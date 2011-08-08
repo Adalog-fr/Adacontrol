@@ -143,6 +143,11 @@ package body Rules.Parameter_Declarations is
             if Subrule in Valued_Subrules then
                Ctl_Values (Subrule, C, Ctl_Kind) := Value;
             end if;
+            if Rule_Used (Subrule, C)(Ctl_Kind) then
+               Parameter_Error (Rule_Id, Image (Callable, Lower_Case)
+                                         & " already specified for "
+                                         & Control_Kinds'Wide_Image (Ctl_Kind));
+            end if;
             Rule_Used  (Subrule, C)(Ctl_Kind) := True;
          end loop;
       end if;
