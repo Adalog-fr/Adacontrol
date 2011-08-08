@@ -453,8 +453,6 @@ package body Rules.Record_Declarations is
                Is_Packed :=         Type_Name = "STANDARD.STRING"
                             or else Type_Name = "STANDARD.WIDE_STRING";
                --2005 add Wide_Wide_String (if bug not fixed)
-               Trace (Type_Name);
-               Trace ("Is_Packed", Is_Packed);
             end;
          end if;
 

@@ -26,7 +26,7 @@ In addition, Adalog can provide various services:
 - Custom improvements to AdaControl, including application-specific
   rules;
  
-- consulting services for defining conding standards;
+- consulting services for defining coding standards;
 
 - consulting services in all areas related to Ada, real-time,
   compilation, etc. See http://www.adalog.fr for details.

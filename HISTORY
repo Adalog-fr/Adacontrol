@@ -4,9 +4,18 @@
 
 General:
 --------
+Recompiled executable versions for GNAT/GPL 2010.
+
 Bug fixes:
    In rule Improper_Initialization: bad handling of slices, extra
    message for out parameter of a separate body without explicit spec.
+
+   Work-around for ASIS bug that resulted in String not appearing as
+   packed for rule Record_Declarations (Component) with older versions
+   of Gnat.
+
+   Work-around for ASIS bug that crashed AdaControl for some deeply
+   nested instantiations.
 
 =============
 == V1.12r3 ==

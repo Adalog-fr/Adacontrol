@@ -38,7 +38,7 @@ Last edited: @today{}
 * Non upward-compatible changes::  
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2009 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2010 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -60,7 +60,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2009
+This document is Copyright @copyright{} 2005-2010
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -5353,7 +5353,8 @@ declarations.
 @subsection Syntax
 @example
 <control_kind> object_declarations (min_integer_span, <param> @{, <param>@});
-<control_kind> object_declarations (volatile_no_address | address_not_volatile);
+<control_kind> object_declarations (volatile_no_address);
+<control_kind> object_declarations (address_not_volatile);
 <param> ::= [all | constant | variable] <value>
 @end example
 

@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.12r3
+@settitle AdaControl Programmer Manual V1.12r4
 @c %**end of header
 
 @titlepage
@@ -38,7 +38,7 @@ AdaControl for industrial projects, or if you want it to be customized
 or extended to match your own needs, please contact Adalog at
 @uref{mailto::info@@adalog.fr,,info@@adalog.fr}.
 
-AdaControl is Copyright @copyright{} 2005-2008 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2010 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -60,7 +60,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2008
+This document is Copyright @copyright{} 2005-2010
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this

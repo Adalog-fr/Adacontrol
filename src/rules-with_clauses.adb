@@ -282,7 +282,6 @@ package body Rules.With_Clauses is
 
             -- Lower bound of Name *is* 1, since it is obtained from Full_Name_Image:
             pragma Warnings (Off, "index for ""Name"" may assume lower bound of 1");
-            pragma Warnings (Off, "suggested replacement:*");
          begin
             if Name'Length <= Magic'Length
               or else Name (1 .. Magic'Length) /= Magic
