@@ -586,7 +586,7 @@ package body Rules.Usage is
          when A_Declaration =>
             Decl := Element;
          when An_Expression =>
-            Decl := Corresponding_Name_Declaration (Element);
+            Decl := A4G_Bugs.Corresponding_Name_Declaration (Element);
             case Element_Kind (Decl) is
                when Not_An_Element =>
                   -- We cannot handle things that have no declaration:
@@ -640,12 +640,12 @@ package body Rules.Usage is
                -- Type is T'Base or T'Class => not a task or protected type
                return K_Variable;
 
-            elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
+            elsif Is_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Temp),
                                             A_Task_Type_Declaration)
             then
                return K_Task;
 
-            elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
+            elsif Is_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Temp),
                                             A_Protected_Type_Declaration)
             then
                return K_Protected;
@@ -1000,7 +1000,7 @@ package body Rules.Usage is
          Current_Definition : Asis.Definition := Def;
       begin
          loop
-            Current_Definition := Type_Declaration_View (Corresponding_Name_Declaration
+            Current_Definition := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
                                                          (Subtype_Simple_Name
                                                           (Component_Subtype_Indication
                                                            (Array_Component_Definition
@@ -1050,7 +1050,7 @@ package body Rules.Usage is
                            Name := Simple_Name (Prefix (Name));
                         end if;
                         Root_Definition := Type_Declaration_View (Corresponding_First_Subtype
-                                                                    (Corresponding_Name_Declaration
+                                                                    (A4G_Bugs.Corresponding_Name_Declaration
                                                                        (Name)));
                      end;
                      if Type_Kind (Root_Definition)
@@ -1424,7 +1424,7 @@ package body Rules.Usage is
    ---------------------------
 
    procedure Process_Instantiation (Instantiation : Asis.Declaration) is
-      use Asis, Asis.Compilation_Units, Asis.Elements, Asis.Expressions, Asis.Declarations;
+      use Asis, Asis.Compilation_Units, Asis.Elements, Asis.Declarations;
       use Thick_Queries;
 
       The_Info    : Null_State;
@@ -1441,6 +1441,7 @@ package body Rules.Usage is
                                Control : in out Asis.Traverse_Control;
                                State   : in out Null_State)
       is
+         use Asis.Expressions;
       begin
          case Element_Kind (Element) is
             when An_Expression =>
@@ -1522,7 +1523,7 @@ package body Rules.Usage is
       -- Do not check instantiations from the standard library or banned units
       Generic_Name := Simple_Name (Generic_Unit_Name (Instantiation));
       if Unit_Origin (Enclosing_Compilation_Unit
-                      (Corresponding_Name_Declaration
+                      (A4G_Bugs.Corresponding_Name_Declaration
                        (Generic_Name))) /=  An_Application_Unit
          or Is_Banned (Generic_Name, For_Rule => Rule_Id)
       then

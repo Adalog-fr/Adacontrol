@@ -338,7 +338,7 @@ package body Rules.Non_Static is
       end if;
       if Type_Kind (Type_Declaration_View
                     (Ultimate_Type_Declaration
-                     (Corresponding_Name_Declaration
+                     (A4G_Bugs.Corresponding_Name_Declaration
                       (Temp)))) in Structured_Types
       then
          return;

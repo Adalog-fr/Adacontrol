@@ -43,6 +43,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -242,9 +243,9 @@ package body Rules.Units is
       begin
          case Expression_Kind (E) is
             when An_Identifier =>
-               return Enclosing_Compilation_Unit (Corresponding_Name_Declaration (E));
+               return Enclosing_Compilation_Unit (A4G_Bugs.Corresponding_Name_Declaration (E));
             when A_Selected_Component =>
-               return Enclosing_Compilation_Unit (Corresponding_Name_Declaration (Selector (E)));
+               return Enclosing_Compilation_Unit (A4G_Bugs.Corresponding_Name_Declaration (Selector (E)));
             when others =>
                Failure ("Element_Unit");
          end case;

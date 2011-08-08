@@ -428,7 +428,7 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Variable_Declaration =>
                   Def := Object_Declaration_View (Element);
                   if Definition_Kind (Def) = A_Subtype_Indication then
-                     if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
+                     if Contains_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration
                                                         (Subtype_Simple_Name (Def)),
                                                         A_Task_Type_Declaration)
                      then
@@ -445,7 +445,7 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Function_Call =>
                   Process_Call ("function");
                when An_Allocation_From_Subtype =>
-                  if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
+                  if Contains_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration
                                                      (Subtype_Simple_Name (Allocator_Subtype_Indication (Element))),
                                                      A_Task_Type_Declaration)
                   then
@@ -522,13 +522,13 @@ package body Rules.Potentially_Blocking_Operations is
      -- PTO_Def is the protected definition of the immediately enclosing protected type/object,
      -- or Nil_Element if check is not called immediately from a PTO
    is
-      use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
       use SP_Property_Map, Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Framework.Element_Queues;
       Decl : Asis.Declaration := Entity_Decl;
    begin
       -- Get rid of renamings
       while Declaration_Kind (Decl) in A_Renaming_Declaration loop
-         Decl := Corresponding_Name_Declaration (Simple_Name (A4G_Bugs.Renamed_Entity (Decl)));
+         Decl := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (A4G_Bugs.Renamed_Entity (Decl)));
       end loop;
 
       if Is_Banned (Decl, Rule_Id) then

@@ -63,7 +63,7 @@ package body Framework.Queries is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries, Utilities;
 
-      E : Asis.Element := Corresponding_Name_Declaration (N);
+      E : Asis.Element := A4G_Bugs.Corresponding_Name_Declaration (N);
       C : Asis.Compilation_Unit;
    begin
       if Is_Nil (E) then

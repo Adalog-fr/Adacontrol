@@ -578,7 +578,7 @@ package body Rules.Declarations is
                            Accessed_Type := Simple_Name (Prefix (Accessed_Type));
                         end if;
 
-                        Accessed_Type := Ultimate_Type_Declaration (Corresponding_Name_Declaration
+                        Accessed_Type := Ultimate_Type_Declaration (A4G_Bugs.Corresponding_Name_Declaration
                                                                       (Accessed_Type));
                         case Declaration_Kind (Accessed_Type) is
                            when A_Task_Type_Declaration =>
@@ -862,7 +862,7 @@ package body Rules.Declarations is
                                  -- None applies to arrays, tasks, or protected
                                  exit;
                               end if;
-                              Def := Type_Declaration_View (Corresponding_Name_Declaration (Type_Name));
+                              Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration (Type_Name));
                               if Is_Nil (Def) then
                                  -- Type_Declaration_View says:
                                  -- Returns a Nil_Element for a task_type_declaration that has no explicit
@@ -1188,7 +1188,7 @@ package body Rules.Declarations is
                      then
                         Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
                      end if;
-                     if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Renamed_Entity))) then
+                     if Is_Nil (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Renamed_Entity))) then
                         Do_Report (D_Library_Unit_Renaming, Get_Location (Element));
                      end if;
                   when others =>
@@ -1234,7 +1234,7 @@ package body Rules.Declarations is
                         then
                            Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
                         end if;
-                        if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Renamed_Entity))) then
+                        if Is_Nil (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Renamed_Entity))) then
                            Do_Report (D_Library_Unit_Renaming, Get_Location (Element));
                         end if;
                         exit;

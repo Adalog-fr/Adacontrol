@@ -269,7 +269,7 @@ package body Rules.Reduceable_Scope is
    ----------------------------
 
    function Declaration_Check_Kind (Decl : Asis.Declaration) return Declaration_Check_Kinds is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements;
       use Thick_Queries;
 
       Temp : Asis.Element;
@@ -339,7 +339,7 @@ package body Rules.Reduceable_Scope is
                      Temp := Subtype_Simple_Name (Temp);
                      if Expression_Kind (Temp) /= An_Attribute_Reference then
                         -- 'Base is not applicable to a task type, nor 'Class (for the moment!)
-                        if Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
+                        if Is_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Temp),
                                                      A_Task_Type_Declaration)
                         then
                            return Check_Not_Checkable;
@@ -616,7 +616,7 @@ package body Rules.Reduceable_Scope is
       procedure Check_Body_Movable_Declaration is
          -- Pre: Enclosing_Decl is the package declaration that contains the declaration
          --      of Name
-         use Asis.Declarations, Asis.Expressions;
+         use Asis.Declarations;
          From_Body : Boolean := False;
          Current   : Asis.Element;
          Info      : Package_Info;
@@ -627,7 +627,7 @@ package body Rules.Reduceable_Scope is
             -- We cannot be in the corresponding body, since a package spec is
             -- always processed before the body
             --    => Not_Movable
-            Kind := Declaration_Check_Kind (Corresponding_Name_Declaration (Name));
+            Kind := Declaration_Check_Kind (A4G_Bugs.Corresponding_Name_Declaration (Name));
             if Kind /= Check_Not_Checkable then
                Package_Visibles.Store (Name, (Outside_Used, Kind));
             end if;
@@ -787,7 +787,6 @@ package body Rules.Reduceable_Scope is
          end loop;
       end Check_Movable_Use_Clause;
 
-      use Asis.Expressions;
       use Thick_Queries;
       EPU : Asis.Defining_Name;
    begin -- Process_Identifier
@@ -802,7 +801,7 @@ package body Rules.Reduceable_Scope is
       end if;
 
       if (Rule_Used and Check_Kind_Set'(Check_Use => False, others => True)) /= No_Check then
-         EPU := Enclosing_Program_Unit (Corresponding_Name_Declaration (Name));
+         EPU := Enclosing_Program_Unit (A4G_Bugs.Corresponding_Name_Declaration (Name));
          if Is_Nil (EPU) then
             -- Name is the name of a compilation unit
             return;

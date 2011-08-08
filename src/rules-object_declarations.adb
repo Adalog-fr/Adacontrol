@@ -245,7 +245,7 @@ package body Rules.Object_Declarations is
                   Failure ("Bad attribute", St_Name);
             end case;
          end if;
-         return Corresponding_Name_Declaration (St_Name);
+         return A4G_Bugs.Corresponding_Name_Declaration (St_Name);
       end Decl_Type_Declaration;
 
       procedure Process_Min_Integer_Span is
@@ -377,7 +377,7 @@ package body Rules.Object_Declarations is
          return;
       end if;
 
-      if Declaration_Kind (Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
+      if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
          return;
       end if;
 
@@ -419,7 +419,7 @@ package body Rules.Object_Declarations is
          when others =>
             return;
       end case;
-      if Declaration_Kind (Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
+      if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
          return;
       end if;
 

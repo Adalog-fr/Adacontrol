@@ -226,7 +226,7 @@ package body Rules.Multiple_Assignments is
 
       function Total_Fields (Struct : Asis.Element) return Extended_Biggest_Natural is
          use Utilities;
-         use Asis.Declarations, Asis.Definitions, Asis.Expressions;
+         use Asis.Declarations, Asis.Definitions;
 
          Def : Asis.Definition;
       begin
@@ -310,7 +310,7 @@ package body Rules.Multiple_Assignments is
                   end;
 
                when A_Subtype_Indication =>
-                  Def := Type_Declaration_View (Corresponding_Name_Declaration
+                  Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
                                                 (Subtype_Simple_Name (Def)));
                when A_Private_Type_Definition
                   | A_Tagged_Private_Type_Definition
@@ -344,7 +344,7 @@ package body Rules.Multiple_Assignments is
          loop
             case Expression_Kind (Target) is
                when A_Selected_Component =>
-                  if Declaration_Kind (Corresponding_Name_Declaration (Selector (Target)))
+                  if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (Target)))
                     in A_Discriminant_Specification .. A_Component_Declaration
                   then
                      Parent := Prefix (Target);
@@ -397,7 +397,7 @@ package body Rules.Multiple_Assignments is
                     =>
                   raise Dynamic_LHS;
                when others =>
-                  if Declaration_Kind (Corresponding_Name_Declaration (Target))
+                  if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Target))
                     /= An_Object_Renaming_Declaration
                   then
                      -- A truly global assignment, not groupable
@@ -407,7 +407,7 @@ package body Rules.Multiple_Assignments is
                   end if;
 
                   -- A renaming: start over with the renamed expression
-                  Target := A4G_Bugs.Renamed_Entity (Corresponding_Name_Declaration (Target));
+                  Target := A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Target));
             end case;
          end loop;
 

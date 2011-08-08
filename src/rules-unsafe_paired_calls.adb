@@ -232,7 +232,7 @@ package body Rules.Unsafe_Paired_Calls is
                return Full_Name_Image (Var);
             end if;
             Sel := Selector (Var);
-            if Declaration_Kind (Corresponding_Name_Declaration (Sel)) = A_Component_Declaration then
+            if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Sel)) = A_Component_Declaration then
                return Selected_Variable_Image (Prefix (Var)) & '.' & A4G_Bugs.Name_Image (Sel);
             else
                return Full_Name_Image (Var);
@@ -269,7 +269,6 @@ package body Rules.Unsafe_Paired_Calls is
          -- We must delay analyzing the lock until we have a way of getting to the corresponding
          -- element, i.e. the first time we have a call to the procedure.
          use Framework.Language;
-         use Asis.Expressions;
       begin
          if Lock_Context.Lock.Kind /= Entity_Spec then
             -- Already transformed (or None)
@@ -295,7 +294,7 @@ package body Rules.Unsafe_Paired_Calls is
                      case Mode_Kind (Profile (I)) is
                         when An_In_Mode | A_Default_In_Mode =>
                            -- Only discrete and access types allowed
-                           case Type_Kind (Type_Declaration_View (Corresponding_Name_Declaration (Mark))) is
+                           case Type_Kind (Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration (Mark))) is
                               when An_Enumeration_Type_Definition
                                 | A_Signed_Integer_Type_Definition
                                 | A_Modular_Type_Definition

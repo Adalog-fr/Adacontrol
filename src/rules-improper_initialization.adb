@@ -202,7 +202,7 @@ package body Rules.Improper_Initialization is
                   if Expression_Kind (Temp) = An_Attribute_Reference then
                      Temp := Simple_Name (Prefix (Temp));
                   end if;
-                  return Non_Array_Component_Declaration (Corresponding_Name_Declaration (Temp));
+                  return Non_Array_Component_Declaration (A4G_Bugs.Corresponding_Name_Declaration (Temp));
                when others =>
                   return Declaration;
             end case;
@@ -215,7 +215,7 @@ package body Rules.Improper_Initialization is
             -- Here, Temp is the simple name of the subtype
             return Non_Array_Component_Declaration
                     (Ultimate_Type_Declaration
-                     (Corresponding_Name_Declaration (Temp)));
+                     (A4G_Bugs.Corresponding_Name_Declaration (Temp)));
          when A_Private_Type_Definition =>
             return Non_Array_Component_Declaration (Corresponding_Type_Declaration
                                                     (Enclosing_Element (Definition)));
@@ -552,7 +552,7 @@ package body Rules.Improper_Initialization is
             end case;
          end loop;
 
-         case Declaration_Kind (Corresponding_Name_Declaration (Good_Name)) is
+         case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name)) is
             when A_Variable_Declaration | A_Parameter_Specification =>
                declare
                   Name_Image : constant Unbounded_Wide_String
@@ -816,7 +816,7 @@ package body Rules.Improper_Initialization is
                         Subtype_Decl := Selector (Subtype_Decl);
                      end if;
                      -- Here, Subtype_Decl is the name of an appropriate subtype
-                     Subtype_Decl   := Corresponding_Name_Declaration (Subtype_Decl);
+                     Subtype_Decl   := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Decl);
                      Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
 
                      if (Extensions (K_Out_Parameter) (M_Access)  or else not Is_Access_Subtype (Component_Decl))
@@ -888,7 +888,7 @@ package body Rules.Improper_Initialization is
                Subtype_Decl := Simple_Name (Prefix (Subtype_Decl));
             end if;
             -- Here, Subtype_Decl is the name of an appropriate subtype
-            Subtype_Decl := Corresponding_Name_Declaration (Subtype_Decl);
+            Subtype_Decl := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Decl);
             -- Now, it is the real subtype declaration
 
             Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
@@ -1015,7 +1015,7 @@ package body Rules.Improper_Initialization is
                                     Check_Object_Use (Slice_Range (Expr), Global_Map);
                                     Expr := Prefix (Expr);
                                  when A_Selected_Component =>
-                                    if Declaration_Kind (Corresponding_Name_Declaration (Selector (Expr)))
+                                    if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (Expr)))
                                     not in A_Discriminant_Specification .. A_Component_Declaration
                                     then
                                        -- This is the object being renamed

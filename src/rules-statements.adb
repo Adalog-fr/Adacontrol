@@ -204,7 +204,7 @@ package body Rules.Statements is
          end if;
 
          if Rule_Used (Stmt_Raise_Nonpublic) and not Is_Standard_Exc then
-            Decl_Place := Enclosing_Element (Corresponding_Name_Declaration (Exc));
+            Decl_Place := Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Exc));
             -- Report if it is in the visible part of the package spec which is the current
             -- compilation unit
             -- NB: Corresponding_Declaration of a proper body returns Nil_Element, therefore
@@ -215,7 +215,7 @@ package body Rules.Statements is
                 Corresponding_Declaration
                   (Unit_Declaration
                      (Enclosing_Compilation_Unit (Element))))
-              or else Is_Part_Of (Corresponding_Name_Declaration (Exc),
+              or else Is_Part_Of (A4G_Bugs.Corresponding_Name_Declaration (Exc),
                                   Private_Part_Declarative_Items (Decl_Place))
             then
                Do_Report (Stmt_Raise_Nonpublic);

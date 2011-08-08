@@ -464,7 +464,7 @@ package body Rules.Max_Call_Depth is
                   when others =>
                      null;
                end case;
-               Called_Body := Corresponding_Name_Declaration (Renaming);
+               Called_Body := A4G_Bugs.Corresponding_Name_Declaration (Renaming);
             when A_Formal_Function_Declaration
                | A_Formal_Procedure_Declaration
                  =>

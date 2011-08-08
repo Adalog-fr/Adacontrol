@@ -392,13 +392,14 @@ package body Rules.Exception_Propagation is
                   State   := Call_In_Declaration;
                   Control := Terminate_Immediately;
                when An_Identifier =>
-                  case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
+                  case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Element)) is
                      when A_Variable_Declaration =>
                         State := Risk_Level'Max (State, Variable_In_Declaration);
                      when An_Object_Renaming_Declaration =>
                         declare
                            use Utilities;
-                           Expr : Asis.Expression := A4G_Bugs.Renamed_Entity (Corresponding_Name_Declaration (Element));
+                           Expr : Asis.Expression
+                             := A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Element));
                         begin
                            loop
                               case Expression_Kind (Expr) is
@@ -662,7 +663,7 @@ package body Rules.Exception_Propagation is
                return;
             end if;
 
-            SP_Declaration := Corresponding_Name_Declaration (Good_Prefix);
+            SP_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix);
 
             case Declaration_Kind (SP_Declaration) is
                when A_Procedure_Declaration
@@ -682,7 +683,7 @@ package body Rules.Exception_Propagation is
                   end if;
                when A_Procedure_Instantiation | A_Function_Instantiation =>
                   Risk := Exception_Propagation_Risk (Corresponding_Body
-                                                      (Corresponding_Name_Declaration
+                                                      (A4G_Bugs.Corresponding_Name_Declaration
                                                        (Simple_Name
                                                         (Generic_Unit_Name
                                                          (SP_Declaration)))),
@@ -691,7 +692,7 @@ package body Rules.Exception_Propagation is
                      Report (Rule_Id,
                              State,
                              Get_Location (Corresponding_Body
-                                           (Corresponding_Name_Declaration
+                                           (A4G_Bugs.Corresponding_Name_Declaration
                                             (Simple_Name
                                              (Generic_Unit_Name
                                               (SP_Declaration))))),
@@ -799,7 +800,7 @@ package body Rules.Exception_Propagation is
                   -- Parameter found
                   -- Actual must be an identifier (or else it is not for us, dereference for example)
                   if Expression_Kind (Actual_Parameter (Actuals (I))) = An_Identifier then
-                     SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name
+                     SP_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Ultimate_Name
                                                                        (Actual_Parameter
                                                                         (Actuals (I))));
 
@@ -823,7 +824,7 @@ package body Rules.Exception_Propagation is
 
                         when A_Procedure_Instantiation | A_Function_Instantiation =>
                            Risk := Exception_Propagation_Risk (Corresponding_Body
-                                                               (Corresponding_Name_Declaration
+                                                               (A4G_Bugs.Corresponding_Name_Declaration
                                                                 (Generic_Unit_Name
                                                                  (SP_Declaration))),
                                                                EP_Rule_Context (Current_Context).Check_Level);
@@ -831,7 +832,7 @@ package body Rules.Exception_Propagation is
                               Report (Rule_Id,
                                       Current_Context,
                                       Get_Location (Corresponding_Body
-                                                    (Corresponding_Name_Declaration
+                                                    (A4G_Bugs.Corresponding_Name_Declaration
                                                      (Generic_Unit_Name
                                                       (SP_Declaration)))),
                                       "generic """ &  A4G_Bugs.Name_Image (Generic_Unit_Name (SP_Declaration))

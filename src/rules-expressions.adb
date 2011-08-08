@@ -417,7 +417,7 @@ package body Rules.Expressions is
             when others =>
                null;
          end case;
-         Def := Corresponding_Name_Declaration (Name);
+         Def := A4G_Bugs.Corresponding_Name_Declaration (Name);
          if Is_Nil (Def) then
             -- ASIS bug [G419-004]: Corresponding_Name_Declaration returns Nil_Element if Name is
             -- part of a pragma Priority. Not a problem in practice, since this would make a false

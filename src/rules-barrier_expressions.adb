@@ -211,7 +211,7 @@ package body Rules.Barrier_Expressions is
 
             when An_Identifier =>
                declare
-                  Name_Decl : constant Asis.Declaration := Corresponding_Name_Declaration (Exp);
+                  Name_Decl : constant Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration (Exp);
                begin
                   case Declaration_Kind (Name_Decl) is
                      when A_Package_Declaration

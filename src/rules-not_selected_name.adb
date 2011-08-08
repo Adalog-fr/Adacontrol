@@ -37,6 +37,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -169,8 +170,9 @@ package body Rules.Not_Selected_Name is
                   declare
                      Elem_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_Program_Unit (Element)));
                      Decl_Name : constant Wide_String := To_Upper (Full_Name_Image
-                                                                     (Enclosing_Program_Unit
-                                                                        (Corresponding_Name_Declaration (Element))));
+                                                                   (Enclosing_Program_Unit
+                                                                    (A4G_Bugs.Corresponding_Name_Declaration
+                                                                     (Element))));
                   begin
                      if Elem_Name = Decl_Name or else Starts_With (Elem_Name, Decl_Name & '.') then
                         return;
@@ -185,7 +187,7 @@ package body Rules.Not_Selected_Name is
                     To_Upper (Full_Name_Image (Names
                                                (Unit_Declaration
                                                 (Enclosing_Compilation_Unit
-                                                 (Corresponding_Name_Declaration
+                                                 (A4G_Bugs.Corresponding_Name_Declaration
                                                   (Element)))) (1)))
                   then
                      return;
@@ -201,7 +203,7 @@ package body Rules.Not_Selected_Name is
                                                                         (Names
                                                                          (Unit_Declaration
                                                                           (Enclosing_Compilation_Unit
-                                                                           (Corresponding_Name_Declaration
+                                                                           (A4G_Bugs.Corresponding_Name_Declaration
                                                                             (Element)))) (1)));
                   begin
                      if Elem_Unit_Name = Decl_Unit_Name or else Starts_With (Elem_Unit_Name, Decl_Unit_Name & '.') then

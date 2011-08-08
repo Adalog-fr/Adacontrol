@@ -376,7 +376,7 @@ package body Rules.Global_References is
                   Process_Call;
                when An_Identifier =>
                   begin
-                     case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
+                     case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Element)) is
                         when A_Variable_Declaration =>
                            declare
                               Key : constant Unbounded_Wide_String
@@ -428,7 +428,7 @@ package body Rules.Global_References is
                               when Write | Read_Write =>
                                  New_State := Written;
                            end case;
-                           Traverse (A4G_Bugs.Renamed_Entity (Corresponding_Name_Declaration (Element)),
+                           Traverse (A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Element)),
                                      Control,
                                      New_State);
                         when others =>

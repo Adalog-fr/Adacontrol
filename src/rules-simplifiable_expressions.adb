@@ -430,15 +430,15 @@ package body Rules.Simplifiable_expressions is
                            exit;
 
                         when A_Selected_Component =>
-                           case Declaration_Kind (Corresponding_Name_Declaration (Selector (LP))) is
+                           case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (LP))) is
                               when A_Component_Declaration | A_Discriminant_Specification =>
                                  if Expression_Kind (UP) /= A_Selected_Component then
                                     return;
                                  end if;
 
                                  -- It's a record field, a protected type field...
-                                 if not Is_Equal (Corresponding_Name_Declaration (Selector (LP)),
-                                                  Corresponding_Name_Declaration (Selector (UP)))
+                                 if not Is_Equal (A4G_Bugs.Corresponding_Name_Declaration (Selector (LP)),
+                                                  A4G_Bugs.Corresponding_Name_Declaration (Selector (UP)))
                                  then
                                     return;
                                  end if;
@@ -454,7 +454,7 @@ package body Rules.Simplifiable_expressions is
                                  exit;
                               when others =>
                                  Failure ("Wrong selected component",
-                                          Corresponding_Name_Declaration (Selector (LP)));
+                                          A4G_Bugs.Corresponding_Name_Declaration (Selector (LP)));
                            end case;
 
                         when An_Indexed_Component =>
@@ -493,7 +493,7 @@ package body Rules.Simplifiable_expressions is
                                           return;
                                        end if;
                                     when An_Identifier =>
-                                       case Declaration_Kind (Corresponding_Name_Declaration (L_Indexers (I)))
+                                       case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (L_Indexers (I)))
                                        is
                                           when A_Constant_Declaration
                                             | A_Deferred_Constant_Declaration
@@ -540,7 +540,7 @@ package body Rules.Simplifiable_expressions is
                   -- Here we have a "clean" name for lower/upper prefix
                   -- Check the full expanded names of both bounds.
                   if Full_Name_Image (LP) = Full_Name_Image (UP) then
-                     case Declaration_Kind (Corresponding_Name_Declaration (LP)) is
+                     case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (LP)) is
                         when A_Subtype_Declaration
                           | An_Ordinary_Type_Declaration
                           | A_Formal_Type_Declaration
@@ -558,7 +558,7 @@ package body Rules.Simplifiable_expressions is
                         when others =>
                            Failure ("Unexpected Element_Kind 1: " &
                                     Declaration_Kinds'Wide_Image (Declaration_Kind
-                                                                  (Corresponding_Name_Declaration
+                                                                  (A4G_Bugs.Corresponding_Name_Declaration
                                                                    (LP))));
                      end case;
                   end if;
@@ -584,7 +584,7 @@ package body Rules.Simplifiable_expressions is
                end case;
 
                -- Get rid of subtypes, incomplete views...
-               Decl := Corresponding_Name_Declaration (P);
+               Decl := A4G_Bugs.Corresponding_Name_Declaration (P);
                if Declaration_Kind (Decl) = A_Subtype_Declaration then
                   Decl := Corresponding_First_Subtype (Decl);
                end if;
@@ -608,7 +608,7 @@ package body Rules.Simplifiable_expressions is
                            Def := Type_Declaration_View (A4G_Bugs.Corresponding_Root_Type (Def));
                         elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
                            Def := Type_Declaration_View (Corresponding_First_Subtype
-                                                         (Corresponding_Name_Declaration
+                                                         (A4G_Bugs.Corresponding_Name_Declaration
                                                           (Subtype_Simple_Name (Def))));
                         else
                            exit;
@@ -856,7 +856,7 @@ package body Rules.Simplifiable_expressions is
          when others =>
             null;
       end case;
-      Target := Corresponding_Name_Declaration (Target);
+      Target := A4G_Bugs.Corresponding_Name_Declaration (Target);
       if Is_Equal (Source, Target)
         or else Is_Equal (Corresponding_First_Subtype (Source), Target)
       then

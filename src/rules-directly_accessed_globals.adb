@@ -35,8 +35,7 @@ with
 -- Asis
 with
   Asis.Declarations,
-  Asis.Elements,
-  Asis.Expressions;
+  Asis.Elements;
 
 -- Adalog
 with
@@ -176,7 +175,7 @@ package body Rules.Directly_Accessed_Globals is
    ------------------------
 
    procedure Process_Identifier (Name : in Asis.Expression) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements;
       use Ada.Strings.Wide_Unbounded, Framework.Reports, Thick_Queries,Utilities, Variables_Map;
       Good_Name : Asis.Expression;
       Name_Decl : Asis.Declaration;
@@ -207,7 +206,7 @@ package body Rules.Directly_Accessed_Globals is
          return;
       end if;
 
-      Name_Decl := Corresponding_Name_Declaration (Good_Name);
+      Name_Decl := A4G_Bugs.Corresponding_Name_Declaration (Good_Name);
       if Is_Nil (Name_Decl) then
          -- Some predefined stuff...
          return;

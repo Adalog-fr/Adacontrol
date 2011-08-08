@@ -188,7 +188,7 @@ package body Rules.Allocators is
 
       Check (Matching_Context (Entities, E, Extend_To => All_Extensions));
       if not Found and Expression_Kind (E) /= An_Attribute_Reference then
-         E := Corresponding_Name_Declaration (E);
+         E := A4G_Bugs.Corresponding_Name_Declaration (E);
          if Is_Type_Declaration_Kind (E, A_Task_Type_Declaration) then
             Check (Framework.Association (Entities, "TASK"));
          elsif Is_Type_Declaration_Kind (E, A_Protected_Type_Declaration) then

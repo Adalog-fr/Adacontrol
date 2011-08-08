@@ -35,11 +35,11 @@ with
 with
   Asis.Declarations,
   Asis.Definitions,
-  Asis.Elements,
-  Asis.Expressions;
+  Asis.Elements;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -428,12 +428,12 @@ package body Rules.Array_Declarations is
    procedure Process_Array_Definition (Definition : Asis.Definition) is
 
       procedure Process_Component is
-         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
          Array_Comp : constant Asis.Expression := Subtype_Simple_Name (Component_Subtype_Indication
                                                                        (Array_Component_Definition
                                                                         (Definition)));
-         Comp_Decl  : constant Asis.Declaration := Corresponding_Name_Declaration (Array_Comp);
+         Comp_Decl  : constant Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration (Array_Comp);
          Arr_Decl   : constant Asis.Declaration := Enclosing_Element (Definition);
          First_St   : Asis.Declaration;
          Iterator   : Context_Iterator := Compo_Iterator.Create;

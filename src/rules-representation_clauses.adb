@@ -286,7 +286,7 @@ package body Rules.Representation_Clauses is
          Control : Asis.Traverse_Control := Continue;
          State   : Null_State;
          Decl    : constant Asis.Declaration
-           := Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
+           := A4G_Bugs.Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
       begin  -- Check_Incomplete
          for C in Components'Range loop
             Add (Compo_Set, To_Upper (A4G_Bugs.Name_Image (Representation_Clause_Name (Components (C)))));
@@ -448,7 +448,7 @@ package body Rules.Representation_Clauses is
          use Asis.Declarations;
 
          Def : constant Asis.Definition := Type_Declaration_View
-                                              (Corresponding_Name_Declaration
+                                              (A4G_Bugs.Corresponding_Name_Declaration
                                                  (Representation_Clause_Name (Rep_Clause)));
       begin
          case Type_Kind (Def) is

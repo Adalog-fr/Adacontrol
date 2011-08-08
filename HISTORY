@@ -1,3 +1,10 @@
+==============
+== V1.10r10 ==
+==============
+Minor bug fix release:
+- Problem following several levels of renaming in rule usage
+- Workaround for an ASIS bug involving renaming and generic child units
+
 =============
 == V1.10r8 ==
 =============

@@ -252,7 +252,7 @@ package body Framework is
                   null;
                when An_Operator_Symbol =>
                   declare
-                     Op_Decl : constant Asis.Element := Corresponding_Name_Declaration (Good_Name);
+                     Op_Decl : constant Asis.Element := A4G_Bugs.Corresponding_Name_Declaration (Good_Name);
                   begin
                      if Is_Nil (Op_Decl) then
                         Is_Predefined_Op := True;
@@ -447,7 +447,7 @@ package body Framework is
                               Name      : in Asis.Element;
                               Extend_To : Extension_Set := No_Extension) return Root_Context'Class
    is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Thick_Queries;
+      use Asis, Asis.Declarations, Asis.Elements, Thick_Queries;
       Good_Name        : Asis.Element;
       Name_Declaration : Asis.Declaration;
    begin
@@ -474,7 +474,7 @@ package body Framework is
       if Element_Kind (Good_Name) = A_Defining_Name then
          Name_Declaration := Enclosing_Element (Good_Name);
       else
-         Name_Declaration := Corresponding_Name_Declaration (Good_Name);
+         Name_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Name);
       end if;
 
       -- 2) if name is a renaming, try the ultimate name

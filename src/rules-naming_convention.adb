@@ -550,7 +550,8 @@ package body Rules.Naming_Convention is
                                           if Is_Nil (Renamed_T) then
                                              -- The prefix is an access type without a real declaration
                                              -- => must be an anonymous access type, and the prefix a formal parameter
-                                             Decl := Corresponding_Name_Declaration (Simple_Name (Prefix (Renamed)));
+                                             Decl := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name
+                                                                                              (Prefix (Renamed)));
                                              Assert (Declaration_Kind (Decl) = A_Parameter_Specification,
                                                      "wrong declaration kind with dereference of Nil accessed type");
                                              Decl_Kind := A_Parameter_Specification;
@@ -575,7 +576,7 @@ package body Rules.Naming_Convention is
                                                    Renamed);
                                     end case;
                                  end loop;
-                                 Decl      := Corresponding_Name_Declaration (Renamed);
+                                 Decl      := A4G_Bugs.Corresponding_Name_Declaration (Renamed);
                                  Decl_Kind := Declaration_Kind (Decl);
                               end loop Going_Up_Renamings;
                            end if;
@@ -712,7 +713,7 @@ package body Rules.Naming_Convention is
 
                            -- Here, we should have a plain (sub)type identifier
 
-                           Accessed := Corresponding_Name_Declaration (Accessed);
+                           Accessed := A4G_Bugs.Corresponding_Name_Declaration (Accessed);
                            if Declaration_Kind (Accessed) = An_Incomplete_Type_Declaration then
                               Accessed := Corresponding_Type_Declaration (Accessed);
                               if Is_Nil (Accessed) then
@@ -744,7 +745,7 @@ package body Rules.Naming_Convention is
                               then
                                  Accessed := A4G_Bugs.Corresponding_Root_Type (Def);
                               elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
-                                 Accessed := Corresponding_Name_Declaration (Subtype_Simple_Name (Def));
+                                 Accessed := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Simple_Name (Def));
                               else
                                  exit;
                               end if;

@@ -253,7 +253,7 @@ package body Rules.Instantiations is
 
    function Is_Corresponding (Specification : in Entity_Specification;
                               Name          : in Asis.Defining_Name) return Boolean is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Elements;
       use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
 
       Declaration  : Asis.Declaration;
@@ -291,7 +291,7 @@ package body Rules.Instantiations is
 
       -- Special case if Name designates a type: try category
       -- (+ first named subtype if it is a subtype)
-      Declaration := Corresponding_Name_Declaration (Simple_Name (Name));
+      Declaration := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (Name));
       case Declaration_Kind (Declaration) is
          when An_Ordinary_Type_Declaration
             | A_Task_Type_Declaration

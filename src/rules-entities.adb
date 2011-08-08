@@ -142,15 +142,15 @@ package body Rules.Entities is
 
    procedure Process_Identifier (Element : in Asis.Expression) is
 
-      Decl : Asis.Declaration;
-      Expr : Asis.Expression;
-
       procedure Check (Identifier : Asis.Expression) is
          use Asis, Asis.Elements, Asis.Expressions;
          use Framework.Reports, Thick_Queries, Utilities;
 
          Current_Context : constant Root_Context'Class
            := Matching_Context (Searched_Entities, Identifier, Extend_To => (Instance => True, Renaming => False));
+
+         Decl : Asis.Declaration;
+         Expr : Asis.Expression;
       begin
          if Current_Context /= No_Matching_Context then
             Report (Rule_Id,
@@ -163,7 +163,7 @@ package body Rules.Entities is
             return;
          end if;
 
-         Decl := Corresponding_Name_Declaration (Identifier);
+         Decl := A4G_Bugs.Corresponding_Name_Declaration (Identifier);
          case Declaration_Kind (Decl) is
             when An_Object_Renaming_Declaration =>
                Expr := A4G_Bugs.Renamed_Entity (Decl);
