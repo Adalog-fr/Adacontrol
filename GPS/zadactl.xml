@@ -358,7 +358,7 @@
 </documentation_file>
 
 <documentation_file>
-  <name>.adacontrol_pm.html</name>
+  <name>adacontrol_pm.html</name>
   <descr>AdaControl Programmer Manual</descr>
   <category>AdaControl</category>
   <menu before="About">/Help/AdaControl/Programmer Manual</menu>
