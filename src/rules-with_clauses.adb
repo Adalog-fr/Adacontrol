@@ -305,7 +305,6 @@ package body Rules.With_Clauses is
 
             return Name;
             pragma Warnings (On, "index for ""Name"" may assume lower bound of 1");
-            pragma Warnings (On, "suggested replacement:*");
          end Defeat_Gnat_Trick;
 
          U_Name : constant Wide_String := Defeat_Gnat_Trick (To_Upper (Full_Name_Image
