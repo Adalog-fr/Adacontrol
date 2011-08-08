@@ -136,7 +136,7 @@
     tip="Print only errors (Check)"/>
    <check line="3" column="1" label="Warnings as errors" switch="-e"
     tip="Treat warnings (Search) as errors (Check)"/>
-   <combo line="3" column="1" label="Statistics" switch="-S" noswitch="0"
+   <combo line="3" column="1" label="Statistics" switch="-S" separator="&#32;" noswitch="0"
     tip="Define the statistics displayed in the Message window at the end or the run">
     <combo-entry label="None"                      value="0" />
     <combo-entry label="Errors and warnings count" value="1" />

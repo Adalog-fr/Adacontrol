@@ -118,8 +118,8 @@ package body Rules.Dependencies is
 
             begin
                Counting_Contexts (Counting_Subrules_Count) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                                      Count_Kind => Sr,
-                                                      Bounds     => Get_Bounds_Parameters (Rule_Id));
+                                                               Count_Kind => Sr,
+                                                               Bounds     => Get_Bounds_Parameters (Rule_Id));
             exception
                when Constraint_Error =>
                   Parameter_Error (Rule_Id, "maximum value negative or too big");
@@ -291,7 +291,7 @@ package body Rules.Dependencies is
 
             if Others_Subrule_Used then
                Elem := Names (N);
-               if Extended_Matching_Context (Allowed_Entities, Elem) = No_Matching_Context then
+               if Matching_Context (Allowed_Entities, Elem, Extend_To => All_Extensions) = No_Matching_Context then
                   Report (Rule_Id,
                           Others_Context,
                           Get_Location (Elem),

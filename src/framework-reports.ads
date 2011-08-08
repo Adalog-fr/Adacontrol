@@ -54,6 +54,11 @@ package Framework.Reports is
    -- Called when a rule cannot check something, because f.e. it depends on a non
    -- statically analyzable construct
 
+   procedure Clear_Delayed_Uncheckable_Messages (Rule_Id : in Wide_String);
+   -- False positive messages are delayed until there is an actual Report from the same rule.
+   -- If it is known that there will be no (appropriate) report, this procedure clears all pending
+   -- messages.
+
    Cancellation : exception;
    -- Raised when the number of allowed errors/messages is exceeded
    -- Occurrence message gives the exact cause
@@ -73,6 +78,7 @@ package Framework.Reports is
    -- Concatenates the strings, separated by the separator appropriate to the output format
 
    procedure Raw_Report (Message : Wide_String);
+   -- Just output the string without formating
 
    type Output_Format is (Source, Gnat, CSV, CSVX, None);
    type Stats_Levels  is (None, General, Nulls_Only, Full);
@@ -86,7 +92,8 @@ package Framework.Reports is
    Adactl_Tag2             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
    Max_Messages            : Natural := Natural'Last;
    Max_Errors              : Natural := Natural'Last;
-
+   Check_Message           : Unbounded_Wide_String := To_Unbounded_Wide_String ("Error");
+   Search_Message          : Unbounded_Wide_String := To_Unbounded_Wide_String ("Found");
 
    function Nb_Errors   return Natural;
    function Nb_Warnings return Natural;

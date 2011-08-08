@@ -18,7 +18,8 @@ def pre_clean ():
 def post_clean ():
    """Clean-up after running AdaControl
    """
-   GPS.MDI.get("Locations").raise_window()
+   # Raise "Locations" window from menu, because it works even if the window has not been created yet
+   GPS.execute_action ("/Window/Locations");
    if GPS.Preference ("delete-trees").get():
       del_tree (confirm=False)
 
@@ -150,13 +151,20 @@ def load_result (file = ""):
 
    try:
       f = open (previous_locfile, 'r')
-      for C in adactl_cats:
-         GPS.Locations.remove_category (C)
-      adactl_cats = sets.Set()
-      parse (f.read())
-      GPS.MDI.get("Locations").raise_window()
    except:
-      GPS.MDI.dialog ("File " + previous_locfile + " not found")
+      GPS.MDI.dialog ("File " + previous_locfile + " not found in " + GPS.pwd())
+      return
+
+   for C in adactl_cats:
+      GPS.Locations.remove_category (C)
+   adactl_cats = sets.Set()
+
+   try:
+      parse (f.read())
+   except:
+      GPS.MDI.dialog ("File " + previous_locfile + " is not a valid result file");
+      return
+   GPS.MDI.get("Locations").raise_window()
 
 def del_tree (confirm):
    """Ask for confirmation, then delete tree files (and possibly .ali files)
@@ -362,6 +370,10 @@ def options (rules, files):
          skip_next = True
       elif O == "-F" and gps:
          skip_next = True
+      elif O[0:2] == "-F":
+         # Bug in GPS: Combo does not add separator
+         if not gps:
+            result = result + ' ' + "-F " + O[2:]
       elif O == "-o":
          next_is_ofile = True
       elif O == "-p":
@@ -369,6 +381,9 @@ def options (rules, files):
          next_is_pfile = True
          if rules != "check":
             result = result + ' ' + O
+      elif O[0:2] == "-S" and O[2:] != "":
+         # Bug in GPS: Combo does not add separator
+         result = result + ' ' + "-S " + O[2:]
       else:
          result = result + ' ' + O
 

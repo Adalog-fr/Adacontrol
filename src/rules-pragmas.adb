@@ -148,7 +148,7 @@ package body Rules.Pragmas is
 
       -- Check nonstandard
       declare
-         Current_Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("NONSTANDARD"));
+         Current_Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "NONSTANDARD");
       begin
          if Current_Context /= No_Matching_Context
             and then Pragma_Kind (Pragma_Element) in An_Implementation_Defined_Pragma .. An_Unknown_Pragma
@@ -164,7 +164,7 @@ package body Rules.Pragmas is
 
       -- check all
       declare
-         Current_Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("ALL"));
+         Current_Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "ALL");
       begin
          if Current_Context /= No_Matching_Context then
             Report (Rule_Id,

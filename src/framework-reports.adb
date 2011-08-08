@@ -48,7 +48,7 @@ with
 
 package body Framework.Reports is
 
-   CSV_Separator : constant array (Output_Format range CSV..CSVX) of Wide_Character := (',', ';');
+   CSV_Separator : constant array (Output_Format range CSV..None) of Wide_Character := (',', ';',';');
 
    Not_Found : constant := 0;
 
@@ -56,8 +56,8 @@ package body Framework.Reports is
    Warning_Count : Natural := 0;
 
    Uncheckable_Used   : array (Uncheckable_Consequence) of Boolean := (others => False);
-   Uncheckable_Types  : array (Uncheckable_Consequence) of Control_Kinds;
-   Uncheckable_Labels : array (Uncheckable_Consequence) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Uncheckable_Controls : array (Uncheckable_Consequence) of Control_Kinds;
+   Uncheckable_Labels   : array (Uncheckable_Consequence) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    type False_Positive_Info (Len : Positive) is
       record
          Loc : Location;
@@ -229,10 +229,8 @@ package body Framework.Reports is
       case Format_Option is
          when Gnat | Source=>
             return Left & ": " & Right;
-         when CSV | CSVX =>
+         when CSV | CSVX | None =>
             return Left & CSV_Separator (Format_Option) & Right;
-         when None =>
-            return Left & CSV_Separator (CSVX) & Right;
       end case;
    end "and";
 
@@ -250,14 +248,14 @@ package body Framework.Reports is
    -- Report --
    ------------
 
+   -- This one is the "true" Report procedure, i.e. the other Report procedure is just
+   -- a front-end to this one.
    procedure Report (Rule_Id   : in Wide_String;
                      Ctl_Label : in Wide_String;
                      Ctl_Kind  : in Control_Kinds;
                      Loc       : in Location;
                      Msg       : in Wide_String)
    is
-      -- This one is the "true" Report procedure, i.e. the other Report procedure is just
-      -- a front-end to this one.
       use Utilities, Adactl_Options;
 
       Label     : constant Wide_String := Choose (Ctl_Label, Otherwise => Rule_Id);
@@ -265,7 +263,7 @@ package body Framework.Reports is
       Line_Last : Natural := 0;
 
       procedure Issue_Message (Title : Wide_String) is
-         use Ada.Wide_Text_IO;
+         use Ada.Strings.Wide_Fixed, Ada.Wide_Text_IO;
 
          function Quote (Item : Wide_String) return Wide_String is
             Result : Wide_String (Item'First .. Item'Last + Ada.Strings.Wide_Fixed.Count (Item, """") + 2);
@@ -287,7 +285,6 @@ package body Framework.Reports is
             return Result;
          end Quote;
 
-         Current_Col : Ada.Wide_Text_IO.Count;
       begin   -- Issue_Message
          if Just_Created then
             Just_Created := False;
@@ -326,7 +323,7 @@ package body Framework.Reports is
                New_Line;
             when CSV | CSVX =>
                if Loc = Null_Location then
-                  Put ("""""");
+                  Put ("""""" and """""" and """""");
                else
                   Put (Image (Loc, Separator => CSV_Separator (Format_Option)));
                end if;
@@ -345,10 +342,11 @@ package body Framework.Reports is
                else
                   Put (Image (Loc));
                   Put (": ");
-                  Current_Col := Col (Current_Output);
                   Put (Line (1 .. Line_Last));
                   New_Line;
-                  Set_Col (Current_Col + Ada.Wide_Text_IO.Count (Get_First_Column (Loc)) - 1);
+                  Put (Image (Loc));
+                  Put (": ");
+                  Put ((Get_First_Column (Loc) - 1) * ' ');
                   Put ("! ");
                end if;
                Put (Title);
@@ -384,14 +382,14 @@ package body Framework.Reports is
             -- Delete entry in map here to avoid infinite recursion
             -- There is no problem, since Queues are controlled, the queue will be released when
             -- exiting the block.
-            Delete (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id));
+            Clear_Delayed_Uncheckable_Messages (Rule_Id);
             while Has_Element (Current) loop
                declare
                   Mess_Info : constant False_Positive_Info := Fetch (Current);
                begin
                   Report (Rule_Id,
                           To_Wide_String (Uncheckable_Labels (False_Positive)),
-                          Uncheckable_Types  (False_Positive),
+                          Uncheckable_Controls  (False_Positive),
                           Mess_Info.Loc,
                           Mess_Info.Msg);
                end;
@@ -445,7 +443,7 @@ package body Framework.Reports is
             when Check =>
                Error_Count := Error_Count + 1;
 
-               Issue_Message ("Error");
+               Issue_Message (To_Wide_String(Check_Message));
             when Search =>
                if Warning_As_Error_Option then
                   Error_Count := Error_Count + 1;
@@ -454,7 +452,7 @@ package body Framework.Reports is
                end if;
 
                if Warning_As_Error_Option or else not Skip_Warning_Option then
-                  Issue_Message ("Found");
+                  Issue_Message (To_Wide_String (Search_Message));
                end if;
             when Count =>
                Add (Rule_Counter,
@@ -534,7 +532,7 @@ package body Framework.Reports is
             when False_Negative =>
                Report (Rule_Id,
                        Label,
-                       Uncheckable_Types  (Risk),
+                       Uncheckable_Controls (Risk),
                        Loc,
                        Choose (Label /= "", "in rule " & Rule_Id & ": ", "")
                        & "Possible false negative: " & Msg);
@@ -556,6 +554,26 @@ package body Framework.Reports is
                   Add (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id), Rule_Queue);
                end;
          end case;
+
+         -- Add UNCHECKABLE to statistics, total under "UNCHECKABLE", subtotal under "UNCHECKABLE.<rule>"
+         if Stats_Level >= Nulls_Only then
+            declare
+               use Counters;
+               Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("UNCHECKABLE");
+            begin
+               Add (Stats_Counters (Uncheckable_Controls (Risk)),
+                    Key,
+                    Fetch (Stats_Counters (Uncheckable_Controls (Risk)), Key, Default_Value => 0) + 1);
+            end;
+            declare
+               use Counters;
+               Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("UNCHECKABLE." & Rule_Id);
+            begin
+               Add (Stats_Counters (Uncheckable_Controls (Risk)),
+                    Key,
+                    Fetch (Stats_Counters (Uncheckable_Controls (Risk)), Key, Default_Value => 0) + 1);
+            end;
+         end if;
       end if;
    end Uncheckable;
 
@@ -580,9 +598,23 @@ package body Framework.Reports is
    is
    begin
       Uncheckable_Used   (Risk) := True;
-      Uncheckable_Types  (Risk) := Ctl_Kind;
+      Uncheckable_Controls  (Risk) := Ctl_Kind;
       Uncheckable_Labels (Risk) := To_Unbounded_Wide_String (Label);
    end Set_Uncheckable;
+
+   ----------------------------------------
+   -- Clear_Delayed_Uncheckable_Messages --
+   ----------------------------------------
+
+   procedure Clear_Delayed_Uncheckable_Messages (Rule_Id : in Wide_String) is
+      use False_Positive_Map;
+
+      Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule_Id);
+   begin
+      if Is_Present (False_Positive_Messages, Key) then
+         Delete (False_Positive_Messages, Key);
+      end if;
+   end Clear_Delayed_Uncheckable_Messages;
 
    ---------------
    -- Nb_Errors --
@@ -736,7 +768,7 @@ package body Framework.Reports is
 
          if Triggered_Count = 0 or else Stats_Level = Full then
             case Format_Option is
-               when Gnat | Source | None =>
+               when Gnat | Source =>
                   Put (Wide_Key);
                   Put (": ");
                   if Triggered_Count = 0 then
@@ -753,7 +785,7 @@ package body Framework.Reports is
                         Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
                      end loop;
                   end if;
-               when CSV | CSVX =>
+               when CSV | CSVX | None =>
                   -- Add CSV separator in place of first '.' in wide key
                   -- (Separates rule name from label)
                   for I in Wide_Key'Range loop
@@ -786,12 +818,16 @@ package body Framework.Reports is
       end if;
 
       if Stats_Level >= Nulls_Only then
-         New_Line;
-         Put_Line ("Rules usage statistics:");
+         if Format_Option /= None then
+            -- if format_option = none, there were no messages, and the stats are output in CSVX
+            -- we don't need the separator, it is better to have the header line first
+            New_Line;
+            Put_Line ("Rules usage statistics:");
+         end if;
          case Format_Option is
-            when Gnat | Source | None =>
+            when Gnat | Source =>
                null;
-            when CSV | CSVX =>
+            when CSV | CSVX  | None=>
                Put_Line ("Rule" and "Label" and "Check" and "Search" and "Count");
          end case;
          Report_All_Stats (Stats_Counters (Control_Kinds'First));

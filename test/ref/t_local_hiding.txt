@@ -42,3 +42,8 @@ t_local_hiding.adb:86:10: Error: Hiding: "Z" hides declaration at t_local_hiding
 t_local_hiding.adb:100:7: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
 t_local_hiding.adb:110:13: Error: Hiding: "Y" hides declaration at t_local_hiding.adb:108:12
 t_local_hiding.adb:114:12: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:137:19: Found: Overloading: "A{ return T_Local_Hiding._Anonymous_.T1}" overloads declaration at t_local_hiding.adb:132:16
+t_local_hiding.adb:138:19: Found: Overloading: "A{ return T_Local_Hiding._Anonymous_.T2}" overloads declaration at t_local_hiding.adb:132:16
+t_local_hiding.adb:139:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:138:19
+t_local_hiding.adb:139:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:137:19
+t_local_hiding.adb:139:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:132:16

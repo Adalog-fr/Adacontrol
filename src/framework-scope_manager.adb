@@ -98,6 +98,66 @@ package body Framework.Scope_Manager is
    Exit_Procs    : Scoping_Link;
    Clear_Procs   : Scoping_Link;
 
+   --------------
+   -- Is_Scope --
+   --------------
+
+   function Is_Scope (Element : Asis.Element) return Boolean is
+      use Asis, Asis.Elements;
+   begin
+      case Element_Kind (Element) is
+         when A_Declaration =>
+            case Declaration_Kind (Element) is
+               when A_Function_Declaration
+                  | A_Procedure_Declaration
+                  | An_Entry_Declaration
+                  | A_Package_Declaration
+                  | A_Generic_Procedure_Declaration
+                  | A_Generic_Function_Declaration
+                  | A_Generic_Package_Declaration
+                  | A_Formal_Procedure_Declaration
+                  | A_Formal_Function_Declaration
+                  | A_Package_Body_Declaration
+                  | A_Task_Type_Declaration
+                  | A_Single_Task_Declaration
+                  | A_Protected_Type_Declaration
+                  | A_Single_Protected_Declaration
+                  | A_Task_Body_Declaration
+                  | A_Protected_Body_Declaration
+                  | An_Entry_Body_Declaration
+                  | A_Procedure_Body_Declaration
+                  | A_Function_Body_Declaration
+                  | A_Package_Renaming_Declaration
+                  | A_Procedure_Renaming_Declaration
+                  | A_Function_Renaming_Declaration
+                  | A_Generic_Package_Renaming_Declaration
+                  | A_Generic_Procedure_Renaming_Declaration
+                  | A_Generic_Function_Renaming_Declaration
+                  | A_Package_Instantiation
+                  | A_Procedure_Instantiation
+                  | A_Function_Instantiation
+                    =>
+                  return True;
+               when others =>
+                  return False;
+            end case;
+         when A_Statement =>
+            case Statement_Kind (Element) is
+               when A_For_Loop_Statement
+                  | A_Block_Statement
+                  | An_Accept_Statement
+                    =>
+                  return True;
+               when others =>
+                  return False;
+            end case;
+         when An_Exception_Handler =>
+            return True;
+         when others =>
+            return False;
+      end case;
+   end Is_Scope;
+
    ------------------
    --Current_Depth --
    ------------------

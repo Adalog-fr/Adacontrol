@@ -38,6 +38,17 @@ procedure T_allocators is
    end P2;
    type Acc_P2 is access P2;
 
+   type Tag1 is tagged null record;
+   subtype Tag_Class is Tag1'Class;
+   type Acc_Tag1 is access Tag1;
+   type Acc_Tag_Class is access Tag_Class;
+
+   generic
+   package Gen is
+      type Gen_T is digits 5;
+   end Gen;
+   package Inst is new Gen;
+   type Acc_Gen_T is access Inst.Gen_T;
 
    V1 : Acc1;
    V2 : Acc2;
@@ -45,13 +56,23 @@ procedure T_allocators is
    V4 : Acc_T2;
    V5 : Acc_P1;
    V6 : Acc_P2;
+   V7 : Acc_Tag1;
+   V8 : Acc_Tag_Class;
+   V9 : Acc_Gen_T;
 begin
    V1 := new Integer;
    V1 := new Integer'(1);
+   V1 := new Standard.Integer'Base'(1);
    V2 := new String (1..3);
    V2 := new String'("Hello world!");
    V3 := new T1;
    V4 := new T2;
    V5 := new P1;
    V6 := new P2;
+   V7 := new Tag1;
+   V7 := new Tag1'(null record);
+   V8 := new Tag1;
+   V8 := new Tag1'Class'(Tag1'Class(V7.all));
+   V8 := new Tag_Class'(Tag_Class (V7.all));
+   V9 := new Inst.Gen_T;
 end T_allocators;

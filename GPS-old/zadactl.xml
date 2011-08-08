@@ -103,10 +103,10 @@
     tip="Treat warnings (Search) as errors (Check)"/>
    <combo line="3" column="1" label="Statistics" switch="-S" noswitch="0"
     tip="Define the statistics displayed in the Message window at the end or the run">
-    <combo-entry label="None"                      value="0" />
-    <combo-entry label="Errors and warnings count" value="1" />
-    <combo-entry label="Report untriggered rules"  value="2" />
-    <combo-entry label="Full rules statistics"     value="3" />
+    <combo-entry label="None"                      value=" 0" />
+    <combo-entry label="Errors and warnings count" value=" 1" />
+    <combo-entry label="Report untriggered rules"  value=" 2" />
+    <combo-entry label="Full rules statistics"     value=" 3" />
    </combo>
    <radio line="3" column="1">
      <radio-entry label="Send results to GPS"

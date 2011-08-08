@@ -90,6 +90,8 @@ package body Rules.Uncheckable is
          if Rule_Used (Missing_Unit) then
             Parameter_Error (Rule_Id, "value already given");
          end if;
+         Missing_Unit_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+
          for F in Uncheckable_Consequence loop
             if Rule_Used (F) then
                Parameter_Error (Rule_Id, "value already given");

@@ -58,7 +58,7 @@ with
 package body Rules.Exception_Propagation is
    use Framework, Ada.Strings.Wide_Unbounded;
 
-   type Risk_Level is (No_Risk, Object_In_Declaration, Variable_In_Declaration, Call_In_Declaration, Always);
+   type Risk_Level is (No_Risk, Object_Declaration, Variable_In_Declaration, Call_In_Declaration, Always);
 
    -- Note that "interface" is a reserved work in Ada 2005
    type Subrules is (Kw_Interface, Kw_Parameter, Kw_Task, Kw_Declaration, Kw_Local_Exception);
@@ -263,23 +263,123 @@ package body Rules.Exception_Propagation is
    procedure Pre_Procedure_Declaration (Element : in     Asis.Element;
                                         Control : in out Asis.Traverse_Control;
                                         State   : in out Risk_Level) is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
-      Good_Name : Asis.Element;
-   begin
+
+      procedure Process_Aliasing_Expr (Aliasing_Expr : Asis.Expression) is
+         -- Handle expressions that are the name of something else:
+         --   - Renamings
+         --   - Prefixes of attributes
+         use Utilities;
+         Expr : Asis.Expression := Aliasing_Expr;
+      begin
+         loop
+            case Expression_Kind (Expr) is
+               when An_Identifier
+                  | An_Enumeration_Literal =>
+                  exit;
+               when A_Selected_Component =>
+                  Expr := Prefix (Expr);
+               when An_Explicit_Dereference =>
+                  -- consider it is an access to variable. Even if the access type is
+                  -- access-to-constant, it could designate a variable.
+                  State := Risk_Level'Max (State, Variable_In_Declaration);
+                  Expr := Prefix (Expr);
+               when An_Indexed_Component =>
+                  declare
+                     Indices : constant Asis.Expression_List := Index_Expressions (Expr);
+                  begin
+                     for I in Indices'Range loop
+                        Traverse_Declaration (Indices (I), Control, State);
+                     end loop;
+                  end;
+                  Expr := Prefix (Expr);
+               when A_Slice =>
+                  Traverse_Declaration (Slice_Range (Expr), Control, State);
+                  Expr := Prefix (Expr);
+               when A_Function_Call =>
+                  Traverse_Declaration (Expr, Control, State);
+                  exit;
+               when An_Attribute_Reference =>
+                  -- Can only be a renaming of a /value/ attribute here
+                  -- (for /functions/ attributes, we would have found A_Function_Call)
+                  exit;
+               when A_Type_Conversion =>
+                  -- Allowed for tagged types
+                  -- There can be no variables or function calls in the prefix, but the
+                  -- converted expression can be pretty much anything.
+                  Expr := Converted_Or_Qualified_Expression (Expr);
+               when others =>
+                  Failure ("Exception_Propagate: unexpected expression in renaming (1)", Expr);
+            end case;
+         end loop;
+      end Process_Aliasing_Expr;
+
+   begin   -- Pre_Procedure_Declaration
       case Element_Kind (Element) is
          when A_Declaration =>
             case Declaration_Kind (Element) is
-               when A_Variable_Declaration | A_Constant_Declaration =>
-                  State := Risk_Level'Max (State, Object_In_Declaration);
-
-               when A_Procedure_Body_Declaration
-                 | A_Function_Body_Declaration
-                 | A_Package_Body_Declaration
-                 | A_Task_Body_Declaration
-                 =>
-                  -- These cannot raise exceptions, and will be traversed later if necessary
+               when An_Integer_Number_Declaration
+                  | A_Real_Number_Declaration
+                    =>
+                  -- These are not allowed by the language to raise exceptions
                   Control := Abandon_Children;
+
+               when An_Ordinary_Type_Declaration =>
+                  case Type_Kind (Type_Declaration_View (Element)) is
+                     when An_Enumeration_Type_Definition
+                        | A_Signed_Integer_Type_Definition
+                        | A_Modular_Type_Definition
+                        | A_Floating_Point_Definition
+                        | An_Ordinary_Fixed_Point_Definition
+                        | A_Decimal_Fixed_Point_Definition
+                          =>
+                        -- Scalar type definitions are always static
+                        Control := Abandon_Children;
+                     when others =>
+                        null;
+                  end case;
+
+               when A_Variable_Declaration | A_Constant_Declaration =>
+                  State := Risk_Level'Max (State, Object_Declaration);
+                  case Definition_Kind (Object_Declaration_View (Element)) is
+                     when A_Task_Definition
+                        | A_Protected_Definition
+                          =>
+                        -- Single task or protected object
+                        -- Don't traverse the definition
+                        Control := Abandon_Children;
+                     when others =>
+                        null;
+                  end case;
+
+               when An_Object_Renaming_Declaration =>
+                  -- Only indexing (or slicing) and dereferences are evaluated here and can raise exceptions
+                  -- Traverse manually just those.
+                  Process_Aliasing_Expr (A4G_Bugs.Renamed_Entity (Element));
+                  Control := Abandon_Children;
+
+               when A_Procedure_Declaration
+                  | A_Generic_Procedure_Declaration
+                  | A_Procedure_Body_Declaration
+
+                  | A_Function_Declaration
+                  | A_Generic_Function_Declaration
+                  | A_Function_Body_Declaration
+
+                  | A_Generic_Package_Declaration
+
+                  | A_Task_Type_Declaration
+                  | A_Task_Body_Declaration
+                 =>
+                  -- Elaboration of these cannot raise exceptions
+                  Control := Abandon_Children;
+
+               when A_Package_Body_Declaration =>
+                  -- Don't traverse generic bodies (but traverse regular ones)
+                  if Is_Generic_Unit (Element) then
+                     Control := Abandon_Children;
+                  end if;
 
                when others =>
                   null;
@@ -288,19 +388,63 @@ package body Rules.Exception_Propagation is
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>
-                  -- There is no higher risk in declarations
+                  -- There is no higher risk in declarations, no need to take the max (nor to analyze any further)
                   State   := Call_In_Declaration;
+                  Control := Terminate_Immediately;
                when An_Identifier =>
-                  Good_Name := Ultimate_Name (Element);
-                  if Is_Nil (Good_Name)  -- Dynamic renaming (not Uncheckable since we know it is a variable)
-                    or else Declaration_Kind (Corresponding_Name_Declaration (Element))
-                    = A_Variable_Declaration
-                  then
-                     State := Risk_Level'Max (State, Variable_In_Declaration);
-                  end if;
+                  case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
+                     when A_Variable_Declaration =>
+                        State := Risk_Level'Max (State, Variable_In_Declaration);
+                     when An_Object_Renaming_Declaration =>
+                        declare
+                           use Utilities;
+                           Expr : Asis.Expression := A4G_Bugs.Renamed_Entity (Corresponding_Name_Declaration (Element));
+                        begin
+                           loop
+                              case Expression_Kind (Expr) is
+                                 when An_Identifier =>
+                                    Traverse_Declaration (Expr, Control, State);
+                                    exit;
+                                 when A_Selected_Component =>
+                                    Traverse_Declaration (Expr, Control, State);
+                                    Expr := Prefix (Expr);
+                                 when An_Explicit_Dereference =>
+                                    -- everything left of the dereference is "used" at the place of the renaming
+                                    -- consider it is an access to variable. Even if the access type is
+                                    -- access-to-constant, it could designate a variable.
+                                    State := Risk_Level'Max (State, Variable_In_Declaration);
+                                    exit;
+                                 when A_Slice
+                                    | An_Indexed_Component
+                                      =>
+                                    -- The indexing expression is "used" at the place of the renanming,
+                                    -- not when using the renamed entity
+                                    Expr := Prefix (Expr);
+                                 when A_Function_Call =>
+                                    -- The function is "used" at the place of the renanming,
+                                    -- not when using the renamed entity
+                                    exit;
+                                 when An_Attribute_Reference =>
+                                    Process_Aliasing_Expr (Prefix (Element));
+                                    exit;
+                                 when A_Type_Conversion =>
+                                    -- Allowed for tagged types
+                                    Expr := Converted_Or_Qualified_Expression (Expr);
+                                 when others =>
+                                    Failure ("Exception_Propagation: unexpected expression in renaming (2)", Expr);
+                              end case;
+                           end loop;
+                        end;
+                     when others =>
+                        null;
+                  end case;
+               when An_Explicit_Dereference =>
+                  -- consider it is an access to variable. Even if the access type is
+                  -- access-to-constant, it could designate a variable.
+                  State := Risk_Level'Max (State, Variable_In_Declaration);
                when An_Attribute_Reference =>
                   -- Traverse prefix only
-                  Traverse_Declaration (Prefix (Element), Control, State);
+                  Process_Aliasing_Expr (Prefix (Element));
                   Control := Abandon_Children;
                when others =>
                   null;
@@ -411,7 +555,6 @@ package body Rules.Exception_Propagation is
    -- Exception_Propagation_Risk --
    --------------------------------
 
-
    function Exception_Propagation_Risk (SP_Body : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
       use Asis, Asis.Elements, Asis.Declarations, Asis.Statements;
       H_State     : Handler_State;
@@ -486,9 +629,9 @@ package body Rules.Exception_Propagation is
       use Framework.Reports, Thick_Queries;
 
       -- Procedure to check if a 'Access or 'Address is encountered
-      procedure Pre_Procedure (Element : in     Asis.Element;
-                               Control : in out Asis.Traverse_Control;
-                               State   : in out EP_Rule_Context)
+      procedure Pre_Procedure_Parameter (Element : in     Asis.Element;
+                                         Control : in out Asis.Traverse_Control;
+                                         State   : in out EP_Rule_Context)
       is
          pragma Unreferenced (Control);
          use Asis.Declarations;
@@ -522,8 +665,12 @@ package body Rules.Exception_Propagation is
             SP_Declaration := Corresponding_Name_Declaration (Good_Prefix);
 
             case Declaration_Kind (SP_Declaration) is
-               when A_Procedure_Body_Declaration | A_Function_Body_Declaration =>
-                  Risk := Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
+               when A_Procedure_Declaration
+                  | A_Procedure_Body_Declaration
+                  | A_Function_Declaration
+                  | A_Function_Body_Declaration
+                    =>
+                  Risk := Exception_Propagation_Risk (Corresponding_Body (SP_Declaration), State.Check_Level);
                   if Risk >= State.Check_Level then
                      Report (Rule_Id,
                              State,
@@ -560,17 +707,19 @@ package body Rules.Exception_Propagation is
                   null;
             end case;
          end if;
-      end Pre_Procedure;
+      end Pre_Procedure_Parameter;
 
-      procedure Post_Procedure (Element : in     Asis.Element;
-                                Control : in out Asis.Traverse_Control;
-                                State   : in out EP_Rule_Context) is
+      procedure Post_Procedure_Parameter (Element : in     Asis.Element;
+                                          Control : in out Asis.Traverse_Control;
+                                          State   : in out EP_Rule_Context) is
          pragma Unreferenced (Element, Control, State);
       begin
          null;
-      end Post_Procedure;
+      end Post_Procedure_Parameter;
 
-      procedure Traverse is new Asis.Iterator.Traverse_Element (EP_Rule_Context, Pre_Procedure, Post_Procedure);
+      procedure Traverse_Parameter is new Asis.Iterator.Traverse_Element (EP_Rule_Context,
+                                                                Pre_Procedure_Parameter,
+                                                                Post_Procedure_Parameter);
 
    begin   -- Process_Call
       if not Rule_Used (Kw_Parameter) then
@@ -607,12 +756,13 @@ package body Rules.Exception_Propagation is
       begin
          for I in Actuals'Range loop
             declare
-               Current_Context : Root_Context'Class := Extended_Matching_Context (Parameters,
-                                                                                  Formal_Name (Call, I));
+               Current_Context : Root_Context'Class := Matching_Context (Parameters,
+                                                                         Formal_Name (Call, I),
+                                                                         Extend_To => All_Extensions);
             begin
                if Current_Context /= No_Matching_Context then
                   -- Parameter found
-                  Traverse (Actual_Parameter (Actuals (I)), The_Control, EP_Rule_Context (Current_Context));
+                  Traverse_Parameter (Actual_Parameter (Actuals (I)), The_Control, EP_Rule_Context (Current_Context));
 
                   -- The same formal parameter won't happen twice in the same call,
                   -- no need to check further
@@ -642,7 +792,7 @@ package body Rules.Exception_Propagation is
          for I in Actuals'Range loop
             declare
                Current_Context : constant Root_Context'Class
-                 := Extended_Matching_Context (Parameters, Formal_Name (Instantiation, I));
+                 := Matching_Context (Parameters, Formal_Name (Instantiation, I), Extend_To => All_Extensions);
                SP_Declaration : Asis.Declaration;
            begin
                if Current_Context /= No_Matching_Context then
@@ -654,8 +804,11 @@ package body Rules.Exception_Propagation is
                                                                         (Actuals (I))));
 
                      case Declaration_Kind (SP_Declaration) is
-                        when A_Procedure_Body_Declaration | A_Function_Body_Declaration =>
-                           Risk := Exception_Propagation_Risk (SP_Declaration,
+                        when A_Procedure_Declaration
+                           | A_Procedure_Body_Declaration
+                           | A_Function_Declaration
+                           | A_Function_Body_Declaration =>
+                           Risk := Exception_Propagation_Risk (Corresponding_Body (SP_Declaration),
                                                                EP_Rule_Context (Current_Context).Check_Level);
                            if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,

@@ -18,12 +18,16 @@ procedure T_Reduceable_Scope (X : Integer) is
    end For_Access;
 
    package Pack2 is  -- Movable to P
-      I : Integer;   -- Movable to body
+      I  : Integer;   -- Movable to body
+      E1 : exception; -- Movable to body
    end Pack2;
    package body Pack2 is
+      E2 : exception; -- OK (movable to P, but exceptions are only to_body)
       procedure P is -- Not movable
       begin
          Pack2.I := 1;
+         raise E1;
+         raise E2;
       end P;
    begin
       P;

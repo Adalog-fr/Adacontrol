@@ -170,7 +170,7 @@ package body Rules.Type_Initial_Values is
 
       Const_Type := Subtype_Simple_Name (Def);
       if not Constant_Table.Is_Present (Const_Type)
-        or else Constant_Table.Depth_Of (Const_Type) /= Current_Depth
+        or else not Is_Equal (Constant_Table.Scope_Of (Const_Type), Current_Scope)
       then
          return;
       end if;
@@ -195,7 +195,7 @@ package body Rules.Type_Initial_Values is
             end loop;
          end;
       end if;
-      Constant_Table.Store (Const_Type, State, At_Declaration_Scope => False);
+      Constant_Table.Store (Const_Type, State);
    end Process_Constant_Declaration;
 
    ------------------------

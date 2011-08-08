@@ -9,8 +9,6 @@ procedure T_instantiations is
    type Integer_Access is access Integer;
    type Natural_Access is access Natural;
 
-   -- T2 never matched
-
    procedure Free_1 is             -- T1, T4, T5, local_instantiation
       new Ada.Unchecked_Deallocation (String, String_Access);
 
@@ -20,11 +18,22 @@ procedure T_instantiations is
    procedure Free_3 is             -- T1, T3, local_instantiation
       new Ada.Unchecked_Deallocation (Standard.Integer, Integer_Access);
 
-   procedure Free_4 is             -- T1, T3, local_instantiation
+   procedure Free_4 is             -- T1, T2, T3, local_instantiation
       new Ada.Unchecked_Deallocation (Standard.Natural, Natural_Access);
+
+   type Tagged_T is tagged null record;
+   type Tagged_Access is access Tagged_T'class;
+   subtype Class_T is Tagged_T'Class;
+   procedure Free_5 is             -- T1, T8, local_instantiation
+      new Ada.Unchecked_Deallocation (Tagged_T'class, Tagged_Access);
+
+   procedure Free_6 is             -- T1, T8, local_instantiation
+      new Ada.Unchecked_Deallocation (Class_T, Tagged_Access);
 
    function To_Integer_Access is   -- T6, local_instantiation
       new Ada.Unchecked_Conversion (String_Access, Integer_Access);
+
+   function To_Mod is new Ada.Unchecked_Conversion (Integer, Float); -- T7, local_instantiation
 
    generic
       type T1 is private;

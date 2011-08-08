@@ -481,7 +481,7 @@ package body Rules.Usage is
          when A_Defining_Name =>
             Name := Element;
          when others =>
-            Failure ("Package_Origin not on defining_name or declaration");
+            Failure ("Package_Origin not on defining_name or declaration", Element);
       end case;
 
       if Declaration_Kind (Enclosing_Element (Enclosing_Element (Name))) in A_Formal_Declaration then
@@ -570,20 +570,58 @@ package body Rules.Usage is
    -- Declaration_Form --
    ----------------------
 
-   function Declaration_Form (Element : Asis.Declaration) return Extended_Entity_Kind is
-      -- Expected element kind: A_Declaration
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Thick_Queries;
+   function Declaration_Form (Element : Asis.Element) return Extended_Entity_Kind is
+      -- Expected element kind:
+      --   A_Declaration
+      --   An_Expression, expected Expression_Kind:
+      --      An_Identifier
+      --      An_Operator_Symbol
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Thick_Queries, Utilities;
 
       Temp : Asis.Element;
+      Decl : Asis.Declaration;
    begin
-      if All_From_Spec and then Package_Origin (Element) = Not_From_Spec then
+      case Element_Kind (Element) is
+         when A_Declaration =>
+            Decl := Element;
+         when An_Expression =>
+            Decl := Corresponding_Name_Declaration (Element);
+            case Element_Kind (Decl) is
+               when Not_An_Element =>
+                  -- We cannot handle things that have no declaration:
+                  -- Predefined operator, formals of predefined operators...
+                  return K_Other;
+               when A_Declaration =>
+                  -- All is well...
+                  null;
+               when A_Statement =>
+                  if Statement_Kind (Decl) /= A_For_Loop_Statement then
+                     -- Block or loop name...
+                     return K_Other;
+                  end if;
+
+                  if Is_Equal (Corresponding_Name_Definition (Element), Statement_Identifier (Decl)) then
+                     -- for loop name
+                     return K_Other;
+                  else
+                     -- Must be the declaration of the loop control variable
+                     return K_Constant;
+                  end if;
+               when others =>
+                  Failure ("Strange declaration in Declaration_Form", Decl);
+            end case;
+         when others =>
+            Failure ("Incorrect element in Declaration_Form", Element);
+      end case;
+
+      if All_From_Spec and then Package_Origin (Decl) = Not_From_Spec then
          -- Optimization:
          -- We check only elements from packages, no need to consider this one
          return K_Other;
       end if;
 
-      case Declaration_Kind (Element) is
+      case Declaration_Kind (Decl) is
          when A_Constant_Declaration
            | A_Deferred_Constant_Declaration
            | A_Number_Declaration
@@ -591,7 +629,7 @@ package body Rules.Usage is
             return K_Constant;
 
          when A_Variable_Declaration =>
-            Temp := Object_Declaration_View (Element);
+            Temp := Object_Declaration_View (Decl);
             if Definition_Kind (Temp) /= A_Subtype_Indication then
                -- Must be A_Type_Definition -> A_Constrained_Array_Definition
                return K_Variable;
@@ -619,7 +657,7 @@ package body Rules.Usage is
          when A_Procedure_Body_Declaration
             | A_Procedure_Body_Stub
               =>
-            if Is_Subunit (Element) or not Is_Nil (Corresponding_Declaration (Element)) then
+            if Is_Subunit (Decl) or not Is_Nil (Corresponding_Declaration (Decl)) then
                -- The check is performed on the specification or the stub, no need to repeat here
                return K_Other;
             end if;
@@ -628,14 +666,14 @@ package body Rules.Usage is
          when A_Function_Body_Declaration
             | A_Function_Body_Stub
               =>
-            if Is_Subunit (Element) or not Is_Nil (Corresponding_Declaration (Element)) then
+            if Is_Subunit (Decl) or not Is_Nil (Corresponding_Declaration (Decl)) then
                -- The check is performed on the specification or the stub, no need to repeat here
                return K_Other;
             end if;
             return K_Function;
 
          when A_Procedure_Declaration =>
-            if Definition_Kind (Enclosing_Element (Element)) = A_Protected_Definition then
+            if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
                -- A protected procedure
                return K_Other;
             else
@@ -643,7 +681,7 @@ package body Rules.Usage is
             end if;
 
          when A_Function_Declaration =>
-            if Definition_Kind (Enclosing_Element (Element)) = A_Protected_Definition then
+            if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
                -- A protected function
                return K_Other;
             else
@@ -707,6 +745,27 @@ package body Rules.Usage is
                Append (Message, ", not " & Usage_Mess);
             end if;
          end Usage_Message;
+
+         function Is_Pseudo_Const (Entity : Asis.Expression) return Boolean is
+         begin
+            declare
+               Lengths : constant Extended_Biggest_Natural_List
+                 := Discrete_Constraining_Lengths (Entity);
+            begin
+               for I in Lengths'Range loop
+                  if Lengths (I) = 0 then
+                     return True;
+                  end if;
+               end loop;
+               return False;
+            end;
+         exception
+            when others =>
+               -- Presumably, a storage_error (maybe changed into an Asis_Failed)
+               -- due to too big an enumeration type (Wide_Character)
+               -- better consider it is not a pseudo-const than crashing the program
+               return False;
+         end Is_Pseudo_Const;
 
       begin  -- Report_One
          Elem_Loc :=  Get_Location (Value.Declaration);
@@ -795,17 +854,8 @@ package body Rules.Usage is
 
             when K_Variable =>
                declare
-                  Pseudo_Const : Boolean;
-                  Lengths      : constant Extended_Biggest_Natural_List
-                    := Discrete_Constraining_Lengths (Value.Declaration);
+                  Pseudo_Const : constant Boolean := Is_Pseudo_Const (Value.Declaration);
                begin
-                  Pseudo_Const := False;
-                  for I in Lengths'Range loop
-                     if Lengths (I) = 0 then
-                        Pseudo_Const := True;
-                        exit;
-                     end if;
-                  end loop;
                   Append (Message, ", variable");
                   if not Pseudo_Const then
                      Usage_Message (True_Usage (K_Initialized), "initialized");
@@ -1108,7 +1158,7 @@ package body Rules.Usage is
    ------------------------
 
    procedure Process_Identifier (Name : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Statements;
       use Framework.Reports, Thick_Queries, Utilities;
 
       Good_Name : Asis.Expression;
@@ -1175,7 +1225,7 @@ package body Rules.Usage is
       end loop;
 
       begin
-         Good_Name := Ultimate_Name (Name);
+         Good_Name := Ultimate_Name (Name, No_Component => True);
       exception
          when Asis.Exceptions.ASIS_Failed =>
             -- Due to an ASIS-for-GNAT bug, Ultimate_Name fails if the parameter is a generic
@@ -1207,7 +1257,7 @@ package body Rules.Usage is
          return;
       end if;
 
-      E_Kind := Declaration_Form (Corresponding_Name_Declaration (Good_Name));
+      E_Kind := Declaration_Form (Good_Name);
       case E_Kind is
          when K_Variable =>
             case Expression_Usage_Kind (Name) is

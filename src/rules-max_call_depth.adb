@@ -62,6 +62,8 @@ package body Rules.Max_Call_Depth is
    -- at least 1.
    -- Since the call depth is a property of the callable entity, the value is kept in the
    -- Call_Depths map to avoid analyzing the same callable entity twice.
+   -- The map is *not* reset between runs, since it is a static property, once you have it,
+   -- it won't change depending on parameters!
    --
    -- The "call depth" is defined as the number of frames pushed on the stack, therefore:
    --   - A task entry call counts always for 1, irrespectively of what happens in the accept body,
@@ -267,7 +269,7 @@ package body Rules.Max_Call_Depth is
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
                             Count   : in out Natural) is
-      use Utilities;
+      use Thick_Queries, Utilities;
       use Asis, Asis.Declarations, Asis.Elements;
 
       Temp : Asis.Element;
@@ -352,7 +354,7 @@ package body Rules.Max_Call_Depth is
                   Control := Abandon_Children;
                when A_Package_Body_Declaration =>
                   -- Recurse normally if it is not a generic body
-                  if Declaration_Kind (Corresponding_Declaration (Element)) = A_Generic_Package_Declaration then
+                  if Is_Generic_Unit (Element) then
                      Control := Abandon_Children;
                   end if;
                when A_Component_Declaration =>
@@ -394,8 +396,8 @@ package body Rules.Max_Call_Depth is
       use Depth_Map, Framework.Reports, Thick_Queries, Utilities;
 
       Called_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Full_Name_Image
-                                                                                  (Ultimate_Name (Names (Decl)(1)),
-                                                                                   With_Profile => True));
+                                                                                (Ultimate_Name (Names (Decl)(1)),
+                                                                                 With_Profile => True));
       Called_Body    : Asis.Declaration;
       Renaming       : Asis.Expression;
       Control        : Traverse_Control := Continue;

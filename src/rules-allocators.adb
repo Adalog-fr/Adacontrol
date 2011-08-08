@@ -31,7 +31,6 @@
 
 -- Asis
 with
-  Asis.Declarations,
   Asis.Elements,
   Asis.Expressions;
 
@@ -127,7 +126,7 @@ package body Rules.Allocators is
 
    procedure Process_Allocator (Element : in Asis.Element) is
       use Utilities, Thick_Queries;
-      use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
+      use Asis, Asis.Expressions, Asis.Elements;
 
       Found : Boolean;
 
@@ -154,7 +153,6 @@ package body Rules.Allocators is
       end Check;
 
       E : Asis.Element;
-      Is_Class : Boolean := False;
    begin  -- Process_Allocator
       if not Rule_Used then
          return;
@@ -165,11 +163,8 @@ package body Rules.Allocators is
       case Expression_Kind (Element) is
          when An_Allocation_From_Subtype =>
             E := Subtype_Simple_Name (Allocator_Subtype_Indication (Element));
-
          when An_Allocation_From_Qualified_Expression =>
-            E := Converted_Or_Qualified_Subtype_Mark
-                   (Allocator_Qualified_Expression (Element));
-
+            E := Converted_Or_Qualified_Subtype_Mark (Allocator_Qualified_Expression (Element));
          when others =>
             Failure (Rule_Id & ": Unexpected element", Element);
       end case;
@@ -177,38 +172,32 @@ package body Rules.Allocators is
       -- E can be an attribute, T'Base or T'Class
       -- T'Base has the same first named subtype as T
       -- T'Base is only allowed for scalar types, therefore we cannot have T'Base'Class
+      -- nor T'Class'Base
       if Expression_Kind (E) = An_Attribute_Reference then
          case A4G_Bugs.Attribute_Kind (E) is
             when A_Base_Attribute =>
-               E := Prefix (E);
+               E := First_Subtype_Name (Simple_Name (Prefix (E)));
             when A_Class_Attribute =>
-               E        := Prefix (E);
-               Is_Class := True;
+               null;
             when others =>
                Failure ("Unexpected attribute", E);
          end case;
-      end if;
-
-      -- Retrieve the first subtype
-      E := Corresponding_First_Subtype (Corresponding_Name_Declaration (Simple_Name (E)));
-
-      if Is_Class then
-         Check (Framework.Association (Entities,
-                                       Framework.Value (To_Upper (Full_Name_Image (Names (E)(1))) & "'CLASS")));
       else
-         Check (Matching_Context (Entities, Names (E)(1)));
+         E := First_Subtype_Name (E);
       end if;
 
-      if not Found then
+      Check (Matching_Context (Entities, E, Extend_To => All_Extensions));
+      if not Found and Expression_Kind (E) /= An_Attribute_Reference then
+         E := Corresponding_Name_Declaration (E);
          if Is_Type_Declaration_Kind (E, A_Task_Type_Declaration) then
-            Check (Framework.Association (Entities, Framework.Value ("TASK")));
+            Check (Framework.Association (Entities, "TASK"));
          elsif Is_Type_Declaration_Kind (E, A_Protected_Type_Declaration) then
-            Check (Framework.Association (Entities, Framework.Value ("PROTECTED")));
+            Check (Framework.Association (Entities, "PROTECTED"));
          end if;
       end if;
 
       if not Found then
-         Check (Framework.Association (Entities, Framework.Value ("ALL")));
+         Check (Framework.Association (Entities, "ALL"));
       end if;
    end Process_Allocator;
 

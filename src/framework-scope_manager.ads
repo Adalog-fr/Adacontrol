@@ -63,12 +63,18 @@ package Framework.Scope_Manager is
    -- Declaration_Origin is Specification if the current scope is a body and the info
    -- comes from the corresponding specification.
 
+   function Is_Scope (Element : Asis.Element) return Boolean;
+   -- True if Element is something considered a scope from the point of view of
+   -- the scope manager
+
    function Current_Depth   return Scope_Range;
    function Current_Scope   return Asis.Element;
    function Enclosing_Scope return Asis.Element;
    function Active_Scopes   return Scope_List;
+
    function In_Private_Part (Scope : Scope_Range := Current_Depth) return Boolean;
    function In_Context_Clauses return Boolean;
+
    function Is_Current_Scope_Global   return Boolean;
    function Is_Enclosing_Scope_Global return Boolean;
    -- A scope is global if itself and all enclosing scopes are all

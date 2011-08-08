@@ -123,7 +123,7 @@ package body Framework.Rules_Manager is
          Accumulate_Time;
       end if;
 
-      Last_Rule_Name (1..Rule'Length) := Rule;
+      Last_Rule_Name (1 .. Rule'Length) := Rule;
       Last_Rule_Length                := Rule'Length;
 
       if Timing_Option then
@@ -175,7 +175,7 @@ package body Framework.Rules_Manager is
          use Utilities;
       begin
          Info.Help.all;
-         User_Message ("");
+         User_Message ("----");
       end One_Help;
 
       procedure Help_Iterate is new Rule_List.Iterate (One_Help);

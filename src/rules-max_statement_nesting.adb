@@ -153,13 +153,17 @@ package body Rules.Max_Statement_Nesting is
                     To_Wide_String (Ctl_Labels (Stmt, Check)),
                     Check,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than " & Integer_Img(Ctl_Values (Stmt, Check)));
+                    Image (Stmt, Lower_Case)
+                    & " statements nesting deeper than "
+                    & Integer_Img (Ctl_Values (Stmt, Check)));
          elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Ctl_Values (Stmt, Search) then
             Report (Rule_Id,
                     To_Wide_String (Ctl_Labels (Stmt, Search)),
                     Search,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Ctl_Values (Stmt, Search)));
+                    Image (Stmt, Lower_Case)
+                    & " statements nesting deeper than "
+                    & Integer_Img (Ctl_Values (Stmt, Search)));
          end if;
 
          if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Ctl_Values (Stmt, Count) then
@@ -167,7 +171,9 @@ package body Rules.Max_Statement_Nesting is
                     To_Wide_String (Ctl_Labels (Stmt, Count)),
                     Count,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Ctl_Values (Stmt, Count)));
+                    Image (Stmt, Lower_Case)
+                    & " statements nesting deeper than "
+                    & Integer_Img (Ctl_Values (Stmt, Count)));
          end if;
 
       end Do_Report;

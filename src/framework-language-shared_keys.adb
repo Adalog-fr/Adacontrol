@@ -89,30 +89,113 @@ package body Framework.Language.Shared_Keys is
    -- Get_Bounds_Parameters --
    ---------------------------
 
-   function Get_Bounds_Parameters (Rule_Id : Wide_String) return Bounds_Values is
-      use Thick_Queries, Min_Max_Utilities;
+   function Get_Bounds_Parameters (Rule_Id      : Wide_String;
+                                   Bound_Min    : Thick_Queries.Biggest_Int := 0;
+                                   Bound_Max    : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Natural'Last;
+                                   Allow_Single : Boolean                   := False)
+                                   return Bounds_Values
+   is
+      use Min_Max_Utilities;
 
       Min_Given : Boolean := False;
       Max_Given : Boolean := False;
-      Result    : Bounds_Values := (Min => 0, Max => Biggest_Natural'Last);
+      Result    : Bounds_Values := (Bound_Min, Bound_Max);
    begin
+      if Allow_Single and then Is_Integer_Parameter then
+         Result.Min := Get_Integer_Parameter;
+         Result.Max := Result.Min;                --## rule line off Multiple_Assignments
+         return Result;
+      end if;
+
       while Parameter_Exists loop
          case Get_Modifier (Required => True) is
             when Min =>
                if Min_Given then
                   Parameter_Error (Rule_Id, "Min value given more than once");
                end if;
-               Result.Min := Get_Integer_Parameter (Min => 0);
+               Result.Min := Get_Integer_Parameter (Min => Bound_Min, Max => Bound_Max);
                Min_Given  := True;
             when Max =>
                if Max_Given then
                   Parameter_Error (Rule_Id, "Max value given more than once");
                end if;
-               Result.Max := Get_Integer_Parameter (Min => 0);
+               Result.Max := Get_Integer_Parameter (Min => Bound_Min, Max => Bound_Max);
                Max_Given  := True;
          end case;
       end loop;
       return Result;
    end Get_Bounds_Parameters;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Item : Thick_Queries.Type_Categories) return Wide_String is
+      use Thick_Queries;
+   begin
+      case Item is
+         when Not_A_Type =>
+            return "";
+         when An_Enumeration_Type =>
+            return "()";
+         when A_Signed_Integer_Type =>
+            return "RANGE";
+         when A_Modular_Type =>
+            return "MOD";
+         when A_Fixed_Point_Type =>
+            return "DELTA";
+         when A_Floating_Point_Type =>
+            return "DIGITS";
+         when An_Array_Type =>
+            return "ARRAY";
+         when A_Record_Type =>
+            return "RECORD";
+         when A_Tagged_Type =>
+            return "TAGGED";
+         when An_Access_Type =>
+            return "ACCESS";
+         when A_Derived_Type =>
+            return "NEW";
+         when A_Private_Type =>
+            return "PRIVATE";
+         when A_Task_Type =>
+            return "TASK";
+         when A_Protected_Type =>
+            return "PROTECTED";
+      end case;
+   end Image;
+
+   -------------
+   -- Matches --
+   -------------
+
+   function Matches (Elem           : in Asis.Element;
+                     Cat            : in Categories;
+                     Follow_Derived : in Boolean := False;
+                     Follow_Private : in Boolean := False)
+                     return Boolean
+   is
+      use Thick_Queries;
+      Match_Table : constant array (Thick_Queries.Type_Categories) of Categories
+        := (Not_A_Type                   => Cat_Any,   -- Since Cat_Any is eliminated first, this will return false
+            An_Enumeration_Type          => Cat_Enum,
+            A_Signed_Integer_Type        => Cat_Range,
+            A_Modular_Type               => Cat_Mod,
+            A_Fixed_Point_Type           => Cat_Delta,
+            A_Floating_Point_Type        => Cat_Digits,
+            An_Array_Type                => Cat_Array,
+            A_Record_Type                => Cat_Record,
+            A_Tagged_Type                => Cat_Tagged,
+            An_Access_Type               => Cat_Access,
+            A_Derived_Type               => Cat_New,
+            A_Private_Type               => Cat_Private,
+            A_Task_Type                  => Cat_Task,
+            A_Protected_Type             => Cat_Protected);
+   begin
+      if Cat = Cat_Any then
+         return True;
+      end if;
+      return Match_Table (Type_Category (Elem, Follow_Derived, Follow_Private)) = Cat;
+   end Matches;
 
 end Framework.Language.Shared_Keys;

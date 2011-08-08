@@ -97,7 +97,7 @@ package body Rules.Directly_Accessed_Globals is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language;
+      use Framework.Language, Utilities;
       F : Filters;
    begin
       if Rule_Used then
@@ -108,7 +108,7 @@ package body Rules.Directly_Accessed_Globals is
          while Parameter_Exists loop
             F := Get_Flag_Parameter (Allow_Any => False);
             if Flags (F) then
-               Parameter_Error (Rule_Id, Image (F) & " already given");
+               Parameter_Error (Rule_Id, Image (F, Lower_Case) & " already given");
             end if;
             Flags (F) := True;
          end loop;
@@ -156,6 +156,8 @@ package body Rules.Directly_Accessed_Globals is
          return;
       end if;
 
+      -- Note that since we are in a package /body/, the declaration is always processed
+      -- before any use.
       declare
          Name_List : constant Asis.Name_List := Names (Decl);
       begin
@@ -189,7 +191,7 @@ package body Rules.Directly_Accessed_Globals is
          return;
       end if;
 
-      Good_Name := Ultimate_Name (Name);
+      Good_Name := Ultimate_Name (Name, No_Component => True);
       if Is_Nil (Good_Name) then
          -- Dynamic renaming...
          Uncheckable (Rule_Id,
@@ -253,7 +255,7 @@ package body Rules.Directly_Accessed_Globals is
                Report (Rule_Id,
                        Rule_Context,
                        Get_Location (Name),
-                       "use of variable """ & A4G_Bugs.Name_Image (Name) & """ not from subprogram");
+                       "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ not from callable entity");
                return;
          end case;
 
@@ -268,12 +270,12 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from accept");
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ from accept");
                elsif not Is_Equal (Corresponding_Body (Enclosing_Element (Encl_Unit_Decl)), Var_Info.Owner_Pack) then
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from nested task object");
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ from nested task object");
                end if;
 
             when A_Task_Type_Declaration =>
@@ -281,12 +283,12 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from accept of a task type");
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ from accept of a task type");
                else
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from accept");
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ from accept");
                end if;
 
             when A_Protected_Body_Declaration =>
@@ -294,7 +296,7 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name)
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name)
                             & """ from subprogram of a protected type or object");
                elsif Declaration_Kind (Corresponding_Declaration (Encl_Unit_Decl))
                  /= A_Single_Protected_Declaration
@@ -302,12 +304,16 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from subprogram of a protected type");
+                          "use of variable """
+                          & A4G_Bugs.Name_Image (Good_Name)
+                          & """ from subprogram of a protected type");
                elsif not Is_Equal (Enclosing_Element (Encl_Unit_Decl), Var_Info.Owner_Pack) then
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from nested protected object");
+                          "use of variable """
+                          & A4G_Bugs.Name_Image (Good_Name)
+                          & """ from nested protected object");
                end if;
 
             when others =>  -- Plain
@@ -315,17 +321,19 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from a non-protected subprogram");
+                          "use of variable """
+                          & A4G_Bugs.Name_Image (Good_Name)
+                          & """ from a non-protected subprogram");
                elsif Declaration_Kind (Corresponding_Declaration (Unit_Decl)) in A_Generic_Declaration then
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from generic subprogram");
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ from generic subprogram");
                elsif not Is_Equal (Encl_Unit_Decl, Var_Info.Owner_Pack) then
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "use of variable """ & A4G_Bugs.Name_Image (Name) & """ from nested subprogram");
+                          "use of variable """ & A4G_Bugs.Name_Image (Good_Name) & """ from nested subprogram");
                end if;
          end case;
 
@@ -341,7 +349,7 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "variable """ & A4G_Bugs.Name_Image (Name)
+                          "variable """ & A4G_Bugs.Name_Image (Good_Name)
                             & """ is already read from " & Defining_Name_Image (Var_Info.Read_Proc)
                             & " at " & Image (Get_Location (Enclosing_Element (Var_Info.Read_Proc))));
                end if;
@@ -354,7 +362,7 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "variable """ & A4G_Bugs.Name_Image (Name)
+                          "variable """ & A4G_Bugs.Name_Image (Good_Name)
                             & """ is already written from " & Defining_Name_Image (Var_Info.Write_Proc)
                             & " at " & Image (Get_Location (Enclosing_Element (Var_Info.Write_Proc))));
                end if;
@@ -367,7 +375,7 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "variable """ & A4G_Bugs.Name_Image (Name)
+                          "variable """ & A4G_Bugs.Name_Image (Good_Name)
                             & """ is already read from " & Defining_Name_Image (Var_Info.Read_Proc)
                             & " at " & Image (Get_Location (Enclosing_Element (Var_Info.Read_Proc))));
                end if;
@@ -379,7 +387,7 @@ package body Rules.Directly_Accessed_Globals is
                   Report (Rule_Id,
                           Rule_Context,
                           Get_Location (Name),
-                          "variable """ & A4G_Bugs.Name_Image (Name)
+                          "variable """ & A4G_Bugs.Name_Image (Good_Name)
                             & """ is already written from " & Defining_Name_Image (Var_Info.Write_Proc)
                             & " at " & Image (Get_Location (Enclosing_Element (Var_Info.Write_Proc))));
                end if;

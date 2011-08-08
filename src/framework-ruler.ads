@@ -33,7 +33,8 @@ private package Framework.Ruler is
 
    procedure Process (Unit_Name  : in Wide_String;
                       Unit_Pos   : in Integer;
-                      Spec_Only  : in Boolean);
+                      Spec_Only  : in Boolean;
+                      Go_Count   : in Positive);
    -- Applies rules on an Ada compilation unit in a parameterized context.
    -- Process only spec of unit if Spec_Only is true.
    -- otherwise, process spec and body.

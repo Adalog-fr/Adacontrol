@@ -7,7 +7,7 @@ Casing                 : search style (casing_keyword,    LOWERCASE);
 Positional_Association : check  style (positional_association,
                                        Pragma, 1,
                                        Discriminant, 1,
-                                       not_operator Call, 1,
+                                       not_operator Call, 1, T_Style{}.Positional_Association{}.Nproc{Standard.Integer;Standard.Integer;Standard.Float},
                                        Instantiation, 1,
                                        Array_Aggregate, 1,
                                        Record_Aggregate, 1);

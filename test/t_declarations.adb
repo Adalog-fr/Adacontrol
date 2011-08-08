@@ -3,6 +3,7 @@ with X_Declarations.Child;
 with X_Declarations_Locations;
 procedure T_declarations is       -- library_procedure
    procedure Test_Anonymous_Subtype is separate;   -- separate
+   procedure Test_Self_SP           is separate;   -- separate
 
    type I1 is range 1 .. 10;      -- signed_type, integer_type
    type I2 is mod 128;            -- binary_modular_type, modular_type, integer_type
@@ -14,7 +15,7 @@ procedure T_declarations is       -- library_procedure
 
    type Enum is (A, B, 'c', D, 'e');       -- enumeration_type, character_literal x2
 
-   task T1 is                     -- single_task, task
+   task T1 is                     -- single_task, task_variable, task
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
    end T1;
    task body T1 is
@@ -37,7 +38,15 @@ procedure T_declarations is       -- library_procedure
       null;
    end T2;
 
-   protected P1 is                                     -- single_protected, protected
+   task type T3;                  -- task_type, task
+   task body T3 is
+   begin
+      null;
+   end T3;
+
+   VT3 : T3;                      -- variable, task_variable
+
+   protected P1 is                                     -- single_protected, protected_variable, protected
       entry E1 (I : out Integer; J : in out Integer);  -- protected_entry, out_parameter, in_out_parameter
       entry E2;                                        -- protected_entry, multiple_protected_entries
    end P1;
@@ -56,8 +65,8 @@ procedure T_declarations is       -- library_procedure
       entry E1;                             -- protected_entry
       entry E2;                             -- protected_entry, multiple_protected_entries
    private
-      I : Integer;                          -- uninitialized_protected_field
-      J : Integer := 0;                     -- initialized_protected_field
+      I : Integer;                          -- uninitialized_protected_component
+      J : Integer := 0;                     -- initialized_protected_component
    end P2;
    protected body P2 is
       entry E1 when True is
@@ -69,6 +78,8 @@ procedure T_declarations is       -- library_procedure
          null;
       end E2;
    end P2;
+
+   VP2 : P2 (0);           -- variable, protected_variable, anonymous subtype_declarations
 
    E : exception;         -- exception
    NN1 : constant := 1;   -- named_number
@@ -86,8 +97,8 @@ procedure T_declarations is       -- library_procedure
    type Acc6 is access all Integer;      -- access_type, access_all_type
    type Acc7 is access constant Integer; -- access_type, access_constant_type
 
-   I,J,K : aliased Integer;               -- variable, aliased, uninitialized_variable, multiple_names
-   C : aliased constant Character := ' '; -- constant, aliased
+   I,J,K : aliased Integer;               -- variable, aliased_variable, uninitialized_variable, multiple_names
+   C : aliased constant Character := ' '; -- constant, aliased_constant
 
    type Rec1 is tagged null record;                       -- null_tagged_type, tagged_type, record_type
    type Rec2 (X : Integer) is tagged limited null record; -- null_tagged_type, tagged_type, record_type, discriminant
@@ -96,9 +107,9 @@ procedure T_declarations is       -- library_procedure
       record
          case X is               -- variant_part
             when 0 =>
-               I : Integer;      -- uninitialized_record_field
+               I : Integer;      -- uninitialized_record_component
             when others =>
-               J : Integer := 0; -- initialized_record_field
+               J : Integer := 0; -- initialized_record_component
          end case;
       end record;
    type Rec5 is null record;  -- null_ordinary_record_type, ordinary_record_type, record_type
@@ -107,8 +118,8 @@ procedure T_declarations is       -- library_procedure
    end record;
    type Rec7 is            -- ordinary_record_type, record_type
       record
-         I : Integer;      -- uninitialized_record_field
-         J : Integer := 0; -- initialized_record_field
+         I : Integer;      -- uninitialized_record_component
+         J : Integer := 0; -- initialized_record_component
       end record;
    Vclass : Rec1'Class          := Rec1'(null record);        -- variable, class_wide_variable
    Cclass : constant Rec1'Class := Rec1'(null record);        -- constant, class_wide_constant
@@ -159,7 +170,7 @@ procedure T_declarations is       -- library_procedure
       type Abs1 is abstract tagged null record;     -- Null_Tagged_Type, Tagged_Type, Record_Type, Abstract_Type
       type Abs2 is abstract tagged limited          -- Tagged_Type, Record_Type, Abstract_Type
          record
-            X : Integer;                            -- Uninitialized_Record_Field
+            X : Integer;                            -- Uninitialized_Record_component
          end record;
       procedure Proc1;                              -- Private Procedure, Nested Procedure, Local Procedure
       Deferred : constant Priv1 := 0;
@@ -186,7 +197,7 @@ procedure T_declarations is       -- library_procedure
    end Pack2;
 
    package Pack3 renames Pack2;                          -- not_operator_renaming, non_identical_renaming, renaming
-   generic package Generic_Elementary_Functions          -- Not_Operator_Renaming, renaming
+   generic package Generic_Elementary_Functions          -- Not_Operator_Renaming, library_unit_renaming, renaming
       renames Ada.Numerics.Generic_Elementary_Functions;
 
    function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names
@@ -227,6 +238,24 @@ procedure T_declarations is       -- library_procedure
 
    Renf1 : Integer renames Succ (1);                                    -- renaming, not_operator_renaming, non_identical_renaming, function_call_renaming
    Renf2 : Integer renames "+"(1,2);                                    -- renaming, not_operator_renaming, non_identical_renaming, function_call_renaming
+
+
+   type Al1 is array (Int1) of aliased Character;                       -- constrained_array_type, array, aliased_array_component
+   type Al2 is array (Positive range <>) of aliased Character;          -- unconstrained_array_type, array, aliased_array_component
+   Al3 : array (Int1) of aliased Character := (others => ' ');          -- variable, single_array, aliased_array_component, constrained_array_variable, array
+
+   type Al4 is                                                          -- ordinary_record_type, record_type
+      record
+         F1 : Integer := 0;                                             -- initialized record component
+         F2 : aliased Integer := 1;                                     -- initialized_record_component, aliased_record_component
+      end record;
+
+   protected Al5 is                                                     -- single_protected, protected_variable, protected
+   private
+      Y : aliased Integer := 2;                                         -- initialized_protected_component, aliased_protected_component
+   end Al5;
+   protected body Al5 is
+   end Al5;
 begin
    null;                                                                -- null_procedure
 end T_declarations;

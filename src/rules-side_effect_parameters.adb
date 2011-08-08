@@ -44,6 +44,7 @@ with
 
 -- Adactl
 with
+  Framework.Generic_Context_Iterator,
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
@@ -81,6 +82,8 @@ package body Rules.Side_Effect_Parameters is
       end record;
 
    Bad_Functions  : Context_Store;
+   package Bad_Functions_Iterator is new Framework.Generic_Context_Iterator (Bad_Functions);
+
    Called_By   : array (Control_Index) of Asis.ASIS_Natural;
    Called_Func : array (Control_Index) of Asis.Element;
 
@@ -242,50 +245,25 @@ package body Rules.Side_Effect_Parameters is
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>
-                  Func_Name := Prefix (Element);
-                  case Expression_Kind (Func_Name) is
-                     when A_Selected_Component =>
-                        Func_Name := Selector (Func_Name);
-                     when An_Explicit_Dereference =>
-                        -- Function is called through pointer => not statically determinable
-                        Uncheckable (Rule_Id,
-                                     False_Negative,
-                                     Get_Location (Element),
-                                     "Call through access to subprogram");
-                        return;
-                     when others =>
-                        null;
-                  end case;
-
-                  if Is_Access_Expression (Func_Name) then
-                     -- Implicit dereference
+                  Func_Name := Simple_Name (Prefix (Element));
+                  if Expression_Kind (Func_Name) = An_Explicit_Dereference
+                    or else Is_Access_Expression (Func_Name)
+                  then
                      -- Function is called through pointer => not statically determinable
                      Uncheckable (Rule_Id,
                                   False_Negative,
                                   Get_Location (Element),
                                   "Call through access to subprogram");
-                     return;
+                        return;
                   end if;
 
                   declare
-                     Context : constant Root_Context'Class
-                       := Extended_Matching_Context (Bad_Functions, Ultimate_Name (Func_Name));
+                     Iter : Context_Iterator := Bad_Functions_Iterator.Create;
                   begin
-                     if Context = No_Matching_Context then
-                        return;
-                     end if;
-                     Check (Entity_Context (Context));
-
-                     loop
-                        declare
-                           Next_Context : constant Root_Context'Class := Next_Matching_Context (Bad_Functions);
-                        begin
-                           if Next_Context = No_Matching_Context then
-                              return;
-                           end if;
-
-                           Check (Entity_Context (Next_Context));
-                        end;
+                     Reset (Iter, Ultimate_Name (Func_Name), Extend_To => All_Extensions);
+                     while not Is_Exhausted (Iter) loop
+                        Check (Entity_Context (Value (Iter)));
+                        Next (Iter);
                      end loop;
                   end;
 

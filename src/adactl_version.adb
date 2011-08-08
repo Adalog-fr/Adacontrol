@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Adactl_Constants - Package body                                 --
+--  Adactl_Version - Function body                                  --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --
@@ -29,13 +29,20 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
-package body Adactl_Constants is
+-- Adacontrol
+with
+   Framework.Specific_Plugs;
+function Adactl_Version return Wide_String is
 
-   Version : constant Wide_String := "1.9r4";
+   Version : constant Wide_String := "1.10r8";
 
-   function Current_Version return Wide_String is
-   begin
+begin
+   -- Gnat warns that the following condition is always false/true, but
+   -- this is intended
+   pragma Warnings (Off);
+   if Framework.Specific_Plugs.Specific_Version = "" then
       return Version;
-   end Current_Version;
-
-end Adactl_Constants;
+   else
+      return Version & '-' & Framework.Specific_Plugs.Specific_Version;
+   end if;
+end Adactl_Version;

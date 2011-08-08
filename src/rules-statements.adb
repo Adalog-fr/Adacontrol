@@ -114,7 +114,7 @@ package body Rules.Statements is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language;
+      use Framework.Language, Utilities;
       Subrule : Subrules;
 
    begin
@@ -125,7 +125,7 @@ package body Rules.Statements is
       while Parameter_Exists loop
          Subrule := Get_Flag_Parameter (Allow_Any => False);
          if Rule_Used (Subrule) then
-            Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule));
+            Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
          end if;
 
          Rule_Used (Subrule) := True;
@@ -170,7 +170,7 @@ package body Rules.Statements is
          Report (Rule_Id,
                  Usage (Stmt),
                  Loc,
-                 "use of statement """ & Image (Stmt) & '"');
+                 "use of statement """ & Image (Stmt, Lower_Case) & '"');
       end Do_Report;
 
       procedure Do_Report (Stmt : in Subrules; Extra_Info : Wide_String) is
@@ -183,7 +183,7 @@ package body Rules.Statements is
          Report (Rule_Id,
                  Usage (Stmt),
                  Get_Location (Element),
-                 "use of statement """ & Image (Stmt) & """, " & Extra_Info);
+                 "use of statement """ & Image (Stmt, Lower_Case) & """, " & Extra_Info);
       end Do_Report;
 
       procedure Check_Filtered_Raise (Exc : Asis.Expression) is
@@ -615,7 +615,7 @@ package body Rules.Statements is
    ---------------------------
 
    procedure Process_Function_Call (Call : in Asis.Expression) is
-      use Asis.Statements;
+      use Asis.Statements, Utilities;
       use Framework.Reports;
    begin
       if not Rule_Used (Stmt_Dispatching_Call) then
@@ -627,7 +627,7 @@ package body Rules.Statements is
          Report (Rule_Id,
                  Usage (Stmt_Dispatching_Call),
                  Get_Location (Call),
-                 "use of statement """ & Image (Stmt_Dispatching_Call) & '"');
+                 "use of statement """ & Image (Stmt_Dispatching_Call, Lower_Case) & '"');
       end if;
    end Process_Function_Call;
 

@@ -29,26 +29,32 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 with  -- Adalog
-   Thick_Queries;
+   Thick_Queries,
+   Utilities;
 package Framework.Language is
 
    --  Process the language used by rules files
    --  Syntax:
    --  <Program> ::= {<commmand> ";"}
-   --  <command> ::= [ <label> ":" ] "check"|"search"|"count" <Name>
-   --                       [ "(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")" ]
-   --              | "clear" "all" | <name> {,<name>}
+   --  <command> ::= [ <label> ":" ] <control_list>
+   --              | "clear"  "all" | <name> {,<name>}
    --              | "go"
-   --              | "help"  [ "all" | "list" | <name>{,<name>} ]
+   --              | "help"  [ <name_or_kw>{,<name_or_kw>} ]
    --              | "inhibit" "all" | <rule_name> "(" [ "all" <unit> {, "all" <unit>} ")"
-   --              | "message" <any_string>
+   --              | "message" <any_string> ["pause"]
    --              | "quit"
-   --              | "set" "format" <format_name> |
-   --                      "output" <file_name>   |
-   --                      "statistics" <level>   |
-   --                      "trace" <file_name>    |
-   --                      "debug" | "ignore" | "verbose" | "warning"  "on" | "off"
-   --              | "source" <file>
+   --              | "set" "format"                     <format_name>     |
+   --                      "check_key"|"search_key"     <any_string>      |
+   --                      "max_errors"|"max_messages" [<integer_value>]  |
+   --                      "output"                     <any_string>      |
+   --                      "statistics"                 <integer_value>   |
+   --                      "tag1"|"tag2"                <any_string>      |
+   --                      "trace"                      <file_name>       |
+   --                      "debug"|"ignore"|"timing"|"verbose"|"warning"  "on"|"off"
+   --              | "source" <file_name>
+   -- <control_list> ::= <control> {"," <control>}
+   -- <control> ::= "check"|"search"|"count" <Name>
+   --                  [ "(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")" ]
    --  Ada-like comments (--) and Shell-like comments (#) are allowed.
 
    function Source_Location return Location;
@@ -104,14 +110,14 @@ package Framework.Language is
 
    generic
       type Modifiers is (<>);
-      Prefix : in Wide_String := "";
+      Prefix   : in Wide_String := "";
+      Box_Pos  : in Integer := -1; -- 'Pos of the modifier that corresponds to "<>", or -1 if none
+      Pars_Pos : in Integer := -1; -- 'Pos of the modifier that corresponds to "()", or -1 if none
    package Modifier_Utilities is
       function Get_Modifier (Required : Boolean) return Modifiers;
       -- If not Required and no modifier given, returns Modifiers'First
-      function Image (Item : Modifiers) return Wide_String;
-      procedure Help_On_Modifiers (Header      : Wide_String := "";
-                                   Footer      : Wide_String := "";
-                                   Extra_Value : Wide_String := "");
+
+      function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
 
       type Unconstrained_Modifier_Set is array (Modifiers range <>) of Boolean;
       subtype Modifier_Set is Unconstrained_Modifier_Set (Modifiers);
@@ -125,6 +131,16 @@ package Framework.Language is
                       Default : Unconstrained_Modifier_Set := Empty_Set) return Wide_String;
       -- Image of all modifiers in Set, separated and terminated by a single space
       -- "" for empty set and Default
+
+      type Modifier_List is array (Positive range <>) of Modifiers;
+      Empty_List : constant Modifier_List := (1 .. 0 => Modifiers'First);
+      function Get_Modifier_List (Expected : Modifier_Set := Full_Set) return Modifier_List;
+      function Image (List : Modifier_List) return Wide_String;
+
+      procedure Help_On_Modifiers (Header      : Wide_String := "";
+                                   Footer      : Wide_String := "";
+                                   Extra_Value : Wide_String := "NONE");
+
    end Modifier_Utilities;
 
    generic
@@ -138,10 +154,11 @@ package Framework.Language is
       --    in order to retrieve it with other Get_XXX_Parameter functions,
       --    unless it is itself Flags'First (which makes an error)
 
-      function Image (Item : Flags) return Wide_String;
+      function Image (Item : Flags; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "");
+                               Extra_Value : Wide_String := "NONE");
+      -- We provide "NONE" as the default to allow "" as an explicit value
    end Flag_Utilities;
 
    -- Procedure to be called by rules if there is something wrong with the

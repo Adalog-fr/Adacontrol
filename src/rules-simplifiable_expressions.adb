@@ -97,13 +97,13 @@ package body Rules.Simplifiable_expressions is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-
       Key : Keywords;
 
       procedure Add_Check (Subrule : Subrules) is
+         use Utilities;
       begin
          if Ctl_Contexts (Ctl_Kind)(Subrule).Used then
-            Parameter_Error (Rule_Id, "check already given: " & Image (Subrule));
+            Parameter_Error (Rule_Id, "check already given: " & Image (Subrule, Lower_Case));
          else
             Ctl_Contexts (Ctl_Kind)(Subrule) := (Used => True, Label => To_Unbounded_Wide_String (Ctl_Label));
          end if;

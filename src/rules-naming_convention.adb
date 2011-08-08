@@ -363,21 +363,13 @@ package body Rules.Naming_Convention is
                if (Current.Scopes and Scopes_Mask) /= Empty_Set
                  and not (Current.Is_Others and Positive_Pattern_Found)
                then
-                  -- In some (undetermined) cases, Match does not return
-                  -- Let's make sure that it does not hang the program
-                  select
-                     delay 1.0;
-                     Matches := False;
-                     A4G_Bugs.Trace_Bug ("Match did not return within 1 sec");
-                  then abort
-                     Matches := Match (Name_Str, Current.Pattern.all);
-                  end select;
+                  Matches := Match (Name_Str, Current.Pattern.all);
                   if Matches then
                      Report (Rule_Id,
                              Current.all,
                              Get_Location (Name),
                              "Name does not follow naming rule for """
-                             & Image (Current.Scopes, Default => Full_Set) & Image (Key)
+                             & Image (Current.Scopes, Default => Full_Set) & Image (Key, Lower_Case)
                              & """: """
                              & Defining_Name_Image (Name) & '"');
                   end if;
@@ -419,7 +411,7 @@ package body Rules.Naming_Convention is
                        Last_Applicable_Pattern.all,
                        Get_Location (Name),
                        "Name does not follow naming rule for """
-                       & Image (Last_Applicable_Pattern.Scopes, Default => Full_Set) & Image (Key)
+                       & Image (Last_Applicable_Pattern.Scopes, Default => Full_Set) & Image (Key, Lower_Case)
                        & """: """
                        & Defining_Name_Image (Name) & '"');
             end if;

@@ -6,7 +6,10 @@
 
 
 ----
-
+--*
+--**
+--***
+--end
 
 with X_Header_Comments;
 procedure T_Header_Comments is

@@ -4,7 +4,8 @@ simple_names: check entities (ada.text_IO.put,
 attributes:   check entities (all 'image, standard.integer'first);
 units:        check entities (ada.calendar);
 operator:     check entities (all "<");
-
+rec:          check entities (t_entities.VR);
+rec_field:    check entities (t_entities.Rec.I);
 Gnat_Specific_Attribute: Check Entities (all 'Abort_Signal,
                                          all 'Address_Size,
                                          all 'Asm_Input,

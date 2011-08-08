@@ -63,23 +63,31 @@ package body Rules.Local_Hiding is
    -- is already the procedure itself, but the name must be attached to where the procedure is declared,
    -- i.e. the enclosing scope.
 
-   type Subrules is (Strict, Overloading, Both);
-   subtype True_Subrules is Subrules range Strict .. Overloading;
-   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
+   type Extended_Subrules is (Strict, Overloading, Overloading_Short);
+   subtype Subrules is Extended_Subrules range Extended_Subrules'First .. Extended_Subrules'Pred (Overloading_Short);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Extended_Subrules);
 
-   type Rule_Usage is array (True_Subrules) of Boolean;
+   type Modifiers is (Not_Operator, Not_Enumeration);
+   package Modifiers_Flag_Utilities is new Framework.Language.Modifier_Utilities (Modifiers);
+
+   type Rule_Usage is array (Subrules) of Boolean;
    Not_Used : constant Rule_Usage := (others => False);
 
    Rule_Used    : Rule_Usage := Not_Used;
    Save_Used    : Rule_Usage;
-   Rule_Context : array (True_Subrules) of Basic_Rule_Context;
+   Rule_Context : array (Subrules) of Basic_Rule_Context;
+
+   Include_Op           : Rule_Usage;
+   Include_Enum         : Rule_Usage;
+   Overloading_Is_Short : Boolean;
 
    type Identifier_Data (Length : Positive) is
       record
-         Name        : Wide_String (1..Length);
-         Short_Last  : Positive;
-         Elem        : Asis.Element;
-         Is_Callable : Boolean;
+         Name           : Wide_String (1..Length);
+         Short_Last     : Positive;
+         Elem           : Asis.Element;
+         Is_Callable    : Boolean;
+         Is_Enumeration : Boolean;
       end record;
    procedure Clear (Item : in out Identifier_Data) is  -- null proc
       pragma Unreferenced (Item);
@@ -93,11 +101,12 @@ package body Rules.Local_Hiding is
    ----------
 
    procedure Help is
-      use Subrules_Flag_Utilities;
+      use Subrules_Flag_Utilities, Modifiers_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s): ", Footer => "(default = strict)");
-      User_Message ("Control occurrences of local identifiers that hide an outer identical name");
+      Help_On_Flags     ("Parameter(s): <exceptions> ", Footer => "(default = strict)");
+      Help_On_Modifiers ("<exceptions>:");
+      User_Message ("Control occurrences of local identifiers that hide or overload an identical name");
    end Help;
 
    -----------------
@@ -105,30 +114,35 @@ package body Rules.Local_Hiding is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Subrules_Flag_Utilities;
-      Subrule : Subrules;
+      use Framework.Language, Subrules_Flag_Utilities, Modifiers_Flag_Utilities;
+      Subrule         : Extended_Subrules;
+      Modif_Specified : Modifier_Set;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
+            Modif_Specified := Get_Modifier_Set;
             Subrule := Get_Flag_Parameter (Allow_Any => False);
             case Subrule is
-               when True_Subrules =>
-                  if Rule_Used (Subrule) then
-                     Parameter_Error (Rule_Id, "subrule already specified");
-                  end if;
-                  Rule_Used    (Subrule) := True;
-                  Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-               when Both =>
-                  if Rule_Used /= (True_Subrules => False) then
-                     Parameter_Error (Rule_Id, "subrule already specified");
-                  end if;
-                  Rule_Used    := (others => True);
-                  Rule_Context := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+               when Overloading =>
+                  Overloading_Is_Short := False;
+               when Overloading_Short =>
+                  Subrule := Overloading;
+                  Overloading_Is_Short := True;
+               when others =>
+                  null;
             end case;
+            if Rule_Used (Subrule) then
+               Parameter_Error (Rule_Id, "subrule already specified");
+            end if;
+            Rule_Used    (Subrule) := True;
+            Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Include_Op   (Subrule) := not Modif_Specified (Not_Operator);
+            Include_Enum (Subrule) := not Modif_Specified (Not_Enumeration);
          end loop;
       else
          Rule_Used    (Strict) := True;
          Rule_Context (Strict) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+         Include_Op   (Strict) := True;
       end if;
    end Add_Control;
 
@@ -156,7 +170,7 @@ package body Rules.Local_Hiding is
 
    procedure Prepare is
    begin
-      if Rule_Used /= (True_Subrules => False) then
+      if Rule_Used /= Not_Used then
          Visible_Identifiers.Activate;
       end if;
    end Prepare;
@@ -225,13 +239,17 @@ package body Rules.Local_Hiding is
             return Result;
          end Enclosing_Scope;
 
-         Short_Name    : constant Wide_String := To_Upper (Defining_Name_Image (Name));
-         Full_Name     : constant Wide_String := Short_Name & To_Upper (Profile_Image (Name, With_Profile => False));
-         Callable_Name : constant Boolean     := Is_Callable_Construct (Name);
-         Is_Scope_Name : constant Boolean     := Is_Equal (Enclosing_Scope (Name), Current_Scope);
+         Short_Name     : constant Wide_String := To_Upper (Defining_Name_Image (Name));
+         Full_Name      : constant Wide_String := Short_Name & To_Upper (Profile_Image (Name, With_Profile => False));
+         Callable_Name  : constant Boolean     := Is_Callable_Construct (Name);
+         Is_Enumeration : constant Boolean     := Declaration_Kind (Enclosing_Element (Name))
+                                                  = An_Enumeration_Literal_Specification;
+         Is_Scope_Name  : constant Boolean     := Is_Equal (Enclosing_Scope (Name), Current_Scope);
          -- Is_Scope_Name is True if Name is the defining name for the current scope
          -- => it belongs to the enclosing scope
-         Already_There : Boolean;
+         Already_There  : Boolean;
+         Overload_Count : Natural := 0;
+         Overload_Last  : Asis.Element;
 
          type Hiding_Kinds is (Hides, Overloads, Not_Hiding);
          function Hiding_Kind (Check : Identifier_Data) return Hiding_Kinds is
@@ -275,7 +293,11 @@ package body Rules.Local_Hiding is
                else
                   case Hiding_Kind (Visible_Identifiers.Current_Data) is
                      when Hides =>
-                        if Rule_Used (Strict) then
+                        if Rule_Used (Strict)
+                          and (Include_Op   (Strict) or Short_Name (1) /= '"')
+                          and (Include_Enum (Strict)
+                               or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                        then
                            Report (Rule_Id,
                                    Rule_Context (Strict),
                                    Get_Location (Name),
@@ -284,13 +306,22 @@ package body Rules.Local_Hiding is
                                    & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
                         end if;
                      when Overloads =>
-                        if Rule_Used (Overloading) then
-                           Report (Rule_Id,
-                                   Rule_Context (Overloading),
-                                   Get_Location (Name),
-                                   '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
-                                   & """ overloads declaration at "
-                                   & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
+                        if Rule_Used (Overloading)
+                          and (Include_Op   (Overloading) or Short_Name (1) /= '"')
+                          and (Include_Enum (Overloading)
+                               or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                        then
+                           if Overloading_Is_Short then
+                              Overload_Count := Overload_Count + 1;
+                              Overload_Last  := Visible_Identifiers.Current_Data.Elem;
+                           else
+                              Report (Rule_Id,
+                                      Rule_Context (Overloading),
+                                      Get_Location (Name),
+                                      '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                                      & """ overloads declaration at "
+                                      & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
+                           end if;
                         end if;
                      when Not_Hiding =>
                         null;
@@ -298,6 +329,18 @@ package body Rules.Local_Hiding is
                end if;
                Visible_Identifiers.Next;
             end loop;
+
+            if Overload_Count /= 0 then
+               -- Short form of reports of overloading, issued after the loop
+                              Report (Rule_Id,
+                                      Rule_Context (Overloading),
+                                      Get_Location (Name),
+                                      '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                                      & """ overloads "
+                                      & Integer_Img (Overload_Count)
+                                      & " declaration(s), last at "
+                                      & Image (Get_Location (Overload_Last)));
+            end if;
          end if;
 
          if not Already_There then
@@ -308,13 +351,15 @@ package body Rules.Local_Hiding is
                                                     Full_Name,
                                                     Short_Name'Length,
                                                     Name,
-                                                    Callable_Name));
+                                                    Is_Callable    => Callable_Name,
+                                                    Is_Enumeration => Is_Enumeration));
             else
                Visible_Identifiers.Push ((Full_Name'Length,
                                           Full_Name,
                                           Short_Name'Length,
                                           Name,
-                                          Callable_Name));
+                                          Is_Callable    => Callable_Name,
+                                          Is_Enumeration => Is_Enumeration));
             end if;
          end if;
       end;
@@ -358,7 +403,8 @@ package body Rules.Local_Hiding is
                                                        Full_Name,
                                                        Short_Name'Length,
                                                        Name,
-                                                       Is_Callable_Construct (Name)));
+                                                       Is_Callable    => Is_Callable_Construct (Name),
+                                                       Is_Enumeration => False));
                end;
                exit when Expression_Kind (Current) = An_Identifier;
                Current := Prefix (Current);

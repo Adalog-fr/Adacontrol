@@ -23,6 +23,13 @@ procedure T_entities is
 
    I : Standard.Integer;
 
+   type Rec is
+      record
+         I : Integer;
+      end record;
+   VR  : Rec;
+   Ren : Integer renames VR.I;                    -- T_Entities.VR, T_Entities.Rec.I
+
 begin
    Put ("Hello world");                           -- Ada.Text_Io.Put{Standard.String}
    Put (F, "Hello world");                        -- Ada.Text_Io.Put
@@ -32,4 +39,8 @@ begin
       null;
    end if;
 
+   VR   := (I => 0);                              -- T_Entities.VR, T_Entities.Rec.I
+   VR.I := 0;                                     -- T_Entities.VR, T_Entities.Rec.I
+   VR.I := Ren;                                   -- T_Entities.VR (x2), T_Entities.Rec.I (x2)
+   Ren  := 0;                                     -- T_Entities.VR, T_Entities.Rec.I
 end T_entities;

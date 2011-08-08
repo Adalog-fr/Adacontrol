@@ -262,7 +262,7 @@ package body Framework.Language.Scanner is
             Negative := True;
             Next_Char;
             if Cur_Char not in '0' .. '9' then
-               Syntax_Error ("Invalid caracter in number",
+               Syntax_Error ("Invalid character in number",
                              (Current_File, Current_Line, Current_Column));
             end if;
          end if;
@@ -284,7 +284,15 @@ package body Framework.Language.Scanner is
                end case;
             end if;
             if Cur_Char in '0' .. '9' then
-               Result := Result*10 + Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
+               Result := Result * 10 + Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
+            elsif Cur_Char = 'e' or Cur_Char = 'E' then
+               Next_Char;
+               if Cur_Char not in '0' .. '9' then
+                  Syntax_Error ("Exponent must be followed by (unsigned) number",
+                                (Current_File, Current_Line, Current_Column));
+               end if;
+               Result := Result * 10 ** Natural (Get_Integer);
+               exit;
             elsif Is_Letter (To_Character (Cur_Char)) then
                Syntax_Error ("Letter not allowed in numbers",
                              (Current_File, Current_Line, Current_Column));
@@ -342,6 +350,8 @@ package body Framework.Language.Scanner is
                declare
                   Integer_Part    : Biggest_Int;
                   Fractional_Part : Float;
+                  Exponent_Part   : Integer := 0;
+                  Exponent_Sign   : Integer := +1;
                begin
                   begin
                      Integer_Part := Get_Integer;
@@ -373,9 +383,31 @@ package body Framework.Language.Scanner is
                      if Integer_Part < 0 then
                         Fractional_Part := -Fractional_Part;
                      end if;
+
+                     if Cur_Char = 'e' or Cur_Char = 'E' then
+                        Next_Char;
+                        case Cur_Char is
+                           when '+' =>
+                              Next_Char;
+                           when '-' =>
+                              Exponent_Sign := -1;
+                              Next_Char;
+                           when others =>
+                              null;
+                        end case;
+
+                        if Cur_Char not in '0' .. '9' then
+                           Syntax_Error ("Illegal exponent of real value",
+                                         (Current_File, Current_Line, Current_Column));
+                        end if;
+
+                        Exponent_Part := Integer (Get_Integer);
+                     end if;
+
                      The_Token := (Kind     => Float_Value,
                                    Position => (Current_File, First_Line, First_Column),
-                                   Fvalue   => Float (Integer_Part) + Fractional_Part);
+                                   Fvalue   => (Float (Integer_Part) + Fractional_Part)
+                                               * 10.0 ** (Exponent_Sign * Exponent_Part));
                   else
                      The_Token := (Kind     => Integer_Value,
                                    Position => (Current_File, First_Line, First_Column),

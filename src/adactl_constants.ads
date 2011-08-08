@@ -31,10 +31,6 @@
 
 package Adactl_Constants is
 
-   -- This is provided as a function rather than a constant to avoid
-   -- recompiling the world each time it changes
-   function Current_Version return Wide_String;
-
    -------------------------------------------------------------------
    -- General dimensioning constants                                --
    -------------------------------------------------------------------
@@ -49,6 +45,9 @@ package Adactl_Constants is
    Max_Controls_For_Rule : constant := 100;
    -- For rules that need an upper bound to the number of times they can
    -- be specified in a control
+
+   Max_Controls_Set : constant := 32;
+   -- As previous, but for rules that need a set (array of boolean) of controls
 
    Max_Parameters : constant := 30;
    -- Maximum number of parameters declared by a subprogram or an entry

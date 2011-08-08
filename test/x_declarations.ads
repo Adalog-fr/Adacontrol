@@ -16,7 +16,7 @@ package X_Declarations is
 
    Arr : array (1..10) of Integer;                                       -- Array, single_array, variable, constrained_array_variable
 
-   package Af renames Ada.Finalization;                                 -- not_operator_renaming, non_identical_renaming, renaming
+   package Af renames Ada.Finalization;                                 -- not_operator_renaming, non_identical_renaming, library_unit_renaming, renaming
    type Cont1 is new Ada.Finalization.Controlled with null record;      -- controlled_type
    type Cont2 is new Af.Limited_Controlled with                         -- controlled_type
       record

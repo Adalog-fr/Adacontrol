@@ -1,4 +1,5 @@
 t_header_comments-sep.adb:3:1: Error: HEADER_COMMENTS: not enough header comment lines
+t_header_comments-sep.adb:5:1: Found: HEADER_COMMENTS: line does not match pattern "--\*{1,5}"
 x_header_comments.ads:1:1: Error: HEADER_COMMENTS: not enough header comment lines
 x_header_comments.ads:1:1: Found: HEADER_COMMENTS: line does not match pattern "^--$"
 x_header_comments.adb:1:1: Found: HEADER_COMMENTS: line does not match pattern "^--$"

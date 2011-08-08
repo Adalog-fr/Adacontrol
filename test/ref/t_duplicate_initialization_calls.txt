@@ -1,6 +1,11 @@
-t_duplicate_initialization_calls.adb:21:4: Error: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:18:4
-t_duplicate_initialization_calls.adb:22:13: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
-t_duplicate_initialization_calls.adb:22:17: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
-t_duplicate_initialization_calls.adb:26:4: Found: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:24:4
-t_duplicate_initialization_calls.adb:27:4: Found: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:25:4
-t_duplicate_initialization_calls.adb:31:4: Found: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:29:4
+t_duplicate_initialization_calls.adb:33:4: Error: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:30:4
+t_duplicate_initialization_calls.adb:34:13: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
+t_duplicate_initialization_calls.adb:34:17: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
+t_duplicate_initialization_calls.adb:38:4: Found: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:36:4
+t_duplicate_initialization_calls.adb:39:4: Found: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:37:4
+t_duplicate_initialization_calls.adb:43:4: Found: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:41:4
+t_duplicate_initialization_calls.adb:46:13: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
+t_duplicate_initialization_calls.adb:47:13: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
+t_duplicate_initialization_calls.adb:48:13: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure
+t_duplicate_initialization_calls.adb:48:4: Error: DUPLICATE_INITIALIZATION_CALLS: initialization call duplicates call at t_duplicate_initialization_calls.adb:46:4
+t_duplicate_initialization_calls.adb:49:13: Error: DUPLICATE_INITIALIZATION_CALLS: non static value in call to initialization procedure

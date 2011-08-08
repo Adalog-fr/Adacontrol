@@ -34,13 +34,13 @@ with
 
 -- ASIS
 with
-  Asis.Declarations,
   Asis.Elements,
   Asis.Expressions;
 
 -- Adalog
 with
   Binary_Map,
+  Framework.Scope_Manager,
   Thick_Queries;
 
 -- AdaControl
@@ -71,9 +71,8 @@ package body Framework.Symbol_Table is
    type Symbol_Entry is
       record
          Name              : Asis.Defining_Name;
-         Depths_OK         : Boolean;
-         Visibility_Depth  : Scope_Range;
-         Declaration_Depth : Scope_Range;
+         Visibility_Scope  : Asis.Element;
+         Declaration_Scope : Asis.Element;
          Contents          : Content_Tab;
       end record;
 
@@ -114,21 +113,18 @@ package body Framework.Symbol_Table is
       -- Store --
       -----------
 
-      procedure Store (Element : Asis.Element; Content_Value : Content; At_Declaration_Scope : Boolean := True) is
-         -- Pre-condition: If At_Declaration_Scope is true, Element is a Defining_Name
-         use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      procedure Store (Element : Asis.Element; Content_Value : Content) is
+         use Asis, Asis.Elements, Asis.Expressions;
          use Thick_Queries, Utilities;
 
          Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-                                                                           (Full_Name_Image
-                                                                            (Element, With_Profile => True)));
+           (Full_Name_Image
+              (Element, With_Profile => True)));
          Symbol : Symbol_Entry;
-         Decl   : Asis.Declaration;
       begin
          if Is_Present (Global_Map, Key) then
             Symbol := Fetch (Global_Map, Key);
          else
-            Symbol.Depths_OK := False;
             case Element_Kind (Element) is
                when A_Defining_Name =>
                   Symbol.Name := Element;
@@ -145,80 +141,27 @@ package body Framework.Symbol_Table is
                when others =>
                   Failure ("Symbol table: not a name (2)", Element);
             end case;
-         end if;
 
-         if not Symbol.Depths_OK and At_Declaration_Scope then
-            Symbol.Depths_OK := True;
-            Decl := Enclosing_Element (Symbol.Name);
+            -- The element's declaration scope is the first enclosing element considered a scope
+            -- starting from the enclosing element of its own declaration
+            Symbol.Declaration_Scope := Enclosing_Element (Enclosing_Element (Symbol.Name));
+            while not Is_Scope (Symbol.Declaration_Scope) loop
+               Symbol.Declaration_Scope := Enclosing_Element (Symbol.Declaration_Scope);
+            end loop;
 
-            -- The symbol's declaration declaration depth is the depth of its declaration, unless it
-            -- is the defining name of a (generic) subprogram, package, task, or protected, in which
-            -- case it is one less (since we are already within the scope of its own declaration).
-            -- We do not have to care about loop and block names, since they cannot be used outside the
-            -- statement.
-            case Element_Kind (Decl) is
-               when A_Declaration =>
-                  case Declaration_Kind (Decl) is
-                     when A_Procedure_Declaration
-                        | A_Function_Declaration
-                        | An_Entry_Declaration
-                        | A_Package_Declaration
-                        | A_Task_Type_Declaration
-                        | A_Single_Task_Declaration
-                        | A_Protected_Type_Declaration
-                        | A_Single_Protected_Declaration
-
-                        | A_Procedure_Body_Declaration
-                        | A_Function_Body_Declaration
-                        | An_Entry_Body_Declaration
-                        | A_Package_Body_Declaration
-                        | A_Task_Body_Declaration
-                        | A_Protected_Body_Declaration
-
-                        | A_Generic_Procedure_Declaration
-                        | A_Generic_Function_Declaration
-                        | A_Generic_Package_Declaration
-
-                        | A_Formal_Procedure_Declaration
-                        | A_Formal_Function_Declaration
-
-                        | A_Procedure_Renaming_Declaration
-                        | A_Function_Renaming_Declaration
-                        | A_Package_Renaming_Declaration
-                        | A_Generic_Package_Renaming_Declaration
-                        | A_Generic_Procedure_Renaming_Declaration
-                        | A_Generic_Function_Renaming_Declaration
-
-                        | A_Procedure_Instantiation
-                        | A_Function_Instantiation
-                        | A_Package_Instantiation
-                          =>
-                        if Is_Equal (Symbol.Name, Names (Decl)(1)) then
-                           Symbol.Declaration_Depth := Current_Depth - 1;
-                           -- The search for the visibility depth must also start one level higher:
-                           Decl := Enclosing_Element (Decl);
-                        else
-                           Symbol.Declaration_Depth := Current_Depth;
-                        end if;
-                     when others =>
-                        Symbol.Declaration_Depth := Current_Depth;
-                  end case;
-               when others =>
-                  Symbol.Declaration_Depth := Current_Depth;
-            end case;
-
-            -- The Symbol's visibility depth is the depth of its declaration, unless the declaration
-            -- is in a package specification, in which case the depth is the first enclosing
-            -- non-package-spec scope (possibly 0 if the symbol is from a library package spec).
-            -- Similarly, (non generic) formal parameters have the visibility of their enclosing
+            -- The Element's visibility scope is its declaration scope, unless the declaration scope
+            -- is a package specification, in which case the visibility scope is the first enclosing
+            -- non-package-spec scope (possibly Nil_Element if the symbol is from a library package spec).
+            -- Similarly, (non generic) formal parameters have the visibility scope of their enclosing
             -- callable unit
 
-            -- Find the enclosing scope of Decl (in the sense of the scope manager)
-            -- except that we skip package specifications
+            Symbol.Visibility_Scope := Symbol.Declaration_Scope;
             loop
-               case Element_Kind (Decl) is
+               case Element_Kind (Symbol.Visibility_Scope) is
+                  when Not_An_Element =>
+                     exit;  -- went out of library package spec
                   when A_Declaration =>
-                     case Declaration_Kind (Decl) is
+                     case Declaration_Kind (Symbol.Visibility_Scope) is
                         when A_Procedure_Declaration
                            | A_Function_Declaration
                            | An_Entry_Declaration
@@ -257,47 +200,34 @@ package body Framework.Symbol_Table is
                         when A_Package_Declaration
                            | A_Generic_Package_Declaration
                              =>
-                           Decl := Enclosing_Element (Decl);
-                           exit when Is_Nil (Decl);  -- went out of library package spec
-                           if Declaration_Kind (Decl) = A_Package_Instantiation then
+                           Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
+                           if Declaration_Kind (Symbol.Visibility_Scope) = A_Package_Instantiation then
                               -- The package was obtained by instantiation
-                              Decl := Enclosing_Element (Decl);
+                              Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
                            end if;
+                        when A_Formal_Package_Declaration
+                           | A_Formal_Package_Declaration_With_Box
+                             =>
+                           -- Elements from a formal package are visible only in the enclosing generic
+                           Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
+                           exit;
                         when A_Parameter_Specification =>
                            -- Parameters are visible outside their declaration
                            -- Note that A_Parameter_Specification does not include generic formals,
                            --      which is appropriate since those are not visible outside the generic
                            -- Skip the Parameter_Specification and the enclosing subprogram or entry declaration
-                           Decl := Enclosing_Element (Enclosing_Element (Decl));
+                           Symbol.Visibility_Scope := Enclosing_Element (Enclosing_Element (Symbol.Visibility_Scope));
                         when others =>
-                           Decl := Enclosing_Element (Decl);
+                           Failure ("wrong enclosing scope 1", Symbol.Visibility_Scope);
                      end case;
-                  when A_Statement
-                     | An_Exception_Handler
+                  when A_Statement            -- for loop, block
+                     | An_Exception_Handler   -- Element is an exception occurrence
                        =>
                      exit;
                   when others =>
-                     Decl := Enclosing_Element (Decl);
+                     Failure ("wrong enclosing scope 2", Symbol.Visibility_Scope);
                end case;
             end loop;
-
-            if Is_Nil (Decl) then
-               Symbol.Visibility_Depth := 0;
-            else
-               declare
-                  Scopes : constant Scope_List := Active_Scopes;
-                  Found  : Boolean := False;
-               begin
-                  for I in reverse Scopes'Range loop
-                     if Is_Equal (Decl, Scopes (I)) then
-                        Symbol.Visibility_Depth := I;
-                        Found := True;
-                        exit;
-                     end if;
-                  end loop;
-                  Assert (Found, "Symbol table: enclosing scope not found in table", Decl);
-               end;
-            end if;
          end if;
 
          if Symbol.Contents (My_Inx) = null then
@@ -367,10 +297,10 @@ package body Framework.Symbol_Table is
       end Is_Present;
 
       --------------
-      -- Depth_Of --
+      -- Scope_Of --
       --------------
 
-      function Depth_Of (Element : Asis.Element) return Framework.Scope_Manager.Scope_Range is
+      function Scope_Of (Element : Asis.Element) return Asis.Element is
          use Thick_Queries, Utilities;
 
          Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
@@ -385,14 +315,11 @@ package body Framework.Symbol_Table is
          Data := Fetch (Global_Map, Key);
          if Data.Contents (My_Inx) = null then
             -- The symbol exists, but for someone else
-            Failure ("Symbol table: depth_of of missing element 2");
-         end if;
-         if not Data.Depths_OK then
-            Failure ("Symbol table: depth_of of non Depths_OK element");
+            raise Not_In_Table;
          end if;
 
-         return Data.Declaration_Depth;
-      end Depth_Of;
+         return Data.Declaration_Scope;
+      end Scope_Of;
 
       -----------
       -- Clear --
@@ -408,24 +335,20 @@ package body Framework.Symbol_Table is
       --------------------------------
 
       procedure On_Every_Entity_From_Scope (Scope_Kind : Scope_Kinds) is
-         Depth : constant Scope_Range := Current_Depth;
+         Scope : constant Asis.Element := Current_Scope;
 
          procedure On_One_Entity (Key : Unbounded_Wide_String; Symbol : in out Symbol_Entry) is
             pragma Unreferenced (Key);
-            Sym_Depth : Scope_Range;
+            use Asis.Elements;
+            Sym_Scope : Asis.Element;
          begin
-            if not Symbol.Depths_OK then
-               -- If it were from the good scope, its declaration would have been processed...
-               return;
-            end if;
-
             case Scope_Kind is
                when Declaration =>
-                  Sym_Depth := Symbol.Declaration_Depth;
+                  Sym_Scope := Symbol.Declaration_Scope;
                when Visibility =>
-                  Sym_Depth := Symbol.Visibility_Depth;
+                  Sym_Scope := Symbol.Visibility_Scope;
             end case;
-            if Sym_Depth = Depth and then Symbol.Contents (My_Inx) /= null then
+            if Is_Equal (Sym_Scope, Scope) and then Symbol.Contents (My_Inx) /= null then
                begin
                   Action (Symbol.Name, Content_Hook (Symbol.Contents (My_Inx).all).The_Content);
                exception
@@ -461,12 +384,13 @@ package body Framework.Symbol_Table is
    procedure Exit_Scope (Element : in Asis.Element) is
       pragma Unreferenced (Element);
 
-      Depth : constant Scope_Range := Current_Depth;
+      Scope : constant Asis.Element := Current_Scope;
 
       procedure Clear_One_Entry (Key : Unbounded_Wide_String; Symbol : in out Symbol_Entry) is
+         use Asis.Elements;
          pragma Unreferenced (Key);
       begin
-         if Symbol.Depths_OK and then Symbol.Visibility_Depth = Depth then
+         if Is_Equal (Symbol.Visibility_Scope, Scope) then
             for I in Content_Inx range 1 .. Nb_Instantiated loop
                Free (Symbol.Contents (I));
             end loop;

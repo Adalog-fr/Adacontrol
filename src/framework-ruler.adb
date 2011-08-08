@@ -52,6 +52,7 @@ with
 
 -- Adactl
 with
+  Framework.Generic_Context_Iterator,
   Framework.Plugs,
   Framework.Reports,
   Framework.Rules_Manager,
@@ -77,6 +78,8 @@ package body Framework.Ruler is
    -- Used to trace whether we are in a pragma or attribute (see procedure True_Identifer);
    -- We need a counter rather than a boolean, because attributes may have multiple levels
    -- (i.e. T'Base'First)
+
+   package Inhibited_Iterator is new Framework.Generic_Context_Iterator (Inhibited);
 
    -----------------
    -- Enter_Unit --
@@ -157,28 +160,20 @@ package body Framework.Ruler is
    procedure Process_Inhibition (Unit : Asis.Compilation_Unit; State : Framework.Rules_Manager.Rule_Action) is
       use Asis.Declarations, Asis.Elements;
       use Framework;
-      Context : constant Root_Context'Class
-        := Matching_Context (Inhibited, Names (Unit_Declaration (Unit))(1));
+
+      Iter : Context_Iterator := Inhibited_Iterator.Create;
    begin
-      if Context /= No_Matching_Context then
-         declare
-            Name : constant Wide_String := To_Wide_String (Inhibited_Rule (Context).Rule_Name);
-         begin
-            if Name = "ALL" then
-               Rules_Manager.Command_All (State);
-               -- There is no other value
-            else
-               Rules_Manager.Command (Name, State);
-               loop
-                  declare
-                     New_Context : constant Root_Context'Class := Next_Matching_Context (Inhibited);
-                  begin
-                     exit when New_Context = No_Matching_Context;
-                     Rules_Manager.Command (To_Wide_String (Inhibited_Rule (New_Context).Rule_Name), State);
-                  end;
-               end loop;
-            end if;
-         end;
+      Reset (Iter, Names (Unit_Declaration (Unit))(1));
+      if not Is_Exhausted (Iter) then
+         if Inhibited_Rule (Value (Iter)).Rule_Name = "ALL" then
+            Rules_Manager.Command_All (State);
+            -- There is no other value
+         else
+            while not Is_Exhausted (Iter) loop
+               Rules_Manager.Command (To_Wide_String (Inhibited_Rule (Value (Iter)).Rule_Name), State);
+               Next (Iter);
+            end loop;
+         end if;
       end if;
    end Process_Inhibition;
 
@@ -661,7 +656,8 @@ package body Framework.Ruler is
 
    procedure Process (Unit_Name  : in Wide_String;
                       Unit_Pos   : in Integer;
-                      Spec_Only  : in Boolean) is
+                      Spec_Only  : in Boolean;
+                      Go_Count   : in Positive) is
       use Asis, Asis.Compilation_Units;
       use Utilities;
 
@@ -706,7 +702,13 @@ package body Framework.Ruler is
             return "";
          end if;
 
-         return '(' & Integer_Img (Unit_Pos) & '/' & Integer_Img (Units_List.Length) & ") ";
+         if Go_Count = 1 then
+            return '(' & Integer_Img (Unit_Pos) & '/' & Integer_Img (Units_List.Length) & ") ";
+         else
+            return '(' & Integer_Img (Unit_Pos) & '/' & Integer_Img (Units_List.Length)
+              & "):" & Integer_Img (Go_Count)
+              & ' ';
+         end if;
       end Progress_Indicator;
 
       Unit_Spec : Asis.Compilation_Unit;
@@ -738,8 +740,14 @@ package body Framework.Ruler is
       end case;
 
       -- Control body
-      if not Spec_Only then
-         if Is_Nil (Unit_Spec) or else Is_Body_Required (Unit_Spec) then
+      if not Spec_Only
+        and Unit_Kind (Unit_Spec) not in A_Generic_Unit_Instance
+        and Unit_Kind (Unit_Spec) not in A_Renaming
+      then
+         if Is_Nil (Unit_Spec)
+           or else (Unit_Kind (Unit_Spec) /= A_Package and Unit_Kind (Unit_Spec) /= A_Generic_Package)
+           or else Is_Body_Required (Unit_Spec)
+         then
             if Is_Nil (Unit_Body) then
                User_Log (Progress_Indicator & "Controlling " & Unit_Name & " body ... not found!");
                Rules.Uncheckable.Process_Missing_Unit ("missing body for " & Unit_Name);

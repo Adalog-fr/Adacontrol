@@ -41,6 +41,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -222,7 +223,22 @@ package body Rules.Unsafe_Paired_Calls is
          -- Precondition: the matching context exists
          Called_Context : constant SP_Context := SP_Context (Call_Context (The_Call));
          Sp_Image       : constant Wide_String := Full_Name_Image (Called_Name (The_Call));
-      begin
+
+         function Selected_Variable_Image (Var : Asis.Expression) return Wide_String is
+            use Asis.Expressions;
+            Sel : Asis.Expression;
+         begin
+            if Expression_Kind (Var) /= A_Selected_Component then
+               return Full_Name_Image (Var);
+            end if;
+            Sel := Selector (Var);
+            if Declaration_Kind (Corresponding_Name_Declaration (Sel)) = A_Component_Declaration then
+               return Selected_Variable_Image (Prefix (Var)) & '.' & A4G_Bugs.Name_Image (Sel);
+            else
+               return Full_Name_Image (Var);
+            end if;
+         end Selected_Variable_Image;
+      begin  -- Call_Image
          case Called_Context.Lock.Kind is
             when None =>
                return Sp_Image;
@@ -242,7 +258,7 @@ package body Rules.Unsafe_Paired_Calls is
             when In_Out_Def =>
                return Sp_Image
                  & " with lock variable "
-                 & Full_Name_Image (Actual_Expression (The_Call, Called_Context.Lock.Formal));
+                 & Selected_Variable_Image (Actual_Expression (The_Call, Called_Context.Lock.Formal));
             when Entity_Spec =>
                Failure ("lock field not initialized");
          end case;
@@ -270,7 +286,7 @@ package body Rules.Unsafe_Paired_Calls is
             -- provided type.
             for I in Profile'Range loop
                Mark := Simple_Name (Declaration_Subtype_Mark (Profile (I)));
-               if Matches (Mark, Lock_Context.Lock.Entity) then
+               if Matches (Lock_Context.Lock.Entity, Mark) then
                   if Lock_Context.Lock.Kind /= Entity_Spec or Names (Profile (I))'Length /= 1 then
                      Parameter_Error (Rule_Id,
                                       "more than one parameter of the provided type",
@@ -350,7 +366,7 @@ package body Rules.Unsafe_Paired_Calls is
 
             -- Here we have a good call; the message always refers to the first call
             if (SP_Context (Other_Context).Rule_Numbers and Called_Context.Rule_Numbers)
-              = (Control_Index_Set'Range => False)
+              = Empty_Control_Index_Set
             then
                Report (Rule_Id,
                        Called_Context,
@@ -412,7 +428,7 @@ package body Rules.Unsafe_Paired_Calls is
                   return False;
                end if;
                if (SP_Context (Other_Context).Rule_Numbers and Called_Context.Rule_Numbers)
-                 = (Control_Index_Set'Range => False)
+                 = Empty_Control_Index_Set
                then
                   return False;
                end if;
@@ -428,8 +444,8 @@ package body Rules.Unsafe_Paired_Calls is
                                   Actual_Expression (Other_Call, SP_Context(Other_Context).Lock.Formal));
             when In_Out_Def =>
                declare
-                  Lock_Object : constant Asis.Expression      := Actual_Expression (Call, Called_Context.Lock.Formal);
-                  Other_Lock_Object :constant Asis.Expression := Actual_Expression
+                  Lock_Object       : constant Asis.Expression := Actual_Expression (Call, Called_Context.Lock.Formal);
+                  Other_Lock_Object : constant Asis.Expression := Actual_Expression
                                                                    (Other_Call,
                                                                     SP_Context(Other_Context).Lock.Formal);
                begin

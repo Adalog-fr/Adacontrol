@@ -1,3 +1,138 @@
+=============
+== V1.10r8 ==
+=============
+
+General:
+--------
+Bug fixes:
+   Missing handling of Name_Error when "set output" was given a bad file name.
+
+   Due to a GPS bug, setting the "statistics" from the switches pannel
+   generated an incorrect command line.
+
+Syntax:
+   Exponent notation accepted for integer numbers.
+   added commands set check_key|search_key
+   Possibility to have several controls attached to the same label
+
+Environment:
+   Default settings can be provided through environment variable ADACTLINI
+
+Statistics:
+   if the output_format is none, statistics are output in CSVX format
+
+Messages:
+   In verbose mode, added run number to message.
+
+Changes to commands:
+--------------------
+message:
+   added optional parameter "pause"
+
+Changes to existing rules:
+--------------------------
+allocators
+   bug fix: correct processing of class wide types in all cases
+   if <type name> is part of a generic, covers all instances
+
+array_declarations
+   ability to specify min and max values for subrule first.
+   changed subrule max_length to length, with ability to specify min and max
+   values.
+   added subrules last, component
+
+declarations
+   renamed subrules initialized_record_field, uninitialized_record_field,
+   initialized_protected_field, uninitialized_protected_field, to
+   initialized_record_component, uninitialized_record_component,
+   initialized_protected_component, uninitialized_protected_component
+
+   split subrule aliased into aliased_variable, aliased_constant
+   
+   added subrules aliased_array_component, aliased_record_component,
+   aliased_protected_component, library_unit_renaming,  protected_variable,
+   self_calling_function, self_calling_procedure, task_variable
+
+directly_accessed_globals:
+   better handling of renamed entities
+
+duplicate_initialization_calls
+   better handling of renamed entities
+
+entities:
+   better handling of renamed entities
+
+exception_propagation:
+   bug fix: elaboration of subprograms were considered propagating
+
+   function calls in named number declaration and scalar type
+   declarations are no more considered as potentially propagating
+   exceptions, since they are required by the language to be static.
+
+   better handling of renamed entities.
+
+expressions:
+   added subrules parameter_view_conversion, prefixed_operator.
+   added categories to subrules type_conversion, parameter_view_conversion,
+      prefixed_operator.
+   
+global_references
+   bug fix when using renamings.
+   changed format of messages (variable name first) to make sorting easier
+   when the result is loaded into a spreadsheet program.
+
+header_comments:
+   added general repetition factors in patterns, and special repetitions
+   "?" and "+".
+
+improper_initialization:
+   added modifier "package", package variables no more checked by default
+
+   mentionning a variable name in a representation clause is no more
+   considered a usage of the variable
+
+   the rule reported incorrectly for initializations and usages from 
+   nested program units. Packages are now processed correctly, other kinds of
+   units are explicitely not analyzed.
+
+   Better handling of renamed entities
+
+instantiations
+   added <category> to the specification of formal parameters.
+   better handling of subtypes
+   Bug fix: works with class-wide types
+
+local_hiding
+   added modifier not_operator, not_enumeration
+   added subrule overloading_short.
+
+movable_accept_statements
+   better handling of renamed entities.
+
+reduceable_scope
+   added modifier to_body
+
+representation_clauses:
+   added subrules non_aligned_component, derived_record, extension_record,
+   tagged_record
+
+style (no_closing_name):
+   bug fix: do not issue message for tasks declared as "task T;".
+
+style (positional_association)
+   added possibility of specifying exempted entities for "call",
+   "instantiation", and "pragma"
+
+uncheckable
+   a global count of "uncheckable" messages, and subtotals by rules,
+   now appears in statistics.
+
+unsafe_paired_calls
+   better handling of renamed entities
+
+usage
+   better handling of renamed entities
+
 ============
 == V1.9r4 ==
 ============

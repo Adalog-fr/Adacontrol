@@ -31,7 +31,22 @@ procedure T_representation_clauses is
          C at 4 range 0..7;
       end record;
 
-   type Tagged_Type is tagged null record;
+   type Der_Rec is new Rec;
+   for Der_Rec use                  -- Record, derived_record
+      record
+         X at 0 range 0..31;
+         C at 4 range 0..7;
+      end record;
+
+   type Tagged_Type is tagged
+      record
+         X : Integer;
+      end record;
+   for Tagged_Type use              -- record, tagged_record
+      record
+         X at 6 range 0 .. 31;      -- gap (may depend on compiler)
+      end record;
+
    function My_Input(Stream : access Ada.Streams.Root_Stream_Type'Class) return Tagged_Type;
    procedure My_Output(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : in Tagged_Type);
    procedure My_Read(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Tagged_Type'Class);
@@ -47,13 +62,19 @@ procedure T_representation_clauses is
    procedure My_Write(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : in Tagged_Type'Class) is
    begin null; end My_Write;
    function My_Input(Stream : access Ada.Streams.Root_Stream_Type'Class) return Tagged_Type is
-   begin return (null record); end;
+   begin return (X => 1); end;
    procedure My_Output(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : in Tagged_Type) is
    begin null; end;
 
-   procedure Fractional_Size       is separate;
-   procedure Non_Contiguous_Record is separate;
-   procedure Incomplete_Record     is separate;
+   type Der_Tagged is new Tagged_Type with null record;
+   for Der_Tagged use              -- record, extension_record
+      record
+         X at 6 range 0 .. 31;     -- gap (may depend on compiler)
+      end record;
+
+   procedure Fractional_Size          is separate;
+   procedure Non_Contiguous_Unaligned is separate;
+   procedure Incomplete_Record        is separate;
 begin
    null;
 end T_representation_clauses;

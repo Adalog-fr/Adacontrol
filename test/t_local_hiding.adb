@@ -114,4 +114,33 @@ begin
       when X : others =>           -- Hiding
          null;
    end;
+
+   declare
+      function "+" (L, R : Integer) return Integer is
+      begin
+         return 1;
+      end "+";
+      function "+" (L, R : Float) return Integer is  -- Operator overloading
+      begin
+         return 1;
+      end "+";
+   begin
+      null;
+   end;
+
+   declare
+      function A return Float is
+      begin
+         return 1.0;
+      end;
+
+      type T1 is (A, B, C);           -- Overloading (function)
+      type T2 is (A, W, Z);           -- Overloading x1 (function, not T1'(A)
+      function A return Integer is    -- Overloading x3
+      begin
+         return 1;
+      end;
+   begin
+      null;
+   end;
 end T_local_hiding;

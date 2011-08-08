@@ -22,15 +22,20 @@ t_improper_initialization.adb:132:26: Error: Parameters: out parameter "IP" not 
 t_improper_initialization.adb:136:26: Error: Parameters: out parameter "IP" not safely initialized
 t_improper_initialization.adb:168:27: Error: Parameters: out parameter "BP" not safely initialized
 t_improper_initialization.adb:178:13: Found: Variables: variable "IV" not safely initialized
-t_improper_initialization.adb:204:13: Found: Variables: variable "Var2" not safely initialized
-t_improper_initialization.adb:218:7: Found: Variables: variable "IV" not safely initialized
-t_improper_initialization.adb:249:67: Found: Variables: use of uninitialized variable: I
-t_improper_initialization.adb:252:41: Found: Variables: use of uninitialized variable: K
-t_improper_initialization.adb:252:35: Found: Variables: use of uninitialized variable: J
-t_improper_initialization.adb:253:35: Found: Variables: use of uninitialized variable: L
-t_improper_initialization.adb:230:7: Found: Variables: variable "I" used before initialisation
-t_improper_initialization.adb:230:10: Found: Variables: variable "J" used before initialisation
-t_improper_initialization.adb:230:13: Found: Variables: variable "K" used before initialisation
-t_improper_initialization.adb:230:16: Found: Variables: variable "L" used before initialisation
-t_improper_initialization.adb:290:7: Found: Variables: variable "I1" not safely initialized
-t_improper_initialization.adb:312:7: Found: Variables: variable "V" not safely initialized before line 314
+t_improper_initialization-sep.adb:2:22: Error: Parameters: out parameter "Var2" not safely initialized
+t_improper_initialization.adb:216:7: Found: Variables: variable "IV" not safely initialized
+t_improper_initialization.adb:247:67: Found: Variables: use of uninitialized variable: I
+t_improper_initialization.adb:250:41: Found: Variables: use of uninitialized variable: K
+t_improper_initialization.adb:250:35: Found: Variables: use of uninitialized variable: J
+t_improper_initialization.adb:251:35: Found: Variables: use of uninitialized variable: L
+t_improper_initialization.adb:228:7: Found: Variables: variable "I" used before initialisation
+t_improper_initialization.adb:228:10: Found: Variables: variable "J" used before initialisation
+t_improper_initialization.adb:228:13: Found: Variables: variable "K" used before initialisation
+t_improper_initialization.adb:228:16: Found: Variables: variable "L" used before initialisation
+t_improper_initialization.adb:288:7: Found: Variables: variable "I1" not safely initialized
+t_improper_initialization.adb:310:7: Found: Variables: variable "V" not safely initialized before line 312
+t_improper_initialization.adb:338:25: Found: Variables: use of uninitialized variable: A
+t_improper_initialization.adb:344:15: Found: Variables: use of uninitialized variable: A
+t_improper_initialization.adb:345:13: Found: Variables: use of uninitialized variable: A
+t_improper_initialization.adb:332:7: Found: Variables: variable "A" used before initialisation
+t_improper_initialization.adb:333:7: Found: Variables: variable "S" not safely initialized

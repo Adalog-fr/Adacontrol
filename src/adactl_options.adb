@@ -29,6 +29,13 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Ada 2005
+-- Since we compile in Ada95 mode, this is allowed but would issue a warning
+pragma Warnings (Off);
+with
+   Ada.Environment_Variables;
+pragma Warnings (On);
+
 -- Ada
 with
   Ada.Characters.Handling,
@@ -181,6 +188,7 @@ package body Adactl_Options is
       procedure Add_Parents (Unit : Wide_String) is
          -- Add parents of the given unit *before* the unit, in order to make sure
          -- that a parent unit is always processed before its children.
+         use Ada.Characters.Handling;
          Point_Pos : constant Natural := Index (Unit, ".", Going => Backward);
       begin
          if Point_Pos = 0 then
@@ -190,7 +198,7 @@ package body Adactl_Options is
          if Point_Pos = Unit'First then
             -- Name starts with '.'
             -- Can happen if the user gives "../name" instead of "../name.adb"
-            Option_Error ("Illegal syntax for a unit (not file) name");
+            Option_Error ("Illegal syntax for a unit (not file) name: " & To_String (Unit));
          end if;
 
          Add_Parents (Unit (Unit'First .. Point_Pos - 1));
@@ -237,7 +245,7 @@ package body Adactl_Options is
    ---------------------
 
    procedure Analyse_Options is
-      use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
+      use Ada.Characters.Handling, Ada.Environment_Variables, Ada.Strings.Wide_Unbounded;
       use Utilities, Analyzer;
 
       procedure Flag_To_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
@@ -305,6 +313,15 @@ package body Adactl_Options is
       --
       -- Options that are translated into the command language
       --
+
+      -- Defaults from the ADACTLINI environment variable
+      if Exists ("ADACTLINI") then
+         Append (Options_Commands, To_Wide_String (Value ("ADACTLINI")));
+         if Element (Options_Commands, Length (Options_Commands)) /= ';' then
+            -- As a courtesy, provide the missing final ';'
+            Append (Options_Commands, ';');
+         end if;
+      end if;
 
       -- Command line parameters come first, since they define the default behaviour
       -- for commands given in the file (-f) and -l options

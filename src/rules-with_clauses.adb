@@ -99,7 +99,7 @@ package body Rules.With_Clauses is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Subrules_Flag_Utilities;
+      use Framework.Language, Subrules_Flag_Utilities, Utilities;
       Subrule : Subrules;
    begin
       if Parameter_Exists then
@@ -107,7 +107,8 @@ package body Rules.With_Clauses is
             Subrule := Get_Flag_Parameter (Allow_Any => False);
 
             if Rule_Used (Subrule) then
-               Parameter_Error (Rule_Id, "rule already specified for " & Image (Subrule));
+               Parameter_Error (Rule_Id, "rule already specified for "
+                                & Image (Subrule, Lower_Case));
             end if;
 
             Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
@@ -270,8 +271,48 @@ package body Rules.With_Clauses is
       end if;
 
       declare
-         U_Name : constant Wide_String := To_Upper (Full_Name_Image
-                                                      (Names (Unit_Declaration (Elem_Def_Unit)) (1)));
+         function Defeat_Gnat_Trick (Name : Wide_String) return Wide_String is
+            -- GNAT implements Integer_IO and brothers as (hidden) children of Ada.Text_IO, through
+            -- special magic in the compiler. Unfortunately, this has the effect that Enclosing_Compilation_Unit
+            -- reports them as their own compilation unit, rather than being included in Ada.Text_IO.
+            -- Therefore, if the only use of Ada.Text_IO is for instantiating one of these packages, the rule
+            -- will report that the "with Ada.Text_IO" is not necessary...
+            --
+            -- This function filters the names of the special generix that appear to be
+            -- children of Ada.Text_IO, and reestablishes the truth.
+            Magic : constant Wide_String := "ADA.TEXT_IO.";
+
+            -- Lower bound of Name *is* 1, since it is obtained from Full_Name_Image:
+            pragma Warnings (Off, "index for ""Name"" may assume lower bound of 1");
+            pragma Warnings (Off, "suggested replacement:*");
+         begin
+            if Name'Length <= Magic'Length
+              or else Name (1 .. Magic'Length) /= Magic
+            then
+               return Name;
+            end if;
+
+            declare
+               Rest : Wide_String renames Name (Magic'Length + 1 .. Name'Last);
+            begin
+               if        Rest = "ENUMERATION_IO"
+                 or else Rest = "INTEGER_IO"
+                 or else Rest = "MODULAR_IO"
+                 or else Rest = "FLOAT_IO"
+                 or else Rest = "FIXED_IO"
+                 or else Rest = "DECIMAL_IO"
+               then
+                  return "ADA.TEXT_IO";
+               end if;
+            end;
+
+            return Name;
+            pragma Warnings (On, "index for ""Name"" may assume lower bound of 1");
+            pragma Warnings (On, "suggested replacement:*");
+         end Defeat_Gnat_Trick;
+
+         U_Name : constant Wide_String := Defeat_Gnat_Trick (To_Upper (Full_Name_Image
+                                                             (Names (Unit_Declaration (Elem_Def_Unit)) (1))));
       begin
          Withed_Units.Reset (Unit_Scopes);
          while Withed_Units.Data_Available loop

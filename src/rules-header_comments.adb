@@ -52,7 +52,14 @@ pragma Elaborate (Framework.Language);
 package body Rules.Header_Comments is
    use Framework;
 
-   subtype Pattern_String is Wide_String (1 .. 512);  -- Size is arbitrary, should be sufficient
+   -- Algorithm:
+   --
+   -- For model subrule:
+   -- Current_Pattern holds the descriptor that must be matched by the current line.
+   -- Next_Pattern holds the pattern that comes after it; in case of an optionally repeated
+   -- pattern, it is checked first. Therefore, if the line matches both the current_pattern
+   -- and the Next_Pattern, it is not considered a repetition of the Current_Pattern (avoid
+   -- "greedy" effects).
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -73,20 +80,132 @@ package body Rules.Header_Comments is
 
    Wide_HT : constant Wide_Character := Ada.Characters.Handling.To_Wide_Character (ASCII.HT);
 
-   -- The same pattern can be used several times, hence it needs to be global
-   pragma Warnings (Off);
-   -- Gnat warns that Pattern and Pat_Last may be referenced before they have a value,
-   -- but this cannot happen because Line_Repeat is initialized to No_Repeat (in Enter_Unit)
-   Pattern  : Pattern_String;
-   Pat_Last : Natural;
-   pragma Warnings (Off);
+   subtype Pattern_Length is Natural range 0 .. 512; -- Size is arbitrary, should be sufficient
+   type Pattern_Descr (Length : Pattern_Length := 0) is
+      record
+         Required : Natural;
+         Optional : Natural;
+         Pattern  : Wide_String (1 .. Length);
+      end record;
+   Model_Sentinel : constant Pattern_Descr := (2, 0, 0, ".*");
+   -- Used to indicate end of model. Pattern matches everything, but the sentinel
+   -- is recognizable because Required = 0 and Optional = 0
 
-   Stop_Pattern  : Pattern_String;
-   Stop_Pat_Last : Natural;
-   Stop_Has_Star : Boolean;
+   Current_Pattern : Pattern_Descr;
+   Next_Pattern    : Pattern_Descr;
 
-   type Line_Match_States is (Repeat, Single);
-   Matcher_State : Line_Match_States;
+   --------------------
+   -- Get_Repetition --
+   --------------------
+
+   package Natural_IO is new Ada.Wide_Text_IO.Integer_IO (Natural);
+
+   procedure Get_Repetition (Buffer : Wide_String; Min, Max : out Natural) is
+      use Ada.Wide_Text_IO, Natural_IO;
+
+      Inx : Positive := 2; -- Assertion: Buffer (1) = '{'
+      Last : Positive;
+
+      procedure Skip_Blanks is
+         -- Post-condition: Inx <= Buffer'Last
+      begin
+         loop
+            if Inx > Buffer'Last then
+               raise Data_Error;
+            end if;
+            exit when Buffer (Inx) /= ' ';
+            Inx := Inx + 1;
+         end loop;
+      end Skip_Blanks;
+   begin   -- Get_Repetition
+      declare
+         -- because of Bug [H621-003], Gnat 6.1.1 (Last is wrong if 'First is not 1)
+         Gnat_Bug : constant Wide_String (1 .. Buffer'Last - Inx + 1) := Buffer (Inx .. Buffer'Last);
+      begin
+         Get (Gnat_Bug, Min, Last);
+         Last := Last + Inx - 1;
+      end;
+      Inx := Last + 1;
+      Skip_Blanks;
+
+      if Buffer (Inx) /= ',' then
+         raise Data_Error;
+      end if;
+      Inx := Inx + 1;
+      Skip_Blanks;
+
+      if Buffer (Inx) = '}' then
+         Max := Natural'Last;
+      else
+         declare
+            -- because of Bug [H621-003], Gnat 6.1.1 (Last is wrong if 'First is not 1)
+            Gnat_Bug : constant Wide_String (1 .. Buffer'Last - Inx + 1) := Buffer (Inx .. Buffer'Last);
+         begin
+            Get (Gnat_Bug, Max, Last);
+            Last := Last + Inx - 1;
+         end;
+         Inx := Last + 1;
+         Skip_Blanks;
+         if Buffer (Inx) /= '}' then
+            raise Data_Error;
+         end if;
+      end if;
+   end Get_Repetition;
+
+   -----------------------
+   -- Next_Pattern_Line --
+   -----------------------
+
+   procedure Get_Pattern (Pat : out Pattern_Descr) is
+      use Ada.Wide_Text_IO;
+      Pat_Str  : Wide_String (1 .. Pattern_Length'Last);
+      Pat_Last : Natural;
+      Pat_Min  : Natural;
+      Pat_Max  : Natural;
+   begin
+      Get_Line (Model_File, Pat_Str, Pat_Last);
+
+      case Pat_Str (1) is
+         when '*' =>
+            Pat_Min := 0;
+            Pat_Max := Natural'Last;
+            Get_Line (Model_File, Pat_Str, Pat_Last);
+         when '+' =>
+            Pat_Min := 1;
+            Pat_Max := Natural'Last;
+            Get_Line (Model_File, Pat_Str, Pat_Last);
+         when '?' =>
+            Pat_Min := 0;
+            Pat_Max := 1;
+            Get_Line (Model_File, Pat_Str, Pat_Last);
+         when '{' =>
+            Get_Repetition (Pat_Str (1 .. Pat_Last), Pat_Min, Pat_Max);
+            Get_Line (Model_File, Pat_Str, Pat_Last);
+         when others =>
+            Pat_Min := 1;
+            Pat_Max := 1;
+      end case;
+      Pat := (Pat_Last, Pat_Min, Pat_Max-Pat_Min, Pat_Str (1 .. Pat_Last));
+   end Get_Pattern;
+
+   -----------------------
+   -- Next_Pattern_Line --
+   -----------------------
+
+   procedure Next_Pattern_Line is
+      use Ada.Wide_Text_IO;
+   begin
+      if Next_Pattern = Model_Sentinel then
+         Model_Reported := True;
+         return;
+      end if;
+
+      Current_Pattern := Next_Pattern;
+      Get_Pattern (Next_Pattern);
+   exception
+      when End_Error =>
+         Next_Pattern := Model_Sentinel;
+   end Next_Pattern_Line;
 
    -----------------
    -- Add_Control --
@@ -96,10 +215,21 @@ package body Rules.Header_Comments is
       use Ada.Characters.Handling, Ada.Exceptions, Ada.Strings.Wide_Unbounded, Ada.Wide_Text_IO;
       use Framework.Language, String_Matching, Subrules_Flag_Utilities;
 
-      Buff    : Pattern_String;
+      Buff    : Wide_String (1 .. Pattern_Length'Last);
       Last    : Natural;
       Subrule : Subrules;
-   begin
+      Min     : Natural;
+      Max     : Natural;
+
+      procedure Model_Error (Mess : Wide_String) is
+      begin
+         Parameter_Error (Rule_Id, Mess
+                                   & " at "
+                                   & To_Wide_String (Name (Model_File)) & ':'
+                                   & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
+                                   & ": " & Buff (1 .. Last));
+      end Model_Error;
+   begin   -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of check required");
       end if;
@@ -135,17 +265,25 @@ package body Rules.Header_Comments is
             loop
                begin
                   Get_Line (Model_File, Buff, Last);
-                  if Buff (1 .. Last) = "*" then
+                  if Buff (1 .. Last) = "*" or Buff (1 .. Last) = "?" then
                      begin
                         Get_Line (Model_File, Buff, Last);
-                        if Buff (1 .. Last) = "*" then
-                           Parameter_Error (Rule_Id, "several ""*"" lines in a row at "
-                                              & To_Wide_String (Name (Model_File)) & ':'
-                                              & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
-                        end if;
                      exception
                         when End_Error =>
-                           Parameter_Error (Rule_Id, "pattern file terminated by ""*"" line");
+                           Parameter_Error (Rule_Id, "pattern file terminated by line repetition indication");
+                     end;
+                  elsif Buff (1) = '{' then
+                     begin
+                        Get_Repetition (Buff (1 .. Last), Min, Max);
+                        Get_Line (Model_File, Buff, Last);
+                        if Max = 0 or Max < Min then
+                           Model_Error ("Maximum value must be > 0 and >= minimum");
+                        end if;
+                     exception
+                        when Data_Error =>
+                           Model_Error ("illegal syntax for repetition indication");
+                        when End_Error =>
+                           Parameter_Error (Rule_Id, "pattern file terminated by line repetition indication");
                      end;
                   end if;
 
@@ -163,11 +301,8 @@ package body Rules.Header_Comments is
                   end if;
                exception
                   when Occur : Pattern_Error =>
-                     Parameter_Error (Rule_Id, "incorrect pattern "
-                                      & " (" & To_Wide_String (Exception_Message (Occur)) & ") at "
-                                      & To_Wide_String (Name (Model_File)) & ':'
-                                      & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
-                                      & ": " & Buff (1 .. Last));
+                     Model_Error ("incorrect pattern "
+                                  & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
                   when End_Error =>
                      exit;
                end;
@@ -237,7 +372,8 @@ package body Rules.Header_Comments is
       Model_Reported := False;
       if Is_Open (Model_File) then
          Reset (Model_File, In_File);
-         Matcher_State := Single;
+         Get_Pattern (Next_Pattern);
+         Next_Pattern_Line;
       end if;
    end Enter_Unit;
 
@@ -282,14 +418,14 @@ package body Rules.Header_Comments is
       procedure Check_Model is
          use Ada.Wide_Text_IO;
 
-         function Line_Match (With_Pattern : Wide_String; Last : Natural) return Boolean is
+         function Line_Match (With_Pattern : Wide_String) return Boolean is
             use String_Matching;
             -- True matching that considers that the empty line matches only the empty pattern
          begin
-            if Line'Length = 0 or Last = 0 then
-               return Last = Line'Length;
+            if Line'Length = 0 or With_Pattern'Length = 0 then
+               return With_Pattern'Length = Line'Length;
             else
-               return Match (Line, With_Pattern (1 .. Last));
+               return Match (Line, With_Pattern);
             end if;
          end Line_Match;
 
@@ -298,78 +434,49 @@ package body Rules.Header_Comments is
             return;
          end if;
 
-         case Matcher_State is
-            when Single =>
-               begin
-                  Get_Line (Model_File, Pattern, Pat_Last);
-               exception
-                  when End_Error =>
-                     Model_Reported := True;
-                     return;
-               end;
-
-               if Pattern (1 .. Pat_Last) = "*" then
-                  -- Remember that a "*" line is always followed by a regular line
-                  -- (checked in Add_Control)
-                  Get_Line (Model_File, Pattern, Pat_Last);
-
-                  begin
-                     Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
-                     Matcher_State := Repeat;
-                     Stop_Has_Star := Stop_Pattern (1 .. Stop_Pat_Last) = "*" ;
-                     if Stop_Has_Star then
-                        Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
-                     end if;
-                  exception
-                     when End_Error =>
-                        -- Nothing after "*" pattern: no need to check further
-                        Model_Reported := True;
-                        return;
-                  end;
-
-                  -- Retry in Repeat state
-                  Check_Model;
-
-               elsif Line_Match (Pattern, Pat_Last) then
-                  null;
-
-               else
-                  Report (Rule_Id, To_Wide_String (Model_Label), Model_Kind, Loc,
-                          "line does not match pattern """ & Pattern (1 .. Pat_Last) & '"');
-                  Model_Reported := True;
-               end if;
-
-            when Repeat =>
-               -- Check the stopping pattern first, to avoid "greedy" effects
-               if Line_Match (Stop_Pattern, Stop_Pat_Last) then
-                  Pattern  := Stop_Pattern;
-                  Pat_Last := Stop_Pat_Last;
-                  if Stop_Has_Star then
-                     -- Stay in Repeat state
-                     begin
-                        Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
-                        Stop_Has_Star := Stop_Pattern (1 .. Stop_Pat_Last) = "*" ;
-                        if Stop_Has_Star then
-                           Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
-                        end if;
-                     exception
-                        when End_Error =>
-                           -- Nothing after "*" pattern: no need to check further
-                           Model_Reported := True;
-                     end;
-                  else
-                     Matcher_State := Single;
+         loop
+            if Current_Pattern.Required > 0 then
+               if Line_Match (Current_Pattern.Pattern) then
+                  Current_Pattern.Required := Current_Pattern.Required - 1;
+                  if Current_Pattern.Required = 0 and Current_Pattern.Optional = 0 then
+                     Next_Pattern_Line;
                   end if;
-
-               elsif Line_Match (Pattern, Pat_Last) then
-                  null;
-
                else
                   Report (Rule_Id, To_Wide_String (Model_Label), Model_Kind, Loc,
-                          "line does not match pattern """ & Stop_Pattern (1 .. Stop_Pat_Last) & '"');
+                          "line does not match pattern """ & Current_Pattern.Pattern & '"');
                   Model_Reported := True;
                end if;
-         end case;
+               exit;
+            end if;
+
+            -- Current_Pattern.Required = 0 here
+            -- Check the next pattern first, to avoid "greedy" effects
+            -- Note that it works only one pattern forward. Room for improvements.
+            if Line_Match (Next_Pattern.Pattern) then
+               Next_Pattern_Line;
+               exit when Model_Reported;   -- End of Model
+               -- Here we don't exit the loop, and will therefore recheck the same
+               -- line against the next pattern, now in Current_Pattern.
+            elsif Line_Match (Current_Pattern.Pattern) then
+               Current_Pattern.Optional := Current_Pattern.Optional - 1;
+               if Current_Pattern.Optional = 0 then
+                  Next_Pattern_Line;
+               end if;
+               exit;
+            elsif Next_Pattern.Required = 0 then
+               -- Maybe the next pattern is not here, but it matches further down
+               -- let's give it another try
+               Next_Pattern_Line;
+               exit when Model_Reported;   -- End of Model
+               -- Here we don't exit the loop, and will therefore recheck the same
+               -- line against the next pattern, now in Current_Pattern.
+            else
+               Report (Rule_Id, To_Wide_String (Model_Label), Model_Kind, Loc,
+                       "line does not match pattern """ & Next_Pattern.Pattern & '"');
+               Model_Reported := True;
+               exit;
+            end if;
+         end loop;
       end Check_Model;
 
    begin  -- Process_Line

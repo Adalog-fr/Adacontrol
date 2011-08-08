@@ -29,25 +29,27 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+  Ada.Strings.Wide_Unbounded,
+  Ada.Unchecked_Deallocation;
+
 -- ASIS
 with
   Asis.Elements,
   Asis.Declarations,
   Asis.Expressions;
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded,
-  Ada.Unchecked_Deallocation;
-
 -- Adalog
 with
+  A4G_Bugs,
   Linear_Queue,
   Thick_Queries,
   Utilities;
 
 -- Adactl
 with
+  Framework.Generic_Context_Iterator,
   Framework.Language,
   Framework.Language.Shared_Keys,
   Framework.Rules_Manager,
@@ -83,6 +85,7 @@ package body Rules.Instantiations is
    procedure Clear (Context : in out Instantiation_Context);
 
    Rule_Uses : Context_Store;
+   package Rule_Uses_Iterator is new Framework.Generic_Context_Iterator (Rule_Uses);
 
    ----------
    -- Free --
@@ -120,20 +123,25 @@ package body Rules.Instantiations is
 
    procedure Add_Value (Values    : in out Generic_Parameter_List;
                         Has_Equal : in out Boolean;
-                        Value     : in     Entity_Specification)
+                        Spec      : in     Entity_Specification)
    is
       New_Values : Generic_Parameter_List;
+      Good_Spec  : Entity_Specification := Spec;
    begin
+      if Good_Spec = Value ("()") then
+         Good_Spec := Value ("ENUM");
+      end if;
+
       if Values = null then
-         New_Values := new Generic_Parameters' ((1 => Value));
+         New_Values := new Generic_Parameters' ((1 => Good_Spec));
       else
-         New_Values := new Generic_Parameters' (Values.all & Value);
+         New_Values := new Generic_Parameters' (Values.all & Good_Spec);
       end if;
 
       Free (Values);
       Values := New_Values;
 
-      if Entity_Specification_Kind (Value) = Equal then
+      if Entity_Specification_Kind (Good_Spec) = Equal then
          Has_Equal := True;
       end if;
    end Add_Value;
@@ -147,8 +155,10 @@ package body Rules.Instantiations is
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Parameter 1     : {<location>} <Generic name>");
-      User_Message ("Parameter 2 .. N: <Entity name> | <> | = (optional)");
+      User_Message ("Parameter 2 .. N: <Entity name> | <category> | <> | = (optional)");
       Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>      :");
+      User_Message ("<category>      : ()      | access   | array | delta  | digits | mod |");
+      User_Message ("                  private |protected | range | record | tagged | task");
       User_Message ("Control generic instantiations of specified units, either all of them");
       User_Message ("or those made with the indicated actual parameters.");
       User_Message ("Optionally, control is restricted to instantiations appearing at indicated locations");
@@ -241,35 +251,73 @@ package body Rules.Instantiations is
    -- Is_Corresponding --
    ----------------------
 
-   function Is_Corresponding (Value      : in Entity_Specification;
-                              Definition : in Asis.Definition) return Boolean is
-      use Asis, Asis.Elements, Asis.Declarations;
+   function Is_Corresponding (Specification : in Entity_Specification;
+                              Name          : in Asis.Defining_Name) return Boolean is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
 
-      Declaration : constant Asis.Declaration := Enclosing_Element (Definition);
-
-      Dummy_Definition : Asis.Definition;
+      Declaration  : Asis.Declaration;
+      Is_Attribute : Boolean := False;
    begin
-      if Entity_Specification_Kind (Value) /= Regular_Id then
-         -- Box or Equal
+      if Entity_Specification_Kind (Specification) in Box .. Equal then
          return True;
       end if;
 
-      case Declaration_Kind (Declaration) is
-         when An_Ordinary_Type_Declaration
-           | A_Task_Type_Declaration
-           | A_Protected_Type_Declaration
-           | A_Private_Type_Declaration
-           | A_Private_Extension_Declaration
-           | A_Subtype_Declaration
-           | A_Formal_Type_Declaration
-           =>
-            Dummy_Definition := Names (Corresponding_First_Subtype (Declaration))(1);
-
+      case Expression_Kind (Name) is
+         when An_Identifier | A_Selected_Component =>
+            null;
+         when An_Attribute_Reference =>
+            case A4G_Bugs.Attribute_Kind (Name) is
+               when A_Base_Attribute | A_Class_Attribute =>
+                  -- The only ones that are names
+                  Is_Attribute := True;
+               when others =>
+                  return False;
+            end case;
          when others =>
-            Dummy_Definition := Definition;
+            -- An arithmetic expression for example, matches nothing but <> and =
+            return False;
       end case;
 
-      return Matches (Dummy_Definition, Value);
+      if Matches (Specification, Name) then
+         return True;
+      end if;
+
+      -- No direct match here
+
+      if Is_Attribute then
+         return False;
+      end if;
+
+      -- Special case if Name designates a type: try category
+      -- (+ first named subtype if it is a subtype)
+      Declaration := Corresponding_Name_Declaration (Simple_Name (Name));
+      case Declaration_Kind (Declaration) is
+         when An_Ordinary_Type_Declaration
+            | A_Task_Type_Declaration
+            | A_Protected_Type_Declaration
+            | A_Private_Type_Declaration
+            | A_Private_Extension_Declaration
+            | A_Formal_Type_Declaration
+            | An_Incomplete_Type_Declaration
+              =>
+            null;
+         when A_Subtype_Declaration =>
+            if Matches (Specification, First_Subtype_Name (Name)) then
+               return True;
+            end if;
+         when others =>
+            -- Not a type or subtype
+            -- (includes Not_An_Element if Name is class wide or predefined)
+            return False;
+      end case;
+
+      -- Here we have a type or subtype
+      if Image (Type_Category (Declaration)) = To_Upper (Image (Specification)) then
+         return True;
+      end if;
+
+      return False;
    end Is_Corresponding;
 
    -----------
@@ -278,28 +326,12 @@ package body Rules.Instantiations is
 
    function Match (Actual_Part : in Asis.Association_List;
                    Values      : in Generic_Parameters) return Boolean is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis.Expressions;
 
-      Parameter    : Expression;
-      Definition   : Asis.Definition;
-      Values_Index : Natural         := Values'First;
+      Values_Index : Natural := Values'First;
    begin
       for I in Actual_Part'Range loop
-         Parameter := Actual_Parameter (Actual_Part (I));
-
-         case Expression_Kind (Parameter) is
-            when An_Identifier =>
-               Definition := Corresponding_Name_Definition (Parameter);
-
-            when A_Selected_Component =>
-               Definition := Corresponding_Name_Definition (Selector (Parameter));
-
-            when others =>
-               -- An arithmetic expression for example, not much we can do with it
-               return False;
-         end case;
-
-         if not Is_Corresponding (Values (Values_Index), Definition) then
+         if not Is_Corresponding (Values (Values_Index), Actual_Parameter (Actual_Part (I))) then
             return False;
          end if;
 
@@ -318,6 +350,8 @@ package body Rules.Instantiations is
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration) is
       use Asis.Declarations;
+
+      Iter : Context_Iterator := Rule_Uses_Iterator.Create;
 
       function Make_Info (Origin : Generic_Parameters;
                           Using  : Asis.Association_List)
@@ -339,89 +373,80 @@ package body Rules.Instantiations is
          return Result;
       end Make_Info;
 
-      procedure Process_Context (Context : in Root_Context'Class; Finished : out Boolean) is
+      procedure Process_Context is
          use Framework.Language.Shared_Keys, Framework.Reports;
+         use Scope_Places_Utilities, Utilities;
+         Good_Context : Instantiation_Context := Instantiation_Context (Value (Iter));
       begin
-         if Context = No_Matching_Context then
-            Finished := True;
+         if not Is_Applicable (Good_Context.Places) then
             return;
          end if;
-         Finished := False;
 
-         declare
-            use Scope_Places_Utilities, Utilities;
-            Good_Context : Instantiation_Context := Instantiation_Context (Context);
-         begin
-            if not Is_Applicable (Good_Context.Places) then
-               return;
-            end if;
+         if Good_Context.Values = null then
+            Report (Rule_Id,
+                    Good_Context,
+                    Get_Location (Instantiation),
+                    Image (Good_Context.Places, Default => Everywhere)
+                    & "instantiation of "
+                    & To_Title (Last_Matching_Name (Rule_Uses)));
 
-            if Good_Context.Values = null then
-               Report (Rule_Id,
-                       Good_Context,
-                       Get_Location (Instantiation),
-                       Image (Good_Context.Places, Default => Everywhere)
-                       & "instantiation of "
-                       & To_Title (Last_Matching_Name (Rule_Uses)));
-
-            elsif Good_Context.Has_Repeated then
-               declare
-                  use Instance_Info_List;
-                  Actual_Part : constant Asis.Association_List := Generic_Actual_Part (Instantiation,
-                                                                                       Normalized => True);
-                  Current     : Cursor;
-                  Found       : Boolean := False;
-               begin
-                  Current := First (Good_Context.All_Instances);
-                  while Has_Element (Current) loop
-                     if Match (Actual_Part, Fetch (Current).Values) then
-                        Found := True;
-                        Report (Rule_Id,
-                                Good_Context,
-                                Get_Location (Instantiation),
-                                Image (Good_Context.Places, Default => Everywhere)
-                                       & "instantiation of "
-                                       & To_Title (Last_Matching_Name (Rule_Uses))
-                                       & " with " & Image (Fetch (Current).Values)
-                                       & " already provided at " & Image (Fetch (Current).Loc));
-                     end if;
-                     Current := Next (Current);
-                  end loop;
-                  if not Found and Match (Actual_Part, Good_Context.Values.all) then
-                     Append (Good_Context.All_Instances, Make_Info (Good_Context.Values.all, Actual_Part));
-                     Update (Rule_Uses, Good_Context);
-                  end if;
-               end;
-
-            else
-               declare
-                  Actual_Part : constant Asis.Association_List := Generic_Actual_Part (Instantiation,
-                                                                                       Normalized => True);
-               begin
-                  if Match (Actual_Part, Good_Context.Values.all) then
+         elsif Good_Context.Has_Repeated then
+            declare
+               use Instance_Info_List;
+               Actual_Part : constant Asis.Association_List := Generic_Actual_Part (Instantiation,
+                                                                                    Normalized => True);
+               Current     : Cursor;
+               Found       : Boolean := False;
+            begin
+               Current := First (Good_Context.All_Instances);
+               while Has_Element (Current) loop
+                  if Match (Actual_Part, Fetch (Current).Values) then
+                     Found := True;
                      Report (Rule_Id,
                              Good_Context,
                              Get_Location (Instantiation),
                              Image (Good_Context.Places, Default => Everywhere)
-                                    & "instantiation of "
-                                    & To_Title (Last_Matching_Name (Rule_Uses))
-                                    & " with " & Image (Good_Context.Values.all));
+                             & "instantiation of "
+                             & To_Title (Last_Matching_Name (Rule_Uses))
+                             & " with " & Image (Fetch (Current).Values)
+                             & " already provided at " & Image (Fetch (Current).Loc));
                   end if;
-               end;
-            end if;
-         end;
+                  Current := Next (Current);
+               end loop;
+               if not Found and Match (Actual_Part, Good_Context.Values.all) then
+                  Append (Good_Context.All_Instances, Make_Info (Good_Context.Values.all, Actual_Part));
+                  Update (Rule_Uses, Good_Context);
+               end if;
+            end;
+
+         else
+            declare
+               Actual_Part : constant Asis.Association_List := Generic_Actual_Part (Instantiation,
+                                                                                    Normalized => True);
+            begin
+               if Match (Actual_Part, Good_Context.Values.all) then
+                  Report (Rule_Id,
+                          Good_Context,
+                          Get_Location (Instantiation),
+                          Image (Good_Context.Places, Default => Everywhere)
+                          & "instantiation of "
+                          & To_Title (Last_Matching_Name (Rule_Uses))
+                          & " with " & Image (Good_Context.Values.all));
+               end if;
+            end;
+         end if;
       end Process_Context;
 
-      Finished : Boolean;
    begin  -- Process_Instantiation
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Process_Context (Matching_Context (Rule_Uses, Generic_Unit_Name (Instantiation)), Finished);
-      while not Finished loop
-         Process_Context (Next_Matching_Context (Rule_Uses), Finished);
+      Reset (Iter, Generic_Unit_Name (Instantiation));
+      while not Is_Exhausted (Iter) loop
+         Process_Context;
+         Next (Iter);
       end loop;
    end Process_Instantiation;
 

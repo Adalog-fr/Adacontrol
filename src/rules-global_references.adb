@@ -46,6 +46,7 @@ with
 
 -- Adactl
 with
+  Framework.Generic_Context_Iterator,
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
@@ -91,6 +92,17 @@ package body Rules.Global_References is
    --
    -- Checked_Bodies is a multi-valued context store that identifies bodies that are to be traversed, and
    -- rules that mention this body.
+   --
+   -- There is a special tricky case for renamings, since usage of the renamed entity comes
+   -- from usage of the renaming entity.
+   -- Therefore, when an identifier is defined by a renaming declaration, we traverse the renamed
+   -- expression, passing the read/write status of the identifier through the State parameter.
+   -- Note that this parameter will be used only when Expression_Usage_Kind returns Untouched,
+   -- which corresponds to the actual variable name in the renamed entity. Other elements used in
+   -- the renaming (indexing...) will be handled normally.
+   -- On the other hand, the renaming can be part of the traversed body, and would be traversed
+   -- normally, but at that point we would not know whether the renaming entity is Read or Write.
+   -- We therefore discard renamings during normal traversal.
 
    type Reference_Kind is (K_All, K_Multiple, K_Multiple_Non_Atomic);
    package Reference_Kind_Utilities is new Framework.Language.Flag_Utilities (Reference_Kind, "K_");
@@ -108,6 +120,7 @@ package body Rules.Global_References is
       end record;
 
    Checked_Bodies  : Context_Store;
+   package Checked_Bodies_Iterator is new Framework.Generic_Context_Iterator (Checked_Bodies);
 
    -- Information about encountered entities
    -- - Variables whose declaration is encountered during traversal are marked Non_Global
@@ -297,17 +310,22 @@ package body Rules.Global_References is
    -----------
 
    -- Forward declarations:
-   procedure Pre_Procedure (Element : in     Asis.Element;
-                            Control : in out Asis.Traverse_Control;
-                            State   : in out Null_State);
-   procedure Traverse is new Asis.Iterator.Traverse_Element (Null_State, Pre_Procedure, Null_State_Procedure);
+   procedure Pre_Procedure  (Element : in     Asis.Element;
+                             Control : in out Asis.Traverse_Control;
+                             State   : in out Usage_Value);
+   procedure Post_Procedure (Element : in     Asis.Element;
+                             Control : in out Asis.Traverse_Control;
+                             State   : in out Usage_Value);
+   procedure Traverse is new Asis.Iterator.Traverse_Element (Usage_Value, Pre_Procedure, Post_Procedure);
    procedure Check (Body_Decl : Asis.Declaration);
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out Null_State) is
+                            State   : in out Usage_Value) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
+
+      New_State : Usage_Value;
 
       procedure Process_Call is
          use Framework.Reports;
@@ -340,6 +358,18 @@ package body Rules.Global_References is
                     (Nil_Element, Non_Global));
             end if;
 
+         when A_Declaration =>
+            case Declaration_Kind (Element) is
+               when A_Renaming_Declaration =>
+                  -- If the renaming entity is used, the declaration will be traversed manually
+                  -- and we cannot traverse it at this point since we don't know how the renaming
+                  -- entity is used.
+                  -- if the renaming entity is not used, we don't care...
+                  Control := Abandon_Children;
+               when others =>
+                  null;
+            end case;
+
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>
@@ -360,27 +390,47 @@ package body Rules.Global_References is
                                     when Non_Global | Written =>
                                        null;
                                     when Read =>
-                                       if Expression_Usage_Kind (Element) /= Read then
-                                          U.Usage := Written;
-                                       end if;
+                                       case Expression_Usage_Kind (Element) is
+                                          when Read =>
+                                             null;
+                                          when Write | Read_Write =>
+                                             U.Usage := Written;
+                                          when Untouched =>
+                                             -- Usage comes from the renaming identifier
+                                             U.Usage := State;
+                                       end case;
                                     when Checked =>
                                        Failure ("Variable marked as checked", Element);
                                  end case;
                               else
-                                 if Expression_Usage_Kind (Element) = Read then
-                                    U := (Corresponding_Name_Definition (Element), Read);
-                                 else
-                                    U := (Corresponding_Name_Definition (Element), Written);
-                                 end if;
+                                 case Expression_Usage_Kind (Element) is
+                                    when Read =>
+                                       U := (Corresponding_Name_Definition (Element), Read);
+                                    when Write | Read_Write =>
+                                       U := (Corresponding_Name_Definition (Element), Written);
+                                    when Untouched =>
+                                       -- Usage comes from the renaming identifier
+                                       U := (Corresponding_Name_Definition (Element), State);
+                                 end case;
                               end if;
                               Add (Usage, Key, U);
                            end;
 
                         when An_Object_Renaming_Declaration =>
+                           -- we must process every element of the renamed entity in the context of
+                           -- the current call.
+                           case Expression_Usage_Kind (Element) is
+                              when Untouched =>
+                                 -- chain of renamings...
+                                 New_State := State;
+                              when Read =>
+                                 New_State := Read;
+                              when Write | Read_Write =>
+                                 New_State := Written;
+                           end case;
                            Traverse (A4G_Bugs.Renamed_Entity (Corresponding_Name_Declaration (Element)),
                                      Control,
-                                     State);
-
+                                     New_State);
                         when others =>
                            -- Not a variable
                            null;
@@ -430,6 +480,14 @@ package body Rules.Global_References is
       end case;
    end Pre_Procedure;
 
+   procedure Post_Procedure (Element : in     Asis.Element;
+                             Control : in out Asis.Traverse_Control;
+                             State   : in out Usage_Value) is
+      pragma Unreferenced (Element, Control, State);
+   begin
+      null;
+   end Post_Procedure;
+
    procedure Check (Body_Decl : Asis.Declaration) is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
       use Thick_Queries, Utilities, Usage_Map, Ada.Strings.Wide_Unbounded;
@@ -452,7 +510,7 @@ package body Rules.Global_References is
                                                                                     (Names (Body_Decl)(1),
                                                                                      With_Profile => True)));
          Control   : Asis.Traverse_Control := Continue;
-         Ignored   : Null_State;
+         Ignored   : Usage_Value := Checked;  -- This value will cause failure if used not from renaming
       begin
          if Is_Present (Usage, Body_Name) then
             return;
@@ -526,62 +584,44 @@ package body Rules.Global_References is
    ------------------
 
    procedure Process_Body (The_Body : in Asis.Declaration) is
+      Iter : Context_Iterator := Checked_Bodies_Iterator.Create;
 
-      function General_Matching_Context return Root_Context'Class is
+      procedure General_Iter_Reset is
          use Asis, Asis.Declarations, Asis.Elements;
-         Name           : Asis.Defining_Name := Names (The_Body)(1);
-         From_Protected : Boolean := False;
+         Name           : Asis.Defining_Name;
+         From_Protected : Boolean;
       begin
          -- If this is a protected operation, the associated context is the one of the
          -- enclosing protected object
          if Declaration_Kind (Enclosing_Element (The_Body)) = A_Protected_Body_Declaration then
             Name           := Names (Enclosing_Element (The_Body))(1);
             From_Protected := True;
+         else
+            Name := Names (The_Body) (1);
+            From_Protected := False;
          end if;
 
-         declare
-            Result : constant Root_Context'Class := Matching_Context (Checked_Bodies, Name);
-         begin
-            if Result /= No_Matching_Context then
-               return Result;
-            end if;
-         end;
+         Reset (Iter, Name);
+         if not Is_Exhausted (Iter) then
+            return;
+         end if;
 
-         -- Compiler bug, GNAT GPL2007/Windows
-         -- In the following, we use an intermediate constant rather than returning directly the
-         -- value from Framework.Association because of memory violation with GPL2007/Windows
-         -- Other combinations of compiler/OS worked, but...
          if From_Protected then
-            declare
-               Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("PROTECTED"));
-            begin
-               return Result;
-            end;
+            Reset (Iter, Value ("PROTECTED"));
+            return;
          end if;
 
          case Declaration_Kind (The_Body) is
             when A_Task_Body_Declaration =>
-               declare
-                  Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("TASK"));
-               begin
-                  return Result;
-               end;
+               Reset (Iter, Value ("TASK"));
             when A_Function_Body_Declaration =>
-               declare
-                  Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("FUNCTION"));
-               begin
-                  return Result;
-               end;
+               Reset (Iter, Value ("FUNCTION"));
             when A_Procedure_Body_Declaration =>
-               declare
-                  Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("PROCEDURE"));
-               begin
-                  return Result;
-               end;
+               Reset (Iter, Value ("PROCEDURE"));
             when others =>
-               return No_Matching_Context;
+               null;  -- Iter is exhausted
          end case;
-     end General_Matching_Context;
+     end General_Iter_Reset;
 
    begin                       -- Process_Body
       if Rules_Used = 0 then
@@ -589,25 +629,17 @@ package body Rules.Global_References is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Current_Context : constant Root_Context'Class := General_Matching_Context;
-      begin
-         if Current_Context = No_Matching_Context then
-            return;
-         end if;
+      General_Iter_Reset;
+      if Is_Exhausted (Iter) then
+         return;
+      end if;
 
-         Check (The_Body);
+      Check (The_Body);
 
-         Update_Globals (The_Body, Body_Context (Current_Context).Rule_Inx);
-         loop
-            declare
-               Next_Context : constant Root_Context'Class := Next_Matching_Context (Checked_Bodies);
-            begin
-               exit when Next_Context = No_Matching_Context;
-               Update_Globals (The_Body, Body_Context (Next_Context).Rule_Inx);
-            end;
-         end loop;
-      end;
+      while not Is_Exhausted (Iter) loop
+         Update_Globals (The_Body, Body_Context (Value (Iter)).Rule_Inx);
+         Next (Iter);
+      end loop;
 
       Usage_Map.Clear (Usage);
    end Process_Body;
@@ -682,14 +714,26 @@ package body Rules.Global_References is
             -- Cases when we must not print results are avoided, so we can print results
             Body_Ptr := Ref_Info.Bodies;
             while Body_Ptr /= null loop
-               Report (Rule_Id,
-                       Rule_Params,
-                       Get_Location (Var_Value.Definition),
-                       Choose (Body_Ptr.Usage = Read, "Read", "Write")
-                       & " of global variable """ & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
-                       & " from " & Full_Name_Image (Names (Body_Ptr.Decl)(1))
-                       & " at " & Image (Get_Location (Body_Ptr.Decl))
-                       );
+               if Is_Part_Of_Instance (Var_Value.Definition) then
+                  -- Let's refer to the instantiation
+                  Report (Rule_Id,
+                          Rule_Params,
+                          Get_Location (Ultimate_Enclosing_Instantiation (Var_Value.Definition)),
+                          '"' & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
+                          & Choose (Body_Ptr.Usage = Read, " read", " written")
+                          & " (in instance) from " & Full_Name_Image (Names (Body_Ptr.Decl) (1))
+                          & " at " & Image (Get_Location (Body_Ptr.Decl))
+                         );
+               else
+                  Report (Rule_Id,
+                          Rule_Params,
+                          Get_Location (Var_Value.Definition),
+                          '"' & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
+                          & Choose (Body_Ptr.Usage = Read, " read", " written")
+                          & " from " & Full_Name_Image (Names (Body_Ptr.Decl) (1))
+                          & " at " & Image (Get_Location (Body_Ptr.Decl))
+                         );
+               end if;
                Body_Ptr := Body_Ptr.Next;
             end loop;
          end Report_One_Rule;

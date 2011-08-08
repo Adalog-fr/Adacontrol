@@ -112,6 +112,11 @@ nb_fw=$((nb_fw+1))
 ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
 	| tr -d \\r >res/${test_case}.txt
 
+test_case=tfw_set
+nb_fw=$((nb_fw+1))
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r >res/${test_case}.txt
+
 test_case=tfw_help
 nb_fw=$((nb_fw+1))
 ${ADACTL} -h all 2>&1 \

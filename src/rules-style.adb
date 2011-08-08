@@ -184,12 +184,18 @@ package body Rules.Style is
    -- Parameters for the positional_association subrule
    --
 
-   type Association_Names is (Na_Call,          Na_Discriminant,    Na_Pragma,
-                              Na_Instantiation, Na_Array_Aggregate, Na_Record_Aggregate);
+   type Extended_Association_Names is (Na_No_Association,
+                                       Na_Pragma,       Na_Call,            Na_Instantiation,
+                                       Na_Discriminant, Na_Array_Aggregate, Na_Record_Aggregate);
+   subtype Association_Names is Extended_Association_Names
+           range Extended_Association_Names'Succ (Na_No_Association) .. Extended_Association_Names'Last;
+   subtype Exceptionable_Associaton_Names is Association_Names range Na_Pragma .. Na_Instantiation;
+
+   package Named_Parameter_Flag_Utilities is new Framework.Language.Flag_Utilities
+     (Flags  => Extended_Association_Names,
+      Prefix => "Na_" );
 
    type Association_Usage is array (Association_Names) of Boolean;
-   package Named_Parameter_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Association_Names,
-                                                                                    Prefix => "Na_" );
    Association_Used : Association_Usage := (others => False);
 
    type Association_Context is new Basic_Rule_Context with
@@ -198,6 +204,8 @@ package body Rules.Style is
          Except_Operator : Boolean;
       end record;
 
+   Positional_Exceptions : array (Exceptionable_Associaton_Names) of Context_Store;
+   -- A Context_Store of Null_Context to flag entities that need not obey the rule
 
    --
    -- Parameters for the renamed_entity subrule
@@ -260,9 +268,11 @@ package body Rules.Style is
 
       User_Message ("For positional_association:");
       Named_Parameter_Flag_Utilities.Help_On_Flags
-        (Header => "   Parameter (2..): [not_operator]",
-         Footer => "(default = all, each value may be followed by allowed number of occurrences)");
-
+        (Header      => "   Parameter (2..): [not_operator]",
+         Extra_Value => "",
+         Footer      => "(default = all)");
+      User_Message ("   each value may be followed by allowed number of occurrences");
+      User_Message ("   and entities not required to follow the rule");
       User_Message ("Control various Ada style issues");
    end Help;
 
@@ -278,7 +288,8 @@ package body Rules.Style is
       Subrule   : Subrules;
       Max       : Integer;
       Except_Op : Boolean;
-      Assoc     : Association_Names;
+      Assoc     : Extended_Association_Names;
+      Next_Assoc     : Extended_Association_Names;
       Multiple  : Multiple_Names;
       Lit_Kind  : Literal_Names;
       Places    : Place_Set := (others => False);
@@ -295,13 +306,13 @@ package body Rules.Style is
               =>
                -- Those without parameters
                if Parameter_Exists then
-                  Parameter_Error (Rule_Id, "subrule """ & Image (Subrule) & """ has no parameter");
+                  Parameter_Error (Rule_Id, "subrule """ & Image (Subrule, Lower_Case) & """ has no parameter");
                end if;
-               Associate (Contexts, Value (Image (Subrule)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+               Associate (Contexts, Value (Image (Subrule, Lower_Case)), Basic.New_Context (Ctl_Kind, Ctl_Label));
                Rule_Used (Subrule) := True;
 
             when Casing_Styles =>
-               Associate (Contexts, Value (Image (Subrule)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+               Associate (Contexts, Value (Image (Subrule, Lower_Case)), Basic.New_Context (Ctl_Kind, Ctl_Label));
                if Parameter_Exists then
                   Casing_Policy (Subrule) := Get_Flag_Parameter (Allow_Any => False);
                   if Casing_Policy (Subrule) = Ca_Original and Subrule /= St_Casing_Identifier then
@@ -362,7 +373,7 @@ package body Rules.Style is
                Permitted_Places (Lit_Kind) := Places;
 
                Associate (Contexts,
-                          Value (Image (St_Exposed_Literal) & Image (Lit_Kind)),
+                          Value (Image (St_Exposed_Literal, Lower_Case) & Image (Lit_Kind, Lower_Case)),
                           Basic.New_Context (Ctl_Kind, Ctl_Label));
                Rule_Used (St_Exposed_Literal) := True;
 
@@ -379,13 +390,13 @@ package body Rules.Style is
                      end if;
 
                      Associate (Contexts,
-                                Value (Image (St_Multiple_Elements) & Image (Multiple)),
+                                Value (Image (St_Multiple_Elements, Lower_Case) & Image (Multiple)),
                                 Basic.New_Context (Ctl_Kind, Ctl_Label));
                   end loop;
                else
                   for M in Multiple_Names loop
                      Associate (Contexts,
-                                Value (Image (St_Multiple_Elements) & Image (M)),
+                                Value (Image (St_Multiple_Elements, Lower_Case) & Image (M, Lower_Case)),
                                 Basic.New_Context (Ctl_Kind, Ctl_Label));
                   end loop;
                end if;
@@ -399,7 +410,7 @@ package body Rules.Style is
                end if;
 
                Associate (Contexts,
-                          Value (Image (St_No_Closing_Name) & Control_Kinds'Wide_Image (Ctl_Kind)),
+                          Value (Image (St_No_Closing_Name, Lower_Case) & Control_Kinds'Wide_Image (Ctl_Kind)),
                           Closing_Name_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Max));
                Rule_Used (St_No_Closing_Name) := True;
 
@@ -432,7 +443,7 @@ package body Rules.Style is
                   end if;
 
                   Associate (Contexts,
-                             Value (Image (St_Numeric_Literal) & Allowed_Bases'Wide_Image (Base)),
+                             Value (Image (St_Numeric_Literal, Lower_Case) & Allowed_Bases'Wide_Image (Base)),
                              Literal_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Is_Not, Block_Size));
                   Rule_Used (St_Numeric_Literal) := True;
               end;
@@ -443,7 +454,7 @@ package body Rules.Style is
                   Not_Specified : Modifier_Set := Full_Set;
                begin
                   if Rule_Used (Subrule) then
-                     Parameter_Error (Rule_Id, Image (Subrule) & " already specified for rule");
+                     Parameter_Error (Rule_Id, Image (Subrule, Lower_Case) & " already specified for rule");
                   end if;
                   if Parameter_Exists then
                      Order_Inx (Subrule):= 1;
@@ -484,13 +495,22 @@ package body Rules.Style is
                   end if;
                end;
                Rule_Used (Subrule) := True;
-               Associate (Contexts, Value (Image (Subrule)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+               Associate (Contexts, Value (Image (Subrule, Lower_Case)), Basic.New_Context (Ctl_Kind, Ctl_Label));
 
             when St_Positional_Association =>
                if Parameter_Exists and then not Is_Integer_Parameter then
-                  while Parameter_Exists loop
-                     Except_Op := Get_Modifier ("NOT_OPERATOR");
-                     Assoc     := Get_Flag_Parameter (Allow_Any => False);
+                  Except_Op := Get_Modifier ("NOT_OPERATOR");
+                  Assoc     := Get_Flag_Parameter (Allow_Any => False);
+
+                  Association_Parameters :
+                  loop
+                     if Assoc = Na_No_Association then
+                        -- This is possible if the user specified "No_Association" the first time,
+                        -- or "not_operator no_association" later. Quite unlikely, but this is not
+                        -- a reason to ignore that case
+                        Parameter_Error (Rule_Id, "Not a valid parameter: No_Association");
+                     end if;
+
                      if Except_Op and Assoc /= Na_Call then
                         Parameter_Error (Rule_Id, "Not_Operator can be specified only with ""call""");
                      end if;
@@ -504,7 +524,29 @@ package body Rules.Style is
                      Associate (Contexts,
                                 Value (Image (St_Positional_Association) & Image (Assoc)),
                                 Association_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Max, Except_Op));
-                  end loop;
+                     exit when not Parameter_Exists;
+
+                     Except_Op  := Get_Modifier ("NOT_OPERATOR");
+                     Next_Assoc := Get_Flag_Parameter (Allow_Any => not Except_Op);
+
+                     if not Except_Op and Next_Assoc = Na_No_Association then
+                        -- exception entities
+                        if Assoc not in Exceptionable_Associaton_Names then
+                           Parameter_Error (Rule_Id, "no exempted entities allowed for """
+                                            & Image (Assoc, Lower_Case) & '"');
+                        end if;
+
+                        loop
+                           Associate (Positional_Exceptions (Assoc), Get_Entity_Parameter, Null_Context);
+                           exit Association_Parameters when not Parameter_Exists;
+
+                           Except_Op  := Get_Modifier ("NOT_OPERATOR");
+                           Next_Assoc := Get_Flag_Parameter (Allow_Any => not Except_Op);
+                           exit when Except_Op or Next_Assoc /= Na_No_Association;
+                        end loop;
+                     end if;
+                     Assoc := Next_Assoc;
+                  end loop Association_Parameters;
                else
                   if Parameter_Exists then
                      -- Must be integer parameter
@@ -610,7 +652,7 @@ package body Rules.Style is
        end if;
    exception
       when Already_In_Store =>
-         Parameter_Error (Rule_Id, "Subrule already provided: " & Image (Subrule));
+         Parameter_Error (Rule_Id, "Subrule already provided: " & Image (Subrule, Lower_Case));
    end Add_Control;
 
    -------------
@@ -629,6 +671,9 @@ package body Rules.Style is
             String_Count     := 0;
             Permitted_Places := (others => (others => False));
             Flexible_Clause  := False;
+            for Assoc in Positional_Exceptions'Range loop
+               Clear (Positional_Exceptions (Assoc));
+            end loop;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);
@@ -677,7 +722,7 @@ package body Rules.Style is
    function Corresponding_Context (Subrule : Subrules; Complement : Wide_String := "") return Root_Context'Class is
       use Subrules_Flag_Utilities;
    begin
-      return Framework.Association (Contexts, Value (Image (Subrule) & Complement));
+      return Framework.Association (Contexts, Image (Subrule) & Complement);
    end Corresponding_Context;
 
    ------------------
@@ -739,7 +784,7 @@ package body Rules.Style is
    -- is omitted
 
    procedure Process_Construct (Construct : in Asis.Declaration) is
-      use Asis.Declarations, Asis.Text;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
       use Framework.Reports;
       Length : Line_Number;
    begin
@@ -747,6 +792,21 @@ package body Rules.Style is
          return ;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      case Declaration_Kind (Construct) is
+         when A_Task_Type_Declaration =>
+            if Is_Nil (Type_Declaration_View (Construct)) then
+               -- No task definition => no closing name possible
+               return;
+            end if;
+         when A_Single_Task_Declaration =>
+            if Is_Nil (Object_Declaration_View (Construct)) then
+               -- No task definition => no closing name possible
+               return;
+            end if;
+         when others =>
+            null;
+      end case;
 
       if not Is_Name_Repeated (Construct) then
          Length := Last_Line_Number (Construct) - First_Line_Number (Construct) + 1;
@@ -833,13 +893,14 @@ package body Rules.Style is
                Check_Casing (A4G_Bugs.Name_Image (Identifier), St_Casing_Keyword, Identifier);
             end if;
          end if;
+
+         -- This procedure is also called on defining names for St_Casing, not interesting
+         -- for St_Renamed_Entity
+         if Rule_Used (St_Renamed_Entity) then
+            Check_Renamed;
+         end if;
       end if;
 
-      -- This procedure is also called on defining names for St_Casing, not interesting
-      -- for St_Renamed_Entity
-      if Rule_Used (St_Renamed_Entity) and then Element_Kind (Identifier) /= A_Defining_Name then
-         Check_Renamed;
-      end if;
    end Process_Identifier;
 
    --------------------------
@@ -851,13 +912,25 @@ package body Rules.Style is
       use Thick_Queries;
 
       procedure Check_Association (Na                  : Association_Names;
+                                   Ident               : Asis.Element;
                                    Is_Positional       : Boolean;
                                    Associations_Length : Positive;
                                    Is_Operator         : Boolean := False)
       is
          use Named_Parameter_Flag_Utilities, Framework.Reports;
       begin
-         if Association_Used (Na) and then Is_Positional then
+         if Association_Used (Na) and Is_Positional then
+            if Na in Exceptionable_Associaton_Names then
+               declare
+                  Indicator : constant Root_Context'Class
+                    := Matching_Context (Positional_Exceptions (Na), Ident, Extend_To => All_Extensions);
+               begin
+                  if Indicator /= No_Matching_Context then
+                     return;
+                  end if;
+               end;
+            end if;
+
             declare
                Ctx : constant Association_Context
                  := Association_Context (Corresponding_Context (St_Positional_Association, Image (Na)));
@@ -869,7 +942,7 @@ package body Rules.Style is
                   Report (Rule_Id,
                           Ctx,
                           Get_Location (Association),
-                          "positional association used in " & Image (Na)
+                          "positional association used in " & Image (Na, Lower_Case)
                           & Choose (Ctx.Allowed_Number = 0,
                               "",
                               " with more than " & Integer_Img (Ctx.Allowed_Number) & " element(s)"));
@@ -878,7 +951,8 @@ package body Rules.Style is
          end if;
       end Check_Association;
 
-      Encl : Asis.Element;
+      Encl   : Asis.Element;
+      Called : Asis.Element;
    begin -- Process_Association
       if not Rule_Used (St_Positional_Association) then
          return;
@@ -889,46 +963,59 @@ package body Rules.Style is
       case Association_Kind (Association) is
          when Not_An_Association =>
             Failure ("Not an association", Association);
-         when A_Pragma_Argument_Association =>
-            Check_Association (Na_Pragma,
-                               Is_Nil (Formal_Parameter (Association)),
-                               Pragma_Argument_Associations (Encl)'Length);
          when A_Discriminant_Association =>
             Check_Association (Na_Discriminant,
+                               Nil_Element,
                                Is_Nil (Discriminant_Selector_Names (Association)),
                                Discriminant_Associations (Encl)'Length);
          when A_Record_Component_Association =>
             Check_Association (Na_Record_Aggregate,
+                               Nil_Element,
                                Is_Nil (Record_Component_Choices (Association)),
                                Record_Component_Associations (Encl)'Length);
          when An_Array_Component_Association =>
             Check_Association (Na_Array_Aggregate,
+                               Nil_Element,
                                Is_Nil (Array_Component_Choices (Association)),
                                Array_Component_Associations (Encl)'Length);
+         when A_Pragma_Argument_Association =>
+            Check_Association (Na_Pragma,
+                               Encl,
+                               Is_Nil (Formal_Parameter (Association)),
+                               Pragma_Argument_Associations (Encl)'Length);
          when A_Parameter_Association =>
-            Encl := Enclosing_Element (Association);
             -- Do not check infix (operators) function calls or attribute functions and procedures
             if Expression_Kind (Encl) = A_Function_Call then
                if Is_Prefix_Call (Encl) and then Expression_Kind (Prefix (Encl)) /= An_Attribute_Reference then
                   Check_Association (Na_Call,
+                                     Called_Simple_Name (Encl),
                                      Is_Nil (Formal_Parameter (Association)),
                                      Function_Call_Parameters (Encl)'Length,
                                      Operator_Kind (Simple_Name (Prefix (Encl))) /= Not_An_Operator);
                end if;
             elsif Statement_Kind (Encl) = A_Procedure_Call_Statement then
-               -- Entries cannot be attributes...
-               if Expression_Kind (Called_Name (Encl)) /= An_Attribute_Reference then
+               Called := Called_Simple_Name (Encl);
+               if Expression_Kind (Called) /= An_Attribute_Reference then
                   Check_Association (Na_Call,
+                                     Called,
                                      Is_Nil (Formal_Parameter (Association)),
                                      Call_Statement_Parameters (Encl)'Length);
                end if;
             else
+               -- Entries, cannot be attributes...
+               Called := Called_Simple_Name (Encl);
+               if Expression_Kind (Called) = An_Indexed_Component then
+                  -- Member of a family
+                  Called := Prefix (Called);
+               end if;
                Check_Association (Na_Call,
+                                  Called,
                                   Is_Nil (Formal_Parameter (Association)),
                                   Call_Statement_Parameters (Encl)'Length);
             end if;
          when A_Generic_Association =>
             Check_Association (Na_Instantiation,
+                               Generic_Unit_Name (Encl),
                                Is_Nil (Formal_Parameter (Association)),
                                Generic_Actual_Part (Encl)'Length);
       end case;
@@ -1423,7 +1510,7 @@ package body Rules.Style is
                end;
 
                Report (Rule_Id,
-                       Corresponding_Context (St_Exposed_Literal, Image (Lit_Integer)),
+                       Corresponding_Context (St_Exposed_Literal, Image (Lit_Integer, Lower_Case)),
                        Get_Location (Expression),
                        "integer literal "
                        & Trim_All (Element_Image (Expression))
@@ -1449,7 +1536,7 @@ package body Rules.Style is
                   -- After running in the permitted values, nothing found
                   -- Put a report
                   Report (Rule_Id,
-                          Corresponding_Context (St_Exposed_Literal, Image (Lit_Real)),
+                          Corresponding_Context (St_Exposed_Literal, Image (Lit_Real, Lower_Case)),
                           Get_Location (Expression),
                           "real literal "
                           & Trim_All (Element_Image (Expression))
@@ -1473,7 +1560,7 @@ package body Rules.Style is
                   return;
                end if;
                Report (Rule_Id,
-                       Corresponding_Context (St_Exposed_Literal, Image (Lit_Character)),
+                       Corresponding_Context (St_Exposed_Literal, Image (Lit_Character, Lower_Case)),
                        Get_Location (Expression),
                        "character literal "
                        & Trim_All (Element_Image (Expression))
@@ -1498,7 +1585,7 @@ package body Rules.Style is
                   end loop;
 
                   Report (Rule_Id,
-                          Corresponding_Context (St_Exposed_Literal, Image (Lit_String)),
+                          Corresponding_Context (St_Exposed_Literal, Image (Lit_String, Lower_Case)),
                           Get_Location (Expression),
                           "string literal "
                           & Trim_All (Element_Image (Expression))
@@ -1728,14 +1815,14 @@ package body Rules.Style is
                         when others =>
                            Report
                              (Rule_Id,
-                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration)),
+                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration, Lower_Case)),
                               Loc,
                               "declaration does not start line");
                      end case;
 
                   when A_Statement =>
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
                              Loc,
                              "statement does not start line");
 

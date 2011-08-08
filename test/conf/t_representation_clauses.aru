@@ -6,6 +6,7 @@ record     : search representation_clauses (record);
 size       : check  representation_clauses ('SIZE);
 fractional : check  representation_clauses (fractional_size);
 non_contig : check  representation_clauses (non_contiguous_record);
+unaligned  : check  representation_clauses (non_aligned_component);
 incomplete : check  representation_clauses (incomplete_record);
 streams    : check  representation_clauses ('read,  'class'read,  'write,  'class'write,
                                               'input, 'class'input, 'output, 'class'output);

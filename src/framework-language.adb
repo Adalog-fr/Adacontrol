@@ -53,10 +53,6 @@ with
   Ada.IO_Exceptions,
   Ada.Strings.Wide_Fixed;
 
--- Adalog
-with
-  Utilities;
-
 -- Adactl
 with
   Adactl_Options,
@@ -112,7 +108,7 @@ package body Framework.Language is
       end if;
 
       declare
-         Result : constant Wide_String := To_Upper (Current_Token.Name_Text (1..Current_Token.Name_Length));
+         Result : constant Wide_String := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
       begin
          if not Is_Rule_Name (Result) and then not (Allow_All and Result = "ALL") then
             Syntax_Error ("Not a rule name: " & Result, Current_Token.Position);
@@ -174,39 +170,50 @@ package body Framework.Language is
          end loop;
       end Process_Error;
 
-      procedure Process_Labelled_Command (Label : in Wide_String) is
-         -- Only controls can follow a label
+      procedure Process_Controls (Label : in Wide_String) is
+         -- Only controls (or '(') can follow a label
       begin
-         Next_Token;
-         if Current_Token.Kind /= Colon then
-            if Current_Token.Kind = Name and then Current_Token.Key in Type_Keys then
-               Syntax_Error ("Missing "":"" after label", Current_Token.Position);
-            else
-               Syntax_Error ("Unknown command " & Label, Current_Token.Position);
+         if Label /= "" then
+            Next_Token;
+            if Current_Token.Kind /= Colon then
+               if Current_Token.Kind = Name and then Current_Token.Key in Type_Keys then
+                  Syntax_Error ("Missing "":"" after label", Current_Token.Position);
+               else
+                  Syntax_Error ("Unknown command " & Label, Current_Token.Position);
+               end if;
             end if;
-         end if;
-         Next_Token;
-         if Current_Token.Kind /= Name then
-            Syntax_Error ("Unexpected element after label", Current_Token.Position);
+            Next_Token;
          end if;
 
-         case Current_Token.Key is
-            when Key_Check =>
-               Next_Token;
-               Add_Control (Label, Check, Get_Rule_Name);
-            when Key_Search =>
-               Next_Token;
-               Add_Control (Label, Search, Get_Rule_Name);
-            when Key_Count =>
-               Next_Token;
-               Add_Control (Label, Count, Get_Rule_Name);
-            when others =>
-               Syntax_Error ("Only ""Check"", ""Search"", or ""Count"" allowed after label",
-                             Current_Token.Position);
-         end case;
-         Close_Command;
+         loop
+            if Current_Token.Kind /= Name then
+               Syntax_Error ("Unexpected element for control", Current_Token.Position);
+            end if;
+
+            case Current_Token.Key is
+               when Key_Check =>
+                  Next_Token;
+                  Add_Control (Label, Check, Get_Rule_Name);
+               when Key_Search =>
+                  Next_Token;
+                  Add_Control (Label, Search, Get_Rule_Name);
+               when Key_Count =>
+                  Next_Token;
+                  Add_Control (Label, Count, Get_Rule_Name);
+               when others =>
+                  Syntax_Error ("Only ""Check"", ""Search"", or ""Count"" allowed for control",
+                                Current_Token.Position);
+            end case;
+
+            if Current_Token.Kind /= Comma then
+               Close_Command;
+               exit;
+            end if;
+
+            Next_Token;
+         end loop;
          Last_Was_Go := False;
-      end Process_Labelled_Command;
+      end Process_Controls;
 
       function State return Boolean is
       begin
@@ -239,10 +246,7 @@ package body Framework.Language is
                when Name =>
                   case Current_Token.Key is
                      when Key_Check =>
-                        Next_Token;
-                        Add_Control ("", Check, Get_Rule_Name);
-                        Close_Command;
-                        Last_Was_Go := False;
+                        Process_Controls ("");
 
                      when Key_Clear =>
                         Next_Token;
@@ -270,10 +274,7 @@ package body Framework.Language is
                         end if;
 
                      when Key_Count =>
-                        Next_Token;
-                        Add_Control ("", Count, Get_Rule_Name);
-                        Close_Command;
-                        Last_Was_Go := False;
+                        Process_Controls ("");
 
                      when Key_Go =>
                         Next_Token;
@@ -316,7 +317,9 @@ package body Framework.Language is
                                  Next_Token;
                               end loop;
 
-                              for I in Rules_Count range 1 .. Inx loop
+                              Help_Command (To_Wide_String (Rule_Names (1)));
+                              for I in Rules_Count range 2 .. Inx loop
+                                 User_Message ("----");
                                  Help_Command (To_Wide_String (Rule_Names (I)));
                               end loop;
 
@@ -339,11 +342,18 @@ package body Framework.Language is
                         end if;
                         declare
                            Mess : constant Wide_String := Current_Token.String_Text (1 .. Current_Token.String_Length);
+                           With_Pause : Boolean;
                         begin
                            Next_Token;
+                           if Is_String (Current_Token, "PAUSE") then
+                              With_Pause := True;
+                              Next_Token;
+                           else
+                              With_Pause := False;
+                           end if;
                            Close_Command;
 
-                           Message_Command (Mess);
+                           Message_Command (Mess, With_Pause);
                         end;
 
                      when Key_Quit =>
@@ -352,10 +362,7 @@ package body Framework.Language is
                         exit;
 
                      when Key_Search =>
-                        Next_Token;
-                        Add_Control ("", Search, Get_Rule_Name);
-                        Close_Command;
-                        Last_Was_Go := False;
+                        Process_Controls ("");
 
                      when Key_Set =>
                         Next_Token;
@@ -367,7 +374,19 @@ package body Framework.Language is
                              := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
                            use Adactl_Options;
                         begin
-                           if Option = "FORMAT" then
+                           if Option = "CHECK_KEY" then
+                              Next_Token;
+                              if Current_Token.Kind /= String_Value then
+                                 Syntax_Error ("String expected for message value",
+                                               Current_Token.Position);
+                              end if;
+                              Framework.Reports.Check_Message
+                                := To_Unbounded_Wide_String (Current_Token.String_Text
+                                                             (1 .. Current_Token.String_Length));
+                              Next_Token;
+                              Close_Command;
+
+                           elsif Option = "FORMAT" then
                               Next_Token;
                               if Current_Token.Kind /= Name then
                                  Syntax_Error ("Format name expected", Current_Token.Position);
@@ -424,6 +443,18 @@ package body Framework.Language is
 
                                  Set_Output_Command (Output);
                               end;
+
+                           elsif Option = "SEARCH_KEY" then
+                              Next_Token;
+                              if Current_Token.Kind /= String_Value then
+                                 Syntax_Error ("String expected for message value",
+                                               Current_Token.Position);
+                              end if;
+                              Framework.Reports.Search_Message
+                                := To_Unbounded_Wide_String (Current_Token.String_Text
+                                                             (1 .. Current_Token.String_Length));
+                              Next_Token;
+                              Close_Command;
 
                            elsif Option = "STATISTICS" then
                               Next_Token;
@@ -533,11 +564,11 @@ package body Framework.Language is
                         | Profile_Keys -- Profile keys allowed as labels
                           =>
                         -- Must be a label
-                        Process_Labelled_Command (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+                        Process_Controls (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
                   end case;
 
                when String_Value =>
-                  Process_Labelled_Command (Current_Token.String_Text (1 .. Current_Token.String_Length));
+                  Process_Controls (Current_Token.String_Text (1 .. Current_Token.String_Length));
 
                when others =>
                   Syntax_Error ("Command or label expected", Current_Token.Position);
@@ -556,25 +587,35 @@ package body Framework.Language is
    generic
       type Flags is (<>);
       Prefix : Wide_String := "";
+      Box_Pos  : in Integer := -1; -- 'Pos of the modifier that corresponds to "<>", or -1 if none
+      Pars_Pos : in Integer := -1; -- 'Pos of the modifier that corresponds to "()", or -1 if none
    package Common_Enumerated_Utilities is
-      function Image (Item : Flags) return Wide_String;
+      function Image (Item : Flags; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
 
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "");
+                               Extra_Value : Wide_String := "NONE");
    end Common_Enumerated_Utilities;
 
    package body Common_Enumerated_Utilities is
-      function Image (Item : Flags) return Wide_String is
-         Img : constant Wide_String := To_Lower (Flags'Wide_Image (Item));
+      function Image (Item : Flags; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String is
+         Img : constant Wide_String := Flags'Wide_Image (Item);
       begin
-         -- Remove prefix
-         return Img (Prefix'Length + 1 .. Img'Last);
+         -- Remove prefix and adjust case
+         if Flags'Pos (Item) = Box_Pos then
+            return "<>";
+         elsif Flags'Pos (Item) = Pars_Pos then
+            return "()";
+         elsif In_Case = Upper_Case then  -- Already upper case
+            return Img (Prefix'Length + 1 .. Img'Last);
+         else
+            return Set_Casing (Img (Prefix'Length + 1 .. Img'Last), In_Case);
+         end if;
       end Image;
 
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "")
+                               Extra_Value : Wide_String := "NONE")
       is
          -- Pretty print of values of flags.
          -- Values are arranged in columns.
@@ -588,23 +629,46 @@ package body Framework.Language is
          -- More sophisticated optimization would be overkill.
          Display_Width : constant := 79;
          True_Width    : constant Natural := Flags'Width - Prefix'Length;
+
+         function Default_Nb_Col return Positive is
+         begin
+            if Extra_Value = "NONE" or Extra_Value = "" then
+               return Natural'Max (2, 1 + (Display_Width - Header'Length
+                                            - True_Width - 3 -- Width of 1st col
+                                           ) / (True_Width + 3)); -- 3 => " | "
+            else
+               return Natural'Max (2, 1 + (Display_Width - Header'Length
+                                            - Natural'Max (True_Width, Extra_Value'Length) - 3 -- Width of 1st col
+                                           ) / (True_Width + 3)); -- 3 => " | "
+
+            end if;
+         end Default_Nb_Col;
+
          Buffer        : Wide_String (1 .. Display_Width);
          Index         : Natural;
-         Nb_Col        : Natural
-           := Natural'Max (2, 1 + (Display_Width - Header'Length
-                                   - Natural'Max (True_Width, Extra_Value'Length) - 3 -- Width of 1st col
-                                  ) / (True_Width + 3)); -- 3 => " | "
-         Col_Widthes   : array (1 .. Nb_Col) of Natural := (1 => Extra_Value'Length, others => 0);
+         Nb_Col        : Natural := Default_Nb_Col;
+         Col_Widthes   : array (1 .. Nb_Col) of Natural := (others => 0);
          Current_Col   : Natural;
          First_Flag    : Flags;
-      begin
-         Current_Col := 1;
-         for I in Flags loop
+      begin  -- Help_On_Flags
+         if Extra_Value = "NONE" then
+            Current_Col := 1;
+            First_Flag  := Flags'First;
+         elsif Extra_Value = "" then
+            Current_Col := 1;
+            First_Flag  := Flags'Succ (Flags'First);
+         else
+            Col_Widthes (1) := Extra_Value'Length;
+            Current_Col     := 2;
+            First_Flag      := Flags'Succ (Flags'First);
+         end if;
+
+         for F in Flags range First_Flag .. Flags'Last loop
             declare
-               Img : constant Wide_String := Image (I);
+               Length : constant Natural := Image (F)'Length;
             begin
-               if Img'Length > Col_Widthes (Current_Col) then
-                  Col_Widthes (Current_Col) := Img'Length;
+               if Length > Col_Widthes (Current_Col) then
+                  Col_Widthes (Current_Col) := Length;
                end if;
                if Current_Col = Nb_Col then
                   Current_Col := 1;
@@ -629,8 +693,10 @@ package body Framework.Language is
          Index := Header'Length;
 
          Current_Col := 1;
-         if Extra_Value = "" then
-            First_Flag  := Flags'First;
+         if Extra_Value = "NONE" then
+            First_Flag := Flags'First;
+         elsif Extra_Value = "" then
+            First_Flag := Flags'Succ (Flags'First);
          else
             Index := Index + 1;  -- Add space
             Buffer (Index + 1 .. Index + Extra_Value'Length) := Extra_Value;
@@ -650,7 +716,7 @@ package body Framework.Language is
 
             -- Gnat warns about Constraint_Error being raised by the following statement
             -- when instantiated with a Flag type that has only one value.
-            -- But in this case, Extra_Value must be "", so it is OK.
+            -- But in this case, Extra_Value must be "NONE", so it is OK.
             pragma Warnings (Off);
             First_Flag := Flags'Succ (Flags'First);
             pragma Warnings (On);
@@ -658,7 +724,7 @@ package body Framework.Language is
 
          for I in Flags range First_Flag .. Flags'Last loop
             declare
-               Img : constant Wide_String := Image (I);
+               Img : constant Wide_String := Image (I, Lower_Case);
             begin
                Index := Index + 1;  -- Add space
 
@@ -1137,6 +1203,21 @@ package body Framework.Language is
             Next_Parameter;
             return (Kind => Equal);
 
+         when Left_Parenthesis =>
+            if not Allow_Extended then
+               Syntax_Error ("Entity name expected", Current_Token.Position);
+            end if;
+
+            Next_Token;
+            if Current_Token.Kind /= Right_Parenthesis then
+               Syntax_Error (""")"" expected", Current_Token.Position);
+            end if;
+
+            Next_Token;
+            Next_Parameter;
+               return (Kind          => Regular_Id,
+                       Specification => To_Unbounded_Wide_String ("()"));
+
          when String_Value =>
             -- Can be an operator
             declare
@@ -1234,25 +1315,50 @@ package body Framework.Language is
    ------------------------
 
    package body Modifier_Utilities is
-      package Local_Utilities is new Common_Enumerated_Utilities (Modifiers, Prefix);
+      package Local_Utilities is new Common_Enumerated_Utilities (Modifiers, Prefix, Box_Pos, Pars_Pos);
 
       procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean) is
       begin
-         if Current_Token.Kind = Name then
-            declare
-               To_Compare : constant Wide_String := To_Upper (Prefix &
-                                                              Current_Token.Name_Text (1 .. Current_Token.Name_Length));
-            begin
-               for Idx in Modifiers loop
-                  if To_Compare = Modifiers'Wide_Image (Idx) then
-                     Next_Token;
-                     Modifier := Idx;
-                     Found    := True;
-                     return;
+         case Current_Token.Kind is
+            when Name =>
+               declare
+                  To_Compare : constant Wide_String
+                    := To_Upper (Prefix & Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+               begin
+                  for Idx in Modifiers loop
+                     if To_Compare = Modifiers'Wide_Image (Idx) then
+                        Next_Token;
+                        Modifier := Idx;
+                        Found    := True;
+                        return;
+                     end if;
+                  end loop;
+               end;
+            when Left_Angle =>
+               if Box_Pos >= 0 then
+                  Next_Token;
+                  if Current_Token.Kind /= Right_Angle then
+                     Syntax_Error (""">"" Expected", Current_Token.Position);
                   end if;
-               end loop;
-            end;
-         end if;
+                  Next_Token;
+                  Modifier := Modifiers'Val (Box_Pos);
+                  Found    := True;
+                  return;
+               end if;
+            when Left_Parenthesis =>
+               if Pars_Pos >= 0 then
+                  Next_Token;
+                  if Current_Token.Kind /= Right_Parenthesis then
+                     Syntax_Error (""")"" Expected", Current_Token.Position);
+                  end if;
+                  Next_Token;
+                  Modifier := Modifiers'Val (Pars_Pos);
+                  Found    := True;
+                  return;
+               end if;
+            when others =>
+               null;
+         end case;
          Found := False;
       end Get_Modifier;
 
@@ -1300,12 +1406,13 @@ package body Framework.Language is
          return Result;
       end Get_Modifier_Set;
 
-      function Image (Item : Modifiers) return Wide_String
+      function Image (Item    : Modifiers;
+                      In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String
                       renames Local_Utilities.Image;
 
       procedure Help_On_Modifiers (Header      : Wide_String := "";
                                    Footer      : Wide_String := "";
-                                   Extra_Value : Wide_String := "")
+                                   Extra_Value : Wide_String := "NONE")
                                    renames Local_Utilities.Help_On_Flags;
 
       function Image (Set     : Unconstrained_Modifier_Set;
@@ -1316,17 +1423,49 @@ package body Framework.Language is
             return "";
          elsif Set'First = Set'Last then
             -- only one element
-            return Image (Set'First) & ' ';
+            return Image (Set'First, Lower_Case) & ' ';
          else
             for M in Modifiers range Set'First .. Modifiers'Pred (Set'Last) loop
                if Set (M) then
-                  return Image (M) & ' ' & Image (Set (Modifiers'Succ (M) .. Set'Last));
+                  return Image (M, Lower_Case) & ' ' & Image (Set (Modifiers'Succ (M) .. Set'Last));
                end if;
             end loop;
             -- If we are here, Set (Set'Last) is the only True element
-            return Image (Set'Last) & ' ';
+            return Image (Set'Last, Lower_Case) & ' ';
          end if;
       end Image;
+
+      function Get_Modifier_List (Expected : Modifier_Set := Full_Set) return Modifier_List is
+         Modifier : Modifiers;
+         Present  : Boolean;
+      begin
+         if not In_Parameters then
+            Failure ("Get_Modifier_List called when not in parameters");
+         end if;
+
+         Get_Modifier (Modifier, Present);
+         if not Present then
+            return Empty_List;
+         end if;
+
+         if not Expected (Modifier) then
+            Syntax_Error (Image (Modifier) & " not allowed here", Current_Token.Position);
+         end if;
+
+         return Modifier & Get_Modifier_List (Expected);
+      end Get_Modifier_List;
+
+      function Image (List : Modifier_List) return Wide_String is
+      begin
+         if List = Empty_List then
+            return "";
+         end if;
+
+         return Image (List (List'First), Lower_Case)
+           & ' '
+           & Image (List (List'First + 1 .. List'Last));
+      end Image;
+
    end Modifier_Utilities;
 
    --------------------
@@ -1389,7 +1528,7 @@ package body Framework.Language is
       -- Image --
       -----------
 
-      function Image (Item : Flags) return Wide_String
+      function Image (Item : Flags; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String
                       renames Local_Utilities.Image;
 
       -------------------
@@ -1398,7 +1537,7 @@ package body Framework.Language is
 
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "")
+                               Extra_Value : Wide_String := "NONE")
                                renames Local_Utilities.Help_On_Flags;
    end Flag_Utilities;
 

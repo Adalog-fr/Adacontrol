@@ -35,7 +35,7 @@ private package Framework.Language.Commands is
    procedure Inhibit_Command    (Rule_Name   : in Wide_String);
    -- Inhibit given rule for all units passed as parameters
    -- Unit names to be parsed using normal parameter parsing procedures
-   procedure Message_Command    (Message     : in Wide_String);
+   procedure Message_Command    (Message     : in Wide_String; With_Pause : Boolean);
    procedure Set_Format_Command (Format      : in Wide_String);
    procedure Set_Output_Command (Output_File : in Wide_String);
    procedure Set_Trace_Command  (Trace_File  : in Wide_String);

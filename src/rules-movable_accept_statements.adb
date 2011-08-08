@@ -71,7 +71,7 @@ package body Rules.Movable_Accept_Statements  is
    --     - Then, we process each statement of the body differently depending
    --       on the statement kind using the following procedure:
    --         ~ for a RETURN or a REQUEUE statement:
-   --           * set a value to tell that the further statements are unreachable
+   --           * set a value to tell that the next statements are unreachable
    --           * quit the procedure
    --         ~ for any other statement, we TRAVERSE it and store each referenced
    --           identifier since it may be a dependent object.
@@ -103,18 +103,18 @@ package body Rules.Movable_Accept_Statements  is
    --
    --   Past this point, at least one statement matches one of the cases described
    --   above. This statement can be called THE LAST STATEMENT.
-   --   We can set each statement that appears below this LAST STATEMENT as
-   --   movable as they WILL NOT AFFECT the program behavior if moved out the
+   --   We can set all statements appearing after this LAST STATEMENT as
+   --   movable as they WILL NOT AFFECT the program behavior if moved out of the
    --   accept scope.
    --
-   --   From here, all identifiers that have been used within each statements
+   --   From here, all identifiers that have been used within each statement
    --   are known and we need only consider the identifiers of the statements
-   --   appearing ABOVE the LAST STATEMENT.
+   --   appearing before the LAST STATEMENT.
    --
    --   According to the user choice, we can then (not) report any statement
    --   not referencing, directly or indirectly, a parameter of the accept.
    --
-   --   If the user asked to report all statements, we need to loop upon each
+   --   If the user asked to report all statements, we need to loop over each
    --   statement until no new dependency is found (i.e. stable state). The
    --   dependency can be from a statement or an identifier to a parameter or
    --   a user-defined dependency.
@@ -325,7 +325,6 @@ package body Rules.Movable_Accept_Statements  is
    --  and set the Last_Statement value accordingly
    -- store every encountered identifier that matches an object definition
 
-   -- State_Information --
    type State_Information is
       record
          Current_Statement    : Natural;
@@ -371,7 +370,8 @@ package body Rules.Movable_Accept_Statements  is
                   --    A_Parameter_Specification, An_Object_Declaration,
                   --    An_Object_Renaming_Declaration, etc.
                   declare
-                     Entity_Context : constant Root_Context'Class := Extended_Matching_Context (Entities, Element);
+                     Entity_Context : constant Root_Context'Class
+                       := Matching_Context (Entities, Element, Extend_To => All_Extensions);
                   begin
                      if Entity_Context /= No_Matching_Context then
                         -- In the case we found a matching context,
@@ -399,28 +399,17 @@ package body Rules.Movable_Accept_Statements  is
                           | An_Object_Declaration
                           | An_Object_Renaming_Declaration
                           =>
-                           -- Getting the last renamed and/or enclosing element for record components
-                           while Declaration_Kind (Identifier_Declaration) = An_Object_Renaming_Declaration loop
-                              Identifier := Ultimate_Name (Identifier);
-                              if Is_Nil (Identifier) then
-                                 -- Dynamic renaming
-                                 Uncheckable (Rule_Id,
-                                              False_Negative,
-                                              Get_Location (Element),
-                                              "Entity is not statically determinable");
-                                 return;
-                              end if;
-                              Identifier_Definition  := Corresponding_Name_Definition (Identifier);
-                              Identifier_Declaration := Enclosing_Element (Identifier_Definition);
-                              while Declaration_Kind (Identifier_Declaration) = A_Component_Declaration loop
-                                 Identifier := Enclosing_Element (Identifier);
-                                 exit when Expression_Kind (Identifier) /= A_Selected_Component;
-                                 Identifier := Prefix (Identifier);
-                                 Identifier_Definition :=
-                                   Corresponding_Name_Definition (Identifier);
-                                 Identifier_Declaration := Enclosing_Element (Identifier_Definition);
-                              end loop;
-                           end loop;
+                           Identifier := Ultimate_Name (Identifier, No_Component => True);
+                           if Is_Nil (Identifier) then
+                              -- Dynamic renaming
+                              Uncheckable (Rule_Id,
+                                           False_Negative,
+                                           Get_Location (Element),
+                                           "Entity is not statically determinable");
+                              return;
+                           end if;
+                           Identifier_Definition  := Corresponding_Name_Definition (Identifier);
+                           Identifier_Declaration := Enclosing_Element (Identifier_Definition);
 
                            -- Insert the element into the queue if it does not exist in yet
                            declare

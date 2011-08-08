@@ -200,10 +200,8 @@ procedure T_Improper_Initialization is
    end My_Pack;
 
    -- case of separate body
-   package Sep is
-      Var1, Var2 : Integer;                                           -- not safely initialized (x1)
-   end Sep;
-   package body Sep is separate;
+   procedure Sep (Var1, Var2 : out Integer);                                           -- not safely initialized (x1)
+   procedure Sep (Var1, Var2 : out Integer) is separate;
 
 begin
 
@@ -325,5 +323,28 @@ B2 :
 
    <<Ailleurs>>
       X := 0;
+   end;
+
+   ----------------------------------
+   -- Checking access from package --
+   ----------------------------------
+   declare
+      A : Integer;               -- used before initialization A
+      S : String (1 .. 10);      -- not safely initialized S
+
+      for A'Address use S'Address;
+
+      package Pack is
+         B : Integer := A;       -- use of uninitialized A
+      end Pack;
+
+      package body Pack is
+         V, W : Integer;            -- OK (package variable)
+      begin
+         V := A;                 -- use of uninitialized A
+         S (A) := 'c';           -- use of uninitialized A
+      end Pack;
+   begin
+      A := 1;
    end;
 end T_Improper_Initialization;

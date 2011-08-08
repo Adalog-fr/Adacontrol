@@ -39,7 +39,6 @@ Use_A4G_Bugs: check entities (
    Asis.Compilation_Units.Subunits,
    Asis.Compilation_Units.Unit_Class,
 
-   Asis.Declarations.Corresponding_Base_Entity,
    Asis.Declarations.Corresponding_Last_Subtype,
    Asis.Declarations.Renamed_Entity,
 

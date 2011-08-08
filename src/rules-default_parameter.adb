@@ -61,7 +61,7 @@ package body Rules.Default_Parameter is
    type Usage_Kind is (Used, Positional, Not_Used);
    package Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Usage_Kind);
 
-   type Entity_Kind is (E_Name, E_Calls, E_Instantiations, E_All);
+   type Entity_Kind is (E_Name, E_Calls, E_Instantiations);
    package Entity_Kind_Utilities is new Framework.Language.Flag_Utilities (Entity_Kind, Prefix => "E_");
 
    type Usage_Rec is new Basic_Rule_Context with
@@ -187,9 +187,6 @@ package body Rules.Default_Parameter is
             when E_Calls =>
                Update (Entity_Calls, Formal, Usage);
             when E_Instantiations =>
-               Update (Entity_Instantiations, Formal, Usage);
-            when E_All =>
-               Update (Entity_Calls, Formal, Usage);
                Update (Entity_Instantiations, Formal, Usage);
          end case;
       end;
@@ -357,8 +354,10 @@ package body Rules.Default_Parameter is
       end case;
 
       declare
-         Name_Context : constant Root_Context'Class := Extended_Matching_Context (Entities, Name);
-         All_Context  : constant Root_Context'Class := Framework.Association     (Entities, Entity_All);
+         Name_Context : constant Root_Context'Class := Matching_Context (Entities,
+                                                                         Name,
+                                                                         Extend_To => All_Extensions);
+         All_Context  : constant Root_Context'Class := Framework.Association (Entities, Entity_All);
       begin
          if Name_Context = No_Matching_Context and All_Context = No_Matching_Context then
             return;

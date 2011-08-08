@@ -32,10 +32,6 @@
 with
   Asis;
 
--- Adalog
-with
-  Framework.Scope_Manager;
-
 package Framework.Symbol_Table is
 
    type Root_Content is tagged limited null record;
@@ -69,23 +65,20 @@ package Framework.Symbol_Table is
    generic
       type Content is private;
    package Data_Access is
-      procedure Store (Element : Asis.Element; Content_Value : Content; At_Declaration_Scope : Boolean := True);
-      -- At_Declaration_Scope must be set to False if Store is called from a scope which is not the one
-      -- where Element is declared.
-      -- It must be set to True only if Element is the Defining_Name
+      procedure Store (Element : Asis.Element; Content_Value : Content);
       function  Fetch (Element : Asis.Element) return Content;
       -- Raises Not_In_Table if not present
       function  Fetch (Element : Asis.Element; Default : Content) return Content;
       -- Returns Default if not present
 
       function Is_Present (Element : Asis.Element) return Boolean;
-      function Depth_Of (Element : Asis.Element) return Framework.Scope_Manager.Scope_Range;
+      function Scope_Of   (Element : Asis.Element) return Asis.Element;
       -- Raises Not_In_Table if not present
 
       procedure Clear;
       -- Remove all data stored by this package
 
-      -- Apply Action to all entities declared within the current scope
+      -- Apply Action to all entities whose declaration or visibility scope is the current scope
       generic
          with procedure Action (Entity : Asis.Defining_Name; Content_Value : in out Content);
       procedure On_Every_Entity_From_Scope (Scope_Kind : Scope_Kinds);

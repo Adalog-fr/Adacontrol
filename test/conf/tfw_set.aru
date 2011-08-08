@@ -1,0 +1,10 @@
+check declarations (integer_type);
+search declarations (variable);
+go;
+
+set check_key "Check";
+set search_key "Search";
+go;
+
+set format csv_short;
+go;

@@ -61,7 +61,7 @@ package body Framework.Queries is
 
    function Enclosing_Package_Name (Rule_Id : Wide_String; N : in Asis.Name) return Wide_String is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use A4G_Bugs, Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Reports, Thick_Queries, Utilities;
 
       E : Asis.Element := Corresponding_Name_Declaration (N);
       C : Asis.Compilation_Unit;

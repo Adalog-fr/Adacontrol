@@ -46,6 +46,7 @@ with
 
 -- Adactl
 with
+  Framework.Generic_Context_Iterator,
   Framework.Language,
   Framework.Language.Shared_Keys,
   Framework.Rules_Manager,
@@ -57,68 +58,69 @@ package body Rules.Declarations is
 
    type Subrules is
      (D_Any_Declaration,
-      D_Abstract_Function,               D_Abstract_Procedure,              D_Abstract_Type,
-      D_Access_All_Type,                 D_Access_Constant_Type,            D_Access_Protected_Type,
-      D_Access_Subprogram_Type,          D_Access_Task_Type,                D_Access_Type,
-      D_Aliased,                         D_Anonymous_Subtype_Allocator,     D_Anonymous_Subtype_Case,
-      D_Anonymous_Subtype_Declaration,   D_Anonymous_Subtype_For,           D_Anonymous_Subtype_Indexing,
-      D_Array,                           D_Array_Type,
+      D_Abstract_Function,                 D_Abstract_Procedure,              D_Abstract_Type,
+      D_Access_All_Type,                   D_Access_Constant_Type,            D_Access_Protected_Type,
+      D_Access_Subprogram_Type,            D_Access_Task_Type,                D_Access_Type,
+      D_Aliased_Array_Component,           D_Aliased_Constant,                D_Aliased_Protected_Component,
+      D_Aliased_Record_Component,          D_Aliased_Variable,                D_Anonymous_Subtype_Allocator,
+      D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,   D_Anonymous_Subtype_For,
+      D_Anonymous_Subtype_Indexing,        D_Array,                           D_Array_Type,
 
       D_Binary_Modular_Type,
 
-      D_Character_Literal,               D_Child_Unit,                      D_Class_Wide_Constant,
-      D_Class_Wide_Variable,             D_Constant,                        D_Constrained_Array_Type,
-      D_Constrained_Array_Variable,      D_Controlled_Type,
+      D_Character_Literal,                 D_Child_Unit,                      D_Class_Wide_Constant,
+      D_Class_Wide_Variable,               D_Constant,                        D_Constrained_Array_Type,
+      D_Constrained_Array_Variable,        D_Controlled_Type,
 
-      D_Decimal_Fixed_Type,              D_Defaulted_Discriminant,          D_Defaulted_Generic_Parameter,
-      D_Defaulted_Parameter,             D_Deferred_Constant,               D_Derived_Type,
+      D_Decimal_Fixed_Type,                D_Defaulted_Discriminant,          D_Defaulted_Generic_Parameter,
+      D_Defaulted_Parameter,               D_Deferred_Constant,               D_Derived_Type,
       D_Discriminant,
 
-      D_Empty_Private_Part,              D_Empty_Visible_Part,              D_Enumeration_Type,
-      D_Entry,                           D_Exception,
-      D_Extension,
+      D_Empty_Private_Part,                D_Empty_Visible_Part,              D_Enumeration_Type,
+      D_Entry,                             D_Exception,                       D_Extension,
 
-      D_Fixed_Type,                      D_Float_Type,                      D_Formal_Function,
-      D_Formal_Package,                  D_Formal_Procedure,                D_Formal_Type,
-      D_Function,                        D_Function_Call_Renaming,          D_Function_Instantiation,
+      D_Fixed_Type,                        D_Float_Type,                      D_Formal_Function,
+      D_Formal_Package,                    D_Formal_Procedure,                D_Formal_Type,
+      D_Function,                          D_Function_Call_Renaming,          D_Function_Instantiation,
 
-      D_Generic,                         D_Generic_Function,                D_Generic_Package,
+      D_Generic,                           D_Generic_Function,                D_Generic_Package,
       D_Generic_Procedure,
 
       D_Handlers,
 
-      D_Incomplete_Type,                 D_In_Out_Generic_Parameter,        D_In_Out_Parameter,
-      D_Initialized_Record_Field,        D_Initialized_Protected_Field,     D_Instantiation,
+      D_Incomplete_Type,                   D_In_Out_Generic_Parameter,        D_In_Out_Parameter,
+      D_Initialized_Protected_Component,   D_Initialized_Record_Component,    D_Instantiation,
       D_Integer_Type,
 
-      D_Limited_Private_Type,
+      D_Library_Unit_Renaming,             D_Limited_Private_Type,
 
-      D_Modular_Type,                    D_Multiple_Names,                  D_Multiple_Protected_Entries,
+      D_Modular_Type,                      D_Multiple_Names,                  D_Multiple_Protected_Entries,
 
-      D_Named_Number,                    D_Non_Binary_Modular_Type,         D_Non_Identical_Renaming,
-      D_Non_Identical_Operator_Renaming, D_Non_Limited_Private_Type,        D_Not_Operator_Renaming,
-      D_Null_Extension,                  D_Null_Ordinary_Record_Type,       D_Null_Procedure,
+      D_Named_Number,                      D_Non_Binary_Modular_Type,         D_Non_Identical_Operator_Renaming,
+      D_Non_Identical_Renaming,            D_Non_Limited_Private_Type,        D_Not_Operator_Renaming,
+      D_Null_Extension,                    D_Null_Ordinary_Record_Type,       D_Null_Procedure,
       D_Null_Tagged_Type,
 
-      D_Operator,                        D_Operator_Renaming,               D_Ordinary_Fixed_Type,
-      D_Ordinary_Fixed_Type_No_Small,    D_Ordinary_Fixed_Type_With_Small,  D_Ordinary_Record_Type,
+      D_Operator,                          D_Operator_Renaming,               D_Ordinary_Fixed_Type,
+      D_Ordinary_Fixed_Type_No_Small,      D_Ordinary_Fixed_Type_With_Small,  D_Ordinary_Record_Type,
       D_Out_Parameter,
 
-      D_Package,                         D_Package_Instantiation,           D_Package_Statements,
-      D_Predefined_Operator,             D_Private_Extension,               D_Procedure,
-      D_Procedure_Instantiation,         D_Protected,                       D_Protected_Entry,
-      D_Protected_Type,
+      D_Package,                           D_Package_Instantiation,           D_Package_Statements,
+      D_Predefined_Operator,               D_Private_Extension,               D_Procedure,
+      D_Procedure_Instantiation,           D_Protected,                       D_Protected_Entry,
+      D_Protected_Type,                    D_Protected_Variable,
 
-      D_Record_Type,                     D_Renaming,
+      D_Record_Type,                       D_Renaming,
 
-      D_Separate,                        D_Signed_Type,                     D_Single_Array,
-      D_Single_Protected ,               D_Single_Task,                     D_Subtype,
+      D_Self_Calling_Function,             D_Self_Calling_Procedure,          D_Separate,
+      D_Signed_Type,                       D_Single_Array,                    D_Single_Protected,
+      D_Single_Task,                       D_Subtype,
 
-      D_Tagged_Type,                     D_Task,                            D_Task_Entry,
-      D_Task_Type,                       D_Type,
+      D_Tagged_Type,                       D_Task,                            D_Task_Entry,
+      D_Task_Type,                         D_Task_Variable,                   D_Type,
 
-      D_Unconstrained_Array_Type,        D_Unconstrained_Array_Variable,    D_Unconstrained_Subtype,
-      D_Uninitialized_Protected_Field,   D_Uninitialized_Record_Field,      D_Uninitialized_Variable,
+      D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,    D_Unconstrained_Subtype,
+      D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,  D_Uninitialized_Variable,
 
       D_Variable,                        D_Variant_Part);
    type Subrules_List is array (Positive range <>) of Subrules;
@@ -135,6 +137,7 @@ package body Rules.Declarations is
    Rule_Used : Usage_Flags := No_Rule_Used;
    Save_Used : Usage_Flags;
    Usage     : Context_Store;
+   package Usage_Iterator is new Framework.Generic_Context_Iterator (Usage);
 
    ----------
    -- Help --
@@ -145,9 +148,9 @@ package body Rules.Declarations is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): {<location>} <decl_kind>");
+      User_Message ("Parameter(s): {<location>} <decl>");
       Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:");
-      Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl_kind>:");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl>:");
       User_Message ("Control occurrences of Ada declarations");
    end Help;
 
@@ -214,41 +217,22 @@ package body Rules.Declarations is
 
    procedure Do_Report (Decl : Subrules; Loc : Location) is
       use Framework.Reports, Framework.Language.Shared_Keys;
-      use Scope_Places_Utilities, Subrules_Flag_Utilities;
+      use Scope_Places_Utilities, Subrules_Flag_Utilities, Utilities;
 
-      First_Context : constant Root_Context'Class
-        := Framework.Association (Usage, Value (Subrules'Wide_Image (Decl)));
+      Iter : Context_Iterator := Usage_Iterator.Create;
    begin
-      if First_Context = No_Matching_Context then
-         return;
-      end if;
-
-      if Is_Applicable (Declaration_Context (First_Context).Locations)  then
-         Report (Rule_Id,
-                 First_Context,
-                 Loc,
-                 "use of declaration """
-                 & Image (Declaration_Context (First_Context).Locations, Default => Everywhere)
-                 & Image (Decl)
-                 & '"');
-      end if;
-
-      loop
-         declare
-            Next_Context : constant Root_Context'Class := Next_Matching_Context (Usage);
-         begin
-            exit when Next_Context = No_Matching_Context;
-
-            if Is_Applicable (Declaration_Context (Next_Context).Locations) then
-               Report (Rule_Id,
-                       Next_Context,
-                       Loc,
-                       "use of declaration """
-                       & Image (Declaration_Context (Next_Context).Locations, Default => Everywhere)
-                       & Image (Decl)
-                       & '"');
-            end if;
-         end;
+      Reset (Iter, Value (Subrules'Wide_Image (Decl)));
+      while not Is_Exhausted (Iter) loop
+         if Is_Applicable (Declaration_Context (Value (Iter)).Locations) then
+            Report (Rule_Id,
+                    Value (Iter),
+                    Loc,
+                    "use of declaration """
+                    & Image (Declaration_Context (Value (Iter)).Locations, Default => Everywhere)
+                    & Image (Decl, Lower_Case)
+                    & '"');
+         end if;
+         Next (Iter);
       end loop;
    end Do_Report;
 
@@ -733,9 +717,23 @@ package body Rules.Declarations is
                   Do_Report ((D_Type, D_Array, D_Array_Type, D_Constrained_Array_Type),
                              Get_Location (Element));
 
+                  case Trait_Kind (Array_Component_Definition (Type_Declaration_View (Element))) is
+                     when An_Aliased_Trait =>
+                        Do_Report (D_Aliased_Array_Component, Get_Location (Element));
+                     when others =>
+                        null;
+                  end case;
+
                when An_Unconstrained_Array_Definition =>
                   Do_Report ((D_Type, D_Array, D_Array_Type, D_Unconstrained_Array_Type),
                              Get_Location (Element));
+
+                  case Trait_Kind (Array_Component_Definition (Type_Declaration_View (Element))) is
+                     when An_Aliased_Trait =>
+                        Do_Report (D_Aliased_Array_Component, Get_Location (Element));
+                     when others =>
+                        null;
+                  end case;
 
                when A_Record_Type_Definition =>
                   if Is_Null_Record (Asis.Definitions.Record_Definition (Type_Declaration_View (Element))) then
@@ -789,7 +787,7 @@ package body Rules.Declarations is
 
             case Trait_Kind (Element) is
                when An_Aliased_Trait =>
-                  Do_Report (D_Aliased, Get_Location (Element));
+                  Do_Report (D_Aliased_Variable, Get_Location (Element));
                when others =>
                   null;
             end case;
@@ -809,13 +807,24 @@ package body Rules.Declarations is
                         -- not an array
                         Failure ("type def not an array");
                   end case;
+
+                  case Trait_Kind (Array_Component_Definition (Def)) is
+                     when An_Aliased_Trait =>
+                        Do_Report (D_Aliased_Array_Component, Get_Location (Element));
+                     when others =>
+                        null;
+                  end case;
+
                elsif Is_Class_Wide_Subtype (Def) then
                   Do_Report (D_Class_Wide_Variable, Get_Location (Element));
                end if;
 
-               -- Find if the type refers to a constrained array, an unconstrained array, or anything else
+               -- Find if the type refers to a constrained array, an unconstrained array, a task or protected type,
+               -- or anything else
                loop
                   case Definition_Kind (Def) is
+                     when Not_A_Definition =>
+                        Failure ("Not_A_Definition in variable type analysis", Def);
                      when  A_Type_Definition =>
                         case Type_Kind (Def) is
                            when An_Unconstrained_Array_Definition =>
@@ -830,33 +839,52 @@ package body Rules.Declarations is
                               -- not an array
                               exit;
                         end case;
+                     when A_Protected_Definition =>
+                        Do_Report (D_Protected_Variable, Get_Location (Element));
+                        exit;
+                     when A_Task_Definition =>
+                        Do_Report (D_Task_Variable, Get_Location (Element));
+                        exit;
                      when A_Subtype_Indication =>
                         case Constraint_Kind (Subtype_Constraint (Def)) is
                            when An_Index_Constraint =>
                               Do_Report ((D_Array, D_Constrained_Array_Variable), Get_Location (Element));
                               exit;
-                           when Not_A_Constraint =>
-                              -- Nil element: no constraint, search parent subtype
+                           when A_Discriminant_Constraint
+                              | Not_A_Constraint
+                                =>
+                              -- no constraint, search parent subtype
+                              -- discriminant_constraint: not an array, but can still be a task or protected
                               Type_Name := Subtype_Simple_Name (Def);
                               if Expression_Kind (Type_Name) = An_Attribute_Reference then
                                  -- 'Base is only for scalar types
                                  -- 'Class is only for tagged types
-                                 -- None applies to arrays
+                                 -- None applies to arrays, tasks, or protected
                                  exit;
                               end if;
                               Def := Type_Declaration_View (Corresponding_Name_Declaration (Type_Name));
-                           when others =>
-                              -- not an array
+                              if Is_Nil (Def) then
+                                 -- Type_Declaration_View says:
+                                 -- Returns a Nil_Element for a task_type_declaration that has no explicit
+                                 --  task_definition.
+                                 Do_Report (D_Task_Variable, Get_Location (Element));
+                                 exit;
+                              end if;
+                           when A_Range_Attribute_Reference
+                              | A_Simple_Expression_Range
+                              | A_Digits_Constraint
+                              | A_Delta_Constraint
+                                =>
+                              -- not an array, task, protected
                               exit;
                         end case;
                      when others =>
-                        -- task definition, protected definition...
                         exit;
                   end case;
                end loop;
             end;
 
-            if Is_Nil (Initialization_Expression (Element)) then
+            if Is_Nil (Initialization_Expression (Element)) and then not Is_Limited (Element) then
                Do_Report (D_Uninitialized_Variable, Get_Location (Element));
             end if;
 
@@ -865,7 +893,7 @@ package body Rules.Declarations is
 
             case Trait_Kind (Element) is
                when An_Aliased_Trait =>
-                  Do_Report (D_Aliased, Get_Location (Element));
+                  Do_Report (D_Aliased_Constant, Get_Location (Element));
                when others =>
                   null;
             end case;
@@ -886,17 +914,32 @@ package body Rules.Declarations is
 
          when A_Component_Declaration =>
             if Definition_Kind (Enclosing_Element (Element)) = A_Protected_Definition then
-               if Is_Nil (Initialization_Expression (Element)) then
-                  Do_Report (D_Uninitialized_Protected_Field, Get_Location (Element));
+               if Is_Nil (Initialization_Expression (Element)) and then not Is_Limited (Element) then
+                  Do_Report (D_Uninitialized_Protected_Component, Get_Location (Element));
                else
-                  Do_Report (D_Initialized_Protected_Field, Get_Location (Element));
+                  Do_Report (D_Initialized_Protected_Component, Get_Location (Element));
                end if;
+
+               case Trait_Kind (Object_Declaration_View (Element)) is
+                  when An_Aliased_Trait =>
+                     Do_Report (D_Aliased_Protected_Component, Get_Location (Element));
+                  when others =>
+                     null;
+               end case;
+
             else
-               if Is_Nil (Initialization_Expression (Element)) then
-                  Do_Report (D_Uninitialized_Record_Field, Get_Location (Element));
+               if Is_Nil (Initialization_Expression (Element)) and then not Is_Limited (Element) then
+                  Do_Report (D_Uninitialized_Record_Component, Get_Location (Element));
                else
-                  Do_Report (D_Initialized_Record_Field, Get_Location (Element));
+                  Do_Report (D_Initialized_Record_Component, Get_Location (Element));
                end if;
+
+               case Trait_Kind (Object_Declaration_View (Element)) is
+                  when An_Aliased_Trait =>
+                     Do_Report (D_Aliased_Record_Component, Get_Location (Element));
+                  when others =>
+                     null;
+               end case;
             end if;
 
          when A_Parameter_Specification =>
@@ -960,9 +1003,26 @@ package body Rules.Declarations is
                Do_Report (D_Procedure, Get_Location (Element));
             end if;
 
-            if Are_Null_Statements (Body_Statements (Element)) then
-               Do_Report (D_Null_Procedure, Get_Location (Body_Statements (Element)(1)));
-            end if;
+            declare
+               Stmts  : constant Asis.Statement_List := Body_Statements (Element);
+               Called : Asis.Expression;
+            begin
+               if Are_Null_Statements (Stmts) then
+                  Do_Report (D_Null_Procedure, Get_Location (Body_Statements (Element) (1)));
+               end if;
+
+               if Stmts'Length = 1
+                 and then Statement_Kind (Stmts (1)) = A_Procedure_Call_Statement
+               then
+                  Called := Called_Simple_Name (Stmts (1));
+                  if not Is_Nil (Called)
+                    and then Full_Name_Image (Called,            With_Profile => True)
+                           = Full_Name_Image (Names(Element)(1), With_Profile => True)
+                  then
+                     Do_Report (D_Self_Calling_Procedure, Get_Location (Element));
+                  end if;
+               end if;
+            end;
 
             if Body_Exception_Handlers (Element) /= Nil_Element_List then
                Do_Report (D_Handlers, Get_Previous_Word_Location (Body_Exception_Handlers (Element), "EXCEPTION"));
@@ -990,6 +1050,27 @@ package body Rules.Declarations is
                Do_Report (D_Function, Get_Location (Element));
             end if;
 
+            declare
+               use Asis.Statements;
+               Stmts : constant Asis.Statement_List := Body_Statements (Element);
+               Expr  : Asis.Expression;
+            begin
+               if Stmts'Length = 1
+                 and then Statement_Kind (Stmts (1)) = A_Return_Statement
+               then
+                  Expr := Return_Expression (Stmts (1));
+                  if Expression_Kind (Expr) = A_Function_Call then
+                     Expr := Called_Simple_Name (Expr);
+                     if not Is_Nil (Expr)
+                       and then Full_Name_Image (Expr,              With_Profile => True)
+                              = Full_Name_Image (Names(Element)(1), With_Profile => True)
+                     then
+                        Do_Report (D_Self_Calling_Function, Get_Location (Element));
+                     end if;
+                  end if;
+               end if;
+            end;
+
             if Body_Exception_Handlers (Element) /= Nil_Element_List then
                Do_Report (D_Handlers, Get_Previous_Word_Location (Body_Exception_Handlers (Element), "EXCEPTION"));
             end if;
@@ -1006,7 +1087,7 @@ package body Rules.Declarations is
             Check_Discriminant (Discriminant_Part (Element));
 
          when A_Single_Task_Declaration =>
-            Do_Report ((D_Task, D_Single_Task), Get_Location (Element));
+            Do_Report ((D_Task, D_Task_Variable, D_Single_Task), Get_Location (Element));
 
          when A_Protected_Type_Declaration =>
             Do_Report ((D_Type, D_Protected, D_Protected_Type), Get_Location (Element));
@@ -1016,7 +1097,7 @@ package body Rules.Declarations is
             end if;
 
          when A_Single_Protected_Declaration =>
-            Do_Report ((D_Protected, D_Single_Protected), Get_Location (Element));
+            Do_Report ((D_Protected, D_Protected_Variable, D_Single_Protected), Get_Location (Element));
             if Rule_Used (D_Multiple_Protected_Entries) then
                Check_Multiple_Entries (Object_Declaration_View (Element));
             end if;
@@ -1078,6 +1159,7 @@ package body Rules.Declarations is
               or Rule_Used (D_Non_Identical_Renaming)
               or Rule_Used (D_Operator_Renaming)
               or Rule_Used (D_Non_Identical_Operator_Renaming)
+              or Rule_Used (D_Library_Unit_Renaming)
             then
                Renamed_Entity := Simple_Name (A4G_Bugs.Renamed_Entity (Element));
 
@@ -1106,6 +1188,9 @@ package body Rules.Declarations is
                      then
                         Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
                      end if;
+                     if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Renamed_Entity))) then
+                        Do_Report (D_Library_Unit_Renaming, Get_Location (Element));
+                     end if;
                   when others =>
                      Failure ("Not a function name in function renaming");
                end case;
@@ -1118,10 +1203,14 @@ package body Rules.Declarations is
            | A_Generic_Package_Renaming_Declaration
            | A_Generic_Procedure_Renaming_Declaration
            =>
+            Do_Report (D_Renaming, Get_Location (Element));
+
             if Rule_Used (D_Not_Operator_Renaming) then
                Do_Report (D_Not_Operator_Renaming, Get_Location (Element));
             end if;
-            if Rule_Used (D_Non_Identical_Renaming) then
+            if Rule_Used (D_Non_Identical_Renaming)
+              or Rule_Used (D_Library_Unit_Renaming)
+            then
                Renamed_Entity := A4G_Bugs.Renamed_Entity (Element);
                loop
                   case Expression_Kind (Renamed_Entity) is
@@ -1145,6 +1234,9 @@ package body Rules.Declarations is
                         then
                            Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
                         end if;
+                        if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Renamed_Entity))) then
+                           Do_Report (D_Library_Unit_Renaming, Get_Location (Element));
+                        end if;
                         exit;
                      when others =>
                         Failure ("Not a name in renaming");
@@ -1156,7 +1248,6 @@ package body Rules.Declarations is
             then
                Do_Report (D_Function_Call_Renaming, Get_Location (Element));
             end if;
-            Do_Report (D_Renaming, Get_Location (Element));
 
          when A_Formal_Function_Declaration =>
             Do_Report (D_Formal_Function, Get_Location (Element));

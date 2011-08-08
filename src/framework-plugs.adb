@@ -463,7 +463,7 @@ package body Framework.Plugs is
                      when A_Discriminant_Constraint =>
                         Rules.Non_Static. Process_Discriminant_Constraint (Element);
                      when An_Index_Constraint =>
-                        Rules.Array_Declarations. Process_Array_Definition (Element);
+                        Rules.Array_Declarations. Process_Index_Constraint (Element);
                         Rules.Non_Static.         Process_Index_Constraint (Element);
                      when others =>
                         null;

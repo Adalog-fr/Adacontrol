@@ -90,9 +90,10 @@ package body Rules.Non_Static is
       use Subrules_Flag_Utilities;
 
       procedure Add_One (Subrule : Subrules) is
+         use Utilities;
       begin
          if Rule_Used (Subrule) then
-            Parameter_Error (Rule_Id, "parameter already specified: " & Image (Subrule));
+            Parameter_Error (Rule_Id, "parameter already specified: " & Image (Subrule, Lower_Case));
          end if;
 
          Rule_Used (Subrule) := True;
@@ -378,7 +379,9 @@ package body Rules.Non_Static is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Bounds   : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Prefix (Expr));
+         Bounds   : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Prefix (Expr),
+                                                                                        Follow_Access => True);
+         -- NB: Follow_Access must be true for the case where the prefix is an implicit dereference
          Inx_List : constant Asis.Expression_List := Index_Expressions (Expr);
          Inx      : Extended_Biggest_Int;
       begin

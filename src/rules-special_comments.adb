@@ -116,7 +116,7 @@ package body Rules.Special_Comments is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use String_Matching, Framework.Language;
-      use Decl_Conditions_Utilities, Subrules_Flags_Utilities, Units_Flags_Utilities;
+      use Decl_Conditions_Utilities, Subrules_Flags_Utilities, Units_Flags_Utilities, Utilities;
       Sr : Subrules;
       Dc : Decl_Conditions;
       Un : Units;
@@ -157,7 +157,7 @@ package body Rules.Special_Comments is
                   Units_Used       := (others => True);
                else
                   if Units_Used (Un) then
-                     Parameter_Error (Rule_Id, "subrule already specified for " & Image (Un));
+                     Parameter_Error (Rule_Id, "subrule already specified for " & Image (Un, Lower_Case));
                   end if;
                   Unnamed_Contexts (Un) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc);
                   Units_Used (Un)       := True;
@@ -345,20 +345,19 @@ package body Rules.Special_Comments is
                        Unnamed_Contexts (Un),
                        Begin_Loc,
                        """begin"" has no unit name comment for " & Defining_Name_Image (Names (Unit) (1)));
-               return;
-            end if;
-
-            Name_Inx := Index (Begin_Text (Comment_Pos .. Begin_Text'Last), " ", Going => Backward);
-            if Name_Inx = 0 then
-               Name_Inx := Comment_Pos + 2; -- just after "--"
             else
-               Name_Inx := Name_Inx + 1;
-            end if;
-            if Begin_Text (Name_Inx .. Begin_Text'Last) /= To_Upper (Defining_Name_Image (Names (Unit) (1))) then
-               Report (Rule_Id,
-                       Unnamed_Contexts (Un),
-                       Begin_Loc,
-                       """begin"" comment does not name " & Defining_Name_Image (Names (Unit) (1)));
+               Name_Inx := Index (Begin_Text (Comment_Pos .. Begin_Text'Last), " ", Going => Backward);
+               if Name_Inx = 0 then
+                  Name_Inx := Comment_Pos + 2; -- just after "--"
+               else
+                  Name_Inx := Name_Inx + 1;
+               end if;
+               if Begin_Text (Name_Inx .. Begin_Text'Last) /= To_Upper (Defining_Name_Image (Names (Unit) (1))) then
+                  Report (Rule_Id,
+                          Unnamed_Contexts (Un),
+                          Begin_Loc,
+                          """begin"" comment does not name " & Defining_Name_Image (Names (Unit) (1)));
+               end if;
             end if;
          end;
       end;

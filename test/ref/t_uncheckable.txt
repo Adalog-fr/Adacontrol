@@ -33,7 +33,7 @@ t_uncheckable-usage.adb:22:9: Error: Uncheckable: in rule USAGE: Possible false 
 t_uncheckable-usage.adb:24:11: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
 t_uncheckable-usage.adb:25:11: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
 t_uncheckable-usage.adb:26:7: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
-Error: UNCHECKABLE: missing body for X_UNCHECKABLE_PROC
+Error: Uncheckable: missing body for X_UNCHECKABLE_PROC
 t_uncheckable-usage.adb:6:4: Error: USAGE: (normal) T_Uncheckable.Usage.C, constant, not read (can be removed)
 t_uncheckable-usage.adb:9:4: Error: USAGE: (normal) T_Uncheckable.Usage.Ptr, variable, initialized, written, read
 t_uncheckable-usage.adb:5:4: Error: USAGE: (normal) T_Uncheckable.Usage.V, variable, not initialized, written, not read

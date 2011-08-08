@@ -178,7 +178,7 @@ package body Rules.Not_Elaboration_Calls is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check (Association (Subprograms, Value ("NEW")), Get_Location (Alloc));
+      Check (Association (Subprograms, "NEW"), Get_Location (Alloc));
    end Process_Allocator;
 
 begin  -- Rules.Not_Elaboration_Calls

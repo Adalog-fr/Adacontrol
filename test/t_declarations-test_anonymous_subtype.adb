@@ -15,7 +15,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
    type Int2 is new Integer range 1..10;       -- derived_type, anonymous_subtype_declaration
    type Rec (D : Integer) is                   -- ordinary_record_type, record_type, discriminant
       record
-         C : Integer range 0 .. 100;           -- uninitialized_record_field, anonymous_subtype_declaration
+         C : Integer range 0 .. 100;           -- uninitialized_record_component, anonymous_subtype_declaration
       end record;
    type Acc_Rec is access Rec;                 -- access_type
    Acc : Acc_Rec;                              -- variable, uninitialized_variable

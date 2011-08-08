@@ -4,6 +4,7 @@ x_errors.aru:4:8: Syntax: Not a rule name: NOT_A_RULE
 Syntax errors found
 ../rules/gnatcheck.aru: No syntax error
 ../rules/nasa.aru: No syntax error
+../rules/no_83_unit_name.aru: No syntax error
 ../rules/no_annex_c.aru: No syntax error
 ../rules/no_annex_d.aru: No syntax error
 ../rules/no_annex_e.aru: No syntax error

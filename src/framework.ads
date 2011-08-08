@@ -60,8 +60,9 @@ package Framework is
    -------------------------------------------------------------------
 
    type Control_Index is range 0 ..  Max_Controls_For_Rule;
-   type Control_Index_Set is array (Control_Index range 1 .. 32) of Boolean; -- Purposedly limited
+   type Control_Index_Set is array (Control_Index range 1 .. Max_Controls_Set) of Boolean; -- Purposedly limited
    pragma Pack (Control_Index_Set);
+   Empty_Control_Index_Set : constant Control_Index_Set := (others => False);
 
    type Control_Kinds is (Check, Search, Count);
    type Control_Kinds_Set is array (Control_Kinds) of Boolean;
@@ -165,12 +166,17 @@ package Framework is
 
    function Image   (Entity : in Entity_Specification) return Wide_String;
    function Value   (Name   : in Wide_String)          return Entity_Specification;
-   function Matches (Name     : in Asis.Element;
-                     Entity   : in Entity_Specification;
-                     Extended : in Boolean := False) return Boolean;
+
+   type Matching_Extension is (Instance, Renaming);
+   type Extension_Set is array (Matching_Extension) of Boolean;
+   No_Extension   : constant Extension_Set := (others => False);
+   All_Extensions : constant Extension_Set := (others => True);
+
+   function Matches (Entity    : in Entity_Specification;
+                     Name      : in Asis.Element;
+                     Extend_To : in Extension_Set := No_Extension) return Boolean;
    -- Appropriate element kinds for Matches:
    --   like Matching_Context, see below
-   -- If Extended = True, use Extended_Matching_Context instead of Matching_Context
 
 
    -------------------------------------------------------------------
@@ -205,6 +211,9 @@ package Framework is
    function Control_Kind  (Context : in Basic_Rule_Context) return Control_Kinds;
    function Control_Label (Context : in Basic_Rule_Context) return Wide_String;
 
+   Null_Context : constant Root_Context := (null record);
+   -- For rules that need a simple set of entities, use a Context_Store
+   -- of Null_Context
 
    -------------------------------------------------------------------
    --  Context_Store                                                --
@@ -217,8 +226,9 @@ package Framework is
    Already_In_Store : exception;
    Not_In_Store     : exception; -- Raised by Dissociate and Association only
 
-   procedure Balance (Store : in out Context_Store);
-   procedure Clear   (Store : in out Context_Store);
+   procedure Balance  (Store : in out Context_Store);
+   procedure Clear    (Store : in out Context_Store);
+   function  Is_Empty (Store : in     Context_Store) return Boolean;
 
    procedure Associate (Into          : in out Context_Store;
                         Specification : in     Entity_Specification;
@@ -229,16 +239,13 @@ package Framework is
    -- If Additive is True, several /different/ contexts can be associated to a specification
    --    (Already_In_Store is raised if the same context value is associated twice)
 
-   procedure Associate_Default (Into    : in out Context_Store;
-                                Context : in     Root_Context'Class);
-   -- If a default context is defined, it will be returned by Matching_Context if
-   -- the name is not matched, instead of No_Matching_Context.
-   -- Already_In_Store is raised if a default is already associated
-
-   function Matching_Context (Into : in Context_Store;
-                              Name : in Asis.Element) return Root_Context'Class;
+   function Matching_Context (Into      : in Context_Store;
+                              Name      : in Asis.Element;
+                              Extend_To : in Extension_Set := No_Extension) return Root_Context'Class;
    -- Retrieves the context associated to the element if there is a match
    -- Returns No_Matching_Context otherwise (including if Name is a Nil_Element).
+   -- If Extended, extends the search to the original name for renamings
+   -- and corresponding generics if Name is an instantiation or part of an instantiation
    --
    -- Appropriate Element_Kinds for Name:
    --   A_Pragma (condition searched on pragma name)
@@ -255,19 +262,11 @@ package Framework is
    --   The name matches without overloading
    --   The name matches an "all" association with overloading
    --   The name matches an "all" association without overloading
-   --   There is a default association (matches everything)
 
-   function Extended_Matching_Context (Into : in Context_Store;
-                                       Name : in Asis.Element) return Root_Context'Class;
-   -- Same as Matching_Context, but extends the search to the original name for renamings
-   -- and corresponding generics if Name is an instantiation or part of an instantiation
-
-   function Next_Matching_Context (Into : in Context_Store) return Root_Context'Class;
-   --  Use to retrieve other contexts of an additive association
-   --  Returns the default (or No_Matching_Context) when exhausted
 
    function Last_Matching_Name (Into : in Context_Store) return Wide_String;
    -- Name that found the context in the last query to Matching_Context or Association
+   -- "" if the last query was not succesfull
 
    procedure Update (Into    : in out Context_Store;
                      Context : in     Root_Context'Class);
@@ -276,13 +275,29 @@ package Framework is
    function  Association (Into          : in Context_Store;
                           Specification : in Entity_Specification) return Root_Context'Class;
    -- Returns the first Context associated to the specification
-   -- (currently used only for non-additive associations; this may change in the future)
-   --  Returns the default (or No_Matching_Context) when not found
+   --  Returns No_Matching_Context when not found
+
+   function  Association (Into : in Context_Store;
+                          Key  : in Wide_String) return Root_Context'Class;
+   -- Idem, but works with plain strings rather than entities.
+   -- Especially usefule when contexts are associated to "keys" rather than entities
 
    procedure Dissociate (From          : in out Context_Store;
                          Specification : in     Entity_Specification);
    -- Removes context associated to specification
 
+   -- Iterator for additive associations
+   -- Must be initialized by a Create from an instantiation of
+   -- Framework.Generic_Context_Iterator (hence the unknown discriminant)
+   type Context_Iterator (<>) is private;
+
+   procedure Reset        (Iter      : in out Context_Iterator;
+                           Name      : in     Asis.Element;
+                           Extend_To : in     Extension_Set := No_Extension);
+   procedure Reset        (Iter : in out Context_Iterator; Name : in Entity_Specification);
+   function  Value        (Iter : in     Context_Iterator) return Root_Context'Class;
+   procedure Next         (Iter : in out Context_Iterator);
+   function  Is_Exhausted (Iter : in     Context_Iterator) return Boolean;
 
    -------------------------------------------------------------------
    --  Banned entities                                              --
@@ -353,18 +368,20 @@ private
    package Context_Tree is new Binary_Map (Key_Type   => Unbounded_Wide_String,
                                            Value_Type => Context_Node_Access);
 
+
    type Auto_Pointer (Self : access Context_Store) is limited null record;
    -- Rosen trick strikes again...
 
-   type Context_Store is
+   type Context_Store is limited
       record
          This             : Auto_Pointer (Context_Store'Access);
          Simple_Names     : Context_Tree.Map;
          Qualified_Names  : Context_Tree.Map;
-         Default          : Context_Node_Access;
          Last_Returned    : Context_Node_Access;
          Last_Name        : Unbounded_Wide_String;
       end record;
+
+   type Context_Iterator is access all Context_Store;
 
    --
    -- Inhibition

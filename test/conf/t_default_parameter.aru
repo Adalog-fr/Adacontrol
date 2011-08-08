@@ -7,6 +7,8 @@ All_1: check   default_parameter (t_default_parameter.gen, all, not_used);
 All_C: search  default_parameter (calls,                    all, not_used);
 All_I: search  default_parameter (instantiations,           all, not_used);
 
-       check default_parameter (all, "<", not_used);
-Pos:   check default_parameter (all, all, positional);
+       check default_parameter (calls,          "<", not_used);
+       check default_parameter (instantiations, "<", not_used);
+Pos:   check default_parameter (calls,          all, positional);
+Pos:   check default_parameter (instantiations, all, positional);
 

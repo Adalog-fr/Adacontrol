@@ -24,6 +24,7 @@ procedure X_Declaration_Parameter is
    end Make_CB_L3;
 
    -- Level 0
+   procedure Proc10;
    procedure Proc10 is
    begin
       null;
@@ -31,8 +32,12 @@ procedure X_Declaration_Parameter is
 
    -- Level 1
    procedure Proc11 is
-      X : Integer;                   -- declaration level 3
-      Y : Integer := X + 1;          -- declaration level 1
+      CI : constant := 1+2;                             -- OK, named number
+      CR : constant := 1.0 + 2.0;                       -- OK, named number
+      type T1 is range 3 * 5 .. 2 ** 4 - 1;             -- OK, scalar type
+      type T2 is digits 3+1 range 3.0+1.0 .. 2.0 ** 3;  -- OK, scalar type
+      X  : Integer;                   -- declaration level 3
+      Y  : Integer := X + 1;          -- declaration level 1
    begin
       null;
    exception

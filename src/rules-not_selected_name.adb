@@ -148,8 +148,11 @@ package body Rules.Not_Selected_Name is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Current_Context : constant Root_Context'Class := Extended_Matching_Context (Searched_Entities, Element);
-         Encl             : Asis.Element;
+         Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
+                                                                            Element,
+                                                                            Extend_To => (Instance => True,
+                                                                                          Renaming => False));
+         Encl : Asis.Element;
       begin
          if Current_Context /= No_Matching_Context then
             Encl := Enclosing_Element (Element);

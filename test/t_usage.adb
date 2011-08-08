@@ -46,7 +46,7 @@ procedure T_Usage is
       I2 : constant := 2;
       R : constant := 3.0;
 
-      VR : Rec;
+      VR1, VR2 : Rec;
       Ac : Acc;
 
       type Arr_Acc is array (1..10) of Acc;
@@ -63,6 +63,7 @@ procedure T_Usage is
       type Acc_Int is access Integer;
       type Derived is new Acc;
       V5 : Derived;
+      V6 : Integer renames VR2.V;
    private
       XX : Integer;
       YY : Integer;
@@ -95,7 +96,8 @@ procedure T_Usage is
 begin
    Ac.V := 0;            -- Read of Ac
 
-   Pack.VR.V := 1;       -- Write of VR
+   Pack.VR1.V := 1;      -- Write of VR1
+   V6         := 1;      -- Write of VR2
    Pack.A1 := Pack.A3;   -- Write of Pack.A1, Read of Pack.A3
    A2 := C;              -- Write of Pack.A2, Read of Pack.A1
    A2 := I2;

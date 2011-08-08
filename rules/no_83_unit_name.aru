@@ -1,0 +1,11 @@
+-- Check that old names (now renamings) of Ada 83 units are not used
+"Use Ada 95 name": check entities (
+   Unchecked_Conversion,
+   Unchecked_Deallocation,
+   Sequential_IO,
+   Direct_IO,
+   Text_IO,
+   IO_Exceptions,
+   Calendar,
+   Machine_Code
+);

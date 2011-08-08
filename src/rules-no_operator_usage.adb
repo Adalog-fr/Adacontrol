@@ -281,7 +281,7 @@ package body Rules.No_Operator_Usage is
             U         : Operator_Usage := Type_Usage.Fetch (Oper, Default => (others => False));
          begin
             U (Class) := True;
-            Type_Usage.Store (Type_Name, U, At_Declaration_Scope => False);
+            Type_Usage.Store (Type_Name, U);
          end;
       end if;
    end Process_Operator;

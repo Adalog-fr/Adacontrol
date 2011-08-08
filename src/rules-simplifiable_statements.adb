@@ -80,7 +80,7 @@ package body Rules.Simplifiable_Statements is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language;
+      use Framework.Language, Utilities;
       Subrule : Subrules;
 
    begin
@@ -88,7 +88,7 @@ package body Rules.Simplifiable_Statements is
          while Parameter_Exists loop
             Subrule := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Subrule) then
-               Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule));
+               Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
             end if;
 
             Rule_Used (Subrule) := True;

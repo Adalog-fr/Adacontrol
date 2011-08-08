@@ -4,6 +4,8 @@ T3: search instantiations (ada.unchecked_deallocation, standard.integer);
 T4: search instantiations (ada.unchecked_deallocation, standard.string, <>);
 T5: check  instantiations (ada.unchecked_deallocation, standard.string, t_instantiations.string_access);
 T6: check  instantiations (ada.unchecked_conversion, <>, t_instantiations.Integer_Access);
+T7: check  instantiations (ada.unchecked_conversion, <>, digits);
+T8: check  instantiations (ada.unchecked_deallocation, t_instantiations.Tagged_T'class);
 
 Local_Instantiation : check instantiations (local ada.unchecked_deallocation);
 Block_Instantiation : check instantiations (block ada.unchecked_deallocation);

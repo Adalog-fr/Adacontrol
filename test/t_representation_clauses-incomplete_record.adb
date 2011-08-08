@@ -11,7 +11,7 @@ procedure Incomplete_Record is
                I4 : Integer;
          end case;
       end record;
-   for T1 use
+   for T1 use                    -- record, no clause for I2, D, I4
       record
          I1 at 0 range 0 .. 31;
          I3 at 4 range 0 .. 31;

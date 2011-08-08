@@ -106,8 +106,14 @@ procedure T_Directly_Accessed_Globals is
    package body P2 is
       I1 : Integer;
       Count : Integer := 0;
-      S1 : String (1..10);
-      S2 : Character renames S1 (I1);         -- Not from subprogram I1, OK S1
+      S1    : String (1 .. 10);
+      S2    : Character renames S1 (I1);         -- Not from subprogram I1, OK S1
+
+      type Rec is
+         record
+            I, J : Integer;
+         end record;
+      R : Rec;
 
       package Pack is
          G1 : aliased Integer;                -- OK, not package body
@@ -135,6 +141,9 @@ procedure T_Directly_Accessed_Globals is
          if S2 = 'a' then
             null;
          end if;
+         if R.I = 1 then
+            null;
+         end if;
       end Read1;
 
       procedure Write is
@@ -142,6 +151,7 @@ procedure T_Directly_Accessed_Globals is
          I1 := 1;
          S1 (1) := 'a';
          S1 := (others => ' ');
+         R.J := 0;
       end Write;
 
       procedure Update is
@@ -149,12 +159,16 @@ procedure T_Directly_Accessed_Globals is
          begin
             I1 := 1;                -- Nested subprogram, Written
          end Inner;
+         Ren1 : Integer renames R.I;
+         Ren2 : Integer renames R.J;
       begin
-         I1 := 1;                   -- Written
-         S2 := 'a';                 -- Written
-         if S1 = "" then            -- Read
+         I1 := 1;                   -- already written
+         S2 := 'a';                 -- already written
+         if S1 = "" then            -- already read
             null;
          end if;
+         R.J  := R.I;               -- already written, already read
+         Ren1 := Ren2;              -- already written, already read
       end Update;
 
       function Get_Next return Integer is
@@ -165,7 +179,7 @@ procedure T_Directly_Accessed_Globals is
 
       function Get_Current return Integer is
       begin
-         return Count;                 -- Read
+         return Count;                 -- already read
       end Get_Current;
 
       generic
@@ -173,7 +187,7 @@ procedure T_Directly_Accessed_Globals is
 
       procedure Gen is
       begin
-         I1 := 1;                      -- Generic subprogram, Written
+         I1 := 1;                      -- Generic subprogram, already written
       end Gen;
    begin
       S2 := 'a';                       -- Not from subprogram

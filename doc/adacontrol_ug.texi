@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.9r4
+@settitle AdaControl User Guide V1.10r8
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -209,7 +209,7 @@ files. See @ref{Non upward-compatible changes} for details.
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with Gnat version GPL 2007, as distributed
+AdaControl will work only with Gnat version GPL 2008, as distributed
 by ACT. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated
 below.
@@ -229,7 +229,7 @@ speed. @xref{Customizing AdaControl}.
 @node Building AdaControl from source, Installing AdaControl, Installation, Installation
 @section Building AdaControl from source
 This section is only for the source distribution of AdaControl. If you
-downloaded an executable distribution (and are using Gnat GPL 2007),
+downloaded an executable distribution (and are using Gnat GPL 2008),
 you may skip to the next section.
 
 @subsection Prerequisites
@@ -267,6 +267,11 @@ representation clauses, which can cause your program to be rejected by
 GNAT. In that case, we provide a sed script to comment-out all
 representation clauses; this can be sufficient to allow you to use
 AdaControl. @xref{unrepr.sed}.
+
+@subsection Build with installer (Windows)
+Run the installer (@code{adactl_src-setup.exe}). This will
+automatically build and install AdaControl, no other installation is
+necessary.
 
 @subsection Build with project file
 Simply go to the @code{src} directory and type:
@@ -389,12 +394,17 @@ under Linux or @code{adactl.exe} under Windows. In addition,
 @code{pfni} (or @code{pfni.exe} under Windows) is a convenient
 utility, required by the GPS support. @xref{pfni}.
 
-If you built AdaControl from source, these executables are in the
-@code{src} directory of the distribution. If you downloaded an
-executable distribution, they are in the root directory of the
-distribution. Copy the executables to any convenient directory on your
-path; a good place, for example, is in the @code{bin} directory of
-your Gnat installation.
+If you downloaded the Windows installer executable version of
+AdaControl, simply run @code{adactl_exe-setup.exe}. This will install
+all the files in the recommended locations (as has been done with the
+Windows installer source version).
+
+If you built AdaControl from source without an installer, the
+executables are in the @code{src} directory of the distribution. If
+you downloaded an executable distribution, they are in the root
+directory of the distribution. Copy the executables to any convenient
+directory on your path; a good place, for example, is in the
+@code{bin} directory of your Gnat installation.
 
 @node Installing support for GPS, Installing support for AdaGide, Installing AdaControl, Installation
 @section Installing support for GPS
@@ -407,11 +417,10 @@ below.
 
 To add AdaControl support to GPS, copy all the files from the
 @code{GPS} (alternatively @code{GPS-old}) directory into the
-@code{<GPS_dir>/share/gps/plug-ins} directory. Copy also the files
-@code{doc/adacontrol_ug.html} and @code{doc/adacontrol_pm.html} into
-the @code{<GPS_dir>/share/doc/gps/html} to access AdaControl's guides
-from the "Help" menu of GPS.
-
+@code{<GPS_dir>/share/gps/plug-ins} directory. Copy also HTML files
+from the @code{doc} directory into the
+@code{<GPS_dir>/share/doc/gps/html} to access AdaControl's guides from
+the "Help" menu of GPS.
 
 @node Installing support for AdaGide,  , Installing support for GPS, Installation
 @section Installing support for AdaGide
@@ -452,6 +461,7 @@ tree files manually (@pxref{Generating tree files manually}) with the
 @menu
 * Command line parameters and options::  
 * Return codes::                
+* Environment variable and default settings::  
 * Interactive mode::            
 * Other execution modes::       
 * Running AdaControl from GPS::  
@@ -684,8 +694,11 @@ your source code.
 @subsection Verbose and debug mode
 In the default mode, AdaControl displays only messages from triggered
 controls. It is possible to get more information with the verbose
-option (``-v''). In this mode, AdaControl displays unit names as they
-are processed, and its global execution time when it finishes.
+option (``-v''). In this mode, AdaControl displays a a progress
+indicator  and unit names as they are processed, and its global
+execution time when it finishes. Note that the progress indicator
+includes an indication of the run number if there are more than one
+``go'' command.
 
 The ``-d'' option enables debug mode. This mode provides more
 information in case of an internal program error, and is of little
@@ -750,7 +763,7 @@ specified. Most users can ignore this feature; however, specifying
 these options can improve the processing time of big
 projects. @xref{Optimizing Adacontrol}.
 
-@node Return codes, Interactive mode, Command line parameters and options, Program Usage
+@node Return codes, Environment variable and default settings, Command line parameters and options, Program Usage
 @section Return codes
 In order to ease the automation of controlling programs with shell
 scripts, AdaControl returns various error codes depending on how
@@ -769,7 +782,19 @@ specification of units.
 10: There was an internal failure of AdaControl.
 @end itemize
 
-@node Interactive mode, Other execution modes, Return codes, Program Usage
+@node Environment variable and default settings, Interactive mode, Return codes, Program Usage
+@section Environment variable and default settings
+If the environment variable ``ADACTLINI'' is set, its content is taken
+as a set of commands (separated by semi-colons) that are executed
+before any other command. Although any command can be specified, this
+is intended to allow changing default settings with ``set''
+commands. @xref{Set command}.
+
+For example, you can set ADACTLINI to ``set format Gnat_Short'' if you
+prefer having you messages in short format rather than the (default)
+long format.
+
+@node Interactive mode, Other execution modes, Environment variable and default settings, Program Usage
 @section Interactive mode
 The ``-I'' option tells AdaControl to operate interactively. In this
 mode, commands  specified with ``-l'' or ``-f'' options are first
@@ -1617,21 +1642,22 @@ to output all errors, but no analysis of user code will be performed.
 
 @node Controls, Other commands, General, Command language reference
 @section Controls
-A @i{control} is a command that defines how a rule is applied to Ada
-units. The syntax of a control command is as follows:
+A @i{control command} is a command that declares one (or several)
+controls. A control defines how a rule is applied to Ada units. The
+syntax of a control command is as follows:
 @example
-<control>   ::= [<label> ":"] <ctrl_kind> <Rule_Name> [<parameters>] ";"
+<control_command> ::= [<label> ":"] <control> @{"," <control>@} ";"
+<control>   ::= <ctrl_kind> <Rule_Name> [<parameters>]
 <parameters ::= "(" [<modifiers>] <value> @{"," [<modifiers>] <value>@} ")"
 <ctrl_kind> ::= "check"|"search"|"count"
 @end example
 
-If present, the label gives a name to the control; it will be printed
-whenever the control is activated, and can be used to disable the control.
-@xref{Disabling controls}. If no label is present, the rule name is
-printed instead. The label must have the syntax of an Ada identifier,
-or else the label must be included within double quotes (@code{"}), in
-which case it can contain any character. Note that there is no
-problem in specifying the same label for several controls.
+If present, the label gives a name to the control(s); it will be
+printed whenever each control is activated, and can be used to disable
+the control(s).  @xref{Disabling controls}. If no label is present,
+the rule name is printed instead. The label must have the syntax of an
+Ada identifier, or else the label must be included within double
+quotes (@code{"}), in which case it can contain any character.
 
 Each control consists of a <ctrl_kind> followed by a rule name, and
 (optionally) parameters. Some parameters may be preceded by modifiers
@@ -1644,6 +1670,16 @@ check unnecessary_use_clause;
 All_Imports: search pragmas (Import);
 "Why do you need that?": check entities (Unchecked_Conversion,
                                          all 'Address);
+@end example
+
+Specifying several controls with the same label is a shorthand which
+is equivalent to specifying the same label for several controls. It is
+handy when the label is long, and/or to stress that several controls are
+part of the same programming rule. For example:
+@example
+"Check why this obsolete stuff is still used":
+   check entities (obsolete_unit_1),     -- Note comma here!
+   check instantiations (some_obsolete_generic);
 @end example
 
 @menu
@@ -1719,10 +1755,13 @@ line is output, and the message is output behind it, with a ``!''
 pointing to the exact location of the problem.
 
 If the format is ``None'', no error message is output at all. This is
-useful when only the return code of running AdaControl is desired (just
-to check if a program is OK or not). Note that this does @i{not} prevent
-the output of statistics, since these are under control of the ``-S''
-option or the ``set statistics'' command.
+useful when only the return code of running AdaControl is desired
+(just to check if a program is OK or not). Note that this does @i{not}
+prevent the output of statistics, since these are under control of the
+``-S'' option or the ``set statistics'' command. In this case,
+statistics are output in CSVX format, since asking for statistics with
+a ``none'' format is mainly useful for analysing the statistics with a
+spreadsheet program.
 
 With recent versions of Gnat, the file name includes the full path of
 the source file. If the ``_Short'' form of the format option is used,
@@ -1765,9 +1804,9 @@ an Ada entity name
 @end itemize
 
 A numerical value is given with the syntax of an Ada integer or real
-literal (underscores are allowed as in Ada). Based literals are not
-currently supported; if somebody can justify a need for them, we'll be
-happy to add this feature later...
+literal (underscores and exponents are allowed as in Ada). Based
+literals are not supported; if somebody can justify a need for them,
+we'll be happy to add this feature later...
 
 A character string is given within double quotes ``"''. As usual, quotes
 appearing within the string are doubled. The tilde character (``~'') can be
@@ -1944,10 +1983,12 @@ interactive mode. @xref{Interactive mode}.
 @subsection Message command
 Syntax:
 @example
-message "<any string>";
+message "<any string>" [pause];
 @end example
 This command prints the given message on the output file. The length
-of the message is limited to 250 characters.
+of the message is limited to 250 characters. If the word ``pause''
+(case irrelevant) is specified after the message, AdaControl will wait
+for the user to press the Return key before proceeding.
 
 Note that the message is syntactically a string, and must therefore be
 quoted (double quotes).
@@ -1989,6 +2030,7 @@ would output all usages of @code{Pack1} together with all usages of
 Syntax:
 @example
 set Format Gnat|Gnat_Short|CSV|CSV_Short|Source|Source_short|None;
+set Check_Key|Search_Key "<value>"
 set Max_Errors [<value>];
 set Max_Messages [<value>];
 set Output <output file>;
@@ -2000,6 +2042,16 @@ set Debug|Ignore|Timing|Verbose|Warning  On|Off;
 The ``set format'' command selects the output format for the messages,
 like the ``-F'' option; see @ref{Control kinds and report messages} for
 details.
+
+The ``set check_key'' command defines a string which is used in place
+of ``Error'' in messages issued by a ``check'' control. Similarly, the
+``set search_key'' command defines a string which is used in place of
+``Found'' in messages issued by a ``search'' control. This can be
+useful when AdaControl is used, for example, to detect places where
+manual inspection is required; having the word ``Error'' in the
+message could be misleading to the persons in charge of the
+review. Note however that if you set these keys, the GPS interface
+will not be able to recognize properly the messages.
 
 The ``set max_errors'' and ``set max_messages'' limit the output of
 AdaControl, like the ``-m'' and ``-M'' options; see @ref{Output
@@ -2271,8 +2323,9 @@ check allocators (T'Class);
 
 @subsection Tips
 The type given in the rule is the first named subtype, and the rule
-will also find allocators that use a subtype of this type; especially,
-if the allocated type is @code{T'Base}, it will be found as T.
+will also find allocators that use a subtype of this type. If the type
+is declared within a generic package, the rule will control all
+corresponding types from instantiations.
 
 The type mentionned in the rule is the one following the
 @code{@b{new}} keyword, which is not necessarily the same as the
@@ -2295,47 +2348,135 @@ value for the lower bound (typically 0 or 1), or by limiting the
 possible size.
 @subsection Syntax
 @example
-<control_kind> Array_Declarations (First, <value>);
-<control_kind> Array_Declarations (Max_Length, <maximum_length>);
+<control_kind> array_declarations (first, <value> | <bounds>);
+<control_kind> array_declarations (last,  <value> | <bounds>);
+<control_kind> array_declarations (length, <bounds>);
+<control_kind> array_declarations (component, <compo_kind> @{,<repr_cond>@});
+bounds     ::= min|max <value> [, min|max <value> ]
+compo_kind ::= <entity>|<category>
+category   ::= () | access    | array | delta  | digits | mod | private | 
+                    protected | range | record | tagged | task
+repr_cond  ::= [not] packed | sized | component_sized
 @end example
 @subsection Action
 The first parameter is a subrule keyword:
 @itemize
 @item
-``First'' controls the lower bound of each dimension of arrays (even
-unconstrained array types) whose value is not the given value. If this
-subrule is given both for ``search'' and for ``check'', the value for
-``search'' is interpreted as the prefered one, and the value for
+``First'' and ``Last'' control the lower (respectively upper) bound of
+each dimension of arrays (even unconstrained array types). If a single
+value is specified without the ``min'' or ``max'' modifiers, the
+subrule controls the bounds that are not exactly this value;
+otherwise, it controls the bounds that are smaller than the given
+``min'' value or greater than the given ``max'' value. It is possible,
+but not required to specify both ``min'' and ``max''. If this subrule
+is given both for ``search'' and for ``check'', the value(s) for
+``search'' is interpreted as the prefered one, and the value(s) for
 ``check'' is interpreted as an alternative acceptable one; i.e., it is
 a warning if the value is the one given for ``check'', and an error if
 it is neither. In short:
 @example
 search array_declarations (first, 1);
-check array_declarations (first, 0);
+check array_declarations (first, min -1, max 1);
 @end example
-will issue a warning if the lower bound of an array is 0, and an error
-if it is neither 0 or 1.
+will be silent if the lower bound of an array is 1, it will issue a
+warning  if it is in the range -1 .. 1, and an error otherwise.
 @item
-``Max_Length'' controls arrays that have a dimension whose number of
-elements is greater than the given value, except for unconstrained
-array types.
+``Length'' controls arrays that have a dimension whose number of
+elements is smaller than the given ``min'' value or greater than the
+given ``max'' value (except for unconstrained array types). At least
+one of ``min'' or ``max'' must be specified, but it is not required to
+specify both.
+@item
+``Component'' controls arrays whose component type is the indicated
+<entity>, or whose component type belongs to the indicated
+<category>. If the <entity> is a subtype, only arrays whose components
+are of that subtype are controlled. If the indicated <entity> is a
+type, all arrays whose components are of that type (including
+subtypes) are controlled. The meaning of <category> is:
+@itemize @bullet
+@item
+``()'': The component is of an enumerated type.
+@item
+``access'':  The component is of an acces type.
+@item
+``array'': The component is of an array type.
+@item
+``delta'': The component is of a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The component is of a floating point type.
+@item
+``mod'': The component is of a modular type.
+@item
+``private'': The component is of a private type (including private
+extensions).
+@item
+``protected'': The component is of a protected type.
+@item
+``range'': The component is of a signed integer type.
+@item
+``record'': The component is of an (untagged) record type.
+@item
+``tagged'': The component is of a tagged type (including type
+extensions).
+@item
+``task'': The component is of a task type.
+@end itemize
+If <repr_cond> are specified, the rule controls only arrays to which
+all the corresponding representation items apply:
+@itemize @bullet
+@item
+``packed'': A pragma Pack applies to the array.
+@item
+``not packed'': No pragma Pack applies to the array.
+@item
+``sized'': A size representation clause applies to the array.
+@item
+``not sized'': No size representation clause applies to the array.
+@item
+``component_sized'': A component_size representation clause applies to
+the array.
+@item
+``not component_sized'': No component_size representation clause
+applies to the array.
+@end itemize
 @end itemize
 
-This rule can be specified at most once for each subrule and for each
-of ``check'', ``search'' and ``count''. It is thus possible for each
-subrule to have a value considered a warning, and a value considered
-an error.
+This rule can be specified several times for the ``component''
+subrule.  For other subrules, it can be specified at most once for
+each subrule and for each of ``check'', ``search'' and ``count''. It
+is thus possible for each subrule to have a value considered a
+warning, and a value considered an error.
 
 Ex:
 @example
 check array_declarations (first, 1);
-check array_declarations (max_length, 100);
+check array_declarations (length, max 100);
+
+-- No empty array:
+check array_declarations (length, min 1);
+
+-- Arrays whose component type is private:
+check array_declarations (component, private);
+
+-- Packed arrays of Character
+check array_declarations (component, Standard.Character, packed);
+
+-- Packed arrays of record without size clause
+check array_declarations (component, record, packed, not sized);
 @end example
 
-@subsection Tip
+@subsection Tips
 The subrule @code{Max_Length} ignores index constraints that are not
 static.  Non static index constraints can be controlled with the rule
 @code{Non_Static (Index_Constraint)}. @xref{Non_Static}.
+
+Requiring the same @i{upper} bound for all arrays is not very useful, but:
+@example
+check array_declarations (last, min 1);
+@end example
+can be used to check that no array has a negative or zero upper bound.
 
 @node Barrier_Expressions, Case_Statement, Array_Declarations, Rules reference
 @section Barrier_Expressions
@@ -2437,9 +2578,9 @@ statement.  It is intended for cases where it is desired to limit the
 complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
-<control_kind> Case_Statement (<subrule>, <bound_spec> [, <bound_spec>]);
+<control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
 subrule    ::= others_span | paths | range_span | values
-bound_spec ::= min | max <value>
+bound ::= min | max <value>
 @end example
 
 @subsection Action
@@ -2552,68 +2693,73 @@ This rule controls usage of various kinds of declarations, possibly only
 those occurring at specified locations.
 @subsection Syntax
 @example
-<control_kind> declarations (<decl_spec> @{, <decl_spec>@});
-decl_spec   ::= @{<location_kw>@} <declaration_kw>
+<control_kind> declarations (<subrule> @{, <subrule>@});
+subrule     ::= @{<location_kw>@} <declaration_kw>
 location_kw ::= all | block   | library | local     | nested | 
                 own | private | public  | task_body
 declaration_kw ::=
-   any_declaration                 |
-   abstract_function               | abstract_procedure            |
-   abstract_type                   | access_all_type               |
-   access_constant_type            | access_protected_type         |
-   access_subprogram_type          | access_task_type              |
-   access_type                     | aliased                       |
-   anonymous_subtype_allocator     | anonymous_subtype_case        |
-   anonymous_subtype_declaration   | anonymous_subtype_for         |
-   anonymous_subtype_indexing      | array                         | 
-   array_type                      | binary_modular_type           | 
-   character_literal               | child_unit                    | 
-   class_wide_constant             | class_wide_variable           |
-   constant                        | constrained_array_type        | 
-   constrained_array_variable      | controlled_type               | 
-   decimal_fixed_type              | defaulted_discriminant        | 
-   defaulted_generic_parameter     | defaulted_parameter           | 
-   deferred_constant               | derived_type                  | 
-   discriminant                    | empty_private_part            | 
-   empty_visible_part              | enumeration_type              | 
-   entry                           | exception                     | 
-   extension                       | fixed_type                    | 
-   float_type                      | formal_function               | 
-   formal_package                  | formal_procedure              | 
-   formal_type                     | function                      | 
-   function_call_renaming          | function_instantiation        | 
-   generic                         | generic_function              | 
-   generic_package                 | generic_procedure             | 
-   handlers                        | in_out_generic_parameter      | 
-   in_out_parameter                | incomplete_type               |
-   instantiation                   | integer_type                  | 
-   initialized_protected_field     | initialized_record_field      | 
-   limited_private_type            | modular_type                  | 
-   multiple_names                  | multiple_protected_entries    | 
-   named_number                    | non_binary_modular_type       | 
-   non_limited_private_type        | non_identical_renaming        | 
-   non_identical_operator_renaming | not_operator_renaming         | 
-   null_extension                  | null_ordinary_record_type     | 
-   null_procedure                  | null_tagged_type              | 
-   operator                        | operator_renaming             | 
-   ordinary_fixed_type             | ordinary_fixed_type_no_small  |
-   ordinary_fixed_type_with_small  | ordinary_record_type          | 
-   out_parameter                   | package                       | 
-   package_instantiation           | procedure_instantiation       | 
-   package_statements              | predefined_operator           | 
-   private_extension               | procedure                     | 
-   protected                       | protected_entry               | 
-   protected_type                  | record_type                   | 
-   renaming                        | separate                      | 
-   signed_type                     | single_array                  | 
-   single_protected                | single_task                   | 
-   subtype                         | tagged_type                   | 
-   task                            | task_entry                    | 
-   task_type                       | type                          | 
-   unconstrained_array_type        | unconstrained_array_variable  | 
-   unconstrained_subtype           | uninitialized_protected_field | 
-   uninitialized_record_field      | uninitialized_variable        | 
-   variable                        | variant_part
+   any_declaration                   |
+   abstract_function                 | abstract_procedure              |
+   abstract_type                     | access_all_type                 |
+   access_constant_type              | access_protected_type           |
+   access_subprogram_type            | access_task_type                |
+   access_type                       | aliased_array_component         |
+   aliased_constant                  | aliased_protected_component     |
+   aliased_record_component          | aliased_variable                |
+   anonymous_subtype_allocator       | anonymous_subtype_case          |
+   anonymous_subtype_declaration     | anonymous_subtype_for           |
+   anonymous_subtype_indexing        | array                           |
+   array_type                        | binary_modular_type             |
+   character_literal                 | child_unit                      |
+   class_wide_constant               | class_wide_variable             |
+   constant                          | constrained_array_type          |
+   constrained_array_variable        | controlled_type                 |
+   decimal_fixed_type                | defaulted_discriminant          |
+   defaulted_generic_parameter       | defaulted_parameter             |
+   deferred_constant                 | derived_type                    |
+   discriminant                      | empty_private_part              |
+   empty_visible_part                | enumeration_type                |
+   entry                             | exception                       |
+   extension                         | fixed_type                      |
+   float_type                        | formal_function                 |
+   formal_package                    | formal_procedure                |
+   formal_type                       | function                        |
+   function_call_renaming            | function_instantiation          |
+   generic                           | generic_function                |
+   generic_package                   | generic_procedure               |
+   handlers                          | incomplete_type                 |
+   in_out_generic_parameter          | in_out_parameter                |
+   initialized_protected_component   | initialized_record_component    |
+   instantiation                     | integer_type                    |
+   library_unit_renaming             | limited_private_type            |
+   modular_type                      | multiple_names                  | 
+   multiple_protected_entries        | named_number                    | 
+   non_binary_modular_type           | non_identical_operator_renaming | 
+   non_identical_renaming            | non_limited_private_type        |  
+   not_operator_renaming             | null_extension                  | 
+   null_ordinary_record_type         | null_procedure                  | 
+   null_tagged_type                  | operator                        | 
+   operator_renaming                 | ordinary_fixed_type             | 
+   ordinary_fixed_type_no_small      | ordinary_fixed_type_with_small  | 
+   ordinary_record_type              | out_parameter                   | 
+   package                           | package_instantiation           | 
+   package_statements                | predefined_operator             |
+   private_extension                 | procedure                       |
+   procedure_instantiation           | protected                       | 
+   protected_entry                   | protected_type                  | 
+   protected_variable                | record_type                     | 
+   renaming                          | self_calling_function           | 
+   self_calling_procedure            | separate                        | 
+   signed_type                       | single_array                    | 
+   single_protected                  | single_task                     | 
+   subtype                           | tagged_type                     | 
+   task                              | task_entry                      | 
+   task_type                         | task_variable                   | 
+   type                              | unconstrained_array_type        | 
+   unconstrained_array_variable      | unconstrained_subtype           | 
+   uninitialized_protected_component | uninitialized_record_component  | 
+   uninitialized_variable            | variable                        | 
+   variant_part
 @end example
 
 @subsection Action
@@ -2677,6 +2823,16 @@ access to protected types, or access to task types, respectively. Similarly,
 @code{access_all_type} control generalized access to variables types (aka
 "@code{@b{access} @b{all} T}", and @code{access_constant_type} control
 generalized access to constants types (aka "@code{@b{access} @b{constant} T}").
+@item
+@code{aliased_variable} and @code{aliased_constant} control the
+declarations of aliased variables or constants, respectively. 
+@item
+@code{aliased_array_component} controls the declaration of arrays
+(array types or single arrays) whose components are declared aliased.
+@item
+@code{aliased_record_component} and @code{aliased_protected_component}
+control the declarations of aliased record (respectively protected)
+components.
 @item
 @code{anonymous_subtype_declaration} controls the declarations of
 anonymous subtypes and ranges that are part of some other
@@ -2782,13 +2938,14 @@ procedure) instantiations.
 is a power of 2, and @code{non_binary_modular_type} controls only
 modular types whose modulus is not a power of 2.
 @item
-@code{initialized_record_field} and @code{initialized_protected_field}
-control the declaration of record (respectively protected) component
-that include a default initialization, while
-@code{uninitialized_record_field} and
-@code{uninitialized_protected_field} control the declaration of record
+@code{initialized_record_component} and
+@code{initialized_protected_component} control the declaration of
+record (respectively protected) component that include a default
+initialization, while @code{uninitialized_record_component} and
+@code{uninitialized_protected_component} control the declaration of record
 (respectively protected) component that do not include a default
-initialization
+initialization, unless they are of a limited type since initialization would
+not be allowed in that case.
 @item
 @code{limited_private_type} controls limited private type
 declarations, while @code{non_limited_private_type} controls regular
@@ -2837,12 +2994,21 @@ record types, and @code{tagged_type} controls only tagged record types.
 @code{renaming} controls all renaming declarations, while
 @code{operator_renaming} controls only those that are renamings of an
 operator, @code{not_operator_renaming} controls only those that are
-@emph{not} renamings of an operator, and @code{function_call_renaming}
-controls renaming of the result of a function call.
+@emph{not} renamings of an operator, @code{function_call_renaming}
+controls renaming of the result of a function call, and
+@code{library_unit_renaming} controls renaming of library units.
 @code{non_identical_renaming} controls only renamings where the new
 name and the old name are not the same, and
 @code{non_identical_operator_renaming} does the same, but only for
 renamings of operators.
+@item
+@code{self_calling_function} controls functions whose body contains
+only a single @code{@b{return}} statement, and the return expression
+is a (recursive) call to the same function. Similarly,
+@code{self_calling_procedure} controls procedures whose body contains
+only a single statement which is a (recursive) call to the same
+procedure. Note that this corresponds to bodies automatically
+generated by gnatstub.
 @item
 @code{subtype} controls all explicit subtype declarations (i.e. not
 all anonymous subtypes that appear at various places in the
@@ -2858,9 +3024,12 @@ only single task declarations or task type declarations respectively
 @item
 @code{variable} controls all variable declarations, while
 @code{uninitialized_variable} controls only variable declarations that
-do not include an initialization expression.
+do not include an initialization expression, unless they are of a
+limited type since initialization would not be allowed in that case.
 @code{class_wide_variable} controls the declarations of variables of a
-class-wide type.
+class-wide type. @code{task_variable} and @code{protected_variable}
+control task and protected objects (respectively), whether given with
+a named or anonymous type.
 @item
 @code{variant_part} controls variant parts in record defintions.
 @end itemize
@@ -2966,9 +3135,9 @@ by count.
 @subsection Syntax
 @example
 <control_kind> dependencies (others, <unit> @{,<unit>@});
-<control_kind> dependencies (<counter>, <bound_spec> [, <bound_spec>]);
+<control_kind> dependencies (<counter>, <bound> [, <bound>]);
 counter    ::= raw | direct | parent
-bound_spec ::= min | max <value>
+bound ::= min | max <value>
 @end example
 
 @subsection Action
@@ -3187,8 +3356,7 @@ corresponding generics are not used.
 
 @node Entity_Inside_Exception, Exception_Propagation, Entities, Rules reference
 @section Entity_Inside_Exception
-This rule controls entities whose use is not allowed in exception
-handlers.
+This rule controls entities that appear within exception handlers.
 @subsection Syntax
 @example
 <control_kind> entity_inside_exception (<spec> @{, <spec>@});
@@ -3261,6 +3429,8 @@ it has an exception handlers with a ``@code{@b{when others}}'' choice
 no exception handler contains a @code{@b{raise}} statement, nor any
 call to @code{Ada.Exception.Raise_Exception} or
 @code{Ada.Exception.Reraise_Occurrence}.
+@item
+no declaration from its own declarative part propagates exceptions.
 @end enumerate
 
 A declaration is considered propagating if it includes elements that
@@ -3276,7 +3446,9 @@ their effect, are:
 ``parameter'' and ``task''. Not allowed for ``declaration'').
 @item
 1: all function calls (including operators) in declarations are
-considered as potentially propagating exceptions.
+considered as potentially propagating exceptions, except those
+appearing in named number declarations or scalar types declarations,
+since those are required by the language to be static.
 @item
 2: same as 1, plus every use of variables in expressions is considered
 as potentially propagating.
@@ -3318,13 +3490,6 @@ exception handler that (at least) reports that the task is being
 completed due to an exception. In its third form, the rule will report
 on any task that can propagate exceptions.
 @end itemize
-
-For these three forms, ensuring that a handler is present protects
-against exceptions raised in the sequence of statements, but not
-against exceptions raised by declarations. In addition, the (optional)
-@code{<level>} parameter can be used to control the use of certain
-constructs in the declarative part of subprograms or tasks, in order
-to minimize the possibility of exceptions being raised.
 
 Finally, it is sometimes desirable to make sure that no declaration
 raises an exception, ever. In its fourth form, the rule will report on
@@ -3407,24 +3572,65 @@ These last two cases are detected by the rule
 This rule controls usage of various kinds of expressions.
 @subsection Syntax
 @example
-<control_kind> expressions (<expression_kw> @{, <expression_kw>@});
-
+<control_kind> expressions (<subrule> @{, <subrule>@});
+subrule ::= @{<category>@} <expression_kw>
 expression_kw ::=
    and                              | and_then              |
-   array_aggregate                  | array_partial_others  |
-   array_others                     | complex_parameter     |
-   inconsistent_attribute_dimension | mixed_operators       |
-   or                               | or_else               |
-   real_equality                    | record_partial_others |
-   record_aggregate                 | record_others         |
-   slice                            | type_conversion       |
+   array_aggregate                  | array_partial_others  | 
+   array_others                     | complex_parameter     | 
+   inconsistent_attribute_dimension | mixed_operators       | 
+   or                               | or_else               | 
+   parameter_view_conversion        | prefixed_operator     | 
+   real_equality                    | record_partial_others | 
+   record_aggregate                 | record_others         | 
+   slice                            | type_conversion       | 
    universal_range                  | unqualified_aggregate | 
    xor
-
+category ::= 
+   <>     | ()     | range  | mod | delta   | digits | array    |
+   record | tagged | access | new | private | task   | protected
 @end example
 @subsection Action
 This rule controls usage of certain forms of expressions. The rule can
-be specified at most once for each expression keyword.
+be specified at most once for each subrule (i.e. subrules that accept
+categories can be specified once for each combination of categories
+and expression keyword).
+
+Categories are used by certain subrules to further refine the control.
+They define categories of types to which they apply:
+@itemize @bullet
+@item
+``<>'': Any type
+@item
+``()'': Enumerated types
+@item
+``range'': Signed integer types
+@item
+``mod'': Modular types
+@item
+``delta'': Fixed point types (no possibility to differentiate ordinary
+and decimal fixed point types yet).
+@item
+``digits'': Floating point types
+@item
+``array'': Array types
+@item
+``record'': (untagged) record types
+@item
+``tagged'': Tagged types (including type extensions)
+@item
+``access'': Access types
+@item
+``new'': Derived types
+@item
+``private'': Private types
+@item
+``task'': Task types
+@item
+``protected'': Protected types
+@end itemize
+
+The subrule define the kind of expression being controlled:
 @itemize @bullet
 @item
 @code{and}, @code{or}, @code{xor}, @code{and_then}, and @code{or_else}
@@ -3461,12 +3667,31 @@ different operators, without parentheses. In a sense, it extends the
 language rule that forbids mixing @code{@b{and}} and @code{@b{or}} in
 logical expressions to all other operators.
 @item
+@code{prefixed_operator} controls calls to operators that use prefixed
+notation (i.e. @code{"+"(A, B)}). If a category is specified, only
+calls whose result type belongs to the category are controlled.
+
+Derived types are followed, i.e. the ``real'' category from the
+original type is used for the matching; as a consequence, the ``new''
+category cannot be specified for this subrule.
+@item
 @code{real_equality} controls usage of exact equality or inequality
 (``='' or ``/='') between real (floating point or fixed point) values.
 @item
 @code{slice} controls usage of array slices.
 @item
-@code{type_conversion} controls all (sub)type conversions.
+@code{type_conversion} controls all (sub)type conversions, while
+@code{parameter_view_conversion} controls conversions that appear as
+@code{@b{out}} or  @code{@b{in out}} actual parameters. One or two
+categories can be specified; if only one category is specified, only
+conversions whose result type belong to that category are
+controlled. If two categories are specified, only conversions whose
+souce type belongs to the first category and whose target type belong
+to the second category are controlled.
+
+Derived types are followed, i.e. the ``real'' category from the
+original type is used for the matching; as a consequence, the ``new''
+category cannot be specified for this subrule.
 @item
 @code{universal_range} controls discrete ranges that are a part of an
 index constraint, constrained array definition, or for-loop parameter
@@ -3478,6 +3703,15 @@ Ex:
 @example
 search expressions (real_equality, slice);
 check  expressions (mixed_operators);
+
+-- Find all conversions between integer and floating point types
+search expression (range digits conversion);
+
+-- Find all conversions from a fixed point type:
+search expressions (delta <> conversion);
+
+-- Find all view conversions between array types:
+search expressions (array parameter_view_conversions);
 @end example
 
 @node  Global_References, Header_Comments, Expressions, Rules reference
@@ -3608,9 +3842,30 @@ of the file that contains the rule, or to the current directory if the
 rule is given on the command line.  Each line of the indicated file is
 a regular expression, and the rule controls that the corresponding
 line of the source file matches the expression. @xref{Syntax of
-regular expressions}. However, if a line contains only a single ``*''
-character, it means that the next line is a pattern that can be
-matched any number of times (including 0).
+regular expressions}. In addition, it is possible to specify a repetition
+for a line. If the first character of a line is a @code{'@{'}, the line
+must have the following syntax:
+@example
+@{<min>,[<max>]@}
+@end example
+where <min> and <max> specify the minimum and maximum number of
+occurrences of the pattern in the line that follows this one. <min>
+must be at least 0, and <max> must be at least 1, and be equal or
+greater than <min>. If <max> is omitted, it means that the line may
+occur any number of times.
+
+As a convenience, if the first character of a line is a @code{'*'}
+it means that the next line is a pattern that can occur any number of
+times (same as @code{@{0,@}}). If the first character is a
+@code{'+'}, it means that the next line is a pattern that must occur
+at least once (same as @code{@{1,@}}). If the first character is a
+@code{'?'}, it means that the next line is an optional pattern (same
+as @code{@{0,1@}}).
+
+Note that the repetition lines all start with a special character
+which is not allowed at the start of a regular expression; there is
+therefore no ambiguity. Everything after the special character (or the
+closing @code{'@}'}) is ignored, and can be used to provide comments.
 
 This rule can be given at most once with ``minimum'' for each of
 ``check'', ``search'', and ``count''. The rule can be given only once
@@ -3630,6 +3885,7 @@ with less than 20 comment lines is reported.
 
 Example of a pattern file:
 @example
+@{1,3@} 1 to 3 occurrences of next line
 ^--$
 ^-- Author: .+$
 ^-- Date: \d@{2@}/\d@{2@}/\\d@{4@}$
@@ -3676,11 +3932,10 @@ This rule enforces a coding pattern that ensures that variables and
 @code{@b{out}} parameters are properly initialized befor use.
 @subsection Syntax
 @example
-<control_kind> improper_initialization
-   [(<check_kind> @{,<check_kind>@})]
-check_kind ::= @{<extra>@} <target>
-extra      ::= access | limited
-target     ::= out_parameter | variable | initialized_variable
+<control_kind> improper_initialization [(<subrule> @{,<subrule>@})]
+subrule ::= @{<extra>@} <target>
+extra   ::= access | limited | package
+target  ::= out_parameter | variable | initialized_variable
 @end example
 @subsection Action
 This rule controls variables and/or @code{@b{out}} parameters that are
@@ -3709,8 +3964,8 @@ procedure calls;
 @item
 return statements;
 @item
-@code{@b{if}} and @code{@b{case}} statements, unless they contain an
-embedded non-trivial statement.
+@code{@b{if}} and @code{@b{case}} statements, unless they contain a
+nested non-trivial statement.
 @end itemize
 The <target> parameters determines what is to be checked:
 @itemize @bullet
@@ -3722,7 +3977,7 @@ every (trivial) @code{return} statement.
 @code{variable} controls that local variables are
 safely initialized before the first non-trivial statement.
 @item
-@code{initialized_variable} controls local variable that are safely
+@code{initialized_variable} controls variables that are safely
 initialized before the first non-trivial statement, but also have an
 explicit (and therefore useless) explicit initialization in their
 declaration.
@@ -3739,6 +3994,11 @@ initialized after the statement.  Note that the variable must be
 assigned to globally, i.e. assigning to some elements of an array, or
 some fields of a record, does not count as an initialization of the
 variable.
+
+Variables declared immediately within a (generic) package
+specification or body are not checked, unless the modifier ``package''
+is specified (quite often, package state variables are initialized
+through calls to dedicated procedures).
 
 Normally, the rule does not control objects of an access types, or
 arrays whose components are of an access type, since these are always
@@ -3769,6 +4029,10 @@ positive. Such a case is detected by the rule
 ``uncheckable''. @xref{Uncheckable}. It is then easy to disable the
 rule for this variable. @xref{Disabling controls}.
 
+The rule analyzes only initializations and uses that are directly in
+the unit, not those from nested units, since these are in the general
+case not statically checkable.
+
 There are other cases where an object is automatically initialized by
 the declaration, like controlled types that have redefined the
 @code{Initialize} procedure, records where all components have a
@@ -3785,9 +4049,12 @@ places.
 @subsection Syntax
 @example
 <control_kind> instantiations (<generic_spec>);
-generic_spec ::= @{<location_kw>@} <generic name> @{, <entity name> | <> | =@}
-location_kw ::= all | block   | library | local     | nested | 
-                own | private | public  | task_body
+generic_spec ::= @{<location_kw>@} <generic name> @{, <formal_spec>@}
+formal_spec  ::= <entity name> | <category> | <> | =
+location_kw  ::= all | block   | library | local     | nested | 
+                 own | private | public  | task_body
+category     ::= ()      | access    | array | delta  | digits | mod  |
+                 private | protected | range | record | tagged | task
 @end example
 
 @subsection Action
@@ -3835,13 +4102,48 @@ any) and either:
 @item
 No entity name is given in the rule
 @item
-The entity names given are the same as the first parameters of the
-instantiation (i.e. there can be more actual parameters in the
-instantiation than specified in the rule). Two special signs can be
-given instead of an entity name: a box (@code{<>}) matches any actual
-parameter (i.e. it stands for any value), and an equal sign (@code{=})
-matches if there has been already an instantiation with the same value
-for this parameter (i.e. it matches the second time it is encountered).
+The actual parameter of the instantiation matches the corresponding
+<formal_spec> if any (there can be more actual parameters in the
+instantiation than specified in the rule). An actual parameter matches
+an entity if it is the same entity, if the entity designates a
+(sub)type and  the actual is a subtype of this type, or if it is a
+type name that belongs to the corresponding category:
+@itemize @bullet
+@item
+``()'': The parameter is of an enumerated type.
+@item
+``access'':  The parameter is of an acces type.
+@item
+``array'': The parameter is of an array type.
+@item
+``delta'': The parameter is of a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The parameter is of a floating point type.
+@item
+``mod'': The parameter is of a modular type.
+@item
+``private'': The parameter is of a private type (including private
+extensions).
+@item
+``protected'': The parameter is of a protected type.
+@item
+``range'': The parameter is of a signed integer type.
+@item
+``record'': The parameter is of an (untagged) record type.
+@item
+``tagged'': The parameter is of a tagged type (including type
+extensions).
+@item
+``task'': The parameter is of a task type.
+@end itemize
+
+In addition, two special signs can be given instead of an entity (or
+category) name: a box (@code{<>}) matches any actual parameter
+(i.e. it stands for any value), and an equal sign (@code{=}) matches
+if there has been already an instantiation with the same value for
+this parameter (i.e. it matches the second time it is encountered).
 @end enumerate
 
 If an actual is an expression (which is possible only for a formal
@@ -3855,6 +4157,10 @@ search instantiations (ada.unchecked_deallocation);
 -- Check all instantiations of Unchecked_Conversion from or to String:
 check instantiations (ada.unchecked_conversion, standard.string);
 check instantiations (ada.unchecked_conversion, <>, standard.string);
+
+-- Check all instantiations of Unchecked_Conversion from address 
+-- to an integer type:
+check instantiations (ada.unchecked_conversion, system.address, range);
 
 -- Check that Unchecked_Conversion is instantiated only once
 -- for any pair of arguments:
@@ -3879,6 +4185,18 @@ check instantiations (Gen, =, Pack.Proc);
 -- second parameter is any procedure named Proc:
 check instantiations (Gen, =, all Proc);
 @end example
+
+Note that a generic actual wich is a subtype matches all types (and subtypes)
+above it. Therefore,
+@example
+check instantiations (ada.unchecked_deallocation (standard.natural));
+@end example
+will find only instantiations that use @code{Natural}, while:
+@example
+check instantiations (ada.unchecked_deallocation (standard.integer));
+@end example
+will find instantiations that use either @code{Integer},
+@code{Positive}, or @code{Natural}.
 
 @subsection Limitation
 Gnat defines @code{Unchecked_Conversion} and
@@ -3940,22 +4258,40 @@ the same name.
 @subsection Syntax
 @example
 <control_kind> local_hiding [(<subrule> @{,<subrule>@})];
-<subrule> ::= strict | overloading
+<subrule>   ::= @{<exception>@}  strict | overloading | overloading_short
+<exception> ::= not_operator | not_enumeration
 @end example
 
 @subsection Action
 If ``strict'' is given (or if there is no subrule), the rule controls
 strict hiding (an inner subprogram that overloads an outer one is not
-considered hiding). If ``overloading'' is given, only subprograms that
-overload another subprogram in the same scope or in an outer scope are
-controlled.
+considered hiding). If ``overloading'' or ``overloading_short'' is
+given, only subprograms that overload another subprogram in the same
+scope or in an outer scope are controlled. Note that following the
+normal Ada model, the declarations of enumeration literals are
+considered functions (and thus controlled).
 
-This rule  can be given only once for strict and once for overloading.
+If ``not_operator'' is mentionned, the subrule does not apply to the
+declarations of operators (i.e. things like ``@code{"+"}''). If
+``not_enumeration'' is mentionned, the subrule does not apply to the
+hiding/overloading of enumeration literals by other enumeration
+literals (the  rule still applies to the hiding/overloading of
+functions by enumeration litterals, for example).
+
+``overloading'' and ``overloading_short'' behave the same, except for
+the way occurrences are reported. When a construct that overloads
+several other constructs is encountered, ``overloading'' will issue a
+message for each overloaded construct, while ``overloading_short''
+will issue a single message mentionning how many constructs are
+overloaded, and a pointer to the last one.
+
+This rule can be given only once for ``strict'' and once for either
+``overloading'' or ``short_overloading''.
 
 Ex:
 @example
 Hiding: check local_hiding (strict);
-Overloading: search local_hiding (overloading);
+Overloading: search local_hiding (not_operator overloading);
 @end example
 
 @node Max_Blank_Lines, Max_Call_Depth, Local_Hiding, Rules reference
@@ -4131,8 +4467,8 @@ This rule controls the nesting of compound statements.
 
 @subsection Syntax
 @example
-<control_kind> Max_Statement_Nesting (<stmt_kw>, <max allowed depth>);
-<stmt_kw> ::= block | case | if | loop | all
+<control_kind> Max_Statement_Nesting (<subrule>, <max allowed depth>);
+<subrule> ::= block | case | if | loop | all
 @end example
 @subsection Action
 If one of ``block'', ``case'', ``if'', or ``loop'' is specified, it
@@ -5012,10 +5348,11 @@ scope.
 
 @subsection Syntax
 @example
-<control_kind> reduceable_scope [(<target> @{, <target>@})];
-<target> ::= [no_blocks] all        | variable | constant |
-                         subprogram | type     | package  |
-                         exception  | generic  | use
+<control_kind> reduceable_scope [(<subrule> @{, <subrule>@})];
+<subrule> ::= @{<restriction>@} all        | variable | constant |
+                              subprogram | type     | package  |
+                              exception  | generic  | use
+<restriction> ::= no_blocks | to_body
 @end example
 @subsection Action
 The rule reports on any declaration that is referenced only from a
@@ -5037,11 +5374,14 @@ dispatching operations (primitive operations of tagged types) are not
 reported either, since they can be the target of an ``invisible''
 (dispatching) call.
 
-If no <target> is given, all declarations are controlled (``all''
-stands for all other subrules). If @code{no_blocks} is specified in
-front of a subrule, the rule will not consider blocks as possible
-targets for a reduced scope for the corresponding category. Specifying
-``all'' explicitely is only useful in the case of ``no_blocks all''.
+If no <target> is given, or the <target> is ``all'', all declarations
+are controlled. If @code{no_blocks} is specified in front of a
+<target>, the rule will not consider blocks as possible targets for a
+reduced scope for the corresponding category.  If @code{to_body} is
+specified in front of a <target>, the rule will report only elements
+declared in a package specification that could be moved into the body.
+Specifying ``all'' explicitely is only useful in the case where there
+is a <restriction>.
 
 As a side effect, the rule will report about entities that are
 declared but not used (i.e. whose scope reduces to nothing).
@@ -5068,18 +5408,25 @@ check unnecessary_use_clause;
 check reduceable_scope (use);
 @end example
 
+@subsection Limitation
+Currently, the rule does not report @code{@b{use}} clauses declared in
+a package specification that could be moved to the body. Such clauses
+appear as ``unused'' (but of course, the compiler will complain on the
+body if the clause is removed).
+
 @node  Representation_Clauses, Return_Type, Reduceable_Scope, Rules reference
 @section Representation_Clauses
 This rule controls usage of representation clause.
 
 @subsection Syntax
 @example
-<control_kind> representation_clauses
-   [(<repr_kw>|<attribute> @{, <repr_kw>|<attribute>@}, ... )];
-
-repr_kw ::= at              | at_mod            | enumeration           |
-            fractional_size | incomplete_record | non_contiguous_record |
-            overlay         | record
+<control_kind> representation_clauses [(<subrule> @{, <subrule>@})];
+subrule ::= <repr_kw> | <attribute>
+repr_kw ::= 
+   at                | at_mod                | derived_record        |
+   enumeration       | extension_record      | fractional_size       |
+   incomplete_record | non_aligned_component | non_contiguous_record |
+   overlay           | record                | tagged_record
 @end example
 
 @subsection Action
@@ -5102,6 +5449,10 @@ multiple of @code{System.Storage_Unit}.
 ``incomplete_record'' controls record representation clauses that miss
 the specification of some components of the record's type.
 @item
+``non_aligned_component'' controls components that do not start on a
+storage unit boundary. The message gives the offset (in bits) relative
+to the closest storage unit boundary.
+@item
 ``non_contiguous_record'' controls record representation clauses where
 there are unused bits between components (or before the first
 component). A message is issued for each ``gap'' between
@@ -5115,7 +5466,11 @@ no variant at all.
 ``overlay'' controls address clauses (given in either style), where the value
 given is the @code{'Address} of some other element.
 @item
-``record'' controls record representation clauses.
+``record'' controls all record representation clauses, while
+``derived_record'' controls only those for (non tagged) derived type,
+``extension_record'' controls those for record extensions (tagged
+derived types), and ``tagged_record'' controls those for (root) tagged
+types.
 @end itemize
 
 In addition to these keyword, any specifiable attribute can be given
@@ -5153,6 +5508,11 @@ to a record and forget to update the associated representation clause,
 there will be no compilation error. The ``incomplete_record'' subrule
 is handy for making sure that this does not happen.
 
+Derived types with a representation clause may incur efficiently
+penalty, since calling an inherited subrograms requires a change of
+representation.  Representation clauses for tagged types are dubious,
+since these types have hidden fields added by the compiler.
+
 @node Return_Type, Side_Effect_Parameters, Representation_Clauses, Rules reference
 @section Return_Type
 This rule controls that certain form of types are not used for
@@ -5160,9 +5520,9 @@ function results.
 
 @subsection Syntax
 @example
-<control_kind> return_type [(<type_kind> @{, <type_kind>@})];
-type_kind ::= class_wide          | unconstrained_discriminated |
-              unconstrained_array | task | protected
+<control_kind> return_type [(<subrule> @{, <subrule>@})];
+subrule ::= class_wide          | unconstrained_discriminated |
+            unconstrained_array | task | protected
 @end example
 
 @subsection Action
@@ -5184,7 +5544,7 @@ as subcomponents.
 objects as subcomponents.
 @end itemize
 
-If no type kind is specified, all type kinds are controlled. Note that
+If no subrule is specified, all type kinds are controlled. Note that
 more than one kind may apply to a type: for example, a function can
 return a class-wide type with discriminants that includes tasks and
 protected objects as subcomponents. In this case, several messages are
@@ -5395,7 +5755,7 @@ This rule controls expressions that can be simplified in various ways.
 
 @subsection Syntax
 @example
-<control_kind> Simplifiable_Expressions [(subrule> @{, <subrule>@})];
+<control_kind> Simplifiable_Expressions [(<subrule> @{, <subrule>@})];
 
 subrule ::= range         | logical     | logical_true |
             logical_false | logical_not | parentheses  |
@@ -5854,8 +6214,9 @@ named.
 not nested in another loop, are allowed not to be named).  The kind of
 loop (plain, @code{@b{for}}, @code{@b{while}}) is not considered.
 @item
-@code{untyped_for} controls @code{@b{for}} loops whose that uses a range
-without an explicitely named type (i.e. @code{@b{for} I @b{in} 1..10 @b{loop}})
+@code{untyped_for} controls @code{@b{for}} loops that use a range
+without an explicitely named type (i.e. @code{@b{for} I @b{in} 1..10
+@b{loop}}). Using a @code{'Range} attribute is OK.
 @item
 @code{while_loop} controls all @code{@b{while}} loops.
 @end itemize
@@ -5901,13 +6262,14 @@ This rules controls usage of various ``general'' Ada coding style.
 <control_kind> style (compound_statement);
 <control_kind> style (default_in);
 <control_kind> style (exposed_literal, <type_kw>, @{, <value_place>@});
+<control_kind> style (formal_parameter_order @{, <mode list>@});
 <control_kind> style (multiple_elements @{,<element_kw>@});
 <control_kind> style (negative_condition);
 <control_kind> style (no_closing_name [, <max_lines>]);
 <control_kind> style (numeric_literal, [not] <base> [, <block_size>]);
 <control_kind> style (parameter_order @{, <mode list>@});
 <control_kind> style (positional_association
-                             @{,<context_kw> [,<max_allowed>]@}
+                             @{,<context_kw> [,<max_allowed>]@{,<entity>@}@}
                              | [, <max_allowed>]);
 <control_kind> style (renamed_entity);
 
@@ -6022,11 +6384,14 @@ then ``in'' ``defaulted_in'' and ``access'', then ``in_out'', then
 ``positional_association'' controls pragmas, discriminants, calls,
 aggregates, or instantiations that use positional associations.  Extra
 parameters specify which kind of construct to check; if not specified,
-all constructs are controlled. Each of the construct keywords is
+all constructs are controlled. Each of the <context> keywords is
 optionally followed by an integer value; if it is specified, it gives
 the maximum number of associations that are allowed to be positional,
 i.e. the rule will trigger only if there are more than the indicated
-number of associations. See examples below.
+number of associations. For ``pragma'', ''call'', and
+``instantiation'', entities can also be specified; such entities are
+exempted from the rule (i.e. the rule will not control these
+entities).See examples below.
 
 For calls, positional association is @i{not} reported for operators
 that use infix notation (since named notation is not possible); in
@@ -6048,7 +6413,7 @@ search style (no_closing_name);
 search style (no_closing_name, 5);
 check style (casing_identifier, original);
 check style (default_in);
-check style (literal, 10, 3);
+check style (numeric_literal, 10, 3);
 check style (exposed_literal, integer, 0, 1);
 check style (exposed_literal, real, 0.0, 1.0);
 
@@ -6060,7 +6425,7 @@ check style (parameter_order,
                in defaulted_in access, 
                in_out, 
                out
-               defaulted_in)
+               defaulted_in);
 
  -- For generics, formal objects must come first, then formal
  -- types, then formal subprograms, then formal package:
@@ -6074,14 +6439,28 @@ check style (formal_parameter_order,
 check style (positional_association);
 
 -- All positional associations in calls and aggregates:
-check style (positional_association, aggregate, call);
+check style (positional_association, array_aggregate, 
+             record_aggregate,       call);
 
  -- All positional associations with more than 3 elements:
 search style (positional_association, 3);
 
 -- Positional associations in calls with more than 3 elements,
 -- and positional associations in aggregates with more than 4 elements:
-search style (positional_association, call, 3, aggregate, 4);
+search style (positional_association, call, 3, 
+                                      array_aggregate, 4, 
+                                      record_aggregate, 4);
+
+-- Positional associations in calls with more than 2 elements (except calls
+-- to any subprogram called Put), and in instantiations (except for
+-- instantiations of Text_IO subpackages):
+search style (positional_association, 
+                  call, 2, all put,
+                  instantiation, Ada.Text_IO.Integer_IO,
+                                 Ada.Text_IO.Fixed_IO,
+                                 Ada.Text_IO.Decimal_IO,
+                                 Ada.Text_IO.Float_IO,
+                                 Ada.Text_IO.Enumeration_IO);
 @end example
 
 Without parameter, the rule will control all style aspects with
@@ -6234,6 +6613,13 @@ result in false positives, i.e. error messages when the rule is not
 really violated. If no keyword is given, both occurrences are
 controlled.
 
+As far as statistics are concerned (see @ref{Control kinds and report
+messages}), ``uncheckable'' messages from rules are counted under the
+corresponding rule's statistics (like other messages), but there will
+be also a count of all ``uncheckable'' messages under the rule
+``UNCHECKABLE'', and also subtotals corresponding to the number of
+``uncheckables'' for each rule.
+
 This rule can be given only once for each of value of the parameters.
 
 Ex:
@@ -6276,7 +6662,7 @@ If the keyword @code{unreferenced} is given, the rule controls
 compilation units that are part of the set of analyzed units, but
 withed by no other unit. If the keyword @code{unchecked} is given, the
 rule controls compilation units that are withed by other unit(s), but
-not part of the set of controlled units.
+not part of the set of controlled units (except standard units).
 
 This rule can only be given once for each of the subrules.
 
@@ -6539,7 +6925,7 @@ considered. Especially, this means that the <Lock type> cannot be
 class-wide.  Such calls are detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
 
-Due to limitations of internal date structures, this rule can be
+Due to a size limitation of internal data structures, this rule can be
 specified at most 32 times.
 
 @node Unsafe_Unchecked_Conversion, Usage, Unsafe_Paired_Calls, Rules reference
@@ -6673,7 +7059,9 @@ are analyzed. @xref{limitation}.
 
 Note that usage of entities whose declaration is not processed (like,
 typically, elements declared in standard packages like
-@code{Ada.Text_IO}), is not reported.
+@code{Ada.Text_IO}), is not reported. For the same reason, it is not
+possible to control usage of predefined operators (since they have no
+declaration).
 
 Ex:
 @example
@@ -6768,8 +7156,8 @@ This rule controls usage of @code{@b{use}} clauses.
 @subsection Syntax
 @example
 <control_kind> use_clauses
-   [([<locality>,] <package name> @{, <package name>@})];
-<locality> ::= local | global
+   [([<subrule>,] <package name> @{, <package name>@})];
+<subrule> ::= local | global
 @end example
 
 @subsection Action
@@ -6941,6 +7329,10 @@ while this rule file controls the declaration of access types on tasks.
 @rule{NASA coding guidelines shall be enforced}
 
 Use file @code{nasa.aru}. This file is an example of how to convert guidelines (available from @uref{http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf}) into an AdaControl rules file.
+
+@rule{Ada 83 unit names shall not be used (i.e. use @code{Ada.Text_IO}, not @code{Text_IO})}
+
+Use file @code{no_83_unit_name.aru}.
 
 @rule{New reserved words of Ada 2005 shall not be used}
 
@@ -7161,7 +7553,7 @@ The syntax of the <Ada_Entity_Name> is as follows:
 <Ada_Entity_Name> ::= <Full_Name> | "all" <Simple_Name> | "all" <Attribute>
 @end example
 @code{<Full_Name>} is the full name of the Ada entity, using normal
-Ada dot notation (with some extensions, see below)). Full name means
+Ada dot notation (with some extensions, see below). Full name means
 that you give the full expanded name, starting from a compilation
 unit. This name must be the actual full name, i.e. it must not include
 any renaming (otherwise the name will not be recognized). For example,
@@ -7494,6 +7886,77 @@ that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
+
+@section Migrating from 1.9r4
+@subsection Array_Declarations
+The subrule ``Max_Length'' has been changed to ``Length'', with the possibility to specify both min and max
+values. Change:
+@example
+check array_declarations (max_length, 100);
+@end example
+to:
+@example
+check array_declarations (length, max 100);
+@end example
+
+@subsection Declarations
+The subrule names ``initialized_record_field'',
+``uninitialized_record_field'', ``initialized_protected_field'', and
+``uninitialized_protected_field'' have been changed to
+``initialized_record_component'', ``uninitialized_record_component'',
+``initialized_protected_component'', and
+``uninitialized_protected_component'', respectively, to be more
+consistent with official Ada terminology. Change:
+@example
+check declarations (initialized_record_field,
+                    uninitialized_record_field, 
+                    initialized_protected_field,
+                    uninitialized_protected_field);
+@end example
+to:
+@example
+check declarations (initialized_record_component,
+                    uninitialized_record_component, 
+                    initialized_protected_component,
+                    uninitialized_protected_component);
+@end example
+
+The subrule ``aliased'' has been split into ``aliased_constant'' and
+``aliased_variable''. The old rule controlled both at the same time,
+but did not control aliased components (there are now other subrules
+to that effect). Change:
+@example
+check declarations (aliased);
+@end example
+to:
+@example
+check declarations (aliased_constant, aliased_variable);
+@end example
+
+@subsection Default_Parameter
+The <place> is no more allowed to be ``all'', because it was ambiguous
+with the ``all <name>'' syntax of <entity>. If you used ``all'',
+duplicate the control with ``calls'' and ``instantiations''. Change:
+@example
+My_label : check default_parameter (all, ...);
+@end example
+to:
+@example
+My_label : check default_parameter (calls, ...),
+           check default_parameter (instantiations, ...);
+@end example
+
+@subsection Improper_Initialization
+By default, variables declared directly within (generic) package
+specifications and bodies are no more checked. To get the previous
+behaviour, add the ``package'' modifier. Change:
+@example
+check improper_initialization (variable);
+@end example
+to:
+@example
+check improper_initialization (package variable);
+@end example
 
 @section Migrating from 1.8r8
 @subsection CSV(X) format

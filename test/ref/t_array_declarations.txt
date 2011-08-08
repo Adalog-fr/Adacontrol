@@ -1,27 +1,57 @@
-t_array_declarations.adb:8:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations.adb:8:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
-t_array_declarations.adb:9:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
-t_array_declarations.adb:10:23: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:12:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations.adb:12:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
-t_array_declarations.adb:13:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
-t_array_declarations.adb:14:23: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:16:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
-t_array_declarations.adb:17:23: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:19:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations.adb:21:22: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:23:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations.adb:23:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
-t_array_declarations.adb:24:22: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
-t_array_declarations.adb:25:22: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:27:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations.adb:27:16: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
-t_array_declarations.adb:28:16: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
-t_array_declarations.adb:29:16: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:31:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations.adb:31:28: Error: ARRAY_DECLARATIONS: lower bound of array is not 0 or 1 (2)
-t_array_declarations.adb:31:28: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:8:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:8:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:9:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:10:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:12:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:12:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:13:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:14:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:16:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:17:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:19:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:21:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:23:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:23:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:24:22: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:25:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:27:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:27:16: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:28:16: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:29:16: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:30:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:31:16: Error: ARRAY_DECLARATIONS: array dimension is smaller than 1 (0)
+t_array_declarations-indexes.adb:31:24: Found: ARRAY_DECLARATIONS: array dimension is smaller than 2 (1)
+t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:33:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1000)
+t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (1001)
+t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1001)
+t_array_declarations-component.adb:3:33: Error: compo_ident: array component is "Standard.Character"
+t_array_declarations-component.adb:3:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:4:24: Error: compo_ident: array component is "Standard.Character"
+t_array_declarations-component.adb:4:24: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:6:33: Error: compo_ident: array component is "Standard.Character"
+t_array_declarations-component.adb:6:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:8:33: Error: compo_array: array component is "array"
+t_array_declarations-component.adb:11:31: Error: compo_array: array component is "array"
+t_array_declarations-component.adb:18:27: Error: compo_task: array component is "task"
+t_array_declarations-component.adb:29:31: Error: compo_protected: array component is "protected"
+t_array_declarations-component.adb:44:33: Error: compo_private: array component is "private"
+t_array_declarations-component.adb:45:33: Error: compo_record: array component is "record"
+t_array_declarations-component.adb:46:33: Error: compo_access: array component is "access"
+t_array_declarations-component.adb:50:33: Error: compo_tagged: array component is "tagged"
+t_array_declarations-component.adb:51:34: Error: compo_tagged: array component is "tagged"
+t_array_declarations-component.adb:53:34: Error: compo_delta: array component is "delta"
+t_array_declarations-component.adb:56:34: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:57:34: Error: compo_enum_p_us: packed unsized array component is "()"
+t_array_declarations-component.adb:59:34: Error: compo_enum_up_s: unpacked sized array component is "()"
+t_array_declarations-component.adb:61:34: Error: compo_enum_p_s: packed sized array component is "()"
+t_array_declarations-component.adb:64:34: Error: compo_enum_cs: component_sized array component is "()"
+t_array_declarations-component.adb:64:34: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:70:37: Error: compo_float: array component is "digits"
 
 Counts summary:
-Not_2: 13
-Too_Long: 5
+Not_2: 36
+Too_Long: 8

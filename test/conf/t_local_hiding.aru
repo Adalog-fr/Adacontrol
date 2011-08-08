@@ -1,4 +1,4 @@
 Hiding: check local_hiding (Strict);
-Overloading: search local_hiding (overloading);
+Overloading: search local_hiding (not_operator not_enumeration overloading);
 
 

@@ -94,7 +94,7 @@ package body Rules.Case_Statement is
       Subrule_Name : Subrules;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id, "two parameters required");
+         Parameter_Error (Rule_Id, "parameters required");
       end if;
 
       Subrule_Name := Get_Flag_Parameter (Allow_Any => False);
@@ -103,7 +103,7 @@ package body Rules.Case_Statement is
       end if;
 
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id, "two parameters required");
+         Parameter_Error (Rule_Id, "two or three parameters required");
       end if;
       Bounds    (Subrule_Name, Ctl_Kind) := Get_Bounds_Parameters (Rule_Id);
       Labels    (Subrule_Name, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);

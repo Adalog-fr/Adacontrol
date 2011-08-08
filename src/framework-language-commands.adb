@@ -48,14 +48,13 @@ with
 
 -- Adacontrol
 with
-  Adactl_Constants,
+  Adactl_Version,
   Adactl_Options,
   Framework.Language.Scanner,
   Framework.Reports,
   Framework.Ruler,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
-  Framework.Specific_Plugs,
   Framework.String_Set,
   Implementation_Options;
 
@@ -85,21 +84,27 @@ package body Framework.Language.Commands is
       User_Message ("   Go;");
       User_Message ("   Help all|commands|license|list|options|rules|version|<rule name> {,...};");
       User_Message ("   Inhibit <rule name> (<unit>{,<unit>});");
-      User_Message ("   Message ""<message>"";");
+      User_Message ("   Message ""<message>"" [pause];");
       User_Message ("   Quit;");
+      User_Message ("   Set check_key|search_key ""<key>""");
       User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short|none ;");
-      User_Message ("   Set output ""<output file>"" ;");
+      User_Message ("   Set output <output file>;");
       User_Message ("   Set statistics <level: 0 .. "
                       & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ">;");
+      User_Message ("   Set trace <trace file>;");
       User_Message ("   Set verbose|debug|ignore|warning|warning_as_error on|off ;");
-      User_Message ("   Search|Check|Count <rule name> [ ( <parameters> ) ];");
       User_Message ("   Source <input file> ;");
+      User_Message ("   [<label>:] <control> {, <control>} ;");
+      User_Message ("Control:");
+      User_Message ("   Search|Check|Count <rule name> [ ( <parameters> ) ]");
    end Help_On_Commands;
 
    ----------------
    -- Go_Command --
    ----------------
+
+   Go_Count : Natural := 0;
 
    procedure Go_Command is
 
@@ -158,6 +163,7 @@ package body Framework.Language.Commands is
          return;
       end if;
 
+      Go_Count := Go_Count + 1;
       begin
          Framework.Rules_Manager.Prepare_All;
       exception
@@ -176,7 +182,8 @@ package body Framework.Language.Commands is
          begin
             Ruler.Process(Unit_Name  => Units_List.Current_Unit,
                           Unit_Pos   => I,
-                          Spec_Only  => Adactl_Options.Spec_Option);
+                          Spec_Only  => Adactl_Options.Spec_Option,
+                          Go_Count   => Go_Count);
          exception
             when Utilities.User_Error =>
                -- Call to Parameter_Error while traversing => propagate silently
@@ -243,14 +250,8 @@ package body Framework.Language.Commands is
          Help_On_Names (Pretty => True);
 
       elsif Upper_On = "VERSION" then
-         -- GNAT warns that the parameter to Choose is statically known
-         -- This is the intended behaviour (kind of conditional compilation)
-         pragma Warnings (Off);
          User_Message ("ADACTL v. "
-                         & Adactl_Constants.Current_Version
-                         & Choose (Framework.Specific_Plugs.Specific_Version = "",
-                                   "",
-                                   '-' & Framework.Specific_Plugs.Specific_Version)
+                         & Adactl_Version
                          & " with " & ASIS_Implementor_Version);
          pragma Warnings (On);
 
@@ -313,7 +314,8 @@ package body Framework.Language.Commands is
    -- Message_Command --
    ---------------------
 
-   procedure Message_Command (Message : in Wide_String) is
+   procedure Message_Command (Message : in Wide_String; With_Pause : Boolean) is
+      use Ada.Wide_Text_IO;
       use Adactl_Options;
    begin
       if Action = Check or Rule_Error_Occurred then
@@ -321,6 +323,10 @@ package body Framework.Language.Commands is
       end if;
 
       User_Message (Message);
+
+      if With_Pause then
+         Skip_Line;
+      end if;
    end Message_Command;
 
    ------------------------
@@ -400,6 +406,9 @@ package body Framework.Language.Commands is
          Add (Seen_Files, Output_File);
          Set_Output (Adactl_Output);
       end if;
+   exception
+      when Name_Error =>
+         Parameter_Error ("set output", "unable to create output file " & Output_File);
    end Set_Output_Command;
 
    -----------------------

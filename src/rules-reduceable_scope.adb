@@ -101,10 +101,14 @@ package body Rules.Reduceable_Scope is
    type Check_Kind_Set is array (Check_Kind) of Boolean;
    No_Check : constant Check_Kind_Set := (others => False);
 
-   Rule_Used     : Check_Kind_Set := (others => False);
-   Save_Used     : Check_Kind_Set;
-   Ctl_Contexts  : array (Check_Kind) of Basic_Rule_Context;
-   Ctl_No_Blocks : array (Check_Kind) of Boolean := (others => False);
+   type Restriction_Kinds is (No_Blocks, To_Body);
+   package Restriction_Utilities is new Framework.Language.Modifier_Utilities (Restriction_Kinds);
+
+   Rule_Used        : Check_Kind_Set := (others => False);
+   Save_Used        : Check_Kind_Set;
+   Ctl_Contexts     : array (Check_Kind) of Basic_Rule_Context;
+   Ctl_Restrictions : array (Check_Kind) of Restriction_Utilities.Modifier_Set
+                                            := (others => Restriction_Utilities.Empty_Set);
 
    -- Management of declaration information, non package visible items
    type Scope_List_Access is access Scope_List;
@@ -146,10 +150,11 @@ package body Rules.Reduceable_Scope is
    ----------
 
    procedure Help is
-      use Subrules_Flag_Utilities;
+      use Subrules_Flag_Utilities, Restriction_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter(s): [no_blocks]", Footer => "(optional)");
+      Help_On_Flags (Header => "Parameter(s): {<restriction>}", Footer => "(optional)");
+      Help_On_Modifiers (Header => "<restriction>:");
       User_Message  ("Control declarations that could be moved to an inner scope,");
       User_Message  ("I.e. where all references are from a single nested scope");
    end Help;
@@ -159,36 +164,36 @@ package body Rules.Reduceable_Scope is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Subrules_Flag_Utilities;
-      Blocks_Restriction : Boolean;
+      use Framework.Language, Subrules_Flag_Utilities, Restriction_Utilities;
+      Restrictions : Modifier_Set;
       Subrule : Subrules;
    begin
       if Parameter_Exists then
-         Blocks_Restriction := Get_Modifier ("NO_BLOCKS");
-         Subrule           := Get_Flag_Parameter (Allow_Any => False);
+         Restrictions := Get_Modifier_Set;
+         Subrule      := Get_Flag_Parameter (Allow_Any => False);
       else
-         Blocks_Restriction := False;
-         Subrule           := Check_All;
+         Restrictions := Empty_Set;
+         Subrule      := Check_All;
       end if;
 
       if Subrule = Check_All then
          if Rule_Used /= No_Check then
             Parameter_Error (Rule_Id, "Rule already specified");
          end if;
-         Rule_Used     := (others => True);
-         Ctl_Contexts  := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Ctl_No_Blocks := (others => Blocks_Restriction);
+         Rule_Used        := (others => True);
+         Ctl_Contexts     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Ctl_Restrictions := (others => Restrictions);
       else
          loop
             if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "Rule already specified for this parameter");
             end if;
-            Rule_Used (Subrule)     := True;
-            Ctl_Contexts  (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-            Ctl_No_Blocks (Subrule) := Blocks_Restriction;
+            Rule_Used        (Subrule) := True;
+            Ctl_Contexts     (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Ctl_Restrictions (Subrule) := Restrictions;
             exit when not Parameter_Exists;
-            Blocks_Restriction := Get_Modifier ("NO_BLOCKS");
-            Subrule            := Get_Flag_Parameter (Allow_Any => False);
+            Restrictions := Get_Modifier_Set;
+            Subrule      := Get_Flag_Parameter (Allow_Any => False);
          end loop;
       end if;
    end Add_Control;
@@ -427,10 +432,12 @@ package body Rules.Reduceable_Scope is
    begin
       case Info.Usage is
          when Not_Used =>
-            Report (Rule_Id,
-                    Ctl_Contexts (Info.Kind),
-                    Get_Location (Entity),
-                    Defining_Name_Image (Entity) & " is not used");
+            if not Ctl_Restrictions (Info.Kind) (To_Body) then
+               Report (Rule_Id,
+                       Ctl_Contexts (Info.Kind),
+                       Get_Location (Entity),
+                       Defining_Name_Image (Entity) & " is not used");
+            end if;
          when Body_Used =>
             Report (Rule_Id,
                     Ctl_Contexts (Info.Kind),
@@ -493,10 +500,6 @@ package body Rules.Reduceable_Scope is
             null;
 
          when A_Package_Declaration =>
---              if In_Private_Part then
---                 -- not outside visible
---                 return;
---              end if;
             if not Package_Visibles.Is_Present (Def) then
                Package_Visibles.Store (Def, (Not_Used, Kind));
             end if;
@@ -626,7 +629,7 @@ package body Rules.Reduceable_Scope is
             --    => Not_Movable
             Kind := Declaration_Check_Kind (Corresponding_Name_Declaration (Name));
             if Kind /= Check_Not_Checkable then
-               Package_Visibles.Store (Name, (Outside_Used, Kind), At_Declaration_Scope => False);
+               Package_Visibles.Store (Name, (Outside_Used, Kind));
             end if;
             return;
          end if;
@@ -727,7 +730,7 @@ package body Rules.Reduceable_Scope is
 
          Merge (Info.Path,
                 Active_Scopes (Local_Declarations.Current_Data_Level + 1 .. Good_Depth),
-                Blocks_Forbidden => Ctl_No_Blocks (Info.Kind),
+                Blocks_Forbidden => Ctl_Restrictions (Info.Kind)(No_Blocks),
                 Action           => Action);
          case Action is
             when Delete =>
@@ -767,7 +770,7 @@ package body Rules.Reduceable_Scope is
             if Info.Image = Enclosing_Name then
                Merge (Info.Path,
                       Active_Scopes (Use_Clauses.Current_Data_Level + 1 .. Good_Depth),
-                      Blocks_Forbidden => Ctl_No_Blocks (Check_Use),
+                      Blocks_Forbidden => Ctl_Restrictions (Check_Use)(No_Blocks),
                       Action           => Action);
                case Action is
                   when Delete =>
@@ -891,18 +894,20 @@ package body Rules.Reduceable_Scope is
       Local_Declarations.Reset (Current_Scope_Only);
       while Local_Declarations.Data_Available loop
          D_Info := Local_Declarations.Current_Data;
-         if D_Info.Path = null then
-            Report (Rule_Id,
-                    Ctl_Contexts (D_Info.Kind),
-                    Get_Location (D_Info.Elem),
-                    Defining_Name_Image (D_Info.Elem) & " is not used");
-         else
-            Report (Rule_Id,
-                    Ctl_Contexts (D_Info.Kind),
-                    Get_Location (D_Info.Elem),
-                    "declaration of " & Defining_Name_Image (D_Info.Elem)
-                    & " can be moved inside " & Scope_Image (D_Info.Path (D_Info.Path'Last))
-                    & " at " & Image (Get_Location (D_Info.Path (D_Info.Path'Last))));
+         if not Ctl_Restrictions (D_Info.Kind)(To_Body) then
+            if D_Info.Path = null then
+               Report (Rule_Id,
+                       Ctl_Contexts (D_Info.Kind),
+                       Get_Location (D_Info.Elem),
+                       Defining_Name_Image (D_Info.Elem) & " is not used");
+            else
+               Report (Rule_Id,
+                       Ctl_Contexts (D_Info.Kind),
+                       Get_Location (D_Info.Elem),
+                       "declaration of " & Defining_Name_Image (D_Info.Elem)
+                       & " can be moved inside " & Scope_Image (D_Info.Path (D_Info.Path'Last))
+                       & " at " & Image (Get_Location (D_Info.Path (D_Info.Path'Last))));
+            end if;
          end if;
 
          Local_Declarations.Next;
@@ -911,18 +916,20 @@ package body Rules.Reduceable_Scope is
       Use_Clauses.Reset (Current_Scope_Only);
       while Use_Clauses.Data_Available loop
          U_Info := Use_Clauses.Current_Data;
-         if U_Info.Path = null then
-            Report (Rule_Id,
-                    Ctl_Contexts (Check_Use),
-                    Get_Location (U_Info.Elem),
-                    "Use clause for " & Extended_Name_Image (U_Info.Elem) & " is not necessary");
-         else
-            Report (Rule_Id,
-                    Ctl_Contexts (Check_Use),
-                    Get_Location (U_Info.Elem),
-                    "use clause for " & Extended_Name_Image (U_Info.Elem)
-                    & " can be moved inside " & Scope_Image (U_Info.Path (U_Info.Path'Last))
-                    & " at " & Image (Get_Location (U_Info.Path (U_Info.Path'Last))));
+         if not Ctl_Restrictions (Check_Use) (To_Body) then
+            if U_Info.Path = null then
+               Report (Rule_Id,
+                       Ctl_Contexts (Check_Use),
+                       Get_Location (U_Info.Elem),
+                       "Use clause for " & Extended_Name_Image (U_Info.Elem) & " is not necessary");
+            else
+               Report (Rule_Id,
+                       Ctl_Contexts (Check_Use),
+                       Get_Location (U_Info.Elem),
+                       "use clause for " & Extended_Name_Image (U_Info.Elem)
+                       & " can be moved inside " & Scope_Image (U_Info.Path (U_Info.Path'Last))
+                       & " at " & Image (Get_Location (U_Info.Path (U_Info.Path'Last))));
+            end if;
          end if;
 
          Use_Clauses.Next;

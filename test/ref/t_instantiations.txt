@@ -1,32 +1,41 @@
-t_instantiations.adb:14:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:14:4: Error: T5: instantiation of Ada.Unchecked_Deallocation with (Standard.String, T_Instantiations.String_Access)
-t_instantiations.adb:14:4: Found: T4: instantiation of Ada.Unchecked_Deallocation with (Standard.String, <>)
-t_instantiations.adb:14:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:17:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:17:4: Found: T4: instantiation of Ada.Unchecked_Deallocation with (Standard.String, <>)
-t_instantiations.adb:17:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:20:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:20:4: Found: T3: instantiation of Ada.Unchecked_Deallocation with (Standard.Integer)
-t_instantiations.adb:20:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:23:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:23:4: Found: T3: instantiation of Ada.Unchecked_Deallocation with (Standard.Integer)
-t_instantiations.adb:23:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
-t_instantiations.adb:26:4: Found: Local_Instantiation: local instantiation of Ada.Unchecked_Conversion
-t_instantiations.adb:26:4: Error: T6: instantiation of Ada.Unchecked_Conversion with (<>, T_Instantiations.Integer_Access)
-t_instantiations.adb:37:4: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Integer) already provided at t_instantiations.adb:36:4
-t_instantiations.adb:37:4: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Integer) already provided at t_instantiations.adb:35:4
-t_instantiations.adb:38:4: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Float) already provided at t_instantiations.adb:35:4
-t_instantiations.adb:38:4: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Float) already provided at t_instantiations.adb:36:4
-t_instantiations.adb:39:4: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Float) already provided at t_instantiations.adb:35:4
-t_instantiations.adb:39:4: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Integer) already provided at t_instantiations.adb:35:4
-t_instantiations.adb:52:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:51:4
-t_instantiations.adb:53:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:51:4
-t_instantiations.adb:54:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:51:4
-t_instantiations.adb:55:4: Error: Repeat5: instantiation of T_Instantiations.G2 with (Standard.Integer, T_Instantiations.Proc1, Standard.Float) already provided at t_instantiations.adb:54:4
-t_instantiations.adb:55:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:51:4
-t_instantiations.adb:59:7: Error: Repeat3: block instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:58:7
-t_instantiations.adb:59:7: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Integer) already provided at t_instantiations.adb:36:4
-t_instantiations.adb:59:7: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:58:7
+t_instantiations.adb:12:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:12:4: Error: T5: instantiation of Ada.Unchecked_Deallocation with (Standard.String, T_Instantiations.String_Access)
+t_instantiations.adb:12:4: Found: T4: instantiation of Ada.Unchecked_Deallocation with (Standard.String, <>)
+t_instantiations.adb:12:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:15:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:15:4: Found: T4: instantiation of Ada.Unchecked_Deallocation with (Standard.String, <>)
+t_instantiations.adb:15:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:18:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:18:4: Found: T3: instantiation of Ada.Unchecked_Deallocation with (Standard.Integer)
+t_instantiations.adb:18:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:21:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:21:4: Found: T3: instantiation of Ada.Unchecked_Deallocation with (Standard.Integer)
+t_instantiations.adb:21:4: Found: T2: instantiation of Ada.Unchecked_Deallocation with (Standard.Natural)
+t_instantiations.adb:21:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:27:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:27:4: Error: T8: instantiation of Ada.Unchecked_Deallocation with (T_Instantiations.Tagged_T'Class)
+t_instantiations.adb:27:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:30:4: Error: Local_Instantiation: local instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:30:4: Error: T8: instantiation of Ada.Unchecked_Deallocation with (T_Instantiations.Tagged_T'Class)
+t_instantiations.adb:30:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
+t_instantiations.adb:33:4: Found: Local_Instantiation: local instantiation of Ada.Unchecked_Conversion
+t_instantiations.adb:33:4: Error: T6: instantiation of Ada.Unchecked_Conversion with (<>, T_Instantiations.Integer_Access)
+t_instantiations.adb:36:4: Found: Local_Instantiation: local instantiation of Ada.Unchecked_Conversion
+t_instantiations.adb:36:4: Error: T7: instantiation of Ada.Unchecked_Conversion with (<>, Digits)
+t_instantiations.adb:46:4: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Integer) already provided at t_instantiations.adb:45:4
+t_instantiations.adb:46:4: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Integer) already provided at t_instantiations.adb:44:4
+t_instantiations.adb:47:4: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Float) already provided at t_instantiations.adb:44:4
+t_instantiations.adb:47:4: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Float) already provided at t_instantiations.adb:45:4
+t_instantiations.adb:48:4: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Float) already provided at t_instantiations.adb:44:4
+t_instantiations.adb:48:4: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Integer) already provided at t_instantiations.adb:44:4
+t_instantiations.adb:61:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:60:4
+t_instantiations.adb:62:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:60:4
+t_instantiations.adb:63:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:60:4
+t_instantiations.adb:64:4: Error: Repeat5: instantiation of T_Instantiations.G2 with (Standard.Integer, T_Instantiations.Proc1, Standard.Float) already provided at t_instantiations.adb:63:4
+t_instantiations.adb:64:4: Error: Repeat4: instantiation of T_Instantiations.G2 with (Standard.Integer, <>, Standard.Float) already provided at t_instantiations.adb:60:4
+t_instantiations.adb:68:7: Error: Repeat3: block instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:67:7
+t_instantiations.adb:68:7: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Integer) already provided at t_instantiations.adb:45:4
+t_instantiations.adb:68:7: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:67:7
 x_instantiations.ads:9:4: Found: T4: instantiation of Ada.Unchecked_Deallocation with (Standard.String, <>)
 x_instantiations.ads:9:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
 x_instantiations.ads:12:4: Found: T3: instantiation of Ada.Unchecked_Deallocation with (Standard.Integer)

@@ -95,7 +95,7 @@ package body Rules.Parameter_Declarations is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Callable_Kinds_Flag_Utilities, Subrules_Flag_Utilities;
+      use Framework.Language, Callable_Kinds_Flag_Utilities, Subrules_Flag_Utilities, Utilities;
       use Ada.Strings.Wide_Unbounded;
       Subrule  : Subrules;
       Callable : Callable_Kinds;
@@ -128,7 +128,7 @@ package body Rules.Parameter_Declarations is
          while Parameter_Exists loop
             Callable := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Subrule, Callable)(Ctl_Kind) then
-               Parameter_Error (Rule_Id, Image (Callable)
+               Parameter_Error (Rule_Id, Image (Callable, Lower_Case)
                                          & " already specified for "
                                          & Control_Kinds'Wide_Image (Ctl_Kind));
             end if;
@@ -196,7 +196,7 @@ package body Rules.Parameter_Declarations is
                        Ctl_Kind,
                        Loc,
                        "more than " & Biggest_Int_Img (Ctl_Values (Max_Parameters, Entity, Ctl_Kind))
-                       & " parameters in " & Image (Entity)
+                       & " parameters in " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
             when Max_Defaulted_Parameters =>
                Report (Rule_Id,
@@ -204,7 +204,7 @@ package body Rules.Parameter_Declarations is
                        Ctl_Kind,
                        Loc,
                        "more than " & Biggest_Int_Img (Ctl_Values (Max_Defaulted_Parameters, Entity, Ctl_Kind))
-                       & " defaulted parameters in " & Image (Entity)
+                       & " defaulted parameters in " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
             when Min_Parameters =>
                Report (Rule_Id,
@@ -212,14 +212,14 @@ package body Rules.Parameter_Declarations is
                        Ctl_Kind,
                        Loc,
                        "less than " & Biggest_Int_Img (Ctl_Values (Min_Parameters, Entity, Ctl_Kind))
-                       & " parameters in " & Image (Entity)
+                       & " parameters in " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
             when Single_Out_Parameter =>
                Report (Rule_Id,
                        To_Wide_String (Ctl_Labels (Single_Out_Parameter, Entity, Ctl_Kind)),
                        Ctl_Kind,
                        Loc,
-                       "Single out parameter in " & Image (Entity));
+                       "Single out parameter in " & Image (Entity, Lower_Case));
          end case;
       end Do_Report;
 

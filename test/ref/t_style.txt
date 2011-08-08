@@ -27,34 +27,38 @@ t_style-casing.adb:28:6: Found: Casing: Wrong casing of "NULL", should be "null"
 t_style-casing.adb:29:4: Found: Casing: Wrong casing of "eND", should be "end"
 t_style-casing.adb:29:8: Found: Casing: Wrong casing of "If", should be "if"
 t_style-casing.adb:32:11: Found: Casing: Wrong casing of "AND", should be "and"
-t_style-positional_association.adb:69:34: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:69:37: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:74:33: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:74:36: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:79:38: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:79:41: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:87:7: Error: Compound: Statement has less than 3 lines
-t_style-positional_association.adb:96:11: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:96:14: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:98:16: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
-t_style-positional_association.adb:98:19: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
-t_style-positional_association.adb:98:22: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
-t_style-positional_association.adb:102:12: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:102:15: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:102:18: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:102:21: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:102:24: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:103:20: Error: Exposed: integer literal 2 not in allowed construct
-t_style-positional_association.adb:103:28: Error: Exposed: integer literal 3 not in allowed construct
-t_style-positional_association.adb:103:36: Error: Exposed: integer literal 4 not in allowed construct
-t_style-positional_association.adb:103:44: Error: Exposed: integer literal 5 not in allowed construct
-t_style-positional_association.adb:106:21: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:106:24: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:106:24: Error: Exposed: integer literal 2 not in allowed construct
+t_style-positional_association.adb:73:34: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:73:37: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:78:33: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:78:36: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:83:38: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:83:41: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:91:7: Error: Compound: Statement has less than 3 lines
+t_style-positional_association.adb:100:11: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:100:14: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:103:16: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
+t_style-positional_association.adb:103:19: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
+t_style-positional_association.adb:103:22: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
+t_style-positional_association.adb:107:12: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:107:15: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:107:18: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:107:21: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:107:24: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:108:20: Error: Exposed: integer literal 2 not in allowed construct
+t_style-positional_association.adb:108:28: Error: Exposed: integer literal 3 not in allowed construct
+t_style-positional_association.adb:108:36: Error: Exposed: integer literal 4 not in allowed construct
+t_style-positional_association.adb:108:44: Error: Exposed: integer literal 5 not in allowed construct
+t_style-positional_association.adb:111:21: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:111:24: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:111:24: Error: Exposed: integer literal 2 not in allowed construct
 t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:10:4: Found: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:14:4: Found: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:19:4: Found: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:24:4: Found: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:26:4: Found: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:37:4: Found: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:39:4: Found: No_Closing_Name: name not repeated at the end
 t_style-renamed_entity.adb:23:7: Error: Renamed_Entity: I has been renamed at t_style-renamed_entity.adb:20:7
 t_style-renamed_entity.adb:24:7: Error: Renamed_Entity: Pack has been renamed at t_style-renamed_entity.adb:19:7
 t_style-renamed_entity.adb:24:17: Error: Renamed_Entity: F has been renamed at t_style-renamed_entity.adb:18:7

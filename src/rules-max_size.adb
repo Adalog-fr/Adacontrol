@@ -100,7 +100,7 @@ package body Rules.Max_Size is
       if Maximum (Subrule) (Ctl_Kind) /= Unused then
          Parameter_Error (Rule_Id, "statement already given for "
                                    & To_Lower (Control_Kinds'Wide_Image (Ctl_Kind)) & ": "
-                                   & Image (Subrule));
+                                   & Image (Subrule, Lower_Case));
       end if;
 
       begin
@@ -166,7 +166,7 @@ package body Rules.Max_Size is
                     To_Wide_String (Ctl_Labels (Stmt, Check)),
                     Check,
                     Loc,
-                    "statement """ & Image (Stmt)
+                    "statement """ & Image (Stmt, Lower_Case)
                     & """ is more than " & Integer_Img (Maximum (Stmt) (Check)) & " lines long ("
                     & Integer_Img (Length) & ')');
          elsif Length > Maximum (Stmt) (Search) then
@@ -174,7 +174,7 @@ package body Rules.Max_Size is
                     To_Wide_String (Ctl_Labels (Stmt, Search)),
                     Search,
                     Loc,
-                    "statement """ & Image (Stmt)
+                    "statement """ & Image (Stmt, Lower_Case)
                     & """ is more than " & Integer_Img (Maximum (Stmt) (Search)) & " lines long ("
                     & Integer_Img (Length) & ')');
          end if;

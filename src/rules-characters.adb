@@ -83,14 +83,14 @@ package body Rules.Characters is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Subrule_Flag_Utilities;
+      use Framework.Language, Subrule_Flag_Utilities, Utilities;
       Sr : Subrule;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
             Sr := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Sr) then
-               Parameter_Error (Rule_Id, "rule already specified for " & Image (Sr));
+               Parameter_Error (Rule_Id, "rule already specified for " & Image (Sr, Lower_Case));
             end if;
             Contexts  (Sr) := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Rule_Used (Sr) := True;
@@ -98,7 +98,7 @@ package body Rules.Characters is
       else
          for S in Subrule loop
             if Rule_Used (S) then
-               Parameter_Error (Rule_Id, "rule already specified for " & Image (S));
+               Parameter_Error (Rule_Id, "rule already specified for " & Image (S, Lower_Case));
             end if;
             Contexts  (S) := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Rule_Used (S) := True;

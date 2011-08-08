@@ -5,3 +5,8 @@ specific_task : check allocators (T_Allocators.T1);
 all_tasks     : check allocators (task);
 specific_prot : check allocators (T_Allocators.P1);
 all_prot      : check allocators (protected);
+
+tagged        : check allocators (T_Allocators.Tag1);
+class1        : check allocators (T_Allocators.Tag1'Class);
+class2        : check allocators (T_allocators.Tag1_Class);
+from_gen      : check allocators (T_Allocators.Gen.Gen_T);

@@ -64,6 +64,11 @@ procedure T_Unsafe_Paired_Calls is
 
    S1, S2 : Sema;
    A1, A2 : constant Acc := new Integer;
+   type Rec is
+      record
+         F : Sema;
+      end record;
+   R1, R2 : Rec;
 begin
 
    --
@@ -282,6 +287,15 @@ begin
    exception
       when others => -- Error: not same parameter
          V (S2);
+   end;
+
+   begin
+      P (R1.F);        -- Error: not same parameter
+      null;
+      V (R2.F);        -- Error: not same parameter
+   exception
+      when others => -- Error: not same parameter
+         V (R1.F);
    end;
 
    begin

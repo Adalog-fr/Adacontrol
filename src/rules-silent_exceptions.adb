@@ -268,8 +268,8 @@ package body Rules.Silent_Exceptions is
    -------------
 
    procedure Prepare is
-      Reraise_Context        : constant Root_Context'Class := Association (Rule_Uses, Reraise_Entity);
-      Explicit_Raise_Context : constant Root_Context'Class := Association (Rule_Uses, Explicit_Raise_Entity);
+      Reraise_Context        : constant Root_Context'Class := Association (Rule_Uses, "RERAISE");
+      Explicit_Raise_Context : constant Root_Context'Class := Association (Rule_Uses, "EXPLICIT_RAISE");
    begin
       if Rule_Used = Not_Used then
          return;
@@ -311,8 +311,9 @@ package body Rules.Silent_Exceptions is
       case Expression_Kind (Element) is
          when A_Function_Call =>
             declare
-               Context : constant Root_Context'Class := Extended_Matching_Context (Rule_Uses,
-                                                                                   Called_Simple_Name (Element));
+               Context : constant Root_Context'Class := Matching_Context (Rule_Uses,
+                                                                          Called_Simple_Name (Element),
+                                                                          Extend_To => All_Extensions);
             begin
                if Context /= No_Matching_Context then
                   State := State and Proc_Context (Context).Usage;
@@ -474,7 +475,7 @@ package body Rules.Silent_Exceptions is
                -- Possible expressions that are part of the return statement must be considered
                Result := Result and Expression_Usage (Stmts (I));
                declare
-                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("RETURN"));
+                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "RETURN");
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -487,7 +488,7 @@ package body Rules.Silent_Exceptions is
                -- Possible expressions that are part of the statements must be considered
                Result := Result and Expression_Usage (Stmts (I));
                declare
-                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("REQUEUE"));
+                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "REQUEUE");
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -499,7 +500,7 @@ package body Rules.Silent_Exceptions is
               =>
                declare
                   Context : constant Root_Context'Class
-                    := Extended_Matching_Context (Rule_Uses, Called_Simple_Name (Stmts (I)));
+                    := Matching_Context (Rule_Uses, Called_Simple_Name (Stmts (I)), Extend_To => All_Extensions);
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -511,9 +512,9 @@ package body Rules.Silent_Exceptions is
                declare
                   Is_Reraise : constant Boolean := Is_Nil (Raised_Exception (Stmts (I)));
                   Context    : constant Root_Context'Class := Framework.Association (Rule_Uses,
-                                                                                     Value (Choose (Is_Reraise,
-                                                                                                    "RERAISE",
-                                                                                                    "EXPLICIT_RAISE")));
+                                                                                     Choose (Is_Reraise,
+                                                                                             "RERAISE",
+                                                                                             "EXPLICIT_RAISE"));
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -694,14 +695,14 @@ package body Rules.Silent_Exceptions is
                      end if;
                      while Has_Element (Current) loop
                         Status := Fetch (Current);
-                        if Matches (Handled (H), Status.Entity, Extended => True)
-                          or else Matches (Names
+                        if Matches (Status.Entity, Handled (H), Extend_To => All_Extensions)
+                          or else Matches (Status.Entity,
+                                           Names
                                            (Unit_Declaration
                                             (Definition_Compilation_Unit
                                              (Ultimate_Name
                                               (Handled (H))))) (1),
-                                           Status.Entity,
-                                           Extended => True)
+                                           Extend_To => All_Extensions)
                         then
                            Controlled := Status.Controlled;
                         end if;

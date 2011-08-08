@@ -29,6 +29,10 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Adalog
+with
+   Thick_Queries;
+
 -- Adacontrol
 with
    Framework.Language;
@@ -61,7 +65,32 @@ package Framework.Language.Shared_Keys is
 
    type Bounds_Values is
       record
-         Min, Max : Thick_Queries.Biggest_Natural;
+         Min : Thick_Queries.Biggest_Int;
+         Max : Thick_Queries.Biggest_Int;
       end record;
-   function Get_Bounds_Parameters (Rule_Id : Wide_String) return Bounds_Values;
+   function Get_Bounds_Parameters (Rule_Id      : Wide_String;
+                                   Bound_Min    : Thick_Queries.Biggest_Int := 0;
+                                   Bound_Max    : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Natural'Last;
+                                   Allow_Single : Boolean                   := False)
+                                   return Bounds_Values;
+   -----------------------------------------------------------------------------------
+   -- Categories
+   -----------------------------------------------------------------------------------
+
+   type Categories is (Cat_Any,
+                       Cat_Enum,    Cat_Range,  Cat_Mod,    Cat_Delta,  Cat_Digits,
+                       Cat_Array,   Cat_Record, Cat_Tagged, Cat_Access, Cat_New,
+                       Cat_Private, Cat_Task,   Cat_Protected);
+   package Categories_Utilities is new Modifier_Utilities (Categories,
+                                                           Prefix   => "CAT_",
+                                                           Box_Pos  => 0,
+                                                           Pars_Pos => 1);
+
+   function Matches (Elem           : in Asis.Element;
+                     Cat            : in Categories;
+                     Follow_Derived : in Boolean := False;
+                     Follow_Private : in Boolean := False)
+                     return Boolean;
+
+   function Image (Item : Thick_Queries.Type_Categories) return Wide_String;
 end Framework.Language.Shared_Keys;

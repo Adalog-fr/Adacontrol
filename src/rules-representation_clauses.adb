@@ -63,9 +63,10 @@ package body Rules.Representation_Clauses is
 
    Storage_Unit : Thick_Queries.Biggest_Int;
 
-   type Subrules is (Sr_Attribute,
-                     Sr_At,              Sr_At_Mod,            Sr_Enumeration,           Sr_Record,
-                     Sr_Fractional_Size, Sr_Incomplete_Record, Sr_Non_Contiguous_Record, Sr_Overlay);
+   type Subrules is (Sr_Attribute,         Sr_At,                    Sr_At_Mod,                Sr_Derived_Record,
+                     Sr_Enumeration,       Sr_Extension_Record,      Sr_Record,                Sr_Fractional_Size,
+                     Sr_Incomplete_Record, Sr_Non_Aligned_Component, Sr_Non_Contiguous_Record, Sr_Overlay,
+                     Sr_Tagged_Record);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
    use Subrules_Flags_Utilities;
@@ -137,7 +138,7 @@ package body Rules.Representation_Clauses is
          if Subrule = Sr_Attribute then
             Param := To_Unbounded_Wide_String (Get_Name_Parameter);
             if Element (Param, 1) /= ''' then
-               Parameter_Error (Rule_Id, "parameter must be at, at_mod, enumeration, record, or an attribute");
+               Parameter_Error (Rule_Id, "parameter must be a representation keyword or an attribute");
             end if;
          else
             Param := To_Unbounded_Wide_String (Subrules'Wide_Image (Subrule));
@@ -300,7 +301,7 @@ package body Rules.Representation_Clauses is
          Clear (Compo_Set);
       end Check_Incomplete;
 
-      procedure Check_Contiguous (Clause : Asis.Representation_Clause) is
+      procedure Check_Components (Clause : Asis.Representation_Clause) is
          use Asis.Definitions;
 
          type Field_Descriptor is
@@ -371,7 +372,13 @@ package body Rules.Representation_Clauses is
          if Fields (Fields'First).Low /= 0 then
             Do_Report (Sr_Non_Contiguous_Record,
                          "gap at 0 range 0.." & Biggest_Int_Img(Fields (Fields'First).Low-1),
-                         Get_Location (Components (Fields(Fields'First).Compo_Inx)));
+                       Get_Location (Components (Fields (Fields'First).Compo_Inx)));
+         end if;
+         if Fields (Fields'First).Low rem Storage_Unit /= 0 then
+            Do_Report (Sr_Non_Aligned_Component,
+                       "unaligned component starts at bit "
+                         & Biggest_Int_Img (Fields (Fields'First).Low rem Storage_Unit),
+                       Get_Location (Components (Fields (Fields'First).Compo_Inx)));
          end if;
          for I in List_Index range Fields'First+1 .. Fields'Last loop
             if Fields (I - 1).High + 1 < Fields (I).Low then
@@ -385,6 +392,13 @@ package body Rules.Representation_Clauses is
                           & Biggest_Int_Img (Fields (I).Low - 1 - Starting_Unit * Storage_Unit),
                           Get_Location (Components (Fields (I).Compo_Inx)));
             end if;
+            if Fields (I).Low rem Storage_Unit /= 0 then
+               Do_Report (Sr_Non_Aligned_Component,
+                          "unaligned component starts at bit "
+                          & Biggest_Int_Img (Fields (I).Low rem Storage_Unit),
+                          Get_Location (Components (Fields (I).Compo_Inx)));
+            end if;
+
          end loop;
 
          -- Check gap at the end if size clause given
@@ -418,7 +432,7 @@ package body Rules.Representation_Clauses is
                           Get_Location (Components (Fields (Fields'Last).Compo_Inx)));
             end if;
          end;
-      end Check_Contiguous;
+      end Check_Components;
 
       procedure Check_Overlay is
          Value : constant Asis.Expression := Ultimate_Expression (Representation_Clause_Expression (Rep_Clause));
@@ -428,7 +442,26 @@ package body Rules.Representation_Clauses is
          then
             Do_Report (Sr_Overlay, "address clause causes overlay");
          end if;
-      end check_overlay;
+      end Check_Overlay;
+
+      procedure Check_Kind is
+         use Asis.Declarations;
+
+         Def : constant Asis.Definition := Type_Declaration_View
+                                              (Corresponding_Name_Declaration
+                                                 (Representation_Clause_Name (Rep_Clause)));
+      begin
+         case Type_Kind (Def) is
+            when A_Derived_Type_Definition =>
+               Do_Report (Sr_Derived_Record, "representation clause on derived type");
+            when A_Derived_Record_Extension_Definition =>
+               Do_Report (Sr_Extension_Record, "representation clause on type extension");
+            when A_Tagged_Record_Type_Definition =>
+               Do_Report (Sr_Tagged_Record, "representation clause on tagged type");
+            when others =>
+               null;
+         end case;
+      end Check_Kind;
    begin   -- Process_Clause
       if Rule_Used = Not_Used then
          return;
@@ -477,7 +510,7 @@ package body Rules.Representation_Clauses is
                end case;
             end if;
 
-            Do_Report (Sr_Attribute, "use of representation clause for " & To_Wide_String (Attribute));
+            Do_Report (Sr_Attribute, "representation clause for " & To_Wide_String (Attribute));
 
             if Attribute = "'SIZE" and then Rule_Used (Sr_Fractional_Size) then
                declare
@@ -500,25 +533,32 @@ package body Rules.Representation_Clauses is
             end if;
 
          when An_Enumeration_Representation_Clause =>
-            Do_Report (Sr_Enumeration, "use of enumeration representation clause");
+            Do_Report (Sr_Enumeration, "enumeration representation clause");
 
          when A_Record_Representation_Clause =>
-            Do_Report (Sr_Record, "use of record representation clause");
+            Do_Report (Sr_Record, "record representation clause");
+
+            if Rule_Used (Sr_Derived_Record)
+              or Rule_Used (Sr_Extension_Record)
+              or Rule_Used (Sr_Tagged_Record)
+            then
+               Check_Kind;
+            end if;
 
             if Rule_Used (Sr_At_Mod) and then not Is_Nil (Mod_Clause_Expression (Rep_Clause)) then
-               Do_Report (Sr_At_Mod, "use of Ada 83 alignment clause");
+               Do_Report (Sr_At_Mod, "Ada 83 alignment clause");
             end if;
 
             if Rule_Used (Sr_Incomplete_Record) then
                Check_Incomplete (Rep_Clause);
             end if;
 
-            if Rule_Used (Sr_Non_Contiguous_Record) then
-               Check_Contiguous (Rep_Clause);
+            if Rule_Used (Sr_Non_Contiguous_Record) or Rule_Used (Sr_Non_Aligned_Component) then
+               Check_Components (Rep_Clause);
             end if;
 
          when An_At_Clause =>
-            Do_Report (Sr_At, "use of Ada 83 address clause");
+            Do_Report (Sr_At, "Ada 83 address clause");
             if Rule_Used (Sr_Overlay) then
                Check_Overlay;
             end if;

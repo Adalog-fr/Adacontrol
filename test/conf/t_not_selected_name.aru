@@ -3,4 +3,5 @@ Selected_unit:        check not_selected_name (Unit,        all U);
 Selected_compilation: check not_selected_name (Compilation, all C);
 Selected_family:      check not_selected_name (Family,      all F);
 
+from_gen: search not_selected_name (none, x_not_selected_name_gen.g);
 search not_selected_name (none, x_not_selected_name.pack);
