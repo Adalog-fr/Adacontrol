@@ -593,6 +593,10 @@ package body Rules.Declarations is
 
       if Rule_Used (D_Any_Declaration) then
          Do_Report (D_Any_Declaration, Get_Location (Element));
+         if Rule_Used = Usage_Flags'(D_Any_Declaration => True, others => False) then
+            -- no need to continue if Any_Declaration is the only one used
+            return;
+         end if;
       end if;
 
       if Names (Element)'Length > 1 then
@@ -802,11 +806,28 @@ package body Rules.Declarations is
             Check_Discriminant (Discriminant_Part (Element));
 
          when A_Private_Type_Declaration =>
-            if Trait_Kind (Element) = A_Limited_Private_Trait then
-               Do_Report (D_Limited_Private_Type, Get_Location (Element));
-            else
-               Do_Report (D_Non_Limited_Private_Type, Get_Location (Element));
-            end if;
+            case Trait_Kind (Element) is
+               when Not_A_Trait
+                  | An_Ordinary_Trait
+                  | An_Aliased_Trait
+                  | An_Access_Definition_Trait
+                  | A_Reverse_Trait
+                  | A_Limited_Trait
+                  | An_Abstract_Trait
+                  | An_Abstract_Limited_Trait
+                  =>
+                  Failure ("Bad trait in A_Private_Type_Declaration", Element);
+               when A_Limited_Private_Trait
+                  | An_Abstract_Limited_Private_Trait
+                  =>
+                  Do_Report (D_Limited_Private_Type, Get_Location (Element));
+               when A_Private_Trait
+                  | An_Abstract_Private_Trait
+                  =>
+                    Do_Report (D_Non_Limited_Private_Type, Get_Location (Element));
+               when others => --2005 A_Null_Exclusion_Trait
+                  null;
+            end case;
             Check_Abstract;
 
          when A_Private_Extension_Declaration =>

@@ -4,6 +4,13 @@
 Bug fixes:
    Crash in Max_Call_Depth for the declaration of access to SP types
 
+   Incorrect handling of names of formal parameters of generic formal
+   subprograms (lead to incorrect messages in rule
+   Improper_Initialization)
+
+   Declarations: abstract limited private were not recognized as
+   limited private
+
 =============
 == V1.12r4 ==
 =============

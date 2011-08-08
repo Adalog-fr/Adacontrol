@@ -164,7 +164,7 @@ procedure T_declarations is       -- library_procedure
       type Priv2 is limited private;                -- Limited_Private_Type
       type Ext1 is new Rec1 with private;           -- Private_Extension
       type Abs1 is abstract tagged private;         -- Non_Limited_Private_Type, Abstract_Type
-      type Abs2 is abstract tagged limited private; -- Non_Limited_Private_Type, Abstract_Type
+      type Abs2 is abstract tagged limited private; -- Limited_Private_Type, Abstract_Type
       procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract; -- Abstract_Function
       Deferred : constant Priv1;                    -- Constant, Deferred_Constant
@@ -173,7 +173,9 @@ procedure T_declarations is       -- library_procedure
    private
       type Priv1 is new Integer;                    -- Derived_Type
       type Priv2 is new Integer;                    -- Derived_Type
-      type Ext1 is new Rec1 with null record;       -- Null_Extension, Extension, Tagged_Type, Record_Type
+      type Ext1 is new Rec1 with record             -- Extension, Tagged_Type, Record_Type
+         I : Integer;                               -- Uninitialized_Record_Component
+      end record;
       type Abs1 is abstract tagged null record;     -- Null_Tagged_Type, Tagged_Type, Record_Type, Abstract_Type
       type Abs2 is abstract tagged limited          -- Tagged_Type, Record_Type, Abstract_Type
          record
