@@ -1509,7 +1509,10 @@ package body Rules.Style is
 
                -- Compare to allowed values
                declare
-                  I : constant Biggest_Int := Biggest_Int'Wide_Value (Value_Image (Expression));
+                  I : constant Extended_Biggest_Int := Extended_Biggest_Int'Wide_Value (Value_Image (Expression));
+                  -- As a special exception, we use Extended_Biggest_Int instead of Biggest_Int here, because
+                  -- it cannot be non-static (it is a litteral), and the user may well spell-out the full value
+                  -- of System.Max_Int
                begin
                   for K in Permitted_Consts_Count range 1 .. Integer_Count loop
                      if Integer_Permitted_Values (K) = I then

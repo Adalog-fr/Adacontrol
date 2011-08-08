@@ -11,6 +11,9 @@ Bug fixes:
    Declarations: abstract limited private were not recognized as
    limited private
 
+   Constraint_Error in Style(Expression_Litteral) when a litteral has the
+   value of System.Max_Int
+
 =============
 == V1.12r4 ==
 =============

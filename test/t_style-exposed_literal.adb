@@ -26,7 +26,9 @@ procedure Exposed_Literal is
    type T is range 1 .. 10;                              -- OK
    subtype Sub is T range 1 .. 5;                        -- OK
 
-   pragma JUNK ("ABCD");                                 -- OK
+   V : Long_Long_Integer := +9_223_372_036_854_775_807;  -- OK
+  
+  pragma JUNK ("ABCD");                                  -- OK
 begin
    I := 0;                                               -- OK
    I := 2;                                               -- Exposed_Literal (integer)
@@ -43,7 +45,8 @@ begin
    I := I**2;                                            -- OK
    I := I**(2);                                          -- OK
    I := 2**I;                                            -- Exposed_Literal (integer)
-
+   V := +9_223_372_036_854_775_807;                      -- Exposed_Literal (integer)  
+   
    for I in 1 .. 10 loop                                 -- Exposed_Literal (integer)
       null;
    end loop;
