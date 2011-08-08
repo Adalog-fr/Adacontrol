@@ -34,19 +34,8 @@ with Asis;
 
 package Rules.Silent_Exceptions  is
 
-   -- This rule can be used to check/search for exception handlers that do not
-   -- re-raise exception and do not call a report procedure
-   -- Parameters (1) => report procedure name
-   -- Parameters (2) => report procedure name
-   -- ...
-   -- Parameters (N) => report procedure name
-
    Rule_Id : constant Wide_String := "SILENT_EXCEPTIONS";
 
    procedure Process_Exception_Handler (Handler : in Asis.Exception_Handler);
-   -- Applies the rule
-   --
-   -- Expected Element_Kinds:
-   --    An_Exception_Handler
 
 end Rules.Silent_Exceptions;

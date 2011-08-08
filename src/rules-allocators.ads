@@ -35,16 +35,6 @@ with
 
 package Rules.Allocators is
 
-   -- This rule can be used to check/search for allocators (all allocators,
-   -- or only for specific types).
-   -- Parameters (1) => Entity name
-   -- Parameters (2) => Entity name
-   -- ...
-   -- Parameters (N) => Entity name
-   --
-   -- NOTE: does not (yet) handle allocators for T'Class properly
-   --       currently, finds them as allocators for T
-
    Rule_Id : constant Wide_String := "ALLOCATORS";
 
    procedure Process_Allocator (Element : in Asis.Element);

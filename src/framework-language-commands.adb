@@ -42,7 +42,6 @@ with
 
 -- Adalog
 with
-  Binary_Map,
   Units_List,
   Utilities;
 
@@ -54,6 +53,7 @@ with
   Framework.Ruler,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
+  Framework.String_Set,
   Implementation_Options;
 
 package body Framework.Language.Commands is
@@ -64,9 +64,7 @@ package body Framework.Language.Commands is
 
    Adactl_Output : Ada.Wide_Text_IO.File_Type;
 
-   type No_Data is null record;
-   package Seen_Files_Map is new Binary_Map (Unbounded_Wide_String, No_Data);
-   Seen_Files : Seen_Files_Map.Map;
+   Seen_Files : Framework.String_Set.Set;
 
    ------------------
    -- Help_Command --
@@ -87,8 +85,8 @@ package body Framework.Language.Commands is
       User_Message ("   Quit;");
       User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short ;");
       User_Message ("   Set output ""<output file>"" ;");
-      User_Message ("   Set statistics <level: 0 .."
-                      & Integer'Wide_Image (Stats_Levels'Pos (Stats_Levels'Last))
+      User_Message ("   Set statistics <level: 0 .. "
+                      & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ">;");
       User_Message ("   Set verbose|debug|ignore|warning on|off ;");
       User_Message ("   Search|Check|Count <rule name> [ ( <parameters> ) ];");
@@ -111,7 +109,7 @@ package body Framework.Language.Commands is
 
          -- Clean-up:
          Ruler.Reset;
-         Framework.Scope_Manager.Reset;
+         Framework.Scope_Manager.Reset (Deactivate => False);
 
          User_Message ("============= Phase: " & Phase & " =============");
          Reraise_Occurrence (Occur);
@@ -164,6 +162,7 @@ package body Framework.Language.Commands is
             raise;
          when Occur : others =>
             Handle_Exception ("Preparation", Occur);
+            return;
       end;
 
       Units_List.Reset;
@@ -191,6 +190,7 @@ package body Framework.Language.Commands is
          -- There should be no call to Parameter_Error here...
          when Occur : others =>
             Handle_Exception ("Finalize", Occur);
+            return;
       end;
 
       Framework.Reports.Report_Counters;
@@ -198,6 +198,8 @@ package body Framework.Language.Commands is
       if Is_Open (Adactl_Output) then
          Flush (Adactl_Output);
       end if;
+
+      Framework.Scope_Manager.Reset (Deactivate => True);
    end Go_Command;
 
    ---------------------
@@ -288,7 +290,8 @@ package body Framework.Language.Commands is
                           """Gnat"", ""Gnat_Short"", "
                           & """CSV"", ""CSV_Short"", "
                           & """CSVX"", ""CSVX_Short"", "
-                          & """Source"", ""Source_Short"" "
+                          & """Source"", ""Source_Short"", "
+                          & """none"" "
                           & "expected for format");
    end Set_Format_Command;
 
@@ -297,8 +300,8 @@ package body Framework.Language.Commands is
    ------------------------
 
   procedure Set_Output_Command (Output_File : Wide_String) is
-      use Ada.Characters.Handling, Ada.Wide_Text_IO, Seen_Files_Map;
-      use Adactl_Options;
+      use Ada.Characters.Handling, Ada.Wide_Text_IO;
+      use Adactl_Options, Framework.String_Set;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;
@@ -312,15 +315,32 @@ package body Framework.Language.Commands is
       end if;
 
       if To_Upper (Output_File) = Console_Name then
-         Utilities.Error_Is_Out := True;
+         Utilities.Error_Is_Out         := True;
+         Framework.Reports.Just_Created := False;
       else
          Utilities.Error_Is_Out := False;
-         Safe_Open (Adactl_Output,
-                    To_String (Output_File),
-                    Append,
-                    Adactl_Options.Overwrite_Option and not Is_Present (Seen_Files,
-                                                                        To_Unbounded_Wide_String (Output_File)));
-         Add (Seen_Files, To_Unbounded_Wide_String (Output_File), (null record));
+         begin
+            Open (Adactl_Output, In_File, To_String (Output_File));
+
+            -- File exists
+            Close (Adactl_Output);
+            if Adactl_Options.Overwrite_Option
+              and not Is_Present (Seen_Files, Output_File)
+            then
+               Create (Adactl_Output, Out_File, To_String (Output_File));
+               Framework.Reports.Just_Created := True;
+            else
+               Open (Adactl_Output, Append_File, To_String (Output_File));
+               Framework.Reports.Just_Created := False;
+            end if;
+         exception
+            when Name_Error =>
+               -- File does not exist
+               Framework.Reports.Just_Created := True;
+               Create (Adactl_Output, Out_File, To_String (Output_File));
+         end;
+
+         Add (Seen_Files, Output_File);
          Set_Output (Adactl_Output);
       end if;
    end Set_Output_Command;

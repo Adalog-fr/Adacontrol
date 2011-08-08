@@ -34,13 +34,6 @@ with Asis;
 
 package Rules.Max_Statement_Nesting  is
 
-   -- This rule can be used to check/search for scopes nested deeper
-   -- than a given limit.
-   -- Parameter 1: <if | case | loop | all>
-   -- Parameter 2: nesting depth
-   -- Control max nesting of if, case, loop or all non sequential
-   -- statements.
-
    Rule_Id : constant Wide_String := "MAX_STATEMENT_NESTING";
 
    procedure Process_Statement (Statement : in Asis.Statement);

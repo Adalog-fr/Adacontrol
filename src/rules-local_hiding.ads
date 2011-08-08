@@ -34,12 +34,8 @@ with Asis;
 
 package Rules.Local_Hiding  is
 
-   -- This rule can be used to check/search for the definition of identifiers
-   -- or enumeration literals that hide an outer identical name
-   -- Parameter(s): None
-
    Rule_Id : constant Wide_String := "LOCAL_HIDING";
 
-   procedure Process_Defining_Name (Name : in Asis.Defining_Name);
-   procedure Process_With_Clause (With_Clause : Asis.Clause);
+   procedure Process_Defining_Name (Name        : in Asis.Defining_Name);
+   procedure Process_With_Clause   (With_Clause : in Asis.Clause);
 end Rules.Local_Hiding;

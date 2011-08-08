@@ -1,0 +1,5 @@
+t_type_initial_values.adb:2:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for this type
+t_type_initial_values.adb:3:9: Error: TYPE_INITIAL_VALUES: No initialization constant for this type matches pattern
+t_type_initial_values.adb:17:12: Error: TYPE_INITIAL_VALUES: No initialization constant defined for this type
+t_type_initial_values.adb:5:9: Error: TYPE_INITIAL_VALUES: No initialization constant for this type matches pattern
+t_type_initial_values.adb:8:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for this type

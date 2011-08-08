@@ -35,17 +35,11 @@ with
 
 package Rules.Simplifiable_Expressions is
 
-   -- This rule can be used to check/search for the occurrence of
-   -- various forms of expressions that should be made simpler:
-   --   T'FIRST .. T'LAST that can be replaced by T'RANGE.
-   --   <expression> = or /= True/False or True/False = or /= <expression>
-   --   Unnecessary parentheses
-   -- Parameter(s)(optional) : "ranges" | "logical" | "logical_true" | "logical_false" | "parentheses"
-
    Rule_Id : constant Wide_String := "SIMPLIFIABLE_EXPRESSIONS";
 
    procedure Process_Range         (Definition : in Asis.Definition);
    procedure Process_Call          (Call       : in Asis.Expression);
    procedure Process_Parenthesized (Expr       : in Asis.Expression);
+   procedure Process_Conversion    (Expr       : in Asis.Expression);
 
 end Rules.Simplifiable_Expressions;

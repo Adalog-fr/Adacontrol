@@ -34,16 +34,9 @@ with Asis;
 
 package Rules.Max_Nesting  is
 
-   -- This rule can be used to check/search for scopes nested deeper
-   -- than a given limit.
-   -- Parameter: Max nesting level
-
    Rule_Id : constant Wide_String := "MAX_NESTING";
 
    procedure Process_Scope_Enter (Scope : in Asis.Element);
-   -- Called whenever a scope is entered
-
-   procedure Process_Scope_Exit (Scope : in Asis.Element);
-   -- Called whenever a scope is exited
+   procedure Process_Scope_Exit  (Scope : in Asis.Element);
 
 end Rules.Max_Nesting;

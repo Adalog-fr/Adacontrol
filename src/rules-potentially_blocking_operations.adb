@@ -302,7 +302,7 @@ package body Rules.Potentially_Blocking_Operations is
                             Control : in out Asis.Traverse_Control;
                             State   : in out Info) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Framework.Reports, Framework.Element_Queues;
+      use Ada.Strings.Wide_Unbounded, Thick_Queries, Framework.Reports, Framework.Element_Queues;
       Is_Blocking    : Boolean;
       Referenced_PTO : Queue;
       Def            : Asis.Definition;
@@ -320,6 +320,7 @@ package body Rules.Potentially_Blocking_Operations is
       end Set_State;
 
       procedure Add_External_Calls is
+         use Utilities;
          Target  : constant Asis.Expression := External_Call_Target (Element);
          Current : Framework.Element_Queues.Cursor;
       begin
@@ -388,6 +389,31 @@ package body Rules.Potentially_Blocking_Operations is
          end loop;
          return Result (Start .. Stop);
       end Pretty_Name;
+
+      procedure Process_Call (Kind : Wide_String) is
+         Called : constant Call_Descriptor := Corresponding_Call_Description (Element);
+      begin
+         case Called.Kind is
+            when A_Regular_Call =>
+               Check (Called.Declaration,
+                      PTO_Def        => Nil_Element,
+                      Is_Blocking    => Is_Blocking,
+                      Referenced_PTO => Referenced_PTO);
+               Set_State (Is_Blocking,
+                          "call of potentially blocking " & Kind & ' '
+                          & Full_Name_Image (Names (Called.Declaration) (1)));
+            when A_Predefined_Entity_Call | An_Attribute_Call =>
+               -- Assumed never potentially blocking
+               null;
+            when A_Dereference_Call | A_Dispatching_Call =>
+               -- Assume not blocking short of knowing what it is
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Element),
+                            "Dispatching call or call to dynamic entity; assuming not blocking");
+         end case;
+         Add_External_Calls;
+      end Process_Call;
    begin
       case Element_Kind (Element) is
          when A_Declaration =>
@@ -413,19 +439,7 @@ package body Rules.Potentially_Blocking_Operations is
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>
-                  declare
-                     Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Function (Element);
-                  begin
-                     if not Is_Nil (Called) then
-                        Check (Called,
-                               PTO_Def        => Nil_Element,
-                               Is_Blocking    => Is_Blocking,
-                               Referenced_PTO => Referenced_PTO);
-                        Set_State(Is_Blocking,
-                                  "call of potentially blocking function "  & Full_Name_Image (Names (Called)(1)));
-                     end if;
-                  end;
-                  Add_External_Calls;
+                  Process_Call ("function");
                when An_Allocation_From_Subtype =>
                   if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
                                                      (Subtype_Simple_Name (Allocator_Subtype_Indication (Element))),
@@ -451,20 +465,7 @@ package body Rules.Potentially_Blocking_Operations is
          when A_Statement =>
             case Statement_Kind (Element) is
                when A_Procedure_Call_Statement =>
-                  declare
-                     Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Entity (Element);
-                  begin
-                     -- Called is Nil for predefined stuff and access to SP, not interesting for us
-                     if not Is_Nil (Called) then
-                        Check (Called,
-                               PTO_Def          => Nil_Element,
-                               Is_Blocking      => Is_Blocking,
-                               Referenced_PTO   => Referenced_PTO);
-                        Set_State (Is_Blocking,
-                                   "call of potentially blocking procedure " & Full_Name_Image (Names (Called)(1)));
-                     end if;
-                  end;
-                  Add_External_Calls;
+                  Process_Call ("procedure");
                when An_Entry_Call_Statement =>
                   -- Always blocking
                   Set_State(True, "potentially blocking statement: " & Pretty_Name (Element));
@@ -667,9 +668,10 @@ package body Rules.Potentially_Blocking_Operations is
    end Process_Protected_Body;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Potentially_Blocking_Operations;

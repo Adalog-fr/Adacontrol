@@ -1,0 +1,3 @@
+Reserved_2005: check naming_convention (all, not "interface", 
+                                             not "overriding",
+                                             not "synchronized");

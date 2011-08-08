@@ -56,6 +56,7 @@ with
   Framework.Specific_Plugs,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
+  Framework.Symbol_Table,
   Rules.Uncheckable;
 
 -- Pragmas
@@ -81,14 +82,16 @@ package body Framework.Ruler is
    -----------------
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
-      use Asis.Compilation_Units;
+      use Asis, Asis.Compilation_Units;
    begin
       Framework.Scope_Manager. Enter_Unit (Unit);
       Framework.Plugs.         Enter_Unit (Unit);
       Framework.Specific_Plugs.Enter_Unit (Unit);
    exception
       when others =>
-         Utilities.Trace ("Exception in Enter_Unit for " & Unit_Full_Name (Unit)); --## rule line off No_Trace
+         Utilities.Trace ("Exception in Enter_Unit for "  --## rule line off No_Trace
+                          & Unit_Full_Name (Unit)
+                          & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
          raise;
    end Enter_Unit;
 
@@ -97,7 +100,7 @@ package body Framework.Ruler is
    -----------------
 
    procedure Exit_Unit (Unit : in Asis.Compilation_Unit) is
-      use Asis.Compilation_Units;
+      use Asis, Asis.Compilation_Units;
 
    begin
       Framework.Plugs.         Exit_Unit (Unit);
@@ -105,7 +108,9 @@ package body Framework.Ruler is
       Framework.Scope_Manager. Exit_Unit (Unit);
    exception
       when others =>
-         Utilities.Trace ("Exception in Exit_Unit for " & Unit_Full_Name (Unit)); --## rule line off No_Trace
+         Utilities.Trace ("Exception in Exit_Unit for "   --## rule line off No_Trace
+                          & Unit_Full_Name (Unit)
+                          & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
          raise;
    end Exit_Unit;
 
@@ -115,7 +120,7 @@ package body Framework.Ruler is
 
    procedure Enter_Scope (Element : in Asis.Element) is
    begin
-      Framework.Scope_Manager. Enter_Scope (Element);
+      Framework.Scope_Manager. Enter_Scope (Element);  -- Must stay first
       Framework.Plugs.         Enter_Scope (Element);
       Framework.Specific_Plugs.Enter_Scope (Element);
    end Enter_Scope;
@@ -128,7 +133,8 @@ package body Framework.Ruler is
    begin
       Framework.Plugs.         Exit_Scope (Element);
       Framework.Specific_Plugs.Exit_Scope (Element);
-      Framework.Scope_Manager. Exit_Scope (Element);
+      Framework.Symbol_Table.  Exit_Scope (Element);
+      Framework.Scope_Manager. Exit_Scope (Element);  -- Must stay last
    end Exit_Scope;
 
    ------------------------
@@ -137,7 +143,7 @@ package body Framework.Ruler is
 
    procedure Process_Inhibition (Unit : Asis.Compilation_Unit; State : Framework.Rules_Manager.Rule_Action) is
       use Asis.Declarations, Asis.Elements;
-      use Framework, Framework.Rules_Manager;
+      use Framework;
       Context : constant Root_Context'Class
         := Matching_Context (Inhibited, Names (Unit_Declaration (Unit))(1));
    begin
@@ -291,7 +297,8 @@ package body Framework.Ruler is
       -- Find possible stubs. Since stubs are always declared at first level, there is
       -- no need to do a full traversal.
       if not Has_Active_Rules (Semantic)
-        and then Unit_Kind (Unit) in A_Procedure_Body .. A_Protected_Body_Subunit -- All *_body and *_body_subunit
+        and then Unit_Kind (Unit) in A_Procedure_Body .. A_Task_Body_Subunit
+        -- All *_body and *_body_subunit, except a_protected_body_subunit, since it cannot have stubs
       then
          declare
             Declaration_List : constant Declarative_Item_List := Body_Declarative_Items (Unit_Declaration (Unit));
@@ -301,16 +308,18 @@ package body Framework.Ruler is
                   Stub_Nesting := Stub_Nesting + 1;
                   declare
                      Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Declaration_List (I));
+                     Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Declaration_List (I)) (1));
                   begin
                      if Is_Nil (Proper_Body) then
                         User_Log (3 * Stub_Nesting * ' '
                                   & "Controlling separate "
-                                  & Defining_Name_Image (Names(Declaration_List (I))(1))
+                                  & Stub_Name
                                   & " ... not found");
+                        Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
                      else
                         User_Log (3 * Stub_Nesting * ' '
                                   & "Controlling separate "
-                                  & Defining_Name_Image (Names(Declaration_List (I))(1)));
+                                  & Stub_Name);
                         Textual_Traverse  (Enclosing_Compilation_Unit (Proper_Body));
                         User_Log (3 * Stub_Nesting * ' ' & "returning");
                      end if;
@@ -363,15 +372,15 @@ package body Framework.Ruler is
                  | A_Procedure_Instantiation
                  | A_Function_Instantiation
                  =>
-                  Enter_Scope (Element);
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
+                  Enter_Scope (Element);
 
                when A_Package_Declaration => -- Thing that can have a private part
-                  Enter_Scope (Element);
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
 
+                  Enter_Scope (Element);
                   Traverse_With_Private (Names(Element)(1)
                                          & Visible_Part_Declarative_Items (Element, Include_Pragmas => True),
                                          Private_Part_Declarative_Items (Element, Include_Pragmas => True),
@@ -384,10 +393,10 @@ package body Framework.Ruler is
                   Control := Abandon_Children;
 
                when A_Generic_Package_Declaration => -- Thing that can have a private part
-                  Enter_Scope (Element);
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
 
+                  Enter_Scope (Element);
                   Traverse_With_Private (Generic_Formal_Part (Element, Include_Pragmas => True)
                                          & Names(Element)(1)
                                          & Visible_Part_Declarative_Items (Element, Include_Pragmas => True),
@@ -408,16 +417,18 @@ package body Framework.Ruler is
                   Stub_Nesting := Stub_Nesting + 1;
                   declare
                      Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Element);
+                     Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Element) (1));
                   begin
                      if Is_Nil (Proper_Body) then
                         User_Log (3 * Stub_Nesting * ' '
                                   & "Controlling separate "
-                                  & Defining_Name_Image (Names(Element)(1))
+                                  & Stub_Name
                                   & " ... not found");
+                        Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
                      else
                         User_Log (3 * Stub_Nesting * ' '
                                   & "Controlling separate "
-                                  & Defining_Name_Image (Names(Element)(1)));
+                                  & Stub_Name);
                         declare
                            Stub_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Proper_Body);
                         begin
@@ -460,9 +471,9 @@ package body Framework.Ruler is
             end case;
 
          when An_Exception_Handler =>
-            Enter_Scope (Element);
             Framework.Plugs.         Pre_Procedure (Element);
             Framework.Specific_Plugs.Pre_Procedure (Element);
+            Enter_Scope (Element);
 
          when A_Statement =>
             case Statement_Kind (Element) is
@@ -470,9 +481,9 @@ package body Framework.Ruler is
                  | A_Block_Statement
                  | An_Accept_Statement
                  =>
-                  Enter_Scope (Element);
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
+                  Enter_Scope (Element);
                when others =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
@@ -537,43 +548,48 @@ package body Framework.Ruler is
                              Control : in out Asis.Traverse_Control;
                              State   : in out Info) is
       pragma Unreferenced (Control);
-      use Asis, Asis.Elements, Utilities;
+      use Asis, Asis.Elements;
    begin
       case Element_Kind (Element) is
          when A_Declaration =>
             case Declaration_Kind (Element) is
-               when A_Function_Declaration
-                 | A_Procedure_Declaration
-                 | An_Entry_Declaration
-                 | A_Generic_Procedure_Declaration
-                 | A_Generic_Function_Declaration
-                 | A_Generic_Package_Declaration
-                 | A_Formal_Procedure_Declaration
-                 | A_Formal_Function_Declaration
-                 | A_Procedure_Body_Declaration
-                 | A_Function_Body_Declaration
-                 | A_Package_Declaration
-                 | A_Package_Body_Declaration
-                 | A_Task_Type_Declaration
-                 | A_Single_Task_Declaration
-                 | A_Protected_Type_Declaration
-                 | A_Single_Protected_Declaration
-                 | A_Task_Body_Declaration
-                 | A_Protected_Body_Declaration
-                 | An_Entry_Body_Declaration
-                 | A_Package_Renaming_Declaration
-                 | A_Procedure_Renaming_Declaration
-                 | A_Function_Renaming_Declaration
-                 | A_Generic_Package_Renaming_Declaration
-                 | A_Generic_Procedure_Renaming_Declaration
-                 | A_Generic_Function_Renaming_Declaration
-                 | A_Package_Instantiation
-                 | A_Procedure_Instantiation
-                 | A_Function_Instantiation
-                 =>
+               when A_Procedure_Declaration   -- Any change to this list must be reflected in Framework.Symbol_Table
+                  | A_Function_Declaration
+                  | An_Entry_Declaration
+                  | A_Package_Declaration
+                  | A_Task_Type_Declaration
+                  | A_Single_Task_Declaration
+                  | A_Protected_Type_Declaration
+                  | A_Single_Protected_Declaration
+
+                  | A_Procedure_Body_Declaration
+                  | A_Function_Body_Declaration
+                  | An_Entry_Body_Declaration
+                  | A_Package_Body_Declaration
+                  | A_Task_Body_Declaration
+                  | A_Protected_Body_Declaration
+
+                  | A_Generic_Procedure_Declaration
+                  | A_Generic_Function_Declaration
+                  | A_Generic_Package_Declaration
+
+                  | A_Formal_Procedure_Declaration
+                  | A_Formal_Function_Declaration
+
+                  | A_Procedure_Renaming_Declaration
+                  | A_Function_Renaming_Declaration
+                  | A_Package_Renaming_Declaration
+                  | A_Generic_Package_Renaming_Declaration
+                  | A_Generic_Procedure_Renaming_Declaration
+                  | A_Generic_Function_Renaming_Declaration
+
+                  | A_Procedure_Instantiation
+                  | A_Function_Instantiation
+                  | A_Package_Instantiation
+                    =>
+                  Exit_Scope (Element);
                   Framework.Plugs.         Post_Procedure (Element);
                   Framework.Specific_Plugs.Post_Procedure (Element);
-                  Exit_Scope (Element);
 
                when others =>
                   Framework.Plugs.         Post_Procedure (Element);
@@ -581,10 +597,9 @@ package body Framework.Ruler is
             end case;
 
          when An_Exception_Handler =>
+            Exit_Scope (Element);
             Framework.Plugs.         Post_Procedure (Element);
             Framework.Specific_Plugs.Post_Procedure (Element);
-
-            Exit_Scope (Element);
 
          when A_Statement =>
             case Statement_Kind (Element) is
@@ -592,10 +607,9 @@ package body Framework.Ruler is
                  | A_Block_Statement
                  | An_Accept_Statement
                  =>
+                  Exit_Scope (Element);
                   Framework.Plugs.         Post_Procedure (Element);
                   Framework.Specific_Plugs.Post_Procedure (Element);
-
-                  Exit_Scope (Element);
 
               when others =>
                  Framework.Plugs.         Post_Procedure (Element);
@@ -677,12 +691,7 @@ package body Framework.Ruler is
             return "";
          end if;
 
-         declare
-            Pos_Image : constant Wide_String := Integer'Wide_Image (Unit_Pos);
-            Len_Image : constant Wide_String := Integer'Wide_Image (Units_List.Length);
-         begin
-            return '(' & Pos_Image (2 .. Pos_Image'Last) & '/' & Len_Image (2..Len_Image'Last) & ") ";
-         end;
+         return '(' & Integer_Img (Unit_Pos) & '/' & Integer_Img (Units_List.Length) & ") ";
       end Progress_Indicator;
 
       Unit_Spec : Asis.Compilation_Unit;
@@ -705,7 +714,7 @@ package body Framework.Ruler is
             -- (Unit_Body is a Nil_Compilation_Unit)
             Unit_Spec := Library_Unit_Declaration (Unit_Name, Framework.Adactl_Context);
             if Is_Nil (Unit_Spec) then
-               User_Message (Progress_Indicator & "Controlling " & Unit_Name & " specification ... not found!");
+               User_Log (Progress_Indicator & "Controlling " & Unit_Name & " specification ... not found!");
                Rules.Uncheckable.Process_Missing_Unit ("missing specification for " & Unit_Name);
             else
                User_Log (Progress_Indicator & "Controlling " & Unit_Name & " specification");
@@ -717,7 +726,7 @@ package body Framework.Ruler is
       if not Spec_Only then
          if Is_Nil (Unit_Spec) or else Is_Body_Required (Unit_Spec) then
             if Is_Nil (Unit_Body) then
-               User_Message (Progress_Indicator & "Controlling " & Unit_Name & " body ... not found!");
+               User_Log (Progress_Indicator & "Controlling " & Unit_Name & " body ... not found!");
                Rules.Uncheckable.Process_Missing_Unit ("missing body for " & Unit_Name);
             else
                User_Log (Progress_Indicator & "Controlling " & Unit_Name & " body");

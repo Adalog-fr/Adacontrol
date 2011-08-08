@@ -113,7 +113,7 @@ package body Rules.Max_Call_Depth is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Framework.Language, Utilities;
+      use Framework.Language;
 
    begin
       if not Parameter_Exists then
@@ -129,7 +129,7 @@ package body Rules.Max_Call_Depth is
          -- + 1 since we store the depth wich is an error
       else
          declare
-            Param : constant Wide_String := To_Upper (Get_String_Parameter);
+            Param : constant Wide_String := Get_Name_Parameter;
          begin
             if Param /= "FINITE" then
                Parameter_Error (Rule_Id, "depth or ""finite"" expected for parameter");
@@ -173,81 +173,49 @@ package body Rules.Max_Call_Depth is
 
    function Call_Depth (Call : Asis.Element) return Natural is
       -- Computes the depth of a call, including itself
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Elements;
       use Framework.Reports, Thick_Queries;
 
-      Called_Decl  : Asis.Declaration;
-      Name         : Asis.Expression;
+      Called_Descr : constant Call_Descriptor := Corresponding_Call_Description (Call);
       Called_Depth : Natural;
    begin
-      if Element_Kind (Call) = An_Expression then
-         -- a function call
-         Called_Decl := A4G_Bugs.Corresponding_Called_Function (Call);
-      else
-         -- procedure or entry call
-         Called_Decl := A4G_Bugs.Corresponding_Called_Entity (Call);
-      end if;
-
-      if Declaration_Kind (Called_Decl) in A_Renaming_Declaration then
-         Name := A4G_Bugs.Corresponding_Base_Entity (Called_Decl);
-         case Expression_Kind (Name) is
-            when Not_An_Expression =>
-               -- Name is Nil_Element
-               Called_Decl := Nil_Element;
-            when An_Attribute_Reference | An_Explicit_Dereference =>
-               Called_Decl := Nil_Element;
-            when An_Indexed_Component =>
-               -- Renaming of a member of an entry family
-               Name := Prefix (Name);
-               if Expression_Kind (Name) = A_Selected_Component then
-                  Name := Selector (Name);
-               end if;
-               Called_Decl := Corresponding_Name_Declaration (Name);
-            when others =>
-               Called_Decl := Corresponding_Name_Declaration (Name);
-               if Declaration_Kind (Called_Decl) = An_Enumeration_Literal_Specification then
-                  -- Do not even count these as calls
-                  return 0;
-               end if;
-         end case;
-      elsif Is_Nil (Called_Decl) then
-         Name := Called_Simple_Name (Call);
-      end if;
-
-      if Is_Nil (Called_Decl) then
-         -- not statically analyzable, dispatching call, attribute...
-         case Expression_Kind (Name) is
-            when An_Attribute_Reference =>
-               -- Assume calls to attributes have a depth of 1
-               return 1;
-            when An_Operator_Symbol =>
-               -- A predefined operator
-               return 1;
-            when others =>
-               if Is_Part_Of_Instance (Call) then
-                  -- Unfortunately, Corresponding_Generic_Element does not work on call.
-                  -- Let the message reference the instantiation instead
-                  Uncheckable (Rule_Id,
-                               False_Negative,
-                               Get_Location (Ultimate_Enclosing_Instantiation (Call)),
-                               "Dispatching call, call to predefined or dynamic entity in generic; "
-                                 & "assuming depth of 1");
-               else
-                  Uncheckable (Rule_Id,
-                               False_Negative,
-                               Get_Location (Call),
-                               "Dispatching call, call to predefined or dynamic entity; assuming depth of 1");
-               end if;
+      case Called_Descr.Kind is
+         when An_Attribute_Call | A_Predefined_Entity_Call =>
+            -- Assume these calls have a depth of 1
             return 1;
-         end case;
-      end if;
 
-      Called_Depth := Entity_Call_Depth (Called_Decl, Call);
-      if Called_Depth = Infinite then
-         return Infinite;
-      else
-         return Called_Depth + 1;
-      end if;
+         when A_Dereference_Call | A_Dispatching_Call =>
+            if Is_Part_Of_Instance (Call) then
+               -- Unfortunately, Corresponding_Generic_Element does not work on call.
+               -- Let the message reference the instantiation instead
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Ultimate_Enclosing_Instantiation (Call)),
+                            "Dispatching call, call to predefined or dynamic entity in generic; "
+                            & "assuming depth of 1");
+            else
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Call),
+                            "Dispatching call, call to predefined or dynamic entity; assuming depth of 1");
+            end if;
+            -- Short of knowing, assume depth of 1
+            return 1;
+
+         when A_Regular_Call =>
+            if Declaration_Kind (Called_Descr.Declaration) = An_Enumeration_Literal_Specification then
+               -- Do not even count these as calls
+               return 0;
+            end if;
+
+            -- Normal case
+            Called_Depth := Entity_Call_Depth (Called_Descr.Declaration, Call);
+            if Called_Depth = Infinite then
+               return Infinite;
+            else
+               return Called_Depth + 1;
+            end if;
+      end case;
    end Call_Depth;
 
    -----------------------
@@ -268,6 +236,8 @@ package body Rules.Max_Call_Depth is
                             Count   : in out Natural) is
       use Utilities;
       use Asis, Asis.Declarations, Asis.Elements;
+
+      Temp : Asis.Element;
    begin
       case Element_Kind (Element) is
          when An_Expression =>
@@ -306,7 +276,11 @@ package body Rules.Max_Call_Depth is
                   | A_Subtype_Declaration
                     =>
                   -- Traverse the definition, but not the discriminant part
-                  Traverse (Type_Declaration_View (Element), Control, Count);
+                  Temp := Type_Declaration_View (Element);
+                  if not Is_Nil (Temp) then
+                     -- Temp is nil for an empty task type declaration (task T;)
+                     Traverse (Temp, Control, Count);
+                  end if;
                   Control := Abandon_Children;
                when An_Incomplete_Type_Declaration
                   | A_Deferred_Constant_Declaration
@@ -564,10 +538,10 @@ package body Rules.Max_Call_Depth is
    ------------------
 
    procedure Process_Call (Call : in Asis.Element) is
-      use Framework.Reports, Utilities;
-
       Depth : Natural;
+
       procedure Do_Report (Rule_Type : Rule_Types) is
+         use Framework.Reports, Utilities;
       begin
          if Depth = Infinite then
              Report (Rule_Id,
@@ -603,8 +577,9 @@ package body Rules.Max_Call_Depth is
    end Process_Call;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Max_Call_Depth;

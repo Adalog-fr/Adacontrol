@@ -108,10 +108,11 @@ package body Rules.Abnormal_Function_Return is
 
    procedure Process_Function_Body (Function_Body : in Asis.Expression) is
       use Asis.Declarations, Asis.Statements;
+      use Thick_Queries;
 
       procedure Check (Stmt : Asis.Statement) is
          use Asis, Asis.Elements;
-         use Framework.Reports, Thick_Queries, Utilities;
+         use Framework.Reports, Utilities;
 
          Last_Statement : Asis.Statement := Stmt;
       begin
@@ -156,7 +157,7 @@ package body Rules.Abnormal_Function_Return is
       declare
          Body_Stmts : constant Asis.Statement_List := Body_Statements (Function_Body);
       begin
-         Check (Body_Stmts (Body_Stmts'Last));
+         Check (Last_Effective_Statement (Body_Stmts));
       end;
 
       declare
@@ -166,15 +167,16 @@ package body Rules.Abnormal_Function_Return is
             declare
                Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Handlers (H));
             begin
-               Check (Handler_Stmts (Handler_Stmts'Last));
+               Check (Last_Effective_Statement (Handler_Stmts));
             end;
          end loop;
       end;
    end Process_Function_Body;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Abnormal_Function_Return;

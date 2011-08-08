@@ -5,17 +5,13 @@ T4: search instantiations (ada.unchecked_deallocation, standard.string, <>);
 T5: check  instantiations (ada.unchecked_deallocation, standard.string, t_instantiations.string_access);
 T6: check  instantiations (ada.unchecked_conversion, <>, t_instantiations.Integer_Access);
 
--- Not tested, resistance test:
-Boolean_Buf_Duplicate_Instance:     Check Instantiations (Buffer.Enumeration_G,  Standard.Boolean);
-Character_Buf_Duplicate_Instance:   Check Instantiations (Buffer.Enumeration_G,  Standard.Character);
-Side_Buf_Duplicate_Instance:        Check Instantiations (Buffer.Enumeration_G,  Side.T);
-Duration_Buf_Duplicate_Instance:    Check Instantiations (Buffer.Fixed_G,        Standard.Duration);
-Float8_T_Buf_Duplicate_Instance:    Check Instantiations (Buffer.Float_G,        System_Types.Float8_T);
-Float_Buf_Duplicate_Instance:       Check Instantiations (Buffer.Float_G,        Standard.Float);
-Integer1_T_Buf_Duplicate_Instance:  Check Instantiations (Buffer.Integer_G,      System_Types.Integer1_T);
-Integer2_T_Buf_Duplicate_Instance:  Check Instantiations (Buffer.Integer_G,      System_Types.Integer2_T);
-Integer4_T_Buf_Duplicate_Instance:  Check Instantiations (Buffer.Integer_G,      System_Types.Integer4_T);
-Integer_Buf_Duplicate_Instance:     Check Instantiations (Buffer.Integer_G,      Standard.Integer);
-Integer_T_Buf_Duplicate_Instance:   Check Instantiations (Buffer.Integer_G,      System_Types.Integer_T);
-Unsigned1_T_Buf_Duplicate_Instance: Check Instantiations (Buffer.Integer_G,      System_Types.Unsigned1_T);
-Unsigned2_T_Buf_Duplicate_Instance: Check Instantiations (Buffer.Integer_G,      System_Types.Unsigned2_T);
+Local_Instantiation : check instantiations (local ada.unchecked_deallocation);
+Block_Instantiation : check instantiations (block ada.unchecked_deallocation);
+Local_Instantiation : search instantiations (local ada.unchecked_conversion);
+
+Repeat1 : check instantiations (t_instantiations.G1, =);
+Repeat2 : check instantiations (t_instantiations.G1, <>, =);
+Repeat3 : check instantiations (block t_instantiations.G1, =);
+Repeat4 : check instantiations (t_instantiations.g2, =,<>,=);
+Repeat5 : check instantiations (t_instantiations.g2, =,t_instantiations.proc1,=);
+

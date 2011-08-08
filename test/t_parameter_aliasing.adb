@@ -1,8 +1,14 @@
 procedure T_parameter_aliasing is
 
-   procedure Proc_CC (X : out Character; Y : in out Character) is begin null; end;
-   procedure Proc_SC (X : out String;    Y : out    Character) is begin null; end;
+   procedure Proc_CC  (X : out Character; Y : in out Character) is begin null; end;
+   procedure Proc_CC2 (X : in  Character; Y : out    Character) is begin null; end;
+   procedure Proc_CCC (X : out Character; Y : in     Character; Z : in Character) is begin null; end;
+   procedure Proc_SC  (X : out String;    Y : out    Character) is begin null; end;
 
+   function "+" (C : Character; I : integer) return Character is
+   begin
+      return C;
+   end "+";
 begin
 Simple_Cases :
    declare
@@ -15,7 +21,10 @@ Simple_Cases :
       Alias1 : Character renames I;
    begin
       Proc_CC (I, I);                         -- Aliasing
+      Proc_CCC(I, I, I);                      -- Aliasing
       Proc_CC (I, J);                         -- OK
+      Proc_CCC(I, J, J);                      -- OK
+      Proc_CC2(J+1, J);                       -- OK
       Proc_CC (X => I, Y => J);               -- OK
       Proc_CC (X => Simple_Cases.I, Y => I);  -- Aliasing
 
@@ -110,13 +119,13 @@ Dereferences:
       C : Acc := R.S'Access;
    begin
       Proc_SC (A.all,   A(3));                      -- Aliasing
-      Proc_SC (G.all,   F(3));                      -- Possible aliasing
+      Proc_SC (G.all,   F(3));                      -- Unlikely aliasing
       Proc_SC (B.all,   R.A(3));                    -- Aliasing
       Proc_SC (R.A.all, R.A(3));                    -- Aliasing
       Proc_SC (R.A.all, R.B(3));                    -- Unlikely aliasing
       Proc_AS (A,       A.all);                     -- Unlikely aliasing
-      Proc_CC (X => F.all(3), Y => F(3));           -- Possible aliasing
-      Proc_SC (Y => Dereferences.F(3), X => F.all); -- Possible aliasing
+      Proc_CC (X => F.all(3), Y => F(3));           -- Unlikely aliasing
+      Proc_SC (Y => Dereferences.F(3), X => F.all); -- Unlikely aliasing
       Proc_SC (C.all, R.S(3));                      -- Unlikely aliasing (but true here)
    end Dereferences;
 

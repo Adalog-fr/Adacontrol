@@ -34,19 +34,8 @@ with Asis;
 
 package Rules.Use_Clauses is
 
-   -- This rule can be used to check/search for use clauses that mention
-   -- any package but the ones passed as parameters (if any)
-   -- Parameters (1) => package name
-   -- Parameters (2) => package name
-   -- ...
-   -- Parameters (N) => package name
-
    Rule_Id : constant Wide_String := "USE_CLAUSES";
 
    procedure Process_Use_Clause (Clause : in Asis.Clause);
-   -- Applies the rule
-   --
-   -- Expected Clause_Kinds:
-   --    A_Use_Clause
 
 end Rules.Use_Clauses;

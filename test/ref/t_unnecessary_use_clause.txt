@@ -1,6 +1,10 @@
 t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for "Ada.Text_Io" in scope of use clause for same package at t_unnecessary_use_clause.adb:8:4
-t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
-t_unnecessary_use_clause.adb:41:7: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Strings"
+t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: use clause for "Ada.Strings.Fixed" in scope of use clause for same package at t_unnecessary_use_clause.adb:14:4
+t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause can be moved to body: Ada.Text_Io
+t_unnecessary_use_clause.adb:53:7: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Strings"
+t_unnecessary_use_clause.adb:50:4: Error: UNNECESSARY_USE_CLAUSE: all uses qualified: "Pack4"
+t_unnecessary_use_clause.adb:44:4: Error: UNNECESSARY_USE_CLAUSE: only used for operators: "Pack3"
+t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Strings.Fixed"
 t_unnecessary_use_clause.adb:8:4: Error: UNNECESSARY_USE_CLAUSE: unused: "Text_IO"
 t_unnecessary_use_clause.adb:2:14: Error: UNNECESSARY_USE_CLAUSE: unused: "System"
 t_unnecessary_use_clause.ads:3:4: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Command_Line" (possible usage in child units)

@@ -1,10 +1,14 @@
 #  This file adds support for AdaControl
 
+# If you are using GPS 3.x, change "true" to "false" in the next line:
+GPS4_Bug=True
+
+#######################################################################
 import GPS, os, glob, re, sets
 
 # Clean-up various windows before running AdaControl
 def pre_clean ():
-   GPS.MDI.save_all (False)
+   GPS.MDI.save_all (GPS.Preference ("force-save").get())
    for C in adactl_cats:
       GPS.Locations.remove_category (C)
    GPS.MDI.get("Messages").raise_window()
@@ -17,7 +21,6 @@ def post_clean ():
 # Get the command name for AdaControl
 def command_name ():
    result = GPS.Project.root().get_attribute_as_string("compiler_command", "Ide", "AdaControl")
-   print result
    if result == "":
       return "adactl"
    else:
@@ -72,23 +75,25 @@ def options ():
             raise ValueError
 
    result = result  + " --"
-   for I in [GPS.Project.root()] + GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
+   for I in GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
       for J in GPS.Project.source_dirs(I) :
-         result=result +  ' -I' + J
+         result=result +  '  -I' + J.replace("\\", "/")
 
+   result = result + "   "
    return result
 
-# Make a '+'-separated of all units in the project
+# Make a '+'-separated list of all units in the project
 def Project_units ():
    files=GPS.Project.root().sources()
    result= ""
    prev_name=""
    for f in files:
-      name= os.path.splitext(os.path.basename (f.name()))[0]
-      name= re.sub("-", ".", name)
-      if name != prev_name:
-         result= result + '+' + name
-         prev_name=name
+      if GPS.File.language (f) == "ada":
+         name= os.path.splitext(os.path.basename (f.name()))[0]
+         name= re.sub("-", ".", name)
+         if name != prev_name:
+            result= result + '+' + name
+            prev_name=name
    return result
 
 # Compare two source references
@@ -152,6 +157,14 @@ def parse (output):
           GPS.Locations.add (category, GPS.File("none"), 1, 1, message)
        except:
           # Always an exception, since file "none" does not exist (presumably)
+          pass
+     elif re.match (r"^.*: ((Check: \d+, Search: \d+, Count: \d+)|(not triggered))$", Mess):
+       # Count summary
+       adactl_cats.add ("Counts summary")
+       try:
+          GPS.Locations.add ("Counts summary", GPS.File(re.sub(r"^(.*): ((Check: \d+, Search: \d+, Count: \d+)|(not triggered))$", r"\1", Mess)), 1, 1, Mess)
+       except:
+          # Always an exception, since file does not exist
           pass
      else:
        # Assume it is a compilation message
@@ -227,30 +240,54 @@ def rules_file_defined ():
    else:
       return "true"
 
-# Ask commands interactively and executes
-def run_interactive (files):
+# Run Adacontrol
+# rules = "ask" | "file"
+# files = "current" | "list" | "project" | "" (means: depending on button definition)
+def run (rules, files):
    global previous_command
-   value=GPS.MDI.input_dialog ("Interactive run", "Command(s)=" + previous_command)
-   if value != [] and value [0] != "":
-      previous_command= re.sub('"', '~', value[0])
-      GPS.execute_action ("AdaControl", files, "-l \"" + previous_command + "\"")
 
-# A filter for the button version of running AdaControl
-# Filters have no effect on a button, therefore we must do the corresponding checks
-def filter_check_file ():
-   try:
-      win = GPS.current_context().file()
-   except:
-     GPS.MDI.dialog ("no active window")
-     raise ValueError
+   if files == "":
+      tmp = GPS.Preference ("button-target").get();
+      if tmp == "Current File":
+         files = "current"
+      elif tmp == "Root Project":
+         files = "project"
+      else: # Units from list
+         files = "list"
 
-   if win.language() != "ada" :
-      GPS.MDI.dialog ("active window is not Ada")
-      raise ValueError
+   if files == "current":
+      try:
+         win = GPS.current_context().file()
+      except:
+         GPS.MDI.dialog ("no active window")
+         return
+      if win.language() != "ada" :
+         GPS.MDI.dialog ("active window is not Ada")
+         return
+      files_param = win.name()
+   elif files == "list":
+      files_param = "@" + get_units_file()
+   else:   # "project"
+      files_param = Project_units()
 
-   if rules_file_defined () == "false" :
-      GPS.MDI.dialog ("no rules file defined")
-      raise ValueError
+   if rules == "ask":
+      value=GPS.MDI.input_dialog ("Interactive run", "Command(s)=" + previous_command)
+      if value != [] and value [0] != "":
+         previous_command= value[0]
+         rules_param = "-l \"" + re.sub('"', '~', previous_command) + "\""
+      else:
+         return
+   else:
+      if rules_file_defined () == "false" :
+         GPS.MDI.dialog ("no rules file defined")
+         return
+      rules_param = "-f " + get_rules_file()
+
+   pre_clean()
+   if GPS4_Bug:
+      GPS.execute_asynchronous_action ("AdaControl", command_name(), rules_param + ' ' + files_param + ' ' + options() )
+   else:
+      GPS.execute_action ("AdaControl", command_name(), rules_param + ' ' + files_param + ' ' + options() )
 
 # Displays help for a given rule, and launcher
 def display_help (proc, status, mess):
@@ -285,15 +322,21 @@ previous_command= ""
 GPS.Editor.register_highlighting ("Adactl_check", "red", "True")
 GPS.Editor.register_highlighting ("Adactl_found", "orange", "True")
 
-# We must define the button here in order to compute the place of the icon from
+# We must define the buttons here in order to compute the place of the icons from
 # the GPS directory, but we cannot call GPS.Button(), because it does not allow
 # the declaration of an icon (hence we use parse_xml).
 GPS.parse_xml("""
-<button action='Check_File_File_Button'>
-   <title>Control Current File (rules file)</title>
+<button action='Check_Unknown_File'>
+   <title>Launch AdaControl (rules file)</title>
    <pixmap>"""
            + GPS.get_system_dir()
            + """share/gps/plug-ins/adactl.gif</pixmap>
+</button>
+<button action='Check_Unknown_Ask'>
+   <title>Launch AdaControl (interactive)</title>
+   <pixmap>"""
+           + GPS.get_system_dir()
+           + """share/gps/plug-ins/adactl_ask.gif</pixmap>
 </button>
 """)
 

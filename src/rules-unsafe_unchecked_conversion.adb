@@ -30,14 +30,12 @@
 
 -- ASIS
 with
-  Asis.Clauses,
   Asis.Declarations,
   Asis.Elements,
   Asis.Expressions;
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -118,50 +116,27 @@ package body Rules.Unsafe_Unchecked_Conversion is
       Assocs : Asis.Association_List (1..2);
 
       Not_Specified : constant Integer := -1;
-      Class_Wide    : constant Integer := -2;
 
       function Size_Value (Type_Name : Asis.Expression) return Integer is
-         use Asis.Clauses;
-         Good_Name : Asis.Expression := Type_Name;
+         Expr : Asis.Expression;
       begin
-         if Expression_Kind (Good_Name) = An_Attribute_Reference then
-            case A4G_Bugs.Attribute_Kind (Good_Name) is
-               when A_Base_Attribute =>
-                  Good_Name := Prefix (Good_Name);
-               when A_Class_Attribute =>
-                  return Class_Wide;
-               when others =>
-                  Failure ("unexpected attribute", Good_Name);
-            end case;
+         Expr := Size_Clause_Expression (Type_Name);
+         if Is_Nil (Expr) then
+            return Not_Specified;
          end if;
 
          declare
-            Reprs : constant Asis.Representation_Clause_List
-              := Corresponding_Representation_Clauses (Corresponding_Name_Declaration (Good_Name));
+            Val_Img : constant Wide_String := Static_Expression_Value_Image (Expr);
          begin
-            for R in Reprs'Range loop
-               if Representation_Clause_Kind (Reprs (R)) = An_Attribute_Definition_Clause
-                 and then A4G_Bugs.Attribute_Kind (Representation_Clause_Name (Reprs (R))) = A_Size_Attribute
-               then
-                  declare
-                     Val_Img : constant Wide_String := Static_Expression_Value_Image
-                       (Representation_Clause_Expression (Reprs (R)));
-                  begin
-                     if Val_Img = "" then
-                        Uncheckable (Rule_Id,
-                                     False_Positive,
-                                     Get_Location (Representation_Clause_Expression (Reprs (R))),
-                                     "unable to evaluate size clause value");
-                        return Not_Specified;
-                     else
-                        return Integer'Wide_Value (Val_Img);
-                     end if;
-                  end;
-               end if;
-            end loop;
-
-            -- No size clause found
-            return Not_Specified;
+            if Val_Img = "" then
+               Uncheckable (Rule_Id,
+                            False_Positive,
+                            Get_Location (Type_Name),
+                            "unable to evaluate size clause value for " & Name_Image (Type_Name));
+               return Not_Specified;
+            else
+               return Integer'Wide_Value (Val_Img);
+            end if;
          end;
       end Size_Value;
 
@@ -193,6 +168,21 @@ package body Rules.Unsafe_Unchecked_Conversion is
          Target := Selector (Target);
       end if;
 
+      if Is_Class_Wide_Subtype (Source) then
+         Report (Rule_Id,
+                 Context,
+                 Get_Location (Source),
+                 "class-wide type given for Source");
+         Reported := True;
+      end if;
+      if Is_Class_Wide_Subtype (Target) then
+         Report (Rule_Id,
+                 Context,
+                 Get_Location (Target),
+                 "class-wide type given for Target");
+         Reported := True;
+      end if;
+
       S_Size := Size_Value (Source);
       T_Size := Size_Value (Target);
 
@@ -211,21 +201,6 @@ package body Rules.Unsafe_Unchecked_Conversion is
          Reported := True;
       end if;
 
-      if S_Size = Class_Wide then
-         Report (Rule_Id,
-                 Context,
-                 Get_Location (Source),
-                 "class-wide type given for Source");
-         Reported := True;
-      end if;
-      if T_Size = Class_Wide then
-         Report (Rule_Id,
-                 Context,
-                 Get_Location (Target),
-                 "class-wide type given for Target");
-         Reported := True;
-      end if;
-
       if Reported then
          return;
       end if;
@@ -241,8 +216,9 @@ package body Rules.Unsafe_Unchecked_Conversion is
    end Process_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Unsafe_Unchecked_Conversion;

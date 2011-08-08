@@ -1,0 +1,18 @@
+check max_size (if, 8);
+check max_size (if_branch, 2);
+
+check max_size (case, 9);
+check max_size (case_branch, 2);
+
+check max_size (unnamed_loop, 3);
+check max_size (loop, 5);
+
+search max_size (block, 8);
+search max_size (unnamed_block, 5);
+check max_size (simple_block,  3);
+
+check max_size (accept, 4);
+
+Block_Count: count max_size (block, 1);
+Loop_Count:  count max_size (loop, 1);
+

@@ -1,7 +1,7 @@
 t_header_comments-sep.adb:4:1: Error: HEADER_COMMENTS: not enough header comment lines
 x_header_comments.ads:1:1: Error: HEADER_COMMENTS: not enough header comment lines
-x_header_comments.ads:1:1: Found: HEADER_COMMENTS: line does not match pattern
-x_header_comments.adb:1:1: Found: HEADER_COMMENTS: line does not match pattern
+x_header_comments.ads:1:1: Found: HEADER_COMMENTS: line does not match pattern "^--$"
+x_header_comments.adb:1:1: Found: HEADER_COMMENTS: line does not match pattern "^--$"
 x_header_comments.adb:3:1: Error: HEADER_COMMENTS: not enough header comment lines
 
 Counts summary:

@@ -1,0 +1,27 @@
+t_multiple_assignments.adb:31:4: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:25:4
+t_multiple_assignments.adb:29:4: Found: Groupable1: too many assignments to components of T_Multiple_Assignments.R, given: 3 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:29:4: Error: Groupable2: too many assignments to components of T_Multiple_Assignments.R, ratio: 100 (>=85)
+t_multiple_assignments.adb:35:4: Found: Groupable1: too many assignments to components of T_Multiple_Assignments.T, given: 4 (>=2), missing: 1 (<=2)
+t_multiple_assignments.adb:49:4: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:41:4
+t_multiple_assignments.adb:50:4: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:42:4
+t_multiple_assignments.adb:51:4: Found: Groupable1: too many assignments to components of T_Multiple_Assignments.R, given: 3 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:51:4: Error: Groupable2: too many assignments to components of T_Multiple_Assignments.R, ratio: 100 (>=85)
+t_multiple_assignments.adb:46:4: Found: Groupable1: too many assignments to components of T_Multiple_Assignments.Rr, given: 3 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:46:4: Error: Groupable2: too many assignments to components of T_Multiple_Assignments.Rr, ratio: 100 (>=85)
+t_multiple_assignments.adb:47:4: Found: Groupable1: too many assignments to components of T_Multiple_Assignments.Rr.Z, given: 2 (>=2), missing: 1 (<=2)
+t_multiple_assignments.adb:77:7: Found: Groupable1: too many assignments to components of T_Multiple_Assignments._Anonymous_.D, given: 3 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:77:7: Error: Groupable2: too many assignments to components of T_Multiple_Assignments._Anonymous_.D, ratio: 100 (>=85)
+t_multiple_assignments.adb:81:7: Found: Groupable1: too many assignments to components of T_Multiple_Assignments._Anonymous_.Ds, given: 3 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:81:7: Error: Groupable2: too many assignments to components of T_Multiple_Assignments._Anonymous_.Ds, ratio: 100 (>=85)
+t_multiple_assignments.adb:73:7: Found: Groupable1: too many assignments to components of T_Multiple_Assignments._Anonymous_.S, given: 3 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:73:7: Error: Groupable2: too many assignments to components of T_Multiple_Assignments._Anonymous_.S, ratio: 100 (>=85)
+t_multiple_assignments.adb:117:7: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:115:7
+t_multiple_assignments.adb:118:7: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:115:7
+t_multiple_assignments.adb:119:7: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:115:7
+t_multiple_assignments.adb:120:7: Error: Repeated: variable already assigned in same group at t_multiple_assignments.adb:115:7
+t_multiple_assignments.adb:136:7: Error: Groupable2: too many assignments to components of T_Multiple_Assignments._Anonymous_.V1, ratio: 100 (>=85)
+t_multiple_assignments.adb:138:7: Found: Groupable1: too many assignments to components of T_Multiple_Assignments._Anonymous_.V2, given: 2 (>=2), missing: 0 (<=2)
+t_multiple_assignments.adb:138:7: Error: Groupable2: too many assignments to components of T_Multiple_Assignments._Anonymous_.V2, ratio: 100 (>=85)
+
+Counts summary:
+Fully_Assigned: 8

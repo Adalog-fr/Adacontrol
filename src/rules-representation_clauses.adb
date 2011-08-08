@@ -36,8 +36,11 @@ with
 -- ASIS
 with
   Asis.Clauses,
+  Asis.Declarations,
+  Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Iterator;
 
 -- Adalog
 with
@@ -48,14 +51,20 @@ with
 -- Adactl
 with
   Framework.Language,
+  Framework.Queries,
   Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Reports,
+  Framework.String_Set;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Representation_Clauses is
    use Framework, Ada.Strings.Wide_Unbounded, Utilities;
 
-   type Clause_Names is (Cl_Attribute, Cl_At, CL_At_Mod, Cl_Enumeration, Cl_Record);
+   Storage_Unit : Thick_Queries.Biggest_Int;
+
+   type Clause_Names is (Cl_Attribute,             Cl_At,              CL_At_Mod,
+                         Cl_Enumeration,           Cl_Fractional_Size, Cl_Incomplete_Record,
+                         Cl_Non_Contiguous_Record, Cl_Record);
 
    package Clause_Flags_Utilities is new Framework.Language.Flag_Utilities (Clause_Names, "CL_");
    use Clause_Flags_Utilities;
@@ -65,8 +74,11 @@ package body Rules.Representation_Clauses is
    use Context_Map;
 
    Usage     : array (Rule_Types) of Context_Map.Map;
-   Rule_Used : Boolean := False;
-   Save_Used : Boolean;
+
+   type Usage_Flags is array (Clause_Names) of Boolean;
+   Not_Used : constant Usage_Flags := (others => False);
+   Rule_Used : Usage_Flags := Not_Used;
+   Save_Used : Usage_Flags;
    Key       : array (Clause_Names range Clause_Names'Succ (Cl_Attribute) .. Clause_Names'Last)
                   of Unbounded_Wide_String;
    Key_All   : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("all");
@@ -118,12 +130,13 @@ package body Rules.Representation_Clauses is
             Parameter_Error (Rule_Id, "some representation clauses already specified");
          end if;
          Add (Usage (Rule_Type), Key_All, To_Unbounded_Wide_String (Label));
+         Rule_Used := (others => True);
       end if;
 
       while Parameter_Exists loop
          Clause := Get_Flag_Parameter (Allow_Any => True);
          if Clause = Cl_Attribute then
-            Param := To_Unbounded_Wide_String (To_Upper (Get_String_Parameter));
+            Param := To_Unbounded_Wide_String (Get_Name_Parameter);
             if Element (Param, 1) /= ''' then
                Parameter_Error (Rule_Id, "parameter must be at, at_mod, enumeration, record, or an attribute");
             end if;
@@ -136,9 +149,9 @@ package body Rules.Representation_Clauses is
          end if;
 
          Add (Usage (Rule_Type), Param, To_Unbounded_Wide_String (Label));
+         Rule_Used (Clause) := True;
       end loop;
 
-      Rule_Used := True;
    end Add_Use;
 
    -------------
@@ -155,21 +168,44 @@ package body Rules.Representation_Clauses is
             end loop;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := False;
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
    end Command;
 
+   -------------
+   -- Prepare --
+   -------------
+
+   procedure Prepare is
+      use Asis.Declarations;
+      use Framework.Queries, Thick_Queries;
+   begin
+      if Rule_Used = Not_Used then
+         return;
+      end if;
+
+      Storage_Unit := Biggest_Int'Wide_Value (Static_Expression_Value_Image
+                                              (Initialization_Expression
+                                               (System_Value ("STORAGE_UNIT"))));
+   end Prepare;
+
+
    --------------------
    -- Process_Clause --
    --------------------
 
-   procedure Process_Clause (Element : in Asis.Representation_Clause) is
-      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries;
+   procedure Process_Clause (Rep_Clause : in Asis.Representation_Clause) is
+      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions, Thick_Queries;
+      use Framework.Reports;
+
       Attribute : Unbounded_Wide_String;
 
-      procedure Check_Usage (Clause : Clause_Names; Message : Wide_String) is
+      procedure Check_Usage (Clause  : Clause_Names;
+                             Message : Wide_String;
+                             Loc     : Location := Get_Location (Rep_Clause))
+      is
          Key_Map : Unbounded_Wide_String;
       begin
          if Clause = Cl_Attribute then
@@ -183,25 +219,25 @@ package body Rules.Representation_Clauses is
             Report (Rule_Id,
                     To_Wide_String (Fetch (Usage (Check), Key_Map)),
                     Check,
-                    Get_Location (Element),
+                    Loc,
                     Message);
          elsif Is_Present (Usage (Check), Key_All) then
             Report (Rule_Id,
                     To_Wide_String (Fetch (Usage (Check), Key_All)),
                     Check,
-                    Get_Location (Element),
+                    Loc,
                     Message);
          elsif Is_Present (Usage (Search), Key_Map) then
             Report (Rule_Id,
                     To_Wide_String (Fetch (Usage (Search), Key_Map)),
                     Search,
-                    Get_Location (Element),
+                    Loc,
                     Message);
          elsif Is_Present (Usage (Search), Key_All) then
             Report (Rule_Id,
                     To_Wide_String (Fetch (Usage (Search), Key_All)),
                     Search,
-                    Get_Location (Element),
+                    Loc,
                     Message);
          end if;
 
@@ -210,31 +246,198 @@ package body Rules.Representation_Clauses is
             Report (Rule_Id,
                     To_Wide_String (Fetch (Usage (Count), Key_Map)),
                     Count,
-                    Get_Location (Element),
+                    Loc,
                     Message);
          elsif Is_Present (Usage (Count), Key_All) then
             Report (Rule_Id,
                     To_Wide_String (Fetch (Usage (Count), Key_All)),
                     Count,
-                    Get_Location (Element),
+                    Loc,
                     Message);
          end if;
-     end Check_Usage;
+      end Check_Usage;
+
+      procedure Check_Incomplete (Clause : Asis.Representation_Clause) is
+         use Asis.Declarations;
+         use Framework.String_Set;
+
+         Components : constant Asis.Component_Clause_List := Component_Clauses (Clause);
+         Compo_Set  : Set;
+
+         procedure Pre_Procedure (Element : in     Asis.Element;
+                                  Control : in out Asis.Traverse_Control;
+                                  State   : in out Null_State)
+         is
+            pragma Unreferenced (Control, State);
+         begin
+            if Element_Kind (Element) = A_Defining_Name then
+               if not Is_Present (Compo_Set, To_Upper (Defining_Name_Image (Element))) then
+                  Check_Usage (Cl_Incomplete_Record,
+                               "no component clause for "
+                               & Defining_Name_Image (Element)
+                               & " at "
+                               & Image (Get_Location (Element)));
+               end if;
+            end if;
+         end Pre_Procedure;
+
+         procedure Traverse_Type is new Asis.Iterator.Traverse_Element (Null_State,
+                                                                        Pre_Procedure,
+                                                                        Null_State_Procedure);
+         Control : Asis.Traverse_Control := Continue;
+         State   : Null_State;
+         Decl    : constant Asis.Declaration
+           := Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
+      begin
+         for C in Components'Range loop
+            Add (Compo_Set, To_Upper (Name_Image (Representation_Clause_Name (Components (C)))));
+         end loop;
+
+         if not Is_Nil (Discriminant_Part (Decl)) then
+            Traverse_Type (Discriminant_Part (Decl), Control, State);
+         end if;
+
+         Traverse_Type (Type_Declaration_View (Decl), Control, State);
+
+         Clear (Compo_Set);
+      end Check_Incomplete;
+
+      procedure Check_Contiguous (Clause : Asis.Representation_Clause) is
+         use Asis.Definitions;
+
+         type Field_Descriptor is
+            record
+               Low, High : Biggest_Int;
+               Compo_Inx : Asis.List_Index;
+            end record;
+
+         Components    : constant Asis.Component_Clause_List := Component_Clauses (Clause);
+         Fields        : array (Components'Range) of Field_Descriptor;
+         Used_F        : ASIS_Natural := Fields'First - 1;
+         Size_Expr     : Asis.Expression;
+         Is_Uncheck    : Boolean := False;
+         Starting_Unit : Biggest_Int;
+      begin
+         for C in Components'Range loop
+            declare
+               Pos : constant Wide_String := Static_Expression_Value_Image (Component_Clause_Position (Components (C)));
+               P   : Biggest_Int;
+               R   : constant Asis.Discrete_Range := Component_Clause_Range (Components (C));
+               L   : constant Wide_String := Static_Expression_Value_Image (Lower_Bound (R));
+               H   : constant Wide_String := Static_Expression_Value_Image (Upper_Bound (R));
+               F   : Field_Descriptor;
+               Ins : Asis.List_Index;
+            begin
+               if Pos = "" or L = "" or H = "" then
+                  Uncheckable (Rule_Id,
+                               False_Negative,
+                               Get_Location (Components (C)),
+                               "unable to evaluate component position for non_contiguous_record subrule");
+                  Is_Uncheck := True;
+               else
+                  P := Biggest_Int'Wide_Value (Pos) * Storage_Unit;
+                  F := (Low       => P + Biggest_Int'Wide_Value (L),
+                        High      => P + Biggest_Int'Wide_Value (H),
+                        Compo_Inx => C);
+
+                  -- Insert F at the right place
+                  -- Since it is highly likely that clauses are given in order, start
+                  -- from the end.
+                  Ins := Fields'First;
+                  for I in reverse List_Index range Fields'First .. Used_F loop
+                     pragma Warnings (Off);
+                     -- Gnat warns that "Fields" may be referenced before it has a value
+                     -- but this cannot happen since the loop is bounded by Used_F
+                     if Fields (I).Low < F.Low then
+                        Ins := I + 1;
+                        exit;
+                     end if;
+                     pragma Warnings (On);
+                     Fields (I + 1) := Fields (I);
+                  end loop;
+                  Fields (Ins) := F;
+                  if Ins /= Fields'First
+                    and then Fields (Ins - 1).High > Fields (Ins).High
+                  then
+                     Fields (Ins).High := Fields (Ins - 1).High;
+                  end if;
+                  Used_F := Used_F + 1;
+               end if;
+            end;
+         end loop;
+         if Is_Uncheck then
+            return;
+         end if;
+
+         if Fields (Fields'First).Low /= 0 then
+            Check_Usage (Cl_Non_Contiguous_Record,
+                         "gap at 0 range 0.." & Biggest_Int_Img(Fields (Fields'First).Low-1),
+                         Get_Location (Components (Fields(Fields'First).Compo_Inx)));
+         end if;
+         for I in List_Index range Fields'First+1 .. Fields'Last loop
+            if Fields (I - 1).High + 1 < Fields (I).Low then
+               Starting_Unit := (Fields (I - 1).High + 1) / Storage_Unit;
+               Check_Usage (Cl_Non_Contiguous_Record,
+                            "gap before component, at "
+                            & Biggest_Int_Img (Starting_Unit)
+                            & " range "
+                            & Biggest_Int_Img (Fields (I - 1).High + 1 - Starting_Unit * Storage_Unit)
+                            & ".."
+                            & Biggest_Int_Img (Fields (I).Low - 1 - Starting_Unit * Storage_Unit),
+                            Get_Location (Components (Fields (I).Compo_Inx)));
+            end if;
+         end loop;
+
+         -- Check gap at the end if size clause given
+         Size_Expr := Size_Clause_Expression (Representation_Clause_Name (Clause));
+         if Is_Nil (Size_Expr) then
+            return;
+         end if;
+         declare
+            S : constant Wide_String := Static_Expression_Value_Image (Size_Expr);
+         begin
+            if S = "" then
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Clause),
+                            "unable to evaluate size of "
+                            & Name_Image (Representation_Clause_Name (Clause))
+                            & "for non_contiguous_record subrule");
+               return;
+            end if;
+
+            if Fields (Fields'Last).High /= Biggest_Int'Wide_Value (S) - 1 then
+               Starting_Unit := (Fields (Fields'Last).High + 1) / Storage_Unit;
+               Check_Usage (Cl_Non_Contiguous_Record,
+                            "gap at end of record, at "
+                            & Biggest_Int_Img (Starting_Unit)
+                            & " range "
+                            & Biggest_Int_Img (Fields (Fields'Last).High + 1 - Starting_Unit * Storage_Unit)
+                            & ".."
+                            & Biggest_Int_Img (Biggest_Int'Wide_Value (S) - 1 - Starting_Unit * Storage_Unit),
+                            Get_Location (Components (Fields (Fields'Last).Compo_Inx)));
+            end if;
+         end;
+      end Check_Contiguous;
 
    begin   -- Process_Clause
-      if not Rule_Used then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      case Representation_Clause_Kind (Element) is
+      case Representation_Clause_Kind (Rep_Clause) is
          when Not_A_Representation_Clause =>
             Failure ("Not a representation clause in " & Rule_Id);
 
          when An_Attribute_Definition_Clause =>
+            if not Rule_Used (Cl_Attribute) and not Rule_Used (Cl_Fractional_Size) then
+               return;
+            end if;
+
             Attribute := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image
-                                                                   (Representation_Clause_Name (Element))));
-            if Expression_Kind (Prefix (Representation_Clause_Name (Element))) = An_Attribute_Reference then
+                                                                   (Representation_Clause_Name (Rep_Clause))));
+            if Expression_Kind (Prefix (Representation_Clause_Name (Rep_Clause))) = An_Attribute_Reference then
                -- This happens only in for T'Class'Read and similar
 
                -- ASIS BUG:
@@ -247,7 +450,7 @@ package body Rules.Representation_Clauses is
                -- Note that we call Asis.Elements.Attribute_Kind, not A4G_Bugs.Attribute_Kind
                -- because the version in A4G_Bugs does not work due to the same ASIS bug, but the
                -- regular version seems to work in this case. Sigh.
-               case Attribute_Kind (Representation_Clause_Name (Element)) is --## RULE LINE OFF Use_A4G_Bugs
+               case Attribute_Kind (Representation_Clause_Name (Rep_Clause)) is --## RULE LINE OFF Use_A4G_Bugs
                   when A_Read_Attribute =>
                      Attribute := To_Unbounded_Wide_String ("'CLASS'READ");
                   when A_Write_Attribute =>
@@ -257,11 +460,27 @@ package body Rules.Representation_Clauses is
                   when An_Output_Attribute =>
                      Attribute := To_Unbounded_Wide_String ("'CLASS'OUTPUT");
                   when others =>
-                     Failure ("Unexpected double attribute in " & Rule_Id, Element);
+                     Failure ("Unexpected double attribute in " & Rule_Id, Rep_Clause);
                end case;
             end if;
 
             Check_Usage (Cl_Attribute, "use of representation clause for " & To_Wide_String (Attribute));
+
+            if Attribute = "'SIZE" and then Rule_Used (Cl_Fractional_Size) then
+               declare
+                  Value_Str : constant Wide_String
+                    := Static_Expression_Value_Image (Representation_Clause_Expression (Rep_Clause));
+               begin
+                  if Value_Str = "" then
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (Representation_Clause_Expression (Rep_Clause)),
+                                  "unable to evaluate size for fractional_size subrule");
+                  elsif Biggest_Int'Wide_Value (Value_Str) rem Storage_Unit /= 0 then
+                     Check_Usage (Cl_Fractional_Size, "size clause not multiple of Storage_Unit");
+                  end if;
+               end;
+            end if;
 
          when An_Enumeration_Representation_Clause =>
             Check_Usage (Cl_Enumeration, "use of enumeration representation clause");
@@ -269,8 +488,16 @@ package body Rules.Representation_Clauses is
          when A_Record_Representation_Clause =>
             Check_Usage (Cl_Record, "use of record representation clause");
 
-            if not Is_Nil (Mod_Clause_Expression (Element)) then
+            if Rule_Used (Cl_At_Mod) and then not Is_Nil (Mod_Clause_Expression (Rep_Clause)) then
                Check_Usage (CL_At_Mod, "use of Ada 83 alignment clause");
+            end if;
+
+            if Rule_Used (Cl_Incomplete_Record) then
+               Check_Incomplete (Rep_Clause);
+            end if;
+
+            if Rule_Used (Cl_Non_Contiguous_Record) then
+               Check_Contiguous (Rep_Clause);
             end if;
 
          when An_At_Clause =>
@@ -283,8 +510,10 @@ begin
       Key (K) := To_Unbounded_Wide_String (Clause_Names'Wide_Image (K));
    end loop;
 
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Representation_Clauses;

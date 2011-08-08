@@ -1,0 +1,30 @@
+t_simplifiable_statements-test_block.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
+t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
+t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+t_simplifiable_statements-test_handler.adb:29:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+t_simplifiable_statements-test_if.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if.adb:15:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if.adb:11:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: content of else path can be moved outside "if" statement
+t_simplifiable_statements-test_if.adb:37:13: Error: SIMPLIFIABLE_STATEMENTS: content of then path can be moved outside "if" statement
+t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
+t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_null.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_null.adb:6:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:14:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:18:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_dead.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:13:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:16:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:26:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:32:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_dead.adb:36:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:46:1: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:47:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement

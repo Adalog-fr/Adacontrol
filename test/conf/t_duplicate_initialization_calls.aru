@@ -1,0 +1,2 @@
+check  duplicate_initialization_calls (t_duplicate_initialization_calls.In_Proc);
+search duplicate_initialization_calls (t_duplicate_initialization_calls.Out_Proc);

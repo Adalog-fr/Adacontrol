@@ -13,5 +13,5 @@ package X_Declarations is
 
    package Inst is new Gen_Pack;                                         -- Nested_Package_Instantiation
 
-   Arr : array (1..10) of Integer;                                       -- Array, single_array
+   Arr : array (1..10) of Integer;                                       -- Array, single_array, variable
 end X_Declarations;

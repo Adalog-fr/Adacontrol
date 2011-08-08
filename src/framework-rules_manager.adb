@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Adalog
 with
   Utilities,
@@ -52,7 +48,7 @@ package body Framework.Rules_Manager is
    Nb_Rules : Rules_Count := 0;
 
    type Rule_Info is record
-      Kind     : Rule_Kind;
+      Kind     : Extended_Rule_Kind;
       Help     : Help_Procedure;
       Add_Use  : Add_Use_Procedure;
       Command  : Command_Procedure;
@@ -61,66 +57,37 @@ package body Framework.Rules_Manager is
       Used     : Boolean;
    end record;
 
-   package Rule_List is new Binary_Map (Ada.Strings.Wide_Unbounded.Unbounded_Wide_String,
-                                        Rule_Info);
+   package Rule_List is new Binary_Map (Unbounded_Wide_String, Rule_Info);
    Rule_Map : Rule_List.Map;
 
-   Kinds_Count : array (Rule_Kind) of Rules_Count := (others => 0);
+   Kinds_Count : array (Extended_Rule_Kind) of Rules_Count := (others => 0);
 
    --------------
    -- Register --
    --------------
 
-   procedure Register (Rule     : Wide_String;
-                       Kind     : Rule_Kind;
-                       Help     : Help_Procedure;
-                       Add_Use  : Add_Use_Procedure;
-                       Command  : Command_Procedure;
-                       Prepare  : Prepare_Procedure  := null;
-                       Finalize : Finalize_Procedure := null) is
+   procedure Register (Rule        : Wide_String;
+                       R_Kind      : Extended_Rule_Kind;
+                       Help_CB     : Help_Procedure;
+                       Add_Use_CB  : Add_Use_Procedure;
+                       Command_CB  : Command_Procedure;
+                       Prepare_CB  : Prepare_Procedure  := null;
+                       Finalize_CB : Finalize_Procedure := null) is
       use Utilities;
    begin
-      if Help = null or Add_Use = null or Command = null then
-         Failure ("Missing Help, Add_Use or Clear procedure");
+      if Help_CB = null or Add_Use_CB = null or Command_CB = null then
+         Failure ("Missing Help, Add_Use or Command procedure");
       end if;
 
       Rule_List.Add (Rule_Map,
                      To_Unbounded_Wide_String (To_Upper (Rule)),
-                     (Kind, Help, Add_Use, Command, Prepare, Finalize, Used => False));
+                     (R_Kind, Help_CB, Add_Use_CB, Command_CB, Prepare_CB, Finalize_CB, Used => False));
       Nb_Rules := Nb_Rules + 1;
 
       if Rule'Length > Max_Name_Length then
          Max_Name_Length := Rule'Length;
       end if;
    end Register;
-
-   -----------------------
-   -- Register_Semantic --
-   -----------------------
-
-   procedure Register_Semantic (Rule     : Wide_String;
-                                Help     : Help_Procedure;
-                                Add_Use  : Add_Use_Procedure;
-                                Command  : Command_Procedure;
-                                Prepare  : Prepare_Procedure  := null;
-                                Finalize : Finalize_Procedure := null) is
-   begin
-      Register (Rule, Semantic, Help, Add_Use, Command, Prepare, Finalize);
-   end Register_Semantic;
-
-   ----------------------
-   -- Register_Textual --
-   ----------------------
-
-   procedure Register_Textual (Rule     : Wide_String;
-                               Help     : Help_Procedure;
-                               Add_Use  : Add_Use_Procedure;
-                               Command  : Command_Procedure;
-                               Prepare  : Prepare_Procedure  := null;
-                               Finalize : Finalize_Procedure := null) is
-   begin
-      Register (Rule, Textual, Help, Add_Use, Command, Prepare, Finalize);
-   end Register_Textual;
 
    -----------
    -- Enter --
@@ -307,7 +274,7 @@ package body Framework.Rules_Manager is
          when others =>
             null;
       end case;
-  end Command_All;
+   end Command_All;
 
   -------------
   -- Command --
@@ -351,9 +318,9 @@ package body Framework.Rules_Manager is
   -- Has_Active_Rules --
   ----------------------
 
-  function Has_Active_Rules (Kind : Rule_Kind) return Boolean is
+  function Has_Active_Rules (R_Kind : Rule_Kind) return Boolean is
   begin
-     return Kinds_Count (Kind) /= 0;
+     return Kinds_Count (R_Kind) + Kinds_Count (Semantic_Textual) /= 0;
   end Has_Active_Rules;
 
 end Framework.Rules_Manager;

@@ -1,9 +1,0 @@
-check local_instantiation (ada.unchecked_deallocation);
-search local_instantiation;
-
--- Not tested, resistance test:
-Local_Instantiation_Memory_Leak: Check Local_Instantiation (Enumeration_External.Regular_G,
-                                                            Enumeration_External.External_G,
-                                                            Enumeration_External.Truncate_G,
-                                                            Enumeration_External.Trailing_Underscore_G);
-Local_Instantiation_Use_Cpu: Check Local_Instantiation (Check_Declared_Objects_Are_Initialized_G);

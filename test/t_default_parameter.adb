@@ -6,13 +6,25 @@ procedure T_default_parameter is
       X,Y : Integer := 0;
    package Gen is end Gen;
 
-   package Inst1 is new Gen (1);
+   package Inst1 is new Gen (1); -- X used, Y not used
 
    generic
-      with package Pack is new Gen (1);
+      with package Pack is new Gen (1);  -- X used, Y not used
    package Gen_Gen is end Gen_Gen;
 
    package Inst2 is new Gen_Gen (Inst1);
+
+   generic
+      with function "<" (L, R  : Integer) return Boolean is <>;
+      Max : in Integer := 100;
+   procedure P;
+   procedure P is
+   begin
+      null;
+   end;
+
+   procedure Q is new P;
+   procedure R is new P ("<");           -- "<" not used
 
    procedure Proc (X, Y : Integer := 0) is
    begin
@@ -23,8 +35,9 @@ procedure T_default_parameter is
    begin
       null;
    end Proc;
+
 begin
-   Proc (1);
-   Proc (Y => 1.0);
+   Proc (1);            -- X used, Y not used
+   Proc (Y => 1.0);     -- X not used, Y used
 end T_default_parameter;
 

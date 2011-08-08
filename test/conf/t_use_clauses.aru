@@ -1,2 +1,3 @@
-search use_clauses (Ada.Text_IO);
+"use local" : search use_clauses (local,  Ada.Text_IO);
+"use global": search use_clauses (global, Ada.Text_IO);
 check  use_clauses (Ada.Text_IO, Ada.Strings);

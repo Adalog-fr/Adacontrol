@@ -1,0 +1,3 @@
+ts_units.adb:2:11: Error: UNITS: unit Ts_Units not withed by any unit
+ts_units.adb:1:6: Error: UNITS: unit X_Units_1 not processed by AdaControl
+x_units_2.ads:1:9: Error: UNITS: unit X_Units_2 not withed by any unit

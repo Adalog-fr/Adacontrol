@@ -129,9 +129,8 @@ package body Rules.Max_Statement_Nesting is
    -----------------------
 
    procedure Process_Statement (Statement : in Asis.Statement) is
-      use Ada.Strings.Wide_Unbounded;
       use Asis.Elements;
-      use Statement_Flag_Utilities, Framework.Reports, Thick_Queries;
+      use Thick_Queries;
       Unit_Name : constant Asis.Defining_Name := Enclosing_Program_Unit (Statement, Including_Accept => True);
       Elem      : Asis.Element := Statement;
       Counts    : array (Statement_Names) of Natural := (others => 0);
@@ -147,19 +146,21 @@ package body Rules.Max_Statement_Nesting is
       end Count;
 
       procedure Do_Report (Stmt : Statement_Names) is
+         use Ada.Strings.Wide_Unbounded;
+         use Statement_Flag_Utilities, Framework.Reports, Utilities;
       begin
          if Rule_Used (Stmt)(Check) and then Counts (Stmt) > Values (Stmt, Check) then
             Report (Rule_Id,
                     To_Wide_String (Labels (Stmt, Check)),
                     Check,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than" & Integer'Wide_Image(Values (Stmt, Check)));
+                    Image (Stmt) & " statements nesting deeper than " & Integer_Img(Values (Stmt, Check)));
          elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Values (Stmt, Search) then
             Report (Rule_Id,
                     To_Wide_String (Labels (Stmt, Search)),
                     Search,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than" & Integer'Wide_Image(Values (Stmt, Search)));
+                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Values (Stmt, Search)));
          end if;
 
          if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Values (Stmt, Count) then
@@ -167,7 +168,7 @@ package body Rules.Max_Statement_Nesting is
                     To_Wide_String (Labels (Stmt, Count)),
                     Count,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than" & Integer'Wide_Image(Values (Stmt, Count)));
+                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Values (Stmt, Count)));
          end if;
 
       end Do_Report;
@@ -219,8 +220,9 @@ package body Rules.Max_Statement_Nesting is
    end Process_Statement;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Max_Statement_Nesting;

@@ -69,7 +69,7 @@ package body Rules.Pragmas is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Utilities, Framework.Language;
+      use Framework.Language;
 
    begin
       if  not Parameter_Exists then
@@ -78,7 +78,7 @@ package body Rules.Pragmas is
 
       while Parameter_Exists loop
          declare
-            Pragma_Name : constant Wide_String := To_Upper (Get_String_Parameter);
+            Pragma_Name : constant Wide_String := Get_Name_Parameter;
          begin
             -- "Nonstandard" and "all" are handled just as if they were pragma names
             Associate (Rule_Uses,
@@ -179,9 +179,10 @@ package body Rules.Pragmas is
    end Process_Pragma;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Pragmas;

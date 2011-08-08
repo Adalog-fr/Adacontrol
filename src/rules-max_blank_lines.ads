@@ -38,10 +38,6 @@ with
   Framework;
 package Rules.Max_Blank_Lines is
 
-   -- This rule can be used to check/search for the occurrence of
-   -- consecutive blank lines
-   -- Parameter(1): Number of blank lines to search/check
-
    Rule_Id : constant Wide_String := "MAX_BLANK_LINES";
 
    procedure Enter_Unit   (Unit : in Asis.Compilation_Unit);

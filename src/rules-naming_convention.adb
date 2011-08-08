@@ -146,12 +146,14 @@ package body Rules.Naming_Convention is
                        K_Generic_Sp,
                           K_Generic_Procedure,
                           K_Generic_Function
-                 );
+                );
+   Max_Hierarchy_Depth : constant := 5;
+   -- Maximum logical depth of the above hierarchy
 
    package Keys_Flags_Utilities is new Framework.Language.Flag_Utilities (Keys, "K_");
    use Keys_Flags_Utilities;
 
-   type Key_Set_Index is range 1 .. Keys'Pos (Keys'Last) + 1;
+   type Key_Set_Index is range 1 .. Max_Hierarchy_Depth;
    type Key_Set is array (Key_Set_Index range <>) of Keys;
 
    type Visibility is (Scope_Global, Scope_Local, Scope_Unit);
@@ -287,10 +289,8 @@ package body Rules.Naming_Convention is
    ---------------------------
 
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
-      use Asis, Asis.Declarations, Asis.Definitions,
-          Asis.Elements, Asis.Expressions, Asis.Statements;
-      use String_Matching, Thick_Queries, Utilities;
-      use Framework.Reports;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Thick_Queries, Utilities;
 
       Decl : Asis.Declaration;
       -- The (true) enclosing declaration of Name
@@ -304,7 +304,7 @@ package body Rules.Naming_Convention is
          Is_Global           : Boolean;
 
          procedure Check_One (Key : in Keys) is
-            use Visibility_Utilities;
+            use String_Matching, Visibility_Utilities, Framework.Reports;
 
             Current              : Usage_Rec_Access := Usage (Key).First;
             Matches              : Boolean;
@@ -337,10 +337,10 @@ package body Rules.Naming_Convention is
                                   & """: """
                                   & Defining_Name_Image (Name) & '"');
                         return;
-                     else
-                        -- We must continue in case there is a "not" match farther
-                        Positive_Match_Found := True;
                      end if;
+
+                     -- We must continue in case there is a "not" match farther
+                     Positive_Match_Found := True;
                   elsif not Current.Is_Not then
                      All_Not_Patterns := False;
                   end if;
@@ -458,7 +458,7 @@ package body Rules.Naming_Convention is
                      -- and separate units.
                      -- Apparently, this does not happen for full declarations of private types,
                      -- therefore we can ignore the problem
-                     A4G_Bugs.Trace_Bug ("Rules.Naming_Convention.Process_Defining_Name");
+                     A4G_Bugs.Trace_Bug ("Rules.Naming_Convention.Process_Defining_Name: ASIS_Failed");
                end;
 
                case Decl_Kind is
@@ -967,8 +967,9 @@ package body Rules.Naming_Convention is
    end Process_Defining_Name;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Naming_Convention;

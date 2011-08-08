@@ -1,27 +1,33 @@
 -- Required style checks:
-check unnecessary_use_clause;
+check unnecessary_use_clause (unused, nested, movable);
+check reduceable_scope (no_blocks use);
 check style (no_closing_name);
 check style (casing_identifier, original);
 check style (casing_attribute, titlecase);
 check style (negative_condition);
 check style (compound_statement);
 check style (multiple_elements);
+check style (casing_keyword, lowercase);
 check max_nesting (7);
 check parameter_aliasing (certain);
 check simplifiable_expressions;
-check statements (untyped_for, unnecessary_null);
+check simplifiable_statements;
+check statements (untyped_for);
 check max_blank_lines (2);
+check characters (control, trailing_space);
+check multiple_assignments (groupable, given 2, ratio 100);
 
 -- Acceptable, but should be looked at:
-search if_for_case;
 search parameter_aliasing (possible);
 search max_nesting (5);
 search local_hiding;
 
--- Check that there is no more debugging code, warn about missing (TBSL) code
-No_Trace : check entities (utilities.trace, timing);
-No_Debug : check entities (debug);
-No_TBSL  : search special_comments (TBSL);
+-- Check that there is no more debugging code, warn about missing (TBSL)
+-- and uncheckable code
+No_Trace : check entities (Utilities.trace);
+No_Debug : check entities (debug, debug.timing, tracer, tracer.timing);
+No_TBSL  : search special_comments ("TBSL");
+search uncheckable (false_negative, missing_unit);
 
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.
@@ -39,12 +45,21 @@ Use_A4G_Bugs: check entities (
 );
 
 -- Check prefered operation from Thick_Queries
-Use_Subtype_Simple_Name: check entities (Asis.Definitions.Subtype_Mark);
+Avoid_Query: check entities (
+   Asis.Definitions.Subtype_Mark,
+   Asis.Definitions.Corresponding_Root_Type,
+   Asis.Definitions.Corresponding_Parent_Subtype
+);
+check characters (not_iso_646);
 check header_comments (minimum, 29);
 check max_line_length (120);
+
+-- Naming
 check naming_convention (Type,     not "^t_");
 check naming_convention (Constant, not "^c_");
 -- Title case convention, but we allow several upper case letters at the beginning:
 check naming_convention (All, case_sensitive "^[A-Z0-9]*[a-z0-9]*(_[A-Z0-9]*[a-z0-9]*)*$");
-Use_Trim_All: check entities (Ada.Strings.Wide_String.Trim);
-Uncheckable: search Uncheckable (false_negative);
+
+-- Replacement subprograms
+Use_Trim_All:     check entities (Ada.Strings.Wide_String.Trim);
+Use_Img_Function: check entities (standard.integer'wide_image, thick_queries.biggest_int'wide_image);

@@ -56,7 +56,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_expressions is
    use Framework, Ada.Strings.Wide_Unbounded;
 
-   type Keywords is (K_Range, K_Logical_True, K_Logical_False, K_Parentheses, K_Logical);
+   type Keywords is (K_Range,  K_Logical_True, K_Logical_False, K_Parentheses, K_Conversion,
+                     K_Logical);
    subtype To_Check is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
    package Check_Flags_Utilities is new Framework.Language.Flag_Utilities (Keywords, "K_");
@@ -86,6 +87,7 @@ package body Rules.Simplifiable_expressions is
       User_Message  ("  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
       User_Message  ("  <expression> = (/=) True/False");
       User_Message  ("  Unnecessary parentheses");
+      User_Message  ("  Conversions to the expression's subtype");
    end Help;
 
    -------------
@@ -122,6 +124,7 @@ package body Rules.Simplifiable_expressions is
          Add_Check (K_Logical_True);
          Add_Check (K_Logical_False);
          Add_Check (K_Parentheses);
+         Add_Check (K_Conversion);
       end if;
       Rule_Used  := True;
    end Add_Use;
@@ -156,7 +159,7 @@ package body Rules.Simplifiable_expressions is
    ------------------
 
    procedure Process_Call (Call : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries;
+      use Asis, Asis.Elements, Asis.Expressions, Framework.Reports;
 
       type Param_Kind is (Static_True, Static_False, Expr);
       function "+" (Left : Wide_String) return Unbounded_Wide_String renames To_Unbounded_Wide_String;
@@ -193,7 +196,7 @@ package body Rules.Simplifiable_expressions is
                   Expr         => +"")));                                                     -- <Expr> /= <Expr>
 
       function Get_Kind (Param : Asis.Expression) return Param_Kind is
-         use Utilities;
+         use Thick_Queries, Utilities;
       begin
          if Expression_Kind (Param) = An_Enumeration_Literal
            and then To_Upper (Full_Name_Image (Param)) = "STANDARD.FALSE"
@@ -276,9 +279,10 @@ package body Rules.Simplifiable_expressions is
 
    procedure Process_Range (Definition : in Asis.Definition) is
       use Asis, Asis.Declarations, Asis.Definitions,
-        Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries, Utilities;
+        Asis.Elements, Asis.Expressions, Thick_Queries, Utilities;
 
       procedure Do_Reports (Message : Wide_String) is
+         use Framework.Reports;
       begin
          if Context (Check)(K_Range).Used then
             Report (Rule_Id,
@@ -350,12 +354,11 @@ package body Rules.Simplifiable_expressions is
 
                   -- Remove the 'BASE attribute but only if it is applied to both attributes.
                   if Expression_Kind (LP) = An_Attribute_Reference then
-                     if Expression_Kind (UP) = An_Attribute_Reference  then
-                        LP := Prefix (LP);
-                        UP := Prefix (UP);
-                     else
+                     if Expression_Kind (UP) /= An_Attribute_Reference  then
                         return;
                      end if;
+                     LP := Prefix (LP);
+                     UP := Prefix (UP);
                   elsif Expression_Kind (UP) = An_Attribute_Reference then
                      return;
                   end if;
@@ -375,14 +378,13 @@ package body Rules.Simplifiable_expressions is
                                  end if;
 
                                  -- It's a record field, a protected type field...
-                                 if Is_Equal (Corresponding_Name_Declaration (Selector (LP)),
-                                              Corresponding_Name_Declaration (Selector (UP)))
+                                 if not Is_Equal (Corresponding_Name_Declaration (Selector (LP)),
+                                                  Corresponding_Name_Declaration (Selector (UP)))
                                  then
-                                    LP := Prefix (LP);
-                                    UP := Prefix (UP);
-                                 else
                                     return;
                                  end if;
+                                 LP := Prefix (LP);
+                                 UP := Prefix (UP);
                               when A_Variable_Declaration
                                 | A_Constant_Declaration
                                 | An_Object_Renaming_Declaration
@@ -621,9 +623,10 @@ package body Rules.Simplifiable_expressions is
    ---------------------------
 
    procedure Process_Parenthesized (Expr : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions, Framework.Reports;
+      use Asis, Asis.Elements, Asis.Expressions;
 
       procedure Do_Report is
+         use Framework.Reports;
          Message : constant Wide_String := "Unnecessary parentheses in expression";
       begin
          if Context (Check)(K_Parentheses).Used then
@@ -673,7 +676,6 @@ package body Rules.Simplifiable_expressions is
 
       case Expression_Kind (Enclosing) is
          when Not_An_Expression
-           | A_Parenthesized_Expression
            =>
             Do_Report;
 
@@ -720,9 +722,93 @@ package body Rules.Simplifiable_expressions is
 
    end Process_Parenthesized;
 
+   ------------------------
+   -- Process_Conversion --
+   ------------------------
+
+   procedure Process_Conversion (Expr : in Asis.Expression) is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Utilities;
+
+      Source : Asis.Declaration;
+      Target : Asis.Element;
+
+      procedure Do_Report is
+         use Framework.Reports;
+      begin
+         if Context (Check) (K_Conversion).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Context (Check) (K_Conversion).Label),
+                    Check,
+                    Get_Location (Expr),
+                    "unnecessary conversion");
+         elsif Context (Search) (K_Conversion).Used  then
+            Report (Rule_Id,
+                    To_Wide_String (Context (Search) (K_Conversion).Label),
+                    Search,
+                    Get_Location (Expr),
+                    "unnecessary conversion");
+         end if;
+
+         -- Always report Count
+         if Context (Count) (K_Conversion).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Context (Count) (K_Conversion).Label),
+                    Count,
+                    Get_Location (Expr),
+                    "");
+         end if;
+      end Do_Report;
+   begin   -- Process_Conversion
+      if not Rule_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Source := A4G_Bugs.Corresponding_Expression_Type (Converted_Or_Qualified_Expression (Expr));
+      if Is_Nil (Source) then
+         -- The expression is of an anonymous or dynamic type
+         -- certainly not suspicious
+         return;
+      end if;
+      if Declaration_Kind (Source) = An_Incomplete_Type_Declaration then
+         -- Use full declaration instead
+         Source := Corresponding_Type_Declaration (Source);
+      end if;
+
+      Target := Converted_Or_Qualified_Subtype_Mark (Expr);
+      case Expression_Kind (Target) is
+         when A_Selected_Component =>
+            Target := Selector (Target);
+         when An_Attribute_Reference =>
+            case A4G_Bugs.Attribute_Kind (Target) is
+               when A_Base_Attribute =>
+                  -- Never necessary
+                  Do_Report;
+                  return;
+               when A_Class_Attribute =>
+                  -- Since a class wide type has no declaration, it is hard
+                  -- to check whether the source is class-wide
+                  -- Just consider it is OK
+                  return;
+               when others =>
+                  Failure ("Unexpected type attribute", Target);
+            end case;
+         when others =>
+            null;
+      end case;
+      Target := Corresponding_Name_Declaration (Target);
+      if Is_Equal (Source, Target)
+        or else Is_Equal (Corresponding_First_Subtype (Source), Target)
+      then
+         Do_Report;
+      end if;
+   end Process_Conversion;
+
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Simplifiable_expressions;

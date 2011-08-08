@@ -12,9 +12,9 @@ procedure T_local_hiding is
    procedure P     -- OK
      (X : Integer) -- Hiding
    is
-      procedure P is begin null; end; -- OK
-      procedure P                     -- Hiding
-        (X : Integer)                 -- Hiding
+      procedure P is begin null; end; -- Overloading
+      procedure P                     -- Overloading, Hiding
+        (X : Integer)                 -- Hiding (x2)
       is begin null; end;
       type Enum                       -- OK
          is (T);                      -- Hiding
@@ -22,6 +22,12 @@ procedure T_local_hiding is
       null;
    end;
 
+   procedure P   -- Overloading
+     (D : Duration) -- OK
+   is
+   begin
+      null;
+   end;
    procedure PP    -- OK
      (X : Integer) -- OK
      renames P;
@@ -40,12 +46,12 @@ procedure T_local_hiding is
       type Priv is private;  -- OK
       Z : Integer;           -- OK
       procedure Proc;        -- OK
-      procedure P            -- Hiding
+      procedure P            -- Overloading, Hiding
         (Param : Integer);   -- OK
       package Internal is    -- OK
          protected Protec is -- OK
-            procedure P;     -- OK
-            procedure P      -- Hiding
+            procedure P;     -- Overloading (x3)
+            procedure P      -- Overloading (x2), Hiding (x2)
               (X : Integer); -- Hiding
          end Protec;
       end Internal;
@@ -58,15 +64,16 @@ procedure T_local_hiding is
    procedure Proc is begin null; end; -- OK
 
    package body Pack is                     -- OK
-      procedure P                           -- Hiding
+      procedure P                           -- Overloading, Hiding
         (Param : Integer)                   -- OK
         is begin null; end;
-      procedure Proc is begin null; end;    -- Hiding
+      procedure Proc (X : Float) is begin null; end; -- No explicit spec
+      procedure Proc is begin null; end;    -- Overloading, Hiding
       package body Internal is              -- OK
          Z : Integer;                       -- Hiding
          protected body Protec is           -- OK
-            procedure P is begin null; end; -- OK
-            procedure P                     -- Hiding
+            procedure P is begin null; end; -- Overloading (x4)
+            procedure P                     -- Overloading (x2), Hiding (x2)
               (X : Integer)                 -- Hiding
             is begin null; end;
          end Protec;

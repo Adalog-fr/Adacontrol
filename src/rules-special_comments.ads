@@ -38,10 +38,6 @@ with
   Framework;
 package Rules.Special_Comments is
 
-   -- This rule can be used to check/search for the occurrence of
-   -- comments matching the indicated pattern.
-   -- Parameter(s): Comment pattern
-
    Rule_Id : constant Wide_String := "SPECIAL_COMMENTS";
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);

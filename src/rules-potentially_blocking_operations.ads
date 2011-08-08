@@ -34,10 +34,6 @@ with
 
 package Rules.Potentially_Blocking_Operations is
 
-   -- This rule controls calls to potentially blocking operations
-   -- (ARM 9.5.1(8..16)) from protected operations
-   -- Parameters: None
-
    Rule_Id : constant Wide_String := "POTENTIALLY_BLOCKING_OPERATIONS";
 
    procedure Process_Protected_Body (Protected_Body : in Asis.Declaration);

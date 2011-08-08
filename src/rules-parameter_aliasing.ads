@@ -34,19 +34,7 @@ with Asis;
 
 package Rules.Parameter_Aliasing  is
 
-   --  This rule can be used to check/search for subprogram or entry
-   --  calls where the same variable is given for more than one [in]
-   --  out parameter. this rule can detect non-straightforward aliasing
-   --  cases, see doc for more details
-   -- Parameters:
-   --   (Optionnal): "Certain" (default), "Possible", or "Strict"
-
    Rule_Id : constant Wide_String := "PARAMETER_ALIASING";
 
    procedure Process_Call (Call : in Asis.Statement);
-   -- Called whenever a subprogram  call is encountered
-   -- Expected Statement_Kind:
-   --   A_Procedure_Call_Statement
-   --   An_Enty_Call_Statement
-   --
 end Rules.Parameter_Aliasing;

@@ -34,19 +34,11 @@ with Asis;
 
 package Rules.Reduceable_Scope  is
 
-   -- This rule can be used to check/search declarations that could be moved
-   -- to an inner scope, i.e. where all references are from a single nested scope
-   -- Parameters: None
-
    Rule_Id : constant Wide_String := "REDUCEABLE_SCOPE";
 
-   procedure Process_Defining_Name (Def: in Asis.Defining_Name);
-
-   procedure Process_Identifier (Name : in Asis.Name);
-   -- Called whenever an identifier is encountered
-   -- Check whether it is declared inside one of the enclosing scopes
-
-   procedure Process_Scope_Exit (Scope : in Asis.Element);
-   -- Applies the rule
+   procedure Process_Defining_Name (Def    : in Asis.Defining_Name);
+   procedure Process_Identifier    (Name   : in Asis.Name);
+   procedure Process_Use_Clause    (Clause : in Asis.Clause);
+   procedure Process_Scope_Exit    (Scope  : in Asis.Element);
 
 end Rules.Reduceable_Scope;

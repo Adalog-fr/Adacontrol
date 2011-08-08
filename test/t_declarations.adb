@@ -1,5 +1,6 @@
 with Ada.Numerics.Generic_Elementary_Functions;
 with X_Declarations.Child;
+with X_Declarations_Locations;
 procedure T_declarations is
    type I1 is range 1..10;      -- signed_type, integer_type
    type I2 is mod 128;          -- modular_type, integer_type
@@ -8,10 +9,16 @@ procedure T_declarations is
    type Fx1 is delta 0.1 range 0.0 .. 1.0; -- ordinary_fixed_type, fixed_type
    type Fx2 is delta 0.1 digits 5;         -- decimal_fixed_type, fixed_type
 
+   type Enum is (A, B, 'c', D, 'e');  -- enumeration_type, character_literal x2
+
    task T1 is                     -- single_task, task
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
    end T1;
    task body T1 is
+      procedure P is              -- task_body procedure, nested procedure, local procedure
+      begin
+         null;                    -- null_procedure
+      end;
    begin
       null;
    exception                      -- handlers
@@ -62,7 +69,7 @@ procedure T_declarations is
    type Der_Task is new T2;        -- derived_type
    type Acc5 is access Der_Task;   -- access_task_type, access_type
 
-   I,J,K : aliased Integer;               -- aliased, multiple_names
+   I,J,K : aliased Integer;               -- aliased, multiple_names, uninitialized_variable, variable
    C : aliased constant Character := ' '; -- aliased
 
    type Rec1 is tagged null record;                       -- null_tagged_type, record_type
@@ -70,7 +77,7 @@ procedure T_declarations is
    type Rec3 is null record;                              -- null_ordinary_record_type, record_type
    type Rec4 (X : Integer := 0) is                        -- ordinary_record_type, record_type, defaulted_discriminant
       record
-         case X is
+         case X is               -- variant_part
             when 0 =>
                I : Integer;      -- uninitialized_record_field
             when others =>
@@ -88,7 +95,7 @@ procedure T_declarations is
       end record;
    type Arr1 is array (1..10) of Character;           -- constrained_array_type, array
    type Arr2 is array (Positive range <>) of Integer; -- unconstrained_array_type, array
-   VArr1 : array (1..10) of Character;                -- single_array, array
+   VArr1 : array (1..10) of Character;                -- single_array, array, uninitialized_variable, variable
 
    type Der1 is new Rec1 with null record;                   -- null_extension, record_type
    type Der2 (Y : Integer) is new Rec1 with null record;     -- null_extension, record_type, discriminant
@@ -102,22 +109,48 @@ procedure T_declarations is
    generic                                                          -- Nested_Generic_Procedure, generic
       I : Integer := 1;                                             -- defaulted_generic_parameter
    procedure P (J : Integer := 1; K : in out Float; L : out Float); -- Defaulted_Parameter, Out_Parameter, In_Out_Parameter
-   procedure P (J : Integer := 1; K : in out Float; L : out Float) is begin null; end;
+   procedure P (J : Integer := 1; K : in out Float; L : out Float) is begin null; end; -- null_procedure
 
-   package Pack1 is end Pack1;                    -- nested_package
+   package Pack1 is end Pack1;                      -- nested_package
    package body Pack1 is
    end Pack1;
 
-   package Pack2 is                               -- nested_package
-      type Priv1 is private;                      -- Non_Limited_Private_Type
-      type Priv2 is limited private;              -- Limited_Private_Type
-      type Ext1 is new Rec1 with private;         -- Non_Limited_Private_Extension
+   package Pack2 is                                 -- nested_package
+      type Priv1 is private;                        -- Non_Limited_Private_Type
+      type Priv2 is limited private;                -- Limited_Private_Type
+      type Ext1 is new Rec1 with private;           -- Non_Limited_Private_Extension
+      type Abs1 is abstract tagged private;         -- Non_Limited_Private_Type, Abstract_Type
+      type Abs2 is abstract tagged limited private; -- Non_Limited_Private_Type, Abstract_Type
+      procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
+      function  F (Y : Abs2) return Integer is abstract; -- Abstract_Function
    private
-      type Priv1 is new Integer;                  -- Derived_Type
-      type Priv2 is new Integer;                  -- Derived_Type
-      type Ext1 is new Rec1 with null record;     -- Null_Extension, Record_Type
+      type Priv1 is new Integer;                    -- Derived_Type
+      type Priv2 is new Integer;                    -- Derived_Type
+      type Ext1 is new Rec1 with null record;       -- Null_Extension, Record_Type
+      type Abs1 is abstract tagged null record;     -- Null_Tagged_Type, Tagged_Type, Record_Type, Abstract_Type
+      type Abs2 is abstract tagged limited          -- Tagged_Type, Record_Type, Abstract_Type
+         record
+            X : Integer;                            -- Uninitialized_Record_Field
+         end record;
+      procedure Proc1;                              -- Private Procedure, Nested Procedure, Local Procedure
    end Pack2;
    package body Pack2 is
+      type Abs3 is abstract new Abs2 with null record; -- Null_Extension, Extension, Tagged_Type, Record_Type, Abstract_Type
+      procedure Proc1 is                                -- Own procedure, nested procedure, local procedure
+      begin
+         null;                                          -- Null_Procedure
+      end Proc1;
+      procedure Proc2 is                                -- Own procedure, nested procedure, local procedure
+      begin
+         declare
+            procedure Proc3 is                          -- Nested Procedure, Local Procedure, Block Procedure
+            begin
+               null;                                    -- Null Procedure
+            end Proc3;
+         begin
+            null;
+         end;
+      end Proc2;
    begin
       null;
    end Pack2;
@@ -128,14 +161,14 @@ procedure T_declarations is
 
    procedure Sep is separate;
 
-   Tab : array (1..10) of Integer;
+   Tab : array (1..10) of Integer;                       -- uninitialized_variable, variable
 
    function "+" (X, Y : Integer) return Integer is
    begin
       return 1;
    end "+";
 
-   function "-" (X, Y : Integer) return Integer;
+   function "-" (X, Y : Integer) return Integer;         -- Predefined_operator
    function "-" (X, Y : Integer) return Integer is
    begin
       return 1;
@@ -160,6 +193,9 @@ procedure T_declarations is
 
    Arr : Integer renames X_Declarations.Arr (1);                        -- renaming, non_identical_renaming, not_operator_renaming
    function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming, non_identical_renaming, not_operator_renaming
+   function "/" (X, Y : Integer) return Integer renames Standard."+";   -- renaming, operator_renaming, non_identical_renaming, non_identical_operator_renaming, multiple_names
+
+   procedure Predefined_Operator is separate;                                 -- separate
 begin
-   null;
+   null;                                                                -- null_procedure
 end T_declarations;

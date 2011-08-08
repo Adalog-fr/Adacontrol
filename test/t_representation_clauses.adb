@@ -1,23 +1,24 @@
 with System.Storage_Elements; use System.Storage_Elements;
 with Ada.Streams;
 procedure T_representation_clauses is
+
    type T is range 1 .. 10;
-   for T'Size use 8;
+   for T'Size use 8;                 -- 'Size
 
    X,Y : T;
-   for X'Address use To_Address (0);
-   for Y use at To_Address (4);
+   for X'Address use To_Address (0); -- 'Address
+   for Y use at To_Address (4);      -- 83 address clause
 
    type Enum is (A, B, C);
-   for Enum use (10, 20, 30);
-   for Enum'Alignment use 4;
+   for Enum use (10, 20, 30);        -- Enumeration
+   for Enum'Alignment use 4;         -- 'Alignment
 
    type Rec is
       record
          X : Integer;
          C : Character;
       end record;
-   for Rec use
+   for Rec use                       -- Record, 83 alignment
       record at mod 4;
          X at 0 range 0..31;
          C at 4 range 0..7;
@@ -29,10 +30,10 @@ procedure T_representation_clauses is
    procedure My_Read(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Tagged_Type'Class);
    procedure My_Write(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : in Tagged_Type'Class);
 
-   for Tagged_Type'Input use My_Input;
-   for Tagged_Type'Output use My_Output;
-   for Tagged_Type'Class'Read use My_Read;
-   for Tagged_Type'Class'Write use My_Write;
+   for Tagged_Type'Input use My_Input;            -- 'Input
+   for Tagged_Type'Output use My_Output;          -- 'Output
+   for Tagged_Type'Class'Read use My_Read;        -- 'Class'Read
+   for Tagged_Type'Class'Write use My_Write;      -- 'Class'Write
 
    procedure My_Read(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : out Tagged_Type'Class) is
    begin null; end;
@@ -43,6 +44,9 @@ procedure T_representation_clauses is
    procedure My_Output(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : in Tagged_Type) is
    begin null; end;
 
+   procedure Fractional_Size       is separate;
+   procedure Non_Contiguous_Record is separate;
+   procedure Incomplete_Record     is separate;
 begin
    null;
 end T_representation_clauses;

@@ -35,19 +35,8 @@ with
 
 package Rules.Representation_Clauses is
 
-   -- This rule can be used to check/search for the occurrence of some representation
-   -- clauses.
-   -- Parameter(1): Clause name
-   -- Parameter(2): Clause name
-   -- ...
-   -- Parameter(N): Clause name
-   -- If no parameter is given, all representation clauses are checked/searched
-   --
-   -- Clause names: "all", "at", "at_mod", "enumeration", "record",
-   --   or any specifiable attribute
-
    Rule_Id : constant Wide_String := "REPRESENTATION_CLAUSES";
 
-   procedure Process_Clause (Element : in Asis.Representation_Clause);
+   procedure Process_Clause (Rep_Clause : in Asis.Representation_Clause);
 
 end Rules.Representation_Clauses;

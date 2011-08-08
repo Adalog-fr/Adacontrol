@@ -54,7 +54,9 @@ pragma Elaborate (Framework.Language);
 package body Rules.Non_Static is
    use Framework;
 
-   type Available_Keyword is (K_Index_Constraint, K_Discriminant_Constraint, K_Instantiation);
+   type Available_Keyword is (K_Variable_Initialization, K_Constant_Initialization,
+                              K_Index_Constraint,        K_Discriminant_Constraint,
+                              K_Instantiation);
 
    package Keyword_Flag_Utilities is new Framework.Language.Flag_Utilities (Available_Keyword, "K_");
 
@@ -165,9 +167,9 @@ package body Rules.Non_Static is
    end Process_Constrained_Array_Definition;
 
 
-   ----------------------------
-   -- Process_Discrete_Range --
-   ----------------------------
+   ------------------------------
+   -- Process_Index_Constraint --
+   ------------------------------
 
    procedure Process_Index_Constraint (Elem : Asis.Discrete_Range) is
       use Asis.Definitions;
@@ -270,7 +272,8 @@ package body Rules.Non_Static is
                      when A_Function_Call =>
                         -- A4G still confused when the actual is an attribute
                         -- (Actually, it is the case above)
-                        A4G_Bugs.Trace_Bug ("Non_Static: Function_Call in place of Attribute_Reference");
+                        A4G_Bugs.Trace_Bug ("Non_Static.Process_Instantiation: "
+                                            & "Function_Call instead of Attribute_Reference");
                      when An_Explicit_Dereference =>
                         Do_Report (Actuals (A));
                      when others =>
@@ -285,9 +288,87 @@ package body Rules.Non_Static is
       end;
    end Process_Instantiation;
 
+   --------------------------------
+   -- Process_Object_Declaration --
+   --------------------------------
+
+   procedure Process_Object_Declaration (Decl : Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Framework.Reports, Thick_Queries, Utilities;
+
+      subtype Structured_Types is Asis.Type_Kinds
+         range An_Unconstrained_Array_Definition .. A_Tagged_Record_Type_Definition;
+
+      Expr : Asis.Expression;
+      Temp : Asis.Element;
+   begin
+      if not Rule_Used (K_Variable_Initialization)
+        and not Rule_Used (K_Constant_Initialization)
+      then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Expr := Initialization_Expression (Decl);
+      if Is_Nil (Expr) then
+         return;
+      end if;
+
+      if Expression_Kind (Expr) = A_Null_Literal then
+         -- Always static
+         return;
+      end if;
+
+      -- Structured types not (yet) controlled
+      Temp := Object_Declaration_View (Decl);
+      if Definition_Kind (Temp) /= A_Subtype_Indication then
+         -- Anonymous array, task, protected
+         return;
+      end if;
+      Temp := Subtype_Simple_Name (Temp);
+      if Expression_Kind (Temp) = An_Attribute_Reference then
+         case A4G_Bugs.Attribute_Kind (Temp) is
+            when A_Base_Attribute =>
+               Temp := Prefix (Temp);
+            when A_Class_Attribute =>
+               return;
+            when others =>
+               Failure ("Bad type attribute");
+         end case;
+      end if;
+      if Type_Kind (Type_Declaration_View
+                    (Ultimate_Type_Declaration
+                     (Corresponding_Name_Declaration
+                      (Temp)))) in Structured_Types
+      then
+         return;
+      end if;
+
+      if Rule_Used (K_Variable_Initialization)
+        and then Declaration_Kind (Decl) = A_Variable_Declaration
+        and then Static_Expression_Value_Image (Expr) = ""
+      then
+         Report (Rule_Id,
+                 Usage (K_Variable_Initialization),
+                 Get_Location (Expr),
+                 "non-static initialization expression");
+      end if;
+
+      if Rule_Used (K_Constant_Initialization)
+        and then Declaration_Kind (Decl) = A_Constant_Declaration
+        and then Static_Expression_Value_Image (Expr) = ""
+      then
+         Report (Rule_Id,
+                 Usage (K_Constant_Initialization),
+                 Get_Location (Expr),
+                 "non-static initialization expression");
+      end if;
+   end Process_Object_Declaration;
+
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Non_Static;

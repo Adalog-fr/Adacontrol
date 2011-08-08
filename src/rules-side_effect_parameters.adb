@@ -260,7 +260,7 @@ package body Rules.Side_Effect_Parameters is
                         null;
                   end case;
 
-                  if Expression_Type_Kind (Func_Name) = An_Access_Type_Definition then
+                  if Is_Access_Expression (Func_Name) then
                      -- Implicit dereference
                      -- Function is called through pointer => not statically determinable
                      Uncheckable (Rule_Id,
@@ -362,9 +362,10 @@ package body Rules.Side_Effect_Parameters is
    end Process_Call_Or_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Side_Effect_Parameters;

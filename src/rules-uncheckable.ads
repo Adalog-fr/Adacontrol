@@ -31,7 +31,7 @@
 
 package Rules.Uncheckable is
    -- This rule is special, since it is *not* plugged into framework.plugs
-   -- It is called from Framework.Rules however
+   -- Process_Missing_Unit is called from Framework.Rules however
 
    Rule_Id : constant Wide_String := "UNCHECKABLE";
 

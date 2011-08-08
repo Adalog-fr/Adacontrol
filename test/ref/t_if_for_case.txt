@@ -1,3 +1,0 @@
-t_if_for_case.adb:24:4: Error: IF_FOR_CASE: If statement could be replaced by case statement
-t_if_for_case.adb:30:4: Error: IF_FOR_CASE: If statement could be replaced by case statement
-t_if_for_case.adb:40:4: Error: IF_FOR_CASE: If statement could be replaced by case statement

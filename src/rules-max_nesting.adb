@@ -49,7 +49,7 @@ with
   Framework.Scope_Manager;
 
 package body Rules.Max_Nesting is
-   use Framework, Framework.Scope_Manager, Utilities;
+   use Framework, Framework.Scope_Manager;
 
    Rule_Used    : Boolean := False;
    Save_Used    : Boolean;
@@ -69,6 +69,7 @@ package body Rules.Max_Nesting is
    ----------
 
    procedure Help is
+      use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Parameter 1: <maximum allowed nesting level>");
@@ -222,8 +223,9 @@ package body Rules.Max_Nesting is
    end Process_Scope_Exit;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Max_Nesting;

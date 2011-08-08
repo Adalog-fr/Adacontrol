@@ -43,19 +43,15 @@ package Framework.Rules_Manager is
    type Prepare_Procedure  is access procedure;
    type Finalize_Procedure is access procedure;
 
-   procedure Register_Semantic (Rule     : Wide_String;
-                                Help     : Help_Procedure;
-                                Add_Use  : Add_Use_Procedure;
-                                Command  : Command_Procedure;
-                                Prepare  : Prepare_Procedure  := null;
-                                Finalize : Finalize_Procedure := null);
-
-   procedure Register_Textual (Rule     : Wide_String;
-                               Help     : Help_Procedure;
-                               Add_Use  : Add_Use_Procedure;
-                               Command  : Command_Procedure;
-                               Prepare  : Prepare_Procedure  := null;
-                               Finalize : Finalize_Procedure := null);
+   type Extended_Rule_Kind is (Semantic, Textual, Semantic_Textual);
+   subtype Rule_Kind is Extended_Rule_Kind range Semantic .. Textual;
+   procedure Register (Rule        : Wide_String;
+                       R_Kind      : Extended_Rule_Kind;
+                       Help_CB     : Help_Procedure;
+                       Add_Use_CB  : Add_Use_Procedure;
+                       Command_CB  : Command_Procedure;
+                       Prepare_CB  : Prepare_Procedure  := null;
+                       Finalize_CB : Finalize_Procedure := null);
 
    procedure Enter (Rule : Wide_String);
 
@@ -63,8 +59,7 @@ package Framework.Rules_Manager is
    --  Declarations below this line are for the use of the framework
    --
 
-   type Rule_Kind is (Semantic, Textual);
-   function Has_Active_Rules (Kind : Rule_Kind) return Boolean;
+   function Has_Active_Rules (R_Kind : Rule_Kind) return Boolean;
 
    function Number_Of_Rules return Rules_Count;
 

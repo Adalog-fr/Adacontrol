@@ -37,5 +37,6 @@ package Rules.Expressions is
    Rule_Id : constant Wide_String := "EXPRESSIONS";
 
    procedure Process_Expression (Expression : in Asis.Expression);
+   procedure Process_Call       (Call       : in Asis.Element);
 
 end Rules.Expressions;

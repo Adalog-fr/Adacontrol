@@ -1,0 +1,6 @@
+Selected_none:        check not_selected_name (none,        all N);
+Selected_unit:        check not_selected_name (Unit,        all U);
+Selected_compilation: check not_selected_name (Compilation, all C);
+Selected_family:      check not_selected_name (Family,      all F);
+
+search not_selected_name (none, x_not_selected_name.pack);

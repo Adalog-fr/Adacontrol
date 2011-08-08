@@ -34,18 +34,8 @@ with Asis;
 
 package Rules.Pragmas is
 
-   -- This rule can be used to check/search for the usage of a specific pragma
-   -- Parameters (1) => pragma name
-   -- Parameters (2) => pragma name
-   -- ...
-   -- Parameters (N) => pragma name
-
    Rule_Id : constant Wide_String := "PRAGMAS";
 
    procedure Process_Pragma (Pragma_Element : in Asis.Pragma_Element);
-   -- Applies the rule
-   --
-   -- Expected Element_Kinds:
-   --      A_Pragma
 
 end Rules.Pragmas;

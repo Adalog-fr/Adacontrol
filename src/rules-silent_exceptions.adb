@@ -584,13 +584,13 @@ package body Rules.Silent_Exceptions is
 
       Paths_Usage : Search_Result;
    begin
-      if Rule_Used = (Rule_Used'Range => False) Then
+      if Rule_Used = (Rule_Used'Range => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       Loops_Depth := 0;
-      Paths_Usage       := Statement_List_Usage (Handler_Statements (Handler));
+      Paths_Usage := Statement_List_Usage (Handler_Statements (Handler));
 
       -- Note: since Check < Search, if both messages apply, only Check
       --       will be output
@@ -640,9 +640,10 @@ package body Rules.Silent_Exceptions is
    end Process_Exception_Handler;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Silent_Exceptions;

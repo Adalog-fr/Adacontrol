@@ -1,2 +1,2 @@
 Rule_Off: check special_comments ("##.* off ");
-check special_comments (tbsl);
+check special_comments ("tbsl");

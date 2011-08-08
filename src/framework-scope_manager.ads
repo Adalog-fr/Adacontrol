@@ -29,25 +29,34 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
---  This package provides facilities for rules that need to manage
---  information associated to scopes. A scope is a construct that can
---  contain declarations.
---
---  Note that when processing context clauses, the current scope is the one
---  of the following library unit. This is what the user would expect,
---  although from an ASIS point of view, the associated construct has not
---  yet been entered.
-
 -- Asis
 with
   Asis;
+
 package Framework.Scope_Manager is
-   type Iterator_Mode is (All_Scopes, Unit_Scopes, Current_Scope_Only);
+   --  This package provides facilities for rules that need to manage
+   --  information associated to scopes. A scope is a construct that can
+   --  contain declarations.
+   --
+   --  The scope level is the nesting depth of the scope.
+   --  The scope level is incremented when the scope is entered, i.e.
+   --  while traversing the construct itself, the current scope is the one of the
+   --  place where the construct is declared, but when traversing anything inside it
+   --  the current scope is one more.
+   --  The current scope of a library unit is 0, and therefore the scope of anything
+   --  inside a library unit is 1.
+   --  Proper bodies have the same depth as their corresponding stub.
+   --
+   --  Note that when processing context clauses, the current scope is the one
+   --  of the following library unit. This is what the user would expect,
+   --  although from an ASIS point of view, the associated construct has not
+   --  yet been entered.
+
+   -----------------------------------------------------------------------------------
+   -- Scopes
+   -----------------------------------------------------------------------------------
 
    type Scope_Range is range 0 .. Max_Scopes;
-   -- Level 0 is useful as a special value.
-   -- The value returned by Current_Depth is always at least 1.
-
    type Scope_List is array (Scope_Range range <>) of Asis.Element;
 
    type Declaration_Origin is (Same_Unit, Specification, Parent);
@@ -65,6 +74,13 @@ package Framework.Scope_Manager is
    -- A scope is global if itself and all enclosing scopes are all
    -- packages or generic packages
 
+
+   -----------------------------------------------------------------------------------
+   -- Scoped_Store
+   -----------------------------------------------------------------------------------
+
+   type Iterator_Mode is (All_Scopes, Unit_Scopes, Current_Scope_Only);
+
    type Scoping_Procedure is access procedure (Scope : Asis.Element);
    -- This declaration is for use in the private part of Scoped_Store,
    -- no use for the users of this package. (No harm either).
@@ -80,6 +96,16 @@ package Framework.Scope_Manager is
       -- task spec or a protected spec is temporarily removed at the end of the spec,
       -- and restored at the beginning of the corresponding body. It is deleted at the
       -- end of the body, unless it is a compilation unit.
+      --
+      -- Since this package automatically deallocates stack elements, if Data contains
+      -- dynamically allocated storage, it must be controlled, or memory leaks will
+      -- result
+      --
+      -- The package is deactivated after each run, in order to avoid managing scopes for
+      -- rules that are not active.
+
+      procedure Activate;
+      -- Must be called before *each* run (typically from a Prepare procedure)
 
       procedure Push (Info : in Data);
       -- Adds Info on top of stack, associated to current scope
@@ -139,6 +165,7 @@ package Framework.Scope_Manager is
       -- The following declarations are here because they are not allowed
       -- in a generic body.
 
+      procedure Enter_Unit    (Scope : Asis.Element);
       procedure Enter_Scope   (Scope : Asis.Element);
       procedure Enter_Private (Scope : Asis.Element);
       procedure Exit_Scope    (Scope : Asis.Element);
@@ -146,11 +173,13 @@ package Framework.Scope_Manager is
       -- The parameters of Enter_Private and Clear_All are not used,
       -- they are here just to match the profile.
 
-      Enter_Access   : constant Scoping_Procedure := Enter_Scope'Access;
+      Unit_Access    : constant Scoping_Procedure := Enter_Unit'Access;
+      Scope_Access   : constant Scoping_Procedure := Enter_Scope'Access;
       Private_Access : constant Scoping_Procedure := Enter_Private'Access;
       Exit_Access    : constant Scoping_Procedure := Exit_Scope'Access;
       Clear_Access   : constant Scoping_Procedure := Clear_All'Access;
    end Scoped_Store;
+
 
    ----------------------------------------------------------------------------
    --
@@ -164,9 +193,11 @@ package Framework.Scope_Manager is
    procedure Exit_Scope  (Scope : in Asis.Element; Force : Boolean := False);
    procedure Exit_Context_Clauses;
 
-   procedure Reset;
+   procedure Reset (Deactivate : Boolean);
    -- Cleans up all active scope and all Scoped_Store data
-   -- To be used only in the case of a premature termination due
-   -- to an unexpected exception.
+   -- To be used at the end of a Go command, or in the case of a premature
+   -- termination due to an unexpected exception.
+   -- If Deactivate is True, scoped stores are also deactivated, which should not
+   -- be done while recovering from an error.
 
 end Framework.Scope_Manager;

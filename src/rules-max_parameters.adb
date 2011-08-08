@@ -49,8 +49,7 @@ with
 pragma Elaborate (Framework.Language);
 
 package body Rules.Max_Parameters is
-
-   use Asis, Framework, Thick_Queries;
+   use Framework, Thick_Queries;
 
    type Entity_Names is (E_Function,           E_Procedure,           E_Protected_Entry,
                          E_Protected_Function, E_Protected_Procedure, E_Task_Entry);
@@ -144,13 +143,15 @@ package body Rules.Max_Parameters is
    -------------------------
 
    procedure Process_Declaration (Declaration : Asis.Declaration) is
-      use Ada.Strings.Wide_Unbounded;
-      use Asis.Declarations, Asis.Elements;
-      use Entity_Flag_Utilities, Framework.Reports, Utilities;
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Utilities;
 
       Good_Decl : Asis.Declaration := Declaration;
 
       procedure Do_Report (Rule_Type : Rule_Types; Entity : Entity_Names;  Loc : Location; Value : Biggest_Int) is
+         use Ada.Strings.Wide_Unbounded;
+         use Entity_Flag_Utilities, Framework.Reports;
+
          Good_Loc : Location := Loc;
       begin
          if Good_Loc = Null_Location then
@@ -161,9 +162,9 @@ package body Rules.Max_Parameters is
                  To_Wide_String (Labels (Entity, Rule_Type)),
                     Rule_Type,
                     Good_Loc,
-                    "more than" & Biggest_Int'Wide_Image (Values (Entity, Rule_Type))
+                    "more than " & Biggest_Int_Img (Values (Entity, Rule_Type))
                        & " parameters in " & Image (Entity)
-                       & " ("   & Biggest_Int'Wide_Image (Value) & ')');
+                       & " ("   & Biggest_Int_Img (Value) & ')');
          end Do_Report;
 
       E : Entity_Names;
@@ -253,8 +254,9 @@ package body Rules.Max_Parameters is
    end Process_Declaration;
 
 begin
-   Rules_Manager.Register_Semantic (Rule_Id,
-                                    Help    => Help'Access,
-                                    Add_Use => Add_Use'Access,
-                                    Command => Command'Access);
+   Rules_Manager.Register (Rule_Id,
+                           Rules_Manager.Semantic,
+                           Help_CB    => Help'Access,
+                           Add_Use_CB => Add_Use'Access,
+                           Command_CB => Command'Access);
 end Rules.Max_Parameters;

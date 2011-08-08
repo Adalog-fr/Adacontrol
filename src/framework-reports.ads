@@ -58,16 +58,18 @@ package Framework.Reports is
    --  Declarations below this line are for the use of the framework
    --
 
-   -- These are for the rule Uncheckable
+   -- These two procedures are for the rule Uncheckable
    procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Rule_Type : Rule_Types; Label : Wide_String);
    procedure Reset_Uncheckable;
 
-   type Output_Format is (Gnat, CSV, CSVX, Source);
+   type Output_Format is (Gnat, CSV, CSVX, Source, None);
    type Stats_Levels  is (None, General, Nulls_Only, Full);
    Warning_As_Error_Option : Boolean       := False;
    Skip_Warning_Option     : Boolean       := False;
    Format_Option           : Output_Format := Gnat;
    Stats_Level             : Stats_Levels  := None;
+
+   Just_Created            : Boolean := False;
 
    function Nb_Errors   return Natural;
    function Nb_Warnings return Natural;

@@ -46,6 +46,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -76,11 +77,16 @@ package body Framework is
    function Image (Entity : in Entity_Specification) return Wide_String is
       use Utilities;
    begin
-      if Entity.Is_Box then
-         return "<>";
-      else
-         return To_Title (To_Wide_String (Entity.Specification));
-      end if;
+      case Entity.Kind is
+         when Box =>
+            return "<>";
+         when Equal =>
+            return "=";
+         when Regular_Id =>
+            return To_Title (To_Wide_String (Entity.Specification));
+         when All_Id =>
+            return "all " & To_Title (To_Wide_String (Entity.Specification));
+      end case;
    end Image;
 
    -----------
@@ -88,10 +94,10 @@ package body Framework is
    -----------
 
    function Value (Name : in Wide_String) return Entity_Specification is
+      use Utilities;
    begin
-      return (Is_Box        => False,
-              Is_All        => False,
-              Specification => To_Unbounded_Wide_String (Name));
+      return (Kind          => Regular_Id,
+              Specification => To_Unbounded_Wide_String (To_Upper (Name)));
    end Value;
 
    -------------------
@@ -99,33 +105,42 @@ package body Framework is
    -------------------
 
    package body Basic is
-      function New_Context (Rule_Type : in Rule_Types; Rule_Label : in Wide_String) return Basic_Rule_Context is
+      function New_Context (With_Type : in Rule_Types; With_Label : in Wide_String) return Basic_Rule_Context is
       begin
-         return (Rule_Type   => Rule_Type,
-                 Rule_Label  => To_Unbounded_Wide_String (Rule_Label),
+         return (Rule_Type   => With_Type,
+                 Rule_Label  => To_Unbounded_Wide_String (With_Label),
                  With_Count  => False,
                  Count_Label => Null_Unbounded_Wide_String);
       end New_Context;
 
-      function Rule_Type (Context : in Basic_Rule_Context) return Rule_Types is
-      begin
-         return Context.Rule_Type;
-      end Rule_Type;
-
-      function Rule_Label (Context : in Basic_Rule_Context) return Wide_String is
-      begin
-         return To_Wide_String (Context.Rule_Label);
-      end Rule_Label;
    end Basic;
 
-   ------------
-   -- Is_Box --
-   ------------
+   ---------------
+   -- Rule_Type --
+   ---------------
 
-   function Is_Box (Entity : in Entity_Specification) return Boolean is
+   function Rule_Type (Context : in Basic_Rule_Context) return Rule_Types is
    begin
-      return Entity.Is_Box;
-   end Is_Box;
+      return Context.Rule_Type;
+   end Rule_Type;
+
+   ----------------
+   -- Rule_Label --
+   ----------------
+
+   function Rule_Label (Context : in Basic_Rule_Context) return Wide_String is
+   begin
+      return To_Wide_String (Context.Rule_Label);
+   end Rule_Label;
+
+   -------------------------------
+   -- Entity_Specification_Kind --
+   -------------------------------
+
+   function Entity_Specification_Kind (Entity : in Entity_Specification) return Entity_Specification_Kinds is
+   begin
+      return Entity.Kind;
+   end Entity_Specification_Kind;
 
    -------------
    -- Matches --
@@ -151,9 +166,10 @@ package body Framework is
                         Context       : in     Root_Context'Class;
                         Additive      : in     Boolean := False)
    is
-      use Context_Tree;
+      use Utilities;
 
       procedure Add_To_Map (Names : in out Context_Tree.Map) is
+         use Context_Tree;
          Node        : Context_Node_Access := null;
          Current     : Context_Node_Access := null;
          Count_Label : Unbounded_Wide_String;
@@ -181,37 +197,41 @@ package body Framework is
             Current := new Context_Node'(new Root_Context'Class'(Context), Node);
          else
             -- Check for the special case to allow Count in addition to another rule type
-            if Context in Basic_Rule_Context'Class and Current.Value.all in Basic_Rule_Context'Class then
-               if Basic_Rule_Context (Context).Rule_Type = Count
-                 xor Basic_Rule_Context (Current.Value.all).Rule_Type = Count
-               then
-                  -- One and only one is a Count
-                  if Basic_Rule_Context (Current.Value.all).Rule_Type = Count then
-                     Count_Label :=  Basic_Rule_Context (Current.Value.all).Rule_Label;
-                     Free (Current.Value);
-                     Current.Value := new Root_Context'Class'(Context);
-                  else
-                     Count_Label := Basic_Rule_Context (Context).Rule_Label;
-                  end if;
-                  Basic_Rule_Context (Current.Value.all).With_Count  := True;
-                  Basic_Rule_Context (Current.Value.all).Count_Label := Count_Label;
-               else
-                  raise Already_In_Store;
-               end if;
-            else
+            if Context not in Basic_Rule_Context'Class or Current.Value.all not in Basic_Rule_Context'Class then
                raise Already_In_Store;
             end if;
+
+            if (Basic_Rule_Context (Context).Rule_Type = Count)
+              = (Basic_Rule_Context (Current.Value.all).Rule_Type = Count)
+            then
+               -- Both are Count, or neither
+               raise Already_In_Store;
+            end if;
+
+            -- One and only one is a Count
+            if Basic_Rule_Context (Current.Value.all).Rule_Type = Count then
+               Count_Label :=  Basic_Rule_Context (Current.Value.all).Rule_Label;
+               Free (Current.Value);
+               Current.Value := new Root_Context'Class'(Context);
+            else
+               Count_Label := Basic_Rule_Context (Context).Rule_Label;
+            end if;
+            Basic_Rule_Context (Current.Value.all).With_Count  := True;
+            Basic_Rule_Context (Current.Value.all).Count_Label := Count_Label;
          end if;
 
          Add (Names, Specification.Specification, Current);
       end Add_To_Map;
 
    begin
-      if Specification.Is_All then
-         Add_To_Map (Into.Simple_Names);
-      else
-         Add_To_Map (Into.Qualified_Names);
-      end if;
+      case Specification.Kind is
+         when Regular_Id =>
+            Add_To_Map (Into.Qualified_Names);
+         when All_Id =>
+            Add_To_Map (Into.Simple_Names);
+         when others =>
+            Failure ("Associate : bad kind");
+      end case;
    end Associate;
 
    -----------------------
@@ -221,11 +241,11 @@ package body Framework is
    procedure Associate_Default (Into    : in out Context_Store;
                                 Context : in     Root_Context'Class) is
    begin
-      if Into.Default = null then
-         Into.Default := new Context_Node'(new Root_Context'Class'(Context), null);
-      else
+      if Into.Default /= null then
          raise Already_In_Store;
       end if;
+
+      Into.Default := new Context_Node'(new Root_Context'Class'(Context), null);
    end Associate_Default;
 
    -------------
@@ -261,19 +281,34 @@ package body Framework is
                               Name : in Asis.Element) return Root_Context'Class
    is
       use Context_Tree, Utilities, Thick_Queries;
-      use Asis, Asis.Elements, Asis.Declarations, Asis.Expressions, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+
+      function Any_Name_Image (E : Asis.Element) return Wide_String is
+         use Asis.Declarations;
+      begin
+         if Element_Kind (Name) = A_Defining_Name then
+            return Defining_Name_Image (E);
+         else
+            return Name_Image (E);
+         end if;
+      end Any_Name_Image;
 
       Good_Name       : Asis.Element;
       Name_Enclosing  : Asis.Element;
-      Name_Definition : Defining_Name;
       Name_Image      : Unbounded_Wide_String;
       Name_Extra      : Unbounded_Wide_String; -- Initialized to Null_Unbounded_Wide_String
       Result          : Context_Node_Access;
+      Is_Predefined_Op: Boolean := False;
    begin
       if Is_Nil (Name) then
          return No_Matching_Context;
       end if;
+
+      -- Find the place where the name is used (skipping all selections)
       Name_Enclosing := Enclosing_Element (Name);
+      while Expression_Kind (Name_Enclosing) = A_Selected_Component loop
+         Name_Enclosing := Enclosing_Element (Name_Enclosing);
+      end loop;
 
       if Expression_Kind (Name) = A_Selected_Component then
          Good_Name := Selector (Name);
@@ -289,7 +324,7 @@ package body Framework is
                               Name_Image,
                               Default_Value => Default_Context);
 
-      -- Only "all" is acceptable for dispatching calls
+      -- Only "all" (without overloading) is acceptable for dispatching calls
       elsif Is_Dispatching_Call (Name_Enclosing)
         and then Is_Equal (Good_Name, Called_Simple_Name (Name_Enclosing))
       then
@@ -299,10 +334,7 @@ package body Framework is
                               Default_Value => Default_Context);
 
       else
-         -- Not a pragma => must be a true name (or an attribute reference)
-         if Element_Kind (Name) = A_Defining_Name then
-            Name_Definition := Name;
-         else
+         if Element_Kind (Good_Name) = An_Expression then
             if Expression_Kind (Good_Name) = An_Attribute_Reference then
                while Expression_Kind (Good_Name) = An_Attribute_Reference loop
                   Name_Extra := ''' & To_Upper (Attribute_Name_Image (Good_Name)) & Name_Extra;
@@ -315,18 +347,34 @@ package body Framework is
             end if;
 
             case Expression_Kind (Good_Name) is
-               when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
-                  Name_Definition := Corresponding_Name_Definition (Good_Name);
-
-                  if Is_Nil (Name_Definition) then
-                     --  Must be an implicitely declared operator symbol, for which
-                     --  the implementation does not provide a "fake" declaration.
-                     --  We do not handle these for the moment
-                     Into.This.Self.Last_Returned := Default_Context;
-                     Into.This.Self.Last_Name     := Null_Unbounded_Wide_String;
-                     return No_Matching_Context;
-                  end if;
-
+               when An_Identifier | An_Enumeration_Literal =>
+                  null;
+               when An_Operator_Symbol =>
+                  declare
+                     Op_Decl : constant Asis.Element := Corresponding_Name_Declaration (Good_Name);
+                  begin
+                     if Is_Nil (Op_Decl) then
+                        Is_Predefined_Op := True;
+                     else
+                        -- This should be a function !
+                        case Declaration_Kind (Op_Decl) is
+                           when A_Function_Declaration
+                              | A_Function_Body_Declaration
+                              | A_Function_Renaming_Declaration
+                              | A_Generic_Function_Renaming_Declaration
+                              | A_Function_Body_Stub
+                              | A_Generic_Function_Declaration
+                              | A_Function_Instantiation
+                              | A_Formal_Function_Declaration
+                                =>
+                              Is_Predefined_Op := False;
+                           when others =>
+                              -- A4G_Bug, this known to happen only on predefined "&" operators
+                              Is_Predefined_Op := True;
+                              A4G_Bugs.Trace_Bug ("Matching_Context: Bad declaration of predefined operator");
+                        end case;
+                     end if;
+                  end;
                when others =>
                   -- This can happen if we were given something that is not appropriate,
                   -- or for something dynamic used as the prefix of an attribute.
@@ -335,21 +383,24 @@ package body Framework is
          end if;
 
          -- Search from most specific to least specific
+         -- Predefined operators cannot be searched with profile
 
          -- Search without "all", with overloading
-         Name_Image := To_Unbounded_Wide_String (To_Upper
-                                                 (Full_Name_Image
-                                                  (Name_Definition, With_Profile => True)))
-                       & Name_Extra;
-         Result := Fetch (Into.Qualified_Names,
-                          Name_Image,
-                          Default_Value => Default_Context);
+         if Is_Predefined_Op then
+            Result := Default_Context;
+         else
+            Name_Image := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => True)))
+                          & Name_Extra;
+            Result := Fetch (Into.Qualified_Names,
+                             Name_Image,
+                             Default_Value => Default_Context);
+         end if;
 
          -- Search without "all", without overloading
          if Result.Value.all = No_Matching_Context then
             Name_Image := To_Unbounded_Wide_String (To_Upper
                                                     (Full_Name_Image
-                                                     (Name_Definition, With_Profile => False)))
+                                                     (Good_Name, With_Profile => False)))
                           & Name_Extra;
             Result := Fetch (Into.Qualified_Names,
                              Name_Image,
@@ -357,10 +408,10 @@ package body Framework is
          end if;
 
          -- Search with "all", with overloading
-         if Result.Value.all = No_Matching_Context then
+         if not Is_Predefined_Op and Result.Value.all = No_Matching_Context then
             Name_Image := To_Unbounded_Wide_String (To_Upper
-                                                    (Defining_Name_Image (Name_Definition)
-                                                   & Profile_Image (Name_Definition, With_Profile => True)))
+                                                    (Any_Name_Image (Good_Name)
+                                                   & Profile_Image (Good_Name, With_Profile => True)))
                           & Name_Extra;
             Result := Fetch (Into.Simple_Names,
                              Name_Image,
@@ -369,7 +420,7 @@ package body Framework is
 
          -- Search with "all", without overloading
          if Result.Value.all = No_Matching_Context then
-            Name_Image := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Name_Definition)))
+            Name_Image := To_Unbounded_Wide_String (To_Upper (Any_Name_Image (Good_Name)))
                           & Name_Extra;
             Result := Fetch (Into.Simple_Names,
                              Name_Image,
@@ -519,14 +570,17 @@ package body Framework is
 
    function Association (Into          : in Context_Store;
                          Specification : in Entity_Specification) return Root_Context'Class is
-      use Context_Tree;
+      use Context_Tree, Utilities;
       Result : Context_Node_Access;
    begin
-      if Specification.Is_All then
-         Result := Fetch (Into.Simple_Names, Specification.Specification, Default_Value => Into.Default);
-      else
-         Result := Fetch (Into.Qualified_Names, Specification.Specification, Default_Value => Into.Default);
-      end if;
+      case Specification.Kind is
+         when Regular_Id =>
+            Result := Fetch (Into.Qualified_Names, Specification.Specification, Default_Value => Into.Default);
+         when All_Id =>
+            Result := Fetch (Into.Simple_Names, Specification.Specification, Default_Value => Into.Default);
+         when others =>
+            Failure ("Association: bad kind");
+      end case;
 
       if Result = null then
          Result := Default_Context;
@@ -553,27 +607,29 @@ package body Framework is
 
    procedure Dissociate (From          : in out Context_Store;
                          Specification : in     Entity_Specification) is
-      use Context_Tree;
+      use Context_Tree, Utilities;
       Temp : Context_Node_Access;
    begin
-      if Specification.Is_All then
-         if Is_Present (From.Simple_Names, Specification.Specification) then
-            Temp := Fetch (From.Simple_Names, Specification.Specification);
-            Release (Temp);
-            Delete (From.Simple_Names, Specification.Specification);
-         else
-            raise Not_In_Store;
-         end if;
+      case Specification.Kind is
+         when Regular_Id =>
+            if not Is_Present (From.Qualified_Names, Specification.Specification) then
+               raise Not_In_Store;
+            end if;
 
-      else
-         if Is_Present (From.Qualified_Names, Specification.Specification) then
             Temp := Fetch (From.Qualified_Names, Specification.Specification);
             Release (Temp);
             Delete (From.Qualified_Names, Specification.Specification);
-         else
-            raise Not_In_Store;
-         end if;
-      end if;
+         when All_Id =>
+            if not Is_Present (From.Simple_Names, Specification.Specification) then
+               raise Not_In_Store;
+            end if;
+
+            Temp := Fetch (From.Simple_Names, Specification.Specification);
+            Release (Temp);
+            Delete (From.Simple_Names, Specification.Specification);
+         when others =>
+            Failure ("Dissociate : bad kind");
+      end case;
    end Dissociate;
 
    ---------------------
@@ -598,11 +654,11 @@ package body Framework is
    begin
       if S = Nil_Span then
          return Null_Location;
-      else
-         return (To_Unbounded_Wide_String (Text_Name (Enclosing_Compilation_Unit (E))),
-                 S.First_Line,
-                 S.First_Column);
       end if;
+
+      return (To_Unbounded_Wide_String (Text_Name (Enclosing_Compilation_Unit (E))),
+              S.First_Line,
+              S.First_Column);
    end Get_Location;
 
    --------------------------------

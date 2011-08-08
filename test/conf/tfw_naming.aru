@@ -7,4 +7,4 @@ check  Entities (Standard.Integer'Base, Standard.Integer'Base'First);
 Search Pragmas (elaborate_all);
 Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String);
 Check  Silent_Exceptions (Ada.Text_Io.Put_Line);
-Search Local_Instantiation (Ada.Unchecked_Deallocation);
+Search Instantiations (local Ada.Unchecked_Deallocation);

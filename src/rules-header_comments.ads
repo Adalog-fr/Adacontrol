@@ -38,10 +38,6 @@ with
   Framework;
 package Rules.Header_Comments is
 
-   -- This rule can be used to check/search that each unit starts with (at least) the
-   -- indicated number of comments lines
-   -- Parameter(1): Required number of comment lines
-
    Rule_Id : constant Wide_String := "HEADER_COMMENTS";
 
    procedure Enter_Unit;

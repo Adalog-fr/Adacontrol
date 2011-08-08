@@ -1,6 +1,7 @@
-check global_references                 (all, t_global_references.P1);
-check global_references                 (all, t_global_references.P1.Inner_P);
-Glob_From_Task: check global_references (all, t_global_references.T1);
+check global_references                  (all, t_global_references.P1);
+check global_references                  (all, t_global_references.P1.Inner_T);
+Glob_From_Task:  check global_references (all, t_global_references.T1);
+Impure_Function: check global_references (all, function);
 
 Conflicts: check global_references (Multiple, task, protected);
 

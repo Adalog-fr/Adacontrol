@@ -1,0 +1,21 @@
+t_max_size.adb:13:7: Error: MAX_SIZE: statement "accept" is more than 4 lines long (5)
+t_max_size.adb:20:4: Error: MAX_SIZE: statement "if" is more than 8 lines long (12)
+t_max_size.adb:21:7: Error: MAX_SIZE: statement "if_branch" is more than 2 lines long (3)
+t_max_size.adb:25:7: Error: MAX_SIZE: statement "if_branch" is more than 2 lines long (3)
+t_max_size.adb:33:4: Error: MAX_SIZE: statement "case" is more than 9 lines long (14)
+t_max_size.adb:38:10: Error: MAX_SIZE: statement "case_branch" is more than 2 lines long (3)
+t_max_size.adb:42:10: Error: MAX_SIZE: statement "case_branch" is more than 2 lines long (4)
+t_max_size.adb:51:4: Error: MAX_SIZE: statement "unnamed_loop" is more than 3 lines long (4)
+t_max_size.adb:59:1: Error: MAX_SIZE: statement "loop" is more than 5 lines long (6)
+t_max_size.adb:66:4: Found: MAX_SIZE: statement "block" is more than 8 lines long (10)
+t_max_size.adb:66:4: Found: MAX_SIZE: statement "unnamed_block" is more than 5 lines long (10)
+t_max_size.adb:66:4: Error: MAX_SIZE: statement "simple_block" is more than 3 lines long (10)
+t_max_size.adb:77:1: Found: MAX_SIZE: statement "block" is more than 8 lines long (10)
+t_max_size.adb:77:1: Error: MAX_SIZE: statement "simple_block" is more than 3 lines long (10)
+t_max_size.adb:88:4: Found: MAX_SIZE: statement "block" is more than 8 lines long (9)
+t_max_size.adb:88:4: Found: MAX_SIZE: statement "unnamed_block" is more than 5 lines long (9)
+t_max_size.adb:98:4: Found: MAX_SIZE: statement "block" is more than 8 lines long (9)
+
+Counts summary:
+Block_Count: 8
+Loop_Count: 4

@@ -49,8 +49,7 @@ with
 pragma Elaborate (Framework.Language);
 
 package body Rules.Array_Declarations is
-
-   use Asis, Framework, Thick_Queries;
+   use Framework, Thick_Queries;
 
    type Array_Declaration_Names is (First, Max_Length);
    package Array_Declaration_Flag_Utilities  is new Framework.Language.Flag_Utilities (Array_Declaration_Names);
@@ -132,7 +131,7 @@ package body Rules.Array_Declarations is
 
    procedure Process_Array_Definition (Definition : Asis.Definition) is
       use Ada.Strings.Wide_Unbounded;
-      use Asis.Elements;
+      use Asis, Asis.Elements;
       use Framework.Reports;
 
       function Get_Bound_Location (Dim : Positive) return Location is
@@ -143,7 +142,7 @@ package body Rules.Array_Declarations is
             case Discrete_Range_Kind (Discrete_Ranges (Definition)(Dim)) is
                when A_Discrete_Subtype_Indication =>
                   return Get_Location
-                    (Asis.Definitions.Subtype_Mark            --## rule line off Use_Subtype_Simple_Name
+                    (Asis.Definitions.Subtype_Mark            --## rule line off Avoid_Query
                        (Discrete_Ranges (Definition)(Dim)));  --   we don't want the selector
                when A_Discrete_Range_Attribute_Reference =>
                   return Get_Location (Range_Attribute (Discrete_Ranges (Definition)(Dim)));
@@ -182,16 +181,16 @@ package body Rules.Array_Declarations is
                                    To_Wide_String (Labels (First, Check)),
                                    Check,
                                    Get_Bound_Location ((B+1)/2),
-                                   "lower bound of array is not" & Biggest_Int'Wide_Image (Values (First, Check))
-                                   & " or" & Biggest_Int'Wide_Image (Values (First, Search))
-                                   & " (" & Biggest_Int'Wide_Image (Val) & ')');
+                                   "lower bound of array is not " & Biggest_Int_Img (Values (First, Check))
+                                   & " or " & Biggest_Int_Img (Values (First, Search))
+                                   & " (" & Biggest_Int_Img (Val) & ')');
                         elsif Val /= Values (First, Search) then
                            Report (Rule_Id,
                                    To_Wide_String (Labels (First, Search)),
                                    Search,
                                    Get_Bound_Location ((B+1)/2),
-                                   "lower bound of array is not" & Biggest_Int'Wide_Image (Values (First, Search))
-                                   & " (" & Biggest_Int'Wide_Image (Val) & ')');
+                                   "lower bound of array is not " & Biggest_Int_Img (Values (First, Search))
+                                   & " (" & Biggest_Int_Img (Val) & ')');
                         end if;
 
                      elsif Rule_Used (First) (Check) and then Val /= Values (First, Check) then
@@ -199,16 +198,16 @@ package body Rules.Array_Declarations is
                                 To_Wide_String (Labels (First, Check)),
                                 Check,
                                 Get_Bound_Location ((B+1)/2),
-                                "lower bound of array is not" & Biggest_Int'Wide_Image (Values (First, Check))
-                                & " (" & Biggest_Int'Wide_Image (Val) & ')');
+                                "lower bound of array is not " & Biggest_Int_Img (Values (First, Check))
+                                & " (" & Biggest_Int_Img (Val) & ')');
 
                      elsif Rule_Used (First) (Search) and then Val /= Values (First, Search) then
                         Report (Rule_Id,
                                 To_Wide_String (Labels (First, Search)),
                                 Search,
                                 Get_Bound_Location ((B+1)/2),
-                                "lower bound of array is not" & Biggest_Int'Wide_Image (Values (First, Search))
-                                & " (" & Biggest_Int'Wide_Image (Val) & ')');
+                                "lower bound of array is not " & Biggest_Int_Img (Values (First, Search))
+                                & " (" & Biggest_Int_Img (Val) & ')');
                      end if;
 
                      if Rule_Used (First) (Count) and then Val /= Values (First, Count) then
@@ -234,16 +233,16 @@ package body Rules.Array_Declarations is
                           To_Wide_String (Labels (Max_Length, Check)),
                           Check,
                           Get_Bound_Location (L),
-                          "array dimension is bigger than" & Biggest_Int'Wide_Image (Values (Max_Length, Check))
-                          & " (" & Biggest_Int'Wide_Image (Lengths (L)) & ')');
+                          "array dimension is bigger than " & Biggest_Int_Img (Values (Max_Length, Check))
+                          & " (" & Biggest_Int_Img (Lengths (L)) & ')');
 
                elsif Rule_Used (Max_Length) (Search) and then Lengths (L) > Values (Max_Length, Search) then
                   Report (Rule_Id,
                           To_Wide_String (Labels (Max_Length, Search)),
                           Search,
                           Get_Bound_Location (L),
-                          "array dimension is bigger than" & Biggest_Int'Wide_Image (Values (Max_Length, Search))
-                          & " (" & Biggest_Int'Wide_Image (Lengths (L)) & ')');
+                          "array dimension is bigger than " & Biggest_Int_Img (Values (Max_Length, Search))
+                          & " (" & Biggest_Int_Img (Lengths (L)) & ')');
                end if;
 
                if Rule_Used (Max_Length) (Count) and then Lengths (L) > Values (Max_Length, Count) then
@@ -275,8 +274,9 @@ package body Rules.Array_Declarations is
    end Process_Array_Definition;
 
 begin
-   Rules_Manager.Register_Semantic (Rule_Id,
-                                    Help    => Help'Access,
-                                    Add_Use => Add_Use'Access,
-                                    Command => Command'Access);
+   Rules_Manager.Register (Rule_Id,
+                           Rules_Manager.Semantic,
+                           Help_CB    => Help'Access,
+                           Add_Use_CB => Add_Use'Access,
+                           Command_CB => Command'Access);
 end Rules.Array_Declarations;

@@ -38,10 +38,6 @@ with
   Framework;
 package Rules.Max_Line_Length is
 
-   -- This rule can be used to check/search for the occurrence of
-   -- lines longer than a given maximum
-   -- Parameter(1): Allowed length
-
    Rule_Id : constant Wide_String := "MAX_LINE_LENGTH";
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);

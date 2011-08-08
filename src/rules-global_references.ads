@@ -34,11 +34,6 @@ with
 
 package Rules.Global_References is
 
-   -- This rule can be used to check/search for references to global
-   -- (in a relative sense) variables
-   -- Parameter(1): all | multiple
-   -- Parameter(2..N): <name> | task | protected
-
    Rule_Id : constant Wide_String := "GLOBAL_REFERENCES";
 
    procedure Process_Body (The_Body : in Asis.Declaration);

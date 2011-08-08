@@ -17,13 +17,13 @@ t_unsafe_paired_calls.adb:175:10: Error: No_Parameter: nested call to T_Unsafe_P
 t_unsafe_paired_calls.adb:209:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P (different or non static lock value)
 t_unsafe_paired_calls.adb:213:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P (different or non static lock value)
 t_unsafe_paired_calls.adb:211:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P (different or non static lock value)
-t_unsafe_paired_calls.adb:218:7: Error: In_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value  1
-t_unsafe_paired_calls.adb:222:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock value  1
-t_unsafe_paired_calls.adb:220:7: Error: No_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value  1
-t_unsafe_paired_calls.adb:227:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value  1
-t_unsafe_paired_calls.adb:231:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock value  1
-t_unsafe_paired_calls.adb:229:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value  1
-t_unsafe_paired_calls.adb:253:10: Error: In_Parameter: nested call to T_Unsafe_Paired_Calls.P with lock value  1
+t_unsafe_paired_calls.adb:218:7: Error: In_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:222:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:220:7: Error: No_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:227:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:231:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:229:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:253:10: Error: In_Parameter: nested call to T_Unsafe_Paired_Calls.P with lock value 1
 t_unsafe_paired_calls.adb:279:7: Error: InOut_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1
 t_unsafe_paired_calls.adb:283:7: Error: InOut_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1
 t_unsafe_paired_calls.adb:281:7: Error: InOut_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1

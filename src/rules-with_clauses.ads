@@ -34,10 +34,6 @@ with
 
 package Rules.With_Clauses is
 
-   -- This rule can be used to check/search for "with" clauses that
-   -- can be moved to a more reduced scope, or are inherited from parents
-   -- Parameter(s): Reduceable | Inherited
-
    Rule_Id : constant Wide_String := "WITH_CLAUSES";
 
    procedure Process_Identifier  (Element : in Asis.Expression);

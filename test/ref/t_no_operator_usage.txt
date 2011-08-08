@@ -1,0 +1,6 @@
+t_no_operator_usage.adb:13:12: Error: NO_OPERATOR_USAGE: no operator used with type T_No_Operator_Usage._anonymous_.T11
+t_no_operator_usage.adb:14:12: Error: NO_OPERATOR_USAGE: no operator used with type T_No_Operator_Usage._anonymous_.T12
+t_no_operator_usage.adb:3:9: Error: NO_OPERATOR_USAGE: only logical operator(s) used with type T_No_Operator_Usage.T1
+x_no_operator_usage.ads:13:9: Error: NO_OPERATOR_USAGE: no operator used with type X_No_Operator_Usage.Intermediate1
+x_no_operator_usage.ads:2:9: Error: NO_OPERATOR_USAGE: no operator used with type X_No_Operator_Usage.X1
+x_no_operator_usage.ads:15:9: Error: NO_OPERATOR_USAGE: no operator used with type X_No_Operator_Usage.X3

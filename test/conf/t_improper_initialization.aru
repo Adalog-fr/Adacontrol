@@ -1,0 +1,3 @@
+Parameters: check improper_initialization (out_parameter);
+Variables:  search improper_initialization (variable);
+Bad_Init :  check  improper_initialization (initialized_variable);

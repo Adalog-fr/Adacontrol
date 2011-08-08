@@ -103,7 +103,7 @@ package body Rules.Exception_Propagation is
    -------------
 
    procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Framework.Language, Utilities;
+      use Framework.Language;
 
       Target      : Target_Kind;
       Int_Value   : Integer;
@@ -127,7 +127,7 @@ package body Rules.Exception_Propagation is
 
             while Parameter_Exists loop
                declare
-                  Convention : constant Wide_String := To_Upper (Get_String_Parameter);
+                  Convention : constant Wide_String := Get_Name_Parameter;
                begin
                   Add (Conventions,
                        To_Unbounded_Wide_String (Convention),
@@ -290,6 +290,10 @@ package body Rules.Exception_Propagation is
                   null;
             end case;
 
+         when A_Pragma =>
+            -- Nothing interesting in pragmas
+            Control := Abandon_Children;
+
          when others =>
             null;
       end case;
@@ -392,12 +396,13 @@ package body Rules.Exception_Propagation is
    ------------------
 
    function Risk_Message (Risk : Risk_Level) return Wide_String is
+      use Utilities;
    begin
       if Risk = Always then
          return "";
       end if;
 
-      return " (declaration at level" & Integer'Wide_Image (Risk_Level'Pos (Always) - Risk_Level'Pos (Risk)) & ')';
+      return " (declaration at level " & Integer_Img (Risk_Level'Pos (Always) - Risk_Level'Pos (Risk)) & ')';
    end Risk_Message;
 
    ------------------
@@ -427,9 +432,7 @@ package body Rules.Exception_Propagation is
                Good_Prefix := Selector (Good_Prefix);
             end if;
 
-            if Expression_Kind (Good_Prefix) = An_Explicit_Dereference
-              or else Expression_Type_Kind (Good_Prefix) = An_Access_Type_Definition
-            then
+            if Expression_Kind (Good_Prefix) = An_Explicit_Dereference or else Is_Access_Expression (Good_Prefix) then
                -- Explicit or implicit dereference: prefix subprogram is dynamic, nothing we can do
                Uncheckable (Rule_Id,
                             False_Negative,
@@ -737,9 +740,10 @@ package body Rules.Exception_Propagation is
    end Process_Declaration;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Exception_Propagation;

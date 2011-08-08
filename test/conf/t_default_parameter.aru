@@ -6,3 +6,5 @@ All_1: check   default_parameter (t_default_parameter.gen, all, not used);
        search  default_parameter (t_default_parameter.proc, y,   used);
 All_2: search  default_parameter (all,                      all, not used);
 
+       check default_parameter (all, "<", not used);
+

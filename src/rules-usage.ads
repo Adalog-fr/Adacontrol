@@ -35,15 +35,10 @@ with
 
 package Rules.Usage is
 
-   -- This rule can be used to check/search for usage of entities declared in
-   -- package specifications.
-   -- Parameter(1): "object" | "variable" | "constant" | "exception"
-   -- Parameter(s): [ "not" ] "read", "written", "initialized", "raised", "handled"
-
    Rule_Id : constant Wide_String := "USAGE";
 
-   procedure Process_Entity_Declaration (Element : in Asis.Declaration);
-   procedure Process_Identifier (Name : in Asis.Expression);
-   procedure Process_Package_Instantiation (Instantiation : Asis.Declaration);
+   procedure Process_Entity_Declaration (Element       : in Asis.Declaration);
+   procedure Process_Identifier         (Name          : in Asis.Expression);
+   procedure Process_Instantiation      (Instantiation : in Asis.Declaration);
 
 end Rules.Usage;

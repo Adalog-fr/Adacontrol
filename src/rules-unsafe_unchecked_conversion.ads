@@ -34,12 +34,6 @@ with
 
 package Rules.Unsafe_Unchecked_Conversion is
 
-   -- This rule can be used to check/search for the occurrence of any Ada entity
-   -- Parameter(1): Entity name
-   -- Parameter(2): Entity name
-   -- ...
-   -- Parameter(N): Entity name
-
    Rule_Id : constant Wide_String := "UNSAFE_UNCHECKED_CONVERSION";
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration);

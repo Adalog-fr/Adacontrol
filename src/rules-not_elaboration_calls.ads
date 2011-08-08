@@ -34,16 +34,8 @@ with Asis;
 
 package Rules.Not_Elaboration_Calls  is
 
-   -- This rule can be used to check/search for subprogram calls that happen
-   -- elsewhere than as part of the elaboration of a library package.
-   -- Parameters (1) => subprogram name
-   -- Parameters (2) => subprogram name
-   -- ...
-   -- Parameters (N) => subprogram name
-
    Rule_Id : constant Wide_String := "NOT_ELABORATION_CALLS";
 
    procedure Process_Call (Call : in Asis.Element);
-   -- Called whenever a subprogram or entry is called
 
 end Rules.Not_Elaboration_Calls;

@@ -1,8 +1,9 @@
-simple_names: check entities (ada.text_IO.put, 
+simple_names: check entities (ada.text_IO.put,
                               ada.text_io.put{string},
                               ada.text_io.float_io.put);
-attributes:   check entities (all 'image, integer'first);
+attributes:   check entities (all 'image, standard.integer'first);
 units:        check entities (ada.calendar);
+operator:     check entities (all "<");
 
 Gnat_Specific_Attribute: Check Entities (all 'Abort_Signal,
                                          all 'Address_Size,

@@ -34,11 +34,6 @@ with Asis;
 
 package Rules.Unnecessary_Use  is
 
-   -- This rule can be used to check/search use clauses for packages,
-   -- where no element of the package is referenced in the scope
-   -- of the use clause.
-   -- Parameters: None
-
    Rule_Id : constant Wide_String := "UNNECESSARY_USE_CLAUSE";
 
    procedure Process_Use_Clause (Clause : in Asis.Clause);

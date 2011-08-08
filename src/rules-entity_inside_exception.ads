@@ -34,19 +34,8 @@ with Asis;
 
 package Rules.Entity_Inside_Exception is
 
-   -- This rule can be used to check/search for the usage of an entity inside
-   -- an exception handler
-   -- Parameters (1) => entity name
-   -- Parameters (2) => entity name
-   -- ...
-   -- Parameters (N) => entity name
-
    Rule_Id : constant Wide_String := "ENTITY_INSIDE_EXCEPTION";
 
    procedure Process_Exception_Handler (Handler : in Asis.Exception_Handler);
-   -- Applies the rule
-   --
-   -- Expected Element_Kinds:
-   --    An_Exception_Handler
 
 end Rules.Entity_Inside_Exception;

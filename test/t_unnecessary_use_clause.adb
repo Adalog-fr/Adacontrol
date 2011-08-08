@@ -1,11 +1,11 @@
 with Ada.Text_IO;
-with System; use System;   -- Declaration outside unit
+with System; use System;   -- Unused (case of declaration outside unit)
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with T_unnecessary_use_clause.Gen;
 package body T_unnecessary_use_clause is
-   use Ada; -- OK, used next line
-   use Text_IO; -- Unused
+   use Ada;            -- OK, used next line
+   use Text_IO;        -- Unused
    package Pack1 is
       use Ada.Text_Io; -- Used in body, in scope of outer clause
       procedure Proc;
@@ -13,6 +13,7 @@ package body T_unnecessary_use_clause is
 
    use Ada.Strings.Fixed; -- Used in Sep
    procedure Sep is separate;
+   use Ada.Strings.Fixed; -- Already given
 
    package body Pack1 is
       procedure Proc is begin null; end;
@@ -36,10 +37,22 @@ package body T_unnecessary_use_clause is
    package Gen2 is
    end Gen2;
 
+   package Pack3 is
+      type Int is new Integer;
+   end Pack3;
+
+   use Pack3;
+   V : Pack3.Int;
+
+   package Pack4 is
+      X : Integer;
+   end Pack4;
+   use Pack4;    -- Only qualified usage
 begin
    declare
       use Ada.Strings; -- Unused
    begin
-      null;
+      V := V + 1;
+      Pack4.X := Pack4.X + 1;
    end;
 end T_unnecessary_use_clause;

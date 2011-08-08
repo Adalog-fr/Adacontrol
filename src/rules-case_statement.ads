@@ -35,7 +35,7 @@ with
 
 package Rules.Case_Statement is
 
-   Rule_Id : Constant Wide_String := "CASE_STATEMENT";
+   Rule_Id : constant Wide_String := "CASE_STATEMENT";
 
    procedure Process_Case_Statement (Statement : Asis.Statement);
    -- Statement_Kind (Statement)= A_Case_Statement

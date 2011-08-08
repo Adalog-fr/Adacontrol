@@ -34,22 +34,8 @@ with Asis;
 
 package Rules.Instantiations is
 
-   -- This rule can be used to check/search for generic instantiations
-   -- either all of them or those made with the given entities
-   -- Parameters (1) : Generic name
-   -- Parameters (2) : Entity name (Optional)
-   -- ...
-   -- Parameters (N) : Entity name (Optional)
-
    Rule_Id : constant Wide_String := "INSTANTIATIONS";
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration);
-   -- Expected Element_Kinds:
-   --    A_Declaration
-   --
-   -- Expected Declaration_Kinds:
-   --    A_Package_Instantiation
-   --    A_Procedure_Instantiation
-   --    A_Function_Instantiation
 
 end Rules.Instantiations;

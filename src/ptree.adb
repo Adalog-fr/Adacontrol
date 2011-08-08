@@ -38,6 +38,7 @@ with   -- Standard Ada units
   Ada.Characters.Handling,
   Ada.Exceptions,
   Ada.Strings.Wide_Fixed,
+  Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Unbounded,
   Ada.Integer_Wide_Text_IO,
   Ada.Wide_Text_IO;
@@ -54,24 +55,26 @@ with   -- ASIS components
 
 with   -- Other reusable components
   Implementation_Options,
-  Options_Analyzer;
+  Options_Analyzer,
+  Utilities;
 
 procedure Ptree is
    use Asis;
    use Compilation_Units, Elements;
 
-   type Location is record
-      File_Name    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-      First_Line   : Asis.Text.Line_Number        := 0;
-      First_Column : Asis.Text.Character_Position := 0;
-   end record;
+   Force_Spec : Boolean := False;
 
-   -- Text is indentent at least from Col_Base, then with a step of Col_Step
+   Unit_Name    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   First_Line   : Asis.Text.Line_Number        := 0;
+   Last_Line    : Asis.Text.Line_Number        := Asis.Text.Line_Number'Last;
+   First_Column : Asis.Text.Character_Position := 0;
+   I_Options    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
+   -- Text is indented at least from Col_Base, then with a step of Col_Step
    Col_Base : constant := 30;
    Col_Step : constant := 10;
 
    Span_Option : Boolean;
-   Unit_Spec   : Location;
    package Options is new Options_Analyzer (Binary_Options => "hsbS",
                                             Valued_Options => "p",
                                             Tail_Separator => "--");
@@ -96,35 +99,76 @@ procedure Ptree is
       Put_Line ("   -S      print span of each element");
    end Print_Help;
 
-   -----------
-   -- Value --
-   -----------
+   ---------------------
+   -- Parse_Parameter --
+   ---------------------
 
-   function Value (S : Wide_String) return Location is
-      use Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded, Asis.Text;
+   procedure Parse_Parameter (S : Wide_String)is
+      use Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded, Ada.Strings.Wide_Maps;
+      use Ada.Characters.Handling;
+      use Utilities;
+      use Asis.Text;
 
+      Unit_First : Natural;
       Pos_Colon1 : Natural;
       Pos_Colon2 : Natural;
-      Result : Location;
+      Pos_Dash   : Natural;
+
+      function Make_Unit_Name (Name : Wide_String) return Wide_String is
+         Pos_Dot : constant Natural := Index (Name, ".", Going => Backward);
+      begin
+         if Pos_Dot = 0 or Pos_Dot /= Name'Last - 3 then
+            return Name (Unit_First .. Name'Last);
+         end if;
+
+         if To_Upper (Name (Name'Last - 2 .. Name'Last)) = "ADB" then
+            return Translate (Name (Unit_First .. Name'Last - 4), To_Mapping ("-", "."));
+         elsif To_Upper (Name (Name'Last - 2 .. Name'Last)) = "ADS" then
+            Force_Spec := True;
+            return Translate (Name (Unit_First .. Name'Last - 4), To_Mapping ("-", "."));
+         else
+            return Name (Unit_First .. Name'Last);
+         end if;
+      end Make_Unit_Name;
+
    begin
-      Pos_Colon1 := Index (S, ":");
-      if Pos_Colon1 = 0 then
-         return (To_Unbounded_Wide_String (S), 0, 0);
+      Unit_First := Index (S, Set => To_Set ("/\"), Going => Backward);
+      if Unit_First = 0 then
+         -- There is no directory separator
+         Unit_First := S'First;
+      else
+         I_Options  := " -I" & To_Unbounded_Wide_String (S (S'First ..  Unit_First));
+         Unit_First := Unit_First + 1;
       end if;
 
-      Result.File_Name := To_Unbounded_Wide_String (S (S'First .. Pos_Colon1-1));
+      Pos_Colon1 := Index (S (Unit_First .. S'Last), ":");
+      if Pos_Colon1 = 0 then
+         Unit_Name := To_Unbounded_Wide_String (Make_Unit_Name (S (Unit_First .. S'Last)));
+         return;
+      end if;
+
+      Unit_Name  := To_Unbounded_Wide_String (Make_Unit_Name (S (Unit_First .. Pos_Colon1-1)));
 
       Pos_Colon2 := Index (S (Pos_Colon1 + 1 .. S'Last), ":");
       if Pos_Colon2 = 0 then
-         Pos_Colon2 := S'Last + 1;
+         Pos_Dash := Index (S (Pos_Colon1 + 1 .. S'Last), "-");
+         if Pos_Dash = 0 then
+            First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. S'Last));
+            Last_Line  := First_Line;
+         else
+            if Pos_Dash /= Pos_Colon1 + 1 then
+               First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Dash - 1));
+            end if;
+            if Pos_Dash /= S'Last then
+               Last_Line  := Line_Number'Wide_Value (S (Pos_Dash   + 1 .. S'Last));
+            end if;
+         end if;
+      else
+         First_Line   := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Colon2 - 1));
+         Last_Line    := First_Line;
+         First_Column := Character_Position'Wide_Value (S (Pos_Colon2+1 .. S'Last));
       end if;
-      Result.First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Colon2 - 1));
-      if Pos_Colon2 < S'Last then
-         Result.First_Column := Character_Position'Wide_Value (S (Pos_Colon2+1 .. S'Last));
-      end if;
-
-      return Result;
-   end Value;
+   end Parse_Parameter;
 
    --------------------------------------------------------------------------
    -- The analyzer                                                         --
@@ -208,15 +252,13 @@ procedure Ptree is
       State := State + 1;
 
       -- Chech if in range
-      if Unit_Spec.First_Line /= 0 then
-         if The_Span.First_Line > Unit_Spec.First_Line or The_Span.Last_Line < Unit_Spec.First_Line then
-            return;
-         elsif Unit_Spec.First_Column /= 0 and then
-           (The_Span.First_Line = Unit_Spec.First_Line
-            and (The_Span.First_Column > Unit_Spec.First_Column or The_Span.Last_Column < Unit_Spec.First_Column))
-         then
-            return;
-         end if;
+      if The_Span.First_Line > Last_Line or The_Span.Last_Line < First_Line then
+         return;
+      elsif First_Column /= 0 and then
+        (The_Span.First_Line = First_Line
+            and (The_Span.First_Column > First_Column or The_Span.Last_Column < First_Column))
+      then
+         return;
       end if;
 
       for I in 1..State-1 loop
@@ -290,7 +332,8 @@ procedure Ptree is
    The_Control    : Traverse_Control := Continue;
    The_Info       : Info := 0;
 
-   use Ada.Wide_Text_IO, Ada.Characters.Handling, Implementation_Options;
+   use Ada.Wide_Text_IO, Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
+   use Implementation_Options, Utilities;
 begin
    if Is_Present (Option => 'h') then
       Print_Help;
@@ -301,26 +344,28 @@ begin
       Print_Help;
       return;
    end if;
+   Implementation_Options.Default_F_Parameter := 'S';  -- -FS by default
    Span_Option := Is_Present (Option => 'S');
-   Unit_Spec   := Value (To_Wide_String (Parameter (1)));
+   begin
+      Parse_Parameter (To_Wide_String (Parameter (1)));
+   exception
+      when Constraint_Error =>
+         User_Message ("Illegal value for line or column specification");
+         return;
+   end;
 
    Implementation.Initialize;
    Ada_Environments.Associate (My_Context, "Ptree",
                                Parameters_String (Value (Option            => 'p',
                                                          Explicit_Required => True),
-                                                  To_Wide_String (Options.Tail_Value)));
+                                                  To_Wide_String (Options.Tail_Value) & To_Wide_String (I_Options)));
    Ada_Environments.Open (My_Context);
 
-   declare
-      use Ada.Strings.Wide_Unbounded;
-      Unit_Name : constant Wide_String := To_Wide_String (Unit_Spec.File_Name);
-   begin
-      if Is_Present (Option => 's') then
-         My_Unit := Library_Unit_Declaration (Unit_Name, My_Context);
-      else
-         My_Unit := Compilation_Unit_Body (Unit_Name, My_Context);
-      end if;
-   end;
+   if Is_Present (Option => 's') or Force_Spec then
+      My_Unit := Library_Unit_Declaration (To_Wide_String (Unit_Name), My_Context);
+   else
+      My_Unit := Compilation_Unit_Body (To_Wide_String (Unit_Name), My_Context);
+   end if;
 
    declare
       My_CC_List : constant Context_Clause_List

@@ -7,11 +7,11 @@ check style (casing_identifier, original);
 check style (negative_condition);
 check style (multiple_elements);
 check style (compound_statement);
+check style (casing_keyword, lowercase);
 check max_nesting (6);
 check parameter_aliasing (certain);
-check simplifiable_expressions (range, logical);
-check statements (unnecessary_null);
-check if_for_case;
+check simplifiable_expressions (range, logical, conversion);
+check simplifiable_statements;
 
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);

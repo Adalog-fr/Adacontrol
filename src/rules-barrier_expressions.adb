@@ -161,20 +161,18 @@ package body Rules.Barrier_Expressions is
    -------------------------------
 
    procedure Process_Entry_Declaration (Decl : in Asis.Declaration) is
-      use Asis.Declarations, Asis.Elements;
-      use Keyword_Flag_Utilities, Thick_Queries;
+      use Asis.Declarations;
 
       procedure Check_Expression (Exp : in Asis.Expression) is
-         use Asis, Asis.Definitions, Asis.Expressions;
-         use Framework.Reports;
-         use Utilities;
+         use Asis, Asis.Definitions, Asis.Elements, Asis.Expressions;
+         use Keyword_Flag_Utilities, Thick_Queries, Utilities;
 
          procedure Do_Report (Message    : in Wide_String;
                               Context    : in Root_Context'Class;
                               Identifier : in Asis.Element := Nil_Element;
                               Loc        : in Location := Get_Location (Exp))
          is
-            use Ada.Strings.Wide_Unbounded;
+            use Framework.Reports, Ada.Strings.Wide_Unbounded;
             S : Rule_Types_Set;
          begin
             if Context = No_Matching_Context then
@@ -206,7 +204,7 @@ package body Rules.Barrier_Expressions is
             end if;
          end Do_Report;
 
-      begin
+      begin   -- Check_Expression
          case Expression_Kind (Exp) is
             when Not_An_Expression =>
                Failure (Rule_Id & ": Not_An_Expression");
@@ -216,6 +214,11 @@ package body Rules.Barrier_Expressions is
                   Name_Decl : constant Asis.Declaration := Corresponding_Name_Declaration (Exp);
                begin
                   case Declaration_Kind (Name_Decl) is
+                     when A_Package_Declaration
+                        | A_Package_Body_Declaration
+                          =>
+                          -- Can appear only as prefix => Harmless
+                          null;
                      when A_Function_Declaration
                         | A_Function_Body_Declaration
                           =>
@@ -226,7 +229,10 @@ package body Rules.Barrier_Expressions is
                         else
                            Do_Report ("non-local function call", Matching_Context (Contexts, Exp));
                         end if;
-                     when A_Variable_Declaration =>
+                     when A_Variable_Declaration
+                        | A_Loop_Parameter_Specification  -- Consider this (and next) as variables,
+                        | An_Entry_Index_Specification    -- although they are strictly speaking constants
+                          =>
                         Do_Report ("variable",
                                    Framework.Association (Contexts, Value (Image (K_Any_Variable))),
                                    Exp);
@@ -254,7 +260,10 @@ package body Rules.Barrier_Expressions is
                         -- always allowed
                         null;
                      when others =>
-                        Failure (Rule_Id & ": unexpected declaration kind", Exp);
+                        Failure (Rule_Id
+                                 & ": unexpected declaration kind "
+                                 & Declaration_Kinds'Wide_Image (Declaration_Kind (Name_Decl)),
+                                 Exp);
                   end case;
                end;
             when An_Integer_Literal
@@ -461,7 +470,7 @@ package body Rules.Barrier_Expressions is
                           Framework.Association (Contexts, Value (Image (K_Indexing))));
 
                -- Check for implicit dereference
-               if Expression_Type_Kind (Prefix (Exp)) = An_Access_Type_Definition then
+               if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
                            Framework.Association (Contexts, Value (Image (K_Dereference))));
                end if;
@@ -480,7 +489,7 @@ package body Rules.Barrier_Expressions is
                           Framework.Association (Contexts, Value (Image (K_Indexing))));
 
                 -- Check for implicit dereference
-               if Expression_Type_Kind (Prefix (Exp)) = An_Access_Type_Definition then
+               if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
                            Framework.Association (Contexts, Value (Image (K_Dereference))));
                end if;                                          -- Check both slice prefix and range
@@ -503,7 +512,7 @@ package body Rules.Barrier_Expressions is
 
             when A_Selected_Component =>
                -- Check for implicit dereference
-               if Expression_Type_Kind (Prefix (Exp)) = An_Access_Type_Definition then
+               if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
                            Framework.Association (Contexts, Value (Image (K_Dereference))));
                end if;
@@ -513,7 +522,7 @@ package body Rules.Barrier_Expressions is
 
             when A_Function_Call =>
                -- Check for implicit dereference
-               if Expression_Type_Kind (Prefix (Exp)) = An_Access_Type_Definition then
+               if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
                            Framework.Association (Contexts, Value (Image (K_Dereference))));
                end if;
@@ -552,7 +561,7 @@ package body Rules.Barrier_Expressions is
       end Check_Expression;
 
 
-   begin -- Process_Declaration
+   begin -- Process_Entry_Declaration
       if Rule_Used = (Rule_Types => False) then
          return;
       end if;
@@ -562,8 +571,9 @@ package body Rules.Barrier_Expressions is
    end Process_Entry_Declaration;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Barrier_Expressions;

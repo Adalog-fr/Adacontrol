@@ -37,6 +37,7 @@ with
 
 -- Adalog
 with
+  Linear_Queue,
   Utilities;
 
 -- Adactl
@@ -58,6 +59,16 @@ package body Framework.Reports is
    Uncheckable_Used   : array (Uncheckable_Consequence) of Boolean := (others => False);
    Uncheckable_Types  : array (Uncheckable_Consequence) of Rule_Types;
    Uncheckable_Labels : array (Uncheckable_Consequence) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   type False_Positive_Info (Len : Positive) is
+      record
+         Loc : Location;
+         Msg : Wide_String (1 .. Len);
+      end record;
+   package False_Positive_List is new Linear_Queue (False_Positive_Info);
+   package False_Positive_Map  is new Binary_Map (Unbounded_Wide_String, False_Positive_List.Queue);
+   False_Positive_Messages : False_Positive_Map.Map;
+   -- The above map maps Rule Id's to a list of delayed false positive messages
+   -- See Uncheckable.
 
    package Counters is new Binary_Map (Unbounded_Wide_String, Natural);
    Rule_Counter   : Counters.Map;
@@ -208,7 +219,10 @@ package body Framework.Reports is
                      Rule_Label : in Wide_String;
                      Rule_Type  : in Rule_Types;
                      Loc        : in Location;
-                     Msg        : in Wide_String) is
+                     Msg        : in Wide_String)
+   is
+      -- This one is the "true" Report procedure, i.e. the other Report procedure is just
+      -- a front-end to this one.
       use Utilities, Adactl_Options;
 
       Label     : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
@@ -219,7 +233,6 @@ package body Framework.Reports is
          use Ada.Wide_Text_IO;
 
          function Quote (Item : Wide_String) return Wide_String is
-            use Ada.Strings.Wide_Fixed;
             Result : Wide_String (Item'First .. Item'Last + Ada.Strings.Wide_Fixed.Count (Item, """") + 2);
             Index  : Positive;
          begin
@@ -241,6 +254,25 @@ package body Framework.Reports is
 
          Current_Col : Ada.Wide_Text_IO.Count;
       begin
+         if Just_Created then
+            Just_Created := False;
+            case Format_Option is
+               when CSV | CSVX =>
+                  Put ("Location");
+                  Put (CSV_Separator (Format_Option));
+                  Put ("Type");
+                  Put (CSV_Separator (Format_Option));
+                  Put ("Label");
+                  Put (CSV_Separator (Format_Option));
+                  Put ("Rule");
+                  Put (CSV_Separator (Format_Option));
+                  Put ("Message");
+                  New_Line;
+               when others =>
+                  null;
+            end case;
+         end if;
+
          case Format_Option is
             when Gnat =>
                if Loc /= Null_Location then
@@ -284,14 +316,45 @@ package body Framework.Reports is
                Put (": ");
                Put (Msg);
                New_Line;
+            when None =>
+               null;
          end case;
       end Issue_Message;
 
-      use Counters;
+      use Counters, False_Positive_Map;
       Active : Boolean := True;
 
    begin
-      if not Ignore_Option or Format_Option = Source then
+      -- Output delayed false positive messages for this rule
+      -- There can be such messages only if Uncheckable has been activated
+      if Is_Present (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id)) then
+         declare
+            use False_Positive_List;
+            Message_Queue : Queue  := Fetch (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id));
+            Current       : Cursor := First (Message_Queue);
+         begin
+            -- Delete entry in map here to avoid infinite recursion
+            -- There is no problem, since Queues are controlled, the queue will be released when
+            -- exiting the block.
+            Delete (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id));
+            while Has_Element (Current) loop
+               declare
+                  Mess_Info : constant False_Positive_Info := Fetch (Current);
+               begin
+                  Report (Rule_Id,
+                          To_Wide_String (Uncheckable_Labels (False_Positive)),
+                          Uncheckable_Types  (False_Positive),
+                          Mess_Info.Loc,
+                          Mess_Info.Msg);
+               end;
+               Current := Next (Current);
+            end loop;
+         end;
+      end if;
+
+      if Format_Option /= None
+        and (not Ignore_Option or Format_Option = Source)
+      then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
             File : File_Type;
@@ -403,9 +466,6 @@ package body Framework.Reports is
    -- Uncheckable --
    -----------------
 
-   Risk_Message : constant array (Uncheckable_Consequence) of Wide_String (1 .. 8)
-     := ("positive", "negative");
-
    procedure Uncheckable (Rule_Id : in Wide_String;
                           Risk    : in Uncheckable_Consequence;
                           Loc     : in Location;
@@ -415,12 +475,32 @@ package body Framework.Reports is
       Rule_Label : constant Wide_String := To_Wide_String (Uncheckable_Labels (Risk));
    begin
       if Uncheckable_Used (Risk) then
-         Report (Rule_Id,
-                 Rule_Label,
-                 Uncheckable_Types  (Risk),
-                 Loc,
-                 Choose (Rule_Label /= "", "in rule " & Rule_Id & ": ", "")
-                   & "Possible false " & Risk_Message (Risk) & ": " & Msg);
+         case Risk is
+            when False_Negative =>
+               Report (Rule_Id,
+                       Rule_Label,
+                       Uncheckable_Types  (Risk),
+                       Loc,
+                       Choose (Rule_Label /= "", "in rule " & Rule_Id & ": ", "")
+                       & "Possible false negative: " & Msg);
+            when False_Positive =>
+               -- False positive messages are delayed until the next call to Report from the
+               -- same rule. Therefore, false positive messages will not appear if there are
+               -- no messages from the rule at all.
+               declare
+                  use False_Positive_List, False_Positive_Map;
+                  Rule_Queue : Queue := Fetch (False_Positive_Messages,
+                                               To_Unbounded_Wide_String (Rule_Id),
+                                               Default_Value => Empty_Queue);
+                  Full_Msg : constant Wide_String := Choose (Rule_Label /= "", "in rule " & Rule_Id & ": ", "")
+                                                     & "Possible false positive: " & Msg;
+               begin
+                  Append (Rule_Queue, (Full_Msg'Length,
+                                       Loc,
+                                       Full_Msg));
+                  Add (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id), Rule_Queue);
+               end;
+         end case;
       end if;
    end Uncheckable;
 
@@ -429,8 +509,10 @@ package body Framework.Reports is
    -----------------------
 
    procedure Reset_Uncheckable is
+      use False_Positive_Map;
    begin
       Uncheckable_Used := (others => False);
+      Clear (False_Positive_Messages);
    end Reset_Uncheckable;
 
    ---------------------
@@ -479,9 +561,10 @@ package body Framework.Reports is
    -------------------
 
    procedure Report_Counts is
-      use Counters, Utilities, Ada.Wide_Text_IO;
+      use Counters, Ada.Wide_Text_IO;
 
       procedure Report_One_Count (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
+         use Utilities;
       begin
          Put (To_Wide_String (Key));
          case Format_Option is
@@ -489,6 +572,8 @@ package body Framework.Reports is
                Put (": ");
             when CSV | CSVX =>
                Put (CSV_Separator (Format_Option));
+            when None =>
+               Failure ("output in none format");
          end case;
          Put (Integer_Img (Counter_Value));
          New_Line;
@@ -496,7 +581,7 @@ package body Framework.Reports is
 
       procedure Report_All_Counts is new Iterate (Report_One_Count);
    begin
-      if Is_Empty (Rule_Counter) then
+      if Is_Empty (Rule_Counter) or Format_Option = None then
          return;
       end if;
 
@@ -595,8 +680,9 @@ package body Framework.Reports is
 
          if Triggered_Count = 0 or else Stats_Level = Full then
             case Format_Option is
-               when Gnat | Source=>
+               when Gnat | Source | None =>
                   Put (Wide_Key);
+                  Put (": ");
                   if Triggered_Count = 0 then
                      Put ("not triggered");
                   else
@@ -636,6 +722,7 @@ package body Framework.Reports is
       end Report_One_Stat;
 
       procedure Report_All_Stats is new Iterate (Report_One_Stat);
+      use Utilities;
    begin
       if Stats_Level = None then
          return;
@@ -645,7 +732,7 @@ package body Framework.Reports is
          New_Line;
          Put_Line ("Rules usage statistics:");
          case Format_Option is
-            when Gnat | Source=>
+            when Gnat | Source | None =>
                null;
             when CSV | CSVX =>
                Put_Line ("Rule"
@@ -659,8 +746,8 @@ package body Framework.Reports is
 
       if Stats_Level >= General then
          New_Line;
-         Put ("Issued messages: Errors =" & Natural'Wide_Image (Nb_Errors));
-         Put (", Warnings =" & Natural'Wide_Image (Nb_Warnings));
+         Put ("Issued messages: Errors = " & Integer_Img (Nb_Errors));
+         Put (", Warnings = " & Integer_Img (Nb_Warnings));
          New_Line;
       end if;
    end Report_Stats;

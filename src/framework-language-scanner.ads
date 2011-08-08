@@ -40,18 +40,19 @@ private package Framework.Language.Scanner is
 
    Max_ID_Length : constant := 250;
 
-   type Token_Kind is (Name, Integer_Value, Float_Value,
+   type Token_Kind is (Name, Integer_Value, Float_Value, String_Value,
 
                        Bad_Token, Bad_Integer, Bad_Float,
 
                        Left_Bracket, Right_Bracket, Left_Parenthesis, Right_Parenthesis,
                        Left_Angle,   Right_Angle,
-                       Tick, Colon,  Semi_Colon, Comma, Period,
+                       Tick, Colon,  Semi_Colon, Comma, Period, Equal,
+                       -- Modify Character_Token_Kind if you add to this list
 
                        Eof);
 
    --Tokens made of a single character
-   subtype Character_Token_Kind is Token_Kind range Left_Bracket .. Period;
+   subtype Character_Token_Kind is Token_Kind range Left_Bracket .. Equal;
 
    -- Keywords
    -- Following values must have the form "Key_" & Keyword
@@ -59,23 +60,26 @@ private package Framework.Language.Scanner is
    type Key_Kind is (Key_Access,  Key_All,   Key_Return,                -- Profile keywords
                      Key_Clear,   Key_Help,  Key_Inhibit, Key_Go,       -- Command keywords
                      Key_Message, Key_Quit,  Key_Set,     Key_Source,
-                     Key_Check,  Key_Search, Key_Count,   Key_Not,      -- Rules keywords
+                     Key_Check,  Key_Search, Key_Count,                 -- Rule type keywords
                      Not_A_Key);                                        -- not a keyword
    subtype Profile_Keys is Key_Kind range Key_Access .. Key_Return;
-   subtype Command_Keys is Key_Kind range Key_Clear .. Key_Count;
+   subtype Type_Keys    is Key_Kind range Key_Check  .. Key_Count;
 
    type Token (Kind : Token_Kind := Semi_Colon) is
       record
          Position : Location;
          case Kind is
             when Name =>
-               Length : Natural;
-               Text   : Wide_String (1..Max_ID_Length);
-               Key    : Key_Kind;
+               Name_Length : Natural;
+               Name_Text   : Wide_String (1..Max_ID_Length);
+               Key         : Key_Kind;
             when Integer_Value =>
                Value : Thick_Queries.Biggest_Int;
             when Float_Value =>
-               Fvalue : Float;
+               Fvalue      : Float;
+            when String_Value =>
+               String_Length : Natural;
+               String_Text   : Wide_String (1..Max_ID_Length);
             when others =>
                null;
          end case;

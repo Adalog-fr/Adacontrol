@@ -35,11 +35,6 @@ with
 
 package Rules.Side_Effect_Parameters is
 
-   -- This rule can be used to check/search for subprogram calls or
-   -- generic instantiations that call functions with side effect and
-   -- where the order of evaluation matters
-   -- Parameters : function names
-
    Rule_Id : constant Wide_String := "SIDE_EFFECT_PARAMETERS";
 
    procedure Process_Call_Or_Instantiation (Element : in Asis.Element);

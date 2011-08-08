@@ -3,12 +3,17 @@ with X_Uncheckable;
 procedure T_Uncheckable is
    use X_Uncheckable;
 
-   procedure Case_Statement              is separate;
-   procedure Directly_Accessed_Globals   is separate;
-   procedure Exception_Propagation       is separate;
-   procedure Max_Call_Depth              is separate;
-   procedure Style                       is separate;
-   procedure Unsafe_Unchecked_Conversion is separate;
+   procedure Case_Statement                  is separate;
+   procedure Directly_Accessed_Globals       is separate;
+   procedure Duplicate_Initialization_Calls  is separate;
+   procedure Exception_Propagation           is separate;
+   procedure Global_References               is separate;
+   procedure Max_Call_Depth                  is separate;
+   procedure Potentially_Blocking_Operations is separate;
+   procedure Representation_Clauses          is separate;
+   procedure Style                           is separate;
+   procedure Unsafe_Unchecked_Conversion     is separate;
+   procedure Usage                           is separate;
 begin
    null;
 end T_Uncheckable;

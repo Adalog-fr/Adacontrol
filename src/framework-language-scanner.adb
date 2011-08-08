@@ -99,23 +99,23 @@ package body Framework.Language.Scanner is
          if Origin_Is_String then
             -- if From_String, End of Line => End Of File
             raise End_Error;
-         else
-            if Current_Prompt /= Null_Unbounded_Wide_String then
-               if Prompt_Active then
-                  -- Here, we have fresh new user input
-                  -- => Cancel any previous error flag
-                  Rule_Error_Occurred := False;
-                  Put (Current_Error, To_Wide_String (Current_Prompt) & ": ");
-               else
-                  Put (Current_Error, Length (Current_Prompt) * '.' & ": ");
-               end if;
-            end if;
-
-            Get_Line (Current_Input, Buffer, Buf_Last);
-            Buf_Inx        := 1;
-            Current_Line   := Current_Line + 1;
-            Current_Column := 1;
          end if;
+
+         if Current_Prompt /= Null_Unbounded_Wide_String then
+            if Prompt_Active then
+               -- Here, we have fresh new user input
+               -- => Cancel any previous error flag
+               Rule_Error_Occurred := False;
+               Put (Current_Error, To_Wide_String (Current_Prompt) & ": ");
+            else
+               Put (Current_Error, Length (Current_Prompt) * '.' & ": ");
+            end if;
+         end if;
+
+         Get_Line (Current_Input, Buffer, Buf_Last);
+         Buf_Inx        := 1;
+         Current_Line   := Current_Line + 1;
+         Current_Column := 1;
 
       else
          Buf_Inx        := Buf_Inx + 1;
@@ -139,27 +139,26 @@ package body Framework.Language.Scanner is
 
    function Look_Ahead_Char return Wide_Character is
    begin
-       if Buf_Inx = Buf_Last and Buf_Last = Buffer'Last then
-          -- Buffer was too short, read next part
+      if Buf_Inx = Buf_Last and Buf_Last = Buffer'Last then
+         -- Buffer was too short, read next part
           -- (may read an empty string, but it's OK)
           -- Keep current char in buffer to maintain invariant
-          Buffer (1) := Cur_Char;
-          if Origin_Is_String then
-             Buf_Last := Integer'Min (Buffer'Size, Length (Source_String) - Source_Last) - 1;
-             Buffer (2 .. Buf_Last) := Slice (Source_String, Source_Last + 1, Source_Last + Buf_Last);
-             Source_Last := Source_Last + Buf_Last;
-          else
-             Get_Line (Current_Input, Buffer (2 .. Buffer'Last), Buf_Last);
-          end if;
-          Buf_Inx := 1;
-       end if;
+         Buffer (1) := Cur_Char;
+         if Origin_Is_String then
+            Buf_Last := Integer'Min (Buffer'Size, Length (Source_String) - Source_Last) - 1;
+            Buffer (2 .. Buf_Last) := Slice (Source_String, Source_Last + 1, Source_Last + Buf_Last);
+            Source_Last := Source_Last + Buf_Last;
+         else
+            Get_Line (Current_Input, Buffer (2 .. Buffer'Last), Buf_Last);
+         end if;
+         Buf_Inx := 1;
+      end if;
 
-       if Buf_Inx = Buffer'Last then
-          -- End of line, pretend there is an extra space
-          return ' ';
-       else
-          return Buffer (Buf_Inx + 1);
-       end if;
+      if Buf_Inx = Buffer'Last then
+         -- End of line, pretend there is an extra space
+         return ' ';
+      end if;
+      return Buffer (Buf_Inx + 1);
    end Look_Ahead_Char;
 
 
@@ -171,7 +170,7 @@ package body Framework.Language.Scanner is
    -- and forget to modify the following elements.
    Char_Tokens : constant Wide_String (Token_Kind'Pos (Character_Token_Kind'First) ..
                                        Token_Kind'Pos (Character_Token_Kind'Last))
-     := "{}()<>':;,.";
+     := "{}()<>':;,.=";
    Char_Token_Values : constant array (Char_Tokens'Range) of Token
      := ((Kind => Left_Bracket,      Position => Null_Location),
          (Kind => Right_Bracket,     Position => Null_Location),
@@ -183,7 +182,8 @@ package body Framework.Language.Scanner is
          (Kind => Colon,             Position => Null_Location),
          (Kind => Semi_Colon,        Position => Null_Location),
          (Kind => Comma,             Position => Null_Location),
-         (Kind => Period,            Position => Null_Location));
+         (Kind => Period,            Position => Null_Location),
+         (Kind => Equal,             Position => Null_Location));
 
    procedure Actual_Next_Token (Force_String : Boolean := False) is
       use Ada.Strings.Wide_Fixed, Ada.Characters.Handling;
@@ -193,56 +193,65 @@ package body Framework.Language.Scanner is
       First_Column : Asis.Text.Character_Position;
 
       procedure Get_Name (Extended : Boolean) is
-         Quoted     : constant Boolean := Cur_Char = '"' or Cur_Char = '~';
-         Quote_Char : Wide_Character;
       begin
-         if Quoted then
-            Quote_Char := Cur_Char;
-            The_Token := (Kind     => Name,
-                          Position => (Current_File, First_Line, First_Column),
-                          Length   => 0,
-                          Text     => (others => ' '),
-                          Key      => Not_A_Key);
-         else
-            The_Token := (Kind     => Name,
-                          Position => (Current_File, First_Line, First_Column),
-                          Length   => 1,
-                          Text     => (1 => Cur_Char, others => ' '),
-                          Key      => Not_A_Key);
-         end if;
+         The_Token := (Kind        => Name,
+                       Position    => (Current_File, First_Line, First_Column),
+                       Name_Length => 1,
+                       Name_Text   => (1 => Cur_Char, others => ' '),
+                       Key         => Not_A_Key);
          Next_Char;
 
          loop
-            if Quoted then
-               if At_Eol then
-                  Syntax_Error ("Unterminated quoted string", The_Token.Position);
-               end if;
-               if Cur_Char = Quote_Char then
-                  Next_Char;
-                  exit when At_Eol or Cur_Char /= Quote_Char;
-               end if;
-            else
-               exit when At_Eol;
+            exit when At_Eol;
 
-               if Extended then
-                  exit when Cur_Char = ';';
-               else
-                  exit when Cur_Char <= ' ';
-                  exit when not Is_Letter (To_Character (Cur_Char))
-                    and not Is_Digit (To_Character (Cur_Char))
-                    and Cur_Char /= '_';
-               end if;
+            if Extended then
+               exit when Cur_Char = ';';
+            else
+               exit when Cur_Char <= ' ';
+               exit when not Is_Letter (To_Character (Cur_Char))
+                 and not Is_Digit (To_Character (Cur_Char))
+                 and Cur_Char /= '_';
             end if;
 
-            if The_Token.Length = The_Token.Text'Last then
+            if The_Token.Name_Length = The_Token.Name_Text'Last then
                Syntax_Error ("Identifier too long", The_Token.Position);
                return;
             end if;
-            The_Token.Length := The_Token.Length + 1;
-            The_Token.Text (The_Token.Length) := Cur_Char;
+            The_Token.Name_Length := The_Token.Name_Length + 1;
+            The_Token.Name_Text (The_Token.Name_Length) := Cur_Char;
             Next_Char;
          end loop;
       end Get_Name;
+
+      procedure Get_String  is
+         Quote_Char : constant Wide_Character := Cur_Char;
+      begin
+         The_Token := (Kind          => String_Value,
+                       Position      => (Current_File, First_Line, First_Column),
+                       String_Length => 0,
+                       String_Text   => (others => ' '));
+         Next_Char;
+         loop
+            if At_Eol then
+               Syntax_Error ("Unterminated quoted string", The_Token.Position);
+            end if;
+            if Cur_Char = Quote_Char then
+               Next_Char;
+               exit when At_Eol or Cur_Char /= Quote_Char;
+            end if;
+
+            if The_Token.String_Length = The_Token.String_Text'Last then
+               Syntax_Error ("String too long", The_Token.Position);
+               return;
+            end if;
+            The_Token.String_Length := The_Token.String_Length + 1;
+            The_Token.String_Text (The_Token.String_Length) := Cur_Char;
+            Next_Char;
+         end loop;
+         if Cur_Char = Quote_Char then
+            Next_Char;
+         end if;
+      end Get_String;
 
       function Get_Integer return Biggest_Int is
          -- Precondition: Cur_Char in '0..9' or '-'
@@ -320,7 +329,7 @@ package body Framework.Language.Scanner is
 
       else
          case Cur_Char is
-            when '{' | '}' | '(' | ')' | '<' | '>' | ''' | ':' | ';' | ',' | '.' =>
+            when '{' | '}' | '(' | ')' | '<' | '>' | ''' | ':' | ';' | ',' | '.' | '=' =>
                The_Token := Char_Token_Values (Index (Char_Tokens, Cur_Char & ""));
                The_Token.Position := (Current_File, First_Line, First_Column);
                Next_Char;
@@ -370,13 +379,16 @@ package body Framework.Language.Scanner is
                   end if;
                end;
 
-            when '~' | '"' | 'a'..'z' | 'A'..'Z' | '_' => -- We allow '_' because of "_anonymous_"
+            when '~' | '"' =>
+               Get_String;
+
+            when 'a' .. 'z' | 'A' .. 'Z' | '_' => -- We allow '_' because of "_anonymous_"
                Get_Name (Extended => False);
 
                -- Check for keywords
                declare
                   To_Check : constant Wide_String
-                    := "KEY_" & To_Upper (The_Token.Text (1..The_Token.Length));
+                    := "KEY_" & To_Upper (The_Token.Name_Text (1..The_Token.Name_Length));
                begin
                   for Key in Key_Kind range Key_Kind'First .. Key_Kind'Pred (Not_A_Key) loop
                      if To_Check = Key_Kind'Wide_Image (Key) then
@@ -505,20 +517,21 @@ package body Framework.Language.Scanner is
 
    function Image (T : Token) return Wide_String is
       use Thick_Queries;
+      function Double_Quotes (S : Wide_String) return Wide_String is
+      begin
+         for I in S'Range loop
+            if S (I) = '"' then
+               return S (S'First .. I) & '"' & Double_Quotes (S (I + 1 .. S'Last));
+            end if;
+         end loop;
+         return S;
+      end Double_Quotes;
    begin
       case T.Kind is
          when Name =>
-            return T.Text (1 .. T.Length);
+            return T.Name_Text (1 .. T.Name_Length);
          when Integer_Value =>
-            declare
-               Result : constant Wide_String := Biggest_Int'Wide_Image (T.Value);
-            begin
-               if T.Value < 0 then
-                  return Result;
-               else
-                  return Result (2 .. Result'Length);
-               end if;
-            end;
+            return  Biggest_Int_Img (T.Value);
          when Float_Value =>
             declare
                Result : constant Wide_String := Float'Wide_Image (T.Fvalue);
@@ -529,6 +542,8 @@ package body Framework.Language.Scanner is
                   return Result (2 .. Result'Length);
                end if;
             end;
+         when String_Value =>
+            return '"' & Double_Quotes (T.String_Text (1 .. T.String_Length)) & '"';
          when Bad_Integer | Bad_Float | Bad_Token =>
             return "#####";
          when Character_Token_Kind =>
@@ -599,7 +614,7 @@ package body Framework.Language.Scanner is
          return False;
       end if;
 
-      return To_Upper (T.Text (1 .. T.Length)) = Expected;
+      return To_Upper (T.Name_Text (1 .. T.Name_Length)) = Expected;
    end Is_String;
 
    -------------------

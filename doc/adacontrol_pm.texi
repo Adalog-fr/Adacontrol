@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.6r8
+@settitle AdaControl Programmer Manual V1.7r9
 @c %**end of header
 
 @titlepage
@@ -471,8 +471,6 @@ line, and the corresponding location.
 @example
 -- Semantic rule:
 @b{procedure} Process_Pragma (Pragma_Element : @b{in} Asis.Pragma_Element);
--- Expected Element_Kinds:
---    A_Pragma
 
 -- Textual rule:
 @b{procedure} Process_Line (Line : @b{in} Asis.Program_Text;
@@ -669,20 +667,21 @@ Ex:
 
 @subsection Package statements
 The package body statements part should include a call to
-@code{Framework.Rules_Manager.Register_Semantic} or
-@code{Framework.Rules_Manager.Register_Textual} in order to register
+@code{Framework.Rules_Manager.Register} in order to register
 the rule and its associated @code{Help}, @code{Add_Use},
 @code{Command}, and optionally @code{Prepare} and @code{Finalize},
-procedures.
+procedures. Note that the second parameter of @code{Register} tells
+whether it is a semantic or textual rule.
 
 Ex:
 @example
 @b{begin}
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 @b{end} Rules.Pragmas;
 @end example
 
@@ -721,7 +720,7 @@ generics.
 
 If you want to output the Element_Image of some element, beware that
 it will be preceded by spaces. Do not use
-@code{Ada.Strings.Wide_Fixed.Trim} to get eliminate them, since it
+@code{Ada.Strings.Wide_Fixed.Trim} to eliminate them, since it
 wont remove tab characters. Use @code{Utilities.trim_all}, which will
 do the right thing.
 
@@ -934,16 +933,23 @@ In addition, a small stand-alone utility called @code{ptree} is
 provided. It prints the logical nesting of ASIS elements for a
 unit. The syntax of Ptree is:
 @example
-ptree [-sS] [-p <project_file>] <unit>[:<line>[:<column>]] -- <ASIS_Options>
+ptree [-sS] [-p <project_file>] <unit>[:<span>] -- <ASIS_Options>
+<span> ::=   <line_number> 
+           | [<first_line>]-[<last_line>]
+           | <line_number>:<column_number> 
 @end example
 If the ``-s'' option is given, @code{ptree} processes the
-specification of the unit, otherwise it processes the body. If the -S
-option is given, the span of each element is also printed. The -p
-option and <ASIS_Options> have the same meaning as in AdaControl itself.
+specification of the unit, otherwise it processes the body. If the
+``-S'' option is given, the span of each element is also printed. The
+``-p'' option has the same meaning as in AdaControl itself. ASIS
+options can be passed, like for AdaControl, after a ``-@w{}-'' (but
+-FS is the default).
 
-If a ``:<line>'' or ``:<line>:<column>'' is mentionned behind the unit
-name, only the constructs that cover the indicated position are
-output. This is useful if you are interested in just one particular
+The <unit> is given either as an Ada unit, or as a file name, provided
+the extension is ``.ads'' or ``.adb'' (as in AdaControl). If a span is
+mentionned behind the unit name, only the constructs that cover the
+indicated span are output. The syntax of the span is the same used
+by pfni. This is useful if you are interested in just one particular
 structure in a big unit.
 
 If you come across a situation where you don't understand the logical
@@ -971,13 +977,16 @@ non-regression verification purpose. Don't forget to include examples
 of the tricky cases in the test.
 
 Go to the @code{test} directory. You'll notice that all test programs
-have a name of the form @code{t_name.adb}. The @code{name} is the rule
-name. You'll notice also that some units have a name like
-@code{tfw_name.adb}; these are tests for the framework, you should
-normally ignore them. Name your test file according to this
-convention. It is OK for your test to have child units (whose names
-will be dictated by the Gnat naming convention). If your test requires
-other units, name them like @code{x_name} or
+have a name of the form @code{t_name.adb} (or in some rare cases,
+@code{ts_name.adb}). The @code{name} is the rule name. You'll notice
+also that some units have a name like @code{tfw_name.adb}; these are
+tests for the framework, you should normally ignore them. Name your
+test file according to this convention, normally using @code{t_},
+unless the test requires some weird parameters that prevent it from
+being run normally, in which case it should use @code{ts_} (``s''
+stands for special). It is OK for your test to have child units (whose
+names will be dictated by the Gnat naming convention). If your test
+requires other units, name them like @code{x_name} or
 @code{x_name_complement}. Then, go to the @code{test/conf} directory,
 and put your rule file under the name @code{t_name.aru} (with the same
 @code{name} of course).
@@ -1014,6 +1023,9 @@ test, called @code{tfw_stress}. This test runs all rules against all
 test units. If it fails, the file @code{res/tfw_stress.txt} contains
 the whole listing of the run (with @code{-dv} options), so you'll find
 all the context of the problem.
+
+In case of problems, note that options can be passed to
+@code{test.sh}; check the comments at the top of the file for details.
 
 When everything is OK, all you have to do is send your modifications
 (including the tests) to

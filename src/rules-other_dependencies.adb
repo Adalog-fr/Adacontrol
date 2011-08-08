@@ -34,6 +34,7 @@ with
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities;
 
 -- Adactl
@@ -129,7 +130,7 @@ package body Rules.Other_Dependencies is
 
    procedure Process_With_Clause (Clause : in Asis.Clause) is
       use Asis.Clauses;
-      use Framework.Reports, Utilities;
+      use Framework.Reports, Thick_Queries;
    begin
       if not Rule_Used then
          return;
@@ -144,16 +145,17 @@ package body Rules.Other_Dependencies is
                Report (Rule_Id,
                        Context,
                        Get_Location (Names (N)),
-                       "unit depends on """ & To_Title (Last_Matching_Name (Allowed_Entities)) & '"');
+                       "unit depends on " & Full_Name_Image (Ultimate_Name (Names (N))));
             end if;
          end loop;
       end;
    end Process_With_Clause;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Other_Dependencies;

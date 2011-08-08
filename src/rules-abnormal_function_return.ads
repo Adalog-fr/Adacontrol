@@ -34,10 +34,6 @@ with
 
 package Rules.Abnormal_Function_Return is
 
-   -- This rule can be used to check/search for functions that can
-   -- propagate Program_Error due to not executing a return statement
-   -- Parameters: none
-
    Rule_Id : constant Wide_String := "ABNORMAL_FUNCTION_RETURN";
 
    procedure Process_Function_Body (Function_Body : in Asis.Expression);

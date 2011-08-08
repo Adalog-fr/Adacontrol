@@ -33,15 +33,6 @@ with Asis;
 
 package Rules.Return_Type is
 
-   -- This rule can be used to check/search returned types for functions.
-   -- It allows to check/search functions that return types that can be
-   -- unconstrained, class-wide, protected and tasks.
-   -- It may be used for many programs, especially those needing high
-   -- security constraints such as embedded or real-time systems.
-   --
-   -- Parameters: class, discriminant, index, protected, task
-   --
-
    Rule_Id : constant Wide_String := "RETURN_TYPE";
 
    procedure Process_Instantiation (Decl : in Asis.Declaration);

@@ -1,7 +1,7 @@
 -- Rules in String_Matching_Gnat syntax:
 Too_short : check naming_convention (all, "....");
 Title_Case: check naming_convention (variable, case_sensitive "^[A-Z][a-z0-9]*(_[A-Z0-9][a-z0-9]*)*$");
-Standard  : check naming_convention (all, not integer);
+Standard  : check naming_convention (all, not "integer");
 Types     : check naming_convention (type, "^T_", "_T$");
 Enum_T    : check naming_convention (Enumeration_Type, "_enum$");
 Tasks     : check naming_convention (task_type, "_task$");

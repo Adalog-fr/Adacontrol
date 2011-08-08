@@ -236,12 +236,12 @@ package body Rules.Return_Type is
 
    procedure Process_Function_Declaration (Decl : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Thick_Queries, Utilities;
       Result_Expression : Asis.Expression;
       Result_Type_Declaration : Asis.Declaration;
 
-      procedure Do_Report (Usage_Kind    : in Return_Kind;
-                           Error_Message : in Wide_String) is
+      procedure Do_Report (Usage_Kind : in Return_Kind; Error_Message : in Wide_String) is
+         use Framework.Reports;
       begin
          if Rule_Used (Usage_Kind) then
             if Instantiation_Location /= Null_Location then
@@ -546,12 +546,12 @@ package body Rules.Return_Type is
                         end case;
 
                      when others =>
-                        Failure ("Not a formal type for function result");
+                        Failure ("Not a formal type for function result", Result_Type_Declaration);
                   end case;
                end;
 
             when others =>
-               Failure ("Not a type for function result");
+               Failure ("Not a type for function result", Result_Type_Declaration);
          end case;
       end loop;
 
@@ -559,8 +559,9 @@ package body Rules.Return_Type is
   end Process_Function_Declaration;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Return_Type;

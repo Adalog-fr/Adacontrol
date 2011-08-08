@@ -35,10 +35,10 @@ package Rules.Non_Static is
 
    Rule_Id : constant Wide_String := "NON_STATIC";
 
-
    procedure Process_Constrained_Array_Definition (Elem : Asis.Type_Definition);
-   procedure Process_Index_Constraint             (Elem : Asis.Discrete_Range);
    procedure Process_Discriminant_Constraint      (Elem : Asis.Constraint);
+   procedure Process_Index_Constraint             (Elem : Asis.Discrete_Range);
    procedure Process_Instantiation                (Elem : Asis.Declaration);
+   procedure Process_Object_Declaration           (Decl : Asis.Declaration);
 
 end Rules.Non_Static;

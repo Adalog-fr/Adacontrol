@@ -33,12 +33,6 @@ with Asis;
 
 package Rules.Terminating_Tasks is
 
-   -- This rule can be used to check/search task termination.
-   -- It allows to check/search tasks that are terminating since they
-   -- may result in an unexpected system behavior (f.e., a terminating
-   -- task may result in halting the system)
-   -- Parameter(s): none
-
    Rule_Id : constant Wide_String := "TERMINATING_TASKS";
 
    procedure Process_Task_Body (Body_Decl : in Asis.Declaration);

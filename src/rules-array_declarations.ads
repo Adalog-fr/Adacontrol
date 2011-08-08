@@ -34,7 +34,7 @@ with
 
 package Rules.Array_Declarations is
 
-   Rule_Id : Constant Wide_String := "ARRAY_DECLARATIONS";
+   Rule_Id : constant Wide_String := "ARRAY_DECLARATIONS";
 
    procedure Process_Array_Definition (Definition : Asis.Definition);
    -- Type_Kind (Definition) = A_Constrained_Array_Definition or An_Unconstrained_Array_Definition

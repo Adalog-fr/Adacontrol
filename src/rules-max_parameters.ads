@@ -34,7 +34,7 @@ with
 
 package Rules.Max_Parameters is
 
-   Rule_Id : Constant Wide_String := "MAX_PARAMETERS";
+   Rule_Id : constant Wide_String := "MAX_PARAMETERS";
 
    procedure Process_Declaration (Declaration : Asis.Declaration);
 

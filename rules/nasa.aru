@@ -1,0 +1,42 @@
+-- This rule file corresponds to the NASA document
+-- "Goddard Dynamic Simulator, Ada Coding Standard"
+-- Stephen Leake, 12 October 2006
+-- (http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf)
+
+-- Language
+"2/2": check pragmas (nonstandard);
+"2/4": check characters (control, trailing_space);
+"2/4": check max_line_length (120);
+
+-- File and package naming convention
+"3.2/2": check naming_convention (generic, "^gen_", "^generic_");
+
+-- File layout
+"4/1": check header_comments (model, "nasa.hdr");
+"4/2": check style (multiple_elements, flexible clause);
+
+-- Comments
+-- Trace special comments (error for "fixme", warnings for others)
+"6/7": check special_comments ("fixme:");
+"6/7": search special_comments ("workaround:");
+"6/7": search special_comments ("improveme:");
+
+-- Identifier naming conventions
+"7/1": check naming_convention (all, not "^?$");          -- More than one character...
+"7/1": check naming_convention (root loop_control, ".*"); -- ... except for loops
+"7/2": check style (casing_keyword, lowercase);
+"7/3,4": check naming_convention (all, case_sensitive "[A-Z]+", 
+                                       case_sensitive "^[A-Z][a-z0-9]*(_[A-Z0-9][a-z0-9]*)*$");
+-- Either all capitals or mixed case with underscores
+
+-- Indentation
+"8/4": check style (multiple_elements, statement);
+"8.2.1/1": check declarations (multiple_names);
+"8.2.3": search expressions (and_then, or_else);
+"8.2.4/2": check case_statement (min_others_span, 1);
+
+-- Miscellaneous
+"9/1": check insufficient_parameters (1, standard.boolean);
+"9/2": check style (positional_association, instantiation);
+"9/3": check reduceable_scope (use);
+"9/4": check exception_propagation (task);

@@ -26,20 +26,18 @@ procedure T_statements is
 
    procedure P is
    begin
-      null;             -- Unnecessary_Null
       return;           -- Procedure_Return
    end P;
 
    function F return Integer is
    begin
       if I = 3 then
-         null;          -- Unnecessary_Null
          return 1;      -- OK (first return)
       else
          return 2;      -- Function_Return
       end if;
 
- B1:  declare           -- Block
+ B1:  declare           -- Block, Declare_Block
          function Ff return Integer is
          begin
             if I = 1 then   -- No_Else
@@ -47,12 +45,10 @@ procedure T_statements is
             end if;
          end Ff;
       begin
-         null;          -- Unnecessary_Null
          I := 0;
       end B1;
    exception
       when Constraint_Error =>
-         null;          -- Unnecessary_Null
          return 1;
       when others =>    -- Exception_Others
          if I = 3 then
@@ -111,14 +107,12 @@ B:                      -- Simple_Loop
       T1.E1;
    then abort
       <<Label>> null;   -- Null, Labelled
-      null;             -- Unnecessary_Null
    end select;
 
    case I is
       when 1 =>
          null;          -- Null;
       when others =>    -- Case_Others_Null
-         null;          -- Unnecessary_Null
          null;          -- Null;
    end case;
 
@@ -151,25 +145,10 @@ B:                      -- Simple_Loop
      null;                -- Null
    end if;
 
-   if I = 0 then           -- OK
-      null;                -- Null
-   else
-      null;                -- Null
-   end if;
-
-   if I = 0 then           -- OK
-      null;                -- Null
-   elsif I = 1 then
-     null;                 -- Null
-   else
-      null;                -- Null
-   end if;
-
 B2:begin                   -- Block
       null;                -- Null
    exception
       when others =>       -- Exception_Others_Null
-         null;             -- Unnecessary_Null
          null;             -- Null
    end B2;
 
@@ -182,8 +161,6 @@ B2:begin                   -- Block
    end;
 
    while Bool  loop null; end loop;  -- While_Loop, Null
-   while True  loop null; end loop;  -- While_True, While_Loop, Null
-   while False loop null; end loop;  -- While_Loop, Null
 
    for I in 1..10 loop null; end loop;               -- For_Loop, Untyped_For, Null
    for I in Integer range 1..10 loop null; end loop; -- For_Loop, Null
@@ -257,7 +234,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
    end loop;
 
    for I in Integer range 1 .. 10 loop          -- For_Loop
-      declare                                   -- Block, Unnamed_Block
+      declare                                   -- Block, Unnamed_Block, Declare_Block
          procedure Proc is
          begin
             for J in Integer range 1 .. 10 loop -- For_Loop
@@ -269,7 +246,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
       end;
    end loop;
 
-   declare                                      -- Block, Unnamed_Block
+   declare                                      -- Block, Unnamed_Block, Declare_Block
       task T2 is
          entry E;
       end T2;
@@ -299,12 +276,12 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
 
    LL1:loop                                        -- Simple_Loop
       exit LL1 when True;                          -- Exit
-      declare                                      -- Block, Unnamed_Block
+      declare                                      -- Block, Unnamed_Block, Declare_Block
          procedure Test is
             X : Integer := 0;
          begin
             Outer: loop                            -- simple_loop
-               declare                             -- Block, Unnamed_Block
+               declare                             -- Block, Unnamed_Block, Declare_Block
                   procedure P is
                      task T is
                         entry E;

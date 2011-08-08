@@ -70,20 +70,19 @@ procedure T_Usage is
    end P;
 
    -- Special case for access types
-   -- This check disabled because of ASIS failure
---       generic
---       with package P1 is new Gen (0);
---       with package P2 is new Gen (<>);
---       package Gen_Gen is end Gen_Gen;
+   generic
+      with package P1 is new Gen (0);
+      with package P2 is new Gen (<>);
+   package Gen_Gen is end Gen_Gen;
 
---       package body Gen_Gen is
---       begin
---          P1.Y1 := P2.Y3;
---       end Gen_Gen;
+   package body Gen_Gen is
+   begin
+      P1.Y1 := P2.Y3;
+   end Gen_Gen;
 
---       package Inst_Inst is new Gen_Gen (Inst1, Inst2);
+   package Inst_Inst is new Gen_Gen (Inst1, Inst2);
 
-     use X_Usage;
+   use X_Usage;
 begin
    Ac.V := 0;            -- Read of Ac
 
@@ -138,4 +137,29 @@ begin
    if P3.F then
       null;
    end if;
+
+   -- Pseudo constants
+Pseudo_Const:
+   declare
+      Empty  : String (1 .. 0);
+      S      : String (1 .. 10);
+      I      : Integer range 1 .. 0;
+      I2     : Integer range 1 .. 0;
+      J      : constant Integer := 0;
+      type Tab is array (Positive range <>) of Integer;
+      subtype None is Tab (1 .. 0);
+      type None_Der is new None;
+      Nothing : None_Der;
+      Something : Tab (1..10);
+   begin
+      if S = Empty then
+         null;
+      end if;
+      if I = I then
+         null;
+      end if;
+      if Something = Tab (Nothing) then
+         null;
+      end if;
+   end Pseudo_Const;
 end T_Usage;

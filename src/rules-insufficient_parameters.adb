@@ -36,6 +36,7 @@ with
 -- ASIS
 with
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Elements,
   Asis.Expressions;
 
@@ -153,7 +154,8 @@ package body Rules.Insufficient_Parameters is
    ---------------------
 
    function Is_Insufficient (Expr : Asis.Expression) return Rule_Types_Set is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Thick_Queries, Utilities;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries, Utilities;
       Pref : Asis.Expression;
    begin
       case Expression_Kind (Expr) is
@@ -207,29 +209,30 @@ package body Rules.Insufficient_Parameters is
             if Expression_Kind (Pref) = A_Selected_Component then
                Pref := Selector (Pref);
             end if;
-            if Expression_Kind (Pref) = An_Operator_Symbol then
-               declare
-                  Params : constant Asis.Association_List := Actual_Parameters (Expr);
-               begin
-                  case Operator_Kind (Pref) is
-                     when Not_An_Operator =>
-                        Failure ("not an operator");
-                     when A_Unary_Plus_Operator
-                       | A_Unary_Minus_Operator
-                       | An_Abs_Operator
-                       | A_Not_Operator
-                       =>
-                        -- Unary operators
-                        return Is_Insufficient (Actual_Parameter (Params (1)));
-                     when others =>
-                        -- Binary operators
-                        return Is_Insufficient (Actual_Parameter (Params (1)))
-                           and Is_Insufficient (Actual_Parameter (Params (2)));
-                  end case;
-               end;
-            else
+            if Expression_Kind (Pref) /= An_Operator_Symbol then
                return (others => False);
             end if;
+
+            -- Operators
+            declare
+               Params : constant Asis.Association_List := Actual_Parameters (Expr);
+            begin
+               case Operator_Kind (Pref) is
+                  when Not_An_Operator =>
+                     Failure ("not an operator");
+                  when A_Unary_Plus_Operator
+                     | A_Unary_Minus_Operator
+                     | An_Abs_Operator
+                     | A_Not_Operator
+                       =>
+                     -- Unary operators
+                     return Is_Insufficient (Actual_Parameter (Params (1)));
+                  when others =>
+                     -- Binary operators
+                     return Is_Insufficient (Actual_Parameter (Params (1)))
+                       and Is_Insufficient (Actual_Parameter (Params (2)));
+               end case;
+            end;
 
          when An_And_Then_Short_Circuit
            | An_Or_Else_Short_Circuit
@@ -238,11 +241,24 @@ package body Rules.Insufficient_Parameters is
                and Is_Insufficient (Short_Circuit_Operation_Right_Expression (Expr));
 
          when An_In_Range_Membership_Test
-           | A_Not_In_Range_Membership_Test
-           | An_In_Type_Membership_Test
+            | A_Not_In_Range_Membership_Test
+              =>
+            declare
+               Result : Rule_Types_Set := Is_Insufficient (Membership_Test_Expression (Expr));
+               Constr : Asis.Range_Constraint;
+            begin
+               Constr := Membership_Test_Range (Expr);
+               if Discrete_Range_Kind (Constr) = A_Discrete_Simple_Expression_Range then
+                  Result := Result and Is_Insufficient (Lower_Bound (Constr))
+                                   and Is_Insufficient (Upper_Bound (Constr));
+               end if;
+               return Result;
+            end;
+
+         when An_In_Type_Membership_Test
            | A_Not_In_Type_Membership_Test
-           =>
-            return (others => False); --TBSL
+              =>
+            return Is_Insufficient (Membership_Test_Expression (Expr));
 
          when A_Parenthesized_Expression =>
             return Is_Insufficient (Expression_Parenthesized (Expr));
@@ -281,18 +297,18 @@ package body Rules.Insufficient_Parameters is
          Insufficiencies  : Rule_Types_Set;
       begin
          for I in Parameters'Range loop
-            if Is_Nil (Formal_Parameter (Parameters (I))) then
-               -- Positional notation
-               Insufficiencies := Is_Insufficient (Actual_Parameter (Parameters (I)));
-               for T in Rule_Types loop
-                  if Insufficiencies (T) then
-                     Nb_Insufficients (T) := Nb_Insufficients (T) + 1;
-                  end if;
-               end loop;
-            else
+            if not Is_Nil (Formal_Parameter (Parameters (I))) then
                -- Named notation, no more positional behind
                exit;
             end if;
+
+            -- Positional notation
+            Insufficiencies := Is_Insufficient (Actual_Parameter (Parameters (I)));
+            for T in Rule_Types loop
+               if Insufficiencies (T) then
+                  Nb_Insufficients (T) := Nb_Insufficients (T) + 1;
+               end if;
+            end loop;
          end loop;
 
          if Rule_Used (Check) and then Nb_Insufficients (Check) > Rule_Counts (Check) then
@@ -329,9 +345,10 @@ package body Rules.Insufficient_Parameters is
    end Process_Call;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Insufficient_Parameters;

@@ -171,8 +171,9 @@ package body Rules.Max_Blank_Lines is
   end Process_Line;
 
 begin
-   Framework.Rules_Manager.Register_Textual (Rule_Id,
-                                             Help    => Help'Access,
-                                             Add_Use => Add_Use'Access,
-                                             Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Textual,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Max_Blank_Lines;

@@ -9,13 +9,24 @@ t_style-no_default_in.adb:33:22: Found: No_Default_In: default IN mode used for 
 t_style-no_default_in.adb:37:25: Found: No_Default_In: default IN mode used for parameter specification
 t_style-casing.adb:4:4: Found: Casing: Wrong casing of "Page", should be "PAGE"
 t_style-casing.adb:8:14: Found: Casing: Wrong casing of "i", should be "I"
-t_style-casing.adb:12:34: Found: Casing: Wrong casing of "image", should be "Image"
-t_style-casing.adb:12:41: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:13:4: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:13:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
-t_style-casing.adb:13:16: Found: Casing: Wrong casing of "INt", should be "Int"
-t_style-casing.adb:14:8: Found: Casing: Wrong casing of "Text_Io", should be "Text_IO"
-t_style-casing.adb:14:41: Found: Casing: Wrong casing of "InT", should be "Int"
+t_style-casing.adb:11:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
+t_style-casing.adb:19:34: Found: Casing: Wrong casing of "image", should be "Image"
+t_style-casing.adb:19:41: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:20:4: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:20:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+t_style-casing.adb:20:16: Found: Casing: Wrong casing of "INt", should be "Int"
+t_style-casing.adb:21:8: Found: Casing: Wrong casing of "Text_Io", should be "Text_IO"
+t_style-casing.adb:21:41: Found: Casing: Wrong casing of "InT", should be "Int"
+t_style-casing.adb:27:7: Error: Exposed: character literal 'a' not in allowed construct
+t_style-casing.adb:34:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
+t_style-casing.adb:24:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:25:7: Found: Casing: Wrong casing of "Null", should be "null"
+t_style-casing.adb:26:4: Found: Casing: Wrong casing of "END", should be "end"
+t_style-casing.adb:26:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:28:6: Found: Casing: Wrong casing of "NULL", should be "null"
+t_style-casing.adb:29:4: Found: Casing: Wrong casing of "eND", should be "end"
+t_style-casing.adb:29:8: Found: Casing: Wrong casing of "If", should be "if"
+t_style-casing.adb:32:11: Found: Casing: Wrong casing of "AND", should be "and"
 t_style-positional_association.adb:69:34: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
 t_style-positional_association.adb:69:37: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
 t_style-positional_association.adb:74:33: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
@@ -62,14 +73,20 @@ t_style-exposed_literal.adb:29:9: Error: Exposed: real literal 2.0 not in allowe
 t_style-exposed_literal.adb:32:12: Error: Exposed: string literal "12345" not in allowed construct
 t_style-exposed_literal.adb:33:14: Error: Exposed: string literal "12345" not in allowed construct
 t_style-exposed_literal.adb:34:12: Error: Exposed: character literal 'A' not in allowed construct
-t_style-multiple_elements.adb:4:26: Error: Spans: declaration does not start line
-t_style-multiple_elements.adb:6:12: Error: Spans: declaration does not start line
-t_style-multiple_elements.adb:8:21: Error: Spans: clause does not start line
-t_style-multiple_elements.adb:14:20: Error: Spans: statement does not start line
-t_style-multiple_elements.adb:15:4: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:15:26: Error: Spans: statement does not start line
-t_style-multiple_elements.adb:17:22: Error: Spans: statement does not start line
-t_style-multiple_elements.adb:18:22: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:3:43: Error: Spans: use clause does not start line and does not come after matching with clause
+t_style-multiple_elements.adb:4:18: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:5:23: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:7:69: Error: Spans: use clause does not start line and Ada.Strings.Unbounded is not part of the preceding with clause
+t_style-multiple_elements.adb:7:92: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:8:90: Error: Spans: use clause does not start line and does not come after matching with clause
+t_style-multiple_elements.adb:12:26: Error: Spans: declaration does not start line
+t_style-multiple_elements.adb:14:12: Error: Spans: declaration does not start line
+t_style-multiple_elements.adb:16:21: Error: Spans: clause does not start line
+t_style-multiple_elements.adb:22:20: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:23:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:23:26: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:25:22: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:26:22: Error: Spans: statement does not start line
 t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:37:4: Error: Compound: Statement has less than 4 lines

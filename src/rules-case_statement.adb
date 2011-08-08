@@ -137,7 +137,7 @@ package body Rules.Case_Statement is
 
    procedure Process_Case_Statement (Statement : in Asis.Statement) is
       use Ada.Strings.Wide_Unbounded;
-      use Asis.Declarations, Asis.Elements, Asis.Statements, Framework.Reports;
+      use Asis.Elements, Asis.Statements, Framework.Reports;
 
       Non_Evaluable : exception;
 
@@ -181,6 +181,7 @@ package body Rules.Case_Statement is
       end Count_Non_Others_Choices;
 
       procedure Process_Min_Others_Range is
+         use Asis.Declarations;
          Case_Paths   : constant Path_List := Statement_Paths (Statement);
          Subtype_Span : Biggest_Int;
          Others_Span  : Biggest_Int;
@@ -217,7 +218,7 @@ package body Rules.Case_Statement is
                        Check,
                        Get_Location (Case_Paths (Case_Paths'Last)),
                        "too few values covered by ""others"" in case statement ("
-                       & Biggest_Int'Wide_Image (Others_Span)
+                       & Biggest_Int_Img (Others_Span)
                        & ')');
          elsif Rule_Used (Min_Others_Span)(Search) and then Others_Span < Values (Min_Others_Span, Search) then
                Report (Rule_Id,
@@ -225,7 +226,7 @@ package body Rules.Case_Statement is
                        Search,
                        Get_Location (Case_Paths (Case_Paths'Last)),
                        "too few values covered by ""others"" in case statement ("
-                       & Biggest_Int'Wide_Image (Others_Span)
+                       & Biggest_Int_Img (Others_Span)
                        & ')');
          end if;
 
@@ -259,7 +260,7 @@ package body Rules.Case_Statement is
                     Check,
                     Get_Location (Statement),
                        "too many values for subtype of selector in case statement ("
-                       & Biggest_Int'Wide_Image (Subtype_Span)
+                       & Biggest_Int_Img (Subtype_Span)
                        & ')');
          elsif Rule_Used (Max_Values)(Search) and then Subtype_Span > Values (Max_Values, Search) then
             Report (Rule_Id,
@@ -267,7 +268,7 @@ package body Rules.Case_Statement is
                     Search,
                     Get_Location (Statement),
                        "too many values for subtype of selector in case statement ("
-                       & Biggest_Int'Wide_Image (Subtype_Span)
+                       & Biggest_Int_Img (Subtype_Span)
                        & ')');
          end if;
 
@@ -296,7 +297,7 @@ package body Rules.Case_Statement is
                     Check,
                     Get_Location (Statement),
                        "too few paths in case statement ("
-                       & Biggest_Int'Wide_Image (Nbr_Of_Paths)
+                       & Biggest_Int_Img (Nbr_Of_Paths)
                        & ')');
          elsif Rule_Used (Min_Paths)(Search) and then Nbr_Of_Paths < Values (Min_Paths, Search) then
             Report (Rule_Id,
@@ -304,7 +305,7 @@ package body Rules.Case_Statement is
                     Search,
                     Get_Location (Statement),
                        "too few paths in case statement ("
-                       & Biggest_Int'Wide_Image (Nbr_Of_Paths)
+                       & Biggest_Int_Img (Nbr_Of_Paths)
                        & ')');
          end if;
 
@@ -378,7 +379,7 @@ package body Rules.Case_Statement is
                           Check,
                           Get_Location (Choices (C)),
                           "too many values in choice range ("
-                            & Biggest_Int'Wide_Image (Nb_Val)
+                            & Biggest_Int_Img (Nb_Val)
                             & ')');
                elsif Rule_Used (Max_Range_Span) (Search) and then Nb_Val > Values (Max_Range_Span, Search) then
                   Report (Rule_Id,
@@ -386,7 +387,7 @@ package body Rules.Case_Statement is
                     Search,
                     Get_Location (Choices (C)),
                           "too many values in choice range ("
-                       & Biggest_Int'Wide_Image (Nb_Val)
+                       & Biggest_Int_Img (Nb_Val)
                        & ')');
                end if;
 
@@ -405,8 +406,9 @@ package body Rules.Case_Statement is
    end Process_Path;
 
 begin
-   Rules_Manager.Register_Semantic (Rule_Id,
-                                    Help    => Help'Access,
-                                    Add_Use => Add_Use'Access,
-                                    Command => Command'Access);
+   Rules_Manager.Register (Rule_Id,
+                           Rules_Manager.Semantic,
+                           Help_CB    => Help'Access,
+                           Add_Use_CB => Add_Use'Access,
+                           Command_CB => Command'Access);
 end Rules.Case_Statement;

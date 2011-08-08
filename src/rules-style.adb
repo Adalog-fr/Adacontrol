@@ -36,6 +36,7 @@ with
 
 -- ASIS
 with
+  Asis.Clauses,
   Asis.Elements,
   Asis.Declarations,
   Asis.Definitions,
@@ -46,7 +47,6 @@ with
 -- Adalog
 with
   A4G_Bugs,
-  Framework,
   String_Matching,
   Thick_Queries,
   Utilities;
@@ -56,19 +56,15 @@ with
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports,
-  Framework.Scope_Manager;
+  Framework.Scope_Manager,
+  Rules.Style.Keyword;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Style is
 
    use Framework, Utilities;
 
-   -- Subrules for the rule
-   -- "casing" subrules must stay together
-   type Style_Names is (St_Casing_Attribute,   St_Casing_Identifier,      St_Casing_Pragma,
-                        St_Compound_Statement, St_Default_In,             St_Exposed_Literal,
-                        St_Multiple_Elements,  St_Negative_Condition,     St_No_Closing_Name,
-                        St_Numeric_Literal,    St_Positional_Association, St_Renamed_Entity);
+   -- See declaration of Style_Names in the private part of the specification
    subtype Casing_Styles is Style_Names range St_Casing_Attribute .. St_Casing_Pragma;
    type Usage_Flags is array (Style_Names) of Boolean;
 
@@ -78,7 +74,7 @@ package body Rules.Style is
    -- Parameters for the casing subrule
    --
 
-   type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
+   -- See declaration of Casing_Names in the private part of the specification
    package Casing_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Casing_Names,
                                                                            Prefix => "Ca_" );
    Casing_Policy : array (Casing_Styles) of Casing_Names;
@@ -148,7 +144,7 @@ package body Rules.Style is
    type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement);
    package Multiple_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Multiple_Names,
                                                                              Prefix => "Mu_" );
-
+   Flexible_Clause : Boolean;
    --
    -- Parameters for the no_closing_name subrule
    --
@@ -207,16 +203,16 @@ package body Rules.Style is
       User_Message ("Rule: " & Rule_Id);
       Style_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
 
-      User_Message ("For casing:");
+      User_Message ("For casing_*:");
       Casing_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2):",
                                            Footer => "(default = Original)");
 
       User_Message ("For exposed_literal:");
       Literal_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2):");
-      User_Message ("   Parameter (3..): <value> | <place>");
+      User_Message ("   Parameter (3..): <value> | <place> (optional)");
 
       User_Message ("For multiple_elements:");
-      Multiple_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2..):",
+      Multiple_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2..): [flexible]",
                                                    Footer => "(default = all)");
 
       User_Message ("For no_closing_name:");
@@ -250,6 +246,7 @@ package body Rules.Style is
       Lit_Kind : Literal_Names;
       Places   : Place_Set := (others => False);
       P        : Place_Names;
+      Flexible : Boolean;
    begin
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => False);
@@ -335,7 +332,15 @@ package body Rules.Style is
             when St_Multiple_Elements =>
                if Parameter_Exists then
                   while Parameter_Exists loop
+                     Flexible := Get_Modifier ("FLEXIBLE");
                      Multiple := Get_Flag_Parameter (Allow_Any => False);
+
+                     if Multiple = Mu_Clause then
+                        Flexible_Clause := Flexible;
+                     elsif Flexible then
+                        Parameter_Error (Rule_Id, """flexible"" allowed only for ""clause""");
+                     end if;
+
                      Associate (Contexts,
                                 Value (Image (St_Multiple_Elements) & Image (Multiple)),
                                 Basic.New_Context (Rule_Type, Label));
@@ -435,6 +440,10 @@ package body Rules.Style is
          Associate (Contexts, Value (Image (St_Casing_Attribute)), Basic.New_Context (Rule_Type, Label));
          Casing_Policy (St_Casing_Attribute) := Ca_Titlecase;
 
+         -- Casing_Keyword
+         Associate (Contexts, Value (Image (St_Casing_Keyword)), Basic.New_Context (Rule_Type, Label));
+         Casing_Policy (St_Casing_Attribute) := Ca_Lowercase;
+
          -- Casing_Identifier
          Associate (Contexts, Value (Image (St_Casing_Identifier)), Basic.New_Context (Rule_Type, Label));
          Casing_Policy (St_Casing_Identifier) := Ca_Original;
@@ -513,6 +522,7 @@ package body Rules.Style is
             Integer_Count    := 0;
             String_Count     := 0;
             Permitted_Places := (others => (others => False));
+            Flexible_Clause  := False;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);
@@ -520,6 +530,29 @@ package body Rules.Style is
             Rule_Used := Save_Used;
       end case;
    end Command;
+
+   -------------
+   -- Prepare --
+   -------------
+
+   procedure Prepare is
+      -- Make defaults for unspecified Check/Search/Count for style No_Closing_Name
+      use Style_Flag_Utilities;
+   begin
+      if Rule_Used (St_Renamed_Entity) then
+         Renamed_Entities.Activate;
+      end if;
+
+      if Rule_Used (St_No_Closing_Name) then
+         for R in Rule_Types loop
+            if Corresponding_Context (St_No_Closing_Name, Rule_Types'Wide_Image (R)) = No_Matching_Context then
+               Associate (Contexts,
+                          Value (Image (St_No_Closing_Name) & Rule_Types'Wide_Image (R)),
+                          Closing_Name_Context'(Basic.New_Context (R, "") with Asis.ASIS_Integer'Last));
+            end if;
+         end loop;
+      end if;
+   end Prepare;
 
    -----------------
    -- Is_Same_Def --
@@ -531,24 +564,15 @@ package body Rules.Style is
       return Is_Equal (L.Renamed_Def, R.Renamed_Def);
    end Is_Same_Def;
 
-   -------------
-   -- Prepare --
-   -------------
+   ---------------------------
+   -- Corresponding_Context --
+   ---------------------------
 
-   procedure Prepare is
-      -- Make defaults for unspecified Check/Search/Count for style No_Closing_Name
+   function Corresponding_Context (Subrule : Style_Names; Complement : Wide_String := "") return Root_Context'Class is
       use Style_Flag_Utilities;
    begin
-      for R in Rule_Types loop
-         if Association (Contexts, Value (Image (St_No_Closing_Name) & Rule_Types'Wide_Image (R)))
-           = No_Matching_Context
-         then
-               Associate (Contexts,
-                          Value (Image (St_No_Closing_Name) & Rule_Types'Wide_Image (R)),
-                          Closing_Name_Context'(Basic.New_Context (R, "") with Asis.ASIS_Integer'Last));
-         end if;
-      end loop;
-   end Prepare;
+      return Framework.Association (Contexts, Value (Image (Subrule) & Complement));
+   end Corresponding_Context;
 
    ------------------
    -- Check_Casing --
@@ -561,7 +585,7 @@ package body Rules.Style is
       -- Element is the identifier for St_Casing_Identifier and St_Casing_Attribute
       -- and the pragma for St_Casing_Pragma
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Style_Flag_Utilities;
+      use Framework.Reports;
 
       Reference_Name : Wide_String (Source_Name'Range);
       -- Note that the source name and the refence name always have the same length!
@@ -590,18 +614,12 @@ package body Rules.Style is
                Def_Name := Defining_Selector (Def_Name);
             end if;
 
-            if Defining_Name_Kind (Def_Name) = A_Defining_Operator_Symbol then
-               -- This should follow the rules for keywords (not checked currently),
-               -- not the original
-               return;
-            end if;
-
             Reference_Name := Defining_Name_Image (Def_Name);
       end case;
 
       if Source_Name /= Reference_Name then
          Report (Rule_Id,
-                 Framework.Association (Contexts, Value (Image (Casing))),
+                 Corresponding_Context (Casing),
                  Get_Location (Element),
                  "Wrong casing of """ & Source_Name & """, should be """ & Reference_Name & '"');
       end if;
@@ -616,40 +634,36 @@ package body Rules.Style is
 
    procedure Process_Construct (Construct : in Asis.Declaration) is
       use Asis.Declarations, Asis.Text;
-      use Framework.Reports, Style_Flag_Utilities;
+      use Framework.Reports;
       Length : Line_Number;
    begin
-      Rules_Manager.Enter (Rule_Id);
       if not Rule_Used (St_No_Closing_Name) then
          return ;
       end if;
+      Rules_Manager.Enter (Rule_Id);
 
       if not Is_Name_Repeated (Construct) then
          Length := Last_Line_Number (Construct) - First_Line_Number (Construct) + 1;
-         if Length > Closing_Name_Context (Association (Contexts,
-                                                        Value (Image (St_No_Closing_Name)
-                                                               & Rule_Types'Wide_Image (Check)))).Length
+         if Length > Closing_Name_Context (Corresponding_Context (St_No_Closing_Name,
+                                                                  Rule_Types'Wide_Image (Check))).Length
          then
             Report (Rule_Id,
-                    Association (Contexts, Value (Image (St_No_Closing_Name) & Rule_Types'Wide_Image (Check))),
+                    Corresponding_Context (St_No_Closing_Name, Rule_Types'Wide_Image (Check)),
                     Get_Location (Construct),
                     "name not repeated at the end");
-         elsif Length > Closing_Name_Context (Association (Contexts,
-                                                           Value (Image (St_No_Closing_Name)
-                                                                  & Rule_Types'Wide_Image (Search)))).Length
+         elsif Length > Closing_Name_Context (Corresponding_Context (St_No_Closing_Name,
+                                                                     Rule_Types'Wide_Image (Search))).Length
          then
             Report (Rule_Id,
-                    Association (Contexts, Value (Image (St_No_Closing_Name)
-                                                  & Rule_Types'Wide_Image (Search))),
+                    Corresponding_Context (St_No_Closing_Name, Rule_Types'Wide_Image (Search)),
                     Get_Location (Construct),
                     "name not repeated at the end");
          end if;
-         if Length > Closing_Name_Context (Association (Contexts,
-                                                        Value (Image (St_No_Closing_Name)
-                                                               & Rule_Types'Wide_Image (Count)))).Length
+         if Length > Closing_Name_Context (Corresponding_Context (St_No_Closing_Name,
+                                                                  Rule_Types'Wide_Image (Count))).Length
          then
             Report (Rule_Id,
-                    Association (Contexts, Value (Image (St_No_Closing_Name) & Rule_Types'Wide_Image (Count))),
+                    Corresponding_Context (St_No_Closing_Name, Rule_Types'Wide_Image (Count)),
                     Get_Location (Construct),
                     "name not repeated at the end");
          end if;
@@ -662,10 +676,10 @@ package body Rules.Style is
    ------------------------
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Framework.Reports, Style_Flag_Utilities;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
 
     procedure Check_Renamed is
-         use Framework.Scope_Manager;
+         use Framework.Scope_Manager, Framework.Reports;
 
          Def : constant Asis.Definition := Corresponding_Name_Definition (Identifier);
          Ren : Renaming_Data;
@@ -682,22 +696,37 @@ package body Rules.Style is
 
          Ren := Renamed_Entities.Current_Data;
          Report (Rule_Id,
-                 Framework.Association (Contexts, Value (Image (St_Renamed_Entity))),
+                 Corresponding_Context (St_Renamed_Entity),
                  Get_Location (Identifier),
                  Defining_Name_Image (Def) & " has been renamed at " & Image (Ren.Ren_Location));
       end Check_Renamed;
 
    begin  -- Process_Identifier
-      if not (Rule_Used (St_Casing_Identifier) or Rule_Used (St_Renamed_Entity)) then
+      -- Beware that if Identifier is A_Defining_Operator_Symbol or An_Operator_Symbol, we must
+      -- apply the rule for keywords, not identifiers
+      if not (Rule_Used (St_Casing_Identifier)
+              or Rule_Used (St_Renamed_Entity)
+              or Rule_Used (St_Casing_Keyword))
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Rule_Used (St_Casing_Identifier) then
-         if Element_Kind (Identifier) = A_Defining_Name then
+      if Element_Kind (Identifier) = A_Defining_Name then
+         if Rule_Used (St_Casing_Identifier) and then Defining_Name_Kind (Identifier) = A_Defining_Identifier then
             Check_Casing (Defining_Name_Image (Identifier), St_Casing_Identifier, Identifier);
-         else
+         elsif Rule_Used (St_Casing_Keyword) and then Defining_Name_Kind (Identifier) = A_Defining_Operator_Symbol then
+            Check_Casing (Defining_Name_Image (Identifier), St_Casing_Keyword, Identifier);
+         end if;
+      else
+         if Rule_Used (St_Casing_Identifier) and then Expression_Kind (Identifier) = An_Identifier then
             Check_Casing (Name_Image (Identifier), St_Casing_Identifier, Identifier);
+         elsif Rule_Used (St_Casing_Keyword) and then Expression_Kind (Identifier) = An_Operator_Symbol then
+            -- This is an operator, must be the prefix of a function call
+            -- If it uses infix notation, don't handle it because it will be found by the texual rule for keywords
+            if Is_Prefix_Call (Enclosing_Element (Identifier)) then
+               Check_Casing (Name_Image (Identifier), St_Casing_Keyword, Identifier);
+            end if;
          end if;
       end if;
 
@@ -714,20 +743,17 @@ package body Rules.Style is
 
    procedure Process_Association (Association : in Asis.Association) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Expressions, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Style_Flag_Utilities;
 
       procedure Check_Association (Na                  : Association_Names;
                                    Is_Positional       : Boolean;
                                    Associations_Length : Positive)
       is
-         use Named_Parameter_Flag_Utilities;
+         use Named_Parameter_Flag_Utilities, Framework.Reports;
       begin
          if Association_Used (Na) and then Is_Positional then
             declare
                Ctx : constant Association_Context
-                 := Association_Context (Framework.Association
-                                         (Contexts,
-                                          Value (Image (St_Positional_Association) & Image (Na))));
+                 := Association_Context (Corresponding_Context (St_Positional_Association, Image (Na)));
             begin
                if Associations_Length > Ctx.Allowed_Number then
                   Report (Rule_Id,
@@ -803,7 +829,7 @@ package body Rules.Style is
 
    procedure Process_Compound_Statement (Statement : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements, Asis.Text;
-      use Framework.Reports, Style_Flag_Utilities;
+      use Framework.Reports;
       Elem_Span : Span;
       Kind      : Asis.Statement_Kinds;
    begin
@@ -822,7 +848,7 @@ package body Rules.Style is
       Elem_Span := Element_Span (Statement);
       if Elem_Span.Last_Line - Elem_Span.First_Line + 1 < Min_Stat_Length (Kind) then
          Report (Rule_Id,
-                 Framework.Association (Contexts, Value (Image (St_Compound_Statement))),
+                 Corresponding_Context (St_Compound_Statement),
                  Get_Location (Statement),
                  "Statement has less than" & Line_Number'Wide_Image (Min_Stat_Length (Kind)) & " lines");
       end if;
@@ -841,12 +867,12 @@ package body Rules.Style is
       use Asis, Asis.Declarations, Asis.Elements;
 
       procedure Check (Formals : Asis.Element_List; Message : Wide_String) is
-         use Framework.Reports, Style_Flag_Utilities;
+         use Framework.Reports;
       begin
          for I in Formals'Range loop
             if Mode_Kind (Formals (I)) = A_Default_In_Mode then
                Report (Rule_Id,
-                       Framework.Association (Contexts, Value (Image (St_Default_In))),
+                       Corresponding_Context (St_Default_In),
                        Get_Location(Formals (I)),
                        "default IN mode used for " & Message);
             end if;
@@ -895,7 +921,7 @@ package body Rules.Style is
 
    procedure Process_If_Statement (Statement   : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Style_Flag_Utilities;
+      use Framework.Reports;
    begin
       if not Rule_Used (St_Negative_Condition) then
          return;
@@ -922,7 +948,7 @@ package body Rules.Style is
                   end if;
                   if To_Upper (Name_Image (Func)) = """NOT""" then
                      Report (Rule_Id,
-                             Framework.Association (Contexts, Value (Image (St_Negative_Condition))),
+                             Corresponding_Context (St_Negative_Condition),
                              Get_Location(Expr),
                              "Negative condition in ""if"" statement could be made positive");
                   end if;
@@ -1013,7 +1039,7 @@ package body Rules.Style is
 
 
       procedure Process_Number_Separator is
-         use Framework.Reports, Style_Flag_Utilities;
+         use Framework.Reports;
 
          Name          : constant Wide_String := Value_Image (Expression);
 
@@ -1042,8 +1068,8 @@ package body Rules.Style is
             The_Base          : constant Wide_String        := Utilities.Choose (Condition  => The_Base_Part = "",
                                                                                  When_True  => "10",
                                                                                  When_False => The_Base_Part);
-            Context           : constant Root_Context'Class :=
-                                  Association (Contexts, Value (Image (St_Numeric_Literal) & " " & The_Base));
+            Context           : constant Root_Context'Class := Corresponding_Context (St_Numeric_Literal,
+                                                                                      " " & The_Base);
 
             Block_Size        : Positive;
          begin
@@ -1074,11 +1100,13 @@ package body Rules.Style is
       end Process_Number_Separator;
 
       procedure Process_Exposed_Literal is
-         use Ada.Strings, Ada.Strings.Wide_Fixed, Framework.Reports, Literal_Flag_Utilities, Style_Flag_Utilities;
+         use Framework.Reports, Literal_Flag_Utilities;
          use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
 
          function Normalize (S : Wide_String) return Wide_String is
             -- Get rid of initial spaces and surrounding quotes, change double double-quotes to single ones
+            use Ada.Strings.Wide_Fixed;
+
             Result      : Wide_String (S'Range);
             Inx_Out     : Natural := S'First-1;
             Ignore_Next : Boolean := False;
@@ -1165,12 +1193,11 @@ package body Rules.Style is
                   end loop;
 
                   Report (Rule_Id,
-                    Framework.Association (Contexts,
-                      Value (Image (St_Exposed_Literal) & Image (Lit_Integer))),
-                    Get_Location(Expression),
-                    "integer literal "
-                    & Trim_All (Element_Image (Expression))
-                    & " not in allowed construct");
+                          Corresponding_Context (St_Exposed_Literal, Image (Lit_Integer)),
+                          Get_Location (Expression),
+                          "integer literal "
+                          & Trim_All (Element_Image (Expression))
+                          & " not in allowed construct");
                end;
 
             when A_Real_Literal =>
@@ -1193,12 +1220,11 @@ package body Rules.Style is
                   -- After running in the permitted values, nothing found
                   -- Put a report
                   Report (Rule_Id,
-                    Framework.Association (Contexts,
-                      Value (Image (St_Exposed_Literal) & Image (Lit_Real))),
-                    Get_Location(Expression),
-                    "real literal "
-                    & Trim_All (Element_Image (Expression))
-                    & " not in allowed construct");
+                          Corresponding_Context (St_Exposed_Literal, Image (Lit_Real)),
+                          Get_Location (Expression),
+                          "real literal "
+                          & Trim_All (Element_Image (Expression))
+                          & " not in allowed construct");
                end;
 
             when A_Character_Literal =>
@@ -1208,12 +1234,11 @@ package body Rules.Style is
                end if;
 
                Report (Rule_Id,
-                 Framework.Association (Contexts,
-                   Value (Image (St_Exposed_Literal) & Image (Lit_Character))),
-                 Get_Location(Expression),
-                 "character literal "
-                 & Trim_All (Element_Image (Expression))
-                 & " not in allowed construct");
+                       Corresponding_Context (St_Exposed_Literal, Image (Lit_Character)),
+                       Get_Location (Expression),
+                       "character literal "
+                       & Trim_All (Element_Image (Expression))
+                       & " not in allowed construct");
 
             when A_String_Literal =>
                if Permitted_Places (Lit_String) (Place) then
@@ -1234,12 +1259,11 @@ package body Rules.Style is
                   end loop;
 
                   Report (Rule_Id,
-                    Framework.Association (Contexts,
-                      Value (Image (St_Exposed_Literal) & Image (Lit_String))),
-                    Get_Location(Expression),
-                    "string literal "
-                    & Trim_All (Element_Image (Expression))
-                    & " not in allowed construct");
+                          Corresponding_Context (St_Exposed_Literal, Image (Lit_String)),
+                          Get_Location (Expression),
+                          "string literal "
+                          & Trim_All (Element_Image (Expression))
+                          & " not in allowed construct");
                end;
 
             when others =>
@@ -1316,16 +1340,8 @@ package body Rules.Style is
             end if;
 
             -- Here we have a good one
-            case Declaration_Kind (Ren) is
-               when An_Object_Renaming_Declaration
-                  | An_Exception_Renaming_Declaration
-                    =>
-                  Renamed_Entities.Push ((Get_Location (Ren), Def));
-               when A_Package_Renaming_Declaration .. A_Generic_Function_Declaration =>
-                  Renamed_Entities.Push_Enclosing ((Get_Location (Ren), Def));
-               when others =>
-                  Failure ("not a renaming declaration");
-            end case;
+            Renamed_Entities.Push ((Get_Location (Ren), Def));
+
          when An_Attribute_Reference =>
             Uncheckable (Rule_Id, False_Negative, Get_Location (Target), "renaming of attribute");
          when others =>
@@ -1339,10 +1355,84 @@ package body Rules.Style is
 
    procedure Process_Element (Element : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Text;
-      use Framework.Reports, Thick_Queries;
-      use Style_Flag_Utilities, Multiple_Flag_Utilities;
+      use Framework.Reports, Framework.Scope_Manager, Thick_Queries;
+      use Multiple_Flag_Utilities;
+
+      procedure Check_Special_Use_Clause (Use_Clause : Asis.Clause) is
+         -- Special processing for use clauses in context clauses.
+         -- Accept it if the preceding clause is a with clause,
+         -- and every name in this use clause is also given in the with clause
+         use Asis.Clauses, Asis.Expressions;
+
+         All_Clauses : constant Context_Clause_List
+           := Context_Clause_Elements (Compilation_Unit => Enclosing_Compilation_Unit (Use_Clause),
+                                       Include_Pragmas  => True) ;
+         -- We include pragmas to prevent allowing a pragma between with and use
+         Clause_Pos : List_Index;
+      begin
+         -- Find where we are, to get the preceding clause
+         for I in All_Clauses'Range loop
+            if Is_Equal (Use_Clause, All_Clauses (I)) then
+               Clause_Pos := I;
+               exit;
+            end if;
+         end loop;
+         -- Clause_Pos cannot be All_Clauses'First, since a use clause cannot appear first.
+
+         -- Is previous clause a with clause?
+         if Clause_Kind (All_Clauses (Clause_Pos - 1)) /= A_With_Clause then
+            Report (Rule_Id,
+                    Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
+                    Get_Location (Use_Clause),
+                    "use clause does not start line and does not come after matching with clause");
+            return;
+         end if;
+
+         declare
+            Use_Names  : constant Asis.Name_List := Clause_Names (Use_Clause);
+            With_Names : constant Asis.Name_List := Clause_Names (All_Clauses (Clause_Pos - 1));
+            Use_Def    : Asis.Defining_Name;
+            With_Def   : Asis.Defining_Name;
+            Found      : Boolean;
+         begin
+            -- Check that all Use_Names are part of With_Names
+            -- This is a horrible N**2 algorithm, but since it can reasonably be expected
+            -- that in most cases N=1 ...
+            for U in Use_Names'Range loop
+               if Expression_Kind (Use_Names (U)) = A_Selected_Component then
+                  Use_Def := Corresponding_Name_Definition (Selector (Use_Names (U)));
+               else
+                  Use_Def := Corresponding_Name_Definition (Use_Names (U));
+               end if;
+
+               Found := False;
+               for W in With_Names'Range loop
+                  if Expression_Kind (With_Names (W)) = A_Selected_Component then
+                     With_Def := Corresponding_Name_Definition (Selector (With_Names (W)));
+                  else
+                     With_Def := Corresponding_Name_Definition (With_Names (W));
+                  end if;
+
+                  if Is_Equal (Use_Def, With_Def) then
+                     Found := True;
+                     exit;
+                  end if;
+               end loop;
+
+               if not Found then
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
+                          Get_Location (Use_Names (U)),
+                          "use clause does not start line and "
+                          & Extended_Name_Image (Use_Names (U))
+                          & " is not part of the preceding with clause");
+               end if;
+            end loop;
+         end;
+      end Check_Special_Use_Clause;
+
       Loc : Location;
-   begin
+   begin -- Process_Element
       if not Rule_Used (St_Multiple_Elements) then
          return;
       end if;
@@ -1372,10 +1462,17 @@ package body Rules.Style is
                      Failure (Rule_Id & ": Not_An_Element");
 
                   when A_Clause =>
-                     Report (Rule_Id,
-                             Framework.Association (Contexts, Value (Image (St_Multiple_Elements) & Image (Mu_Clause))),
-                             Loc,
-                             "clause does not start line");
+                     if Flexible_Clause
+                       and then Clause_Kind (Element) = A_Use_Package_Clause
+                       and then In_Context_Clauses
+                     then
+                        Check_Special_Use_Clause (Element);
+                     else
+                        Report (Rule_Id,
+                                Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
+                                Loc,
+                                "clause does not start line");
+                     end if;
 
                   when A_Declaration =>
                      case Declaration_Kind (Element) is
@@ -1393,16 +1490,14 @@ package body Rules.Style is
                         when others =>
                            Report
                              (Rule_Id,
-                              Framework.Association (Contexts,
-                                                     Value (Image (St_Multiple_Elements) & Image (Mu_Declaration))),
+                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration)),
                               Loc,
                               "declaration does not start line");
                      end case;
 
                   when A_Statement =>
                      Report (Rule_Id,
-                       Framework.Association (Contexts,
-                                              Value (Image (St_Multiple_Elements) & Image (Mu_Statement))),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement)),
                              Loc,
                              "statement does not start line");
 
@@ -1447,10 +1542,25 @@ package body Rules.Style is
       Check_Casing (Pragma_Name_Image (Pr), St_Casing_Pragma, Pr);
    end Process_Pragma;
 
+   ------------------
+   -- Process_Line --
+   ------------------
+
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
+   begin
+      if not Rule_Used (St_Casing_Keyword) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Rules.Style.Keyword.Process_Line (Line, Loc, Casing_Policy (St_Casing_Keyword));
+   end Process_Line;
+
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic_Textual,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Style;

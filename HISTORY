@@ -1,4 +1,162 @@
 ============
+== V1.7r9 ==
+============
+
+General
+-------
+Bug fix: missing proper bodies not reported by uncheckable.
+
+New example rules file: reserved_2005.aru
+
+Added support for AdaGide
+
+Framework
+---------
+String parameters now handled as a kind of parameter type, improved 
+Matching_Context for operators
+  => Default_Parameter (and others) now handle correctly operators
+
+Missing units are no more reported unless the -v option is given; use
+the rule "check uncheckable (missing_unit)" to make sure that there are
+no missing unit.
+
+Issue a header line when the output file is created with format CSV[X].
+Added new output format "None".
+
+GPS
+---
+Counts now appear under the "Counts summary" category in the locations window
+Bug fixes: 
+   AdaControl executed twice with "project" menu
+   Do not process files that are not "ada"
+Added contextual menu to call pfni on the current entity
+Added parameters to auto-save files before running AdaControl
+Added icon to run AdaControl interactively on current file
+Preference to choose which units the buttons operate on
+
+PFNI
+----
+Adjusted the result of profiles to match the syntax used in AdaControl.
+Added possibility to specify a unit as a file name.
+Added range of lines in unit specification
+Added -q option
+Made -FS the default ASIS option
+
+PTREE
+-----
+Added possibility to specify a unit as a file name.
+Added range of lines in unit specification
+Made -FS the default ASIS option
+
+New rules:
+----------
+duplicate_initialization_calls
+max_size
+multiple_assignments
+no_operator_usage
+not_selected_name
+simplifiable_statements
+units
+
+Changes to existing rules
+-------------------------
+control_characters:
+   renamed to characters (control). 
+   Added parameters trailing_space, not_iso_6464, wide.
+
+declarations
+   changed parameters: 
+      nested_XXX to XXX
+   added parameters: 
+      function, procedure, abstract_function, abstract_procedure, null_procedure,
+      abstract_type, uninitialized_variable, character_literal, variant_part, variable,
+      non_identical_operator_renaming, predefined_operator
+   added location modifier
+   removed limitation that the same keyword could not be used with different rule types
+
+default_parameter
+   now handles default formal subprograms in generic instantiations
+   can be applied to a parameter of a generic subprogram (checks all instantiations)
+
+expressions
+   added parameters:
+      inconsistent_attribute_dimension, array_aggregate, complex_parameter, 
+      mixed_operators, record_aggregate, unqualified_aggregate
+
+global_references
+   recognize properly uncheckable cases
+   added keywords function, procedure
+
+if_for_case
+   changed into a subrule of simplifiable_statement
+
+insufficient_parameters
+   processes membership test like other forms of expressions
+
+instantiations
+   does not print a count of messages any more
+   added location modifier
+   added = to detect double instantiations
+
+local_hiding
+   now works also with definitions of operators
+   added parameters: strict (as before), overloading, both
+
+local_instantiation:
+   removed (now covered by declarations and instantiations)
+
+no_safe_initialization
+   renamed to improper_initialization
+   added parameter initialized_variable and modifiers access/limited
+   detection of use-before-assignment
+
+non_static
+   added parameters variable_initialization, constant_initialization
+
+parameter_aliasing
+   added modifier "with_in"
+
+potentially_blocking_operations
+   recognize properly uncheckable cases
+
+reduceable_scope
+   fixed false positives in some special cases
+   now works also with definitions of operators
+   added parameter to select what is controlled
+   added support for use clauses
+
+representation_clauses
+   added parameter: fractional_size, incomplete_record, non_contiguous_record
+
+simplifiable_expressions
+   added parameter: conversion
+
+statements
+   added parameter: declare_block
+   moved parameters unnecessary_null and while_true to simplifiable_statements
+
+style
+   added casing_keyword
+   added "flexible" to multiple_elements (clause)
+
+uncheckable
+   false positive messages are not printed if the corresponding rule 
+   is not triggered.
+
+unnecessary_use_clause
+  tells cases where a use clause is given for a package which is always used 
+    with qualified names, or only for operators.
+  added parameters to select the kind of use which is reported
+
+usage
+   do not analyze instantiations of predefined or inhibited-all units
+   diagnose uncheckable cases
+   special processing for pseudo-constants
+
+use_clauses
+   added global/local (optional) parameter
+
+============
 == V1.6r8 ==
 ============
 

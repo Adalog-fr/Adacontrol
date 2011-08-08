@@ -100,6 +100,7 @@ package body Adactl_Options is
       User_Message ("   -h        prints this help message");
       User_Message ("   -h rule   prints rule help");
       User_Message ("   -h all    prints all rules help");
+      User_Message ("   -h list   prints all rules names");
       User_Message ("   -I        interactive mode");
       User_Message ("   -D        generate dependencies");
       User_Message ("   -C        check rules syntax only");
@@ -115,8 +116,8 @@ package body Adactl_Options is
       User_Message ("   -p file   specify an emacs ada-mode project file (.adp)");
       User_Message ("   -r        recursive");
       User_Message ("   -s        process specifications only");
-      User_Message ("   -S        statistics level (0 .."
-                      & Integer'Wide_Image (Stats_Levels'Pos (Stats_Levels'Last))
+      User_Message ("   -S        statistics level (0 .. "
+                      & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ')');
       User_Message ("   -t file   specify a trace file");
       User_Message ("   -u        treat all parameters as Ada units");
@@ -184,7 +185,7 @@ package body Adactl_Options is
          Append (Unit_List, "+" & Unit (Unit'First .. Point_Pos - 1));
       end Add_Parents;
    begin
-      if S(S'First) = '@' then
+      if S (S'First) = '@' then
          Body_Found := True;
          Append (Unit_List, S);
          return;
@@ -278,7 +279,7 @@ package body Adactl_Options is
                                & Integer'Image (Stats_Levels'Pos (Stats_Levels'Last)));
             end if;
             Options_Commands := Options_Commands
-              & "set statistics" & Integer'Wide_Image (Temp_Value) & ';';
+              & "set statistics " & Integer_Img (Temp_Value) & ';';
          end;
       end if;
 

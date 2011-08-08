@@ -1,3 +1,5 @@
-t_use_clauses.adb:4:4: Found: USE_CLAUSES: use clause for "Ada.Strings"
-t_use_clauses.adb:5:4: Found: USE_CLAUSES: use clause for "Ada.Strings"
-t_use_clauses.adb:5:4: Error: USE_CLAUSES: use clause for "System"
+t_use_clauses.adb:2:1: Found: use global: use clause for "Ada.Strings"
+t_use_clauses.adb:2:1: Error: USE_CLAUSES: use clause for "System"
+t_use_clauses.adb:5:4: Found: use local: use clause for "Ada.Strings"
+t_use_clauses.adb:6:4: Found: use local: use clause for "Ada.Strings"
+t_use_clauses.adb:6:4: Error: USE_CLAUSES: use clause for "System"

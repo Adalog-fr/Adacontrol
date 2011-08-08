@@ -1,0 +1,21 @@
+Tool definitions V1.00A00
+Toolname=AdaControl
+Programname=adactl
+Parameters=<fullpath> -F GNAT_SHORT -vw -f verif.aru -- <comp-opt>
+Tooltype=EXECUTABLE
+Toolinvocation=INVOKE_MANUALLY
+Toolname=AdaControl recursive
+Programname=adactl
+Parameters=<fullpath> -r -F GNAT_SHORT -vw -f verif.aru -- <comp-opt>
+Tooltype=EXECUTABLE
+Toolinvocation=INVOKE_MANUALLY
+Toolname=AdaControl interactive
+Programname=adactl
+Parameters=<fullpath> -F GNAT_SHORT -vw -l "<input=Enter command>" -- <comp-opt>
+Tooltype=EXECUTABLE
+Toolinvocation=INVOKE_MANUALLY
+Toolname=AdaControl: delete .adt
+Programname=del *.adt
+Parameters=
+Tooltype=INTERNALCOMMAND
+Toolinvocation=INVOKE_MANUALLY

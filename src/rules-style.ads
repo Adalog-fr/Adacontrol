@@ -33,6 +33,9 @@
 with
   Asis;
 
+-- Adactl
+with
+  Framework;
 package Rules.Style is
 
    Rule_Id : constant Wide_String := "STYLE";
@@ -50,5 +53,22 @@ package Rules.Style is
    procedure Process_Renaming           (Ren         : in Asis.Declaration);
    -- Process_Renaming is plugged as Post_Procedure, since the occurrence of an identifier
    -- is still allowed within the renaming itself.
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+
+private
+   -- These declarations here to be visible from child
+
+   -- Subrules for the rule
+   -- "casing" subrules must stay together
+   type Style_Names is (St_Casing_Attribute,   St_Casing_Identifier,  St_Casing_Keyword,
+                        St_Casing_Pragma,      St_Compound_Statement, St_Default_In,
+                        St_Exposed_Literal,    St_Multiple_Elements,  St_Negative_Condition,
+                        St_No_Closing_Name,    St_Numeric_Literal,    St_Positional_Association,
+                        St_Renamed_Entity);
+
+   type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
+
+   function Corresponding_Context (Subrule : Style_Names; Complement : Wide_String := "")
+                                   return Framework.Root_Context'Class;
 
 end Rules.Style;

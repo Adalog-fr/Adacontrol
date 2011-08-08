@@ -70,8 +70,14 @@ package Framework.Language is
                                    Max : Integer := Integer'Last)
                                    return Integer;
    function Get_Float_Parameter   return Float;
+   function Get_Name_Parameter    return Wide_String;
+   -- Returns either a single identifier or an attribute (possibly complex, i.e. 'Base'First)
+   -- A string is considered as an operator's name, and returned with its quotes
+   -- In any case, returned name is in upper case
    function Get_String_Parameter  return Wide_String;
-   function Get_Entity_Parameter  return Entity_Specification;
+   -- The parameter must be a quoted string. The delimiter quotes are not returned, and any
+   -- enclosed doubled quotes are reduced to a single one.
+   function Get_Entity_Parameter (Allow_Extended : Boolean := False) return Entity_Specification;
    function Get_File_Parameter    return Wide_String;
    -- If the parameter is not an absolute file name, it is made relative to the
    -- directory of the rules file, or to the current directory if there is none
@@ -92,7 +98,7 @@ package Framework.Language is
    --  This allows having modifiers or flags that are the same as Ada keywords
    --
    -- WARNING !!
-   -- If you instantiate ones of these packages immediately inside a library package,
+   -- If you instantiate one of these packages immediately inside a library package,
    -- you must put a "pragma Elaborate (Framework.Language);", or circularity
    -- will result.
 
@@ -100,8 +106,12 @@ package Framework.Language is
       type Modifiers is (<>);
       Prefix : in Wide_String := "";
    package Modifier_Utilities is
-      function Get_Modifier (Default : in Modifiers := Modifiers'First) return Modifiers;
+      function Get_Modifier (Required : Boolean) return Modifiers;
+      -- If not Required and no modifier given, returns Modifiers'First
       function Image (Item : Modifiers) return Wide_String;
+      procedure Help_On_Modifiers (Header      : Wide_String := "";
+                                   Footer      : Wide_String := "";
+                                   Extra_Value : Wide_String := "");
 
       type Unconstrained_Modifier_Set is array (Modifiers range <>) of Boolean;
       subtype Modifier_Set is Unconstrained_Modifier_Set (Modifiers);
@@ -145,7 +155,7 @@ package Framework.Language is
    --   we use "access" rather than "*" for access parameters
 
 
-   ---------------------------------------------------------------
+   ------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --

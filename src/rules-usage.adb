@@ -35,6 +35,7 @@ with
 
 -- Asis
 with
+  Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
@@ -63,7 +64,7 @@ package body Rules.Usage is
    -- Algorithm:
    --
    -- For each identifier or defining name encountered, we keep in the Usage table how
-   -- it has been used (if declared in a package spec).
+   -- it has been used.
    -- For generics, we keep the same information also in Cumulated_Usage.
    -- For the usage of objects declared in instances, the actual usage is the union of
    -- both tables.
@@ -102,7 +103,6 @@ package body Rules.Usage is
    subtype Extended_Entity_Kind is Entity_Kind range Entity_Kind'Succ (K_All) .. Entity_Kind'Last;
 
    package Entity_Flags_Utilities is new Framework.Language.Flag_Utilities (User_Entity_Kind, Prefix => "K_");
-   use Entity_Flags_Utilities;
 
    type Usage_Value is array (Usage_Kind) of Boolean;
    type Usage_Record is
@@ -112,11 +112,8 @@ package body Rules.Usage is
          Usage       : Usage_Value;
       end record;
 
-   package Usage_Map is new Binary_Map (Unbounded_Wide_String,
-                                        Usage_Record,
-                                        Ada.Strings.Wide_Unbounded."<",
-                                        Ada.Strings.Wide_Unbounded.">");
-   Usage           : Usage_Map.Map;
+   package Usage_Map is new Binary_Map (Unbounded_Wide_String, Usage_Record);
+   Own_Usage       : Usage_Map.Map;
    Cumulated_Usage : Usage_Map.Map; -- For Objects declared in generics
 
    -- Rule Applicability
@@ -154,7 +151,7 @@ package body Rules.Usage is
       User_Message ("  or        : task              {, [not] from_spec | called | aborted}");
       User_Message ("  or        : protected         {, [not] from_spec | called}");
       User_Message ("  or        : all               [, [not] from_spec]");
-      User_Message ("Control usage of entities declared in package specifications");
+      User_Message ("Control usage of various entities");
       User_Message ("(possibly restricted to those that match the specified properties)");
    end Help;
 
@@ -163,7 +160,7 @@ package body Rules.Usage is
    -------------
 
    procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Framework.Language;
+      use Framework.Language, Entity_Flags_Utilities;
 
       type General_Condition is (None, Found, Not_Found, Both);
       subtype Condition is General_Condition range Found .. Not_Found;
@@ -219,8 +216,7 @@ package body Rules.Usage is
       while Parameter_Exists loop
          Has_Not := Get_Modifier ("NOT");
          declare
-            use Utilities;
-            To_Compare : constant Wide_String := To_Upper (Get_String_Parameter);
+            To_Compare : constant Wide_String := Get_Name_Parameter;
          begin
             if To_Compare = "FROM_SPEC" then
                Usage_Param := K_From_Spec;
@@ -338,7 +334,8 @@ package body Rules.Usage is
                                       (others => (Used_Types => (others => False),
                                                   Labels     => (others => Null_Unbounded_Wide_String))
                                    )))));
-            Clear (Usage);
+            Clear (Own_Usage);
+            Clear (Cumulated_Usage);
             All_From_Spec := True;
          when Suspend =>
             Save_Used := Rule_Used;
@@ -347,51 +344,6 @@ package body Rules.Usage is
             Rule_Used := Save_Used;
       end case;
    end Command;
-
-   ------------
-   -- Update --
-   ------------
-
-   procedure Update (Element : Asis.Element; Entity : True_Entity_Kind; Value : Usage_Value) is
-      -- Precondition:
-      -- Element is a Defining_Name of the Ultimate_Name of an identifier
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Usage_Map, Thick_Queries;
-
-      Unbounded_Key : Unbounded_Wide_String;
-      Entry_Value   : Usage_Record;
-      Default_Decl  : Asis.Defining_Name;
-   begin
-      if Element_Kind (Element) = A_Defining_Name then
-         Default_Decl := Element;
-      else
-         Default_Decl := Corresponding_Name_Definition (Element);
-      end if;
-
-      Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image (Default_Decl));
-      Entry_Value   := Fetch (From          => Usage,
-                              Key           => Unbounded_Key,
-                              Default_Value => (Declaration => Default_Decl,
-                                                Entity      => Entity,
-                                                Usage       => (others => False)));
-      Entry_Value.Usage := Entry_Value.Usage or Value;
-      Add (To => Usage, Key => Unbounded_Key, Value => Entry_Value);
-
-      -- For Objects that are part of an instance, accumulate usage
-      -- for the corresponding generic element
-      if Is_Part_Of_Instance (Default_Decl) then
-         Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image
-                                                    (Corresponding_Generic_Element (Default_Decl)));
-         Entry_Value   := Fetch (From          => Cumulated_Usage,
-                                 Key           => Unbounded_Key,
-                                 Default_Value => (Declaration => Default_Decl,
-                                                   Entity      => Entity,
-                                                   Usage       => (others => False)));
-         Entry_Value.Usage := Entry_Value.Usage or Value;
-         Add (To => Cumulated_Usage, Key => Unbounded_Key, Value => Entry_Value);
-      end if;
-   end Update;
-
 
    --------------------------
    -- Is_From_Package_Spec --
@@ -415,6 +367,51 @@ package body Rules.Usage is
    end Is_From_Package_Spec;
 
 
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update (Element : Asis.Element; Entity : True_Entity_Kind; Value : Usage_Value) is
+      -- Precondition:
+      -- Element is a Defining_Name, or the Ultimate_Name of an identifier
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Usage_Map, Thick_Queries;
+
+      Unbounded_Key : Unbounded_Wide_String;
+      Entry_Value   : Usage_Record;
+      Default_Decl  : Asis.Defining_Name;
+   begin
+      if Element_Kind (Element) = A_Defining_Name then
+         Default_Decl := Element;
+      else
+         Default_Decl := Corresponding_Name_Definition (Element);
+      end if;
+
+      Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image (Default_Decl));
+      Entry_Value   := Fetch (From          => Own_Usage,
+                              Key           => Unbounded_Key,
+                              Default_Value => (Declaration => Default_Decl,
+                                                Entity      => Entity,
+                                                Usage       => (others => False)));
+      Entry_Value.Usage := Entry_Value.Usage or Value;
+      Add (To => Own_Usage, Key => Unbounded_Key, Value => Entry_Value);
+
+      -- For Objects that are part of a package specification of an instance, accumulate usage
+      -- from the outside for the corresponding generic element
+      if Is_Part_Of_Instance (Default_Decl) and then Is_From_Package_Spec (Default_Decl) then
+         Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image
+                                                    (Corresponding_Generic_Element (Default_Decl)));
+         Entry_Value   := Fetch (From          => Cumulated_Usage,
+                                 Key           => Unbounded_Key,
+                                 Default_Value => (Declaration => Default_Decl,
+                                                   Entity      => Entity,
+                                                   Usage       => (others => False)));
+         Entry_Value.Usage := Entry_Value.Usage or Value;
+         Add (To => Cumulated_Usage, Key => Unbounded_Key, Value => Entry_Value);
+      end if;
+   end Update;
+
+
    ----------------------
    -- Declaration_Form --
    ----------------------
@@ -435,26 +432,26 @@ package body Rules.Usage is
       case Declaration_Kind (Element) is
          when A_Variable_Declaration =>
             Temp := Object_Declaration_View (Element);
-            if Definition_Kind (Temp) = A_Subtype_Indication then
-               Temp := Subtype_Simple_Name (Temp);
+            if Definition_Kind (Temp) /= A_Subtype_Indication then
+               -- Must be A_Type_Definition -> A_Constrained_Array_Definition
+               return K_Variable;
+            end if;
 
-               if Expression_Kind (Temp) = An_Attribute_Reference then
-                  -- Type is T'Base or T'Class => not a task or protected type
-                  return K_Variable;
+            Temp := Subtype_Simple_Name (Temp);
+            if Expression_Kind (Temp) = An_Attribute_Reference then
+               -- Type is T'Base or T'Class => not a task or protected type
+               return K_Variable;
 
-               elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
-                                               A_Task_Type_Declaration)
-               then
-                  return K_Task;
+            elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
+                                            A_Task_Type_Declaration)
+            then
+               return K_Task;
 
-               elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
-                                               A_Protected_Type_Declaration)
-               then
-                  return K_Protected;
+            elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
+                                            A_Protected_Type_Declaration)
+            then
+               return K_Protected;
 
-               else
-                  return K_Variable;
-               end if;
             else
                return K_Variable;
             end if;
@@ -474,7 +471,7 @@ package body Rules.Usage is
          when A_Single_Protected_Declaration =>
             return K_Protected;
 
-        when others =>
+         when others =>
             return K_Other;
       end case;
    end Declaration_Form;
@@ -484,9 +481,11 @@ package body Rules.Usage is
    --------------
 
    procedure Finalize is
-      use Asis.Elements, Usage_Map, Reports;
+      use Usage_Map;
+
       procedure Report_One (Key : Unbounded_Wide_String; Value : in out Usage_Record) is
-         use Asis.Declarations, Thick_Queries;
+         use Asis.Declarations, Asis.Elements;
+         use Reports, Thick_Queries;
 
          type Origin_Kind is (Normal, From_Instance, From_Generic);
 
@@ -516,7 +515,7 @@ package body Rules.Usage is
             Elem_Loc := Get_Location (Ultimate_Enclosing_Instantiation (Value.Declaration));
 
             -- Add usages from the generic itself
-            True_Usage := Value.Usage or Fetch (From => Usage,
+            True_Usage := Value.Usage or Fetch (From => Own_Usage,
                                                 Key  => To_Unbounded_Wide_String (Full_Name_Image
                                                                                   (Corresponding_Generic_Element
                                                                                    (Value.Declaration))),
@@ -577,27 +576,43 @@ package body Rules.Usage is
                end if;
 
             when K_Variable =>
-               Append (Message, ", variable");
-               Usage_Message (True_Usage (K_Initialized), "initialized");
-               Usage_Message (True_Usage (K_Written), "written");
-               Usage_Message (True_Usage (K_Read), "read");
+               declare
+                  Pseudo_Const : Boolean;
+                  Lengths      : constant Extended_Biggest_Natural_List
+                    := Discrete_Constraining_Lengths (Value.Declaration);
+               begin
+                  Pseudo_Const := False;
+                  for I in Lengths'Range loop
+                     if Lengths (I) = 0 then
+                        Pseudo_Const := True;
+                        exit;
+                     end if;
+                  end loop;
+                  Append (Message, ", variable");
+                  if not Pseudo_Const then
+                     Usage_Message (True_Usage (K_Initialized), "initialized");
+                     Usage_Message (True_Usage (K_Written), "written");
+                  end if;
+                  Usage_Message (True_Usage (K_Read), "read");
 
-               if not True_Usage (K_Read)
-                 and not True_Usage (K_Written)
-                 and Origin /= From_Instance
-               then
-                  Append (Message," (can be removed)");
-               elsif True_Usage (K_Read)
-                 and not (True_Usage (K_Initialized) or True_Usage (K_Written))
-               then
-                  Append (Message," (never given a value)");
-               elsif not True_Usage (K_Written)
-                 and True_Usage (K_Initialized)
-                 and Origin /= From_Instance
-               then
-                  Append (Message," (can be declared constant)");
-               end if;
-
+                  if not True_Usage (K_Read)
+                    and not True_Usage (K_Written)
+                    and Origin /= From_Instance
+                  then
+                     Append (Message, " (can be removed)");
+                  elsif Pseudo_Const then
+                     Append (Message, " (pseudo constant)");
+                  elsif True_Usage (K_Read)
+                    and not (True_Usage (K_Initialized) or True_Usage (K_Written))
+                  then
+                     Append (Message, " (never given a value)");
+                  elsif not True_Usage (K_Written)
+                    and True_Usage (K_Initialized)
+                    and Origin /= From_Instance
+                  then
+                     Append (Message, " (can be declared constant)");
+                  end if;
+               end;
             when K_Exception =>
                Append (Message, ", exception");
                Usage_Message (True_Usage (K_Raised), "raised");
@@ -673,7 +688,7 @@ package body Rules.Usage is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Report_All (Usage);
+      Report_All (Own_Usage);
    end Finalize;
 
    --------------------------------
@@ -681,9 +696,31 @@ package body Rules.Usage is
    --------------------------------
 
    procedure Process_Entity_Declaration (Element : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Thick_Queries, Utilities;
-   begin
+
+      function Is_Array_Initialized (Def : Asis.Definition) return Boolean is
+         -- Check if the components of the (formal) array of Def are automatically initialized
+         -- Currently: only access types recognized as initialized
+         use Asis.Definitions;
+         Current_Definition : Asis.Definition := Def;
+      begin
+         loop
+            Current_Definition := Type_Declaration_View (Corresponding_Name_Declaration
+                                                         (Subtype_Simple_Name
+                                                          (Component_Subtype_Indication
+                                                           (Array_Component_Definition
+                                                            (Current_Definition)))));
+            exit when Type_Kind (Current_Definition)
+                      not in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition
+              and then Formal_Type_Kind (Current_Definition)
+                      not in A_Formal_Unconstrained_Array_Definition .. A_Formal_Constrained_Array_Definition;
+         end loop;
+         return Type_Kind (Current_Definition) = An_Access_Type_Definition
+                or else Formal_Type_Kind (Current_Definition) = A_Formal_Access_Type_Definition;
+      end Is_Array_Initialized;
+
+   begin   -- Process_Entity_Declaration
       if not Rule_Used then
          return;
       end if;
@@ -736,26 +773,27 @@ package body Rules.Usage is
                            when An_Unconstrained_Array_Definition
                              | A_Constrained_Array_Definition
                              =>
-                              -- So are arrays of accesses (to any depth)
-                              loop
-                                 Root_Definition := Type_Declaration_View (Corresponding_Name_Declaration
-                                                                             (Subtype_Simple_Name
-                                                                                (Component_Subtype_Indication
-                                                                                   (Array_Component_Definition
-                                                                                      (Root_Definition)))));
-                                 exit when Type_Kind (Root_Definition)
-                                   not in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition;
-                              end loop;
-                              Is_Initialized := Type_Kind (Root_Definition) = An_Access_Type_Definition;
+                              Is_Initialized := Is_Array_Initialized (Root_Definition);
                            when Not_A_Type_Definition =>
                               Failure ("Wrong definition", Root_Definition);
+                           when others =>
+                              Is_Initialized := False;
+                        end case;
+                     when A_Formal_Type_Definition =>
+                        case Formal_Type_Kind (Root_Definition) is
+                           when A_Formal_Access_Type_Definition =>
+                              -- Access types are always initialized
+                              Is_Initialized := True;
+                           when A_Formal_Unconstrained_Array_Definition
+                              | A_Formal_Constrained_Array_Definition
+                                =>
+                              Is_Initialized := Is_Array_Initialized (Root_Definition);
                            when others =>
                               Is_Initialized := False;
                         end case;
                      when A_Private_Type_Definition
                        | A_Tagged_Private_Type_Definition
                        | A_Private_Extension_Definition
-                       | A_Formal_Type_Definition
                        | A_Task_Definition
                        | A_Protected_Definition
                        =>
@@ -845,6 +883,28 @@ package body Rules.Usage is
 
       Good_Name : Asis.Expression;
       Item      : Asis.Element;
+
+      procedure Check_Access is
+         -- Checks if Name is the prefix of 'Access, 'Unchecked_Access or 'Address
+         -- Calls Uncheckable if it is
+         Enclosing : Asis.Element := Enclosing_Element (Name);
+      begin
+         while Expression_Kind (Enclosing) = A_Selected_Component loop
+            Enclosing := Enclosing_Element (Enclosing);
+         end loop;
+
+         if Expression_Kind (Enclosing) = An_Attribute_Reference then
+            case A4G_Bugs.Attribute_Kind (Enclosing) is
+               when An_Access_Attribute
+                  | An_Unchecked_Access_Attribute
+                  | An_Address_Attribute
+                    =>
+                  Uncheckable (Rule_Id, False_Negative, Get_Location (Name), "possible access through alias");
+               when others =>
+                  null;
+            end case;
+         end if;
+      end Check_Access;
    begin
       if not Rule_Used then
          return;
@@ -863,9 +923,8 @@ package body Rules.Usage is
                  and then Mode_Kind (Enclosing_Element (Formal_Name (Item))) = An_In_Out_Mode
                then
                   return;
-               else
-                  exit;
                end if;
+               exit;
             when others =>
                exit;
          end case;
@@ -879,7 +938,7 @@ package body Rules.Usage is
             -- formal "in" parameter. However, if this parameter corresponds to a variable,
             -- it has already been marked as read at the level of the instantiation.
             -- Therefore, we can catch and ignore this case.
-            A4G_Bugs.Trace_Bug ("Rules.Usage.Process_Identifier");
+            A4G_Bugs.Trace_Bug ("Rules.Usage.Process_Identifier: ASIS_Failed");
             return;
       end;
 
@@ -891,7 +950,7 @@ package body Rules.Usage is
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Ultimate_Enclosing_Instantiation (Name)),
-                         "Name """ & Name_Image(Name) & """is dynamic renaming");
+                         "Name """ & Name_Image (Name) & """ is dynamic renaming");
          else
             Uncheckable (Rule_Id,
                          False_Negative,
@@ -900,7 +959,7 @@ package body Rules.Usage is
          end if;
          return;
       elsif Expression_Kind (Good_Name) = An_Attribute_Reference then
-         -- Renaming of an attribute: certainly not defined in a package
+         -- Renaming of an attribute: not something we check
          return;
       end if;
 
@@ -908,7 +967,7 @@ package body Rules.Usage is
          when K_Variable =>
             case Expression_Usage_Kind (Name) is
                when Untouched =>
-                  null;
+                  Check_Access;
                when Read =>
                   Update (Good_Name, K_Variable, Value => (K_Read => True, others => False));
                when Write =>
@@ -918,9 +977,14 @@ package body Rules.Usage is
             end case;
 
          when K_Constant =>
-            if Expression_Usage_Kind (Name) /= Untouched then
-               Update (Good_Name, K_Constant, Value => (K_Read => True, others => False));
-            end if;
+            case Expression_Usage_Kind (Name) is
+               when Untouched =>
+                  Check_Access;
+               when Read =>
+                  Update (Good_Name, K_Constant, Value => (K_Read => True, others => False));
+               when Write | Read_Write =>
+                  Failure ("Usage: write of constant");
+            end case;
 
          when K_Exception =>
             declare
@@ -1022,75 +1086,67 @@ package body Rules.Usage is
    end Process_Identifier;
 
 
-   -----------------------------------
-   -- Process_Package_Instantiation --
-   -----------------------------------
+   ---------------------------
+   -- Process_Instantiation --
+   ---------------------------
 
-   procedure Process_Package_Instantiation (Instantiation : Asis.Declaration) is
-      use Asis, Asis.Elements, Asis.Iterator, Asis.Declarations;
+   procedure Process_Instantiation (Instantiation : Asis.Declaration) is
+      use Asis, Asis.Compilation_Units, Asis.Elements, Asis.Expressions, Asis.Declarations;
 
       The_Info    : Null_State;
       The_Control : Traverse_Control := Continue;
 
-      -- Process Object declarations from the instantiated package specification
-      procedure Pre_Procedure_Decl (Element : in     Asis.Element;
-                                    Control : in out Asis.Traverse_Control;
-                                    State   : in out Null_State);
-      -- Process identifiers from the instantiated package (specification and body)
-      procedure Pre_Procedure_Ident (Element : in     Asis.Element;
-                                     Control : in out Asis.Traverse_Control;
-                                     State   : in out Null_State);
+      procedure Pre_Procedure (Element : in     Asis.Element;
+                               Control : in out Asis.Traverse_Control;
+                               State   : in out Null_State);
 
-      procedure Traverse_Decl is new Asis.Iterator.Traverse_Element
-        (Null_State, Pre_Procedure_Decl, Null_State_Procedure);
-      procedure Traverse_Ident is new Asis.Iterator.Traverse_Element
-        (Null_State, Pre_Procedure_Ident, Null_State_Procedure);
+      procedure Traverse is new Asis.Iterator.Traverse_Element
+        (Null_State, Pre_Procedure, Null_State_Procedure);
 
-      procedure Pre_Procedure_Decl (Element : in     Asis.Element;
-                                    Control : in out Asis.Traverse_Control;
-                                    State   : in out Null_State)
+      procedure Pre_Procedure (Element : in     Asis.Element;
+                               Control : in out Asis.Traverse_Control;
+                               State   : in out Null_State)
       is
-         pragma Unreferenced (Control, State);
-      begin
-         case Declaration_Kind (Element) is
-            when A_Variable_Declaration
-              | A_Constant_Declaration
-              | A_Deferred_Constant_Declaration
-              | A_Number_Declaration
-              =>
-               -- Do not consider pseudo declarations of constants or variables that
-               -- correspond, in the expanded template, to the formals of the generic.
-               if Declaration_Kind (Enclosing_Element
-                                    (Corresponding_Generic_Element
-                                     (Names (Element)(1))))
-                 /= A_Formal_Object_Declaration
-               then
-                  Process_Entity_Declaration (Element);
-               end if;
-            when others =>
-               null;
-         end case;
-      end Pre_Procedure_Decl;
-
-      procedure Pre_Procedure_Ident (Element : in     Asis.Element;
-                                     Control : in out Asis.Traverse_Control;
-                                     State   : in out Null_State)
-      is
-         use Asis.Expressions;
       begin
          case Element_Kind (Element) is
             when An_Expression =>
                case Expression_Kind (Element) is
                   when An_Identifier
-                    | An_Operator_Symbol
-                    | An_Enumeration_Literal
-                    =>
+                     | An_Operator_Symbol
+                     | An_Enumeration_Literal
+                       =>
                      Process_Identifier (Element);
 
                   when An_Attribute_Reference =>
                      -- Don't traverse the selector, therefore we traverse manually the prefix
-                     Traverse_Ident (Prefix (Element), Control, State);
+                     Traverse (Prefix (Element), Control, State);
                      Control := Abandon_Children;
+                  when others =>
+                     null;
+               end case;
+
+            when A_Declaration =>
+               case Declaration_Kind (Element) is
+                  when A_Variable_Declaration
+                     | A_Constant_Declaration
+                     | A_Deferred_Constant_Declaration
+                     | A_Number_Declaration
+                       =>
+                     -- Do not consider pseudo declarations of constants or variables that
+                     -- correspond, in the expanded template, to the formals of the generic.
+                     if Declaration_Kind (Enclosing_Element
+                       (Corresponding_Generic_Element
+                          (Names (Element) (1))))
+                       = A_Formal_Object_Declaration
+                     then
+                        Control := Abandon_Children;
+                     else
+                        Process_Entity_Declaration (Element);
+                     end if;
+                  when A_Single_Task_Declaration
+                     | A_Single_Protected_Declaration
+                       =>
+                     Process_Entity_Declaration (Element);
                   when others =>
                      null;
                end case;
@@ -1102,31 +1158,45 @@ package body Rules.Usage is
             when others =>
                null;
          end case;
-      end Pre_Procedure_Ident;
+      end Pre_Procedure;
 
+      Generic_Name : Asis.Expression;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      -- Do not check instantiations from the standard library or banned units
+      Generic_Name := Generic_Unit_Name (Instantiation);
+      if Expression_Kind (Generic_Name) = A_Selected_Component then
+         Generic_Name := Selector (Generic_Name);
+      end if;
+      if Unit_Origin (Enclosing_Compilation_Unit
+                      (Corresponding_Name_Declaration
+                       (Generic_Name))) /=  An_Application_Unit
+         or Is_Banned (Generic_Name, For_Rule => Rule_Id)
+      then
+         return;
+      end if;
+
       declare
          Instantiated_Spec : constant Asis.Declaration := Corresponding_Declaration (Instantiation);
          Instantiated_Body : constant Asis.Declaration := Corresponding_Body        (Instantiation);
       begin
-         Traverse_Decl  (Instantiated_Spec, The_Control, The_Info);
-         Traverse_Ident (Instantiated_Spec, The_Control, The_Info);
+         Traverse (Instantiated_Spec, The_Control, The_Info);
 
          if not Is_Nil (Instantiated_Body) then
-            Traverse_Ident (Instantiated_Body, The_Control, The_Info);
+            Traverse (Instantiated_Body, The_Control, The_Info);
          end if;
       end;
-   end Process_Package_Instantiation;
+   end Process_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help     => Help'Access,
-                                              Add_Use  => Add_Use'Access,
-                                              Command  => Command'Access,
-                                              Finalize => Finalize'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB     => Help'Access,
+                                     Add_Use_CB  => Add_Use'Access,
+                                     Command_CB  => Command'Access,
+                                     Finalize_CB => Finalize'Access);
 end Rules.Usage;

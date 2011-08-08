@@ -1,14 +1,39 @@
-t_representation_clauses.adb:5:4: Error: size: use of representation clause for 'SIZE
-t_representation_clauses.adb:8:4: Error: address: use of representation clause for 'ADDRESS
-t_representation_clauses.adb:9:4: Error: address: use of Ada 83 address clause
-t_representation_clauses.adb:12:4: Found: enumeration: use of enumeration representation clause
-t_representation_clauses.adb:13:4: Error: alignment: use of representation clause for 'ALIGNMENT
-t_representation_clauses.adb:20:4: Found: record: use of record representation clause
-t_representation_clauses.adb:20:4: Error: alignment: use of Ada 83 alignment clause
-t_representation_clauses.adb:32:4: Error: streams: use of representation clause for 'INPUT
-t_representation_clauses.adb:33:4: Error: streams: use of representation clause for 'OUTPUT
-t_representation_clauses.adb:34:4: Error: streams: use of representation clause for 'CLASS'READ
-t_representation_clauses.adb:35:4: Error: streams: use of representation clause for 'CLASS'WRITE
+t_representation_clauses.adb:6:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses.adb:9:4: Error: address: use of representation clause for 'ADDRESS
+t_representation_clauses.adb:10:4: Error: address: use of Ada 83 address clause
+t_representation_clauses.adb:13:4: Found: enumeration: use of enumeration representation clause
+t_representation_clauses.adb:14:4: Error: alignment: use of representation clause for 'ALIGNMENT
+t_representation_clauses.adb:21:4: Found: record: use of record representation clause
+t_representation_clauses.adb:21:4: Error: alignment: use of Ada 83 alignment clause
+t_representation_clauses.adb:33:4: Error: streams: use of representation clause for 'INPUT
+t_representation_clauses.adb:34:4: Error: streams: use of representation clause for 'OUTPUT
+t_representation_clauses.adb:35:4: Error: streams: use of representation clause for 'CLASS'READ
+t_representation_clauses.adb:36:4: Error: streams: use of representation clause for 'CLASS'WRITE
+t_representation_clauses-fractional_size.adb:8:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-fractional_size.adb:9:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-fractional_size.adb:9:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-fractional_size.adb:10:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-fractional_size.adb:11:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-fractional_size.adb:11:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-fractional_size.adb:16:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-fractional_size.adb:17:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-non_contiguous_record.adb:11:4: Found: record: use of record representation clause
+t_representation_clauses-non_contiguous_record.adb:13:10: Error: non_contig: gap at 0 range 0..7
+t_representation_clauses-non_contiguous_record.adb:14:10: Error: non_contig: gap before component, at 5 range 0..7
+t_representation_clauses-non_contiguous_record.adb:15:10: Error: non_contig: gap before component, at 9 range 0..8
+t_representation_clauses-non_contiguous_record.adb:15:10: Error: non_contig: gap at end of record, at 11 range 1..1
+t_representation_clauses-non_contiguous_record.adb:17:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-non_contiguous_record.adb:17:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-non_contiguous_record.adb:25:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses-non_contiguous_record.adb:28:4: Found: record: use of record representation clause
+t_representation_clauses-non_contiguous_record.adb:32:10: Error: non_contig: gap at 0 range 0..7
+t_representation_clauses-non_contiguous_record.adb:31:10: Error: non_contig: gap before component, at 5 range 0..7
+t_representation_clauses-non_contiguous_record.adb:30:10: Error: non_contig: gap before component, at 9 range 0..8
+t_representation_clauses-non_contiguous_record.adb:30:10: Error: non_contig: gap at end of record, at 11 range 1..7
+t_representation_clauses-incomplete_record.adb:14:4: Found: record: use of record representation clause
+t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for D at t_representation_clauses-incomplete_record.adb:3:13
+t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for I2 at t_representation_clauses-incomplete_record.adb:6:10
+t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for I4 at t_representation_clauses-incomplete_record.adb:11:16
 
 Counts summary:
-Total: 11
+Total: 36

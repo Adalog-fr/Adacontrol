@@ -1,0 +1,34 @@
+t_improper_initialization.adb:30:32: Error: Parameters: out parameter "IP" not safely initialized
+t_improper_initialization.adb:36:10: Found: Variables: variable "TV" not safely initialized
+t_improper_initialization.adb:61:17: Found: Variables: use of uninitialized variable: IV8
+t_improper_initialization.adb:62:17: Found: Variables: use of uninitialized variable: IV9
+t_improper_initialization.adb:50:36: Error: Parameters: out parameter "IP" not safely initialized
+t_improper_initialization.adb:54:10: Error: Bad_Init: variable "IV5" unnecessarily initialized in declaration
+t_improper_initialization.adb:57:10: Found: Variables: variable "IV8" used before initialisation
+t_improper_initialization.adb:57:15: Found: Variables: variable "IV9" used before initialisation
+t_improper_initialization.adb:74:38: Error: Parameters: out parameter "BP" not safely initialized before line 94
+t_improper_initialization.adb:81:10: Error: Bad_Init: variable "CV2" unnecessarily initialized in declaration
+t_improper_initialization.adb:73:38: Error: Parameters: out parameter "IP1" not safely initialized before line 94
+t_improper_initialization.adb:73:43: Error: Parameters: out parameter "IP2" not safely initialized before line 94
+t_improper_initialization.adb:115:15: Found: Variables: use of uninitialized variable: B
+t_improper_initialization.adb:113:10: Found: Variables: variable "B" used before initialisation
+t_improper_initialization.adb:111:10: Found: Variables: variable "IV1" not safely initialized before line 116
+t_improper_initialization.adb:112:10: Found: Variables: variable "IV2" not safely initialized before line 116
+t_improper_initialization.adb:112:15: Found: Variables: variable "IV3" not safely initialized before line 116
+t_improper_initialization.adb:117:20: Error: Parameters: use of uninitialized out parameter: IP
+t_improper_initialization.adb:116:26: Error: Parameters: out parameter "IP" used before initialisation
+t_improper_initialization.adb:132:26: Error: Parameters: out parameter "IP" not safely initialized
+t_improper_initialization.adb:136:26: Error: Parameters: out parameter "IP" not safely initialized
+t_improper_initialization.adb:168:27: Error: Parameters: out parameter "BP" not safely initialized
+t_improper_initialization.adb:178:13: Found: Variables: variable "IV" not safely initialized
+t_improper_initialization.adb:204:13: Found: Variables: variable "Var2" not safely initialized
+t_improper_initialization.adb:218:7: Found: Variables: variable "IV" not safely initialized
+t_improper_initialization.adb:249:67: Found: Variables: use of uninitialized variable: I
+t_improper_initialization.adb:252:41: Found: Variables: use of uninitialized variable: K
+t_improper_initialization.adb:252:35: Found: Variables: use of uninitialized variable: J
+t_improper_initialization.adb:253:35: Found: Variables: use of uninitialized variable: L
+t_improper_initialization.adb:230:7: Found: Variables: variable "I" used before initialisation
+t_improper_initialization.adb:230:10: Found: Variables: variable "J" used before initialisation
+t_improper_initialization.adb:230:13: Found: Variables: variable "K" used before initialisation
+t_improper_initialization.adb:230:16: Found: Variables: variable "L" used before initialisation
+t_improper_initialization.adb:290:7: Found: Variables: variable "I1" not safely initialized

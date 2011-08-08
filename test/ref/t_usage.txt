@@ -2,6 +2,8 @@ t_usage.adb:16:7: Error: USAGE: (generic) T_Usage.Gen.Y1, variable, initialized,
 t_usage.adb:17:7: Error: USAGE: (generic) T_Usage.Gen.Y2, variable, not initialized, written, not read
 t_usage.adb:18:7: Found: Constantable: (generic) T_Usage.Gen.Y3, variable, initialized, not written, read (can be declared constant)
 t_usage.adb:19:7: Found: Removable: (generic) T_Usage.Gen.Z, constant, not read (can be removed)
+t_usage.adb:74:7: Error: USAGE: (instance) T_Usage.Gen_Gen.P1.Y1, variable, initialized, written, not read
+t_usage.adb:75:7: Found: Constantable: (instance) T_Usage.Gen_Gen.P2.Y3, variable, initialized, not written, read
 t_usage.adb:30:4: Error: USAGE: (instance) T_Usage.Inst1.Y1, variable, initialized, written, not read
 t_usage.adb:30:4: Error: USAGE: (instance) T_Usage.Inst1.Y2, variable, not initialized, written, not read
 t_usage.adb:30:4: Found: Removable: (instance) T_Usage.Inst1.Y3, variable, initialized, not written, not read
@@ -31,6 +33,13 @@ t_usage.adb:45:7: Error: USAGE: (normal) T_Usage.Pack.VR, variable, not initiali
 t_usage.adb:63:7: Found: Removable: (normal) T_Usage.Pack.XX, variable, not initialized, not written, not read (can be removed)
 t_usage.adb:54:7: Found: Removable: (normal) T_Usage.Pack.Y, variable, initialized, not written, not read (can be removed)
 t_usage.adb:55:7: Found: Removable: (normal) T_Usage.Pack.Z, variable, initialized, not written, not read (can be removed)
+t_usage.adb:144:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Empty, variable, read (pseudo constant)
+t_usage.adb:146:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.I, variable, read (pseudo constant)
+t_usage.adb:147:7: Found: Removable: (normal) T_Usage.Pseudo_Const.I2, variable, not read (can be removed)
+t_usage.adb:148:7: Found: Removable: (normal) T_Usage.Pseudo_Const.J, constant, not read (can be removed)
+t_usage.adb:152:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Nothing, variable, read (pseudo constant)
+t_usage.adb:145:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.S, variable, not initialized, not written, read (never given a value)
+t_usage.adb:153:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Something, variable, not initialized, not written, read (never given a value)
 x_usage.ads:4:4: Error: USAGE: (normal) X_Usage.E1, exception, raised, handled
 x_usage.ads:4:8: Error: USAGE: (normal) X_Usage.E2, exception, raised, not handled
 x_usage.ads:4:12: Error: USAGE: (normal) X_Usage.E3, exception, not raised, handled
@@ -46,4 +55,4 @@ x_usage.ads:14:4: Error: USAGE: (normal) X_Usage.T3, task, not called, aborted
 x_usage.ads:15:9: Error: USAGE: (normal) X_Usage.T4, task, not called, not aborted
 
 Counts summary:
-USAGE: 22
+USAGE: 24

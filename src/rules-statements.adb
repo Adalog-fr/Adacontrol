@@ -31,6 +31,7 @@
 
 -- ASIS
 with
+  Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
   Asis.Iterator,
@@ -52,20 +53,21 @@ pragma Elaborate (Framework.Language);
 package body Rules.Statements is
    use Framework;
 
-   type Statement_Names is (Stmt_Abort,                  Stmt_Accept_Return,         Stmt_Asynchronous_Select,
-                            Stmt_Block,                  Stmt_Case_Others,           Stmt_Case_Others_Null,
-                            Stmt_Conditional_Entry_Call, Stmt_Delay,                 Stmt_Delay_Until,
-                            Stmt_Dispatching_Call,       Stmt_Entry_Return,          Stmt_Exception_Others,
-                            Stmt_Exception_Others_Null,  Stmt_Exit,                  Stmt_Exit_For_Loop,
-                            Stmt_Exit_While_Loop,        Stmt_For_Loop,              Stmt_Function_Return,
-                            Stmt_Goto,                   Stmt_Labelled,              Stmt_Loop_Return,
-                            Stmt_Multiple_Exits,         Stmt_No_Else,               Stmt_Null,
-                            Stmt_Procedure_Return,       Stmt_Raise,                 Stmt_Raise_Standard,
-                            Stmt_Requeue,                Stmt_Reraise,               Stmt_Selective_Accept,
-                            Stmt_Simple_Loop,            Stmt_Terminate,             Stmt_Timed_Entry_Call,
-                            Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,         Stmt_Unnamed_Exit,
-                            Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_Multiple_Loop, Stmt_Unnecessary_Null,
-                            Stmt_Untyped_For,            Stmt_While_Loop,            Stmt_While_True);
+   type Statement_Names is (Stmt_Abort,                  Stmt_Accept_Return,         Stmt_Assignment,
+                            Stmt_Asynchronous_Select,    Stmt_Block,                 Stmt_Case,
+                            Stmt_Case_Others,            Stmt_Case_Others_Null,      Stmt_Code,
+                            Stmt_Conditional_Entry_Call, Stmt_Declare_Block,         Stmt_Delay,
+                            Stmt_Delay_Until,            Stmt_Dispatching_Call,      Stmt_Entry_Return,
+                            Stmt_Exception_Others,       Stmt_Exception_Others_Null, Stmt_Exit,
+                            Stmt_Exit_For_Loop,          Stmt_Exit_While_Loop,       Stmt_For_Loop,
+                            Stmt_Function_Return,        Stmt_Goto,                  Stmt_If,
+                            Stmt_Labelled,               Stmt_Loop_Return,           Stmt_Multiple_Exits,
+                            Stmt_No_Else,                Stmt_Null,                  Stmt_Procedure_Return,
+                            Stmt_Raise,                  Stmt_Raise_Standard,        Stmt_Requeue,
+                            Stmt_Reraise,                Stmt_Selective_Accept,      Stmt_Simple_Loop,
+                            Stmt_Terminate,              Stmt_Timed_Entry_Call,      Stmt_Unconditional_Exit,
+                            Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,          Stmt_Unnamed_Loop_Exited,
+                            Stmt_Unnamed_Multiple_Loop,  Stmt_Untyped_For,           Stmt_While_Loop);
 
    package Statement_Flags_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
    use Statement_Flags_Utilities;
@@ -137,35 +139,16 @@ package body Rules.Statements is
    end Command;
 
 
-   -------------------------
-   -- Are_Null_Statements --
-   -------------------------
-
-   function Are_Null_Statements (Stats : Asis.Statement_List; Except_Labelled : Boolean := False) return Boolean is
-      use Asis, Asis.Elements, Asis.Statements;
-   begin
-      for I in Stats'Range loop
-         if Statement_Kind (Stats (I)) = A_Null_Statement then
-            if Except_Labelled and then not Is_Nil (Label_Names (Stats (I)))then
-               return False;
-            end if;
-         else
-            return False;
-         end if;
-      end loop;
-      return True;
-   end Are_Null_Statements;
-
-
    -----------------------
    -- Process_Statement --
    -----------------------
 
    procedure Process_Statement (Element : in Asis.Statement) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Statements;
+      use Thick_Queries, Utilities;
 
-      procedure Do_Report (Stmt : Statement_Names) is
+      procedure Do_Report (Stmt : in Statement_Names; Loc : Location := Get_Location (Element)) is
+         use Framework.Reports;
       begin
          if not Rule_Used (Stmt) then
             return;
@@ -173,15 +156,9 @@ package body Rules.Statements is
 
          Report (Rule_Id,
                  Usage (Stmt),
-                 Get_Location (Element),
+                 Loc,
                  "use of statement """ & Image (Stmt) & '"');
       end Do_Report;
-
-      function Starts_With (Name : Wide_String; Pattern : Wide_String) return Boolean is
-      begin
-         return Name'Length >= Pattern'Length
-           and then Name (Name'First .. Name'First + Pattern'Length - 1) = Pattern;
-      end Starts_With;
 
    begin
       if Rule_Used = (Statement_Names => False) then
@@ -194,22 +171,49 @@ package body Rules.Statements is
       end if;
 
       case Statement_Kind (Element) is
+         when Not_A_Statement =>
+            Failure ("Not a statement");
+
          when An_Abort_Statement =>
             Do_Report (Stmt_Abort);
+
+         when An_Accept_Statement =>
+            null;
+
+         when An_Assignment_Statement =>
+            Do_Report (Stmt_Assignment);
+
          when An_Asynchronous_Select_Statement =>
             Do_Report (Stmt_Asynchronous_Select);
+
          when A_Block_Statement =>
             Do_Report (Stmt_Block);
             if Is_Nil (Statement_Identifier (Element)) then
                Do_Report (Stmt_Unnamed_Block);
             end if;
+            if Is_Declare_Block (Element) then
+               Do_Report (Stmt_Declare_Block);
+            end if;
+
+         when A_Case_Statement =>
+            Do_Report (Stmt_Case);
+
+         when A_Code_Statement =>
+            Do_Report (Stmt_Code);
+
          when A_Conditional_Entry_Call_Statement =>
             Do_Report (Stmt_Conditional_Entry_Call);
+
          when A_Delay_Relative_Statement =>
             Do_Report (Stmt_Delay);
+
          when A_Delay_Until_Statement =>
             Do_Report (Stmt_Delay_Until);
-         when An_Exit_Statement=>
+
+         when An_Entry_Call_Statement =>
+            null;
+
+         when An_Exit_Statement =>
             if Is_Nil (Exit_Condition (Element)) then
                Do_Report (Stmt_Unconditional_Exit);
             end if;
@@ -231,6 +235,7 @@ package body Rules.Statements is
             else
                Do_Report (Stmt_Exit);
             end if;
+
          when A_For_Loop_Statement =>
             Do_Report (Stmt_For_Loop);
             if Discrete_Range_Kind (Specification_Subtype_Definition
@@ -239,9 +244,12 @@ package body Rules.Statements is
             then
                Do_Report (Stmt_Untyped_For);
             end if;
+
          when A_Goto_Statement =>
             Do_Report (Stmt_Goto);
+
          when An_If_Statement =>
+            Do_Report (Stmt_If);
             declare
                Paths : constant Asis.Path_List := Statement_Paths (Element);
             begin
@@ -249,35 +257,18 @@ package body Rules.Statements is
                   Do_Report (Stmt_No_Else);
                end if;
             end;
+
          when A_Loop_Statement =>
             Do_Report (Stmt_Simple_Loop);
+
          when A_Null_Statement =>
-            if Rule_Used (Stmt_Unnecessary_Null) then
-               -- If the enclosing statements contain only null statements without labels,
-               -- the last one is Stmt_Null, others are Stmt_Unnecessary_Null
-               -- A null statement with label(s) is never deemed unnecessary
-               if Is_Nil (Label_Names (Element)) then
-                  declare
-                     Stats : constant Asis.Statement_List := Thick_Queries.Statements (Enclosing_Element (Element));
-                  begin
-                     if Is_Equal (Element, Stats (Stats'Last))
-                       and then Are_Null_Statements (Stats, Except_Labelled => True)
-                     then
-                        Do_Report (Stmt_Null);
-                     else
-                        Do_Report (Stmt_Unnecessary_Null);
-                     end if;
-                  end;
-               else
-                  Do_Report (Stmt_Null);
-               end if;
-            else
-               Do_Report (Stmt_Null);
-            end if;
+            Do_Report (Stmt_Null);
+
          when A_Procedure_Call_Statement =>
             if Is_Dispatching_Call (Element) then
                Do_Report (Stmt_Dispatching_Call);
             end if;
+
          when A_Raise_Statement =>
             declare
                Exc : constant Asis.Expression := Raised_Exception (Element);
@@ -288,7 +279,7 @@ package body Rules.Statements is
                   else
                      Do_Report (Stmt_Raise);
                   end if;
-               elsif Starts_With (To_Upper (Full_Name_Image (Exc)), "STANDARD.") then
+               elsif To_Upper (Unit_Full_Name (Definition_Compilation_Unit (Exc))) = "STANDARD" then
                   if Rule_Used (Stmt_Raise_Standard) then
                      Do_Report (Stmt_Raise_Standard);
                   else
@@ -298,8 +289,10 @@ package body Rules.Statements is
                   Do_Report (Stmt_Raise);
                end if;
             end;
+
          when A_Requeue_Statement | A_Requeue_Statement_With_Abort =>
             Do_Report (Stmt_Requeue);
+
          when A_Return_Statement =>
             if Loops_Depth (Body_Depth) > 0 then
                Do_Report (Stmt_Loop_Return);
@@ -319,25 +312,21 @@ package body Rules.Statements is
                when others =>
                   Failure ("Return not from subprogram");
             end case;
+
          when A_Selective_Accept_Statement =>
             Do_Report (Stmt_Selective_Accept);
+
          when A_Terminate_Alternative_Statement =>
             Do_Report (Stmt_Terminate);
+
          when A_Timed_Entry_Call_Statement =>
             Do_Report (Stmt_Timed_Entry_Call);
+
          when A_While_Loop_Statement =>
             Do_Report (Stmt_While_Loop);
-            declare
-               Expr   : constant Asis.Expression := While_Condition (Element);
-               E_Kind : constant Asis.Expression_Kinds := Expression_Kind (Expr);
-            begin
-               if (E_Kind = An_Enumeration_Literal or E_Kind = A_Selected_Component)
-                 and then To_Upper (Full_Name_Image (Expr)) = "STANDARD.TRUE"
-               then
-                  Do_Report (Stmt_While_True);
-               end if;
-            end;
+
          when others =>
+            -- Ada 2005 : An_Extended_Return_Statement
             null;
       end case;
    end Process_Statement;
@@ -349,7 +338,7 @@ package body Rules.Statements is
 
    procedure Process_Others (Definition : in Asis.Definition) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports;
+      use Framework.Reports, Thick_Queries;
       Encl : Asis.Element;
 
    begin
@@ -399,8 +388,7 @@ package body Rules.Statements is
    ---------------------------
 
    procedure Process_Function_Body (Function_Body : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Iterator, Asis.Statements;
-      use Framework.Reports;
+      use Asis, Asis.Declarations, Asis.Iterator, Asis.Statements;
 
       First_Return : Asis.Statement;
 
@@ -411,7 +399,10 @@ package body Rules.Statements is
 
       procedure Pre_Procedure (Element : in     Asis.Element;
                                Control : in out Traverse_Control;
-                               State   : in out Null_State) is
+                               State   : in out Null_State)
+      is
+         use Asis.Elements;
+         use Framework.Reports;
       begin
          case Statement_Kind (Element) is
             when A_Return_Statement =>
@@ -501,8 +492,7 @@ package body Rules.Statements is
    --------------------------
 
    procedure Process_Loop_Statements (In_Loop : in Asis.Statement) is
-      use Asis, Asis.Elements, Asis.Iterator, Asis.Statements;
-      use Framework.Reports;
+      use Asis, Asis.Iterator, Asis.Statements;
 
       First_Exit : Asis.Statement;
 
@@ -521,7 +511,10 @@ package body Rules.Statements is
 
       procedure Pre_Procedure (Element : in     Asis.Element;
                                Control : in out Traverse_Control;
-                               State   : in out State_Info) is
+                               State   : in out State_Info)
+      is
+         use Asis.Elements;
+         use Framework.Reports;
       begin
          case Statement_Kind (Element) is
             when An_Exit_Statement =>
@@ -712,8 +705,9 @@ package body Rules.Statements is
    end Process_Scope_Exit;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Statements;

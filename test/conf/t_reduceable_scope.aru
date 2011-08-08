@@ -1,1 +1,3 @@
-check reduceable_scope;
+includes_blocks: check reduceable_scope (variable, subprogram, type, package, exception);
+except_blocks:   check reduceable_scope (no_blocks generic);
+use_clauses:     check reduceable_scope (use);

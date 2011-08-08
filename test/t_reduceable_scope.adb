@@ -1,13 +1,16 @@
-with System;
 procedure T_Reduceable_Scope (X : Integer) is
    Top : Integer;    -- Not movable
 
-   package Pack1 is  -- Movable to P
+   package Pack1 is  -- Movable to Unused
       I : Integer;   -- Not movable
    end Pack1;
+
    procedure Unused is    -- Not used
+      use Pack1;          -- Movable to block
    begin
-      Pack1.I := 1;
+      begin
+         I := 1;
+      end;
    end Unused;
    procedure For_Access is
    begin
@@ -50,7 +53,14 @@ procedure T_Reduceable_Scope (X : Integer) is
       null;
    end TT2;
 
-   T2 : TT1;  -- Not movable
+   T2  : TT1;  -- Not movable
+
+   type Param_T is range 1 .. 10;   -- Not movable
+   procedure Proc (X : Param_T) is  -- Not used
+   begin
+      null;
+   end Proc;
+
 begin
 
 For_Loop : for I in 1..10 loop -- Not movable (For_Loop, I)
@@ -67,12 +77,19 @@ For_Loop : for I in 1..10 loop -- Not movable (For_Loop, I)
    end;
    declare
       I, J, K, L : Integer;  -- I movable to Inner1, J, L movable to P, K not movable
+      generic procedure Pg;  -- Movable to Inner1, but not block because generics are no_blocks
+      procedure Pg is begin null; end;
 
       procedure P is         -- Not used
          procedure Inner1 is -- Not used
          begin
             I := 1;
             L := 1;
+            declare
+               procedure Inst is new Pg;
+            begin
+               Inst;
+            end;
          end Inner1;
          procedure Inner2 is -- Not movable
             type Proc_Ptr is access procedure;

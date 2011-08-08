@@ -151,6 +151,16 @@ package body Rules.With_Clauses is
       end case;
    end Command;
 
+   -------------
+   -- Prepare --
+   -------------
+
+   procedure Prepare is
+   begin
+      if Rule_Used /= (With_Usage => False) then
+         Withed_Units.Activate;
+      end if;
+   end Prepare;
 
    -------------------------
    -- Process_With_Clause --
@@ -245,12 +255,12 @@ package body Rules.With_Clauses is
       if Is_Nil (Elem_Def) then
          -- Some predefined stuff...
          return;
-      else
-         Elem_Def_Unit := Enclosing_Compilation_Unit (Elem_Def);
-         if Is_Equal (Elem_Def_Unit, Enclosing_Compilation_Unit (Element)) then
-            -- This is a local element
-            return;
-         end if;
+      end if;
+
+      Elem_Def_Unit := Enclosing_Compilation_Unit (Elem_Def);
+      if Is_Equal (Elem_Def_Unit, Enclosing_Compilation_Unit (Element)) then
+         -- This is a local element
+         return;
       end if;
 
       declare
@@ -393,8 +403,10 @@ package body Rules.With_Clauses is
    end Process_Unit_Exit;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.With_Clauses;

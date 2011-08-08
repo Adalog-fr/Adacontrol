@@ -73,11 +73,8 @@ package body Rules.Default_Parameter is
    type Usage_Tab is array (Usage_Kind) of Usage_Rec;
    Empty_Usage : constant Usage_Tab := (others => (Basic_Rule_Context with Active => False));
 
-   package Parameter_Tree is new Binary_Map
-     (Key_Type   => Ada.Strings.Wide_Unbounded.Unbounded_Wide_String,
-      Value_Type => Usage_Tab,
-      "<"        => Ada.Strings.Wide_Unbounded."<",
-      ">"        => Ada.Strings.Wide_Unbounded.">");
+   package Parameter_Tree is new Binary_Map (Key_Type   => Unbounded_Wide_String,
+                                             Value_Type => Usage_Tab);
 
    type Entity_Context is new Root_Context with
       record
@@ -153,7 +150,7 @@ package body Rules.Default_Parameter is
       end if;
 
       declare
-         Formal      : constant Wide_String := To_Upper (Get_String_Parameter);
+         Formal      : constant Wide_String := Get_Name_Parameter;
          Usage       : Usage_Kind;
          Affirmative : Boolean;
       begin
@@ -237,12 +234,13 @@ package body Rules.Default_Parameter is
    -----------------------------------
 
    procedure Process_Call_Or_Instantiation (Element : in Asis.Element) is
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
-      use Parameter_Tree, Thick_Queries;
+      use Asis, Asis.Elements, Asis.Declarations;
+      use Thick_Queries;
 
       Name : Asis.Expression;
 
       function Get_Formals_List return Asis.Element_List is
+         use Asis.Expressions;
          Gen_Name : Asis.Expression;
       begin
          if Expression_Kind (Name) = An_Attribute_Reference then
@@ -269,6 +267,7 @@ package body Rules.Default_Parameter is
 
       procedure Check (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class) is
          use Framework.Reports;
+         use Parameter_Tree;
          Formal_Key : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
          Usage        : Usage_Tab        := Empty_Usage;
@@ -349,8 +348,8 @@ package body Rules.Default_Parameter is
       end case;
 
       declare
-         Name_Context : constant Root_Context'Class := Matching_Context      (Entities, Name);
-         All_Context  : constant Root_Context'Class := Framework.Association (Entities, Entity_All);
+         Name_Context : constant Root_Context'Class := Extended_Matching_Context (Entities, Name);
+         All_Context  : constant Root_Context'Class := Framework.Association     (Entities, Entity_All);
       begin
          if Name_Context = No_Matching_Context and All_Context = No_Matching_Context then
             return;
@@ -381,7 +380,16 @@ package body Rules.Default_Parameter is
                         when A_Formal_Procedure_Declaration
                            | A_Formal_Function_Declaration
                              =>
-                           null; -- TBSL
+                           case Default_Kind (Formals (I)) is
+                              when Not_A_Default =>
+                                 Failure ("Not_A_Default");
+                              when A_Name_Default
+                                 | A_Box_Default
+                                   =>
+                                 Check (Names (Formals (I))(1), Name_Context, All_Context);
+                              when A_Nil_Default =>
+                                 null;
+                           end case;
                         when others =>
                            -- Others cases have no possible default value
                            null;
@@ -395,9 +403,10 @@ package body Rules.Default_Parameter is
    end Process_Call_Or_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Default_Parameter;

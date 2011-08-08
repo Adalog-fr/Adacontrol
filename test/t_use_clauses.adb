@@ -1,4 +1,5 @@
 with Ada.Text_IO, System, Ada.Strings;
+use Ada.Text_IO, Ada.Strings, System;
 procedure T_use_clauses is
    use Ada.Text_IO;
    use Ada.Text_IO, Ada.Strings;

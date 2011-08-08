@@ -1,12 +1,46 @@
-Sequential_Stmts: search statements (goto,                  raise,           exit,             unnamed_exit,
-                                     case_others,           no_else,         case_others_null, exception_others,
-                                     exception_others_null, untyped_for,     while_true,       procedure_return,
-                                     accept_return,         function_return, entry_return,     raise_standard,
-                                     unnamed_multiple_loop, block,           unnamed_block,    unnamed_loop_exited,
-                                     dispatching_call,      reraise,         null,             unnecessary_null,
-                                     labelled);
-Tasking_Stmts:    check statements (delay,             delay_until,            abort,            requeue,
-                                    selective_accept,  conditional_entry_call, timed_entry_call, asynchronous_select,
-                                    terminate);
-Loop_Stmts:       check statements (exit_for_loop, exit_while_loop, unconditional_exit, multiple_exits,
-                                    loop_return,   while_loop,      for_loop,           simple_loop);
+Sequential_Stmts: search statements (accept_return,
+                                     block,
+                                     case_others,
+                                     case_others_null,
+                                     declare_block,
+                                     dispatching_call,
+                                     entry_return,
+                                     exception_others,
+                                     exception_others_null,
+                                     exit,
+                                     function_return,
+                                     goto,
+                                     labelled,
+                                     no_else,
+                                     null,
+                                     procedure_return,
+                                     raise,
+                                     raise_standard,
+                                     reraise,
+                                     unnamed_block,
+                                     unnamed_exit,
+                                     unnamed_loop_exited,
+                                     unnamed_multiple_loop,
+                                     untyped_for);
+
+Tasking_Stmts:    check  statements (abort,
+                                     asynchronous_select,
+                                     conditional_entry_call,
+                                     delay,
+                                     delay_until,
+                                     requeue,
+                                     selective_accept,
+                                     terminate,
+                                     timed_entry_call);
+
+Loop_Stmts:       check  statements (exit_for_loop,
+                                     exit_while_loop,
+                                     for_loop,
+                                     loop_return,
+                                     multiple_exits,
+                                     simple_loop,
+                                     unconditional_exit,
+                                     while_loop);
+
+If_Count   : count statements (if);
+Case_Count : count statements (case);

@@ -107,6 +107,10 @@ procedure T_Global_References is
       P3;
    end T1;
 
+   function Impure return Integer is
+   begin
+      return Glob1;
+   end Impure;
 
    ----------------------------------------------------
    -- Check for Atomic and Atomic_Components pragmas --

@@ -70,6 +70,7 @@ package body Rules.Parameter_Aliasing is
    Save_Used  : Usage;
    Rule_Type  : array (Rule_Detail) of Rule_Types;
    Rule_Label : array (Rule_Detail) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   With_In    : array (Rule_Detail) of Boolean;
 
    ----------
    -- Help --
@@ -78,10 +79,11 @@ package body Rules.Parameter_Aliasing is
    procedure Help is
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter 1:", Footer => "(optional, default=certain)");
+      Help_On_Flags (Header => "Parameter 1: [with_in] ",
+                     Footer => "(optional, default=certain)");
       User_Message  ("Control subprogram or entry calls where the same variable is given");
       User_Message  ("for more than one [in] out parameter.");
-      User_Message  ("This rule can detect non-straightforward aliasing cases, see doc for details");
+      User_Message  ("If ""with_in"" is given, consider also in parameters");
    end Help;
 
    -------------
@@ -93,10 +95,15 @@ package body Rules.Parameter_Aliasing is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language, Thick_Queries;
 
-      Detail  : Rule_Detail := Certain;
+      Detail  : Rule_Detail;
+      In_Flag : Boolean;
    begin
       if Parameter_Exists then
-         Detail := Get_Flag_Parameter (Allow_Any => False);
+         In_Flag := Get_Modifier ("WITH_IN");
+         Detail  := Get_Flag_Parameter (Allow_Any => False);
+      else
+         In_Flag := False;
+         Detail  := Certain;
       end if;
 
       if Rule_Used (Detail) then
@@ -113,6 +120,7 @@ package body Rules.Parameter_Aliasing is
       Rule_Type  (Detail) := Rule_Use_Type;
       Rule_Label (Detail) := To_Unbounded_Wide_String (Label);
       Rule_Used  (Detail) := True;
+      With_In    (Detail) := In_Flag;
    end Add_Use;
 
 
@@ -147,11 +155,13 @@ package body Rules.Parameter_Aliasing is
          Rule_Used  (Possible) := True;
          Rule_Type  (Possible) := Rule_Type  (Unlikely);
          Rule_Label (Possible) := Rule_Label (Unlikely);
+         With_In    (Possible) := With_In    (Unlikely);
       end if;
       if Rule_Used (Possible) and not Rule_Used (Certain) then
          Rule_Used  (Certain) := True;
          Rule_Type  (Certain) := Rule_Type  (Possible);
          Rule_Label (Certain) := Rule_Label (Possible);
+         With_In    (Certain) := With_In    (Possible);
       end if;
    end Prepare;
 
@@ -160,16 +170,16 @@ package body Rules.Parameter_Aliasing is
    -- Process_Call --
    ------------------
 
-   type Parameters_Table is array (Asis.List_Index range <>) of Asis.List_Index;
+   type Parameters_Descr is
+      record
+         Mode : Asis.Mode_Kinds;
+         Expr : Asis.Expression;
+      end record;
 
-   -- NB:
-   -- Some of the algorithms in this procedure are a bit convoluted, because we avoid
-   -- using normalized formals and actuals list, which are UNIMPLEMENTED in some versions
-   -- of ASIS-for-Gnat.
-   -- Some rewriting might be in order when the problem goes away...
+   type Parameters_Table is array (Asis.List_Index range <>) of Parameters_Descr;
 
    procedure Process_Call (Call : in Asis.Statement) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Framework.Reports, Ada.Strings.Wide_Unbounded;
 
    begin
@@ -195,7 +205,7 @@ package body Rules.Parameter_Aliasing is
             -- plain identifier.
             -- This kludge is needed because currently the function Formal_Name is
             -- inconsistent, depending on whether the actual association is positionnal or named
-            use Asis.Text;
+            use Asis.Declarations, Asis.Text;
 
             Name : constant Asis.Name := Formal_Name (Call, Position);
          begin
@@ -208,18 +218,10 @@ package body Rules.Parameter_Aliasing is
             end if;
          end Association_Image;
 
-         Mode    : Mode_Kinds;
-         TCP_Top : ASIS_Natural := To_Check_Parameters'First - 1;
-
-         pragma Warnings (Off, To_Check_Parameters);
-         -- GNAT warns that To_Check_Parameters may be used before it has a value,
-         -- but the algorithm ensures that this does not happen, because the loop on J
-         -- is not executed the first time.
-
          Param_Proximity : Proximity;
       begin
-         if Actuals'Length = 1 then
-            -- Only 1 parameter => no possible aliasing
+         if Actuals'Length <= 1 then
+            -- 0 or 1 parameter => no possible aliasing
             return;
          end if;
 
@@ -229,41 +231,42 @@ package body Rules.Parameter_Aliasing is
          end if;
 
          for I in Actuals'Range loop
-            Mode := Mode_Kind (Enclosing_Element (Formal_Name (Call, I)));
-
-            if Mode in An_Out_Mode .. An_In_Out_Mode then
-               for J in List_Index range To_Check_Parameters'First .. TCP_Top loop
-                  Param_Proximity := Variables_Proximity (Actual_Parameter (Actuals (To_Check_Parameters (J))),
-                                                          Actual_Parameter (Actuals (I)));
-                  if Rule_Used (Param_Proximity.Confidence) and then Param_Proximity.Overlap /= None then
-                     Report (Rule_Id,
-                             To_Wide_String (Rule_Label (Param_Proximity.Confidence)),
-                             Rule_Type (Param_Proximity.Confidence),
-                             Get_Location (Call),
-                             Choose (Param_Proximity.Confidence = Certain,
-                                     "Certain",
-                                     Choose (Param_Proximity.Confidence = Possible,
-                                             "Possible",
-                                             "Unlikely"))
-                             & " aliasing between parameters "
-                             & Association_Image (To_Check_Parameters (J))
-                             & " and "
-                             & Association_Image (I)
-                            );
-                  end if;
-               end loop;
-
-               TCP_Top := TCP_Top + 1;
-               To_Check_Parameters (TCP_Top) := I;
-            end if;
+            To_Check_Parameters (I) := (Mode_Kind (Enclosing_Element (Formal_Name (Call, I))),
+                                        Actual_Parameter (Actuals (I)));
+            for J in List_Index range To_Check_Parameters'First .. I-1 loop
+               Param_Proximity := Variables_Proximity (To_Check_Parameters (J).Expr,
+                                                       To_Check_Parameters (I).Expr);
+               if Rule_Used (Param_Proximity.Confidence)
+                 and then Param_Proximity.Overlap /= None
+                 and then (To_Check_Parameters (I).Mode in An_Out_Mode .. An_In_Out_Mode
+                           or else (With_In (Param_Proximity.Confidence)
+                                    and To_Check_Parameters (J).Mode in An_Out_Mode .. An_In_Out_Mode))
+               then
+                  Report (Rule_Id,
+                    To_Wide_String (Rule_Label (Param_Proximity.Confidence)),
+                    Rule_Type (Param_Proximity.Confidence),
+                    Get_Location (Call),
+                    Choose (Param_Proximity.Confidence = Certain,
+                      "Certain",
+                      Choose (Param_Proximity.Confidence = Possible,
+                        "Possible",
+                        "Unlikely"))
+                    & " aliasing between parameters "
+                    & Association_Image (J)
+                    & " and "
+                    & Association_Image (I)
+                   );
+               end if;
+            end loop;
          end loop;
       end;
    end Process_Call;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help    => Help'Access,
-                                              Add_Use => Add_Use'Access,
-                                              Command => Command'Access,
-                                              Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access,
+                                     Prepare_CB => Prepare'Access);
 end Rules.Parameter_Aliasing;

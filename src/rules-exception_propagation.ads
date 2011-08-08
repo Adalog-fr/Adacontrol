@@ -35,14 +35,6 @@ with
 
 package Rules.Exception_Propagation is
 
-   -- This rule can be used to check/search that certain kinds of subprograms
-   -- cannot propagate exception
-   -- Parameter(1): "interface" | "parameter" | "task"
-   -- Parameters(2 .. N): for interface: convention names
-   --                     for parameter: full name of parameters known to expect
-   --                                    call-backs
-   --                     for task: nothing
-
    Rule_Id : constant Wide_String := "EXCEPTION_PROPAGATION";
 
    procedure Process_SP_Declaration (Element       : in Asis.Declaration);

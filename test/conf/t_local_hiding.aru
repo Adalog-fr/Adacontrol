@@ -1,2 +1,4 @@
-check local_hiding;
+Hiding: check local_hiding (Strict);
+Overloading: search local_hiding (overloading);
+
 

@@ -40,6 +40,7 @@ package body Framework.Specific_Plugs is
    ----------------
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
+      pragma Unreferenced (Unit);
    begin
       null;
    end Enter_Unit;
@@ -49,6 +50,7 @@ package body Framework.Specific_Plugs is
    ---------------
 
    procedure Exit_Unit (Unit : in Asis.Compilation_Unit) is
+      pragma Unreferenced (Unit);
    begin
       null;
    end Exit_Unit;
@@ -58,6 +60,7 @@ package body Framework.Specific_Plugs is
    -----------------
 
    procedure Enter_Scope (Element : in Asis.Element) is
+      pragma Unreferenced (Element);
    begin
       null;
    end Enter_Scope;
@@ -67,6 +70,7 @@ package body Framework.Specific_Plugs is
    ----------------
 
    procedure Exit_Scope (Element : in Asis.Element) is
+      pragma Unreferenced (Element);
    begin
       null;
    end Exit_Scope;
@@ -76,6 +80,7 @@ package body Framework.Specific_Plugs is
    ---------------------
 
    procedure True_Identifier (Element : in Asis.Expression) is
+      pragma Unreferenced (Element);
    begin
       null;
    end True_Identifier;
@@ -111,6 +116,7 @@ package body Framework.Specific_Plugs is
    ---------------------
 
    procedure Text_Enter_Unit (Unit : in Asis.Compilation_Unit) is
+      pragma Unreferenced (Unit);
    begin
       null;
    end Text_Enter_Unit;
@@ -120,6 +126,7 @@ package body Framework.Specific_Plugs is
    -------------------
 
    procedure Text_Analysis (Line : Asis.Program_Text; Loc : Location) is
+      pragma Unreferenced (Line, Loc);
    begin
       null;
    end Text_Analysis;

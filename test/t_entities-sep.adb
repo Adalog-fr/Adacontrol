@@ -1,4 +1,4 @@
-with Calendar;
+with Calendar;       -- Ada.Calendar
 separate (T_Entities)
 procedure Sep is
 begin

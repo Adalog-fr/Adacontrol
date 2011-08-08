@@ -34,7 +34,7 @@ begin
       null;
    end if;
 
-   case B is  when others =>                            -- Compound_Statement
+   case B is  when others =>                        -- Compound_Statement
          null; end case;
 
    for I in 0 .. 1 loop                             -- Compound_Statement

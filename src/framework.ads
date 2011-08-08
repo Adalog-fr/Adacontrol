@@ -139,11 +139,12 @@ package Framework is
    -- the specification of an Ada entity in the command language
 
    type Entity_Specification is private;
-   Null_Entity : constant Entity_Specification;
+   type Entity_Specification_Kinds is (Box, Equal, Regular_Id, All_Id);
+
+   function Entity_Specification_Kind (Entity : in Entity_Specification) return Entity_Specification_Kinds;
 
    function Image   (Entity : in Entity_Specification) return Wide_String;
    function Value   (Name   : in Wide_String)          return Entity_Specification;
-   function Is_Box  (Entity : in Entity_Specification) return Boolean;
    function Matches (Name   : in Asis.Element; Entity : in Entity_Specification) return Boolean;
    -- Appropriate element kinds for Matches:
    --   like Matching_Context, see below
@@ -166,19 +167,19 @@ package Framework is
 
    -- A basic context is what most rules need
    -- It simply (logically) holds the Rule_Type and Rule_Label, but we need extra
-   -- mechanisms to allow specifying "Count" in addition to any "Seach" or "Check"
+   -- mechanisms to allow specifying "Count" in addition to any "Search" or "Check"
    -- without causing double definitions in the context store. Therefore, this has to
    -- be private, and a constructor is provided.
    type Basic_Rule_Context is new Root_Context with private;
 
    package Basic is
-      -- This package to prevent these operations from being primitive.
-      -- Since New_Context et alt. could have been called Basic_New_Context, it is not
+      -- This package to prevent this operations from being primitive.
+      -- Since New_Context could have been called Basic_New_Context, it is not
       -- really annoying to have to write Basic.New_Context...
-      function New_Context (Rule_Type : in Rule_Types; Rule_Label : in Wide_String) return Basic_Rule_Context;
-      function Rule_Type   (Context   : in Basic_Rule_Context) return Rule_Types;
-      function Rule_Label  (Context   : in Basic_Rule_Context) return Wide_String;
+      function New_Context (With_Type : in Rule_Types; With_Label : in Wide_String) return Basic_Rule_Context;
    end Basic;
+   function Rule_Type  (Context : in Basic_Rule_Context) return Rule_Types;
+   function Rule_Label (Context : in Basic_Rule_Context) return Wide_String;
 
 
    -------------------------------------------------------------------
@@ -286,20 +287,15 @@ private
    -- Entity_Specification
    --
 
-   type Entity_Specification (Is_Box : Boolean := False) is
+   type Entity_Specification (Kind : Entity_Specification_Kinds := Regular_Id) is
       record
-         case Is_Box is
-            when True =>
+         case Kind is
+            when Box | Equal =>
                null;
-            when False =>
-               Is_All        : Boolean;
+            when Regular_Id | All_Id =>
                Specification : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          end case;
       end record;
-   Null_Entity : constant Entity_Specification :=
-                   (Is_Box => False,
-                    Is_All        => False,
-                    Specification => Ada.Strings.Wide_Unbounded.Null_Unbounded_Wide_String);
 
    --
    -- Context
@@ -330,9 +326,8 @@ private
          Value : Context_Access;
          Next  : Context_Node_Access;
       end record;
-   package Context_Tree is new Binary_Map
-     (Key_Type   => Unbounded_Wide_String,
-      Value_Type => Context_Node_Access);
+   package Context_Tree is new Binary_Map (Key_Type   => Unbounded_Wide_String,
+                                           Value_Type => Context_Node_Access);
 
    type Auto_Pointer (Self : access Context_Store) is limited null record;
    -- Rosen trick strikes again...

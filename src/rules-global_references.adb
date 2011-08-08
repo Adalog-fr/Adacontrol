@@ -95,7 +95,7 @@ package body Rules.Global_References is
    type Reference_Kind is (K_All, K_Multiple, K_Multiple_Non_Atomic);
    package Reference_Kind_Utilities is new Framework.Language.Flag_Utilities (Reference_Kind, "K_");
 
-   type Checked_Kind is (K_Name, K_Task, K_Protected);
+   type Checked_Kind is (K_Name, K_Task, K_Protected, K_Function, K_Procedure);
    package Checked_Kind_Utilities is new Framework.Language.Flag_Utilities (Checked_Kind, "K_");
 
    Rules_Used : Rule_Index := 0;
@@ -224,6 +224,10 @@ package body Rules.Global_References is
                   Entity := Value ("TASK");
                when K_Protected =>
                   Entity := Value ("PROTECTED");
+               when K_Function =>
+                  Entity := Value ("FUNCTION");
+               when K_Procedure =>
+                  Entity := Value ("PROCEDURE");
             end case;
             Add (Rules_Map,
                  Key => Rules_Used,
@@ -300,12 +304,33 @@ package body Rules.Global_References is
    procedure Traverse is new Asis.Iterator.Traverse_Element (Null_State, Pre_Procedure, Null_State_Procedure);
    procedure Check (Body_Decl : Asis.Declaration);
 
-
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
                             State   : in out Null_State) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
+
+      procedure Process_Call is
+         use Framework.Reports;
+         Called : constant Call_Descriptor := Corresponding_Call_Description (Element);
+      begin
+         case Called.Kind is
+            when A_Regular_Call =>
+               if Declaration_Kind (Called.Declaration)
+                  not in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration
+               then
+                  Check (Corresponding_Body (Called.Declaration));
+               end if;
+            when A_Predefined_Entity_Call | An_Attribute_Call =>
+               null;
+            when A_Dereference_Call | A_Dispatching_Call =>
+               -- Assume no global references, short of knowing what it does
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Element),
+                            "Dispatching call or call to dynamic entity; assuming no global references");
+         end case;
+      end Process_Call;
 
    begin
       case Element_Kind (Element) is
@@ -313,21 +338,13 @@ package body Rules.Global_References is
             if Declaration_Kind (Enclosing_Element (Element)) = A_Variable_Declaration then
                Add (Usage,
                     To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Element, With_Profile => True))),
-                    (Element, Non_Global));
+                    (Nil_Element, Non_Global));
             end if;
 
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>
-                  declare
-                     Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Function (Element);
-                  begin
-                     if not Is_Nil (Called)
-                       and then Declaration_Kind (Called) /= A_Formal_Function_Declaration
-                     then
-                        Check (Corresponding_Body (Called));
-                     end if;
-                  end;
+                  Process_Call;
                when An_Identifier =>
                   begin
                      case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
@@ -344,9 +361,7 @@ package body Rules.Global_References is
                                     when Non_Global | Written =>
                                        null;
                                     when Read =>
-                                       if Expression_Usage_Kind (Element) = Read then
-                                          U.Usage :=  Read;
-                                       else
+                                       if Expression_Usage_Kind (Element) /= Read then
                                           U.Usage := Written;
                                        end if;
                                     when Checked =>
@@ -376,7 +391,7 @@ package body Rules.Global_References is
                         -- KLUDGE FOR ASIS BUG: Constraint_Error in Corresponding_Name_Declaration.
                         -- This happens only if Element is a generic formal "in" parameter
                         -- (but not "in out"). We can thus safely ignore it (it is not a variable)
-                        null;
+                        A4G_Bugs.Trace_Bug ("Global_References.Pre_Procedure: CE for generic formal in parameter");
                   end;
 
                when An_Attribute_Reference =>
@@ -391,16 +406,7 @@ package body Rules.Global_References is
          when A_Statement =>
             case Statement_Kind (Element) is
                when A_Procedure_Call_Statement =>
-                  declare
-                     Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Entity (Element);
-                  begin
-                     -- Called is Nil for predefined stuff and access to SP, not interesting for us
-                     if not Is_Nil (Called)
-                       and then Declaration_Kind (Called) /= A_Formal_Procedure_Declaration
-                     then
-                        Check (Corresponding_Body (Called));
-                     end if;
-                  end;
+                  Process_Call;
                when An_Entry_Call_Statement =>
                   -- Process only protected entries (not task entries)
                   declare
@@ -429,7 +435,7 @@ package body Rules.Global_References is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
       use Thick_Queries, Utilities, Usage_Map, Ada.Strings.Wide_Unbounded;
    begin
-      if Is_Nil (Body_Decl) -- Predefined operations, f.e. ...
+      if Is_Nil (Body_Decl) -- Predefined operations, dispatching call, f.e. ...
         or else Is_Banned (Body_Decl, Rule_Id)
         or else Element_Kind (Body_Decl) = A_Pragma -- case of pragma Import
       then
@@ -520,9 +526,9 @@ package body Rules.Global_References is
    ------------------
 
    procedure Process_Body (The_Body : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Elements;
 
       function General_Matching_Context return Root_Context'Class is
+         use Asis, Asis.Declarations, Asis.Elements;
          Name           : Asis.Defining_Name := Names (The_Body)(1);
          From_Protected : Boolean := False;
       begin
@@ -541,13 +547,40 @@ package body Rules.Global_References is
             end if;
          end;
 
+         -- Compiler bug, GNAT GPL2007/Windows
+         -- In the following, we use an intermediate constant rather than returning directly the
+         -- value from Framework.Association because of memory violation with GPL2007/Windows
+         -- Other combinations of compiler/OS worked, but...
          if From_Protected then
-            return Framework.Association (Checked_Bodies, Value ("PROTECTED"));
-         elsif Declaration_Kind (The_Body) = A_Task_Body_Declaration then
-            return Framework.Association (Checked_Bodies, Value ("TASK"));
-         else
-            return No_Matching_Context;
+            declare
+               Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("PROTECTED"));
+            begin
+               return Result;
+            end;
          end if;
+
+         case Declaration_Kind (The_Body) is
+            when A_Task_Body_Declaration =>
+               declare
+                  Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("TASK"));
+               begin
+                  return Result;
+               end;
+            when A_Function_Body_Declaration =>
+               declare
+                  Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("FUNCTION"));
+               begin
+                  return Result;
+               end;
+            when A_Procedure_Body_Declaration =>
+               declare
+                  Result : constant Root_Context'Class := Framework.Association (Checked_Bodies, Value ("PROCEDURE"));
+               begin
+                  return Result;
+               end;
+            when others =>
+               return No_Matching_Context;
+         end case;
      end General_Matching_Context;
 
    begin                       -- Process_Body
@@ -586,13 +619,13 @@ package body Rules.Global_References is
    procedure Finalize is
       use Ada.Strings.Wide_Unbounded;
 
-      procedure Report_One_Variable (Key : in Unbounded_Wide_String; Var_Value : in out Globals_Info_Record) is
-         pragma Unreferenced (Key);
-         use Framework.Reports, Thick_Queries, Utilities;
+      procedure Report_One_Variable (Var_Key : in Unbounded_Wide_String; Var_Value : in out Globals_Info_Record) is
+         pragma Unreferenced (Var_Key);
 
          procedure Report_One_Rule (Rule_Key : in Rule_Index; Rule_Value : in out Referencing_Info) is
             use Asis, Asis.Declarations, Asis.Elements;
-            use Rules_Info_Map;
+            use Framework.Reports, Rules_Info_Map, Thick_Queries, Utilities;
+
             Rule_Params   : constant Rule_Info        := Fetch (Rules_Map, Rule_Key);  -- Must be there
             Ref_Info      : constant Referencing_Info := Rule_Value;                   -- Ref_Info.Bodies /= null
             Body_Ptr      : Body_List;
@@ -603,45 +636,45 @@ package body Rules.Global_References is
             if Rule_Params.Reference /= K_All then
                if not Ref_Info.Includes_Type and Ref_Info.Bodies.Next = null then -- Only one body, not K_All
                   return;
-               else
-                  -- We have several bodies, but we must check:
-                  --   - that we are not in the case of Multiple_Non_Atomic with an Atomic variable
-                  --   - that they are not all from the same protected object
-                  --     (protected types have already been dealt with by flag Includes_Type)
-                  if Rule_Params.Reference = K_Multiple_Non_Atomic
-                    -- no more than one writer to the variable
-                    and then Ref_Info.Write_Count /= Multiple_Writes
-                    -- `pragma Atomic' or `pragma Atomic_Components' set upon declaration or its type
-                    and then (Corresponding_Pragma_Set (Var_Value.Definition)
-                              and Pragma_Set'(An_Atomic_Pragma | An_Atomic_Components_Pragma => True,
-                                              others => False))
-                             /= Pragma_Set'(others => False)
-                  then
-                     return;
-                  elsif not Ref_Info.Includes_Type then
-                     -- We have several bodies, but we must check that they are not all from the same protected object
-                     -- (protected types have already been dealt with by flag Includes_Type)
-                     Body_Ptr      := Ref_Info.Bodies;
-                     Different_POs := False;
-                     while Body_Ptr /= null loop
-                        if Declaration_Kind (Enclosing_Element (Body_Ptr.Decl)) = A_Protected_Body_Declaration then
-                           if Is_Nil (PO_Decl) then
-                              PO_Decl := Enclosing_Element (Body_Ptr.Decl);
-                           elsif not Is_Equal (Enclosing_Element (Body_Ptr.Decl), PO_Decl) then
-                              Different_POs := True;
-                              exit;
-                           end if;
-                        else
-                           Different_POs := True;
-                           exit;
-                        end if;
+               end if;
 
-                        Body_Ptr := Body_Ptr.Next;
-                     end loop;
-                     -- When all bodies are from the same protected object, we must not print results
-                     if not Different_POs then
-                        return;
+               -- We have several bodies, but we must check:
+               --   - that we are not in the case of Multiple_Non_Atomic with an Atomic variable
+               --   - that they are not all from the same protected object
+               --     (protected types have already been dealt with by flag Includes_Type)
+               if Rule_Params.Reference = K_Multiple_Non_Atomic
+               -- no more than one writer to the variable
+                 and then Ref_Info.Write_Count /= Multiple_Writes
+               -- `pragma Atomic' or `pragma Atomic_Components' set upon declaration or its type
+                 and then (Corresponding_Pragma_Set (Var_Value.Definition)
+                   and Pragma_Set'(An_Atomic_Pragma | An_Atomic_Components_Pragma => True,
+                                   others                                         => False))
+                             /= Pragma_Set'(others => False)
+               then
+                  return;
+               elsif not Ref_Info.Includes_Type then
+                  -- We have several bodies, but we must check that they are not all from the same protected object
+                  -- (protected types have already been dealt with by flag Includes_Type)
+                  Body_Ptr      := Ref_Info.Bodies;
+                  Different_POs := False;
+                  while Body_Ptr /= null loop
+                     if Declaration_Kind (Enclosing_Element (Body_Ptr.Decl)) /= A_Protected_Body_Declaration then
+                        Different_POs := True;
+                        exit;
                      end if;
+
+                     if Is_Nil (PO_Decl) then
+                        PO_Decl := Enclosing_Element (Body_Ptr.Decl);
+                     elsif not Is_Equal (Enclosing_Element (Body_Ptr.Decl), PO_Decl) then
+                        Different_POs := True;
+                        exit;
+                     end if;
+
+                     Body_Ptr := Body_Ptr.Next;
+                  end loop;
+                  -- When all bodies are from the same protected object, we must not print results
+                  if not Different_POs then
+                     return;
                   end if;
                end if;
             end if;
@@ -679,10 +712,11 @@ package body Rules.Global_References is
    end Finalize;
 
 begin
-   Framework.Rules_Manager.Register_Semantic (Rule_Id,
-                                              Help     => Help'Access,
-                                              Add_Use  => Add_Use'Access,
-                                              Command  => Command'Access,
-                                              Prepare  => Prepare'Access,
-                                              Finalize => Finalize'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Semantic,
+                                     Help_CB     => Help'Access,
+                                     Add_Use_CB  => Add_Use'Access,
+                                     Command_CB  => Command'Access,
+                                     Prepare_CB  => Prepare'Access,
+                                     Finalize_CB => Finalize'Access);
 end Rules.Global_References;

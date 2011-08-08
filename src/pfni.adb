@@ -35,6 +35,7 @@ with   -- Standard Ada units
   Ada.Characters.Handling,
   Ada.Exceptions,
   Ada.Strings.Wide_Fixed,
+  Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Unbounded,
   Ada.Wide_Text_IO;
 
@@ -63,50 +64,98 @@ procedure Pfni is
    use Thick_Queries, Utilities;
    use Ada.Wide_Text_IO;
 
-   type Location is record
-      File_Name    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-      First_Line   : Asis.Text.Line_Number        := 0;
-      First_Column : Asis.Text.Character_Position := 0;
-   end record;
 
-   function Value (S : Wide_String) return Location is
-      use Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded, Asis.Text;
+   Force_Spec : Boolean := False;
+   Force_Full : Boolean := False;
 
+   Overloading_Option : Boolean;
+   Full_Option        : Boolean;
+   Quiet_Option       : Boolean;
+
+   Unit_Name    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   First_Line   : Asis.Text.Line_Number        := 0;
+   Last_Line    : Asis.Text.Line_Number        := Asis.Text.Line_Number'Last;
+   First_Column : Asis.Text.Character_Position := 0;
+   I_Options    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
+   ---------------------
+   -- Parse_Parameter --
+   ---------------------
+
+   procedure Parse_Parameter (S : Wide_String)is
+      use Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded, Ada.Strings.Wide_Maps;
+      use Asis.Text;
+
+      Unit_First : Natural;
       Pos_Colon1 : Natural;
       Pos_Colon2 : Natural;
-      Result : Location;
+      Pos_Dash   : Natural;
+
+      function Make_Unit_Name (Name : Wide_String) return Wide_String is
+         Pos_Dot : constant Natural := Index (Name, ".", Going => Backward);
+      begin
+         if Pos_Dot = 0 or Pos_Dot /= Name'Last - 3 then
+            return Name (Unit_First .. Name'Last);
+         end if;
+
+         if To_Upper (Name (Name'Last - 2 .. Name'Last)) = "ADB" then
+            return Translate (Name (Unit_First .. Name'Last - 4), To_Mapping ("-", "."));
+         elsif To_Upper (Name (Name'Last - 2 .. Name'Last)) = "ADS" then
+            Force_Spec := True;
+            return Translate (Name (Unit_First .. Name'Last - 4), To_Mapping ("-", "."));
+         else
+            return Name (Unit_First .. Name'Last);
+         end if;
+      end Make_Unit_Name;
+
    begin
-      Pos_Colon1 := Index (S, ":");
-      if Pos_Colon1 = 0 then
-         return (To_Unbounded_Wide_String (S), 0, 0);
+      Unit_First := Index (S, Set => To_Set ("/\"), Going => Backward);
+      if Unit_First = 0 then
+         -- There is no directory separator
+         Unit_First := S'First;
+      else
+         I_Options  := " -I" & To_Unbounded_Wide_String (S (S'First ..  Unit_First));
+         Unit_First := Unit_First + 1;
       end if;
 
-      Result.File_Name := To_Unbounded_Wide_String (S (S'First .. Pos_Colon1-1));
+      Pos_Colon1 := Index (S (Unit_First .. S'Last), ":");
+      if Pos_Colon1 = 0 then
+         Unit_Name := To_Unbounded_Wide_String (Make_Unit_Name (S (Unit_First .. S'Last)));
+         return;
+      end if;
+
+      Force_Full := True;
+      Unit_Name  := To_Unbounded_Wide_String (Make_Unit_Name (S (Unit_First .. Pos_Colon1-1)));
 
       Pos_Colon2 := Index (S (Pos_Colon1 + 1 .. S'Last), ":");
       if Pos_Colon2 = 0 then
-         Pos_Colon2 := S'Last + 1;
+         Pos_Dash := Index (S (Pos_Colon1 + 1 .. S'Last), "-");
+         if Pos_Dash = 0 then
+            First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. S'Last));
+            Last_Line  := First_Line;
+         else
+            if Pos_Dash /= Pos_Colon1 + 1 then
+               First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Dash - 1));
+            end if;
+            if Pos_Dash /= S'Last then
+               Last_Line  := Line_Number'Wide_Value (S (Pos_Dash   + 1 .. S'Last));
+            end if;
+         end if;
+      else
+         First_Line   := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Colon2 - 1));
+         Last_Line    := First_Line;
+         First_Column := Character_Position'Wide_Value (S (Pos_Colon2+1 .. S'Last));
       end if;
-      Result.First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Colon2 - 1));
-      if Pos_Colon2 < S'Last then
-         Result.First_Column := Character_Position'Wide_Value (S (Pos_Colon2+1 .. S'Last));
-      end if;
-
-      return Result;
-   end Value;
+   end Parse_Parameter;
 
    -------------
    -- Options --
    -------------
 
-   package Options is new Options_Analyzer (Binary_Options => "hsodf",
+   package Options is new Options_Analyzer (Binary_Options => "dfhoqs",
                                             Valued_Options => "p",
                                             Tail_Separator => "--");
    use Options;
-
-   Unit_Spec          : Location;
-   Overloading_Option : Boolean;
-   Full_Option        : Boolean;
 
    ----------------
    -- Print_Help --
@@ -115,18 +164,71 @@ procedure Pfni is
    procedure Print_Help is
    begin
       Put_Line ("PFNI : Print Full Name Image");
-      Put_Line ("Usage: pfni [-sofd] [-p <project-file>] <unit>[:<line_number>[:<column_number>]] -- <ASIS options>");
+      Put_Line ("Usage: pfni [-sofdq] [-p <project-file>] <unit>[:<line_number>[:<column_number>]] -- <ASIS options>");
       Put_Line ("   or: pfni -h");
       New_Line;
 
       Put_Line ("Options:");
-      Put_Line ("   -d      enable debug mode");
+      Put_Line ("   -d      debug mode");
       Put_Line ("   -f      full output (each occurrence of names)");
       Put_Line ("   -h      prints this help message");
       Put_Line ("   -o      output overloading information");
       Put_Line ("   -p file specify an emacs ada-mode project file (.adp)");
+      Put_Line ("   -q      don't repeat source line (quiet)");
       Put_Line ("   -s      process specifications only");
    end Print_Help;
+
+   ------------------
+   -- Adjust_Image --
+   ------------------
+
+   function Adjust_Image (Original : Wide_String) return Wide_String is
+      -- Transform a Full_Name_Image according to the syntax we use externally.
+      -- The differences with the string return by Full_Name_Image are:
+      --   we use "return" rather than ":" for the return type of functions.
+      --   we use "access" rather than "*" for access parameters
+      use Ada.Strings.Wide_Fixed;
+
+      Pos   : Natural;
+      Start : Natural;
+   begin
+      Pos := Index (Original, ":");
+      if Pos = 0 then
+         -- Find a real * meaning "access", discard the "*" and "**" operators
+         Start := Original'First;
+         loop
+            Pos := Index (Original (Start .. Original'Last), "*");
+
+            if Pos = 0 then
+               -- No * found
+               return Original;
+
+            elsif Original (Pos+1) = '"' then
+               -- "*" operator
+               Start := Pos+2;
+
+            elsif Original (Pos+1) = '*' then
+               -- "**" operator
+               Start := Pos+3;
+
+            else
+               -- Real access parameter
+               exit;
+            end if;
+         end loop;
+
+         return
+           Original (Original'First..Pos - 1) &
+           " access " &
+           Adjust_Image (Original (Pos + 1 .. Original'Last));
+
+      else
+         return
+           Adjust_Image (Original (Original'First..Pos - 1)) &
+           " return " &
+           Adjust_Image (Original (Pos + 1 .. Original'Last));
+      end if;
+   end Adjust_Image;
 
    ----------------
    -- Print_Name --
@@ -139,41 +241,44 @@ procedure Pfni is
       use Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
       The_Span : constant Span := Element_Span (The_Name);
    begin
-      if Unit_Spec.First_Line /= 0 and then
-        (Unit_Spec.First_Line /= The_Span.First_Line
-         or else (Unit_Spec.First_Column /= 0
-                  and then Unit_Spec.First_Column not in The_Span.First_Column .. The_Span.Last_Column))
+      if The_Span.First_Line not in First_Line .. Last_Line
+        or else (First_Column /= 0
+                 and then First_Column not in The_Span.First_Column .. The_Span.Last_Column)
       then
          return;
       end if;
 
       if The_Span.First_Line /= Previous_Line then
          New_Line;
-         declare
-            use Line_Number_IO;
-            The_Lines : constant Line_List := Lines (The_Name,
-                                                     The_Span.First_Line,
-                                                     The_Span.Last_Line);
-         begin
-            for I in The_Lines'Range loop
-               Put (I, Width => 4);
-               Put (": ");
-               Put_Line (Line_Image (The_Lines(I)));
-            end loop;
-         end;
+         if not Quiet_Option then
+            declare
+               use Line_Number_IO;
+               The_Lines : constant Line_List := Lines (The_Name,
+                                                        The_Span.First_Line,
+                                                        The_Span.Last_Line);
+            begin
+               for I in The_Lines'Range loop
+                  Put (I, Width => 4);
+                  Put (": ");
+                  Put_Line (Line_Image (The_Lines (I)));
+               end loop;
+            end;
+         end if;
          Previous_Line := The_Span.Last_Line;
          Put ("==>> ");
       else
          Put (", ");
       end if;
 
-      if Element_Kind (The_Name) = A_Defining_Name then
-         Put (Full_Name_Image (The_Name, Overloading_Option));
-      elsif Is_Nil (Corresponding_Name_Definition (The_Name)) then
-         Put ("<<Nil definition: " & Trim (Element_Image (The_Name), Both) & ">>");
-      else
-         Put (Full_Name_Image (Corresponding_Name_Definition (The_Name), Overloading_Option));
-      end if;
+      declare
+         Result : constant Wide_String := Full_Name_Image (The_Name, Overloading_Option);
+      begin
+         if Result = "" then
+            Put ("<<FNI not available for """ & Trim (Element_Image (The_Name), Both) & """>>");
+         else
+            Put (Adjust_Image (Result));
+         end if;
+      end;
    end Print_Name;
 
    --------------------------------------------------------------------------
@@ -192,20 +297,14 @@ procedure Pfni is
    is
       pragma Unreferenced (State);
       use Asis.Text;
-      Pref : Asis.Expression;
    begin
       case Element_Kind (Element) is
          when An_Expression =>
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
                   if Full_Option then
-                     Pref := Prefix (Element);
-                     if Expression_Kind (Pref) = A_Selected_Component then
-                        Pref := Selector (Pref);
-                     end if;
-                     Print_Name (Pref);
+                     Print_Name (Element);
                   end if;
-                  -- Do not recurse into the attribute name itself
                   Control := Abandon_Children;
                when An_Identifier | An_Enumeration_Literal | An_Operator_Symbol =>
                   if Full_Option then
@@ -259,7 +358,7 @@ procedure Pfni is
    use Ada.Characters.Handling, Asis.Exceptions;
    use Implementation_Options;
    use Ada.Strings.Wide_Unbounded;
-begin
+begin  -- PFNI
    if Is_Present (Option => 'h') then
       Print_Help;
       return;
@@ -270,36 +369,32 @@ begin
       return;
    end if;
 
-   Overloading_Option := Is_Present (Option => 'o');
-   Debug_Option       := Is_Present (Option => 'd');
-   Full_Option        := Is_Present (Option => 'f');
-
+   Implementation_Options.Default_F_Parameter := 'S';  -- -FS by default
    begin
-      Unit_Spec := Value (To_Wide_String (Parameter (1)));
+      Parse_Parameter (To_Wide_String (Parameter (1)));
    exception
       when Constraint_Error =>
          User_Message ("Illegal value for line or column specification");
          return;
    end;
 
+   Overloading_Option := Is_Present (Option => 'o');
+   Debug_Option       := Is_Present (Option => 'd');
+   Full_Option        := Is_Present (Option => 'f') or Force_Full;
+   Quiet_Option       := Is_Present (Option => 'q');
+
    Implementation.Initialize;
    Ada_Environments.Associate (My_Context,
                                "MARF",
-                               Parameters_String (Value (Option => 'p',
-                                                         Explicit_Required => True),
-                                                  To_Wide_String (Tail_Value)));
+                               Parameters_String (Value (Option => 'p', Explicit_Required => True),
+                                                  To_Wide_String (Tail_Value) & To_Wide_String (I_Options)));
    Ada_Environments.Open (My_Context);
 
-   declare
-      Unit_Name : constant Wide_String
-        := To_Wide_String (Unit_Spec.File_Name);
-   begin
-      if Is_Present (Option => 's') then
-         My_Unit := Library_Unit_Declaration (Unit_Name, My_Context);
-      else
-         My_Unit := Compilation_Unit_Body (Unit_Name, My_Context);
-      end if;
-   end;
+   if Is_Present (Option => 's') or Force_Spec then
+      My_Unit := Library_Unit_Declaration (To_Wide_String (Unit_Name), My_Context);
+   else
+      My_Unit := Compilation_Unit_Body (To_Wide_String (Unit_Name), My_Context);
+   end if;
 
    declare
       My_CC_List : constant Context_Clause_List
@@ -331,7 +426,7 @@ exception
             end if;
       end case;
    when ASIS_Inappropriate_Compilation_Unit =>
-      User_Message ("Unit " & To_Wide_String (Unit_Spec.File_Name) & " not found in context");
+      User_Message ("Unit " & To_Wide_String (Unit_Name) & " not found in context");
    when
      ASIS_Inappropriate_Context
      | ASIS_Inappropriate_Container

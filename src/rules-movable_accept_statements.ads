@@ -34,24 +34,6 @@ with Asis;
 
 package Rules.Movable_Accept_Statements  is
 
-   -- This rule can be used to check/search statements that could be moved
-   -- from an accept scope to the directly outer scope, i.e. statements not
-   -- depending on the use of any formal parameter of the accept structure
-   -- might be moved, according to certain circumstances, to the directly
-   -- outer scope.
-   -- Note: circumstances are explained in the documentation.
-   -- Parameters: None
-
-   --                               OR
-
-   -- This rule can be used to check/search statements that could be moved
-   -- from the `accept' scope to an outer scope, i.e. every statements not
-   -- depending on any parameter of the `accept' structure should be moved
-   -- to the direct outer scope.
-   --
-   -- Parameters: None
-   --
-
    Rule_Id : constant Wide_String := "MOVABLE_ACCEPT_STATEMENTS";
 
    procedure Process_Accept_Statement (Statement : in Asis.Statement);

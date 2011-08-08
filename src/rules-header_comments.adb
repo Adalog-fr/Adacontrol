@@ -143,7 +143,7 @@ package body Rules.Header_Comments is
                      end;
                   end if;
 
-                  if Last = Buff'Last then     --## rule line off If_For_Case ## Case wouldn't be pretty here...
+                  if Last = Buff'Last then     --## rule line off Simplifiable_Statements ## If_For_Case
                      Parameter_Error (Rule_Id, "pattern too long at "
                                         & To_Wide_String (Name (Model_File)) & ':'
                                         & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
@@ -294,7 +294,7 @@ package body Rules.Header_Comments is
                Check_Model;
             else
                Report (Rule_Id, To_Wide_String (Model_Label), Model_Rule, Loc,
-                       "line does not match pattern");
+                       "line does not match pattern """ & Pattern (1 .. Pat_Last) & '"');
                Model_Reported := True;
             end if;
          end if;
@@ -304,7 +304,9 @@ package body Rules.Header_Comments is
       end Check_Model;
 
    begin
-      if not Rule_Used or Reported = (Rule_Types => True) then
+      if not Rule_Used
+        or (Reported = (Rule_Types => True) and Model_Reported)
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -319,8 +321,9 @@ package body Rules.Header_Comments is
   end Process_Line;
 
 begin
-   Framework.Rules_Manager.Register_Textual (Rule_Id,
-                                             Help    => Help'Access,
-                                             Add_Use => Add_Use'Access,
-                                             Command => Command'Access);
+   Framework.Rules_Manager.Register (Rule_Id,
+                                     Rules_Manager.Textual,
+                                     Help_CB    => Help'Access,
+                                     Add_Use_CB => Add_Use'Access,
+                                     Command_CB => Command'Access);
 end Rules.Header_Comments;

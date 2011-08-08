@@ -1,9 +1,32 @@
 procedure T_Non_Static is
+   -- Misc. types
+   type Enum is (A, B, C);
+   type Rec is
+      record
+         I : Integer;
+      end record;
+   type Acc is access Integer;
 
    -- Non static values:
    V : Integer;
    type Ptr_Proc is access procedure;
    Ptr : Ptr_Proc;
+
+   -- Check objects
+   V1 : Integer;
+   V2 : Integer := 3 + 2;
+   V3 : Integer := V;                  -- Variable_Initialization
+   V4 : Enum := A;
+   V5 : Enum := Enum'Succ (A);
+   V6 : Enum := V5;                    -- Variable_Initialization
+   V7 : Rec  := (I => 1);
+   V8 : Acc;
+   V9 : Acc := null;
+   V10 : Acc := new Integer;           -- Variable_Initialization
+
+   C1 : constant Integer := 2 ** 4;
+   C2 : constant Integer := V;         -- Constant_Initialization
+
 
    -- Check Index_Constraint
    type Tab1 is array (Integer range <>)    of Integer;
@@ -30,7 +53,7 @@ procedure T_Non_Static is
    procedure Gen1 is begin null; end;
 
    procedure Inst11 is new Gen1 (1, 2);
-   procedure Inst12 is new Gen1 (V, V);                   -- Instantiation
+   procedure Inst12 is new Gen1 (V, V);                   -- Instantiation x2
    procedure Inst13 is new Gen1 (1);                      -- Instantiation
 
    procedure Static is begin null; end;
