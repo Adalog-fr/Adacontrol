@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.12r4
+@settitle AdaControl User Guide V1.12b5
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -3480,9 +3480,16 @@ check usage (variable, from_spec);
 
 @subsection Limitations
 AdaControl cannot check entities accessed through dynamic names
-(dynamic renaming, access on aliased variables).  Use of such
+(dynamic renaming, access on aliased variables). Use of such
 constructs is detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
+
+Due to a weakness in the ASIS standard, it is not possible to know the
+mode (@b{in}, @b{out}) of variables used as parameters of dispatching
+calls. Such variables are considered to be read and written at the
+point of the call, therefore possibly creating false positives (which
+is safer than false negatives). Use of such constructs is detected by
+the rule ``uncheckable''.  @xref{Uncheckable}.
 
 @node Duplicate_Initialization_Calls, Entities, Directly_Accessed_Globals, Rules reference
 @section Duplicate_Initialization_Calls
@@ -7584,10 +7591,12 @@ analyzable. The same happens if objects are targets of dynamic
 renamings. Such cases are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
-Due to a weakness of the ASIS standard, usages of variables used as
-parameters to dispatching calls are ignored. This limitation will be
-removed as soon as we find a way to work around this problem, but the
-issue is quite difficult!
+Due to a weakness of the ASIS standard, it is not possible to know the
+mode (@b{in}, @b{out}) of variables used as parameters of dispatching
+calls. Such variables are considered to be read and written at the
+point of the call, therefore possibly creating false positives (which
+is safer than false negatives). Use of such constructs is detected by
+the rule ``uncheckable''.  @xref{Uncheckable}.
 
 @node Use_Clauses, With_Clauses, Usage, Rules reference
 @section Use_Clauses
@@ -7601,7 +7610,7 @@ This rule controls usage of @code{@b{use}} clauses.
 @end example
 
 @subsection Action
-The rule controls every  @code{@b{use}}clause, @i{except} those that
+The rule controls every  @code{@b{use}} clause, @i{except} those that
 name one of the mentioned packages. It is therefore possible to allow
 @code{@b{use}} clauses just for certain packages. If the keyword
 ``global'' is given, only @code{@b{use}} clauses that appear in
