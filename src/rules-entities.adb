@@ -130,17 +130,25 @@ package body Rules.Entities is
 
    procedure Process_Attribute (Attr : in Asis.Expression) is
       use Framework.Language, Framework.Reports, Utilities;
-      Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
-                                                                         Attr,
-                                                                         Extend_To => (Instance => True,
-                                                                                       Renaming => False));
    begin
-      if Current_Context /= No_Matching_Context then
-         Report (Rule_Id,
-                 Current_Context,
-                 Get_Location (Attr),
-                 "use of element """ & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities))) & '"');
+      if not Rule_Used then
+         return;
       end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
+                                                                            Attr,
+                                                                            Extend_To => (Instance => True,
+                                                                                          Renaming => False));
+      begin
+         if Current_Context /= No_Matching_Context then
+            Report (Rule_Id,
+                    Current_Context,
+                    Get_Location (Attr),
+                    "use of element """ & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities))) & '"');
+         end if;
+      end;
    end Process_Attribute;
 
    ------------------------
