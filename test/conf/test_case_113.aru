@@ -1,0 +1,4 @@
+#                                                                             #
+#                                TEST_CASE_113                                #
+#                                                                             #
+search not_elaboration_calls (ada.text_io.put_line, ada.text_io.line);

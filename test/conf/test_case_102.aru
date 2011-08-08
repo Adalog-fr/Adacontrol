@@ -1,0 +1,6 @@
+#                                                                             #
+#                                TEST_CASE_102                                #
+#                                                                             #
+check non_raising_non_reporting_exception_handler (Ada.Text_IO.Put_line,
+                                                   test_case_102.P);
+search non_raising_non_reporting_exception_handler (test_case_102.P);

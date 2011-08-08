@@ -1,0 +1,9 @@
+#                                                                             #
+#                                TEST_CASE_105                                #
+#                                                                             #
+#
+#
+#
+check  pragmas (elaborate_all);
+search pragmas (pure);
+search pragmas (inconnu);

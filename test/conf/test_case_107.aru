@@ -1,0 +1,16 @@
+#                                                                             #
+#                                TEST_CASE_107                                #
+#                                                                             #
+#
+#
+#
+search  default_parameter (test_case_107.gen, x, used);
+search  default_parameter (test_case_107.gen, y, used);
+search  default_parameter (test_case_107.gen, x, not_used);
+search  default_parameter (test_case_107.gen, y, not_used);
+
+# Commented out because of GNAT bug:
+#search  default_parameter (test_case_107.proc, x, used);
+#search  default_parameter (test_case_107.proc, y, used);
+#search  default_parameter (test_case_107.proc, x, not_used);
+#search  default_parameter (test_case_107.proc, y, not_used);

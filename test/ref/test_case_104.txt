@@ -1,0 +1,6 @@
+test_case_104.adb:7:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+test_case_104.adb:10:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+test_case_104.adb:21:10: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+test_case_104.adb:24:10: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+test_case_104.adb:36:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+test_case_104.adb:39:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"

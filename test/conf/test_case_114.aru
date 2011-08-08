@@ -1,0 +1,5 @@
+#                                                                             #
+#                                TEST_CASE_114                                #
+#                                                                             #
+search use_clauses (Ada.Text_IO);
+check  use_clauses (Ada.Text_IO, Ada.Strings);

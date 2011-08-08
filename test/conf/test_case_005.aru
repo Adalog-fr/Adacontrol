@@ -1,0 +1,5 @@
+#                                                                             #
+#                                TEST_CASE_005                                #
+#                                                                             #
+
+check pragmas (elaborate_all);

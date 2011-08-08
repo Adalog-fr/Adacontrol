@@ -1,0 +1,7 @@
+test_case_110.adb:7:17: Error: LOCAL_HIDING: "X" hides declaration at test_case_110.adb:2:4
+test_case_110.adb:12:7: Error: LOCAL_HIDING: "X" hides declaration at test_case_110.adb:2:4
+test_case_110.adb:16:4: Error: LOCAL_HIDING: "Test_Case_110" hides declaration at test_case_110.adb:1:11
+test_case_110.adb:25:10: Error: LOCAL_HIDING: "Z" hides declaration at test_case_110.adb:19:7
+test_case_110.adb:32:7: Error: LOCAL_HIDING: "X" hides declaration at test_case_110.adb:2:4
+test_case_110.adb:42:13: Error: LOCAL_HIDING: "Y" hides declaration at test_case_110.adb:40:12
+test_case_110.adb:46:12: Error: LOCAL_HIDING: "X" hides declaration at test_case_110.adb:2:4

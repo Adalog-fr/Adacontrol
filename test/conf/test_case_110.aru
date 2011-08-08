@@ -1,0 +1,5 @@
+#                                                                             #
+#                                TEST_CASE_110                                #
+#                                                                             #
+check local_hiding;
+

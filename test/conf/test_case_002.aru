@@ -1,0 +1,9 @@
+#                                                                             #
+#                                TEST_CASE_002                                #
+#                                                                             #
+
+Check  Entity_Inside_Exception (Pack_1.Proc_1{});
+Search Pragmas (elaborate_all);
+Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String);
+Check  Non_Raising_Non_Reporting_Exception_Handler (Ada.Text_Io.Put_Line);
+Search Local_Instantiation (Ada.Unchecked_Deallocation);

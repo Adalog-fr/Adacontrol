@@ -1,0 +1,5 @@
+#                                                                             #
+#                                TEST_CASE_109                                #
+#                                                                             #
+check entities (ada.text_IO.put, ada.text_io.put{string});
+

@@ -1,0 +1,9 @@
+#                                                                             #
+#                                TEST_CASE_101                                #
+#                                                                             #
+
+not_all_overloaded    : check entity_inside_exception (Ada.Text_IO.Put_line{string});
+not_all_not_overloaded: check entity_inside_exception (Ada.Text_IO.Put_line);
+all_overloaded        : check entity_inside_exception (all Put_line{string});
+all_not_overloaded    : check entity_inside_exception (all Put_line);
+

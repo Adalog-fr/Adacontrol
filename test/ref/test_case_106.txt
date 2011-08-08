@@ -1,0 +1,3 @@
+test_case_106.adb:6:13: Found: ATTRIBUTES: use of attribute "Unchecked_Access"
+test_case_106.adb:7:13: Error: ATTRIBUTES: use of attribute "Unrestricted_Access"
+test_case_106.adb:8:26: Found: ATTRIBUTES: use of attribute "Address"

@@ -1,0 +1,78 @@
+Rule: ALLOCATORS
+Parameter(s): allocated types
+This rule can be used to check/search for the occurrence of allocators,
+either all of them, or just those for specific type(s)
+
+Rule: ATTRIBUTES
+Parameter(s): attribute names
+This rule can be used to check/search for the usage of one 
+or several specific attribute (e.g. Unchecked_Access).
+
+Rule: DEFAULT_PARAMETER
+Parameter 1: Subprogram or generic name
+Parameter 2: Formal parameter name
+Parameter 3: "Used" or "Not_Used"
+This rule can be used to check/search for subprogram calls or generic
+instantiations that use (or not) the default value for a given parameter
+
+Rule: ENTITIES
+Parameter(s): Entity names
+This rule can be used to check/search for the occurrence of any Ada entity
+
+Rule: ENTITY_INSIDE_EXCEPTION
+Parameter(s): Entity names
+This rule can be used to check/search for the usage
+of an entity inside an exception handler.
+
+Rule: INSTANTIATIONS
+Parameter 1     : Generic name
+Parameter 2 .. N: Entity name (Optional)
+This rule can be used to check/search for generic instantiations,
+either all of them or those made with the given entities
+
+Rule: LOCAL_HIDING
+Parameter(s): none
+This rule can be used to check/search for local identifiers that hide an outer identical name
+
+Rule: LOCAL_INSTANTIATION
+Parameter(s): <generic name list>
+This rule can be used to check/search for the instantiations that are done in a local scope.
+
+Rule: MAX_NESTING
+Parameter: maximum allowed nesting level
+This rule can be used to check/search for scopes nested deeper than a given limit.
+
+Rule: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER
+Parameter(s): <report procedure name list>
+This rule can be used to check/search for exception handlers that do not re-raise exception and do not call a report procedure
+
+Rule: NOT_ELABORATION_CALLS
+Parameter(s): subprogram names
+This rule can be used to check/search for subprogram calls that happen
+elsewhere than as part of the elaboration of a library package.
+
+Rule: NO_CLOSING_NAME
+Parameter(s): none
+This rule can be used to check/search for constructs where repeating
+the construct name at the end is optional and not provided.
+
+Rule: PARAMETER_ALIASING
+Parameter (optional): certain (default) | possible | unlikely
+This rule can be used to check/search for subprogram or entry calls where
+the same variable is given for more than one [in] out parameter.
+This rule can detect non-straightforward aliasing cases, see doc for details
+
+Rule: PRAGMAS
+Parameter(s): Pragma names
+This rule can be used to check/search for the usage of a specific pragma
+
+Rule: UNNECESSARY_USE_CLAUSE
+Parameter(s): none
+This rule can be used to check/search use clauses for packages, where
+no element of the package is referenced in the scope of the use clause.
+
+Rule: USE_CLAUSES
+Parameter(s): Allowed package names
+This rule can be used to check/search for use clauses that mention
+any package but the ones passed as parameters (if any)
+

@@ -1,0 +1,9 @@
+#                                                                             #
+#                                TEST_CASE_001                                #
+#                                                                             #
+
+Check  Entity_Inside_Exception  (Pack_1.Proc_1{});
+Search Entity_Inside_Exception (Test_Case_001.Q,
+                                 Test_Case_001{}.P{STANDARD.INTEGER});
+Search Pragmas (Pure);
+Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String);

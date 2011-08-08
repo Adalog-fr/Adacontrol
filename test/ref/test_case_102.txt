@@ -1,0 +1,4 @@
+test_case_102.adb:22:4: Found: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: no re-raise or report procedure call in exception handler
+test_case_102.adb:25:4: Error: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: some paths have no re-raise or report procedure call in exception handler, check manually
+test_case_102.adb:30:4: Found: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: some paths have no re-raise or report procedure call in exception handler, check manually
+test_case_102.adb:43:4: Error: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: no re-raise or report procedure call in exception handler

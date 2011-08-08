@@ -1,0 +1,4 @@
+test_case_112.adb:3:7: Found: MAX_NESTING: nesting deeper than 2
+test_case_112.adb:4:10: Error: MAX_NESTING: nesting deeper than 3
+test_case_112.adb:9:10: Error: MAX_NESTING: nesting deeper than 3
+test_case_112-sep.adb:3:4: Found: MAX_NESTING: nesting deeper than 2

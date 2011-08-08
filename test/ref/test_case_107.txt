@@ -1,0 +1,2 @@
+test_case_107.adb:12:4: Found: DEFAULT_PARAMETER: non default use of formal "X"
+test_case_107.adb:12:4: Found: DEFAULT_PARAMETER: default use of formal "Y"

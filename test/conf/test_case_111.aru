@@ -1,0 +1,5 @@
+#                                                                             #
+#                                TEST_CASE_111                                #
+#                                                                             #
+check no_closing_name (5);
+search no_closing_name (3);

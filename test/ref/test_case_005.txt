@@ -1,0 +1,4 @@
+test_case_005.adb:3:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+test_case_005.adb:5:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+test_case_005.adb:8:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+test_case_005.adb:11:1: Error: PRAGMAS: use of pragma "Elaborate_All"

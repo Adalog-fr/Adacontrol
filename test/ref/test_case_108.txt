@@ -1,0 +1,6 @@
+test_case_108.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io in scope of use clause for same package at test_case_108.adb:8:4
+test_case_108.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
+test_case_108.adb:30:7: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Strings"
+test_case_108.adb:8:4: Error: UNNECESSARY_USE_CLAUSE: unused: "Text_IO"
+test_case_108.adb:2:14: Error: UNNECESSARY_USE_CLAUSE: unused: "System"
+test_case_108.ads:3:4: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Command_Line" (possible usage in child units)
