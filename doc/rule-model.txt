@@ -1,0 +1,13 @@
+@node
+@section 
+@subsection Syntax
+@example
+<check|search|count> 
+@end example
+@subsection Action
+This rule controls 
+
+Ex:
+@example
+@end example
+
