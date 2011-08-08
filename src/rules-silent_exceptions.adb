@@ -49,13 +49,10 @@ with
 
 -- Adactl
 with
-  Adactl_Constants,
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Adactl_Constants;
 
 package body Rules.Silent_Exceptions is
-   use Adactl_Constants, Framework;
+   use Adactl_Constants, Framework, Framework.Control_Manager;
 
    -- Algorithm
    --
@@ -475,7 +472,7 @@ package body Rules.Silent_Exceptions is
                -- Possible expressions that are part of the return statement must be considered
                Result := Result and Expression_Usage (Stmts (I));
                declare
-                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "RETURN");
+                  Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "RETURN");
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -488,7 +485,7 @@ package body Rules.Silent_Exceptions is
                -- Possible expressions that are part of the statements must be considered
                Result := Result and Expression_Usage (Stmts (I));
                declare
-                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "REQUEUE");
+                  Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "REQUEUE");
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -511,10 +508,8 @@ package body Rules.Silent_Exceptions is
             when A_Raise_Statement =>
                declare
                   Is_Reraise : constant Boolean := Is_Nil (Raised_Exception (Stmts (I)));
-                  Context    : constant Root_Context'Class := Framework.Association (Rule_Uses,
-                                                                                     Choose (Is_Reraise,
-                                                                                             "RERAISE",
-                                                                                             "EXPLICIT_RAISE"));
+                  Context    : constant Root_Context'Class
+                    := Control_Manager.Association (Rule_Uses, Choose (Is_Reraise, "RERAISE", "EXPLICIT_RAISE"));
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;

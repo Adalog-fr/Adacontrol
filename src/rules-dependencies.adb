@@ -31,7 +31,7 @@
 
 -- Ada
 with
-   Ada.Strings.Wide_Fixed;
+  Ada.Strings.Wide_Fixed;
 
 -- ASIS
 with
@@ -45,16 +45,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
   Framework.Language.Shared_Keys,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.String_Set;
 pragma Elaborate (Framework.Language);
+
 package body Rules.Dependencies is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Counting subrules must stay together:
    type Subrules is (Sr_Others, Sr_Raw, Sr_Direct, Sr_Parent);
@@ -138,7 +137,7 @@ package body Rules.Dependencies is
                declare
                   Entity : constant Entity_Specification := Get_Entity_Parameter;
                begin
-                  Associate (Allowed_Entities, Entity, Empty_Context);
+                  Associate (Allowed_Entities, Entity, Null_Context);
                exception
                   when Already_In_Store =>
                      Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));

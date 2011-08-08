@@ -42,18 +42,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework,
-  Framework.Reports,
-  Framework.Rules_Manager,
   Framework.Language;
-
-
 pragma Elaborate (Framework.Language);
 
 package body Rules.Return_Type is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm:
    --   First, in case the function declaration is a body or a body stub, we
@@ -75,14 +70,15 @@ package body Rules.Return_Type is
    --   protected and task types.
    --
 
-   type Return_Kind is (K_Class_Wide, K_Unconstrained_Discriminated, K_Unconstrained_Array, K_Protected, K_Task);
-   package Return_Kind_Utilities is new Framework.Language.Flag_Utilities (Return_Kind, "K_");
+   type Subrules is (K_Class_Wide,          K_Protected,                  K_Task,
+                     K_Unconstrained_Array, K_Unconstrained_Discriminated);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
-   type Usage_Flags is array (Return_Kind) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
 
    Rule_Used  : Usage_Flags := (others => False);
    Save_Used  : Usage_Flags;
-   Usage      : array (Return_Kind) of Basic_Rule_Context;
+   Usage      : array (Subrules) of Basic_Rule_Context;
 
    -- A global to store location of instantiation
    Instantiation_Location : Location := Null_Location;
@@ -95,7 +91,7 @@ package body Rules.Return_Type is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Return_Kind_Utilities.Help_On_Flags ("Parameter(s): ");
+      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s): ");
       User_Message ("Control various forms of the type returned by functions");
    end Help;
 
@@ -106,9 +102,9 @@ package body Rules.Return_Type is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-      use Return_Kind_Utilities;
+      use Subrules_Flag_Utilities;
 
-      procedure Add_One (Key : in Return_Kind) is
+      procedure Add_One (Key : in Subrules) is
       begin
          if Rule_Used (Key) then
             Parameter_Error (Rule_Id, "rule can be specified only once for each parameter.");
@@ -126,7 +122,7 @@ package body Rules.Return_Type is
             exit when not Parameter_Exists;
          end loop;
       else -- no parameter means all return kinds are checked
-         for K in Return_Kind loop
+         for K in Subrules loop
             Add_One (K);
          end loop;
       end if;
@@ -239,7 +235,7 @@ package body Rules.Return_Type is
       Result_Expression : Asis.Expression;
       Result_Type_Declaration : Asis.Declaration;
 
-      procedure Do_Report (Usage_Kind : in Return_Kind; Error_Message : in Wide_String) is
+      procedure Do_Report (Usage_Kind : in Subrules; Error_Message : in Wide_String) is
          use Framework.Reports;
       begin
          if Rule_Used (Usage_Kind) then

@@ -43,11 +43,9 @@ with
 with
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Max_Size is

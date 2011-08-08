@@ -48,15 +48,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Improper_Initialization is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm
    --

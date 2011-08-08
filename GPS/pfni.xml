@@ -24,10 +24,10 @@
 
  <!--  Contextual  -->
 <contextual action="Display_Fni" >
-    <Title>Print full name</Title>
+    <Title>Print full name of %e</Title>
 </contextual>
 <contextual action="Display_Fni_Ol" >
-    <Title>Print full name (with overloading)</Title>
+    <Title>Print full name of %e (with overloading)</Title>
 </contextual>
 </Pfni>
 

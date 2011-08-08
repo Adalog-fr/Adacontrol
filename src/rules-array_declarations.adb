@@ -43,17 +43,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Generic_Context_Iterator,
+  Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
-  Framework.Language.Shared_Keys,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Array_Declarations is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Subrules is (First, Last, Length, Component);
    subtype Dim_Subrules is Subrules range First .. Length;

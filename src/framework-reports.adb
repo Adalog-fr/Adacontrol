@@ -38,6 +38,7 @@ with
 
 -- Adalog
 with
+  Binary_Map,
   Linear_Queue,
   Utilities;
 
@@ -483,12 +484,12 @@ package body Framework.Reports is
    -- Report --
    ------------
 
-   procedure Report (Rule_Id     : in Wide_String;
-                     Context    : in Root_Context'Class;
-                     Loc        : in Location;
-                     Msg        : in Wide_String;
-                     Count_Only : in Boolean := False)
+   procedure Report (Rule_Id : in Wide_String;
+                     Context : in Control_Manager.Root_Context'Class;
+                     Loc     : in Location;
+                     Msg     : in Wide_String)
    is
+      use Control_Manager;
    begin
       if Context = No_Matching_Context then
          return;
@@ -497,13 +498,11 @@ package body Framework.Reports is
       declare
          Basic_Context : Basic_Rule_Context renames Basic_Rule_Context (Context);
       begin
-         if not Count_Only then
-            Report (Rule_Id,
-                    To_Wide_String (Basic_Context.Ctl_Label),
-                    Basic_Context.Ctl_Kind,
-                    Loc,
-                    Msg);
-         end if;
+         Report (Rule_Id,
+                 To_Wide_String (Basic_Context.Ctl_Label),
+                 Basic_Context.Ctl_Kind,
+                 Loc,
+                 Msg);
 
          if Basic_Context.With_Count then
             Report (Rule_Id,

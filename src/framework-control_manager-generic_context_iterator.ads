@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------
---  Framework.Generic_Context_Iterator - Package specification      --
+--  Framework.Control_Manager.Generic_Context_Iterator              --
+--  Package specification                                           --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -30,13 +31,13 @@
 ----------------------------------------------------------------------
 
 -- We make this unit a child because
--- 1) Framework is big enough :-)
--- 2) We need the visibility on the private part of Framework
+-- 1) Framework.Control_Manager is big enough :-)
+-- 2) We need the visibility on the private part of Framework.Control_Manager
 generic
    The_Store : in out Context_Store;
-package Framework.Generic_Context_Iterator is
+package Framework.Control_Manager.Generic_Context_Iterator is
    Create : constant Context_Iterator;
 private
    Create : constant Context_Iterator  := The_Store.This.Self.all'Access;
-end Framework.Generic_Context_Iterator;
+end Framework.Control_Manager.Generic_Context_Iterator;
 

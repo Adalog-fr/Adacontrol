@@ -41,18 +41,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework,
-  Framework.Reports,
-  Framework.Rules_Manager,
   Framework.Language;
-
-
 pragma Elaborate (Framework.Language);
 
 package body Rules.Non_Static is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Subrules is (K_Variable_Initialization, K_Constant_Initialization,
                      K_Index_Constraint,        K_Discriminant_Constraint,

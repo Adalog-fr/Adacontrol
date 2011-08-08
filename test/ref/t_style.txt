@@ -98,9 +98,9 @@ t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for
 t_style-parameter_order.adb:13:24: Found: No_Default_In: default IN mode used for parameter specification
 t_style-parameter_order.adb:23:18: Error: order_regular: parameter out of order for parameter specification
 t_style-parameter_order.adb:37:18: Error: order_regular: parameter out of order for parameter specification
-t_style-parameter_order.adb:64:7: Error: order_regular: parameter out of order for formal parameter declaration
-t_style-parameter_order.adb:65:7: Error: order_regular: parameter out of order for formal parameter declaration
-t_style-parameter_order.adb:66:7: Error: order_regular: parameter out of order for formal parameter declaration
+t_style-parameter_order.adb:64:7: Error: order_generic: parameter out of order for formal parameter declaration
+t_style-parameter_order.adb:65:7: Error: order_generic: parameter out of order for formal parameter declaration
+t_style-parameter_order.adb:66:7: Error: order_generic: parameter out of order for formal parameter declaration
 t_style-parameter_order.adb:67:45: Found: No_Default_In: default IN mode used for parameter specification
 t_style-parameter_order.adb:67:41: Error: order_regular: parameter out of order for parameter specification
 t_style-parameter_order.adb:68:45: Found: No_Default_In: default IN mode used for parameter specification

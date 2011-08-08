@@ -31,8 +31,7 @@
 
 -- Ada
 with
-  Ada.Strings.Wide_Unbounded,
-  Ada.Unchecked_Deallocation;
+  Ada.Strings.Wide_Unbounded;
 
 -- ASIS
 with
@@ -49,20 +48,17 @@ with
 
 -- Adactl
 with
-  Framework.Generic_Context_Iterator,
-  Framework.Language,
-  Framework.Language.Shared_Keys,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Control_Manager.Generic_Context_Iterator,
+  Framework.Language.Shared_Keys;
 
 package body Rules.Instantiations is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
    type Generic_Parameters is array (Positive range <>) of Entity_Specification;
-   type Generic_Parameter_List is access Generic_Parameters;
+   No_Parameters : constant Generic_Parameters (1 .. 0) := (others => Value ("Junk"));
 
    type Instance_Info (Nb_Param : Positive) is
       record
@@ -71,9 +67,9 @@ package body Rules.Instantiations is
       end record;
    package Instance_Info_List is new Linear_Queue (Instance_Info);
 
-   type Instantiation_Context (Has_Repeated : Boolean) is new Basic_Rule_Context with
+   type Instantiation_Context (Nb_Values : Natural; Has_Repeated : Boolean) is new Basic_Rule_Context with
       record
-         Values : Generic_Parameter_List;
+         Values : Generic_Parameters (1 .. Nb_Values);
          Places : Framework.Language.Shared_Keys.Places_Set;
          case Has_Repeated is
             when False =>
@@ -82,17 +78,9 @@ package body Rules.Instantiations is
                All_Instances : Instance_Info_List.Queue;
          end case;
       end record;
-   procedure Clear (Context : in out Instantiation_Context);
 
    Rule_Uses : Context_Store;
-   package Rule_Uses_Iterator is new Framework.Generic_Context_Iterator (Rule_Uses);
-
-   ----------
-   -- Free --
-   ----------
-
-   procedure Free is
-      new Ada.Unchecked_Deallocation (Generic_Parameters, Generic_Parameter_List);
+   package Rule_Uses_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Rule_Uses);
 
    -----------
    -- Image --
@@ -117,34 +105,6 @@ package body Rules.Instantiations is
       return To_Wide_String (Dummy);
    end Image;
 
-   ---------------
-   -- Add_Value --
-   ---------------
-
-   procedure Add_Value (Values    : in out Generic_Parameter_List;
-                        Has_Equal : in out Boolean;
-                        Spec      : in     Entity_Specification)
-   is
-      New_Values : Generic_Parameter_List;
-      Good_Spec  : Entity_Specification := Spec;
-   begin
-      if Good_Spec = Value ("()") then
-         Good_Spec := Value ("ENUM");
-      end if;
-
-      if Values = null then
-         New_Values := new Generic_Parameters' ((1 => Good_Spec));
-      else
-         New_Values := new Generic_Parameters' (Values.all & Good_Spec);
-      end if;
-
-      Free (Values);
-      Values := New_Values;
-
-      if Entity_Specification_Kind (Good_Spec) = Equal then
-         Has_Equal := True;
-      end if;
-   end Add_Value;
 
    ----------
    -- Help --
@@ -164,60 +124,69 @@ package body Rules.Instantiations is
       User_Message ("Optionally, control is restricted to instantiations appearing at indicated locations");
    end Help;
 
+
    -----------------
    -- Add_Control --
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Framework.Language.Shared_Keys, Instance_Info_List;
-   begin
+      use Framework.Language, Framework.Language.Shared_Keys;
+
+      function Build_Context (Places : Places_Set) return Instantiation_Context is
+         use Instance_Info_List;
+      begin
+         if not Parameter_Exists then
+            return (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                    Nb_Values    => 0,
+                    Has_Repeated => False,
+                    Values       => No_Parameters,
+                    Places       => Places);
+         end if;
+
+         declare
+            Spec : Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+            Rest : constant Instantiation_Context := Build_Context (Places);
+         begin
+            if Spec = Value ("()") then
+               Spec := Value ("ENUM");
+            end if;
+
+            if Rest.Has_Repeated or Entity_Specification_Kind (Spec) = Equal then
+               return (Basic_Rule_Context (Rest) with
+                       Nb_Values     => Rest.Nb_Values + 1,
+                       Has_Repeated  => True,
+                       Values        => Spec & Rest.Values,
+                       Places        => Rest.Places,
+                       All_Instances => Empty_Queue);
+            else
+               return (Basic_Rule_Context (Rest) with
+                       Nb_Values    => Rest.Nb_Values + 1,
+                       Has_Repeated => False,
+                       Values       => Spec & Rest.Values,
+                       Places       => Rest.Places);
+            end if;
+         end;
+      end Build_Context;
+
+   begin   -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "At least one parameter required");
       end if;
 
       declare
-         Places         : constant Places_Set             := Get_Places_Set_Modifiers;
-         Generic_Name   : constant Entity_Specification   := Get_Entity_Parameter;
-         Generic_Params :          Generic_Parameter_List := null;
-         Has_Equal      :          Boolean                := False;
+         Places         : constant Places_Set           := Get_Places_Set_Modifiers;
+         Generic_Name   : constant Entity_Specification := Get_Entity_Parameter;
       begin
-         while Parameter_Exists loop
-            Add_Value (Generic_Params, Has_Equal, Get_Entity_Parameter (Allow_Extended => True));
-         end loop;
-
-         if Has_Equal then
-            Associate (Rule_Uses,
-                       Generic_Name,
-                       Instantiation_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                              Has_Repeated  => True,
-                                              Values        => Generic_Params,
-                                              Places        => Places,
-                                              All_Instances => Empty_Queue),
-                       Additive => True);
-         else
-            Associate (Rule_Uses,
-                       Generic_Name,
-                       Instantiation_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                              Has_Repeated => False,
-                                              Values       => Generic_Params,
-                                              Places       => Places),
-                       Additive => True);
-         end if;
+         Associate (Rule_Uses,
+                    Generic_Name,
+                    Build_Context (Places),
+                    Additive => True);
          Rule_Used := True;
       exception
          when Already_In_Store =>
             Parameter_Error (Rule_Id, "this combination of parameters already specified for " & Image (Generic_Name));
       end;
    end Add_Control;
-
-   -----------
-   -- Clear --
-   -----------
-
-   procedure Clear (Context : in out Instantiation_Context) is
-   begin
-      Free (Context.Values);
-   end Clear;
 
    -------------
    -- Command --
@@ -382,7 +351,7 @@ package body Rules.Instantiations is
             return;
          end if;
 
-         if Good_Context.Values = null then
+         if Good_Context.Nb_Values = 0 then
             Report (Rule_Id,
                     Good_Context,
                     Get_Location (Instantiation),
@@ -413,8 +382,8 @@ package body Rules.Instantiations is
                   end if;
                   Current := Next (Current);
                end loop;
-               if not Found and Match (Actual_Part, Good_Context.Values.all) then
-                  Append (Good_Context.All_Instances, Make_Info (Good_Context.Values.all, Actual_Part));
+               if not Found and Match (Actual_Part, Good_Context.Values) then
+                  Append (Good_Context.All_Instances, Make_Info (Good_Context.Values, Actual_Part));
                   Update (Rule_Uses, Good_Context);
                end if;
             end;
@@ -424,14 +393,14 @@ package body Rules.Instantiations is
                Actual_Part : constant Asis.Association_List := Generic_Actual_Part (Instantiation,
                                                                                     Normalized => True);
             begin
-               if Match (Actual_Part, Good_Context.Values.all) then
+               if Match (Actual_Part, Good_Context.Values) then
                   Report (Rule_Id,
                           Good_Context,
                           Get_Location (Instantiation),
                           Image (Good_Context.Places, Default => Everywhere)
                           & "instantiation of "
                           & To_Title (Last_Matching_Name (Rule_Uses))
-                          & " with " & Image (Good_Context.Values.all));
+                          & " with " & Image (Good_Context.Values));
                end if;
             end;
          end if;

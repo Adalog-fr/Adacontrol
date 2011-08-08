@@ -51,16 +51,14 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -383,22 +381,14 @@ package body Rules.Naming_Convention is
                  and not (Current.Is_Others and Positive_Pattern_Found)
                then
                   Last_Applicable_Pattern := Current;
-                  -- In some (undetermined) cases, Match does not return
-                  -- Let's make sure that it does not hang the program
-                  select
-                     delay 1.0;
-                     Matches := False;
-                     A4G_Bugs.Trace_Bug ("Match did not return within 1 sec");
-                  then abort
-                     Matches := Match (Name_Str, Current.Pattern.all);
-                  end select;
+                  Matches := Match (Name_Str, Current.Pattern.all);
                   if Matches then
                      Positive_Pattern_Found := True;
                      return;
                   end if;
                end if;
                exit when Current.Next = null;
-               Current  := Current.Next;
+               Current := Current.Next;
             end loop;
 
             -- No match found here => error, unless there were no positive patterns, or

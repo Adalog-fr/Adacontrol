@@ -47,9 +47,7 @@ with
 -- Adactl
 with
   Framework.Language,
-  Framework.Language.Shared_Keys,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Case_Statement is

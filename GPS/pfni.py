@@ -1,5 +1,8 @@
-#  This file adds support for Pfni
-
+"""  This file adds support for Pfni
+     It provides a contextual entry that displays the full name image
+     of any identifier
+"""
+
 import GPS
 
 # Builds the options string

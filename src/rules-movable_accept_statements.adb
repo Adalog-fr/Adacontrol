@@ -44,18 +44,13 @@ with
   Thick_Queries,
   Utilities;
 
-
--- Adactl
+-- AdaControl
 with
-  Framework,
-  Framework.Language,
-  Framework.Reports,
-  Framework.Rules_Manager;
-
+  Framework.Language;
 pragma Elaborate (Framework.Language);
--- package Rules.Movable_Accept_Statements
+
 package body Rules.Movable_Accept_Statements  is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm:
    --

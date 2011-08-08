@@ -29,6 +29,10 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- AdaControl
+with
+   Framework.Control_Manager;
+
 package Framework.Reports is
 
    procedure Report (Rule_Id   : in Wide_String;
@@ -39,10 +43,9 @@ package Framework.Reports is
    -- Reports rule match to current output
 
    procedure Report (Rule_Id    : in Wide_String;
-                     Context    : in Root_Context'Class;
+                     Context    : in Control_Manager.Root_Context'Class;
                      Loc        : in Location;
-                     Msg        : in Wide_String;
-                     Count_Only : in Boolean := False);
+                     Msg        : in Wide_String);
    -- Id, but get Rule_Label and Rule_Type from Context
    -- Context must be either No_Matching_Context (and Report does nothing)
    --   or a descendant of Simple_Context.

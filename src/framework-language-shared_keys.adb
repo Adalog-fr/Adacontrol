@@ -152,6 +152,8 @@ package body Framework.Language.Shared_Keys is
             return "RECORD";
          when A_Tagged_Type =>
             return "TAGGED";
+         when An_Extended_Tagged_Type =>
+            return "EXTENSION";
          when An_Access_Type =>
             return "ACCESS";
          when A_Derived_Type =>
@@ -169,33 +171,61 @@ package body Framework.Language.Shared_Keys is
    -- Matches --
    -------------
 
-   function Matches (Elem           : in Asis.Element;
-                     Cat            : in Categories;
-                     Follow_Derived : in Boolean := False;
-                     Follow_Private : in Boolean := False)
+   Match_Table : constant array (Thick_Queries.Type_Categories) of Categories
+     := (Thick_Queries.Not_A_Type                   => Cat_Any,
+         -- For Matches: Since Cat_Any is eliminated first, will return false
+         Thick_Queries.An_Enumeration_Type          => Cat_Enum,
+         Thick_Queries.A_Signed_Integer_Type        => Cat_Range,
+         Thick_Queries.A_Modular_Type               => Cat_Mod,
+         Thick_Queries.A_Fixed_Point_Type           => Cat_Delta,
+         Thick_Queries.A_Floating_Point_Type        => Cat_Digits,
+         Thick_Queries.An_Array_Type                => Cat_Array,
+         Thick_Queries.A_Record_Type                => Cat_Record,
+         Thick_Queries.A_Tagged_Type                => Cat_Tagged,
+         Thick_Queries.An_Extended_Tagged_Type      => Cat_Extension,
+         Thick_Queries.An_Access_Type               => Cat_Access,
+         Thick_Queries.A_Derived_Type               => Cat_New,
+         Thick_Queries.A_Private_Type               => Cat_Private,
+         Thick_Queries.A_Task_Type                  => Cat_Task,
+         Thick_Queries.A_Protected_Type             => Cat_Protected);
+
+   function Matches (Elem               : in Asis.Element;
+                     Cat                : in Categories;
+                     Follow_Derived     : in Boolean := False;
+                     Follow_Private     : in Boolean := False;
+                     Separate_Extension : in Boolean := False)
                      return Boolean
    is
       use Thick_Queries;
-      Match_Table : constant array (Thick_Queries.Type_Categories) of Categories
-        := (Not_A_Type                   => Cat_Any,   -- Since Cat_Any is eliminated first, this will return false
-            An_Enumeration_Type          => Cat_Enum,
-            A_Signed_Integer_Type        => Cat_Range,
-            A_Modular_Type               => Cat_Mod,
-            A_Fixed_Point_Type           => Cat_Delta,
-            A_Floating_Point_Type        => Cat_Digits,
-            An_Array_Type                => Cat_Array,
-            A_Record_Type                => Cat_Record,
-            A_Tagged_Type                => Cat_Tagged,
-            An_Access_Type               => Cat_Access,
-            A_Derived_Type               => Cat_New,
-            A_Private_Type               => Cat_Private,
-            A_Task_Type                  => Cat_Task,
-            A_Protected_Type             => Cat_Protected);
    begin
       if Cat = Cat_Any then
          return True;
       end if;
-      return Match_Table (Type_Category (Elem, Follow_Derived, Follow_Private)) = Cat;
+      return Match_Table (Type_Category (Elem, Follow_Derived, Follow_Private, Separate_Extension)) = Cat;
    end Matches;
+
+
+   -----------------------
+   -- Matching_Category --
+   -----------------------
+
+   function Matching_Category (Elem               : in Asis.Element;
+                               From_Cats          : in Categories_Utilities.Unconstrained_Modifier_Set;
+                               Follow_Derived     : in Boolean := False;
+                               Follow_Private     : in Boolean := False;
+                               Separate_Extension : in Boolean := False)
+                               return Categories
+   is
+      use Thick_Queries;
+      Cat : constant Categories
+        := Match_Table (Type_Category (Elem, Follow_Derived, Follow_Private, Separate_Extension));
+   begin
+      if From_Cats (Cat) then
+         return Cat;
+      else
+         return Cat_Any;
+      end if;
+   end Matching_Category;
+
 
 end Framework.Language.Shared_Keys;

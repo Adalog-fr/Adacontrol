@@ -37,7 +37,6 @@ with
 with
   Asis.Declarations,
   Asis.Elements,
-  Asis.Expressions,
   Asis.Iterator;
 
 -- Adalog
@@ -47,18 +46,12 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
 package body Rules.Max_Call_Depth is
    use Framework, Ada.Strings.Wide_Unbounded;
 
    -- Algorithm:
    --
-   -- The function Max_Call_Depth computes the maximum depth of a *call*, i.e. it returns
+   -- The function Call_Depth computes the maximum depth of a *call*, i.e. it returns
    -- at least 1.
    -- Since the call depth is a property of the callable entity, the value is kept in the
    -- Call_Depths map to avoid analyzing the same callable entity twice.
@@ -94,13 +87,25 @@ package body Rules.Max_Call_Depth is
    Depths   : array (Control_Kinds) of Integer := (others => Unused);
    -- Depth that triggers the message, i.e. allowed depth + 1
 
-   type Called_Kind is (Enumerated, Recursive, Regular);
-   type Entity_Descriptor is
+   type Called_Kind is (Regular, Inline, Recursive, Banned, Formal, Unavailable, Unknown, Dynamic);
+   subtype Unexplored is Called_Kind range Banned .. Unavailable;
+   -- Regular .. Imported are really properties of the called entity
+   -- Dynamic .. Unknown are properties of the call.
+   -- But it's not worth making two different types for this subtility
+   --
+   -- A value in Unexplored is returned by Call_Depth if it is a direct call to a subprogram with the
+   -- corresponding property.
+   -- If the call is to something that indirectly calls an Unexplored SP, the returned kind is Unknown.
+
+   type Depth_Descriptor is
       record
          Kind  : Called_Kind;
          Depth : Natural;
+         -- Infinite      for Recursive
+         -- Actual depth  for Regular
+         -- Minimum depth for unknown
       end record;
-   package Depth_Map is new Binary_Map (Unbounded_Wide_String, Entity_Descriptor);
+   package Depth_Map is new Binary_Map (Unbounded_Wide_String, Depth_Descriptor);
    Call_Depths : Depth_Map.Map;
 
    ----------
@@ -132,7 +137,9 @@ package body Rules.Max_Call_Depth is
       end if;
 
       if Is_Integer_Parameter then
-         Depths (Ctl_Kind) := Get_Integer_Parameter (Min => 0) + 1;
+         -- We limit max to Infinite-2 so that there can be no confusion with Infinite after adding 1.
+         -- Should be more than enough anyway...
+         Depths (Ctl_Kind) := Get_Integer_Parameter (Min => 0, Max => Infinite-2) + 1;
          -- + 1 since we store the depth wich is an error
       else
          declare
@@ -172,84 +179,94 @@ package body Rules.Max_Call_Depth is
       end case;
    end Command;
 
+   ------------------------
+   -- Report_Uncheckable --
+   ------------------------
+
+   procedure Report_Uncheckable (Call : Asis.Element; Message : Wide_String; Assumed : Natural) is
+      use Asis.Elements;
+      use Framework.Reports, Thick_Queries, Utilities;
+   begin
+      if Is_Part_Of_Instance (Call) then
+         -- Unfortunately, Corresponding_Generic_Element does not work on call.
+         -- Let the message reference the instantiation instead
+         Uncheckable (Rule_Id,
+                      False_Negative,
+                      Get_Location (Ultimate_Enclosing_Instantiation (Call)),
+                      Message & " in generic; assuming depth of " & Integer_Img (Assumed));
+      else
+         Uncheckable (Rule_Id,
+                      False_Negative,
+                      Get_Location (Call),
+                      Message & "; assuming depth of " & Integer_Img (Assumed));
+      end if;
+   end Report_Uncheckable;
+
    ----------------
    -- Call_Depth --
    ----------------
 
-   function Entity_Call_Depth (Decl : Asis.Declaration; Call : Asis.Element) return Natural;
+   function Entity_Call_Depth (Decl : Asis.Declaration) return Depth_Descriptor;
 
-   function Call_Depth (Call : Asis.Element) return Natural is
-      -- Computes the depth of a call, including itself
+   function Call_Depth (Call : Asis.Element) return Depth_Descriptor is
+   -- Computes the depth of a call, including itself
       use Asis, Asis.Elements;
-      use Depth_Map, Framework.Reports, Thick_Queries;
+      use Depth_Map, Thick_Queries, Utilities;
 
       Called       : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Call));
       Called_Name  : Unbounded_Wide_String;
       Called_Descr : Call_Descriptor;
-      Called_Depth : Entity_Descriptor;
+      Called_Depth : Depth_Descriptor;
    begin
-      if not Is_Nil (Called) then
-         Called_Name := To_Unbounded_Wide_String (Full_Name_Image (Called, With_Profile => True));
-         if Is_Present (Call_Depths, Called_Name) then
-            Called_Depth := Fetch (Call_Depths, Called_Name);
-            case Called_Depth.Kind is
-               when Recursive =>
-                  return Infinite;
-               when Enumerated =>
-                  return 0;
-               when Regular =>
-                  return Called_Depth.Depth + 1;
-            end case;
-         end if;
+      if Is_Nil (Called) then
+         return (Dynamic, 1);
       end if;
 
-      Called_Descr := Corresponding_Call_Description (Call);
-      case Called_Descr.Kind is
-         when An_Attribute_Call | A_Predefined_Entity_Call =>
-            -- Assume these functions have a depth of 0
-            Called_Depth := (Regular, 0);
+      Called_Name := To_Unbounded_Wide_String (Full_Name_Image (Called, With_Profile => True));
+      if Is_Present (Call_Depths, Called_Name) then
+         Called_Depth := Fetch (Call_Depths, Called_Name);
 
-         when A_Dereference_Call | A_Dispatching_Call =>
-            if Is_Part_Of_Instance (Call) then
-               -- Unfortunately, Corresponding_Generic_Element does not work on call.
-               -- Let the message reference the instantiation instead
-               Uncheckable (Rule_Id,
-                            False_Negative,
-                            Get_Location (Ultimate_Enclosing_Instantiation (Call)),
-                            "Dispatching call, call to predefined or dynamic entity in generic; "
-                            & "assuming depth of 1");
-            else
-               Uncheckable (Rule_Id,
-                            False_Negative,
-                            Get_Location (Call),
-                            "Dispatching call, call to predefined or dynamic entity; assuming depth of 1");
-            end if;
-            -- Short of knowing, assume depth of 1
-            -- Return directly, since there is no name to add to Call_Depths in this case
-            return 1;
+      else
+         Called_Descr := Corresponding_Call_Description (Call);
+         case Called_Descr.Kind is
+            when An_Attribute_Call =>
+               -- Short of knowing, assume they are implemented with a regular call, with no further calls
+               Called_Depth := (Regular, 0);
 
-         when A_Regular_Call =>
-            if Declaration_Kind (Called_Descr.Declaration) = An_Enumeration_Literal_Specification then
-               -- Do not even count these as calls
-               Called_Depth := (Enumerated, 0);
-            else
-               -- Normal case
-               Called_Depth := (Regular, Entity_Call_Depth (Called_Descr.Declaration, Call));
-               if Called_Depth.Depth = Infinite then
-                  Called_Depth.Kind := Recursive;
+            when A_Predefined_Entity_Call =>
+               -- Assume these are generated in-line
+               Called_Depth := (Inline, 0);
+
+            when A_Dereference_Call | A_Dispatching_Call =>
+               -- Short of knowing, assume depth of 1
+               -- Return directly, since there is no name to add to Call_Depths in this case
+               return (Dynamic, 1);
+
+            when A_Regular_Call =>
+               if Declaration_Kind (Called_Descr.Declaration) = An_Enumeration_Literal_Specification then
+                  -- Do not even count these as calls
+                  Called_Depth := (Inline, 0);
+               else
+                  -- Normal case
+                  Called_Depth := Entity_Call_Depth (Called_Descr.Declaration);
                end if;
-            end if;
-      end case;
+         end case;
 
-      Add (Call_Depths, Called_Name, Called_Depth);
+         -- This may seem redundant with the call to Add in Entity_Call_Depth, but it isn't if
+         -- the Called_Name is a renaming, since we register here the new name, and Entity_Call_Depth
+         -- does the same for the ultimate name. Granted, for regular calls it is added twice, but this
+         -- happens only once.
+         Add (Call_Depths, Called_Name, Called_Depth);
+      end if;
 
       case Called_Depth.Kind is
-         when Recursive =>
-            return Infinite;
-         when Enumerated =>
-            return 0;
-         when Regular =>
-            return Called_Depth.Depth + 1;
+         when Inline | Recursive =>
+            return Called_Depth;
+         when Dynamic =>
+            Failure ("Dynamic kind returned by Entity_Call_Depth - 1");
+         when Regular | Unexplored | Unknown =>
+            -- All cases where something is actually called (although we may not know very well what)
+            return (Called_Depth.Kind, Called_Depth.Depth + 1);
       end case;
    end Call_Depth;
 
@@ -259,29 +276,42 @@ package body Rules.Max_Call_Depth is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            Count   : in out Natural);
+                            Descr   : in out Depth_Descriptor);
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             Count   : in out Natural);
-   procedure Traverse is new Asis.Iterator.Traverse_Element (Natural, Pre_Procedure, Post_Procedure);
+                             Descr   : in out Depth_Descriptor);
+   procedure Traverse is new Asis.Iterator.Traverse_Element (Depth_Descriptor, Pre_Procedure, Post_Procedure);
    -- Computes the maximum depth of all calls encountered in the body.
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            Count   : in out Natural) is
+                            Descr   : in out Depth_Descriptor) is
       use Thick_Queries, Utilities;
       use Asis, Asis.Declarations, Asis.Elements;
 
-      Temp : Asis.Element;
-   begin
+      Temp       : Asis.Element;
+      This_Descr : Depth_Descriptor;
+      begin
       case Element_Kind (Element) is
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>
-                  Count := Natural'Max (Count, Call_Depth (Element));
-                  if Count = Infinite then
-                     Control := Terminate_Immediately;
-                  end if;
+                  This_Descr := Call_Depth (Element);
+                  case This_Descr.Kind is
+                     when Inline =>
+                        -- does not count
+                        null;
+                     when Recursive =>
+                        Descr := This_Descr;
+                        -- No need to investigate any further
+                        Control := Terminate_Immediately;
+                     when Regular =>
+                        -- If Descr.Kind = Unknown, it stays this way
+                        Descr.Depth := Natural'Max (Descr.Depth, This_Descr.Depth);
+                     when Unexplored | Unknown | Dynamic =>
+                        -- All cases where the body is unknown are turned to Unknown at this point
+                        Descr := (Unknown, Natural'Max (Descr.Depth, This_Descr.Depth));
+                  end case;
                when others =>
                   null;
             end case;
@@ -291,10 +321,22 @@ package body Rules.Max_Call_Depth is
                when A_Procedure_Call_Statement
                     | An_Entry_Call_Statement
                     =>
-                  Count := Natural'Max (Count, Call_Depth (Element));
-                  if Count = Infinite then
-                     Control := Terminate_Immediately;
-                  end if;
+                  This_Descr := Call_Depth (Element);
+                  case This_Descr.Kind is
+                     when Inline =>
+                        -- does not count
+                        null;
+                     when Recursive =>
+                        Descr := This_Descr;
+                        -- No need to investigate any further
+                        Control := Terminate_Immediately;
+                     when Regular =>
+                        -- If Descr.Kind = Unknown, it stays this way
+                        Descr.Depth := Natural'Max (Descr.Depth, This_Descr.Depth);
+                     when Unexplored | Unknown | Dynamic =>
+                        -- All cases where the body is unknown are turned to Unknown at this point
+                        Descr := (Unknown, Natural'Max (Descr.Depth, This_Descr.Depth));
+                  end case;
                when others =>
                   null;
             end case;
@@ -314,7 +356,7 @@ package body Rules.Max_Call_Depth is
                   Temp := Type_Declaration_View (Element);
                   if not Is_Nil (Temp) then
                      -- Temp is nil for an empty task type declaration (task T;)
-                     Traverse (Temp, Control, Count);
+                     Traverse (Temp, Control, Descr);
                   end if;
                   Control := Abandon_Children;
                when An_Incomplete_Type_Declaration
@@ -350,7 +392,7 @@ package body Rules.Max_Call_Depth is
                   null;
                when A_Renaming_Declaration =>
                   -- Traverse only the renamed entity (not the new name)
-                  Traverse (A4G_Bugs.Renamed_Entity (Element), Control, Count);
+                  Traverse (A4G_Bugs.Renamed_Entity (Element), Control, Descr);
                   Control := Abandon_Children;
                when A_Package_Body_Declaration =>
                   -- Recurse normally if it is not a generic body
@@ -359,7 +401,7 @@ package body Rules.Max_Call_Depth is
                   end if;
                when A_Component_Declaration =>
                   -- Traverse the declaration, but not the initialization expression
-                  Traverse (Object_Declaration_View (Element), Control, Count);
+                  Traverse (Object_Declaration_View (Element), Control, Descr);
                   Control := Abandon_Children;
                when A_Parameter_Specification
                   | An_Entry_Index_Specification
@@ -380,42 +422,86 @@ package body Rules.Max_Call_Depth is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             Count   : in out Natural) is
-      pragma Unreferenced (Element, Control, Count);
+                             Descr   : in out Depth_Descriptor) is
+      pragma Unreferenced (Element, Control, Descr);
    begin
       null;
    end Post_Procedure;
 
-   function Entity_Call_Depth (Decl : Asis.Declaration; Call : Asis.Element) return Natural is
-      -- The call depth of an entity is the maximum of all calls inside it, i.e.:
-      -- returns 0 if Decl is the declaration of a callable_entity that calls nothing
-      -- returns 1 if Decl is the declaration of a callable_entity that calls only entities of depth 0
-      --    ...
-      -- returns Infinite if Decl is the declaration of a callable_entity that is directly or indirectly recursive
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Depth_Map, Framework.Reports, Thick_Queries, Utilities;
+   function Entity_Call_Depth (Decl : Asis.Declaration) return Depth_Descriptor is
+   -- The call depth of an entity is the maximum of all calls inside it, i.e.:
+   -- returns 0 if Decl is the declaration of a callable_entity that calls nothing
+   -- returns 1 if Decl is the declaration of a callable_entity that calls only entities of depth 0
+   --    ...
+   -- returns Infinite if Decl is the declaration of a callable_entity that is directly or indirectly recursive
+   --
+   -- Precondition: Decl is the declaration of a real subprogram, not of a renaming
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Depth_Map, Framework.Rules_Manager, Thick_Queries, Utilities;
 
-      Called_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Full_Name_Image
-                                                                                (Ultimate_Name (Names (Decl)(1)),
-                                                                                 With_Profile => True));
-      Called_Body    : Asis.Declaration;
-      Renaming       : Asis.Expression;
-      Control        : Traverse_Control := Continue;
-      Count          : Natural          := 0;
-      Is_Uncheckable : Boolean := False;
-      Result         : Entity_Descriptor  := (Regular, 0);
-   begin
+      Called_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Full_Name_Image (Names (Decl)(1),
+                                                                                                 With_Profile => True));
+      Called_Body : Asis.Declaration;
+      Control     : Traverse_Control := Continue;
+      Result      : Depth_Descriptor;
+
+      procedure Analyze_Body is
+         Recursivity_Found : exception;
+      begin
+         -- Initialize to Infinite before traversing. This way, if it is truly recursive,
+         -- it will be found in the map and the result will be Infinite.
+         Add (Call_Depths, Called_Name, (Recursive, Infinite));
+         Result := (Regular, 0);
+
+         -- We cannot directly traverse the whole body, since bodies are discarded
+         -- We traverse all the parts manually (except formal parameters, of course)
+         -- Of course, we can stop the traversal as soon as we determine that the
+         -- SP is recursive.
+         declare
+            Body_Decls : constant Asis.Declaration_List := Body_Declarative_Items (Called_Body);
+         begin
+            for I in Body_Decls'Range loop
+               Traverse (Body_Decls (I), Control, Result);
+               if Result.Kind = Recursive then
+                  raise Recursivity_Found;
+               end if;
+            end loop;
+         end;
+         declare
+            Body_Stats : constant Asis.Statement_List := Body_Statements (Called_Body);
+         begin
+            for I in Body_Stats'Range loop
+               Traverse (Body_Stats (I), Control, Result);
+               if Result.Kind = Recursive then
+                  raise Recursivity_Found;
+               end if;
+            end loop;
+         end;
+         declare
+            Body_Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (Called_Body);
+         begin
+            for I in Body_Handlers'Range loop
+               Traverse (Body_Handlers (I), Control, Result);
+               if Result.Kind = Recursive then
+                  raise Recursivity_Found;
+               end if;
+            end loop;
+         end;
+
+      exception
+         when Recursivity_Found =>
+            Result := (Recursive, Infinite);
+      end Analyze_Body;
+
+   begin  -- Entity_Call_Depth
       -- Called_Body walks the structure until we find the real body corresponding to Decl
       -- So, it is really the called body only after this loop!
       Called_Body := Decl;
 
-      -- This loop is exited from the tests at the top, or when an acceptable body is found
       loop
-         if Is_Uncheckable or Is_Nil (Called_Body) then
-            exit;
-         end if;
+
          if Is_Banned (Called_Body, Rule_Id) then
-            Is_Uncheckable := True;
+            Result := (Banned, 0);
             exit;
          end if;
 
@@ -428,18 +514,29 @@ package body Rules.Max_Call_Depth is
                | A_Function_Instantiation
                  =>
                Called_Body := Corresponding_Body (Called_Body);
+               if Is_Nil (Called_Body) then
+                  Result := (Unavailable, 0);
+                  exit;
+               end if;
             when An_Entry_Declaration  =>
                if Is_Task_Entry (Called_Body) then
                   -- A task entry => not followed
-                  Called_Body := Nil_Element;
-               else
-                  Called_Body := Corresponding_Body (Called_Body);
+                  Result := (Regular, 0);
+                  exit;
                end if;
+
+               Called_Body := Corresponding_Body (Called_Body);
+               if Is_Nil (Called_Body) then
+                  Result := (Unavailable, 0);
+                  exit;
+               end if;
+
             when A_Procedure_Body_Declaration
               | A_Function_Body_Declaration
               | An_Entry_Body_Declaration
               =>
                -- A real body (at last!)
+               Analyze_Body;
                exit;
             when A_Procedure_Body_Stub
               | A_Function_Body_Stub
@@ -447,112 +544,25 @@ package body Rules.Max_Call_Depth is
                Called_Body := Corresponding_Subunit (Called_Body);
             when A_Procedure_Renaming_Declaration
               | A_Function_Renaming_Declaration
-              =>
-               Renaming := Simple_Name (A4G_Bugs.Renamed_Entity (Called_Body));
-               case Expression_Kind (Renaming) is
-                  when An_Explicit_Dereference =>
-                     -- renaming of not static stuff
-                     Is_Uncheckable := True;
-                  when An_Indexed_Component =>
-                     -- This can happen when renaming a member of an entry family as a procedure
-                     -- (sigh)
-                     Renaming := Simple_Name (Prefix (Renaming));
-                  when An_Attribute_Reference
-                    | An_Enumeration_Literal
-                    =>
-                     Called_Body := Nil_Element;
-                  when others =>
-                     null;
-               end case;
-               Called_Body := A4G_Bugs.Corresponding_Name_Declaration (Renaming);
+                 =>
+               Failure ("renaming declaration in Entity_Call_Depth", Called_Body);
             when A_Formal_Function_Declaration
                | A_Formal_Procedure_Declaration
                  =>
-               Is_Uncheckable := True;
+               Result := (Formal, 0);
+               exit;
             when Not_A_Declaration =>
                -- this should happen only when the body is given by a pragma import
                Assert (Element_Kind (Called_Body) = A_Pragma, "Entity_Call_Depth: not a declaration or pragma");
-               Is_Uncheckable := True;
+               Result := (Unavailable, 0);
+               exit;
             when others =>
                Failure ("not a callable entity declaration", Called_Body);
          end case;
       end loop;
 
-      if Is_Uncheckable then
-         -- predefined stuff, call from access to SP or dispatching call (sigh!), banned unit
-         -- or imported SP
-         -- the best we can do is to consider that it calls nothing
-
-         if Is_Part_Of_Instance (Call) then
-            -- Unfortunately, Corresponding_Generic_Element does not work on call.
-            -- Let the message reference the instantiation instead
-            Uncheckable (Rule_Id,
-                         False_Negative,
-                         Get_Location (Ultimate_Enclosing_Instantiation (Call)),
-                         "Call to predefined, dynamic, formal, imported, or inhibited entity in generic; "
-                           & "assuming depth of 1");
-         else
-            Uncheckable (Rule_Id,
-                         False_Negative,
-                         Get_Location (Call),
-                         "Call to predefined, dynamic, formal, imported, or inhibited entity; assuming depth of 1");
-         end if;
-         Count := 0;
-      elsif Is_Nil (Called_Body) then
-         -- Task entry, attribute, literal
-         -- Has no body, but we assume a depth of 0
-         Count := 0;
-      else
-         -- Initialize to Infinite before traversing. This way, if it is truly recursive,
-         -- it will be found in the map and the result will be Infinite.
-         Add (Call_Depths, Called_Name, (Recursive, Infinite));
-
-         -- We cannot directly traverse the whole body, since bodies are discarded
-         -- We traverse all the parts manually (except formal parameters, of course)
-         -- Of course, we can stop the traversal as soon as we determine that the
-         -- SP is recursive.
-         declare
-            Recursivity_Found : exception;
-         begin
-            declare
-               Body_Decls : constant Asis.Declaration_List := Body_Declarative_Items (Called_Body);
-            begin
-               for I in Body_Decls'Range loop
-                  Traverse (Body_Decls (I), Control, Count);
-                  if Count = Infinite then
-                     raise Recursivity_Found;
-                  end if;
-               end loop;
-            end;
-            declare
-               Body_Stats: constant Asis.Statement_List := Body_Statements (Called_Body);
-            begin
-               for I in Body_Stats'Range loop
-                  Traverse (Body_Stats (I), Control, Count);
-                  if Count = Infinite then
-                     raise Recursivity_Found;
-                  end if;
-               end loop;
-            end;
-            declare
-               Body_Handlers: constant Asis.Exception_Handler_List := Body_Exception_Handlers (Called_Body);
-            begin
-               for I in Body_Handlers'Range loop
-                  Traverse (Body_Handlers (I), Control, Count);
-                  if Count = Infinite then
-                     raise Recursivity_Found;
-                  end if;
-               end loop;
-            end;
-         exception
-            when Recursivity_Found =>
-               Result := (Recursive, Infinite);
-         end;
-      end if;
-      Result.Depth := Count;
-
       Add (Call_Depths, Called_Name, Result);
-      return Count;
+      return Result;
    end Entity_Call_Depth;
 
 
@@ -561,24 +571,37 @@ package body Rules.Max_Call_Depth is
    ------------------
 
    procedure Process_Call (Call : in Asis.Element) is
-      Depth : Natural;
+      Descr : Depth_Descriptor;
 
       procedure Do_Report (Ctl_Kind : Control_Kinds) is
          use Framework.Reports, Utilities;
       begin
-         if Depth = Infinite then
-             Report (Rule_Id,
-                    To_Wide_String (Ctl_Labels (Ctl_Kind)),
-                    Ctl_Kind,
-                    Get_Location (Call),
-                    "Call to recursive entity");
-        else
-            Report (Rule_Id,
-                    To_Wide_String (Ctl_Labels (Ctl_Kind)),
-                    Ctl_Kind,
-                    Get_Location (Call),
-                    "Call has a depth of " & Integer_Img (Depth));
-         end if;
+         case Descr.Kind is
+            when Regular | Inline =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                       Ctl_Kind,
+                       Get_Location (Call),
+                       "Call has a depth of " & Integer_Img (Descr.Depth));
+            when Dynamic =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                       Ctl_Kind,
+                       Get_Location (Call),
+                       "Dynamic or dispatching call has a depth of at least " & Integer_Img (Descr.Depth));
+            when Unexplored | Unknown =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                       Ctl_Kind,
+                       Get_Location (Call),
+                       "Call has a depth of at least " & Integer_Img (Descr.Depth));
+            when Recursive =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                       Ctl_Kind,
+                       Get_Location (Call),
+                       "Call to recursive entity");
+         end case;
       end Do_Report;
 
    begin  -- Process_Call
@@ -587,14 +610,31 @@ package body Rules.Max_Call_Depth is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Depth := Call_Depth (Call);
-      if Depths (Check) /= Unused and then Depth >= Depths (Check) then
+      Descr := Call_Depth (Call);
+      if Depths (Check) /= Unused and then Descr.Depth >= Depths (Check) then
          Do_Report (Check);
-      elsif Depths (Search) /= Unused and then Depth >= Depths (Search) then
+      elsif Depths (Search) /= Unused and then Descr.Depth >= Depths (Search) then
          Do_Report (Search);
+      else
+         case Descr.Kind is
+            when Unknown =>
+               Report_Uncheckable (Call, "depth unknown for some elements in call chain", Descr.Depth);
+            when Dynamic =>
+               Report_Uncheckable (Call, "dynamic or dispatching call", Descr.Depth);
+            when Banned =>
+               Report_Uncheckable (Call, "call to a inhibited subprogram", Descr.Depth);
+            when Formal =>
+               Report_Uncheckable (Call, "call to a generic formal subprogram", Descr.Depth);
+            when Unavailable =>
+               Report_Uncheckable (Call,
+                                   "call to a subprogram whose body is not available (imported, predefined...)",
+                                   Descr.Depth);
+            when Regular | Inline | Recursive =>
+               null;
+         end case;
       end if;
 
-      if Depths (Count) /= Unused and then Depth >= Depths (Count) then
+      if Depths (Count) /= Unused and then Descr.Depth >= Depths (Count) then
          Do_Report (Count);
       end if;
 

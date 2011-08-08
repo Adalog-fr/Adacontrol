@@ -95,8 +95,14 @@ procedure T_Max_Call_Depth is
    function F4 return Integer renames F3;
    function F5 return Integer  renames F4;
    function F6 (X : Integer) return Integer renames Integer'Succ;
+   function F7 return Integer; -- Renaming as body
+   function F7 return Integer renames F5;
    type Enum is (Enum1, Enum2, Enum3);
    function Z return Enum renames Enum1;
+
+   type Proc_Access is access procedure;
+   Indirect : Proc_Access := P1'Access;
+   procedure Ren_Indirect renames Indirect.all;
 
    -- Check use in declarations
    I : Integer;
@@ -104,6 +110,29 @@ procedure T_Max_Call_Depth is
    K : constant Integer := F3;            -- Depth = 3
    subtype Int is Integer range 1 .. F3;  -- Depth = 3
    E : Enum;
+
+   -- Check renamings, dynamic, renaming, and unknown cases
+   package Obj is
+      type T is tagged null record;
+      procedure Prim (X : T);
+   end Obj;
+   package body Obj is
+      procedure Prim (X : T) is
+      begin
+         null;
+      end Prim;
+   end Obj;
+   use Obj;
+
+   procedure Check_Unknown is
+      O : Obj.T;
+   begin
+      In_C;
+      Prim (T'Class (O));
+      Indirect.all;
+      Ren_Indirect;
+   end Check_Unknown;
+
 begin
    -- Check use in statements
    P2;                    -- Depth = 2
@@ -121,7 +150,10 @@ begin
    I := Integer'Succ (1); -- OK (Attribute)
    I := F4;               -- Depth = 3
    I := F5;               -- Depth = 3
-   I := F6(1);            -- OK (attribute)
+   I := F6 (1);           -- OK (attribute)
+   I := F7;               -- Depth = 3
    E := Enum1;            -- OK
    E := Z;                -- OK (enumeration literal)
+
+   Check_Unknown;         -- Depth >= 2
 end T_Max_Call_Depth;

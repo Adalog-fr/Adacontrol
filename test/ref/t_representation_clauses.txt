@@ -2,22 +2,44 @@ t_representation_clauses.adb:6:4: Error: size: representation clause for 'SIZE
 t_representation_clauses.adb:9:4: Error: address: representation clause for 'ADDRESS
 t_representation_clauses.adb:10:4: Error: address: Ada 83 address clause
 t_representation_clauses.adb:13:4: Error: address: representation clause for 'ADDRESS
+t_representation_clauses.adb:13:4: Error: rng_over: address clause causes overlay for RANGE
 t_representation_clauses.adb:13:4: Error: overlay: address clause causes overlay
 t_representation_clauses.adb:17:4: Error: address: Ada 83 address clause
+t_representation_clauses.adb:17:4: Error: rng_over: address clause causes overlay for RANGE
 t_representation_clauses.adb:17:4: Error: overlay: address clause causes overlay
 t_representation_clauses.adb:20:4: Found: enumeration: enumeration representation clause
 t_representation_clauses.adb:21:4: Error: alignment: representation clause for 'ALIGNMENT
-t_representation_clauses.adb:28:4: Found: record: record representation clause
-t_representation_clauses.adb:28:4: Error: alignment: Ada 83 alignment clause
-t_representation_clauses.adb:35:4: Found: record: record representation clause
-t_representation_clauses.adb:45:4: Found: record: record representation clause
-t_representation_clauses.adb:47:10: Error: non_contig: gap at 0 range 0..47
-t_representation_clauses.adb:55:4: Error: streams: representation clause for 'INPUT
-t_representation_clauses.adb:56:4: Error: streams: representation clause for 'OUTPUT
-t_representation_clauses.adb:57:4: Error: streams: representation clause for 'CLASS'READ
-t_representation_clauses.adb:58:4: Error: streams: representation clause for 'CLASS'WRITE
-t_representation_clauses.adb:70:4: Found: record: record representation clause
-t_representation_clauses.adb:72:10: Error: non_contig: gap at 0 range 0..47
+t_representation_clauses.adb:24:4: Found: der_enum: enumeration representation clause for NEW
+t_representation_clauses.adb:24:4: Found: enumeration: enumeration representation clause
+t_representation_clauses.adb:25:4: Error: der_align: representation clause for 'ALIGNMENT for NEW
+t_representation_clauses.adb:25:4: Error: alignment: representation clause for 'ALIGNMENT
+t_representation_clauses.adb:32:4: Found: record: layout representation clause
+t_representation_clauses.adb:32:4: Error: alignment: Ada 83 alignment clause
+t_representation_clauses.adb:39:4: Found: Der_record: layout representation clause for NEW
+t_representation_clauses.adb:39:4: Found: record: layout representation clause
+t_representation_clauses.adb:49:4: Found: Tag_record: layout representation clause for TAGGED
+t_representation_clauses.adb:49:4: Found: record: layout representation clause
+t_representation_clauses.adb:51:10: Error: non_contig: gap at 0 range 0..47
+t_representation_clauses.adb:59:4: Error: streams: representation clause for 'INPUT
+t_representation_clauses.adb:60:4: Error: streams: representation clause for 'OUTPUT
+t_representation_clauses.adb:61:4: Error: streams: representation clause for 'CLASS'READ
+t_representation_clauses.adb:62:4: Error: streams: representation clause for 'CLASS'WRITE
+t_representation_clauses.adb:74:4: Found: Ext_record: layout representation clause for EXTENSION
+t_representation_clauses.adb:74:4: Found: record: layout representation clause
+t_representation_clauses.adb:76:10: Error: non_contig: gap at 0 range 0..47
+t_representation_clauses.adb:80:4: Error: Arr_Size: representation clause for 'SIZE for ARRAY
+t_representation_clauses.adb:80:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:83:4: Error: Arr_Addr: representation clause for 'ADDRESS for ARRAY
+t_representation_clauses.adb:83:4: Error: address: representation clause for 'ADDRESS
+t_representation_clauses.adb:83:4: Error: tab_over: address clause causes overlay for ARRAY
+t_representation_clauses.adb:83:4: Error: overlay: address clause causes overlay
+t_representation_clauses.adb:88:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
+t_representation_clauses.adb:88:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:89:4: Found: record: layout representation clause
+t_representation_clauses.adb:91:10: Error: non_contig: gap at 0 range 0..0
+t_representation_clauses.adb:91:10: Error: Arr_comp: unaligned component starts at bit 1 for ARRAY
+t_representation_clauses.adb:91:10: Error: unaligned: unaligned component starts at bit 1
+t_representation_clauses.adb:91:10: Error: non_contig: gap at end of record, at 10 range 1..7, size clause line 88
 t_representation_clauses-fractional_size.adb:8:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: fractional: size clause not multiple of Storage_Unit
@@ -26,26 +48,28 @@ t_representation_clauses-fractional_size.adb:11:4: Error: size: representation c
 t_representation_clauses-fractional_size.adb:11:4: Error: fractional: size clause not multiple of Storage_Unit
 t_representation_clauses-fractional_size.adb:16:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:17:4: Error: size: representation clause for 'SIZE
-t_representation_clauses-non_contiguous_unaligned.adb:12:4: Found: record: record representation clause
+t_representation_clauses-non_contiguous_unaligned.adb:12:4: Found: record: layout representation clause
 t_representation_clauses-non_contiguous_unaligned.adb:14:10: Error: non_contig: gap at 0 range 0..7
 t_representation_clauses-non_contiguous_unaligned.adb:15:10: Error: non_contig: gap before component, at 5 range 0..7
 t_representation_clauses-non_contiguous_unaligned.adb:16:10: Error: non_contig: gap before component, at 9 range 0..8
 t_representation_clauses-non_contiguous_unaligned.adb:16:10: Error: unaligned: unaligned component starts at bit 1
 t_representation_clauses-non_contiguous_unaligned.adb:17:10: Error: unaligned: unaligned component starts at bit 1
 t_representation_clauses-non_contiguous_unaligned.adb:17:10: Error: non_contig: gap at end of record, at 15 range 1..1, size clause line 19
+t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
 t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-non_contiguous_unaligned.adb:27:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
 t_representation_clauses-non_contiguous_unaligned.adb:27:4: Error: size: representation clause for 'SIZE
-t_representation_clauses-non_contiguous_unaligned.adb:30:4: Found: record: record representation clause
+t_representation_clauses-non_contiguous_unaligned.adb:30:4: Found: record: layout representation clause
 t_representation_clauses-non_contiguous_unaligned.adb:34:10: Error: non_contig: gap at 0 range 0..7
 t_representation_clauses-non_contiguous_unaligned.adb:33:10: Error: non_contig: gap before component, at 5 range 0..7
 t_representation_clauses-non_contiguous_unaligned.adb:32:10: Error: non_contig: gap before component, at 9 range 0..8
 t_representation_clauses-non_contiguous_unaligned.adb:32:10: Error: unaligned: unaligned component starts at bit 1
 t_representation_clauses-non_contiguous_unaligned.adb:32:10: Error: non_contig: gap at end of record, at 11 range 1..7, size clause line 27
-t_representation_clauses-incomplete_record.adb:14:4: Found: record: record representation clause
+t_representation_clauses-incomplete_record.adb:14:4: Found: record: layout representation clause
 t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for D at t_representation_clauses-incomplete_record.adb:3:13
 t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for I2 at t_representation_clauses-incomplete_record.adb:6:10
 t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for I4 at t_representation_clauses-incomplete_record.adb:11:16
 
 Counts summary:
-Total: 51
+Total: 58

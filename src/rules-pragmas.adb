@@ -37,14 +37,8 @@ with
 with
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
 package body Rules.Pragmas is
-  use Framework;
+  use Framework, Framework.Control_Manager;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -126,7 +120,6 @@ package body Rules.Pragmas is
 
    procedure Process_Pragma (Pragma_Element : in Asis.Pragma_Element) is
       use Asis, Asis.Elements, Utilities, Framework.Reports;
-      Found : Boolean := False;
    begin
       if not Rule_Used then
          return;
@@ -142,13 +135,12 @@ package body Rules.Pragmas is
                     Current_Context,
                     Get_Location (Pragma_Element),
                     "use of pragma """ & To_Title (Last_Matching_Name (Rule_Uses)) & '"');
-            Found := True;
          end if;
       end;
 
       -- Check nonstandard
       declare
-         Current_Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "NONSTANDARD");
+         Current_Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "NONSTANDARD");
       begin
          if Current_Context /= No_Matching_Context
             and then Pragma_Kind (Pragma_Element) in An_Implementation_Defined_Pragma .. An_Unknown_Pragma
@@ -156,22 +148,19 @@ package body Rules.Pragmas is
               Report (Rule_Id,
                       Current_Context,
                       Get_Location (Pragma_Element),
-                      "use of non-standard pragma """ & Pragma_Name_Image (Pragma_Element) & '"',
-                      Count_Only => Found);
-              Found := True;
+                      "use of non-standard pragma """ & Pragma_Name_Image (Pragma_Element) & '"');
          end if;
       end;
 
       -- check all
       declare
-         Current_Context : constant Root_Context'Class := Framework.Association (Rule_Uses, "ALL");
+         Current_Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "ALL");
       begin
          if Current_Context /= No_Matching_Context then
             Report (Rule_Id,
                     Current_Context,
                     Get_Location (Pragma_Element),
-                    "use of pragma """ & Pragma_Name_Image (Pragma_Element) & '"',
-                    Count_Only => Found);
+                    "use of pragma """ & Pragma_Name_Image (Pragma_Element) & '"');
          end if;
       end;
 

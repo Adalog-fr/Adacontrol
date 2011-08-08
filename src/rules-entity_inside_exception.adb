@@ -34,28 +34,19 @@ with
   Asis.Elements,
   Asis.Expressions,
   Asis.Iterator;
+pragma Elaborate_All (Asis.Iterator);
 
 -- Adalog
 with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
-
--- Pragmas
-pragma Elaborate_All (Asis.Iterator);
-
 package body Rules.Entity_Inside_Exception is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
-   Key_Calls : constant Entity_Specification := Framework.Value ("CALLS");
+   Key_Calls : constant Entity_Specification := Value ("CALLS");
 
-   type Entity_Context is new Framework.Basic_Rule_Context with
+   type Entity_Context is new Basic_Rule_Context with
       record
          Is_Not : Boolean;
       end record;

@@ -46,15 +46,8 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-pragma Elaborate (Framework.Language);
-
 package body Rules.Insufficient_Parameters is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rule_Used : Control_Kinds_Set := (others => False);
    Save_Used : Control_Kinds_Set;

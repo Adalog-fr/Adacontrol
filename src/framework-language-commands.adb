@@ -50,6 +50,7 @@ with
 with
   Adactl_Version,
   Adactl_Options,
+  Framework.Control_Manager,
   Framework.Language.Scanner,
   Framework.Reports,
   Framework.Ruler,
@@ -253,7 +254,6 @@ package body Framework.Language.Commands is
          User_Message ("ADACTL v. "
                          & Adactl_Version
                          & " with " & ASIS_Implementor_Version);
-         pragma Warnings (On);
 
       else   -- Assume it is a rule name
          Help_On_Rule (Upper_On);
@@ -265,7 +265,7 @@ package body Framework.Language.Commands is
    ---------------------
 
    procedure Inhibit_Command (Rule_Name : in Wide_String) is
-      use Framework, Framework.Language;
+      use Framework, Framework.Control_Manager, Framework.Language, Framework.Rules_Manager;
    begin
       if not Parameter_Exists then
          Parameter_Error ("Inhibit", "Missing unit names");
@@ -273,36 +273,9 @@ package body Framework.Language.Commands is
 
       while Parameter_Exists loop
          declare
-            Is_All : constant Boolean := Get_Modifier ("ALL", Default => False);
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            -- Check that inhibition is not already specified
-            -- (otherwise, the suspend/resume mechanism won't work since
-            -- suspensions are not stacked)
-            if Rule_Name = "ALL" then
-               -- Can be given only once for each unit, and is incompatible with a specific rule name
-               --   => Associate in non additive mode
-               --   => will raise Parameter_Error if already specified for any rule
-               Associate (Inhibited,
-                          Entity,
-                          Inhibited_Rule'(Rule_Name =>To_Unbounded_Wide_String (Rule_Name), Is_Banned => Is_All),
-                          Additive => False);
-            else
-               -- Check that it is not already specified for "ALL". If it is, it is the only association,
-               -- per previous test
-               declare
-                  Cont : constant Root_Context'Class := Association (Inhibited, Entity);
-               begin
-                  if Cont /= No_Matching_Context and then Inhibited_Rule (Cont).Rule_Name = "ALL" then
-                     raise Already_In_Store;
-                  end if;
-               end;
-
-               Associate (Inhibited,
-                          Entity,
-                          Inhibited_Rule'(Rule_Name =>To_Unbounded_Wide_String (Rule_Name), Is_Banned => Is_All),
-                          Additive => True);
-            end if;
+            Inhibit (Rule_Name, Entity, Is_All => Get_Modifier ("ALL", Default => False));
          exception
             when Already_In_Store =>
                Parameter_Error ("Inhibit", "Rule " & Rule_Name & " already inhibited for " & Image (Entity));
@@ -362,7 +335,7 @@ package body Framework.Language.Commands is
    -- Set_Output_Command --
    ------------------------
 
-  procedure Set_Output_Command (Output_File : Wide_String) is
+   procedure Set_Output_Command (Output_File : Wide_String; Force_Overwrite : Boolean) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO;
       use Adactl_Options, Framework.String_Set;
    begin
@@ -387,8 +360,8 @@ package body Framework.Language.Commands is
 
             -- File exists
             Close (Adactl_Output);
-            if Adactl_Options.Overwrite_Option
-              and not Is_Present (Seen_Files, Output_File)
+            if Force_Overwrite
+              or else (Adactl_Options.Overwrite_Option and not Is_Present (Seen_Files, Output_File))
             then
                Create (Adactl_Output, Out_File, To_String (Output_File));
                Framework.Reports.Just_Created := True;

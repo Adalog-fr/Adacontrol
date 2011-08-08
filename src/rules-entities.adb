@@ -40,14 +40,8 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
 package body Rules.Entities is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm:
    --
@@ -144,7 +138,7 @@ package body Rules.Entities is
 
       procedure Check (Identifier : Asis.Expression) is
          use Asis, Asis.Elements, Asis.Expressions;
-         use Framework.Reports, Thick_Queries, Utilities;
+         use Framework.Language, Framework.Reports, Thick_Queries, Utilities;
 
          Current_Context : constant Root_Context'Class
            := Matching_Context (Searched_Entities, Identifier, Extend_To => (Instance => True, Renaming => False));
@@ -156,7 +150,7 @@ package body Rules.Entities is
             Report (Rule_Id,
                     Current_Context,
                     Get_Location (Element),
-                    "use of element """ & To_Title (Last_Matching_Name (Searched_Entities)) & '"');
+                    "use of element """ & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities))) & '"');
          end if;
 
          if Expression_Kind (Identifier) = An_Attribute_Reference then

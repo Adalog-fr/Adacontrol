@@ -49,17 +49,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Special_Comments is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
-   type Subrules is (Pattern, Unnamed_Begin);
+   type Subrules is (Pattern, Terminating, Unnamed_Begin);
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules);
    type Subrules_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrules_Set := (others => False);
@@ -74,9 +72,10 @@ package body Rules.Special_Comments is
    Rule_Used : Subrules_Set := No_Rule;
    Save_Used : Subrules_Set;
 
+   type Pattern_Access is access String_Matching.Compiled_Pattern;
+
    type Pattern_Context;
    type Pattern_Context_Access is access Pattern_Context;
-   type Pattern_Access is access String_Matching.Compiled_Pattern;
    type Pattern_Context is new Basic_Rule_Context with
       record
          Pattern : Pattern_Access;
@@ -88,7 +87,23 @@ package body Rules.Special_Comments is
          Condition : Decl_Conditions;
       end record;
 
-   Pattern_Contexts : Pattern_Context_Access;
+   type Pattern_Node;
+   type Pattern_Node_Access is access Pattern_Node;
+   type Pattern_Node is
+      record
+         Pattern : Pattern_Access;
+         Next    : Pattern_Node_Access;
+      end record;
+
+   type Terminating_Context is new Basic_Rule_Context with
+      record
+         Begin_Allowed : Boolean;
+         End_Allowed   : Boolean;
+         Pattern_List  : Pattern_Node_Access;
+      end record;
+
+   Pattern_Contexts     : Pattern_Context_Access;
+   Terminating_Contexts : Terminating_Context;
 
    Units_Used       : array (True_Units) of Boolean := (others => False);
    Unnamed_Contexts : array (True_Units) of Unnamed_Context;
@@ -141,6 +156,46 @@ package body Rules.Special_Comments is
                      Parameter_Error (Rule_Id, "Incorrect pattern: " & Pat);
                end;
             end loop;
+
+         when Terminating =>
+            if Rule_Used (Terminating) then
+               Parameter_Error (Rule_Id, "subrule already specified");
+            end if;
+
+            Basic_Rule_Context (Terminating_Contexts) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Terminating_Contexts.Begin_Allowed        := False;
+            Terminating_Contexts.End_Allowed          := False;
+            if Parameter_Exists then
+               while Parameter_Exists loop
+                  if Is_String_Parameter then
+                     declare
+                        Pat : constant Wide_String := Get_String_Parameter;
+                     begin
+                        -- Since the rule is allowed only once, the context is the same for
+                        -- every element of the list. Oh, well...
+                        Terminating_Contexts.Pattern_List := new Pattern_Node'
+                          (Pattern => new Compiled_Pattern'(Compile (Pat, Ignore_Case => True)),
+                           Next    => Terminating_Contexts.Pattern_List);
+                     exception
+                        when Pattern_Error =>
+                           Parameter_Error (Rule_Id, "Incorrect pattern: " & Pat);
+                     end;
+                  else
+                     declare
+                        Key : constant Wide_String := Get_Name_Parameter;
+                     begin
+                        if Key = "BEGIN" then
+                           Terminating_Contexts.Begin_Allowed := True;
+                        elsif Key = "END" then
+                           Terminating_Contexts.End_Allowed := True;
+                        end if;
+                     end;
+                  end if;
+               end loop;
+            else
+               Terminating_Contexts.Pattern_List := null;
+            end if;
+
          when Unnamed_Begin =>
             if not Parameter_Exists then
                Parameter_Error (Rule_Id, "Parameter required");
@@ -178,11 +233,14 @@ package body Rules.Special_Comments is
       Subrules_Flags_Utilities.Help_On_Flags ("Parameter (1)");
       User_Message ("for pattern:");
       User_Message ("   Parameter(2..): ""<comment pattern>""");
+      User_Message ("for terminating:");
+      User_Message ("   Parameter(2..): ""<allowed pattern>"" | begin | end");
       User_Message ("for unnamed_begin:");
       User_Message ("   Parameter(2..): [<condition>] <unit>");
       Decl_Conditions_Utilities.Help_On_Modifiers (Header => "      <condition>:");
       Units_Flags_Utilities.Help_On_Flags         (Header => "           <unit>:");
       User_Message ("Control comments that match the specified pattern");
+      User_Message ("or are on the same line as something else");
       User_Message ("or ""begin"" without a comment identifying the program unit");
    end Help;
 
@@ -214,38 +272,121 @@ package body Rules.Special_Comments is
      := Ada.Strings.Wide_Maps.To_Set (Ada.Characters.Handling.To_Wide_String (' ' & Ada.Characters.Latin_1.HT));
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use String_Matching, Framework.Reports, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Maps;
-      Current : Pattern_Context_Access;
-      Start   : Natural;
+      use Framework.Reports, String_Matching, Utilities;
+      use Ada.Strings.Wide_Maps;
+
+      type Found_State is (Nothing_Found, Begin_Found, End_Found, Others_Found);
+      State     : Found_State := Nothing_Found;
+      Inx       : Natural;
+      In_String : Boolean := False;
+
+      Current_P : Pattern_Context_Access;
+      Current_T : Pattern_Node_Access;
+      Start     : Natural := 0;
+      Matched   : Boolean;
    begin
-      if not Rule_Used (Pattern) then
+      if not (Rule_Used (Pattern) or Rule_Used (Terminating)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Start := Index (Line, "--");
+      -- Find start of comment, note if there is anything but spaces before it
+      Inx := Line'First;
+      while Inx <= Line'Last loop  -- Can't use a "for" because we skip characters
+         if In_String then
+            if Line (Inx) = '"' then
+               In_String := False;
+            end if;
+         else
+            case Line (Inx) is
+               when Wide_Character'First .. ' ' =>
+                  null;
+               when '-' =>
+                  if Inx /= Line'Last and then Line (Inx + 1) = '-' then
+                     -- Comment found
+                     Start := Inx;
+                     exit;
+                  end if;
+                  State := Others_Found;
+               when '"' =>
+                  In_String := True;
+                  State     := Others_Found;
+               when 'b' | 'B' =>
+                  if State /= Nothing_Found then
+                     State := Others_Found;
+                  elsif Inx + 4 <= Line'Last and then To_Upper (Line (Inx .. Inx + 4)) = "BEGIN" then
+                     State := Begin_Found;
+                     Inx := Inx + 4;
+                  else
+                     State := Others_Found;
+                  end if;
+               when 'e' | 'E' =>
+                  if State /= Nothing_Found then
+                     State := Others_Found;
+                  elsif Inx + 2 <= Line'Last and then To_Upper (Line (Inx .. Inx + 2)) = "END" then
+                     State := End_Found;
+                     Inx := Inx + 2;
+                  else
+                     State := Others_Found;
+                  end if;
+               when ';' =>
+                  if State /= End_Found then
+                     -- Allow semi-colon following "end"
+                     State := Others_Found;
+                  end if;
+               when others =>
+                  State := Others_Found;
+            end case;
+         end if;
+         Inx := Inx + 1;
+      end loop;
+
       if Start = 0 then
          return;
       end if;
 
+      -- Skip spaces following "--"
       Start := Start + 2;
       while Start <= Line'Last and then Is_In (Line (Start), Separators) loop
          Start := Start + 1;
       end loop;
-      if Start > Line'Last then
-         return;
+
+      if Rule_Used (Pattern) and Start <= Line'Last then
+         Current_P := Pattern_Contexts;
+         while Current_P /= null loop
+            if Match (Line (Start .. Line'Last), Current_P.Pattern.all) then
+               Report (Rule_Id,
+                       Current_P.all,
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Start),
+                       '"' & Line (Start .. Line'Last) & '"');
+            end if;
+            Current_P := Current_P.Next;
+         end loop;
       end if;
 
-      Current := Pattern_Contexts;
-      while Current /= null loop
-         if Match (Line (Start .. Line'Last), Current.Pattern.all) then
-            Report (Rule_Id,
-                    Current.all,
-                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Start),
-                    '"' & Line (Start .. Line'Last) & '"');
+      if Rule_Used (Terminating) and State /= Nothing_Found then
+         Matched := False;
+         if Terminating_Contexts.Begin_Allowed and State = Begin_Found then
+            Matched := True;
+         elsif Terminating_Contexts.End_Allowed and State = End_Found then
+            Matched := True;
+         else
+            Current_T := Terminating_Contexts.Pattern_List;
+            while Current_T /= null loop
+               if Match (Line (Start .. Line'Last), Current_T.Pattern.all) then
+                  Matched := True;
+                  exit;
+               end if;
+               Current_T := Current_T.Next;
+            end loop;
          end if;
-         Current := Current.Next;
-      end loop;
+         if not Matched then
+            Report (Rule_Id,
+                    Terminating_Contexts,
+                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Start),
+                    "Not an allowed terminating comment");
+         end if;
+      end if;
    end Process_Line;
 
    --------------------------
@@ -337,9 +478,32 @@ package body Rules.Special_Comments is
             Begin_Line : constant Natural      := Get_First_Line (Begin_Loc);
             Begin_Text : constant Program_Text := To_Upper (Line_Image
                                                             (Lines (Unit, Begin_Line, Begin_Line) (Begin_Line)));
-            Comment_Pos : constant Natural := Index (Begin_Text, "--");
+            Comment_Pos : Natural := 0;
             Name_Inx    : Natural;
+            In_String   : Boolean := False;
          begin
+            -- Find start of comment, but beware of string literals
+            for Inx in Begin_Text'Range loop
+               if In_String then
+                  if Begin_Text (Inx) = '"' then
+                     In_String := False;
+                  end if;
+               else
+                  case Begin_Text (Inx) is
+                     when '-' =>
+                        if Inx /= Begin_Text'Last and then Begin_Text (Inx + 1) = '-' then
+                           -- Comment found
+                           Comment_Pos := Inx;
+                           exit;
+                        end if;
+                     when '"' =>
+                        In_String := True;
+                     when others =>
+                        null;
+                  end case;
+               end if;
+            end loop;
+
             if Comment_Pos = 0 then
                Report (Rule_Id,
                        Unnamed_Contexts (Un),

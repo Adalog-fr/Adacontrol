@@ -1,5 +1,7 @@
 with "asis";
 project Build is
+   type Fixes is ("1", "none");
+   Gnat_Fix : Fixes := external ("GNAT_FIX", "none");
 
    for Languages use ("Ada");
    for Source_Dirs use (".");
@@ -15,8 +17,14 @@ project Build is
       for Default_Switches ("ada") use ("-E");
    end Binder;
 
+   Std_Options := ("-O2", "-gnatwa", "-gnatWh", "-gnat95", "-gnato", "-gnatf", "-g");
    package Compiler is
-      for Default_Switches ("ada") use ("-O2", "-gnatwa", "-gnatWh", "-gnat95", "-gnato", "-gnatf", "-g");
+      case Gnat_Fix is
+      when "1" =>
+         for Default_Switches ("ada") use Std_Options & "-fno-tree-vrp";
+      when others =>
+         for Default_Switches ("ada") use Std_Options;
+      end case;
    end Compiler;
 
    package Builder is

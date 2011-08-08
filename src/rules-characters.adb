@@ -40,15 +40,13 @@ with
 with
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Characters is
-   use Ada.Strings.Wide_Maps, Framework;
+   use Ada.Strings.Wide_Maps, Framework, Framework.Control_Manager;
 
    Tab_Chars  : constant  Wide_Character_Set := To_Set (Ada.Characters.Handling.To_Wide_String
                                                           (Ada.Characters.Latin_1.HT

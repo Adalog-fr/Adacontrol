@@ -227,6 +227,7 @@ package body Framework.Language is
             Syntax_Error ("""on"" or ""off"" expected", Current_Token.Position);
          end if;
       end State;
+
    begin   -- Compile
       -- Set up initial token
       begin
@@ -429,7 +430,7 @@ package body Framework.Language is
                               end if;
                               Close_Command;
 
-                           elsif Option = "OUTPUT" then
+                           elsif Option = "OUTPUT" or Option = "NEW_OUTPUT" then
                               Next_Token (Force_String => True);
                               if Current_Token.Kind /= Name then
                                  Syntax_Error ("File name expected", Current_Token.Position);
@@ -441,7 +442,7 @@ package body Framework.Language is
                                  Next_Token;
                                  Close_Command;
 
-                                 Set_Output_Command (Output);
+                                 Set_Output_Command (Output, Force_Overwrite => Option = "NEW_OUTPUT");
                               end;
 
                            elsif Option = "SEARCH_KEY" then
@@ -586,15 +587,17 @@ package body Framework.Language is
 
    generic
       type Flags is (<>);
-      Prefix : Wide_String := "";
-      Box_Pos  : in Integer := -1; -- 'Pos of the modifier that corresponds to "<>", or -1 if none
-      Pars_Pos : in Integer := -1; -- 'Pos of the modifier that corresponds to "()", or -1 if none
+      Prefix   : Wide_String := "";
+      Box_Pos  : in Integer  := -1; -- 'Pos of the modifier that corresponds to "<>", or -1 if none
+      Pars_Pos : in Integer  := -1; -- 'Pos of the modifier that corresponds to "()", or -1 if none
    package Common_Enumerated_Utilities is
       function Image (Item : Flags; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
 
+      type Flag_Set is array (Flags) of Boolean;
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "NONE");
+                               Extra_Value : Wide_String := "NONE";
+                               Expected    : Flag_Set    := (others => True));
    end Common_Enumerated_Utilities;
 
    package body Common_Enumerated_Utilities is
@@ -615,7 +618,8 @@ package body Framework.Language is
 
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "NONE")
+                               Extra_Value : Wide_String := "NONE";
+                               Expected    : Flag_Set    := (others => True))
       is
          -- Pretty print of values of flags.
          -- Values are arranged in columns.
@@ -664,18 +668,20 @@ package body Framework.Language is
          end if;
 
          for F in Flags range First_Flag .. Flags'Last loop
-            declare
-               Length : constant Natural := Image (F)'Length;
-            begin
-               if Length > Col_Widthes (Current_Col) then
-                  Col_Widthes (Current_Col) := Length;
-               end if;
-               if Current_Col = Nb_Col then
-                  Current_Col := 1;
-               else
-                  Current_Col := Current_Col + 1;
-               end if;
-            end;
+            if Expected (F) then
+               declare
+                  Length : constant Natural := Image (F)'Length;
+               begin
+                  if Length > Col_Widthes (Current_Col) then
+                     Col_Widthes (Current_Col) := Length;
+                  end if;
+                  if Current_Col = Nb_Col then
+                     Current_Col := 1;
+                  else
+                     Current_Col := Current_Col + 1;
+                  end if;
+               end;
+            end if;
          end loop;
 
          -- 2 colums: it may have been forced, check if it fits
@@ -723,31 +729,33 @@ package body Framework.Language is
          end if;
 
          for I in Flags range First_Flag .. Flags'Last loop
-            declare
-               Img : constant Wide_String := Image (I, Lower_Case);
-            begin
-               Index := Index + 1;  -- Add space
+            if Expected (I) then
+               declare
+                  Img : constant Wide_String := Image (I, Lower_Case);
+               begin
+                  Index := Index + 1;  -- Add space
 
-               Buffer (Index + 1 .. Index + Img'Length) := Img;
-               if I = Flags'Last then
-                  Index := Index + Img'Length;
-                  User_Message (Buffer (1 .. Index));
-                  exit;
-               end if;
+                  Buffer (Index + 1 .. Index + Img'Length) := Img;
+                  if I = Flags'Last then
+                     Index := Index + Img'Length;
+                     User_Message (Buffer (1 .. Index));
+                     exit;
+                  end if;
 
-               Index := Index + Col_Widthes (Current_Col) + 1;
-               Buffer (Index + 1) := '|';
-               Index := Index + 1;
+                  Index := Index + Col_Widthes (Current_Col) + 1;
+                  Buffer (Index + 1) := '|';
+                  Index := Index + 1;
 
-               if Current_Col = Nb_Col then
-                  User_Message (Buffer (1 .. Index));
-                  Current_Col := 1;
-                  Buffer := (others => ' ');
-                  Index := Header'Length;
-               else
-                  Current_Col := Current_Col + 1;
-               end if;
-            end;
+                  if Current_Col = Nb_Col then
+                     User_Message (Buffer (1 .. Index));
+                     Current_Col := 1;
+                     Buffer := (others => ' ');
+                     Index := Header'Length;
+                  else
+                     Current_Col := Current_Col + 1;
+                  end if;
+               end;
+            end if;
          end loop;
 
          if Footer /= "" then
@@ -814,6 +822,19 @@ package body Framework.Language is
 
       return Current_Token.Kind = Float_Value;
    end Is_Float_Parameter;
+
+   ------------------------
+   -- Is_String_Parameter --
+   ------------------------
+
+   function Is_String_Parameter return Boolean is
+   begin
+      if not In_Parameters then
+         Failure ("Is_Sting_Parameter called when not in parameters");
+      end if;
+
+      return Current_Token.Kind = String_Value;
+   end Is_String_Parameter;
 
    ---------------------------
    -- Get_Integer_Parameter --
@@ -1317,7 +1338,7 @@ package body Framework.Language is
    package body Modifier_Utilities is
       package Local_Utilities is new Common_Enumerated_Utilities (Modifiers, Prefix, Box_Pos, Pars_Pos);
 
-      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean) is
+      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean; Expected : Modifier_Set) is
       begin
          case Current_Token.Kind is
             when Name =>
@@ -1326,7 +1347,7 @@ package body Framework.Language is
                     := To_Upper (Prefix & Current_Token.Name_Text (1 .. Current_Token.Name_Length));
                begin
                   for Idx in Modifiers loop
-                     if To_Compare = Modifiers'Wide_Image (Idx) then
+                     if Expected (Idx) and then To_Compare = Modifiers'Wide_Image (Idx) then
                         Next_Token;
                         Modifier := Idx;
                         Found    := True;
@@ -1335,7 +1356,7 @@ package body Framework.Language is
                   end loop;
                end;
             when Left_Angle =>
-               if Box_Pos >= 0 then
+               if Box_Pos >= 0 and then Expected (Modifiers'Val (Box_Pos)) then
                   Next_Token;
                   if Current_Token.Kind /= Right_Angle then
                      Syntax_Error (""">"" Expected", Current_Token.Position);
@@ -1346,7 +1367,7 @@ package body Framework.Language is
                   return;
                end if;
             when Left_Parenthesis =>
-               if Pars_Pos >= 0 then
+               if Pars_Pos >= 0 and then Expected (Modifiers'Val (Pars_Pos)) then
                   Next_Token;
                   if Current_Token.Kind /= Right_Parenthesis then
                      Syntax_Error (""")"" Expected", Current_Token.Position);
@@ -1362,7 +1383,7 @@ package body Framework.Language is
          Found := False;
       end Get_Modifier;
 
-      function Get_Modifier (Required : Boolean) return Modifiers is
+      function Get_Modifier (Required : Boolean; Expected : Modifier_Set := Full_Set) return Modifiers is
          Present : Boolean;
          Result  : Modifiers;
       begin
@@ -1370,7 +1391,7 @@ package body Framework.Language is
             Failure ("Get_Modifier called when not in parameters");
          end if;
 
-         Get_Modifier (Result, Present);
+         Get_Modifier (Result, Present, Expected);
          if Present then
             return Result;
          elsif Required then
@@ -1380,7 +1401,10 @@ package body Framework.Language is
          end if;
       end Get_Modifier;
 
-      function Get_Modifier_Set  (No_Parameter : Boolean := False) return Modifier_Set is
+      function Get_Modifier_Set (No_Parameter : Boolean := False;
+                                 Expected     : Modifier_Set := Full_Set)
+                                 return Modifier_Set
+      is
          Result   : Modifier_Set := Empty_Set;
          Modifier : Modifiers;
          Present  : Boolean;
@@ -1390,7 +1414,7 @@ package body Framework.Language is
          end if;
 
          loop
-            Get_Modifier (Modifier, Present);
+            Get_Modifier (Modifier, Present, Expected);
             exit when not Present;
             Result (Modifier) := True;
          end loop;
@@ -1412,8 +1436,12 @@ package body Framework.Language is
 
       procedure Help_On_Modifiers (Header      : Wide_String := "";
                                    Footer      : Wide_String := "";
-                                   Extra_Value : Wide_String := "NONE")
-                                   renames Local_Utilities.Help_On_Flags;
+                                   Extra_Value : Wide_String := "NONE";
+                                   Expected    : Modifier_Set := Full_Set)
+      is
+      begin
+         Local_Utilities.Help_On_Flags (Header, Footer, Extra_Value, Local_Utilities.Flag_Set (Expected));
+      end Help_On_Modifiers;
 
       function Image (Set     : Unconstrained_Modifier_Set;
                       Default : Unconstrained_Modifier_Set := Empty_Set) return Wide_String
@@ -1443,13 +1471,9 @@ package body Framework.Language is
             Failure ("Get_Modifier_List called when not in parameters");
          end if;
 
-         Get_Modifier (Modifier, Present);
+         Get_Modifier (Modifier, Present, Expected);
          if not Present then
             return Empty_List;
-         end if;
-
-         if not Expected (Modifier) then
-            Syntax_Error (Image (Modifier) & " not allowed here", Current_Token.Position);
          end if;
 
          return Modifier & Get_Modifier_List (Expected);
@@ -1537,8 +1561,10 @@ package body Framework.Language is
 
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "NONE")
-                               renames Local_Utilities.Help_On_Flags;
+                               Extra_Value : Wide_String := "NONE") is
+      begin
+         Local_Utilities.Help_On_Flags (Header, Footer, Extra_Value);
+      end Help_On_Flags;
    end Flag_Utilities;
 
    ------------------
@@ -1552,41 +1578,41 @@ package body Framework.Language is
       Start : Natural;
    begin
       Pos := Index (Original, ":");
-      if Pos = 0 then
-         -- Find a real * meaning "access", discard the "*" and "**" operators
-         Start := Original'First;
-         loop
-            Pos := Index (Original (Start .. Original'Last), "*");
-
-            if Pos = 0 then
-               -- No * found
-               return Original;
-
-            elsif Original (Pos+1) = '"' then
-               -- "*" operator
-               Start := Pos+2;
-
-            elsif Original (Pos+1) = '*' then
-               -- "**" operator
-               Start := Pos+3;
-
-            else
-               -- Real access parameter
-               exit;
-            end if;
-         end loop;
-
-         return
-           Original (Original'First..Pos - 1) &
-           " access " &
-           Adjust_Image (Original (Pos + 1 .. Original'Last));
-
-      else
+      if Pos /= 0 then
          return
            Adjust_Image (Original (Original'First..Pos - 1)) &
            " return " &
            Adjust_Image (Original (Pos + 1 .. Original'Last));
       end if;
+
+      -- Find a real * meaning "access", discard the "*" and "**" operators
+      Start := Original'First;
+      loop
+         Pos := Index (Original (Start .. Original'Last), "*");
+
+         if Pos = 0 then
+            -- No * found
+            return Original;
+
+         elsif Original (Pos + 1) = '"' then
+            -- "*" operator
+            Start := Pos + 2;
+
+         elsif Original (Pos + 1) = '*' then
+            -- "**" operator
+            Start := Pos + 3;
+
+         else
+            -- Real access parameter
+            exit;
+         end if;
+      end loop;
+
+      return
+        Original (Original'First .. Pos - 1) &
+      " access " &
+      Adjust_Image (Original (Pos + 1 .. Original'Last));
+
    end Adjust_Image;
 
    ---------------------

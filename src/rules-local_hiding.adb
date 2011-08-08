@@ -42,16 +42,14 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Local_Hiding is
-   use Framework, Utilities;
+   use Framework, Framework.Control_Manager, Utilities;
 
    -- Algorithm:
    -- This rule is quite easy, since most of the work is done by Scoped_Store

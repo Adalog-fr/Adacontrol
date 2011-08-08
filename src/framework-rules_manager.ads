@@ -35,6 +35,8 @@ package Framework.Rules_Manager is
    Max_Rules : constant := 100; -- Max number of rules in AdaControl
    type Rules_Count is range 0 .. Max_Rules;
 
+   procedure Initialize;
+
    type Help_Procedure        is access procedure;
    type Add_Control_Procedure is access procedure (Ctl_Label : in Wide_String;
                                                    Ctl_Kind  : in Control_Kinds);
@@ -55,6 +57,7 @@ package Framework.Rules_Manager is
 
    procedure Enter (Rule : Wide_String);
 
+   ---------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
@@ -88,10 +91,21 @@ package Framework.Rules_Manager is
    procedure Add_Control (Ctl_Label : in Wide_String;
                           Ctl_Kind  : in Control_Kinds;
                           Rule_Name : in Wide_String);
-   -- Adds a new use of a rule.
+   -- Adds a new control for a rule.
 
    procedure Command_All (Action : Rule_Action);
    procedure Command (Rule_Id : in Wide_String; Action : Rule_Action);
 
    procedure Report_Timings;
+
+   -------------------------------------------------------------------
+   --  Inhibition management                                        --
+   -------------------------------------------------------------------
+
+   procedure Inhibit (Rule_Name : Wide_String; Entity : Entity_Specification; Is_All : Boolean);
+   procedure Process_Inhibition (Unit : Asis.Compilation_Unit; State : Framework.Rules_Manager.Rule_Action);
+   function Is_Banned (Element : in Asis.Element; For_Rule : in Wide_String) return Boolean;
+   -- Returns True if Element is declared within a banned unit for rule For_Rule.
+   -- A banned unit is one which is the target of an inhibit all command.
+
 end Framework.Rules_Manager;

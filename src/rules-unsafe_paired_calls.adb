@@ -47,13 +47,10 @@ with
 
 -- Adactl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager;
 
 package body Rules.Unsafe_Paired_Calls is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rules_Used : Control_Index := 0;
    Save_Used  : Control_Index;

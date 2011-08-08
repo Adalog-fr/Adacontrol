@@ -3,6 +3,9 @@ with X_Uncheckable;
 procedure T_Uncheckable is
    use X_Uncheckable;
 
+   -- A type whose size is unknown:
+   type Unknown is range Integer'First .. Integer'Last;
+
    procedure Case_Statement                  is separate;
    procedure Declarations                    is separate;
    procedure Directly_Accessed_Globals       is separate;

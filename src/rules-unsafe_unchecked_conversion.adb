@@ -40,18 +40,12 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
 package body Rules.Unsafe_Unchecked_Conversion is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
-   Context   : Framework.Basic_Rule_Context;
+   Context   : Basic_Rule_Context;
 
    ----------
    -- Help --

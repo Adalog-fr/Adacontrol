@@ -44,17 +44,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Adactl_Constants,
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Statements is
-   use Adactl_Constants, Framework;
+   use Adactl_Constants, Framework, Framework.Control_Manager;
 
    -- all "filtered_raise" subrules (i.e. raise subrules except the plain one) must stay together
    type Subrules is (Stmt_Any_Statement,

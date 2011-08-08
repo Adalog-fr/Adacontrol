@@ -44,15 +44,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Directly_Accessed_Globals is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Filters is (F_Plain, F_Accept, F_Protected);
    package Filter_Flags_Utilities is new Framework.Language.Flag_Utilities (Filters, "F_");

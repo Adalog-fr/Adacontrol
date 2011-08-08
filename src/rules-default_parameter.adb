@@ -46,15 +46,14 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
+
 package body Rules.Default_Parameter is
    use Ada.Strings.Wide_Unbounded;
-   use Framework, Utilities;
+   use Framework, Framework.Control_Manager, Utilities;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -86,26 +85,6 @@ package body Rules.Default_Parameter is
    Key_All               : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("ALL");
    Entity_Calls          : constant Entity_Specification  := Value ("CALLS");
    Entity_Instantiations : constant Entity_Specification  := Value ("INSTANTIATIONS");
-
-   -------------
-   -- Or_Else --
-   -------------
-
-   function Or_Else (L, R : Usage_Tab) return Usage_Tab is
-      Result : Usage_Tab;
-   begin
-      if L (Used).Active then
-         Result (Used) := L (Used);
-      else
-         Result (Used) := R (Used);
-      end if;
-       if L (Not_Used).Active then
-         Result (Not_Used) := L (Not_Used);
-      else
-         Result (Not_Used) := R (Not_Used);
-       end if;
-       return Result;
-  end Or_Else;
 
    ----------
    -- Help --
@@ -194,6 +173,23 @@ package body Rules.Default_Parameter is
       Rule_Used  := True;
    end Add_Control;
 
+   -------------
+   -- Or_Else --
+   -------------
+
+   function Or_Else (L, R : Usage_Tab) return Usage_Tab is
+      Result : Usage_Tab;
+   begin
+      for U in Usage_Kind loop
+         if L (U).Active then
+            Result (U) := L (U);
+         else
+            Result (U) := R (U);
+         end if;
+      end loop;
+      return Result;
+   end Or_Else;
+
    -----------
    -- Clear --
    -----------
@@ -271,6 +267,7 @@ package body Rules.Default_Parameter is
       is
          use Asis.Expressions;
          use Framework.Reports, Parameter_Tree;
+
          Formal_Key : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
          Usage         : Usage_Tab        := Empty_Usage;
@@ -278,8 +275,9 @@ package body Rules.Default_Parameter is
          Is_Defaulted  : constant Boolean := Is_Nil (Actual);
          Is_Positional : constant Boolean := not Is_Defaulted
                                              and then Is_Nil (Formal_Parameter (Enclosing_Element (Actual)));
+
       begin
-         -- Build usage in order of preferences:
+         -- Build Usage in order of preferences:
          --    Sp_Name, Formal_Name
          --    Sp_Name, Positional
          --    Sp_Name, All
@@ -322,7 +320,7 @@ package body Rules.Default_Parameter is
          end if;
 
          if Usage (Not_Used).Active then
-            if not Is_Defaulted then
+             if not Is_Defaulted then
                Report (Rule_Id,
                        Usage (Not_Used),
                        Get_Location (Element),
@@ -357,7 +355,7 @@ package body Rules.Default_Parameter is
          Name_Context : constant Root_Context'Class := Matching_Context (Entities,
                                                                          Name,
                                                                          Extend_To => All_Extensions);
-         All_Context  : constant Root_Context'Class := Framework.Association (Entities, Entity_All);
+         All_Context  : constant Root_Context'Class := Control_Manager.Association (Entities, Entity_All);
       begin
          if Name_Context = No_Matching_Context and All_Context = No_Matching_Context then
             return;
@@ -397,6 +395,13 @@ package body Rules.Default_Parameter is
                                  Check (Names (Formals (I))(1), Name_Context, All_Context);
                               when A_Nil_Default =>
                                  null;
+
+                              -- Depending on A4G version, the following branch may cover 0 values, causing
+                              -- a warning
+                              pragma Warnings (Off);
+                              when others =>  -- Ada 2005: A_Null_Default
+                                 null;
+                              pragma Warnings (On);
                            end case;
                         when others =>
                            -- Others cases have no possible default value

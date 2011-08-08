@@ -40,14 +40,8 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
 package body Rules.Allocators is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -164,7 +158,7 @@ package body Rules.Allocators is
          when An_Allocation_From_Subtype =>
             E := Subtype_Simple_Name (Allocator_Subtype_Indication (Element));
          when An_Allocation_From_Qualified_Expression =>
-            E := Converted_Or_Qualified_Subtype_Mark (Allocator_Qualified_Expression (Element));
+            E := Simple_Name (Converted_Or_Qualified_Subtype_Mark (Allocator_Qualified_Expression (Element)));
          when others =>
             Failure (Rule_Id & ": Unexpected element", Element);
       end case;
@@ -176,7 +170,7 @@ package body Rules.Allocators is
       if Expression_Kind (E) = An_Attribute_Reference then
          case A4G_Bugs.Attribute_Kind (E) is
             when A_Base_Attribute =>
-               E := First_Subtype_Name (Simple_Name (Prefix (E)));
+               E := Simple_Name (First_Subtype_Name (Simple_Name (Prefix (E))));
             when A_Class_Attribute =>
                null;
             when others =>
@@ -190,14 +184,14 @@ package body Rules.Allocators is
       if not Found and Expression_Kind (E) /= An_Attribute_Reference then
          E := A4G_Bugs.Corresponding_Name_Declaration (E);
          if Is_Type_Declaration_Kind (E, A_Task_Type_Declaration) then
-            Check (Framework.Association (Entities, "TASK"));
+            Check (Control_Manager.Association (Entities, "TASK"));
          elsif Is_Type_Declaration_Kind (E, A_Protected_Type_Declaration) then
-            Check (Framework.Association (Entities, "PROTECTED"));
+            Check (Control_Manager.Association (Entities, "PROTECTED"));
          end if;
       end if;
 
       if not Found then
-         Check (Framework.Association (Entities, "ALL"));
+         Check (Control_Manager.Association (Entities, "ALL"));
       end if;
    end Process_Allocator;
 

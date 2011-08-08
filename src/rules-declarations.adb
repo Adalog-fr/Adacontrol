@@ -44,83 +44,82 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Generic_Context_Iterator,
+  Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
-  Framework.Language.Shared_Keys,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Declarations is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Subrules is
      (D_Any_Declaration,
-      D_Abstract_Function,                 D_Abstract_Procedure,              D_Abstract_Type,
-      D_Access_All_Type,                   D_Access_Constant_Type,            D_Access_Protected_Type,
-      D_Access_Subprogram_Type,            D_Access_Task_Type,                D_Access_Type,
-      D_Aliased_Array_Component,           D_Aliased_Constant,                D_Aliased_Protected_Component,
-      D_Aliased_Record_Component,          D_Aliased_Variable,                D_Anonymous_Subtype_Allocator,
-      D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,   D_Anonymous_Subtype_For,
-      D_Anonymous_Subtype_Indexing,        D_Array,                           D_Array_Type,
+      D_Abstract_Function,               D_Abstract_Procedure,                D_Abstract_Type,
+      D_Access_All_Type,                 D_Access_Constant_Type,              D_Access_Protected_Type,
+      D_Access_Subprogram_Type,          D_Access_Task_Type,                  D_Access_Type,
+      D_Aliased_Array_Component,         D_Aliased_Constant,                  D_Aliased_Protected_Component,
+      D_Aliased_Record_Component,        D_Aliased_Variable,                  D_Anonymous_Subtype_Allocator,
+      D_Anonymous_Subtype_Case,          D_Anonymous_Subtype_Declaration,     D_Anonymous_Subtype_For,
+      D_Anonymous_Subtype_Indexing,      D_Array,                             D_Array_Type,
 
       D_Binary_Modular_Type,
 
-      D_Character_Literal,                 D_Child_Unit,                      D_Class_Wide_Constant,
-      D_Class_Wide_Variable,               D_Constant,                        D_Constrained_Array_Type,
-      D_Constrained_Array_Variable,        D_Controlled_Type,
+      D_Character_Literal,               D_Child_Unit,                        D_Class_Wide_Constant,
+      D_Class_Wide_Variable,             D_Constant,                          D_Constrained_Array_Constant,
+      D_Constrained_Array_Type,          D_Constrained_Array_Variable,        D_Controlled_Type,
 
-      D_Decimal_Fixed_Type,                D_Defaulted_Discriminant,          D_Defaulted_Generic_Parameter,
-      D_Defaulted_Parameter,               D_Deferred_Constant,               D_Derived_Type,
+      D_Decimal_Fixed_Type,              D_Defaulted_Discriminant,            D_Defaulted_Generic_Parameter,
+      D_Defaulted_Parameter,             D_Deferred_Constant,                 D_Derived_Type,
       D_Discriminant,
 
-      D_Empty_Private_Part,                D_Empty_Visible_Part,              D_Enumeration_Type,
-      D_Entry,                             D_Exception,                       D_Extension,
+      D_Empty_Private_Part,              D_Empty_Visible_Part,                D_Enumeration_Type,
+      D_Entry,                           D_Exception,                         D_Extension,
 
-      D_Fixed_Type,                        D_Float_Type,                      D_Formal_Function,
-      D_Formal_Package,                    D_Formal_Procedure,                D_Formal_Type,
-      D_Function,                          D_Function_Call_Renaming,          D_Function_Instantiation,
+      D_Fixed_Type,                      D_Float_Type,                        D_Formal_Function,
+      D_Formal_Package,                  D_Formal_Procedure,                  D_Formal_Type,
+      D_Function,                        D_Function_Call_Renaming,            D_Function_Instantiation,
 
-      D_Generic,                           D_Generic_Function,                D_Generic_Package,
+      D_Generic,                         D_Generic_Function,                  D_Generic_Package,
       D_Generic_Procedure,
 
       D_Handlers,
 
-      D_Incomplete_Type,                   D_In_Out_Generic_Parameter,        D_In_Out_Parameter,
-      D_Initialized_Protected_Component,   D_Initialized_Record_Component,    D_Instantiation,
-      D_Integer_Type,
+      D_Incomplete_Type,                 D_In_Out_Generic_Parameter,          D_In_Out_Parameter,
+      D_Initialized_Protected_Component, D_Initialized_Record_Component,      D_Initialized_Variable,
+      D_Instantiation,                   D_Integer_Type,
 
-      D_Library_Unit_Renaming,             D_Limited_Private_Type,
+      D_Library_Unit_Renaming,           D_Limited_Private_Type,
 
-      D_Modular_Type,                      D_Multiple_Names,                  D_Multiple_Protected_Entries,
+      D_Modular_Type,                    D_Multiple_Names,                    D_Multiple_Protected_Entries,
 
-      D_Named_Number,                      D_Non_Binary_Modular_Type,         D_Non_Identical_Operator_Renaming,
-      D_Non_Identical_Renaming,            D_Non_Limited_Private_Type,        D_Not_Operator_Renaming,
-      D_Null_Extension,                    D_Null_Ordinary_Record_Type,       D_Null_Procedure,
-      D_Null_Tagged_Type,
+      D_Named_Number,                    D_Non_Binary_Modular_Type,           D_Non_Identical_Operator_Renaming,
+      D_Non_Identical_Renaming,          D_Non_Joint_CE_NE_Handler,           D_Non_Limited_Private_Type,
+      D_Not_Operator_Renaming,           D_Null_Extension,                    D_Null_Ordinary_Record_Type,
+      D_Null_Procedure,                  D_Null_Tagged_Type,
 
-      D_Operator,                          D_Operator_Renaming,               D_Ordinary_Fixed_Type,
-      D_Ordinary_Fixed_Type_No_Small,      D_Ordinary_Fixed_Type_With_Small,  D_Ordinary_Record_Type,
+      D_Operator,                        D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
+      D_Ordinary_Fixed_Type_No_Small,    D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
       D_Out_Parameter,
 
-      D_Package,                           D_Package_Instantiation,           D_Package_Statements,
-      D_Predefined_Operator,               D_Private_Extension,               D_Procedure,
-      D_Procedure_Instantiation,           D_Protected,                       D_Protected_Entry,
-      D_Protected_Type,                    D_Protected_Variable,
+      D_Package,                         D_Package_Instantiation,             D_Package_Statements,
+      D_Predefined_Operator,             D_Private_Extension,                 D_Procedure,
+      D_Procedure_Instantiation,         D_Protected,                         D_Protected_Entry,
+      D_Protected_Type,                  D_Protected_Variable,
 
-      D_Record_Type,                       D_Renaming,
+      D_Record_Type,                     D_Renaming,
 
-      D_Self_Calling_Function,             D_Self_Calling_Procedure,          D_Separate,
-      D_Signed_Type,                       D_Single_Array,                    D_Single_Protected,
-      D_Single_Task,                       D_Subtype,
+      D_Self_Calling_Function,           D_Self_Calling_Procedure,            D_Separate,
+      D_Signed_Type,                     D_Single_Array,                      D_Single_Protected,
+      D_Single_Task,                     D_Subtype,
 
-      D_Tagged_Type,                       D_Task,                            D_Task_Entry,
-      D_Task_Type,                         D_Task_Variable,                   D_Type,
+      D_Tagged_Type,                     D_Task,                              D_Task_Entry,
+      D_Task_Type,                       D_Task_Variable,                     D_Type,
 
-      D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,    D_Unconstrained_Subtype,
-      D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,  D_Uninitialized_Variable,
+      D_Unconstrained_Array_Constant,    D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
+      D_Unconstrained_Subtype,           D_Uninitialized_Protected_Component,
+      D_Uninitialized_Record_Component,  D_Uninitialized_Variable,
 
       D_Variable,                        D_Variant_Part);
    type Subrules_List is array (Positive range <>) of Subrules;
@@ -137,7 +136,7 @@ package body Rules.Declarations is
    Rule_Used : Usage_Flags := No_Rule_Used;
    Save_Used : Usage_Flags;
    Usage     : Context_Store;
-   package Usage_Iterator is new Framework.Generic_Context_Iterator (Usage);
+   package Usage_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
 
    ----------
    -- Help --
@@ -250,6 +249,49 @@ package body Rules.Declarations is
       end loop;
    end Do_Report;
 
+
+   --------------------
+   -- Check_Handlers --
+   --------------------
+
+   procedure Check_Handlers (Handlers : Asis.Exception_Handler_List) is
+      use Asis, Asis.Elements, Asis.Statements;
+      use Thick_Queries, Utilities;
+
+      CE_Found : Boolean;
+      NE_Found : Boolean;
+   begin
+      if Handlers /= Nil_Element_List then
+         Do_Report (D_Handlers, Get_Previous_Word_Location (Handlers, "EXCEPTION"));
+      end if;
+
+      if Rule_Used (D_Non_Joint_CE_NE_Handler) then
+         for H in Handlers'Range loop
+            declare
+               Choices : constant Asis.Element_List := Exception_Choices (Handlers (H));
+            begin
+               if Definition_Kind (Choices (1)) /= An_Others_Choice then
+                  CE_Found := False;
+                  NE_Found := False;
+                  for C in Choices'Range loop
+                     declare
+                        Name : constant Wide_String := To_Upper (Full_Name_Image (Choices (C)));
+                     begin
+                        if Name = "STANDARD.CONSTRAINT_ERROR" then
+                           CE_Found := True;
+                        elsif Name = "STANDARD.NUMERIC_ERROR" then
+                           NE_Found := True;
+                        end if;
+                     end;
+                  end loop;
+                  if CE_Found xor NE_Found then
+                     Do_Report (D_Non_Joint_CE_NE_Handler, Get_Location (Handlers (H)));
+                  end if;
+               end if;
+            end;
+         end loop;
+      end if;
+   end Check_Handlers;
 
    -------------------------
    -- Process_Declaration --
@@ -793,8 +835,9 @@ package body Rules.Declarations is
             end case;
 
             declare
-               Def       : Asis.Definition := Object_Declaration_View (Element);
-               Type_Name : Asis.Expression;
+               Def           : Asis.Definition := Object_Declaration_View (Element);
+               Type_Name     : Asis.Expression;
+               Is_Class_Wide : Boolean := False;
             begin
                if Definition_Kind (Def) = A_Type_Definition then
                      -- This happens only for anonymous arrays
@@ -816,6 +859,7 @@ package body Rules.Declarations is
                   end case;
 
                elsif Is_Class_Wide_Subtype (Def) then
+                  Is_Class_Wide := True;
                   Do_Report (D_Class_Wide_Variable, Get_Location (Element));
                end if;
 
@@ -882,11 +926,17 @@ package body Rules.Declarations is
                         exit;
                   end case;
                end loop;
-            end;
 
-            if Is_Nil (Initialization_Expression (Element)) and then not Is_Limited (Element) then
-               Do_Report (D_Uninitialized_Variable, Get_Location (Element));
-            end if;
+               if Is_Nil (Initialization_Expression (Element)) then
+                  if not Is_Limited (Element) then
+                     Do_Report (D_Uninitialized_Variable, Get_Location (Element));
+                  end if;
+               else
+                  if not Is_Class_Wide then -- Class-wide variables must be initialized
+                     Do_Report (D_Initialized_Variable, Get_Location (Element));
+                  end if;
+               end if;
+            end;
 
          when A_Constant_Declaration =>
             Do_Report (D_Constant, Get_Location (Element));
@@ -899,7 +949,8 @@ package body Rules.Declarations is
             end case;
 
             declare
-               Def : constant Asis.Definition := Object_Declaration_View (Element);
+               Def : Asis.Definition := Object_Declaration_View (Element);
+               Type_Name : Asis.Expression;
             begin
                if Definition_Kind (Def) = A_Type_Definition then
                   -- This happens only for anonymous arrays
@@ -907,6 +958,56 @@ package body Rules.Declarations is
                elsif Is_Class_Wide_Subtype (Def) then
                   Do_Report (D_Class_Wide_Constant, Get_Location (Element));
                end if;
+
+               -- Find if the type refers to a constrained array or an unconstrained array
+               -- This is copied from the sequence for variables, but is slightly simpler since there are no
+               -- tasks or protected constants
+               loop
+                  case Definition_Kind (Def) is
+                     when Not_A_Definition =>
+                        Failure ("Not_A_Definition in variable type analysis", Def);
+                     when  A_Type_Definition =>
+                        case Type_Kind (Def) is
+                           when An_Unconstrained_Array_Definition =>
+                              Do_Report ((D_Array, D_Unconstrained_Array_Constant), Get_Location (Element));
+                              exit;
+                           when A_Constrained_Array_Definition =>
+                              Do_Report ((D_Array, D_Constrained_Array_Constant), Get_Location (Element));
+                              exit;
+                           when A_Derived_Type_Definition =>
+                              Def := Parent_Subtype_Indication (Def);
+                           when others =>
+                              -- not an array
+                              exit;
+                        end case;
+                     when A_Subtype_Indication =>
+                        case Constraint_Kind (Subtype_Constraint (Def)) is
+                           when An_Index_Constraint =>
+                              Do_Report ((D_Array, D_Constrained_Array_Constant), Get_Location (Element));
+                              exit;
+                           when Not_A_Constraint =>
+                              -- no constraint, search parent subtype
+                              Type_Name := Subtype_Simple_Name (Def);
+                              if Expression_Kind (Type_Name) = An_Attribute_Reference then
+                                 -- 'Base is only for scalar types
+                                 -- 'Class is only for tagged types
+                                 -- None applies to arrays
+                                 exit;
+                              end if;
+                              Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration (Type_Name));
+                           when A_Discriminant_Constraint
+                              | A_Range_Attribute_Reference
+                              | A_Simple_Expression_Range
+                              | A_Digits_Constraint
+                              | A_Delta_Constraint
+                                =>
+                              -- not an array
+                              exit;
+                        end case;
+                     when others =>
+                        exit;
+                  end case;
+               end loop;
             end;
 
          when A_Deferred_Constant_Declaration =>
@@ -989,9 +1090,7 @@ package body Rules.Declarations is
             if Body_Statements (Element) /= Nil_Element_List then
                Do_Report (D_Package_Statements, Get_Previous_Word_Location (Body_Statements (Element), "BEGIN"));
             end if;
-            if Body_Exception_Handlers (Element) /= Nil_Element_List then
-               Do_Report (D_Handlers, Get_Previous_Word_Location (Body_Exception_Handlers (Element), "EXCEPTION"));
-            end if;
+            Check_Handlers (Body_Exception_Handlers (Element));
 
          when A_Procedure_Declaration =>
             Do_Report (D_Procedure, Get_Location (Element));
@@ -1024,9 +1123,7 @@ package body Rules.Declarations is
                end if;
             end;
 
-            if Body_Exception_Handlers (Element) /= Nil_Element_List then
-               Do_Report (D_Handlers, Get_Previous_Word_Location (Body_Exception_Handlers (Element), "EXCEPTION"));
-            end if;
+            Check_Handlers (Body_Exception_Handlers (Element));
 
          when A_Function_Declaration =>
             if Defining_Name_Kind (Names (Element)(1)) = A_Defining_Operator_Symbol then
@@ -1071,16 +1168,12 @@ package body Rules.Declarations is
                end if;
             end;
 
-            if Body_Exception_Handlers (Element) /= Nil_Element_List then
-               Do_Report (D_Handlers, Get_Previous_Word_Location (Body_Exception_Handlers (Element), "EXCEPTION"));
-            end if;
+            Check_Handlers (Body_Exception_Handlers (Element));
 
          when A_Task_Body_Declaration
            | An_Entry_Body_Declaration
            =>
-            if Body_Exception_Handlers (Element) /= Nil_Element_List then
-               Do_Report (D_Handlers, Get_Previous_Word_Location (Body_Exception_Handlers (Element), "EXCEPTION"));
-            end if;
+            Check_Handlers (Body_Exception_Handlers (Element));
 
          when A_Task_Type_Declaration =>
             Do_Report ((D_Type, D_Task, D_Task_Type), Get_Location (Element));
@@ -1364,21 +1457,16 @@ package body Rules.Declarations is
    procedure Process_Statement (Element : in Asis.Declaration) is
       use Asis, Asis.Elements, Asis.Statements, Utilities;
    begin
-      if not Rule_Used (D_Handlers) then
+      if not (Rule_Used (D_Handlers) or Rule_Used (D_Non_Joint_CE_NE_Handler)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       case Statement_Kind (Element) is
          when An_Accept_Statement =>
-            if Accept_Body_Exception_Handlers (Element) /= Nil_Element_List then
-               Do_Report (D_Handlers,
-                          Get_Previous_Word_Location (Accept_Body_Exception_Handlers (Element), "EXCEPTION"));
-            end if;
+            Check_Handlers (Accept_Body_Exception_Handlers (Element));
          when A_Block_Statement =>
-            if Block_Exception_Handlers (Element) /= Nil_Element_List then
-               Do_Report (D_Handlers, Get_Previous_Word_Location (Block_Exception_Handlers (Element), "EXCEPTION"));
-            end if;
+            Check_Handlers (Block_Exception_Handlers (Element));
          when others =>
             Failure ("Bad statement", Element);
       end case;

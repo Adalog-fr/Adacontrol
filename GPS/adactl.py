@@ -1,5 +1,8 @@
-#  This file adds support for AdaControl
-
+"""  This file adds support for AdaControl
+     It provides a new menu, entries in the "help" menu, and
+     buttons to make use of AdaControl easier
+"""
+
 #######################################################################
 import GPS, os, glob, re, sets
 
@@ -19,7 +22,9 @@ def post_clean ():
    """Clean-up after running AdaControl
    """
    # Raise "Locations" window from menu, because it works even if the window has not been created yet
-   GPS.execute_action ("/Window/Locations");
+   # GPS.execute_action ("/Window/Locations");
+   loc = GPS.MDI.get ("Locations")
+   loc.raise_window ()
    if GPS.Preference ("delete-trees").get():
       del_tree (confirm=False)
 
@@ -202,27 +207,10 @@ def create_adp ():
       f.close()
       GPS.MDI.dialog ("Project file " + name + " created")
 
-def get_units_file ():
-   """Return the units file name
-   """
-   opt_list=GPS.Project.root().get_tool_switches_as_list("AdaControl")
-   try:
-      return filter(lambda x:x[0]=="@", opt_list)[0][1:]
-   except:
-      return ""
-
-def units_file_defined ():
-   """Is the units file defined?
-   """
-   if get_units_file() == "":
-      return "false"
-   else:
-      return "true"
-
 def create_units ():
    """Create units file from project
    """
-   name = get_units_file ()
+   name = get_file ("-@")
    if not name:
       name= GPS.Project.file(GPS.Project.root()).name()[:-4]+".txt"
    value = GPS.MDI.input_dialog ("Create units file",  "File=" + name)
@@ -251,20 +239,23 @@ def get_file (option):
        return ""
 
 def rules_file_defined ():
-   """Is the rules file defined?
-   """
-   if not get_file("-f"):
-      return "false"
-   else:
+   if get_file ("-f"):
       return "true"
+   else:
+      return "false"
 
+def units_file_defined ():
+   if get_file ("-@"):
+      return "true"
+   else:
+      return "false"
 
 def options (rules, files):
    """Builds the options string
-      Options -f and @ are defined as switches for the convenience of the user
-      but they are actually passed as explicit parameters depending on the way
-      Adacontrol is launched. We must therefore remove these options from the
-      switches string provided by GPS.
+      Options -f and @ (actually -@) are defined as switches for the convenience
+      of the user but they are actually passed as explicit parameters depending on
+      the way Adacontrol is launched. We must therefore remove these options from
+      the switches string provided by GPS.
       Similarly, the -o option depends on the setting of the (pseudo) switches
       -GPS and -NOGPS
    """
@@ -295,7 +286,7 @@ def options (rules, files):
          raise ValueError
       result = result + ' ' + win.name()
    elif files == "list":
-      result = result + " @" + get_units_file()
+      result = result + " @" + get_file("-@")
    else:   # "project"
       result = result + ' ' + Project_units()
 
@@ -311,7 +302,7 @@ def options (rules, files):
       else:
          raise ValueError
    elif rules == "file":
-      if rules_file_defined () == "false" :
+      if not get_file("-f") :
          GPS.MDI.dialog ("no rules file defined")
          raise ValueError
       result = result + " -f " + get_file("-f")
@@ -357,7 +348,10 @@ def options (rules, files):
       elif skip_next:
          skip_next = False
       elif O[0] == "@":
+         # A remaining of the old syntax, ignore
          pass
+      elif O == "-@":
+         skip_next = True
       elif O == "--":
          next_is_ASIS = True
       elif O == "-GPS":

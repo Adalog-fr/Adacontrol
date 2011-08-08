@@ -42,17 +42,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
-  Framework.Scope_Manager,
-  Framework.Queries;
+  Framework.Queries,
+  Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Unnecessary_Use is
-   use Framework, Utilities;
+   use Framework, Framework.Control_Manager, Utilities;
 
    -- Algorithm:
    -- We use a Scoped_Store to maintain a list of used packages. For each package, we

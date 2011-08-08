@@ -41,16 +41,14 @@ with
   Asis.Elements,
   Asis.Expressions;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.With_Clauses is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Subrules is (Multiple_Names, Reduceable, Inherited);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);

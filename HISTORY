@@ -1,6 +1,57 @@
+=============
+== V1.11r3 ==
+=============
+
+General:
+--------
+Bug fixes:
+   Compilation unit pragmas were not processed.
+   Representation_Clauses: Constraint_Error on null ranges for component clauses
+   Style (Formal_Parameter_Order): not processed correctly if Default_In or 
+     Parameter_Order not given at the same time.
+   Special_Comments (Pattern): treated "--" in string literals as comments
+   GPS settings: value of units file is remembered in the switch dialog
+
+Improvements:
+   Predefined and derived types have 'Size recognized by the static evaluator
+   Block statements that contain only a null statement are considered as null
+      statements for the rules dealing with null statements.
+
+pfni: 
+   If the identifier is initialized by a static expression (and
+   especially a constant), the value is displayed after the full name.
+
+Changes to commands:
+--------------------
+set: added new_output
+
+Changes to existing rules:
+--------------------------
+Declarations:
+   Added subrules constrained_array_constant, unconstrained_array_constant,
+   instantiation, initialized_variable, non_joint_CE_NE_handler
+
+Max_Call_Depth:
+   Better handling of dynamic calls or calls to SP whose body is
+   missing or unknown. Report "at least" for indirect calls to these.
+
+Pragmas:
+   If several controls apply to the same pragma, they are all reported instead
+   of only the most specific one.
+
+Representation_clauses:
+   Added categories to subrules
+
+Simpifiable_Expressions
+   Conversion reports conversions of universal values
+
+Special_Comments
+   Added subrule "terminating"
+
 ==============
 == V1.10r10 ==
 ==============
+
 Minor bug fix release:
 - Problem following several levels of renaming in rule usage
 - Workaround for an ASIS bug involving renaming and generic child units

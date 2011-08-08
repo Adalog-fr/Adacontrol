@@ -20,11 +20,11 @@ Blocks:
    check statements (block);
 
 Boolean_Relational_Operators: 
-   check entities (standard."="{standard.Boolean; standard.boolean return standard.boolean},
+   check entities (standard."=" {standard.Boolean; standard.boolean return standard.boolean},
                    standard."/="{standard.Boolean; standard.boolean return standard.boolean},
-                   standard."<"{standard.Boolean; standard.boolean return standard.boolean},
+                   standard."<" {standard.Boolean; standard.boolean return standard.boolean},
                    standard."<="{standard.Boolean; standard.boolean return standard.boolean},
-                   standard.">"{standard.Boolean; standard.boolean return standard.boolean},
+                   standard.">" {standard.Boolean; standard.boolean return standard.boolean},
                    standard.">="{standard.Boolean; standard.boolean return standard.boolean}
                   );
 
@@ -104,12 +104,9 @@ Local_Packages:
    check declarations (public package);
 
 Misnamed_Identifiers:
-   check naming_convention (type, "_T$");
-Misnamed_Identifiers:
-   check naming_convention (root access_type, "_A$");
-Misnamed_Identifiers:
-   check naming_convention (regular_constant, "_C$");
-Misnamed_Identifiers:
+   check naming_convention (type, "_T$"),
+   check naming_convention (root access_type, "_A$"),
+   check naming_convention (regular_constant, "_C$"),
    check naming_convention (package_renaming, "_R$");
 
 Multiple_Entries_In_Protected_Definitions:
@@ -203,8 +200,7 @@ Positional_Actuals_For_Defaulted_Parameters:
    check default_parameter (calls, all, positional);
 
 Positional_Components:
-   check style (positional_association, array_aggregate);
-Positional_Components:
+   check style (positional_association, array_aggregate),
    check style (positional_association, record_aggregate);
 
 Positional_Generic_Parameters:
@@ -225,6 +221,9 @@ Raising_External_Exceptions:
 
 Raising_Predefined_Exceptions:
    check statements (raise_standard);
+
+Separate_Numeric_Error_Handlers:
+   check declarations (non_joint_CE_NE_handler);
 
 Slices:
    check expressions (slice);

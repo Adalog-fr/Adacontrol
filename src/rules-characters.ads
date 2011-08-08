@@ -33,9 +33,6 @@
 with
   Asis;
 
--- Adactl
-with
-  Framework;
 package Rules.Characters is
 
    Rule_Id : constant Wide_String := "CHARACTERS";

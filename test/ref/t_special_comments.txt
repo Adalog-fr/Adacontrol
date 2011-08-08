@@ -5,3 +5,8 @@ t_special_comments-test_unnamed_begin.adb:47:1: Found: SPECIAL_COMMENTS: "begin"
 t_special_comments-test_unnamed_begin.adb:36:4: Found: SPECIAL_COMMENTS: "begin" has no unit name comment for Pack1
 t_special_comments-test_unnamed_begin.adb:15:7: Found: SPECIAL_COMMENTS: "begin" comment does not name P3
 t_special_comments-test_unnamed_begin.adb:26:7: Found: SPECIAL_COMMENTS: "begin" has no unit name comment for F2
+t_special_comments-test_unnamed_begin.adb:4:42: Error: SPECIAL_COMMENTS: Not an allowed terminating comment
+t_special_comments-test_terminating.adb:4:40: Error: SPECIAL_COMMENTS: Not an allowed terminating comment
+t_special_comments-test_terminating.adb:11:17: Error: SPECIAL_COMMENTS: Not an allowed terminating comment
+t_special_comments-test_terminating.adb:14:18: Error: SPECIAL_COMMENTS: Not an allowed terminating comment
+t_special_comments-test_terminating.adb:17:14: Error: SPECIAL_COMMENTS: Not an allowed terminating comment

@@ -33,6 +33,11 @@
 with
   Ada.Calendar;
 
+-- ASIS
+with
+  Asis.Declarations,
+  Asis.Elements;
+
 -- Adalog
 with
   Utilities,
@@ -42,10 +47,12 @@ pragma Elaborate_All (Binary_Map);
 
 -- Adacontrol
 with
+  Framework.Control_Manager,
+  Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Reports;
 
 package body Framework.Rules_Manager is
-   Last_Rule_Name   : Wide_String (1..50);  -- 50 arbitrary, but largely sufficient
+   Last_Rule_Name   : Wide_String (1 .. Max_Rule_Name_Length);
    Last_Rule_Length : Natural := 0;
    Last_Rule_Start  : Ada.Calendar.Time;
    Max_Name_Length  : Natural := 0;
@@ -68,6 +75,19 @@ package body Framework.Rules_Manager is
 
    Kinds_Count : array (Extended_Rule_Kind) of Rules_Count := (others => 0);
 
+   --
+   -- Inhibition
+   --
+
+   type Inhibited_Rule is new Control_Manager.Root_Context with
+      record
+         Rule_Name : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+         Is_Banned : Boolean;
+      end record;
+   Inhibited : Control_Manager.Context_Store;
+
+   package Inhibited_Iterator is new Control_Manager.Generic_Context_Iterator (Inhibited);
+
    --------------
    -- Register --
    --------------
@@ -81,6 +101,10 @@ package body Framework.Rules_Manager is
                        Finalize_CB    : Finalize_Procedure := null) is
       use Utilities;
    begin
+      if Rule'Length > Max_Rule_Name_Length then
+         Failure ("Name of rule too long");
+      end if;
+
       if Help_CB = null or Add_Control_CB = null or Command_CB = null then
          Failure ("Missing Help, Add_Control or Command procedure");
       end if;
@@ -124,7 +148,7 @@ package body Framework.Rules_Manager is
       end if;
 
       Last_Rule_Name (1 .. Rule'Length) := Rule;
-      Last_Rule_Length                := Rule'Length;
+      Last_Rule_Length                  := Rule'Length;
 
       if Timing_Option then
          Last_Rule_Start := Clock;
@@ -258,9 +282,7 @@ package body Framework.Rules_Manager is
       end Prepare_One;
 
       procedure Iterate_On_Prepare is new Rule_List.Iterate (Prepare_One);
-
    begin  -- Prepare_All
-      Rule_List.Balance (Rule_Map);
       Iterate_On_Prepare (Rule_Map);
    end Prepare_All;
 
@@ -400,4 +422,104 @@ package body Framework.Rules_Manager is
 
    end Report_Timings;
 
+   -------------
+   -- Inhibit --
+   -------------
+
+   procedure Inhibit (Rule_Name : Wide_String; Entity : Entity_Specification; Is_All : Boolean) is
+      use Framework.Control_Manager;
+   begin
+      -- Check that inhibition is not already specified
+      -- (otherwise, the suspend/resume mechanism won't work since
+      -- suspensions are not stacked)
+      if Rule_Name = "ALL" then
+         -- Can be given only once for each unit, and is incompatible with a specific rule name
+         --   => Associate in non additive mode
+         --   => will raise Parameter_Error if already specified for any rule
+         Associate (Inhibited,
+                    Entity,
+                    Inhibited_Rule'(Rule_Name => To_Unbounded_Wide_String (Rule_Name), Is_Banned => Is_All),
+                    Additive => False);
+      else
+         -- Check that it is not already specified for "ALL". If it is, it is the only association,
+         -- per previous test
+         declare
+            Cont : constant Root_Context'Class := Association (Inhibited, Entity);
+         begin
+            if Cont /= No_Matching_Context and then Inhibited_Rule (Cont).Rule_Name = "ALL" then
+               raise Already_In_Store;
+            end if;
+         end;
+
+         Associate (Inhibited,
+                    Entity,
+                    Inhibited_Rule'(Rule_Name => To_Unbounded_Wide_String (Rule_Name), Is_Banned => Is_All),
+                    Additive => True);
+      end if;
+   end Inhibit;
+
+   ------------------------
+   -- Process_Inhibition --
+   ------------------------
+
+   procedure Process_Inhibition (Unit : Asis.Compilation_Unit; State : Framework.Rules_Manager.Rule_Action) is
+      use Asis.Declarations, Asis.Elements;
+      use Framework, Framework.Control_Manager;
+
+      Iter : Context_Iterator := Inhibited_Iterator.Create;
+   begin
+      Reset (Iter, Names (Unit_Declaration (Unit))(1));
+      if not Is_Exhausted (Iter) then
+         if Inhibited_Rule (Value (Iter)).Rule_Name = "ALL" then
+            Rules_Manager.Command_All (State);
+            -- There is no other value
+         else
+            while not Is_Exhausted (Iter) loop
+               Rules_Manager.Command (To_Wide_String (Inhibited_Rule (Value (Iter)).Rule_Name), State);
+               Next (Iter);
+            end loop;
+         end if;
+      end if;
+   end Process_Inhibition;
+
+   ---------------
+   -- Is_Banned --
+   ---------------
+
+   function Is_Banned (Element : in Asis.Element; For_Rule : in Wide_String) return Boolean is
+      use Asis.Declarations, Asis.Elements;
+      use Framework.Control_Manager;
+      Iter : Context_Iterator := Inhibited_Iterator.Create;
+   begin
+      Reset (Iter, Names (Unit_Declaration (Enclosing_Compilation_Unit (Element)))(1));
+      if Is_Exhausted (Iter) then
+         return False;
+      end if;
+
+      if Inhibited_Rule (Value (Iter)).Rule_Name = "ALL" then
+         return Inhibited_Rule (Value (Iter)).Is_Banned;
+      end if;
+
+      declare
+         Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (For_Rule);
+      begin
+         while not Is_Exhausted (Iter) loop
+            if Inhibited_Rule (Value (Iter)).Rule_Name = Rule_Name then
+               return Inhibited_Rule (Value (Iter)).Is_Banned;
+            end if;
+            Next (Iter);
+         end loop;
+      end;
+
+      return False;
+   end Is_Banned;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      Rule_List.Balance (Rule_Map);
+   end Initialize;
 end Framework.Rules_Manager;

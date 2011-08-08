@@ -41,13 +41,14 @@ with   -- Standard Ada units
 
 with   -- ASIS components
   Asis.Ada_Environments,
+  Asis.Compilation_Units,
+  Asis.Declarations,
   Asis.Elements,
   Asis.Errors,
-  Asis.Compilation_Units,
+  Asis.Exceptions,
+  Asis.Expressions,
   Asis.Iterator,
   Asis.Implementation,
-  Asis.Expressions,
-  Asis.Exceptions,
   Asis.Text;
 
 with   -- Other reusable components
@@ -277,6 +278,40 @@ procedure Pfni is
             Put ("<<FNI not available for """ & Trim (Element_Image (The_Name), Both) & """>>");
          else
             Put (Adjust_Image (Result));
+
+            -- Print initial value if there is one
+            declare
+               use Asis.Declarations;
+
+               Decl : Asis.Declaration;
+               Init : Asis.Expression;
+            begin
+               if Element_Kind (The_Name) = A_Defining_Name then
+                  Decl := Enclosing_Element (The_Name);
+               else
+                  Decl := Corresponding_Name_Declaration (The_Name);
+               end if;
+
+               case Declaration_Kind (Decl) is
+                  when A_Variable_Declaration
+                     | A_Constant_Declaration
+                     | An_Integer_Number_Declaration
+                     | A_Real_Number_Declaration
+                     | A_Discriminant_Specification
+                     | A_Component_Declaration
+                     | A_Parameter_Specification
+                     | A_Formal_Object_Declaration
+                       =>
+                     Init := Initialization_Expression (Decl);
+                     if not Is_Nil (Init) then
+                        Put (" (Init => ");
+                        Put (Choose (Static_Expression_Value_Image (Init), "not static"));
+                        Put (')');
+                     end if;
+                  when others =>
+                     null;
+               end case;
+            end;
          end if;
       end;
    end Print_Name;
@@ -303,7 +338,7 @@ procedure Pfni is
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
                   if Full_Option then
-                     Print_Name (Element);
+                     Print_Name (Prefix (Element));
                   end if;
                   Control := Abandon_Children;
                when An_Identifier | An_Enumeration_Literal | An_Operator_Symbol =>

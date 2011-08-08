@@ -44,14 +44,15 @@ with
 
 -- Adactl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Symbol_Table;
+
+-- AdaControl
+with
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.No_Operator_Usage is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Operator_Class is (Arithmetic, Logical);
 

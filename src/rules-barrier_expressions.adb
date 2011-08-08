@@ -47,14 +47,11 @@ with
 
 -- AdaControl
 with
-  Framework,
-  Framework.Reports,
-  Framework.Rules_Manager,
-  Framework.Language;
+   Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Barrier_Expressions is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Keyword is (K_Entity,              K_Allocation,          K_Any_Component,
                     K_Any_Variable,        K_Arithmetic_Operator, K_Array_Aggregate,
@@ -241,7 +238,7 @@ package body Rules.Barrier_Expressions is
                            end if;
                            if Is_Local then
                               Do_Report ("local function call",
-                                         Framework.Association (Contexts, Image (K_Local_Function)),
+                                         Control_Manager.Association (Contexts, Image (K_Local_Function)),
                                          Exp);
                            else
                               Do_Report ("non-local function call", Matching_Context (Contexts, Exp));
@@ -253,7 +250,7 @@ package body Rules.Barrier_Expressions is
                         | An_Entry_Index_Specification    -- although they are strictly speaking constants
                           =>
                         Do_Report ("variable",
-                                   Framework.Association (Contexts, Image (K_Any_Variable)),
+                                   Control_Manager.Association (Contexts, Image (K_Any_Variable)),
                                    Exp);
                      when A_Component_Declaration =>
                         -- This can be:
@@ -269,7 +266,7 @@ package body Rules.Barrier_Expressions is
                              /= "STANDARD.BOOLEAN"
                            then
                               Do_Report ("non-boolean protected component",
-                                         Framework.Association (Contexts, Image (K_Any_Component)),
+                                         Control_Manager.Association (Contexts, Image (K_Any_Component)),
                                          Exp);
                            end if;
                         end if;
@@ -308,7 +305,7 @@ package body Rules.Barrier_Expressions is
                      if Is_Nil (A4G_Bugs.Corresponding_Called_Function (Enclosing_Element (Exp))) then
                         -- Predefined operator
                         Do_Report ("predefined logical operator",
-                                   Framework.Association (Contexts, Image (K_Logical_Operator)));
+                                   Control_Manager.Association (Contexts, Image (K_Logical_Operator)));
                      else
                         -- User defined operator
                         Do_Report ("redefined logical operator",
@@ -324,8 +321,8 @@ package body Rules.Barrier_Expressions is
                      if Is_Nil (A4G_Bugs.Corresponding_Called_Function (Enclosing_Element (Exp))) then
                         -- Predefined operator
                         Do_Report ("predefined comparison operator",
-                          Framework.Association (Contexts,
-                                                 Image (K_Comparison_Operator)));
+                          Control_Manager.Association (Contexts,
+                                                       Image (K_Comparison_Operator)));
                      else
                         -- User defined operator
                         Do_Report ("redefined comparison operator",
@@ -335,8 +332,8 @@ package body Rules.Barrier_Expressions is
                      if Is_Nil (A4G_Bugs.Corresponding_Called_Function (Enclosing_Element (Exp))) then
                         -- Predefined operator
                         Do_Report ("predefined arithmetic operator",
-                          Framework.Association (Contexts,
-                                                 Image (K_Arithmetic_Operator)));
+                          Control_Manager.Association (Contexts,
+                                                       Image (K_Arithmetic_Operator)));
                      else
                         -- User defined operator
                         Do_Report ("redefined arithmetic operator",
@@ -348,11 +345,11 @@ package body Rules.Barrier_Expressions is
                -- Attributes that are not callable entities are always allowed
                if Is_Callable_Construct (Exp) then
                   Do_Report ("callable attribute",
-                             Framework.Association (Contexts, Image (K_Function_Attribute)),
+                             Control_Manager.Association (Contexts, Image (K_Function_Attribute)),
                              Exp);
                else
                   Do_Report ("value attribute",
-                             Framework.Association (Contexts, Image (K_Value_Attribute)),
+                             Control_Manager.Association (Contexts, Image (K_Value_Attribute)),
                              Exp);
                end if;
 
@@ -360,7 +357,7 @@ package body Rules.Barrier_Expressions is
               | An_Or_Else_Short_Circuit
               =>
                Do_Report ("short-circuit control form",
-                          Framework.Association (Contexts, Image (K_Logical_Operator)),
+                          Control_Manager.Association (Contexts, Image (K_Logical_Operator)),
                           Loc => Get_Next_Word_Location (Short_Circuit_Operation_Left_Expression (Exp)));
 
                -- Check left and right expressions
@@ -373,7 +370,7 @@ package body Rules.Barrier_Expressions is
 
             when A_Record_Aggregate =>
                Do_Report ("record aggregate",
-                          Framework.Association (Contexts, Image (K_Record_Aggregate)));
+                          Control_Manager.Association (Contexts, Image (K_Record_Aggregate)));
 
                -- Record_Component_Associations + Record_Component_Choices/Component_Expression
                declare
@@ -386,7 +383,7 @@ package body Rules.Barrier_Expressions is
 
             when An_Extension_Aggregate =>
                Do_Report ("record extension",
-                          Framework.Association (Contexts, Image (K_Record_Aggregate)));
+                          Control_Manager.Association (Contexts, Image (K_Record_Aggregate)));
 
                -- Extension_Aggregate_Expression
                -- Record_Component_Associations + Record_Component_Choices/Component_Expression
@@ -404,7 +401,7 @@ package body Rules.Barrier_Expressions is
               | A_Named_Array_Aggregate
               =>
                Do_Report ("array aggregate",
-                          Framework.Association (Contexts, Image (K_Array_Aggregate)));
+                          Control_Manager.Association (Contexts, Image (K_Array_Aggregate)));
 
                -- Array_Component_Associations + Array_Component_Choices/Component_Expression
                declare
@@ -456,7 +453,7 @@ package body Rules.Barrier_Expressions is
               | A_Not_In_Range_Membership_Test
               =>
                Do_Report ("membership test",
-                          Framework.Association (Contexts, Image (K_Logical_Operator)),
+                          Control_Manager.Association (Contexts, Image (K_Logical_Operator)),
                           Loc => Get_Next_Word_Location (Membership_Test_Expression (Exp)));
 
                -- Check both tested expression and range
@@ -479,19 +476,19 @@ package body Rules.Barrier_Expressions is
               | A_Not_In_Type_Membership_Test
               =>
                Do_Report ("membership test",
-                          Framework.Association (Contexts, Image (K_Logical_Operator)));
+                          Control_Manager.Association (Contexts, Image (K_Logical_Operator)));
 
                -- Check membership test expression
                Check_Expression (Membership_Test_Expression (Exp));
 
             when An_Indexed_Component =>
                Do_Report ("indexing",
-                          Framework.Association (Contexts, Image (K_Indexing)));
+                          Control_Manager.Association (Contexts, Image (K_Indexing)));
 
                -- Check for implicit dereference
                if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
-                           Framework.Association (Contexts, Image (K_Dereference)));
+                           Control_Manager.Association (Contexts, Image (K_Dereference)));
                end if;
                -- Check both prefix and indexes of the component
                Check_Expression (Prefix (Exp));
@@ -505,12 +502,12 @@ package body Rules.Barrier_Expressions is
 
             when A_Slice =>
                Do_Report ("slice",
-                          Framework.Association (Contexts, Image (K_Indexing)));
+                          Control_Manager.Association (Contexts, Image (K_Indexing)));
 
                 -- Check for implicit dereference
                if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
-                           Framework.Association (Contexts, Image (K_Dereference)));
+                           Control_Manager.Association (Contexts, Image (K_Dereference)));
                end if;                                          -- Check both slice prefix and range
                Check_Expression (Prefix (Exp));
                declare
@@ -533,7 +530,7 @@ package body Rules.Barrier_Expressions is
                -- Check for implicit dereference
                if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
-                           Framework.Association (Contexts, Image (K_Dereference)));
+                           Control_Manager.Association (Contexts, Image (K_Dereference)));
                end if;
                -- Check both prefix and selector
                Check_Expression (Prefix (Exp));
@@ -543,7 +540,7 @@ package body Rules.Barrier_Expressions is
                -- Check for implicit dereference
                if Is_Access_Expression (Prefix (Exp)) then
                 Do_Report ("dereference",
-                           Framework.Association (Contexts, Image (K_Dereference)));
+                           Control_Manager.Association (Contexts, Image (K_Dereference)));
                end if;
                -- Check prefix
                Check_Expression (Prefix (Exp));
@@ -558,23 +555,23 @@ package body Rules.Barrier_Expressions is
 
             when An_Explicit_Dereference =>
                Do_Report ("dereference",
-                          Framework.Association (Contexts, Image (K_Dereference)));
+                          Control_Manager.Association (Contexts, Image (K_Dereference)));
                Check_Expression (Prefix (Exp));
 
             when A_Type_Conversion
               | A_Qualified_Expression
               =>
                Do_Report ("conversion or qualified expression",
-                          Framework.Association (Contexts, Image (K_Conversion)));
+                          Control_Manager.Association (Contexts, Image (K_Conversion)));
                Check_Expression (Converted_Or_Qualified_Expression (Exp));
 
             when An_Allocation_From_Subtype =>
                Do_Report ("allocation",
-                          Framework.Association (Contexts, Image (K_Allocation)));
+                          Control_Manager.Association (Contexts, Image (K_Allocation)));
 
             when An_Allocation_From_Qualified_Expression =>
                Do_Report ("allocation",
-                          Framework.Association (Contexts, Image (K_Allocation)));
+                          Control_Manager.Association (Contexts, Image (K_Allocation)));
                Check_Expression (Allocator_Qualified_Expression (Exp));
          end case;
       end Check_Expression;

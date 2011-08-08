@@ -78,19 +78,46 @@ package Framework.Language.Shared_Keys is
    -----------------------------------------------------------------------------------
 
    type Categories is (Cat_Any,
-                       Cat_Enum,    Cat_Range,  Cat_Mod,    Cat_Delta,  Cat_Digits,
-                       Cat_Array,   Cat_Record, Cat_Tagged, Cat_Access, Cat_New,
-                       Cat_Private, Cat_Task,   Cat_Protected);
+                       Cat_Enum,  Cat_Range,   Cat_Mod,    Cat_Delta,     Cat_Digits,
+                       Cat_Array, Cat_Record,  Cat_Tagged, Cat_Extension, Cat_Access,
+                       Cat_New,   Cat_Private, Cat_Task,   Cat_Protected);
    package Categories_Utilities is new Modifier_Utilities (Categories,
                                                            Prefix   => "CAT_",
                                                            Box_Pos  => 0,
                                                            Pars_Pos => 1);
 
-   function Matches (Elem           : in Asis.Element;
-                     Cat            : in Categories;
-                     Follow_Derived : in Boolean := False;
-                     Follow_Private : in Boolean := False)
+   function Matches (Elem               : in Asis.Element;
+                     Cat                : in Categories;
+                     Follow_Derived     : in Boolean := False;
+                     Follow_Private     : in Boolean := False;
+                     Separate_Extension : in Boolean := False)
                      return Boolean;
+   -- Appropriate Element_Kinds for Elem:
+   --       A_Declaration
+   --       A_Definition
+   -- Appropriate Declaration_Kinds:
+   --       An_Ordinary_Type_Declaration
+   --       A_Task_Type_Declaration
+   --       A_Protected_Type_Declaration
+   --       A_Private_Type_Declaration
+   --       A_Private_Extension_Declaration
+   --       A_Subtype_Declaration
+   --       A_Formal_Type_Declaration
+   -- Appropriate Definition_Types:
+   --       A_Type_Definition
+   --       A_Task_Definition
+   --       A_Protected_Definition
+
+   function Matching_Category (Elem               : in Asis.Element;
+                               From_Cats          : in Categories_Utilities.Unconstrained_Modifier_Set;
+                               Follow_Derived     : in Boolean := False;
+                               Follow_Private     : in Boolean := False;
+                               Separate_Extension : in Boolean := False)
+                               return Categories;
+   -- Appropriate Element_Kinds for Elem:
+   -- Same as Matches above
+   --
+   -- Return the category of Elem it is in From_Cats, Cat_Any otherwise
 
    function Image (Item : Thick_Queries.Type_Categories) return Wide_String;
 end Framework.Language.Shared_Keys;

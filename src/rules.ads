@@ -30,6 +30,26 @@
 ----------------------------------------------------------------------
 with  -- ASIS
   Asis;
+
+-- All rules necessarily need these units. We put the with clauses
+-- here so they apply to all child units. This way, rules need to
+-- put in their with clauses only the ones they need for some special
+-- purpose.
+-- Of course, we have to disable the warnings that these units are
+-- not referenced here
+
+pragma Warnings (Off);
+--## RULE OFF With_Clauses
+-- Adactl
+with
+  Framework,
+  Framework.Control_Manager,
+  Framework.Language,
+  Framework.Rules_Manager,
+  Framework.Reports;
+pragma Warnings (On);
+--## RULE ON With_Clauses
+
 package Rules is
    pragma Elaborate_Body (Rules);
 private

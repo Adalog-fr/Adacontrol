@@ -42,16 +42,14 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Use_Clauses is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Subrules is (Both, Local, Global);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);

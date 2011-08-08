@@ -33,14 +33,13 @@
 with
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
+
 package body Rules.Uncheckable is
-   use Framework, Framework.Reports;
+   use Framework, Framework.Control_Manager, Framework.Reports;
 
    subtype Subrules is Uncheckable_Kinds;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);

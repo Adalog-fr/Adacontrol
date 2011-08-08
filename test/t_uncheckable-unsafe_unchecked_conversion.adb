@@ -7,7 +7,7 @@ procedure Unsafe_Unchecked_Conversion is
       end record;
    for T1'Size use 32;
    type T2 is range 1 .. 10;
-   for T2'Size use Integer'Size;
+   for T2'Size use Unknown'Size;
    function Inst is new Unchecked_Conversion (T1, T2);      -- Uncheckable, False positive
 begin
    null;

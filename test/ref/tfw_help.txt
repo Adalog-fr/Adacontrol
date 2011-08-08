@@ -61,49 +61,51 @@ Parameter(s): {<location>} <decl>
         binary_modular_type             | character_literal                 |
         child_unit                      | class_wide_constant               |
         class_wide_variable             | constant                          |
-        constrained_array_type          | constrained_array_variable        |
-        controlled_type                 | decimal_fixed_type                |
-        defaulted_discriminant          | defaulted_generic_parameter       |
-        defaulted_parameter             | deferred_constant                 |
-        derived_type                    | discriminant                      |
-        empty_private_part              | empty_visible_part                |
-        enumeration_type                | entry                             |
-        exception                       | extension                         |
-        fixed_type                      | float_type                        |
-        formal_function                 | formal_package                    |
-        formal_procedure                | formal_type                       |
-        function                        | function_call_renaming            |
-        function_instantiation          | generic                           |
-        generic_function                | generic_package                   |
-        generic_procedure               | handlers                          |
-        incomplete_type                 | in_out_generic_parameter          |
-        in_out_parameter                | initialized_protected_component   |
-        initialized_record_component    | instantiation                     |
+        constrained_array_constant      | constrained_array_type            |
+        constrained_array_variable      | controlled_type                   |
+        decimal_fixed_type              | defaulted_discriminant            |
+        defaulted_generic_parameter     | defaulted_parameter               |
+        deferred_constant               | derived_type                      |
+        discriminant                    | empty_private_part                |
+        empty_visible_part              | enumeration_type                  |
+        entry                           | exception                         |
+        extension                       | fixed_type                        |
+        float_type                      | formal_function                   |
+        formal_package                  | formal_procedure                  |
+        formal_type                     | function                          |
+        function_call_renaming          | function_instantiation            |
+        generic                         | generic_function                  |
+        generic_package                 | generic_procedure                 |
+        handlers                        | incomplete_type                   |
+        in_out_generic_parameter        | in_out_parameter                  |
+        initialized_protected_component | initialized_record_component      |
+        initialized_variable            | instantiation                     |
         integer_type                    | library_unit_renaming             |
         limited_private_type            | modular_type                      |
         multiple_names                  | multiple_protected_entries        |
         named_number                    | non_binary_modular_type           |
         non_identical_operator_renaming | non_identical_renaming            |
-        non_limited_private_type        | not_operator_renaming             |
-        null_extension                  | null_ordinary_record_type         |
-        null_procedure                  | null_tagged_type                  |
-        operator                        | operator_renaming                 |
-        ordinary_fixed_type             | ordinary_fixed_type_no_small      |
-        ordinary_fixed_type_with_small  | ordinary_record_type              |
-        out_parameter                   | package                           |
-        package_instantiation           | package_statements                |
-        predefined_operator             | private_extension                 |
-        procedure                       | procedure_instantiation           |
-        protected                       | protected_entry                   |
-        protected_type                  | protected_variable                |
-        record_type                     | renaming                          |
-        self_calling_function           | self_calling_procedure            |
-        separate                        | signed_type                       |
-        single_array                    | single_protected                  |
-        single_task                     | subtype                           |
-        tagged_type                     | task                              |
-        task_entry                      | task_type                         |
-        task_variable                   | type                              |
+        non_joint_ce_ne_handler         | non_limited_private_type          |
+        not_operator_renaming           | null_extension                    |
+        null_ordinary_record_type       | null_procedure                    |
+        null_tagged_type                | operator                          |
+        operator_renaming               | ordinary_fixed_type               |
+        ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
+        ordinary_record_type            | out_parameter                     |
+        package                         | package_instantiation             |
+        package_statements              | predefined_operator               |
+        private_extension               | procedure                         |
+        procedure_instantiation         | protected                         |
+        protected_entry                 | protected_type                    |
+        protected_variable              | record_type                       |
+        renaming                        | self_calling_function             |
+        self_calling_procedure          | separate                          |
+        signed_type                     | single_array                      |
+        single_protected                | single_task                       |
+        subtype                         | tagged_type                       |
+        task                            | task_entry                        |
+        task_type                       | task_variable                     |
+        type                            | unconstrained_array_constant      |
         unconstrained_array_type        | unconstrained_array_variable      |
         unconstrained_subtype           | uninitialized_protected_component |
         uninitialized_record_component  | uninitialized_variable            |
@@ -387,20 +389,21 @@ Control declarations that could be moved to an inner scope,
 I.e. where all references are from a single nested scope
 ----
 Rule: REPRESENTATION_CLAUSES
-Parameter(s): <specifiable attribute> | at                    |
-              at_mod                  | derived_record        |
-              enumeration             | extension_record      |
-              record                  | fractional_size       |
-              incomplete_record       | non_aligned_component |
-              non_contiguous_record   | overlay               |
-              tagged_record
-              (optional)
+Parameter(s): [<categories>] <specifiable attribute> | at                    |
+                             at_mod                  | enumeration           |
+                             fractional_size         | incomplete_layout     |
+                             layout                  | non_aligned_component |
+                             non_contiguous_layout   | overlay
+                             (optional)
+Categories: <>     | ()    | range   | mod    | delta     |
+            digits | array | record  | tagged | extension |
+            access | new   | private | task   | protected
 Control occurrences of representation clauses
 ----
 Rule: RETURN_TYPE
-Parameter(s):  class_wide          | unconstrained_discriminated |
-               unconstrained_array | protected                   |
-               task
+Parameter(s):  class_wide                  | protected           |
+               task                        | unconstrained_array |
+               unconstrained_discriminated
 Control various forms of the type returned by functions
 ----
 Rule: SIDE_EFFECT_PARAMETERS
@@ -417,15 +420,15 @@ Control exception handlers that do not re-raise an exception
 nor call a report procedure
 ----
 Rule: SIMPLIFIABLE_EXPRESSIONS
-Parameter(s): range       | logical_true | logical_false | logical_not |
-              parentheses | conversion   | logical
+Parameter(s): conversion  | parentheses  | range   | logical_false |
+              logical_not | logical_true | logical
               (optional, default=all)
 Control occurrence of various forms of expressions that could be made simpler:
   T'FIRST .. T'LAST that can be replaced by T'RANGE or T.
   <expression> = (/=) True/False
   not <comparison>
   Unnecessary parentheses
-  Conversions to the expression's subtype
+  Conversions of universal values, or to the expression's subtype
 ----
 Rule: SIMPLIFIABLE_STATEMENTS
 Parameter(s): block | dead           | handler     |
@@ -435,15 +438,18 @@ Parameter(s): block | dead           | handler     |
 Control Ada statements that can be made simpler
 ----
 Rule: SPECIAL_COMMENTS
-Parameter (1) pattern | unnamed_begin
+Parameter (1) pattern | terminating | unnamed_begin
 for pattern:
    Parameter(2..): "<comment pattern>"
+for terminating:
+   Parameter(2..): "<allowed pattern>" | begin | end
 for unnamed_begin:
    Parameter(2..): [<condition>] <unit>
       <condition>: always | declaration | program_unit
            <unit>: all  | procedure | function | entry | package |
                    task
 Control comments that match the specified pattern
+or are on the same line as something else
 or "begin" without a comment identifying the program unit
 ----
 Rule: STATEMENTS

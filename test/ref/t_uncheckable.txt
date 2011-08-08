@@ -11,18 +11,19 @@ t_uncheckable-exception_propagation.adb:15:4: Error: Uncheckable: in rule EXCEPT
 t_uncheckable-global_references.adb:4:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
 t_uncheckable-global_references.adb:5:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
 t_uncheckable-global_references.adb:6:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
-t_uncheckable-max_call_depth.adb:4:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
-t_uncheckable-max_call_depth.adb:5:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
-t_uncheckable-max_call_depth.adb:6:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_uncheckable-max_call_depth.adb:6:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: dynamic or dispatching call; assuming depth of 1
+t_uncheckable-max_call_depth.adb:7:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: dynamic or dispatching call; assuming depth of 1
+t_uncheckable-max_call_depth.adb:8:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: dynamic or dispatching call; assuming depth of 1
+t_uncheckable-max_call_depth.adb:9:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: call to a subprogram whose body is not available (imported, predefined...); assuming depth of 1
 t_uncheckable-object_declarations.adb:6:21: Error: Uncheckable: in rule OBJECT_DECLARATIONS: Possible false negative: cannot check variables of class-wide type
 t_uncheckable-object_declarations.adb:9:4: Error: OBJECT_DECLARATIONS: variable is volatile and has no address clause
 t_uncheckable-potentially_blocking_operations.adb:9:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:10:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:11:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-representation_clauses.adb:5:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size subrule
-t_uncheckable-representation_clauses.adb:17:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_record subrule
-t_uncheckable-representation_clauses.adb:18:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_record subrule
-t_uncheckable-representation_clauses.adb:19:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_record subrule
+t_uncheckable-representation_clauses.adb:17:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
+t_uncheckable-representation_clauses.adb:18:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
+t_uncheckable-representation_clauses.adb:19:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
 t_uncheckable-representation_clauses.adb:21:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size subrule
 t_uncheckable-style.adb:3:58: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of attribute
 t_uncheckable-style.adb:4:69: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of predefined operation

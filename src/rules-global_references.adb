@@ -35,7 +35,12 @@ with
 
 -- ASIS
 with
-  Asis.Expressions;
+  Asis.Compilation_Units,
+  Asis.Declarations,
+  Asis.Elements,
+  Asis.Exceptions,
+  Asis.Expressions,
+  Asis.Iterator;
 
 -- Adalog
 with
@@ -44,28 +49,18 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Generic_Context_Iterator,
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Control_Manager.Generic_Context_Iterator,
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
--- ASIS
-with
-  Asis.Compilation_Units,
-  Asis.Declarations,
-  Asis.Elements,
-  Asis.Exceptions,
-  Asis.Iterator;
-
 package body Rules.Global_References is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm:
    --
-   -- The algorithm for identifying globals is quite straightforward. The procedure Check is in charge
+   -- The algorithm for identifying globals is quite straightforward. The procedure Check_Body is in charge
    -- of identifying global variables usage for a given body, and it is called when an appropriate body
    -- is encountered. It traverses the body, and stores information about encountered variables in the
    -- (global) map "Usage". This variable serves also to note local declarations (not reported) and bodies
@@ -120,7 +115,7 @@ package body Rules.Global_References is
       end record;
 
    Checked_Bodies  : Context_Store;
-   package Checked_Bodies_Iterator is new Framework.Generic_Context_Iterator (Checked_Bodies);
+   package Checked_Bodies_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Checked_Bodies);
 
    -- Information about encountered entities
    -- - Variables whose declaration is encountered during traversal are marked Non_Global
@@ -305,9 +300,9 @@ package body Rules.Global_References is
       end loop;
    end Clear_Referencing_Info;
 
-   -----------
-   -- Check --
-   -----------
+   ----------------
+   -- Check_Body --
+   ----------------
 
    -- Forward declarations:
    procedure Pre_Procedure  (Element : in     Asis.Element;
@@ -317,7 +312,7 @@ package body Rules.Global_References is
                              Control : in out Asis.Traverse_Control;
                              State   : in out Usage_Value);
    procedure Traverse is new Asis.Iterator.Traverse_Element (Usage_Value, Pre_Procedure, Post_Procedure);
-   procedure Check (Body_Decl : Asis.Declaration);
+   procedure Check_Body (Body_Decl : Asis.Declaration);
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
@@ -336,7 +331,7 @@ package body Rules.Global_References is
                if Declaration_Kind (Called.Declaration)
                   not in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration
                then
-                  Check (Corresponding_Body (Called.Declaration));
+                  Check_Body (Corresponding_Body (Called.Declaration));
                end if;
             when A_Predefined_Entity_Call | An_Attribute_Call =>
                null;
@@ -464,7 +459,7 @@ package body Rules.Global_References is
                      if not Is_Nil (Called)
                        and then Definition_Kind (Enclosing_Element (Called)) = A_Protected_Definition
                      then
-                        Check (Corresponding_Body (Called));
+                        Check_Body (Corresponding_Body (Called));
                      end if;
                   end;
                when others =>
@@ -488,9 +483,10 @@ package body Rules.Global_References is
       null;
    end Post_Procedure;
 
-   procedure Check (Body_Decl : Asis.Declaration) is
+   procedure Check_Body (Body_Decl : Asis.Declaration) is
+      use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
-      use Thick_Queries, Utilities, Usage_Map, Ada.Strings.Wide_Unbounded;
+      use Framework.Rules_Manager, Thick_Queries, Utilities, Usage_Map;
    begin
       if Is_Nil (Body_Decl) -- Predefined operations, dispatching call, f.e. ...
         or else Is_Banned (Body_Decl, Rule_Id)
@@ -519,7 +515,7 @@ package body Rules.Global_References is
          Add (Usage, Body_Name, (Nil_Element, Checked));
          Traverse (Body_Decl, Control, Ignored);
       end;
-   end Check;
+   end Check_Body;
 
    --------------------
    -- Update_Globals --
@@ -634,7 +630,7 @@ package body Rules.Global_References is
          return;
       end if;
 
-      Check (The_Body);
+      Check_Body (The_Body);
 
       while not Is_Exhausted (Iter) loop
          Update_Globals (The_Body, Body_Context (Value (Iter)).Rule_Inx);
@@ -665,51 +661,55 @@ package body Rules.Global_References is
             PO_Decl       : Asis.Declaration := Nil_Element;
          begin
             -- Avoid cases when we must not print results
-            if Rule_Params.Reference /= K_All then
-               if not Ref_Info.Includes_Type and Ref_Info.Bodies.Next = null then -- Only one body, not K_All
-                  return;
-               end if;
+            case Rule_Params.Reference is
+               when K_All =>
+                  null;
 
-               -- We have several bodies, but we must check:
-               --   - that we are not in the case of Multiple_Non_Atomic with an Atomic variable
-               --   - that they are not all from the same protected object
-               --     (protected types have already been dealt with by flag Includes_Type)
-               if Rule_Params.Reference = K_Multiple_Non_Atomic
-               -- no more than one writer to the variable
-                 and then Ref_Info.Write_Count /= Multiple_Writes
-               -- `pragma Atomic' or `pragma Atomic_Components' set upon declaration or its type
-                 and then (Corresponding_Pragma_Set (Var_Value.Definition)
-                   and Pragma_Set'(An_Atomic_Pragma | An_Atomic_Components_Pragma => True,
-                                   others                                         => False))
-                             /= Pragma_Set'(others => False)
-               then
-                  return;
-               elsif not Ref_Info.Includes_Type then
-                  -- We have several bodies, but we must check that they are not all from the same protected object
-                  -- (protected types have already been dealt with by flag Includes_Type)
-                  Body_Ptr      := Ref_Info.Bodies;
-                  Different_POs := False;
-                  while Body_Ptr /= null loop
-                     if Declaration_Kind (Enclosing_Element (Body_Ptr.Decl)) /= A_Protected_Body_Declaration then
-                        Different_POs := True;
-                        exit;
-                     end if;
-
-                     if Is_Nil (PO_Decl) then
-                        PO_Decl := Enclosing_Element (Body_Ptr.Decl);
-                     elsif not Is_Equal (Enclosing_Element (Body_Ptr.Decl), PO_Decl) then
-                        Different_POs := True;
-                        exit;
-                     end if;
-
-                     Body_Ptr := Body_Ptr.Next;
-                  end loop;
-                  -- When all bodies are from the same protected object, we must not print results
-                  if not Different_POs then
+               when K_Multiple | K_Multiple_Non_Atomic =>
+                  if not Ref_Info.Includes_Type and Ref_Info.Bodies.Next = null then -- Only one body, not K_All
                      return;
                   end if;
-               end if;
-            end if;
+
+                  -- We have several bodies, but we must check:
+                  --   - that we are not in the case of Multiple_Non_Atomic with an Atomic variable
+                  --   - that they are not all from the same protected object
+                  --     (protected types have already been dealt with by flag Includes_Type)
+                  if Rule_Params.Reference = K_Multiple_Non_Atomic
+                  -- no more than one writer to the variable
+                    and then Ref_Info.Write_Count /= Multiple_Writes
+                  -- `pragma Atomic' or `pragma Atomic_Components' set upon declaration or its type
+                    and then (Corresponding_Pragma_Set (Var_Value.Definition)
+                              and Pragma_Set'(An_Atomic_Pragma | An_Atomic_Components_Pragma => True,
+                                              others                                         => False))
+                    /= Pragma_Set'(others => False)
+                  then
+                     return;
+                  elsif not Ref_Info.Includes_Type then
+                     -- We have several bodies, but we must check that they are not all from the same protected object
+                     -- (protected types have already been dealt with by flag Includes_Type)
+                     Body_Ptr      := Ref_Info.Bodies;
+                     Different_POs := False;
+                     while Body_Ptr /= null loop
+                        if Declaration_Kind (Enclosing_Element (Body_Ptr.Decl)) /= A_Protected_Body_Declaration then
+                           Different_POs := True;
+                           exit;
+                        end if;
+
+                        if Is_Nil (PO_Decl) then
+                           PO_Decl := Enclosing_Element (Body_Ptr.Decl);
+                        elsif not Is_Equal (Enclosing_Element (Body_Ptr.Decl), PO_Decl) then
+                           Different_POs := True;
+                           exit;
+                        end if;
+
+                        Body_Ptr := Body_Ptr.Next;
+                     end loop;
+                     -- When all bodies are from the same protected object, we must not print results
+                     if not Different_POs then
+                        return;
+                     end if;
+                  end if;
+            end case;
 
             -- Cases when we must not print results are avoided, so we can print results
             Body_Ptr := Ref_Info.Bodies;

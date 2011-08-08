@@ -1,13 +1,26 @@
 Total      : count representation_clauses;
 address    : check  representation_clauses (at, 'address);
 alignment  : check  representation_clauses (at_mod, 'alignment);
+der_align  : check  representation_clauses (new at_mod, new 'alignment);
 enumeration: search representation_clauses (enumeration);
-record     : search representation_clauses (record);
+der_enum   : search representation_clauses (new enumeration);
+record     : search representation_clauses (layout);
+Der_record : search representation_clauses (new layout);
+Ext_record : search representation_clauses (extension layout);
+Tag_record : search representation_clauses (tagged layout);
 size       : check  representation_clauses ('SIZE);
 fractional : check  representation_clauses (fractional_size);
-non_contig : check  representation_clauses (non_contiguous_record);
+non_contig : check  representation_clauses (non_contiguous_layout);
 unaligned  : check  representation_clauses (non_aligned_component);
-incomplete : check  representation_clauses (incomplete_record);
+incomplete : check  representation_clauses (incomplete_layout);
 streams    : check  representation_clauses ('read,  'class'read,  'write,  'class'write,
-                                              'input, 'class'input, 'output, 'class'output);
+                                            'input, 'class'input, 'output, 'class'output);
+Arr_Size   : check  representation_clauses (array 'size);
+Rec_Size   : check  representation_clauses (record 'size);
+Arr_Addr   : Check  representation_clauses (array 'address);
+Arr_comp   : check  representation_clauses (array non_aligned_component);
+
 overlay    : check  representation_clauses (overlay);
+tab_over   : check  representation_clauses (array overlay);
+rng_over   : check  representation_clauses (range overlay);
+

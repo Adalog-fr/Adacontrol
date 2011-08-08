@@ -35,6 +35,13 @@ package Adactl_Constants is
    -- General dimensioning constants                                --
    -------------------------------------------------------------------
 
+   -- These constants define limits about the rules themselves
+   -- These limits are arbitrary and can be changed at will, no other change is needed.
+
+   Max_Rule_Name_Length : constant := 50;
+   -- Maximum number of characters in a rule's name
+
+
    -- These constants define limits about what "reasonable" programs may contain.
    -- They can be used by rules to limit some capabilities.
    -- These limits are arbitrary and can be changed at will, no other change is needed.

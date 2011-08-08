@@ -41,13 +41,10 @@ with
 
 -- Adactl
 with
-  Framework.Element_Queues,
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Element_Queues;
 
 package body Rules.Duplicate_Initialization_Calls is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm
    --

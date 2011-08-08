@@ -50,6 +50,8 @@ CARGS = -cargs -O2 -gnatWh -gnat95 -gnato
 BARGS = -bargs -E
 LARGS = -largs -L${ASIS_LIB} -lasis
 
+# Uncomment the following line if you are running GnatPro 6.1.2 or above
+#CARGS_EXTRA = ${CARGS} -fno-tree-vrp
 
 ###############################################################################
 # Do not change anything below this line
@@ -75,13 +77,13 @@ help :
 build : adactl ptree pfni;
 
 adactl :
-	gnatmake adactl ${GARGS} ${CARGS} ${BARGS} ${LARGS}
+	gnatmake adactl ${GARGS} ${CARGS} ${CARGS_EXTRA} ${BARGS} ${LARGS}
 
 ptree :
-	gnatmake ptree ${GARGS} ${CARGS} ${BARGS} ${LARGS}
+	gnatmake ptree ${GARGS} ${CARGS} ${CARGS_EXTRA} ${BARGS} ${LARGS}
 
 pfni :
-	gnatmake pfni ${GARGS} ${CARGS} ${BARGS} ${LARGS}
+	gnatmake pfni ${GARGS} ${CARGS} ${CARGS_EXTRA} ${BARGS} ${LARGS}
 
 clean :
 	- ${RM} *.o *.ali b~*
@@ -90,7 +92,7 @@ veryclean : clean
 	- ${RM} *~ adactl${EXT} *~ ptree${EXT} *~ pfni${EXT}
 
 % :
-	gnatmake $@ ${GARGS} -gnatc ${CARGS} ${BARGS} 
+	gnatmake $@ ${GARGS} -gnatc ${CARGS} ${CARGS_EXTRA} ${BARGS} 
 
 
 

@@ -54,6 +54,9 @@ procedure T_declarations is       -- library_procedure
       entry E1 (I : out Integer; J : in out Integer) when True  is --out_parameter, in_out_parameter
       begin
          null;
+      exception                      -- handlers
+         when others =>
+            null;
       end E1;
       entry E2 when True is
       begin
@@ -130,10 +133,12 @@ procedure T_declarations is       -- library_procedure
    subtype Subarr22 is Arr2 (1 .. 3);                         -- subtype, anonymous_subtype_declaration
    subtype Subarr23 is Subarr22;                              -- subtype, unconstrained_subtype
    VArr1 : array (1 .. 10) of Character;                      -- anonymous_subtype_declaration, variable, single_array, constrained_array_variable, array, uninitialized_variable
-   Varr2 : Arr2 := (1, 2, 3);                                 -- variable, unconstrained_array_variable, array
-   Varr3 : array (Positive range <>) of Integer := (1, 2, 3); -- variable, single_array, unconstrained_array_variable, array
-   Varr4 : Subarr21 := (1,2, 3);                              -- variable, unconstrained_array_variable, array
+   Varr2 : Arr2 := (1, 2, 3);                                 -- variable, unconstrained_array_variable, array, initialized_variable
+   Carr1 : constant Arr2 := Varr2;                            -- constant, unconstrained_array_constant, array
+   Varr3 : array (Positive range <>) of Integer := (1, 2, 3); -- variable, single_array, unconstrained_array_variable, array, initialized_variable
+   Varr4 : Subarr21 := (1,2, 3);                              -- variable, unconstrained_array_variable, array, initialized_variable
    Varr5 : Subarr23;                                          -- variable, constrained_array_variable, array, uninitialized_variable
+   Carr2 : constant Subarr23 := Varr5;                        -- constant, constrained_array_constant, array
 
    type Der1 is new Rec1 with null record;                   -- null_extension, extension, tagged_type, record_type
    type Der2 (Y : Integer) is new Rec1 with null record;     -- null_extension, extension, tagged_type, record_type, discriminant
@@ -194,6 +199,11 @@ procedure T_declarations is       -- library_procedure
       end Proc2;
    begin                                                 -- package_statements
       null;
+   exception                                             -- handlers
+      when Numeric_Error =>                              -- non_joint_CE_NE_handler
+         null;
+      when others =>
+         null;
    end Pack2;
 
    package Pack3 renames Pack2;                          -- not_operator_renaming, non_identical_renaming, renaming
@@ -203,6 +213,9 @@ procedure T_declarations is       -- library_procedure
    function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names
    begin
       return 1;
+   exception                                             -- handlers
+      when others =>
+         null;
    end "+";
 
    function "-" (X, Y : Integer) return Integer;         -- Operator, Predefined_operator, multiple_names
@@ -242,7 +255,7 @@ procedure T_declarations is       -- library_procedure
 
    type Al1 is array (Int1) of aliased Character;                       -- constrained_array_type, array, aliased_array_component
    type Al2 is array (Positive range <>) of aliased Character;          -- unconstrained_array_type, array, aliased_array_component
-   Al3 : array (Int1) of aliased Character := (others => ' ');          -- variable, single_array, aliased_array_component, constrained_array_variable, array
+   Al3 : array (Int1) of aliased Character := (others => ' ');          -- variable, single_array, aliased_array_component, constrained_array_variable, array, initialized_variable
 
    type Al4 is                                                          -- ordinary_record_type, record_type
       record
@@ -257,5 +270,17 @@ procedure T_declarations is       -- library_procedure
    protected body Al5 is
    end Al5;
 begin
-   null;                                                                -- null_procedure
+   begin
+      null;                                                             -- null_procedure
+   exception                                                            -- handlers
+      when Constraint_Error | Numeric_Error =>
+         null;
+      when others =>
+         null;
+   end;
+exception                                                               -- handlers
+   when Constraint_Error =>                                             -- non_joint_CE_NE_handler
+      null;
+   when others =>
+      null;
 end T_declarations;

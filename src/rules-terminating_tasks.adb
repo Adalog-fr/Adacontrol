@@ -39,16 +39,8 @@ with
 with
   Utilities;
 
--- AdaControl
-with
-  Framework,
-  Framework.Reports,
-  Framework.Rules_Manager,
-  Framework.Language;
-pragma Elaborate (Framework.Language);
-
 package body Rules.Terminating_Tasks is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    -- Algorithm:
    --

@@ -41,17 +41,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Generic_Context_Iterator,
+  Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
-  Framework.Language.Shared_Keys,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Expressions is
-   use Framework, Framework.Language.Shared_Keys;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    type Subrules is (E_And,                   E_And_Then,                         E_Array_Aggregate,
                      E_Array_Partial_Others,  E_Array_Others,
@@ -79,7 +77,10 @@ package body Rules.Expressions is
          Cats : Categories_Utilities.Modifier_List (1 .. Nb_Categories);
       end record;
 
-   package Categories_Iterator is new Framework.Generic_Context_Iterator (Usage);
+   package Categories_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
+
+   Expected_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Extension => False, others => True);
+
 
    ----------
    -- Help --
@@ -94,7 +95,7 @@ package body Rules.Expressions is
       User_Message ("    [[<source_category>] <target_category>] <subrule>");
       User_Message ("For subrule prefixed_operator:");
       User_Message ("    [<result_category>] <subrule>");
-      Help_On_Modifiers (Header => "Categories:");
+      Help_On_Modifiers (Header => "Categories:", Expected => Expected_Categories);
       User_Message ("Control occurrences of Ada expressions");
    end Help;
 
@@ -112,7 +113,7 @@ package body Rules.Expressions is
 
       while Parameter_Exists loop
          declare
-            Cat_List : constant Modifier_List := Get_Modifier_List;
+            Cat_List : constant Modifier_List := Get_Modifier_List (Expected_Categories);
          begin
             for C in Cat_List'Range loop
                if Cat_List (C) = Cat_New then
@@ -290,7 +291,7 @@ package body Rules.Expressions is
                  and then Operator_Kind (Prefix (Expr)) /= Operator_Kind (Called)
                then
                   Report (Rule_Id,
-                          Framework.Association (Usage, Image (E_Mixed_Operators)),
+                          Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
                           Get_Location (Prefix (Expr)),
                           "Unparenthesized mixed operators in expression");
                end if;
@@ -333,14 +334,14 @@ package body Rules.Expressions is
                               when A_Root_Real_Definition => -- 3.4.1(8)
                                  Report
                                  (Rule_Id,
-                                  Framework.Association (Usage, Image (E_Real_Equality)),
+                                  Control_Manager.Association (Usage, Image (E_Real_Equality)),
                                   Get_Location (Prefix (Call)),
                                   "equality or inequality with Root Real !!!");
                               when A_Universal_Real_Definition => -- 3.4.1(6)
                                  if Parsed_First_Parameter then
                                     Report
                                     (Rule_Id,
-                                     Framework.Association (Usage, Image (E_Real_Equality)),
+                                     Control_Manager.Association (Usage, Image (E_Real_Equality)),
                                      Get_Location (Prefix (Call)),
                                      "equality or inequality with two Universal Real constants !!!");
                                  else
@@ -352,21 +353,21 @@ package body Rules.Expressions is
                         when A_Floating_Point_Definition => -- 3.5.7(2)
                            Report
                            (Rule_Id,
-                            Framework.Association (Usage, Image (E_Real_Equality)),
+                            Control_Manager.Association (Usage, Image (E_Real_Equality)),
                             Get_Location (Prefix (Call)),
                             "equality or inequality with Floating Point");
                             exit Parameter_Loop;
                         when An_Ordinary_Fixed_Point_Definition => -- 3.5.9(3)
                            Report
                            (Rule_Id,
-                            Framework.Association (Usage, Image (E_Real_Equality)),
+                            Control_Manager.Association (Usage, Image (E_Real_Equality)),
                             Get_Location (Prefix (Call)),
                             "equality or inequality with Ordinary Fixed Point");
                             exit Parameter_Loop;
                          when A_Decimal_Fixed_Point_Definition => -- 3.5.9(4)
                            Report
                            (Rule_Id,
-                            Framework.Association (Usage, Image (E_Real_Equality)),
+                            Control_Manager.Association (Usage, Image (E_Real_Equality)),
                             Get_Location (Prefix (Call)),
                             "equality or inequality with Decimal Fixed Point");
                             exit Parameter_Loop;
@@ -714,4 +715,5 @@ begin  -- Rules.Expressions
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+
 end Rules.Expressions;

@@ -46,14 +46,11 @@ with
 
 -- Adactl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager,
   Framework.Symbol_Table;
 
 package body Rules.Type_Initial_Values is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Pattern_Access is access String_Matching.Compiled_Pattern;
    Pattern   : Pattern_Access;

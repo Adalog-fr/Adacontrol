@@ -52,7 +52,6 @@ with
 
 -- Adactl
 with
-  Framework.Generic_Context_Iterator,
   Framework.Plugs,
   Framework.Reports,
   Framework.Rules_Manager,
@@ -78,8 +77,6 @@ package body Framework.Ruler is
    -- Used to trace whether we are in a pragma or attribute (see procedure True_Identifer);
    -- We need a counter rather than a boolean, because attributes may have multiple levels
    -- (i.e. T'Base'First)
-
-   package Inhibited_Iterator is new Framework.Generic_Context_Iterator (Inhibited);
 
    -----------------
    -- Enter_Unit --
@@ -153,30 +150,6 @@ package body Framework.Ruler is
       Framework.Scope_Manager. Exit_Scope (Element);  -- Must stay last
    end Exit_Scope;
 
-   ------------------------
-   -- Process_Inhibition --
-   ------------------------
-
-   procedure Process_Inhibition (Unit : Asis.Compilation_Unit; State : Framework.Rules_Manager.Rule_Action) is
-      use Asis.Declarations, Asis.Elements;
-      use Framework;
-
-      Iter : Context_Iterator := Inhibited_Iterator.Create;
-   begin
-      Reset (Iter, Names (Unit_Declaration (Unit))(1));
-      if not Is_Exhausted (Iter) then
-         if Inhibited_Rule (Value (Iter)).Rule_Name = "ALL" then
-            Rules_Manager.Command_All (State);
-            -- There is no other value
-         else
-            while not Is_Exhausted (Iter) loop
-               Rules_Manager.Command (To_Wide_String (Inhibited_Rule (Value (Iter)).Rule_Name), State);
-               Next (Iter);
-            end loop;
-         end if;
-      end if;
-   end Process_Inhibition;
-
    ---------------------
    -- True_Identifier --
    ---------------------
@@ -207,27 +180,46 @@ package body Framework.Ruler is
       use Asis, Asis.Elements;
       The_Control : Traverse_Control := Continue;
       The_Info    : Info := (Pragma_Or_Attribute_Level => 0);
+      Duplicate   : Boolean;
+
+      My_Pragma_List : constant Pragma_Element_List := Compilation_Pragmas (Unit);
+      My_CC_List     : constant Context_Clause_List := Context_Clause_Elements (Compilation_Unit => Unit,
+                                                                                Include_Pragmas  => True) ;
+      My_Declaration : constant Declaration := Unit_Declaration (Unit);
    begin
       Enter_Unit (Unit);
 
-   Process_Context_Clauses :
-      declare
-         My_CC_List : constant Context_Clause_List := Context_Clause_Elements (Compilation_Unit => Unit,
-                                                                               Include_Pragmas  => True) ;
-      begin
-         for I in My_CC_List'Range loop
-            Semantic_Traverse_Elements (My_CC_List (I), The_Control, The_Info);
+      -- Process_Compilation_Pragmas :
+      -- In the comments for Compilation_Pragmas, ASIS says:
+      -- Pragmas from this query may be duplicates of some or all of the
+      -- non-Elaborate pragmas available from the Context_Clause_Elements query.
+      -- We eliminate duplicates from here since they will appear at their natural place if
+      -- analysed as context clauses
+      for I in My_Pragma_List'Range loop
+         -- not a very efficient algorithm, but we assumes there are not many compilation pragmas nor
+         -- context clauses
+         Duplicate := False;
+         for C in My_CC_List'Range loop
+            if Is_Equal (My_Pragma_List (I), My_CC_List (C)) then
+               Duplicate := True;
+               exit;
+            end if;
          end loop;
-      end Process_Context_Clauses;
+
+         if not Duplicate then
+            Semantic_Traverse_Elements (My_Pragma_List (I), The_Control, The_Info);
+         end if;
+      end loop;
+
+      -- Process_Context_Clauses
+      for I in My_CC_List'Range loop
+         Semantic_Traverse_Elements (My_CC_List (I), The_Control, The_Info);
+      end loop;
 
       Exit_Context_Clauses (Unit);
 
-   Process_Unit :
-      declare
-         My_Declaration : constant Declaration := Unit_Declaration (Unit);
-      begin
-         Semantic_Traverse_Elements (My_Declaration, The_Control, The_Info);
-      end Process_Unit;
+      -- Process_Unit
+      Semantic_Traverse_Elements (My_Declaration, The_Control, The_Info);
 
       Exit_Unit (Unit);
    end Semantic_Traverse;

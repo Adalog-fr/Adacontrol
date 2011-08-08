@@ -48,15 +48,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Units is
-   use Framework, Ada.Strings.Wide_Unbounded;
+   use Framework, Framework.Control_Manager, Ada.Strings.Wide_Unbounded;
 
    type Subrules is (Unreferenced, Unchecked);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);

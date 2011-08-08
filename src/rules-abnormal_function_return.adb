@@ -33,19 +33,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-
 -- Asis
 with
   Asis.Declarations,
   Asis.Elements,
   Asis.Statements;
 package body Rules.Abnormal_Function_Return is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    Rule_Used  : Boolean := False;
    Save_Used  : Boolean;

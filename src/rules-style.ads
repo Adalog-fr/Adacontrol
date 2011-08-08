@@ -35,7 +35,8 @@ with
 
 -- Adactl
 with
-  Framework;
+  Framework,
+  Framework.Control_Manager;
 package Rules.Style is
 
    Rule_Id : constant Wide_String := "STYLE";
@@ -71,6 +72,6 @@ private
    type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
 
    function Corresponding_Context (Subrule : Subrules; Complement : Wide_String := "")
-                                   return Framework.Root_Context'Class;
+                                   return Framework.Control_Manager.Root_Context'Class;
 
 end Rules.Style;

@@ -40,6 +40,7 @@ begin
 
    for I in 0 .. 1 loop                             -- Compound_Statement
       null; end loop;
+   -- An acceptable comment
 end T_Style;
 
 

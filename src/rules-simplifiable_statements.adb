@@ -42,15 +42,13 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Simplifiable_Statements is
-   use Framework;
+   use Framework, Framework.Control_Manager;
 
    type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_Handler,        Stmt_If,          Stmt_If_For_Case,
                      Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null);

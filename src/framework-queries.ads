@@ -52,4 +52,5 @@ package Framework.Queries is
    -- If this function is called from elaboration code, put a pragma Elaborate_All (Framework.Queries)
    --
    -- Cannot be made application independant, because it needs the Asis context from Framework.
+
 end Framework.Queries;

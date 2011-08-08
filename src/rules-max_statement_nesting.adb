@@ -39,14 +39,12 @@ with
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
-  Thick_Queries;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Max_Statement_Nesting is

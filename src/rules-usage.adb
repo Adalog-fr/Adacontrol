@@ -51,11 +51,9 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Usage is
@@ -1511,6 +1509,7 @@ package body Rules.Usage is
          end case;
       end Pre_Procedure;
 
+      use Framework.Rules_Manager;
       Generic_Name : Asis.Expression;
    begin  -- Process_Instantiation
       if not Rule_Used then

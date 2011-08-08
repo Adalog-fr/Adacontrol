@@ -10,29 +10,33 @@ procedure T_representation_clauses is
    for Y use at To_Address (4);      -- 83 address clause
 
    I, J, K: Integer;
-   for I'Address use J'Address;      -- 'Address, overlay
+   for I'Address use J'Address;      -- 'Address, rng_over, overlay
 
    C1      : constant System.Address := I'Address;
    C2      : constant System.Address := T_Representation_Clauses.C1;
-   for K use at C2;                  -- 83 address clause, overlay
+   for K use at C2;                  -- 83 address clause, rng_over, overlay
 
    type Enum is (A, B, C);
    for Enum use (10, 20, 30);        -- Enumeration
    for Enum'Alignment use 4;         -- 'Alignment
+
+   type Enum2 is new Enum;
+   for Enum2 use (4, 5, 6);          -- Der_Enum, Enumeration
+   for Enum2'Alignment use 1;        -- Der_Align, 'Alignment
 
    type Rec is
       record
          X : Integer;
          C : Character;
       end record;
-   for Rec use                       -- Record, 83 alignment
+   for Rec use                       -- record, 83 alignment
       record at mod 4;
          X at 0 range 0..31;
          C at 4 range 0..7;
       end record;
 
    type Der_Rec is new Rec;
-   for Der_Rec use                  -- Record, derived_record
+   for Der_Rec use                  -- der_record, record
       record
          X at 0 range 0..31;
          C at 4 range 0..7;
@@ -42,7 +46,7 @@ procedure T_representation_clauses is
       record
          X : Integer;
       end record;
-   for Tagged_Type use              -- record, tagged_record
+   for Tagged_Type use              -- Tag_record, record
       record
          X at 6 range 0 .. 31;      -- gap (may depend on compiler)
       end record;
@@ -67,9 +71,24 @@ procedure T_representation_clauses is
    begin null; end;
 
    type Der_Tagged is new Tagged_Type with null record;
-   for Der_Tagged use              -- record, extension_record
+   for Der_Tagged use              -- ext_record, record
       record
          X at 6 range 0 .. 31;     -- gap (may depend on compiler)
+      end record;
+
+   type Tab is array (1 .. 10) of Integer;
+   for Tab'Size use Integer'Size * 10;   -- arr_size
+   V1 : Tab;
+   V2 : Tab;
+   for V2'Address use V1'Address;        -- Arr_Addr, 'Address, tab_over, overlay
+   type RecTab is
+      record
+         S : String (1 .. 10);
+      end record;
+   for RecTab'Size use 88;               -- rec_size, 'size
+   for RecTab use                        -- layout
+     record
+         S at 0 range 1 .. 80;           -- gap x2, arr_comp, unaligned
       end record;
 
    procedure Fractional_Size          is separate;

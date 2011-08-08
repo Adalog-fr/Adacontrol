@@ -38,15 +38,12 @@ with
 with
   Asis.Elements;
 
--- Adactl
+-- AdaControl
 with
-  Framework.Language,
-  Framework.Reports,
-  Framework.Rules_Manager,
   Framework.Scope_Manager;
 
 package body Rules.Not_Elaboration_Calls is
-   use Framework, Utilities;
+   use Framework, Framework.Control_Manager, Utilities;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;

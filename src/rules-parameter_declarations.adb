@@ -43,9 +43,7 @@ with
 
 -- Adactl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Parameter_Declarations is

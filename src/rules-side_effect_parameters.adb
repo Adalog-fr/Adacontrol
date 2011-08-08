@@ -44,13 +44,10 @@ with
 
 -- Adactl
 with
-  Framework.Generic_Context_Iterator,
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Control_Manager.Generic_Context_Iterator;
 
 package body Rules.Side_Effect_Parameters is
-   use Framework, Utilities;
+   use Framework, Framework.Control_Manager, Utilities;
 
    -- Algorithm:
    --
@@ -82,7 +79,7 @@ package body Rules.Side_Effect_Parameters is
       end record;
 
    Bad_Functions  : Context_Store;
-   package Bad_Functions_Iterator is new Framework.Generic_Context_Iterator (Bad_Functions);
+   package Bad_Functions_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Bad_Functions);
 
    Called_By   : array (Control_Index) of Asis.ASIS_Natural;
    Called_Func : array (Control_Index) of Asis.Element;

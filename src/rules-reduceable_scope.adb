@@ -48,18 +48,16 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
+-- AdaControl
 with
   Framework.Language,
   Framework.Queries,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager,
   Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Reduceable_Scope is
-   use Framework, Framework.Scope_Manager, Utilities;
+   use Framework, Framework.Control_Manager, Framework.Scope_Manager, Utilities;
    use Ada.Strings.Wide_Unbounded;
 
    -- Algorithm:

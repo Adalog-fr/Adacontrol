@@ -48,16 +48,15 @@ with
 
 -- Adactl
 with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Simplifiable_expressions is
    use Framework, Ada.Strings.Wide_Unbounded;
 
-   type Keywords is (K_Range,  K_Logical_True, K_Logical_False, K_Logical_Not, K_Parentheses,
-                     K_Conversion, K_Logical);
+   -- All "K_Logical_*" must stay together, and K_Logical must stay last
+   type Keywords is (K_Conversion,    K_Parentheses, K_Range,
+                     K_Logical_False, K_Logical_Not, K_Logical_True, K_Logical);
    subtype Subrules is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Keywords, "K_");
@@ -88,7 +87,7 @@ package body Rules.Simplifiable_expressions is
       User_Message  ("  <expression> = (/=) True/False");
       User_Message  ("  not <comparison>");
       User_Message  ("  Unnecessary parentheses");
-      User_Message  ("  Conversions to the expression's subtype");
+      User_Message  ("  Conversions of universal values, or to the expression's subtype");
    end Help;
 
    -----------------
@@ -833,6 +832,19 @@ package body Rules.Simplifiable_expressions is
       if Declaration_Kind (Source) = An_Incomplete_Type_Declaration then
          -- Use full declaration instead
          Source := Corresponding_Type_Declaration (Source);
+      end if;
+
+      if Type_Kind (Type_Declaration_View (Source)) = A_Root_Type_Definition
+        or else Is_Nil (Enclosing_Element (Source))
+      then
+         -- Explicit conversion is never required:
+         -- the argument of the conversion is a literal or a named number, or a static expression of those.
+         -- In the latter case, the type returned by A4G is not Root_Integer, but a declaration
+         -- for Universal_Integer that appears "out of the blue" (it is not included in anything else,
+         -- and that's how we recognize it).
+         -- Not sure this kludge would be portable to other implementations...
+         Do_Report;
+         return;
       end if;
 
       Target := Converted_Or_Qualified_Subtype_Mark (Expr);

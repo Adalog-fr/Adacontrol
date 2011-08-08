@@ -54,15 +54,13 @@ with
 -- Adactl
 with
   Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports,
   Framework.Scope_Manager,
   Rules.Style.Keyword;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Style is
 
-   use Framework, Utilities;
+   use Framework, Framework.Control_Manager, Utilities;
 
    -- See declaration of Style_Names in the private part of the specification
    subtype Casing_Styles is Subrules range St_Casing_Attribute .. St_Casing_Pragma;
@@ -115,6 +113,7 @@ package body Rules.Style is
                         Pl_Pragma,   Pl_Repr_Clause, Pl_Index,    Pl_Exponent);
    -- Pl_Other used internally when not in one of the other Places, not accessible to user. Must stay first.
    type Place_Set is array (Place_Names) of Boolean;
+   No_Place : constant Place_Set := (others => False);
    package Place_Flag_Utilities  is new Framework.Language.Flag_Utilities (Flags => Place_Names,
                                                                            Prefix => "Pl_" );
 
@@ -189,7 +188,7 @@ package body Rules.Style is
                                        Na_Discriminant, Na_Array_Aggregate, Na_Record_Aggregate);
    subtype Association_Names is Extended_Association_Names
            range Extended_Association_Names'Succ (Na_No_Association) .. Extended_Association_Names'Last;
-   subtype Exceptionable_Associaton_Names is Association_Names range Na_Pragma .. Na_Instantiation;
+   subtype Exceptionable_Association_Names is Association_Names range Na_Pragma .. Na_Instantiation;
 
    package Named_Parameter_Flag_Utilities is new Framework.Language.Flag_Utilities
      (Flags  => Extended_Association_Names,
@@ -204,7 +203,7 @@ package body Rules.Style is
          Except_Operator : Boolean;
       end record;
 
-   Positional_Exceptions : array (Exceptionable_Associaton_Names) of Context_Store;
+   Positional_Exceptions : array (Exceptionable_Association_Names) of Context_Store;
    -- A Context_Store of Null_Context to flag entities that need not obey the rule
 
    --
@@ -300,9 +299,9 @@ package body Rules.Style is
          Subrule := Get_Flag_Parameter (Allow_Any => False);
          case Subrule is
             when St_Compound_Statement
-              | St_Default_In
-              | St_Negative_Condition
-              | St_Renamed_Entity
+               | St_Default_In
+               | St_Negative_Condition
+               | St_Renamed_Entity
               =>
                -- Those without parameters
                if Parameter_Exists then
@@ -531,7 +530,7 @@ package body Rules.Style is
 
                      if not Except_Op and Next_Assoc = Na_No_Association then
                         -- exception entities
-                        if Assoc not in Exceptionable_Associaton_Names then
+                        if Assoc not in Exceptionable_Association_Names then
                            Parameter_Error (Rule_Id, "no exempted entities allowed for """
                                             & Image (Assoc, Lower_Case) & '"');
                         end if;
@@ -722,7 +721,7 @@ package body Rules.Style is
    function Corresponding_Context (Subrule : Subrules; Complement : Wide_String := "") return Root_Context'Class is
       use Subrules_Flag_Utilities;
    begin
-      return Framework.Association (Contexts, Image (Subrule) & Complement);
+      return Association (Contexts, Image (Subrule) & Complement);
    end Corresponding_Context;
 
    ------------------
@@ -920,7 +919,7 @@ package body Rules.Style is
          use Named_Parameter_Flag_Utilities, Framework.Reports;
       begin
          if Association_Used (Na) and Is_Positional then
-            if Na in Exceptionable_Associaton_Names then
+            if Na in Exceptionable_Association_Names then
                declare
                   Indicator : constant Root_Context'Class
                     := Matching_Context (Positional_Exceptions (Na), Ident, Extend_To => All_Extensions);
@@ -1066,7 +1065,7 @@ package body Rules.Style is
 
       procedure Check_Formals (Subrule : St_Orders; Formals : Asis.Element_List; Message : Wide_String) is
          use Framework.Reports;
-         State : Order_Index := Order_Index'First;
+         State     : Order_Index := Order_Index'First;
          E_Mode    : Extended_Modes;
          Old_State : Order_Index;
          Enclosing : Asis.Declaration;
@@ -1149,7 +1148,7 @@ package body Rules.Style is
                      while not Mode_Order (Subrule) (State) (E_Mode) loop
                         if State = Order_Inx (Subrule) then
                            Report (Rule_Id,
-                                   Corresponding_Context (St_Parameter_Order),
+                                   Corresponding_Context (Subrule),
                                    Get_Location (Formals (I)),
                                    "parameter out of order for " & Message);
                            -- Avoid multiple messages if there was only one parameter out of order:
@@ -1166,7 +1165,10 @@ package body Rules.Style is
       end Check_Formals;
 
    begin  -- Process_Declaration
-      if not Rule_Used (St_Default_In) and not Rule_Used (St_Parameter_Order) then
+      if not Rule_Used (St_Default_In)
+        and not Rule_Used (St_Parameter_Order)
+        and not Rule_Used (St_Formal_Parameter_Order)
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -1185,11 +1187,11 @@ package body Rules.Style is
            | A_Formal_Function_Declaration
            | A_Formal_Procedure_Declaration
            =>
-            Check_Formals (St_Parameter_Order, Parameter_Profile(Declaration), "parameter specification");
+            Check_Formals (St_Parameter_Order, Parameter_Profile (Declaration), "parameter specification");
 
          when A_Generic_Procedure_Declaration
            | A_Generic_Function_Declaration
-           =>
+              =>
             Check_Formals (St_Formal_Parameter_Order,
                            Generic_Formal_Part (Declaration),
                            "formal parameter declaration");
@@ -1330,7 +1332,7 @@ package body Rules.Style is
       procedure Process_Number_Separator is
          use Framework.Reports;
 
-         Name          : constant Wide_String := Value_Image (Expression);
+         Name : constant Wide_String := Value_Image (Expression);
 
          Base_Delimiter_1 : Integer;
          Base_Delimiter_2 : Integer;
@@ -1390,7 +1392,7 @@ package body Rules.Style is
 
       procedure Process_Exposed_Literal is
          use Framework.Reports, Literal_Flag_Utilities, Thick_Queries;
-         use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
+         use Asis, Asis.Elements, Asis.Text;
 
          function Normalize (S : Wide_String) return Wide_String is
             -- Get rid of initial spaces and surrounding quotes, change double double-quotes to single ones
@@ -1413,66 +1415,70 @@ package body Rules.Style is
             return Result (Result'First .. Inx_Out);
          end Normalize;
 
-         E         : Asis.Element;
-         Top_Expr  : Asis.Expression;
+         function Place return Place_Names is
+         -- Search the place where the expression is used
+            use Asis.Declarations;
+            E        : Asis.Element := Expression;
+            Top_Expr : Asis.Expression;
+         begin
+            loop
+               case Element_Kind (E) is
+                  when An_Expression | An_Association =>
+                     Top_Expr := E;
+                     E := Enclosing_Element (E);
+                  when others =>
+                     exit;
+               end case;
+            end loop;
+            while Element_Kind (E) = A_Definition loop
+               E := Enclosing_Element (E);
+            end loop;
+
+            case Element_Kind (E) is
+               when A_Declaration =>
+                  case Declaration_Kind (E) is
+                     when A_Constant_Declaration =>
+                        return Pl_Constant;
+                     when A_Number_Declaration =>
+                        return Pl_Number;
+                     when A_Variable_Declaration =>
+                        if Is_Equal (Top_Expr, Initialization_Expression (E)) then
+                           return Pl_Var_Init;
+                        else
+                           return Pl_Other;
+                        end if;
+                     when A_Type_Declaration |
+                          A_Subtype_Declaration
+                          =>
+                        return Pl_Type;
+                     when others =>
+                        return Pl_Other;
+                  end case;
+               when A_Clause =>
+                  case Clause_Kind (E) is
+                     when A_Representation_Clause | A_Component_Clause =>
+                        return Pl_Repr_Clause;
+                     when others =>
+                        return Pl_Other;
+                  end case;
+               when A_Pragma =>
+                  return Pl_Pragma;
+               when others =>
+                  return Pl_Other;
+            end case;
+         end Place;
+
          Enclosing : Asis.Element;
-         Place     : Place_Names;
+
       begin  -- Process_Exposed_Literal
 
-         -- Search the place where the expression is used
-         E := Expression;
-         loop
-            case Element_Kind (E) is
-               when An_Expression | An_Association =>
-                  Top_Expr := E;
-                  E := Enclosing_Element (E);
-               when others =>
-                  exit;
-            end case;
-         end loop;
-         while Element_Kind (E) = A_Definition loop
-            E := Enclosing_Element (E);
-         end loop;
-
-         case Element_Kind (E) is
-            when A_Declaration =>
-               case Declaration_Kind (E) is
-                  when A_Constant_Declaration =>
-                     Place := Pl_Constant;
-                  when A_Number_Declaration =>
-                     Place := Pl_Number;
-                  when A_Variable_Declaration =>
-                     if Is_Equal (Top_Expr, Initialization_Expression (E)) then
-                        Place := Pl_Var_Init;
-                     else
-                        Place := Pl_Other;
-                     end if;
-                  when A_Type_Declaration |
-                       A_Subtype_Declaration
-                       =>
-                     Place := Pl_Type;
-                  when others =>
-                     Place := Pl_Other;
-               end case;
-            when A_Clause =>
-               case Clause_Kind (E) is
-                  when A_Representation_Clause | A_Component_Clause =>
-                     Place := Pl_Repr_Clause;
-                  when others =>
-                     Place := Pl_Other;
-               end case;
-            when A_Pragma =>
-               Place := Pl_Pragma;
-            when others =>
-               Place := Pl_Other;
-         end case;
-
-         -- Now check if allowed
          -- Note that if there is not check for the corresponding class of type,
          -- Report will be called with an Empty_Context (and thus will not report).
          case Expression_Kind (Expression) is
             when An_Integer_Literal =>
-               if Permitted_Places (Lit_Integer) (Place) then
+               if Permitted_Places (Lit_Integer) /= No_Place
+                 and then Permitted_Places (Lit_Integer) (Place)
+               then
                   -- Always allowed
                   return;
                end if;
@@ -1517,7 +1523,9 @@ package body Rules.Style is
                        & " not in allowed construct");
 
             when A_Real_Literal =>
-               if Permitted_Places (Lit_Real) (Place) then
+               if Permitted_Places (Lit_Real) /= No_Place
+                 and then Permitted_Places (Lit_Real) (Place)
+               then
                   -- Always allowed
                   return;
                end if;
@@ -1544,7 +1552,9 @@ package body Rules.Style is
                end;
 
             when A_Character_Literal =>
-               if Permitted_Places (Lit_Character) (Place) then
+               if Permitted_Places (Lit_Character) /= No_Place
+                 and then Permitted_Places (Lit_Character) (Place)
+               then
                   -- Always allowed
                   return;
                end if;
@@ -1567,7 +1577,9 @@ package body Rules.Style is
                        & " not in allowed construct");
 
             when A_String_Literal =>
-               if Permitted_Places (Lit_String) (Place) then
+               if Permitted_Places (Lit_String) /= No_Place
+                 and then Permitted_Places (Lit_String) (Place)
+               then
                   -- Always allowed
                   return;
                end if;

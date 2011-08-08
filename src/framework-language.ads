@@ -62,10 +62,15 @@ package Framework.Language is
 
    function Parameter_Exists return Boolean;
    --  Returns true if there are parameters left to parse
+
    function Is_Integer_Parameter return Boolean;
    --  Returns true if next parameter is an integer
+
    function Is_Float_Parameter return Boolean;
    --  Returns true if next parameter is a float
+
+   function Is_String_Parameter return Boolean;
+   --  Returns true if next parameter is a string
 
    --  Following functions return the next parameter, or raise Syntax_Error
    --  They have side effects (i.e. they advance to the next parameter)
@@ -114,17 +119,18 @@ package Framework.Language is
       Box_Pos  : in Integer := -1; -- 'Pos of the modifier that corresponds to "<>", or -1 if none
       Pars_Pos : in Integer := -1; -- 'Pos of the modifier that corresponds to "()", or -1 if none
    package Modifier_Utilities is
-      function Get_Modifier (Required : Boolean) return Modifiers;
-      -- If not Required and no modifier given, returns Modifiers'First
-
-      function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
-
       type Unconstrained_Modifier_Set is array (Modifiers range <>) of Boolean;
       subtype Modifier_Set is Unconstrained_Modifier_Set (Modifiers);
       Empty_Set : constant Modifier_Set := (others => False);
       Full_Set  : constant Modifier_Set := (others => True);
 
-      function Get_Modifier_Set (No_Parameter : Boolean := False) return Modifier_Set;
+      function Get_Modifier (Required : Boolean; Expected : Modifier_Set := Full_Set) return Modifiers;
+      -- If not Required and no modifier given, returns Modifiers'First
+
+      function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
+
+      function Get_Modifier_Set (No_Parameter : Boolean := False;
+                                 Expected     : Modifier_Set := Full_Set) return Modifier_Set;
       -- If No_Parameter, there is no flag after the modifiers, at least one modifier
       -- required.
       function Image (Set     : Unconstrained_Modifier_Set;
@@ -137,9 +143,10 @@ package Framework.Language is
       function Get_Modifier_List (Expected : Modifier_Set := Full_Set) return Modifier_List;
       function Image (List : Modifier_List) return Wide_String;
 
-      procedure Help_On_Modifiers (Header      : Wide_String := "";
-                                   Footer      : Wide_String := "";
-                                   Extra_Value : Wide_String := "NONE");
+      procedure Help_On_Modifiers (Header      : Wide_String  := "";
+                                   Footer      : Wide_String  := "";
+                                   Extra_Value : Wide_String  := "NONE";
+                                   Expected    : Modifier_Set := Full_Set);
 
    end Modifier_Utilities;
 

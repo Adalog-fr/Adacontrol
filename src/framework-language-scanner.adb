@@ -248,9 +248,6 @@ package body Framework.Language.Scanner is
             The_Token.String_Text (The_Token.String_Length) := Cur_Char;
             Next_Char;
          end loop;
-         if Cur_Char = Quote_Char then
-            Next_Char;
-         end if;
       end Get_String;
 
       function Get_Integer return Biggest_Int is

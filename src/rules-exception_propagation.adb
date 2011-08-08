@@ -40,13 +40,6 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Language,
-  Framework.Rules_Manager,
-  Framework.Reports;
-pragma Elaborate (Framework.Language);
-
 -- Asis
 with
   Asis.Declarations,
@@ -55,8 +48,13 @@ with
   Asis.Iterator,
   Asis.Statements;
 
+-- AdaControl
+with
+  Framework.Language;
+pragma Elaborate (Framework.Language);
+
 package body Rules.Exception_Propagation is
-   use Framework, Ada.Strings.Wide_Unbounded;
+   use Framework, Framework.Control_Manager, Ada.Strings.Wide_Unbounded;
 
    type Risk_Level is (No_Risk, Object_Declaration, Variable_In_Declaration, Call_In_Declaration, Always);
 

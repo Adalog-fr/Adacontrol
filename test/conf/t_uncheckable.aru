@@ -13,7 +13,7 @@ check global_references (all, t_uncheckable.global_references);
 check max_call_depth (finite);
 check object_declarations (volatile_no_address);
 check potentially_blocking_operations;
-check representation_clauses (fractional_size, non_contiguous_record);
+check representation_clauses (fractional_size, non_contiguous_layout);
 check style (renamed_entity);
 check unsafe_unchecked_conversion;
 check usage (object);
