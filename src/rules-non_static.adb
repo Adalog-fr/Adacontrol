@@ -99,7 +99,7 @@ package body Rules.Non_Static is
          Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end Add_One;
 
-   begin
+   begin  -- Add_Control
       if Parameter_Exists then
          loop
             Add_One (Get_Flag_Parameter (Allow_Any => False));
@@ -229,7 +229,7 @@ package body Rules.Non_Static is
                  & Choose (Is_Defaulted_Association (Assoc), " (default value)", ""));
       end Do_Report;
 
-   begin
+   begin  -- Process_Instantiation
       if not Rule_Used (K_Instantiation) then
          return;
       end if;
@@ -431,7 +431,7 @@ package body Rules.Non_Static is
       end;
    end Process_Index_Expression;
 
-begin
+begin  -- Rules.Non_Static
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

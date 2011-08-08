@@ -58,4 +58,10 @@ package Framework.Language.Shared_Keys is
 
    type Min_Max is (Min, Max);
    package Min_Max_Utilities is new Modifier_Utilities (Min_Max);
+
+   type Bounds_Values is
+      record
+         Min, Max : Thick_Queries.Biggest_Natural;
+      end record;
+   function Get_Bounds_Parameters (Rule_Id : Wide_String) return Bounds_Values;
 end Framework.Language.Shared_Keys;

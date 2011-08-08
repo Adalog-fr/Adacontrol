@@ -61,13 +61,14 @@ package body Rules.Exception_Propagation is
    type Risk_Level is (No_Risk, Object_In_Declaration, Variable_In_Declaration, Call_In_Declaration, Always);
 
    -- Note that "interface" is a reserved work in Ada 2005
-   type Subrules is (Kw_Interface, Kw_Parameter, Kw_Task, Kw_Declaration);
+   type Subrules is (Kw_Interface, Kw_Parameter, Kw_Task, Kw_Declaration, Kw_Local_Exception);
 
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "KW_");
    use Subrules_Flag_Utilities;
 
    type Usage is array (Subrules) of Boolean;
-   Rule_Used : Usage := (others => False);
+   No_Rule : constant Usage := (others => False);
+   Rule_Used : Usage := No_Rule;
    Save_Used : Usage;
 
    type EP_Rule_Context is new Basic_Rule_Context with
@@ -81,6 +82,7 @@ package body Rules.Exception_Propagation is
    Conventions         : Convention_Map.Map;
    Task_Context        : EP_Rule_Context;
    Declaration_Context : EP_Rule_Context;
+   Local_Exc_Context   : Basic_Rule_Context;
 
    ----------
    -- Help --
@@ -95,7 +97,9 @@ package body Rules.Exception_Propagation is
       User_Message  ("                  for parameter: <full name of parameters known to expect call-backs>");
       User_Message  ("                  for task: nothing");
       User_Message  ("                  for declaration: nothing");
+      User_Message  ("                  for local_exception: nothing, no <level> allowed");
       User_Message  ("Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions");
+      User_Message  ("and that local exceptions cannot propagate out of scope");
    end Help;
 
    -----------------
@@ -185,6 +189,22 @@ package body Rules.Exception_Propagation is
 
             Declaration_Context        := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Check_Level);
             Rule_Used (Kw_Declaration) := True;
+
+         when Kw_Local_Exception =>
+            if Parameter_Exists then
+               Parameter_Error (Rule_Id, "No parameter for ""local_exception""");
+            end if;
+
+            if Rule_Used (Kw_Local_Exception) then
+               Parameter_Error (Rule_Id, """local_exception"" already given");
+            end if;
+
+            if Check_Level /= Always then
+               Parameter_Error (Rule_Id, "no level allowed for ""local_exception""");
+            end if;
+
+            Local_Exc_Context              := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Rule_Used (Kw_Local_Exception) := True;
       end case;
    end Add_Control;
 
@@ -197,12 +217,12 @@ package body Rules.Exception_Propagation is
    begin
       case Action is
          when Clear =>
-            Rule_Used := (others => False);
+            Rule_Used := No_Rule;
             Clear (Parameters);
             Clear (Conventions);
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := No_Rule;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -218,17 +238,6 @@ package body Rules.Exception_Propagation is
       Balance (Conventions);
    end Prepare;
 
-   -------------------------
-   -- Post_Procedure_Null --
-   -------------------------
-
-   procedure Post_Procedure_Null (Element : in     Asis.Element;
-                                  Control : in out Asis.Traverse_Control;
-                                  State   : in out Risk_Level) is
-      pragma Unreferenced (Element, Control, State);
-   begin
-      null;
-   end Post_Procedure_Null;
 
    --------------------------
    -- Traverse_Declaration --
@@ -239,10 +248,17 @@ package body Rules.Exception_Propagation is
    procedure Pre_Procedure_Declaration (Element : in     Asis.Element;
                                         Control : in out Asis.Traverse_Control;
                                         State   : in out Risk_Level);
+   procedure Post_Procedure_Declaration (Element : in     Asis.Element;
+                                         Control : in out Asis.Traverse_Control;
+                                         State   : in out Risk_Level) is
+      pragma Unreferenced (Element, Control, State);
+   begin
+      null;
+   end Post_Procedure_Declaration;
 
    procedure Traverse_Declaration is new Asis.Iterator.Traverse_Element (Risk_Level,
                                                                          Pre_Procedure_Declaration,
-                                                                         Post_Procedure_Null);
+                                                                         Post_Procedure_Declaration);
 
    procedure Pre_Procedure_Declaration (Element : in     Asis.Element;
                                         Control : in out Asis.Traverse_Control;
@@ -299,54 +315,110 @@ package body Rules.Exception_Propagation is
       end case;
    end Pre_Procedure_Declaration;
 
+
+   ----------------------
+   -- Traverse_Handler --
+   ----------------------
+
+   -- Procedure to check if a raise statement (or equivalent) is encountered in a handler
+   -- returns No_Risk or Always only
+   type Handler_State is
+      record
+         Risk    : Risk_Level;
+         Exc     : Asis.Defining_Name; -- Search this exception or all if nil_element
+         Reraise : Boolean;            -- Search reraise if true
+      end record;
+   procedure Pre_Procedure_Handler (Element : in     Asis.Element;
+                                    Control : in out Asis.Traverse_Control;
+                                    State   : in out Handler_State);
+   procedure Post_Procedure_Handler (Element : in     Asis.Element;
+                                     Control : in out Asis.Traverse_Control;
+                                     State   : in out Handler_State) is
+      pragma Unreferenced (Element, Control, State);
+   begin
+      null;
+   end Post_Procedure_Handler;
+
+   procedure Traverse_Handler is new Asis.Iterator.Traverse_Element (Handler_State,
+                                                                     Pre_Procedure_Handler,
+                                                                     Post_Procedure_Handler);
+
+   procedure Pre_Procedure_Handler (Element : in     Asis.Element;
+                                    Control : in out Asis.Traverse_Control;
+                                    State   : in out Handler_State) is
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Utilities, Thick_Queries;
+      SP : Asis.Expression;
+   begin
+      case Statement_Kind (Element) is
+         when A_Raise_Statement =>
+            if Is_Nil (Raised_Exception (Element)) then
+               if State.Reraise then
+                  State.Risk := Always;
+                  Control    := Terminate_Immediately;
+               end if;
+            elsif Is_Nil (State.Exc)
+              or else Is_Equal (Corresponding_Name_Definition (Simple_Name (Raised_Exception (Element))),
+                                State.Exc)
+            then
+               State.Risk := Always;
+               Control    := Terminate_Immediately;
+            end if;
+         when A_Procedure_Call_Statement =>
+            SP := Called_Simple_Name (Element);
+            if not Is_Nil (SP) then
+               -- It is nil for implicit or explicit dereference
+               declare
+                  SP_Name : constant Wide_String := To_Upper (Full_Name_Image (SP));
+               begin
+                  if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION" then
+                     if Is_Nil (State.Exc) then
+                        State.Risk := Always;
+                        Control    := Terminate_Immediately;
+                     else
+                        declare
+                           Exc_Param : constant Asis.Expression := Ultimate_Expression
+                                                                    (Actual_Parameter
+                                                                     (Call_Statement_Parameters
+                                                                      (Element, Normalized => True) (1)));
+                        begin
+                           if Expression_Kind (Exc_Param) = An_Attribute_Reference
+                             and then A4G_Bugs.Attribute_Kind (Exc_Param) = An_Identity_Attribute
+                             and then Is_Equal (Corresponding_Name_Definition (Ultimate_Name (Prefix (Exc_Param))),
+                                                State.Exc)
+                           then
+                              State.Risk := Always;
+                              Control    := Terminate_Immediately;
+                           end if;
+                        end;
+                     end if;
+
+                  elsif SP_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE" then
+                     if State.Reraise then
+                        State.Risk := Always;
+                        Control    := Terminate_Immediately;
+                     end if;
+                  end if;
+               end;
+            end if;
+         when others =>
+            null;
+      end case;
+   end Pre_Procedure_Handler;
+
+
    --------------------------------
    -- Exception_Propagation_Risk --
    --------------------------------
 
 
    function Exception_Propagation_Risk (SP_Body : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
-
-      -- Procedure to check if a raise statement (or equivalent) is encountered in a handler
-      -- returns No_Risk or Always only
-      procedure Pre_Procedure_Handler (Element : in     Asis.Element;
-                                       Control : in out Asis.Traverse_Control;
-                                       State   : in out Risk_Level) is
-         use Asis, Asis.Elements, Utilities, Thick_Queries;
-         SP : Asis.Expression;
-      begin
-         case Statement_Kind (Element) is
-            when A_Raise_Statement =>
-               State   := Always;
-               Control := Terminate_Immediately;
-            when A_Procedure_Call_Statement =>
-               SP := Called_Simple_Name (Element);
-               if not Is_Nil (SP) then
-                  -- It is nil for implicit or explicit dereference
-                  declare
-                     SP_Name : constant Wide_String := To_Upper (Full_Name_Image (SP));
-                  begin
-                     if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
-                       or else SP_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE"
-                     then
-                        State   := Always;
-                        Control := Terminate_Immediately;
-                     end if;
-                  end;
-               end if;
-            when others =>
-               null;
-         end case;
-      end Pre_Procedure_Handler;
-
-      procedure Traverse_Handler is new Asis.Iterator.Traverse_Element (Risk_Level,
-                                                                        Pre_Procedure_Handler,
-                                                                        Post_Procedure_Null);
-
       use Asis, Asis.Elements, Asis.Declarations, Asis.Statements;
+      H_State     : Handler_State;
       Level       : Risk_Level;
       The_Control : Traverse_Control := Continue;
 
-      Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
+      Handlers    : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
    begin -- Exception_Propagation_Risk
       -- Is there a handler ?
       if Handlers = Nil_Element_List then
@@ -359,21 +431,21 @@ package body Rules.Exception_Propagation is
       end if;
 
       -- Is there any raise statement in handler?
-      Level := No_Risk;
+      H_State := (No_Risk, Exc => Nil_Element, Reraise => True);
       for I in Handlers'Range loop
          declare
             Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
          begin
             for J in Stats'Range loop
-               Traverse_Handler (Stats (J), The_Control, Level);
-               if Level = Always then
+               Traverse_Handler (Stats (J), The_Control, H_State);
+               if H_State.Risk = Always then
                   return Always;
                end if;
             end loop;
          end;
       end loop;
+      Level := No_Risk;
 
-      -- Level is No_Risk here
       -- No need to check declarations if not requested by the user
       if Max_Level < Always then
          declare
@@ -427,10 +499,7 @@ package body Rules.Exception_Propagation is
          if Expression_Kind (Element) = An_Attribute_Reference
            and then A4G_Bugs.Attribute_Kind (Element) in An_Access_Attribute .. An_Address_Attribute
          then
-            Good_Prefix := Prefix (Element);
-            if Expression_Kind (Good_Prefix) = A_Selected_Component then
-               Good_Prefix := Selector (Good_Prefix);
-            end if;
+            Good_Prefix := Simple_Name (Prefix (Element));
 
             if Expression_Kind (Good_Prefix) = An_Explicit_Dereference or else Is_Access_Expression (Good_Prefix) then
                -- Explicit or implicit dereference: prefix subprogram is dynamic, nothing we can do
@@ -467,17 +536,19 @@ package body Rules.Exception_Propagation is
                when A_Procedure_Instantiation | A_Function_Instantiation =>
                   Risk := Exception_Propagation_Risk (Corresponding_Body
                                                       (Corresponding_Name_Declaration
-                                                       (Generic_Unit_Name
-                                                        (SP_Declaration))),
+                                                       (Simple_Name
+                                                        (Generic_Unit_Name
+                                                         (SP_Declaration)))),
                                                      State.Check_Level);
                   if Risk >= State.Check_Level then
                      Report (Rule_Id,
                              State,
                              Get_Location (Corresponding_Body
                                            (Corresponding_Name_Declaration
-                                            (Generic_Unit_Name
-                                             (SP_Declaration)))),
-                             "generic """ &  A4G_Bugs.Name_Image (Generic_Unit_Name (SP_Declaration))
+                                            (Simple_Name
+                                             (Generic_Unit_Name
+                                              (SP_Declaration))))),
+                             "generic """ &  A4G_Bugs.Name_Image (Simple_Name (Generic_Unit_Name (SP_Declaration)))
                              & """ can propagate exceptions"
                              & Risk_Message (Risk)
                              & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
@@ -714,32 +785,109 @@ package body Rules.Exception_Propagation is
       end if;
    end Process_Task_Body;
 
+
+   -----------------------------
+   -- Process_Local_Exception --
+   -----------------------------
+
+   procedure Process_Local_Exception (Exc : Asis.Definition) is
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Framework.Reports, Thick_Queries, Utilities;
+
+      Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Element (Exc));
+   begin
+      case Declaration_Kind (Scope) is
+         when A_Package_Declaration
+            | A_Generic_Package_Declaration
+            | A_Package_Body_Declaration
+              =>
+            return;
+         when others =>
+            null;
+      end case;
+
+      declare
+         Handlers      : constant Asis.Exception_Handler_List := Exception_Handlers (Scope);
+         H_State       : Handler_State;
+         Handler_Found : Boolean := False;
+         Reraise       : Boolean;
+         The_Control   : Traverse_Control;
+      begin
+         Handlers_Loop : for H in Handlers'Range loop
+            declare
+               Choices : constant Asis.Element_List := Exception_Choices (Handlers (H));
+            begin
+               Reraise := False;
+               for C in Choices'Range loop
+                  if Element_Kind (Choices (C)) = A_Definition   -- "others"
+                    or else Is_Equal (Corresponding_Name_Definition (Simple_Name (Choices (C))), Exc)
+                  then
+                     Handler_Found := True;
+                     Reraise       := True;
+                  end if;
+               end  loop;
+            end;
+            H_State     := (No_Risk, Exc, Reraise);
+            The_Control := Continue;
+            Traverse_Handler (Handlers (H), The_Control, H_State);
+            if H_State.Risk = Always then
+               Report (Rule_Id,
+                       Local_Exc_Context,
+                       Get_Location (Handlers (H)),
+                       "handler can propagate local exception at " & Image (Get_Location (Exc)));
+            end if;
+         end loop Handlers_Loop;
+         if not Handler_Found then
+            Report (Rule_Id,
+                    Local_Exc_Context,
+                    Get_Location (Exc),
+                    "No handler for local exception in enclosing "
+                    & Choose (Statement_Kind (Scope) = A_Block_Statement, "block", "body"));
+         end if;
+      end;
+   end Process_Local_Exception;
+
+
    -------------------------
    -- Process_Declaration --
    -------------------------
 
    procedure Process_Declaration (Declaration   : in Asis.Declaration) is
-      use Asis;
+      use Asis, Asis.Declarations, Asis.Elements;
       use Framework.Reports;
 
       Risk        : Risk_Level := No_Risk;
       The_Control : Traverse_Control := Continue;
    begin
-      if not Rule_Used (Kw_Declaration) then
+      if not Rule_Used (Kw_Declaration) and not Rule_Used (Kw_Local_Exception) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Traverse_Declaration (Declaration, The_Control, Risk);
-      if Risk >= Declaration_Context.Check_Level then
-         Report (Rule_Id,
-                 Declaration_Context,
-                 Get_Location (Declaration),
-                 "declaration can propagate exceptions" & Risk_Message (Risk));
+      if Rule_Used (Kw_Declaration) then
+         Traverse_Declaration (Declaration, The_Control, Risk);
+         if Risk >= Declaration_Context.Check_Level then
+            Report (Rule_Id,
+                    Declaration_Context,
+                    Get_Location (Declaration),
+                    "declaration can propagate exceptions" & Risk_Message (Risk));
+         end if;
+      end if;
+
+      if Rule_Used (Kw_Local_Exception)
+        and then Declaration_Kind (Declaration) = An_Exception_Declaration
+      then
+         declare
+            Exc_Names : constant Asis.Name_List := Names (Declaration);
+         begin
+            for E in Exc_Names'Range loop
+               Process_Local_Exception (Exc_Names (E));
+            end loop;
+         end;
       end if;
    end Process_Declaration;
 
-begin
+begin  -- Rules.Exception_Propagation
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

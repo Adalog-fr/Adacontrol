@@ -14,6 +14,8 @@ t_uncheckable-global_references.adb:6:4: Error: Uncheckable: in rule GLOBAL_REFE
 t_uncheckable-max_call_depth.adb:4:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
 t_uncheckable-max_call_depth.adb:5:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
 t_uncheckable-max_call_depth.adb:6:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_uncheckable-object_declarations.adb:6:21: Error: Uncheckable: in rule OBJECT_DECLARATIONS: Possible false negative: cannot check variables of class-wide type
+t_uncheckable-object_declarations.adb:9:4: Error: OBJECT_DECLARATIONS: variable is volatile and has no address clause
 t_uncheckable-potentially_blocking_operations.adb:9:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:10:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:11:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking

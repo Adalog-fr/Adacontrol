@@ -7,4 +7,6 @@ Aggregate  : search expressions (array_aggregate, record_aggregate);
 attributes : check  expressions (inconsistent_attribute_dimension);
 Calls      : check  expressions (complex_parameter);
 Mixed      : check  expressions (mixed_operators);
+Conversions: search expressions (type_conversion);
+Ranges     : check  expressions (universal_range);
 

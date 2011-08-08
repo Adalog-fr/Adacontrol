@@ -9,3 +9,4 @@ non_contig : check  representation_clauses (non_contiguous_record);
 incomplete : check  representation_clauses (incomplete_record);
 streams    : check  representation_clauses ('read,  'class'read,  'write,  'class'write,
                                               'input, 'class'input, 'output, 'class'output);
+overlay    : check  representation_clauses (overlay);

@@ -38,64 +38,83 @@ Rule: DECLARATIONS
 Parameter(s): {<location>} <decl_kind>
 <location>: all | block   | library | local     | nested |
             own | private | public  | task_body
-<decl_kind>: abstract_function          | abstract_procedure              |
-             abstract_type              | access_all_type                 |
-             access_constant_type       | access_protected_type           |
-             access_subprogram_type     | access_task_type                |
-             access_type                | aliased                         |
-             array                      | array_type                      |
-             binary_modular_type        | character_literal               |
-             child_unit                 | constant                        |
-             constrained_array_type     | constrained_array_variable      |
-             controlled_type            | decimal_fixed_type              |
-             defaulted_discriminant     | defaulted_generic_parameter     |
-             defaulted_parameter        | deferred_constant               |
-             derived_type               | discriminant                    |
-             enumeration_type           | entry                           |
-             exception                  | extension                       |
-             fixed_type                 | float_type                      |
-             formal_function            | formal_package                  |
-             formal_procedure           | formal_type                     |
-             function                   | function_instantiation          |
-             generic                    | generic_function                |
-             generic_package            | generic_procedure               |
-             handlers                   | incomplete_type                 |
-             in_out_generic_parameter   | in_out_parameter                |
-             initialized_record_field   | initialized_protected_field     |
-             instantiation              | integer_type                    |
-             limited_private_type       | modular_type                    |
-             multiple_names             | multiple_protected_entries      |
-             named_number               | non_binary_modular_type         |
-             non_identical_renaming     | non_identical_operator_renaming |
-             non_limited_private_type   | not_operator_renaming           |
-             null_extension             | null_ordinary_record_type       |
-             null_procedure             | null_tagged_type                |
-             operator                   | operator_renaming               |
-             ordinary_fixed_type        | ordinary_record_type            |
-             out_parameter              | package                         |
-             package_instantiation      | package_statements              |
-             predefined_operator        | private_extension               |
-             procedure                  | procedure_instantiation         |
-             protected                  | protected_entry                 |
-             protected_type             | record_type                     |
-             renaming                   | separate                        |
-             signed_type                | single_array                    |
-             single_protected           | single_task                     |
-             subtype                    | tagged_type                     |
-             task                       | task_entry                      |
-             task_type                  | type                            |
-             unconstrained_array_type   | unconstrained_array_variable    |
-             unconstrained_subtype      | uninitialized_protected_field   |
-             uninitialized_record_field | uninitialized_variable          |
-             variable                   | variant_part
+<decl_kind>: any_declaration                 | abstract_function              |
+             abstract_procedure              | abstract_type                  |
+             access_all_type                 | access_constant_type           |
+             access_protected_type           | access_subprogram_type         |
+             access_task_type                | access_type                    |
+             aliased                         | anonymous_subtype_allocator    |
+             anonymous_subtype_case          | anonymous_subtype_declaration  |
+             anonymous_subtype_for           | anonymous_subtype_indexing     |
+             array                           | array_type                     |
+             binary_modular_type             | character_literal              |
+             child_unit                      | class_wide_constant            |
+             class_wide_variable             | constant                       |
+             constrained_array_type          | constrained_array_variable     |
+             controlled_type                 | decimal_fixed_type             |
+             defaulted_discriminant          | defaulted_generic_parameter    |
+             defaulted_parameter             | deferred_constant              |
+             derived_type                    | discriminant                   |
+             empty_private_part              | empty_visible_part             |
+             enumeration_type                | entry                          |
+             exception                       | extension                      |
+             fixed_type                      | float_type                     |
+             formal_function                 | formal_package                 |
+             formal_procedure                | formal_type                    |
+             function                        | function_call_renaming         |
+             function_instantiation          | generic                        |
+             generic_function                | generic_package                |
+             generic_procedure               | handlers                       |
+             incomplete_type                 | in_out_generic_parameter       |
+             in_out_parameter                | initialized_record_field       |
+             initialized_protected_field     | instantiation                  |
+             integer_type                    | limited_private_type           |
+             modular_type                    | multiple_names                 |
+             multiple_protected_entries      | named_number                   |
+             non_binary_modular_type         | non_identical_renaming         |
+             non_identical_operator_renaming | non_limited_private_type       |
+             not_operator_renaming           | null_extension                 |
+             null_ordinary_record_type       | null_procedure                 |
+             null_tagged_type                | operator                       |
+             operator_renaming               | ordinary_fixed_type            |
+             ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small |
+             ordinary_record_type            | out_parameter                  |
+             package                         | package_instantiation          |
+             package_statements              | predefined_operator            |
+             private_extension               | procedure                      |
+             procedure_instantiation         | protected                      |
+             protected_entry                 | protected_type                 |
+             record_type                     | renaming                       |
+             separate                        | signed_type                    |
+             single_array                    | single_protected               |
+             single_task                     | subtype                        |
+             tagged_type                     | task                           |
+             task_entry                      | task_type                      |
+             type                            | unconstrained_array_type       |
+             unconstrained_array_variable    | unconstrained_subtype          |
+             uninitialized_protected_field   | uninitialized_record_field     |
+             uninitialized_variable          | variable                       |
+             variant_part
 Control occurrences of Ada declarations
 
 Rule: DEFAULT_PARAMETER
-Parameter 1: <Subprogram or generic name> | all
+Parameter 1: <Subprogram or generic name> | calls | instantiations |
+             all
 Parameter 2: <Formal parameter name> | all
-Parameter 3: [not] used
-Control subprogram calls or generic instantiations that use (or not)
-the default value for a given parameter
+Parameter 3: used | positional | not_used
+Control subprogram calls or generic instantiations that use the default for a
+given defaulted parameter, or provide it, positionally or using any notation
+
+Rule: DEPENDENCIES
+Parameter(1)   : others | raw | direct | parent
+For subrule "others":
+Parameter(2..3): allowed units
+For other subrules:
+Parameter(2..3): <bound> <value>
+                (at least one parameter required)
+<bound>:  min | max
+Control units that depend on units others than those indicated,
+or whose number of dependencies is not in the specified range
 
 Rule: DIRECTLY_ACCESSED_GLOBALS
 Parameter(s): plain | accept | protected
@@ -116,14 +135,17 @@ Parameter(s): [not] calls | <Entity name>
 Control occurrences of an entity inside an exception handler.
 
 Rule: EXCEPTION_PROPAGATION
-Parameter 1     : [<level>,] interface   | parameter | task |
-                             declaration
+Parameter 1     : [<level>,] interface       | parameter   |
+                             task            | declaration |
+                             local_exception
                              (<level> is required for declaration)
 Parameter 2 .. N: for interface: <convention name>
                   for parameter: <full name of parameters known to expect call-backs>
                   for task: nothing
                   for declaration: nothing
+                  for local_exception: nothing, no <level> allowed
 Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions
+and that local exceptions cannot propagate out of scope
 
 Rule: EXPRESSIONS
 Parameter (s): and                              | and_then              |
@@ -133,7 +155,8 @@ Parameter (s): and                              | and_then              |
                or                               | or_else               |
                real_equality                    | record_aggregate      |
                record_partial_others            | record_others         |
-               slice                            | unqualified_aggregate |
+               slice                            | type_conversion       |
+               universal_range                  | unqualified_aggregate |
                xor
 Control occurrences of Ada expressions
 
@@ -278,9 +301,9 @@ Parameter(s): variable_initialization | constant_initialization |
 Control that index and discriminant constraints use only static expressions
 
 Rule: NOT_ELABORATION_CALLS
-Parameter(s): <subprogram name>
-Control subprogram calls that happen elsewhere than as part
-of the elaboration of a library package.
+Parameter(s): <subprogram name>|new
+Control subprogram calls or allocators that happen elsewhere than
+as part of the elaboration of a library package.
 
 Rule: NOT_SELECTED_NAME
 Parameter(1) : none | unit | compilation | family
@@ -292,14 +315,10 @@ Parameter: none | logical
 Control integer types where no operators, except as indicated, are used
 
 Rule: OBJECT_DECLARATIONS
-Parameter(1): min_integer_span
+Parameter(1): min_integer_span | volatile_no_address
 Parameter(2..)
    for Min_Integer_Span: [all|constant|variable] <value>
 Control allowed forms of object declarations
-
-Rule: OTHER_DEPENDENCIES
-Parameter(s): <Unit name>
-Control semantic dependencies (with clauses) to units other than those indicated
 
 Rule: PARAMETER_ALIASING
 Parameter 1: [with_in]  unlikely | possible | certain
@@ -345,7 +364,8 @@ Rule: REPRESENTATION_CLAUSES
 Parameter(s): <specifiable attribute> | at                    |
               at_mod                  | enumeration           |
               record                  | fractional_size       |
-              incomplete_record       | non_contiguous_record
+              incomplete_record       | non_contiguous_record |
+              overlay
               (optional)
 Control occurrences of representation clauses
 
@@ -361,7 +381,10 @@ Control subprogram calls or generic instantiations that call
 functions with side effect and where the order of evaluation matters
 
 Rule: SILENT_EXCEPTIONS
-Parameter(s): <report procedure name> | raise | return | requeue
+Parameter(s)   : <control-item> | <report-item>
+<control-item> : not | with   <exception> | <library unit> | others
+ <report-item> : raise | explicit_raise | reraise |
+                 return | requeue | <report procedure name>
 Control exception handlers that do not re-raise an exception 
 nor call a report procedure
 
@@ -377,50 +400,63 @@ Control occurrence of various forms of expressions that could be made simpler:
   Conversions to the expression's subtype
 
 Rule: SIMPLIFIABLE_STATEMENTS
-Parameter(s): block       | dead   | handler | if          |
-              if_for_case | if_not | loop    | nested_path |
+Parameter(s): block | dead           | handler     |
+              if    | if_for_case    | if_not      |
+              loop  | loop_for_while | nested_path |
               null
 Control Ada statements that can be made simpler
 
 Rule: SPECIAL_COMMENTS
-Parameter(s): Special comment pattern
+Parameter (1) pattern | unnamed_begin
+for pattern:
+   Parameter(2..): "<comment pattern>"
+for unnamed_begin:
+   Parameter(2..): [<condition>] <unit>
+      <condition>: always | declaration | program_unit
+           <unit>: all  | procedure | function | entry | package |
+                   task
 Control comments that match the specified pattern
+or "begin" without a comment identifying the program unit
 
 Rule: STATEMENTS
-Parameter(s): abort                   | accept_return          |
-              assignment              | asynchronous_select    |
-              block                   | case                   |
-              case_others             | case_others_null       |
-              code                    | conditional_entry_call |
-              declare_block           | delay                  |
-              delay_until             | dispatching_call       |
-              effective_declare_block | entry_return           |
-              exception_others        | exception_others_null  |
-              exit                    | exit_for_loop          |
-              exit_while_loop         | for_loop               |
-              function_return         | goto                   |
-              if                      | if_elsif               |
-              labelled                | loop_return            |
-              multiple_exits          | no_else                |
-              null                    | procedure_return       |
-              raise                   | raise_standard         |
-              requeue                 | reraise                |
-              selective_accept        | simple_loop            |
-              terminate               | timed_entry_call       |
-              unconditional_exit      | unnamed_block          |
-              unnamed_exit            | unnamed_loop_exited    |
-              unnamed_for_loop        | unnamed_multiple_loop  |
-              unnamed_simple_loop     | unnamed_while_loop     |
-              untyped_for             | while_loop
+Parameter(s): any_statement          | abort                   |
+              accept_return          | assignment              |
+              asynchronous_select    | block                   |
+              case                   | case_others             |
+              case_others_null       | code                    |
+              conditional_entry_call | declare_block           |
+              delay                  | delay_until             |
+              dispatching_call       | effective_declare_block |
+              entry_return           | exception_others        |
+              exception_others_null  | exit                    |
+              exit_expanded_name     | exit_for_loop           |
+              exit_outer_loop        | exit_while_loop         |
+              for_loop               | function_return         |
+              goto                   | if                      |
+              if_elsif               | labelled                |
+              loop_return            | multiple_exits          |
+              no_else                | null                    |
+              procedure_return       | raise                   |
+              raise_locally_handled  | raise_nonpublic         |
+              raise_standard         | reraise                 |
+              requeue                | selective_accept        |
+              simple_loop            | terminate               |
+              timed_entry_call       | unconditional_exit      |
+              unnamed_block          | unnamed_exit            |
+              unnamed_loop_exited    | unnamed_for_loop        |
+              unnamed_multiple_loop  | unnamed_simple_loop     |
+              unnamed_while_loop     | untyped_for             |
+              while_loop
 Control occurrences of Ada statements
 
 Rule: STYLE
-Parameter(1): casing_attribute   | casing_identifier      |
-              casing_keyword     | casing_pragma          |
-              compound_statement | default_in             |
-              exposed_literal    | multiple_elements      |
-              negative_condition | no_closing_name        |
-              numeric_literal    | positional_association |
+Parameter(1): casing_attribute       | casing_identifier      |
+              casing_keyword         | casing_pragma          |
+              compound_statement     | default_in             |
+              exposed_literal        | multiple_elements      |
+              negative_condition     | no_closing_name        |
+              numeric_literal        | parameter_order        |
+              formal_parameter_order | positional_association |
               renamed_entity
 For casing_*:
    Parameter (2): uppercase | lowercase | titlecase | original
@@ -439,6 +475,10 @@ For no_closing_name:
 For numeric_literal:
    Parameter (2): [not] <base>
    Parameter (3): <block_size>
+For parameter_order:
+   parameter (2..): list of in        | defaulted_in | access  |
+                            in_out    | out          | type    |
+                            procedure | function     | package
 For positional_association:
    Parameter (2..): [not_operator] call            | discriminant     |
                                    pragma          | instantiation    |
@@ -477,17 +517,18 @@ Parameter(s): none
 Control unsafe usage of Unchecked_Conversion
 
 Rule: USAGE
-Parameter(s): variable | object    {, [not] from_spec | initialized | read | written}
-  or        : constant             {, [not] from_spec | read}
-  or        : type                 {, [not] from_spec | used}
-  or        : procedure | function {, [not] from_spec | called}
-  or        : exception            {, [not] from_spec | raised | handled}
-  or        : task                 {, [not] from_spec | called | aborted}
-  or        : protected            {, [not] from_spec | called}
-  or        : generic              {, [not] from_spec | instantiated}
-  or        : all                  [, [not] from_spec]
+Parameter(s): variable | object    {, [not] <location> | initialized | read | written}
+  or        : constant             {, [not] <location> | read}
+  or        : type                 {, [not] <location> | used}
+  or        : procedure | function {, [not] <location> | called}
+  or        : exception            {, [not] <location> | raised | handled}
+  or        : task                 {, [not] <location> | called | aborted}
+  or        : protected            {, [not] <location> | called}
+  or        : generic              {, [not] <location> | instantiated}
+  or        : all                  [, [not] <location>]
+location ::= from_visible | from_private | from_spec
 Control usage of various entities
-(possibly restricted to those that match the specified properties)
+(possibly restricted to those that match the specified location and properties)
 
 Rule: USE_CLAUSES
 Parameter(1):  <Allowed package name> | local | global

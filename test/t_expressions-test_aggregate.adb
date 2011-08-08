@@ -1,6 +1,6 @@
 separate (T_Expressions)
 procedure Test_Aggregate is
-   type Arr is array (1 .. 4) of Integer;
+   type Arr is array (Integer'(1) .. 4) of Integer;
    type Rec is tagged
       record
          X, Y : Float;

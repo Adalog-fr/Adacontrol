@@ -45,6 +45,16 @@ package body Framework.Specific_Plugs is
       null;
    end Enter_Unit;
 
+   --------------------------
+   -- Exit_Context_Clauses --
+   --------------------------
+
+   procedure Exit_Context_Clauses (Unit : in Asis.Compilation_Unit) is
+      pragma Unreferenced (Unit);
+   begin
+      null;
+   end Exit_Context_Clauses;
+
    ---------------
    -- Exit_Unit --
    ---------------

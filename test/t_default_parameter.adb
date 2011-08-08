@@ -9,7 +9,7 @@ procedure T_default_parameter is
    package Inst1 is new Gen (1); -- X used, Y not used
 
    generic
-      with package Pack is new Gen (1);  -- X used, Y not used
+      with package Pack is new Gen (X => 1);  -- X used, Y not used
    package Gen_Gen is end Gen_Gen;
 
    package Inst2 is new Gen_Gen (Inst1);
@@ -24,7 +24,8 @@ procedure T_default_parameter is
    end;
 
    procedure Q is new P;
-   procedure R is new P ("<");           -- "<" not used
+   procedure R is new P ("<");           -- "<" not used, Max used
+   procedure S is new P (Max => 10);     -- "<" used,     Max not used
 
    procedure Proc (X, Y : Integer := 0) is
    begin

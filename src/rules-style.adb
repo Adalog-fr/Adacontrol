@@ -164,6 +164,23 @@ package body Rules.Style is
 
 
    --
+   -- Parameters for the [formal_]parameter_order subrule
+   --
+
+   type Extended_Modes is (Mode_In,   Mode_Defaulted_In, Mode_Access,   Mode_In_Out, Mode_Out,
+                           Mode_Type, Mode_Procedure,    Mode_Function, Mode_Package);
+   package Extended_Modes_Utilities is new Framework.Language.Modifier_Utilities (Modifiers => Extended_Modes,
+                                                                                  Prefix    => "Mode_");
+   type Order_Index is range 1 .. Extended_Modes'Pos (Extended_Modes'Last) + 1 + 1;
+   -- Number of orders that can be specified.
+   -- Quite arbitrary; here we allow one position for each Extended_Mode, plus the extra
+   -- guard value.
+   type Modes_Array is array (Order_Index) of Extended_Modes_Utilities.Modifier_Set;
+   Mode_Order : array (St_Orders) of Modes_Array;
+   Order_Inx  : array (St_Orders) of Order_Index;
+
+
+   --
    -- Parameters for the positional_association subrule
    --
 
@@ -192,6 +209,11 @@ package body Rules.Style is
          Renamed_Def  : Asis.Defining_Name;
       end record;
    function Is_Same_Def (L, R : Renaming_Data) return Boolean;
+   procedure Clear (Item : in out Renaming_Data) is  -- null proc
+      pragma Unreferenced (Item);
+   begin
+      null;
+   end Clear;
    package Renamed_Entities is new Framework.Scope_Manager.Scoped_Store (Renaming_Data,
                                                                          Equivalent_Keys => Is_Same_Def);
 
@@ -232,6 +254,9 @@ package body Rules.Style is
       User_Message ("For numeric_literal:");
       User_Message ("   Parameter (2): [not] <base>");
       User_Message ("   Parameter (3): <block_size>");
+
+      User_Message ("For parameter_order:");
+      Extended_Modes_Utilities.Help_On_Modifiers(Header => "   parameter (2..): list of");
 
       User_Message ("For positional_association:");
       Named_Parameter_Flag_Utilities.Help_On_Flags
@@ -412,11 +437,60 @@ package body Rules.Style is
                   Rule_Used (St_Numeric_Literal) := True;
               end;
 
+            when St_Parameter_Order | St_Formal_Parameter_Order =>
+               declare
+                  use Extended_Modes_Utilities;
+                  Not_Specified : Modifier_Set := Full_Set;
+               begin
+                  if Rule_Used (Subrule) then
+                     Parameter_Error (Rule_Id, Image (Subrule) & " already specified for rule");
+                  end if;
+                  if Parameter_Exists then
+                     Order_Inx (Subrule):= 1;
+                     loop
+                        Mode_Order (Subrule)(Order_Inx (Subrule)) := Get_Modifier_Set (No_Parameter => True);
+                        Not_Specified := Not_Specified and not Mode_Order (Subrule)(Order_Inx (Subrule));
+                        exit when not Parameter_Exists;
+                        if Order_Inx (Subrule) = Order_Index'Last - 1 then
+                           Parameter_Error (Rule_Id, "Too many parameters");
+                        end if;
+                        Order_Inx (Subrule) := Order_Inx (Subrule) + 1;
+                     end loop;
+                     if Not_Specified /= Empty_Set then
+                        -- allow all modes not explicitely specified after the ones specified
+                        Order_Inx  (Subrule):= Order_Inx (Subrule) + 1;
+                        Mode_Order (Subrule)(Order_Inx (Subrule)) := Not_Specified;
+                     end if;
+                  else
+                     case St_Orders (Subrule) is
+                        when St_Parameter_Order =>
+                           Mode_Order (St_Parameter_Order)
+                             := ((Mode_In | Mode_Access => True, others => False),
+                                 (Mode_In_Out           => True, others => False),
+                                 (Mode_Out              => True, others => False),
+                                 (Mode_Defaulted_In     => True, others => False),
+                                 others =>                      (others => False));
+                           Order_Inx (St_Parameter_Order) := 4;
+                        when St_Formal_Parameter_Order =>
+                           Mode_Order (St_Formal_Parameter_Order )
+                             := ((Mode_Type                                 => True, others => False),
+                                 (Mode_In | Mode_Access | Mode_Defaulted_In => True, others => False),
+                                 (Mode_In_Out                               => True, others => False),
+                                 (Mode_Procedure | Mode_Function            => True, others => False),
+                                 (Mode_Package                              => True, others => False),
+                                 others =>                                          (others => False));
+                           Order_Inx (St_Formal_Parameter_Order) := 5;
+                     end case;
+                  end if;
+               end;
+               Rule_Used (Subrule) := True;
+               Associate (Contexts, Value (Image (Subrule)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+
             when St_Positional_Association =>
                if Parameter_Exists and then not Is_Integer_Parameter then
                   while Parameter_Exists loop
-                     Except_Op                := Get_Modifier ("NOT_OPERATOR");
-                     Assoc                    := Get_Flag_Parameter (Allow_Any => False);
+                     Except_Op := Get_Modifier ("NOT_OPERATOR");
+                     Assoc     := Get_Flag_Parameter (Allow_Any => False);
                      if Except_Op and Assoc /= Na_Call then
                         Parameter_Error (Rule_Id, "Not_Operator can be specified only with ""call""");
                      end if;
@@ -458,7 +532,7 @@ package body Rules.Style is
 
          -- Casing_Keyword
          Associate (Contexts, Value (Image (St_Casing_Keyword)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Attribute) := Ca_Lowercase;
+         Casing_Policy (St_Casing_Keyword) := Ca_Lowercase;
 
          -- Casing_Identifier
          Associate (Contexts, Value (Image (St_Casing_Identifier)), Basic.New_Context (Ctl_Kind, Ctl_Label));
@@ -508,6 +582,22 @@ package body Rules.Style is
                     Value (Image (St_Numeric_Literal) & Allowed_Bases'Wide_Image (10)),
                     Literal_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label)
                                                  with Is_Not => False, Block_Size => 3));
+
+         -- Parameter_Order
+         Associate (Contexts, Value (Image (St_Parameter_Order)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Mode_Order :=
+           (St_Parameter_Order => ((Mode_In | Mode_Access => True, others => False),
+                                   (Mode_In_Out           => True, others => False),
+                                   (Mode_Out              => True, others => False),
+                                   (Mode_Defaulted_In     => True, others => False),
+                                others => (others => False)),
+            St_Formal_Parameter_Order => ((Mode_Type                                 => True, others => False),
+                                          (Mode_In | Mode_Access | Mode_Defaulted_In => True, others => False),
+                                          (Mode_In_Out                               => True, others => False),
+                                          (Mode_Procedure | Mode_Function            => True, others => False),
+                                          (Mode_Package                              => True, others => False),
+                                          others => (others => False)));
+            Order_Inx := (St_Parameter_Order => 4, St_Formal_Parameter_Order => 5);
 
          -- Positional_Association
          Association_Used := (others => True);
@@ -693,7 +783,6 @@ package body Rules.Style is
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
-
     procedure Check_Renamed is
          use Framework.Scope_Manager, Framework.Reports;
 
@@ -718,8 +807,6 @@ package body Rules.Style is
       end Check_Renamed;
 
    begin  -- Process_Identifier
-      -- Beware that if Identifier is A_Defining_Operator_Symbol or An_Operator_Symbol, we must
-      -- apply the rule for keywords, not identifiers
       if not (Rule_Used (St_Casing_Identifier)
               or Rule_Used (St_Renamed_Entity)
               or Rule_Used (St_Casing_Keyword))
@@ -728,6 +815,8 @@ package body Rules.Style is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      -- Beware that if Identifier is A_Defining_Operator_Symbol or An_Operator_Symbol, we must
+      -- apply the rule for keywords, not identifiers
       if Element_Kind (Identifier) = A_Defining_Name then
          if Rule_Used (St_Casing_Identifier) and then Defining_Name_Kind (Identifier) = A_Defining_Identifier then
             Check_Casing (Defining_Name_Image (Identifier), St_Casing_Identifier, Identifier);
@@ -781,7 +870,7 @@ package body Rules.Style is
                           Ctx,
                           Get_Location (Association),
                           "positional association used in " & Image (Na)
-                    & Choose (Ctx.Allowed_Number = 0,
+                          & Choose (Ctx.Allowed_Number = 0,
                               "",
                               " with more than " & Integer_Img (Ctx.Allowed_Number) & " element(s)"));
                end if;
@@ -880,31 +969,117 @@ package body Rules.Style is
    -- Process_Declaration --
    -------------------------
 
-   -- Checking that all mode parameter are explicit (no default in)
+   -- Checking that all mode parameter are explicit (no default in) or in order
    --
    -- It just uses the Mode_Kind function provides by ASIS
-   -- on parameter specification get from procedure declaration
+   -- on parameter specification obtained from SP or generics declarations
 
    procedure Process_Declaration (Declaration: in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
 
-      procedure Check (Formals : Asis.Element_List; Message : Wide_String) is
+      procedure Check_Formals (Subrule : St_Orders; Formals : Asis.Element_List; Message : Wide_String) is
          use Framework.Reports;
-      begin
-         for I in Formals'Range loop
-            if Mode_Kind (Formals (I)) = A_Default_In_Mode
-              and then Trait_Kind (Formals (I)) /= An_Access_Definition_Trait
-            then
-               Report (Rule_Id,
-                       Corresponding_Context (St_Default_In),
-                       Get_Location(Formals (I)),
-                       "default IN mode used for " & Message);
-            end if;
-         end loop;
-      end Check;
+         State : Order_Index := Order_Index'First;
+         E_Mode    : Extended_Modes;
+         Old_State : Order_Index;
+         Enclosing : Asis.Declaration;
+         Ignore    : Boolean;
 
-   begin
-      if not Rule_Used (St_Default_In) then
+         function Object_Mode (Formal : Asis.Declaration) return Extended_Modes is
+         begin
+            case Mode_Kind (Formal) is
+               when Not_A_Mode =>
+                  Failure ("style: not_a_mode in process_declaration");
+               when An_In_Mode =>
+                  if Is_Nil (Initialization_Expression (Formal)) then
+                     return Mode_In;
+                  else
+                     return Mode_Defaulted_In;
+                  end if;
+               when A_Default_In_Mode =>
+                  if Trait_Kind (Formal) = An_Access_Definition_Trait then
+                     return Mode_Access;
+                  elsif Is_Nil (Initialization_Expression (Formal)) then
+                     return Mode_In;
+                  else
+                     return Mode_Defaulted_In;
+                  end if;
+               when An_Out_Mode =>
+                  return Mode_Out;
+               when An_In_Out_Mode =>
+                  return Mode_In_Out;
+            end case;
+         end Object_Mode;
+
+      begin  -- Check_Formals
+         if Rule_Used (St_Default_In) then
+            for I in Formals'Range loop
+               if Mode_Kind (Formals (I)) = A_Default_In_Mode
+                 and then Trait_Kind (Formals (I)) /= An_Access_Definition_Trait
+               then
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Default_In),
+                          Get_Location (Declaration_Subtype_Mark (Formals (I))),
+                          "default IN mode used for " & Message);
+               end if;
+            end loop;
+         end if;
+
+         if (Rule_Used (St_Parameter_Order) or Rule_Used (St_Formal_Parameter_Order))
+           and then Formals /= Nil_Element_List
+         then
+            Enclosing := Enclosing_Element (Formals (Formals'First));
+           -- if it is a subprogram with an explicit spec, do not repeat message on body
+            if Declaration_Kind (Enclosing) not in A_Procedure_Body_Declaration .. A_Function_Body_Declaration
+                or else Is_Nil (Corresponding_Declaration (Enclosing))
+            then
+               for I in Formals'Range loop
+                  Ignore := False;
+                  case Declaration_Kind (Formals (I)) is
+                     when A_Parameter_Specification =>
+                        E_Mode  := Object_Mode (Formals (I));
+                     when A_Formal_Object_Declaration =>
+                        E_Mode  := Object_Mode (Formals (I));
+                     when A_Formal_Type_Declaration =>
+                        E_Mode  := Mode_Type;
+                     when A_Formal_Procedure_Declaration =>
+                        E_Mode  := Mode_Procedure;
+                     when A_Formal_Function_Declaration =>
+                        E_Mode  := Mode_Function;
+                     when A_Formal_Package_Declaration
+                        | A_Formal_Package_Declaration_With_Box
+                          =>
+                        E_Mode  := Mode_Package;
+                     when Not_A_Declaration =>
+                        -- presumably, a use clause for a generic formal package
+                        Ignore := True;
+                     when others =>
+                        Failure ("style: inappropriate declaration_kind for formal", Formals (I));
+                  end case;
+
+                  if Rule_Used (Subrule) and not Ignore then
+                     Old_State := State;
+                     while not Mode_Order (Subrule) (State) (E_Mode) loop
+                        if State = Order_Inx (Subrule) then
+                           Report (Rule_Id,
+                                   Corresponding_Context (St_Parameter_Order),
+                                   Get_Location (Formals (I)),
+                                   "parameter out of order for " & Message);
+                           -- Avoid multiple messages if there was only one parameter out of order:
+                           State := Old_State;
+                           exit;
+                        end if;
+
+                        State := State + 1;
+                     end loop;
+                  end if;
+               end loop;
+            end if;
+         end if;
+      end Check_Formals;
+
+   begin  -- Process_Declaration
+      if not Rule_Used (St_Default_In) and not Rule_Used (St_Parameter_Order) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -923,16 +1098,22 @@ package body Rules.Style is
            | A_Formal_Function_Declaration
            | A_Formal_Procedure_Declaration
            =>
-            Check (Parameter_Profile(Declaration), "parameter specification");
+            Check_Formals (St_Parameter_Order, Parameter_Profile(Declaration), "parameter specification");
 
          when A_Generic_Procedure_Declaration
            | A_Generic_Function_Declaration
            =>
-            Check (Parameter_Profile  (Declaration), "parameter specification");
-            Check (Generic_Formal_Part(Declaration), "formal object declaration");
+            Check_Formals (St_Formal_Parameter_Order,
+                           Generic_Formal_Part (Declaration),
+                           "formal parameter declaration");
+            Check_Formals (St_Parameter_Order,
+                           Parameter_Profile (Declaration),
+                           "parameter specification");
 
           when A_Generic_Package_Declaration =>
-            Check (Generic_Formal_Part(Declaration), "formal object declaration");
+            Check_Formals (St_Formal_Parameter_Order,
+                           Generic_Formal_Part (Declaration),
+                           "formal parameter declaration");
 
          when others =>
             null;
@@ -945,7 +1126,7 @@ package body Rules.Style is
 
    procedure Process_If_Statement (Statement   : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports;
+      use Framework.Reports, Thick_Queries;
    begin
       if not Rule_Used (St_Negative_Condition) then
          return;
@@ -966,10 +1147,7 @@ package body Rules.Style is
                end loop;
 
                if Expression_Kind (Expr) = A_Function_Call then
-                  Func := Prefix (Expr);
-                  if Expression_Kind (Func) = A_Selected_Component then
-                     Func := Selector (Func);
-                  end if;
+                  Func := Simple_Name (Prefix (Expr));
                   if To_Upper (A4G_Bugs.Name_Image (Func)) = """NOT""" then
                      Report (Rule_Id,
                              Corresponding_Context (St_Negative_Condition),
@@ -1081,7 +1259,7 @@ package body Rules.Style is
             end loop;
             return Result;
          end Wide_String_Reverse;
-      begin
+      begin  -- Process_Number_Separator
 
          Number_Decomposition (Name, Base_Delimiter_1, Base_Delimiter_2, Dot_Delimiter, Exp_Delimiter);
          declare
@@ -1152,13 +1330,7 @@ package body Rules.Style is
          Top_Expr  : Asis.Expression;
          Enclosing : Asis.Element;
          Place     : Place_Names;
-      begin
-
-         -- Find immediately enclosing expression, but get rid of spurious parentheses
-         Enclosing := Enclosing_Element (Expression);
-         while Expression_Kind (Enclosing) = A_Parenthesized_Expression loop
-            Enclosing := Enclosing_Element (Enclosing);
-         end loop;
+      begin  -- Process_Exposed_Literal
 
          -- Search the place where the expression is used
          E := Expression;
@@ -1216,14 +1388,24 @@ package body Rules.Style is
                if Permitted_Places (Lit_Integer) (Place) then
                   -- Always allowed
                   return;
-               elsif Permitted_Places (Lit_Integer) (Pl_Index)
+               end if;
+
+               -- Find immediately enclosing expression, but get rid of spurious parentheses
+               Enclosing := Enclosing_Element (Expression);
+               while Expression_Kind (Enclosing) = A_Parenthesized_Expression loop
+                  Enclosing := Enclosing_Element (Enclosing);
+               end loop;
+
+               if Permitted_Places (Lit_Integer) (Pl_Index)
                  and then Expression_Kind (Enclosing) = An_Indexed_Component
                then
                   return;
-               elsif Permitted_Places (Lit_Integer) (Pl_Exponent)
+               end if;
+
+               if Permitted_Places (Lit_Integer) (Pl_Exponent)
                  and then Association_Kind (Enclosing) = A_Parameter_Association
                  and then Operator_Kind (Called_Simple_Name (Enclosing_Element (Enclosing))) = An_Exponentiate_Operator
-                 and then Is_Equal (Enclosing, Actual_Parameters (Enclosing_Element (Enclosing))(2))
+                 and then Is_Equal (Enclosing, Actual_Parameters (Enclosing_Element (Enclosing)) (2))
                then
                   return;
                end if;
@@ -1238,14 +1420,14 @@ package body Rules.Style is
                         return;
                      end if;
                   end loop;
-
-                  Report (Rule_Id,
-                          Corresponding_Context (St_Exposed_Literal, Image (Lit_Integer)),
-                          Get_Location (Expression),
-                          "integer literal "
-                          & Trim_All (Element_Image (Expression))
-                          & " not in allowed construct");
                end;
+
+               Report (Rule_Id,
+                       Corresponding_Context (St_Exposed_Literal, Image (Lit_Integer)),
+                       Get_Location (Expression),
+                       "integer literal "
+                       & Trim_All (Element_Image (Expression))
+                       & " not in allowed construct");
 
             when A_Real_Literal =>
                if Permitted_Places (Lit_Real) (Place) then
@@ -1278,12 +1460,18 @@ package body Rules.Style is
                if Permitted_Places (Lit_Character) (Place) then
                   -- Always allowed
                   return;
-               elsif Permitted_Places (Lit_Character) (Pl_Index)
+               end if;
+
+               -- Find immediately enclosing expression, but get rid of spurious parentheses
+               Enclosing := Enclosing_Element (Expression);
+               while Expression_Kind (Enclosing) = A_Parenthesized_Expression loop
+                     Enclosing := Enclosing_Element (Enclosing);
+               end loop;
+               if Permitted_Places (Lit_Character) (Pl_Index)
                  and then Expression_Kind (Enclosing) = An_Indexed_Component
                then
                   return;
                end if;
-
                Report (Rule_Id,
                        Corresponding_Context (St_Exposed_Literal, Image (Lit_Character)),
                        Get_Location (Expression),
@@ -1324,7 +1512,7 @@ package body Rules.Style is
       end Process_Exposed_Literal;
 
       use Asis, Asis.Elements;
-   begin
+   begin  -- Process_Literal
       if not (Rule_Used (St_Numeric_Literal) or Rule_Used (St_Exposed_Literal)) then
          return;
       end if;
@@ -1339,7 +1527,6 @@ package body Rules.Style is
       if Rule_Used (St_Exposed_Literal) then
          Process_Exposed_Literal;
       end if;
-
    end Process_Literal;
 
    ----------------------
@@ -1495,7 +1682,7 @@ package body Rules.Style is
       if Is_Compilation_Unit (Element)
         and then A4G_Bugs.Unit_Class (Enclosing_Compilation_Unit (Element)) = A_Private_Declaration
       then
-         Loc := Get_Previous_Word_Location (Element);
+         Loc := Get_Previous_Word_Location (Element, "PRIVATE");
       else
          Loc := Get_Location (Element);
       end if;
@@ -1567,7 +1754,7 @@ package body Rules.Style is
 
    procedure Process_Attribute (Attribute : in Asis.Expression) is
       Identifier : Asis.Expression;
-   begin
+  begin
       if not Rule_Used (St_Casing_Attribute) then
          return;
       end if;
@@ -1606,7 +1793,7 @@ package body Rules.Style is
       Rules.Style.Keyword.Process_Line (Line, Loc, Casing_Policy (St_Casing_Keyword));
    end Process_Line;
 
-begin
+begin  -- Rules.Style
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic_Textual,
                                      Help_CB        => Help'Access,

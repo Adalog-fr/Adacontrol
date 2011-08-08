@@ -85,4 +85,34 @@ package body Framework.Language.Shared_Keys is
       end if;
    end Get_Places_Set_Modifiers;
 
+   ---------------------------
+   -- Get_Bounds_Parameters --
+   ---------------------------
+
+   function Get_Bounds_Parameters (Rule_Id : Wide_String) return Bounds_Values is
+      use Thick_Queries, Min_Max_Utilities;
+
+      Min_Given : Boolean := False;
+      Max_Given : Boolean := False;
+      Result    : Bounds_Values := (Min => 0, Max => Biggest_Natural'Last);
+   begin
+      while Parameter_Exists loop
+         case Get_Modifier (Required => True) is
+            when Min =>
+               if Min_Given then
+                  Parameter_Error (Rule_Id, "Min value given more than once");
+               end if;
+               Result.Min := Get_Integer_Parameter (Min => 0);
+               Min_Given  := True;
+            when Max =>
+               if Max_Given then
+                  Parameter_Error (Rule_Id, "Max value given more than once");
+               end if;
+               Result.Max := Get_Integer_Parameter (Min => 0);
+               Max_Given  := True;
+         end case;
+      end loop;
+      return Result;
+   end Get_Bounds_Parameters;
+
 end Framework.Language.Shared_Keys;

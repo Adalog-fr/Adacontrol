@@ -265,7 +265,7 @@ package body Rules.Parameter_Aliasing is
       end;
    end Process_Call;
 
-begin
+begin  -- Rules.Parameter_Aliasing
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

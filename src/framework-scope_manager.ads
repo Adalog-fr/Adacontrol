@@ -2,7 +2,7 @@
 --  Framework.Scope_Manager - Package specification                 --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -76,7 +76,8 @@ package Framework.Scope_Manager is
 
 
    -----------------------------------------------------------------------------------
-   -- Scoped_Store
+   -- Scoped_Store                                                                  --
+   -- Management of user data associated to scopes                                  --
    -----------------------------------------------------------------------------------
 
    type Iterator_Mode is (All_Scopes, Unit_Scopes, Current_Scope_Only);
@@ -88,6 +89,7 @@ package Framework.Scope_Manager is
    generic
       type Data (<>) is private;
       with function Equivalent_Keys (L, R : Data) return Boolean is "=";
+      with procedure Clear (Item : in out Data) is <>;
    package Scoped_Store is
       -- This package manages user data that are to be associated to a scope.
       -- It is managed as a stack. Data associated to a scope are automatically
@@ -97,9 +99,10 @@ package Framework.Scope_Manager is
       -- and restored at the beginning of the corresponding body. It is deleted at the
       -- end of the body, unless it is a compilation unit.
       --
-      -- Since this package automatically deallocates stack elements, if Data contains
-      -- dynamically allocated storage, it must be controlled, or memory leaks will
-      -- result
+      -- The Clear formal procedure is called whenever this package automatically
+      -- deallocates stack elements; if Data contains dynamically allocated storage,
+      -- it must provide a non-null Clear procedure to free this storage, or memory
+      -- leaks will result
       --
       -- The package is deactivated after each run, in order to avoid managing scopes for
       -- rules that are not active.
@@ -109,22 +112,39 @@ package Framework.Scope_Manager is
 
       procedure Push (Info : in Data);
       -- Adds Info on top of stack, associated to current scope
+
       procedure Push_Enclosing (Info : in Data);
       -- Adds Info associated to the enclosing scope of the current scope
       -- If Current_Scope is a library unit, the info is associated to the scope level 0,
       -- and the corresponding Current_Data_Scope returns Nil_Element
 
-      -- Iterator
-      -- Data are returned by Get_Current_Data from top to bottom but not removed
-      -- from the stack.
+      -- It is possible to add new data with Push while iterating; since they are added
+      -- on top (i.e. above the current position of the iterator), it does not
+      -- change the behaviour of the iterator.
+      -- The same does not hold when adding data with Push_Enclosing, which should therefore
+      -- not be used while iterating.
+
       --
+      -- Iterator
+      --
+      function  Data_Available     return Boolean;
+      function  Current_Data       return Data;
+      function  Current_Data_Level return Scope_Range;
+      function  Current_Data_Scope return Asis.Element;
+      function  Current_Origin     return Declaration_Origin;
+      procedure Update_Current (Info : in Data);
+      -- Data are returned by Current_Data from top to bottom but not removed
+      -- from the stack.
+
+      procedure Reset (Mode : Iterator_Mode);
       -- In the first form of Reset, the iterator is set to the top of the statck.
       -- If the mode of Reset is Current_Scope_Only, only data associated to the current scope
       -- are returned by the iterator.
       -- If the mode of Reset is Unit_Scopes, only data associated to the scope of the current
       -- compilation unit and above are returned.
       -- If the mode is All_Scopes, all data are returned.
-      --
+
+      procedure Reset (Info : Data; Mode : Iterator_Mode);
       -- In the second form of Reset, the iterator is initialized on the data with
       -- Equivalent_Keys to the provided Info (Data_Available returns False if not found).
       -- If the mode of Reset is Current_Scope_Only, only data associated to the scope
@@ -132,34 +152,16 @@ package Framework.Scope_Manager is
       -- If the mode of Reset is Unit_Scopes, only data associated to the scope
       -- of the compilation unit of Info and above are returned by the iterator.
       -- If the mode is All_Scopes, all data from Info to the bottom of the stack are returned.
-      --
+
+      procedure Continue (Mode : Iterator_Mode);
       -- Continue is like the second form of Reset, starting from the current position.
-      --
+
+      procedure Next;
       -- Next moves to the next element. If the iterator is exhausted (i.e.
       -- Data_Available is False), it raises Constraint_Error.
-      --
-      -- After a call to Delete_Current, the iterator moves to the next position.
-      --
-      -- Is_Current_Transmitted_From_Spec is true iff the current scope is a body
-      -- and the data originated from the corresponding specification.
-      --
-      -- It is possible to add new data with Push while iterating; since they are added
-      -- on top (i.e. above the current position of the iterator), it does not
-      -- change the behaviour of the iterator.
-      -- The same does not hold when adding data with Push_Enclosing, which should therefore
-      -- not be used while iterating.
 
-      procedure Reset (Mode : Iterator_Mode);
-      procedure Reset (Info : Data; Mode : Iterator_Mode);
-      procedure Continue (Mode : Iterator_Mode);
-      procedure Next;
-      function  Data_Available     return Boolean;
-      function  Current_Data       return Data;
-      function  Current_Data_Level return Scope_Range;
-      function  Current_Data_Scope return Asis.Element;
-      function  Current_Origin     return Declaration_Origin;
-      procedure Update_Current (Info : in Data);
       procedure Delete_Current;
+      -- After a call to Delete_Current, the iterator moves to the next position.
 
    private
       -- The following declarations are here because they are not allowed

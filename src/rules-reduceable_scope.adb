@@ -83,8 +83,12 @@ package body Rules.Reduceable_Scope is
    -- does *not* appear...
    --
    -- To check declarations that can be moved from package spec to body:
-   -- We just use a symbol table, where we keep elements and where they were used from
+   -- We just use a symbol table, where we keep elements and where they were used from.
    -- Reports are issued when leaving the corresponding visibility scope.
+   --
+   -- Note on memory management of paths:
+   -- Paths that are no more needed are freed by the scope manager from the associated Clear
+   -- procedures; they should not be freed from any other place.
 
    type Declaration_Check_Kinds is (Check_Not_Checkable,
                                     Check_All,
@@ -113,6 +117,7 @@ package body Rules.Reduceable_Scope is
          Path  : Scope_List_Access;
       end record;
    function Equivalent_Keys (L, R : Declaration_Info) return Boolean;
+   procedure Clear (Item : in out Declaration_Info);
    package Local_Declarations is new Scoped_Store (Declaration_Info, Equivalent_Keys);
 
    -- Management of declaration information, package visible items
@@ -132,6 +137,7 @@ package body Rules.Reduceable_Scope is
          Image : Unbounded_Wide_String;
       end record;
    function Equivalent_Keys (L, R : Use_Info) return Boolean;
+   procedure Clear (Item : in out Use_Info);
    package Use_Clauses is new Scoped_Store (Use_Info, Equivalent_Keys);
 
 
@@ -218,6 +224,24 @@ package body Rules.Reduceable_Scope is
          Use_Clauses.Activate;
       end if;
    end Prepare;
+
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear (Item : in out Declaration_Info) is
+   begin
+      Free (Item.Path);
+   end Clear;
+
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear (Item : in out Use_Info) is
+   begin
+      Free (Item.Path);
+   end Clear;
 
    ---------------------
    -- Equivalent_Keys --
@@ -469,10 +493,10 @@ package body Rules.Reduceable_Scope is
             null;
 
          when A_Package_Declaration =>
-            if In_Private_Part then
-               -- not outside visible
-               return;
-            end if;
+--              if In_Private_Part then
+--                 -- not outside visible
+--                 return;
+--              end if;
             if not Package_Visibles.Is_Present (Def) then
                Package_Visibles.Store (Def, (Not_Used, Kind));
             end if;
@@ -521,26 +545,31 @@ package body Rules.Reduceable_Scope is
    procedure Process_Identifier (Name : in Asis.Name) is
       use Asis, Asis.Elements;
 
-     procedure Merge (Declaration_Path : in out Scope_List_Access;
+      type Merge_Action is (Keep, Update, Delete);
+      procedure Merge (Declaration_Path : in out Scope_List_Access;
                        Usage_Path       : in     Scope_List;
-                       Blocks_Forbidden : in     Boolean)
+                       Blocks_Forbidden : in     Boolean;
+                       Action           : out    Merge_Action)
       is
+         -- Assert: Declaration_Path'First = Usage_Path'First, since they both correspond
+         --         to the level (+1) where the same element is declared.
+         -- Merge does /not/ free paths. This will be done by a call to Clear for the
+         -- node of the scoped_store that contains the path.
          Top : Scope_Range := Usage_Path'Last;
       begin
          if Usage_Path'Length = 0 then
             -- Reference from same level as declaration
             -- This declaration cannot be moved. Remove it.
-            Free (Declaration_Path);
+            Action := Delete;
             return;
          end if;
 
          -- Determine the common part of both paths
          if Declaration_Path /= null then
             -- Declaration_Path is null on the first reference
-
             if not Is_Equal (Usage_Path (Usage_Path'First), Declaration_Path (Declaration_Path'First)) then
                -- Nothing in common, declaration cannot be moved. Remove it.
-               Free (Declaration_Path);
+               Action := Delete;
                return;
             end if;
 
@@ -548,6 +577,7 @@ package body Rules.Reduceable_Scope is
                if I > Declaration_Path'Last then
                   -- Declaration_Path is shorter and matches the beginning of Current_Path
                   -- => keep it
+                  Action := Keep;
                   return;
                end if;
 
@@ -568,14 +598,14 @@ package body Rules.Reduceable_Scope is
          loop
             if Top = Usage_Path'First then
                -- Nothing left => remove declaration
-               Free (Declaration_Path);
+               Action := Delete;
                return;
             end if;
             Top := Top - 1;
          end loop;
 
-         Free (Declaration_Path);
          Declaration_Path := new Scope_List'(Usage_Path (Usage_Path'First .. Top));
+         Action           := Update;
       end Merge;
 
       Enclosing_Decl : Asis.Declaration;
@@ -632,6 +662,7 @@ package body Rules.Reduceable_Scope is
          Info       : Declaration_Info;
          Enclosing  : Asis.Expression;
          Good_Depth : Scope_Range;
+         Action     : Merge_Action;
       begin
          if Is_Nil (Name_Def) then
             -- Some predefined stuff
@@ -682,7 +713,6 @@ package body Rules.Reduceable_Scope is
            and then A4G_Bugs.Attribute_Kind (Enclosing) in An_Access_Attribute .. An_Address_Attribute
          then
             -- Name used in 'Access or 'Address, too dangerous to move
-            Free (Info.Path);
             Local_Declarations.Delete_Current;
             return;
          end if;
@@ -697,12 +727,16 @@ package body Rules.Reduceable_Scope is
 
          Merge (Info.Path,
                 Active_Scopes (Local_Declarations.Current_Data_Level + 1 .. Good_Depth),
-                Ctl_No_Blocks (Info.Kind));
-         if Info.Path = null then
-            Local_Declarations.Delete_Current;
-         else
-            Local_Declarations.Update_Current (Info);
-         end if;
+                Blocks_Forbidden => Ctl_No_Blocks (Info.Kind),
+                Action           => Action);
+         case Action is
+            when Delete =>
+               Local_Declarations.Delete_Current;
+            when Update =>
+               Local_Declarations.Update_Current (Info);
+            when Keep =>
+               null;
+         end case;
       end Check_Movable_Declaration;
 
       procedure Check_Movable_Use_Clause is
@@ -712,6 +746,7 @@ package body Rules.Reduceable_Scope is
            := To_Unbounded_Wide_String (Enclosing_Package_Name (Rule_Id, Name));
          Info       : Use_Info;
          Good_Depth : Scope_Range;
+         Action     : Merge_Action;
       begin
          if Enclosing_Name = "" then
             -- Not declared immediately in a package specification
@@ -732,13 +767,17 @@ package body Rules.Reduceable_Scope is
             if Info.Image = Enclosing_Name then
                Merge (Info.Path,
                       Active_Scopes (Use_Clauses.Current_Data_Level + 1 .. Good_Depth),
-                      Ctl_No_Blocks (Check_Use));
-               if Info.Path = null then
-                  Use_Clauses.Delete_Current;
-               else
-                  Use_Clauses.Update_Current (Info);
-                  Use_Clauses.Next;
-               end if;
+                      Blocks_Forbidden => Ctl_No_Blocks (Check_Use),
+                      Action           => Action);
+               case Action is
+                  when Delete =>
+                     Use_Clauses.Delete_Current;
+                  when Update =>
+                     Use_Clauses.Update_Current (Info);
+                     Use_Clauses.Next;
+                  when Keep =>
+                     Use_Clauses.Next;
+               end case;
             else
                Use_Clauses.Next;
             end if;
@@ -813,6 +852,9 @@ package body Rules.Reduceable_Scope is
       use Framework.Reports, Thick_Queries;
       use Asis, Asis.Declarations;
 
+      D_Info : Declaration_Info;
+      U_Info : Use_Info;
+
       function Scope_Image (Elem : Asis.Element) return Wide_String is
          use Asis.Elements;
       begin
@@ -820,9 +862,9 @@ package body Rules.Reduceable_Scope is
             when A_Procedure_Declaration | A_Procedure_Body_Declaration =>
                return "procedure " & Defining_Name_Image (Names (Elem)(1));
             when A_Function_Declaration | A_Function_Body_Declaration =>
-               return "procedure " & Defining_Name_Image (Names (Elem)(1));
+               return "function " & Defining_Name_Image (Names (Elem)(1));
             when A_Package_Declaration | A_Package_Body_Declaration =>
-               return "procedure " & Defining_Name_Image (Names (Elem)(1));
+               return "package " & Defining_Name_Image (Names (Elem)(1));
             when others =>
                -- Including Not_A_Declaration
                null;
@@ -838,7 +880,7 @@ package body Rules.Reduceable_Scope is
          return "scope";
       end Scope_Image;
 
-   begin
+   begin -- Process_Scope_Exit
       if Rule_Used = No_Check then
          return;
       end if;
@@ -848,46 +890,40 @@ package body Rules.Reduceable_Scope is
 
       Local_Declarations.Reset (Current_Scope_Only);
       while Local_Declarations.Data_Available loop
-         declare
-            Info : constant Declaration_Info := Local_Declarations.Current_Data;
-         begin
-            if Info.Path = null then
-               Report (Rule_Id,
-                       Ctl_Contexts (Info.Kind),
-                       Get_Location (Info.Elem),
-                       Defining_Name_Image (Info.Elem) & " is not used");
-            else
-               Report (Rule_Id,
-                       Ctl_Contexts (Info.Kind),
-                       Get_Location (Info.Elem),
-                       "declaration of " & Defining_Name_Image (Info.Elem)
-                       & " can be moved inside " & Scope_Image (Info.Path (Info.Path'Last))
-                       & " at " & Image (Get_Location (Info.Path (Info.Path'Last))));
-            end if;
-         end;
+         D_Info := Local_Declarations.Current_Data;
+         if D_Info.Path = null then
+            Report (Rule_Id,
+                    Ctl_Contexts (D_Info.Kind),
+                    Get_Location (D_Info.Elem),
+                    Defining_Name_Image (D_Info.Elem) & " is not used");
+         else
+            Report (Rule_Id,
+                    Ctl_Contexts (D_Info.Kind),
+                    Get_Location (D_Info.Elem),
+                    "declaration of " & Defining_Name_Image (D_Info.Elem)
+                    & " can be moved inside " & Scope_Image (D_Info.Path (D_Info.Path'Last))
+                    & " at " & Image (Get_Location (D_Info.Path (D_Info.Path'Last))));
+         end if;
 
          Local_Declarations.Next;
       end loop;
 
       Use_Clauses.Reset (Current_Scope_Only);
       while Use_Clauses.Data_Available loop
-         declare
-            Info : constant Use_Info := Use_Clauses.Current_Data;
-         begin
-            if Info.Path = null then
-               Report (Rule_Id,
-                       Ctl_Contexts (Check_Use),
-                       Get_Location (Info.Elem),
-                       "Use clause for " & Extended_Name_Image (Info.Elem) & " is not necessary");
-            else
-               Report (Rule_Id,
-                       Ctl_Contexts (Check_Use),
-                       Get_Location (Info.Elem),
-                       "use clause for " & Extended_Name_Image (Info.Elem)
-                       & " can be moved inside " & Scope_Image (Info.Path (Info.Path'Last))
-                       & " at " & Image (Get_Location (Info.Path (Info.Path'Last))));
-            end if;
-         end;
+         U_Info := Use_Clauses.Current_Data;
+         if U_Info.Path = null then
+            Report (Rule_Id,
+                    Ctl_Contexts (Check_Use),
+                    Get_Location (U_Info.Elem),
+                    "Use clause for " & Extended_Name_Image (U_Info.Elem) & " is not necessary");
+         else
+            Report (Rule_Id,
+                    Ctl_Contexts (Check_Use),
+                    Get_Location (U_Info.Elem),
+                    "use clause for " & Extended_Name_Image (U_Info.Elem)
+                    & " can be moved inside " & Scope_Image (U_Info.Path (U_Info.Path'Last))
+                    & " at " & Image (Get_Location (U_Info.Path (U_Info.Path'Last))));
+         end if;
 
          Use_Clauses.Next;
       end loop;
@@ -910,7 +946,7 @@ package body Rules.Reduceable_Scope is
       Package_Visibles.Clear;
    end Finalize;
 
-begin
+begin  -- Rules.Reduceable_Scope
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

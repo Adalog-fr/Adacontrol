@@ -252,7 +252,7 @@ package body Rules.Array_Declarations is
          end loop;
       end Process_Max_Length;
 
-   begin
+   begin  -- Process_Array_Definition
       if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
@@ -269,7 +269,7 @@ package body Rules.Array_Declarations is
        end if;
    end Process_Array_Definition;
 
-begin
+begin  -- Rules.Array_Declarations
    Rules_Manager.Register (Rule_Id,
                            Rules_Manager.Semantic,
                            Help_CB        => Help'Access,

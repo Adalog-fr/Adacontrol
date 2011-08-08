@@ -226,13 +226,16 @@ package body Framework.Language is
          Next_Token (No_Delay => True);
          -- No_Delay is true to get the error here if there is a parse error in the first token
       exception
-         when Occur : others =>
+         when Occur : Utilities.User_Error =>
             Process_Error (Occur);
       end;
 
-      while Current_Token.Kind /= Eof loop
+      loop
          begin
             case Current_Token.Kind is
+               when Eof =>
+                  exit;
+
                when Name =>
                   case Current_Token.Key is
                      when Key_Check =>
@@ -356,6 +359,9 @@ package body Framework.Language is
 
                      when Key_Set =>
                         Next_Token;
+                        if Current_Token.Kind /= Name then
+                           Syntax_Error ("Flag name expected", Current_Token.Position);
+                        end if;
                         declare
                            Option : constant Wide_String
                              := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
@@ -982,7 +988,8 @@ package body Framework.Language is
                end if;
             end if;
          end Formated_Name;
-      begin
+
+      begin  -- Profile_List
          if Current_Token.Kind = Name and then Current_Token.Key = Key_Access then
             With_Access := True;
             Next_Token;
@@ -1267,7 +1274,7 @@ package body Framework.Language is
          end if;
       end Get_Modifier;
 
-      function Get_Modifier_Set return Modifier_Set is
+      function Get_Modifier_Set  (No_Parameter : Boolean := False) return Modifier_Set is
          Result   : Modifier_Set := Empty_Set;
          Modifier : Modifiers;
          Present  : Boolean;
@@ -1281,6 +1288,14 @@ package body Framework.Language is
             exit when not Present;
             Result (Modifier) := True;
          end loop;
+
+         if No_Parameter then
+            if Result = Empty_Set then
+               Syntax_Error ("Keyword expected, use option -h <rule name> for a list of allowable keywords",
+                             Current_Token.Position);
+            end if;
+            Next_Parameter;
+         end if;
 
          return Result;
       end Get_Modifier_Set;

@@ -232,7 +232,7 @@ package body Rules.Duplicate_Initialization_Calls is
          return All_In_Parameters_Equal;
       end Are_Equivalent_Calls;
 
-   begin
+   begin  -- Process_Procedure_Call
       if not Rule_Used then
          return;
       end if;
@@ -278,7 +278,7 @@ package body Rules.Duplicate_Initialization_Calls is
       end;
    end Process_Procedure_Call;
 
-begin
+begin  -- Rules.Duplicate_Initialization_Calls
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

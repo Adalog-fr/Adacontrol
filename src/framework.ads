@@ -2,7 +2,7 @@
 --  Framework - Package specification                               --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -41,34 +41,13 @@ with
 --  Adalog
 with
   Binary_Map;
-
 pragma Elaborate_All (Binary_Map);
 
+-- Adactl
+with
+  Adactl_Constants;
 package Framework is
-
-   Version : constant Wide_String := "1.8r8";
-
-   -------------------------------------------------------------------
-   -- General dimensioning constants                                --
-   -------------------------------------------------------------------
-
-   -- These constants define limits about what "reasonable" programs may contain.
-   -- They can be used by rules to limit some capabilities.
-   -- These limits are arbitrary and can be changed at will, no other change is needed.
-
-   Max_Controls_For_Rule : constant := 100;
-   -- For rules that need an upper bound to the number of times they can
-   -- be specified in a control
-
-   Max_Parameters : constant := 30;
-   -- Maximum number of parameters declared by a subprogram or an entry
-
-   Max_Loop_Nesting : constant := 20;
-   -- Maximum depth of nested loops
-
-   Max_Scopes : constant := 50;
-   -- Maximum depth of scopes nesting.
-
+   use Adactl_Constants;
 
    -------------------------------------------------------------------
    -- The ASIS context                                              --
@@ -101,19 +80,52 @@ package Framework is
    type Location is private;
    Null_Location : constant Location;
 
+   type Search_Start is (From_Head, From_Tail);
+
    function Create_Location (File         : in Wide_String;
                              First_Line   : in Natural;
                              First_Column : in Natural) return Location;
    function Get_Location (E : in Asis.Element) return Location;
    -- Returns location of an element
 
-   function Get_Previous_Word_Location (E : in Asis.Element) return Location;
+   function Get_Previous_Word_Location (E        : in Asis.Element;
+                                        Matching : Wide_String := "";
+                                        Starting : Search_Start := From_Head)
+                                        return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
-   -- precedes E.
+   -- precedes the beginning of E (if Starting = From_Head) or the end of E (if Starting = From_Tail).
+   -- If Matching is specified, returns the location of the first word identical to Matching
+   -- Matching must be given in upper-case
 
-   function Get_Next_Word_Location (E : in Asis.Element) return Location;
+   function Get_Previous_Word_Location (L        : in Asis.Element_List;
+                                        Matching : Wide_String := "";
+                                        Starting : Search_Start := From_Head)
+                                        return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
-   -- follows E.
+   -- precedes the beginning of the first element of E (if Starting = From_Head)
+   -- or the end of the last element of E (if Starting = From_Tail).
+   -- If Matching is specified, returns the location of the first word identical to Matching
+   -- Matching must be given in upper-case
+
+   function Get_Next_Word_Location (E        : in Asis.Element;
+                                    Matching : Wide_String := "";
+                                    Starting : Search_Start := From_Tail)
+                                    return Location;
+   -- Returns the location of the first "word" (identifier of keyword) that immediately
+   -- follows the beginning of E (if Starting = From_Head) or the end of E (if Starting = From_Tail).
+   -- If Matching is specified, returns the location of the first word identical to Matching
+   -- Matching must be given in upper-case
+
+   function Get_Next_Word_Location (L        : in Asis.Element_List;
+                                    Matching : Wide_String := "";
+                                    Starting : Search_Start := From_Tail)
+                                    return Location;
+   -- Returns the location of the first "word" (identifier of keyword) that immediately
+   -- follows the beginning of the first element of E (if Starting = From_Head)
+   -- or the end of the last element of E (if Starting = From_Tail).
+   -- If Matching is specified, returns the location of the first word identical to Matching
+   -- Matching must be given in upper-case
+   -- Precondition: L is not empty
 
    function Get_File_Name (L : in Location) return Wide_String;
    -- Returns location file name
@@ -125,10 +137,14 @@ package Framework is
    -- Returns location first column
 
    Default_Short_Name : Boolean := False;
-   function Image (L : in Location; Short_Name : in Boolean := Default_Short_Name) return Wide_String;
+   function Image (L          : in Location;
+                   Short_Name : in Boolean := Default_Short_Name;
+                   Separator  : Wide_Character := ':')
+                   return Wide_String;
    -- Returns image of a location
    -- i.e. file:1:1
    -- If Short_Name = True, strip File name from any path
+   -- Separator: character used to separate file name, lines and cols
 
    function Value (S : in Wide_String) return Location;
    -- Returns location value of a string
@@ -149,9 +165,12 @@ package Framework is
 
    function Image   (Entity : in Entity_Specification) return Wide_String;
    function Value   (Name   : in Wide_String)          return Entity_Specification;
-   function Matches (Name   : in Asis.Element; Entity : in Entity_Specification) return Boolean;
+   function Matches (Name     : in Asis.Element;
+                     Entity   : in Entity_Specification;
+                     Extended : in Boolean := False) return Boolean;
    -- Appropriate element kinds for Matches:
    --   like Matching_Context, see below
+   -- If Extended = True, use Extended_Matching_Context instead of Matching_Context
 
 
    -------------------------------------------------------------------

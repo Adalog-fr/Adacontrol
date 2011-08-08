@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.8r8
+@settitle AdaControl User Guide V1.9r4
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -480,21 +480,22 @@ tree files manually (@pxref{Generating tree files manually}) with the
 @node Input units, Commands, Command line parameters and options, Command line parameters and options
 @subsection Input units
 Units to be processed are given as parameters on the command
-line. Note that they are Ada compilation unit names, not file names:
-case is not significant, and there should be no extension! Child units
-are allowed following normal Ada naming rules: @code{Parent.Child},
-but be aware that specifying a child unit will automatically include
-its parent unit in the analysis. Subunits are processed during
-the analysis of the including unit; there is therefore no need to
-specify subunits explicitely. If you do specify a subunit explicitly,
-it will result in the whole enclosing unit being analyzed.
+line. Note that they are Ada @emph{compilation unit} names, not
+@emph{file names}: case is not significant, and there should be no
+extension! Child units are allowed following normal Ada naming rules:
+@code{Parent.Child}, but be aware that specifying a child unit will
+automatically include its parent unit in the analysis. Subunits are
+processed during the analysis of the including unit; there is
+therefore no need to specify subunits explicitely. If you do specify a
+subunit explicitly, it will result in the whole enclosing unit being
+analyzed.
 
 However, as a convenience to the user, units can be specified as file
 names, provided they follow the default GNAT naming convention. More
 precisely, if a parameter ends in ``.ads'' or ``.adb'', the unit name
 is extracted from it (and all ``-'' in the name are substituted with
 ``.''). File names can include a path; in this case, the path is
-automatically added to the list of directories searched (``-I''
+automatically added to the list of directories searched (``-I'' ASIS
 option). The file notation is convenient to process all units in a
 directory, as in the following example:
 @example
@@ -1165,9 +1166,10 @@ recompilation for the next build of the project.
 select ``Pop-up'', a summary of the rule's purpose and syntax is
 displayed in a pop-up. If you select ``User Guide'', the user guide
 opens in a browser at the page that explains the rule. (Caveat: due to
-a problem in GPS under Windows, it may not work at all, or the browser
-will not find the right anchor; hopefully, this will be fixed in an
-upcomming release of GPS. No such problem under Linux).
+a problem in GPS under Windows, the ``User Guide'' option may not work
+at all, or the browser will not find the right anchor; hopefully, this
+will be fixed in an upcomming release of GPS. No such problem under
+Linux).
 @item
 ``Use separate categories''. If this box is checked, there will be one
 category (i.e. tree in the locations window) for each rule type or
@@ -1213,12 +1215,14 @@ files, and provide appropriate colorization.
 The AdaControl User Manual (this manual) and the AdaControl
 Programmer Manual are available from the "Help/AdaControl" menu of GPS.
 
-In addition, there is a "Help on rule" entry in this menu. This entry
-displays the list of all rules; if you click on one of them, you get
-help for the particular rule. Depending on the setting of the ``Help
-on rule'' preference (see above), it opens a pop-up that displays the
-rule(s) purpose and the syntax of its parameters, or opens the
-user guide at the appropriate location.
+The "Help on rule" entry displays the list of all rules; if you click
+on one of them, you get help for the particular rule. Depending on the
+setting of the ``Help on rule'' preference (see above), it opens a
+pop-up that displays the rule(s) purpose and the syntax of its
+parameters, or opens the user guide at the appropriate location.
+
+The ``About'' entry displays a popup with AdaControl's version number
+and license condition.
 
 @node Caveat,  , AdaControl help, Running AdaControl from GPS
 @subsection Caveat
@@ -1638,7 +1642,8 @@ Here are some examples of commands:
 @example
 check unnecessary_use_clause;
 All_Imports: search pragmas (Import);
-"Why do you need that?": check entities (Unchecked_Conversion, all 'Address);
+"Why do you need that?": check entities (Unchecked_Conversion,
+                                         all 'Address);
 @end example
 
 @menu
@@ -1701,13 +1706,13 @@ unless there is none, in which case it is replaced with the rule name.
 If the format is ``CSV'' or ``CSV_Short'', items are separated by ','
 and surrounded by double quotes. This is the ``Comma Separated
 Values'' format, which can be read by any known spreadsheet program,
-except Excel(tm), which uses the semicolon and not the comma to
-separate fields. Therefore, the formats ``CSVX'' and ``CSVX_Short'' do
-the same thing, but using semi-colons (';') instead of commas. Both
-the label (replaced by an empty column if there is none) and the rule
-name appear. Note that when an output file is created in one of the
-``CSV'' formats, a title line is issued as the first line, following
-normal CSV convention.
+except Excel(tm) by default, which uses the semicolon and not the
+comma to separate fields. Therefore, the formats ``CSVX'' and
+``CSVX_Short'' do the same thing, but using semi-colons (';') instead
+of commas. Both the label (replaced by an empty column if there is
+none) and the rule name appear. Note that when an output file is
+created in one of the ``CSV'' formats, a title line is issued as the
+first line, following normal CSV convention.
 
 If the format is ``Source'' or ``Source_Short'', the offending source
 line is output, and the message is output behind it, with a ``!''
@@ -2137,6 +2142,7 @@ is a dispatching call.
 * Characters::                  
 * Declarations::                
 * Default_Parameter::           
+* Dependencies::                
 * Directly_Accessed_Globals::   
 * Duplicate_Initialization_Calls::  
 * Entities::                    
@@ -2163,7 +2169,6 @@ is a dispatching call.
 * Not_Elaboration_Calls::       
 * Not_Selected_Name::           
 * Object_Declarations::         
-* Other_Dependencies::          
 * Parameter_Aliasing::          
 * Parameter_Declarations::      
 * Potentially_Blocking_Operations::  
@@ -2552,25 +2557,31 @@ decl_spec   ::= @{<location_kw>@} <declaration_kw>
 location_kw ::= all | block   | library | local     | nested | 
                 own | private | public  | task_body
 declaration_kw ::=
+   any_declaration                 |
    abstract_function               | abstract_procedure            |
    abstract_type                   | access_all_type               |
    access_constant_type            | access_protected_type         |
    access_subprogram_type          | access_task_type              |
    access_type                     | aliased                       |
-   array                           | array_type                    |
-   binary_modular_type             | character_literal             |
-   child_unit                      | constant                      |
-   constrained_array_type          | constrained_array_variable    |
-   controlled_type                 | decimal_fixed_type            | 
-   defaulted_discriminant          | defaulted_generic_parameter   | 
-   defaulted_parameter             | deferred_constant             |
-   derived_type                    | discrimin  ant                | 
-   enumeration_type                | entry                         | 
-   exception                       | extension                     | 
-   fixed_type                      | float_type                    | 
-   formal_function                 | formal_package                | 
-   formal_procedure                | formal_type                   | 
-   function                        | function_instantiation        | 
+   anonymous_subtype_allocator     | anonymous_subtype_case        |
+   anonymous_subtype_declaration   | anonymous_subtype_for         |
+   anonymous_subtype_indexing      | array                         | 
+   array_type                      | binary_modular_type           | 
+   character_literal               | child_unit                    | 
+   class_wide_constant             | class_wide_variable           |
+   constant                        | constrained_array_type        | 
+   constrained_array_variable      | controlled_type               | 
+   decimal_fixed_type              | defaulted_discriminant        | 
+   defaulted_generic_parameter     | defaulted_parameter           | 
+   deferred_constant               | derived_type                  | 
+   discriminant                    | empty_private_part            | 
+   empty_visible_part              | enumeration_type              | 
+   entry                           | exception                     | 
+   extension                       | fixed_type                    | 
+   float_type                      | formal_function               | 
+   formal_package                  | formal_procedure              | 
+   formal_type                     | function                      | 
+   function_call_renaming          | function_instantiation        | 
    generic                         | generic_function              | 
    generic_package                 | generic_procedure             | 
    handlers                        | in_out_generic_parameter      | 
@@ -2585,7 +2596,8 @@ declaration_kw ::=
    null_extension                  | null_ordinary_record_type     | 
    null_procedure                  | null_tagged_type              | 
    operator                        | operator_renaming             | 
-   ordinary_fixed_type             | ordinary_record_type          | 
+   ordinary_fixed_type             | ordinary_fixed_type_no_small  |
+   ordinary_fixed_type_with_small  | ordinary_record_type          | 
    out_parameter                   | package                       | 
    package_instantiation           | procedure_instantiation       | 
    package_statements              | predefined_operator           | 
@@ -2647,6 +2659,10 @@ The <declaration_kw> specifies what kind of declaration to control:
 Declaration keywords that are Ada keywords match the corresponding Ada
 declarations.
 @item
+@code{any_declaration} controls all declarations. This is of course not
+intended to forbid all declarations in a program (!), but
+@emph{counting} all declarations can be quite useful.
+@item
 @code{abstract_function} and @code{abstract_procedure} control the
 declarations of abstract functions and abstract procedures,
 respectively.
@@ -2661,6 +2677,15 @@ access to protected types, or access to task types, respectively. Similarly,
 @code{access_all_type} control generalized access to variables types (aka
 "@code{@b{access} @b{all} T}", and @code{access_constant_type} control
 generalized access to constants types (aka "@code{@b{access} @b{constant} T}").
+@item
+@code{anonymous_subtype_declaration} controls the declarations of
+anonymous subtypes and ranges that are part of some other
+declaration. Similarly, @code{anonymous_subtype_allocator},
+@code{anonymous_subtype_case}, @code{anonymous_subtype_for}, and
+@code{anonymous_subtype_indexing} control anonymous subtype
+declarations and ranges that are part of allocators, @code{@b{case}}
+statements (ranges in the @code{@b{when}} path), @code{@b{for}} loop
+statements, and indexing of slices or array aggregates, respectively.
 @item
 @code{array} controls all array definitions (array types and single
 arrays), while @code{array_type} controls only array types and
@@ -2680,6 +2705,11 @@ enumeration type.
 @item
 @code{child_unit} controls the declaration of all child units.
 @item
+@code{constant} controls all constants, while
+@code{class_wide_constant} control the declaration of constants of a
+class-wide type, and @code{deferred_constant} controls the declaration
+of deferred constants.
+@item
 @code{controlled_type} controls the declaration of controlled types,
 i.e. descendants of @code{Ada.Finalization.Controlled} or
 @code{Ada.Finalization.Limited_Controlled}. Note that this includes
@@ -2690,9 +2720,6 @@ parameters that provide a default value, while
 @code{defaulted_generic_parameter} controls generic formal objects
 that provide a default value.
 @item
-@code{deferred_constant} controls the declaration of deferred
-constants.
-@item
 @code{derived_type} controls regular derived types, but not type
 extensions (derivations of tagged types). These are controlled by
 @code{extension} and @code{private_extension}.
@@ -2701,14 +2728,26 @@ extensions (derivations of tagged types). These are controlled by
 discriminants, while @code{defaulted_discriminants} controls only
 those where defaults are provided for the discriminants.
 @item
+@code{empty_private_part} controls package specification with an empty
+private part, i.e. where the word @code{@b{private}} appears, but the
+private part contains no declaration (even if it contains pragmas).
+@item
+@code{empty_visible_part} controls package specifications that contain
+no declaration in the visible part (before the word @code{@b{private}}
+if any), even if it contains pragmas.
+@item
 @code{enumeration_type} controls the declaration of enumeration types.
 @item
 @code{exception} controls exception declarations.
 @item
 @code{fixed_type} controls all declarations of fixed point types while
 @code{ordinary_fixed_type} controls only ordinary (binary) fixed point
-types, and @code{decimal_fixed_type} controls only decimal fixed point
-types.
+types, @code{ordinary_fixed_type_no_small} controls ordinary fixed
+point type without a representation clause for @code{'SMALL},
+@code{ordinary_fixed_type_with_small} controls ordinary fixed point
+type with an explicit representation clause for @code{'SMALL}, and
+@code{decimal_fixed_type} controls only decimal fixed point types
+(those can never have a representation clause for @code{'SMALL}).
 @item
 @code{float_type} controls declarations of floating point types.
 @item
@@ -2798,8 +2837,10 @@ record types, and @code{tagged_type} controls only tagged record types.
 @code{renaming} controls all renaming declarations, while
 @code{operator_renaming} controls only those that are renamings of an
 operator, @code{not_operator_renaming} controls only those that are
-not renamings of an operator, @code{non_identical_renaming} controls
-only those where the new name and the old name are not the same, and
+@emph{not} renamings of an operator, and @code{function_call_renaming}
+controls renaming of the result of a function call.
+@code{non_identical_renaming} controls only renamings where the new
+name and the old name are not the same, and
 @code{non_identical_operator_renaming} does the same, but only for
 renamings of operators.
 @item
@@ -2818,6 +2859,8 @@ only single task declarations or task type declarations respectively
 @code{variable} controls all variable declarations, while
 @code{uninitialized_variable} controls only variable declarations that
 do not include an initialization expression.
+@code{class_wide_variable} controls the declarations of variables of a
+class-wide type.
 @item
 @code{variant_part} controls variant parts in record defintions.
 @end itemize
@@ -2860,44 +2903,51 @@ of a modular type definition, thus preventing correct operation of
 ``binary_modular_type'' and ``non_binary_modular_type'' subrules. Such
 cases are detected by the rule ``uncheckable''.  @xref{Uncheckable}.
 
-@node Default_Parameter, Directly_Accessed_Globals, Declarations, Rules reference
+@node Default_Parameter, Dependencies, Declarations, Rules reference
 @section Default_Parameter
-This rule checks usage (or non-usage) of default parameters.
+This rule checks usage (or non-usage) of defaulted parameters.
 @subsection Syntax
 @example
-<control_kind> default_parameter
-   (<entity> | all, <formal name> | all, [not] used);
+<control_kind> default_parameter (<place>, <formal>, <usage>);
+place  ::= <entity> | calls | instantiations | all
+formal ::=  <formal name> | all
+usage  ::= used | positional | not_used
 @end example
 
 @subsection Action
 The rule controls subprogram calls or generic instantiations that use
-(or conversely don't use) the default value for the indicated
-parameter. If a subprogram is called, or a generic instantiated, whose
-name matches <entity>, and it has a formal whose name is <formal
-name>, then:
+the default value for the indicated parameter, or conversely don't use
+it, either in positional notation or in any notation. If a subprogram
+is called, or a generic instantiated, whose name matches <entity>, and
+it has a formal whose name is <formal name>, then:
 @itemize @bullet
 @item
 If the string @code{used} (case irrelevant) is given as the third
 parameter, the rule reports when there is no corresponding actual
 parameter (i.e. the default value is used for the parameter).
 @item
-If the string @code{not used} (case irrelevant) is given as the third
-parameter, the rule reports when there is an explicit corresponding
-actual parameter (i.e. the default is not used for the parameter).
+If the string @code{positional} (case irrelevant) is given as the
+third parameter, the rule reports when there is an explicit
+corresponding actual parameter (i.e. the default is not used for the
+parameter), and the actual uses positional (not named) notation.
 @item
-If the string given as the third parameter is anything else, it is an
-error.
+If the string @code{not_used} (case irrelevant) is given as the third
+parameter, the rule reports when there is an explicit corresponding
+actual parameter (i.e. the default is not used for the parameter),
+independently of whether it uses positional or named notation.
 @end itemize
 
-Alternatively, the <entity> and/or the <formal name> can be replaced by
-the keyword @code{all}, in which case any entity (respectively formal) will
-match.
+Alternatively, the <entity> can be specified as @code{calls}, to
+control all calls, @code{instantiations}, to control all
+instantiations, or @code{all}, for both. Similarly, the <formal name>
+can be replaced by the  @code{all}, in which case all formals are
+controlled.
 
 Ex:
 @example
 check default_parameter (P, X, used);
 check default_parameter (P, Y, not used);
-search default_parameter (all, all, used);
+search default_parameter (all, all, positional);
 @end example
 
 @subsection Tip
@@ -2907,7 +2957,61 @@ parameter) as the <formal name>; in this case, all instantiations of
 the indicated generic subprogram will be controlled for the use of the
 indicated parameter.
 
-@node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Default_Parameter, Rules reference
+@node Dependencies, Directly_Accessed_Globals, Default_Parameter, Rules reference
+@section Dependencies
+This rule controls dependencies of units (i.e. @code{@b{with}}
+clauses, parents...), either according to a set of allowed units, or
+by count.
+
+@subsection Syntax
+@example
+<control_kind> dependencies (others, <unit> @{,<unit>@});
+<control_kind> dependencies (<counter>, <bound_spec> [, <bound_spec>]);
+counter    ::= raw | direct | parent
+bound_spec ::= min | max <value>
+@end example
+
+@subsection Action
+The kind of action depends on the specified subrule.
+
+The ``others'' subrule controls semantic dependencies to units other
+than those indicated. This subrule can be specified only once, and at
+least one unit must be given. 
+
+Other subrules control that the number of various dependencies is
+whithin a specified range.  The second (and optionnally third)
+parameter give the minimum and/or maximum allowed values (i.e. the
+rule will control values outside the indicated interval). If not
+specified, the minimum value is defaulted to 0 and the maximum value
+to infinity.
+@itemize @bullet
+@item
+``raw'' controls the number of units textually given in
+@code{@b{with}} clauses. Redundant @code{@b{with}} clauses are
+counted, and a child unit counts for one.
+@item
+``direct'' controls the number of different units that this unit
+really depends on: if a unit is mentionned in several @code{@b{with}}
+clauses, it is counted only once, but if a child unit is mentionned,
+all parents of this child unit are added to the count.
+@item
+``parent'' counts the number of parents of the current unit. A root
+unit has no parent, a child of a root unit has one parent, etc.
+@end itemize
+
+Ex:
+@example
+check dependencies (others, Ada.Text_IO);
+check dependencies (raw, max 15);
+
+-- child units should not be nested more than 5 levels:
+check dependencies (parent, max 5);
+
+-- units that depend on nothing:
+search dependencies (direct, min 1);
+@end example
+
+@node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Dependencies, Rules reference
 @section Directly_Accessed_Globals
 This rule checks that global variables in package bodies are accessed
 only through dedicated subprograms. Especially, it can be used to
@@ -3116,10 +3220,13 @@ check entity_inside_exception (all Put,
 
 @node Exception_Propagation, Expressions, Entity_Inside_Exception, Rules reference
 @section Exception_Propagation
-This rule controls that certain program units are guaranteed
-to never propagate exceptions.
+This rule controls that certain program units are guaranteed to never
+propagate exceptions, or that local exceptions cannot propagate out of
+their scope.
 @subsection Syntax
 @example
+<control_kind> exception_propagation
+   (local_exception);
 <control_kind> exception_propagation
    ([<level>,] interface, <convention> @{, <convention> @});
 <control_kind> exception_propagation
@@ -3131,11 +3238,22 @@ to never propagate exceptions.
 @end example
 
 @subsection Action
-This rule controls subprograms, tasks, or all declarations that can
+The ``local_exception'' subrule controls a design pattern that ensures
+that a local exception cannot propagate outside the scope where it is
+declared. If an exception is declared within a block, a subprogram
+body, an entry body, or a task body, then this body must have either a
+handler for this exception or for @code{@b{others}}; this handler must
+not reraise the exception; and no handler is allowed to raise
+explicitely the exception. The subrule controls explicit
+@code{@b{raise}} statements and calls to @code{Raise_Exception} and
+@code{Reraise_Occurrence}, but it does not control exceptions raised
+as a consequence of calling other subprograms.
+
+Other subrules control subprograms, tasks, or all declarations that can
 propagate exceptions, while being used in contexts where it is
 desirable to ensure that no exception can be propagated.
 
-A subprogram or task is considered as not propagating if:
+A subprogram or task is considered as @emph{not} propagating if:
 @enumerate
 @item
 it has an exception handlers with a ``@code{@b{when others}}'' choice
@@ -3168,7 +3286,7 @@ is considered potentially propagating (not very useful for
 ``declaration'').
 @end itemize
 
-This rule serves several purposes:
+These subrule serve several purposes:
 @itemize @bullet
 @item
 It is dangerous to call an Ada subprogram that can propagate
@@ -3299,7 +3417,8 @@ expression_kw ::=
    or                               | or_else               |
    real_equality                    | record_partial_others |
    record_aggregate                 | record_others         |
-   slice                            | unqualified_aggregate |
+   slice                            | type_conversion       |
+   universal_range                  | unqualified_aggregate | 
    xor
 
 @end example
@@ -3346,6 +3465,13 @@ logical expressions to all other operators.
 (``='' or ``/='') between real (floating point or fixed point) values.
 @item
 @code{slice} controls usage of array slices.
+@item
+@code{type_conversion} controls all (sub)type conversions.
+@item
+@code{universal_range} controls discrete ranges that are a part of an
+index constraint, constrained array definition, or for-loop parameter
+specification (but not type or subtype defintions), and whose bounds
+are both of type universal_integer.
 @end itemize
 
 Ex:
@@ -4070,6 +4196,9 @@ whose execution must be part of the accept statement for logical
 reasons. They can also be global variables,  when the rendezvous is
 intended to prevent concurrent access to these variables.
 
+As usual, the whole syntax for entities is allowed as the <entity
+name>. @xref{Specifying an Ada entity name}. 
+
 @node  Multiple_Assignments, Naming_Convention, Movable_Accept_Statements, Rules reference
 @section Multiple_Assignments
 This rule controls groups of assignments that are either redundant of
@@ -4488,22 +4617,23 @@ be statically determined.
 
 @node Not_Elaboration_Calls, Not_Selected_Name, Non_Static, Rules reference
 @section Not_Elaboration_Calls
-This rule controls that certain subprograms are called only during
-program initialization.
+This rule controls that certain subprograms (or allocators) are called
+only during program initialization.
 @subsection Syntax
 @example
 <control_kind> not_elaboration_calls
-   (<subprogram name> @{, <subprogram name>@});
+   (<subprogram name>|new @{, <subprogram name>|new@});
 @end example
 
 @subsection Action
-This rule controls subprogram calls (procedure, function or entry
-calls) that are performed at any time except during the elaboration of
-library packages.
+This rule controls calls to the indicated subprogram(s) (procedure,
+function or entry calls), or allocators if ``new'' is given, that are
+performed at any time except during the elaboration of library
+packages.
 
 Ex:
 @example
-search not_elaboration_calls (Data.Initialize);
+search not_elaboration_calls (Data.Initialize, new);
 @end example
 
 @subsection Limitations
@@ -4564,27 +4694,38 @@ declared with a special name (like @code{Instance}, @code{Object},
 @code{T}) and are intended to be always used with the name of the
 enclosing package.
 
-@node Object_Declarations, Other_Dependencies, Not_Selected_Name, Rules reference
+@node Object_Declarations, Parameter_Aliasing, Not_Selected_Name, Rules reference
 @section Object_Declarations
-This rule controls aspects of object (constants and variables)
+This rule controls various aspects of object (constants and variables)
 declarations.
 
 @subsection Syntax
 @example
-<control_kind> object_declarations (<subrule>, <parameter> @{, <parameter>@});
-<subrule>   ::= min_integer_span
-<parameter> ::= [all | constant | variable] <value>
+<control_kind> object_declarations (min_integer_span, <param> @{, <param>@});
+<control_kind> object_declarations (volatile_no_address);
+<param> ::= [all | constant | variable] <value>
 @end example
 
 @subsection Action
-There is currently only one subrule: ``min_integer_span''. This
-subrule controls that every object of an integer type has a subtype
-that covers at least the indicated number of values. Different values
-can be specified for variables and constants;``all'' (the default
-value if no modifier is supplied) applies to both.
+The action depends on the subrule.
+@itemize @bullet
+@item
+``min_integer_span'': controls that every object of an integer type
+has a subtype that covers at least the indicated number of
+values. Different values can be specified for variables and
+constants;``all'' (the default value if no modifier is supplied)
+applies to both.
 
-This rule can be given only once for each combination of
+This subrule can be given only once for each combination of
 check/search/count and constant/variable.
+@item
+``volatile_no_address'': controls variables that are the target of a
+pragma volatile, but have no address clause. Constants are not
+controlled, since it would be very strange to have a volatile
+constant...
+
+Since this subrule has no parameters, it can be given only once.
+@end itemize
 
 Ex:
 @example
@@ -4592,33 +4733,26 @@ check object_declarations (min_integer_span, variable 5, constant 10);
 
 count object_declarations (min_integer_span, 8);  
 -- Same value for variables and constants
+
+search object_declarations (volatile_no_address);
 @end example
 
 @subsection Tip
 This rule can be useful for detecting variables that should use an
 enumerated type rather than an integer type.
 
-@node Other_Dependencies, Parameter_Aliasing, Object_Declarations, Rules reference
-@section Other_Dependencies
-This rule controls that only a given set of units can be withed by the
-program.
+@subsection Limitation
+Due to a shortcomming of the ASIS interface, the subrule
+``volatile_no_address'' will not detect variables of a class-wide type
+that are volatile due to a pragma volatile applying to the class-wide
+type. If the pragma applies to the variable, the subrule will work
+correctly. A pragma volatile applied to a class-wide type is detected
+by the rule ``uncheckable''. @xref{Uncheckable}.
 
-@subsection Syntax
-@example
-<control_kind> other_dependencies (<unit> @{,<unit>@});
-@end example
+Declaring a class-wide @emph{type} as volatile seems very peculiar
+anyway...
 
-@subsection Action
-This rule controls semantic dependencies (i.e. @code{@b{with}} clauses)
-to units other than those indicated. This rule can be specified only
-once.
-
-Ex:
-@example
-check other_dependencies (Ada.Text_IO);
-@end example
-
-@node  Parameter_Aliasing, Parameter_Declarations, Other_Dependencies, Rules reference
+@node  Parameter_Aliasing, Parameter_Declarations, Object_Declarations, Rules reference
 @section Parameter_Aliasing
 This rule controls aliased use of variables in subprogram
 calls.
@@ -4945,7 +5079,7 @@ This rule controls usage of representation clause.
 
 repr_kw ::= at              | at_mod            | enumeration           |
             fractional_size | incomplete_record | non_contiguous_record |
-            record
+            overlay         | record
 @end example
 
 @subsection Action
@@ -4977,6 +5111,9 @@ rule will report if there are unused bits at the end of the component
 component). In the case of variant records, there can be
 overlapping fields; the rule will control only the bits that belong to
 no variant at all.
+@item
+``overlay'' controls address clauses (given in either style), where the value
+given is the @code{'Address} of some other element.
 @item
 ``record'' controls record representation clauses.
 @end itemize
@@ -5123,7 +5260,10 @@ silently disappear.
 @subsection Syntax
 @example
 <control_kind> Silent_Exceptions (<element> @{, <element>@});
-element ::= <subprogram name> | raise | return | requeue
+element      ::= <control-item> | <report-item>
+control-item ::= not | with   <entity> | others
+report-item  ::= raise   | explicit_raise | reraise | return | 
+                 requeue | <subprogram name>
 @end example
 
 @subsection Action
@@ -5132,14 +5272,56 @@ subprograms (for example a reporting procedure) nor perform other
 required operations, like returning, requeuing, or re-raising an
 exception.
 
-The parameters are the Ada callable constructs considered
-``reporting''. In addition to subprogram and entry names, the special
-names ``raise'', ``return'' and ``requeue'' mark raise statements,
-return statements, and requeue statements (respectively) as
-reporting. If a generic procedure or function is given to the rule,
+A parameter that starts with ``not'' or ``with'' is a <control-item>
+and defines wich exceptions are controlled; the <entity> should be
+either an exception, or the name of a library unit (in which case, it
+applies to all exceptions declared in the library unit). As usual, the
+whole syntax for entities is allowed here. @xref{Specifying an Ada
+entity name}. If the <entity> is (part of) a generic, then it applies
+to all exceptions from all corresponding instantiations. If there is
+no <control-item>, then all exceptions are controlled.
+
+If several <control-item> are given, the ones with ``with'' add
+exceptions to the set of controlled exceptions, and the ones with
+``not'' remove exceptions, in order, starting from the empty set if
+the first <control-item> is a ``with'', or starting from the set of
+all exceptions if the  first <control-item> is a ``not''. See examples
+below.
+
+``@code{@b{when others}}'' handlers are always controlled, unless
+there is an explicit ``not others'' <control-item>. A ``with others''
+<control-item> can be specified to check @emph{only} ``@code{@b{when
+others}}'' handlers.
+
+The other parameters are <report-item> and define the Ada callable
+constructs considered ``reporting''. In addition to subprogram and
+entry names, the special names ``explicit_raise'', ``reraise'',
+``return'' and ``requeue'' mark raise statements with an explicit
+exception name, raise statements without an exception name, return
+statements, and requeue statements (respectively) as
+reporting. ``raise'' is a shorthand for both ``explicit_raise'' and
+``reraise''.  If a generic procedure or function is given to the rule,
 then all corresponding instances are considered reporting
 subprograms. If a generic package is given, any instantiation (in an
 inner block of the handler) is considered reporting.
+
+If ``explicit_raise'' is given as a parameter, the procedure
+@code{Ada.Exceptions.Raise_Exception} is automatically added to the
+list of procedures for both Check and Search, unless it is
+explicitely specified as a parameter in a rule; and similarly
+@code{Ada.Exceptions.Reraise_Occurrence} is added for ``reraise''.
+This way, it is possible to consider them as reporting procedures for
+Check (for example) and not for Search.
+
+A handler where @emph{all} exceptions are uncontrolled is not
+controlled at all (i.e. it is allowed to be non reporting). Otherwise,
+the rule reports if the handler does not contain at least one of the
+<report-item> in each possible path of the handler. If the
+<report-item> appear only in @code{@b{if}} or @code{@b{case}}
+statements, but not in all possible paths, or if they appear only in
+the body of @code{@b{loop}} statements, the rule will issue a message
+asking for a manual verification, since it cannot be statically
+determined whether the proper treatment happens in every case.
 
 Note that the purpose of this rule is to require the reporting calls
 to be ``eye-visible'', i.e. textually written in the exception
@@ -5158,28 +5340,36 @@ one considered an error (check).
 
 Ex:
 @example
-check silent_exceptions (raise, reports.trace);
+-- Make an error if exception is not reraised and does not call
+-- Reports.Trace, but make it only a warning if the exception is an 
+-- IO exception or Constraint_Error:
+check silent_exceptions (not ada.io_exceptions, 
+                         not standard.constraint_error, 
+                         raise, 
+                         reports.trace);
+search silent_exceptions (raise, reports.trace);
+
+-- check handlers that do not reraise the exception, except for 
+-- IO exceptions:
+check silent_exceptions (not Ada.IO_Exceptions, reraise);
+
+-- Same for predefined exceptions, except Constraint_Error:
+check silent_exceptions (not Standard, with Standard.Constraint_Error,
+                         reraise);
+
+-- Same for all exceptions named User_Error, wherever they are declared,
+-- and no others
+check silent_exceptions (with all User_Error, reraise);
+
+-- Same for "when others" handlers
+check silent_exceptions (with others, reraise);
+
 @end example
-
-If the @code{@b{raise}} statements or subprogram calls appear only in
-@code{@b{if}} or @code{@b{case}} statements, but not in all possible
-paths, or if they appear only in the body of @code{@b{loop}}
-statements, the rule will issue a message asking for a manual
-verification, since it cannot be statically determined whether the
-proper treatment happens in every case.
-
-If ``raise'' is given as a parameter, the procedures
-@code{Ada.Exceptions.Raise_Exception} and
-@code{Ada.Exceptions.Reraise_Occurrence} are automatically added to
-the list of procedures for both Check and Search, unless they are
-explicitely specified as a parameter in a rule. This way, it is
-possible to consider them as reporting procedures for Check (for
-example) and not for Search.
 
 @subsection Limitations
 Currently, ``return'' includes all return statements. It would be nice
 to separate function returns from procedure or accept returns. This is
-expected to be done in the next version of AdaControl.
+expected to be done in some future version of AdaControl.
 
 There are two cases that are not statically checkable, and
 thus may not be identified by this rule: if an exception is raised in
@@ -5201,21 +5391,21 @@ reporting function that it seems better to draw attention to it...
 
 @node Simplifiable_Expressions, Simplifiable_Statements, Silent_Exceptions, Rules reference
 @section Simplifiable_Expressions
-This rule controls expressions that can be simplified in various ways
+This rule controls expressions that can be simplified in various ways.
 
 @subsection Syntax
 @example
-<control_kind> Simplifiable_Expressions
-   [(<Expression_kw> @{, <Expression_kw>@})];
+<control_kind> Simplifiable_Expressions [(subrule> @{, <subrule>@})];
 
-Expression_kw ::= range         | logical     | logical_true |
-                  logical_false | logical_not | parentheses  |
-                  conversion
+subrule ::= range         | logical     | logical_true |
+            logical_false | logical_not | parentheses  |
+            conversion
 @end example
 
 @subsection Action
-Parameters are keywords which define which kind of expressions are
-controlled:
+Without parameters, all kinds of simplifiable expressions are
+controlled; otherwise, the controlled expressions depend on the
+subrule:
 @itemize @bullet
 @item
 ``range'' controls expressions of the form @code{T'First .. T'Last}
@@ -5240,8 +5430,8 @@ rules.
 either the same as the expression's subtype, or the first named
 subtype of the expression.
 @end itemize
-If no keyword is specified, the rule controls all kinds of
-simplifiable expressions.
+
+This rule can be given at most once for each subrule.
 
 Ex:
 @example
@@ -5280,14 +5470,14 @@ various ways without changing the meaning of the program.
 
 @subsection Syntax
 @example
-<control_kind> Simplifiable_Statements [(<stmt_kw> @{, <stmt_kw>@})];
-<stmt_kw> ::= block  | dead | handler     | if   | if_for_case |
-              if_not | loop | nested_path | null
+<control_kind> Simplifiable_Statements [(<subrule> @{, <subrule>@})];
+<subrule> ::= block  | dead | handler        | if          | if_for_case |
+              if_not | loop | loop_for_while | nested_path | null
 @end example
 @subsection Action
-Without parameters, all kind of simplifiable statements are
+Without parameter, all kinds of simplifiable statements are
 controlled; otherwise, the controlled statements depend on the
-provided keyword:
+subrule:
 @itemize @bullet
 @item
 @code{block} controls block statements that have no labels, no
@@ -5410,9 +5600,13 @@ a label, it is not considered  simplifiable.
 @item
 @code{loop} controls @code{while} loop statements where the condition
 is a plain @code{True}, and can thus be changed to simple loops.
+@item
+@code{loop_for_while} controls simple loop statements whose first
+statement is an @code{@b{exit}} (for the same loop), and which can
+therefore be turned into a @code{while} loop.
 @end itemize
 
-This rule can be given at most once for each value of the parameters.
+This rule can be given at most once for each subrule.
 
 Ex:
 @example
@@ -5428,31 +5622,69 @@ proper Ada training. Such code is certainly worth a peer review...
 
 @node  Special_Comments, Statements, Simplifiable_Statements, Rules reference
 @section Special_Comments
-This rule controls the occurrence of certain phrases in comments.
+This rule controls comments that must, or must not, appear in certain cases.
 
 @subsection Syntax
 @example
-<control_kind> Special_Comments ("<pattern>" @{, "<pattern>"@});
+<control_kind> Special_Comments (pattern, "<pattern>" @{, "<pattern>"@});
+<control_kind> Special_Comments (unnamed_begin, <kind> @{, <kind>@});
+<kind>      ::= [<condition>] <unit_kind>
+<condition> ::= always | declaration | program_unit
+<unit_kind> ::= all | procedure | function | entry | package | task
 @end example
 
 @subsection Action
-This rule controls comments that match one of the given patterns
+The first parameter is a subrule name which detemines what is being
+controlled.
+@itemize @bullet
+@item
+``pattern'' controls comments that match one of the given patterns
 (given as strings). Only the ``useful'' part of the comment is
 matched against the patterns, i.e. the part after the ``@code{--}''
 and spaces following it. Patterns are given using the full Regexp
 syntax. @pxref{Syntax of regular expressions} for details. Pattern
 matching is always case insensitive.
 
-This rule is especially useful to find lines with comments like
-``TBSL'' (To Be Supplied Later), which are often used to mark places
-where something should be done before releasing the program.
+This subrule is especially useful to find lines with comments like
+``TBSL'' (To Be Supplied Later) or ``fixme'', which are often used to
+mark places where something should be done before releasing the
+program.
+@item
+``unnamed_begin'' controls @code{@b{begin}} of various constructs that
+do not have a comment that repeats the name of the program unit
+associated to the @code{@b{begin}}. Except for spaces, the comment
+must not contain anything else than the unit name.
+
+The <condition> keyword determines circumstances where the comment is required:
+@itemize
+@item
+''always'' (default): the comment is always required.
+@item
+``declaration'': the comment is required only if the preceding
+declaration part is non-empty (non counting pragmas).
+@item
+``program_unit'': the comment is required only if the preceding
+declaration part contains the declarations of other program units
+(subprograms, packages, protected objects, or tasks).
+@end itemize
+
+The <unit_kind> keyword detemines the kind of program unit to which
+the rule applies (``all'' stands for all kinds).  The subrule can be
+given only once of each kind of program unit.
+@end itemize
 
 Ex:
 @example
-check special_comments ("TBSL");
+check special_comments (pattern, "TBSL");
 
 -- Report places where rules are disabled:
-search special_comments ("##.* off");
+search special_comments (pattern, "##.* off");
+
+-- Named begin required for packages unless they have no
+-- declaration, and subprograms if they have nested units
+check special_comments (unnamed_begin, declaration package);
+check special_comments (unnamed_begin, program_unit procedure);
+check special_comments (unnamed_begin, program_unit function);
 @end example
 
 @subsection Tips
@@ -5472,6 +5704,7 @@ This rule controls usage of certain Ada statements.
 <control_kind> statements (<statement_kw> @{, <statement_kw>@};
 
 statement_kw ::=
+   any_statement           |
    abort                   | accept_return          | 
    assignment              | asynchronous_select    | 
    block                   | case                   |
@@ -5481,14 +5714,16 @@ statement_kw ::=
    delay_until             | dispatching_call       | 
    effective_declare_block | entry_return           | 
    exception_others        | exception_others_null  | 
-   exit                    | exit_for_loop          | 
+   exit                    | exit_expanded_name     |
+   exit_for_loop           | exit_outer_loop        |
    exit_while_loop         | for_loop               | 
    function_return         | goto                   | 
    if                      | if_elsif               | 
    labelled                | loop_return            | 
-   multiple_exits          | no_else                |    
+   multiple_exits          | no_else                | 
    null                    | procedure_return       | 
-   raise                   | raise_standard         | 
+   raise                   | raise_locally_handled  |
+   raise_nonpublic         | raise_standard         | 
    requeue                 | reraise                | 
    selective_accept        | simple_loop            | 
    terminate               | timed_entry_call       | 
@@ -5503,6 +5738,10 @@ statement_kw ::=
 Statement keywords that are Ada keywords control the corresponding Ada
 statements. The meaning of other keywords is as follows:
 @itemize @bullet
+@item
+@code{any_statement} controls all statements. This is of course not
+intended to forbid all statements in a program (!), but
+@emph{counting} all statements can be quite useful.
 @item
 @code{accept_return} controls return statements that return from an
 @code{@b{accept}} statement, @code{entry_return} controls return
@@ -5550,7 +5789,9 @@ respectively. @code{unconditional_exit} controls @code{@b{exit}}
 statements without a @code{@b{when}} condition.  @code{multiple_exits}
 controls loop that have more than one @code{@b{exit}} statement.
 @code{unnamed_loop_exited} controls exit statements that terminate an
-unnamed loop.
+unnamed loop. @code{exit_outer_loop} controls @code{@b{exit}} statements
+that exit from an outer loop (i.e. not the innermost one). @code{exit_expanded_name} controls named @code{@b{exit}} statements
+where the name is given as an expanded name.
 @item
 @code{exception_others} controls any @code{@b{when others}} exception
 handler, while @code{exception_others_null} controls only
@@ -5578,14 +5819,25 @@ path.
 @item
 @code{null} controls all @code{@b{null}} statements.
 @item
-@code{raise} controls all @code{@b{raise}} statements, while
+@code{raise} controls all @code{@b{raise}} statements.
+@item
+@code{reraise} controls @code{@b{raise}} statements in exception
+handlers that reraise the same exception, and calls to the
+@code{Ada.Exceptions.Reraise_Occurrence} procedure.
+@item
 @code{raise_standard} controls @code{raise} statements that raise one
-of the predefined exceptions (those declared in package @code{Standard}) and
-@code{reraise} controls only @code{@b{raise}} statements in exception
-handlers that reraise the same exception. Note that @code{raise_standard}
-and @code{reraise} take precedence over @code{raise} if they are mentionned
-together, but that @code{raise} will control all form of @code{@b{raise}}
-statements if no more specific subrule is given.
+of the predefined exceptions (those declared in package
+@code{Standard}). @code{raise_nonpublic} controls statements that
+raise exceptions that are neither predefined nor defined in the
+visible part of a package which is the enclosing library unit of the
+statement.  @code{raise_locally_handled} controls statements that
+raise an exception which is handled by a handler in the same
+subprogram body as the statement.
+
+Note that for these subrules, the exception can be raised either by a
+@code{@b{raise}} statement, or by a call to
+@code{Ada.Exceptions.Raise_Exception} where the raised exception is
+statically determinable.
 @item
 @code{simple_loop} controls simple loops, i.e. those that are neither
 @code{@b{while}} nor @code{@b{for}} loops.
@@ -5615,12 +5867,25 @@ check  statements (goto, abort);
 check  statements (case_others_null, exception_others_null);
 @end example
 
-@subsection Tip
+@subsection Tips
 It may seem strange to control things like @code{@b{if}} or
 @code{@b{case}} statements, since no coding standard would prohibit
 their use. However, this may be useful, especially with ``count'', for
 statistical purposes, like measuring the ratio of @code{@b{if}} to
 @code{@b{case}} statements.
+
+The plain ``raise'' subrule controls the @code{@b{raise}} statement, and
+only this one. If you want to check all places where exceptions can be
+raised, use also the ``entities'' rule like this:
+@example
+"all raise": check statements (raise);
+"all raise": check entities (Ada.Exceptions.Raise_Exception, 
+                             Ada.Exceptions.Reraise_Occurrence);
+@end example
+
+Other subrules of the ``raise'' family are more about which kind of
+exception is being raised, and therefore control also exceptions
+raised by calling the procedures from @code{Ada.Exceptions}.
 
 @node Style, Terminating_Tasks, Statements, Rules reference
 @section Style
@@ -5640,6 +5905,7 @@ This rules controls usage of various ``general'' Ada coding style.
 <control_kind> style (negative_condition);
 <control_kind> style (no_closing_name [, <max_lines>]);
 <control_kind> style (numeric_literal, [not] <base> [, <block_size>]);
+<control_kind> style (parameter_order @{, <mode list>@});
 <control_kind> style (positional_association
                              @{,<context_kw> [,<max_allowed>]@}
                              | [, <max_allowed>]);
@@ -5649,6 +5915,9 @@ casing_kw   ::= uppercase | lowercase | titlecase | original
 context_kw  ::= [not_operator] call | pragma          | discriminant     | 
                 instantiation       | array_aggregate | record_aggregate
 element_kw  ::= [flexible] clause | declaration | statement
+mode_list   ::= <mode> @{<mode>@}
+mode        ::= in   | defaulted_in | access   | in_out  | out |
+                type | procedure    | function | package
 type_kw     ::= integer | real | character | string
 value_place ::= <value> | <place>
 value       ::= <integer number> | <real number> | "<pattern>"
@@ -5737,6 +6006,19 @@ for that base, i.e. there must be an underscore character to separate
 digits every <block_size> position. Typically, <block_size> is 3 for
 base 10, 4 for base 2, etc.
 @item
+``parameter_order'' and ``formal_parameter_order'' control the order
+of the declarations of parameters or generic formal parameters,
+respectively. Each parameter of the rule consists in one or several of
+the ``mode'' keywords, and describes, in order, which kind of
+parameter is allowed. All modes not specified explicitely are allowed
+after the ones that are specified.  See examples below.
+
+If no parameter is given, the order for regular parameters is ``in''
+or ``access'' first, then ``in_out'', then ``out'', then
+``defaulted_in''.  The order for formal_parameters is ``type'' first,
+then ``in'' ``defaulted_in'' and ``access'', then ``in_out'', then
+``procedure'' and ``function'', then ``package''.
+@item
 ``positional_association'' controls pragmas, discriminants, calls,
 aggregates, or instantiations that use positional associations.  Extra
 parameters specify which kind of construct to check; if not specified,
@@ -5769,6 +6051,24 @@ check style (default_in);
 check style (literal, 10, 3);
 check style (exposed_literal, integer, 0, 1);
 check style (exposed_literal, real, 0.0, 1.0);
+
+ -- in parameters (with or without default) and access
+ -- parameters must be first, then in out parameters, then
+ -- out parameters. In parameters are allowed last if they
+ -- have defaults.
+check style (parameter_order, 
+               in defaulted_in access, 
+               in_out, 
+               out
+               defaulted_in)
+
+ -- For generics, formal objects must come first, then formal
+ -- types, then formal subprograms, then formal package:
+check style (formal_parameter_order, 
+               in in_out, 
+               type, 
+               procedure function,
+               package);
 
  -- All positional associations:
 check style (positional_association);
@@ -6287,25 +6587,27 @@ types, exceptions, tasks and protected objects) are used.
 @subsection Syntax
 @example
 <control_kind> usage
-   (variable|object @{,[not] from_spec | read | written | initialized@});
+   (variable|object @{,[not] <location> | read | written | initialized@});
 <control_kind> usage
-   (constant @{,[not] from_spec | read@});
+   (constant @{,[not]  <location> | read@});
 <control_kind> usage
-   (type @{,[not] from_spec | used@});
+   (type @{,[not]  <location> | used@});
 <control_kind> usage
-   (procedure @{,[not] from_spec | called@});
+   (procedure @{,[not]  <location> | called@});
 <control_kind> usage
-   (function @{,[not] from_spec | called@});
+   (function @{,[not]  <location> | called@});
 <control_kind> usage
-   (exception @{,[not] from_spec | raised | handled@});
+   (exception @{,[not]  <location> | raised | handled@});
 <control_kind> usage
-   (task @{,[not] from_spec | called | aborted@});
+   (task @{,[not]  <location> | called | aborted@});
 <control_kind> usage
-   (protected @{,[not] from_spec | called@});
+   (protected @{,[not]  <location> | called@});
 <control_kind> usage
-   (generic @{,[not] from_spec | instantiated@});
+   (generic @{,[not]  <location> | instantiated@});
 <control_kind> usage
-   (all [,[not] from_spec]);
+   (all @{,[not]  <location>@});
+
+location ::= from_visible | from_private | from_spec
 @end example
 
 @subsection Action
@@ -6318,19 +6620,23 @@ If only one parameter is given, usage of all entities belonging to the
 indicated class are reported . Otherwise, other parameter(s) are
 keyword that restrict the kind of usage being controlled.
 
-``[not] from_spec'' restrict entities being checked to those that
-appear in (generic) package specifications.  Other keywords carry
+``[not] from_visible'', ``[not] from_private'', and ``[not]
+from_spec'' restrict entities being checked to those that appear (or
+not) in (generic) package specifications, in the visible part, in the
+private part, or in any part, respectively.  Other keywords carry
 their obvious meaning, and are allowed only where appropriate. The
 rule will output the information only for objects that match all the
 conditions given. A combination of parameters can be given only once
 for each of ``check'', ``search'', and ``count''.
 
 The report includes the kind of unit that declares the entity (normal
-unit, instantiation, or generic unit) and whether the entity is known
-to be initialized, read, written, raised, handled, called, or aborted,
-depending on the entity's class. Some combinations give an extra
-useful message (for example, a variable which is initialized and read
-but not written will produce a ``could be declared constant'' message).
+unit, instantiation, or generic unit), the part where it is declared
+(visible or private) if it is declared in a (generic) package, and
+whether the entity is known to be initialized, read, written, raised,
+handled, called, or aborted, depending on the entity's class. Some
+combinations give an extra useful message (for example, a variable
+which is initialized and read but not written will produce a ``could
+be declared constant'' message).
 
 Variables of an access type and variables of an array type whose
 components are of an access type (or arrays of an access type, etc.)
@@ -6570,14 +6876,11 @@ corresponding controls can be written.
 @node  Migrating from Gnatcheck, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules, Examples of using AdaControl for common programming rules
 @section Migrating from Gnatcheck
 The file @code{gnatcheck.aru} in directory @code{rules} gives the
-AdaControl equivalents of rules checked by Gnatcheck.  For rules where
-Gnatcheck requires a parameter, the AdaControl rule is given for the
-default value, or with an example value.  Small differences are
+AdaControl equivalents of rules checked by Gnatcheck. This version of
+AdaControl covers all Gnatcheck rules.  For rules where Gnatcheck
+requires a parameter, the AdaControl rule is given for the default
+value, or with an example value.  Small differences in semantics are
 indicated by a comment that starts with "Difference:". 
-
-Gnatcheck rules that are not (yet) supported by AdaControl are left as
-comments. There are few of these, and we expect them to disappear in
-the next version of AdaControl.
 
 This file is not intended to be used directly, but as an example on
 how to convert Gnatcheck rules into AdaControl rules. Note that in
@@ -7192,6 +7495,56 @@ more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
 
+@section Migrating from 1.8r8
+@subsection CSV(X) format
+If the output format is CSV or CSVX, the file name, line number and
+column number are generated as three different spreadsheet columns,
+instead of forming a single message. This makes it easier to use a
+spreadsheet program for per-file statistics.
+
+@subsection Default_Parameter
+Due to the introduction of the ``positional'' keyword, ``not used'' is
+now spelled ``not_used''.  Change:
+@example
+check default_parameter (proc, param, not used);
+@end example
+to:
+@example
+check default_parameter (proc, param, not_used);
+@end example
+
+@subsection Other_Dependencies
+This rule has been changed into a subrule of the (new) rule
+``Dependencies''. Change:
+@example
+check Other_Dependencies (pack1, pack2);
+@end example
+to:
+@example
+check Dependencies (others, pack1, pack2);
+@end example
+
+@subsection Special_Comments
+Due to the introduction of another subrule, add ``pattern'' as the first parameter
+to the rule. Change:
+@example
+check Special_Comments ("TBSL");
+@end example
+to:
+@example
+check Special_Comments (pattern, "TBSL");
+@end example
+
+@subsection Statements
+The ``raise'' subrule now reports all occurrences of the @code{@b{raise}}
+statement, even if another control is applicable to the same statement.
+
+The ``reraise'' subrule now reports calls to
+@code{Ada.Exceptions.Reraise_Occurrence}.
+
+The ``raise_standard'' subrule now reports exceptions raised by calls to
+@code{Ada.Exceptions.Raise_Exception}.
+
 @section Migrating from 1.7r9
 @subsection Case_Statement
 This rule now allows the specification of both min and max values for
@@ -7247,7 +7600,7 @@ check characters (control);
 @end example
 
 @subsection If_For_Case
-This rule is has been changed into a subrule of the (new) rule
+This rule has been changed into a subrule of the (new) rule
 ``simplifiable_statements''. Change:
 @example
 check if_for_case;

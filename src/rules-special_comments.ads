@@ -41,5 +41,6 @@ package Rules.Special_Comments is
    Rule_Id : constant Wide_String := "SPECIAL_COMMENTS";
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+   procedure Process_Program_Unit (Unit : Asis.Declaration);
 
 end Rules.Special_Comments;

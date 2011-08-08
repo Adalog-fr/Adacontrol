@@ -2,7 +2,7 @@
 --  Framework.Language - Package specification                      --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -118,7 +118,9 @@ package Framework.Language is
       Empty_Set : constant Modifier_Set := (others => False);
       Full_Set  : constant Modifier_Set := (others => True);
 
-      function Get_Modifier_Set return Modifier_Set;
+      function Get_Modifier_Set (No_Parameter : Boolean := False) return Modifier_Set;
+      -- If No_Parameter, there is no flag after the modifiers, at least one modifier
+      -- required.
       function Image (Set     : Unconstrained_Modifier_Set;
                       Default : Unconstrained_Modifier_Set := Empty_Set) return Wide_String;
       -- Image of all modifiers in Set, separated and terminated by a single space

@@ -169,7 +169,7 @@ package body Rules.Terminating_Tasks is
 
       The_Control : Asis.Traverse_Control := Continue;
       The_State   : Null_State;
-   begin
+   begin  -- Process_Task_Body
       if not Rule_Used then
          return;
       end if;
@@ -194,7 +194,7 @@ package body Rules.Terminating_Tasks is
       end;
    end Process_Task_Body;
 
-begin
+begin  -- Rules.Terminating_Tasks
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

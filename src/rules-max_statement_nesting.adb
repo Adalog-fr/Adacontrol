@@ -171,7 +171,8 @@ package body Rules.Max_Statement_Nesting is
          end if;
 
       end Do_Report;
-   begin
+
+   begin  -- Process_Statement
       if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
@@ -218,7 +219,7 @@ package body Rules.Max_Statement_Nesting is
       end case;
    end Process_Statement;
 
-begin
+begin  -- Rules.Max_Statement_Nesting
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

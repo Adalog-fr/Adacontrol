@@ -54,8 +54,7 @@ package Framework.Symbol_Table is
    type Scope_Kinds is (Declaration, Visibility);
    -- The Declaration scope is the scope where the entity is declared
    -- The Visibility scope is the outermost scope where the entity is visible
-   -- They are different for entities declared in package specs.
-   -- TBSL: formal parameters
+   -- They are different for entities declared in package specs and formal parameters
 
    Not_In_Table   : exception;
    Delete_Current : exception;
@@ -63,10 +62,10 @@ package Framework.Symbol_Table is
 
 
    -- Instantiate this generic to allow to associate any data with any declared element.
-   -- Data associated to an element are automatically freed when the scope of the element is
-   -- exited. Note that this happens *after* calling Framework.Plugs.Exit_Scope, therefore
-   -- rules that need to inspect how an entity has been used can do so by plugging some
-   -- processing into Exit_Scope.
+   -- Data associated to an element are automatically freed when the (visibility) scope of
+   -- the element is exited. Note that this happens *after* calling Framework.Plugs.Exit_Scope,
+   -- therefore rules that need to inspect how an entity has been used can do so by plugging
+   -- some processing into Exit_Scope.
    generic
       type Content is private;
    package Data_Access is

@@ -108,10 +108,11 @@ package body Rules.Abnormal_Function_Return is
 
    procedure Process_Function_Body (Function_Body : in Asis.Expression) is
       use Asis.Declarations, Asis.Statements;
+      use Thick_Queries;
 
       procedure Check (Stmt : Asis.Statement) is
          use Asis, Asis.Elements;
-         use Framework.Reports, Thick_Queries, Utilities;
+         use Framework.Reports, Utilities;
       begin
          case Statement_Kind (Stmt) is
             when A_Return_Statement
@@ -135,21 +136,13 @@ package body Rules.Abnormal_Function_Return is
                        "Sequence of statements not terminated by ""return"" or ""raise""");
 
             when A_Block_Statement =>
-               declare
-                  Block_Stmts : constant Asis.Statement_List := Block_Statements (Stmt);
-               begin
-                  Check (Block_Stmts (Block_Stmts'Last));
-               end;
+               Check (Last_Effective_Statement (Block_Statements (Stmt)));
 
                declare
                   Handlers : constant Asis.Exception_Handler_List := Block_Exception_Handlers (Stmt);
                begin
                   for H in Handlers'Range loop
-                     declare
-                        Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Handlers (H));
-                     begin
-                        Check (Handler_Stmts (Handler_Stmts'Last));
-                     end;
+                     Check (Last_Effective_Statement (Handler_Statements (Handlers (H))));
                   end loop;
                end;
 
@@ -184,32 +177,25 @@ package body Rules.Abnormal_Function_Return is
                        "Sequence of statements not terminated by ""return"" or ""raise""");
          end case;
       end Check;
-   begin
+
+   begin   -- Process_Function_Body
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Body_Stmts : constant Asis.Statement_List := Body_Statements (Function_Body);
-      begin
-         Check (Body_Stmts (Body_Stmts'Last));
-      end;
+      Check (Last_Effective_Statement (Body_Statements (Function_Body)));
 
       declare
          Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (Function_Body);
       begin
          for H in Handlers'Range loop
-            declare
-               Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Handlers (H));
-            begin
-               Check (Handler_Stmts (Handler_Stmts'Last));
-            end;
+            Check (Last_Effective_Statement (Handler_Statements (Handlers (H))));
          end loop;
       end;
    end Process_Function_Body;
 
-begin
+begin  -- Rules.Abnormal_Function_Return
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

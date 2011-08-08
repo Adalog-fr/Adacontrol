@@ -413,7 +413,7 @@ package body Rules.Instantiations is
       end Process_Context;
 
       Finished : Boolean;
-   begin
+   begin  -- Process_Instantiation
       if not Rule_Used then
          return;
       end if;
@@ -425,7 +425,7 @@ package body Rules.Instantiations is
       end loop;
    end Process_Instantiation;
 
-begin
+begin  -- Rules.Instantiations
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

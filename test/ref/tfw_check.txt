@@ -27,6 +27,7 @@ conf/t_case_statement.aru: No syntax error
 conf/t_characters.aru: No syntax error
 conf/t_declarations.aru: No syntax error
 conf/t_default_parameter.aru: No syntax error
+conf/t_dependencies.aru: No syntax error
 conf/t_directly_accessed_globals.aru: No syntax error
 conf/t_duplicate_initialization_calls.aru: No syntax error
 conf/t_entities.aru: No syntax error
@@ -53,7 +54,6 @@ conf/t_non_static.aru: No syntax error
 conf/t_not_elaboration_calls.aru: No syntax error
 conf/t_not_selected_name.aru: No syntax error
 conf/t_object_declarations.aru: No syntax error
-conf/t_other_dependencies.aru: No syntax error
 conf/t_parameter_aliasing.aru: No syntax error
 conf/t_parameter_declarations.aru: No syntax error
 conf/t_potentially_blocking_operations.aru: No syntax error

@@ -87,11 +87,18 @@ package body Rules.Usage is
 
 
    -- In the following type, K_Declared is not visible to users of the rule, since
-   -- an enitity is always declared! However, it does not necessarily mean that the
+   -- an entity is always declared! However, it does not necessarily mean that the
    -- declaration is processed (if the corresponding unit is not processed).
    -- Objects whose declaration is not processed are not reported.
-   type Usage_Kind is (K_Declared, K_From_Spec, K_Initialized, K_Read, K_Written);
-   subtype Rule_Usage_Kind is Usage_Kind range Usage_Kind'Succ (K_Declared) .. Usage_Kind'Last;
+   -- K_From_Spec is not a real usage kind, just a short_hand for (K_From_Visible or K_From_Private)
+   --    must stay last in type.
+   -- Note that "check usage (<entity>, not from_spec, ...)" is translated
+   --      to "check usage (<entity>, not from_visible, not from_spec, ...)" ("and" semantics),
+   --      while "check usage (<entity>, from_spec, ...)" is translated to
+   --      "check usage (<entity>, from_visible, ...);check usage (<entity>, from_private, ...)" ("or" semantics)
+   type Usage_Kind is (K_Declared, K_From_Visible, K_From_Private, K_Initialized, K_Read, K_Written, K_From_Spec);
+   subtype User_Usage_Kind is Usage_Kind range Usage_Kind'Succ (K_Declared) .. Usage_Kind'Last;
+   subtype Rule_Usage_Kind is Usage_Kind range Usage_Kind'First             .. Usage_Kind'Pred (K_From_Spec);
    K_Used         : Rule_Usage_Kind renames K_Read;
    K_Called       : Rule_Usage_Kind renames K_Read;
    K_Accessed     : Rule_Usage_Kind renames K_Written;
@@ -108,11 +115,11 @@ package body Rules.Usage is
    -- K_Other is used internally, not visible to the user. Must stay last in type.
    subtype Subrules             is Entity_Kind range Entity_Kind'First        .. Entity_Kind'Pred (K_Other);
    subtype True_Entity_Kind     is Entity_Kind range Entity_Kind'Succ (K_All) .. Entity_Kind'Pred (K_Other);
-   subtype Extended_Entity_Kind is Entity_Kind range Entity_Kind'Succ (K_All) .. Entity_Kind'Last;
+   subtype Extended_Entity_Kind is Entity_Kind range True_Entity_Kind'First   .. Entity_Kind'Last;
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "K_");
 
-   type Usage_Value is array (Usage_Kind) of Boolean;
+   type Usage_Value is array (Rule_Usage_Kind) of Boolean;
    type Usage_Record is
       record
          Declaration : Asis.Expression;
@@ -124,22 +131,25 @@ package body Rules.Usage is
    Own_Usage       : Usage_Map.Map;
    Cumulated_Usage : Usage_Map.Map; -- For Objects declared in generics
 
+   type Package_Origins is (From_Visible, From_Private, Not_From_Spec);
+
    -- Rule Applicability
    type Label_Table is array (Control_Kinds) of Unbounded_Wide_String;
 
    type Rule_Info is
       record
-         Used_Types : Control_Kinds_Set;
-         Labels     : Label_Table;
+         Used_Controls : Control_Kinds_Set;
+         Labels        : Label_Table;
       end record;
 
-   -- Indices of following table correspond to True_Entity_Kind, K_From_Spec, K_Initialized, K_Read, K_Written
+   -- Indices of following table correspond to:
+   --    True_Entity_Kind, K_From_Visible, K_From_Private, K_Initialized, K_Read, K_Written
    -- in that order
-   Rule_Table : array (True_Entity_Kind, Boolean, Boolean, Boolean, Boolean) of Rule_Info
-     := (others => (others => (others => (others => (others =>
-                                            (Used_Types => (others => False),
-                                             Labels     => (others => Null_Unbounded_Wide_String))
-                                                    )))));
+   Rule_Table : array (True_Entity_Kind, Boolean, Boolean, Boolean, Boolean, Boolean) of Rule_Info
+     := (others => (others => (others => (others => (others => (others =>
+                                            (Used_Controls => (others => False),
+                                             Labels        => (others => Null_Unbounded_Wide_String))
+                                                    ))))));
    All_From_Spec : Boolean := True;
 
    Rule_Used : Boolean := False;
@@ -153,57 +163,96 @@ package body Rules.Usage is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): variable | object    {, [not] from_spec | initialized | read | written}");
-      User_Message ("  or        : constant             {, [not] from_spec | read}");
-      User_Message ("  or        : type                 {, [not] from_spec | used}");
-      User_Message ("  or        : procedure | function {, [not] from_spec | called}");
-      User_Message ("  or        : exception            {, [not] from_spec | raised | handled}");
-      User_Message ("  or        : task                 {, [not] from_spec | called | aborted}");
-      User_Message ("  or        : protected            {, [not] from_spec | called}");
-      User_Message ("  or        : generic              {, [not] from_spec | instantiated}");
-      User_Message ("  or        : all                  [, [not] from_spec]");
+      User_Message ("Parameter(s): variable | object    {, [not] <location> | initialized | read | written}");
+      User_Message ("  or        : constant             {, [not] <location> | read}");
+      User_Message ("  or        : type                 {, [not] <location> | used}");
+      User_Message ("  or        : procedure | function {, [not] <location> | called}");
+      User_Message ("  or        : exception            {, [not] <location> | raised | handled}");
+      User_Message ("  or        : task                 {, [not] <location> | called | aborted}");
+      User_Message ("  or        : protected            {, [not] <location> | called}");
+      User_Message ("  or        : generic              {, [not] <location> | instantiated}");
+      User_Message ("  or        : all                  [, [not] <location>]");
+      User_Message ("location ::= from_visible | from_private | from_spec");
       User_Message ("Control usage of various entities");
-      User_Message ("(possibly restricted to those that match the specified properties)");
+      User_Message ("(possibly restricted to those that match the specified location and properties)");
    end Help;
 
    -----------------
    -- Add_Control --
    -----------------
 
+   Bad_KW        : constant Wide_String := "unexpected keyword: ";
+   Already_Given : constant Wide_String := "parameter value already given";
+
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Subrules_Flags_Utilities;
 
-      type General_Condition is (None, Found, Not_Found, Both);
-      subtype Condition is General_Condition range Found .. Not_Found;
+      -- Note: Not_Found means "not" has been found
+      -- Order is important
+      type General_Condition is (None, Not_Found, Found, Both);
+      subtype Condition is General_Condition range Not_Found .. Found;
       type Rule_Usage_Value is array (Rule_Usage_Kind) of General_Condition;
 
       Value_Mask  : Rule_Usage_Value := (others => None);
+      Value_Mask2 : Rule_Usage_Value;
       Subrule     : Subrules;
-      Usage_Param : Rule_Usage_Kind;
+      Usage_Param : User_Usage_Kind;
       Has_Not     : Boolean;
       Wide_Label  : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Ctl_Label);
+
+      Positive_From_Spec : Boolean := False;
+
+      procedure Update_Mask_Entry (Cond : in out General_Condition; Inverted : Boolean) is
+      begin
+         case Cond is
+            when None =>
+               if Inverted then
+                  Cond := Not_Found;
+               else
+                  Cond := Found;
+               end if;
+            when Found =>
+               if Inverted then
+                  Cond := Both;
+               else
+                  Parameter_Error (Rule_Id, Already_Given);
+               end if;
+            when Not_Found =>
+               if Inverted then
+                  Parameter_Error (Rule_Id, Already_Given);
+               else
+                  Cond := Both;
+               end if;
+            when Both =>
+               Parameter_Error (Rule_Id, Already_Given);
+         end case;
+      end Update_Mask_Entry;
 
       procedure Update_Rule_Table (Kind : True_Entity_Kind; Usages : Rule_Usage_Value) is
          -- None is the same as Both for the initialization of Rule_Table
       begin
-         for S in Condition loop
-            if Usages (K_From_Spec) not in Condition or else Usages (K_From_Spec) = S then
-               for I in Condition loop
-                  if Usages (K_Initialized) not in Condition or else Usages (K_Initialized) = I then
-                     for R in Condition loop
-                        if Usages (K_Read) not in Condition or else Usages (K_Read) = R then
-                           for W in Condition loop
-                              if Usages (K_Written) not in Condition or else Usages (K_Written) = W then
-                                 if Rule_Table (Kind,
-                                                S = Found, I = Found, R = Found, W = Found).Used_Types (Ctl_Kind)
-                                 then
-                                    Parameter_Error (Rule_Id, "This combination of values already specified");
-                                 else
-                                    Rule_Table (Kind, S = Found, I = Found, R = Found, W = Found).Used_Types (Ctl_Kind)
-                                      := True;
-                                    Rule_Table (Kind, S = Found, I = Found, R = Found, W = Found).Labels (Ctl_Kind)
-                                      := Wide_Label;
-                                 end if;
+         for V in Condition loop
+            if Usages (K_From_Visible) not in Condition or else Usages (K_From_Visible) = V then
+               for P in Condition loop
+                  if Usages (K_From_Private) not in Condition or else Usages (K_From_Private) = P then
+                     for I in Condition loop
+                        if Usages (K_Initialized) not in Condition or else Usages (K_Initialized) = I then
+                           for R in Condition loop
+                              if Usages (K_Read) not in Condition or else Usages (K_Read) = R then
+                                 for W in Condition loop
+                                    if Usages (K_Written) not in Condition or else Usages (K_Written) = W then
+                                       if Rule_Table (Kind, V = Found, P = Found, I = Found, R = Found, W = Found)
+                                            .Used_Controls (Ctl_Kind)
+                                       then
+                                          Parameter_Error (Rule_Id, "This combination of values already specified");
+                                       else
+                                          Rule_Table (Kind, V = Found, P = Found, I = Found, R = Found, W = Found)
+                                            .Used_Controls (Ctl_Kind) := True;
+                                          Rule_Table (Kind, V = Found, P = Found, I = Found, R = Found, W = Found)
+                                            .Labels (Ctl_Kind) := Wide_Label;
+                                       end if;
+                                    end if;
+                                 end loop;
                               end if;
                            end loop;
                         end if;
@@ -214,8 +263,6 @@ package body Rules.Usage is
          end loop;
       end Update_Rule_Table;
 
-      Bad_KW        : constant Wide_String := "unexpected keyword: ";
-      Already_Given : constant Wide_String := "parameter value already given";
    begin -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "Parameter required");
@@ -229,12 +276,25 @@ package body Rules.Usage is
          declare
             To_Compare : constant Wide_String := Get_Name_Parameter;
          begin
-            if To_Compare = "FROM_SPEC" then
+            if To_Compare = "FROM_VISIBLE" then
+               Usage_Param := K_From_Visible;
+               if Has_Not then
+                  All_From_Spec := False;
+               end if;
+            elsif To_Compare = "FROM_PRIVATE" then
+               Usage_Param := K_From_Private;
+               if Has_Not then
+                  All_From_Spec := False;
+               end if;
+            elsif To_Compare = "FROM_SPEC" then
                Usage_Param := K_From_Spec;
+               if Has_Not then
+                  All_From_Spec := False;
+               end if;
             else
                case Subrule is
                   when K_All =>
-                     -- Only From_Spec allowed
+                     -- Only From_Spec, From_Visible, From_Private allowed
                      Parameter_Error (Rule_Id, Bad_KW & To_Compare);
 
                   when K_Variable | K_Object =>
@@ -307,45 +367,70 @@ package body Rules.Usage is
             end if;
          end;
 
-         case Value_Mask (Usage_Param) is
-            when None =>
-               if Has_Not then
-                  Value_Mask (Usage_Param) := Not_Found;
-               else
-                  Value_Mask (Usage_Param) := Found;
-               end if;
-            when Found =>
-               if Has_Not then
-                  Value_Mask (Usage_Param) := Both;
-               else
-                  Parameter_Error (Rule_Id, Already_Given);
-               end if;
-            when Not_Found =>
-               if Has_Not then
-                  Parameter_Error (Rule_Id, Already_Given);
-               else
-                  Value_Mask (Usage_Param) := Both;
-               end if;
-            when Both =>
-               Parameter_Error (Rule_Id, Already_Given);
-         end case;
+         if Usage_Param = K_From_Spec then
+            if Has_Not then
+               Update_Mask_Entry (Value_Mask (K_From_Visible), Inverted => True);
+               Update_Mask_Entry (Value_Mask (K_From_Private), Inverted => True);
+            else
+               Positive_From_Spec := True; -- will handle that case later
+            end if;
+         else
+            Update_Mask_Entry (Value_Mask (Usage_Param), Has_Not);
+         end if;
       end loop;
+
+      if Value_Mask (K_From_Visible) = None
+        and Value_Mask (K_From_Private) = None
+        and not Positive_From_Spec
+      then
+         -- no positive place specified (negative have been handled already)
+         All_From_Spec := False;
+      end if;
+
+      -- Ensure that From_Visible and From_Private are exclusive
+      if Value_Mask (K_From_Visible) = Found and Value_Mask (K_From_Private) = Found then
+         Parameter_Error (Rule_Id, "entity cannot be both in visible and private part");
+      end if;
+
+      -- From_Visible => not From_Private, From_Private => not From_Visible
+      if Value_Mask (K_From_Visible) = Found and Value_Mask (K_From_Private) = None then
+         Update_Mask_Entry (Value_Mask (K_From_Private), Inverted => True);
+      end if;
+      if Value_Mask (K_From_Private) = Found and Value_Mask (K_From_Visible) = None then
+         Update_Mask_Entry (Value_Mask (K_From_Visible), Inverted => True);
+      end if;
+
+
+      if Positive_From_Spec then
+         Value_Mask2 := Value_Mask;
+         Update_Mask_Entry (Value_Mask  (K_From_Visible), Inverted => False);
+         Update_Mask_Entry (Value_Mask  (K_From_Private), Inverted => True);
+         Update_Mask_Entry (Value_Mask2 (K_From_Private), Inverted => False);
+         Update_Mask_Entry (Value_Mask2 (K_From_Visible), Inverted => True);
+      end if;
 
       case Subrule is
          when K_All =>
             for E in True_Entity_Kind loop
                Update_Rule_Table (E, Value_Mask);
+               if Positive_From_Spec then
+                  Update_Rule_Table (E, Value_Mask2);
+               end if;
             end loop;
          when K_Object =>
             Update_Rule_Table (K_Variable, Value_Mask);
             Update_Rule_Table (K_Constant, Value_Mask);
+            if Positive_From_Spec then
+               Update_Rule_Table (K_Variable, Value_Mask2);
+               Update_Rule_Table (K_Constant, Value_Mask2);
+            end if;
          when others =>
             Update_Rule_Table (Subrule, Value_Mask);
+            if Positive_From_Spec then
+               Update_Rule_Table (Subrule, Value_Mask2);
+            end if;
       end case;
 
-      if Value_Mask (K_From_Spec) /= Found then
-         All_From_Spec := False;
-      end if;
       Rule_Used := True;
    end Add_Control;
 
@@ -363,9 +448,10 @@ package body Rules.Usage is
                              (others =>
                                 (others =>
                                    (others =>
-                                      (others => (Used_Types => (others => False),
-                                                  Labels     => (others => Null_Unbounded_Wide_String))
-                                   )))));
+                                      (others =>
+                                         (others => (Used_Controls => (others => False),
+                                                     Labels        => (others => Null_Unbounded_Wide_String))
+                                   ))))));
             Clear (Own_Usage);
             Clear (Cumulated_Usage);
             All_From_Spec := True;
@@ -377,26 +463,57 @@ package body Rules.Usage is
       end case;
    end Command;
 
-   --------------------------
-   -- Is_From_Package_Spec --
-   --------------------------
 
-   function Is_From_Package_Spec (Element : in Asis.Declaration) return Boolean is
-      use Asis, Asis.Elements, Thick_Queries;
-      Enclosing_PU : constant Asis.Defining_Name := Enclosing_Program_Unit (Element);
+   --------------------
+   -- Package_Origin --
+   --------------------
+
+   function Package_Origin (Element : in Asis.Element) return Package_Origins is
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Thick_Queries, Utilities;
+      Name              : Asis.Defining_Name;
+      Enclosing_PU_Name : Asis.Defining_Name;
+      Enclosing_PU      : Asis.Declaration;
    begin
-      if Is_Nil (Enclosing_PU) then
-         -- Element is a compilation unit
-         return False;
+      case Element_Kind (Element) is
+         when A_Declaration =>
+            Name := Names (Element) (1);
+         when A_Defining_Name =>
+            Name := Element;
+         when others =>
+            Failure ("Package_Origin not on defining_name or declaration");
+      end case;
+
+      if Declaration_Kind (Enclosing_Element (Enclosing_Element (Name))) in A_Formal_Declaration then
+         -- Name is a name of a formal package f.e., not in private nor visible,
+         -- and this case would run afoul of the rest of the algorithm
+         return Not_From_Spec;
       end if;
 
-      case Declaration_Kind (Enclosing_Element (Enclosing_PU)) is
+      if Is_Part_Of_Instance (Name) then
+         -- We are analyzing something from an expanded generic => no source is available,
+         -- and Is_Part_Of does not work (as specified). We must therefore use the corresponding
+         -- generic element.
+         Name := Corresponding_Generic_Element (Name);
+      end if;
+      Enclosing_PU_Name := Enclosing_Program_Unit (Name);
+      if Is_Nil (Enclosing_PU_Name) then
+         -- Element is a compilation unit
+         return Not_From_Spec;
+      end if;
+      Enclosing_PU := Enclosing_Element (Enclosing_PU_Name);
+
+      case Declaration_Kind (Enclosing_PU) is
          when A_Package_Declaration | A_Generic_Package_Declaration =>
-            return True;
+            if Is_Part_Of (Name, Private_Part_Declarative_Items (Enclosing_PU)) then
+               return From_Private;
+            else
+               return From_Visible;
+            end if;
          when others =>
-            return False;
+            return Not_From_Spec;
       end case;
-   end Is_From_Package_Spec;
+   end Package_Origin;
 
 
    ------------
@@ -430,8 +547,8 @@ package body Rules.Usage is
       Add (To => Own_Usage, Key => Unbounded_Key, Value => Entry_Value);
 
       -- For Objects that are part of a package specification of an instance, accumulate usage
-      -- from the outside for the corresponding generic element
-      if Is_Part_Of_Instance (Default_Decl) and then Is_From_Package_Spec (Default_Decl) then
+      -- from the outside for the corresponding generic element.
+      if Is_Part_Of_Instance (Default_Decl) and then Package_Origin (Default_Decl) = From_Visible then
          Generic_Decl := Corresponding_Generic_Element (Default_Decl);
          -- Generic_Decl can be Nil for implicit elements inherited from a derivation in the generic,
          -- which have no corresponding generic elements.
@@ -460,7 +577,7 @@ package body Rules.Usage is
 
       Temp : Asis.Element;
    begin
-      if All_From_Spec and not Is_From_Package_Spec (Element) then
+      if All_From_Spec and then Package_Origin (Element) = Not_From_Spec then
          -- Optimization:
          -- We check only elements from packages, no need to consider this one
          return K_Other;
@@ -591,7 +708,7 @@ package body Rules.Usage is
             end if;
          end Usage_Message;
 
-      begin
+      begin  -- Report_One
          Elem_Loc :=  Get_Location (Value.Declaration);
 
          -- Determine usage
@@ -632,10 +749,11 @@ package body Rules.Usage is
          end if;
 
          if Rule_Table (Value.Entity,
-                        True_Usage (K_From_Spec),
+                        True_Usage (K_From_Visible),
+                        True_Usage (K_From_Private),
                         True_Usage (K_Initialized),
                         True_Usage (K_Read),
-                        True_Usage (K_Written)).Used_Types = (Control_Kinds => False)
+                        True_Usage (K_Written)).Used_Controls = (Control_Kinds => False)
          then
             -- This combination not checked
             return;
@@ -657,6 +775,12 @@ package body Rules.Usage is
                Message := To_Unbounded_Wide_String ("(generic) ");
          end case;
          Append (Message, Full_Name_Image (Value.Declaration));
+
+         if True_Usage (K_From_Visible) then
+            Append (Message, ", visible");
+         elsif True_Usage (K_From_Private) then
+            Append (Message, ", private");
+         end if;
 
          case Value.Entity is
             when K_Constant =>
@@ -744,14 +868,16 @@ package body Rules.Usage is
          -- Do actual report
 
          if Rule_Table (Value.Entity,
-                        True_Usage(K_From_Spec),
+                        True_Usage(K_From_Visible),
+                        True_Usage(K_From_Private),
                         True_Usage(K_Initialized),
                         True_Usage(K_Read),
-                        True_Usage(K_Written)).Used_Types (Check)
+                        True_Usage(K_Written)).Used_Controls (Check)
          then
             Report (Rule_Id,
                     To_Wide_String (Rule_Table (Value.Entity,
-                                                True_Usage(K_From_Spec),
+                                                True_Usage (K_From_Visible),
+                                                True_Usage (K_From_Private),
                                                 True_Usage(K_Initialized),
                                                 True_Usage(K_Read),
                                                 True_Usage(K_Written)).Labels (Check)),
@@ -760,14 +886,16 @@ package body Rules.Usage is
                     To_Wide_String (Message));
 
          elsif Rule_Table (Value.Entity,
-                           True_Usage(K_From_Spec),
+                           True_Usage(K_From_Visible),
+                           True_Usage(K_From_Private),
                            True_Usage(K_Initialized),
                            True_Usage(K_Read),
-                           True_Usage(K_Written)).Used_Types (Search)
+                           True_Usage(K_Written)).Used_Controls (Search)
          then
             Report (Rule_Id,
                     To_Wide_String (Rule_Table (Value.Entity,
-                                                True_Usage(K_From_Spec),
+                                                True_Usage(K_From_Visible),
+                                                True_Usage(K_From_Private),
                                                 True_Usage(K_Initialized),
                                                 True_Usage(K_Read),
                                                 True_Usage(K_Written)).Labels (Search)),
@@ -777,14 +905,16 @@ package body Rules.Usage is
          end if;
 
          if Rule_Table (Value.Entity,
-                        True_Usage(K_From_Spec),
+                        True_Usage(K_From_Visible),
+                        True_Usage(K_From_Private),
                         True_Usage(K_Initialized),
                         True_Usage(K_Read),
-                        True_Usage(K_Written)).Used_Types (Count)
+                        True_Usage(K_Written)).Used_Controls (Count)
          then
             Report (Rule_Id,
                     To_Wide_String (Rule_Table (Value.Entity,
-                                                True_Usage(K_From_Spec),
+                                                True_Usage(K_From_Visible),
+                                                True_Usage(K_From_Private),
                                                 True_Usage(K_Initialized),
                                                 True_Usage(K_Read),
                                                 True_Usage(K_Written)).Labels (Count)),
@@ -795,7 +925,8 @@ package body Rules.Usage is
       end Report_One;
 
       procedure Report_All is new Iterate (Report_One);
-   begin
+
+   begin  -- Finalize
       if not Rule_Used then
          return;
       end if;
@@ -804,9 +935,9 @@ package body Rules.Usage is
       Report_All (Own_Usage);
    end Finalize;
 
-   --------------------------------
-   -- Process_Entity_Declaration --
-   --------------------------------
+   -------------------------
+   -- Process_Declaration --
+   -------------------------
 
    procedure Process_Declaration (Element : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
@@ -834,6 +965,7 @@ package body Rules.Usage is
       end Is_Array_Initialized;
 
       E_Kind : Extended_Entity_Kind;
+      Origin : Package_Origins;
    begin   -- Process_Declaration
       if not Rule_Used then
          return;
@@ -841,6 +973,8 @@ package body Rules.Usage is
       Rules_Manager.Enter (Rule_Id);
 
       E_Kind := Declaration_Form (Element);
+      Origin := Package_Origin   (Element);
+      -- Since we are processing the declaration, the declaration scope is the current scope
       case E_Kind is
          when K_Variable =>
             -- Element is A_Variable_Declaration here
@@ -863,10 +997,7 @@ package body Rules.Usage is
                            -- 'Class is for a tagged type
                            -- Both are not special cases tested below, we can therefore
                            -- take the prefix as well for Root_Definition
-                           Name := Prefix (Name);
-                           if Expression_Kind (Name) = A_Selected_Component then
-                              Name := Selector (Name);
-                           end if;
+                           Name := Simple_Name (Prefix (Name));
                         end if;
                         Root_Definition := Type_Declaration_View (Corresponding_First_Subtype
                                                                     (Corresponding_Name_Declaration
@@ -924,9 +1055,10 @@ package body Rules.Usage is
                for I in The_Names'Range loop
                   Update (The_Names (I),
                           K_Variable,
-                          (K_Declared    => True,
-                           K_From_Spec   => Is_From_Package_Spec (Element),
-                           K_Initialized => Is_Initialized,
+                          (K_Declared     => True,
+                           K_From_Visible => Origin = From_Visible,
+                           K_From_Private => Origin = From_Private,
+                           K_Initialized  => Is_Initialized,
                            others => False));
                end loop;
             end;
@@ -939,7 +1071,8 @@ package body Rules.Usage is
                   Update (The_Names (I),
                           K_Constant,
                           (K_Declared | K_Initialized => True,
-                           K_From_Spec                => Is_From_Package_Spec (Element),
+                           K_From_Visible             => Origin = From_Visible,
+                           K_From_Private             => Origin = From_Private,
                            others                     => False));
                end loop;
             end;
@@ -958,9 +1091,10 @@ package body Rules.Usage is
                for I in The_Names'Range loop
                   Update (The_Names (I),
                           E_Kind,
-                          (K_Declared  => True,
-                           K_From_Spec => Is_From_Package_Spec (Element),
-                           others      => False));
+                          (K_Declared     => True,
+                           K_From_Visible => Origin = From_Visible,
+                           K_From_Private => Origin = From_Private,
+                           others         => False));
                end loop;
             end;
 
@@ -981,7 +1115,7 @@ package body Rules.Usage is
       Item      : Asis.Element;
 
       procedure Check_Access is
-         -- Checks if Name is the prefix of 'Access, 'Unchecked_Access or 'Address
+         -- Checks if Name is the prefix of 'Access, 'Uncheked_Access or 'Address
          -- Calls Uncheckable if it is
          Enclosing : Asis.Element := Enclosing_Element (Name);
       begin
@@ -995,7 +1129,19 @@ package body Rules.Usage is
                   | An_Unchecked_Access_Attribute
                   | An_Address_Attribute
                     =>
-                  Uncheckable (Rule_Id, False_Negative, Get_Location (Name), "possible access through alias");
+                  if Is_Part_Of_Instance (Name) then
+                     -- Name may be an artificial name without a location
+                     -- Put the message at the location of the instantiation
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (Ultimate_Enclosing_Instantiation (Name)),
+                                  "Possible access to """ & A4G_Bugs.Name_Image (Name) & """ through alias");
+                  else
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (Name),
+                                  "possible access through alias");
+                  end if;
                when others =>
                   null;
             end case;
@@ -1300,6 +1446,8 @@ package body Rules.Usage is
                        =>
                      Process_Declaration (Element);
                   when others =>
+                     -- Since we are in an instantiated unit, all subinstantiations are expanded
+                     -- there is therefore no need to handle instantiations here
                      null;
                end case;
 
@@ -1313,7 +1461,7 @@ package body Rules.Usage is
       end Pre_Procedure;
 
       Generic_Name : Asis.Expression;
-   begin
+   begin  -- Process_Instantiation
       if not Rule_Used then
          return;
       end if;
@@ -1343,7 +1491,7 @@ package body Rules.Usage is
       end;
    end Process_Instantiation;
 
-begin
+begin  -- Rules.Usage
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB         => Help'Access,

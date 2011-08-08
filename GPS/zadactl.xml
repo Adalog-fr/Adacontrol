@@ -265,9 +265,18 @@
   <shell lang="python" show-command="false" output="">adactl.create_units()</shell>
  </action>
 
+<action name="About">
+  <shell lang="python" show-command="false" output="none">adactl.about()</shell>
+</action>
+
 <!--  Submenus  -->
 <submenu before="About">
   <title>/Help/AdaControl</title>
+
+  <menu action="About">
+     <title>About</title>
+  </menu>
+
 </submenu>
 
 <submenu before="Help">
@@ -339,14 +348,14 @@
   <name>adacontrol_ug.html</name>
   <descr>AdaControl User Guide</descr>
   <category>AdaControl</category>
-  <menu>/Help/AdaControl/User Guide</menu>
+  <menu before="About">/Help/AdaControl/User Guide</menu>
 </documentation_file>
 
 <documentation_file>
   <name>adacontrol_pm.html</name>
   <descr>AdaControl Programmer Manual</descr>
   <category>AdaControl</category>
-  <menu>/Help/AdaControl/Programmer Manual</menu>
+  <menu before="About">/Help/AdaControl/Programmer Manual</menu>
 </documentation_file>
 
 </AdaControl>

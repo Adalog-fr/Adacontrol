@@ -43,6 +43,29 @@ package body Framework.String_Set is
       Add (To, To_Unbounded_Wide_String (Key), Dummy);
    end Add;
 
+   --------------
+   -- Cardinal --
+   --------------
+
+   function Cardinal (The_Set : in Set) return Natural is
+      use Null_Map;
+
+      Temp : Map := Map (The_Set);
+      -- must have a variable for Count_Elements
+
+      Counter : Natural := 0;
+      procedure Inc (Key : Unbounded_Wide_String; Val : in out Null_Record) is
+         pragma Unreferenced (Key, Val);
+      begin
+         Counter := Counter + 1;
+      end Inc;
+      procedure Count_Elements is new Iterate (Inc);
+
+   begin  -- Cardinal
+      Count_Elements (Temp);
+      return Counter;
+   end Cardinal;
+
    ------------
    -- Delete --
    ------------

@@ -22,6 +22,7 @@ check with_clauses (reduceable);
 search parameter_aliasing (possible);
 search max_nesting (5);
 search local_hiding;
+search special_comments (unnamed_begin, program_unit all);
 --search usage (procedure, from_spec, not called);
 --search usage (function,  from_spec, not called);
 
@@ -29,7 +30,7 @@ search local_hiding;
 -- and uncheckable code
 No_Trace : check entities (Utilities.trace);
 No_Debug : check entities (debug, debug.timing, tracer, tracer.timing);
-No_TBSL  : search special_comments ("TBSL");
+No_TBSL  : search special_comments (pattern, "TBSL");
 search uncheckable (false_negative, missing_unit);
 
 -- Check that functions for which there is a replacement in A4G_Bugs
@@ -42,13 +43,17 @@ Use_A4G_Bugs: check entities (
    Asis.Declarations.Corresponding_Last_Subtype,
    Asis.Declarations.Renamed_Entity,
 
+   -- Asis.Definitions.Corresponding_Root_Type, => see preferred
+
    Asis.Elements.Attribute_Kind,
 
    Asis.Expressions.Attribute_Designator_Identifier,
-   Asis.Statements.Corresponding_Called_Entity,
    Asis.Expressions.Corresponding_Called_Function,
    Asis.Expressions.Corresponding_Expression_Type,
-   Asis.Expressions.Name_Image
+   Asis.Expressions.Name_Image,
+
+   Asis.Statements.Corresponding_Called_Entity,
+   Asis.Statements.Corresponding_Entry
 );
 
 -- Check prefered operation from Thick_Queries

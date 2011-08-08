@@ -30,8 +30,9 @@
 ----------------------------------------------------------------------
 
 package Framework.Plugs is
-   procedure Enter_Unit  (Unit : in Asis.Compilation_Unit);
-   procedure Exit_Unit   (Unit : in Asis.Compilation_Unit);
+   procedure Enter_Unit           (Unit : in Asis.Compilation_Unit);
+   procedure Exit_Context_Clauses (Unit : in Asis.Compilation_Unit);
+   procedure Exit_Unit            (Unit : in Asis.Compilation_Unit);
    procedure Enter_Scope (Element : in Asis.Element);
    procedure Exit_Scope  (Element : in Asis.Element);
 

@@ -568,7 +568,7 @@ package body Rules.Multiple_Assignments is
       end;
    end Process_Statement_Container;
 
-begin
+begin  -- Rules.Multiple_Assignments
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

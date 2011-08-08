@@ -1059,7 +1059,7 @@ package body Rules.Naming_Convention is
       end;
    end Process_Defining_Name;
 
-begin
+begin  -- Rules.Naming_Convention
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

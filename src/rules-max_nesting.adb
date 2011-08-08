@@ -221,7 +221,7 @@ package body Rules.Max_Nesting is
       end case;
    end Process_Scope_Exit;
 
-begin
+begin  -- Rules.Max_Nesting
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

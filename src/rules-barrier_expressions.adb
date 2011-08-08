@@ -589,7 +589,7 @@ package body Rules.Barrier_Expressions is
       Check_Expression (Entry_Barrier (Decl));
    end Process_Entry_Declaration;
 
-begin
+begin  -- Rules.Barrier_Expressions
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

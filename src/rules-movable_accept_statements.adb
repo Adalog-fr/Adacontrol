@@ -39,6 +39,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Linear_Queue,
   Thick_Queries,
   Utilities;
@@ -57,14 +58,6 @@ package body Rules.Movable_Accept_Statements  is
    use Framework;
 
    -- Algorithm:
-   --   The main goal of the algorithm is to target movable statements from `accept'
-   --   since processing accept statements is a blocking operation for entry callers.
-   --   In fact, when a task is processing accept statements, any entry caller that
-   --   arrives to the task is enqueued and wait until its turn comes.
-   --   Reducing the number of statements within an `accept' scope allows to limit
-   --   delays for entry callers, which could be (very) useful with some real-time
-   --   based systems or embedded systems.
-   --
    --
    --   The algorithm implemented here may be decomposed in 5 steps:
    --     - First of all, we create a fictive element that would be referenced only
@@ -103,12 +96,12 @@ package body Rules.Movable_Accept_Statements  is
    --   At this point, we should know the INDEX and KIND of the LAST STATEMENT that
    --   may either reference a parameter, reference a user-defined dependent object
    --   or exclude any further statements.
-   --   If the index is greater than the number of statements componing the `accept'
+   --   If the index is greater than the number of statements composing the `accept'
    --   structure, it tells us that any statement may be moved to an outer as none
    --   depends on any case described here above.
    --   The specific case of an empty body SHOULD NOT REPORT an error.
    --
-   --   Past this point, at least one statement matches one of the case described
+   --   Past this point, at least one statement matches one of the cases described
    --   above. This statement can be called THE LAST STATEMENT.
    --   We can set each statement that appears below this LAST STATEMENT as
    --   movable as they WILL NOT AFFECT the program behavior if moved out the
@@ -164,8 +157,9 @@ package body Rules.Movable_Accept_Statements  is
    package Detail_Flags_Utilities is new Framework.Language.Flag_Utilities (Rule_Detail, "K_");
 
    type Usage_Flags is array (Rule_Detail) of Boolean;
+   Not_Used : constant Usage_Flags := (others => False);
 
-   Rule_Used : Usage_Flags := (others => False);
+   Rule_Used : Usage_Flags := Not_Used;
    Save_Used : Usage_Flags;
    Usage     : array (Rule_Detail) of Basic_Rule_Context;
 
@@ -280,10 +274,10 @@ package body Rules.Movable_Accept_Statements  is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := (others => False);
+            Rule_Used  := Not_Used;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -309,19 +303,15 @@ package body Rules.Movable_Accept_Statements  is
    ----------------------------------
 
    procedure Add_Fictive_Object_Reference
-     (The_Queue            : in out Object_Queue.Queue;
-      Statement_Index      : in Natural;
-      Number_Of_Statements : in Natural)
+     (The_Queue       : in out Object_Queue.Queue;
+      Statement_Index : in Natural)
    is
       use Object_Queue;
 
-      Fictive_Object_Cursor : constant Cursor := First (The_Queue);
-      Fictive_Object        : Object_Information (Number_Of_Statements);
+      Fictive_Object_Cursor : constant Cursor    := First (The_Queue);
+      Fictive_Object        : Object_Information := Fetch (Fictive_Object_Cursor);
    begin
-      -- Retrieve the fictive object from the queue
-      Fictive_Object := Fetch (Fictive_Object_Cursor);
       Fictive_Object.References (Statement_Index) := True;
-      -- Replace with the necessary modifications
       Replace (Fictive_Object_Cursor, Fictive_Object);
    end Add_Fictive_Object_Reference;
 
@@ -390,19 +380,19 @@ package body Rules.Movable_Accept_Statements  is
                           Last_Statement_Information'(Kind  => User_Defined_Dependency,
                                                       Index => State.Current_Statement);
                         Add_Fictive_Object_Reference (State.References_Queue,
-                                                      State.Current_Statement,
-                                                      State.Number_Of_Statements);
+                                                      State.Current_Statement);
                      end if;
                   end;
+
                   -- Check if the identifier is A_Parameter_Specification, An_Object_Declaration or
                   -- An_Object_Renaming_Declaration and process it
                   declare
                      use Framework.Reports;
                      Identifier             : Asis.Expression    := Element;
                      Identifier_Definition  : Asis.Defining_Name :=
-                       Corresponding_Name_Definition (Identifier);
+                                                Corresponding_Name_Definition (Identifier);
                      Identifier_Declaration : Asis.Declaration   :=
-                       Enclosing_Element (Identifier_Definition);
+                                                Enclosing_Element (Identifier_Definition);
                   begin
                      case Declaration_Kind (Identifier_Declaration) is
                         when A_Parameter_Specification
@@ -483,7 +473,6 @@ package body Rules.Movable_Accept_Statements  is
                                  Append (State.References_Queue, Inserted_Object);
                               end if;
                            end;
-
                         when others =>
                            null;
                      end case;
@@ -502,26 +491,16 @@ package body Rules.Movable_Accept_Statements  is
          when A_Statement =>
             case Statement_Kind (Element) is
                -- Inner exclusive statements
-               when A_Return_Statement =>
+               when A_Return_Statement
+                  | A_Requeue_Statement
+                  | A_Requeue_Statement_With_Abort
+                    =>
                   State.Last_Statement :=
                     Last_Statement_Information'(Kind  => Inner_Exclusive,
                                                 Index => State.Current_Statement);
                   State.Movable_Statements (State.Current_Statement) := False;
                   Add_Fictive_Object_Reference (State.References_Queue,
-                                                State.Current_Statement,
-                                                State.Number_Of_Statements);
-
-               -- Inner exclusive statements
-               when A_Requeue_Statement
-                 | A_Requeue_Statement_With_Abort
-                 =>
-                  State.Last_Statement :=
-                    Last_Statement_Information'(Kind  => Inner_Exclusive,
-                                                Index => State.Current_Statement);
-                  State.Movable_Statements (State.Current_Statement) := False;
-                  Add_Fictive_Object_Reference (State.References_Queue,
-                                                State.Current_Statement,
-                                                State.Number_Of_Statements);
+                                                State.Current_Statement);
 
                -- Synchronization statements
                when An_Accept_Statement
@@ -540,8 +519,7 @@ package body Rules.Movable_Accept_Statements  is
                                                 Index => State.Current_Statement);
                   State.Movable_Statements (State.Current_Statement) := False;
                   Add_Fictive_Object_Reference (State.References_Queue,
-                                                State.Current_Statement,
-                                                State.Number_Of_Statements);
+                                                State.Current_Statement);
 
                when others =>
                   null;
@@ -570,11 +548,11 @@ package body Rules.Movable_Accept_Statements  is
    procedure Process_Accept_Statement (Statement : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Framework.Reports;
-      use Object_Queue;
+      use Object_Queue, Thick_Queries;
 
       Stable_State : Boolean := False;
    begin
-      if Rule_Used = (Rule_Detail => False) then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -613,7 +591,7 @@ package body Rules.Movable_Accept_Statements  is
          -- 2nd step: insert all of the `accept' parameters into the referenced objects queue
          declare
             Accept_Entry_Parameters : constant Asis.Parameter_Specification_List
-              := Parameter_Profile (Corresponding_Entry (Statement));
+              := Parameter_Profile (A4G_Bugs.Corresponding_Entry (Statement));
          begin
             -- Insert all of the `accept' parameters into the queue
             for P in Accept_Entry_Parameters'Range loop
@@ -622,7 +600,7 @@ package body Rules.Movable_Accept_Statements  is
                begin
                   for I in Params_Ids'Range loop
                      Append (The_State.References_Queue, (Nb_Refs      => The_State.Number_Of_Statements,
-                                                          Identifier   => Params_Ids (I),
+                                                          Identifier   => First_Defining_Name (Params_Ids (I)),
                                                           Kind         => Parameter,
                                                           References   => (others => False),
                                                           Checked      => False));
@@ -637,17 +615,10 @@ package body Rules.Movable_Accept_Statements  is
          for Stmt_Index in Body_Statements'Range loop
             The_State.Current_Statement := Stmt_Index;
             case Statement_Kind (Body_Statements (Stmt_Index)) is
-               -- Return statements
-               when A_Return_Statement =>
-                  -- Since further statements are unreachable, do not try to process them
-                  The_State.Last_Statement :=
-                    Last_Statement_Information'(Kind  => Exclusive,
-                                                Index => Stmt_Index);
-                  The_State.Movable_Statements (Stmt_Index) := False;
-                  exit;
-               -- Requeue statements
-               when A_Requeue_Statement
-                 | A_Requeue_Statement_With_Abort
+                  -- returning statements
+               when A_Return_Statement
+                  | A_Requeue_Statement
+                  | A_Requeue_Statement_With_Abort
                  =>
                   -- Since further statements are unreachable, do not try to process them
                   The_State.Last_Statement :=
@@ -680,7 +651,7 @@ package body Rules.Movable_Accept_Statements  is
          -- We also know the index and the kind of the last statement.
 
          -- 4th step: try to obtain a stable state for dependent identifiers and movable statements
-         -- No need to check all statements since "Possible" has not been called
+         -- No need to check all statements if "Possible" has not been requested
          if not Rule_Used (K_Possible) then
             Stable_State := True;
          end if;
@@ -741,13 +712,13 @@ package body Rules.Movable_Accept_Statements  is
          end loop;
 
 
-         -- From here on, every reference of an identifier or parameter within a statement is know.
-         -- We also know which statement is movable/removable.
+         -- From here on, every reference of an identifier or parameter within a statement is known.
+         -- We also know which statements are movable/removable.
          -- We can then report each error we found within the `accept' statement
 
          -- 5th step: report errors
          if Rule_Used (K_Possible) then
-        Report_Basic_Statements:
+            Report_Basic_Statements :
             for Stmt_Index in Integer range Body_Statements'First .. The_State.Last_Statement.Index loop
                if The_State.Movable_Statements (Stmt_Index) then
                   Report (Rule_Id,
@@ -770,12 +741,12 @@ package body Rules.Movable_Accept_Statements  is
                   Report (Rule_Id,
                           Usage (K_Certain),
                           Get_Location (Body_Statements (Stmt_Index)),
-                          "statement may be moved to an outer scope (below last parameter reference)");
+                          "statement may be moved to an outer scope (after last parameter reference)");
                when User_Defined_Dependency =>
                   Report (Rule_Id,
                           Usage (K_Certain),
                           Get_Location (Body_Statements (Stmt_Index)),
-                          "statement may be moved to an outer scope (below user-defined dependency)");
+                          "statement may be moved to an outer scope (after user-defined dependency)");
                when others =>
                   Report (Rule_Id,
                           Usage (K_Certain),
@@ -787,7 +758,7 @@ package body Rules.Movable_Accept_Statements  is
    end Process_Accept_Statement;
 
 
-begin
+begin  -- Rules.Movable_Accept_Statements
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

@@ -1,2 +1,3 @@
 check object_declarations (min_integer_span, constant 5, variable 10);
 count object_declarations (min_integer_span, 6);
+search object_declarations (volatile_no_address);

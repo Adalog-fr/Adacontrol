@@ -9,6 +9,13 @@ procedure T_representation_clauses is
    for X'Address use To_Address (0); -- 'Address
    for Y use at To_Address (4);      -- 83 address clause
 
+   I, J, K: Integer;
+   for I'Address use J'Address;      -- 'Address, overlay
+
+   C1      : constant System.Address := I'Address;
+   C2      : constant System.Address := T_Representation_Clauses.C1;
+   for K use at C2;                  -- 83 address clause, overlay
+
    type Enum is (A, B, C);
    for Enum use (10, 20, 30);        -- Enumeration
    for Enum'Alignment use 4;         -- 'Alignment

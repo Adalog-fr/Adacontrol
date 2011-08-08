@@ -1,2 +1,2 @@
 search not_elaboration_calls (ada.text_io.put_line, ada.text_io.line, ada.text_io.count'Image);
-check  not_elaboration_calls (all dispatch);
+check  not_elaboration_calls (all dispatch, new);

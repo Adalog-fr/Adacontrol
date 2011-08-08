@@ -20,12 +20,15 @@ procedure T_Usage is
       Z : constant Integer := 1;
       function "+" (Left : in Calendar.Time;
                     Right : in Duration) return Calendar.Time
-        renames Calendar."+";
+                    renames Calendar."+";
+   private
+      Y4 : Integer;
    end Gen;
 
    package body Gen is
    begin
       Gen.Y2 := X;
+      Gen.Y4 := X;
    end Gen;
 
    package Inst1 is new Gen (0);
@@ -62,6 +65,11 @@ procedure T_Usage is
       V5 : Derived;
    private
       XX : Integer;
+      YY : Integer;
+   end Pack;
+   package body Pack is
+   begin
+      YY := 0;
    end Pack;
    use Pack;
 

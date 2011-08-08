@@ -38,9 +38,9 @@ package Rules.Declarations is
    Rule_Id : constant Wide_String := "DECLARATIONS";
 
    procedure Process_Declaration (Element : in Asis.Declaration);
+   procedure Process_Definition  (Element : in Asis.Definition);
    procedure Process_Statement   (Element : in Asis.Declaration);
    -- For handlers in accept and block statements.
-   procedure Process_Variant     (Variant : in Asis.Definition);
 
    procedure Process_Unit (Unit : in Asis.Compilation_Unit);
 end Rules.Declarations;

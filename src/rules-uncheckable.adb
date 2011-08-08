@@ -46,10 +46,12 @@ package body Rules.Uncheckable is
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Flags_Array is array (Uncheckable_Kinds) of Boolean;
-   Rule_Used : Flags_Array := (others => False);
+   Not_Used : constant Flags_Array := (others => False);
+   Rule_Used : Flags_Array := Not_Used;
    Save_Used : Flags_Array;
 
    Missing_Unit_Context : Basic_Rule_Context;
+
    ----------
    -- Help --
    ----------
@@ -108,11 +110,11 @@ package body Rules.Uncheckable is
    begin
       case Action is
          when Clear =>
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
             Reset_Uncheckable;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -131,7 +133,7 @@ package body Rules.Uncheckable is
 
       Report (Rule_Id, Missing_Unit_Context, Null_Location, Message);
    end Process_Missing_Unit;
-begin
+begin  -- Rules.Uncheckable
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

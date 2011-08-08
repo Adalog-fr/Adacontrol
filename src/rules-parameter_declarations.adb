@@ -227,7 +227,7 @@ package body Rules.Parameter_Declarations is
       C : Callable_Kinds;
 
 
-   begin
+   begin  -- Process_Declaration
       if Rule_Used = (Subrules => (Callable_Kinds => Empty_Control_Kinds_Set)) then
          return;
       end if;
@@ -385,7 +385,7 @@ package body Rules.Parameter_Declarations is
       end;
    end Process_Declaration;
 
-begin
+begin  -- Rules.Parameter_Declarations
    Rules_Manager.Register (Rule_Id,
                            Rules_Manager.Semantic,
                            Help_CB        => Help'Access,

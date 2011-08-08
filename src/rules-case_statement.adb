@@ -65,11 +65,8 @@ package body Rules.Case_Statement is
 
    Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
-   type Bounds_Values is
-      record
-         Min, Max : Biggest_Natural;
-      end record;
-   Bounds : array (Subrules, Control_Kinds) of Bounds_Values := (others => (others => (0, 0)));
+   Bounds : array (Subrules, Control_Kinds) of Framework.Language.Shared_Keys.Bounds_Values
+     := (others => (others => (0, 0)));
 
    ----------
    -- Help --
@@ -91,15 +88,10 @@ package body Rules.Case_Statement is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Framework.Language.Shared_Keys, Framework.Language.Shared_Keys.Min_Max_Utilities,
-          Subrules_Flag_Utilities;
+      use Framework.Language, Framework.Language.Shared_Keys, Subrules_Flag_Utilities;
       use Ada.Strings.Wide_Unbounded;
 
       Subrule_Name : Subrules;
-      Min_Given    : Boolean := False;
-      Max_Given    : Boolean := False;
-      Min_Val      : Biggest_Natural := 0;
-      Max_Val      : Biggest_Natural := Biggest_Natural'Last;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
@@ -113,25 +105,7 @@ package body Rules.Case_Statement is
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
       end if;
-
-      while Parameter_Exists loop
-         case Get_Modifier (Required => True) is
-            when Min =>
-               if Min_Given then
-                  Parameter_Error (Rule_Id, "Min value given more than once");
-               end if;
-               Min_Val   :=  Get_Integer_Parameter (Min => 0);
-               Min_Given := True;
-            when Max =>
-               if Max_Given then
-                  Parameter_Error (Rule_Id, "Max value given more than once");
-               end if;
-               Max_Val   :=  Get_Integer_Parameter (Min => 0);
-               Max_Given := True;
-         end case;
-      end loop;
-
-      Bounds    (Subrule_Name, Ctl_Kind) := (Min_Val, Max_Val);
+      Bounds    (Subrule_Name, Ctl_Kind) := Get_Bounds_Parameters (Rule_Id);
       Labels    (Subrule_Name, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
       Rule_Used (Subrule_Name)(Ctl_Kind) := True;
     end Add_Control;
@@ -335,7 +309,7 @@ package body Rules.Case_Statement is
                        Elem    => Statement);
       end Process_Min_Paths;
 
-   begin
+   begin  -- Process_Case_Statement
       if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
@@ -400,7 +374,7 @@ package body Rules.Case_Statement is
       end loop;
    end Process_Path;
 
-begin
+begin  -- Rules.Case_Statement
    Rules_Manager.Register (Rule_Id,
                            Rules_Manager.Semantic,
                            Help_CB        => Help'Access,

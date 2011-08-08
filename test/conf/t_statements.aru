@@ -9,6 +9,7 @@ Sequential_Stmts: search statements (accept_return,
                                      exception_others,
                                      exception_others_null,
                                      exit,
+                                     exit_expanded_name,
                                      function_return,
                                      goto,
                                      if_elsif,
@@ -17,6 +18,8 @@ Sequential_Stmts: search statements (accept_return,
                                      null,
                                      procedure_return,
                                      raise,
+                                     raise_nonpublic,
+                                     raise_locally_handled,
                                      raise_standard,
                                      reraise,
                                      unnamed_block,
@@ -37,6 +40,7 @@ Tasking_Stmts:    check  statements (abort,
 
 Loop_Stmts:       check  statements (exit_for_loop,
                                      exit_while_loop,
+                                     exit_outer_loop,
                                      for_loop,
                                      loop_return,
                                      multiple_exits,
@@ -49,3 +53,5 @@ Loop_Stmts:       check  statements (exit_for_loop,
 
 If_Count   : count statements (if);
 Case_Count : count statements (case);
+All_Stmts  : count statements (any_statement);
+

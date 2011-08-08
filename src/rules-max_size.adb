@@ -188,7 +188,7 @@ package body Rules.Max_Size is
          end if;
       end Do_Report;
 
-   begin
+   begin  -- Process_Statement
       if not Rule_Used then
          return;
       end if;
@@ -245,7 +245,7 @@ package body Rules.Max_Size is
       end case;
    end Process_Statement;
 
-begin
+begin  -- Rules.Max_Size
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

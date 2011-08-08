@@ -4,7 +4,6 @@
 --
 -- Small differences are indicated by a comment that starts with "Difference:"
 --
--- Gnatcheck rules that are not (yet) supported by AdaControl are left as comments
 
 Abstract_Type_Declarations: 
    check declarations (abstract_type);
@@ -12,7 +11,10 @@ Abstract_Type_Declarations:
 Anonymous_Arrays: 
    check declarations (single_array);
 
--- Anonymous_Subtypes
+Anonymous_Subtypes:
+   check declarations (anonymous_subtype_allocator,   anonymous_subtype_case, 
+                       anonymous_subtype_declaration, anonymous_subtype_for, 
+                       anonymous_subtype_indexing);
 
 Blocks: 
    check statements (block);
@@ -43,13 +45,16 @@ Enumeration_Ranges_In_CASE_Statements:
    check case_statement (range_span, max 0); 
    -- Difference: includes also integer ranges, does not include null ranges
 
--- Exceptions_As_Control_Flow
+Exceptions_As_Control_Flow:
+   check statements (raise_locally_handled);
+   -- Difference: AdaControl handles correctly package bodies, tasks, and accepts
 
 EXIT_Statements_With_No_Loop_Name: 
    check statements (unnamed_exit); 
    -- Difference: applies only to named loops
 
--- Expanded_Loop_Exit_Names
+Expanded_Loop_Exit_Names:
+   check statements (exit_expanded_name);
 
 Explicit_Full_Discrete_Ranges:
    check simplifiable_expressions (range);
@@ -79,7 +84,8 @@ GOTO_Statements:
 Implicit_IN_Mode_Parameters: 
    check style (default_in);
 
--- Implicit_SMALL_For_Fixed_Point_Types
+Implicit_SMALL_For_Fixed_Point_Types:
+   check declarations (ordinary_fixed_type_no_small);
 
 Improperly_Located_Instantiations:
    check declarations (public  instantiation);
@@ -160,7 +166,8 @@ Non_SPARK_Attributes: check entities (all 'Access,
 Non_Tagged_Derived_Types: 
    check declarations (derived_type);
 
--- Non_Visible_Exceptions
+Non_Visible_Exceptions:
+   check exception_propagation (local_exception);
 
 "Numeric_Literals:1": 
    check style (exposed_literal, integer, 0, 1, number, constant);
@@ -176,7 +183,8 @@ OTHERS_In_CASE_Statements:
 OTHERS_In_Exception_Handlers: 
    check statements (exception_others);
 
--- Outer_Loop_Exits
+Outer_Loop_Exits:
+   check statements (exit_outer_loop);
 
 Overloaded_Operators: 
    check declarations (operator); 
@@ -185,11 +193,14 @@ Overloaded_Operators:
 Overly_Nested_Control_Structures:
    check max_statement_nesting (all, 4);
 
--- Parameters_Out_Of_Order
+Parameters_Out_Of_Order:
+   check style (parameter_order, in access, in_out, out, defaulted_in);
 
--- Positional_Actuals_For_Defaulted_Generic_Parameters
+Positional_Actuals_For_Defaulted_Generic_Parameters:
+   check default_parameter (instantiations, all, positional);
 
--- Positional_Actuals_For_Defaulted_Parameters
+Positional_Actuals_For_Defaulted_Parameters:
+   check default_parameter (calls, all, positional);
 
 Positional_Components:
    check style (positional_association, array_aggregate);
@@ -209,7 +220,8 @@ Predefined_Numeric_Types:
                    Standard.Short_Float, Standard.Float, Standard.Long_Float, Standard.Long_Long_Float, 
                    Standard.Duration);
 
--- Raising_External_Exceptions
+Raising_External_Exceptions:
+   check statements (raise_nonpublic);
 
 Raising_Predefined_Exceptions:
    check statements (raise_standard);
@@ -221,12 +233,16 @@ Unassigned_OUT_Parameters:
    check improper_initialization (out_parameter);
    -- Difference: this rule may require a stricter pattern than gnatcheck
 
--- Uncommented_BEGIN_In_Package_Bodies
+Uncommented_BEGIN_In_Package_Bodies:
+   check special_comments (unnamed_begin, declaration package);
+   -- difference: we do not require the begin to be alone on its line
+   -- (better checked by other rules)
 
 Unconstrained_Array_Returns:
    check return_type (unconstrained_array);
 
--- Universal_Ranges
+Universal_Ranges:
+   check expressions (universal_range);
 
 Unnamed_Blocks_And_Loops:
    check statements (unnamed_block, unnamed_for_loop, unnamed_simple_loop, unnamed_while_loop);
@@ -234,4 +250,5 @@ Unnamed_Blocks_And_Loops:
 USE_PACKAGE_Clauses:
    check use_clauses;
 
--- Volatile_Objects_Without_Address_Clauses
+Volatile_Objects_Without_Address_Clauses:
+   check object_declarations (volatile_no_address);

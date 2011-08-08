@@ -36,6 +36,7 @@ package Rules.Not_Elaboration_Calls  is
 
    Rule_Id : constant Wide_String := "NOT_ELABORATION_CALLS";
 
-   procedure Process_Call (Call : in Asis.Element);
+   procedure Process_Call      (Call  : in Asis.Element);
+   procedure Process_Allocator (Alloc : in Asis.Expression);
 
 end Rules.Not_Elaboration_Calls;

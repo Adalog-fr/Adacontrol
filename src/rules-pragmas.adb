@@ -177,7 +177,7 @@ package body Rules.Pragmas is
 
    end Process_Pragma;
 
-begin
+begin  -- Rules.Pragmas
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

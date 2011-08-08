@@ -67,6 +67,7 @@ package body Framework.Symbol_Table is
    procedure Free is new Ada.Unchecked_Deallocation (Root_Content'Class, Content_Access);
 
    type Content_Tab is array (Content_Inx) of Content_Access;
+   Empty_Content : constant Content_Tab := (others => null);
    type Symbol_Entry is
       record
          Name              : Asis.Defining_Name;
@@ -90,10 +91,15 @@ package body Framework.Symbol_Table is
          pragma Unreferenced (Key);
       begin
          Free (Symbol.Contents (Entry_Inx));
+         if Symbol.Contents = Empty_Content then
+            -- no more used
+            raise Symbols.Delete_Current;
+         end if;
       end Clear_One_Entry;
 
       procedure Clear_All_Entries is new Symbols.Iterate (Clear_One_Entry);
-   begin
+
+   begin  -- Clear_Entry
       Clear_All_Entries (Global_Map);
    end Clear_Entry;
 
@@ -424,13 +430,18 @@ package body Framework.Symbol_Table is
                   Action (Symbol.Name, Content_Hook (Symbol.Contents (My_Inx).all).The_Content);
                exception
                   when Delete_Current =>
-                     raise Symbols.Delete_Current;
+                     Free (Symbol.Contents (My_Inx));
+                     if Symbol.Contents = Empty_Content then
+                        -- no more used
+                        raise Symbols.Delete_Current;
+                     end if;
                end;
             end if;
          end On_One_Entity;
 
          procedure On_Every_Entity is new Symbols.Iterate (On_One_Entity);
-      begin
+
+      begin  -- On_Every_Entity_From_Scope
          On_Every_Entity (Global_Map);
       end On_Every_Entity_From_Scope;
 
@@ -459,10 +470,12 @@ package body Framework.Symbol_Table is
             for I in Content_Inx range 1 .. Nb_Instantiated loop
                Free (Symbol.Contents (I));
             end loop;
+            raise Symbols.Delete_Current;
          end if;
       end Clear_One_Entry;
       procedure Clear_All_Entries is new Symbols.Iterate (Clear_One_Entry);
-   begin
+
+   begin  -- Exit_Scope
       Clear_All_Entries (Global_Map);
    end Exit_Scope;
 

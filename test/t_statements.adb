@@ -1,5 +1,7 @@
 with Ada.Calendar; use Ada.Calendar;
 procedure T_statements is
+   procedure Test_Raise is separate;
+
    task T1 is
       entry E1;
       entry E2;
@@ -68,8 +70,6 @@ procedure T_statements is
       end E;
    end Prot;
 
-   E : exception;
-
    package Dispatching is
       type Object is tagged null record;
       procedure Proc (X : Object);
@@ -94,13 +94,14 @@ begin
    <<Next>> null;       -- Null, Labelled
    abort T1;             -- Abort
 
-   loop                 -- Simple_Loop, Unnamedmv_Simple_Loop
+   loop                 -- Simple_Loop, Unnamed_Simple_Loop
       exit;             -- Unconditional_Exit, Exit, Unnamed_Loop_Exited
    end loop;
 B:                      -- Simple_Loop
    loop
-      exit;             -- Unnamed_exit, unconditional_exit, exit
-      exit B;           -- Multiple_exit, unconditional_exit, exit
+      exit;                -- Unnamed_exit, unconditional_exit, exit
+      exit B;              -- Multiple_exit, unconditional_exit, exit
+      exit T_Statements.B; -- Multiple_exit, unconditional_exit, exit_expanded_name, exit
    end loop B;
 
    select               -- Asynchronous select
@@ -131,10 +132,6 @@ B:                      -- Simple_Loop
       when VC => null;  -- Null
    end case;
 
-   raise Constraint_Error; -- Raise_Standard
-
-   raise E;                -- Raise
-
    if I = 0 then           -- No_Else
       null;                -- Null
    end if;
@@ -151,14 +148,6 @@ B2:begin                   -- Block
       when others =>       -- Exception_Others_Null
          null;             -- Null
    end B2;
-
-   begin                   -- Block, Unnamed_Block
-      null;                -- Null
-   exception
-      when others =>       -- Exception_Others
-         I := 1;
-         raise;            -- Reraise
-   end;
 
    while Bool  loop null; end loop;  -- While_Loop, Unnamed_While_Loop, Null
 

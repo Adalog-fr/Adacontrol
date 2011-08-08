@@ -43,6 +43,8 @@ package Framework.String_Set is
 
    function Is_Empty (The_Set : in Set) return Boolean;
    -- Check if there are elements
+   function Cardinal (The_Set : in Set) return Natural;
+   -- Number of elements in the set
    function  Is_Present (Within : in Set; Key : in Wide_String) return Boolean;
 
    procedure Balance (The_Set : in out Set);

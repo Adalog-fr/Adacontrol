@@ -9,6 +9,7 @@ procedure T_Style is
    procedure Literals               is separate;
    procedure Exposed_Literal        is separate;
    procedure Multiple_Elements      is separate;
+   procedure Parameter_Order        is separate;
 
    B : Boolean;
 begin

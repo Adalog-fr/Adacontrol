@@ -262,7 +262,7 @@ def options (rules, files):
    """
    global output_name, gps, previous_command
 
-   result      = "-v"
+   result = "-v"
 
    # set files
    if rules != "check" and files == "":
@@ -334,13 +334,14 @@ def options (rules, files):
    next_is_pfile = False
    next_is_ASIS  = False
    for O in opt_list:
-      if next_is_ofile:
+      if len(O) == 0:
+         pass
+      elif next_is_ofile:
          output_name  = O
-         result       = result + ' ' + O
          next_is_ofile = False
       elif next_is_pfile:
          if rules != "check":
-            result       = result + ' ' + O
+            result = result + ' ' + O
          next_is_pfile = False
       elif next_is_ASIS:
          if rules != "check":
@@ -362,11 +363,7 @@ def options (rules, files):
       elif O == "-F" and gps:
          skip_next = True
       elif O == "-o":
-         if outfile:
-            next_is_ofile = True
-            result = result + ' ' + O
-         else:
-            skip_next = True
+         next_is_ofile = True
       elif O == "-p":
          p_option      = True
          next_is_pfile = True
@@ -389,22 +386,28 @@ def options (rules, files):
          raise ValueError
       elif gps:
          # always override
-         result= result + " -w"
+         result= result + " -wo " + output_name
       elif len (glob.glob(output_name)) != 0:
          if GPS.MDI.yes_no_dialog ("File " + output_name + " exists, override?"):
-            result= result + " -w"
+            result= result + " -wo " + output_name
          else:
             raise ValueError
+      else:
+         result= result + " -o " + output_name
+   else:
+      # file is specified but not used
+      output_name = ""
+
 
    if ASIS_option or not p_option:
       result = result  + " -- "
       if ASIS_option:
-         result = result  + ASIS_option
+         result = result + ASIS_option
 
       if not p_option:
          for I in GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
             for J in GPS.Project.source_dirs(I) :
-               result = result +  " -I" + J.replace("\\", "/")
+               result = result + " -I" + J.replace("\\", "/")
 
    return result
 
@@ -457,10 +460,19 @@ def Help_On_Rule (self):
      GPS.HTML.browse ("adacontrol_ug.html", self.name, navigation = False)
 
 def Add_Rule_Menu (self, matched, unmatched):
-   """Add a new entry to the "help on rule" menu
+   """Add a new entry to the "Help on rule" menu
    """
-   entry=GPS.Menu.create ("Help/AdaControl/Help on rule/" + matched, Help_On_Rule);
+
+   # '_' is interpreted as a special mark in menus, double it
+   entry=GPS.Menu.create ("Help/AdaControl/Help on rule/" + matched.replace("_","__"),
+                          Help_On_Rule,
+                          ref="About",
+                          add_before=True);
    entry.name=matched
+
+def about ():
+   proc = GPS.Process (command_name()+" -h version license")
+   GPS.MDI.dialog (proc.get_result())
 
 def on_pref_changed (H):
    """Hook on preference changes

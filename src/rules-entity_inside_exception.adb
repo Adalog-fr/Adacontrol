@@ -232,7 +232,7 @@ package body Rules.Entity_Inside_Exception is
       Traverse (Handler, Control, State);
    end Process_Exception_Handler;
 
-begin
+begin  -- Rules.Entity_Inside_Exception
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

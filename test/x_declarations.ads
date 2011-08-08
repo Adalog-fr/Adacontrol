@@ -8,7 +8,7 @@ package X_Declarations is
       procedure Free is new Unchecked_Deallocation (Integer, A_Integer); -- Nested_Procedure_Instantiation
    end Pack;
 
-   generic                                                               -- Generic, Nested_Generic_Package
+   generic                                                               -- Generic, Nested_Generic_Package, empty_visible_part
    package Gen_Pack is
    end Gen_Pack;
 

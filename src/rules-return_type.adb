@@ -118,7 +118,7 @@ package body Rules.Return_Type is
          Usage (Key)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end Add_One;
 
-   begin
+   begin  -- Add_Control
       -- each existing parameter must be added for rule checking
       if Parameter_Exists then
          loop
@@ -289,10 +289,7 @@ package body Rules.Return_Type is
          Good_Res : Asis.Expression;
       begin
          Do_Report (K_Class_Wide, "function returns class-wide type");
-         Good_Res := Prefix (Good_Expr);
-         if Expression_Kind (Good_Res) = A_Selected_Component then
-            Good_Res := Selector (Good_Res);
-         end if;
+         Good_Res := Simple_Name (Prefix (Good_Expr));
 
          Result_Type_Declaration := Corresponding_Name_Declaration (Good_Res);
          Check_Tasks_Protected;
@@ -425,10 +422,7 @@ package body Rules.Return_Type is
                                  -- in any other case, we need to check the parent subtype
                                  Parent_Name := Subtype_Simple_Name (Parent_Type);
                                  if Expression_Kind (Parent_Name) = An_Attribute_Reference then
-                                    Parent_Name := Prefix (Parent_Name);
-                                    if Expression_Kind (Parent_Name) = A_Selected_Component then
-                                       Parent_Name := Selector (Parent_Name);
-                                    end if;
+                                    Parent_Name := Simple_Name (Prefix (Parent_Name));
                                  end if;
                                  Result_Type_Declaration := Corresponding_Name_Declaration (Parent_Name);
                               end;
@@ -551,7 +545,7 @@ package body Rules.Return_Type is
       -- Here, the type may have discriminants
   end Process_Function_Declaration;
 
-begin
+begin  -- Rules.Return_Type
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

@@ -196,7 +196,8 @@ package body Adactl_Options is
          Add_Parents (Unit (Unit'First .. Point_Pos - 1));
          Append (Unit_List, "+" & Unit (Unit'First .. Point_Pos - 1));
       end Add_Parents;
-   begin
+
+   begin  -- Add_Unit
       if S (S'First) = '@' then
          Body_Found := True;
          Append (Unit_List, S);
@@ -254,12 +255,12 @@ package body Adactl_Options is
       begin
          if Is_Present (Option) then
             Append (Options_Commands,
-                    "set " & Param & ' '
+                    Param & ' '
                     & To_Wide_String (Value (Option, Explicit_Required => Required, Default => "")) & ';');
          end if;
       end Value_To_Command;
-   begin
 
+   begin -- Analyse_Options
       --
       -- Help
       --
@@ -310,21 +311,18 @@ package body Adactl_Options is
       Flag_To_Command  ('d', "debug");
       Flag_To_Command  ('e', "warning_as_error");
       Flag_To_Command  ('E', "warning", Inverted => True);
-      Value_To_Command ('F', "format");
+      Value_To_Command ('F', "set format");
       Flag_To_Command  ('i', "ignore");
-      Value_To_Command ('m', "max_errors",   Required => False);
-      Value_To_Command ('M', "max_messages", Required => False);
-      Value_To_Command ('o', "output");
-      Value_To_Command ('S', "statistics");
-      Value_To_Command ('t', "trace");
+      Value_To_Command ('m', "set max_errors",   Required => False);
+      Value_To_Command ('M', "set max_messages", Required => False);
+      Value_To_Command ('o', "set output");
+      Value_To_Command ('S', "set statistics");
+      Value_To_Command ('t', "set trace");
       Flag_To_Command  ('T', "timing");
       Flag_To_Command  ('v', "verbose");
 
       -- add commands from file
-      if Is_Present (Option => 'f') then
-         Append (Options_Commands,
-                 "source " & To_Wide_String (Value (Option => 'f', Explicit_Required => True)) & ';');
-      end if;
+      Value_To_Command ('f', "source");
 
       -- add commands from command line
       -- Must stay after file, to allow changing parameters defined in file

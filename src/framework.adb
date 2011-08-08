@@ -2,7 +2,7 @@
 --  Framework - Package body                                        --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -56,9 +56,9 @@ package body Framework is
      := new Context_Node'(new Root_Context'Class'(No_Matching_Context), null);
 
    procedure Free is new Ada.Unchecked_Deallocation (Root_Context'Class, Context_Access);
-   procedure Free is new Ada.Unchecked_Deallocation (Context_Node, Context_Node_Access);
 
    procedure Release (List : in out Context_Node_Access) is
+      procedure Free is new Ada.Unchecked_Deallocation (Context_Node, Context_Node_Access);
 
       Next : Context_Node_Access;
    begin
@@ -147,13 +147,20 @@ package body Framework is
    -- Matches --
    -------------
 
-   function Matches (Name : in Asis.Element; Entity : in Entity_Specification) return Boolean is
-      -- This implementation of Matches is a bit violent, but it ensures consistency with Matching_Context
+   function Matches (Name     : in Asis.Element;
+                     Entity   : in Entity_Specification;
+                     Extended : in Boolean := False) return Boolean
+   is
+      -- This implementation of Matches is a bit violent, but it ensures consistency with (Extended_)Matching_Context
       Junk_Store : Context_Store;
       Result     : Boolean;
    begin
       Associate (Junk_Store, Entity, Root_Context'(null record));
-      Result := Matching_Context (Junk_Store, Name) /= No_Matching_Context;
+      if Extended then
+         Result := Extended_Matching_Context (Junk_Store, Name) /= No_Matching_Context;
+      else
+         Result := Matching_Context (Junk_Store, Name) /= No_Matching_Context;
+      end if;
       Clear (Junk_Store);
       return Result;
    end Matches;
@@ -224,7 +231,7 @@ package body Framework is
          Add (Names, Specification.Specification, Current);
       end Add_To_Map;
 
-   begin
+   begin  -- Associate
       case Specification.Kind is
          when Regular_Id =>
             Add_To_Map (Into.Qualified_Names);
@@ -300,7 +307,7 @@ package body Framework is
       Name_Extra      : Unbounded_Wide_String; -- Initialized to Null_Unbounded_Wide_String
       Result          : Context_Node_Access;
       Is_Predefined_Op: Boolean := False;
-   begin
+   begin  -- Matching_Context
       if Is_Nil (Name) then
          return No_Matching_Context;
       end if;
@@ -311,11 +318,7 @@ package body Framework is
          Name_Enclosing := Enclosing_Element (Name_Enclosing);
       end loop;
 
-      if Expression_Kind (Name) = A_Selected_Component then
-         Good_Name := Selector (Name);
-      else
-         Good_Name := Name;
-      end if;
+      Good_Name := Simple_Name (Name);
 
       -- Special case for pragmas: they have no "name" in the Asis sense.
       if Element_Kind (Name) = A_Pragma then
@@ -466,11 +469,9 @@ package body Framework is
    begin
       if Is_Nil (Name) then
          return No_Matching_Context;
-      elsif Expression_Kind (Name) = A_Selected_Component then
-         Good_Name := Selector (Name);
-      else
-         Good_Name := Name;
       end if;
+
+      Good_Name := Simple_Name (Name);
 
       -- 1) Check provided name
       declare
@@ -669,81 +670,164 @@ package body Framework is
    Identifier_Chars : constant Ada.Strings.Wide_Maps.Wide_Character_Set
      := Ada.Strings.Wide_Maps.To_Set (Ranges => (('a', 'z'), ('A', 'Z'), ('0', '9'), ('_', '_')));
 
-   function Get_Previous_Word_Location (E : in Asis.Element) return Location is
+   function Get_Previous_Word_Location (E        : in Asis.Element;
+                                        Matching : Wide_String := "";
+                                        Starting : Search_Start := From_Head)
+                                        return Location is
       use Asis.Text;
-      E_Span : constant Span := Element_Span (E);
-      L      : Line_Number;
-      Start  : Character_Position;
-      Result : Location;
+      E_Span     : constant Span := Element_Span (E);
+      L          : Line_Number;
+      Word_Start : Character_Position;
+      Result     : Location;
 
       function Find_Word_Start (Line : in Wide_String) return Character_Position is
          use Ada.Strings.Wide_Maps;
+         use Utilities;
+         Stop  : Natural := Line'Last;
+         Start : Positive;
       begin
-         for I in reverse Line'Range loop
-            if Is_In (Line (I), Identifier_Chars) then
-               for J in reverse Positive range Line'First+1 .. I loop
-                  if not Is_In (Line (J-1), Identifier_Chars) then
-                     return J;
-                  end if;
+         while Stop >= Line'First loop
+            if Is_In (Line (Stop), Identifier_Chars) then
+               Start := Stop;
+               while  Start > Line'First and then Is_In (Line (Start - 1), Identifier_Chars) loop
+                  Start := Start - 1;
                end loop;
-               return Line'First;
+               if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
+                  return Start;
+               end if;
+               Stop := Start - 1;
+            else
+               Stop := Stop - 1;
             end if;
          end loop;
 
          return 0;
       end Find_Word_Start;
-   begin
-      L := E_Span.First_Line;
-      Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L)(L)) (1 .. E_Span.First_Column-1));
-      while Start = 0 loop
+
+   begin  -- Get_Previous_Word_Location
+      case Starting is
+         when From_Head =>
+            L := E_Span.First_Line;
+            Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L) (L)) (1 .. E_Span.First_Column - 1));
+         when From_Tail =>
+            L := E_Span.Last_Line;
+            Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L) (L)) (1 .. E_Span.Last_Column));
+      end case;
+      while Word_Start = 0 loop
          L     := L - 1;
-         Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L)(L)));
+         Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L)(L)));
       end loop;
 
       Result := Get_Location (E);
       Result.First_Line   := L;
-      Result.First_Column := Start;
+      Result.First_Column := Word_Start;
       return Result;
    end Get_Previous_Word_Location;
+
+
+   --------------------------------
+   -- Get_Previous_Word_Location --
+   --------------------------------
+
+   function Get_Previous_Word_Location (L        : in Asis.Element_List;
+                                        Matching : Wide_String := "";
+                                        Starting : Search_Start := From_Head)
+                                        return Location
+   is
+   begin
+      case Starting is
+         when From_Head =>
+            return Get_Previous_Word_Location (L (L'First), Matching, From_Head);
+         when From_Tail =>
+            return Get_Previous_Word_Location (L (L'Last), Matching, From_Tail);
+      end case;
+   end Get_Previous_Word_Location;
+
 
    ----------------------------
    -- Get_Next_Word_Location --
    ----------------------------
 
-   function Get_Next_Word_Location (E : in Asis.Element) return Location is
+   function Get_Next_Word_Location (E        : in Asis.Element;
+                                    Matching : Wide_String := "";
+                                    Starting : Search_Start := From_Tail)
+                                    return Location
+   is
       use Asis.Text;
-      E_Span : constant Span := Element_Span (E);
-      L      : Line_Number;
-      Start  : Character_Position;
-      Result : Location;
+      E_Span     : constant Span := Element_Span (E);
+      L          : Line_Number;
+      Word_Start : Character_Position;
+      Result     : Location;
 
       function Find_Word_Start (Line : in Wide_String) return Character_Position is
          use Ada.Strings.Wide_Maps;
+         use Utilities;
+         Start : Positive := Line'First;
+         Stop  : Positive;
       begin
-         for I in Line'Range loop
-            if Is_In (Line (I), Identifier_Chars) then
-               return I;
+         while Start <= Line'Last loop
+            if Is_In (Line (Start), Identifier_Chars) then
+               Stop := Start;
+               while  Stop < Line'Last and then Is_In (Line (Stop + 1), Identifier_Chars) loop
+                  Stop := Stop + 1;
+               end loop;
+               if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
+                  return Start;
+               end if;
+               Start := Stop + 1;
+            else
+               Start := Start + 1;
             end if;
          end loop;
 
          return 0;
       end Find_Word_Start;
-   begin
-      L := E_Span.Last_Line;
+
+   begin  -- Get_Next_Word_Location
+      case Starting is
+         when From_Head =>
+            L := E_Span.First_Line;
+         when From_Tail =>
+            L := E_Span.Last_Line;
+      end case;
       declare
          The_Line : constant Asis.Program_Text := Non_Comment_Image (Lines (E, L, L) (L));
       begin
-         Start := Find_Word_Start (The_Line (E_Span.Last_Column + 1 .. The_Line'Last));
+         case Starting is
+            when From_Head =>
+               Word_Start := Find_Word_Start (The_Line (E_Span.First_Column + 1 .. The_Line'Last));
+            when From_Tail =>
+               Word_Start := Find_Word_Start (The_Line (E_Span.Last_Column + 1 .. The_Line'Last));
+         end case;
       end;
-      while Start = 0 loop
+      while Word_Start = 0 loop
          L     := L + 1;
-         Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L)(L)));
+         Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L)(L)));
       end loop;
 
       Result := Get_Location (E);
       Result.First_Line   := L;
-      Result.First_Column := Start;
+      Result.First_Column := Word_Start;
       return Result;
+   end Get_Next_Word_Location;
+
+
+   ----------------------------
+   -- Get_Next_Word_Location --
+   ----------------------------
+
+   function Get_Next_Word_Location (L        : in Asis.Element_List;
+                                    Matching : Wide_String := "";
+                                    Starting : Search_Start := From_Tail)
+                                    return Location
+   is
+   begin
+      case Starting is
+         when From_Head =>
+            return Get_Next_Word_Location (L (L'First), Matching, From_Head);
+         when From_Tail =>
+            return Get_Next_Word_Location (L (L'Last), Matching, From_Tail);
+      end case;
    end Get_Next_Word_Location;
 
    -------------------
@@ -777,7 +861,11 @@ package body Framework is
    -- Image --
    -----------
 
-   function Image (L : in Location; Short_Name : in Boolean := Default_Short_Name) return Wide_String is
+   function Image (L          : in Location;
+                   Short_Name : in Boolean := Default_Short_Name;
+                   Separator  : in Wide_Character := ':')
+                   return Wide_String
+   is
       use Utilities;
 
       function Strip (Name : in Wide_String) return Wide_String is
@@ -796,16 +884,16 @@ package body Framework is
          return Name;
       end Strip;
 
-   begin
+   begin  -- Image
       if L = Null_Location then
          Failure ("Image of null location");
       elsif L.File_Name = Null_Unbounded_Wide_String then
          return Integer_Img (L.First_Column);
       else
          return Strip (To_Wide_String (L.File_Name))
-           & ":"
+           & Separator
            & Integer_Img (L.First_Line)
-           & ":"
+           & Separator
            & Integer_Img (L.First_Column);
       end if;
    end Image;
@@ -876,6 +964,6 @@ package body Framework is
       return False;
    end Is_Banned;
 
-begin
+begin  -- Framework
    Units_List.Initialize (Adactl_Context'Access);
 end Framework;

@@ -179,7 +179,8 @@ package body Framework.Rules_Manager is
       end One_Help;
 
       procedure Help_Iterate is new Rule_List.Iterate (One_Help);
-   begin
+
+   begin  -- Help_On_All_Rules
       Help_Iterate (Rule_Map);
    end Help_On_All_Rules;
 
@@ -209,7 +210,7 @@ package body Framework.Rules_Manager is
 
       procedure Help_Iterate is new Rule_List.Iterate (One_Name);
 
-   begin
+   begin  -- Help_On_Names
       if Pretty then
          Line := Spaces;
          User_Message ("Rules:");
@@ -257,7 +258,8 @@ package body Framework.Rules_Manager is
       end Prepare_One;
 
       procedure Iterate_On_Prepare is new Rule_List.Iterate (Prepare_One);
-   begin
+
+   begin  -- Prepare_All
       Rule_List.Balance (Rule_Map);
       Iterate_On_Prepare (Rule_Map);
    end Prepare_All;
@@ -276,7 +278,8 @@ package body Framework.Rules_Manager is
       end Finalize_One;
 
       procedure Iterate_On_Finalize is new Rule_List.Iterate (Finalize_One);
-   begin
+
+   begin  -- Finalize_All
       Iterate_On_Finalize (Rule_Map);
    end Finalize_All;
 
@@ -298,7 +301,8 @@ package body Framework.Rules_Manager is
       end One_Command;
 
       procedure Command_Iterate is new Rule_List.Iterate (One_Command);
-   begin
+
+   begin  -- Command_All
       Command_Iterate (Rule_Map);
       case Action is
          when Clear =>
@@ -361,10 +365,9 @@ package body Framework.Rules_Manager is
    --------------------
 
    procedure Report_Timings is
-      use Framework.Reports;
+      use Framework.Reports, Utilities;
 
       procedure Report_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
-         use Utilities;
       begin
          if Info.Total_Time = 0.0 then
             return;
@@ -377,7 +380,8 @@ package body Framework.Rules_Manager is
       end Report_One_Timing;
 
       procedure Report_All_Timings is new Rule_List.Iterate (Report_One_Timing);
-   begin
+
+   begin  -- Report_Timings
       if Last_Rule_Length = 0 then
          --? empty run
          return;
@@ -386,7 +390,11 @@ package body Framework.Rules_Manager is
       if Timing_Option then
          Accumulate_Time;
 
-         Raw_Report ("Rules timing statistics");
+         if Format_Option in CSV .. CSVX then
+            Raw_Trace ("Rule" and "Time");
+         else
+            Raw_Trace ("Rules timing statistics");
+         end if;
          Report_All_Timings (Rule_Map);
       end if;
 

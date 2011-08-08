@@ -1,7 +1,8 @@
 ----------------------------------------------------------------------
---  Rules.Other_Dependencies - Package specification                --
+--  Rules.Dependencies - Package specification                      --
 --                                                                  --
---  This software  is (c) SAGEM DS and  Adalog  2004-2006.  The Ada --
+--  This software  is (c) The European Organisation  for the Safety --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -32,10 +33,12 @@
 with
   Asis;
 
-package Rules.Other_Dependencies is
+package Rules.Dependencies is
 
-   Rule_Id : constant Wide_String := "OTHER_DEPENDENCIES";
+   Rule_Id : constant Wide_String := "DEPENDENCIES";
 
-   procedure Process_With_Clause (Clause : in Asis.Clause);
+   procedure Enter_Unit           (Unit   : in Asis.Compilation_Unit);
+   procedure Exit_Context_Clauses (Unit   : in Asis.Compilation_Unit);
+   procedure Process_With_Clause  (Clause : in Asis.Clause);
 
-end Rules.Other_Dependencies;
+end Rules.Dependencies;

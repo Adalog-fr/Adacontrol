@@ -38,8 +38,6 @@ with
 private package Framework.Language.Scanner is
    -- Scans from current input
 
-   Max_ID_Length : constant := 250;
-
    type Token_Kind is (Name, Integer_Value, Float_Value, String_Value,
 
                        Bad_Token, Bad_Integer, Bad_Float,
@@ -60,7 +58,7 @@ private package Framework.Language.Scanner is
    type Key_Kind is (Key_Access,  Key_All,   Key_Return,                -- Profile keywords
                      Key_Clear,   Key_Help,  Key_Inhibit, Key_Go,       -- Command keywords
                      Key_Message, Key_Quit,  Key_Set,     Key_Source,
-                     Key_Check,  Key_Search, Key_Count,                 -- Rule type keywords
+                     Key_Check,  Key_Search, Key_Count,                 -- Control kind keywords
                      Not_A_Key);                                        -- not a keyword
    subtype Profile_Keys is Key_Kind range Key_Access .. Key_Return;
    subtype Type_Keys    is Key_Kind range Key_Check  .. Key_Count;

@@ -1,5 +1,8 @@
 with Ada.Text_IO; use Ada.Text_IO;
 package body T_not_elaboration_calls is
+   type Int_Ptr is access Integer;
+   Ptr : Int_Ptr;
+
    procedure P is
       package Inner_P is
          type T is tagged null record;
@@ -13,6 +16,7 @@ package body T_not_elaboration_calls is
          end Dispatch;
       begin
          Put_Line ("Hello"); -- Not elaboration
+         Ptr := new Integer; -- Not elaboration
       end Inner_P;
       use Inner_P;
 
@@ -20,9 +24,17 @@ package body T_not_elaboration_calls is
       V : T;
    begin
       Put_Line ("Hello");         -- Not elaboration
-      Put_Line (Count'Image (Z)); -- Not elaboration
+      Put_Line (Count'Image (Z)); -- Not elaboration x2
       Dispatch (V);               -- Not elaboration, non dispatching
-      Dispatch (T'Class (V));     -- Not elaboration, dispatching
+      declare
+         procedure Inner is
+         begin
+            Dispatch (T'Class (V));     -- Not elaboration, dispatching
+            Ptr := new Integer'(32);    -- Not elaboration
+         end Inner;
+      begin
+         Inner;
+      end;
    end P;
 
    package Inner is
@@ -42,5 +54,6 @@ package body T_not_elaboration_calls is
 begin
    begin
       Put_Line ("Hello"); --OK
+      Ptr := new Integer; --OK
    end;
 end T_not_elaboration_calls;

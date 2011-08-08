@@ -46,7 +46,7 @@ procedure T_Movable_Accept_Statements is
                Left := Right;
             end Assign;
          begin
-            Assign (P, D);                      -- explicit reference is here
+            Assign (P, D);                              -- explicit reference is here
             B := True;
          end;
          N := Natural'First;                            -- should trigger (below last parameter reference)
@@ -64,6 +64,11 @@ procedure T_Movable_Accept_Statements is
          N := Natural (I) + 1;                          -- should trigger (below user-defined dependency)
       end User_Defined_Dependent_Procedure_Entry;
    end Simple_Task_Type;
+
+   task Separate_Task is
+      entry Out_Parameter (X : out Boolean);
+   end Separate_Task;
+   task body Separate_Task is separate;
 
    -- A_Procedure_Body_Stub (for renamings)
    procedure Renaming is separate;

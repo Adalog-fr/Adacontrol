@@ -45,8 +45,8 @@ package Rules.Statements is
    procedure Pre_Process_Loop  (Stmt : in Asis.Statement);
    procedure Post_Process_Loop (Stmt : in Asis.Statement);
 
-   procedure Process_Scope_Enter (Scope : in Asis.Statement);
-   procedure Process_Scope_Exit  (Scope : in Asis.Statement);
+   procedure Process_Scope_Enter (Scope : in Asis.Element);
+   procedure Process_Scope_Exit  (Scope : in Asis.Element);
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit);
 end Rules.Statements;

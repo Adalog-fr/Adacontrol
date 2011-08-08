@@ -79,7 +79,11 @@ package body Rules.Unsafe_Paired_Calls is
       end record;
 
    Checked_Subprograms  : Context_Store;
-
+   procedure Clear (Item : in out Asis.Element) is  -- null proc
+      pragma Unreferenced (Item);
+   begin
+      null;
+   end Clear;
    package Active_Procs is new Framework.Scope_Manager.Scoped_Store (Asis.Element,
                                                                      Equivalent_Keys => Asis.Elements.Is_Equal);
 
@@ -125,7 +129,8 @@ package body Rules.Unsafe_Paired_Calls is
             Update (Checked_Subprograms, Existing);
          end if;
       end Associate_With_Set;
-   begin
+
+   begin  -- Add_Control
       if Rules_Used = Control_Index_Set'Last then
          Parameter_Error (Rule_Id,
                           "this rule can be given at most"
@@ -264,10 +269,7 @@ package body Rules.Unsafe_Paired_Calls is
             -- This is intended to diagnose the case where more than one parameter is of the
             -- provided type.
             for I in Profile'Range loop
-               Mark := Declaration_Subtype_Mark (Profile (I));
-               if Expression_Kind (Mark) = A_Selected_Component then
-                  Mark := Selector (Mark);
-               end if;
+               Mark := Simple_Name (Declaration_Subtype_Mark (Profile (I)));
                if Matches (Mark, Lock_Context.Lock.Entity) then
                   if Lock_Context.Lock.Kind /= Entity_Spec or Names (Profile (I))'Length /= 1 then
                      Parameter_Error (Rule_Id,
@@ -487,7 +489,7 @@ package body Rules.Unsafe_Paired_Calls is
          if Definition_Kind (Exception_Choices (Handlers (Handlers'Last))(1)) /= An_Others_Choice then
             Report (Rule_Id,
                     Called_Context,
-                    Get_Previous_Word_Location (Handlers (Handlers'First)),
+                    Get_Previous_Word_Location (Handlers, "EXCEPTION" ),
                     "construct must have a ""when others"" exception handler");
             return;
          end if;
@@ -658,7 +660,7 @@ package body Rules.Unsafe_Paired_Calls is
       end;
    end Process_Call;
 
-begin
+begin  -- Rules.Unsafe_Paired_Calls
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

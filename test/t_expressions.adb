@@ -7,6 +7,8 @@ procedure T_Expressions is
    procedure Test_Others            is separate;
    procedure Test_Real_Equality     is separate;
    procedure Test_Slice             is separate;
+   procedure Test_Conversions       is separate;
+   procedure Test_Range             is separate;
 begin
    null;
 end T_Expressions;

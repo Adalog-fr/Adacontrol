@@ -249,7 +249,7 @@ package body Rules.Units is
                Failure ("Element_Unit");
          end case;
       end Element_Unit;
-   begin
+   begin  -- Process_With_Clause
       if Rule_Used = (Subrules => False) then
          return;
       end if;
@@ -279,7 +279,7 @@ package body Rules.Units is
       end;
    end Process_With_Clause;
 
-begin
+begin  -- Rules.Units
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB         => Help'Access,

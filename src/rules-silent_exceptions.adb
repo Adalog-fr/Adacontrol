@@ -43,20 +43,43 @@ with
 
 -- Adalog
 with
+  Linear_Queue,
   Thick_Queries,
   Utilities;
 
 -- Adactl
 with
+  Adactl_Constants,
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
 
 package body Rules.Silent_Exceptions is
-   use Framework;
+   use Adactl_Constants, Framework;
+
+   -- Algorithm
+   --
+   -- Path analysis
+   -- We traverse recursively all path, setting up a truth table (one for each control kind). The values
+   -- tell whether, in the current construct, no path, some paths, or all paths are reporting.
+   -- An "and" function computes the result of combining two serial paths, and an "or" function computes the
+   -- result of combining two parallel paths.
+   --
+   -- Management of "with" and "not":
+   -- We want to include all exceptions named in a "with" <control spec>, except those named in a "not" <control spec>
+   -- This is done by having a list of control specs, where "with" are prepended and "not" are appended.
+   -- If there is no "with", we must include all exceptions by default, but this is easy to see since the first
+   -- element of the list is a "not".
+   --
+   -- There is a special case, with separate booleans, for "not others". There is /no/ special case for "with others";
+   -- what actually happens is that "others" is taken as a package name. Of course, there is no package named "others",
+   -- but since there is a "with <control spec>", all exceptions are uncontrolled - except "others" handler; this
+   -- achieves the desired effect. Actually, if the user specified "with junk" it would work as well. We just pretend
+   -- we made it on purpose ;-)
 
    type Usage is array (Control_Kinds) of Boolean;
-   Rule_Used  : Usage := (others => False);
+   Not_Used : constant Usage := (others => False);
+   Rule_Used  : Usage := Not_Used;
    Save_Used  : Usage;
    Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
@@ -72,6 +95,20 @@ package body Rules.Silent_Exceptions is
 
    Rule_Uses : Context_Store;
 
+   type Exception_Status is
+      record
+         Entity     : Entity_Specification;
+         Controlled : Boolean;
+      end record;
+   package Exception_Status_Queues is new Linear_Queue (Exception_Status);
+
+   Others_Entity         : constant Entity_Specification := Value ("others");
+   Raise_Entity          : constant Entity_Specification := Value ("raise");
+   Reraise_Entity        : constant Entity_Specification := Value ("reraise");
+   Explicit_Raise_Entity : constant Entity_Specification := Value ("explicit_raise");
+
+   Special_Exceptions  : array (Control_Kinds) of Exception_Status_Queues.Queue;
+   Others_Uncontrolled : array (Control_Kinds) of Boolean := (others => False);
 
    -- Data for managing "exit" from loops:
    type Active_Loops_Data is
@@ -132,15 +169,15 @@ package body Rules.Silent_Exceptions is
    -- Add_Entity --
    ----------------
 
-   procedure Add_Entity (Entity : Entity_Specification; Use_Rule_Type : Control_Kinds) is
+   procedure Add_Entity (Entity : Entity_Specification; Ctl_Kind : Control_Kinds) is
       Value  : Proc_Context := (Usage => (others => No_Path));
    begin
-      Value.Usage (Use_Rule_Type) := All_Paths;
+      Value.Usage (Ctl_Kind) := All_Paths;
       Associate (Rule_Uses, Entity, Value);
    exception
       when Already_In_Store =>
          Value := Proc_Context (Association (Rule_Uses, Entity));
-         Value.Usage (Use_Rule_Type) := All_Paths;
+         Value.Usage (Ctl_Kind) := All_Paths;
          Update (Rule_Uses, Value);
    end Add_Entity;
 
@@ -152,7 +189,10 @@ package body Rules.Silent_Exceptions is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <report procedure name> | raise | return | requeue");
+      User_Message ("Parameter(s)   : <control-item> | <report-item>");
+      User_Message ("<control-item> : not | with   <exception> | <library unit> | others");
+      User_Message (" <report-item> : raise | explicit_raise | reraise |");
+      User_Message ("                 return | requeue | <report procedure name>");
       User_Message ("Control exception handlers that do not re-raise an exception ");
       User_Message ("nor call a report procedure");
    end Help;
@@ -161,21 +201,40 @@ package body Rules.Silent_Exceptions is
    -- Add_Control --
    -----------------
 
-   procedure Add_Control (Ctl_Label : in Wide_String; Use_Rule_Type : in Control_Kinds) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Language;
-
+      use Framework.Language, Exception_Status_Queues;
+      Entity : Entity_Specification;
    begin
-      if Rule_Used (Use_Rule_Type) then
+      if Rule_Used (Ctl_Kind) then
          Parameter_Error (Rule_Id,
                           "this rule can be specified only once for each" &
                           " of  check, search, and count");
       end if;
-      Ctl_Labels (Use_Rule_Type) := To_Unbounded_Wide_String (Ctl_Label);
-      Rule_Used  (Use_Rule_Type) := True;
+      Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used  (Ctl_Kind) := True;
 
       while Parameter_Exists loop
-         Add_Entity (Get_Entity_Parameter, Use_Rule_Type);
+         if Get_Modifier ("NOT") then
+            -- uncontrolled exception (or others) or library unit
+            Entity := Get_Entity_Parameter;
+            if Entity = Others_Entity then
+               Others_Uncontrolled (Ctl_Kind) := True;
+            else
+               Append (Special_Exceptions (Ctl_Kind), (Entity, Controlled => False));
+            end if;
+         elsif Get_Modifier ("WITH") then
+            -- forced controlled exception or library unit
+            Append (Special_Exceptions (Ctl_Kind), (Get_Entity_Parameter, Controlled => True));
+         else
+            Entity := Get_Entity_Parameter;
+            if Entity = Raise_Entity then
+               Add_Entity (Reraise_Entity,        Ctl_Kind);
+               Add_Entity (Explicit_Raise_Entity, Ctl_Kind);
+            else
+               Add_Entity (Entity, Ctl_Kind);
+            end if;
+         end if;
       end loop;
    end Add_Control;
 
@@ -184,16 +243,21 @@ package body Rules.Silent_Exceptions is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+      use Ada.Strings.Wide_Unbounded;
+      use Framework.Rules_Manager, Exception_Status_Queues;
    begin
       case Action is
          when Clear =>
-            Rule_Used   := (others => False);
+            Rule_Used   := Not_Used;
             Ctl_Labels  := (others => Null_Unbounded_Wide_String);
             Clear (Rule_Uses);
+            for Ck in Control_Kinds loop
+               Clear (Special_Exceptions (Ck));
+            end loop;
+            Others_Uncontrolled := (others => False);
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -204,13 +268,26 @@ package body Rules.Silent_Exceptions is
    -------------
 
    procedure Prepare is
-      Raise_Context : constant Root_Context'Class := Association (Rule_Uses, Value ("RAISE"));
+      Reraise_Context        : constant Root_Context'Class := Association (Rule_Uses, Reraise_Entity);
+      Explicit_Raise_Context : constant Root_Context'Class := Association (Rule_Uses, Explicit_Raise_Entity);
    begin
-      if Raise_Context /= No_Matching_Context then
+      if Rule_Used = Not_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if Reraise_Context /= No_Matching_Context then
          for R in Control_Kinds loop
-            if Proc_Context (Raise_Context).Usage (R) = All_Paths then
-               Add_Entity (Value ("ADA.EXCEPTIONS.RAISE_EXCEPTION"), R);
+            if Proc_Context (Reraise_Context).Usage (R) = All_Paths then
                Add_Entity (Value ("ADA.EXCEPTIONS.RERAISE_OCCURRENCE"), R);
+            end if;
+         end loop;
+      end if;
+
+      if Explicit_Raise_Context /= No_Matching_Context then
+         for R in Control_Kinds loop
+            if Proc_Context (Explicit_Raise_Context).Usage (R) = All_Paths then
+               Add_Entity (Value ("ADA.EXCEPTIONS.RAISE_EXCEPTION"), R);
             end if;
          end loop;
       end if;
@@ -432,7 +509,11 @@ package body Rules.Silent_Exceptions is
 
             when A_Raise_Statement =>
                declare
-                  Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("RAISE"));
+                  Is_Reraise : constant Boolean := Is_Nil (Raised_Exception (Stmts (I)));
+                  Context    : constant Root_Context'Class := Framework.Association (Rule_Uses,
+                                                                                     Value (Choose (Is_Reraise,
+                                                                                                    "RERAISE",
+                                                                                                    "EXPLICIT_RAISE")));
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
@@ -577,39 +658,99 @@ package body Rules.Silent_Exceptions is
    -------------------------------
 
    procedure Process_Exception_Handler (Handler : in Asis.Exception_Handler) is
-      use Asis.Statements;
-      use Framework.Reports, Utilities;
       use Ada.Strings.Wide_Unbounded;
+      use Asis, Asis.Statements;
+      use Framework.Reports, Exception_Status_Queues, Utilities;
 
       Paths_Usage : Search_Result;
-   begin
-      if Rule_Used = (Rule_Used'Range => False) then
+      Current     : Cursor;
+
+      All_Uncontrolled : Usage := (Control_Kinds => True);
+      procedure Eval_All_Uncontrolled is
+         -- Check if this handler handles *only* uncontrolled exceptions for each Control_Kind
+         use Asis.Declarations, Asis.Elements;
+         use Thick_Queries;
+
+         Handled    : constant Asis.Element_List := Exception_Choices (Handler);
+         Status     : Exception_Status;
+         Controlled : Boolean;
+      begin
+         for Ck in Control_Kinds loop
+            if Rule_Used (Ck) then
+               if Element_Kind (Handled (Handled'First)) = A_Definition then
+                  -- when others
+                  All_Uncontrolled (Ck) := Others_Uncontrolled (Ck);
+               else
+                  On_Exception_Names :
+                  for H in Handled'Range loop
+
+                     Current := First (Special_Exceptions (Ck));
+                     if Has_Element (Current) then
+                        Controlled := not Fetch (Current).Controlled;
+                        -- i.e.: If the first element is a "with", default is not controlled
+                        --       if the first element is a "not", default is controlled
+                     else
+                        Controlled := True;
+                     end if;
+                     while Has_Element (Current) loop
+                        Status := Fetch (Current);
+                        if Matches (Handled (H), Status.Entity, Extended => True)
+                          or else Matches (Names
+                                           (Unit_Declaration
+                                            (Definition_Compilation_Unit
+                                             (Ultimate_Name
+                                              (Handled (H))))) (1),
+                                           Status.Entity,
+                                           Extended => True)
+                        then
+                           Controlled := Status.Controlled;
+                        end if;
+                        Current := Next (Current);
+                     end loop;
+
+                     if Controlled then
+                        All_Uncontrolled (Ck) := False;
+                        exit On_Exception_Names;
+                     end if;
+                  end loop On_Exception_Names;
+               end if;
+            end if;
+         end loop;
+      end Eval_All_Uncontrolled;
+
+   begin  -- Process_Exception_Handler
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      Eval_All_Uncontrolled;
+      if All_Uncontrolled = (Control_Kinds => True) then
+         return;
+      end if;
 
       Loops_Depth := 0;
       Paths_Usage := Statement_List_Usage (Handler_Statements (Handler));
 
       -- Note: since Check < Search, if both messages apply, only Check
       --       will be output
-      for I in Control_Kinds range Check .. Search loop
-         if Rule_Used (I) then
-            case Paths_Usage (I) is
+      for Ck in Control_Kinds range Check .. Search loop
+         if Rule_Used (Ck) and not All_Uncontrolled (Ck) then
+            case Paths_Usage (Ck) is
                when Neutral =>
                   Failure ("Wrong path evaluation");
 
                when No_Path =>
                   Report (Rule_Id,
-                          To_Wide_String (Ctl_Labels (I)),
-                          I,
+                          To_Wide_String (Ctl_Labels (Ck)),
+                          Ck,
                           Get_Location (Handler),
                           "all paths are silent in exception handler");
                   exit;
                when Some_Paths =>
                   Report (Rule_Id,
-                          To_Wide_String (Ctl_Labels (I)),
-                          I,
+                          To_Wide_String (Ctl_Labels (Ck)),
+                          Ck,
                           Get_Location (Handler),
                           "some paths are silent in exception handler, check manually");
                   exit;
@@ -620,7 +761,7 @@ package body Rules.Silent_Exceptions is
       end loop;
 
       -- Always report count
-      if Rule_Used (Count) then
+      if Rule_Used (Count) and not All_Uncontrolled (Count) then
             case Paths_Usage (Count) is
                when Neutral =>
                   Failure ("Wrong path evaluation");
@@ -638,7 +779,7 @@ package body Rules.Silent_Exceptions is
       end if;
    end Process_Exception_Handler;
 
-begin
+begin  -- Rules.Silent_Exceptions
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

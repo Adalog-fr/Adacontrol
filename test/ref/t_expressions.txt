@@ -35,22 +35,22 @@ t_expressions-test_aggregate.adb:34:13: Error: Unqualified: use of expression "u
 t_expressions-test_aggregate.adb:35:13: Found: Aggregate: use of expression "record_aggregate"
 t_expressions-test_aggregate.adb:36:13: Found: Aggregate: use of expression "record_aggregate"
 t_expressions-test_aggregate.adb:36:13: Error: Unqualified: use of expression "unqualified_aggregate"
-t_expressions-test_attributes.adb:31:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_attributes.adb:33:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:37:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:41:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:35:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:39:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_attributes.adb:43:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:47:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:51:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:55:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:58:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:45:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:49:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:53:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:57:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_attributes.adb:60:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:62:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:68:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:62:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:64:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_attributes.adb:70:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:74:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:76:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_attributes.adb:82:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:72:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:76:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:78:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
+t_expressions-test_attributes.adb:84:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_call.adb:18:7: Error: Calls: use of expression "complex_parameter"
 t_expressions-test_call.adb:19:7: Error: Calls: use of expression "complex_parameter"
 t_expressions-test_call.adb:20:7: Error: Calls: use of expression "complex_parameter"
@@ -97,6 +97,10 @@ t_expressions-test_others.adb:27:9: Found: Aggregate: use of expression "record_
 t_expressions-test_others.adb:27:9: Error: Unqualified: use of expression "unqualified_aggregate"
 t_expressions-test_others.adb:29:9: Found: Aggregate: use of expression "record_aggregate"
 t_expressions-test_others.adb:29:9: Error: Unqualified: use of expression "unqualified_aggregate"
+t_expressions-test_real_equality.adb:22:14: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_real_equality.adb:27:14: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_real_equality.adb:32:14: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_real_equality.adb:37:14: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:42:11: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:44:14: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:46:14: Found: EXPRESSIONS: equality or inequality with Floating Point
@@ -106,11 +110,20 @@ t_expressions-test_real_equality.adb:52:15: Found: EXPRESSIONS: equality or ineq
 t_expressions-test_real_equality.adb:54:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
 t_expressions-test_real_equality.adb:56:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
 t_expressions-test_real_equality.adb:58:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions-test_real_equality.adb:58:17: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:60:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
 t_expressions-test_real_equality.adb:62:14: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:64:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:66:14: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:68:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions-test_real_equality.adb:68:18: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:70:12: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:72:14: Found: EXPRESSIONS: equality or inequality with two Universal Real constants !!!
 t_expressions-test_slice.adb:5:10: Error: EXPRESSIONS: use of expression "slice"
+t_expressions-test_conversions.adb:8:10: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_conversions.adb:9:10: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_conversions.adb:10:10: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_conversions.adb:11:10: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_range.adb:8:25: Error: Ranges: use of expression "universal_range"
+t_expressions-test_range.adb:10:18: Error: Ranges: use of expression "universal_range"
+t_expressions-test_range.adb:13:13: Error: Ranges: use of expression "universal_range"

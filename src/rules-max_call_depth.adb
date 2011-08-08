@@ -87,12 +87,18 @@ package body Rules.Max_Call_Depth is
    Save_Used  : Boolean;
    Ctl_Labels : array (Control_Kinds) of Unbounded_Wide_String;
 
-   Unused   : constant Integer := -1;
    Infinite : constant Natural := Natural'Last;
+   Unused   : constant Integer := -1;
    Depths   : array (Control_Kinds) of Integer := (others => Unused);
    -- Depth that triggers the message, i.e. allowed depth + 1
 
-   package Depth_Map is new Binary_Map (Unbounded_Wide_String, Natural);
+   type Called_Kind is (Enumerated, Recursive, Regular);
+   type Entity_Descriptor is
+      record
+         Kind  : Called_Kind;
+         Depth : Natural;
+      end record;
+   package Depth_Map is new Binary_Map (Unbounded_Wide_String, Entity_Descriptor);
    Call_Depths : Depth_Map.Map;
 
    ----------
@@ -173,15 +179,33 @@ package body Rules.Max_Call_Depth is
    function Call_Depth (Call : Asis.Element) return Natural is
       -- Computes the depth of a call, including itself
       use Asis, Asis.Elements;
-      use Framework.Reports, Thick_Queries;
+      use Depth_Map, Framework.Reports, Thick_Queries;
 
-      Called_Descr : constant Call_Descriptor := Corresponding_Call_Description (Call);
-      Called_Depth : Natural;
+      Called       : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Call));
+      Called_Name  : Unbounded_Wide_String;
+      Called_Descr : Call_Descriptor;
+      Called_Depth : Entity_Descriptor;
    begin
+      if not Is_Nil (Called) then
+         Called_Name := To_Unbounded_Wide_String (Full_Name_Image (Called, With_Profile => True));
+         if Is_Present (Call_Depths, Called_Name) then
+            Called_Depth := Fetch (Call_Depths, Called_Name);
+            case Called_Depth.Kind is
+               when Recursive =>
+                  return Infinite;
+               when Enumerated =>
+                  return 0;
+               when Regular =>
+                  return Called_Depth.Depth + 1;
+            end case;
+         end if;
+      end if;
+
+      Called_Descr := Corresponding_Call_Description (Call);
       case Called_Descr.Kind is
          when An_Attribute_Call | A_Predefined_Entity_Call =>
-            -- Assume these calls have a depth of 1
-            return 1;
+            -- Assume these functions have a depth of 0
+            Called_Depth := (Regular, 0);
 
          when A_Dereference_Call | A_Dispatching_Call =>
             if Is_Part_Of_Instance (Call) then
@@ -199,21 +223,31 @@ package body Rules.Max_Call_Depth is
                             "Dispatching call, call to predefined or dynamic entity; assuming depth of 1");
             end if;
             -- Short of knowing, assume depth of 1
+            -- Return directly, since there is no name to add to Call_Depths in this case
             return 1;
 
          when A_Regular_Call =>
             if Declaration_Kind (Called_Descr.Declaration) = An_Enumeration_Literal_Specification then
                -- Do not even count these as calls
-               return 0;
-            end if;
-
-            -- Normal case
-            Called_Depth := Entity_Call_Depth (Called_Descr.Declaration, Call);
-            if Called_Depth = Infinite then
-               return Infinite;
+               Called_Depth := (Enumerated, 0);
             else
-               return Called_Depth + 1;
+               -- Normal case
+               Called_Depth := (Regular, Entity_Call_Depth (Called_Descr.Declaration, Call));
+               if Called_Depth.Depth = Infinite then
+                  Called_Depth.Kind := Recursive;
+               end if;
             end if;
+      end case;
+
+      Add (Call_Depths, Called_Name, Called_Depth);
+
+      case Called_Depth.Kind is
+         when Recursive =>
+            return Infinite;
+         when Enumerated =>
+            return 0;
+         when Regular =>
+            return Called_Depth.Depth + 1;
       end case;
    end Call_Depth;
 
@@ -362,96 +396,89 @@ package body Rules.Max_Call_Depth is
       Called_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Full_Name_Image
                                                                                   (Ultimate_Name (Names (Decl)(1)),
                                                                                    With_Profile => True));
-      Good_Decl      : Asis.Declaration := Decl;
       Called_Body    : Asis.Declaration;
       Renaming       : Asis.Expression;
       Control        : Traverse_Control := Continue;
       Count          : Natural          := 0;
       Is_Uncheckable : Boolean := False;
+      Result         : Entity_Descriptor  := (Regular, 0);
    begin
-      if Is_Present (Call_Depths, Called_Name) then
-         return Fetch (Call_Depths, Called_Name);
-      end if;
+      -- Called_Body walks the structure until we find the real body corresponding to Decl
+      -- So, it is really the called body only after this loop!
+      Called_Body := Decl;
 
+      -- This loop is exited from the tests at the top, or when an acceptable body is found
       loop
-         if Is_Banned (Good_Decl, Rule_Id) then
+         if Is_Uncheckable or Is_Nil (Called_Body) then
+            exit;
+         end if;
+         if Is_Banned (Called_Body, Rule_Id) then
             Is_Uncheckable := True;
             exit;
          end if;
 
-         case Declaration_Kind (Good_Decl) is
+         case Declaration_Kind (Called_Body) is
             when A_Procedure_Declaration
-              | A_Function_Declaration
-              | A_Generic_Procedure_Declaration
-              | A_Generic_Function_Declaration
-              | A_Procedure_Instantiation
-              | A_Function_Instantiation
-              =>
-               Called_Body := Corresponding_Body (Good_Decl);
-               case  Declaration_Kind (Called_Body) is
-                  when A_Body_Stub
-                    | A_Procedure_Renaming_Declaration  -- This can happen with
-                    | A_Function_Renaming_Declaration   -- renamings as bodies
-                    =>
-                     Good_Decl := Called_Body;
-                  when others =>
-                     exit;
-               end case;
+               | A_Function_Declaration
+               | A_Generic_Procedure_Declaration
+               | A_Generic_Function_Declaration
+               | A_Procedure_Instantiation
+               | A_Function_Instantiation
+                 =>
+               Called_Body := Corresponding_Body (Called_Body);
             when An_Entry_Declaration  =>
-               if Declaration_Kind (Good_Decl) = An_Entry_Declaration and then Is_Task_Entry (Good_Decl) then
+               if Is_Task_Entry (Called_Body) then
                   -- A task entry => not followed
                   Called_Body := Nil_Element;
                else
-                  Called_Body := Corresponding_Body (Good_Decl);
+                  Called_Body := Corresponding_Body (Called_Body);
                end if;
-               exit;
             when A_Procedure_Body_Declaration
               | A_Function_Body_Declaration
               | An_Entry_Body_Declaration
               =>
-               Called_Body := Good_Decl;
+               -- A real body (at last!)
                exit;
             when A_Procedure_Body_Stub
               | A_Function_Body_Stub
               =>
-               Called_Body := Corresponding_Subunit (Good_Decl);
-               exit;
+               Called_Body := Corresponding_Subunit (Called_Body);
             when A_Procedure_Renaming_Declaration
               | A_Function_Renaming_Declaration
               =>
-               Renaming := Simple_Name (A4G_Bugs.Renamed_Entity (Good_Decl));
+               Renaming := Simple_Name (A4G_Bugs.Renamed_Entity (Called_Body));
                case Expression_Kind (Renaming) is
                   when An_Explicit_Dereference =>
                      -- renaming of not static stuff
                      Is_Uncheckable := True;
-                     exit;
                   when An_Indexed_Component =>
                      -- This can happen when renaming a member of an entry family as a procedure
                      -- (sigh)
                      Renaming := Simple_Name (Prefix (Renaming));
-                     Good_Decl := Corresponding_Name_Declaration (Renaming);
                   when An_Attribute_Reference
                     | An_Enumeration_Literal
                     =>
                      Called_Body := Nil_Element;
-                     exit;
                   when others =>
                      null;
                end case;
-               Good_Decl := Corresponding_Name_Declaration (Renaming);
+               Called_Body := Corresponding_Name_Declaration (Renaming);
             when A_Formal_Function_Declaration
                | A_Formal_Procedure_Declaration
                  =>
                Is_Uncheckable := True;
-               exit;
+            when Not_A_Declaration =>
+               -- this should happen only when the body is given by a pragma import
+               Assert (Element_Kind (Called_Body) = A_Pragma, "Entity_Call_Depth: not a declaration or pragma");
+               Is_Uncheckable := True;
             when others =>
-               Failure ("not a callable entity declaration", Good_Decl);
+               Failure ("not a callable entity declaration", Called_Body);
          end case;
       end loop;
 
-      if Is_Uncheckable or else Element_Kind (Called_Body) = A_Pragma then
+      if Is_Uncheckable then
          -- predefined stuff, call from access to SP or dispatching call (sigh!), banned unit
-         -- Pragma: imported SP
+         -- or imported SP
          -- the best we can do is to consider that it calls nothing
 
          if Is_Part_Of_Instance (Call) then
@@ -460,13 +487,13 @@ package body Rules.Max_Call_Depth is
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Ultimate_Enclosing_Instantiation (Call)),
-                         "Call to predefined, dynamic, formal, or inhibited entity in generic; "
+                         "Call to predefined, dynamic, formal, imported, or inhibited entity in generic; "
                            & "assuming depth of 1");
          else
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Call),
-                         "Call to predefined, dynamic, formal, or inhibited entity; assuming depth of 1");
+                         "Call to predefined, dynamic, formal, imported, or inhibited entity; assuming depth of 1");
          end if;
          Count := 0;
       elsif Is_Nil (Called_Body) then
@@ -476,7 +503,7 @@ package body Rules.Max_Call_Depth is
       else
          -- Initialize to Infinite before traversing. This way, if it is truly recursive,
          -- it will be found in the map and the result will be Infinite.
-         Add (Call_Depths, Called_Name, Infinite);
+         Add (Call_Depths, Called_Name, (Recursive, Infinite));
 
          -- We cannot directly traverse the whole body, since bodies are discarded
          -- We traverse all the parts manually (except formal parameters, of course)
@@ -517,11 +544,12 @@ package body Rules.Max_Call_Depth is
             end;
          exception
             when Recursivity_Found =>
-               null;
+               Result := (Recursive, Infinite);
          end;
       end if;
+      Result.Depth := Count;
 
-      Add (Call_Depths, Called_Name, Count);
+      Add (Call_Depths, Called_Name, Result);
       return Count;
    end Entity_Call_Depth;
 
@@ -550,7 +578,8 @@ package body Rules.Max_Call_Depth is
                     "Call has a depth of " & Integer_Img (Depth));
          end if;
       end Do_Report;
-   begin
+
+   begin  -- Process_Call
       if not Rule_Used then
          return;
       end if;
@@ -569,7 +598,7 @@ package body Rules.Max_Call_Depth is
 
    end Process_Call;
 
-begin
+begin  -- Rules.Max_Call_Depth
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

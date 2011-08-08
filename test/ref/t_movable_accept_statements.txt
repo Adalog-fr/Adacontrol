@@ -1,20 +1,20 @@
 t_movable_accept_statements.adb:30:10: Found: Possible: statement may be moved to an outer scope
 t_movable_accept_statements.adb:34:10: Error: Certain: statement may be moved to an outer scope
 t_movable_accept_statements.adb:38:10: Found: Possible: statement may be moved to an outer scope
-t_movable_accept_statements.adb:52:10: Error: Certain: statement may be moved to an outer scope (below last parameter reference)
+t_movable_accept_statements.adb:52:10: Error: Certain: statement may be moved to an outer scope (after last parameter reference)
 t_movable_accept_statements.adb:56:10: Found: Possible: statement may be moved to an outer scope
-t_movable_accept_statements.adb:58:10: Error: Certain: statement may be moved to an outer scope (below user-defined dependency)
+t_movable_accept_statements.adb:58:10: Error: Certain: statement may be moved to an outer scope (after user-defined dependency)
 t_movable_accept_statements.adb:62:10: Found: Possible: statement may be moved to an outer scope
-t_movable_accept_statements.adb:64:10: Error: Certain: statement may be moved to an outer scope (below user-defined dependency)
+t_movable_accept_statements.adb:64:10: Error: Certain: statement may be moved to an outer scope (after user-defined dependency)
 t_movable_accept_statements-renaming.adb:21:10: Error: Certain: statement may be moved to an outer scope
 t_movable_accept_statements-renaming.adb:26:10: Found: Possible: statement may be moved to an outer scope
-t_movable_accept_statements-renaming.adb:29:10: Error: Certain: statement may be moved to an outer scope (below last parameter reference)
+t_movable_accept_statements-renaming.adb:29:10: Error: Certain: statement may be moved to an outer scope (after last parameter reference)
 t_movable_accept_statements-renaming.adb:59:10: Found: Possible: statement may be moved to an outer scope
-t_movable_accept_statements-renaming.adb:65:10: Error: Certain: statement may be moved to an outer scope (below last parameter reference)
-t_movable_accept_statements-renaming.adb:66:10: Error: Certain: statement may be moved to an outer scope (below last parameter reference)
+t_movable_accept_statements-renaming.adb:65:10: Error: Certain: statement may be moved to an outer scope (after last parameter reference)
+t_movable_accept_statements-renaming.adb:66:10: Error: Certain: statement may be moved to an outer scope (after last parameter reference)
 t_movable_accept_statements-renaming.adb:116:10: Found: Possible: statement may be moved to an outer scope
-t_movable_accept_statements-renaming.adb:127:10: Error: Certain: statement may be moved to an outer scope (below last parameter reference)
-t_movable_accept_statements-renaming.adb:128:10: Error: Certain: statement may be moved to an outer scope (below last parameter reference)
+t_movable_accept_statements-renaming.adb:127:10: Error: Certain: statement may be moved to an outer scope (after last parameter reference)
+t_movable_accept_statements-renaming.adb:128:10: Error: Certain: statement may be moved to an outer scope (after last parameter reference)
 t_movable_accept_statements-renaming.adb:133:10: Found: Possible: statement may be moved to an outer scope
 t_movable_accept_statements-renaming.adb:135:10: Error: Certain: statement may be moved to an outer scope
 t_movable_accept_statements-renaming.adb:140:10: Found: Possible: statement may be moved to an outer scope

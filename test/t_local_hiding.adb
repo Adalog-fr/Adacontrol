@@ -88,6 +88,13 @@ procedure T_local_hiding is
          null;
       end;
    end Pack;
+
+   package Sep is
+      procedure Sep_Proc;
+   end Sep;
+
+   package body Sep is separate;
+
 begin
    declare
       X : Integer; -- Hiding

@@ -2,7 +2,7 @@
 --  Rules.Unnecessary_Use - Package body                            --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -78,7 +78,8 @@ package body Rules.Unnecessary_Use is
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Subrules_Set is array (Subrules) of Boolean;
-   Rule_Used : Subrules_Set := (others => False);
+   Not_Used  : constant Subrules_Set := (others => False);
+   Rule_Used : Subrules_Set := Not_Used;
    Save_Used : Subrules_Set;
    Ctl_Contexts  : array (Subrules) of Basic_Rule_Context;
 
@@ -90,7 +91,11 @@ package body Rules.Unnecessary_Use is
          Original_Name   : Wide_String (1..Length_2);
          User            : User_Kind;
       end record;
-
+   procedure Clear (Item : in out Package_Info) is  -- null proc
+      pragma Unreferenced (Item);
+   begin
+      null;
+   end Clear;
    package Used_Packages is new Framework.Scope_Manager.Scoped_Store (Package_Info);
 
    ----------
@@ -141,10 +146,10 @@ package body Rules.Unnecessary_Use is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := (others => False);
+            Rule_Used  := Not_Used;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -181,8 +186,8 @@ package body Rules.Unnecessary_Use is
                  User          => Nothing);
       end Build_Info;
 
-   begin
-      if Rule_Used = (Subrules => False) then
+   begin  -- Process_Use_Clause
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -204,8 +209,8 @@ package body Rules.Unnecessary_Use is
                         Report (Rule_Id,
                                 Ctl_Contexts (Nested),
                                 Get_Location (Info.Elem),
-                                "use clause for """ & Info.Original_Name
-                                & """ in scope of use clause for same package at "
+                                "use clause for " & Info.Original_Name
+                                & " in scope of use clause for same package at "
                                 & Image (Get_Location (Used_Packages.Current_Data.Elem)));
                      end if;
                   end if;
@@ -270,7 +275,7 @@ package body Rules.Unnecessary_Use is
       end Is_Name_Prefixed_With;
 
    begin  -- Process_Identifier
-      if Rule_Used = (Subrules => False) then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -295,7 +300,7 @@ package body Rules.Unnecessary_Use is
                         Report (Rule_Id,
                                 Ctl_Contexts (Movable),
                                 Get_Location (Info.Elem),
-                                "use clause can be moved to body: " & Info.Original_Name);
+                                "use clause for "  & Info.Original_Name & " can be moved to body");
                      end if;
                   end if;
                   if Is_Name_Prefixed_With (Info.Name) then
@@ -329,7 +334,7 @@ package body Rules.Unnecessary_Use is
       use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
       use Framework.Reports;
    begin
-      if Rule_Used = (Subrules => False) then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -366,69 +371,90 @@ package body Rules.Unnecessary_Use is
       use Framework.Reports, Framework.Scope_Manager;
       use Asis, Asis.Elements, Asis.Declarations;
 
-      Is_Package_Spec : constant Boolean := Declaration_Kind (Scope) = A_Package_Declaration or
-                                            Declaration_Kind (Scope) = A_Generic_Package_Declaration;
+      Is_Package_Spec : Boolean := False;
+      Is_Package_Body : Boolean := False;
    begin
-      if Rule_Used = (Subrules => False) then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      -- For a unit spec with a body, delay messages until the end of the body
+      case Declaration_Kind (Scope) is
+         when A_Package_Declaration
+            | A_Generic_Package_Declaration
+              =>
+            if not Is_Nil (Corresponding_Body (Scope)) then
+               return;
+            end if;
+            Is_Package_Spec := True;
+         when A_Procedure_Declaration
+            | A_Generic_Procedure_Declaration
+            | A_Function_Declaration
+            | A_Generic_Function_Declaration
+              =>
+            if not Is_Nil (Corresponding_Body (Scope)) then
+               return;
+            end if;
+         when A_Package_Body_Declaration =>
+            Is_Package_Body := True;
+         when others =>
+            null;
+      end case;
+
       Used_Packages.Reset (Current_Scope_Only);
       while Used_Packages.Data_Available loop
-         -- For a package spec with a body, delay messages until the end of the body
-         if not Is_Package_Spec or else Is_Nil (Corresponding_Body (Scope)) then
-            declare
-               Info : constant Package_Info := Used_Packages.Current_Data;
-               Child_Warning : constant Boolean
-                 := (Is_Package_Spec or Used_Packages.Current_Origin = Specification)
-                 and Current_Depth = 1;
-            begin
-               if Used_Packages.Current_Origin /= Parent then
-                  case Info.User is
-                     when Nothing =>
-                        if Rule_Used (Unused) then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Unused),
-                                   Get_Location (Info.Elem),
-                                   "unused: """ & Info.Original_Name
-                                   & Choose (Child_Warning,
-                                             """ (possible usage in child units)",
-                                             """"));
-                        end if;
-                     when Qualified_Name =>
-                        if Rule_Used (Qualified) then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Qualified),
-                                   Get_Location (Info.Elem),
-                                   "all uses qualified: """ & Info.Original_Name
-                                   & Choose (Child_Warning,
-                                             """ (possible usage in child units)",
-                                             """"));
-                        end if;
-                     when Operator =>
-                        if Rule_Used (Operator) then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Operator),
-                                   Get_Location (Info.Elem),
-                                   "only used for operators: """ & Info.Original_Name
-                                   & Choose (Child_Warning,
-                                             """ (possible usage in child units)",
-                                             """"));
-                        end if;
-                     when Identifier =>
-                        null;
-                  end case;
-               end if;
-            end;
-         end if;
+         declare
+            Info          : constant Package_Info := Used_Packages.Current_Data;
+            Child_Warning : constant Boolean :=  Current_Depth = 1
+                                                 and (Is_Package_Spec
+                                                      or (Is_Package_Body
+                                                          and Used_Packages.Current_Origin = Specification));
+         begin
+            if Used_Packages.Current_Origin /= Parent then
+               case Info.User is
+                  when Nothing =>
+                     if Rule_Used (Unused) then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Unused),
+                                Get_Location (Info.Elem),
+                                "unused use clause for " & Info.Original_Name
+                                & Choose (Child_Warning,
+                                          " (possible usage in child units)",
+                                          ""));
+                     end if;
+                  when Qualified_Name =>
+                     if Rule_Used (Qualified) then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Qualified),
+                                Get_Location (Info.Elem),
+                                "all uses of " & Info.Original_Name & " are qualified"
+                                 & Choose (Child_Warning,
+                                           " (possible usage in child units)",
+                                           ""));
+                     end if;
+                  when Operator =>
+                     if Rule_Used (Operator) then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Operator),
+                                Get_Location (Info.Elem),
+                                "use clause for "  & Info.Original_Name & " only used for operators"
+                                & Choose (Child_Warning,
+                                          " (possible usage in child units)",
+                                          ""));
+                     end if;
+                  when Identifier =>
+                     null;
+               end case;
+            end if;
+         end;
 
          Used_Packages.Next;
       end loop;
 
    end Process_Scope_Exit;
 
-begin
+begin  -- Rules.Unnecessary_Use
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

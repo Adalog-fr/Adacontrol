@@ -1,28 +1,30 @@
 separate (T_Expressions)
 procedure Test_Attributes is
+   subtype Index is Integer range 1 .. 10;
+
    -- One dimensional:
-   type T11 is array (1 .. 10) of Integer;
+   type T11 is array (Index) of Integer;
    type T12 is array (Positive range <>) of Integer;
-   type T13 is new T12 (1 .. 10);
-   subtype T14 is T12 (1 .. 10);
+   type T13 is new T12 (Index);
+   subtype T14 is T12 (Index);
 
    V11 : T11;
-   V12 : T12 (1 .. 5);
+   V12 : T12 (Index);
    V13 : T13;
    V14 : T14;
-   V15 : array (1 .. 10) of Integer;
+   V15 : array (Index) of Integer;
 
    -- Two dimensional:
-   type T21 is array (1 .. 10, 1 .. 10) of Integer;
+   type T21 is array (Index, Index) of Integer;
    type T22 is array (Positive range <>, Character range <>) of Integer;
-   type T23 is new T22 (1 .. 10, 'a' .. 'z');
-   subtype T24 is T22 (1 .. 10, 'a' .. 'z');
+   type T23 is new T22 (Index, 'a' .. 'z');
+   subtype T24 is T22 (Index, 'a' .. 'z');
 
    V21 : T21;
-   V22 : T22 (1 .. 5, 'a' .. 'z');
+   V22 : T22 (Index, 'a' .. 'z');
    V23 : T23;
    V24 : T24;
-   V25 : array (1 .. 10, 1 .. 5) of Integer;
+   V25 : array (Index, Index) of Integer;
 
    I : Integer;
 begin

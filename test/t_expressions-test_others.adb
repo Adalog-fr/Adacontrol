@@ -1,6 +1,6 @@
 separate (T_Expressions)
 procedure Test_Others is
-   S : String (1 .. 4);
+   S : String (1 .. Natural'(4));
    type Nothing is null record;
    type Rec is tagged
       record

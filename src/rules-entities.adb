@@ -137,7 +137,7 @@ package body Rules.Entities is
       end;
    end Process_Identifier;
 
-begin
+begin  -- Rules.Entities
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

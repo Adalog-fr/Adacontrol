@@ -204,10 +204,7 @@ package body Rules.Insufficient_Parameters is
             end;
 
          when A_Function_Call =>
-            Pref := Prefix (Expr);
-            if Expression_Kind (Pref) = A_Selected_Component then
-               Pref := Selector (Pref);
-            end if;
+            Pref := Simple_Name (Prefix (Expr));
             if Expression_Kind (Pref) /= An_Operator_Symbol then
                return (others => False);
             end if;
@@ -343,7 +340,7 @@ package body Rules.Insufficient_Parameters is
 
    end Process_Call;
 
-begin
+begin  -- Rules.Insufficient_Parameters
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

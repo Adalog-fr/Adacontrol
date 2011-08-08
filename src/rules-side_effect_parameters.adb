@@ -205,14 +205,9 @@ package body Rules.Side_Effect_Parameters is
       end Formal_Image;
 
       function Func_Image (Func : Asis.Expression) return Wide_String is
-         Pfx : Asis.Element;
       begin
          if Expression_Kind (Func) = An_Attribute_Reference then
-            Pfx := Prefix (Func);
-            if Expression_Kind (Pfx) = A_Selected_Component then
-               Pfx := Selector (Pfx);
-            end if;
-            return A4G_Bugs.Name_Image (Pfx) & ''' & Attribute_Name_Image (Func);
+            return A4G_Bugs.Name_Image (Simple_Name (Prefix (Func))) & ''' & Attribute_Name_Image (Func);
          else
             return To_Title (A4G_Bugs.Name_Image (Func));
          end if;
@@ -238,7 +233,7 @@ package body Rules.Side_Effect_Parameters is
          end if;
       end Check;
 
-   begin
+   begin  -- Pre_Procedure
       case Element_Kind (Element) is
          when A_Pragma =>
             -- Do not traverse pragmas
@@ -363,7 +358,7 @@ package body Rules.Side_Effect_Parameters is
       end;
    end Process_Call_Or_Instantiation;
 
-begin
+begin  -- Rules.Side_Effect_Parameters
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

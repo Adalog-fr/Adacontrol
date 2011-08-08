@@ -29,3 +29,10 @@ t_exception_propagation-x_interface.adb:21:4: Error: interf: subprogram "Proc_C3
 t_exception_propagation-x_interface.adb:33:4: Error: interf: subprogram "F" can propagate exceptions, interfaced to C
 t_exception_propagation-x_task.adb:4:4: Error: task: task "T1" can propagate exceptions
 t_exception_propagation-x_task.adb:19:4: Error: task: task "T3" can propagate exceptions
+t_exception_propagation-x_local_exception.adb:4:4: Found: local: No handler for local exception in enclosing body
+t_exception_propagation-x_local_exception.adb:11:7: Found: local: handler can propagate local exception at t_exception_propagation-x_local_exception.adb:7:7
+t_exception_propagation-x_local_exception.adb:16:7: Found: local: No handler for local exception in enclosing body
+t_exception_propagation-x_local_exception.adb:23:7: Found: local: No handler for local exception in enclosing block
+t_exception_propagation-x_local_exception.adb:36:7: Found: local: handler can propagate local exception at t_exception_propagation-x_local_exception.adb:32:7
+t_exception_propagation-x_local_exception.adb:38:7: Found: local: handler can propagate local exception at t_exception_propagation-x_local_exception.adb:32:7
+t_exception_propagation-x_local_exception.adb:50:7: Found: local: handler can propagate local exception at t_exception_propagation-x_local_exception.adb:45:7

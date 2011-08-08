@@ -51,14 +51,15 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_Statements is
    use Framework;
 
-   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_Handler,     Stmt_If,  Stmt_If_For_Case,
-                     Stmt_If_Not, Stmt_Loop, Stmt_Nested_Path, Stmt_Null);
+   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_Handler,        Stmt_If,          Stmt_If_For_Case,
+                     Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
    use Subrules_Flags_Utilities;
 
    type Usage_Flags is array (Subrules) of Boolean;
-   Rule_Used : Usage_Flags := (others => False);
+   Not_Used : constant Usage_Flags := (others => False);
+   Rule_Used : Usage_Flags := Not_Used;
    Save_Used : Usage_Flags;
    Usage     : array (Subrules) of Basic_Rule_Context;
 
@@ -108,10 +109,10 @@ package body Rules.Simplifiable_Statements is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := (others => False);
+            Rule_Used  := Not_Used;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -156,9 +157,9 @@ package body Rules.Simplifiable_Statements is
    end Is_Breaking_Statement;
 
 
-   -----------
-   -- Check --
-   -----------
+   ---------------------
+   -- Check_Condition --
+   ---------------------
 
    Not_Appropriate_For_Case : exception;
 
@@ -183,19 +184,17 @@ package body Rules.Simplifiable_Statements is
             raise Not_Appropriate_For_Case;
          end if;
       end Update_Pivot;
-   begin
+
+   begin  -- Check_Condition
       case Expression_Kind (Expr) is
          when Not_An_Expression =>
             Failure ("Not an expression in traverse", Expr);
 
          when A_Function_Call =>
             declare
-               Func_Name : Asis.Expression := Prefix (Expr);
+               Func_Name : constant Asis.Expression := Simple_Name (Prefix (Expr));
                Decl      : Asis.Declaration;
             begin
-               if Expression_Kind (Func_Name) = A_Selected_Component then
-                  Func_Name := Selector (Func_Name);
-               end if;
                case Expression_Kind (Func_Name) is
                   when An_Operator_Symbol =>
                      -- Check that the operator is the real one, not some user-defined function
@@ -334,7 +333,8 @@ package body Rules.Simplifiable_Statements is
 
          return True;
       end Is_Trivial_Handler;
-   begin
+
+   begin  -- Process_Exception_Handler
       if not Rule_Used (Stmt_Handler) then
          return;
       end if;
@@ -399,21 +399,17 @@ package body Rules.Simplifiable_Statements is
                  and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
                then
                   Report (Rule_Id,
-                          Usage (Stmt_If),
+                          Usage (Stmt_Nested_Path),
                           Get_Location (Paths (Paths'Last)),
                           "content of else path can be moved outside ""if"" statement");
                elsif Is_Breaking_Statement (Else_Last_Stmt)
                  and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
                then
                   -- Prettier to put message in front of "then" than in front of "if"
-                  declare
-                     Stats : constant Asis.Statement_List := Sequence_Of_Statements (Paths (Paths'First));
-                  begin
-                     Report (Rule_Id,
-                             Usage (Stmt_If),
-                             Get_Previous_Word_Location (Stats (Stats'First)),
-                             "content of then path can be moved outside ""if"" statement");
-                  end;
+                  Report (Rule_Id,
+                          Usage (Stmt_Nested_Path),
+                          Get_Previous_Word_Location (Sequence_Of_Statements (Paths (Paths'First)), "THEN"),
+                          "content of then path can be moved outside ""if"" statement");
                end if;
             end if;
 
@@ -499,7 +495,7 @@ package body Rules.Simplifiable_Statements is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Framework.Reports, Thick_Queries, Utilities;
    begin
-      if Rule_Used = (Subrules => False) then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -546,6 +542,22 @@ package body Rules.Simplifiable_Statements is
                      end if;
                   end;
                end if;
+            end if;
+
+         when A_Loop_Statement =>
+            if Rule_Used (Stmt_Loop_For_While) then
+               declare
+                  Loop_Stmts : constant Asis.Statement_List := Loop_Statements (Stmt);
+               begin
+                  if Statement_Kind (Loop_Stmts (Loop_Stmts'First)) = An_Exit_Statement
+                    and then Is_Equal (Stmt, Corresponding_Loop_Exited (Loop_Stmts (Loop_Stmts'First)))
+                  then
+                     Report (Rule_Id,
+                             Usage (Stmt_Loop_For_While),
+                             Get_Location (Stmt),
+                             "simple loop can be changed to ""while""");
+                  end if;
+               end;
             end if;
 
          when A_For_Loop_Statement =>
@@ -607,7 +619,7 @@ package body Rules.Simplifiable_Statements is
       end if;
    end Process_Statement;
 
-begin
+begin  -- Rules.Simplifiable_Statements
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

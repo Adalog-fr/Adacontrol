@@ -115,6 +115,18 @@ package body Framework.Ruler is
          raise;
    end Exit_Unit;
 
+
+   --------------------------
+   -- Exit_Context_Clauses --
+   --------------------------
+
+   procedure Exit_Context_Clauses (Unit : in Asis.Compilation_Unit) is
+   begin
+      Framework.Plugs.         Exit_Context_Clauses (Unit);
+      Framework.Specific_Plugs.Exit_Context_Clauses (Unit);
+      Framework.Scope_Manager. Exit_Context_Clauses;
+   end Exit_Context_Clauses;
+
    -----------------
    -- Enter_Scope --
    -----------------
@@ -213,7 +225,7 @@ package body Framework.Ruler is
          end loop;
       end Process_Context_Clauses;
 
-      Framework.Scope_Manager.Exit_Context_Clauses;
+      Exit_Context_Clauses (Unit);
 
    Process_Unit :
       declare

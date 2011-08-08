@@ -58,12 +58,10 @@ package body Rules.Default_Parameter is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   type Usage_Kind is (Used, Not_Used);
-   subtype Key_Used is Usage_Kind range Used .. Used;
+   type Usage_Kind is (Used, Positional, Not_Used);
+   package Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Usage_Kind);
 
-   package Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Key_Used);
-
-   type Entity_Kind is (E_Name, E_All);
+   type Entity_Kind is (E_Name, E_Calls, E_Instantiations, E_All);
    package Entity_Kind_Utilities is new Framework.Language.Flag_Utilities (Entity_Kind, Prefix => "E_");
 
    type Usage_Rec is new Basic_Rule_Context with
@@ -84,8 +82,9 @@ package body Rules.Default_Parameter is
 
    Entities : Context_Store;
 
-   Key_All    : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("ALL");
-   Entity_All : constant Entity_Specification  := Value ("ALL");
+   Key_All               : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("ALL");
+   Entity_Calls          : constant Entity_Specification  := Value ("CALLS");
+   Entity_Instantiations : constant Entity_Specification  := Value ("INSTANTIATIONS");
 
    -------------
    -- Or_Else --
@@ -112,14 +111,14 @@ package body Rules.Default_Parameter is
    ----------
 
    procedure Help is
-      use Usage_Kind_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      User_Message  ("Parameter 1: <Subprogram or generic name> | all");
+      Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter 1:",
+                                           Extra_Value => "<Subprogram or generic name>");
       User_Message  ("Parameter 2: <Formal parameter name> | all");
-      Help_On_Flags ("Parameter 3: [not]");
-      User_Message  ("Control subprogram calls or generic instantiations that use (or not)");
-      User_Message  ("the default value for a given parameter");
+      Usage_Kind_Utilities.Help_On_Flags ("Parameter 3:");
+      User_Message  ("Control subprogram calls or generic instantiations that use the default for a");
+      User_Message  ("given defaulted parameter, or provide it, positionally or using any notation");
    end Help;
 
    -----------------
@@ -131,59 +130,68 @@ package body Rules.Default_Parameter is
 
       Entity      : Entity_Specification;
       E_Kind      : Entity_Kind;
-      Formals_Map : Parameter_Tree.Map;
-   begin
-      if not Parameter_Exists then
-         Parameter_Error (Rule_Id, "missing subprogram or generic name");
-      end if;
 
-      E_Kind := Get_Flag_Parameter (Allow_Any => True);
-      case E_Kind is
-         when E_Name =>
-            Entity := Get_Entity_Parameter;
-         when E_All =>
-            Entity := Entity_All;
-      end case;
-      if not Parameter_Exists then
-         Parameter_Error (Rule_Id, "missing formal name");
-      end if;
-
-      declare
-         Formal      : constant Wide_String := Get_Name_Parameter;
-         Usage       : Usage_Kind;
-         Affirmative : Boolean;
+      procedure Update (Ent : Entity_Specification; Form : Wide_String; Usg : Usage_Kind) is
+         Formals_Map : Parameter_Tree.Map;
       begin
-         if Parameter_Exists then
-            Affirmative := not Get_Modifier ("NOT");
-            Usage       := Get_Flag_Parameter (Allow_Any => False);  -- "used" (or error)
-            if not Affirmative then
-               Usage := Not_Used;
-            end if;
-         else
-            Parameter_Error (Rule_Id, """used"" or ""not used"" expected");
-         end if;
-
          begin
-            Associate (Entities, Entity, Entity_Context'(Formals_Map => Formals_Map));
+            Associate (Entities, Ent, Entity_Context'(Formals_Map => Formals_Map));
          exception
             when Already_In_Store =>
                null;
          end;
 
          -- Note: Maps have object (reference) semantics
-         Formals_Map := Entity_Context (Association (Entities, Entity)).Formals_Map;
+         Formals_Map := Entity_Context (Association (Entities, Ent)).Formals_Map;
          declare
             Val : Usage_Tab := Parameter_Tree.Fetch (Formals_Map,
-                                                     To_Unbounded_Wide_String (Formal),
+                                                     To_Unbounded_Wide_String (Form),
                                                      Default_Value => Empty_Usage);
          begin
-            if Val (Usage).Active then
+            if Val (Usg).Active then
                Parameter_Error (Rule_Id, "this combination of parameters already specified");
             end if;
-            Val (Usage) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with True);
-            Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Formal), Val);
+            Val (Usg) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with True);
+            Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Form), Val);
             Update (Entities, Entity_Context'(Formals_Map => Formals_Map));
          end;
+      end Update;
+
+   begin  -- Add_Control
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "missing subprogram or generic name");
+      end if;
+
+      E_Kind := Get_Flag_Parameter (Allow_Any => True);
+      if E_Kind = E_Name then
+         Entity := Get_Entity_Parameter;
+      end if;
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "missing formal name");
+      end if;
+
+      declare
+         Formal : constant Wide_String := Get_Name_Parameter;
+         -- Note: "ALL" is handled as a regular name
+         Usage : Usage_Kind;
+      begin
+         if Parameter_Exists then
+            Usage := Get_Flag_Parameter (Allow_Any => False);
+         else
+            Parameter_Error (Rule_Id, "usage kind expected");
+         end if;
+
+         case E_Kind is
+            when E_Name =>
+               Update (Entity, Formal, Usage);
+            when E_Calls =>
+               Update (Entity_Calls, Formal, Usage);
+            when E_Instantiations =>
+               Update (Entity_Instantiations, Formal, Usage);
+            when E_All =>
+               Update (Entity_Calls, Formal, Usage);
+               Update (Entity_Instantiations, Formal, Usage);
+         end case;
       end;
       Rule_Used  := True;
    end Add_Control;
@@ -240,7 +248,6 @@ package body Rules.Default_Parameter is
 
       function Get_Formals_List return Asis.Element_List is
          use Asis.Expressions;
-         Gen_Name : Asis.Expression;
       begin
          if Expression_Kind (Name) = An_Attribute_Reference then
             -- Calls to attributes must be ignored, since they have no formal name (and no default value)
@@ -254,28 +261,33 @@ package body Rules.Default_Parameter is
          elsif Declaration_Kind (Element) in A_Generic_Instantiation
            or Declaration_Kind (Element) = A_Formal_Package_Declaration
          then
-            Gen_Name := Ultimate_Name (Generic_Unit_Name (Element));
-            if Expression_Kind (Gen_Name) = A_Selected_Component then
-               Gen_Name := Selector (Gen_Name);
-            end if;
-            return Generic_Formal_Part (Corresponding_Name_Declaration (Gen_Name));
+            return Generic_Formal_Part (Corresponding_Name_Declaration
+                                        (Simple_Name
+                                         (Ultimate_Name
+                                          (Generic_Unit_Name (Element)))));
          else
             Failure ("Unexpected element in Process for Default_Parameter", Element);
          end if;
       end Get_Formals_List;
 
-      procedure Check (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class) is
-         use Framework.Reports;
-         use Parameter_Tree;
+      procedure Check (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class)
+      is
+         use Asis.Expressions;
+         use Framework.Reports, Parameter_Tree;
          Formal_Key : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
-         Usage        : Usage_Tab        := Empty_Usage;
-         Is_Defaulted : constant Boolean := Is_Nil (Actual_Expression (Element, Formal, Return_Default => False));
+         Usage         : Usage_Tab        := Empty_Usage;
+         Actual        : constant Asis.Expression := Actual_Expression (Element, Formal, Return_Default => False);
+         Is_Defaulted  : constant Boolean := Is_Nil (Actual);
+         Is_Positional : constant Boolean := not Is_Defaulted
+                                             and then Is_Nil (Formal_Parameter (Enclosing_Element (Actual)));
       begin
          -- Build usage in order of preferences:
          --    Sp_Name, Formal_Name
+         --    Sp_Name, Positional
          --    Sp_Name, All
          --    All,     Formal_Name
+         --    All,     Positional
          --    All,     All
          if Name_Context /= No_Matching_Context then
             if Is_Present (Entity_Context (Name_Context).Formals_Map, Formal_Key) then
@@ -303,6 +315,15 @@ package body Rules.Default_Parameter is
             end if;
          end if;
 
+         if Usage (Positional).Active then
+            if Is_Positional then
+               Report (Rule_Id,
+                       Usage (Used),
+                       Get_Location (Element),
+                       "use of defaulted formal """ & Defining_Name_Image (Formal) & """ with positional association");
+            end if;
+         end if;
+
          if Usage (Not_Used).Active then
             if not Is_Defaulted then
                Report (Rule_Id,
@@ -312,7 +333,9 @@ package body Rules.Default_Parameter is
             end if;
          end if;
       end Check;
-   begin
+
+      Entity_All : Entity_Specification;
+   begin  -- Process_Call_Or_Instantiation
       if not Rule_Used then
          return;
       end if;
@@ -321,29 +344,16 @@ package body Rules.Default_Parameter is
       case Element_Kind (Element) is
          when A_Declaration =>
             -- Must be A_Generic_Instantiation or A_Formal_Package_Declaration
-            Name := Generic_Unit_Name (Element);
+            Name       := Generic_Unit_Name (Element);
+            Entity_All := Entity_Instantiations;
          when An_Expression =>
             -- Must be A_Function_Call
-            Name := Called_Simple_Name (Element);
-
--- The following sequence was necessary due to a bug in Called_Simple_Name for functions
--- Kept as comments until proven not useful on any supported platform.
---              if Expression_Kind (Name) /= An_Attribute_Reference then
---                 declare
---                    Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Function (Element);
---                 begin
---                    if Is_Nil (Called) then
---                       -- Some predefined stuff
---                       Name := Nil_Element;
---                    else
---                       Name := Names (Called)(1);
---                    end if;
---                 end;
---              end if;
-
+            Name       := Called_Simple_Name (Element);
+            Entity_All := Entity_Calls;
          when others =>
             -- Must be a procedure or entry call
-            Name := Called_Simple_Name (Element);
+            Name       := Called_Simple_Name (Element);
+            Entity_All := Entity_Calls;
       end case;
 
       declare
@@ -401,7 +411,7 @@ package body Rules.Default_Parameter is
       end;
    end Process_Call_Or_Instantiation;
 
-begin
+begin  -- Rules.Default_Parameter
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

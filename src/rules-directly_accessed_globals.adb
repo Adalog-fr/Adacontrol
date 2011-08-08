@@ -443,11 +443,12 @@ package body Rules.Directly_Accessed_Globals is
       end Check_One;
 
       procedure Check_All is new Variables_Map.Iterate (Check_One);
-   begin
+
+   begin  -- Post_Process_Package_Body
       Check_All (Global_Variables);
    end Post_Process_Package_Body;
 
-begin
+begin  -- Rules.Directly_Accessed_Globals
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

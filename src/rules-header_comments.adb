@@ -226,6 +226,11 @@ package body Rules.Header_Comments is
    procedure Enter_Unit is
       use Ada.Wide_Text_IO;
    begin
+      if not Rule_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
       for R in Control_Kinds loop
          Reported (R) := Comments (R) = Uninitialized;
       end loop;
@@ -288,7 +293,7 @@ package body Rules.Header_Comments is
             end if;
          end Line_Match;
 
-      begin
+      begin  -- Check_Model
          if not Is_Open (Model_File) or Model_Reported then
             return;
          end if;
@@ -367,7 +372,7 @@ package body Rules.Header_Comments is
          end case;
       end Check_Model;
 
-   begin
+   begin  -- Process_Line
       if not Rule_Used
         or (Reported = (Control_Kinds => True) and Model_Reported)
       then
@@ -384,7 +389,7 @@ package body Rules.Header_Comments is
       Check_Model;
   end Process_Line;
 
-begin
+begin  -- Rules.Header_Comments
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
                                      Help_CB        => Help'Access,

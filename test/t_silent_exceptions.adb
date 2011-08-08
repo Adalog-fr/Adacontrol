@@ -95,7 +95,7 @@ begin
             P;
          end loop;
 
-      when Constraint_Error => --Found, Counted
+      when Constraint_Error => -- Found (in Standard, but constraint_error), Counted
          if False then
             raise;
          else
@@ -120,7 +120,7 @@ begin
       when Mode_Error =>         -- Found
          Put_Line (F);
 
-      when Constraint_Error =>   -- Found
+      when Name_Error =>         -- Found
          declare
             X : constant String := F;
          begin
@@ -133,7 +133,7 @@ begin
       when Tasking_Error =>      -- Error, Counted
          delay Duration'Value ("1.0");
 
-      when Program_Error =>     -- Found
+      when Program_Error | End_Error =>     -- Found (not all uncontrolled)
          delay Duration'Value (F);
 
       when Storage_Error =>     -- Error, Counted
@@ -145,7 +145,7 @@ begin
          begin
             X := H;
          end;
-      when Use_Error =>         -- Found
+      when Use_Error =>         -- OK (Found but Use_Error)
          X := G(F);
    end;
 
@@ -158,7 +158,7 @@ begin
          begin
             null;
          end;
-      when Tasking_Error =>     -- Found
+      when End_Error =>          -- Found
          declare
             package Pack is new Genpack1 (F);
          begin
@@ -191,13 +191,13 @@ begin
    begin
       null;
    exception
-      when Tasking_Error =>     -- Found
+      when Name_Error =>        -- Found
          declare
             package Pack is new Genpack2;
          begin
             null;
          end;
-      when Constraint_Error =>  -- Found
+      when Data_Error =>        -- Found
          I := FF'length;
       when Storage_Error =>     -- OK
          PP;

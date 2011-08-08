@@ -170,7 +170,7 @@ package body Rules.Max_Blank_Lines is
       end if;
   end Process_Line;
 
-begin
+begin  -- Rules.Max_Blank_Lines
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
                                      Help_CB        => Help'Access,

@@ -156,7 +156,7 @@ package body Framework.Reports is
          end if;
       end Next_Word;
 
-   begin
+   begin  -- Update
       if Pos = Not_Found then
          return;
       end if;
@@ -293,7 +293,11 @@ package body Framework.Reports is
             Just_Created := False;
             case Format_Option is
                when CSV | CSVX =>
-                  Put ("Location");
+                  Put ("File");
+                  Put (CSV_Separator (Format_Option));
+                  Put ("Line");
+                  Put (CSV_Separator (Format_Option));
+                  Put ("Col");
                   Put (CSV_Separator (Format_Option));
                   Put ("Type");
                   Put (CSV_Separator (Format_Option));
@@ -324,7 +328,7 @@ package body Framework.Reports is
                if Loc = Null_Location then
                   Put ("""""");
                else
-                  Put (Image (Loc));
+                  Put (Image (Loc, Separator => CSV_Separator (Format_Option)));
                end if;
                Put (CSV_Separator (Format_Option));
                Put (Title);
@@ -362,7 +366,7 @@ package body Framework.Reports is
       use Counters, False_Positive_Map;
       Active : Boolean := True;
 
-   begin
+   begin  -- Report
       if Error_Count = Max_Errors or Error_Count + Warning_Count = Max_Messages then
          -- This can happen for finalization messages after the run has been previously cancelled
          -- due to too many errors/messages
@@ -624,13 +628,21 @@ package body Framework.Reports is
       end Report_One_Count;
 
       procedure Report_All_Counts is new Iterate (Report_One_Count);
-   begin
+
+   begin -- Report_Counts
       if Is_Empty (Rule_Counter) or Format_Option = None then
          return;
       end if;
 
-      New_Line;
-      Put_Line ("Counts summary:");
+      case Format_Option is
+         when None =>
+            return;
+         when CSV | CSVX =>
+            Raw_Report ("Rule" and "Counts");
+         when Source | Gnat =>
+            New_Line;
+            Raw_Report ("Counts summary:");
+      end case;
       Report_All_Counts (Rule_Counter);
    end Report_Counts;
 
@@ -695,7 +707,7 @@ package body Framework.Reports is
 
       procedure Check_Delete is new Iterate (Check_Delete_One);
 
-   begin
+   begin  -- Clear
       Check_Delete (Rule_Counter);
       -- TBSL: delete entries whose name is a label associated to the rule
 
@@ -766,8 +778,9 @@ package body Framework.Reports is
       end Report_One_Stat;
 
       procedure Report_All_Stats is new Iterate (Report_One_Stat);
+
       use Utilities;
-   begin
+   begin  -- Report_Stats
       if Stats_Level = None then
          return;
       end if;
@@ -779,11 +792,7 @@ package body Framework.Reports is
             when Gnat | Source | None =>
                null;
             when CSV | CSVX =>
-               Put_Line ("Rule"
-                           & CSV_Separator (Format_Option) & "Label"
-                           & CSV_Separator (Format_Option) & "Check"
-                           & CSV_Separator (Format_Option) & "Search"
-                           & CSV_Separator (Format_Option) & "Count");
+               Put_Line ("Rule" and "Label" and "Check" and "Search" and "Count");
          end case;
          Report_All_Stats (Stats_Counters (Control_Kinds'First));
       end if;

@@ -177,8 +177,8 @@ if [ $? -eq 0 ] ; then
    result=10
 fi
 # Create timing file
-echo "Rule;Time" >res/rules_timing.txt
-grep -E "^[A-Z_]+; [0-9.]+" res/${test_case}.txt >>res/rules_timing.txt
+echo "Rule;Time" >res/rules_timing.csv
+grep -E "^[A-Z_]+; [0-9.]+" res/${test_case}.txt >>res/rules_timing.csv
 # Put "PASSED" as the result if OK
 if [ $result -le 1 ]; then
    put_line "PASSED"
@@ -230,7 +230,7 @@ put_title_line "Test result for $nb_rules rules, $nb_fw framework tests"
 put_line_line
 for test_case in $list; do
     diff=`diff res/${test_case} ref/${test_case} 2>&1 `
-    if [ "$diff" = "" ]; then
+    if [ "$diff" == "" ]; then
 	nb_passed=$((nb_passed+1))
 	if [ $SILENT -eq 0 ]; then
 	    printf "=> %-60s%-13s <=\n" ${test_case} "       PASSED"

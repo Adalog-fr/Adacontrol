@@ -108,7 +108,8 @@ package body Rules.Simplifiable_expressions is
             Ctl_Contexts (Ctl_Kind)(Subrule) := (Used => True, Label => To_Unbounded_Wide_String (Ctl_Label));
          end if;
       end Add_Check;
-   begin
+
+   begin  -- Add_Control
       if Parameter_Exists then
          while Parameter_Exists loop
             Key := Get_Flag_Parameter (Allow_Any => False);
@@ -219,7 +220,8 @@ package body Rules.Simplifiable_expressions is
             return Expr;
          end if;
       end Get_Kind;
-   begin
+
+   begin  -- Process_Call
       if not Rule_Used then
          return;
       end if;
@@ -362,7 +364,8 @@ package body Rules.Simplifiable_expressions is
                     Message);
          end if;
       end Do_Reports;
-   begin
+
+   begin  -- Process_Range
       if not Rule_Used then
          return;
       end if;
@@ -719,7 +722,7 @@ package body Rules.Simplifiable_expressions is
 
       Enclosing : Asis.Element;
       Enclosed  : Asis.Element;
-   begin
+   begin  -- Process_Parenthesized
       if not Rule_Used then
          return;
       end if;
@@ -861,7 +864,7 @@ package body Rules.Simplifiable_expressions is
       end if;
    end Process_Conversion;
 
-begin
+begin  -- Rules.Simplifiable_expressions
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

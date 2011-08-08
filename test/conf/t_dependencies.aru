@@ -1,0 +1,6 @@
+"more than 2":  search dependencies (raw, max 2);
+"less than 10": check dependencies (raw, min 10);
+"all direct" :  check dependencies (direct, max 0);
+"not between 5 and 10": check dependencies (direct, min 5, max 10);
+"others": check dependencies (others, ada.text_IO, ada.strings);
+

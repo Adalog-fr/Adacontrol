@@ -216,7 +216,7 @@ package body Rules.Use_Clauses is
       end;
    end Process_Use_Clause;
 
-begin
+begin  -- Rules.Use_Clauses
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

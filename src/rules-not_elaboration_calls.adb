@@ -60,9 +60,9 @@ package body Rules.Not_Elaboration_Calls is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <subprogram name>");
-      User_Message ("Control subprogram calls that happen elsewhere than as part");
-      User_Message ("of the elaboration of a library package.");
+      User_Message ("Parameter(s): <subprogram name>|new");
+      User_Message ("Control subprogram calls or allocators that happen elsewhere than");
+      User_Message ("as part of the elaboration of a library package.");
    end Help;
 
    -----------------
@@ -119,54 +119,69 @@ package body Rules.Not_Elaboration_Calls is
       Balance (Subprograms);
    end Prepare;
 
+   procedure Check (Current_Context : Root_Context'Class; Loc : Location) is
+      use Asis, Asis.Elements;
+      use Framework.Reports, Framework.Scope_Manager;
+      Scopes : constant Scope_List := Active_Scopes;
+   begin
+      if Current_Context = No_Matching_Context then
+         return;
+      end if;
+
+      -- The enclosing scopes must not contain any procedure, function or entry
+      for I in Scopes'Range loop
+         case Declaration_Kind (Scopes (I)) is
+            when A_Procedure_Body_Declaration
+               | A_Function_Body_Declaration
+               | A_Task_Body_Declaration
+               | A_Protected_Body_Declaration
+               | An_Entry_Body_Declaration
+                 =>
+               Report (Rule_Id,
+                       Current_Context,
+                       Loc,
+                       "call of """ & To_Title (Last_Matching_Name (Subprograms)) & '"');
+               exit;  -- no need to issue the message more than once
+            when others =>
+               -- This covers :
+               --   all specifications (no call can happen there)
+               --   things that are not declarations, i.e. statements and exception
+               --   handlers
+               null;
+         end case;
+      end loop;
+   end Check;
+
    ------------------
    -- Process_Call --
    ------------------
 
    procedure Process_Call (Call : in Asis.Element) is
       use Thick_Queries;
-      use Asis, Asis.Elements;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         use Framework.Reports, Framework.Scope_Manager;
-         Current_Context : constant Root_Context'Class := Matching_Context (Subprograms,
-                                                                            Called_Simple_Name (Call));
-         Scopes          : constant Scope_List := Active_Scopes;
-      begin
-         if Current_Context = No_Matching_Context then
-            return;
-         end if;
-
-         -- The enclosing scopes must not contain any procedure, function or entry
-         for I in Scopes'Range loop
-            case Declaration_Kind (Scopes (I)) is
-               when A_Procedure_Body_Declaration
-                 | A_Function_Body_Declaration
-                 | A_Task_Body_Declaration
-                 | A_Protected_Body_Declaration
-                 | An_Entry_Body_Declaration
-                 =>
-                  Report (Rule_Id,
-                          Current_Context,
-                          Get_Location (Call),
-                          "call of """ & To_Title (Last_Matching_Name (Subprograms)) & '"');
-               when others =>
-                  -- This covers :
-                  --   all specifications (no call can happen there)
-                  --   things that are not declarations, i.e. statements and exception
-                  --   handlers
-                  null;
-            end case;
-         end loop;
-      end;
+      Check (Matching_Context (Subprograms, Called_Simple_Name (Call)), Get_Location (Call));
    end Process_Call;
 
-begin
+   -----------------------
+   -- Process_Allocator --
+   -----------------------
+
+   procedure Process_Allocator (Alloc : in Asis.Expression) is
+   begin
+      if not Rule_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Check (Association (Subprograms, Value ("NEW")), Get_Location (Alloc));
+   end Process_Allocator;
+
+begin  -- Rules.Not_Elaboration_Calls
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

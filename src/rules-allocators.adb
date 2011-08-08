@@ -155,7 +155,7 @@ package body Rules.Allocators is
 
       E : Asis.Element;
       Is_Class : Boolean := False;
-   begin
+   begin  -- Process_Allocator
       if not Rule_Used then
          return;
       end if;
@@ -189,14 +189,8 @@ package body Rules.Allocators is
          end case;
       end if;
 
-
-      -- Get rid of the selected component case
-      if Expression_Kind (E) = A_Selected_Component then
-         E := Selector (E);
-      end if;
-
       -- Retrieve the first subtype
-      E := Corresponding_First_Subtype (Corresponding_Name_Declaration (E));
+      E := Corresponding_First_Subtype (Corresponding_Name_Declaration (Simple_Name (E)));
 
       if Is_Class then
          Check (Framework.Association (Entities,
@@ -218,7 +212,7 @@ package body Rules.Allocators is
       end if;
    end Process_Allocator;
 
-begin
+begin  -- Rules.Allocators
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

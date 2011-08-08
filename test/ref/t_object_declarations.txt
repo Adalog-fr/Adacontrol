@@ -1,7 +1,12 @@
-t_object_declarations.adb:3:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
-t_object_declarations.adb:5:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
-t_object_declarations.adb:9:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (5)
-t_object_declarations.adb:14:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (8)
+t_object_declarations-test_min_integer_span.adb:4:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
+t_object_declarations-test_min_integer_span.adb:6:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
+t_object_declarations-test_min_integer_span.adb:10:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (5)
+t_object_declarations-test_min_integer_span.adb:15:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (8)
+t_object_declarations-test_volatile_no_address.adb:10:12: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
+t_object_declarations-test_volatile_no_address.adb:10:8: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
+t_object_declarations-test_volatile_no_address.adb:9:4: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
+t_object_declarations-test_volatile_no_address.adb:8:4: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
+t_object_declarations-test_volatile_no_address.adb:7:4: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
 
 Counts summary:
 OBJECT_DECLARATIONS: 4

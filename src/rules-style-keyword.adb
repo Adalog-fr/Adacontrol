@@ -315,14 +315,16 @@ package body Rules.Style.Keyword is
                   return To_Title (Source);
             end case;
          end Should_Be;
-      begin
+
+      begin  -- Do_Report
          Report (Rule_Id,
                  Corresponding_Context (St_Casing_Keyword),
                  Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Kw_Start),
                  "Wrong casing of """ & Line (Kw_Start .. Kw_Stop)
                  & """, should be """ & Should_Be (Line (Kw_Start .. Kw_Stop) & '"'));
       end Do_Report;
-   begin
+
+   begin  -- Process_Line
       for I in Line'Range loop
          if Line (I) = '-' and then I /= Line'Last and then Line (I + 1) = '-' then
             -- Comment

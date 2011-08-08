@@ -201,7 +201,7 @@ package body Framework.Language.Scanner is
                        Key         => Not_A_Key);
          Next_Char;
 
-         loop
+         loop   --## rule line off simplifiable_statements ## exit OK, since we have several ones
             exit when At_Eol;
 
             if Extended then
@@ -261,6 +261,10 @@ package body Framework.Language.Scanner is
          if Cur_Char = '-' then
             Negative := True;
             Next_Char;
+            if Cur_Char not in '0' .. '9' then
+               Syntax_Error ("Invalid caracter in number",
+                             (Current_File, Current_Line, Current_Column));
+            end if;
          end if;
          Result := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
          loop
@@ -526,7 +530,8 @@ package body Framework.Language.Scanner is
          end loop;
          return S;
       end Double_Quotes;
-   begin
+
+   begin  -- Image
       case T.Kind is
          when Name =>
             return T.Name_Text (1 .. T.Name_Length);

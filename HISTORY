@@ -1,4 +1,93 @@
 ============
+== V1.9r4 ==
+============
+
+General:
+--------
+Bug fixes:
+   A4G_Bugs.Corresponding_called_function blew up for "/=" functions
+   obtained by instantiation.
+  
+   Scoped_Store not restoring spec context for subprograms.
+  
+   Memory leaks fixed.
+
+   Bad defaults in "style" rule.
+
+CSV and CSVX format:
+   file name, line, and column are now in three different columns.
+
+GPS:
+----
+Added "About" entry to Help/AdaControl menu
+
+New rules:
+----------
+dependencies
+
+Changes to existing rules:
+--------------------------
+declarations 
+   added subrules anonymous_subtype_allocator,
+      anonymous_subtype_case, anonymous_subtype_declaration,
+      anonymous_subtype_for, anonymous_subtype_indexing,
+      any_declaration, class_wide_constant, class_wide_variable, 
+      empty_visible_part, empty_private_part, function_call_renaming, 
+      ordinary_fixed_type_with_small, ordinary_fixed_type_no_small
+      
+
+default_parameter
+   can specify "calls" or "instantiations" (in addition to "all") as the first
+   parameter.
+   3rd parameter: "not used" changed to "not_used", added "used_positional"
+
+exception_propagation
+   added subrule local_exception
+
+expressions
+   added subrules type_conversion, universal_range
+
+max_call_depth
+   better caching of subprograms => significant speed-up
+
+not_elaboration_calls
+   added "new" for allocators in addition to SP names
+
+object_declarations:
+   added subrule volatile_no_address
+
+other_dependencies
+   changed to subrule of dependencies
+
+representation_clauses
+   added subrule overlay
+
+silent_exceptions
+   added possibility to define which exceptions are controlled to the parameters.
+   separated "raise" in "explicit_raise" and "reraise".
+
+simplifiable_statements
+   added subrule loop_for_while
+
+special_comments
+   old behaviour now under subrule pattern, added subrule unnamed_begin
+
+statements
+   added subrules any_statement, exit_expanded_name, exit_outer_loop, 
+   raise_locally_handled, raise_nonpublic
+   
+   statements (raise) always reports, even if another "raise" subrule is also
+   applicable. All "raise" subrules except the plain one also consider calls
+   from procedures from Ada.Exceptions.
+
+style
+   added subrule parameter_order
+
+usage
+   added from_private and from_visible to the conditions, and "private" or
+   "visible to the message.
+
+============
 == V1.8r8 ==
 ============
 
@@ -14,21 +103,21 @@ Added missing files for "info" version of manuals
 == V1.8r7 ==
 ============
 
-General
--------
+General:
+--------
 New options -M and -m and corresponding commands ("set Max_Messages" and
    "set Max_Errors"). -T ("set Timing on").
 Rearranged User Guide, clarified the notions of "rule", "control" and "command".
 
-New commands
-------------
+New commands:
+-------------
 set warning_as_error
 set timing
 help commands|license|options|rules|version
 
-GPS
----
-Now requires GPS > v4.0
+GPS:
+----
+Now requires GPS > v4.2
 Improved messages (better statistics in locations window)
 In interactive mode, check syntax before launching Adacontrol for good.
 Added menu "create units file"
@@ -38,8 +127,8 @@ Added option to set ASIS options
 Added preferences for -m and -M options
 Added preference to choose whether to display AdaControl command and result
 
-Changes to existing rules
--------------------------
+Changes to existing rules:
+--------------------------
 abnormal_function_return
    accepts if and case statements, if all paths contain raise or return
 
@@ -110,8 +199,8 @@ usage
 =============
 (Specific release, not released publicly)
 
-General
--------
+General:
+--------
 Bug fix: type_initial_value did not work for types declared in library 
          package specs.
 Bug fix: improper handling of return and goto in rule improper_initialization
@@ -126,22 +215,22 @@ object_declarations
 =============
 (Specific release, not released publicly)
 
-General
--------
+General:
+--------
 Bug fix: fixed error in error recovery procedure
 ASIS bug workaround: failure in Name_Image (GNAT 6.0.x only)
 
-GPS
----
+GPS:
+----
 Added "Load result file" to AdaControl menu
 
-New commands
-------------
+New commands:
+-------------
 set tag1
 set tag2
 
-Changes to existing rules
--------------------------
+Changes to existing rules:
+--------------------------
 declarations
    added parameters: 
       binary_modular_type, non_binary_modular_type, access_all_type, 
@@ -151,16 +240,16 @@ declarations
 == V1.7r9 ==
 ============
 
-General
--------
+General:
+--------
 Bug fix: missing proper bodies not reported by uncheckable.
 
 New example rules file: reserved_2005.aru
 
 Added support for AdaGide
 
-Framework
----------
+Framework:
+----------
 String parameters now handled as a kind of parameter type, improved 
 Matching_Context for operators
   => Default_Parameter (and others) now handle correctly operators
@@ -172,8 +261,8 @@ no missing unit.
 Issue a header line when the output file is created with format CSV[X].
 Added new output format "None".
 
-GPS
----
+GPS:
+----
 Counts now appear under the "Counts summary" category in the locations window
 Bug fixes: 
    AdaControl executed twice with "project" menu
@@ -183,16 +272,16 @@ Added parameters to auto-save files before running AdaControl
 Added icon to run AdaControl interactively on current file
 Preference to choose which units the buttons operate on
 
-PFNI
-----
+PFNI:
+-----
 Adjusted the result of profiles to match the syntax used in AdaControl.
 Added possibility to specify a unit as a file name.
 Added range of lines in unit specification
 Added -q option
 Made -FS the default ASIS option
 
-PTREE
------
+PTREE:
+------
 Added possibility to specify a unit as a file name.
 Added range of lines in unit specification
 Made -FS the default ASIS option
@@ -208,9 +297,9 @@ simplifiable_statements
 type_initial_values (lacking documentation)
 units
 
-Changes to existing rules
--------------------------
-control_characters:
+Changes to existing rules:
+--------------------------
+control_characters
    renamed to characters (control). 
    Added parameters trailing_space, not_iso_6464, wide.
 
@@ -310,24 +399,24 @@ use_clauses
 == V1.6r8 ==
 ============
 
-General
--------
+General:
+--------
 Counters and statistics are in CSV format if CSV format requested
 
 Use a project file to build AdaControl
 
 Accept "~" as a string delimiter
 
-GPS
----
+GPS:
+----
 It is now possible to pass quoted parameters interactively
 
 New rules:
 ----------
 barrier_expressions
 
-Changes to existing rules
--------------------------
+Changes to existing rules:
+--------------------------
 Declarations: 
    added operator_renaming
 
@@ -362,14 +451,14 @@ Uncheckable:
 ============
 (Specific release, not released publicly)
 
-General
--------
+General:
+--------
 Option to just list rules (-h list)
 
 Form of syntax/parameter messages made consistent with form of report messages
 
-GPS
----
+GPS:
+----
 Rules menu for "Help/AdaControl/Help on rule"
 
 Choose "help on rule" style in preferences
@@ -393,8 +482,8 @@ Other_Dependencies
 Uncheckable
 Unsafe_Unchecked_Conversion
 
-Changes to existing rules
--------------------------
+Changes to existing rules:
+--------------------------
 case_statement
    added parameter: max_range_span
    changed parameters: min_others_range into min_others_span
@@ -451,8 +540,8 @@ unsafe_paired_calls:
 == V1.5r24 ==
 =============
 
-General
--------
+General:
+--------
 Do no stop analysis of rules file at first error
 
 Option to just check syntax (-C)
@@ -503,8 +592,8 @@ Unsafe_Paired_Calls
 Usage
 With_Clauses
 
-Changes to existing rules
--------------------------
+Changes to existing rules:
+--------------------------
 Allocators:
   Treat T'Class as T'Class, no more as T
   added task and protected
@@ -582,8 +671,8 @@ Unnecessary_Use:
 When_Others_Null
   no more a rule of its own, now a subrule of statements
 
-Commands
---------
+Commands:
+---------
 Inhibit:
    Added "all" for rule names, "all" for units
 

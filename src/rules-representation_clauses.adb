@@ -65,7 +65,7 @@ package body Rules.Representation_Clauses is
 
    type Subrules is (Sr_Attribute,
                      Sr_At,              Sr_At_Mod,            Sr_Enumeration,           Sr_Record,
-                     Sr_Fractional_Size, Sr_Incomplete_Record, Sr_Non_Contiguous_Record);
+                     Sr_Fractional_Size, Sr_Incomplete_Record, Sr_Non_Contiguous_Record, Sr_Overlay);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
    use Subrules_Flags_Utilities;
@@ -162,6 +162,7 @@ package body Rules.Representation_Clauses is
    begin
       case Action is
          when Clear =>
+            Rule_Used := Not_Used;
             for T in Usage'Range loop
                Clear (Usage (T));
             end loop;
@@ -199,9 +200,9 @@ package body Rules.Representation_Clauses is
 
       Attribute : Unbounded_Wide_String;
 
-      procedure Check_Usage (Clause  : Subrules;
-                             Message : Wide_String;
-                             Loc     : Location := Get_Location (Rep_Clause))
+      procedure Do_Report (Clause  : Subrules;
+                           Message : Wide_String;
+                           Loc     : Location := Get_Location (Rep_Clause))
       is
          Key_Map : Unbounded_Wide_String;
       begin
@@ -252,7 +253,7 @@ package body Rules.Representation_Clauses is
                     Loc,
                     Message);
          end if;
-      end Check_Usage;
+      end Do_Report;
 
       procedure Check_Incomplete (Clause : Asis.Representation_Clause) is
          use Asis.Declarations;
@@ -269,11 +270,11 @@ package body Rules.Representation_Clauses is
          begin
             if Element_Kind (Element) = A_Defining_Name then
                if not Is_Present (Compo_Set, To_Upper (Defining_Name_Image (Element))) then
-                  Check_Usage (Sr_Incomplete_Record,
-                               "no component clause for "
-                               & Defining_Name_Image (Element)
-                               & " at "
-                               & Image (Get_Location (Element)));
+                  Do_Report (Sr_Incomplete_Record,
+                             "no component clause for "
+                             & Defining_Name_Image (Element)
+                             & " at "
+                             & Image (Get_Location (Element)));
                end if;
             end if;
          end Pre_Procedure;
@@ -285,7 +286,7 @@ package body Rules.Representation_Clauses is
          State   : Null_State;
          Decl    : constant Asis.Declaration
            := Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
-      begin
+      begin  -- Check_Incomplete
          for C in Components'Range loop
             Add (Compo_Set, To_Upper (A4G_Bugs.Name_Image (Representation_Clause_Name (Components (C)))));
          end loop;
@@ -368,21 +369,21 @@ package body Rules.Representation_Clauses is
          end if;
 
          if Fields (Fields'First).Low /= 0 then
-            Check_Usage (Sr_Non_Contiguous_Record,
+            Do_Report (Sr_Non_Contiguous_Record,
                          "gap at 0 range 0.." & Biggest_Int_Img(Fields (Fields'First).Low-1),
                          Get_Location (Components (Fields(Fields'First).Compo_Inx)));
          end if;
          for I in List_Index range Fields'First+1 .. Fields'Last loop
             if Fields (I - 1).High + 1 < Fields (I).Low then
                Starting_Unit := (Fields (I - 1).High + 1) / Storage_Unit;
-               Check_Usage (Sr_Non_Contiguous_Record,
-                            "gap before component, at "
-                            & Biggest_Int_Img (Starting_Unit)
-                            & " range "
-                            & Biggest_Int_Img (Fields (I - 1).High + 1 - Starting_Unit * Storage_Unit)
-                            & ".."
-                            & Biggest_Int_Img (Fields (I).Low - 1 - Starting_Unit * Storage_Unit),
-                            Get_Location (Components (Fields (I).Compo_Inx)));
+               Do_Report (Sr_Non_Contiguous_Record,
+                          "gap before component, at "
+                          & Biggest_Int_Img (Starting_Unit)
+                          & " range "
+                          & Biggest_Int_Img (Fields (I - 1).High + 1 - Starting_Unit * Storage_Unit)
+                          & ".."
+                          & Biggest_Int_Img (Fields (I).Low - 1 - Starting_Unit * Storage_Unit),
+                          Get_Location (Components (Fields (I).Compo_Inx)));
             end if;
          end loop;
 
@@ -406,19 +407,28 @@ package body Rules.Representation_Clauses is
 
             if Fields (Fields'Last).High /= S - 1 then
                Starting_Unit := (Fields (Fields'Last).High + 1) / Storage_Unit;
-               Check_Usage (Sr_Non_Contiguous_Record,
-                            "gap at end of record, at "
-                            & Biggest_Int_Img (Starting_Unit)
-                            & " range "
-                            & Biggest_Int_Img (Fields (Fields'Last).High + 1 - Starting_Unit * Storage_Unit)
-                            & ".."
-                            & Biggest_Int_Img (S - 1 - Starting_Unit * Storage_Unit)
-                            & ", size clause line " & Integer_Img (Get_First_Line (Get_Location (Size_Expr))),
-                            Get_Location (Components (Fields (Fields'Last).Compo_Inx)));
+               Do_Report (Sr_Non_Contiguous_Record,
+                          "gap at end of record, at "
+                          & Biggest_Int_Img (Starting_Unit)
+                          & " range "
+                          & Biggest_Int_Img (Fields (Fields'Last).High + 1 - Starting_Unit * Storage_Unit)
+                          & ".."
+                          & Biggest_Int_Img (S - 1 - Starting_Unit * Storage_Unit)
+                          & ", size clause line " & Integer_Img (Get_First_Line (Get_Location (Size_Expr))),
+                          Get_Location (Components (Fields (Fields'Last).Compo_Inx)));
             end if;
          end;
       end Check_Contiguous;
 
+      procedure Check_Overlay is
+         Value : constant Asis.Expression := Ultimate_Expression (Representation_Clause_Expression (Rep_Clause));
+      begin
+         if Expression_Kind (Value) = An_Attribute_Reference
+           and then A4G_Bugs.Attribute_Kind (Value) = An_Address_Attribute
+         then
+            Do_Report (Sr_Overlay, "address clause causes overlay");
+         end if;
+      end check_overlay;
    begin   -- Process_Clause
       if Rule_Used = Not_Used then
          return;
@@ -430,7 +440,10 @@ package body Rules.Representation_Clauses is
             Failure ("Not a representation clause in " & Rule_Id);
 
          when An_Attribute_Definition_Clause =>
-            if not Rule_Used (Sr_Attribute) and not Rule_Used (Sr_Fractional_Size) then
+            if not Rule_Used (Sr_Attribute)
+              and not Rule_Used (Sr_Fractional_Size)
+              and not Rule_Used (Sr_Overlay)
+            then
                return;
             end if;
 
@@ -439,6 +452,7 @@ package body Rules.Representation_Clauses is
             if Expression_Kind (Prefix (Representation_Clause_Name (Rep_Clause))) = An_Attribute_Reference then
                -- This happens only in for T'Class'Read and similar
 
+               -- TBSL: Is this kludge still necessary?
                -- ASIS BUG:
                -- Attribute_Designator_Identifier returns wrong value on double attributes.
                -- (Attribute_Designator_Identifer is used by Attribute_Name_Image)
@@ -463,7 +477,7 @@ package body Rules.Representation_Clauses is
                end case;
             end if;
 
-            Check_Usage (Sr_Attribute, "use of representation clause for " & To_Wide_String (Attribute));
+            Do_Report (Sr_Attribute, "use of representation clause for " & To_Wide_String (Attribute));
 
             if Attribute = "'SIZE" and then Rule_Used (Sr_Fractional_Size) then
                declare
@@ -476,19 +490,23 @@ package body Rules.Representation_Clauses is
                                   Get_Location (Representation_Clause_Expression (Rep_Clause)),
                                   "unable to evaluate size for fractional_size subrule");
                   elsif Value rem Storage_Unit /= 0 then
-                     Check_Usage (Sr_Fractional_Size, "size clause not multiple of Storage_Unit");
+                     Do_Report (Sr_Fractional_Size, "size clause not multiple of Storage_Unit");
                   end if;
                end;
             end if;
 
+            if Attribute = "'ADDRESS" and then Rule_Used (Sr_Overlay) then
+               Check_Overlay;
+            end if;
+
          when An_Enumeration_Representation_Clause =>
-            Check_Usage (Sr_Enumeration, "use of enumeration representation clause");
+            Do_Report (Sr_Enumeration, "use of enumeration representation clause");
 
          when A_Record_Representation_Clause =>
-            Check_Usage (Sr_Record, "use of record representation clause");
+            Do_Report (Sr_Record, "use of record representation clause");
 
             if Rule_Used (Sr_At_Mod) and then not Is_Nil (Mod_Clause_Expression (Rep_Clause)) then
-               Check_Usage (Sr_At_Mod, "use of Ada 83 alignment clause");
+               Do_Report (Sr_At_Mod, "use of Ada 83 alignment clause");
             end if;
 
             if Rule_Used (Sr_Incomplete_Record) then
@@ -500,11 +518,14 @@ package body Rules.Representation_Clauses is
             end if;
 
          when An_At_Clause =>
-            Check_Usage (Sr_At, "use of Ada 83 address clause");
+            Do_Report (Sr_At, "use of Ada 83 address clause");
+            if Rule_Used (Sr_Overlay) then
+               Check_Overlay;
+            end if;
       end case;
    end Process_Clause;
 
-begin
+begin  -- Rules.Representation_Clauses
    for K in Subrules range Subrules'Succ (Sr_Attribute) .. Subrules'Last loop
       Key (K) := To_Unbounded_Wide_String (Subrules'Wide_Image (K));
    end loop;

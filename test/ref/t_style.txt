@@ -1,12 +1,12 @@
 t_style.adb:1:10: Found: Casing: Wrong casing of "Text_io", should be "Text_IO"
-t_style-no_default_in.adb:3:22: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:15:38: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:14:7: Found: No_Default_In: default IN mode used for formal object declaration
-t_style-no_default_in.adb:26:7: Found: No_Default_In: default IN mode used for formal object declaration
-t_style-no_default_in.adb:27:25: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:30:25: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:33:22: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:37:25: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:3:31: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:13:28: Found: No_Default_In: default IN mode used for formal parameter declaration
+t_style-no_default_in.adb:15:44: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:26:13: Found: No_Default_In: default IN mode used for formal parameter declaration
+t_style-no_default_in.adb:27:29: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:30:29: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:33:26: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter specification
 t_style-casing.adb:4:4: Found: Casing: Wrong casing of "Page", should be "PAGE"
 t_style-casing.adb:8:14: Found: Casing: Wrong casing of "i", should be "I"
 t_style-casing.adb:11:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
@@ -90,10 +90,20 @@ t_style-multiple_elements.adb:23:4: Error: Compound: Statement has less than 3 l
 t_style-multiple_elements.adb:23:26: Error: Spans: statement does not start line
 t_style-multiple_elements.adb:25:22: Error: Spans: statement does not start line
 t_style-multiple_elements.adb:26:22: Error: Spans: statement does not start line
-t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
-t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
+t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter specification
+t_style-parameter_order.adb:13:24: Found: No_Default_In: default IN mode used for parameter specification
+t_style-parameter_order.adb:23:18: Error: order_regular: parameter out of order for parameter specification
+t_style-parameter_order.adb:37:18: Error: order_regular: parameter out of order for parameter specification
+t_style-parameter_order.adb:64:7: Error: order_regular: parameter out of order for formal parameter declaration
+t_style-parameter_order.adb:65:7: Error: order_regular: parameter out of order for formal parameter declaration
+t_style-parameter_order.adb:66:7: Error: order_regular: parameter out of order for formal parameter declaration
+t_style-parameter_order.adb:67:45: Found: No_Default_In: default IN mode used for parameter specification
+t_style-parameter_order.adb:67:41: Error: order_regular: parameter out of order for parameter specification
+t_style-parameter_order.adb:68:45: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:26:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:32:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:38:4: Error: Compound: Statement has less than 4 lines
+t_style.adb:41:4: Error: Compound: Statement has less than 3 lines
 x_style2.ads:1:15: Error: Spans: declaration does not start line
 
 Counts summary:

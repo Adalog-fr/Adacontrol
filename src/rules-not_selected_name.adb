@@ -215,7 +215,7 @@ package body Rules.Not_Selected_Name is
       end;
    end Process_Identifier;
 
-begin
+begin  -- Rules.Not_Selected_Name
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

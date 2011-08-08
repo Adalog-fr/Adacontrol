@@ -151,7 +151,7 @@ package body Rules.Potentially_Blocking_Operations is
             end loop;
          end Traverse_Declarations;
 
-      begin   --Add unit
+      begin   -- Add_Unit
          if Is_Nil (Unit) then
             -- Unit can be Nil if it is not in the context.
             -- In GNAT, this happens for standard units that are not referenced
@@ -417,7 +417,8 @@ package body Rules.Potentially_Blocking_Operations is
          end case;
          Add_External_Calls;
       end Process_Call;
-   begin
+
+   begin  -- Pre_Procedure
       case Element_Kind (Element) is
          when A_Declaration =>
             case Declaration_Kind (Element) is
@@ -665,7 +666,7 @@ package body Rules.Potentially_Blocking_Operations is
 
    end Process_Protected_Body;
 
-begin
+begin  -- Rules.Potentially_Blocking_Operations
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

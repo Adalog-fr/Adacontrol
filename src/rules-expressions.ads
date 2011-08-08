@@ -38,5 +38,5 @@ package Rules.Expressions is
 
    procedure Process_Expression (Expression : in Asis.Expression);
    procedure Process_Call       (Call       : in Asis.Element);
-
+   procedure Process_Range      (Def        : in Asis.Definition);
 end Rules.Expressions;

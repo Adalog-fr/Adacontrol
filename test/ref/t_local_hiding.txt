@@ -39,6 +39,6 @@ t_local_hiding.adb:76:23: Error: Hiding: "P{Standard.Integer}" hides declaration
 t_local_hiding.adb:77:16: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
 t_local_hiding.adb:82:10: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
 t_local_hiding.adb:86:10: Error: Hiding: "Z" hides declaration at t_local_hiding.adb:47:7
-t_local_hiding.adb:93:7: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
-t_local_hiding.adb:103:13: Error: Hiding: "Y" hides declaration at t_local_hiding.adb:101:12
-t_local_hiding.adb:107:12: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:100:7: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:110:13: Error: Hiding: "Y" hides declaration at t_local_hiding.adb:108:12
+t_local_hiding.adb:114:12: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4

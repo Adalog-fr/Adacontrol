@@ -58,9 +58,9 @@ with
   Rules.Insufficient_Parameters,
   Rules.Local_Hiding,
   Rules.Max_Blank_Lines,
+  Rules.Dependencies,
   Rules.Max_Line_Length,
   Rules.Max_Nesting,
-  Rules.Parameter_Declarations,
   Rules.Max_Size,
   Rules.Max_Statement_Nesting,
   Rules.Movable_Accept_Statements,
@@ -69,8 +69,9 @@ with
   Rules.Non_Static,
   Rules.Not_Elaboration_Calls,
   Rules.Not_Selected_Name,
-  Rules.Other_Dependencies,
+  Rules.Object_Declarations,
   Rules.Parameter_Aliasing,
+  Rules.Parameter_Declarations,
   Rules.Potentially_Blocking_Operations,
   Rules.Pragmas,
   Rules.Reduceable_Scope,
@@ -91,7 +92,6 @@ with
   Rules.Unsafe_Unchecked_Conversion,
   Rules.Usage,
   Rules.Use_Clauses,
-  Rules.Object_Declarations,
   Rules.With_Clauses;
 package body Framework.Plugs is
 
@@ -105,10 +105,24 @@ package body Framework.Plugs is
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
    begin
       Rules.Max_Blank_Lines. Enter_Unit   (Unit);
+      Rules.Dependencies.    Enter_Unit   (Unit);
       Rules.Declarations.    Process_Unit (Unit);
       Rules.Statements.      Enter_Unit   (Unit);
       Rules.Units.           Process_Unit (Unit);
    end Enter_Unit;
+
+
+   --------------------------
+   -- Exit_Context_Clauses --
+   --------------------------
+
+   -- This procedure is called after all context clauses have been traversed,
+   -- before traversing the unit itself
+
+   procedure Exit_Context_Clauses (Unit : in Asis.Compilation_Unit) is
+   begin
+      Rules.Dependencies.Exit_Context_Clauses (Unit);
+   end Exit_Context_Clauses;
 
    ---------------
    -- Exit_Unit --
@@ -150,6 +164,7 @@ package body Framework.Plugs is
    begin
       Rules.Max_Nesting.         Process_Scope_Exit (Element);
       Rules.No_Operator_Usage.   Process_Scope_Exit;
+      Rules.Object_Declarations. Process_Scope_Exit;
       Rules.Reduceable_Scope.    Process_Scope_Exit (Element);
       Rules.Statements.          Process_Scope_Exit (Element);
       Rules.Type_Initial_Values. Process_Scope_Exit (Element);
@@ -193,10 +208,11 @@ package body Framework.Plugs is
                   Rules.Reduceable_Scope. Process_Use_Clause (Element);
                   Rules.Use_Clauses.      Process_Use_Clause (Element);
                when A_Representation_Clause =>
-                  Rules.Representation_Clauses.Process_Clause (Element);
+                  Rules.Object_Declarations.    Process_Representation_Clause (Element);
+                  Rules.Representation_Clauses. Process_Clause                (Element);
                when A_With_Clause =>
+                  Rules.Dependencies.       Process_With_Clause (Element);
                   Rules.Local_Hiding.       Process_With_Clause (Element);
-                  Rules.Other_Dependencies. Process_With_Clause (Element);
                   Rules.Units.              Process_With_Clause (Element);
                   Rules.With_Clauses.       Process_With_Clause (Element);
                when others =>
@@ -268,6 +284,7 @@ package body Framework.Plugs is
                   Rules.Parameter_Declarations.   Process_Declaration          (Element);
                   Rules.Improper_Initialization.  Process_Structure            (Element);
                   Rules.Return_Type.              Process_Function_Declaration (Element);
+                  Rules.Special_Comments.         Process_Program_Unit         (Element);
                   Rules.Statements.               Process_Function_Body        (Element);
                   Rules.Style.                    Process_Construct            (Element);
                   Rules.Style.                    Process_Declaration          (Element);
@@ -279,6 +296,7 @@ package body Framework.Plugs is
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Parameter_Declarations.  Process_Declaration         (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
+                  Rules.Special_Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
                   Rules.Style.                   Process_Declaration         (Element);
                   Rules.Usage.                   Process_Declaration         (Element);
@@ -288,6 +306,7 @@ package body Framework.Plugs is
                   Rules.Global_References.       Process_Body                (Element);
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
+                  Rules.Special_Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
                   Rules.Style.                   Process_Declaration         (Element);
 
@@ -301,6 +320,7 @@ package body Framework.Plugs is
                when A_Package_Body_Declaration =>
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
+                  Rules.Special_Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
 
                when A_Generic_Package_Declaration =>
@@ -324,6 +344,7 @@ package body Framework.Plugs is
                   Rules.Global_References.       Process_Body                (Element);
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
+                  Rules.Special_Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
                   Rules.Terminating_Tasks.       Process_Task_Body           (Element);
 
@@ -434,6 +455,9 @@ package body Framework.Plugs is
                         null;
                   end case;
 
+               when A_Subtype_Indication =>
+                  Rules.Declarations. Process_Definition (Element);
+
                when A_Constraint =>
                   case Constraint_Kind (Element) is
                      when A_Discriminant_Constraint =>
@@ -451,10 +475,12 @@ package body Framework.Plugs is
                when A_Discrete_Range
                  | A_Discrete_Subtype_Definition
                  =>
-                  Rules.Simplifiable_Expressions.Process_Range (Element);
+                  Rules.Declarations.            Process_Definition (Element);
+                  Rules.Expressions.             Process_Range      (Element);
+                  Rules.Simplifiable_Expressions.Process_Range      (Element);
 
                when A_Variant_Part =>
-                  Rules.Declarations.Process_Variant (Element);
+                  Rules.Declarations.Process_Definition (Element);
 
                when others =>
                   null;
@@ -565,7 +591,8 @@ package body Framework.Plugs is
                when An_Allocation_From_Subtype
                  | An_Allocation_From_Qualified_Expression
                  =>
-                  Rules.Allocators.Process_Allocator (Element);
+                  Rules.Allocators.Process_Allocator            (Element);
+                  Rules.Not_Elaboration_Calls.Process_Allocator (Element);
 
                 when A_Function_Call =>
                   Rules.Default_Parameter.        Process_Call_Or_Instantiation (Element);
@@ -602,8 +629,9 @@ package body Framework.Plugs is
             Rules.Style. Process_Association (Element);
 
          when A_Pragma =>
-            Rules.Pragmas.Process_Pragma (Element);
-            Rules.Style.  Process_Pragma (Element);
+            Rules.Object_Declarations. Process_Pragma (Element);
+            Rules.Pragmas.             Process_Pragma (Element);
+            Rules.Style.               Process_Pragma (Element);
 
          when others =>
             null;

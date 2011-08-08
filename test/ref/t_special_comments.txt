@@ -1,3 +1,7 @@
-t_special_comments.adb:4:7: Error: SPECIAL_COMMENTS: "TBSL"
-t_special_comments.adb:5:7: Error: SPECIAL_COMMENTS: "TBSL=To be supplied later"
-t_special_comments.adb:6:6: Error: Rule_Off: "## rule off all"
+t_special_comments-test_pattern.adb:5:7: Error: SPECIAL_COMMENTS: "TBSL"
+t_special_comments-test_pattern.adb:6:7: Error: SPECIAL_COMMENTS: "TBSL=To be supplied later"
+t_special_comments-test_pattern.adb:7:6: Error: Rule_Off: "## rule off all"
+t_special_comments-test_unnamed_begin.adb:47:1: Found: SPECIAL_COMMENTS: "begin" has no unit name comment for Test_Unnamed_Begin
+t_special_comments-test_unnamed_begin.adb:36:4: Found: SPECIAL_COMMENTS: "begin" has no unit name comment for Pack1
+t_special_comments-test_unnamed_begin.adb:15:7: Found: SPECIAL_COMMENTS: "begin" comment does not name P3
+t_special_comments-test_unnamed_begin.adb:26:7: Found: SPECIAL_COMMENTS: "begin" has no unit name comment for F2

@@ -19,57 +19,57 @@ procedure Test_Real_Equality is
 
    function X return A is
    begin
-      return A (0.0);
+      return A (0.0);     -- type_conversion
    end X;
 
    function X return SB is
    begin
-      return SB (0.0);
+      return SB (0.0);     -- type_conversion
    end X;
 
    function X return C is
    begin
-      return C (0.0);
+      return C (0.0);     -- type_conversion
    end X;
 
    function X return Float is
    begin
-      return Float (0.0);
+      return Float (0.0);     -- type_conversion
    end X;
 
 begin
 
-   if VA1 = VA2 then
+   if VA1 = VA2 then               -- real_equality
       null;
-   elsif VB1 /= 0.0 then
+   elsif VB1 /= 0.0 then           -- real_equality
       null;
-   elsif 1.0 /= VB1 then
+   elsif 1.0 /= VB1 then           -- real_equality
       null;
-   elsif VB1 /= X then
+   elsif VB1 /= X then             -- real_equality
       null;
-   elsif VSB1 = VSB2 then
+   elsif VSB1 = VSB2 then          -- real_equality
       null;
-   elsif VSB1 = X then
+   elsif VSB1 = X then             -- real_equality
       null;
-   elsif VC1 /= 0.0 then
+   elsif VC1 /= 0.0 then           -- real_equality
       null;
-   elsif 1.0 /= VC1 then
+   elsif 1.0 /= VC1 then           -- real_equality
       null;
-   elsif VC1 /= C (0.0) then
+   elsif VC1 /= C (0.0) then       -- real_equality, type_conversion
       null;
-   elsif VC1 = X then
+   elsif VC1 = X then              -- real_equality
       null;
-   elsif VD1 = VD2 then
+   elsif VD1 = VD2 then            -- real_equality
       null;
-   elsif VSD1 /= 0.0 then
+   elsif VSD1 /= 0.0 then          -- real_equality
       null;
-   elsif 1.0 /= VSD1 then
+   elsif 1.0 /= VSD1 then          -- real_equality
       null;
-   elsif VSD1 /= SD (0.0) then
+   elsif VSD1 /= SD (0.0) then     -- real_equality, type_conversion
       null;
-   elsif F /= X then
+   elsif F /= X then               -- real_equality
       null;
-   elsif 0.0 = 1.0 then
+   elsif 0.0 = 1.0 then            -- real_equality
       null;
    end if;
 end Test_Real_Equality;

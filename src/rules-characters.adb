@@ -232,7 +232,7 @@ package body Rules.Characters is
          end loop;
       end Check_Character_Set;
 
-   begin
+   begin  -- Process_Line
       if Rule_Used = (Subrule => False) then
          return;
       end if;
@@ -251,7 +251,7 @@ package body Rules.Characters is
       end if;
   end Process_Line;
 
-begin
+begin  -- Rules.Characters
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
                                      Help_CB        => Help'Access,

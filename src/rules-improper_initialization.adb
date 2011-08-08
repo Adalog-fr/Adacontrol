@@ -197,10 +197,7 @@ package body Rules.Improper_Initialization is
                   Temp := Subtype_Simple_Name (Component_Subtype_Indication
                                                (Array_Component_Definition (Definition)));
                   if Expression_Kind (Temp) = An_Attribute_Reference then
-                     Temp := Prefix (Temp);
-                     if Expression_Kind (Temp) = A_Selected_Component then
-                        Temp := Selector (Temp);
-                     end if;
+                     Temp := Simple_Name (Prefix (Temp));
                   end if;
                   return Non_Array_Component_Declaration (Corresponding_Name_Declaration (Temp));
                when others =>
@@ -210,10 +207,7 @@ package body Rules.Improper_Initialization is
             Temp := Subtype_Simple_Name (Definition);
             if Expression_Kind (Temp) = An_Attribute_Reference then
                -- 'Class or 'Base, properties are the same as the prefix
-               Temp := Prefix (Temp);
-               if Expression_Kind (Temp) = A_Selected_Component then
-                  Temp := Selector (Temp);
-               end if;
+               Temp := Simple_Name (Prefix (Temp));
             end if;
             -- Here, Temp is the simple name of the subtype
             return Non_Array_Component_Declaration
@@ -391,7 +385,8 @@ package body Rules.Improper_Initialization is
       end Report_One;
 
       procedure Report_All is new Iterate (Report_One);
-   begin
+
+   begin  -- Do_Report
       Report_All (Global_Map);
    end Do_Report;
 
@@ -525,7 +520,8 @@ package body Rules.Improper_Initialization is
             end if;
          end Make_One;
          procedure Make_All is new Iterate (Make_One);
-      begin
+
+      begin  -- Clean_Map
          Make_All (Source_Copy);
          return Result;
       end Clean_Map;
@@ -551,7 +547,8 @@ package body Rules.Improper_Initialization is
             end case;
          end Refresh_One;
          procedure Refresh_All is new Iterate (Refresh_One);
-      begin
+
+      begin  -- Refresh
          Refresh_All (On);
       end Refresh;
 
@@ -723,7 +720,7 @@ package body Rules.Improper_Initialization is
             end if;
          end General_Parameter_Profile;
 
-      begin
+      begin  -- Add_Out_Parameters
          if not Rule_Used (K_Out_Parameter) then
             return;
          end if;
@@ -812,10 +809,7 @@ package body Rules.Improper_Initialization is
                Subtype_Decl := Subtype_Simple_Name (Subtype_Decl);
             end if;
             if Expression_Kind (Subtype_Decl) = An_Attribute_Reference then
-               Subtype_Decl := Prefix (Subtype_Decl);
-               if Expression_Kind (Subtype_Decl) = A_Selected_Component then
-                  Subtype_Decl := Selector (Subtype_Decl);
-               end if;
+               Subtype_Decl := Simple_Name (Prefix (Subtype_Decl));
             end if;
             -- Here, Subtype_Decl is the name of an appropriate subtype
             Subtype_Decl := Corresponding_Name_Declaration (Subtype_Decl);
@@ -941,7 +935,7 @@ package body Rules.Improper_Initialization is
          raise;
    end Process_Structure;
 
-begin
+begin  -- Rules.Improper_Initialization
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

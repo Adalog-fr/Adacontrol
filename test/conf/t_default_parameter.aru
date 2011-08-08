@@ -1,10 +1,12 @@
        search  default_parameter (t_default_parameter.gen, x,   used);
        search  default_parameter (t_default_parameter.gen, y,   used);
-All_1: check   default_parameter (t_default_parameter.gen, all, not used);
+All_1: check   default_parameter (t_default_parameter.gen, all, not_used);
 
        search  default_parameter (t_default_parameter.proc, x,   used);
        search  default_parameter (t_default_parameter.proc, y,   used);
-All_2: search  default_parameter (all,                      all, not used);
+All_C: search  default_parameter (calls,                    all, not_used);
+All_I: search  default_parameter (instantiations,           all, not_used);
 
-       check default_parameter (all, "<", not used);
+       check default_parameter (all, "<", not_used);
+Pos:   check default_parameter (all, all, positional);
 

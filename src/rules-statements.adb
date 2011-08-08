@@ -34,16 +34,19 @@ with
   Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
+  Asis.Expressions,
   Asis.Iterator,
   Asis.Statements;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
 -- Adactl
 with
+  Adactl_Constants,
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports,
@@ -51,32 +54,40 @@ with
 pragma Elaborate (Framework.Language);
 
 package body Rules.Statements is
-   use Framework;
+   use Adactl_Constants, Framework;
 
-   type Subrules is (Stmt_Abort,                  Stmt_Accept_Return,          Stmt_Assignment,
+   -- all "filtered_raise" subrules (i.e. raise subrules except the plain one) must stay together
+   type Subrules is (Stmt_Any_Statement,
+                     Stmt_Abort,                  Stmt_Accept_Return,          Stmt_Assignment,
                      Stmt_Asynchronous_Select,    Stmt_Block,                  Stmt_Case,
                      Stmt_Case_Others,            Stmt_Case_Others_Null,       Stmt_Code,
                      Stmt_Conditional_Entry_Call, Stmt_Declare_Block,          Stmt_Delay,
                      Stmt_Delay_Until,            Stmt_Dispatching_Call,       Stmt_Effective_Declare_Block,
-                     Stmt_Entry_Return,
-                     Stmt_Exception_Others,       Stmt_Exception_Others_Null,  Stmt_Exit,
-                     Stmt_Exit_For_Loop,          Stmt_Exit_While_Loop,        Stmt_For_Loop,
+                     Stmt_Entry_Return,           Stmt_Exception_Others,       Stmt_Exception_Others_Null,
+                     Stmt_Exit,                   Stmt_Exit_Expanded_Name,     Stmt_Exit_For_Loop,
+                     Stmt_Exit_Outer_Loop,        Stmt_Exit_While_Loop,        Stmt_For_Loop,
                      Stmt_Function_Return,        Stmt_Goto,                   Stmt_If,
                      Stmt_If_Elsif,               Stmt_Labelled,               Stmt_Loop_Return,
                      Stmt_Multiple_Exits,         Stmt_No_Else,                Stmt_Null,
-                     Stmt_Procedure_Return,       Stmt_Raise,                  Stmt_Raise_Standard,
-                     Stmt_Requeue,                Stmt_Reraise,                Stmt_Selective_Accept,
-                     Stmt_Simple_Loop,            Stmt_Terminate,              Stmt_Timed_Entry_Call,
-                     Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,
-                     Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_For_Loop,       Stmt_Unnamed_Multiple_Loop,
-                     Stmt_Unnamed_Simple_Loop,    Stmt_Unnamed_While_Loop,     Stmt_Untyped_For,
-                     Stmt_While_Loop);
+                     Stmt_Procedure_Return,       Stmt_Raise,
 
+                     -- all "filtered_raise"
+                     Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,        Stmt_Raise_Standard,
+                     Stmt_Reraise,
+
+                     Stmt_Requeue,                Stmt_Selective_Accept,       Stmt_Simple_Loop,
+                     Stmt_Terminate,              Stmt_Timed_Entry_Call,       Stmt_Unconditional_Exit,
+                     Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,           Stmt_Unnamed_Loop_Exited,
+                     Stmt_Unnamed_For_Loop,       Stmt_Unnamed_Multiple_Loop,  Stmt_Unnamed_Simple_Loop,
+                     Stmt_Unnamed_While_Loop,     Stmt_Untyped_For,            Stmt_While_Loop);
+
+   subtype Filtered_Raise_Subrules is Subrules range Stmt_Raise .. Stmt_Reraise;
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
    use Subrules_Flags_Utilities;
 
    type Usage_Flags is array (Subrules) of Boolean;
-   Rule_Used : Usage_Flags := (others => False);
+   No_Rule   : constant Usage_Flags := (others => False);
+   Rule_Used : Usage_Flags := No_Rule;
    Save_Used : Usage_Flags;
    Usage     : array (Subrules) of Basic_Rule_Context;
 
@@ -131,10 +142,10 @@ package body Rules.Statements is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := (others => False);
+            Rule_Used  := No_Rule;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := No_Rule;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -146,7 +157,7 @@ package body Rules.Statements is
    -----------------------
 
    procedure Process_Statement (Element : in Asis.Statement) is
-      use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Statements;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Utilities;
 
       procedure Do_Report (Stmt : in Subrules; Loc : Location := Get_Location (Element)) is
@@ -162,11 +173,70 @@ package body Rules.Statements is
                  "use of statement """ & Image (Stmt) & '"');
       end Do_Report;
 
-   begin
+      procedure Do_Report (Stmt : in Subrules; Extra_Info : Wide_String) is
+         use Framework.Reports;
+      begin
+         if not Rule_Used (Stmt) then
+            return;
+         end if;
+
+         Report (Rule_Id,
+                 Usage (Stmt),
+                 Get_Location (Element),
+                 "use of statement """ & Image (Stmt) & """, " & Extra_Info);
+      end Do_Report;
+
+      procedure Check_Filtered_Raise (Exc : Asis.Expression) is
+         -- process filtered (i.e. non trivial) raises.
+         -- common to a real raise and to a call to Raise_Exception
+         use Asis.Compilation_Units;
+
+         Handler         : Asis.Exception_Handler;
+         Decl_Place      : Asis.Declaration;
+         Is_Standard_Exc : Boolean := False;
+      begin
+         if Rule_Used (Stmt_Raise_Standard) or Rule_Used (Stmt_Raise_Nonpublic) then
+            Is_Standard_Exc := To_Upper (Unit_Full_Name (Definition_Compilation_Unit (Exc))) = "STANDARD";
+         end if;
+
+         if Rule_Used (Stmt_Raise_Standard) and Is_Standard_Exc then
+            Do_Report (Stmt_Raise_Standard);
+         end if;
+
+         if Rule_Used (Stmt_Raise_Nonpublic) and not Is_Standard_Exc then
+            Decl_Place := Enclosing_Element (Corresponding_Name_Declaration (Exc));
+            -- Report if it is in the visible part of the package spec which is the current
+            -- compilation unit
+            -- NB: Corresponding_Declaration of a proper body returns Nil_Element, therefore
+            --     this case is automatically eliminated
+            if (    Declaration_Kind (Decl_Place) /= A_Package_Declaration
+                and Declaration_Kind (Decl_Place) /= A_Generic_Package_Declaration)
+              or else not Is_Equal (Decl_Place,
+                Corresponding_Declaration
+                  (Unit_Declaration
+                     (Enclosing_Compilation_Unit (Element))))
+              or else Is_Part_Of (Corresponding_Name_Declaration (Exc),
+                                  Private_Part_Declarative_Items (Decl_Place))
+            then
+               Do_Report (Stmt_Raise_Nonpublic);
+            end if;
+         end if;
+
+         if Rule_Used (Stmt_Raise_Locally_Handled) then
+            Handler := Corresponding_Static_Exception_Handler (Exc, Element, Include_Others => True);
+            if not Is_Nil (Handler) then
+               Do_Report (Stmt_Raise_Locally_Handled, "handler at " & Image (Get_Location (Handler)));
+            end if;
+         end if;
+      end Check_Filtered_Raise;
+
+   begin  -- Process_Statement
       if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      Do_Report (Stmt_Any_Statement);
 
       if not Is_Nil (Label_Names (Element)) then
          Do_Report (Stmt_Labelled);
@@ -198,7 +268,7 @@ package body Rules.Statements is
                if Rule_Used (Stmt_Effective_Declare_Block) then
                   declare
                      Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Element,
-                                                                                              Include_Pragmas => False);
+                                                                                             Include_Pragmas => False);
                   begin
                      for D in Decls'Range loop
                         if Clause_Kind (Decls (D)) not in A_Use_Package_Clause .. A_Use_Type_Clause then
@@ -242,6 +312,10 @@ package body Rules.Statements is
                   Do_Report (Stmt_Unnamed_Exit);
                end if;
 
+               if Expression_Kind (Exit_Loop_Name (Element)) = A_Selected_Component then
+                  Do_Report (Stmt_Exit_Expanded_Name);
+               end if;
+
                if Rule_Used (Stmt_Exit_For_Loop)
                  and then Statement_Kind (Exited_Loop) = A_For_Loop_Statement
                then
@@ -252,6 +326,21 @@ package body Rules.Statements is
                   Do_Report (Stmt_Exit_While_Loop);
                else
                   Do_Report (Stmt_Exit);
+               end if;
+
+               if Rule_Used (Stmt_Exit_Outer_Loop) then
+                  declare
+                     Enclosing_Loop : Asis.Statement := Enclosing_Element (Element);
+                  begin
+                     while Statement_Kind (Enclosing_Loop) not in A_Loop_Statement .. A_For_Loop_Statement loop
+                        Enclosing_Loop := Enclosing_Element (Enclosing_Loop);
+                     end loop;
+
+                     if not Is_Equal (Enclosing_Loop, Exited_Loop) then
+                        Do_Report (Stmt_Exit_Outer_Loop,
+                                   Extra_Info => "exiting from loop at " & Image (Get_Location (Exited_Loop)));
+                     end if;
+                  end;
                end if;
             end;
 
@@ -300,26 +389,47 @@ package body Rules.Statements is
                Do_Report (Stmt_Dispatching_Call);
             end if;
 
+            if (Rule_Used and Usage_Flags'(Filtered_Raise_Subrules => True, others => False)) /= No_Rule then
+               declare
+                  Called : constant Asis.Expression := Called_Simple_Name (Element);
+               begin
+                  if not Is_Nil (Called) then  -- is nil if called from access to SP
+                     declare
+                        Called_Name : constant Wide_String := To_Upper (Full_Name_Image (Called));
+                     begin
+                        if Called_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE" then
+                           if Rule_Used (Stmt_Reraise) then
+                              Do_Report (Stmt_Reraise);
+                           end if;
+                        elsif Called_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION" then
+                           declare
+                              Exc_Param : constant Asis.Expression := Ultimate_Expression
+                                                                       (Actual_Parameter
+                                                                        (Call_Statement_Parameters
+                                                                         (Element, Normalized => True) (1)));
+                           begin
+                              if Expression_Kind (Exc_Param) = An_Attribute_Reference
+                                and then A4G_Bugs.Attribute_Kind (Exc_Param) = An_Identity_Attribute
+                              then
+                                 Check_Filtered_Raise (Simple_Name (Prefix (Exc_Param)));
+                              end if;
+                           end;
+                        end if;
+                     end;
+                  end if;
+               end;
+            end if;
+
          when A_Raise_Statement =>
-            declare
-               Exc : constant Asis.Expression := Raised_Exception (Element);
-            begin
-               if Is_Nil (Exc) then
-                  if Rule_Used (Stmt_Reraise) then
-                     Do_Report (Stmt_Reraise);
-                  else
-                     Do_Report (Stmt_Raise);
-                  end if;
-               elsif To_Upper (Unit_Full_Name (Definition_Compilation_Unit (Exc))) = "STANDARD" then
-                  if Rule_Used (Stmt_Raise_Standard) then
-                     Do_Report (Stmt_Raise_Standard);
-                  else
-                     Do_Report (Stmt_Raise);
-                  end if;
-               else
-                  Do_Report (Stmt_Raise);
+            Do_Report (Stmt_Raise);
+
+            if Is_Nil (Raised_Exception (Element)) then
+               if Rule_Used (Stmt_Reraise) then
+                  Do_Report (Stmt_Reraise);
                end if;
-            end;
+            else
+               Check_Filtered_Raise (Simple_Name (Raised_Exception (Element)));
+            end if;
 
          when A_Requeue_Statement | A_Requeue_Statement_With_Abort =>
             Do_Report (Stmt_Requeue);
@@ -467,7 +577,7 @@ package body Rules.Statements is
 
       State   : Null_State;
       Control : Traverse_Control;
-   begin
+   begin  -- Process_Function_Body
       if not Rule_Used (Stmt_Function_Return) then
          return;
       end if;
@@ -553,7 +663,7 @@ package body Rules.Statements is
       begin
          case Statement_Kind (Element) is
             when An_Exit_Statement =>
-               if Is_Identical (Corresponding_Loop_Exited (Element), State.Loop_Statement) then
+               if Is_Equal (Corresponding_Loop_Exited (Element), State.Loop_Statement) then
                   if Is_Nil (First_Exit) then
                      First_Exit := Element;
                   else
@@ -603,7 +713,7 @@ package body Rules.Statements is
 
       State   : State_Info := (Loop_Statement => In_Loop);
       Control : Traverse_Control;
-   begin
+   begin  -- Process_Loop_Statements
       declare
          Loop_Stmts : constant Asis.Statement_List := Loop_Statements (In_Loop);
       begin
@@ -690,7 +800,7 @@ package body Rules.Statements is
    -- Process_Scope_Enter --
    -------------------------
 
-   procedure Process_Scope_Enter (Scope : in Asis.Statement) is
+   procedure Process_Scope_Enter (Scope : in Asis.Element) is
       use Asis, Asis.Elements;
       use Framework.Scope_Manager;
    begin
@@ -719,7 +829,7 @@ package body Rules.Statements is
    -- Process_Scope_Exit --
    ------------------------
 
-   procedure Process_Scope_Exit  (Scope : in Asis.Statement) is
+   procedure Process_Scope_Exit  (Scope : in Asis.Element) is
       use Asis, Asis.Elements;
       use Framework.Scope_Manager;
    begin
@@ -761,7 +871,7 @@ package body Rules.Statements is
       end if;
    end Enter_Unit;
 
-begin
+begin  -- Rules.Statements
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

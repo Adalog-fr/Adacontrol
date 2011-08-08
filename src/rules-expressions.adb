@@ -51,12 +51,13 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework;
 
-   type Subrules is (E_And,                              E_And_Then,        E_Array_Aggregate,
-                     E_Array_Partial_Others,             E_Array_Others,    E_Complex_Parameter,
-                     E_Inconsistent_Attribute_Dimension, E_Mixed_Operators, E_Or,
-                     E_Or_Else,                          E_Real_Equality,   E_Record_Aggregate,
-                     E_Record_Partial_Others,            E_Record_Others,   E_Slice,
-                     E_Unqualified_Aggregate,            E_Xor);
+   type Subrules is (E_And,                              E_And_Then,              E_Array_Aggregate,
+                     E_Array_Partial_Others,             E_Array_Others,          E_Complex_Parameter,
+                     E_Inconsistent_Attribute_Dimension, E_Mixed_Operators,       E_Or,
+                     E_Or_Else,                          E_Real_Equality,         E_Record_Aggregate,
+                     E_Record_Partial_Others,            E_Record_Others,         E_Slice,
+                     E_Type_Conversion,                  E_Universal_Range,       E_Unqualified_Aggregate,
+                     E_Xor);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");
    use Subrules_Flags_Utilities;
@@ -145,12 +146,8 @@ package body Rules.Expressions is
    procedure Process_Function_Call (Call : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
-      Called : Asis.Expression := Prefix (Call);
+      Called : constant Asis.Expression := Simple_Name (Prefix (Call));
    begin
-      if Expression_Kind (Called) = A_Selected_Component then
-         Called := Selector (Called);
-      end if;
-
       if Expression_Kind (Called) /= An_Operator_Symbol then
          return;
       end if;
@@ -435,6 +432,9 @@ package body Rules.Expressions is
                Do_Report (E_Unqualified_Aggregate, Get_Location (Expression));
             end if;
 
+         when A_Type_Conversion =>
+            Do_Report (E_Type_Conversion, Get_Location (Expression));
+
          when others =>
             null;
       end case;
@@ -471,7 +471,37 @@ package body Rules.Expressions is
       end;
    end Process_Call;
 
-begin
+   -------------------
+   -- Process_Range --
+   -------------------
+
+   procedure Process_Range (Def : in Asis.Definition) is
+      use Asis, Asis.Definitions, Asis.Elements;
+
+      function Root_Kind (Expr : Asis.Expression) return Root_Type_Kinds is
+         use Asis.Declarations;
+      begin
+         return Root_Type_Kind (Type_Declaration_View (A4G_Bugs.Corresponding_Expression_Type (Expr)));
+      end Root_Kind;
+
+   begin  -- Process_Range
+      if not Rule_Used (E_Universal_Range) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if Discrete_Range_Kind (Def) /= A_Discrete_Simple_Expression_Range then
+         return;
+      end if;
+
+      if         Root_Kind (Lower_Bound (Def)) = A_Universal_Integer_Definition
+        and then Root_Kind (Upper_Bound (Def)) = A_Universal_Integer_Definition
+      then
+         Do_Report (E_Universal_Range, Get_Location (Def));
+      end if;
+   end Process_Range;
+
+begin  -- Rules.Expressions
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

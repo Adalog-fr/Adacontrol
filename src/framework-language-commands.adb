@@ -48,6 +48,7 @@ with
 
 -- Adacontrol
 with
+  Adactl_Constants,
   Adactl_Options,
   Framework.Language.Scanner,
   Framework.Reports,
@@ -229,7 +230,7 @@ package body Framework.Language.Commands is
          Help_On_Commands;
 
       elsif Upper_On = "LICENSE" then
-         User_Message ("Copyright (C) 2004-2007 Eurocontrol/Adalog and others.");
+         User_Message ("Copyright (C) 2004-2008 Eurocontrol/Adalog and others.");
          User_Message ("This software is covered by the GNU Modified General Public License.");
 
       elsif Upper_On = "LIST" then
@@ -246,7 +247,7 @@ package body Framework.Language.Commands is
          -- This is the intended behaviour (kind of conditional compilation)
          pragma Warnings (Off);
          User_Message ("ADACTL v. "
-                         & Framework.Version
+                         & Adactl_Constants.Current_Version
                          & Choose (Framework.Specific_Plugs.Specific_Version = "",
                                    "",
                                    '-' & Framework.Specific_Plugs.Specific_Version)
@@ -476,8 +477,12 @@ package body Framework.Language.Commands is
       end if;
 
       Restore_State (Current_State);
+   exception
+      when others =>
+         Restore_State (Current_State);
+         raise;
    end Source_Command;
 
-begin
+begin  -- Framework.Language.Commands
    Utilities.Error_Is_Out := True;
 end Framework.Language.Commands;

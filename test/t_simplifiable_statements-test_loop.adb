@@ -11,4 +11,12 @@ begin
    while I < 2 loop
       I := I + 1;
    end loop;
+   loop             -- loop_for_while
+      exit when I = 1;
+   end loop;
+   L1 : loop
+      loop
+         exit L1;
+      end loop;
+   end loop L1;
 end Test_Loop;

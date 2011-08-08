@@ -242,7 +242,7 @@ package body Rules.Type_Initial_Values is
       Check_All_Types (Declaration);
    end Process_Scope_Exit;
 
-begin
+begin  -- Rules.Type_Initial_Values
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

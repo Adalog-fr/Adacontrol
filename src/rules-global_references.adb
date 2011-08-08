@@ -331,7 +331,7 @@ package body Rules.Global_References is
          end case;
       end Process_Call;
 
-   begin
+   begin  -- Pre_Procedure
       case Element_Kind (Element) is
          when A_Defining_Name =>
             if Declaration_Kind (Enclosing_Element (Element)) = A_Variable_Declaration then
@@ -516,7 +516,8 @@ package body Rules.Global_References is
       end Update_One_Variable;
 
       procedure Update_All_Variables is new Usage_Map.Iterate (Update_One_Variable);
-   begin
+
+   begin  -- Update_Globals
       Update_All_Variables (Usage);
    end Update_Globals;
 
@@ -694,13 +695,14 @@ package body Rules.Global_References is
          end Report_One_Rule;
 
          procedure Report_All_Rules is new Referencing_Rule_Map.Iterate (Report_One_Rule);
-      begin
+
+      begin  -- Report_One_Variable
          Report_All_Rules (Var_Value.Rule_Map);
       end Report_One_Variable;
 
       procedure Report_All_Variables is new Globals_Info_Map.Iterate (Report_One_Variable);
 
-   begin
+   begin  -- Finalize
       if Rules_Used = 0 then
          return;
       end if;
@@ -710,7 +712,7 @@ package body Rules.Global_References is
       Clear_All (Globals_Info);
    end Finalize;
 
-begin
+begin  -- Rules.Global_References
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB         => Help'Access,

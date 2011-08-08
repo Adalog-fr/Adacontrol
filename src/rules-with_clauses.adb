@@ -56,11 +56,13 @@ package body Rules.With_Clauses is
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Usage_Flags is array (Subrules) of Boolean;
-   Rule_Used    : Usage_Flags := (others => False);
+   Not_Used : constant Usage_Flags := (others => False);
+
+   Rule_Used    : Usage_Flags := Not_Used;
    Save_Used    : Usage_Flags;
    Ctl_Contexts : array (Subrules) of Basic_Rule_Context;
 
-   type Usage is (Not_Used, Used_In_Separate, Used);
+   type Usage is (Never_Used, Used_In_Separate, Used);
    type With_Info (U_Length, O_Length : Positive) is
       record
          Unit_Name     : Wide_String (1 .. U_Length);
@@ -72,7 +74,11 @@ package body Rules.With_Clauses is
    begin
       return Left.Unit_Name = Right.Unit_Name;
    end Equivalent_Info;
-
+   procedure Clear (Item : in out With_Info) is  -- null proc
+      pragma Unreferenced (Item);
+   begin
+      null;
+   end Clear;
    package Withed_Units is new Framework.Scope_Manager.Scoped_Store (With_Info, Equivalent_Info);
 
    ----------
@@ -97,15 +103,16 @@ package body Rules.With_Clauses is
       Subrule : Subrules;
    begin
       if Parameter_Exists then
-         Subrule := Get_Flag_Parameter (Allow_Any => False);
+         while Parameter_Exists loop
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-         if Rule_Used (Subrule) then
-            Parameter_Error (Rule_Id, "rule already specified for " & Image (Subrule));
-         end if;
+            if Rule_Used (Subrule) then
+               Parameter_Error (Rule_Id, "rule already specified for " & Image (Subrule));
+            end if;
 
-         Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-         Rule_Used    (Subrule) := True;
-
+            Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Rule_Used    (Subrule) := True;
+         end loop;
       else
          -- All usages
          if Rule_Used /= (Subrules => False) then
@@ -126,10 +133,10 @@ package body Rules.With_Clauses is
    begin
       case Action is
          when Clear =>
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => False);
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -141,7 +148,7 @@ package body Rules.With_Clauses is
 
    procedure Prepare is
    begin
-      if Rule_Used /= (Subrules => False) then
+      if Rule_Used /= Not_Used then
          Withed_Units.Activate;
       end if;
    end Prepare;
@@ -169,7 +176,7 @@ package body Rules.With_Clauses is
       use Asis.Clauses;
       use Framework.Scope_Manager, Framework.Reports, Thick_Queries, Utilities;
    begin
-      if not Rule_Used (Reduceable) and not Rule_Used (Multiple_Names) then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -184,7 +191,7 @@ package body Rules.With_Clauses is
                     "With clause uses multiple names");
          end if;
 
-         if not Rule_Used (Reduceable) then
+         if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
             return;
          end if;
 
@@ -217,7 +224,7 @@ package body Rules.With_Clauses is
                                          Unit_Name     => U_Name,
                                          Unit_Loc      => Get_Location (Names (I)),
                                          Original_Name => O_Name,
-                                         Status        => Not_Used));
+                                         Status        => Never_Used));
                   end;
                end if;
             end;
@@ -273,7 +280,7 @@ package body Rules.With_Clauses is
             begin
                if Info.Unit_Name = U_Name then
                   case Info.Status is
-                     when Not_Used | Used_In_Separate =>
+                     when Never_Used | Used_In_Separate =>
                         case Withed_Units.Current_Origin is
                            when Specification =>
                               if Rule_Used (Reduceable) then
@@ -323,7 +330,7 @@ package body Rules.With_Clauses is
                   Info : With_Info := Withed_Units.Current_Data;
                begin
                   if Info.Unit_Name = U_Name then
-                     if Info.Status = Not_Used then
+                     if Info.Status = Never_Used then
                         Report (Rule_Id,
                                 Ctl_Contexts (Inherited),
                                 Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
@@ -371,7 +378,7 @@ package body Rules.With_Clauses is
             begin
                if Rule_Used (Reduceable) then
                   case Info.Status is
-                     when Not_Used =>
+                     when Never_Used =>
                         Report (Rule_Id,
                                 Ctl_Contexts (Reduceable),
                                 Info.Unit_Loc,
@@ -392,7 +399,7 @@ package body Rules.With_Clauses is
                end if;
 
                -- Reset status for possible later child units
-               Info.Status := Not_Used;
+               Info.Status := Never_Used;
                Withed_Units.Update_Current (Info);
             end;
          end if;
@@ -401,7 +408,7 @@ package body Rules.With_Clauses is
       end loop;
    end Process_Unit_Exit;
 
-begin
+begin  -- Rules.With_Clauses
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

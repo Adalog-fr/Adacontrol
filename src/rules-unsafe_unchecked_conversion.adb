@@ -109,7 +109,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
    --------------------------
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Expressions;
       use Framework.Reports, Thick_Queries, Utilities;
 
       Source, Target : Asis.Expression;
@@ -119,6 +119,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
       Not_Specified : constant Biggest_Int := -1;
 
       function Size_Value (Type_Name : Asis.Expression) return Biggest_Int is
+         use Asis.Elements;
          Expr : Asis.Expression;
       begin
          Expr := Attribute_Clause_Expression (A_Size_Attribute, Type_Name);
@@ -142,7 +143,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
       end Size_Value;
 
       Reported : Boolean := False;
-   begin
+   begin  -- Process_Instantiation
       if not Rule_Used then
          return;
       end if;
@@ -160,14 +161,8 @@ package body Rules.Unsafe_Unchecked_Conversion is
       end;
 
       Assocs := Generic_Actual_Part (Instantiation);
-      Source := Actual_Parameter (Assocs (1));
-      if Expression_Kind (Source) = A_Selected_Component then
-         Source := Selector (Source);
-      end if;
-      Target := Actual_Parameter (Assocs (2));
-      if Expression_Kind (Target) = A_Selected_Component then
-         Target := Selector (Target);
-      end if;
+      Source := Simple_Name (Actual_Parameter (Assocs (1)));
+      Target := Simple_Name (Actual_Parameter (Assocs (2)));
 
       if Is_Class_Wide_Subtype (Source) then
          Report (Rule_Id,
@@ -216,7 +211,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
 
    end Process_Instantiation;
 
-begin
+begin  -- Rules.Unsafe_Unchecked_Conversion
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,

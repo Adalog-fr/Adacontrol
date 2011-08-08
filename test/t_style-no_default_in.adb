@@ -10,8 +10,8 @@ procedure No_Default_In is
    end Proc_B;
 
    generic
-      Variable : in out Integer;
       Limit, Reset_Value : Integer;                    -- No_Default_In
+      Variable : in out Integer;
    procedure Reset_Integer_Template (Var : Integer);   -- No_Default_In
 
    procedure Reset_Integer_Template (Var : in Integer) is

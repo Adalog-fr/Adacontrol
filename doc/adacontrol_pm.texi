@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.8r8
+@settitle AdaControl Programmer Manual V1.9r4
 @c %**end of header
 
 @titlepage
@@ -25,11 +25,11 @@ necessary to use AdaControl. On the other hand, it is assumed that the
 reader knows how to use AdaControl before thinking of adding new rules.
 
 @menu
-* General::
-* The framework and utilities packages::
-* Writing a new rule::
-* Plugging-in a new rule into the framework::
-* Testing and debugging a rule::
+* General::                     
+* The framework and utilities packages::  
+* Writing a new rule::          
+* Plugging-in a new rule into the framework::  
+* Testing and debugging a rule::  
 @end menu
 
 Commercial support is available for AdaControl. If you plan to use
@@ -121,20 +121,33 @@ package. Existing rules are also typical examples of how to use these
 functionnalities.
 
 @menu
-* The package Framework::
-* The package Framework.Rules_Manager::
-* The package Framework.Reports::
-* The package Framework.Language::
-* The package Framework.Scope_Manager::
-* The package Framework.Plugs::
-* The package Rules::
-* The package Utilities::
-* The package Thick_Queries::
-* The packages Linear_Queue and Binary_Map::
-* The package A4G_Bugs::
+* The package Adactl_Constants::  
+* The package Framework::       
+* The package Framework.Rules_Manager::  
+* The package Framework.Reports::  
+* The package Framework.Language::  
+* The package Framework.Scope_Manager::  
+* The package Framework.Plugs::  
+* The package Rules::           
+* The package Utilities::       
+* The package Thick_Queries::   
+* The packages Linear_Queue and Binary_Map::  
+* The package A4G_Bugs::        
 @end menu
 
-@node The package Framework, The package Framework.Rules_Manager, The framework and utilities packages, The framework and utilities packages
+@node  The package Adactl_Constants, The package Framework, The framework and utilities packages, The framework and utilities packages
+@section The package Adactl_Constants
+AdaControl has some fixed size structures that limit the complexity of
+the programs it can handle, like for example the maximum numbers of
+parameters that subprograms can have, the maximum nesting of loops,
+etc.
+
+These limits are set as constants in the package
+@code{Adactl_Constants}. These values are large enough to accomodate
+any reasonable program, but should you hit one of these limits, you
+can safely change them here. No other change is required.
+
+@node The package Framework, The package Framework.Rules_Manager, The package Adactl_Constants, The framework and utilities packages
 @section The package Framework
 The package Framework includes general services, needed by most
 rules. These include:
@@ -771,9 +784,9 @@ and do your own analysis, depending on whether the returned
 @chapter Plugging-in a new rule into the framework
 
 @menu
-* Normal case::
-* Specific rules::
-* User documentation::
+* Normal case::                 
+* Specific rules::              
+* User documentation::          
 @end menu
 
 @node Normal case, Specific rules, Plugging-in a new rule into the framework, Plugging-in a new rule into the framework
@@ -906,9 +919,9 @@ you need will be quite straightforward to understand.
 @chapter Testing and debugging a rule
 
 @menu
-* Testing::
-* Debugging aids::
-* Integrating the test in the test suite::
+* Testing::                     
+* Debugging aids::              
+* Integrating the test in the test suite::  
 @end menu
 
 @node Testing, Debugging aids, Testing and debugging a rule, Testing and debugging a rule

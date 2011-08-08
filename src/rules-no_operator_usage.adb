@@ -328,7 +328,7 @@ package body Rules.No_Operator_Usage is
       Do_Report (Visibility);
    end Process_Scope_Exit;
 
-begin
+begin  -- Rules.No_Operator_Usage
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB         => Help'Access,

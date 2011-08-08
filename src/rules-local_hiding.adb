@@ -79,9 +79,13 @@ package body Rules.Local_Hiding is
          Name        : Wide_String (1..Length);
          Short_Last  : Positive;
          Elem        : Asis.Element;
-         Other_Elem  : Asis.Element;
          Is_Callable : Boolean;
       end record;
+   procedure Clear (Item : in out Identifier_Data) is  -- null proc
+      pragma Unreferenced (Item);
+   begin
+      null;
+   end Clear;
    package Visible_Identifiers is new Framework.Scope_Manager.Scoped_Store (Identifier_Data);
 
    ----------
@@ -165,7 +169,8 @@ package body Rules.Local_Hiding is
       use Asis, Asis.Elements, Asis.Declarations;
       use Thick_Queries, Framework.Scope_Manager;
 
-      Scope : Asis.Element;
+      Scope      : Asis.Element;
+      First_Name : Asis.Defining_Name;
 
       function Not_An_Appropriate_Name return Boolean is
          -- This function detects names that are not to be processed by this rule, since
@@ -198,43 +203,6 @@ package body Rules.Local_Hiding is
          end case;
       end Not_An_Appropriate_Name;
 
-      function Other_Part (Elem : Asis.Defining_Name) return Asis.Element is
-         -- Returns the declaration of the completion of Elem if any
-         Decl : Asis.Declaration;
-      begin
-         Decl := Enclosing_Element (Elem);
-         case Declaration_Kind (Decl) is
-            when A_Private_Type_Declaration
-               | A_Private_Extension_Declaration
-               | An_Incomplete_Type_Declaration
-                 =>
-               return Corresponding_Type_Declaration (Decl);
-            when A_Deferred_Constant_Declaration =>
-               return Corresponding_Constant_Declaration (Elem);
-            when A_Function_Declaration
-               | A_Generic_Package_Declaration
-               | A_Generic_Procedure_Declaration
-               | A_Generic_Function_Declaration
-               | A_Package_Declaration
-               | A_Procedure_Declaration
-               | A_Single_Task_Declaration
-               | A_Task_Type_Declaration
-               | A_Protected_Type_Declaration
-               | A_Single_Protected_Declaration
-                 =>
-               return Corresponding_Body (Decl);
-            when An_Entry_Declaration =>
-               if Is_Task_Entry (Decl) then
-                  -- Task entries have no body...
-                  return Nil_Element;
-               else
-                  return Corresponding_Body (Decl);
-               end if;
-            when others =>
-               return Nil_Element;
-         end case;
-      end Other_Part;
-
    begin   -- Process_Defining_Name
       if Rule_Used = Not_Used then
          return;
@@ -245,6 +213,7 @@ package body Rules.Local_Hiding is
          return;
       end if;
 
+      First_Name := First_Defining_Name (Name);
       declare
          use Framework.Reports;
          function Enclosing_Scope (N : Asis.Element) return Asis.Element is
@@ -257,7 +226,7 @@ package body Rules.Local_Hiding is
          end Enclosing_Scope;
 
          Short_Name    : constant Wide_String := To_Upper (Defining_Name_Image (Name));
-         Full_Name     : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
+         Full_Name     : constant Wide_String := Short_Name & To_Upper (Profile_Image (Name, With_Profile => False));
          Callable_Name : constant Boolean     := Is_Callable_Construct (Name);
          Is_Scope_Name : constant Boolean     := Is_Equal (Enclosing_Scope (Name), Current_Scope);
          -- Is_Scope_Name is True if Name is the defining name for the current scope
@@ -301,9 +270,7 @@ package body Rules.Local_Hiding is
             while Visible_Identifiers.Data_Available loop
                -- Discard the case where we find the definition of another view
                -- of the same entity
-               if Is_Equal (Visible_Identifiers.Current_Data.Other_Elem,
-                            Enclosing_Element (Name))
-               then
+               if Is_Equal (First_Name, Visible_Identifiers.Current_Data.Elem) then
                   Already_There := True;
                else
                   case Hiding_Kind (Visible_Identifiers.Current_Data) is
@@ -341,14 +308,12 @@ package body Rules.Local_Hiding is
                                                     Full_Name,
                                                     Short_Name'Length,
                                                     Name,
-                                                    Other_Part (Name),
                                                     Callable_Name));
             else
                Visible_Identifiers.Push ((Full_Name'Length,
                                           Full_Name,
                                           Short_Name'Length,
                                           Name,
-                                          Other_Part (Name),
                                           Callable_Name));
             end if;
          end if;
@@ -389,9 +354,10 @@ package body Rules.Local_Hiding is
                   Full_Name  : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
                begin
                   -- Bind names to scope 0
-                  Visible_Identifiers.Push_Enclosing ((Full_Name'Length, Full_Name,
-                                                       Short_Name'Length, Name,
-                                                       Nil_Element,
+                  Visible_Identifiers.Push_Enclosing ((Full_Name'Length,
+                                                       Full_Name,
+                                                       Short_Name'Length,
+                                                       Name,
                                                        Is_Callable_Construct (Name)));
                end;
                exit when Expression_Kind (Current) = An_Identifier;
@@ -401,7 +367,7 @@ package body Rules.Local_Hiding is
       end;
    end Process_With_Clause;
 
-begin
+begin  -- Rules.Local_Hiding
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
