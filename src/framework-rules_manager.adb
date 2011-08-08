@@ -29,6 +29,10 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+  Ada.Calendar;
+
 -- Adalog
 with
   Utilities,
@@ -43,18 +47,20 @@ with
 package body Framework.Rules_Manager is
    Last_Rule_Name   : Wide_String (1..50);  -- 50 arbitrary, but largely sufficient
    Last_Rule_Length : Natural := 0;
+   Last_Rule_Start  : Ada.Calendar.Time;
    Max_Name_Length  : Natural := 0;
 
    Nb_Rules : Rules_Count := 0;
 
    type Rule_Info is record
-      Kind     : Extended_Rule_Kind;
-      Help     : Help_Procedure;
-      Add_Use  : Add_Use_Procedure;
-      Command  : Command_Procedure;
-      Prepare  : Prepare_Procedure;
-      Finalize : Finalize_Procedure;
-      Used     : Boolean;
+      Kind         : Extended_Rule_Kind;
+      Help         : Help_Procedure;
+      Add_Control  : Add_Control_Procedure;
+      Command      : Command_Procedure;
+      Prepare      : Prepare_Procedure;
+      Finalize     : Finalize_Procedure;
+      Used         : Boolean;
+      Total_Time   : Duration;
    end record;
 
    package Rule_List is new Binary_Map (Unbounded_Wide_String, Rule_Info);
@@ -66,22 +72,25 @@ package body Framework.Rules_Manager is
    -- Register --
    --------------
 
-   procedure Register (Rule        : Wide_String;
-                       R_Kind      : Extended_Rule_Kind;
-                       Help_CB     : Help_Procedure;
-                       Add_Use_CB  : Add_Use_Procedure;
-                       Command_CB  : Command_Procedure;
-                       Prepare_CB  : Prepare_Procedure  := null;
-                       Finalize_CB : Finalize_Procedure := null) is
+   procedure Register (Rule           : Wide_String;
+                       R_Kind         : Extended_Rule_Kind;
+                       Help_CB        : Help_Procedure;
+                       Add_Control_CB : Add_Control_Procedure;
+                       Command_CB     : Command_Procedure;
+                       Prepare_CB     : Prepare_Procedure  := null;
+                       Finalize_CB    : Finalize_Procedure := null) is
       use Utilities;
    begin
-      if Help_CB = null or Add_Use_CB = null or Command_CB = null then
-         Failure ("Missing Help, Add_Use or Command procedure");
+      if Help_CB = null or Add_Control_CB = null or Command_CB = null then
+         Failure ("Missing Help, Add_Control or Command procedure");
       end if;
 
       Rule_List.Add (Rule_Map,
                      To_Unbounded_Wide_String (To_Upper (Rule)),
-                     (R_Kind, Help_CB, Add_Use_CB, Command_CB, Prepare_CB, Finalize_CB, Used => False));
+                     (R_Kind,
+                      Help_CB, Add_Control_CB, Command_CB, Prepare_CB, Finalize_CB,
+                      Used  => False,
+                      Total_Time => 0.0));
       Nb_Rules := Nb_Rules + 1;
 
       if Rule'Length > Max_Name_Length then
@@ -89,14 +98,37 @@ package body Framework.Rules_Manager is
       end if;
    end Register;
 
+   ---------------------
+   -- Accumulate_Time --
+   ---------------------
+
+   procedure Accumulate_Time is
+      use Ada.Calendar;
+      use Rule_List;
+      Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Last_Rule_Name (1 .. Last_Rule_Length));
+      Info      : Rule_Info := Fetch (Rule_Map, Rule_Name);
+   begin
+      Info.Total_Time := Info.Total_Time + (Clock - Last_Rule_Start);
+      Add (Rule_Map, Rule_Name, Info);
+   end Accumulate_Time;
+
    -----------
    -- Enter --
    -----------
 
    procedure Enter (Rule : Wide_String) is
+      use Ada.Calendar;
    begin
+      if Timing_Option and Last_Rule_Length /= 0 then
+         Accumulate_Time;
+      end if;
+
       Last_Rule_Name (1..Rule'Length) := Rule;
       Last_Rule_Length                := Rule'Length;
+
+      if Timing_Option then
+         Last_Rule_Start := Clock;
+      end if;
    end Enter;
 
    ---------------
@@ -118,11 +150,11 @@ package body Framework.Rules_Manager is
       return Is_Present (Rule_Map, To_Unbounded_Wide_String (Rule));
    end Is_Rule_Name;
 
-   ----------
-   -- Help --
-   ----------
+   ------------------
+   -- Help_On_Rule --
+   ------------------
 
-   procedure Help (Rule_Id : in Wide_String) is
+   procedure Help_On_Rule (Rule_Id : in Wide_String) is
       use Utilities, Rule_List;
 
       Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Rule_Id));
@@ -131,13 +163,13 @@ package body Framework.Rules_Manager is
    exception
       when Not_Present =>
          Error ("Unknown rule: " & To_Wide_String (Rule_Name));
-   end Help;
+   end Help_On_Rule;
 
-   --------------
-   -- Help_All --
-   --------------
+   -----------------------
+   -- Help_On_All_Rules --
+   -----------------------
 
-   procedure Help_All is
+   procedure Help_On_All_Rules is
       procedure One_Help (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
          pragma Unreferenced (Key);
          use Utilities;
@@ -149,13 +181,13 @@ package body Framework.Rules_Manager is
       procedure Help_Iterate is new Rule_List.Iterate (One_Help);
    begin
       Help_Iterate (Rule_Map);
-   end Help_All;
+   end Help_On_All_Rules;
 
-   ----------------
-   -- Help_Names --
-   ----------------
+   -------------------
+   -- Help_On_Names --
+   -------------------
 
-   procedure Help_Names (Pretty : Boolean) is
+   procedure Help_On_Names (Pretty : Boolean) is
       use Utilities;
       Spaces : constant Unbounded_Wide_String := 3 * ' ';
       Line : Unbounded_Wide_String;
@@ -180,35 +212,36 @@ package body Framework.Rules_Manager is
    begin
       if Pretty then
          Line := Spaces;
+         User_Message ("Rules:");
       end if;
       Help_Iterate (Rule_Map);
       User_Message (To_Wide_String (Line));
-   end Help_Names;
+   end Help_On_Names;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types;
-                      Rule_Name : in Wide_String) is
+   procedure Add_Control (Ctl_Label : in Wide_String;
+                          Ctl_Kind  : in Control_Kinds;
+                          Rule_Name : in Wide_String) is
       use Rule_List, Framework.Reports;
 
       -- Existence of rule checked by the language (ours, not Ada!)
       Info : Rule_Info := Fetch (Rule_Map, To_Unbounded_Wide_String (Rule_Name));
    begin
-      Info.Add_Use (Label, Rule_Type);
+      Info.Add_Control (Ctl_Label, Ctl_Kind);
       if not Info.Used then
          Kinds_Count (Info.Kind) := Kinds_Count (Info.Kind) + 1;
          Info.Used := True;
          Add (Rule_Map, To_Unbounded_Wide_String (Rule_Name), Info);
       end if;
 
-      if Rule_Type = Count then
-         Init_Counts (Rule_Name, Label);
+      if Ctl_Kind = Count then
+         Init_Counts (Rule_Name, Ctl_Label);
       end if;
-      Init_Stats (Rule_Name, Label);
-   end Add_Use;
+      Init_Stats (Rule_Name, Ctl_Label);
+   end Add_Control;
 
    -----------------
    -- Prepare_All --
@@ -322,5 +355,41 @@ package body Framework.Rules_Manager is
   begin
      return Kinds_Count (R_Kind) + Kinds_Count (Semantic_Textual) /= 0;
   end Has_Active_Rules;
+
+   --------------------
+   -- Report_Timings --
+   --------------------
+
+   procedure Report_Timings is
+      use Framework.Reports;
+
+      procedure Report_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
+         use Utilities;
+      begin
+         if Info.Total_Time = 0.0 then
+            return;
+         end if;
+
+         Raw_Trace (To_Wide_String (Rule)
+                    and Duration'Wide_Image (Info.Total_Time)
+                        & Choose (Format_Option in CSV .. None, "", "s."));
+         Info.Total_Time := 0.0;
+      end Report_One_Timing;
+
+      procedure Report_All_Timings is new Rule_List.Iterate (Report_One_Timing);
+   begin
+      if Last_Rule_Length = 0 then
+         --? empty run
+         return;
+      end if;
+
+      if Timing_Option then
+         Accumulate_Time;
+
+         Raw_Report ("Rules timing statistics");
+         Report_All_Timings (Rule_Map);
+      end if;
+
+   end Report_Timings;
 
 end Framework.Rules_Manager;

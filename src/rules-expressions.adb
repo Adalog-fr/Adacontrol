@@ -51,19 +51,20 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework;
 
-   type Expression_Names is (E_And,             E_And_Then,              E_Array_Aggregate,
-                             E_Array_Others,    E_Complex_Parameter,     E_Inconsistent_Attribute_Dimension,
-                             E_Mixed_Operators, E_Or,                    E_Or_Else,
-                             E_Real_Equality,   E_Record_Aggregate,      E_Record_Others,
-                             E_Slice,           E_Unqualified_Aggregate, E_Xor);
+   type Subrules is (E_And,                              E_And_Then,        E_Array_Aggregate,
+                     E_Array_Partial_Others,             E_Array_Others,    E_Complex_Parameter,
+                     E_Inconsistent_Attribute_Dimension, E_Mixed_Operators, E_Or,
+                     E_Or_Else,                          E_Real_Equality,   E_Record_Aggregate,
+                     E_Record_Partial_Others,            E_Record_Others,   E_Slice,
+                     E_Unqualified_Aggregate,            E_Xor);
 
-   package Usage_Flags_Utilities is new Framework.Language.Flag_Utilities (Expression_Names, "E_");
-   use Usage_Flags_Utilities;
+   package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");
+   use Subrules_Flags_Utilities;
 
-   type Usage_Flags is array (Expression_Names) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
    Rule_Used : Usage_Flags := (others => False);
    Save_Used : Usage_Flags;
-   Usage     : array (Expression_Names) of Basic_Rule_Context;
+   Usage     : array (Subrules) of Basic_Rule_Context;
 
    ----------
    -- Help --
@@ -77,14 +78,13 @@ package body Rules.Expressions is
       User_Message ("Control occurrences of Ada expressions");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-      Expr : Expression_Names;
+      Subrule : Subrules;
 
    begin
       if not Parameter_Exists then
@@ -92,15 +92,15 @@ package body Rules.Expressions is
       end if;
 
       while Parameter_Exists loop
-         Expr := Get_Flag_Parameter (Allow_Any => False);
-         if Rule_Used (Expr) then
-            Parameter_Error (Rule_Id, "Expression already given: " & Image (Expr));
+         Subrule := Get_Flag_Parameter (Allow_Any => False);
+         if Rule_Used (Subrule) then
+            Parameter_Error (Rule_Id, "Expression already given: " & Image (Subrule));
          end if;
 
-         Rule_Used (Expr) := True;
-         Usage (Expr)     := Basic.New_Context (Rule_Type, Label);
+         Rule_Used (Subrule) := True;
+         Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end loop;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -124,7 +124,7 @@ package body Rules.Expressions is
    -- Do_Report --
    ---------------
 
-   procedure Do_Report (Expr : Expression_Names; Loc : Location) is
+   procedure Do_Report (Expr : Subrules; Loc : Location) is
       use Framework.Reports;
    begin
       if not Rule_Used (Expr) then
@@ -347,7 +347,7 @@ package body Rules.Expressions is
    procedure Process_Expression (Expression : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
    begin
-      if Rule_Used = (Expression_Names => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -392,6 +392,11 @@ package body Rules.Expressions is
                  and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
                then
                   Do_Report (E_Array_Others, Get_Location (Choices (Choices'First)));
+                  if Assocs'Length > 1 then
+                     -- Note that others must appear alone as a choice, therefore we cannot
+                     -- be fooled by multiple choices
+                     Do_Report (E_Array_Partial_Others, Get_Location (Choices (Choices'First)));
+                  end if;
                end if;
             end;
 
@@ -416,6 +421,11 @@ package body Rules.Expressions is
                        and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
                      then
                         Do_Report (E_Record_Others, Get_Location (Choices (Choices'First)));
+                        if Assocs'Length > 1 then
+                           -- Note that others must appear alone as a choice, therefore we cannot
+                           -- be fooled by multiple choices
+                           Do_Report (E_Record_Partial_Others, Get_Location (Choices (Choices'First)));
+                        end if;
                      end if;
                   end;
                end if;
@@ -464,7 +474,7 @@ package body Rules.Expressions is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Expressions;

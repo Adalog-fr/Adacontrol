@@ -40,7 +40,10 @@ procedure No_Default_In is
       end Foo_Bar;
    end Foo;
 
-
+   procedure Access_Param (X : access Integer) is
+   begin
+      null;
+   end Access_Param;
 begin
    Proc_A;
 end No_Default_In;

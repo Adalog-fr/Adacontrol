@@ -61,7 +61,7 @@ package body Rules.Improper_Initialization is
    -- Algorithm
    --
    -- Bodies of things that can have a body are analyzed by Process_Structure
-   -- The (local) map Object_Map is indexed by the names of local objects and out parameters
+   -- The map Global_Map is indexed by the names of local objects and out parameters
    -- It is initialized by Add_Out_Parameters and Add_Variables, all objects marked with a reference of
    -- None.
    --
@@ -75,28 +75,28 @@ package body Rules.Improper_Initialization is
    -- As a side effect, if an object is read while its Reference is None, it means it is read
    -- before being assigned; its Reference is then set to Read_Before_Assign
 
-   type Object_Kind is (K_Out_Parameter, K_Variable, K_Initialized_Variable);
-   package Object_Kind_Flag_Utilities is new Framework.Language.Flag_Utilities (Object_Kind, "K_");
+   type Subrules is (K_Out_Parameter, K_Variable, K_Initialized_Variable);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
    type Extension_Kind is (M_Access, M_Limited);
    package Extension_Kind_Modifier_Utilities is new Framework.Language.Modifier_Utilities (Extension_Kind, "M_");
 
-   type Usage_Flags is array (Object_Kind) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
 
    Rule_Used : Usage_Flags := (others => False);
    Save_Used : Usage_Flags;
 
-   Extensions : array (Object_Kind) of Extension_Kind_Modifier_Utilities.Modifier_Set
+   Extensions : array (Subrules) of Extension_Kind_Modifier_Utilities.Modifier_Set
      := (others => Extension_Kind_Modifier_Utilities.Empty_Set);
 
-   type Usage_Contexts is array (Object_Kind) of Basic_Rule_Context;
+   type Usage_Contexts is array (Subrules) of Basic_Rule_Context;
    Usage : Usage_Contexts;
 
    type Reference_Kind is (None, Assigned, Read_Before_Assign);
    type Object_Information is
       record
          Identifier : Asis.Defining_Name;
-         Kind       : Object_Kind;
+         Kind       : Subrules;
          Reference  : Reference_Kind;
       end record;
 
@@ -104,6 +104,7 @@ package body Rules.Improper_Initialization is
                                               Object_Information,
                                               Ada.Strings.Wide_Unbounded."<",
                                               Ada.Strings.Wide_Unbounded.">");
+   Global_Map : Object_Info_Map.Map;
 
 
    ----------
@@ -114,36 +115,35 @@ package body Rules.Improper_Initialization is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Object_Kind_Flag_Utilities.Help_On_Flags ("Parameter(s): [access] [limited]");
+      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s): [access] [limited]");
       User_Message ("Control out parameters and local variables that are improperly initialized");
       User_Message ("(not initialized for all paths, or given an unnecessary initial value)");
    end Help;
 
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-      use Object_Kind_Flag_Utilities, Extension_Kind_Modifier_Utilities;
+      use Subrules_Flag_Utilities, Extension_Kind_Modifier_Utilities;
 
-      Key : Object_Kind;
-      Ext : Modifier_Set;
+      Subrule : Subrules;
+      Ext     : Modifier_Set;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
             Ext := Get_Modifier_Set;
-            Key := Get_Flag_Parameter (Allow_Any => False);
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-            if Rule_Used (Key) then
+            if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "rule can be specified only once for each parameter");
             end if;
 
-            Rule_Used (Key)  := True;
-            Usage (Key)      := Basic.New_Context (Rule_Use_Type, Label);
-            Extensions (Key) := Ext;
+            Rule_Used (Subrule)  := True;
+            Usage (Subrule)      := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Extensions (Subrule) := Ext;
          end loop;
       else
          if Rule_Used /= Usage_Flags'(others => False) then
@@ -151,9 +151,9 @@ package body Rules.Improper_Initialization is
          end if;
 
          Rule_Used := Usage_Flags'(others => True);
-         Usage     := Usage_Contexts'(others => Basic.New_Context (Rule_Use_Type, Label));
+         Usage     := Usage_Contexts'(others => Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
-   end Add_Use;
+   end Add_Control;
 
 
    -------------
@@ -276,12 +276,12 @@ package body Rules.Improper_Initialization is
                                     Report (Rule_Id,
                                             Usage (K_Out_Parameter),
                                             Get_Location (Element),
-                                            "use of uninitialized out parameter: " & Name_Image (Element));
+                                            "use of uninitialized out parameter: " & A4G_Bugs.Name_Image (Element));
                                  when K_Variable =>
                                     Report (Rule_Id,
                                             Usage (K_Variable),
                                             Get_Location (Element),
-                                            "use of uninitialized variable: " & Name_Image (Element));
+                                            "use of uninitialized variable: " & A4G_Bugs.Name_Image (Element));
                                  when K_Initialized_Variable =>
                                     null;
                               end case;
@@ -315,19 +315,97 @@ package body Rules.Improper_Initialization is
       Traverse (Entity, Cont, State);
    end Check_Object_Use;
 
+
+   ---------------
+   -- Do_Report --
+   ---------------
+
+   procedure Do_Report (Report_Loc : Location; Out_Params_Only : Boolean := False) is
+      use Ada.Strings.Wide_Unbounded;
+      use Object_Info_Map;
+
+      procedure Report_One (Key : Unbounded_Wide_String; Info : in out Object_Information) is
+         pragma Unreferenced (Key);
+         use Asis.Declarations;
+         use Framework.Reports, Utilities;
+      begin
+         case Info.Reference is
+            when None =>
+               case Info.Kind is
+                  when K_Out_Parameter =>
+                     Report (Rule_Id,
+                             Usage (K_Out_Parameter),
+                             Get_Location (Info.Identifier),
+                             "out parameter """ & Defining_Name_Image (Info.Identifier)
+                             & """ not safely initialized"
+                             & Choose (Report_Loc = Null_Location,
+                                       "",
+                                       " before line " & Integer_Img (Get_First_Line (Report_Loc))));
+                  when K_Variable =>
+                     if not Out_Params_Only then
+                        Report (Rule_Id,
+                                Usage (K_Variable),
+                                Get_Location (Info.Identifier),
+                                "variable """ & Defining_Name_Image (Info.Identifier)
+                                & """ not safely initialized"
+                                & Choose (Report_Loc = Null_Location,
+                                          "",
+                                          " before line " & Integer_Img (Get_First_Line (Report_Loc))));
+                     end if;
+                  when K_Initialized_Variable =>
+                     null;
+               end case;
+            when Read_Before_Assign =>
+               case Info.Kind is
+                  when K_Out_Parameter =>
+                     Report (Rule_Id,
+                             Usage (K_Out_Parameter),
+                             Get_Location (Info.Identifier),
+                             "out parameter """ & Defining_Name_Image (Info.Identifier)
+                             & """ used before initialisation");
+                  when K_Variable =>
+                     if not Out_Params_Only then
+                        Report (Rule_Id,
+                                Usage (K_Variable),
+                                Get_Location (Info.Identifier),
+                                "variable """ & Defining_Name_Image (Info.Identifier)
+                                & """ used before initialisation");
+                     end if;
+                  when K_Initialized_Variable =>
+                     null;
+               end case;
+            when Assigned =>
+               case Info.Kind is
+                  when K_Initialized_Variable =>
+                     if not Out_Params_Only then
+                        Report (Rule_Id,
+                                Usage (K_Initialized_Variable),
+                                Get_Location (Info.Identifier),
+                                "variable """ & Defining_Name_Image (Info.Identifier)
+                                & """ unnecessarily initialized in declaration");
+                     end if;
+                  when others =>
+                     null;
+               end case;
+         end case;
+      end Report_One;
+
+      procedure Report_All is new Iterate (Report_One);
+   begin
+      Report_All (Global_Map);
+   end Do_Report;
+
+
    ------------------------
    -- Process_Statements --
    ------------------------
 
-   Statements_Break : exception;
-   -- Raised when a breaking statement (return, goto...) is encountered
-   -- This terminates the analysis of all paths that are enclosing this statement, but not
-   -- of paths parallel to the path that contains the breaking statement.
-   -- Of course, you should think about this recursively...
+   type Exit_Causes is (End_Of_Statements, Return_Statement, Non_Trivial_Statement);
 
    procedure Process_Statements (Object_Map     : in out Object_Info_Map.Map;
                                  Statement_List : in     Asis.Statement_List;
-                                 Final_Location :    out Location)
+                                 Final_Location :    out Location;
+                                 Exit_Cause     :    out Exit_Causes)
    is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Framework.Reports, Thick_Queries, Utilities;
@@ -452,24 +530,30 @@ package body Rules.Improper_Initialization is
          return Result;
       end Clean_Map;
 
-      procedure Refresh_One (Key   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-                             Value : in out Object_Information)
-      is
-         pragma Unreferenced (Key);
+      procedure Refresh (On : in out Map; No_Delete : Boolean := False) is
+         -- Delete all entries in the None (not written) state (unless no_delete),
+         -- and returns others to None for the next round.
+         procedure Refresh_One (Key   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+                                Value : in out Object_Information)
+         is
+            pragma Unreferenced (Key);
+         begin
+            case Value.Reference is
+               when None =>
+                  if not No_Delete then
+                     raise Delete_Current;
+                  end if;
+               when Assigned =>
+                  Value.Reference := None;
+               when Read_Before_Assign =>
+                  -- Keep that state, to allow to propagate upwards
+                  null;
+            end case;
+         end Refresh_One;
+         procedure Refresh_All is new Iterate (Refresh_One);
       begin
-         case Value.Reference is
-            when None =>
-               raise Delete_Current;
-            when Assigned =>
-               Value.Reference := None;
-            when Read_Before_Assign =>
-               -- Keep that state, to allow to propagate upwards
-               null;
-         end case;
-      end Refresh_One;
-      procedure Refresh is new Iterate (Refresh_One);
-      -- Delete all entries in the None (not written) state, and returns others
-      -- to None for the next round.
+         Refresh_All (On);
+      end Refresh;
 
       procedure Update_One (Key   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
                             Value : in out Object_Information)
@@ -495,7 +579,6 @@ package body Rules.Improper_Initialization is
       -- Marks all remaining entries from the local map as Written in the Object_Map
 
    begin   -- Process_Statements
-      Final_Location := Null_Location;
       for Stmt_Index in Statement_List'Range loop
          case Statement_Kind (Statement_List (Stmt_Index)) is
             when An_Assignment_Statement =>
@@ -552,45 +635,67 @@ package body Rules.Improper_Initialization is
                   Paths     : constant Asis.Path_List := Statement_Paths (Statement_List (Stmt_Index));
                   Local_Map : Map;
                   Ignored   : Location;
-                  Had_Break : Boolean := False;
                begin
-                  -- Don't consider it if it is an "if" without an else path
-                  if Path_Kind (Paths (Paths'Last)) not in An_If_Path .. An_Elsif_Path then
-                     Local_Map := Clean_Map (Object_Map);
-                     for Path_Index in Paths'Range loop
-                        begin
-                           if Path_Kind (Paths (Path_Index)) in An_If_Path .. An_Elsif_Path then
-                              Check_Object_Use (Condition_Expression (Paths (Path_Index)), Object_Map);
-                           end if;
-                           Process_Statements (Local_Map, Sequence_Of_Statements (Paths (Path_Index)), Ignored);
-                        exception
-                           when Statements_Break =>
-                              Had_Break := True;
-                        end;
-                        Refresh (Local_Map);
-                     end loop;
-                     Update_Local (Local_Map);
+                  -- If it is an "if" without an else path, leave the map empty since there is a (pseudo)
+                  -- path that writes into no variable. We must traverse the statement however to deal with
+                  -- return and non-trivial statements.
+                  if Path_Kind (Paths (Paths'Last)) in An_If_Path .. An_Elsif_Path then
                      Clear (Local_Map);
-                     if Had_Break then
-                        raise Statements_Break;
-                     end if;
+                  else
+                     Local_Map := Clean_Map (Object_Map);
                   end if;
+
+                  for Path_Index in Paths'Range loop
+                     if Path_Kind (Paths (Path_Index)) in An_If_Path .. An_Elsif_Path then
+                        Check_Object_Use (Condition_Expression (Paths (Path_Index)), Object_Map);
+                     end if;
+                     Process_Statements (Local_Map,
+                                         Sequence_Of_Statements (Paths (Path_Index)),
+                                         Final_Location => Ignored,
+                                         Exit_Cause     => Exit_Cause);
+                     case Exit_Cause is
+                        when Non_Trivial_Statement =>
+                           Final_Location := Get_Location (Statement_List (Stmt_Index));
+                           return;
+                        when Return_Statement =>
+                           -- This branch does not count for uninitialized variables
+                           Refresh (Local_Map, No_Delete => True);
+                        when End_Of_Statements =>
+                           Refresh (Local_Map);
+                     end case;
+                  end loop;
+                  Update_Local (Local_Map);
                end;
 
             when A_Null_Statement =>
                null; -- Precisely...
 
-            when A_Goto_Statement
-               | A_Return_Statement
-                 =>
-                 raise Statements_Break;
+            when A_Return_Statement =>
+               declare
+                  Expr : constant Asis.Expression := Return_Expression (Statement_List (Stmt_Index));
+               begin
+                  if not Is_Nil (Expr) then
+                     Check_Object_Use (Expr, Object_Map);
+                  end if;
+               end;
+
+               -- Out parameters must be OK at this point
+               Do_Report (Get_Location (Statement_List (Stmt_Index)), Out_Params_Only => True);
+
+               Final_Location := Get_Location (Statement_List (Stmt_Index));
+               Exit_Cause     := Return_Statement;
+               return;
 
             when others =>
-               -- End of intialization statements
+               -- non trivial statements
                Final_Location := Get_Location (Statement_List (Stmt_Index));
-               exit;
+               Exit_Cause     := Non_Trivial_Statement;
+               return;
          end case;
       end loop;
+
+      Final_Location := Null_Location;
+      Exit_Cause     := End_Of_Statements;
    end Process_Statements;
 
    -----------------------
@@ -601,8 +706,8 @@ package body Rules.Improper_Initialization is
       use Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Object_Info_Map;
 
-      Object_Map : Object_Info_Map.Map;
       Final_Loc  : Location;
+      Exit_Cause : Exit_Causes;
 
       procedure Add_Out_Parameters (Element : in Asis.Element) is
          use Asis, Asis.Declarations, Asis.Elements;
@@ -660,10 +765,11 @@ package body Rules.Improper_Initialization is
                            Param_Names : constant Asis.Defining_Name_List := Names (Params_Profile (Profile_Index));
                         begin
                            for Param_Index in Param_Names'Range loop
-                              Add (Object_Map,
+                              Add (Global_Map,
                                    To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Param_Names (Param_Index)))),
                                    (Identifier => Param_Names (Param_Index),
-                                    Kind       => K_Out_Parameter, Reference => None));
+                                    Kind       => K_Out_Parameter,
+                                    Reference  => None));
                            end loop;
                         end;
                      end if;
@@ -682,7 +788,7 @@ package body Rules.Improper_Initialization is
             use Asis.Definitions;
 
             Var_Names      : constant Asis.Defining_Name_List := Names (Decl);
-            Var_Kind       : Object_Kind;
+            Var_Kind       : Subrules;
             Subtype_Decl   : Asis.Declaration;
             Component_Decl : Asis.Declaration;
          begin
@@ -724,7 +830,7 @@ package body Rules.Improper_Initialization is
             end if;
 
             for Var_Index in Var_Names'Range loop
-               Add (Object_Map,
+               Add (Global_Map,
                     To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Var_Names (Var_Index)))),
                     (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
             end loop;
@@ -760,38 +866,38 @@ package body Rules.Improper_Initialization is
                            -- It is the variable being renamed
                            exit;
                         when An_Explicit_Dereference =>
-                           Check_Object_Use (Prefix (Expr), Object_Map);
+                           Check_Object_Use (Prefix (Expr), Global_Map);
                            exit;
                         when A_Function_Call =>
                            -- Renaming of the result of a function call
                            -- May include implicit dereference, but we don't care
-                           Check_Object_Use (Expr, Object_Map);
+                           Check_Object_Use (Expr, Global_Map);
                            exit;
                         when An_Indexed_Component =>
                            declare
                               Indexes : constant Asis.Expression_List := Index_Expressions (Expr);
                            begin
                               for I in Indexes'Range loop
-                                 Check_Object_Use (Indexes (I), Object_Map);
+                                 Check_Object_Use (Indexes (I), Global_Map);
                               end loop;
                            end;
                            Expr := Prefix (Expr);
                         when A_Slice =>
-                           Check_Object_Use (Slice_Range (Expr), Object_Map);
+                           Check_Object_Use (Slice_Range (Expr), Global_Map);
                            Expr := Prefix (Expr);
                         when A_Selected_Component =>
                            if Declaration_Kind (Corresponding_Name_Declaration (Selector (Expr)))
                               not in A_Discriminant_Specification .. A_Component_Declaration
                            then
                               -- This is the object being renamed
-                              Check_Object_Use (Prefix (Expr), Object_Map);
+                              Check_Object_Use (Prefix (Expr), Global_Map);
                               exit;
                            end if;
 
                            Expr := Prefix (Expr);
                            if Is_Access_Expression (Expr) then
                               -- Implicit dereference
-                              Check_Object_Use (Expr, Object_Map);
+                              Check_Object_Use (Expr, Global_Map);
                               exit;
                            end if;
                         when A_Type_Conversion =>
@@ -808,73 +914,11 @@ package body Rules.Improper_Initialization is
                   if Declaration_Kind (Decls (Decl_Index)) = A_Variable_Declaration then
                      Add_Variable (Decls (Decl_Index));
                   end if;
-                  Check_Object_Use (Decls (Decl_Index), Object_Map);
+                  Check_Object_Use (Decls (Decl_Index), Global_Map);
                end if;
             end loop;
          end;
       end Process_Declarations;
-
-      procedure Report_One (Key : Unbounded_Wide_String; Info : in out Object_Information) is
-         pragma Unreferenced (Key);
-         use Asis.Declarations;
-         use Framework.Reports, Utilities;
-      begin
-         case Info.Reference is
-            when None =>
-               case Info.Kind is
-                  when K_Out_Parameter =>
-                     Report (Rule_Id,
-                             Usage (K_Out_Parameter),
-                             Get_Location (Info.Identifier),
-                             "out parameter """ & Defining_Name_Image (Info.Identifier)
-                             & """ not safely initialized"
-                             & Choose (Final_Loc = Null_Location,
-                                       "",
-                                       " before line " & Integer_Img (Get_First_Line (Final_Loc))));
-                  when K_Variable =>
-                     Report (Rule_Id,
-                             Usage (K_Variable),
-                             Get_Location (Info.Identifier),
-                             "variable """ & Defining_Name_Image (Info.Identifier)
-                             & """ not safely initialized"
-                             & Choose (Final_Loc = Null_Location,
-                                       "",
-                                       " before line " & Integer_Img (Get_First_Line (Final_Loc))));
-                  when K_Initialized_Variable =>
-                     null;
-               end case;
-            when Read_Before_Assign =>
-               case Info.Kind is
-                  when K_Out_Parameter =>
-                     Report (Rule_Id,
-                             Usage (K_Out_Parameter),
-                             Get_Location (Info.Identifier),
-                             "out parameter """ & Defining_Name_Image (Info.Identifier)
-                             & """ used before initialisation");
-                  when K_Variable =>
-                     Report (Rule_Id,
-                             Usage (K_Variable),
-                             Get_Location (Info.Identifier),
-                             "variable """ & Defining_Name_Image (Info.Identifier)
-                             & """ used before initialisation");
-                  when K_Initialized_Variable =>
-                     null;
-               end case;
-            when Assigned =>
-               case Info.Kind is
-                  when K_Initialized_Variable =>
-                     Report (Rule_Id,
-                             Usage (K_Initialized_Variable),
-                             Get_Location (Info.Identifier),
-                             "variable """ & Defining_Name_Image (Info.Identifier)
-                             & """ unnecessarily initialized in declaration");
-                  when others =>
-                     null;
-               end case;
-         end case;
-      end Report_One;
-
-      procedure Report_All is new Iterate (Report_One);
 
    begin -- Process_Structure
 
@@ -886,26 +930,21 @@ package body Rules.Improper_Initialization is
       Add_Out_Parameters   (Elem);
       Process_Declarations (Elem);
 
-      begin
-         Process_Statements (Object_Map, Thick_Queries.Statements (Elem), Final_Loc);
-      exception
-         when Statements_Break =>
-            null;
-      end;
-      Report_All (Object_Map);
+      Process_Statements (Global_Map, Thick_Queries.Statements (Elem), Final_Loc, Exit_Cause);
 
-      Clear (Object_Map);
+      Do_Report (Final_Loc);
+      Clear (Global_Map);
    exception
       when others =>
          -- Prevent memory leak in case of problem
-         Clear (Object_Map);
+         Clear (Global_Map);
          raise;
    end Process_Structure;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Improper_Initialization;

@@ -33,7 +33,7 @@
 "8/4": check style (multiple_elements, statement);
 "8.2.1/1": check declarations (multiple_names);
 "8.2.3": search expressions (and_then, or_else);
-"8.2.4/2": check case_statement (min_others_span, 1);
+"8.2.4/2": check case_statement (others_span, min 1);
 
 -- Miscellaneous
 "9/1": check insufficient_parameters (1, standard.boolean);

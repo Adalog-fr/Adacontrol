@@ -47,7 +47,19 @@ package Framework.Symbol_Table is
    -- Exceeding this number will immediately result in Failure
    -- If necessary, just increase the above constant, no other change required.
 
-   Not_In_Table : exception;
+
+   --
+   -- Declarations common to all instantiations
+   --
+   type Scope_Kinds is (Declaration, Visibility);
+   -- The Declaration scope is the scope where the entity is declared
+   -- The Visibility scope is the outermost scope where the entity is visible
+   -- They are different for entities declared in package specs.
+   -- TBSL: formal parameters
+
+   Not_In_Table   : exception;
+   Delete_Current : exception;
+   -- Works like Binary_Map.Delete_Current
 
 
    -- Instantiate this generic to allow to associate any data with any declared element.
@@ -58,7 +70,10 @@ package Framework.Symbol_Table is
    generic
       type Content is private;
    package Data_Access is
-      procedure Store (Element : Asis.Element; Content_Value : Content);
+      procedure Store (Element : Asis.Element; Content_Value : Content; At_Declaration_Scope : Boolean := True);
+      -- At_Declaration_Scope must be set to False if Store is called from a scope which is not the one
+      -- where Element is declared.
+      -- It must be set to True only if Element is the Defining_Name
       function  Fetch (Element : Asis.Element) return Content;
       -- Raises Not_In_Table if not present
       function  Fetch (Element : Asis.Element; Default : Content) return Content;
@@ -74,7 +89,7 @@ package Framework.Symbol_Table is
       -- Apply Action to all entities declared within the current scope
       generic
          with procedure Action (Entity : Asis.Defining_Name; Content_Value : in out Content);
-      procedure On_Every_Entity_From_Scope;
+      procedure On_Every_Entity_From_Scope (Scope_Kind : Scope_Kinds);
    private
       type Content_Hook is new Root_Content with
          record

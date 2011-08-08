@@ -86,8 +86,8 @@ package body Rules.Multiple_Assignments is
    -- At the end of a sequence of assignments, all LHS in the map are traversed, and
    -- messages are issued according to the values assigned/total subcomponents.
 
-   type Subrule is (Repeated, Groupable);
-   package Subrule_Utilities is new Framework.Language.Flag_Utilities (Subrule);
+   type Subrules is (Repeated, Groupable);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio);
    package Criteria_Utilities is new Framework.Language.Modifier_Utilities (Criteria, Prefix => "Crit_");
@@ -130,7 +130,7 @@ package body Rules.Multiple_Assignments is
    ----------
 
    procedure Help is
-      use Utilities, Criteria_Utilities, Subrule_Utilities;
+      use Utilities, Criteria_Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter (1) :");
@@ -141,24 +141,24 @@ package body Rules.Multiple_Assignments is
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Context_Queue, Criteria_Utilities, Subrule_Utilities, Framework.Language, Thick_Queries;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities, Framework.Language, Thick_Queries;
       Given   : Biggest_Natural := 0;
       Missing : Biggest_Natural := Biggest_Natural'Last;
       Ratio   : Percentage      := 0;
       Crit    : Criteria;
-      Subr    : Subrule;
+      Subrule : Subrules;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "subrule expected");
       end if;
 
-      Subr := Get_Flag_Parameter (Allow_Any => False);
-      case Subr is
+      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      case Subrule is
          when Repeated =>
             if Parameter_Exists then
                Parameter_Error (Rule_Id, "No parameter for subrule ""repeated""");
@@ -168,7 +168,7 @@ package body Rules.Multiple_Assignments is
             end if;
 
             Repeated_Used    := True;
-            Repeated_Context := Basic.New_Context (Rule_Type, Label);
+            Repeated_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
 
          when Groupable =>
             if not Parameter_Exists then
@@ -186,10 +186,10 @@ package body Rules.Multiple_Assignments is
                      Ratio := Get_Integer_Parameter (Min => 1, Max => 100);
                end case;
             end loop;
-            Append (Groupable_Contexts, (Basic.New_Context (Rule_Type, Label) with Given, Missing, Ratio));
+            Append (Groupable_Contexts, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Given, Missing, Ratio));
       end case;
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -354,7 +354,7 @@ package body Rules.Multiple_Assignments is
                      end if;
                      Process_Assignment (Parent, Component, Key);
                      Parent_Key := Key;
-                     Append (Key, '.' & To_Upper (Name_Image (Selector (Target))));
+                     Append (Key, '.' & To_Upper (A4G_Bugs.Name_Image (Selector (Target))));
                      exit;
                   end if;
 
@@ -468,9 +468,12 @@ package body Rules.Multiple_Assignments is
             return;
          end if;
 
-         Assert (Value.Total = Not_Static or else Value.Nb_Subcompo <= Value.Total,
-                 "More assigned fields than possible for " & To_Wide_String (Key) & ": "
-                 & Biggest_Int_Img (Value.Nb_Subcompo) & "/" & Biggest_Int_Img (Value.Total));
+         -- We do not use Assert for the following sanity check, to avoid evaluating the error string
+         -- (would raise Constraint_Error if Value.Total = Not_Static)
+         if Value.Total /= Not_Static and then Value.Nb_Subcompo > Value.Total then
+            Failure ("More assigned fields than possible for " & To_Wide_String (Key) & ": "
+                     & Biggest_Int_Img (Value.Nb_Subcompo) & "/" & Biggest_Int_Img (Value.Total));
+         end if;
 
          while Has_Element (Current) loop
             Matched := True;
@@ -568,7 +571,7 @@ package body Rules.Multiple_Assignments is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Multiple_Assignments;

@@ -1,4 +1,5 @@
 with Unchecked_Deallocation, Unchecked_Conversion;
+with Ada.Finalization;
 package X_Declarations is
    function ItoF is new Unchecked_Conversion (Integer, Float);           -- Nested_Function_Instantiation
    type A_Integer is access Integer;                                     -- Access_Type
@@ -13,5 +14,12 @@ package X_Declarations is
 
    package Inst is new Gen_Pack;                                         -- Nested_Package_Instantiation
 
-   Arr : array (1..10) of Integer;                                       -- Array, single_array, variable
+   Arr : array (1..10) of Integer;                                       -- Array, single_array, variable, constrained_array_variable
+
+   package Af renames Ada.Finalization;                                 -- not_operator_renaming, non_identical_renaming, renaming
+   type Cont1 is new Ada.Finalization.Controlled with null record;      -- controlled_type
+   type Cont2 is new Af.Limited_Controlled with                         -- controlled_type
+      record
+         I : Integer;                                                   -- Uninitialized_record_field
+      end record;
 end X_Declarations;

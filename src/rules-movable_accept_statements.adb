@@ -176,7 +176,7 @@ package body Rules.Movable_Accept_Statements  is
       end record;
 
    -- The context associated with the user-defined dependent objects
-   Default_Detail_Context : Detail_Context := Detail_Context'(Detail => K_Both);
+   Default_Detail_Context : constant Detail_Context := Detail_Context'(Detail => K_Both);
 
    -- The context store (storing the association contexts)
    Entities  : Context_Store;
@@ -233,12 +233,11 @@ package body Rules.Movable_Accept_Statements  is
    end Help;
 
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
       use Detail_Flags_Utilities;
 
@@ -268,8 +267,8 @@ package body Rules.Movable_Accept_Statements  is
       end loop;
 
       Rule_Used (Detail) := True;
-      Usage     (Detail) := Basic.New_Context (Rule_Use_Type, Label);
-   end Add_Use;
+      Usage     (Detail) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+   end Add_Control;
 
 
    -------------
@@ -791,8 +790,8 @@ package body Rules.Movable_Accept_Statements  is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Movable_Accept_Statements;

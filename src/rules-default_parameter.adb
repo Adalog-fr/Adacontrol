@@ -122,12 +122,11 @@ package body Rules.Default_Parameter is
       User_Message  ("the default value for a given parameter");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Usage_Kind_Utilities, Entity_Kind_Utilities;
 
       Entity      : Entity_Specification;
@@ -181,13 +180,13 @@ package body Rules.Default_Parameter is
             if Val (Usage).Active then
                Parameter_Error (Rule_Id, "this combination of parameters already specified");
             end if;
-            Val (Usage) := (Basic.New_Context (Rule_Type, Label) with True);
+            Val (Usage) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with True);
             Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Formal), Val);
             Update (Entities, Entity_Context'(Formals_Map => Formals_Map));
          end;
       end;
       Rule_Used  := True;
-   end Add_Use;
+   end Add_Control;
 
    -----------
    -- Clear --
@@ -405,8 +404,8 @@ package body Rules.Default_Parameter is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Default_Parameter;

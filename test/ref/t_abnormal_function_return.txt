@@ -1,3 +1,7 @@
 t_abnormal_function_return.adb:7:7: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
 t_abnormal_function_return.adb:10:9: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
-t_abnormal_function_return.adb:12:10: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
+t_abnormal_function_return.adb:17:19: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
+t_abnormal_function_return.adb:21:10: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
+t_abnormal_function_return.adb:38:19: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
+t_abnormal_function_return.adb:35:16: Error: ABNORMAL_FUNCTION_RETURN: Missing "else" path containing "return" or "raise"
+t_abnormal_function_return.adb:53:16: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"

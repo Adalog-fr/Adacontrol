@@ -38,7 +38,8 @@ with
 
 -- Asis
 with
-  Asis.Exceptions;
+  Asis.Exceptions,
+  Asis.Implementation;
 
 -- Adalog
 with
@@ -53,6 +54,7 @@ with
   Framework.Ruler,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
+  Framework.Specific_Plugs,
   Framework.String_Set,
   Implementation_Options;
 
@@ -66,32 +68,33 @@ package body Framework.Language.Commands is
 
    Seen_Files : Framework.String_Set.Set;
 
-   ------------------
-   -- Help_Command --
-   ------------------
+   ----------------------
+   -- Help_On_Commands --
+   ----------------------
 
-   procedure Help_Command is
+   procedure Help_On_Commands is
       use Adactl_Options, Framework.Reports;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;
       end if;
 
+      User_Message ("Commands:");
       User_Message ("   Clear all|<rule name> ;");
       User_Message ("   Go;");
-      User_Message ("   Help [ all|<rule name>{,<rule name>} ];");
+      User_Message ("   Help all|commands|license|list|options|rules|version|<rule name> {,...};");
       User_Message ("   Inhibit <rule name> (<unit>{,<unit>});");
       User_Message ("   Message ""<message>"";");
       User_Message ("   Quit;");
-      User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short ;");
+      User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short|none ;");
       User_Message ("   Set output ""<output file>"" ;");
       User_Message ("   Set statistics <level: 0 .. "
                       & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ">;");
-      User_Message ("   Set verbose|debug|ignore|warning on|off ;");
+      User_Message ("   Set verbose|debug|ignore|warning|warning_as_error on|off ;");
       User_Message ("   Search|Check|Count <rule name> [ ( <parameters> ) ];");
       User_Message ("   Source <input file> ;");
-   end Help_Command;
+   end Help_On_Commands;
 
    ----------------
    -- Go_Command --
@@ -148,7 +151,7 @@ package body Framework.Language.Commands is
             end if;
       end Handle_Exception;
 
-      use Ada.Wide_Text_IO, Adactl_Options;
+      use Ada.Exceptions, Ada.Characters.Handling, Ada.Wide_Text_IO, Adactl_Options;
    begin  -- Go_Command
       if Action = Check or Rule_Error_Occurred then
          return;
@@ -177,6 +180,9 @@ package body Framework.Language.Commands is
             when Utilities.User_Error =>
                -- Call to Parameter_Error while traversing => propagate silently
                raise;
+            when Occur : Framework.Reports.Cancellation =>
+               User_Message ("Execution cancelled due to " & To_Wide_String (Exception_Message (Occur)));
+               exit;
             when Occur : others =>
                Handle_Exception ("Processing", Occur, Units_List.Current_Unit);
          end;
@@ -185,6 +191,7 @@ package body Framework.Language.Commands is
       end loop;
 
       begin
+         -- If run has been cancelled, messages from finalization will be ignored by Report
          Framework.Rules_Manager.Finalize_All;
       exception
          -- There should be no call to Parameter_Error here...
@@ -193,7 +200,10 @@ package body Framework.Language.Commands is
             return;
       end;
 
-      Framework.Reports.Report_Counters;
+      Framework.Reports.Report_Counts;
+
+      Framework.Reports.Report_Stats;
+      Rules_Manager.Report_Timings;
 
       if Is_Open (Adactl_Output) then
          Flush (Adactl_Output);
@@ -201,6 +211,52 @@ package body Framework.Language.Commands is
 
       Framework.Scope_Manager.Reset (Deactivate => True);
    end Go_Command;
+
+   ------------------
+   -- Help_Command --
+   ------------------
+
+   procedure Help_Command (On : in Wide_String) is
+      use Asis.Implementation;
+      use Adactl_Options, Framework.Rules_Manager;
+
+      Upper_On : constant Wide_String := To_Upper (On);
+   begin
+      if Upper_On = "ALL" then
+         Help_On_All_Rules;
+
+      elsif Upper_On = "COMMANDS" then
+         Help_On_Commands;
+
+      elsif Upper_On = "LICENSE" then
+         User_Message ("Copyright (C) 2004-2007 Eurocontrol/Adalog and others.");
+         User_Message ("This software is covered by the GNU Modified General Public License.");
+
+      elsif Upper_On = "LIST" then
+         Help_On_Names (Pretty => False);
+
+      elsif Upper_On = "OPTIONS" then
+         Help_On_Options;
+
+      elsif Upper_On = "RULES" then
+         Help_On_Names (Pretty => True);
+
+      elsif Upper_On = "VERSION" then
+         -- GNAT warns that the parameter to Choose is statically known
+         -- This is the intended behaviour (kind of conditional compilation)
+         pragma Warnings (Off);
+         User_Message ("ADACTL v. "
+                         & Framework.Version
+                         & Choose (Framework.Specific_Plugs.Specific_Version = "",
+                                   "",
+                                   '-' & Framework.Specific_Plugs.Specific_Version)
+                         & " with " & ASIS_Implementor_Version);
+         pragma Warnings (On);
+
+      else   -- Assume it is a rule name
+         Help_On_Rule (Upper_On);
+      end if;
+   end Help_Command;
 
    ---------------------
    -- Inhibit_Command --

@@ -57,7 +57,7 @@ package body Rules.Characters is
    Separators : constant Wide_Character_Set := Tab_Chars or To_Set (' ');
 
    type Subrule is (Control, Not_Iso_646, Trailing_Space, Wide);
-   package Subrule_Utilities is new Framework.Language.Flag_Utilities (Subrule);
+   package Subrule_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrule);
 
    type Subrule_Set is array (Subrule) of Boolean;
    Rule_Used : Subrule_Set := (others => False);
@@ -70,7 +70,7 @@ package body Rules.Characters is
    ----------
 
    procedure Help is
-      use Utilities, Subrule_Utilities;
+      use Utilities, Subrule_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter (s):",
@@ -78,12 +78,12 @@ package body Rules.Characters is
       User_Message ("Controls source lines that contain specified kind of characters");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Framework.Language, Subrule_Utilities;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrule_Flag_Utilities;
       Sr : Subrule;
    begin
       if Parameter_Exists then
@@ -92,7 +92,7 @@ package body Rules.Characters is
             if Rule_Used (Sr) then
                Parameter_Error (Rule_Id, "rule already specified for " & Image (Sr));
             end if;
-            Contexts  (Sr) := Basic.New_Context (Rule_Type, Label);
+            Contexts  (Sr) := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Rule_Used (Sr) := True;
          end loop;
       else
@@ -100,11 +100,11 @@ package body Rules.Characters is
             if Rule_Used (S) then
                Parameter_Error (Rule_Id, "rule already specified for " & Image (S));
             end if;
-            Contexts  (S) := Basic.New_Context (Rule_Type, Label);
+            Contexts  (S) := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Rule_Used (S) := True;
          end loop;
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -254,7 +254,7 @@ package body Rules.Characters is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Characters;

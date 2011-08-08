@@ -3,6 +3,7 @@ procedure T_parameter_aliasing is
    procedure Proc_CC  (X : out Character; Y : in out Character) is begin null; end;
    procedure Proc_CC2 (X : in  Character; Y : out    Character) is begin null; end;
    procedure Proc_CCC (X : out Character; Y : in     Character; Z : in Character) is begin null; end;
+   procedure Proc_CC3 (                   Y : in     Character; Z : in Character; X : out Character)  is begin null; end;
    procedure Proc_SC  (X : out String;    Y : out    Character) is begin null; end;
 
    function "+" (C : Character; I : integer) return Character is
@@ -24,6 +25,8 @@ Simple_Cases :
       Proc_CCC(I, I, I);                      -- Aliasing
       Proc_CC (I, J);                         -- OK
       Proc_CCC(I, J, J);                      -- OK
+      Proc_CCC(I, I, J);                      -- Aliasing
+      Proc_CC3(   I, J, I);                   -- Aliasing
       Proc_CC2(J+1, J);                       -- OK
       Proc_CC (X => I, Y => J);               -- OK
       Proc_CC (X => Simple_Cases.I, Y => I);  -- Aliasing

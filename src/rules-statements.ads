@@ -47,4 +47,6 @@ package Rules.Statements is
 
    procedure Process_Scope_Enter (Scope : in Asis.Statement);
    procedure Process_Scope_Exit  (Scope : in Asis.Statement);
+
+   procedure Enter_Unit (Unit : in Asis.Compilation_Unit);
 end Rules.Statements;

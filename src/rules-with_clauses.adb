@@ -52,13 +52,13 @@ pragma Elaborate (Framework.Language);
 package body Rules.With_Clauses is
    use Framework;
 
-   type With_Usage is (Multiple_Names, Reduceable, Inherited);
-   package With_Usage_Utilities is new Framework.Language.Flag_Utilities (With_Usage);
+   type Subrules is (Multiple_Names, Reduceable, Inherited);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Usage_Flags is array (With_Usage) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
    Rule_Used    : Usage_Flags := (others => False);
    Save_Used    : Usage_Flags;
-   Rule_Context : array (With_Usage) of Basic_Rule_Context;
+   Ctl_Contexts : array (Subrules) of Basic_Rule_Context;
 
    type Usage is (Not_Used, Used_In_Separate, Used);
    type With_Info (U_Length, O_Length : Positive) is
@@ -75,27 +75,12 @@ package body Rules.With_Clauses is
 
    package Withed_Units is new Framework.Scope_Manager.Scoped_Store (With_Info, Equivalent_Info);
 
-   ---------------
-   -- Is_Within --
-   ---------------
-
-   function Is_Within (Expr : Asis.Expression; Clause : Asis.Clause_Kinds) return Boolean is
-      use Asis, Asis.Elements;
-      Current : Asis.Element := Expr;
-   begin
-      while Element_Kind (Current) = An_Expression loop
-         Current := Enclosing_Element (Current);
-      end loop;
-
-      return Clause_Kind (Current) = Clause;
-   end Is_Within;
-
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Utilities, With_Usage_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter(s):");
@@ -103,35 +88,34 @@ package body Rules.With_Clauses is
       User_Message ("or are implicitely inherited from a parent unit");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
-      use Framework.Language, With_Usage_Utilities;
-      Kw : With_Usage;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrules_Flag_Utilities;
+      Subrule : Subrules;
    begin
       if Parameter_Exists then
-         Kw := Get_Flag_Parameter (Allow_Any => False);
+         Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-         if Rule_Used (Kw) then
-            Parameter_Error (Rule_Id, "rule already specified for " & Image (Kw));
+         if Rule_Used (Subrule) then
+            Parameter_Error (Rule_Id, "rule already specified for " & Image (Subrule));
          end if;
 
-         Rule_Context (Kw) := Basic.New_Context (Rule_Type, Label);
-         Rule_Used    (Kw) := True;
+         Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+         Rule_Used    (Subrule) := True;
 
       else
          -- All usages
-         if Rule_Used /= (With_Usage => False) then
+         if Rule_Used /= (Subrules => False) then
             Parameter_Error (Rule_Id, "already specified");
          end if;
 
-         Rule_Context := (others => Basic.New_Context (Rule_Type, Label));
+         Ctl_Contexts := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
          Rule_Used    := (others => True);
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -157,10 +141,25 @@ package body Rules.With_Clauses is
 
    procedure Prepare is
    begin
-      if Rule_Used /= (With_Usage => False) then
+      if Rule_Used /= (Subrules => False) then
          Withed_Units.Activate;
       end if;
    end Prepare;
+
+   ---------------
+   -- Is_Within --
+   ---------------
+
+   function Is_Within (Expr : Asis.Expression; Clause : Asis.Clause_Kinds) return Boolean is
+      use Asis, Asis.Elements;
+      Current : Asis.Element := Expr;
+   begin
+      while Element_Kind (Current) = An_Expression loop
+         Current := Enclosing_Element (Current);
+      end loop;
+
+      return Clause_Kind (Current) = Clause;
+   end Is_Within;
 
    -------------------------
    -- Process_With_Clause --
@@ -180,7 +179,7 @@ package body Rules.With_Clauses is
       begin
          if Rule_Used (Multiple_Names) and Names'Length > 1 then
             Report (Rule_Id,
-                    Rule_Context (Multiple_Names),
+                    Ctl_Contexts (Multiple_Names),
                     Get_Location (Element),
                     "With clause uses multiple names");
          end if;
@@ -199,7 +198,7 @@ package body Rules.With_Clauses is
                while Withed_Units.Data_Available loop
                   if U_Name = Withed_Units.Current_Data.Unit_Name then
                      Report (Rule_Id,
-                             Rule_Context (Reduceable),
+                             Ctl_Contexts (Reduceable),
                              Get_Location (Names (I)),
                              "With clause for " & Extended_Name_Image (Names (I))
                                & " redundant with clause at " & Image (Withed_Units.Current_Data.Unit_Loc));
@@ -279,7 +278,7 @@ package body Rules.With_Clauses is
                            when Specification =>
                               if Rule_Used (Reduceable) then
                                  Report (Rule_Id,
-                                         Rule_Context (Reduceable),
+                                         Ctl_Contexts (Reduceable),
                                          Info.Unit_Loc,
                                          "With clause for "
                                            & Info.Original_Name
@@ -288,7 +287,7 @@ package body Rules.With_Clauses is
                            when Parent =>
                               if Rule_Used (Inherited) then
                                  Report (Rule_Id,
-                                         Rule_Context (Inherited),
+                                         Ctl_Contexts (Inherited),
                                          Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
                                          "With clause for "
                                            & Info.Original_Name
@@ -326,7 +325,7 @@ package body Rules.With_Clauses is
                   if Info.Unit_Name = U_Name then
                      if Info.Status = Not_Used then
                         Report (Rule_Id,
-                                Rule_Context (Inherited),
+                                Ctl_Contexts (Inherited),
                                 Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
                                 "With clause for "
                                   & Info.Original_Name
@@ -374,7 +373,7 @@ package body Rules.With_Clauses is
                   case Info.Status is
                      when Not_Used =>
                         Report (Rule_Id,
-                                Rule_Context (Reduceable),
+                                Ctl_Contexts (Reduceable),
                                 Info.Unit_Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
                                   & Choose (Is_Spec or Withed_Units.Current_Origin = Specification,
@@ -383,7 +382,7 @@ package body Rules.With_Clauses is
                                );
                      when Used_In_Separate =>
                         Report (Rule_Id,
-                                Rule_Context (Reduceable),
+                                Ctl_Contexts (Reduceable),
                                 Info.Unit_Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
                                   & """ (used in separate unit(s))");
@@ -405,8 +404,8 @@ package body Rules.With_Clauses is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.With_Clauses;

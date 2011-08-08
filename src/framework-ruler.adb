@@ -53,9 +53,10 @@ with
 -- Adactl
 with
   Framework.Plugs,
-  Framework.Specific_Plugs,
+  Framework.Reports,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
+  Framework.Specific_Plugs,
   Framework.Symbol_Table,
   Rules.Uncheckable;
 
@@ -530,8 +531,9 @@ package body Framework.Ruler is
       end case;
 
    exception
-      when Utilities.User_Error =>
-         -- Call to Parameter_Error while traversing => propagate silently
+      when Utilities.User_Error =>             -- Call to Parameter_Error while traversing => propagate silently
+         raise;
+      when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
       when others =>
          Utilities.Trace ("Exception in Pre_Procedure at " & Image (Get_Location (Element)), --## rule line off No_Trace
@@ -629,8 +631,9 @@ package body Framework.Ruler is
       end case;
 
    exception
-      when Utilities.User_Error =>
-         -- Call to Parameter_Error while traversing => propagate silently
+      when Utilities.User_Error =>             -- Call to Parameter_Error while traversing => propagate silently
+         raise;
+      when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
       when others =>
          Utilities.Trace ("Exception in Post_Procedure at "   --## rule line off No_Trace

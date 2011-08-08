@@ -54,7 +54,8 @@ with
   Framework.Queries,
   Framework.Rules_Manager,
   Framework.Reports,
-  Framework.Scope_Manager;
+  Framework.Scope_Manager,
+  Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Reduceable_Scope is
@@ -62,6 +63,8 @@ package body Rules.Reduceable_Scope is
    use Ada.Strings.Wide_Unbounded;
 
    -- Algorithm:
+   --
+   -- To check declarations that can be moved to an inner scope:
    -- We use a Scoped_Store to maintain a list of declared entities.
    -- Each entry consists of the defining name of the entity, plus a path to where
    -- the declaration could be moved. This path is the list of scopes between the scope
@@ -74,21 +77,32 @@ package body Rules.Reduceable_Scope is
    --
    -- At scope exit, remainining entities can be moved, and the top of the associated path
    -- tells where. If there is no path at all, the entity has not been referenced.
+   --
+   -- To check movable use clauses:
+   -- We use a separate Scoped_Store, since a "use" of a use clause is when it's name
+   -- does *not* appear...
+   --
+   -- To check declarations that can be moved from package spec to body:
+   -- We just use a symbol table, where we keep elements and where they were used from
+   -- Reports are issued when leaving the corresponding visibility scope.
 
-   type Subrules is (Check_All, Check_Variable,  Check_Subprogram, Check_Type, Check_Package,
-                                Check_Exception, Check_Generic,    Check_Use);
+   type Declaration_Check_Kinds is (Check_Not_Checkable,
+                                    Check_All,
+                                    Check_Variable, Check_Constant,  Check_Subprogram, Check_Type,
+                                    Check_Package,  Check_Exception, Check_Generic,    Check_Use);
+   subtype Subrules is Declaration_Check_Kinds range Check_All .. Declaration_Check_Kinds'Last;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "CHECK_");
    subtype Check_Kind is Subrules range Subrules'Succ (Check_All) .. Subrules'Last;
 
    type Check_Kind_Set is array (Check_Kind) of Boolean;
    No_Check : constant Check_Kind_Set := (others => False);
 
-   Rule_Used  : Check_Kind_Set := (others => False);
-   Save_Used  : Check_Kind_Set;
-   Contexts   : array (Check_Kind) of Basic_Rule_Context;
-   No_Blocks  : array (Check_Kind) of Boolean := (others => False);
+   Rule_Used     : Check_Kind_Set := (others => False);
+   Save_Used     : Check_Kind_Set;
+   Ctl_Contexts  : array (Check_Kind) of Basic_Rule_Context;
+   Ctl_No_Blocks : array (Check_Kind) of Boolean := (others => False);
 
-   -- Management of declaration information
+   -- Management of declaration information, non package visible items
    type Scope_List_Access is access Scope_List;
    procedure Free is new Ada.Unchecked_Deallocation (Scope_List, Scope_List_Access);
 
@@ -101,6 +115,16 @@ package body Rules.Reduceable_Scope is
    function Equivalent_Keys (L, R : Declaration_Info) return Boolean;
    package Local_Declarations is new Scoped_Store (Declaration_Info, Equivalent_Keys);
 
+   -- Management of declaration information, package visible items
+   type Package_Usage is (Not_Used, Body_Used, Outside_Used);
+   type Package_Info is
+      record
+         Usage : Package_Usage;
+         Kind  : Check_Kind;
+      end record;
+   package Package_Visibles is new Framework.Symbol_Table.Data_Access (Package_Info);
+
+   -- Management of declaration information, use clauses
    type Use_Info is
       record
          Elem  : Asis.Element;
@@ -124,45 +148,44 @@ package body Rules.Reduceable_Scope is
       User_Message  ("I.e. where all references are from a single nested scope");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Subrules_Flag_Utilities;
       Blocks_Restriction : Boolean;
-      To_Check : Subrules;
+      Subrule : Subrules;
    begin
       if Parameter_Exists then
          Blocks_Restriction := Get_Modifier ("NO_BLOCKS");
-         To_Check           := Get_Flag_Parameter (Allow_Any => False);
+         Subrule           := Get_Flag_Parameter (Allow_Any => False);
       else
          Blocks_Restriction := False;
-         To_Check           := Check_All;
+         Subrule           := Check_All;
       end if;
 
-      if To_Check = Check_All then
+      if Subrule = Check_All then
          if Rule_Used /= No_Check then
             Parameter_Error (Rule_Id, "Rule already specified");
          end if;
-         Rule_Used := (others => True);
-         Contexts  := (others => Basic.New_Context (Rule_Type, Label));
-         No_Blocks := (others => Blocks_Restriction);
+         Rule_Used     := (others => True);
+         Ctl_Contexts  := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Ctl_No_Blocks := (others => Blocks_Restriction);
       else
          loop
-            if Rule_Used (To_Check) then
+            if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "Rule already specified for this parameter");
             end if;
-            Rule_Used (To_Check) := True;
-            Contexts  (To_Check) := Basic.New_Context (Rule_Type, Label);
-            No_Blocks (To_Check) := Blocks_Restriction;
+            Rule_Used (Subrule)     := True;
+            Ctl_Contexts  (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Ctl_No_Blocks (Subrule) := Blocks_Restriction;
             exit when not Parameter_Exists;
             Blocks_Restriction := Get_Modifier ("NO_BLOCKS");
-            To_Check           := Get_Flag_Parameter (Allow_Any => False);
+            Subrule            := Get_Flag_Parameter (Allow_Any => False);
          end loop;
       end if;
-   end Add_Use;
+   end Add_Control;
 
 
    -------------
@@ -196,7 +219,6 @@ package body Rules.Reduceable_Scope is
       end if;
    end Prepare;
 
-
    ---------------------
    -- Equivalent_Keys --
    ---------------------
@@ -213,40 +235,19 @@ package body Rules.Reduceable_Scope is
       return Is_Equal (L.Elem, R.Elem);
    end Equivalent_Keys;
 
+   ----------------------------
+   -- Declaration_Check_Kind --
+   ----------------------------
 
-   ---------------------------
-   -- Process_Defining_Name --
-   ---------------------------
-
-   procedure Process_Defining_Name (Def: in Asis.Defining_Name) is
+   function Declaration_Check_Kind (Decl : Asis.Declaration) return Declaration_Check_Kinds is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
 
-      Enclosing_Unit : Asis.Declaration;
-      Enclosing_Decl : Asis.Declaration;
-      Temp           : Asis.Element;
-      Kind           : Check_Kind;
+      Temp : Asis.Element;
    begin
-      if Rule_Used = No_Check then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      Enclosing_Decl  := Enclosing_Element (Def);
-      -- Make sure we have really the declaration
-      -- (case of defining expanded names of child units)
-      while Defining_Name_Kind (Enclosing_Decl) = A_Defining_Expanded_Name loop
-         Enclosing_Decl := Enclosing_Element (Enclosing_Decl);
-      end loop;
-
-      if Is_Nil (Enclosing_Element (Enclosing_Decl)) then
-         -- This is the defining name of a compilation unit
-         return;
-      end if;
-
-      case Element_Kind (Enclosing_Decl) is
+      case Element_Kind (Decl) is
          when A_Declaration =>
-            case Declaration_Kind (Enclosing_Decl) is
+            case Declaration_Kind (Decl) is
                when Not_A_Declaration =>
                   Failure ("Not a declaration");
 
@@ -267,7 +268,7 @@ package body Rules.Reduceable_Scope is
                   --   Control variables of for loops
                   --   Task objects (since it would change the master)
                   --   Entries
-                  return;
+                  return Check_Not_Checkable;
                when A_Package_Body_Declaration
                   | A_Task_Body_Declaration
                   | A_Protected_Body_Declaration
@@ -278,33 +279,33 @@ package body Rules.Reduceable_Scope is
                     =>
                   -- These things always have an explicit spec => no need to consider
                   -- the name from the body
-                  return;
+                  return Check_Not_Checkable;
                when An_Incomplete_Type_Declaration   -------------- Types
                   | A_Private_Type_Declaration
                   | A_Private_Extension_Declaration
                   | A_Subtype_Declaration
                     =>
-                  Kind := Check_Type;
+                  return Check_Type;
                when An_Ordinary_Type_Declaration
                   | A_Task_Type_Declaration
                   | A_Protected_Type_Declaration
                     =>
                   -- Do not consider the declaration if it is a completion
                   -- since in this case, we use the defining name from the completed declaration.
-                  if not Is_Nil (Corresponding_Type_Declaration (Enclosing_Decl)) then
-                     return;
+                  if Is_Nil (Corresponding_Type_Declaration (Decl)) then
+                     return Check_Type;
+                  else
+                     return Check_Not_Checkable;
                   end if;
-                  Kind := Check_Type;
                when A_Constant_Declaration  ------------------- Objects
                   | A_Deferred_Constant_Declaration
                   | An_Integer_Number_Declaration
                   | A_Real_Number_Declaration
                   | An_Enumeration_Literal_Specification
                     =>
-                  -- Since these are always initialized...
-                  return;
+                  return Check_Constant;
                when A_Variable_Declaration =>
-                  Temp := Object_Declaration_View (Enclosing_Decl);
+                  Temp := Object_Declaration_View (Decl);
                   if Definition_Kind (Temp) = A_Subtype_Indication then
                      Temp := Subtype_Simple_Name (Temp);
                      if Expression_Kind (Temp) /= An_Attribute_Reference then
@@ -312,21 +313,17 @@ package body Rules.Reduceable_Scope is
                         if Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
                                                      A_Task_Type_Declaration)
                         then
-                           return;
+                           return Check_Not_Checkable;
                         end if;
                      end if;
                   end if;
 
-                  if not Is_Nil (Initialization_Expression (Enclosing_Decl)) then
-                     -- Consider that initialization is a reference from same scope
-                     return;
-                  end if;
-                  Kind := Check_Variable;
+                  return Check_Variable;
                when An_Object_Renaming_Declaration =>
                   -- Treat as variable even if it is a renaming of a constant
-                  Kind := Check_Variable;
+                  return Check_Variable;
                when A_Single_Protected_Declaration =>
-                  Kind := Check_Variable;
+                  return Check_Variable;
                when A_Procedure_Declaration  ------------ Subprograms
                   | A_Function_Declaration
                   | A_Procedure_Instantiation
@@ -334,10 +331,11 @@ package body Rules.Reduceable_Scope is
                     =>
                   -- Dispatching operations are never movable, since they can be called without
                   -- their name appearing in the program text
-                  if Is_Dispatching_Operation (Enclosing_Decl) then
-                     return;
+                  if Is_Dispatching_Operation (Decl) then
+                     return Check_Not_Checkable;
+                  else
+                     return Check_Subprogram;
                   end if;
-                  Kind := Check_Subprogram;
                when A_Procedure_Body_Declaration
                   | A_Function_Body_Declaration
                   | A_Procedure_Body_Stub
@@ -345,31 +343,32 @@ package body Rules.Reduceable_Scope is
                     =>
                   -- Do not consider the body if there is an explicit spec.
                   -- since in this case, we use the defining name from the spec.
-                  if not Is_Nil (Corresponding_Declaration (Enclosing_Decl)) then
-                     return;
+                  if Is_Nil (Corresponding_Declaration (Decl)) then
+                     return Check_Subprogram;
+                  else
+                     return Check_Not_Checkable;
                   end if;
-                  Kind := Check_Subprogram;
                when A_Procedure_Renaming_Declaration
                   | A_Function_Renaming_Declaration
                     =>
                   -- Renamings can be both completions and dispatching operations
                   -- (see comments above)
-                  if Is_Dispatching_Operation (Enclosing_Decl) then
-                     return;
+                  if Is_Dispatching_Operation (Decl) then
+                     return check_not_checkable;
+                  elsif Is_Nil (Corresponding_Declaration (Decl)) then
+                     return Check_Subprogram;
+                  else
+                     return Check_Not_Checkable;
                   end if;
-                  if not Is_Nil (Corresponding_Declaration (Enclosing_Decl)) then
-                     return;
-                  end if;
-                  Kind := Check_Subprogram;
                when A_Package_Declaration   ---------------- Packages
                   | A_Package_Renaming_Declaration
                   | A_Package_Instantiation
                     =>
-                  Kind := Check_Package;
+                  return Check_Package;
                when An_Exception_Declaration   ---------------- Exceptions
                   | An_Exception_Renaming_Declaration
                     =>
-                  Kind := Check_Exception;
+                  return Check_Exception;
                when A_Generic_Procedure_Declaration  -------------- Generics
                   | A_Generic_Function_Declaration
                   | A_Generic_Package_Declaration
@@ -377,9 +376,9 @@ package body Rules.Reduceable_Scope is
                   | A_Generic_Procedure_Renaming_Declaration
                   | A_Generic_Function_Renaming_Declaration
                     =>
-                  Kind := Check_Generic;
+                  return Check_Generic;
                when others =>  ---------- Ada 2005 stuff only
-                  return;
+                  return Check_Not_Checkable;
             end case;
 
          when A_Statement =>
@@ -387,12 +386,71 @@ package body Rules.Reduceable_Scope is
             -- Statements result from references to statement labels, loop identifiers,
             -- and block identifiers.
             -- None of these are moveable
-            return;
+            return Check_Not_Checkable;
 
          when others =>
-            Failure ("Unexpected place for defining name", Enclosing_Decl);
+            Failure ("Unexpected place for defining name", Decl);
       end case;
-      if not Rule_Used (Kind) then
+   end Declaration_Check_Kind;
+
+   ------------------------------
+   -- Report_All_Package_Names --
+   ------------------------------
+
+   procedure Report_One_Name (Entity : Asis.Defining_Name; Info : in out Package_Info) is
+      use Asis.Declarations;
+      use Framework.Reports;
+   begin
+      case Info.Usage is
+         when Not_Used =>
+            Report (Rule_Id,
+                    Ctl_Contexts (Info.Kind),
+                    Get_Location (Entity),
+                    Defining_Name_Image (Entity) & " is not used");
+         when Body_Used =>
+            Report (Rule_Id,
+                    Ctl_Contexts (Info.Kind),
+                    Get_Location (Entity),
+                    "Declaration of "
+                    & Defining_Name_Image (Entity)
+                    & " can be moved into package body");
+         when Outside_Used =>
+            null;
+      end case;
+   end Report_One_Name;
+
+   procedure Report_All_Package_Names is new Package_Visibles.On_Every_Entity_From_Scope (Report_One_Name);
+
+   ---------------------------
+   -- Process_Defining_Name --
+   ---------------------------
+
+   procedure Process_Defining_Name (Def: in Asis.Defining_Name) is
+      use Asis, Asis.Declarations, Asis.Elements;
+
+      Enclosing_Unit : Asis.Declaration;
+      Enclosing_Decl : Asis.Declaration;
+      Kind           : Declaration_Check_Kinds;
+   begin
+      if Rule_Used = No_Check then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Enclosing_Decl  := Enclosing_Element (Def);
+      -- Make sure we have really the declaration
+      -- (case of defining expanded names of child units)
+      while Defining_Name_Kind (Enclosing_Decl) = A_Defining_Expanded_Name loop
+         Enclosing_Decl := Enclosing_Element (Enclosing_Decl);
+      end loop;
+
+      if Is_Nil (Enclosing_Element (Enclosing_Decl)) then
+         -- This is the defining name of a compilation unit
+         return;
+      end if;
+
+      Kind := Declaration_Check_Kind (Enclosing_Decl);
+      if Kind = Check_Not_Checkable or else not Rule_Used (Kind) then
          return;
       end if;
 
@@ -401,30 +459,58 @@ package body Rules.Reduceable_Scope is
          Enclosing_Unit := Enclosing_Element (Enclosing_Unit);
       end if;
       case Declaration_Kind (Enclosing_Unit) is
-         when A_Package_Declaration
-           | A_Generic_Package_Declaration
+         when A_Generic_Package_Declaration
            | A_Task_Type_Declaration
            | A_Single_Task_Declaration
            | A_Protected_Type_Declaration
            | A_Single_Protected_Declaration
            =>
-            -- Never process declarations from package specs, task specs and protected specs
-            return;
-         when others =>
+            -- Never process declarations from generic packages, task specs and protected specs
             null;
-      end case;
 
-      if Is_Equal (Enclosing_Decl, Current_Scope) then
-         -- This is the defining name for the current scope
-         -- => it belongs to the enclosing scope
-         Local_Declarations.Push_Enclosing ((Elem  => Def,
-                                             Kind  => Kind,
-                                             Path  => null));
-      else
-         Local_Declarations.Push ((Elem  => Def,
-                                   Kind  => Kind,
-                                   Path  => null));
-      end if;
+         when A_Package_Declaration =>
+            if In_Private_Part then
+               -- not outside visible
+               return;
+            end if;
+            if not Package_Visibles.Is_Present (Def) then
+               Package_Visibles.Store (Def, (Not_Used, Kind));
+            end if;
+
+         when others =>
+            -- Consider that initialization is a reference from same scope
+            case Kind is
+               when Check_Constant =>
+                  -- always initialized
+                  return;
+               when Check_Variable =>
+                  case Declaration_Kind (Enclosing_Decl) is
+                     when An_Object_Renaming_Declaration
+                        | A_Single_Protected_Declaration
+                          =>
+                        -- Never initialized
+                        null;
+                     when others =>
+                        if not Is_Nil (Initialization_Expression (Enclosing_Decl)) then
+                           return;
+                        end if;
+                  end case;
+               when others =>
+                  null;
+            end case;
+
+            if Is_Equal (Enclosing_Decl, Current_Scope) then
+               -- This is the defining name for the current scope
+               -- => it belongs to the enclosing scope
+               Local_Declarations.Push_Enclosing ((Elem  => Def,
+                                                   Kind  => Kind,
+                                                   Path  => null));
+            else
+               Local_Declarations.Push ((Elem  => Def,
+                                         Kind  => Kind,
+                                         Path  => null));
+            end if;
+      end case;
    end Process_Defining_Name;
 
 
@@ -435,7 +521,7 @@ package body Rules.Reduceable_Scope is
    procedure Process_Identifier (Name : in Asis.Name) is
       use Asis, Asis.Elements;
 
-      procedure Merge (Declaration_Path : in out Scope_List_Access;
+     procedure Merge (Declaration_Path : in out Scope_List_Access;
                        Usage_Path       : in     Scope_List;
                        Blocks_Forbidden : in     Boolean)
       is
@@ -491,6 +577,54 @@ package body Rules.Reduceable_Scope is
          Free (Declaration_Path);
          Declaration_Path := new Scope_List'(Usage_Path (Usage_Path'First .. Top));
       end Merge;
+
+      Enclosing_Decl : Asis.Declaration;
+
+      procedure Check_Body_Movable_Declaration is
+         -- Pre: Enclosing_Decl is the package declaration that contains the declaration
+         --      of Name
+         use Asis.Declarations, Asis.Expressions;
+         From_Body : Boolean := False;
+         Current   : Asis.Element;
+         Info      : Package_Info;
+         Kind      : Declaration_Check_Kinds;
+      begin
+         if not Package_Visibles.Is_Present (Name) then
+            -- Package is a compilation unit that has not yet been processed
+            -- We cannot be in the corresponding body, since a package spec is
+            -- always processed before the body
+            --    => Not_Movable
+            Kind := Declaration_Check_Kind (Corresponding_Name_Declaration (Name));
+            if Kind /= Check_Not_Checkable then
+               Package_Visibles.Store (Name, (Outside_Used, Kind), At_Declaration_Scope => False);
+            end if;
+            return;
+         end if;
+
+         Info := Package_Visibles.Fetch (Name);
+         if Info.Usage = Outside_Used then
+            return;
+         end if;
+
+         -- Search if Name is within the body of the package that contains its
+         -- declaration
+         Enclosing_Decl := Corresponding_Body (Enclosing_Decl);
+         Current        := Enclosing_Element (Name);
+         while not Is_Nil (Current) loop
+            if Is_Equal (Current, Enclosing_Decl) then
+               From_Body := True;
+               exit;
+            end if;
+            Current := Enclosing_Element (Current);
+         end loop;
+
+         if From_Body then
+            Info.Usage := Body_Used;
+         else
+            Info.Usage := Outside_Used;
+         end if;
+         Package_Visibles.Store (Name, Info);
+      end Check_Body_Movable_Declaration;
 
       procedure Check_Movable_Declaration is
          use  Asis.Declarations, Asis.Expressions;
@@ -563,7 +697,7 @@ package body Rules.Reduceable_Scope is
 
          Merge (Info.Path,
                 Active_Scopes (Local_Declarations.Current_Data_Level + 1 .. Good_Depth),
-                No_Blocks (Info.Kind));
+                Ctl_No_Blocks (Info.Kind));
          if Info.Path = null then
             Local_Declarations.Delete_Current;
          else
@@ -598,7 +732,7 @@ package body Rules.Reduceable_Scope is
             if Info.Image = Enclosing_Name then
                Merge (Info.Path,
                       Active_Scopes (Use_Clauses.Current_Data_Level + 1 .. Good_Depth),
-                      No_Blocks (Check_Use));
+                      Ctl_No_Blocks (Check_Use));
                if Info.Path = null then
                   Use_Clauses.Delete_Current;
                else
@@ -611,14 +745,32 @@ package body Rules.Reduceable_Scope is
          end loop;
       end Check_Movable_Use_Clause;
 
+      use Asis.Expressions;
+      use Thick_Queries;
+      EPU : Asis.Defining_Name;
    begin -- Process_Identifier
       if Rule_Used = No_Check then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      if In_Context_Clauses then
+         -- nothing here for us
+         return;
+      end if;
+
       if (Rule_Used and Check_Kind_Set'(Check_Use => False, others => True)) /= No_Check then
-         Check_Movable_Declaration;
+         EPU := Enclosing_Program_Unit (Corresponding_Name_Declaration (Name));
+         if Is_Nil (EPU) then
+            -- Name is the name of a compilation unit
+            return;
+         end if;
+         Enclosing_Decl := Enclosing_Element (EPU);
+         if Declaration_Kind (Enclosing_Decl) = A_Package_Declaration then
+            Check_Body_Movable_Declaration;
+         else
+            Check_Movable_Declaration;
+         end if;
       end if;
 
       if Rule_Used (Check_Use) then
@@ -685,11 +837,14 @@ package body Rules.Reduceable_Scope is
 
          return "scope";
       end Scope_Image;
+
    begin
       if Rule_Used = No_Check then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      Report_All_Package_Names (Scope_Kind => Symbol_Table.Visibility);
 
       Local_Declarations.Reset (Current_Scope_Only);
       while Local_Declarations.Data_Available loop
@@ -698,12 +853,12 @@ package body Rules.Reduceable_Scope is
          begin
             if Info.Path = null then
                Report (Rule_Id,
-                       Contexts (Info.Kind),
+                       Ctl_Contexts (Info.Kind),
                        Get_Location (Info.Elem),
                        Defining_Name_Image (Info.Elem) & " is not used");
             else
                Report (Rule_Id,
-                       Contexts (Info.Kind),
+                       Ctl_Contexts (Info.Kind),
                        Get_Location (Info.Elem),
                        "declaration of " & Defining_Name_Image (Info.Elem)
                        & " can be moved inside " & Scope_Image (Info.Path (Info.Path'Last))
@@ -721,12 +876,12 @@ package body Rules.Reduceable_Scope is
          begin
             if Info.Path = null then
                Report (Rule_Id,
-                       Contexts (Check_Use),
+                       Ctl_Contexts (Check_Use),
                        Get_Location (Info.Elem),
                        "Use clause for " & Extended_Name_Image (Info.Elem) & " is not necessary");
             else
                Report (Rule_Id,
-                       Contexts (Check_Use),
+                       Ctl_Contexts (Check_Use),
                        Get_Location (Info.Elem),
                        "use clause for " & Extended_Name_Image (Info.Elem)
                        & " can be moved inside " & Scope_Image (Info.Path (Info.Path'Last))
@@ -738,11 +893,29 @@ package body Rules.Reduceable_Scope is
       end loop;
    end Process_Scope_Exit;
 
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize is
+   begin
+      if Rule_Used = No_Check then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      -- Report on declarations from library packages
+      Report_All_Package_Names (Scope_Kind => Symbol_Table.Visibility);
+
+      Package_Visibles.Clear;
+   end Finalize;
+
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access,
+                                     Finalize_CB    => Finalize'Access);
 end Rules.Reduceable_Scope;

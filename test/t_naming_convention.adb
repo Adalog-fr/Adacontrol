@@ -107,13 +107,28 @@ package body T_naming_convention is
    procedure New_Proc is new Proc_Gen; -- OK
 
    generic procedure Ren_Gen_Proc renames Gen_Proc;
-   generic procedure Ren_Proc_Gen renames Proc_Gen; --OK
+   generic procedure Proc_Ren_Gen renames Proc_Gen; --OK
    procedure Ren_Bad_Gen renames Bad_Gen;
    procedure Ren_New_Proc renames New_Proc; --OK
 
-   -- Protected
+   generic
+   function SP_Func_GEN return Int_Type;  --OK
+   function SP_Func_GEN return Int_Type is
+   begin
+      return 1;
+   end SP_Func_GEN;
+
+   generic
+   function proc_Func_GEN return Int_Type;
+   function proc_Func_GEN return Int_Type is
+   begin
+      return 1;
+   end proc_Func_GEN;
+
+   -- Protected and tasks
    protected Prot is
       procedure P;
+      procedure P_Gen;
       procedure Protec_P; -- OK
    private
       Field : Boolean;
@@ -121,6 +136,7 @@ package body T_naming_convention is
    end Prot;
    protected body Prot is
       procedure P is begin null; end;
+      procedure P_Gen is begin null; end;
       procedure Protec_P is begin null; end;
    end Prot;
 
@@ -184,11 +200,13 @@ package body T_naming_convention is
 
    C1    : Character renames Obj_A.Rf_1 (1);
    Rf_C1 : Character renames Obj_A.Rf_1 (1); -- OK
-   -- Tests commented out due to ASIS bug:
-   -- C2    : Character renames Obj_B.Rf_1 (1);
-   -- Rf_C2 : Character renames Obj_B.Rf_1 (1);
-   -- C3    : Character renames Obj_C.Rf_1 (1);
-   -- Rf_C3 : Character renames Obj_C.Rf_1 (1);
+   C2    : Character renames Obj_B.Rf_1 (1);
+   Rf_C2 : Character renames Obj_B.Rf_1 (1);
+   C3    : Character renames Obj_C.Rf_1 (1);
+   Rf_C3 : Character renames Obj_C.Rf_1 (1);
+
+   CE      : exception renames Constraint_Error;
+   CE_ExcR : exception renames Constraint_Error; -- OK
 
       -- Subtypes and derived types
    subtype ST1 is My_Task;

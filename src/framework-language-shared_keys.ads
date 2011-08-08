@@ -41,7 +41,8 @@ package Framework.Language.Shared_Keys is
    -- Scope_Places
    -----------------------------------------------------------------------------------
 
-   type Scope_Places is (S_All, S_Block, S_Local, S_Nested, S_Own, S_Private, S_Public, S_Task_Body);
+   type Scope_Places is (S_All, S_Block,   S_Library, S_Local,    S_Nested,
+                         S_Own, S_Private, S_Public,  S_Task_Body);
    package Scope_Places_Utilities is new Modifier_Utilities (Scope_Places, "S_");
 
    subtype Places_Set is Scope_Places_Utilities.Modifier_Set;
@@ -50,4 +51,11 @@ package Framework.Language.Shared_Keys is
    function Is_Applicable (Expected_Places : Places_Set) return Boolean;
    -- Checks if Current_Scope matches all Scope_Places in Expected_Places
 
+
+   -----------------------------------------------------------------------------------
+   -- Min_Max
+   -----------------------------------------------------------------------------------
+
+   type Min_Max is (Min, Max);
+   package Min_Max_Utilities is new Modifier_Utilities (Min_Max);
 end Framework.Language.Shared_Keys;

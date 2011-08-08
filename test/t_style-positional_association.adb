@@ -106,4 +106,6 @@ begin
    Taske.EntryCall (1, 2);                             -- Positional_Association x2, Exposed_Literal (Integer)
    Taske.EntryCall (I => 1, J => 1);                   -- OK
 
+   Tab (1) := Tab (1) + 1;                             -- OK
+   Tab (1) := "+" (Tab (1), 1);                        -- OK (because not_operator)
 end Positional_Association;

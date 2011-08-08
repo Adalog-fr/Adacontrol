@@ -61,12 +61,12 @@ package body Rules.Exception_Propagation is
    type Risk_Level is (No_Risk, Object_In_Declaration, Variable_In_Declaration, Call_In_Declaration, Always);
 
    -- Note that "interface" is a reserved work in Ada 2005
-   type Target_Kind is (Kw_Interface, Kw_Parameter, Kw_Task, Kw_Declaration);
+   type Subrules is (Kw_Interface, Kw_Parameter, Kw_Task, Kw_Declaration);
 
-   package Target_Kind_Utilities is new Framework.Language.Flag_Utilities (Target_Kind, Prefix => "KW_");
-   use Target_Kind_Utilities;
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "KW_");
+   use Subrules_Flag_Utilities;
 
-   type Usage is array (Target_Kind) of Boolean;
+   type Usage is array (Subrules) of Boolean;
    Rule_Used : Usage := (others => False);
    Save_Used : Usage;
 
@@ -98,14 +98,14 @@ package body Rules.Exception_Propagation is
       User_Message  ("Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
-      Target      : Target_Kind;
+      Subrule     : Subrules;
       Int_Value   : Integer;
       Check_Level : Risk_Level := Always;
    begin
@@ -118,8 +118,8 @@ package body Rules.Exception_Propagation is
          Check_Level := Risk_Level'Val (Risk_Level'Pos (Always) - Int_Value);
       end if;
 
-      Target := Get_Flag_Parameter (Allow_Any => False);
-      case Target is
+      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      case Subrule is
          when Kw_Interface =>
             if not Parameter_Exists then
                Parameter_Error (Rule_Id, "at least two parameters required");
@@ -131,7 +131,7 @@ package body Rules.Exception_Propagation is
                begin
                   Add (Conventions,
                        To_Unbounded_Wide_String (Convention),
-                       EP_Rule_Context'(Basic.New_Context (Rule_Type, Label) with Check_Level));
+                       EP_Rule_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Check_Level));
                exception
                   when Already_In_Store =>
                      Parameter_Error (Rule_Id, "convention already given: " & Convention);
@@ -150,7 +150,7 @@ package body Rules.Exception_Propagation is
                begin
                   Associate (Parameters,
                              Entity,
-                             EP_Rule_Context'(Basic.New_Context (Rule_Type, Label) with Check_Level));
+                             EP_Rule_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Check_Level));
                exception
                   when Already_In_Store =>
                      Parameter_Error (Rule_Id, "parameter already given: " & Image (Entity));
@@ -167,7 +167,7 @@ package body Rules.Exception_Propagation is
                Parameter_Error (Rule_Id, """task"" already given");
             end if;
 
-            Task_Context        := (Basic.New_Context (Rule_Type, Label) with Check_Level);
+            Task_Context        := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Check_Level);
             Rule_Used (Kw_Task) := True;
 
          when Kw_Declaration =>
@@ -183,10 +183,10 @@ package body Rules.Exception_Propagation is
                Parameter_Error (Rule_Id, "non 0 level required for ""declaration""");
             end if;
 
-            Declaration_Context        := (Basic.New_Context (Rule_Type, Label) with Check_Level);
+            Declaration_Context        := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Check_Level);
             Rule_Used (Kw_Declaration) := True;
       end case;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -477,7 +477,7 @@ package body Rules.Exception_Propagation is
                                            (Corresponding_Name_Declaration
                                             (Generic_Unit_Name
                                              (SP_Declaration)))),
-                             "generic """ &  Name_Image (Generic_Unit_Name (SP_Declaration))
+                             "generic """ &  A4G_Bugs.Name_Image (Generic_Unit_Name (SP_Declaration))
                              & """ can propagate exceptions"
                              & Risk_Message (Risk)
                              & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
@@ -590,7 +590,7 @@ package body Rules.Exception_Propagation is
                               Report (Rule_Id,
                                       Current_Context,
                                       Get_Location (SP_Declaration),
-                                      "subprogram """ &  Name_Image (Actual_Parameter (Actuals (I)))
+                                      "subprogram """ &  A4G_Bugs.Name_Image (Actual_Parameter (Actuals (I)))
                                       & """ can propagate exceptions"
                                       & Risk_Message (Risk)
                                       & ", used as call-back in instantiation at "
@@ -610,7 +610,7 @@ package body Rules.Exception_Propagation is
                                                     (Corresponding_Name_Declaration
                                                      (Generic_Unit_Name
                                                       (SP_Declaration)))),
-                                      "generic """ &  Name_Image (Generic_Unit_Name (SP_Declaration))
+                                      "generic """ &  A4G_Bugs.Name_Image (Generic_Unit_Name (SP_Declaration))
                                       & """ can propagate exceptions"
                                       & Risk_Message (Risk)
                                       & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
@@ -664,7 +664,7 @@ package body Rules.Exception_Propagation is
                   -- The convention is always the first argument of the pragma
                   declare
                      Convention : constant Unbounded_Wide_String
-                       := To_Unbounded_Wide_String (To_Upper (Name_Image
+                       := To_Unbounded_Wide_String (To_Upper (A4G_Bugs.Name_Image
                                                               (Actual_Parameter
                                                                (Pragma_Argument_Associations
                                                                 (All_Pragmas (I))(1)))));
@@ -742,8 +742,8 @@ package body Rules.Exception_Propagation is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Exception_Propagation;

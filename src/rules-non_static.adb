@@ -54,17 +54,17 @@ pragma Elaborate (Framework.Language);
 package body Rules.Non_Static is
    use Framework;
 
-   type Available_Keyword is (K_Variable_Initialization, K_Constant_Initialization,
-                              K_Index_Constraint,        K_Discriminant_Constraint,
-                              K_Instantiation);
+   type Subrules is (K_Variable_Initialization, K_Constant_Initialization,
+                     K_Index_Constraint,        K_Discriminant_Constraint,
+                     K_Instantiation,           K_Index_Check);
 
-   package Keyword_Flag_Utilities is new Framework.Language.Flag_Utilities (Available_Keyword, "K_");
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
-   type Usage_Flags is array (Available_Keyword) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
 
    Rule_Used  : Usage_Flags := (others => False);
    Save_Used  : Usage_Flags;
-   Usage      : array (Available_Keyword) of Basic_Rule_Context;
+   Usage      : array (Subrules) of Basic_Rule_Context;
 
 
    ----------
@@ -73,7 +73,7 @@ package body Rules.Non_Static is
 
    procedure Help is
       use Utilities;
-      use Keyword_Flag_Utilities;
+      use Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default = all)");
@@ -81,23 +81,22 @@ package body Rules.Non_Static is
    end Help;
 
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-      use Keyword_Flag_Utilities;
+      use Subrules_Flag_Utilities;
 
-      procedure Add_One (Key : Available_Keyword) is
+      procedure Add_One (Subrule : Subrules) is
       begin
-         if Rule_Used (Key) then
-            Parameter_Error (Rule_Id, "parameter already specified: " & Image (Key));
+         if Rule_Used (Subrule) then
+            Parameter_Error (Rule_Id, "parameter already specified: " & Image (Subrule));
          end if;
 
-         Rule_Used (Key) := True;
-         Usage (Key)     := Basic.New_Context (Rule_Use_Type, Label);
+         Rule_Used (Subrule) := True;
+         Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end Add_One;
 
    begin
@@ -107,11 +106,11 @@ package body Rules.Non_Static is
             exit when not Parameter_Exists;
          end loop;
       else
-         for K in Available_Keyword loop
+         for K in Subrules loop
             Add_One (K);
          end loop;
       end if;
-   end Add_Use;
+   end Add_Control;
 
 
    -------------
@@ -250,7 +249,7 @@ package body Rules.Non_Static is
                            Do_Report (Actuals (A));
                         end if;
                      when An_In_Out_Mode =>
-                        if Is_Static_Object (Actual_Parameter (Actuals (A))) then
+                        if not Is_Static_Object (Actual_Parameter (Actuals (A))) then
                            Do_Report (Actuals (A));
                         end if;
                      when others =>
@@ -365,10 +364,77 @@ package body Rules.Non_Static is
       end if;
    end Process_Object_Declaration;
 
+   ------------------------------
+   -- Process_Index_Expression --
+   ------------------------------
+
+   procedure Process_Index_Expression (Expr : Asis.Expression) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Reports, Thick_Queries;
+   begin
+      if not Rule_Used (K_Index_Check) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Bounds   : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Prefix (Expr));
+         Inx_List : constant Asis.Expression_List := Index_Expressions (Expr);
+         Inx      : Extended_Biggest_Int;
+      begin
+         -- Note: Bounds'Length = 2 * Inx_List'Length
+         for I in Inx_List'Range loop
+            if Bounds (2 * I - 1) = Not_Static or Bounds (2 * I) = Not_Static then
+               -- non static bounds
+               Report (Rule_Id,
+                       Usage (K_Index_Check),
+                       Get_Location (Expr),
+                       "indexing of non statically constrained array");
+            else
+               -- static bounds
+               Inx := Discrete_Static_Expression_Value (Inx_List (I));
+               if Inx = Not_Static then
+                  -- static bounds, non static index
+                  if Expression_Kind (Simple_Name (Inx_List (I))) = An_Identifier then
+                     declare
+                        Inx_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Inx_List (I));
+                     begin
+                        if Inx_Bounds (1) = Not_Static or Inx_Bounds (2) = Not_Static then
+                           Report (Rule_Id,
+                                   Usage (K_Index_Check),
+                                   Get_Location (Inx_List (I)),
+                                   "indexing by non statically checkable expression");
+                        elsif Inx_Bounds (1) < Bounds (2 * I - 1) or Inx_Bounds (2) > Bounds (2 * I) then
+                           Report (Rule_Id,
+                                   Usage (K_Index_Check),
+                                   Get_Location (Inx_List (I)),
+                                   "index expression may fail index_check");
+                        end if;
+                     end;
+                  else
+                     Report (Rule_Id,
+                             Usage (K_Index_Check),
+                             Get_Location (Inx_List (I)),
+                             "indexing by non statically checkable expression");
+                  end if;
+               else
+                  -- static bounds, static index
+                  if Inx < Bounds (2 * I - 1) or Inx > Bounds (2 * I) then
+                     Report (Rule_Id,
+                             Usage (K_Index_Check),
+                             Get_Location (Expr),
+                             "indexing out of bounds");
+                  end if;
+               end if;
+            end if;
+         end loop;
+      end;
+   end Process_Index_Expression;
+
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Non_Static;

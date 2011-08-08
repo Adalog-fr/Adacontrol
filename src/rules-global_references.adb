@@ -98,13 +98,13 @@ package body Rules.Global_References is
    type Checked_Kind is (K_Name, K_Task, K_Protected, K_Function, K_Procedure);
    package Checked_Kind_Utilities is new Framework.Language.Flag_Utilities (Checked_Kind, "K_");
 
-   Rules_Used : Rule_Index := 0;
-   Save_Used  : Rule_Index;
+   Rules_Used : Control_Index := 0;
+   Save_Used  : Control_Index;
 
    -- Management of checked bodies
    type Body_Context is new Root_Context with
       record
-         Rule_Inx : Rule_Index;
+         Rule_Inx : Control_Index;
       end record;
 
    Checked_Bodies  : Context_Store;
@@ -133,7 +133,7 @@ package body Rules.Global_References is
       record
          Reference : Reference_Kind;
       end record;
-   package Rules_Info_Map is new Binary_Map (Rule_Index, Rule_Info);
+   package Rules_Info_Map is new Binary_Map (Control_Index, Rule_Info);
 
    Rules_Map : Rules_Info_Map.Map;
 
@@ -157,7 +157,7 @@ package body Rules.Global_References is
       end record;
    procedure Clear_Referencing_Info (V : in out Referencing_Info);
 
-   package Referencing_Rule_Map is new Binary_Map (Rule_Index, Referencing_Info);
+   package Referencing_Rule_Map is new Binary_Map (Control_Index, Referencing_Info);
    procedure Clear_All is new Referencing_Rule_Map.Generic_Clear_And_Release (Clear_Referencing_Info);
 
 
@@ -190,12 +190,11 @@ package body Rules.Global_References is
       User_Message ("directly or indirectly from some specific constructs");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Reference_Kind_Utilities, Checked_Kind_Utilities;
       use Rules_Info_Map;
 
@@ -231,14 +230,14 @@ package body Rules.Global_References is
             end case;
             Add (Rules_Map,
                  Key => Rules_Used,
-                 Value => (Basic.New_Context (Rule_Type, Label) with Reference));
+                 Value => (Basic.New_Context (Ctl_Kind, Ctl_Label) with Reference));
             Associate (Checked_Bodies,
                        Entity,
                        Body_Context'(Rule_Inx => Rules_Used),
                        Additive => True);
          end;
       end loop;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -468,7 +467,7 @@ package body Rules.Global_References is
    -- Update_Globals --
    --------------------
 
-   procedure Update_Globals (Decl : Asis.Declaration; Rule_Inx : Rule_Index) is
+   procedure Update_Globals (Decl : Asis.Declaration; Rule_Inx : Control_Index) is
       procedure Update_One_Variable (Key   : in     Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
                                      Value : in out Usage_Record)
       is
@@ -622,7 +621,7 @@ package body Rules.Global_References is
       procedure Report_One_Variable (Var_Key : in Unbounded_Wide_String; Var_Value : in out Globals_Info_Record) is
          pragma Unreferenced (Var_Key);
 
-         procedure Report_One_Rule (Rule_Key : in Rule_Index; Rule_Value : in out Referencing_Info) is
+         procedure Report_One_Rule (Rule_Key : in Control_Index; Rule_Value : in out Referencing_Info) is
             use Asis, Asis.Declarations, Asis.Elements;
             use Framework.Reports, Rules_Info_Map, Thick_Queries, Utilities;
 
@@ -714,9 +713,9 @@ package body Rules.Global_References is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB     => Help'Access,
-                                     Add_Use_CB  => Add_Use'Access,
-                                     Command_CB  => Command'Access,
-                                     Prepare_CB  => Prepare'Access,
-                                     Finalize_CB => Finalize'Access);
+                                     Help_CB         => Help'Access,
+                                     Add_Control_CB  => Add_Control'Access,
+                                     Command_CB      => Command'Access,
+                                     Prepare_CB      => Prepare'Access,
+                                     Finalize_CB     => Finalize'Access);
 end Rules.Global_References;

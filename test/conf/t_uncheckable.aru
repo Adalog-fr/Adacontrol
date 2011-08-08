@@ -4,7 +4,8 @@ go;
 clear all;
 Uncheckable: check uncheckable;
 
-check case_statement (min_others_span, 5);
+check case_statement (others_span, min 5);
+check declarations (binary_modular_type);
 check directly_accessed_globals;
 check duplicate_initialization_calls (all out_proc);
 check exception_propagation (0, parameter, t_uncheckable.exception_propagation.make_cb_l0.cb);
@@ -17,7 +18,19 @@ check unsafe_unchecked_conversion;
 check usage (object);
 
 -- Inhibit for all but the desired test to avoid confusing multiple messages
-inhibit case_statement                  (t_uncheckable.directly_accessed_globals,
+inhibit case_statement                  (t_uncheckable.declarations,
+                                         t_uncheckable.directly_accessed_globals,
+                                         t_uncheckable.duplicate_initialization_calls,
+                                         t_uncheckable.exception_propagation,
+                                         t_uncheckable.global_references,
+                                         t_uncheckable.max_call_depth,
+                                         t_uncheckable.potentially_blocking_operations,
+                                         t_uncheckable.representation_clauses,
+                                         t_uncheckable.style,
+                                         t_uncheckable.unsafe_unchecked_conversion,
+                                         t_uncheckable.usage);
+inhibit declarations                    (t_uncheckable.case_statement,
+                                         t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
                                          t_uncheckable.global_references,
@@ -28,6 +41,7 @@ inhibit case_statement                  (t_uncheckable.directly_accessed_globals
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit directly_accessed_globals       (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
                                          t_uncheckable.global_references,
@@ -38,6 +52,7 @@ inhibit directly_accessed_globals       (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit duplicate_initialization_calls  (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.exception_propagation,
                                          t_uncheckable.global_references,
@@ -48,6 +63,7 @@ inhibit duplicate_initialization_calls  (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit exception_propagation           (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.global_references,
@@ -58,6 +74,7 @@ inhibit exception_propagation           (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit global_references               (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
@@ -68,6 +85,7 @@ inhibit global_references               (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit max_call_depth                  (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
@@ -78,6 +96,7 @@ inhibit max_call_depth                  (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit potentially_blocking_operations (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
@@ -88,6 +107,7 @@ inhibit potentially_blocking_operations (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit representation_clauses          (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
@@ -98,6 +118,7 @@ inhibit representation_clauses          (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit style                           (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
@@ -108,6 +129,7 @@ inhibit style                           (t_uncheckable.case_statement,
                                          t_uncheckable.unsafe_unchecked_conversion,
                                          t_uncheckable.usage);
 inhibit unsafe_unchecked_conversion     (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
@@ -118,6 +140,7 @@ inhibit unsafe_unchecked_conversion     (t_uncheckable.case_statement,
                                          t_uncheckable.style,
                                          t_uncheckable.usage);
 inhibit usage                           (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,

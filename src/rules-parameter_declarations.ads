@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Max_Parameters - Package specification                    --
+--  Rules.Parameter_Declarations - Package specification            --
 --                                                                  --
 --  This software  is (c) SAGEM DS and  Adalog  2004-2006.  The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
@@ -32,10 +32,10 @@
 with
   Asis;
 
-package Rules.Max_Parameters is
+package Rules.Parameter_Declarations is
 
-   Rule_Id : constant Wide_String := "MAX_PARAMETERS";
+   Rule_Id : constant Wide_String := "PARAMETER_DECLARATIONS";
 
    procedure Process_Declaration (Declaration : Asis.Declaration);
 
-end Rules.Max_Parameters;
+end Rules.Parameter_Declarations;

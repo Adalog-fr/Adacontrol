@@ -11,6 +11,15 @@ t_simplifiable_statements-test_if.adb:37:13: Error: SIMPLIFIABLE_STATEMENTS: con
 t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:5:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+t_simplifiable_statements-test_if_not.adb:13:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:11:9: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+t_simplifiable_statements-test_if_not.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
 t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
 t_simplifiable_statements-test_null.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path

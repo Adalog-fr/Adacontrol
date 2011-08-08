@@ -24,20 +24,22 @@ t_simplifiable_expressions-test_range.adb:142:13: Error: Range_Or_True: (T)'Firs
 t_simplifiable_expressions-test_logical.adb:10:19: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
 t_simplifiable_expressions-test_logical.adb:11:28: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
 t_simplifiable_expressions-test_logical.adb:13:35: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:20:7: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:20:26: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
-t_simplifiable_expressions-test_logical.adb:22:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:23:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:24:10: Found: False: Simplify expression '<expr> /= False' to just '<expr>'
-t_simplifiable_expressions-test_logical.adb:26:10: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
-t_simplifiable_expressions-test_logical.adb:28:10: Error: Range_Or_True: Simplify expression '<expr> /= True' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:30:10: Found: False: Simplify expression 'False = <expr>' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:31:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:32:10: Found: False: Simplify expression 'False /= <expr>' to just '<expr>'
-t_simplifiable_expressions-test_logical.adb:34:10: Error: Range_Or_True: Simplify expression 'True = <expr>' to just '<expr>'
-t_simplifiable_expressions-test_logical.adb:36:10: Error: Range_Or_True: Simplify expression 'True /= <expr>' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:40:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions-test_logical.adb:40:24: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:23:7: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:23:26: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
+t_simplifiable_expressions-test_logical.adb:23:30: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_logical.adb:25:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:26:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:27:10: Found: False: Simplify expression '<expr> /= False' to just '<expr>'
+t_simplifiable_expressions-test_logical.adb:29:10: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
+t_simplifiable_expressions-test_logical.adb:31:10: Error: Range_Or_True: Simplify expression '<expr> /= True' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:33:10: Found: False: Simplify expression 'False = <expr>' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:34:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:35:10: Found: False: Simplify expression 'False /= <expr>' to just '<expr>'
+t_simplifiable_expressions-test_logical.adb:37:10: Error: Range_Or_True: Simplify expression 'True = <expr>' to just '<expr>'
+t_simplifiable_expressions-test_logical.adb:39:10: Error: Range_Or_True: Simplify expression 'True /= <expr>' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:43:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:43:24: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions-test_logical.adb:47:7: Found: SIMPLIFIABLE_EXPRESSIONS: "not" on comparison
 t_simplifiable_expressions-test_parentheses.adb:4:19: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:13:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:16:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
@@ -63,4 +65,4 @@ t_simplifiable_expressions-test_conversion.adb:7:9: Found: SIMPLIFIABLE_EXPRESSI
 t_simplifiable_expressions-test_conversion.adb:9:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 63
+SIMPLIFIABLE_EXPRESSIONS: 65

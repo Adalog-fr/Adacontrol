@@ -1,0 +1,237 @@
+-- This file gives the AdaControl equivalents of rules checked by Gnatcheck
+-- For rules where Gnatcheck requires a parameter, the AdaControl rule is given for
+-- the default value, or with an example value.
+--
+-- Small differences are indicated by a comment that starts with "Difference:"
+--
+-- Gnatcheck rules that are not (yet) supported by AdaControl are left as comments
+
+Abstract_Type_Declarations: 
+   check declarations (abstract_type);
+
+Anonymous_Arrays: 
+   check declarations (single_array);
+
+-- Anonymous_Subtypes
+
+Blocks: 
+   check statements (block);
+
+Boolean_Relational_Operators: 
+   check entities (standard."="{standard.Boolean; standard.boolean return standard.boolean},
+                   standard."/="{standard.Boolean; standard.boolean return standard.boolean},
+                   standard."<"{standard.Boolean; standard.boolean return standard.boolean},
+                   standard."<="{standard.Boolean; standard.boolean return standard.boolean},
+                   standard.">"{standard.Boolean; standard.boolean return standard.boolean},
+                   standard.">="{standard.Boolean; standard.boolean return standard.boolean}
+                  );
+
+Controlled_Type_Declarations:
+   check declarations (controlled_type);
+
+Declarations_In_Blocks:
+   check statements (effective_declare_block);
+
+Default_Parameters: 
+   check declarations (defaulted_parameter);
+
+Discriminated_Records: 
+   check declarations (discriminant); 
+   -- Difference: includes also task and protected discriminants
+
+Enumeration_Ranges_In_CASE_Statements: 
+   check case_statement (range_span, max 0); 
+   -- Difference: includes also integer ranges, does not include null ranges
+
+-- Exceptions_As_Control_Flow
+
+EXIT_Statements_With_No_Loop_Name: 
+   check statements (unnamed_exit); 
+   -- Difference: applies only to named loops
+
+-- Expanded_Loop_Exit_Names
+
+Explicit_Full_Discrete_Ranges:
+   check simplifiable_expressions (range);
+
+Float_Equality_Checks: 
+   check expressions (real_equality); 
+   -- Difference: applies also to fixed points
+
+"Forbidden_Pragmas:all": 
+   check pragmas (all);
+"Forbidden_Pragmas:gnat": 
+   check pragmas (nonstandard);
+   -- Difference: applies to all non-standard pragmas, not only Gnat ones
+"Forbidden_Pragmas:elaborate": 
+   check pragmas (Elaborate);
+
+Function_Style_Procedures:
+   check parameter_declarations (single_out_parameter, procedure);
+   -- Difference: applies also to limited out parameters and null procedures
+
+Generics_In_Subprograms:
+   check declarations (local generic);
+
+GOTO_Statements: 
+   check statements(goto);
+
+Implicit_IN_Mode_Parameters: 
+   check style (default_in);
+
+-- Implicit_SMALL_For_Fixed_Point_Types
+
+Improperly_Located_Instantiations:
+   check declarations (public  instantiation);
+   check declarations (private instantiation);
+   check declarations (local   instantiation);
+
+Improper_Returns:
+   check statements (procedure_return, function_return);
+   -- Difference: AdaControl allows one return in each exception handler
+
+Library_Level_Subprograms:
+   check declarations (library procedure, library function);
+
+Local_Packages: 
+   check declarations (private package);
+   check declarations (public package);
+
+Misnamed_Identifiers:
+   check naming_convention (type, "_T$");
+Misnamed_Identifiers:
+   check naming_convention (root access_type, "_A$");
+Misnamed_Identifiers:
+   check naming_convention (regular_constant, "_C$");
+Misnamed_Identifiers:
+   check naming_convention (package_renaming, "_R$");
+
+Multiple_Entries_In_Protected_Definitions:
+   check declarations (multiple_protected_entries);
+
+Name_Clashes:
+   check naming_convention (all, not "example");
+   -- replace "example" by the prohibited identifiers
+
+Non_Qualified_Aggregates:
+   check expressions (unqualified_aggregate);
+
+Non_Short_Circuit_Operators: 
+   check expressions (and, or);
+
+Non_SPARK_Attributes: check entities (all 'Access,
+                                      all 'Address,
+                                      all 'Alignment,
+                                      all 'Bit_Order,
+                                      all 'Body_Version,
+                                      all 'Callable,
+                                      all 'Caller,
+                                      all 'Class,
+                                      all 'Constrained,
+                                      all 'Count,
+                                      all 'Definite,
+                                      all 'External_Tag,
+                                      all 'First_Bit,
+                                      all 'Identity,
+                                      all 'Image,
+                                      all 'Input,
+                                      all 'Last_Bit,
+                                      all 'Max_Size_In_Storage_Elements,
+                                      all 'Output,
+                                      all 'Partition_ID,
+                                      all 'Position,
+                                      all 'Read,
+                                      all 'Round,
+                                      all 'Scale,
+                                      all 'Scaling,
+                                      all 'Storage_Pool,
+                                      all 'Storage_Size,
+                                      all 'Tag,
+                                      all 'Terminated,
+                                      all 'Unchecked_Access,
+                                      all 'Value,
+                                      all 'Version,
+                                      all 'Wide_Image,
+                                      all 'Wide_Value,
+                                      all 'Wide_Width,
+                                      all 'Width,
+                                      all 'Write);
+
+Non_Tagged_Derived_Types: 
+   check declarations (derived_type);
+
+-- Non_Visible_Exceptions
+
+"Numeric_Literals:1": 
+   check style (exposed_literal, integer, 0, 1, number, constant);
+   check style (exposed_literal, real, number, constant);
+
+OTHERS_In_Aggregates: 
+   check expressions (array_partial_others, record_partial_others);
+   -- Difference: does not special case when others refer to all-but-one component
+
+OTHERS_In_CASE_Statements: 
+   check statements (case_others);
+
+OTHERS_In_Exception_Handlers: 
+   check statements (exception_others);
+
+-- Outer_Loop_Exits
+
+Overloaded_Operators: 
+   check declarations (operator); 
+   -- Difference: controls all operators; gnatcheck says operator overloading
+
+Overly_Nested_Control_Structures:
+   check max_statement_nesting (all, 4);
+
+-- Parameters_Out_Of_Order
+
+-- Positional_Actuals_For_Defaulted_Generic_Parameters
+
+-- Positional_Actuals_For_Defaulted_Parameters
+
+Positional_Components:
+   check style (positional_association, array_aggregate);
+Positional_Components:
+   check style (positional_association, record_aggregate);
+
+Positional_Generic_Parameters:
+   check style (positional_association, instantiation);
+
+Positional_Parameters:
+   check style (positional_association, call, 1);
+
+Predefined_Numeric_Types:
+   check entities (Standard.Short_Short_Integer, Standard.Short_Integer, Standard.Integer, 
+                   Standard.Long_Integer, Standard.Long_Long_Integer, 
+                   Standard.Natural, Standard.Positive, 
+                   Standard.Short_Float, Standard.Float, Standard.Long_Float, Standard.Long_Long_Float, 
+                   Standard.Duration);
+
+-- Raising_External_Exceptions
+
+Raising_Predefined_Exceptions:
+   check statements (raise_standard);
+
+Slices:
+   check expressions (slice);
+
+Unassigned_OUT_Parameters:
+   check improper_initialization (out_parameter);
+   -- Difference: this rule may require a stricter pattern than gnatcheck
+
+-- Uncommented_BEGIN_In_Package_Bodies
+
+Unconstrained_Array_Returns:
+   check return_type (unconstrained_array);
+
+-- Universal_Ranges
+
+Unnamed_Blocks_And_Loops:
+   check statements (unnamed_block, unnamed_for_loop, unnamed_simple_loop, unnamed_while_loop);
+
+USE_PACKAGE_Clauses:
+   check use_clauses;
+
+-- Volatile_Objects_Without_Address_Clauses

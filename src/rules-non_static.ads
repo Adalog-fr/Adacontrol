@@ -40,5 +40,6 @@ package Rules.Non_Static is
    procedure Process_Index_Constraint             (Elem : Asis.Discrete_Range);
    procedure Process_Instantiation                (Elem : Asis.Declaration);
    procedure Process_Object_Declaration           (Decl : Asis.Declaration);
+   procedure Process_Index_Expression             (Expr : Asis.Expression);
 
 end Rules.Non_Static;

@@ -63,12 +63,11 @@ package body Rules.Pragmas is
       User_Message ("Control usage of specific pragmas");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
    begin
@@ -83,7 +82,7 @@ package body Rules.Pragmas is
             -- "Nonstandard" and "all" are handled just as if they were pragma names
             Associate (Rule_Uses,
                        Specification => Value (Pragma_Name),
-                       Context       => Basic.New_Context (Rule_Type,Label));
+                       Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, Pragma_Name & " already given");
@@ -91,7 +90,7 @@ package body Rules.Pragmas is
       end loop;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -181,8 +180,8 @@ package body Rules.Pragmas is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Pragmas;

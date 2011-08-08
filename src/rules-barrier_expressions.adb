@@ -67,13 +67,13 @@ package body Rules.Barrier_Expressions is
    -- i.e. the <entity> is /not/ allowed for K
    type Key_Context is new Root_Context with
       record
-         Types : Rule_Types_Set;
+         Types : Control_Kinds_Set;
       end record;
    Contexts  : Context_Store;
 
-   Rule_Used : Rule_Types_Set := (others => False);
-   Save_Used : Rule_Types_Set;
-   Labels    : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Rule_Used : Control_Kinds_Set := (others => False);
+   Save_Used : Control_Kinds_Set;
+   Labels    : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    ----------
    -- Help --
@@ -88,11 +88,11 @@ package body Rules.Barrier_Expressions is
    end Help;
 
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language, Keyword_Flag_Utilities, Utilities;
 
@@ -100,11 +100,11 @@ package body Rules.Barrier_Expressions is
       Spec : Entity_Specification;
       Cont : Key_Context;
    begin
-      if Rule_Used (Rule_Type) then
-         Parameter_Error (Rule_Id,  "rule already specified for " & To_Lower (Rule_Types'Wide_Image (Rule_Type)));
+      if Rule_Used (Ctl_Kind) then
+         Parameter_Error (Rule_Id,  "rule already specified for " & To_Lower (Control_Kinds'Wide_Image (Ctl_Kind)));
       end if;
-      Cont.Types             := (others => True);
-      Cont.Types (Rule_Type) := False;
+      Cont.Types            := (others => True);
+      Cont.Types (Ctl_Kind) := False;
 
       while Parameter_Exists loop
          Key := Get_Flag_Parameter (Allow_Any => True);
@@ -120,20 +120,20 @@ package body Rules.Barrier_Expressions is
          exception
             when Already_In_Store =>
                Cont := Key_Context (Association (Contexts, Spec));
-               if Cont.Types (Rule_Type) then
-                  Cont.Types (Rule_Type) := False;
+               if Cont.Types (Ctl_Kind) then
+                  Cont.Types (Ctl_Kind) := False;
                   Update (Contexts, Cont);
                else
                   Parameter_Error (Rule_Id, "parameter already provided for "
-                                     & To_Lower (Rule_Types'Wide_Image (Rule_Type))
+                                     & To_Lower (Control_Kinds'Wide_Image (Ctl_Kind))
                                      & ": " & Image (Spec));
                end if;
          end;
       end loop;
 
-      Labels    (Rule_Type) := To_Unbounded_Wide_String (Label);
-      Rule_Used (Rule_Type) := True;
-   end Add_Use;
+      Labels    (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used (Ctl_Kind) := True;
+   end Add_Control;
 
 
    -------------
@@ -173,7 +173,7 @@ package body Rules.Barrier_Expressions is
                               Loc        : in Location := Get_Location (Exp))
          is
             use Framework.Reports, Ada.Strings.Wide_Unbounded;
-            S : Rule_Types_Set;
+            S : Control_Kinds_Set;
          begin
             if Context = No_Matching_Context then
                if Is_Nil (Identifier) then
@@ -216,20 +216,39 @@ package body Rules.Barrier_Expressions is
                   case Declaration_Kind (Name_Decl) is
                      when A_Package_Declaration
                         | A_Package_Body_Declaration
+                        | A_Protected_Type_Declaration
                           =>
                           -- Can appear only as prefix => Harmless
                           null;
                      when A_Function_Declaration
                         | A_Function_Body_Declaration
                           =>
-                        if Definition_Kind (Enclosing_Element (Name_Decl)) = A_Protected_Definition then
+                        -- Since we are in a barrier expression, a function name can appear only as
+                        -- a call, not as a prefix of an internal element
+                        declare
+                           Temp_Elem : Asis.Element := Enclosing_Element (Name_Decl);
+                           Is_Local  : Boolean;
+                        begin
+                           if Definition_Kind (Temp_Elem) = A_Protected_Definition then
+                              -- It is a call to a protected function, but does it belong to the same PO?
+                              Temp_Elem := Enclosing_Element (Exp);
+                              while Expression_Kind (Temp_Elem) /= A_Function_Call loop
+                                 Temp_Elem := Enclosing_Element (Temp_Elem);
+                              end loop;
+                              Is_Local := Is_Nil (External_Call_Target (Temp_Elem));
+                           else
+                              Is_Local := False;
+                           end if;
+                           if Is_Local then
                               Do_Report ("local function call",
                                          Framework.Association (Contexts, Value (Image (K_Local_Function))),
                                          Exp);
-                        else
-                           Do_Report ("non-local function call", Matching_Context (Contexts, Exp));
-                        end if;
+                           else
+                              Do_Report ("non-local function call", Matching_Context (Contexts, Exp));
+                           end if;
+                        end;
                      when A_Variable_Declaration
+                        | A_Single_Protected_Declaration
                         | A_Loop_Parameter_Specification  -- Consider this (and next) as variables,
                         | An_Entry_Index_Specification    -- although they are strictly speaking constants
                           =>
@@ -562,7 +581,7 @@ package body Rules.Barrier_Expressions is
 
 
    begin -- Process_Entry_Declaration
-      if Rule_Used = (Rule_Types => False) then
+      if Rule_Used = (Control_Kinds => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -573,7 +592,7 @@ package body Rules.Barrier_Expressions is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Barrier_Expressions;

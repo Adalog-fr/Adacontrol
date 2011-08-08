@@ -18,7 +18,7 @@ procedure T_Reduceable_Scope (X : Integer) is
    end For_Access;
 
    package Pack2 is  -- Movable to P
-      I : Integer;   -- Not movable because declared in package spec
+      I : Integer;   -- Movable to body
    end Pack2;
    package body Pack2 is
       procedure P is -- Not movable

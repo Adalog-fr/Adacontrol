@@ -4,6 +4,7 @@ procedure T_Uncheckable is
    use X_Uncheckable;
 
    procedure Case_Statement                  is separate;
+   procedure Declarations                    is separate;
    procedure Directly_Accessed_Globals       is separate;
    procedure Duplicate_Initialization_Calls  is separate;
    procedure Exception_Propagation           is separate;

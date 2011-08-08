@@ -92,7 +92,7 @@ fi
 
 put_line_line
 put_title_line
-put_title_line "`${ADACTL} -h 2>&1 | grep ADACTL | tr -d \\\\r`"
+put_title_line "`${ADACTL} -h version 2>&1 | tr -d \\\\r`"
 put_title_line
 put_title_line VALIDATION
 put_title_line
@@ -106,6 +106,7 @@ put_line_line
 run_start=`date +%s`
 nb_fw=0
 
+put_line "--- General framework tests"
 test_case=tfw_naming
 nb_fw=$((nb_fw+1))
 ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
@@ -126,6 +127,11 @@ nb_fw=$((nb_fw+1))
 ${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
+test_case=tfw_rule_off_tags
+nb_fw=$((nb_fw+1))
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r >res/${test_case}.txt
+
 test_case=tfw_inhibit
 nb_fw=$((nb_fw+1))
 ${ADACTL} -w -f conf/${test_case}.aru ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb \
@@ -138,10 +144,12 @@ nb_fw=$((nb_fw+1))
 ${ADACTL} -Cv -f conf/x_errors.aru 2>&1 \
 	| tr -d \\r >res/${test_case}.txt
 for I in ../rules/*.aru; do
+   echo -n "$I: " >>res/${test_case}.txt
    ${ADACTL} -Cv -f $I 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 done
 for I in conf/t_*.aru conf/ts_*.aru; do
+   echo -n "$I: " >>res/${test_case}.txt
    ${ADACTL} -Cv -f $I 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 done
@@ -152,12 +160,14 @@ done
 # We are not interested in the actual output (would be too difficult to analyse),
 # just to see if it crashes.
 # Result file will contain the context if there is a crash, or just "PASSED" if OK.
+# We use this test to make some timing statistics; we run therefore with the -i 
+# option, otherwise the time spent in Report would hide the true time of rules.
 #
 put "--- Stress test... "
 test_case=tfw_stress
 nb_fw=$((nb_fw+1))
 list=`find ./ -name "t_*.adb" ! -name "ts_*.adb" ! -name "tfw_*.adb" ! -name "x_*.ads" ! -name "x_*.adb" ! -name "*-*" -printf "%P "`
-find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -wd -f - $list \
+find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -T -i -F csvx_short -wd -f - $list \
    1> res/${test_case}.txt 2>&1
 result=$?
 # if -x option, return code is always 1
@@ -166,6 +176,10 @@ grep -q "=============" res/${test_case}.txt
 if [ $? -eq 0 ] ; then
    result=10
 fi
+# Create timing file
+echo "Rule;Time" >res/rules_timing.txt
+grep -E "^[A-Z_]+; [0-9.]+" res/${test_case}.txt >>res/rules_timing.txt
+# Put "PASSED" as the result if OK
 if [ $result -le 1 ]; then
    put_line "PASSED"
    echo "PASSED" | tr -d \\r >res/${test_case}.txt
@@ -177,6 +191,7 @@ fi
 # Rules test. All tests are of the form t_<rule name>.ad[bs],
 # but do not take separate and child units
 #
+put_line "--- Rules tests"
 
 list=`find ./ -name "t_*.adb" ! -name "*-*" -printf "%P "`
 nb_rules=0
@@ -192,13 +207,16 @@ done
 # For some reasons (explained), these tests cannot be launched automatically
 #
 
-# units. 
-# Must not include some withed units, must include a non-withed unit
+# Units. Special because:
+#   Must not include some withed units, must include a non-withed unit
 nb_rules=$((nb_rules+1))
 test_case=ts_units
 ${ADACTL} -uw -f conf/${test_case}.aru $test_case+x_units_2 \
 	| tr -d \\r >res/${test_case}.txt
 
+#
+# Tests finalization
+#
 
 run_stop=`date +%s`
 pushd ref 1>/dev/null

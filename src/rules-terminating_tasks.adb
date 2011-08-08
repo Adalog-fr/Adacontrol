@@ -84,12 +84,11 @@ package body Rules.Terminating_Tasks is
    end Help;
 
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
    begin
       if Rule_Used then
@@ -97,8 +96,8 @@ package body Rules.Terminating_Tasks is
       end if;
 
       Rule_Used := True;
-      Usage     := Basic.New_Context (Rule_Use_Type, Label);
-   end Add_Use;
+      Usage     := Basic.New_Context (Ctl_Kind, Ctl_Label);
+   end Add_Control;
 
 
    -------------
@@ -198,7 +197,7 @@ package body Rules.Terminating_Tasks is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Terminating_Tasks;

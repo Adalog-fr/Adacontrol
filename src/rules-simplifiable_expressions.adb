@@ -56,23 +56,23 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_expressions is
    use Framework, Ada.Strings.Wide_Unbounded;
 
-   type Keywords is (K_Range,  K_Logical_True, K_Logical_False, K_Parentheses, K_Conversion,
-                     K_Logical);
-   subtype To_Check is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
+   type Keywords is (K_Range,  K_Logical_True, K_Logical_False, K_Logical_Not, K_Parentheses,
+                     K_Conversion, K_Logical);
+   subtype Subrules is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
-   package Check_Flags_Utilities is new Framework.Language.Flag_Utilities (Keywords, "K_");
-   use Check_Flags_Utilities;
+   package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Keywords, "K_");
+   use Subrules_Flags_Utilities;
 
    type Usage_Entry is
       record
          Used  : Boolean := False;
          Label : Unbounded_Wide_String;
       end record;
-   type Usages is array (To_Check) of Usage_Entry;
+   type Usages is array (Subrules) of Usage_Entry;
 
-   Context   : array (Rule_Types) of Usages;
-   Rule_Used : Boolean := False;
-   Save_Used : Boolean;
+   Ctl_Contexts : array (Control_Kinds) of Usages;
+   Rule_Used    : Boolean := False;
+   Save_Used    : Boolean;
 
    ----------
    -- Help --
@@ -86,26 +86,26 @@ package body Rules.Simplifiable_expressions is
       User_Message  ("Control occurrence of various forms of expressions that could be made simpler:");
       User_Message  ("  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
       User_Message  ("  <expression> = (/=) True/False");
+      User_Message  ("  not <comparison>");
       User_Message  ("  Unnecessary parentheses");
       User_Message  ("  Conversions to the expression's subtype");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
       Key : Keywords;
 
-      procedure Add_Check (Check : To_Check) is
+      procedure Add_Check (Subrule : Subrules) is
       begin
-         if Context (Rule_Use_Type)(Check).Used then
-            Parameter_Error (Rule_Id, "check already given: " & Image (Check));
+         if Ctl_Contexts (Ctl_Kind)(Subrule).Used then
+            Parameter_Error (Rule_Id, "check already given: " & Image (Subrule));
          else
-            Context (Rule_Use_Type)(Check) := (Used => True, Label => To_Unbounded_Wide_String (Add_Use.Label));
+            Ctl_Contexts (Ctl_Kind)(Subrule) := (Used => True, Label => To_Unbounded_Wide_String (Ctl_Label));
          end if;
       end Add_Check;
    begin
@@ -115,6 +115,7 @@ package body Rules.Simplifiable_expressions is
             if Key = K_Logical then
                Add_Check (K_Logical_True);
                Add_Check (K_Logical_False);
+               Add_Check (K_Logical_Not);
             else
                Add_Check (Key);
             end if;
@@ -123,11 +124,12 @@ package body Rules.Simplifiable_expressions is
          Add_Check (K_Range);
          Add_Check (K_Logical_True);
          Add_Check (K_Logical_False);
+         Add_Check (K_Logical_Not);
          Add_Check (K_Parentheses);
          Add_Check (K_Conversion);
       end if;
       Rule_Used  := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -140,9 +142,9 @@ package body Rules.Simplifiable_expressions is
          when Clear =>
             --The following aggregate hangs Gnat, but the explicit loop is OK...
             --Context   := (others => (others => (Used => False, Label => Null_Unbounded_Wide_String)));
-            for I in Context'Range loop
+            for I in Ctl_Contexts'Range loop
                for J in Usages'Range loop
-                  Context (I)(J) := (Used => False, Label => Null_Unbounded_Wide_String);
+                  Ctl_Contexts (I)(J) := (Used => False, Label => Null_Unbounded_Wide_String);
                end loop;
             end loop;
             Rule_Used := False;
@@ -160,6 +162,9 @@ package body Rules.Simplifiable_expressions is
 
    procedure Process_Call (Call : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Framework.Reports;
+      use Thick_Queries;
+
+      subtype A_Comparison_Operator is Operator_Kinds range An_Equal_Operator .. A_Greater_Than_Or_Equal_Operator;
 
       type Param_Kind is (Static_True, Static_False, Expr);
       function "+" (Left : Wide_String) return Unbounded_Wide_String renames To_Unbounded_Wide_String;
@@ -196,14 +201,18 @@ package body Rules.Simplifiable_expressions is
                   Expr         => +"")));                                                     -- <Expr> /= <Expr>
 
       function Get_Kind (Param : Asis.Expression) return Param_Kind is
-         use Thick_Queries, Utilities;
+         use Utilities;
+         Good_Param : Asis.Expression := Param;
       begin
-         if Expression_Kind (Param) = An_Enumeration_Literal
-           and then To_Upper (Full_Name_Image (Param)) = "STANDARD.FALSE"
+         while Expression_Kind (Good_Param) = A_Parenthesized_Expression loop
+            Good_Param := Expression_Parenthesized (Good_Param);
+         end loop;
+         if Expression_Kind (Good_Param) = An_Enumeration_Literal
+           and then To_Upper (Full_Name_Image (Good_Param)) = "STANDARD.FALSE"
          then
             return Static_False;
-         elsif Expression_Kind (Param) = An_Enumeration_Literal
-           and then To_Upper (Full_Name_Image (Param)) = "STANDARD.TRUE"
+         elsif Expression_Kind (Good_Param) = An_Enumeration_Literal
+           and then To_Upper (Full_Name_Image (Good_Param)) = "STANDARD.TRUE"
          then
             return Static_True;
          else
@@ -217,59 +226,106 @@ package body Rules.Simplifiable_expressions is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Op : constant Asis.Operator_Kinds := Operator_Kind (Prefix (Call));
+         Op : constant Asis.Operator_Kinds := Operator_Kind (Called_Simple_Name (Call));
       begin
-         if Op in  An_Equal_Operator .. A_Not_Equal_Operator then
-            declare
-               P : constant Asis.Association_List := Function_Call_Parameters (Call);
-               L : constant Param_Kind := Get_Kind (Actual_Parameter (P(1)));
-               R : constant Param_Kind := Get_Kind (Actual_Parameter (P(2)));
-            begin
-               if Message_Table (Op, L, R) /= Null_Unbounded_Wide_String then
-                  -- Report the highest priority from Check/Search
-                  if Context (Check)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
-                     Report (Rule_Id,
-                             To_Wide_String (Context (Check)(K_Logical_False).Label),
-                             Check,
-                             Get_Location (Call),
-                             To_Wide_String (Message_Table (Op, L, R)));
-                  elsif Context (Check)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
-                     Report (Rule_Id,
-                             To_Wide_String (Context (Check)(K_Logical_True).Label),
-                             Check,
-                             Get_Location (Call),
-                             To_Wide_String (Message_Table (Op, L, R)));
-                  elsif Context (Search)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
-                     Report (Rule_Id,
-                             To_Wide_String (Context (Search)(K_Logical_False).Label),
-                             Search,
-                             Get_Location (Call),
-                             To_Wide_String (Message_Table (Op, L, R)));
-                  elsif Context (Search)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
-                     Report (Rule_Id,
-                             To_Wide_String (Context (Search) (K_Logical_True).Label),
-                             Search,
-                             Get_Location (Call),
-                             To_Wide_String (Message_Table (Op, L, R)));
-                  end if;
+         case Op is
+            when An_Equal_Operator .. A_Not_Equal_Operator =>
+               declare
+                  P : constant Asis.Association_List := Function_Call_Parameters (Call);
+                  L : constant Param_Kind := Get_Kind (Actual_Parameter (P (1)));
+                  R : constant Param_Kind := Get_Kind (Actual_Parameter (P (2)));
+               begin
+                  if Message_Table (Op, L, R) /= Null_Unbounded_Wide_String then
+                     -- Report the highest priority from Check/Search
+                     if Ctl_Contexts (Check) (K_Logical_False).Used
+                       and then (L = Static_False or R = Static_False)
+                     then
+                        Report (Rule_Id,
+                                To_Wide_String (Ctl_Contexts (Check) (K_Logical_False).Label),
+                                Check,
+                                Get_Location (Call),
+                                To_Wide_String (Message_Table (Op, L, R)));
+                     elsif Ctl_Contexts (Check) (K_Logical_True).Used and then (L = Static_True or R = Static_True) then
+                        Report (Rule_Id,
+                                To_Wide_String (Ctl_Contexts (Check) (K_Logical_True).Label),
+                                Check,
+                                Get_Location (Call),
+                                To_Wide_String (Message_Table (Op, L, R)));
+                     elsif Ctl_Contexts (Search) (K_Logical_False).Used
+                       and then (L = Static_False or R = Static_False)
+                     then
+                        Report (Rule_Id,
+                                To_Wide_String (Ctl_Contexts (Search) (K_Logical_False).Label),
+                                Search,
+                                Get_Location (Call),
+                                To_Wide_String (Message_Table (Op, L, R)));
+                     elsif Ctl_Contexts (Search) (K_Logical_True).Used
+                       and then (L = Static_True or R = Static_True)
+                     then
+                        Report (Rule_Id,
+                                To_Wide_String (Ctl_Contexts (Search) (K_Logical_True).Label),
+                                Search,
+                                Get_Location (Call),
+                                To_Wide_String (Message_Table (Op, L, R)));
+                     end if;
 
-                  -- Always report Count
-                  if Context (Count)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
-                     Report (Rule_Id,
-                             To_Wide_String (Context (Count) (K_Logical_False).Label),
-                             Count,
-                             Get_Location (Call),
-                             To_Wide_String (Message_Table (Op, L, R)));
-                  elsif Context (Count)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
-                     Report (Rule_Id,
-                             To_Wide_String (Context (Count) (K_Logical_True).Label),
-                             Count,
-                             Get_Location (Call),
-                             To_Wide_String (Message_Table (Op, L, R)));
+                     -- Always report Count
+                     if Ctl_Contexts (Count) (K_Logical_False).Used and then (L = Static_False or R = Static_False) then
+                        Report (Rule_Id,
+                                To_Wide_String (Ctl_Contexts (Count) (K_Logical_False).Label),
+                                Count,
+                                Get_Location (Call),
+                                To_Wide_String (Message_Table (Op, L, R)));
+                     elsif Ctl_Contexts (Count) (K_Logical_True).Used and then (L = Static_True or R = Static_True) then
+                        Report (Rule_Id,
+                                To_Wide_String (Ctl_Contexts (Count) (K_Logical_True).Label),
+                                Count,
+                                Get_Location (Call),
+                                To_Wide_String (Message_Table (Op, L, R)));
+                     end if;
                   end if;
-               end if;
-            end;
-         end if;
+               end;
+            when A_Not_Operator =>
+               declare
+                  P : constant Asis.Association_List := Function_Call_Parameters (Call);
+                  L : Asis.Expression := Actual_Parameter (P (1));
+                  Name : Asis.Expression;
+               begin
+                  while Expression_Kind (L) = A_Parenthesized_Expression loop
+                     L := Expression_Parenthesized (L);
+                  end loop;
+                  if Expression_Kind (L) = A_Function_Call then
+                     Name := Called_Simple_Name (L);
+                     if Operator_Kind (Name) in A_Comparison_Operator then
+                        if Ctl_Contexts (Check) (K_Logical_not).Used then
+                           Report (Rule_Id,
+                                   To_Wide_String (Ctl_Contexts (Check) (K_Logical_Not).Label),
+                                   Check,
+                                   Get_Location (Call),
+                                   """not"" on comparison");
+                        elsif Ctl_Contexts (Search) (K_Logical_not).Used then
+                           Report (Rule_Id,
+                                   To_Wide_String (Ctl_Contexts (Search) (K_Logical_Not).Label),
+                                   Search,
+                                   Get_Location (Call),
+                                   """not"" on comparison");
+                        end if;
+
+                        -- Always report count
+                        if Ctl_Contexts (Count) (K_Logical_not).Used then
+                           Report (Rule_Id,
+                                   To_Wide_String (Ctl_Contexts (Count) (K_Logical_Not).Label),
+                                   Count,
+                                   Get_Location (Call),
+                                   """not"" on comparison");
+                        end if;
+                     end if;
+                  end if;
+               end;
+
+            when others =>
+               null;
+         end case;
       end;
    end Process_Call;
 
@@ -284,23 +340,23 @@ package body Rules.Simplifiable_expressions is
       procedure Do_Reports (Message : Wide_String) is
          use Framework.Reports;
       begin
-         if Context (Check)(K_Range).Used then
+         if Ctl_Contexts (Check)(K_Range).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Check)(K_Range).Label),
+                    To_Wide_String (Ctl_Contexts (Check)(K_Range).Label),
                     Check,
                     Get_Location (Definition),
                     Message);
-         elsif Context (Search)(K_Range).Used then
+         elsif Ctl_Contexts (Search)(K_Range).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Search)(K_Range).Label),
+                    To_Wide_String (Ctl_Contexts (Search)(K_Range).Label),
                     Search,
                     Get_Location (Definition),
                     Message);
          end if;
 
-         if Context (Count)(K_Range).Used then
+         if Ctl_Contexts (Count)(K_Range).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Count)(K_Range).Label),
+                    To_Wide_String (Ctl_Contexts (Count)(K_Range).Label),
                     Count,
                     Get_Location (Definition),
                     Message);
@@ -346,8 +402,8 @@ package body Rules.Simplifiable_expressions is
                   --      and are satic integers.
                   if ALB'Length /= AUB'Length
                     or else (ALB'Length = 1  -- Implies AUB'LENGTH = 1
-                             and then ASIS_Integer'Wide_Value (Static_Expression_Value_Image (ALB (1))) /=
-                             ASIS_Integer'Wide_Value (Static_Expression_Value_Image (AUB (1))))
+                             and then Discrete_Static_Expression_Value (ALB (1)) /=
+                               Discrete_Static_Expression_Value (AUB (1)))
                   then
                      return;
                   end if;
@@ -629,23 +685,23 @@ package body Rules.Simplifiable_expressions is
          use Framework.Reports;
          Message : constant Wide_String := "Unnecessary parentheses in expression";
       begin
-         if Context (Check)(K_Parentheses).Used then
+         if Ctl_Contexts (Check)(K_Parentheses).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Check)(K_Parentheses).Label),
+                    To_Wide_String (Ctl_Contexts (Check)(K_Parentheses).Label),
                     Check,
                     Get_Location (Expr),
                     Message);
-         elsif Context (Search)(K_Parentheses).Used then
+         elsif Ctl_Contexts (Search)(K_Parentheses).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Search)(K_Parentheses).Label),
+                    To_Wide_String (Ctl_Contexts (Search)(K_Parentheses).Label),
                     Search,
                     Get_Location (Expr),
                     Message);
          end if;
 
-         if Context (Count)(K_Parentheses).Used then
+         if Ctl_Contexts (Count)(K_Parentheses).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Count)(K_Parentheses).Label),
+                    To_Wide_String (Ctl_Contexts (Count)(K_Parentheses).Label),
                     Count,
                     Get_Location (Expr),
                     Message);
@@ -736,24 +792,24 @@ package body Rules.Simplifiable_expressions is
       procedure Do_Report is
          use Framework.Reports;
       begin
-         if Context (Check) (K_Conversion).Used then
+         if Ctl_Contexts (Check) (K_Conversion).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Check) (K_Conversion).Label),
+                    To_Wide_String (Ctl_Contexts (Check) (K_Conversion).Label),
                     Check,
                     Get_Location (Expr),
                     "unnecessary conversion");
-         elsif Context (Search) (K_Conversion).Used  then
+         elsif Ctl_Contexts (Search) (K_Conversion).Used  then
             Report (Rule_Id,
-                    To_Wide_String (Context (Search) (K_Conversion).Label),
+                    To_Wide_String (Ctl_Contexts (Search) (K_Conversion).Label),
                     Search,
                     Get_Location (Expr),
                     "unnecessary conversion");
          end if;
 
          -- Always report Count
-         if Context (Count) (K_Conversion).Used then
+         if Ctl_Contexts (Count) (K_Conversion).Used then
             Report (Rule_Id,
-                    To_Wide_String (Context (Count) (K_Conversion).Label),
+                    To_Wide_String (Ctl_Contexts (Count) (K_Conversion).Label),
                     Count,
                     Get_Location (Expr),
                     "");
@@ -808,7 +864,7 @@ package body Rules.Simplifiable_expressions is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Simplifiable_expressions;

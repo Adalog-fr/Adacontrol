@@ -68,30 +68,30 @@ package body Rules.Allocators is
       User_Message ("or just those for tasks, protected types, or specific type(s)");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String;
+                          Ctl_Kind  : in Control_Kinds) is
       use Framework.Language;
       Entity : Entity_Specification;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
             Entity := Get_Entity_Parameter;
-            Associate (Entities, Entity, Basic.New_Context (Rule_Type, Label));
+            Associate (Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
          end loop;
       else
          Entity := Value ("ALL");
-         Associate (Entities, Entity, Basic.New_Context (Rule_Type, Label));
+         Associate (Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
 
       Rule_Used  := True;
    exception
       when Already_In_Store =>
          Parameter_Error (Rule_Id, "type or keyword already given: " & Image (Entity));
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -221,8 +221,8 @@ package body Rules.Allocators is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Allocators;

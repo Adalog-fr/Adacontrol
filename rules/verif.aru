@@ -10,8 +10,9 @@ check style (compound_statement);
 check style (casing_keyword, lowercase);
 check max_nesting (6);
 check parameter_aliasing (certain);
-check simplifiable_expressions (range, logical, conversion);
+check simplifiable_expressions;
 check simplifiable_statements;
+check with_clauses (reduceable);
 
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);

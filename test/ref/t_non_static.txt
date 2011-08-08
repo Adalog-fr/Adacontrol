@@ -1,13 +1,15 @@
-t_non_static.adb:18:20: Error: NON_STATIC: non-static initialization expression
-t_non_static.adb:21:17: Error: NON_STATIC: non-static initialization expression
-t_non_static.adb:25:17: Error: NON_STATIC: non-static initialization expression
-t_non_static.adb:28:29: Error: NON_STATIC: non-static initialization expression
-t_non_static.adb:34:24: Error: NON_STATIC: array index non-statically constrained
-t_non_static.adb:38:15: Error: NON_STATIC: array index non-statically constrained
-t_non_static.adb:39:16: Error: NON_STATIC: array index non-statically constrained
-t_non_static.adb:46:10: Error: NON_STATIC: discriminant non-statically constrained
-t_non_static.adb:56:4: Found: NON_STATIC: Actual for X in instantiation is not static
-t_non_static.adb:56:4: Found: NON_STATIC: Actual for Y in instantiation is not static
-t_non_static.adb:57:4: Found: NON_STATIC: Actual for Y in instantiation is not static (default value)
-t_non_static.adb:71:4: Found: NON_STATIC: Actual for FP in instantiation is not static
-t_non_static.adb:72:4: Found: NON_STATIC: Actual for FP in instantiation is not static
+t_non_static.adb:19:20: Error: NON_STATIC: non-static initialization expression
+t_non_static.adb:22:17: Error: NON_STATIC: non-static initialization expression
+t_non_static.adb:26:17: Error: NON_STATIC: non-static initialization expression
+t_non_static.adb:29:29: Error: NON_STATIC: non-static initialization expression
+t_non_static.adb:35:24: Error: NON_STATIC: array index non-statically constrained
+t_non_static.adb:39:15: Error: NON_STATIC: array index non-statically constrained
+t_non_static.adb:40:16: Error: NON_STATIC: array index non-statically constrained
+t_non_static.adb:47:10: Error: NON_STATIC: discriminant non-statically constrained
+t_non_static.adb:57:4: Found: NON_STATIC: Actual for X in instantiation is not static
+t_non_static.adb:57:4: Found: NON_STATIC: Actual for Y in instantiation is not static
+t_non_static.adb:58:4: Found: NON_STATIC: Actual for Y in instantiation is not static (default value)
+t_non_static.adb:67:4: Found: NON_STATIC: Actual for X in instantiation is not static
+t_non_static.adb:68:4: Found: NON_STATIC: Actual for X in instantiation is not static
+t_non_static.adb:82:4: Found: NON_STATIC: Actual for FP in instantiation is not static
+t_non_static.adb:83:4: Found: NON_STATIC: Actual for FP in instantiation is not static

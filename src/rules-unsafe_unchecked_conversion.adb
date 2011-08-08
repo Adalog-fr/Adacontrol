@@ -36,6 +36,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -64,11 +65,11 @@ package body Rules.Unsafe_Unchecked_Conversion is
       User_Message ("Control unsafe usage of Unchecked_Conversion");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
    begin
@@ -80,9 +81,9 @@ package body Rules.Unsafe_Unchecked_Conversion is
          Parameter_Error (Rule_Id, "no parameter for rule");
       end if;
 
-      Context   := Basic.New_Context (Rule_Type, Label);
+      Context   := Basic.New_Context (Ctl_Kind, Ctl_Label);
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -112,30 +113,30 @@ package body Rules.Unsafe_Unchecked_Conversion is
       use Framework.Reports, Thick_Queries, Utilities;
 
       Source, Target : Asis.Expression;
-      S_Size, T_Size : Integer;
+      S_Size, T_Size : Biggest_Int;
       Assocs : Asis.Association_List (1..2);
 
-      Not_Specified : constant Integer := -1;
+      Not_Specified : constant Biggest_Int := -1;
 
-      function Size_Value (Type_Name : Asis.Expression) return Integer is
+      function Size_Value (Type_Name : Asis.Expression) return Biggest_Int is
          Expr : Asis.Expression;
       begin
-         Expr := Size_Clause_Expression (Type_Name);
+         Expr := Attribute_Clause_Expression (A_Size_Attribute, Type_Name);
          if Is_Nil (Expr) then
             return Not_Specified;
          end if;
 
          declare
-            Val_Img : constant Wide_String := Static_Expression_Value_Image (Expr);
+            Val : constant Extended_Biggest_Natural := Discrete_Static_Expression_Value (Expr);
          begin
-            if Val_Img = "" then
+            if Val = Not_Static then
                Uncheckable (Rule_Id,
                             False_Positive,
                             Get_Location (Type_Name),
-                            "unable to evaluate size clause value for " & Name_Image (Type_Name));
+                            "unable to evaluate size clause value for " & A4G_Bugs.Name_Image (Type_Name));
                return Not_Specified;
             else
-               return Integer'Wide_Value (Val_Img);
+               return Val;
             end if;
          end;
       end Size_Value;
@@ -210,7 +211,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
          Report (Rule_Id,
                  Context,
                  Get_Location (Source),
-                 "Source size (" & Integer_Img (S_Size) & ") /= Target size (" & Integer_Img (T_Size) & ')');
+                 "Source size (" & Biggest_Int_Img (S_Size) & ") /= Target size (" & Biggest_Int_Img (T_Size) & ')');
       end if;
 
    end Process_Instantiation;
@@ -218,7 +219,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Unsafe_Unchecked_Conversion;

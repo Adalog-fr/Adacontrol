@@ -63,12 +63,12 @@ package body Rules.Abnormal_Function_Return is
       User_Message ("Control functions that can propagate Program_Error due to not executing a return statement");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String;
+                          Ctl_Kind  : in Control_Kinds) is
       use Framework.Language;
 
    begin
@@ -79,10 +79,10 @@ package body Rules.Abnormal_Function_Return is
       if Rule_Used then
          Parameter_Error (Rule_Id, "this rule can be specified only once");
       else
-         Rule_Context := Basic.New_Context (Rule_Type, Label);
+         Rule_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
          Rule_Used    := True;
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -108,30 +108,20 @@ package body Rules.Abnormal_Function_Return is
 
    procedure Process_Function_Body (Function_Body : in Asis.Expression) is
       use Asis.Declarations, Asis.Statements;
-      use Thick_Queries;
 
       procedure Check (Stmt : Asis.Statement) is
          use Asis, Asis.Elements;
-         use Framework.Reports, Utilities;
-
-         Last_Statement : Asis.Statement := Stmt;
+         use Framework.Reports, Thick_Queries, Utilities;
       begin
-         while Statement_Kind (Last_Statement) = A_Block_Statement loop
-            declare
-               Block_Stmts : constant Asis.Statement_List := Block_Statements (Last_Statement);
-            begin
-               Last_Statement := Block_Stmts (Block_Stmts'Last);
-            end;
-         end loop;
-
-         case Statement_Kind (Last_Statement) is
+         case Statement_Kind (Stmt) is
             when A_Return_Statement
               | A_Raise_Statement
               =>
-               return;
+               null;
+
             when A_Procedure_Call_Statement =>
                declare
-                  SP_Name : constant Wide_String := To_Upper (Full_Name_Image (Called_Simple_Name (Last_Statement)));
+                  SP_Name : constant Wide_String := To_Upper (Full_Name_Image (Called_Simple_Name (Stmt)));
                begin
                   if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
                     or else SP_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE"
@@ -139,14 +129,60 @@ package body Rules.Abnormal_Function_Return is
                      return;
                   end if;
                end;
-            when others =>
-               null;
-         end case;
+               Report (Rule_Id,
+                       Rule_Context,
+                       Get_Location (Stmt),
+                       "Sequence of statements not terminated by ""return"" or ""raise""");
 
-         Report (Rule_Id,
-                 Rule_Context,
-                 Get_Location (Last_Statement),
-                 "Sequence of statements not terminated by ""return"" or ""raise""");
+            when A_Block_Statement =>
+               declare
+                  Block_Stmts : constant Asis.Statement_List := Block_Statements (Stmt);
+               begin
+                  Check (Block_Stmts (Block_Stmts'Last));
+               end;
+
+               declare
+                  Handlers : constant Asis.Exception_Handler_List := Block_Exception_Handlers (Stmt);
+               begin
+                  for H in Handlers'Range loop
+                     declare
+                        Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Handlers (H));
+                     begin
+                        Check (Handler_Stmts (Handler_Stmts'Last));
+                     end;
+                  end loop;
+               end;
+
+            when An_If_Statement =>
+               declare
+                  Paths : constant Asis.Path_List := Statement_Paths (Stmt);
+               begin
+                  for This_Path in Paths'Range loop
+                     Check (Last_Effective_Statement (Sequence_Of_Statements (Paths (This_Path))));
+                  end loop;
+                  if Path_Kind (Paths (Paths'Last)) /= An_Else_Path then
+                     Report (Rule_Id,
+                       Rule_Context,
+                       Get_Location (Stmt),
+                       "Missing ""else"" path containing ""return"" or ""raise""");
+                  end if;
+               end;
+
+            when A_Case_Statement =>
+               declare
+                  Paths : constant Asis.Path_List := Statement_Paths (Stmt);
+               begin
+                  for This_Path in Paths'Range loop
+                     Check (Last_Effective_Statement (Sequence_Of_Statements (Paths (This_Path))));
+                  end loop;
+               end;
+
+            when others =>
+               Report (Rule_Id,
+                       Rule_Context,
+                       Get_Location (Stmt),
+                       "Sequence of statements not terminated by ""return"" or ""raise""");
+         end case;
       end Check;
    begin
       if not Rule_Used then
@@ -157,7 +193,7 @@ package body Rules.Abnormal_Function_Return is
       declare
          Body_Stmts : constant Asis.Statement_List := Body_Statements (Function_Body);
       begin
-         Check (Last_Effective_Statement (Body_Stmts));
+         Check (Body_Stmts (Body_Stmts'Last));
       end;
 
       declare
@@ -167,7 +203,7 @@ package body Rules.Abnormal_Function_Return is
             declare
                Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Handlers (H));
             begin
-               Check (Last_Effective_Statement (Handler_Stmts));
+               Check (Handler_Stmts (Handler_Stmts'Last));
             end;
          end loop;
       end;
@@ -176,7 +212,7 @@ package body Rules.Abnormal_Function_Return is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Abnormal_Function_Return;

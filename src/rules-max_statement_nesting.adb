@@ -54,24 +54,24 @@ package body Rules.Max_Statement_Nesting is
    use Asis, Framework;
 
    -- Note: Stmt_All must stay last.
-   type Statement_Names is (Stmt_Block, Stmt_Case, Stmt_If, Stmt_Loop, Stmt_All);
-   package Statement_Flag_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
+   type Subrules is (Stmt_Block, Stmt_Case, Stmt_If, Stmt_Loop, Stmt_All);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
 
    subtype Controlled_Statements is Asis.Statement_Kinds range An_If_Statement .. A_Block_Statement;
 
-   type Usage is array (Statement_Names) of Rule_Types_Set;
+   type Usage is array (Subrules) of Control_Kinds_Set;
    Rule_Used : Usage := (others => (others => False));
    Save_Used : Usage;
 
-   Labels : array (Statement_Names, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Values : array (Statement_Names, Rule_Types) of Natural;
+   Ctl_Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Ctl_Values : array (Subrules, Control_Kinds) of Natural;
 
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Utilities, Statement_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter 1:");
@@ -79,32 +79,31 @@ package body Rules.Max_Statement_Nesting is
       User_Message  ("Control max nesting of compound statements");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-    procedure Add_Use (Label     : in Wide_String;
-                       Rule_Type : in Rule_Types) is
-      use Framework.Language, Statement_Flag_Utilities, Ada.Strings.Wide_Unbounded;
-      Stmt : Statement_Names;
+    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrules_Flag_Utilities, Ada.Strings.Wide_Unbounded;
+      Subrule : Subrules;
     begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
-      Stmt := Get_Flag_Parameter (Allow_Any => False);
-      if Rule_Used (Stmt) (Rule_Type) then
-         Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      if Rule_Used (Subrule) (Ctl_Kind) then
+         Parameter_Error (Rule_Id, "rule already specified for " & Control_Kinds'Wide_Image (Ctl_Kind));
       end if;
 
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "Two parameters required");
       end if;
 
-      Values    (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 1);
-      Labels    (Stmt, Rule_Type) := To_Unbounded_Wide_String (Label);
-      Rule_Used (Stmt)(Rule_Type) := True;
-    end Add_Use;
+      Ctl_Values    (Subrule, Ctl_Kind) := Get_Integer_Parameter (Min => 1);
+      Ctl_Labels    (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used (Subrule)(Ctl_Kind) := True;
+    end Add_Control;
 
    -------------
    -- Command --
@@ -133,47 +132,47 @@ package body Rules.Max_Statement_Nesting is
       use Thick_Queries;
       Unit_Name : constant Asis.Defining_Name := Enclosing_Program_Unit (Statement, Including_Accept => True);
       Elem      : Asis.Element := Statement;
-      Counts    : array (Statement_Names) of Natural := (others => 0);
+      Counts    : array (Subrules) of Natural := (others => 0);
 
-      procedure Count (Stmt : Statement_Names) is
+      procedure Count (Stmt : Subrules) is
       begin
-         if Rule_Used (Stmt) /= (Rule_Types => False)
-           or else Rule_Used (Stmt_All) /= (Rule_Types => False)
+         if Rule_Used (Stmt) /= (Control_Kinds => False)
+           or else Rule_Used (Stmt_All) /= (Control_Kinds => False)
          then
             Counts (Stmt)     := Counts (Stmt) + 1;
             Counts (Stmt_All) := Counts (Stmt_All) + 1;
          end if;
       end Count;
 
-      procedure Do_Report (Stmt : Statement_Names) is
+      procedure Do_Report (Stmt : Subrules) is
          use Ada.Strings.Wide_Unbounded;
-         use Statement_Flag_Utilities, Framework.Reports, Utilities;
+         use Subrules_Flag_Utilities, Framework.Reports, Utilities;
       begin
-         if Rule_Used (Stmt)(Check) and then Counts (Stmt) > Values (Stmt, Check) then
+         if Rule_Used (Stmt)(Check) and then Counts (Stmt) > Ctl_Values (Stmt, Check) then
             Report (Rule_Id,
-                    To_Wide_String (Labels (Stmt, Check)),
+                    To_Wide_String (Ctl_Labels (Stmt, Check)),
                     Check,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than " & Integer_Img(Values (Stmt, Check)));
-         elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Values (Stmt, Search) then
+                    Image (Stmt) & " statements nesting deeper than " & Integer_Img(Ctl_Values (Stmt, Check)));
+         elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Ctl_Values (Stmt, Search) then
             Report (Rule_Id,
-                    To_Wide_String (Labels (Stmt, Search)),
+                    To_Wide_String (Ctl_Labels (Stmt, Search)),
                     Search,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Values (Stmt, Search)));
+                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Ctl_Values (Stmt, Search)));
          end if;
 
-         if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Values (Stmt, Count) then
+         if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Ctl_Values (Stmt, Count) then
             Report (Rule_Id,
-                    To_Wide_String (Labels (Stmt, Count)),
+                    To_Wide_String (Ctl_Labels (Stmt, Count)),
                     Count,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Values (Stmt, Count)));
+                    Image (Stmt) & " statements nesting deeper than " & Integer_Img (Ctl_Values (Stmt, Count)));
          end if;
 
       end Do_Report;
    begin
-      if Rule_Used = (Statement_Names => (Rule_Types => False)) then
+      if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
 
@@ -222,7 +221,7 @@ package body Rules.Max_Statement_Nesting is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Max_Statement_Nesting;

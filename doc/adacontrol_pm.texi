@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.7r9
+@settitle AdaControl Programmer Manual V1.8r7
 @c %**end of header
 
 @titlepage
@@ -164,7 +164,7 @@ The package @code{Framework.Rules_Manager} is used to register and
 manage rules.
 
 The procedure  @code{Register} declares the name of the rule and the
-associated @code{Help}, @code{Add_Use}, @code{Command},
+associated @code{Help}, @code{Add_Control}, @code{Command},
 @code{Prepare}, and @code{Finalize} procedures.
 
 Note that there is nothing else to do to make a rule known to the
@@ -189,8 +189,8 @@ mean. The specifications of the Report procedures are:
 @example
 @b{procedure} Report (Rule_Id    : @b{in} Wide_String;
                   Rule_Label : @b{in} Wide_String;
-                  Rule_Type  : @b{in} Rules.Rule_Types;
-                  Loc        : @b{in} Rules.Location;
+                  Ctl_Type   : @b{in} Control_Kinds;
+                  Loc        : @b{in} Location;
                   Msg        : @b{in} Wide_String);
 
 @b{procedure} Report (Rule_Id    : @b{in} Wide_String;
@@ -232,8 +232,8 @@ non-checkable construct, since it is what allows the rule
 
 @node The package Framework.Language, The package Framework.Scope_Manager, The package Framework.Reports, The framework and utilities packages
 @section The package Framework.Language
-The package @code{Framework.Language} deals with the language used to
-specify which rules are used in a rules file. Only the subprograms
+The package @code{Framework.Language} deals with the command language
+used to specify controls used in a rules file. Only the subprograms
 used to parse parameters are relevant to the writing of rules.
 
 There is a @code{Parameter_Exists} function that returns @code{True}
@@ -247,18 +247,22 @@ is expected to be a general specification for an Ada entity (including
 overloading information, for example). Such an entity can be used as a
 key for a context.
 
-There is a @code{Get_Modifier} to process modifiers (things like
-``not'' or ``case_sensitive'' in front of a parameter).
+There is a generic package @code{Flag_Utilities} to help manage flags
+(keywords) parameters defined by an enumerated type. An instantiation
+of this package provides a @code{Get_Flag_Parameter} procedure to
+parse the flags, an @code{Image} function to get a string
+representation of a flag, and a @code{Help_On_Flags} function to print
+the help message that enumerates all possible flag values. 
 
-There is also a generic package @code{Flag_Utilities} to help manage
-flags (keywords) parameters defined by an enumerated type. An
-instantiation of this package provides a @code{Get_Flag_Parameter}
-procedure to parse the flags (as for other values above), an
-@code{Image} function to get a string representation of a flag, and a
-@code{Help_On_Flags} function to print the help message that
-enumerates all possible flag values. Note that if you instantiate
-@code{Flag_Utilities} in a library package (as will be the case most
-of the time), you @i{must} put a @code{pragma Elaborate
+There is a @code{Get_Modifier} to process modifiers (things like
+``not'' or ``case_sensitive'' in front of a parameter). For more
+sophisticated modifiers, you can instantiate the generic package
+@code{Modifier_Utilities}, which works like @code{Flag_Utilities}, but
+also provides the notion of sets of modifiers.
+
+Note that if you instantiate @code{Flag_Utilities} or
+@code{Modifier_Utilities} in a library package (as will be the case
+most of the time), you @i{must} put a @code{pragma Elaborate
 (Framework.Language);} on top of the package. Failing to do so will
 result in circular elaboration problems (@code{pragma Elaborate_All},
 as implicitely provided by GNAT, does @i{not} work).
@@ -295,8 +299,11 @@ framework}.
 
 @node The package Rules, The package Utilities, The package Framework.Plugs, The framework and utilities packages
 @section The package Rules
-The package @code{Rules} is empty. It's  purpose is to serve as the
+The package @code{Rules} is (almost) empty. It's  purpose is to serve as the
 parent package of all rules.
+
+It simply provides an empty state type, and a null procedure that can
+be used for instantiating @code{Traverse_Element}in simple cases.
 
 @node The package Utilities, The package Thick_Queries, The package Rules, The framework and utilities packages
 @section The package Utilities
@@ -320,7 +327,7 @@ String handling services, see package specification
 Error management. The @code{Error} procedure is not to be called
 directly, use @code{Framework.Language.Parameter_Error} instead to
 report errors in user provided parameters. In most cases, parameters
-are checked in the @code{Add_Use} procedure, and therefore errors are
+are checked in the @code{Add_Control} procedure, and therefore errors are
 reported during the parsing of the commands. In some cases, incorrect
 parameters are discovered while traversing the code. It is acceptable
 to call @code{Framework.Language.Parameter_Error} at any time, but be
@@ -400,10 +407,12 @@ replacement in @code{A4G_Bugs}.
 @node Writing a new rule, Plugging-in a new rule into the framework, The framework and utilities packages, Top
 @chapter Writing a new rule
 There are two kinds of rules: @i{semantic} rules, which operate on Ada
-elements, and @i{textual} rules, which operate on the source text. A
-rule cannot be of both kinds (although a semantic rule can access the
-text of an Ada construct with the  facilities provided by the package
-@code{Asis.Text}).
+elements, and @i{textual} rules, which operate on the source text. In
+some rare cases, a rule can be of both kinds at the same time; see the
+rule ``Style'' for an example of this. Note that a semantic rule can
+access the text of an Ada construct with the facilities provided by
+the package @code{Asis.Text}, this does not require the rule to be
+@code{Semantic_Textual}.
 
 All rules currently provided follow a common pattern, described below;
 it is recommended that new rules do the same, in order to make
@@ -474,7 +483,7 @@ line, and the corresponding location.
 
 -- Textual rule:
 @b{procedure} Process_Line (Line : @b{in} Asis.Program_Text;
-                       Loc  : @b{in} Framework.Location);
+                        Loc  : @b{in} Framework.Location);
 @end example
 
 @section Body
@@ -482,13 +491,13 @@ It is a good habit to start the body of a rule by giving a comment
 explaining the general principles of the algorithm used, especially if
 the algorithm is not trivial.
 
-The body must contain a @code{Help}, an @code{Add_Use}, and a
+The body must contain a @code{Help}, an @code{Add_Control}, and a
 @code{Command} procedure. It may also optionnally contain a
 @code{Prepare} and a @code{Finalize} procedure. These procedures are
 call-backs that are registered to the framework by calling
-@code{Framework.Rules_Manager.Register_Semantic} (for semantic rules)
-or @code{Framework.Rules_Manager.Register_Textual} (for textual
-rules) in the statements part of the body. These procedures have
+@code{Framework.Rules_Manager.Register} in the statements part of the
+body. Note that there is a parameter to this procedure that tells
+whether the rule is semantic, textual, or both.  This procedure has
 @b{@code{null}} defaults for the optional subprograms.
 
 @subsection Help
@@ -523,35 +532,35 @@ Ex:
 @b{end} Help;
 @end example
 
-@subsection Add_Use
-@code{Add_Use} is a procedure which is called by the rules parser when
-it finds a use of the corresponding rule. It is passed the
-corresponding label (an empty string if there is no label), and the
-rule's type (@code{Check}, @code{Search} or @code{Count}). It will
-typically loop over the parameters with the various
-@code{Get_XXX_Parameters} from package @code{Rules.Language} to
-process the parameters.
+@subsection Add_Control
+@code{Add_Control} is a procedure which is called by the rules parser
+when it finds a control command that refers to the corresponding
+rule. It is passed the corresponding label (an empty string if there
+is no label), and the control's kind (@code{Check}, @code{Search} or
+@code{Count}). It will typically loop over the parameters with the
+various @code{Get_XXX_Parameters} from package @code{Rules.Language}
+to process the parameters.
 
 If for some reason a parameter is not appropriate to the rule, the
 rule should call @code{Rules.Language.Parameter_Error} with an
 appropriate message. This procedure will raise the exception
-@code{User_Error}, and the @code{Add_Use} procedure should not handle
+@code{User_Error}, and the @code{Add_Control} procedure should not handle
 it; the exception will be processed by the framework.
 
-Note that @code{Add_Use} may be called several times if the same rule
+Note that @code{Add_Control} may be called several times if the same rule
 is activated with different parameters in a rules file. If a rule can
 be specified only once, it is up to the rule to check this and call
 @code{Parameter_Error} in case it is given more than once.
 
 Ex:
 @example
-@b{procedure} Add_Use (Label     : @b{in} Label;
-                   Rule_Type : @b{in} Rule_Types) @b{is}
+@b{procedure} Add_Control (Label    : @b{in} Label;
+                   Ctl_Type : @b{in} Control_Kinds) @b{is}
 @b{begin}
    @b{while} Parameter_Exists @b{loop}
       -- process parameter
    @b{end} @b{loop};
-@b{end} Add_Use;
+@b{end} Add_Control;
 @end example
 There is no special requirement on the implementation of the @code{Add}
 procedure. The programmer is free to interpret the parameters as
@@ -608,10 +617,11 @@ Ex:
 @anchor{Prepare}
 @subsection Prepare
 @code{Prepare} is a procedure that performs some initialisations that
-must be done after adding uses of the rule and before processing the
-units. It is optional (i.e. a @code{@b{null}} pointer can be passed
-for it to the @code{Register} procedure, or simply not mentionned
-since @code{@b{null}} is the default).
+must be done after all controls refering to the rule have been parsed,
+and before processing the units. It is optional (i.e. a
+@code{@b{null}} pointer can be passed for it to the @code{Register}
+procedure, or simply not mentionned since @code{@b{null}} is the
+default).
 
 A typical use of @code{Prepare} is to balance the tree from a binary
 map to improve efficiency.
@@ -628,9 +638,9 @@ the programmer wants to do some processing when going down the ASIS
 tree, and some other processing when going up).
 
 A @code{Process} procedure should return immediately if no
-corresponding @code{Add_Use} has ever been called. In most cases, this
+corresponding @code{Add_Control} has ever been called. In most cases, this
 is conveniently done by having a @code{Rule_Used} global boolean
-variable which is set to @code{True} in @code{Add_Use}, and checked at
+variable which is set to @code{True} in @code{Add_Control}, and checked at
 the beginning of @code{Process}. For efficiency reasons, avoid doing
 any call to the ASIS library before this check. This means that if you
 need objects initialized with such calls, they should be declared in a
@@ -668,20 +678,20 @@ Ex:
 @subsection Package statements
 The package body statements part should include a call to
 @code{Framework.Rules_Manager.Register} in order to register
-the rule and its associated @code{Help}, @code{Add_Use},
+the rule and its associated @code{Help}, @code{Add_Control},
 @code{Command}, and optionally @code{Prepare} and @code{Finalize},
 procedures. Note that the second parameter of @code{Register} tells
-whether it is a semantic or textual rule.
+whether it is a semantic, textual, or semantic_textual rule.
 
 Ex:
 @example
 @b{begin}
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+                                     Help        => Help'Access,
+                                     Add_Control => Add_Control'Access,
+                                     Command     => Command'Access,
+                                     Prepare     => Prepare'Access);
 @b{end} Rules.Pragmas;
 @end example
 
@@ -711,9 +721,12 @@ framework, get in touch with us and we'll discuss it.
 
 @subsection Things to care about
 Each time you want the name of something, remember that the name may
-be given in selected notation. For many queries, you should inspect
-the returned expression to see if its @code{Expression_Kind} is
-@code{A_Selected_Component}, and take the @code{Selector} if it is.
+be given in selected notation. In most cases, you should call
+@code{Thick_Queries.Simple_Name} on the result of any query that
+returns a name to get rid of the possible selectors. Otherwise, you
+should inspect the returned expression to see if its
+@code{Expression_Kind} is @code{A_Selected_Component}, and take the
+@code{Selector} if it is.
 
 When designing a rule, consider the implications of renamings and
 generics.
@@ -1016,13 +1029,14 @@ diff test/ref/tfw_check.txt test/res/tfw_check.txt
 and check that the only difference is the addition of one ``No error
 found'' message.
 
-Then copy @code{test/res/tfw_help.txt} to the directory
-@code{test/ref/}.  Run @code{test.sh} again: it should print PASSED
-for all tests, including yours. Pay special attention to the last
-test, called @code{tfw_stress}. This test runs all rules against all
-test units. If it fails, the file @code{res/tfw_stress.txt} contains
-the whole listing of the run (with @code{-dv} options), so you'll find
-all the context of the problem.
+Then copy @code{test/res/tfw_help.txt} and
+@code{test/res/tfw_check.txt} to the directory @code{test/ref/}. Run
+@code{test.sh} again: it should print PASSED for all tests, including
+yours. Pay special attention to the last test, called
+@code{tfw_stress}. This test runs all rules against all test units. If
+it fails, the file @code{res/tfw_stress.txt} contains the whole
+listing of the run (with @code{-dv} options), so you'll find all the
+context of the problem.
 
 In case of problems, note that options can be passed to
 @code{test.sh}; check the comments at the top of the file for details.

@@ -55,15 +55,15 @@ package body Rules.No_Operator_Usage is
 
    type Operator_Class is (Arithmetic, Logical);
 
-   type Filter_Kind is (None, Logical);
-   package Filter_Flag_Utilities is new Framework.Language.Flag_Utilities (Filter_Kind);
+   type Subrules is (None, Logical);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Usage_Flags is array (Filter_Kind) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
 
    Rule_Used : Usage_Flags := (others => False);
    Save_Used : Usage_Flags;
 
-   type Usage_Contexts is array (Filter_Kind) of Basic_Rule_Context;
+   type Usage_Contexts is array (Subrules) of Basic_Rule_Context;
    Usage : Usage_Contexts;
 
    type Operator_Usage is array (Operator_Class) of Boolean;
@@ -74,40 +74,39 @@ package body Rules.No_Operator_Usage is
    ----------
 
    procedure Help is
-      use Utilities, Filter_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter:");
       User_Message ("Control integer types where no operators, except as indicated, are used");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
-      use Framework.Language, Filter_Flag_Utilities;
-      Key : Filter_Kind;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrules_Flag_Utilities;
+      Subrule : Subrules;
    begin
       if Parameter_Exists then
-         Key := Get_Flag_Parameter (Allow_Any => False);
+         Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-         if Rule_Used (Key) then
+         if Rule_Used (Subrule) then
             Parameter_Error (Rule_Id, "rule can be specified only once for each parameter");
          end if;
 
-         Rule_Used (Key) := True;
-         Usage (Key)     := Basic.New_Context (Rule_Type, Label);
+         Rule_Used (Subrule) := True;
+         Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       else
          if Rule_Used /= Usage_Flags'(others => False) then
             Parameter_Error (Rule_Id, "rule can be specified only once for each parameter");
          end if;
 
          Rule_Used := Usage_Flags'(others => True);
-         Usage     := Usage_Contexts'(others => Basic.New_Context (Rule_Type, Label));
+         Usage     := Usage_Contexts'(others => Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -282,7 +281,7 @@ package body Rules.No_Operator_Usage is
             U         : Operator_Usage := Type_Usage.Fetch (Oper, Default => (others => False));
          begin
             U (Class) := True;
-            Type_Usage.Store (Type_Name, U);
+            Type_Usage.Store (Type_Name, U, At_Declaration_Scope => False);
          end;
       end if;
    end Process_Operator;
@@ -318,21 +317,23 @@ package body Rules.No_Operator_Usage is
    procedure Do_Report is new Type_Usage.On_Every_Entity_From_Scope (Report_One);
 
    procedure Process_Scope_Exit is
+      use Framework.Symbol_Table;
    begin
       if Rule_Used = Usage_Flags'(others => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Do_Report;
+
+      Do_Report (Visibility);
    end Process_Scope_Exit;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB     => Help'Access,
-                                     Add_Use_CB  => Add_Use'Access,
-                                     Command_CB  => Command'Access,
-                                     Prepare_CB  => Prepare'Access,
-                                     Finalize_CB => Finalize'Access);
+                                     Help_CB         => Help'Access,
+                                     Add_Control_CB  => Add_Control'Access,
+                                     Command_CB      => Command'Access,
+                                     Prepare_CB      => Prepare'Access,
+                                     Finalize_CB     => Finalize'Access);
 end Rules.No_Operator_Usage;

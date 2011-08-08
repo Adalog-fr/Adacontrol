@@ -100,12 +100,11 @@ package body Rules.Return_Type is
    end Help;
 
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
       use Return_Kind_Utilities;
 
@@ -116,7 +115,7 @@ package body Rules.Return_Type is
          end if;
 
          Rule_Used (Key) := True;
-         Usage (Key)     := Basic.New_Context (Rule_Use_Type, Label);
+         Usage (Key)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end Add_One;
 
    begin
@@ -131,7 +130,7 @@ package body Rules.Return_Type is
             Add_One (K);
          end loop;
       end if;
-   end Add_Use;
+   end Add_Control;
 
 
    -------------
@@ -210,7 +209,7 @@ package body Rules.Return_Type is
 
       The_State   : Null_State;
       The_Control : Asis.Traverse_Control := Continue;
-   begin
+   begin   -- Process_Instantiation
       if Rule_Used = Usage_Flags'(others => False) then
          return;
       end if;
@@ -244,16 +243,16 @@ package body Rules.Return_Type is
          use Framework.Reports;
       begin
          if Rule_Used (Usage_Kind) then
-            if Instantiation_Location /= Null_Location then
-               Report (Rule_Id,
-                       Usage (Usage_Kind),
-                       Instantiation_Location,
-                       Error_Message & " from instantiation");
-            else
+            if Instantiation_Location = Null_Location then
                Report (Rule_Id,
                        Usage (Usage_Kind),
                        Get_Location (Result_Expression),
                        Error_Message);
+            else
+               Report (Rule_Id,
+                       Usage (Usage_Kind),
+                       Instantiation_Location,
+                       Error_Message & " from instantiation");
             end if;
          end if;
       end Do_Report;
@@ -300,7 +299,7 @@ package body Rules.Return_Type is
          Check_Discriminants;
       end Check_Class;
 
-   begin
+   begin   -- Process_Function_Declaration
       if Rule_Used = Usage_Flags'(others => False) then
          return;
       end if;
@@ -320,28 +319,23 @@ package body Rules.Return_Type is
       end case;
 
       -- Retrieve the returned type from the function declaration
-      Result_Expression := Result_Profile (Decl);
+      Result_Expression := Simple_Name (Result_Profile (Decl));
       case Expression_Kind (Result_Expression) is
-         when A_Selected_Component =>
-            Result_Expression := Selector (Result_Expression);
          when An_Identifier =>
             null;
          when An_Attribute_Reference =>
             case A4G_Bugs.Attribute_Kind (Result_Expression) is
                when A_Base_Attribute =>
                   -- when matching A_Base_Attribute, we need to retrieve the Selector
-                  Result_Expression := Prefix (Result_Expression);
-                  if Expression_Kind (Result_Expression) = A_Selected_Component then
-                     Result_Expression := Selector (Result_Expression);
-                  end if;
+                  Result_Expression := Simple_Name (Prefix (Result_Expression));
                when A_Class_Attribute =>
                   Check_Class (Result_Expression);
                   return;
                when others =>
-                  Failure ("unexpected return type: attribute");
+                  Failure ("unexpected return type: attribute", Result_Expression);
             end case;
          when others =>
-            Failure ("unexpected return type: others");
+            Failure ("unexpected return type: others", Result_Expression);
       end case;
 
       -- Here we have a good ol' identifier
@@ -371,9 +365,8 @@ package body Rules.Return_Type is
                         case A4G_Bugs.Attribute_Kind (Result_Type_Expression) is
                            when A_Base_Attribute =>
                               -- when matching A_Base_Attribute, we need to retrieve the Selector
-                              Result_Type_Declaration :=
-                                Corresponding_Name_Declaration (Prefix
-                                                                         (Result_Type_Expression));
+                              Result_Type_Declaration := Corresponding_Name_Declaration (Prefix
+                                                                                         (Result_Type_Expression));
                            when A_Class_Attribute =>
                               Check_Class (Result_Type_Expression);
                               return;
@@ -561,7 +554,7 @@ package body Rules.Return_Type is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Return_Type;

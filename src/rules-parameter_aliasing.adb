@@ -43,6 +43,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -68,8 +69,8 @@ package body Rules.Parameter_Aliasing is
    type Usage is array (Rule_Detail) of Boolean;
    Rule_Used  : Usage := (others => False);
    Save_Used  : Usage;
-   Rule_Type  : array (Rule_Detail) of Rule_Types;
-   Rule_Label : array (Rule_Detail) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Ctl_Kinds  : array (Rule_Detail) of Control_Kinds;
+   Ctl_Labels : array (Rule_Detail) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    With_In    : array (Rule_Detail) of Boolean;
 
    ----------
@@ -86,12 +87,11 @@ package body Rules.Parameter_Aliasing is
       User_Message  ("If ""with_in"" is given, consider also in parameters");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language, Thick_Queries;
 
@@ -117,11 +117,11 @@ package body Rules.Parameter_Aliasing is
          Parameter_Error (Rule_Id, "only one parameter allowed");
       end if;
 
-      Rule_Type  (Detail) := Rule_Use_Type;
-      Rule_Label (Detail) := To_Unbounded_Wide_String (Label);
+      Ctl_Kinds  (Detail) := Ctl_Kind;
+      Ctl_Labels (Detail) := To_Unbounded_Wide_String (Ctl_Label);
       Rule_Used  (Detail) := True;
       With_In    (Detail) := In_Flag;
-   end Add_Use;
+   end Add_Control;
 
 
    -------------
@@ -134,7 +134,7 @@ package body Rules.Parameter_Aliasing is
       case Action is
          when Clear =>
             Rule_Used  := (others => False);
-            Rule_Label := (others => Null_Unbounded_Wide_String);
+            Ctl_Labels := (others => Null_Unbounded_Wide_String);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);
@@ -153,14 +153,14 @@ package body Rules.Parameter_Aliasing is
       -- If weaker checks have been specified, force them for stronger ones
       if Rule_Used (Unlikely) and not Rule_Used (Possible) then
          Rule_Used  (Possible) := True;
-         Rule_Type  (Possible) := Rule_Type  (Unlikely);
-         Rule_Label (Possible) := Rule_Label (Unlikely);
+         Ctl_Kinds  (Possible) := Ctl_Kinds  (Unlikely);
+         Ctl_Labels (Possible) := Ctl_Labels (Unlikely);
          With_In    (Possible) := With_In    (Unlikely);
       end if;
       if Rule_Used (Possible) and not Rule_Used (Certain) then
          Rule_Used  (Certain) := True;
-         Rule_Type  (Certain) := Rule_Type  (Possible);
-         Rule_Label (Certain) := Rule_Label (Possible);
+         Ctl_Kinds  (Certain) := Ctl_Kinds  (Possible);
+         Ctl_Labels (Certain) := Ctl_Labels (Possible);
          With_In    (Certain) := With_In    (Possible);
       end if;
    end Prepare;
@@ -213,7 +213,7 @@ package body Rules.Parameter_Aliasing is
                return '"' & Defining_Name_Image (Name) & " => "
                  & Trim_All (Element_Image (Actual_Parameter (Actuals (Position)))) & '"';
             else
-               return '"' & Name_Image (Name) & " => "
+               return '"' & A4G_Bugs.Name_Image (Name) & " => "
                  & Trim_All (Element_Image (Actual_Parameter (Actuals (Position)))) & '"';
             end if;
          end Association_Image;
@@ -238,13 +238,16 @@ package body Rules.Parameter_Aliasing is
                                                        To_Check_Parameters (I).Expr);
                if Rule_Used (Param_Proximity.Confidence)
                  and then Param_Proximity.Overlap /= None
-                 and then (To_Check_Parameters (I).Mode in An_Out_Mode .. An_In_Out_Mode
-                           or else (With_In (Param_Proximity.Confidence)
-                                    and To_Check_Parameters (J).Mode in An_Out_Mode .. An_In_Out_Mode))
+                 and then (((To_Check_Parameters (I).Mode in An_Out_Mode .. An_In_Out_Mode
+                            or else With_In (Param_Proximity.Confidence))
+                        and To_Check_Parameters (J).Mode in An_Out_Mode .. An_In_Out_Mode)
+                     or    ((To_Check_Parameters (J).Mode in An_Out_Mode .. An_In_Out_Mode
+                            or else With_In (Param_Proximity.Confidence))
+                        and To_Check_Parameters (I).Mode in An_Out_Mode .. An_In_Out_Mode))
                then
                   Report (Rule_Id,
-                    To_Wide_String (Rule_Label (Param_Proximity.Confidence)),
-                    Rule_Type (Param_Proximity.Confidence),
+                    To_Wide_String (Ctl_Labels (Param_Proximity.Confidence)),
+                    Ctl_Kinds (Param_Proximity.Confidence),
                     Get_Location (Call),
                     Choose (Param_Proximity.Confidence = Certain,
                       "Certain",
@@ -265,8 +268,8 @@ package body Rules.Parameter_Aliasing is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Parameter_Aliasing;

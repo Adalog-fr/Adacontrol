@@ -3,3 +3,4 @@ Range_Or_True: check  simplifiable_expressions (Range, Logical_True);
 False:         search simplifiable_expressions (Logical_False);
                check  simplifiable_expressions (parentheses);
                search simplifiable_expressions (conversion);
+               search simplifiable_expressions (Logical_not);

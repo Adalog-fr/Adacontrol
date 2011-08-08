@@ -54,21 +54,21 @@ package body Rules.Max_Size is
    use Framework;
    use Asis.Text;
 
-   type Statement_Names is (Stmt_Accept,        Stmt_Block,       Stmt_Case, Stmt_Case_Branch,
-                            Stmt_If,            Stmt_If_Branch,   Stmt_Loop, Stmt_Simple_Block,
-                            Stmt_Unnamed_Block, Stmt_Unnamed_Loop);
+   type Subrules is (Stmt_Accept,        Stmt_Block,       Stmt_Case, Stmt_Case_Branch,
+                     Stmt_If,            Stmt_If_Branch,   Stmt_Loop, Stmt_Simple_Block,
+                     Stmt_Unnamed_Block, Stmt_Unnamed_Loop);
 
-   package Statement_Flags_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
-   use Statement_Flags_Utilities;
+   package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
+   use Subrules_Flags_Utilities;
 
    Unused : constant Line_Number := Line_Number'Last;
 
    Rule_Used  : Boolean := False;
    Save_Used  : Boolean;
-   Rule_Label : array (Statement_Names, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Ctl_Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
-   type Max_Table is array (Rule_Types) of Line_Number;
-   Maximum : array (Statement_Names) of Max_Table  := (others => (others => Unused));
+   type Max_Table is array (Control_Kinds) of Line_Number;
+   Maximum : array (Subrules) of Max_Table  := (others => (others => Unused));
 
    ----------
    -- Help --
@@ -83,25 +83,24 @@ package body Rules.Max_Size is
       User_Message  ("Control the maximum length of Ada statements");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Ada.Strings.Wide_Unbounded, Utilities;
-      Stmt : Statement_Names;
-      Max  : Line_Number_Positive;
+      Subrule : Subrules;
+      Max     : Line_Number_Positive;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "parameters required");
       end if;
 
-      Stmt := Get_Flag_Parameter (Allow_Any => False);
-      if Maximum (Stmt) (Rule_Type) /= Unused then
+      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      if Maximum (Subrule) (Ctl_Kind) /= Unused then
          Parameter_Error (Rule_Id, "statement already given for "
-                                   & To_Lower (Rule_Types'Wide_Image (Rule_Type)) & ": "
-                                   & Image (Stmt));
+                                   & To_Lower (Control_Kinds'Wide_Image (Ctl_Kind)) & ": "
+                                   & Image (Subrule));
       end if;
 
       begin
@@ -112,9 +111,9 @@ package body Rules.Max_Size is
       end;
 
       Rule_Used                    := True;
-      Rule_Label (Stmt, Rule_Type) := To_Unbounded_Wide_String (Label);
-      Maximum (Stmt) (Rule_Type)    := Max;
-   end Add_Use;
+      Ctl_Labels (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Maximum (Subrule) (Ctl_Kind)    := Max;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -143,7 +142,7 @@ package body Rules.Max_Size is
    procedure Process_Statement (Statement : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements;
 
-      procedure Do_Report (Stmt : in Statement_Names; Element : Asis.Element := Statement) is
+      procedure Do_Report (Stmt : in Subrules; Element : Asis.Element := Statement) is
          use Ada.Strings.Wide_Unbounded;
          use Framework.Reports, Utilities;
 
@@ -164,7 +163,7 @@ package body Rules.Max_Size is
 
          if Length > Maximum (Stmt) (Check) then
             Report (Rule_Id,
-                    To_Wide_String (Rule_Label (Stmt, Check)),
+                    To_Wide_String (Ctl_Labels (Stmt, Check)),
                     Check,
                     Loc,
                     "statement """ & Image (Stmt)
@@ -172,7 +171,7 @@ package body Rules.Max_Size is
                     & Integer_Img (Length) & ')');
          elsif Length > Maximum (Stmt) (Search) then
             Report (Rule_Id,
-                    To_Wide_String (Rule_Label (Stmt, Search)),
+                    To_Wide_String (Ctl_Labels (Stmt, Search)),
                     Search,
                     Loc,
                     "statement """ & Image (Stmt)
@@ -182,7 +181,7 @@ package body Rules.Max_Size is
 
          if Length > Maximum (Stmt) (Count) then
             Report (Rule_Id,
-                    To_Wide_String (Rule_Label (Stmt, Count)),
+                    To_Wide_String (Ctl_Labels (Stmt, Count)),
                     Count,
                     Loc,
                     "");
@@ -210,7 +209,7 @@ package body Rules.Max_Size is
 
          when A_Case_Statement =>
             Do_Report (Stmt_Case);
-            if Maximum (Stmt_Case_Branch) /= (Rule_Types => Unused) then
+            if Maximum (Stmt_Case_Branch) /= (Control_Kinds => Unused) then
                declare
                   Paths : constant Asis.Path_List := Statement_Paths (Statement);
                begin
@@ -231,7 +230,7 @@ package body Rules.Max_Size is
 
          when An_If_Statement =>
             Do_Report (Stmt_If);
-            if Maximum (Stmt_If_Branch) /= (Rule_Types => Unused) then
+            if Maximum (Stmt_If_Branch) /= (Control_Kinds => Unused) then
                declare
                   Paths : constant Asis.Path_List := Statement_Paths (Statement);
                begin
@@ -249,7 +248,7 @@ package body Rules.Max_Size is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Max_Size;

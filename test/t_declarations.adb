@@ -3,7 +3,8 @@ with X_Declarations.Child;
 with X_Declarations_Locations;
 procedure T_declarations is
    type I1 is range 1..10;      -- signed_type, integer_type
-   type I2 is mod 128;          -- modular_type, integer_type
+   type I2 is mod 128;          -- binary_modular_type, modular_type, integer_type
+   type I3 is mod 127;          -- non_binary_modular_type, modular_type, integer_type
 
    type Fl is digits 5;                    -- float_type
    type Fx1 is delta 0.1 range 0.0 .. 1.0; -- ordinary_fixed_type, fixed_type
@@ -35,32 +36,43 @@ procedure T_declarations is
    end T2;
 
    protected P1 is                                     -- single_protected, protected
-      entry E (I : out Integer; J : in out Integer);   -- protected_entry, out_parameter, in_out_parameter
+      entry E1 (I : out Integer; J : in out Integer);  -- protected_entry, out_parameter, in_out_parameter
+      entry E2;                                        -- protected_entry, multiple_protected_entries
    end P1;
    protected body P1 is
-      entry E (I : out Integer; J : in out Integer) when True  is --out_parameter, in_out_parameter
+      entry E1 (I : out Integer; J : in out Integer) when True  is --out_parameter, in_out_parameter
       begin
          null;
-      end E;
+      end E1;
+      entry E2 when True is
+      begin
+         null;
+      end E2;
    end P1;
 
    protected type P2 (X : Integer := 0) is  -- protected_type, protected, defaulted_discriminant
-      entry E;                              -- protected_entry
+      entry E1;                             -- protected_entry
+      entry E2;                             -- protected_entry, multiple_protected_entries
    private
       I : Integer;                          -- uninitialized_protected_field
       J : Integer := 0;                     -- initialized_protected_field
    end P2;
    protected body P2 is
-      entry E when True is
+      entry E1 when True is
       begin
          null;
-      end E;
+      end E1;
+      entry E2 when True is
+      begin
+         null;
+      end E2;
    end P2;
 
    E : exception;         -- exception
    NN1 : constant := 1;   -- named_number
    NN2 : constant := 1.0; -- named_number
 
+   type Acc1;                      -- incomplete_type
    type Acc1 is access Integer;    -- access_type
    type Acc2 is access procedure;  -- access_subprogram_type, access_type
    type Acc3 is access T2;         -- access_task_type, access_type
@@ -68,6 +80,9 @@ procedure T_declarations is
 
    type Der_Task is new T2;        -- derived_type
    type Acc5 is access Der_Task;   -- access_task_type, access_type
+
+   type Acc6 is access all Integer;      -- access_type, access_all_type
+   type Acc7 is access constant Integer; -- access_type, access_constant_type
 
    I,J,K : aliased Integer;               -- aliased, multiple_names, uninitialized_variable, variable
    C : aliased constant Character := ' '; -- aliased
@@ -93,9 +108,11 @@ procedure T_declarations is
          I : Integer;      -- uninitialized_record_field
          J : Integer := 0; -- initialized_record_field
       end record;
-   type Arr1 is array (1..10) of Character;           -- constrained_array_type, array
-   type Arr2 is array (Positive range <>) of Integer; -- unconstrained_array_type, array
-   VArr1 : array (1..10) of Character;                -- single_array, array, uninitialized_variable, variable
+   type Arr1 is array (1..10) of Character;                   -- constrained_array_type, array
+   type Arr2 is array (Positive range <>) of Integer;         -- unconstrained_array_type, array
+   VArr1 : array (1..10) of Character;                        -- single_array, array, uninitialized_variable, variable, constrained_array_variable
+   Varr2 : Arr2 := (1, 2, 3);                                 -- variable, unconstrained_array_variable
+   Varr3 : array (Positive range <>) of Integer := (1, 2, 3); -- single_array, array, variable, unconstrained_array_variable
 
    type Der1 is new Rec1 with null record;                   -- null_extension, record_type
    type Der2 (Y : Integer) is new Rec1 with null record;     -- null_extension, record_type, discriminant
@@ -123,6 +140,7 @@ procedure T_declarations is
       type Abs2 is abstract tagged limited private; -- Non_Limited_Private_Type, Abstract_Type
       procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract; -- Abstract_Function
+      Deffered : constant Priv1;                    -- Deferred_Constant
    private
       type Priv1 is new Integer;                    -- Derived_Type
       type Priv2 is new Integer;                    -- Derived_Type
@@ -133,6 +151,7 @@ procedure T_declarations is
             X : Integer;                            -- Uninitialized_Record_Field
          end record;
       procedure Proc1;                              -- Private Procedure, Nested Procedure, Local Procedure
+      Deffered : constant Priv1 := 0;
    end Pack2;
    package body Pack2 is
       type Abs3 is abstract new Abs2 with null record; -- Null_Extension, Extension, Tagged_Type, Record_Type, Abstract_Type
@@ -161,7 +180,7 @@ procedure T_declarations is
 
    procedure Sep is separate;
 
-   Tab : array (1..10) of Integer;                       -- uninitialized_variable, variable
+   Tab : array (1..10) of Integer;                       -- uninitialized_variable, variable, constrained_array_variable
 
    function "+" (X, Y : Integer) return Integer is
    begin
@@ -180,6 +199,7 @@ procedure T_declarations is
 
    generic                                                                    -- Nested_Generic_Function, generic
       Global : in out Integer;                                                -- in_out_generic_parameter
+      type T is private;                                                      -- formal type
       with procedure Formal_P;                                                -- formal_procedure
       with function Formal_F return Integer;                                  -- formal_function
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
@@ -189,13 +209,14 @@ procedure T_declarations is
       return 0;
    end Test_Formals;
 
-   subtype Int is Integer range 1..10;                                  -- subtype
+   subtype Int1 is Integer range 1..10;                                 -- subtype
+   subtype Int2 is Integer;                                             -- subtype, unconstrained_subtype
 
    Arr : Integer renames X_Declarations.Arr (1);                        -- renaming, non_identical_renaming, not_operator_renaming
    function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming, non_identical_renaming, not_operator_renaming
    function "/" (X, Y : Integer) return Integer renames Standard."+";   -- renaming, operator_renaming, non_identical_renaming, non_identical_operator_renaming, multiple_names
 
-   procedure Predefined_Operator is separate;                                 -- separate
+   procedure Predefined_Operator is separate;                           -- separate
 begin
    null;                                                                -- null_procedure
 end T_declarations;

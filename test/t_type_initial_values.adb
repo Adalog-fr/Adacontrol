@@ -1,3 +1,4 @@
+with X_Initial_Values;
 procedure T_Type_Initial_Values is
    type Bool is new Boolean;   -- No constant
    type Int is new Integer;    -- No matching constant

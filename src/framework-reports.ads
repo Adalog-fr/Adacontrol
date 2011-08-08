@@ -31,11 +31,11 @@
 
 package Framework.Reports is
 
-   procedure Report (Rule_Id    : in Wide_String;
-                     Rule_Label : in Wide_String;
-                     Rule_Type  : in Rule_Types;
-                     Loc        : in Location;
-                     Msg        : in Wide_String);
+   procedure Report (Rule_Id   : in Wide_String;
+                     Ctl_Label : in Wide_String;
+                     Ctl_Kind  : in Control_Kinds;
+                     Loc       : in Location;
+                     Msg       : in Wide_String);
    -- Reports rule match to current output
 
    procedure Report (Rule_Id    : in Wide_String;
@@ -54,15 +54,27 @@ package Framework.Reports is
    -- Called when a rule cannot check something, because f.e. it depends on a non
    -- statically analyzable construct
 
+   Cancellation : exception;
+   -- Raised when the number of allowed errors/messages is exceeded
+   -- Occurrence message gives the exact cause
+
+
+   ----------------------------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
+   use Ada.Strings.Wide_Unbounded;
 
    -- These two procedures are for the rule Uncheckable
-   procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Rule_Type : Rule_Types; Label : Wide_String);
+   procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Ctl_Kind : Control_Kinds; Label : Wide_String);
    procedure Reset_Uncheckable;
 
-   type Output_Format is (Gnat, CSV, CSVX, Source, None);
+   function "and" (Left, Right : Wide_String) return Wide_String;
+   -- Concatenates the strings, separated by the separator appropriate to the output format
+
+   procedure Raw_Report (Message : Wide_String);
+
+   type Output_Format is (Source, Gnat, CSV, CSVX, None);
    type Stats_Levels  is (None, General, Nulls_Only, Full);
    Warning_As_Error_Option : Boolean       := False;
    Skip_Warning_Option     : Boolean       := False;
@@ -70,6 +82,11 @@ package Framework.Reports is
    Stats_Level             : Stats_Levels  := None;
 
    Just_Created            : Boolean := False;
+   Adactl_Tag1             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
+   Adactl_Tag2             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
+   Max_Messages            : Natural := Natural'Last;
+   Max_Errors              : Natural := Natural'Last;
+
 
    function Nb_Errors   return Natural;
    function Nb_Warnings return Natural;
@@ -77,8 +94,10 @@ package Framework.Reports is
    procedure Clear (Rule : Wide_String);
    procedure Clear_All;
    procedure Reset;
-   procedure Report_Counters;
 
-   procedure Init_Counts (Rule_Id : Wide_String; Rule_Label : Wide_String);
+   procedure Init_Counts (Rule : Wide_String; Label : Wide_String);
+   procedure Report_Counts;
+
    procedure Init_Stats  (Rule : Wide_String; Label : Wide_String);
+   procedure Report_Stats;
 end Framework.Reports;

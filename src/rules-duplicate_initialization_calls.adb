@@ -79,12 +79,11 @@ package body Rules.Duplicate_Initialization_Calls is
       User_Message ("or twice on the same out actual parameter");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label     : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Framework.Element_Queues;
 
    begin
@@ -98,7 +97,7 @@ package body Rules.Duplicate_Initialization_Calls is
          begin
             Associate (Applicable_Calls,
                        Entity,
-                       Procedure_Context'(Basic.New_Context (Rule_Type, Label) with
+                       Procedure_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
                                           Profile_Checked => False,
                                           Has_Out         => False,
                                           Other_Calls     => Empty_Queue));
@@ -109,7 +108,7 @@ package body Rules.Duplicate_Initialization_Calls is
       end loop;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -282,8 +281,8 @@ package body Rules.Duplicate_Initialization_Calls is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Duplicate_Initialization_Calls;

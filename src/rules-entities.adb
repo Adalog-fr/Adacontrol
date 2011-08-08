@@ -59,12 +59,11 @@ package body Rules.Entities is
       User_Message ("Control occurrences of any Ada entity");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
    begin
@@ -76,7 +75,7 @@ package body Rules.Entities is
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Searched_Entities, Entity, Basic.New_Context (Rule_Type,Label));
+            Associate (Searched_Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
@@ -84,7 +83,7 @@ package body Rules.Entities is
       end loop;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -141,8 +140,8 @@ package body Rules.Entities is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Entities;

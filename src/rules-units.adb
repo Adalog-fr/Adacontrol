@@ -57,14 +57,14 @@ pragma Elaborate (Framework.Language);
 package body Rules.Units is
    use Framework, Ada.Strings.Wide_Unbounded;
 
-   type Subrule is (Unreferenced, Unchecked);
-   package Subrule_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrule);
+   type Subrules is (Unreferenced, Unchecked);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Usages is array (Subrule) of Boolean;
+   type Usages is array (Subrules) of Boolean;
    Rule_Used : Usages := (others => False);
    Save_Used : Usages;
 
-   Contexts : array (Subrule) of Basic_Rule_Context;
+   Ctl_Contexts : array (Subrules) of Basic_Rule_Context;
 
    type Unit_Info is
       record
@@ -83,38 +83,37 @@ package body Rules.Units is
    ----------
 
    procedure Help is
-      use Utilities, Subrule_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter(s):");
       User_Message ("Control units not analyzed, or not referenced from the rest of the project");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
-      use Framework.Language, Subrule_Flag_Utilities;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrules_Flag_Utilities;
 
-      Flag : Subrule;
+      Subrule : Subrules;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            Flag := Get_Flag_Parameter (Allow_Any => False);
-            if Rule_Used (Flag) then
-               Parameter_Error (Rule_Id, "rule already specified for " & Subrule'Wide_Image (Flag));
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
+            if Rule_Used (Subrule) then
+               Parameter_Error (Rule_Id, "rule already specified for " & Subrules'Wide_Image (Subrule));
             end if;
 
-            Contexts  (Flag) := Basic.New_Context (Rule_Type, Label);
-            Rule_Used (Flag) := True;
+            Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Rule_Used    (Subrule) := True;
          end loop;
       else
-         Contexts  := (others => Basic.New_Context (Rule_Type, Label));
-         Rule_Used := (others => True);
+         Ctl_Contexts := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Rule_Used    := (others => True);
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -155,14 +154,14 @@ package body Rules.Units is
       if Value.Withed then
          if not Value.Checked and Rule_Used (Unchecked) then
             Report (Rule_Id,
-                    Contexts (Unchecked),
+                    Ctl_Contexts (Unchecked),
                     Value.Loc,
                     "unit " & To_Title (To_Wide_String (Key)) & " not processed by AdaControl");
          end if;
       else
          if Rule_Used (Unreferenced) then
             Report (Rule_Id,
-                    Contexts (Unreferenced),
+                    Ctl_Contexts (Unreferenced),
                     Value.Loc,
                     "unit " & To_Title (To_Wide_String (Key)) & " not withed by any unit");
          end if;
@@ -173,7 +172,7 @@ package body Rules.Units is
 
    procedure Finalize is
    begin
-      if Rule_Used = (Subrule => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -218,7 +217,7 @@ package body Rules.Units is
    procedure Process_Unit (Unit : in Asis.Compilation_Unit) is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
    begin
-      if Rule_Used = (Subrule => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -251,7 +250,7 @@ package body Rules.Units is
          end case;
       end Element_Unit;
    begin
-      if Rule_Used = (Subrule => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -283,9 +282,9 @@ package body Rules.Units is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB     => Help'Access,
-                                     Add_Use_CB  => Add_Use'Access,
-                                     Command_CB  => Command'Access,
-                                     Prepare_CB  => Prepare'Access,
-                                     Finalize_CB => Finalize'Access);
+                                     Help_CB         => Help'Access,
+                                     Add_Control_CB  => Add_Control'Access,
+                                     Command_CB      => Command'Access,
+                                     Prepare_CB      => Prepare'Access,
+                                     Finalize_CB     => Finalize'Access);
 end Rules.Units;

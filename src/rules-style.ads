@@ -60,15 +60,15 @@ private
 
    -- Subrules for the rule
    -- "casing" subrules must stay together
-   type Style_Names is (St_Casing_Attribute,   St_Casing_Identifier,  St_Casing_Keyword,
-                        St_Casing_Pragma,      St_Compound_Statement, St_Default_In,
-                        St_Exposed_Literal,    St_Multiple_Elements,  St_Negative_Condition,
-                        St_No_Closing_Name,    St_Numeric_Literal,    St_Positional_Association,
-                        St_Renamed_Entity);
+   type Subrules is (St_Casing_Attribute,   St_Casing_Identifier,  St_Casing_Keyword,
+                     St_Casing_Pragma,      St_Compound_Statement, St_Default_In,
+                     St_Exposed_Literal,    St_Multiple_Elements,  St_Negative_Condition,
+                     St_No_Closing_Name,    St_Numeric_Literal,    St_Positional_Association,
+                     St_Renamed_Entity);
 
    type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
 
-   function Corresponding_Context (Subrule : Style_Names; Complement : Wide_String := "")
+   function Corresponding_Context (Subrule : Subrules; Complement : Wide_String := "")
                                    return Framework.Root_Context'Class;
 
 end Rules.Style;

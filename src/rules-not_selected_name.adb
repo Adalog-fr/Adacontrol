@@ -74,12 +74,11 @@ package body Rules.Not_Selected_Name is
       User_Message ("Control usages of an Ada entities that do not use selected notation");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Exceptions_Flag_Utilities;
       Exc : Exceptions;
    begin
@@ -97,7 +96,7 @@ package body Rules.Not_Selected_Name is
          begin
             Associate (Searched_Entities,
                        Entity,
-                       Selected_Context'(Basic.New_Context (Rule_Type, Label) with Exc));
+                       Selected_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Exc));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
@@ -105,7 +104,7 @@ package body Rules.Not_Selected_Name is
       end loop;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -219,8 +218,8 @@ package body Rules.Not_Selected_Name is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Not_Selected_Name;

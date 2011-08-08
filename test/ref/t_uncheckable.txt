@@ -1,6 +1,7 @@
 t_uncheckable-case_statement.adb:15:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_uncheckable-case_statement.adb:19:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_uncheckable-case_statement.adb:24:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
+t_uncheckable-declarations.adb:4:21: Error: Uncheckable: in rule DECLARATIONS: Possible false negative: unable to evaluate mod expression
 t_uncheckable-directly_accessed_globals.adb:15:15: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false negative: Name is dynamic renaming
 t_uncheckable-directly_accessed_globals.adb:12:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Uncheckable.Directly_Accessed_Globals.Pack.J" is not read from any subprogram
 t_uncheckable-duplicate_initialization_calls.adb:12:14: Error: Uncheckable: in rule DUPLICATE_INITIALIZATION_CALLS: Possible false negative: non statically determinable out parameter

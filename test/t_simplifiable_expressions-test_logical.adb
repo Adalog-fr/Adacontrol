@@ -15,9 +15,12 @@ procedure Test_Logical is
       A := B;
    end Z;
 
+   type T is mod 5;
+   I : T;
+
 begin
 
-   if X = False and then Y = True then    -- Should trigger (twice)
+   if X = False and then Y = (True) then  -- Should trigger (three times)
       Z;
    elsif X = False then                   -- Should trigger
       X := Y = False;                     -- Should trigger
@@ -28,7 +31,7 @@ begin
    elsif X /= True then                   -- Should trigger
       null;
    elsif False = X then                   -- Should trigger
-      X := Y = False;
+      X := Y = False;                     -- Should trigger
    elsif False /= X then                  -- Should trigger
       null;
    elsif True = X then                    -- Should trigger
@@ -40,5 +43,12 @@ begin
    while Y = False and X = False loop     -- Should trigger (twice)
       A := B;
    end loop;
+
+   if not (I = 3) then                    -- Should trigger
+      null;
+   end if;
+   I := not I;
+   I := not (I and 2);
+
 end Test_Logical;
 

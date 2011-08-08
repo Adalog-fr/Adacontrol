@@ -76,12 +76,11 @@ package body Rules.Max_Nesting is
       User_Message ("Control scopes nested deeper than a given limit.");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
@@ -93,25 +92,25 @@ package body Rules.Max_Nesting is
 
       Max := Get_Integer_Parameter (Min => 0);
 
-      case Rule_Use_Type is
+      case Ctl_Kind is
          when Check =>
             if Check_Depth /= Scope_Range'Last then
                Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
             end if;
             Check_Depth      := Scope_Range (Max) + 1;
-            Rule_Check_Label := To_Unbounded_Wide_String (Label);
+            Rule_Check_Label := To_Unbounded_Wide_String (Ctl_Label);
          when Search =>
             if Search_Depth /= Scope_Range'Last then
                Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
             end if;
             Search_Depth      := Scope_Range (Max) + 1;
-            Rule_Search_Label := To_Unbounded_Wide_String (Label);
+            Rule_Search_Label := To_Unbounded_Wide_String (Ctl_Label);
          when Count =>
             if Count_Depth /= Scope_Range'Last then
                Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
             end if;
             Count_Depth       := Scope_Range (Max) + 1;
-            Rule_Count_Label := To_Unbounded_Wide_String (Label);
+            Rule_Count_Label := To_Unbounded_Wide_String (Ctl_Label);
      end case;
 
      Rule_Used  := True;
@@ -120,7 +119,7 @@ package body Rules.Max_Nesting is
          Parameter_Error (Rule_Id,
                           "specified nesting greater than allowed maximum of"
                           & Scope_Range'Wide_Image (Scope_Range'Last - 1));
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -225,7 +224,7 @@ package body Rules.Max_Nesting is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Max_Nesting;

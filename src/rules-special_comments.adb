@@ -94,11 +94,11 @@ package body Rules.Special_Comments is
       User_Message ("Control comments that match the specified pattern");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use String_Matching, Framework.Language;
 
    begin
@@ -110,7 +110,7 @@ package body Rules.Special_Comments is
          declare
             Pattern : constant Wide_String := Get_String_Parameter;
          begin
-            Usage := new Usage_Rec'(Basic.New_Context (Rule_Type, Label) with
+            Usage := new Usage_Rec'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
                                     Pattern => new Compiled_Pattern'(Compile (Pattern, Ignore_Case => True)),
                                     Next    => Usage);
          exception
@@ -120,7 +120,7 @@ package body Rules.Special_Comments is
       end loop;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -186,7 +186,7 @@ package body Rules.Special_Comments is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Special_Comments;

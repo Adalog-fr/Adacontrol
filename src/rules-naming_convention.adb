@@ -145,7 +145,19 @@ package body Rules.Naming_Convention is
                        K_Generic_Package,
                        K_Generic_Sp,
                           K_Generic_Procedure,
-                          K_Generic_Function
+                          K_Generic_Function,
+                    K_Renaming,
+                       K_Object_Renaming,
+                       K_Exception_Renaming,
+                       K_Package_Renaming,
+                       K_Subprogram_Renaming,
+                          K_Procedure_Renaming,
+                          K_Function_Renaming,
+                       K_Generic_Renaming,
+                          K_Generic_Package_Renaming,
+                          K_Generic_Sp_Renaming,
+                             K_Generic_Procedure_Renaming,
+                             K_Generic_Function_Renaming
                 );
    Max_Hierarchy_Depth : constant := 5;
    -- Maximum logical depth of the above hierarchy
@@ -166,16 +178,17 @@ package body Rules.Naming_Convention is
    type Pattern_Access is access String_Matching.Compiled_Pattern;
    type Usage_Rec is new Basic_Rule_Context with
       record
-         Scopes  : Scope_Set;
-         Is_Not  : Boolean;
-         Pattern : Pattern_Access;
-         Next    : Usage_Rec_Access;
+         Scopes    : Scope_Set;
+         Is_Others : Boolean := False;
+         Pattern   : Pattern_Access;
+         Next      : Usage_Rec_Access;
       end record;
 
    type Rule_Rec is
       record
-         Is_Root : Boolean := False;
-         First   : Usage_Rec_Access;
+         Is_Root        : Boolean := False;
+         First_Positive : Usage_Rec_Access;
+         First_Negative : Usage_Rec_Access;
       end record;
    Usage : array (Keys) of Rule_Rec;
 
@@ -204,29 +217,31 @@ package body Rules.Naming_Convention is
       use Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter 1: ");
-      User_Message  ("Parameter 2..N: [any|local|global] [case_sensitive|case_insensitive] [not] ""<name pattern>""");
+      User_Message  ("Parameter 1: [root] [others] [global|local|unit]");
+      Help_On_Flags ("                ");
+      User_Message  ("Parameter 2..N: [case_sensitive|case_insensitive] [not] ""<name pattern>""");
       User_Message  ("Control the form of allowed (or forbidden) names in declarations");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Characters.Handling, Ada.Exceptions, Framework.Language, String_Matching;
       use Visibility_Utilities;
 
-      Key     : Keys;
-      Scopes  : Scope_Set;
-      Is_Root : Boolean;
+      Key       : Keys;
+      Scopes    : Scope_Set;
+      Is_Root   : Boolean;
+      Is_Others : Boolean;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of filter required");
       end if;
-      Is_Root := Get_Modifier ("ROOT");
-      Scopes  := Get_Modifier_Set;
+      Is_Root   := Get_Modifier ("ROOT");
+      Is_Others := Get_Modifier ("OTHERS");
+      Scopes    := Visibility_Utilities.Get_Modifier_Set;
       if Scopes = Empty_Set then
          Scopes := Full_Set;
       end if;
@@ -244,13 +259,27 @@ package body Rules.Naming_Convention is
             Is_Not      : constant Boolean     := Get_Modifier ("NOT");
             Pattern     : constant Wide_String := Get_String_Parameter;
          begin
-            Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
-                            First   => new Usage_Rec'(Basic.New_Context (Rule_Type, Label) with
-                                                      Scopes  => Scopes,
-                                                      Is_Not  => Is_Not,
-                                                      Pattern =>
-                                                        new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
-                                                      Next    => Usage (Key).First));
+            if Is_Not then
+               Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
+                               First_Positive => Usage (Key).First_Positive,
+                               First_Negative => new Usage_Rec'
+                                                    (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                                                     Scopes    => Scopes,
+                                                     Is_Others => Is_Others,
+                                                     Pattern   => new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
+                                                     Next      => Usage (Key).First_Negative)
+                              );
+            else
+               Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
+                               First_Positive => new Usage_Rec'
+                                                    (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                                                     Scopes    => Scopes,
+                                                     Is_Others => Is_Others,
+                                                     Pattern   => new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
+                                                     Next      => Usage (Key).First_Positive),
+                               First_Negative => Usage (Key).First_Negative
+                              );
+            end if;
          exception
             when Occur: Pattern_Error =>
                Parameter_Error (Rule_Id,
@@ -260,7 +289,7 @@ package body Rules.Naming_Convention is
       end loop;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -273,7 +302,8 @@ package body Rules.Naming_Convention is
          when Clear =>
             Rule_Used := False;
             for I in Usage'Range loop
-               Clear (Usage (I).First);
+               Clear (Usage (I).First_Positive);
+               Clear (Usage (I).First_Negative);
                Usage (I).Is_Root := False;
             end loop;
          when Suspend =>
@@ -283,6 +313,22 @@ package body Rules.Naming_Convention is
             Rule_Used := Save_Used;
       end case;
    end Command;
+
+   -------------
+   -- Is_Used --
+   -------------
+
+   function Is_Used (Filters : Key_Set) return Boolean is
+   begin
+      for I in Filters'Range loop
+         if Usage (Filters (I)).First_Positive /= null
+           or Usage (Filters (I)).First_Negative /= null
+         then
+            return True;
+         end if;
+      end loop;
+      return False;
+   end Is_Used;
 
    ---------------------------
    -- Process_Defining_Name --
@@ -299,72 +345,83 @@ package body Rules.Naming_Convention is
       procedure Check (Name_Str : in Wide_String; Set : in Key_Set) is
          use Framework.Scope_Manager;
 
-         Is_Program_Unit     : constant Boolean := Is_Equal (Decl, Current_Scope);
-         Is_Compilation_Unit : constant Boolean := Is_Program_Unit and Current_Depth = 1;
-         Is_Global           : Boolean;
+         Is_Program_Unit        : constant Boolean := Is_Equal (Decl, Current_Scope);
+         Is_Compilation_Unit    : constant Boolean := Is_Program_Unit and Current_Depth = 1;
+         Is_Global              : Boolean;
+         Scopes_Mask            : Scope_Set;
+         Positive_Pattern_Found : Boolean := False;
 
          procedure Check_One (Key : in Keys) is
             use String_Matching, Visibility_Utilities, Framework.Reports;
 
-            Current              : Usage_Rec_Access := Usage (Key).First;
-            Matches              : Boolean;
-            All_Not_Patterns     : Boolean := True;
-            Positive_Match_Found : Boolean := False;
-            Last_Checked         : Usage_Rec_Access := null;
-
+            Current                 : Usage_Rec_Access;
+            Matches                 : Boolean;
+            Last_Applicable_Pattern : Usage_Rec_Access := null;
          begin
-            if Current = null then
-               -- No rule
-               return;
-            end if;
-
-            loop
-               if (Current.Scopes and (Scope_Local  => not Is_Global and not Is_Compilation_Unit,
-                                       Scope_Global => Is_Global,
-                                       Scope_Unit   => Is_Compilation_Unit))
-                 /= Empty_Set
+            Current := Usage (Key).First_Negative;
+            while Current /= null loop
+               if (Current.Scopes and Scopes_Mask) /= Empty_Set
+                 and not (Current.Is_Others and Positive_Pattern_Found)
                then
-                  Last_Checked := Current;
-
-                  Matches := Match (Name_Str, Current.Pattern.all);
+                  -- In some (undetermined) cases, Match does not return
+                  -- Let's make sure that it does not hang the program
+                  select
+                     delay 1.0;
+                     Matches := False;
+                     A4G_Bugs.Trace_Bug ("Match did not return within 1 sec");
+                  then abort
+                     Matches := Match (Name_Str, Current.Pattern.all);
+                  end select;
                   if Matches then
-                     if Current.Is_Not then
-                        Report (Rule_Id,
-                                Current.all,
-                                Get_Location (Name),
-                                "Name does not follow naming rule for """
-                                  & Image (Current.Scopes, Default => Full_Set) & Image (Key)
-                                  & """: """
-                                  & Defining_Name_Image (Name) & '"');
-                        return;
-                     end if;
-
-                     -- We must continue in case there is a "not" match farther
-                     Positive_Match_Found := True;
-                  elsif not Current.Is_Not then
-                     All_Not_Patterns := False;
+                     Report (Rule_Id,
+                             Current.all,
+                             Get_Location (Name),
+                             "Name does not follow naming rule for """
+                             & Image (Current.Scopes, Default => Full_Set) & Image (Key)
+                             & """: """
+                             & Defining_Name_Image (Name) & '"');
                   end if;
-
                end if;
+               Current  := Current.Next;
+            end loop;
 
+            Current := Usage (Key).First_Positive;
+            while Current /= null loop
+               if (Current.Scopes and Scopes_Mask) /= Empty_Set
+                 and not (Current.Is_Others and Positive_Pattern_Found)
+               then
+                  Last_Applicable_Pattern := Current;
+                  -- In some (undetermined) cases, Match does not return
+                  -- Let's make sure that it does not hang the program
+                  select
+                     delay 1.0;
+                     Matches := False;
+                     A4G_Bugs.Trace_Bug ("Match did not return within 1 sec");
+                  then abort
+                     Matches := Match (Name_Str, Current.Pattern.all);
+                  end select;
+                  if Matches then
+                     Positive_Pattern_Found := True;
+                     return;
+                  end if;
+               end if;
                exit when Current.Next = null;
                Current  := Current.Next;
             end loop;
 
-            if Positive_Match_Found then
-               return;
-
-               -- No match found here. It is an error, unless all patterns were "not" patterns.
-               -- Last_Checked points to the last applicable rule, which is the first one specified
-               -- since we chain on head.
-            elsif not All_Not_Patterns then
+            -- No match found here => error, unless there were no positive patterns, or
+            --                        all positive patterns were "others"
+            -- Note that Last_Applicable_Pattern points to the last non-others pattern checked, which is
+            -- the first one given by the user since we chain on head.
+            if Last_Applicable_Pattern /= null then
+               Positive_Pattern_Found := True;
                Report (Rule_Id,
-                       Last_Checked.all,
+                       Last_Applicable_Pattern.all,
                        Get_Location (Name),
                        "Name does not follow naming rule for """
-                         & Image (Current.Scopes, Default => Full_Set) & Image (Key)
-                         & """: """
-                         & Defining_Name_Image (Name) & '"');
+                       & Image (Last_Applicable_Pattern.Scopes, Default => Full_Set) & Image (Key)
+                       & """: """
+                       & Defining_Name_Image (Name) & '"');
             end if;
          end Check_One;
 
@@ -376,6 +433,9 @@ package body Rules.Naming_Convention is
          else
             Is_Global := Is_Current_Scope_Global;
          end if;
+         Scopes_Mask := (Scope_Local  => not Is_Global and not Is_Compilation_Unit,
+                         Scope_Global => Is_Global,
+                         Scope_Unit   => Is_Compilation_Unit);
 
          for I in reverse Set'Range loop
             Check_One (Set (I));
@@ -466,91 +526,106 @@ package body Rules.Naming_Convention is
                      -- Get Decl and Decl_Kind from the renamed entity
                      case A_Renaming_Declaration (Decl_Kind) is
                         when An_Object_Renaming_Declaration =>
+                           if not Is_Used ((K_Renaming, K_Object_Renaming)) then
+                              -- There are cases (like renaming of an indexed component) where
+                              -- we want to go up a renaming, but Corrresponding_Base_Entity doesn't.
+                              -- Hence the loop.
+                              -- We can't use Ultimate_Name, because we need a different treatment of dereferences
+                              Going_Up_Renamings :
+                              while Decl_Kind in A_Renaming_Declaration loop
+                                 Renamed := A4G_Bugs.Renamed_Entity (Decl);
 
-                           -- There are cases (like renaming of an indexed component) where
-                           -- we want to go up a renaming, but Corrresponding_Base_Entity doesn't.
-                           -- Hence the loop.
-                           -- We can't use Ultimate_Name, because we need a different treatment of dereferences
-                           Going_Up_Renamings:
-                             while Decl_Kind in A_Renaming_Declaration loop
-                                Renamed := A4G_Bugs.Renamed_Entity (Decl);
+                                 loop
+                                    case Expression_Kind (Renamed) is
+                                       when A_Selected_Component =>
+                                          Renamed := Selector (Renamed);
+                                       when A_Slice
+                                          | An_Indexed_Component
+                                            =>
+                                          Renamed := Prefix (Renamed);
+                                       when A_Function_Call =>
+                                          Decl_Kind := A_Constant_Declaration;
+                                          exit Going_Up_Renamings;
+                                          when A_Type_Conversion =>
+                                          Renamed := Converted_Or_Qualified_Expression (Renamed);
+                                       when An_Identifier
+                                          | An_Enumeration_Literal
+                                          | A_Character_Literal
+                                            =>
+                                          exit;
+                                       when An_Explicit_Dereference =>
+                                          Renamed_T := A4G_Bugs.Corresponding_Expression_Type (Prefix (Renamed));
+                                          if Is_Nil (Renamed_T) then
+                                             -- The prefix is an access type without a real declaration
+                                             -- => must be an anonymous access type, and the prefix a formal parameter
+                                             Decl := Corresponding_Name_Declaration (Simple_Name (Prefix (Renamed)));
+                                             Assert (Declaration_Kind (Decl) = A_Parameter_Specification,
+                                                     "wrong declaration kind with dereference of Nil accessed type");
+                                             Decl_Kind := A_Parameter_Specification;
+                                             exit Going_Up_Renamings;
+                                          end if;
 
-                                loop
-                                   case Expression_Kind (Renamed) is
-                                      when A_Selected_Component =>
-                                         Renamed := Selector (Renamed);
-                                      when A_Slice
-                                        | An_Indexed_Component
-                                        =>
-                                         Renamed := Prefix (Renamed);
-                                      when A_Function_Call =>
-                                         Decl_Kind := A_Constant_Declaration;
-                                         exit Going_Up_Renamings;
-                                      when A_Type_Conversion =>
-                                         Renamed := Converted_Or_Qualified_Expression (Renamed);
-                                      when An_Identifier
-                                        | An_Enumeration_Literal
-                                        | A_Character_Literal
-                                        =>
-                                         exit;
-                                      when An_Explicit_Dereference =>
-                                         Renamed_T := A4G_Bugs.Corresponding_Expression_Type (Prefix (Renamed));
-                                         if Is_Nil (Renamed_T) then
-                                            -- This implies that the prefix is an access type without a real declaration
-                                            -- => must be an anonymous access type, and the prefix is a formal parameter
-                                            Renamed   := Prefix (Renamed);
-                                            if Expression_Kind (Renamed) = A_Selected_Component then
-                                               Renamed := Selector (Renamed);
-                                            end if;
-                                            Decl := Corresponding_Name_Declaration (Renamed);
-                                            Assert (Declaration_Kind (Decl) = A_Parameter_Specification,
-                                                    "wrong declaration kind with dereference of Nil accessed type");
-                                            Decl_Kind := A_Parameter_Specification;
-                                            exit Going_Up_Renamings;
-                                        end if;
+                                          case Access_Type_Kind (Type_Declaration_View (Renamed_T)) is
+                                             when A_Pool_Specific_Access_To_Variable
+                                                | An_Access_To_Variable
+                                                  =>
+                                                Decl_Kind := A_Variable_Declaration;
+                                             when An_Access_To_Constant =>
+                                                Decl_Kind := A_Constant_Declaration;
+                                             when others =>
+                                                Failure ("Unexpected type for dereference", Renamed);
+                                          end case;
+                                          exit Going_Up_Renamings;
 
-                                         case Access_Type_Kind (Type_Declaration_View (Renamed_T)) is
-                                            when A_Pool_Specific_Access_To_Variable
-                                              | An_Access_To_Variable
-                                              =>
-                                               Decl_Kind := A_Variable_Declaration;
-                                            when An_Access_To_Constant =>
-                                               Decl_Kind := A_Constant_Declaration;
-                                            when others =>
-                                               Failure ("Unexpected type for dereference", Renamed);
-                                         end case;
-                                         exit Going_Up_Renamings;
-                                      when others =>
-                                         Failure ("Unexpected expression kind in renaming: "
-                                                  & Expression_Kinds'Wide_Image (Expression_Kind (Renamed)),
-                                                  Renamed);
-                                   end case;
-                                end loop;
-                                Decl      := Corresponding_Name_Declaration (Renamed);
-                                Decl_Kind := Declaration_Kind (Decl);
-                             end loop Going_Up_Renamings;
-
+                                          when others =>
+                                          Failure ("Unexpected expression kind in renaming: "
+                                                   & Expression_Kinds'Wide_Image (Expression_Kind (Renamed)),
+                                                   Renamed);
+                                    end case;
+                                 end loop;
+                                 Decl      := Corresponding_Name_Declaration (Renamed);
+                                 Decl_Kind := Declaration_Kind (Decl);
+                              end loop Going_Up_Renamings;
+                           end if;
                         when An_Exception_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := An_Exception_Declaration;
+                           if not Is_Used ((K_Renaming, K_Exception_Renaming)) then
+                              -- Decl not needed
+                              Decl_Kind := An_Exception_Declaration;
+                           end if;
                         when A_Package_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := A_Package_Declaration;
+                           if not Is_Used ((K_Renaming, K_Package_Renaming)) then
+                              -- Decl not needed
+                              Decl_Kind := A_Package_Declaration;
+                           end if;
                         when A_Procedure_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := A_Procedure_Declaration;
+                           if not Is_Used ((K_Renaming, K_Subprogram_Renaming, K_Procedure_Renaming)) then
+                              -- Decl not needed
+                              Decl_Kind := A_Procedure_Declaration;
+                           end if;
                         when A_Function_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := A_Function_Declaration;
+                           if not Is_Used ((K_Renaming, K_Subprogram_Renaming, K_Function_Renaming)) then
+                              -- Decl not needed
+                              Decl_Kind := A_Function_Declaration;
+                           end if;
                         when A_Generic_Package_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := A_Generic_Package_Declaration;
+                           if not Is_Used ((K_Renaming, K_Generic_Renaming, K_Generic_Package_Renaming)) then
+                              -- Decl not needed
+                              Decl_Kind := A_Generic_Package_Declaration;
+                           end if;
                         when A_Generic_Procedure_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := A_Generic_Procedure_Declaration;
+                           if not Is_Used ((K_Renaming,            K_Generic_Renaming,
+                                            K_Generic_Sp_Renaming, K_Generic_Procedure_Renaming))
+                           then
+                              -- Decl not needed
+                              Decl_Kind := A_Generic_Procedure_Declaration;
+                           end if;
                         when A_Generic_Function_Renaming_Declaration =>
-                           -- Decl not needed
-                           Decl_Kind := A_Generic_Function_Declaration;
+                           if not Is_Used ((K_Renaming,            K_Generic_Renaming,
+                                            K_Generic_Sp_Renaming, K_Generic_Function_Renaming))
+                           then
+                              -- Decl not needed
+                              Decl_Kind := A_Generic_Function_Declaration;
+                           end if;
                      end case;
 
                   when A_Subtype_Declaration =>
@@ -954,8 +1029,26 @@ package body Rules.Naming_Convention is
                      null;
 
                   when A_Renaming_Declaration =>
-                     Failure ("Unexpected renaming", Decl);
-
+                     case A_Renaming_Declaration (Decl_Kind) is
+                        when An_Object_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming, K_Object_Renaming));
+                        when An_Exception_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming, K_Exception_Renaming));
+                        when A_Package_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming, K_Package_Renaming));
+                        when A_Procedure_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming, K_Subprogram_Renaming, K_Procedure_Renaming));
+                        when A_Function_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming, K_Subprogram_Renaming, K_Function_Renaming));
+                        when A_Generic_Package_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming, K_Generic_Renaming, K_Generic_Package_Renaming));
+                        when A_Generic_Procedure_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming,            K_Generic_Renaming,
+                                             K_Generic_Sp_Renaming, K_Generic_Procedure_Renaming));
+                        when A_Generic_Function_Renaming_Declaration =>
+                           Check (Name_Str, (K_Renaming,            K_Generic_Renaming,
+                                             K_Generic_Sp_Renaming, K_Generic_Function_Renaming));
+                     end case;
                   when others =>   -- Compatibility Ada 2005
                      null;
                end case;
@@ -969,7 +1062,7 @@ package body Rules.Naming_Convention is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Naming_Convention;

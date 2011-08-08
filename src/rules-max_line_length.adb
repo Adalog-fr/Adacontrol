@@ -49,8 +49,8 @@ package body Rules.Max_Line_Length is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   Rule_Label : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Maximum    : array (Rule_Types) of Natural := (others => Natural'Last);
+   Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Maximum    : array (Control_Kinds) of Natural := (others => Natural'Last);
 
    ----------
    -- Help --
@@ -64,16 +64,16 @@ package body Rules.Max_Line_Length is
       User_Message ("Control that no source line is longer than the indicated maximum");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
    begin
-      if Maximum (Rule_Type) /= Natural'Last then
+      if Maximum (Ctl_Kind) /= Natural'Last then
          Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
@@ -82,19 +82,19 @@ package body Rules.Max_Line_Length is
       end if;
 
       begin
-         Maximum (Rule_Type) := Get_Integer_Parameter (Min => 10, Max => Natural'Last - 1);
+         Maximum (Ctl_Kind) := Get_Integer_Parameter (Min => 10, Max => Natural'Last - 1);
       exception
          when Constraint_Error =>
             Parameter_Error (Rule_Id, "maximum value negative or too big");
       end;
 
-      if Maximum (Rule_Type) <= 10 then -- Must be at least as long as the longest KW...
+      if Maximum (Ctl_Kind) <= 10 then -- Must be at least as long as the longest KW...
          Parameter_Error (Rule_Id, "maximum value must be at least 10");
       end if;
 
-      Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
+      Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -128,22 +128,22 @@ package body Rules.Max_Line_Length is
       Rules_Manager.Enter (Rule_Id);
 
       if Line'Length > Maximum (Check) then
-         Report (Rule_Id, To_Wide_String (Rule_Label (Check)), Check, Loc,
+         Report (Rule_Id, To_Wide_String (Ctl_Labels (Check)), Check, Loc,
                  "line too long (" & Integer_Img (Line'Length) & ')');
       elsif Line'Length > Maximum (Search) then
-         Report (Rule_Id, To_Wide_String (Rule_Label (Search)), Search, Loc,
+         Report (Rule_Id, To_Wide_String (Ctl_Labels (Search)), Search, Loc,
                  "line too long ("& Integer_Img (Line'Length) & ')');
       end if;
 
       if Line'Length > Maximum (Count) then
-         Report (Rule_Id, To_Wide_String (Rule_Label (Count)), Count, Loc, "");
+         Report (Rule_Id, To_Wide_String (Ctl_Labels (Count)), Count, Loc, "");
       end if;
   end Process_Line;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Max_Line_Length;

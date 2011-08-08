@@ -31,6 +31,7 @@
 
 -- Ada
 with
+  Ada.Exceptions,
   Ada.Characters.Handling,
   Ada.Strings.Wide_Fixed,
   Ada.Wide_Text_IO;
@@ -49,15 +50,13 @@ package body Framework.Reports is
 
    CSV_Separator : constant array (Output_Format range CSV..CSVX) of Wide_Character := (',', ';');
 
-   Not_Found   : constant             := 0;
-   Adactl_Mark : constant Wide_String := "##";
-   Adactl_Tag  : constant Wide_String := "--" & Adactl_Mark;
+   Not_Found : constant := 0;
 
    Error_Count   : Natural := 0;
    Warning_Count : Natural := 0;
 
    Uncheckable_Used   : array (Uncheckable_Consequence) of Boolean := (others => False);
-   Uncheckable_Types  : array (Uncheckable_Consequence) of Rule_Types;
+   Uncheckable_Types  : array (Uncheckable_Consequence) of Control_Kinds;
    Uncheckable_Labels : array (Uncheckable_Consequence) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    type False_Positive_Info (Len : Positive) is
       record
@@ -72,7 +71,14 @@ package body Framework.Reports is
 
    package Counters is new Binary_Map (Unbounded_Wide_String, Natural);
    Rule_Counter   : Counters.Map;
-   Stats_Counters : array (Rule_Types) of Counters.Map;
+   Stats_Counters : array (Control_Kinds) of Counters.Map;
+   -- Note on the management of stat counters:
+   -- An entry in each map of Stats_Counters is added by Rule_Manager (Init_Stats)
+   -- when a new control is added. This is necessary to know about rules that were
+   -- not triggered at all.
+   -- However, this does not guarantee that every rule is present in the map, because
+   -- of Uncheckable, which does not follow the normal naming scheme of rules.
+   -- Therefore, a default value must still be provided when fetching from those maps.
 
    -----------
    -- Reset --
@@ -89,14 +95,16 @@ package body Framework.Reports is
    -- Update --
    ------------
 
-   procedure Update (Rule_Id     : in     Wide_String;
-                     Rule_Label  : in     Wide_String;
+   procedure Update (Id          : in     Wide_String;
+                     Label       : in     Wide_String;
                      Line        : in     Wide_String;
                      Single_Line : in     Boolean;
                      Active      : in out Boolean) is
       use Utilities, Ada.Strings.Wide_Fixed;
 
-      Pos : Natural := Index (Line, Adactl_Tag);
+      Mark1 : constant Wide_String := "--" & To_Wide_String (Adactl_Tag1);
+      Mark2 : constant Wide_String := To_Wide_String (Adactl_Tag2);
+      Pos   : Natural := Index (Line, Mark1);
 
       function Next_Word return Wide_String is
          Quoted : Boolean;
@@ -108,8 +116,8 @@ package body Framework.Reports is
                return "";
             elsif Line (Start) <= ' ' then
                Start := Start+1;
-            elsif Start <= Line'Last - Adactl_Mark'Length + 1
-              and then Line (Start .. Start + Adactl_Mark'Length -1) = Adactl_Mark
+            elsif Start <= Line'Last - Mark2'Length + 1
+              and then Line (Start .. Start + Mark2'Length -1) = Mark2
             then
                return "";
             else
@@ -134,6 +142,7 @@ package body Framework.Reports is
             else
                exit when Stop > Line'Last;
                exit when Line (Stop) <= ' ';
+               exit when Line (Stop) = '#';
             end if;
             Stop := Stop + 1;
          end loop;
@@ -151,7 +160,7 @@ package body Framework.Reports is
       if Pos = Not_Found then
          return;
       end if;
-      Pos := Pos + Adactl_Tag'Length;
+      Pos := Pos + Mark1'Length;
 
       if Next_Word /= "RULE" then
          return;
@@ -195,8 +204,8 @@ package body Framework.Reports is
                Current : constant Wide_String := Next_Word;
             begin
                exit when Current = "";
-               if        Current = To_Upper (Rule_Id)
-                 or else Current = To_Upper (Rule_Label)
+               if        Current = To_Upper (Id)
+                 or else Current = To_Upper (Label)
                  or else Current = "ALL"
                then
                   Active := Activity;
@@ -211,21 +220,47 @@ package body Framework.Reports is
       -- Active does not change
    end Update;
 
+   -----------
+   -- "and" --
+   -----------
+
+   function "and" (Left, Right : Wide_String) return Wide_String is
+   begin
+      case Format_Option is
+         when Gnat | Source=>
+            return Left & ": " & Right;
+         when CSV | CSVX =>
+            return Left & CSV_Separator (Format_Option) & Right;
+         when None =>
+            return Left & CSV_Separator (CSVX) & Right;
+      end case;
+   end "and";
+
+   ----------------
+   -- Raw_Report --
+   ----------------
+
+   procedure Raw_Report (Message : Wide_String) is
+      use Ada.Wide_Text_IO;
+   begin
+      Put_Line (Message);
+   end Raw_Report;
+
    ------------
    -- Report --
    ------------
 
-   procedure Report (Rule_Id    : in Wide_String;
-                     Rule_Label : in Wide_String;
-                     Rule_Type  : in Rule_Types;
-                     Loc        : in Location;
-                     Msg        : in Wide_String)
+   procedure Report (Rule_Id   : in Wide_String;
+                     Ctl_Label : in Wide_String;
+                     Ctl_Kind  : in Control_Kinds;
+                     Loc       : in Location;
+                     Msg       : in Wide_String)
    is
       -- This one is the "true" Report procedure, i.e. the other Report procedure is just
       -- a front-end to this one.
       use Utilities, Adactl_Options;
 
-      Label     : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
+      Label     : constant Wide_String := Choose (Ctl_Label, Otherwise => Rule_Id);
       Line      : Wide_String (1..1024);
       Line_Last : Natural := 0;
 
@@ -253,7 +288,7 @@ package body Framework.Reports is
          end Quote;
 
          Current_Col : Ada.Wide_Text_IO.Count;
-      begin
+      begin   -- Issue_Message
          if Just_Created then
             Just_Created := False;
             case Format_Option is
@@ -294,22 +329,24 @@ package body Framework.Reports is
                Put (CSV_Separator (Format_Option));
                Put (Title);
                Put (CSV_Separator (Format_Option));
-               Put (Choose (Rule_Label, Otherwise => """"""));
+               Put (Choose (Ctl_Label, Otherwise => """"""));
                Put (CSV_Separator (Format_Option));
                Put (Rule_Id);
                Put (CSV_Separator (Format_Option));
                Put (Quote (Msg));
                New_Line;
             when Source =>
-               if Loc /= Null_Location then
+               if Loc = Null_Location then
+                  Put (Line (1 .. Line_Last));
+               else
                   Put (Image (Loc));
                   Put (": ");
+                  Current_Col := Col (Current_Output);
+                  Put (Line (1 .. Line_Last));
+                  New_Line;
+                  Set_Col (Current_Col + Ada.Wide_Text_IO.Count (Get_First_Column (Loc)) - 1);
+                  Put ("! ");
                end if;
-               Current_Col := Col (Current_Output);
-               Put (Line (1 .. Line_Last));
-               New_Line;
-               Set_Col (Current_Col + Ada.Wide_Text_IO.Count (Get_First_Column (Loc)) - 1);
-               Put ("! ");
                Put (Title);
                Put (": ");
                Put (Label);
@@ -321,16 +358,23 @@ package body Framework.Reports is
          end case;
       end Issue_Message;
 
+      use Ada.Exceptions;
       use Counters, False_Positive_Map;
       Active : Boolean := True;
 
    begin
+      if Error_Count = Max_Errors or Error_Count + Warning_Count = Max_Messages then
+         -- This can happen for finalization messages after the run has been previously cancelled
+         -- due to too many errors/messages
+         return;
+      end if;
+
       -- Output delayed false positive messages for this rule
       -- There can be such messages only if Uncheckable has been activated
       if Is_Present (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id)) then
          declare
             use False_Positive_List;
-            Message_Queue : Queue  := Fetch (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id));
+            Message_Queue : constant Queue  := Fetch (False_Positive_Messages, To_Unbounded_Wide_String (Rule_Id));
             Current       : Cursor := First (Message_Queue);
          begin
             -- Delete entry in map here to avoid infinite recursion
@@ -352,39 +396,39 @@ package body Framework.Reports is
          end;
       end if;
 
-      if Format_Option /= None
-        and (not Ignore_Option or Format_Option = Source)
+      if Format_Option = Source
+        or (Format_Option /= None and not Ignore_Option)
       then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
-            File : File_Type;
+            Source_File : File_Type;
          begin
-            Open (File,
+            Open (Source_File,
                   In_File,
                   To_String (Get_File_Name (Loc)),
                   Form => Implementation_Options.Form_Parameters);
 
             for I in Natural range 1 .. Get_First_Line (Loc) - 1 loop
-               Get_Line (File, Line, Line_Last);
+               Get_Line (Source_File, Line, Line_Last);
                if not Ignore_Option then
-                  Update (Rule_Id, Rule_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
+                  Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
                end if;
             end loop;
 
-            Get_Line (File, Line, Line_Last);
+            Get_Line (Source_File, Line, Line_Last);
             if not Ignore_Option then
-               Update (Rule_Id, Rule_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
+               Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
             end if;
 
-            Close (File);
+            Close (Source_File);
          exception
             when Name_Error =>
                -- if file is not found ???,
                -- consider that rule is active
                null;
             when others =>
-               if Is_Open (File) then
-                  Close (File);
+               if Is_Open (Source_File) then
+                  Close (Source_File);
                end if;
                raise;
          end;
@@ -393,9 +437,10 @@ package body Framework.Reports is
       -- Here, Line is the good source line
 
       if Active then
-         case Rule_Type is
+         case Ctl_Kind is
             when Check =>
                Error_Count := Error_Count + 1;
+
                Issue_Message ("Error");
             when Search =>
                if Warning_As_Error_Option then
@@ -416,12 +461,18 @@ package body Framework.Reports is
          if Stats_Level >= Nulls_Only then
             declare
                Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule_Id
-                                                                                   & Choose (Rule_Label = "",
+                                                                                   & Choose (Ctl_Label = "",
                                                                                              "",
-                                                                                             "." & Rule_Label));
+                                                                                             "." & Ctl_Label));
             begin
-               Add (Stats_Counters (Rule_Type), Key, Fetch (Stats_Counters (Rule_Type), Key) + 1);
+               Add (Stats_Counters (Ctl_Kind), Key, Fetch (Stats_Counters (Ctl_Kind), Key, Default_Value => 0) + 1);
             end;
+         end if;
+
+         if Error_Count = Max_Errors then
+            Raise_Exception (Cancellation'Identity, Message => "too many errors");
+         elsif Error_Count + Warning_Count = Max_Messages then
+            Raise_Exception (Cancellation'Identity, Message => "too many messages");
          end if;
       end if;
    end Report;
@@ -430,7 +481,7 @@ package body Framework.Reports is
    -- Report --
    ------------
 
-   procedure Report (Rule_Id    : in Wide_String;
+   procedure Report (Rule_Id     : in Wide_String;
                      Context    : in Root_Context'Class;
                      Loc        : in Location;
                      Msg        : in Wide_String;
@@ -446,8 +497,8 @@ package body Framework.Reports is
       begin
          if not Count_Only then
             Report (Rule_Id,
-                    To_Wide_String (Basic_Context.Rule_Label),
-                    Basic_Context.Rule_Type,
+                    To_Wide_String (Basic_Context.Ctl_Label),
+                    Basic_Context.Ctl_Kind,
                     Loc,
                     Msg);
          end if;
@@ -472,16 +523,16 @@ package body Framework.Reports is
                           Msg     : in Wide_String)
    is
       use Utilities;
-      Rule_Label : constant Wide_String := To_Wide_String (Uncheckable_Labels (Risk));
+      Label : constant Wide_String := To_Wide_String (Uncheckable_Labels (Risk));
    begin
       if Uncheckable_Used (Risk) then
          case Risk is
             when False_Negative =>
                Report (Rule_Id,
-                       Rule_Label,
+                       Label,
                        Uncheckable_Types  (Risk),
                        Loc,
-                       Choose (Rule_Label /= "", "in rule " & Rule_Id & ": ", "")
+                       Choose (Label /= "", "in rule " & Rule_Id & ": ", "")
                        & "Possible false negative: " & Msg);
             when False_Positive =>
                -- False positive messages are delayed until the next call to Report from the
@@ -492,7 +543,7 @@ package body Framework.Reports is
                   Rule_Queue : Queue := Fetch (False_Positive_Messages,
                                                To_Unbounded_Wide_String (Rule_Id),
                                                Default_Value => Empty_Queue);
-                  Full_Msg : constant Wide_String := Choose (Rule_Label /= "", "in rule " & Rule_Id & ": ", "")
+                  Full_Msg : constant Wide_String := Choose (Label /= "", "in rule " & Rule_Id & ": ", "")
                                                      & "Possible false positive: " & Msg;
                begin
                   Append (Rule_Queue, (Full_Msg'Length,
@@ -519,10 +570,13 @@ package body Framework.Reports is
    -- Set_Uncheckable --
    ---------------------
 
-   procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Rule_Type : Rule_Types; Label : Wide_String) is
+   procedure Set_Uncheckable (Risk     : Uncheckable_Consequence;
+                              Ctl_Kind : Control_Kinds;
+                              Label    : Wide_String)
+   is
    begin
       Uncheckable_Used   (Risk) := True;
-      Uncheckable_Types  (Risk) := Rule_Type;
+      Uncheckable_Types  (Risk) := Ctl_Kind;
       Uncheckable_Labels (Risk) := To_Unbounded_Wide_String (Label);
    end Set_Uncheckable;
 
@@ -548,12 +602,12 @@ package body Framework.Reports is
    -- Init_Counts --
    -----------------
 
-   procedure Init_Counts (Rule_Id : Wide_String; Rule_Label : Wide_String) is
+   procedure Init_Counts (Rule : Wide_String; Label : Wide_String) is
       use Counters, Utilities;
 
-      Label : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
+      Good_Label : constant Wide_String := Choose (Label, Otherwise => Rule);
    begin
-      Add (Rule_Counter, To_Unbounded_Wide_String (Label), 0);
+      Add (Rule_Counter, To_Unbounded_Wide_String (Good_Label), 0);
   end Init_Counts;
 
    -------------------
@@ -566,17 +620,7 @@ package body Framework.Reports is
       procedure Report_One_Count (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
          use Utilities;
       begin
-         Put (To_Wide_String (Key));
-         case Format_Option is
-            when Gnat | Source=>
-               Put (": ");
-            when CSV | CSVX =>
-               Put (CSV_Separator (Format_Option));
-            when None =>
-               Failure ("output in none format");
-         end case;
-         Put (Integer_Img (Counter_Value));
-         New_Line;
+         Raw_Report (To_Wide_String (Key) and Integer_Img (Counter_Value));
       end Report_One_Count;
 
       procedure Report_All_Counts is new Iterate (Report_One_Count);
@@ -598,7 +642,7 @@ package body Framework.Reports is
       use Counters;
    begin
       Clear (Rule_Counter);
-      for R in Rule_Types loop
+      for R in Control_Kinds loop
          Clear (Stats_Counters (R));
       end loop;
    end Clear_All;
@@ -614,7 +658,7 @@ package body Framework.Reports is
       Error_Count   := 0;
       Reset (Rule_Counter);
 
-      for R in Rule_Types loop
+      for R in Control_Kinds loop
          Reset (Stats_Counters (R));
       end loop;
    end Reset;
@@ -628,7 +672,7 @@ package body Framework.Reports is
       use Counters, Utilities;
       Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule & Choose (Label = "", "", "." & Label));
    begin
-      for R in Rule_Types loop
+      for R in Control_Kinds loop
         Add (Stats_Counters (R), Key, 0);
       end loop;
    end Init_Stats;
@@ -655,7 +699,7 @@ package body Framework.Reports is
       Check_Delete (Rule_Counter);
       -- TBSL: delete entries whose name is a label associated to the rule
 
-      for R in Rule_Types loop
+      for R in Control_Kinds loop
          Check_Delete (Stats_Counters (R));
       end loop;
    end Clear;
@@ -674,8 +718,8 @@ package body Framework.Reports is
          Wide_Key        : Wide_String := To_Wide_String (Key);
          Dot_Found       : Boolean     := False;
       begin
-         for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
-            Triggered_Count := Triggered_Count + Fetch (Stats_Counters (R), Key);
+         for R in Control_Kinds range Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last loop
+            Triggered_Count := Triggered_Count + Fetch (Stats_Counters (R), Key, Default_Value => 0);
          end loop;
 
          if Triggered_Count = 0 or else Stats_Level = Full then
@@ -686,15 +730,15 @@ package body Framework.Reports is
                   if Triggered_Count = 0 then
                      Put ("not triggered");
                   else
-                     Put (To_Title (Rule_Types'Wide_Image (Rule_Types'First)));
+                     Put (To_Title (Control_Kinds'Wide_Image (Control_Kinds'First)));
                      Put (": ");
                      Put (Integer_Img (Counter_Value));
 
-                     for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
+                     for R in Control_Kinds range Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last loop
                         Put (", ");
-                        Put (To_Title (Rule_Types'Wide_Image (R)));
+                        Put (To_Title (Control_Kinds'Wide_Image (R)));
                         Put(": ");
-                        Put (Integer_Img (Fetch (Stats_Counters (R), Key)));
+                        Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
                      end loop;
                   end if;
                when CSV | CSVX =>
@@ -712,9 +756,9 @@ package body Framework.Reports is
                      Put (CSV_Separator (Format_Option));
                   end if;
 
-                  for R in Rule_Types loop
+                  for R in Control_Kinds loop
                      Put (CSV_Separator (Format_Option));
-                     Put (Integer_Img (Fetch (Stats_Counters (R), Key)));
+                     Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
                   end loop;
             end case;
             New_Line;
@@ -741,7 +785,7 @@ package body Framework.Reports is
                            & CSV_Separator (Format_Option) & "Search"
                            & CSV_Separator (Format_Option) & "Count");
          end case;
-         Report_All_Stats (Stats_Counters (Rule_Types'First));
+         Report_All_Stats (Stats_Counters (Control_Kinds'First));
       end if;
 
       if Stats_Level >= General then
@@ -751,14 +795,4 @@ package body Framework.Reports is
          New_Line;
       end if;
    end Report_Stats;
-
-   ---------------------
-   -- Report_Counters --
-   ---------------------
-
-   procedure Report_Counters is
-   begin
-      Report_Counts;
-      Report_Stats;
-   end Report_Counters;
 end Framework.Reports;

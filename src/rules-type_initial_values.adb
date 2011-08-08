@@ -77,12 +77,11 @@ package body Rules.Type_Initial_Values is
       User_Message ("Control types without proper initialization constants");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Characters.Handling, Ada.Exceptions;
       use Framework.Language, String_Matching;
 
@@ -107,9 +106,9 @@ package body Rules.Type_Initial_Values is
          end;
       end if;
 
-      Context   := Basic.New_Context (Rule_Type, Label);
+      Context   := Basic.New_Context (Ctl_Kind, Ctl_Label);
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -196,7 +195,7 @@ package body Rules.Type_Initial_Values is
             end loop;
          end;
       end if;
-      Constant_Table.Store (Const_Type, State);
+      Constant_Table.Store (Const_Type, State, At_Declaration_Scope => False);
    end Process_Constant_Declaration;
 
    ------------------------
@@ -204,41 +203,49 @@ package body Rules.Type_Initial_Values is
    ------------------------
 
    procedure Check_One_Type (Entity : Asis.Defining_Name; State : in out Constant_Found) is
-      use Framework.Reports;
+      use Asis.Declarations;
+      use Framework.Reports, Framework.Symbol_Table;
    begin
       case State is
          when No_Constant =>
             Report (Rule_Id,
                     Context,
                     Get_Location (Entity),
-                    "No initialization constant defined for this type");
+                    "No initialization constant defined for type " & Defining_Name_Image (Entity));
          when Non_Matching_Constant =>
             Report (Rule_Id,
                     Context,
                     Get_Location (Entity),
-                    "No initialization constant for this type matches pattern");
+                    "No initialization constant matches pattern for type "& Defining_Name_Image (Entity));
          when Matching_Constant =>
             null;
       end case;
+
+      raise Delete_Current;
+      -- Systematically delete current entity since:
+      -- 1) we don't need it any more
+      -- 2) if it is from a package spec, we don't want to have it when analyzing the corresponding
+      --    body, or else the message would appear twice.
    end Check_One_Type;
 
    procedure Check_All_Types is new Constant_Table.On_Every_Entity_From_Scope (Check_One_Type);
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
       pragma Unreferenced (Scope);
+      use Framework.Symbol_Table;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check_All_Types;
+      Check_All_Types (Declaration);
    end Process_Scope_Exit;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Type_Initial_Values;

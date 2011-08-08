@@ -1,89 +1,101 @@
-t_barrier_expressions.adb:101:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:99:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:97:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:95:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:93:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:46:20: Error: BARRIER_EXPRESSIONS: variable
+t_barrier_expressions.adb:46:31: Error: BARRIER_EXPRESSIONS: local function call
+t_barrier_expressions.adb:125:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:123:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:121:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:119:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:117:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:115:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:113:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:111:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:109:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:107:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:105:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:103:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:101:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:99:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:97:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:95:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
+t_barrier_expressions.adb:93:11: Error: BARRIER_EXPRESSIONS: predefined logical operator
 t_barrier_expressions.adb:91:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
 t_barrier_expressions.adb:89:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
 t_barrier_expressions.adb:87:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
 t_barrier_expressions.adb:85:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:83:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:81:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
 t_barrier_expressions.adb:79:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:77:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:75:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:73:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:71:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:69:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:67:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:61:9: Error: BARRIER_EXPRESSIONS: predefined logical operator
-t_barrier_expressions.adb:63:12: Error: BARRIER_EXPRESSIONS: short-circuit control form
-t_barrier_expressions.adb:62:12: Error: BARRIER_EXPRESSIONS: membership test
-t_barrier_expressions.adb:62:10: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:62:20: Error: BARRIER_EXPRESSIONS: value attribute
-t_barrier_expressions.adb:65:12: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:64:25: Error: BARRIER_EXPRESSIONS: predefined arithmetic operator
-t_barrier_expressions.adb:64:15: Error: BARRIER_EXPRESSIONS: predefined arithmetic operator
-t_barrier_expressions.adb:64:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:64:19: Error: BARRIER_EXPRESSIONS: predefined arithmetic operator
-t_barrier_expressions.adb:64:17: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:64:22: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:64:29: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:68:11: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:68:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:68:13: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:70:11: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:70:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:70:13: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:72:11: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:72:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:72:13: Error: BARRIER_EXPRESSIONS: allocation
-t_barrier_expressions.adb:72:17: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:74:13: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:74:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:76:21: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:76:9: Error: BARRIER_EXPRESSIONS: indexing
-t_barrier_expressions.adb:76:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:76:12: Error: BARRIER_EXPRESSIONS: value attribute
-t_barrier_expressions.adb:78:26: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:78:9: Error: BARRIER_EXPRESSIONS: slice
-t_barrier_expressions.adb:78:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:78:12: Error: BARRIER_EXPRESSIONS: value attribute
-t_barrier_expressions.adb:80:9: Error: BARRIER_EXPRESSIONS: local function call
-t_barrier_expressions.adb:80:16: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:82:17: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:82:11: Error: BARRIER_EXPRESSIONS: dereference
-t_barrier_expressions.adb:82:11: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:84:13: Error: BARRIER_EXPRESSIONS: dereference
-t_barrier_expressions.adb:84:13: Error: BARRIER_EXPRESSIONS: variable
-t_barrier_expressions.adb:84:24: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:86:13: Error: BARRIER_EXPRESSIONS: dereference
-t_barrier_expressions.adb:86:13: Error: BARRIER_EXPRESSIONS: variable
-t_barrier_expressions.adb:86:20: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:88:13: Error: BARRIER_EXPRESSIONS: non-local function call
-t_barrier_expressions.adb:90:9: Error: BARRIER_EXPRESSIONS: value attribute
-t_barrier_expressions.adb:92:26: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:92:9: Error: BARRIER_EXPRESSIONS: callable attribute
-t_barrier_expressions.adb:92:23: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:94:12: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:94:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:94:14: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:94:26: Error: BARRIER_EXPRESSIONS: record aggregate
-t_barrier_expressions.adb:96:12: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:96:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:96:14: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:96:35: Error: BARRIER_EXPRESSIONS: record extension
-t_barrier_expressions.adb:96:36: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:98:11: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:98:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:98:13: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:98:20: Error: BARRIER_EXPRESSIONS: array aggregate
-t_barrier_expressions.adb:100:11: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:100:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:100:13: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:100:20: Error: BARRIER_EXPRESSIONS: array aggregate
-t_barrier_expressions.adb:102:11: Error: BARRIER_EXPRESSIONS: predefined comparison operator
-t_barrier_expressions.adb:102:9: Error: BARRIER_EXPRESSIONS: non-boolean protected component
-t_barrier_expressions.adb:102:13: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
-t_barrier_expressions.adb:102:20: Error: BARRIER_EXPRESSIONS: array aggregate
-t_barrier_expressions.adb:102:24: Error: BARRIER_EXPRESSIONS: variable
+t_barrier_expressions.adb:81:12: Error: BARRIER_EXPRESSIONS: short-circuit control form
+t_barrier_expressions.adb:80:14: Error: BARRIER_EXPRESSIONS: membership test
+t_barrier_expressions.adb:80:12: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:80:22: Error: BARRIER_EXPRESSIONS: value attribute
+t_barrier_expressions.adb:83:12: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:82:27: Error: BARRIER_EXPRESSIONS: predefined arithmetic operator
+t_barrier_expressions.adb:82:17: Error: BARRIER_EXPRESSIONS: predefined arithmetic operator
+t_barrier_expressions.adb:82:15: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:82:21: Error: BARRIER_EXPRESSIONS: predefined arithmetic operator
+t_barrier_expressions.adb:82:19: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:82:24: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:82:31: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:86:13: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:86:11: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:86:15: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:88:13: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:88:11: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:88:15: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:90:13: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:90:11: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:90:15: Error: BARRIER_EXPRESSIONS: allocation
+t_barrier_expressions.adb:90:19: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:92:15: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:92:11: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:94:25: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:94:13: Error: BARRIER_EXPRESSIONS: indexing
+t_barrier_expressions.adb:94:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:94:16: Error: BARRIER_EXPRESSIONS: value attribute
+t_barrier_expressions.adb:96:30: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:96:13: Error: BARRIER_EXPRESSIONS: slice
+t_barrier_expressions.adb:96:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:96:16: Error: BARRIER_EXPRESSIONS: value attribute
+t_barrier_expressions.adb:98:13: Error: BARRIER_EXPRESSIONS: local function call
+t_barrier_expressions.adb:98:20: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:100:19: Error: BARRIER_EXPRESSIONS: local function call
+t_barrier_expressions.adb:100:26: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:102:13: Error: BARRIER_EXPRESSIONS: variable
+t_barrier_expressions.adb:102:22: Error: BARRIER_EXPRESSIONS: non-local function call
+t_barrier_expressions.adb:102:29: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:104:13: Error: BARRIER_EXPRESSIONS: variable
+t_barrier_expressions.adb:104:24: Error: BARRIER_EXPRESSIONS: non-local function call
+t_barrier_expressions.adb:106:19: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:106:13: Error: BARRIER_EXPRESSIONS: dereference
+t_barrier_expressions.adb:106:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:108:13: Error: BARRIER_EXPRESSIONS: dereference
+t_barrier_expressions.adb:108:13: Error: BARRIER_EXPRESSIONS: variable
+t_barrier_expressions.adb:108:24: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:110:13: Error: BARRIER_EXPRESSIONS: dereference
+t_barrier_expressions.adb:110:13: Error: BARRIER_EXPRESSIONS: variable
+t_barrier_expressions.adb:110:20: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:112:13: Error: BARRIER_EXPRESSIONS: non-local function call
+t_barrier_expressions.adb:114:13: Error: BARRIER_EXPRESSIONS: value attribute
+t_barrier_expressions.adb:116:30: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:116:13: Error: BARRIER_EXPRESSIONS: callable attribute
+t_barrier_expressions.adb:116:27: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:118:16: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:118:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:118:18: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:118:30: Error: BARRIER_EXPRESSIONS: record aggregate
+t_barrier_expressions.adb:120:16: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:120:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:120:18: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:120:39: Error: BARRIER_EXPRESSIONS: record extension
+t_barrier_expressions.adb:120:40: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:122:15: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:122:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:122:17: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:122:24: Error: BARRIER_EXPRESSIONS: array aggregate
+t_barrier_expressions.adb:124:15: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:124:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:124:17: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:124:24: Error: BARRIER_EXPRESSIONS: array aggregate
+t_barrier_expressions.adb:126:15: Error: BARRIER_EXPRESSIONS: predefined comparison operator
+t_barrier_expressions.adb:126:13: Error: BARRIER_EXPRESSIONS: non-boolean protected component
+t_barrier_expressions.adb:126:17: Error: BARRIER_EXPRESSIONS: conversion or qualified expression
+t_barrier_expressions.adb:126:24: Error: BARRIER_EXPRESSIONS: array aggregate
+t_barrier_expressions.adb:126:30: Error: BARRIER_EXPRESSIONS: variable

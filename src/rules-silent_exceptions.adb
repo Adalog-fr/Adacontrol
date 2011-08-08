@@ -55,15 +55,15 @@ with
 package body Rules.Silent_Exceptions is
    use Framework;
 
-   type Usage is array (Rule_Types) of Boolean;
-   Rule_Used : Usage := (others => False);
-   Save_Used : Usage;
-   Labels    : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   type Usage is array (Control_Kinds) of Boolean;
+   Rule_Used  : Usage := (others => False);
+   Save_Used  : Usage;
+   Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Search_Result_Kind is (Neutral, No_Path, Some_Paths, All_Paths);
    -- Neutral is the neutral element for "or" and "and", used for initialization
 
-   type Search_Result is array (Rule_Types) of Search_Result_Kind;
+   type Search_Result is array (Control_Kinds) of Search_Result_Kind;
 
    type Proc_Context is new Root_Context with
       record
@@ -132,7 +132,7 @@ package body Rules.Silent_Exceptions is
    -- Add_Entity --
    ----------------
 
-   procedure Add_Entity (Entity : Entity_Specification; Use_Rule_Type : Rule_Types) is
+   procedure Add_Entity (Entity : Entity_Specification; Use_Rule_Type : Control_Kinds) is
       Value  : Proc_Context := (Usage => (others => No_Path));
    begin
       Value.Usage (Use_Rule_Type) := All_Paths;
@@ -157,12 +157,11 @@ package body Rules.Silent_Exceptions is
       User_Message ("nor call a report procedure");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Use_Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Use_Rule_Type : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
@@ -172,13 +171,13 @@ package body Rules.Silent_Exceptions is
                           "this rule can be specified only once for each" &
                           " of  check, search, and count");
       end if;
-      Labels    (Use_Rule_Type) := To_Unbounded_Wide_String (Label);
-      Rule_Used (Use_Rule_Type) := True;
+      Ctl_Labels (Use_Rule_Type) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used  (Use_Rule_Type) := True;
 
       while Parameter_Exists loop
          Add_Entity (Get_Entity_Parameter, Use_Rule_Type);
       end loop;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -190,7 +189,7 @@ package body Rules.Silent_Exceptions is
       case Action is
          when Clear =>
             Rule_Used   := (others => False);
-            Labels      := (others => Null_Unbounded_Wide_String);
+            Ctl_Labels  := (others => Null_Unbounded_Wide_String);
             Clear (Rule_Uses);
          when Suspend =>
             Save_Used := Rule_Used;
@@ -208,7 +207,7 @@ package body Rules.Silent_Exceptions is
       Raise_Context : constant Root_Context'Class := Association (Rule_Uses, Value ("RAISE"));
    begin
       if Raise_Context /= No_Matching_Context then
-         for R in Rule_Types loop
+         for R in Control_Kinds loop
             if Proc_Context (Raise_Context).Usage (R) = All_Paths then
                Add_Entity (Value ("ADA.EXCEPTIONS.RAISE_EXCEPTION"), R);
                Add_Entity (Value ("ADA.EXCEPTIONS.RERAISE_OCCURRENCE"), R);
@@ -594,7 +593,7 @@ package body Rules.Silent_Exceptions is
 
       -- Note: since Check < Search, if both messages apply, only Check
       --       will be output
-      for I in Rule_Types range Check .. Search loop
+      for I in Control_Kinds range Check .. Search loop
          if Rule_Used (I) then
             case Paths_Usage (I) is
                when Neutral =>
@@ -602,14 +601,14 @@ package body Rules.Silent_Exceptions is
 
                when No_Path =>
                   Report (Rule_Id,
-                          To_Wide_String (Labels (I)),
+                          To_Wide_String (Ctl_Labels (I)),
                           I,
                           Get_Location (Handler),
                           "all paths are silent in exception handler");
                   exit;
                when Some_Paths =>
                   Report (Rule_Id,
-                          To_Wide_String (Labels (I)),
+                          To_Wide_String (Ctl_Labels (I)),
                           I,
                           Get_Location (Handler),
                           "some paths are silent in exception handler, check manually");
@@ -628,7 +627,7 @@ package body Rules.Silent_Exceptions is
 
                when No_Path | Some_Paths=>
                   Report (Rule_Id,
-                          To_Wide_String (Labels (Count)),
+                          To_Wide_String (Ctl_Labels (Count)),
                           Count,
                           Get_Location (Handler),
                           ""); -- Message ignored for Count
@@ -642,8 +641,8 @@ package body Rules.Silent_Exceptions is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Silent_Exceptions;

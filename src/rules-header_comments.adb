@@ -59,15 +59,15 @@ package body Rules.Header_Comments is
 
    Uninitialized : constant Integer := 0;
 
-   Rule_Label : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Comments   : array (Rule_Types) of Integer := (others => Uninitialized);
+   Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Comments   : array (Control_Kinds) of Integer := (others => Uninitialized);
 
-   type Header_Kind is (Minimum, Model);
-   package Header_Flag_Utilities is new Framework.Language.Flag_Utilities (Header_Kind);
+   type Subrules is (Minimum, Model);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   Reported       : array (Rule_Types) of Boolean;
+   Reported       : array (Control_Kinds) of Boolean;
    Model_File     : Ada.Wide_Text_IO.File_Type;
-   Model_Rule     : Rule_Types;
+   Model_Kind     : Control_Kinds;
    Model_Label    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Model_Reported : Boolean;
 
@@ -75,39 +75,45 @@ package body Rules.Header_Comments is
 
    -- The same pattern can be used several times, hence it needs to be global
    pragma Warnings (Off);
-   -- Gnat warns that Pattern and Last may be referenced before they have a value,
-   -- but this cannot happen because Repeat is initialized to False (in Enter_Unit)
+   -- Gnat warns that Pattern and Pat_Last may be referenced before they have a value,
+   -- but this cannot happen because Line_Repeat is initialized to No_Repeat (in Enter_Unit)
    Pattern  : Pattern_String;
    Pat_Last : Natural;
    pragma Warnings (Off);
-   Repeat : Boolean;
 
-   -------------
-   -- Add_Use --
-   -------------
+   Stop_Pattern  : Pattern_String;
+   Stop_Pat_Last : Natural;
+   Stop_Has_Star : Boolean;
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   type Line_Match_States is (Repeat, Single);
+   Matcher_State : Line_Match_States;
+
+   -----------------
+   -- Add_Control --
+   -----------------
+
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Characters.Handling, Ada.Exceptions, Ada.Strings.Wide_Unbounded, Ada.Wide_Text_IO;
-      use Framework.Language, String_Matching, Header_Flag_Utilities;
+      use Framework.Language, String_Matching, Subrules_Flag_Utilities;
 
-      Buff : Pattern_String;
-      Last : Natural;
-      Kind : Header_Kind;
+      Buff    : Pattern_String;
+      Last    : Natural;
+      Subrule : Subrules;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of check required");
       end if;
-      Kind := Get_Flag_Parameter (Allow_Any => False);
+      Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-      case Kind is
+      case Subrule is
          when Minimum =>
-            if Comments (Rule_Type) /= Uninitialized then
+            if Comments (Ctl_Kind) /= Uninitialized then
                Parameter_Error (Rule_Id, "rule already specified");
             elsif not Parameter_Exists then
                Parameter_Error (Rule_Id, "number of comment lines required");
             end if;
-            Comments   (Rule_Type) := Get_Integer_Parameter (Min => 1);
-            Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
+            Comments   (Ctl_Kind) := Get_Integer_Parameter (Min => 1);
+            Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
 
          when Model =>
             if Is_Open (Model_File) then
@@ -157,28 +163,28 @@ package body Rules.Header_Comments is
                   end if;
                exception
                   when Occur : Pattern_Error =>
-                     Parameter_Error (Rule_Id, "incorrect pattern at "
-                                        & To_Wide_String (Name (Model_File)) & ':'
-                                        & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
-                                        & ": " & Buff (1 .. Last)
-                                        & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
+                     Parameter_Error (Rule_Id, "incorrect pattern "
+                                      & " (" & To_Wide_String (Exception_Message (Occur)) & ") at "
+                                      & To_Wide_String (Name (Model_File)) & ':'
+                                      & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
+                                      & ": " & Buff (1 .. Last));
                   when End_Error =>
                      exit;
                end;
             end loop;
-            Model_Rule  := Rule_Type;
-            Model_Label := To_Unbounded_Wide_String (Label);
+            Model_Kind  := Ctl_Kind;
+            Model_Label := To_Unbounded_Wide_String (Ctl_Label);
       end case;
 
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Utilities, Header_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter (1):");
@@ -220,13 +226,13 @@ package body Rules.Header_Comments is
    procedure Enter_Unit is
       use Ada.Wide_Text_IO;
    begin
-      for R in Rule_Types loop
+      for R in Control_Kinds loop
          Reported (R) := Comments (R) = Uninitialized;
       end loop;
       Model_Reported := False;
       if Is_Open (Model_File) then
          Reset (Model_File, In_File);
-         Repeat := False;
+         Matcher_State := Single;
       end if;
    end Enter_Unit;
 
@@ -239,14 +245,14 @@ package body Rules.Header_Comments is
       use Ada.Strings.Wide_Unbounded;
       Line_Num : Natural;
 
-      procedure Check_Comments_Number (Rule_Type : Rule_Types) is
+      procedure Check_Comments_Number (Ctl_Kind : Control_Kinds) is
       begin
-         if Comments (Rule_Type) < 1 or Reported (Rule_Type) then
+         if Comments (Ctl_Kind) < 1 or Reported (Ctl_Kind) then
             return;
          end if;
 
-         if Line_Num > Comments (Rule_Type) then
-            Reported (Rule_Type) := True;
+         if Line_Num > Comments (Ctl_Kind) then
+            Reported (Ctl_Kind) := True;
             return;
          end if;
 
@@ -260,52 +266,110 @@ package body Rules.Header_Comments is
          end loop;
 
          -- Here we have a non-comment line in the range where a check is required
-         Report (Rule_Id, To_Wide_String (Rule_Label (Rule_Type)), Rule_Type, Loc,
+         Report (Rule_Id, To_Wide_String (Ctl_Labels (Ctl_Kind)), Ctl_Kind, Loc,
                  "not enough header comment lines");
-         Reported (Rule_Type) := True;
-         if Rule_Type = Check and Comments (Search) >= 1 then
+         Reported (Ctl_Kind) := True;
+         if Ctl_Kind = Check and Comments (Search) >= 1 then
             Reported (Search) := True;
          end if;
       end Check_Comments_Number;
 
       procedure Check_Model is
-         use String_Matching;
          use Ada.Wide_Text_IO;
+
+         function Line_Match (With_Pattern : Wide_String; Last : Natural) return Boolean is
+            use String_Matching;
+            -- True matching that considers that the empty line matches only the empty pattern
+         begin
+            if Line'Length = 0 or Last = 0 then
+               return Last = Line'Length;
+            else
+               return Match (Line, With_Pattern (1 .. Last));
+            end if;
+         end Line_Match;
+
       begin
          if not Is_Open (Model_File) or Model_Reported then
             return;
          end if;
 
-         if not Repeat then
-            Get_Line (Model_File, Pattern, Pat_Last);
-            if Pattern (1 .. Pat_Last) = "*" then
-               Repeat := True;
-               Get_Line (Model_File, Pattern, Pat_Last);
-            end if;
-         end if;
+         case Matcher_State is
+            when Single =>
+               begin
+                  Get_Line (Model_File, Pattern, Pat_Last);
+               exception
+                  when End_Error =>
+                     Model_Reported := True;
+                     return;
+               end;
 
-         if (Pat_Last = 0 and Line'Length /= 0)
-           or else not Match (Line, Pattern (1..Pat_Last))
-         then
-            if Repeat then
-               -- maybe the end of the repeated pattern
-               Repeat := False;
-               -- give it another chance
-               Check_Model;
-            else
-               Report (Rule_Id, To_Wide_String (Model_Label), Model_Rule, Loc,
-                       "line does not match pattern """ & Pattern (1 .. Pat_Last) & '"');
-               Model_Reported := True;
-            end if;
-         end if;
-      exception
-         when End_Error =>
-            Model_Reported := True;
+               if Pattern (1 .. Pat_Last) = "*" then
+                  -- Remember that a "*" line is always followed by a regular line
+                  -- (checked in Add_Control)
+                  Get_Line (Model_File, Pattern, Pat_Last);
+
+                  begin
+                     Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
+                     Matcher_State := Repeat;
+                     Stop_Has_Star := Stop_Pattern (1 .. Stop_Pat_Last) = "*" ;
+                     if Stop_Has_Star then
+                        Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
+                     end if;
+                  exception
+                     when End_Error =>
+                        -- Nothing after "*" pattern: no need to check further
+                        Model_Reported := True;
+                        return;
+                  end;
+
+                  -- Retry in Repeat state
+                  Check_Model;
+
+               elsif Line_Match (Pattern, Pat_Last) then
+                  null;
+
+               else
+                  Report (Rule_Id, To_Wide_String (Model_Label), Model_Kind, Loc,
+                          "line does not match pattern """ & Pattern (1 .. Pat_Last) & '"');
+                  Model_Reported := True;
+               end if;
+
+            when Repeat =>
+               -- Check the stopping pattern first, to avoid "greedy" effects
+               if Line_Match (Stop_Pattern, Stop_Pat_Last) then
+                  Pattern  := Stop_Pattern;
+                  Pat_Last := Stop_Pat_Last;
+                  if Stop_Has_Star then
+                     -- Stay in Repeat state
+                     begin
+                        Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
+                        Stop_Has_Star := Stop_Pattern (1 .. Stop_Pat_Last) = "*" ;
+                        if Stop_Has_Star then
+                           Get_Line (Model_File, Stop_Pattern, Stop_Pat_Last);
+                        end if;
+                     exception
+                        when End_Error =>
+                           -- Nothing after "*" pattern: no need to check further
+                           Model_Reported := True;
+                     end;
+                  else
+                     Matcher_State := Single;
+                  end if;
+
+               elsif Line_Match (Pattern, Pat_Last) then
+                  null;
+
+               else
+                  Report (Rule_Id, To_Wide_String (Model_Label), Model_Kind, Loc,
+                          "line does not match pattern """ & Stop_Pattern (1 .. Stop_Pat_Last) & '"');
+                  Model_Reported := True;
+               end if;
+         end case;
       end Check_Model;
 
    begin
       if not Rule_Used
-        or (Reported = (Rule_Types => True) and Model_Reported)
+        or (Reported = (Control_Kinds => True) and Model_Reported)
       then
          return;
       end if;
@@ -313,7 +377,7 @@ package body Rules.Header_Comments is
 
       Line_Num := Get_First_Line (Loc);
 
-      for R in Rule_Types loop
+      for R in Control_Kinds loop
          Check_Comments_Number (R);
       end loop;
 
@@ -323,7 +387,7 @@ package body Rules.Header_Comments is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Header_Comments;

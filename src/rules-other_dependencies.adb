@@ -46,9 +46,9 @@ with
 package body Rules.Other_Dependencies is
    use Framework;
 
-   Rule_Used : Boolean := False;
-   Save_Used : Boolean;
-   Context   : Basic_Rule_Context;
+   Rule_Used   : Boolean := False;
+   Save_Used   : Boolean;
+   Ctl_Context : Basic_Rule_Context;
 
    Allowed_Entities  : Context_Store;
 
@@ -64,12 +64,11 @@ package body Rules.Other_Dependencies is
       User_Message ("Control semantic dependencies (with clauses) to units other than those indicated");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
    begin
@@ -92,9 +91,9 @@ package body Rules.Other_Dependencies is
          end;
       end loop;
 
-      Rule_Used := True;
-      Context   := Basic.New_Context (Rule_Type, Label);
-   end Add_Use;
+      Rule_Used   := True;
+      Ctl_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+   end Add_Control;
 
    -------------
    -- Command --
@@ -143,7 +142,7 @@ package body Rules.Other_Dependencies is
          for N in Names'Range loop
             if Extended_Matching_Context (Allowed_Entities, Names (N)) = No_Matching_Context then
                Report (Rule_Id,
-                       Context,
+                       Ctl_Context,
                        Get_Location (Names (N)),
                        "unit depends on " & Full_Name_Image (Ultimate_Name (Names (N))));
             end if;
@@ -154,8 +153,8 @@ package body Rules.Other_Dependencies is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Other_Dependencies;

@@ -54,16 +54,12 @@ with
 with
   Adactl_Options,
   Framework.Language,
-  Framework.Reports,
-  Framework.Rules_Manager,
-  Framework.Specific_Plugs;
+  Framework.Reports;
 
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Calendar;
    use Asis.Implementation;
    use Utilities, Adactl_Options;
-
-   Version : constant Wide_String := "1.7r9";
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -89,26 +85,11 @@ begin
       Asis.Ada_Environments.Open (Framework.Adactl_Context);
       Units_List.Register (Unit_Spec  => Ada_Units_List,
                            Recursive  => Recursive_Option,
-                           Add_Stubs  => False,
-                           My_Context => Framework.Adactl_Context);
+                           Add_Stubs  => False);
    end if;
 
    case Action is
       when Help =>
-         Help_Options;
-         User_Message ("Rules:");
-         Framework.Rules_Manager.Help_Names (Pretty => True);
-         User_Message ("");
-         User_Message ("ADACTL v. "
-                         & Version
-                         & Choose (Framework.Specific_Plugs.Specific_Version = "",
-                                   "",
-                                   '-' & Framework.Specific_Plugs.Specific_Version)
-                         & " with " & ASIS_Implementor_Version);
-         User_Message ("Copyright (C) 2004-2007 Eurocontrol/Adalog and others.");
-         User_Message ("This software is covered by the GNU Modified General Public License.");
-
-      when Help_Rule =>
          Execute (Command_Line_Commands);
 
       when Dependents =>

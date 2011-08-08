@@ -53,29 +53,32 @@ pragma Elaborate (Framework.Language);
 package body Rules.Statements is
    use Framework;
 
-   type Statement_Names is (Stmt_Abort,                  Stmt_Accept_Return,         Stmt_Assignment,
-                            Stmt_Asynchronous_Select,    Stmt_Block,                 Stmt_Case,
-                            Stmt_Case_Others,            Stmt_Case_Others_Null,      Stmt_Code,
-                            Stmt_Conditional_Entry_Call, Stmt_Declare_Block,         Stmt_Delay,
-                            Stmt_Delay_Until,            Stmt_Dispatching_Call,      Stmt_Entry_Return,
-                            Stmt_Exception_Others,       Stmt_Exception_Others_Null, Stmt_Exit,
-                            Stmt_Exit_For_Loop,          Stmt_Exit_While_Loop,       Stmt_For_Loop,
-                            Stmt_Function_Return,        Stmt_Goto,                  Stmt_If,
-                            Stmt_Labelled,               Stmt_Loop_Return,           Stmt_Multiple_Exits,
-                            Stmt_No_Else,                Stmt_Null,                  Stmt_Procedure_Return,
-                            Stmt_Raise,                  Stmt_Raise_Standard,        Stmt_Requeue,
-                            Stmt_Reraise,                Stmt_Selective_Accept,      Stmt_Simple_Loop,
-                            Stmt_Terminate,              Stmt_Timed_Entry_Call,      Stmt_Unconditional_Exit,
-                            Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,          Stmt_Unnamed_Loop_Exited,
-                            Stmt_Unnamed_Multiple_Loop,  Stmt_Untyped_For,           Stmt_While_Loop);
+   type Subrules is (Stmt_Abort,                  Stmt_Accept_Return,          Stmt_Assignment,
+                     Stmt_Asynchronous_Select,    Stmt_Block,                  Stmt_Case,
+                     Stmt_Case_Others,            Stmt_Case_Others_Null,       Stmt_Code,
+                     Stmt_Conditional_Entry_Call, Stmt_Declare_Block,          Stmt_Delay,
+                     Stmt_Delay_Until,            Stmt_Dispatching_Call,       Stmt_Effective_Declare_Block,
+                     Stmt_Entry_Return,
+                     Stmt_Exception_Others,       Stmt_Exception_Others_Null,  Stmt_Exit,
+                     Stmt_Exit_For_Loop,          Stmt_Exit_While_Loop,        Stmt_For_Loop,
+                     Stmt_Function_Return,        Stmt_Goto,                   Stmt_If,
+                     Stmt_If_Elsif,               Stmt_Labelled,               Stmt_Loop_Return,
+                     Stmt_Multiple_Exits,         Stmt_No_Else,                Stmt_Null,
+                     Stmt_Procedure_Return,       Stmt_Raise,                  Stmt_Raise_Standard,
+                     Stmt_Requeue,                Stmt_Reraise,                Stmt_Selective_Accept,
+                     Stmt_Simple_Loop,            Stmt_Terminate,              Stmt_Timed_Entry_Call,
+                     Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,
+                     Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_For_Loop,       Stmt_Unnamed_Multiple_Loop,
+                     Stmt_Unnamed_Simple_Loop,    Stmt_Unnamed_While_Loop,     Stmt_Untyped_For,
+                     Stmt_While_Loop);
 
-   package Statement_Flags_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
-   use Statement_Flags_Utilities;
+   package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
+   use Subrules_Flags_Utilities;
 
-   type Usage_Flags is array (Statement_Names) of Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
    Rule_Used : Usage_Flags := (others => False);
    Save_Used : Usage_Flags;
-   Usage     : array (Statement_Names) of Basic_Rule_Context;
+   Usage     : array (Subrules) of Basic_Rule_Context;
 
    -- For Stmt_Unnamed_Multiple_Loop:
    type Loops_Level is range 0 .. Max_Loop_Nesting;
@@ -95,14 +98,13 @@ package body Rules.Statements is
       User_Message  ("Control occurrences of Ada statements");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-      Stmt    : Statement_Names;
+      Subrule : Subrules;
 
    begin
       if not Parameter_Exists then
@@ -110,15 +112,15 @@ package body Rules.Statements is
       end if;
 
       while Parameter_Exists loop
-         Stmt := Get_Flag_Parameter (Allow_Any => False);
-         if Rule_Used (Stmt) then
-            Parameter_Error (Rule_Id, "statement already given: " & Image (Stmt));
+         Subrule := Get_Flag_Parameter (Allow_Any => False);
+         if Rule_Used (Subrule) then
+            Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule));
          end if;
 
-         Rule_Used (Stmt) := True;
-         Usage (Stmt)     := Basic.New_Context (Rule_Type, Label);
+         Rule_Used (Subrule) := True;
+         Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end loop;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -147,7 +149,7 @@ package body Rules.Statements is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Thick_Queries, Utilities;
 
-      procedure Do_Report (Stmt : in Statement_Names; Loc : Location := Get_Location (Element)) is
+      procedure Do_Report (Stmt : in Subrules; Loc : Location := Get_Location (Element)) is
          use Framework.Reports;
       begin
          if not Rule_Used (Stmt) then
@@ -161,7 +163,7 @@ package body Rules.Statements is
       end Do_Report;
 
    begin
-      if Rule_Used = (Statement_Names => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -193,6 +195,19 @@ package body Rules.Statements is
             end if;
             if Is_Declare_Block (Element) then
                Do_Report (Stmt_Declare_Block);
+               if Rule_Used (Stmt_Effective_Declare_Block) then
+                  declare
+                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Element,
+                                                                                              Include_Pragmas => False);
+                  begin
+                     for D in Decls'Range loop
+                        if Clause_Kind (Decls (D)) not in A_Use_Package_Clause .. A_Use_Type_Clause then
+                           Do_Report (Stmt_Effective_Declare_Block);
+                           exit;
+                        end if;
+                     end loop;
+                  end;
+               end if;
             end if;
 
          when A_Case_Statement =>
@@ -214,30 +229,39 @@ package body Rules.Statements is
             null;
 
          when An_Exit_Statement =>
-            if Is_Nil (Exit_Condition (Element)) then
-               Do_Report (Stmt_Unconditional_Exit);
-            end if;
+            declare
+               Exited_Loop : constant Asis.Statement := Corresponding_Loop_Exited (Element);
+            begin
+               if Is_Nil (Exit_Condition (Element)) then
+                  Do_Report (Stmt_Unconditional_Exit);
+               end if;
 
-            if Is_Nil (Statement_Identifier (Corresponding_Loop_Exited (Element))) then
-               Do_Report (Stmt_Unnamed_Loop_Exited);
-            elsif Is_Nil (Exit_Loop_Name (Element)) then
+               if Is_Nil (Statement_Identifier (Exited_Loop)) then
+                  Do_Report (Stmt_Unnamed_Loop_Exited);
+               elsif Is_Nil (Exit_Loop_Name (Element)) then
                   Do_Report (Stmt_Unnamed_Exit);
-            end if;
+               end if;
 
-            if Rule_Used (Stmt_Exit_For_Loop)
-              and then Statement_Kind (Corresponding_Loop_Exited (Element)) = A_For_Loop_Statement
-            then
-               Do_Report (Stmt_Exit_For_Loop);
-            elsif Rule_Used (Stmt_Exit_While_Loop)
-              and then Statement_Kind (Corresponding_Loop_Exited (Element)) = A_While_Loop_Statement
-            then
-               Do_Report (Stmt_Exit_While_Loop);
-            else
-               Do_Report (Stmt_Exit);
-            end if;
+               if Rule_Used (Stmt_Exit_For_Loop)
+                 and then Statement_Kind (Exited_Loop) = A_For_Loop_Statement
+               then
+                  Do_Report (Stmt_Exit_For_Loop);
+               elsif Rule_Used (Stmt_Exit_While_Loop)
+                 and then Statement_Kind (Exited_Loop) = A_While_Loop_Statement
+               then
+                  Do_Report (Stmt_Exit_While_Loop);
+               else
+                  Do_Report (Stmt_Exit);
+               end if;
+            end;
 
          when A_For_Loop_Statement =>
             Do_Report (Stmt_For_Loop);
+
+            if Is_Nil (Statement_Identifier (Element)) then
+               Do_Report (Stmt_Unnamed_For_Loop);
+            end if;
+
             if Discrete_Range_Kind (Specification_Subtype_Definition
                                     (For_Loop_Parameter_Specification
                                      (Element))) = A_Discrete_Simple_Expression_Range
@@ -256,10 +280,17 @@ package body Rules.Statements is
                if Path_Kind (Paths (Paths'Last)) /= An_Else_Path then
                   Do_Report (Stmt_No_Else);
                end if;
+               if Paths'Length >= 2 and then Path_Kind (Paths (2)) = An_Elsif_Path then
+                  Do_Report (Stmt_If_Elsif);
+               end if;
             end;
 
          when A_Loop_Statement =>
             Do_Report (Stmt_Simple_Loop);
+
+            if Is_Nil (Statement_Identifier (Element)) then
+               Do_Report (Stmt_Unnamed_Simple_Loop);
+            end if;
 
          when A_Null_Statement =>
             Do_Report (Stmt_Null);
@@ -324,6 +355,10 @@ package body Rules.Statements is
 
          when A_While_Loop_Statement =>
             Do_Report (Stmt_While_Loop);
+
+            if Is_Nil (Statement_Identifier (Element)) then
+               Do_Report (Stmt_Unnamed_While_Loop);
+            end if;
 
          when others =>
             -- Ada 2005 : An_Extended_Return_Statement
@@ -588,9 +623,10 @@ package body Rules.Statements is
       use Asis, Asis.Elements, Asis.Statements;
       use Framework.Reports, Utilities;
    begin
-      if not Rule_Used (Stmt_Unnamed_Multiple_Loop) and
-         not Rule_Used (Stmt_Multiple_Exits) and
-         not Rule_Used (Stmt_Loop_Return) then
+      if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
+        and not Rule_Used (Stmt_Multiple_Exits)
+        and not Rule_Used (Stmt_Loop_Return)
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -601,7 +637,8 @@ package body Rules.Statements is
 
       if Loops_Depth (Body_Depth) = Loops_Level'Last then
          Failure ("Loops nesting deeper than maximum allowed:"
-                    & Loops_Level'Wide_Image (Max_Loop_Nesting));
+                  & Loops_Level'Wide_Image (Max_Loop_Nesting),
+                  Element => Stmt);
       end if;
       Loops_Depth (Body_Depth) := Loops_Depth (Body_Depth) + 1;
       if Loops_Depth (Body_Depth) = 1 then
@@ -638,8 +675,10 @@ package body Rules.Statements is
    procedure Post_Process_Loop (Stmt : in Asis.Statement) is
       pragma Unreferenced (Stmt);
    begin
-      if not Rule_Used (Stmt_Unnamed_Multiple_Loop) and
-         not Rule_Used (Stmt_Loop_Return) then
+      if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
+        and not Rule_Used (Stmt_Multiple_Exits)
+        and not Rule_Used (Stmt_Loop_Return)
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -655,7 +694,7 @@ package body Rules.Statements is
       use Asis, Asis.Elements;
       use Framework.Scope_Manager;
    begin
-      if Rule_Used = (Statement_Names => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -684,7 +723,7 @@ package body Rules.Statements is
       use Asis, Asis.Elements;
       use Framework.Scope_Manager;
    begin
-      if Rule_Used = (Statement_Names => False) then
+      if Rule_Used = (Subrules => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -704,10 +743,28 @@ package body Rules.Statements is
       Body_Depth := Body_Depth - 1;
    end Process_Scope_Exit;
 
+
+   ----------------
+   -- Enter_Unit --
+   ----------------
+
+   procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
+      use Asis, Asis.Compilation_Units;
+   begin
+      if Unit_Kind (Unit) not in A_Subunit then
+         -- In normal cases, Body_Depth from processing previous units has returned to 0 when
+         -- we enter a top-level unit (not a subunit).
+         -- However, if a previous unit failed, Body_Depth is left at a possible non-zero value.
+         -- If we have several failures, we may end up in Constraint_Error.
+         -- So, stay on the safe side and force resetting in all cases.
+         Body_Depth := 0;
+      end if;
+   end Enter_Unit;
+
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Statements;

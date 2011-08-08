@@ -2,77 +2,79 @@ x_errors.aru:1:0: Syntax: Command or label expected
 x_errors.aru:2:32: Syntax: Keyword expected, use option -h <rule name> for a list of allowable keywords
 x_errors.aru:4:8: Syntax: Not a rule name: NOT_A_RULE
 Syntax errors found
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
-No syntax error
+../rules/gnatcheck.aru: No syntax error
+../rules/nasa.aru: No syntax error
+../rules/no_annex_c.aru: No syntax error
+../rules/no_annex_d.aru: No syntax error
+../rules/no_annex_e.aru: No syntax error
+../rules/no_annex_f.aru: No syntax error
+../rules/no_annex_g.aru: No syntax error
+../rules/no_annex_h.aru: No syntax error
+../rules/no_gnat_attribute.aru: No syntax error
+../rules/no_io.aru: No syntax error
+../rules/no_obsolescent_features.aru: No syntax error
+../rules/no_standard_entity.aru: No syntax error
+../rules/no_standard_unit.aru: No syntax error
+../rules/no_system_entity.aru: No syntax error
+../rules/ravenscar.aru: No syntax error
+../rules/reserved_2005.aru: No syntax error
+../rules/verif.aru: No syntax error
+conf/t_abnormal_function_return.aru: No syntax error
+conf/t_allocators.aru: No syntax error
+conf/t_array_declarations.aru: No syntax error
+conf/t_barrier_expressions.aru: No syntax error
+conf/t_case_statement.aru: No syntax error
+conf/t_characters.aru: No syntax error
+conf/t_declarations.aru: No syntax error
+conf/t_default_parameter.aru: No syntax error
+conf/t_directly_accessed_globals.aru: No syntax error
+conf/t_duplicate_initialization_calls.aru: No syntax error
+conf/t_entities.aru: No syntax error
+conf/t_entity_inside_exception.aru: No syntax error
+conf/t_exception_propagation.aru: No syntax error
+conf/t_expressions.aru: No syntax error
+conf/t_global_references.aru: No syntax error
+conf/t_header_comments.aru: No syntax error
+conf/t_improper_initialization.aru: No syntax error
+conf/t_instantiations.aru: No syntax error
+conf/t_insufficient_parameters.aru: No syntax error
+conf/t_local_hiding.aru: No syntax error
+conf/t_max_blank_lines.aru: No syntax error
+conf/t_max_call_depth.aru: No syntax error
+conf/t_max_line_length.aru: No syntax error
+conf/t_max_nesting.aru: No syntax error
+conf/t_max_size.aru: No syntax error
+conf/t_max_statement_nesting.aru: No syntax error
+conf/t_movable_accept_statements.aru: No syntax error
+conf/t_multiple_assignments.aru: No syntax error
+conf/t_naming_convention.aru: No syntax error
+conf/t_no_operator_usage.aru: No syntax error
+conf/t_non_static.aru: No syntax error
+conf/t_not_elaboration_calls.aru: No syntax error
+conf/t_not_selected_name.aru: No syntax error
+conf/t_object_declarations.aru: No syntax error
+conf/t_other_dependencies.aru: No syntax error
+conf/t_parameter_aliasing.aru: No syntax error
+conf/t_parameter_declarations.aru: No syntax error
+conf/t_potentially_blocking_operations.aru: No syntax error
+conf/t_pragmas.aru: No syntax error
+conf/t_reduceable_scope.aru: No syntax error
+conf/t_representation_clauses.aru: No syntax error
+conf/t_return_type.aru: No syntax error
+conf/t_side_effect_parameters.aru: No syntax error
+conf/t_silent_exceptions.aru: No syntax error
+conf/t_simplifiable_expressions.aru: No syntax error
+conf/t_simplifiable_statements.aru: No syntax error
+conf/t_special_comments.aru: No syntax error
+conf/t_statements.aru: No syntax error
+conf/t_style.aru: No syntax error
+conf/t_terminating_tasks.aru: No syntax error
+conf/t_type_initial_values.aru: No syntax error
+conf/t_uncheckable.aru: No syntax error
+conf/t_unnecessary_use_clause.aru: No syntax error
+conf/t_unsafe_paired_calls.aru: No syntax error
+conf/t_unsafe_unchecked_conversion.aru: No syntax error
+conf/t_usage.aru: No syntax error
+conf/t_use_clauses.aru: No syntax error
+conf/t_with_clauses.aru: No syntax error
+conf/ts_units.aru: No syntax error

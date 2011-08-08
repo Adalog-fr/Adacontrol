@@ -38,6 +38,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -56,7 +57,7 @@ package body Rules.Side_Effect_Parameters is
    -- actual parameters.
    --
    -- Each occurrence of a check/search command is given a unique Rule_ID number (hence limiting
-   -- the number of check/search command that can be given - adjustable by setting the Max_Identical_Rules
+   -- the number of check/search command that can be given - adjustable by setting the Max_Controls_For_Rule
    -- constant).
    --
    -- If during the traversal we encounter a call to a "bad function" from rule N, and slot N of the Called_By
@@ -71,17 +72,17 @@ package body Rules.Side_Effect_Parameters is
    -- The Called_Func table is similar to Called_By and holds a reference to the corresponding function for
    -- more precise error mesages.
 
-   Rules_Used : Rule_Index := 0;
-   Save_Used  : Rule_Index;
+   Rules_Used : Control_Index := 0;
+   Save_Used  : Control_Index;
 
    type Entity_Context is new Basic_Rule_Context with
       record
-         Rule_Id : Rule_Index;
+         Ctl_Id : Control_Index;
       end record;
 
    Bad_Functions  : Context_Store;
-   Called_By   : array (Rule_Index) of Asis.ASIS_Natural;
-   Called_Func : array (Rule_Index) of Asis.Element;
+   Called_By   : array (Control_Index) of Asis.ASIS_Natural;
+   Called_Func : array (Control_Index) of Asis.Element;
 
    ----------
    -- Help --
@@ -95,12 +96,11 @@ package body Rules.Side_Effect_Parameters is
       User_Message ("functions with side effect and where the order of evaluation matters");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
       Entity : Entity_Specification;
@@ -109,9 +109,11 @@ package body Rules.Side_Effect_Parameters is
          Parameter_Error (Rule_Id, "missing function name");
       end if;
 
-      if Rules_Used = Rule_Index'Last then
+      if Rules_Used = Control_Index'Last then
          Parameter_Error (Rule_Id,
-                          "Rule cannot be specified more than" & Rule_Index'Wide_Image (Rule_Index'Last) & " times");
+                          "Rule cannot be specified more than"
+                          & Control_Index'Wide_Image (Control_Index'Last)
+                          & " times");
       end if;
 
       Rules_Used := Rules_Used + 1;
@@ -120,10 +122,10 @@ package body Rules.Side_Effect_Parameters is
          Entity := Get_Entity_Parameter;
          Associate (Bad_Functions,
                     Entity,
-                    Entity_Context'(Basic.New_Context (Rule_Type, Label) with Rules_Used),
+                    Entity_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Rules_Used),
                     Additive => True);
       end loop;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -198,7 +200,7 @@ package body Rules.Side_Effect_Parameters is
          elsif Element_Kind (Formal_Elem) = A_Defining_Name then
             return ' ' & Defining_Name_Image (Formal_Elem);
          else
-            return ' ' & Name_Image (Formal_Elem);
+            return ' ' & A4G_Bugs.Name_Image (Formal_Elem);
          end if;
       end Formal_Image;
 
@@ -210,17 +212,17 @@ package body Rules.Side_Effect_Parameters is
             if Expression_Kind (Pfx) = A_Selected_Component then
                Pfx := Selector (Pfx);
             end if;
-            return Name_Image (Pfx) & ''' & Attribute_Name_Image (Func);
+            return A4G_Bugs.Name_Image (Pfx) & ''' & Attribute_Name_Image (Func);
          else
-            return To_Title (Name_Image (Func));
+            return To_Title (A4G_Bugs.Name_Image (Func));
          end if;
       end Func_Image;
 
       procedure Check (Good_Context : Entity_Context) is
       begin
-         if Called_By (Good_Context.Rule_Id) = 0 then
-            Called_By (Good_Context.Rule_Id)   := State.Param_Pos;
-            Called_Func (Good_Context.Rule_Id) := Func_Name;
+         if Called_By (Good_Context.Ctl_Id) = 0 then
+            Called_By (Good_Context.Ctl_Id)   := State.Param_Pos;
+            Called_Func (Good_Context.Ctl_Id) := Func_Name;
          else
             Report (Rule_Id,
                     Good_Context,
@@ -230,9 +232,9 @@ package body Rules.Side_Effect_Parameters is
                     & """ for parameter"
                     & Formal_Image (State.Param_Pos)
                     & " may cause conflict with call of """
-                    & Func_Image (Called_Func (Good_Context.Rule_Id))
+                    & Func_Image (Called_Func (Good_Context.Ctl_Id))
                     & """ for parameter"
-                    & Formal_Image (Called_By (Good_Context.Rule_Id)));
+                    & Formal_Image (Called_By (Good_Context.Ctl_Id)));
          end if;
       end Check;
 
@@ -364,8 +366,8 @@ package body Rules.Side_Effect_Parameters is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Side_Effect_Parameters;

@@ -29,63 +29,92 @@
 
  <!--  Preferences  -->
  <preference name="force-save"
-               page="AdaControl"
-               label="Auto save files"
-               default="False"
-               type="boolean"
-               tip="Save all files without asking before each run of AdaControl"/>
+             page="AdaControl"
+             label="Auto save files"
+             default="False"
+             type="boolean"
+             tip="Save all files without asking before each run of AdaControl"/>
 
  <preference name="delete-trees"
-               page="AdaControl"
-               label="Delete trees"
-               default="False"
-               type="boolean"
-               tip="Delete all tree files after each run of AdaControl"/>
+             page="AdaControl"
+             label="Delete trees"
+             default="False"
+             type="boolean"
+             tip="Delete all tree files after each run of AdaControl"/>
 
  <preference name="delete-ali"
-               page="AdaControl"
-               label="Delete .ali files with tree files"
-               default="False"
-               type="boolean"
-               tip="Delete also .ali files whenever the tree files are deleted"/>
+             page="AdaControl"
+             label="Delete .ali files with tree files"
+             default="False"
+             type="boolean"
+             tip="Delete also .ali files whenever the tree files are deleted"/>
 
  <preference name="separate-rules"
-               page="AdaControl"
-               label="Use separate categories"
-               default="False"
-               type="boolean"
-               tip="Make a category for each rule in the locations window"/>
+             page="AdaControl"
+             label="Use separate categories"
+             default="False"
+             type="boolean"
+             tip="Make a category for each rule in the locations window"/>
 
-<preference name="button-target"
+ <preference name="display-run"
+            page="AdaControl"
+            label="Display AdaControl run"
+            default="False"
+               type="boolean"
+               tip="Displays AdaControl command line and results in Messages window"/>
+
+ <preference name="button-target"
                page="AdaControl"
                label="Buttons operate on"
                default="0"
                type="choices" >
-  <choice>Current File</choice>
-  <choice>Root Project</choice>
-  <choice>Units from List</choice>
-</preference>
+                  <choice>Current File</choice>
+                  <choice>Root Project</choice>
+                  <choice>Units from List</choice>
+ </preference>
 
-<preference name="help-format"
-               page="AdaControl"
-               label="Help on rule"
-               default="0"
-               type="choices" >
-  <choice>Pop-up</choice>
-  <choice>User Guide</choice>
-</preference>
+ <preference name="help-format"
+             page="AdaControl"
+             label="Help on rule"
+             default="0"
+             type="choices" >
+                <choice>Pop-up</choice>
+                <choice>User Guide</choice>
+ </preference>
+
+ <preference name="max-errors"
+             page="AdaControl"
+             label="Max allowed error messages"
+             tip="Maximum number of error messages allowed before cancelling run (0=no limit)"
+             default="0"
+             minimum="0"
+             maximum="10000"
+             type="integer" />
+
+ <preference name="max-messages"
+             page="AdaControl"
+             label="Max allowed messages (all kinds)"
+             tip="Maximum number of messages allowed before cancelling run (0=no limit)"
+             default="0"
+             minimum="0"
+             maximum="10000"
+             type="integer" />
 
 
  <!--  Tool  -->
  <tool name="AdaControl" package="Ide">
   <language>Ada</language>
 
-  <switches lines="4" columns="1" separator="&#32;">
-   <title line="1" column="1"> Files </title>
+  <switches lines="4" columns="2" separator="&#32;">
+   <title line="1" column="1" column-span="2"> Files </title>
    <field line="1" column="1"
      label="Rules file" switch="-f" separator="&#32;" as-file="true" />
    <field line="1" column="1"
      label="Units file" switch="@" separator="" as-file="true" />
+   <field line="1" column="1"
+     label=".adp project file" switch="-p" separator="&#32;" as-file="true" />
+
+   <title line="1" column="2" column-span="0"></title>
 
    <title line="2" column="1"> Processing </title>
    <check line="2" column="1" label="Recursive mode" switch="-r"
@@ -96,7 +125,13 @@
    <check line="2" column="1" label="Compilation unit mode" switch="-u"
     tip="Treat all source names as compilation units even if they look like file names"/>
 
-   <title line="3" column="1"> Output </title>
+   <title line="2" column="2"> Debug </title>
+   <check line="2" column="2" label="Debug messages" switch="-d"
+    tip="Displays debug information (not useful for normal user)"/>
+   <check line="2" column="2" label="Halt on error" switch="-x"
+    tip="Terminate AdaControl if a fatal error is encountered"/>
+
+   <title line="3" column="1" column-span="2"> Output </title>
    <check line="3" column="1" label="Display only errors" switch="-E"
     tip="Print only errors (Check)"/>
    <check line="3" column="1" label="Warnings as errors" switch="-e"
@@ -114,6 +149,9 @@
      <radio-entry label="Send results to File"
         tip="Send the output to a file (file name below is required)"
         switch="-NOGPS" />
+     <radio-entry label="Send results to File and GPS"
+        tip="Send the output to a file and load it into locations window"
+        switch="-GPS" />
    </radio>
    <field line="3" column="1"
      label="File name" switch="-o" separator="&#32;" as-file="true" />
@@ -129,92 +167,66 @@
     <combo-entry label="Source, long file names"  value="source" />
    </combo>
 
-   <title line="4" column="1"> Debug </title>
-   <check line="4" column="1" label="Debug messages" switch="-d"
-    tip="Displays debug information (not useful for normal user)"/>
-   <check line="4" column="1" label="Halt on error" switch="-x"
-    tip="Terminate AdaControl if a fatal error is encountered"/>
-  </switches>
+   <title line="3" column="2" column-span="0"></title>
+
+   <title line="4" column="1" column-span="2">ASIS</title>
+   <field line="4" column="1"
+     label="ASIS options" switch="--" separator="&#32;"/>
+
+   <title line="4" column="2" column-span="0"></title>
+
+</switches>
  </tool>
 
 
  <!--  Actions  -->
-<action name="AdaControl" show-command="true" output="none">
-  <shell lang="python">adactl.pre_clean()   </shell>
-  <shell lang="python">adactl.command_name()</shell>
-  <shell lang="python">adactl.options()     </shell>
-  <external 
-      show-command="true" 
-      output="" 
-      progress-regexp="^\((\d+)/(\d+)\)" 
-      progress-current="1" 
-      progress-final="2" 
-      progress-hide="false">$1 $2
-</external>
-  <on-failure>
-    <shell lang="python">adactl.parse ("""%1 """) </shell>
-    <shell lang="python">adactl.post_clean() </shell>
-  </on-failure>
-  <shell lang="python">adactl.parse ("""%1 """) </shell>
-  <shell lang="python">adactl.post_clean() </shell>
-</action>
-
-<action name="Check_File_File" show-command="false" output="none">
+<action name="Check_File_File">
   <filter_and>
     <filter language="ada" />
     <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
   </filter_and>
 
-  <shell lang="Python">adactl.run("file", "current")</shell>
+  <shell lang="Python" show-command="false" output="">adactl.run("file", "current")</shell>
 </action>
 
-<action name="Check_Project_File" show-command="false" output="none">
+<action name="Check_Project_File">
   <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
-  <shell lang="Python">adactl.run("file", "project")</shell>
+  <shell lang="Python" show-command="false" output="">adactl.run("file", "project")</shell>
 </action>
 
-<action name="Check_Units_File" show-command="false" output="none">
+<action name="Check_Units_File">
   <filter_and>
     <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
     <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
   </filter_and>
-  <shell lang="Python">adactl.run("file", "list")</shell>
+  <shell lang="Python" show-command="false" output="">adactl.run("file", "list")</shell>
 </action>
 
-<action name="Check_Unknown_File" show-command="false" output="none">
-   <shell lang="Python">adactl.run("file", "")</shell>
+<action name="Check_Unknown_File">
+   <shell lang="Python" show-command="false" output="">adactl.run("file", "")</shell>
 </action>
 
-<action name="Check_File_Ask" show-command="false" output="none">
+<action name="Check_File_Ask">
   <filter language="ada" />
-  <shell lang="Python">adactl.run("ask", "current")</shell>
+  <shell lang="Python" show-command="false" output="">adactl.run("ask", "current")</shell>
 </action>
 
-<action name="Check_Project_Ask" show-command="false" output="none">
-  <shell lang="Python">adactl.run("ask", "project")</shell>
+<action name="Check_Project_Ask">
+  <shell lang="Python" show-command="false" output="">adactl.run("ask", "project")</shell>
 </action>
 
-<action name="Check_Units_Ask" show-command="false" output="none">
+<action name="Check_Units_Ask">
   <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
-  <shell lang="Python">adactl.run("ask", "list")</shell>
+  <shell lang="Python" show-command="false" output="">adactl.run("ask", "list")</shell>
 </action>
 
-<action name="Check_Unknown_Ask" show-command="false" output="none">
-   <shell lang="Python" show-command="false" output="none">adactl.run("ask", "")</shell>
+<action name="Check_Unknown_Ask">
+  <shell lang="Python" show-command="false" output="">adactl.run("ask", "")</shell>
 </action>
 
-<action name="Check_AdaCtl" show-command="false" output="none">
+<action name="Check_AdaCtl">
   <filter language="AdaControl" />
-  <shell>MDI.save_all False</shell>
-  <shell>Locations.remove_category AdaControl</shell>
-  <shell>MDI.get "Messages"</shell>
-  <shell>MDIWindow.raise_window %1</shell>
-  <shell>Project %P</shell>
-  <external show-command="true" output="">adactl -C -v -f %F</external>
-  <on-failure>
-    <shell lang="python">adactl.parse ("""%1 """) </shell>
-  </on-failure>
-  <shell lang="python">adactl.parse ("""%1 """) </shell>
+  <shell lang="Python" show-command="false" output="">adactl.run("check", "")</shell>
 </action>
 
 <action name="Get_Units" show-command="false" output="none">
@@ -229,7 +241,7 @@
 
 <action name="Get_Rules" show-command="false" output="none">
   <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
-  <shell lang="python">adactl.get_rules_file()</shell>
+  <shell lang="python">adactl.get_file("-f")</shell>
   <shell> File %1</shell>
   <shell> EditorBuffer.get %1</shell>
   <shell> EditorBuffer.views %1</shell>
@@ -237,14 +249,21 @@
   <shell> MDIWindow.raise_window %1</shell>
 </action>
 
-<action name="Del_Tree" show-command="false" output="none">
-  <shell lang="python">adactl.del_tree(confirm=True)</shell>
+<action name="Del_Tree">
+  <shell lang="python" show-command="false" output="none">adactl.del_tree(confirm=True)</shell>
 </action>
 
-<action name="Create_adp" show-command="false" output="">
-  <shell lang="python">adactl.create_adp()</shell>
+<action name="Create_adp">
+  <shell lang="python" show-command="false" output="">adactl.create_adp()</shell>
 </action>
 
+<action name="Load_Result">
+  <shell lang="python" show-command="false" output="none">adactl.load_result()</shell>
+</action>
+
+ <action name="Create_units">
+  <shell lang="python" show-command="false" output="">adactl.create_units()</shell>
+ </action>
 
 <!--  Submenus  -->
 <submenu before="About">
@@ -294,15 +313,24 @@
      <title>Open units file</title>
   </menu>
 
+  <menu action="Load_Result">
+     <title>Load results file</title>
+  </menu>
+
   <menu />
 
-  <menu action="Del_Tree">
-     <title>Delete Tree Files</title>
+  <menu action="Create_units">
+     <title>Create units file</title>
   </menu>
 
   <menu action="Create_adp">
      <title>Create .adp project</title>
   </menu>
+
+  <menu action="Del_Tree">
+     <title>Delete Tree Files</title>
+  </menu>
+
 </submenu>
 
 <!--  Documentation  -->

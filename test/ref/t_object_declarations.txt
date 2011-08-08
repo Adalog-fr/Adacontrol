@@ -1,0 +1,7 @@
+t_object_declarations.adb:3:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
+t_object_declarations.adb:5:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
+t_object_declarations.adb:9:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (5)
+t_object_declarations.adb:14:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (8)
+
+Counts summary:
+OBJECT_DECLARATIONS: 4

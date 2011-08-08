@@ -51,11 +51,11 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_Statements is
    use Framework;
 
-   type Subrules is (Stmt_Block, Stmt_Handler,     Stmt_If,   Stmt_If_For_Case,
-                     Stmt_Loop,  Stmt_Nested_Path, Stmt_Null, Stmt_Dead);
+   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_Handler,     Stmt_If,  Stmt_If_For_Case,
+                     Stmt_If_Not, Stmt_Loop, Stmt_Nested_Path, Stmt_Null);
 
-   package Subrule_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
-   use Subrule_Flags_Utilities;
+   package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
+   use Subrules_Flags_Utilities;
 
    type Usage_Flags is array (Subrules) of Boolean;
    Rule_Used : Usage_Flags := (others => False);
@@ -74,31 +74,30 @@ package body Rules.Simplifiable_Statements is
       User_Message  ("Control Ada statements that can be made simpler");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
-      Stmt    : Subrules;
+      Subrule : Subrules;
 
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            Stmt := Get_Flag_Parameter (Allow_Any => False);
-            if Rule_Used (Stmt) then
-               Parameter_Error (Rule_Id, "statement already given: " & Image (Stmt));
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
+            if Rule_Used (Subrule) then
+               Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule));
             end if;
 
-            Rule_Used (Stmt) := True;
-            Usage (Stmt)     := Basic.New_Context (Rule_Type, Label);
+            Rule_Used (Subrule) := True;
+            Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
          end loop;
       else
          Rule_Used := (others => True);
-         Usage     := (others => Basic.New_Context (Rule_Type, Label));
+         Usage     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -137,7 +136,7 @@ package body Rules.Simplifiable_Statements is
             return True;
          when An_Exit_Statement =>
             return Is_Nil (Exit_Condition (S))
-              or else Static_Expression_Value_Image (Exit_Condition (S)) = "1";
+              or else Static_Expression_Value_Image (Exit_Condition (S)) = "1";  -- "1" corresponds to True
          when A_Procedure_Call_Statement =>
             SP := Called_Simple_Name (S);
             if Is_Nil (SP) then
@@ -371,46 +370,67 @@ package body Rules.Simplifiable_Statements is
    --------------------------
 
    procedure Process_If_Statement (Stmt  : in Asis.Statement) is
-      use Asis, Asis.Elements, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Framework.Reports, Thick_Queries;
 
       Then_Last_Stmt : Asis.Statement;
       Else_Last_Stmt : Asis.Statement;
       Paths          : constant Asis.Path_List := Statement_Paths (Stmt);
+      If_Cond        : Asis.Expression;
+      Op             : Asis.Operator_Kinds;
    begin
-      -- Stmt_If
-      if Rule_Used (Stmt_If) and then Path_Kind (Paths (Paths'Last)) = An_Else_Path then
-         if Are_Null_Statements (Sequence_Of_Statements (Paths (Paths'Last))) then
-            if Rule_Used (Stmt_If) then
-               Report (Rule_Id,
-                       Usage (Stmt_If),
-                       Get_Location (Paths (Paths'Last)),
-                       "empty else path");
-            end if;
+      -- Stmt_If, Stmt_Nested_Path, Stmt_If_Not
+      if (Rule_Used (Stmt_If) or Rule_Used (Stmt_Nested_Path) or Rule_Used (Stmt_If_Not))
+        and then Path_Kind (Paths (Paths'Last)) = An_Else_Path
+      then
+         if Rule_Used (Stmt_If) and then Are_Null_Statements (Sequence_Of_Statements (Paths (Paths'Last))) then
+            Report (Rule_Id,
+                    Usage (Stmt_If),
+                    Get_Location (Paths (Paths'Last)),
+                    "empty else path");
+         end if;
 
-         elsif Paths'Length = 2 and Rule_Used (Stmt_Nested_Path) then
+         if Paths'Length = 2 then
             -- Since we have an else path here, Paths'Length = 2 means that we have no elsif
-            Then_Last_Stmt := Last_Effective_Statement (Sequence_Of_Statements (Paths (Paths'First)));
-            Else_Last_Stmt := Last_Effective_Statement (Sequence_Of_Statements (Paths (Paths'Last )));
-            if Is_Breaking_Statement (Then_Last_Stmt)
-              and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
-            then
-               Report (Rule_Id,
-                       Usage (Stmt_If),
-                       Get_Location (Paths (Paths'Last)),
-                       "content of else path can be moved outside ""if"" statement");
-            elsif Is_Breaking_Statement (Else_Last_Stmt)
-              and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
-            then
-               -- Prettier to put message in front of "then" than in front of "if"
-               declare
-                  Stats : constant Asis.Statement_List := Sequence_Of_Statements (Paths (Paths'First));
-               begin
+            if Rule_Used (Stmt_Nested_Path) then
+               Then_Last_Stmt := Last_Effective_Statement (Sequence_Of_Statements (Paths (Paths'First)));
+               Else_Last_Stmt := Last_Effective_Statement (Sequence_Of_Statements (Paths (Paths'Last )));
+               if Is_Breaking_Statement (Then_Last_Stmt)
+                 and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
+               then
                   Report (Rule_Id,
                           Usage (Stmt_If),
-                          Get_Previous_Word_Location (Stats (Stats'First)),
-                          "content of then path can be moved outside ""if"" statement");
-               end;
+                          Get_Location (Paths (Paths'Last)),
+                          "content of else path can be moved outside ""if"" statement");
+               elsif Is_Breaking_Statement (Else_Last_Stmt)
+                 and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
+               then
+                  -- Prettier to put message in front of "then" than in front of "if"
+                  declare
+                     Stats : constant Asis.Statement_List := Sequence_Of_Statements (Paths (Paths'First));
+                  begin
+                     Report (Rule_Id,
+                             Usage (Stmt_If),
+                             Get_Previous_Word_Location (Stats (Stats'First)),
+                             "content of then path can be moved outside ""if"" statement");
+                  end;
+               end if;
+            end if;
+
+            if Rule_Used (Stmt_If_Not) then
+               If_Cond := Condition_Expression (Paths (Paths'First));
+               while Expression_Kind (If_Cond) = A_Parenthesized_Expression loop
+                  If_Cond := Expression_Parenthesized (If_Cond);
+               end loop;
+               if Expression_Kind (If_Cond) = A_Function_Call then
+                  Op := Operator_Kind (Simple_Name (Prefix (If_Cond)));
+                  if Op = A_Not_Operator or Op = A_Not_Equal_Operator then
+                     Report (Rule_Id,
+                             Usage (Stmt_If_Not),
+                             Get_Location (If_Cond),
+                             "Negative condition in ""if-else"" statement");
+                  end if;
+               end if;
             end if;
          end if;
       end if;
@@ -459,7 +479,7 @@ package body Rules.Simplifiable_Statements is
       if Rule_Used (Stmt_Dead) then
          for P in Paths'Range loop
             if Path_Kind (Paths (P)) /= An_Else_Path
-              and then Static_Expression_Value_Image (Condition_Expression (Paths (P))) = "0"
+              and then Static_Expression_Value_Image (Condition_Expression (Paths (P))) = "0"  -- "0" => False
             then
                Report (Rule_Id,
                        Usage (Stmt_Dead),
@@ -501,6 +521,7 @@ package body Rules.Simplifiable_Statements is
          when An_If_Statement =>
             if Rule_Used (Stmt_If)
               or Rule_Used (Stmt_Nested_Path)
+              or Rule_Used (Stmt_If_Not)
               or Rule_Used (Stmt_If_For_Case)
             then
                Process_If_Statement (Stmt);
@@ -534,7 +555,7 @@ package body Rules.Simplifiable_Statements is
                                                   (Stmt)))(1) = 0
                then
                   Report (Rule_Id,
-                          Usage (Stmt_Loop),
+                          Usage (Stmt_Dead),
                           Get_Location (Stmt),
                           "for loop is never executed");
                end if;
@@ -559,7 +580,7 @@ package body Rules.Simplifiable_Statements is
 
                      -- For stmt_dead, signal any expression statically false
                      if Rule_Used (Stmt_Dead)
-                       and then Static_Expression_Value_Image (Expr) = "0"
+                       and then Static_Expression_Value_Image (Expr) = "0"  -- "0" => False
                      then
                         Report (Rule_Id,
                                 Usage (Stmt_Dead),
@@ -589,7 +610,7 @@ package body Rules.Simplifiable_Statements is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Simplifiable_Statements;

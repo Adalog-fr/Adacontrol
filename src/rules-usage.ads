@@ -37,8 +37,8 @@ package Rules.Usage is
 
    Rule_Id : constant Wide_String := "USAGE";
 
-   procedure Process_Entity_Declaration (Element       : in Asis.Declaration);
-   procedure Process_Identifier         (Name          : in Asis.Expression);
-   procedure Process_Instantiation      (Instantiation : in Asis.Declaration);
+   procedure Process_Declaration   (Element       : in Asis.Declaration);
+   procedure Process_Identifier    (Name          : in Asis.Expression);
+   procedure Process_Instantiation (Instantiation : in Asis.Declaration);
 
 end Rules.Usage;

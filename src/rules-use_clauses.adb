@@ -53,16 +53,16 @@ pragma Elaborate (Framework.Language);
 package body Rules.Use_Clauses is
    use Framework;
 
-   type Locality is (Both, Local, Global);
-   package Locality_Flag_Utilities is new Framework.Language.Flag_Utilities (Locality);
+   type Subrules is (Both, Local, Global);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Usage is array (Locality, Rule_Types) of Boolean;
+   type Usage is array (Subrules, Control_Kinds) of Boolean;
 
-   Rule_Used : Usage := (others => (others => False));
-   Save_Used : Usage;
-   Labels    : array (Locality, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Rule_Used  : Usage := (others => (others => False));
+   Save_Used  : Usage;
+   Ctl_Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
-   type Usage_Type is array (Locality, Rule_Types) of Boolean;
+   type Usage_Type is array (Subrules, Control_Kinds) of Boolean;
    type Package_Context is new Root_Context with
       record
          Allowed : Usage_Type;
@@ -75,7 +75,7 @@ package body Rules.Use_Clauses is
    ----------
 
    procedure Help is
-      use Utilities, Locality_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       Help_On_Flags ("Parameter(1): ", Extra_Value => "<Allowed package name>", Footer => "(optional)");
@@ -84,36 +84,36 @@ package body Rules.Use_Clauses is
       User_Message ("any package but the ones passed as parameters (if any)");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Language, Locality_Flag_Utilities;
+      use Framework.Language, Subrules_Flag_Utilities;
 
-      Loc : Locality;
+      Subrule : Subrules;
    begin
       if Parameter_Exists then
-         Loc := Get_Flag_Parameter (Allow_Any => True);
+         Subrule := Get_Flag_Parameter (Allow_Any => True);
       else
-         Loc := Both;
+         Subrule := Both;
       end if;
 
-      if Loc = Both then
-         if Rule_Used (Local, Rule_Type) or Rule_Used (Global, Rule_Type) then
+      if Subrule = Both then
+         if Rule_Used (Local, Ctl_Kind) or Rule_Used (Global, Ctl_Kind) then
             Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
          end if;
-         Labels    (Local,  Rule_Type) := To_Unbounded_Wide_String (Label);
-         Labels    (Global, Rule_Type) := To_Unbounded_Wide_String (Label);
-         Rule_Used (Local,  Rule_Type) := True;
-         Rule_Used (Global, Rule_Type) := True;
+         Ctl_Labels (Local,  Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+         Ctl_Labels (Global, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+         Rule_Used  (Local,  Ctl_Kind) := True;
+         Rule_Used  (Global, Ctl_Kind) := True;
       else
-         if Rule_Used (Loc, Rule_Type) then
+         if Rule_Used (Subrule, Ctl_Kind) then
             Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
          end if;
-         Labels    (Loc, Rule_Type) := To_Unbounded_Wide_String (Label);
-         Rule_Used (Loc, Rule_Type) := True;
+         Ctl_Labels (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+         Rule_Used  (Subrule, Ctl_Kind) := True;
       end if;
 
       while Parameter_Exists loop
@@ -121,26 +121,26 @@ package body Rules.Use_Clauses is
             Entity : constant Entity_Specification := Get_Entity_Parameter;
             Value  : Package_Context := (Allowed => (others => (others => False)));
          begin
-            if Loc = Both then
-               Value.Allowed (Local,  Rule_Type) := True;
-               Value.Allowed (Global, Rule_Type) := True;
+            if Subrule = Both then
+               Value.Allowed (Local,  Ctl_Kind) := True;
+               Value.Allowed (Global, Ctl_Kind) := True;
             else
-               Value.Allowed (Loc, Rule_Type) := True;
+               Value.Allowed (Subrule, Ctl_Kind) := True;
             end if;
             Associate (Allowed_Packages, Entity, Value);
          exception
             when Already_In_Store =>
                Value := Package_Context (Association (Allowed_Packages, Entity));
-               if Loc = Both then
-                  Value.Allowed (Local,  Rule_Type) := True;
-                  Value.Allowed (Global, Rule_Type) := True;
+               if Subrule = Both then
+                  Value.Allowed (Local,  Ctl_Kind) := True;
+                  Value.Allowed (Global, Ctl_Kind) := True;
                else
-                  Value.Allowed (Loc, Rule_Type) := True;
+                  Value.Allowed (Subrule, Ctl_Kind) := True;
                end if;
                Update (Allowed_Packages, Value);
          end;
       end loop;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -151,8 +151,8 @@ package body Rules.Use_Clauses is
    begin
       case Action is
          when Clear =>
-            Rule_Used := (others => (others => False));
-            Labels    := (others => (others => Null_Unbounded_Wide_String));
+            Rule_Used  := (others => (others => False));
+            Ctl_Labels := (others => (others => Null_Unbounded_Wide_String));
             Clear (Allowed_Packages);
          when Suspend =>
             Save_Used := Rule_Used;
@@ -178,9 +178,9 @@ package body Rules.Use_Clauses is
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
       use Ada.Strings.Wide_Unbounded, Asis.Clauses, Thick_Queries;
       use Framework.Reports, Framework.Scope_Manager;
-      Loc : Locality;
+      Loc : Subrules;
    begin
-      if Rule_Used = (Locality => (Rule_Types => False)) then
+      if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -198,13 +198,13 @@ package body Rules.Use_Clauses is
             declare
                Context : constant Root_Context'Class := Matching_Context (Allowed_Packages, Names (N));
             begin
-               for R in Rule_Types loop
+               for R in Control_Kinds loop
                   if Rule_Used (Loc, R) and then
                     (Context = No_Matching_Context or else
                      not Package_Context (Context).Allowed (Loc, R))
                   then
                      Report (Rule_Id,
-                             To_Wide_String (Labels (Loc, R)),
+                             To_Wide_String (Ctl_Labels (Loc, R)),
                              R,
                              Get_Location (Clause),
                              "use clause for """ & Extended_Name_Image (Names (N)) & '"');
@@ -219,8 +219,8 @@ package body Rules.Use_Clauses is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Use_Clauses;

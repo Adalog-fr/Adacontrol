@@ -140,7 +140,7 @@ package body Framework.Queries is
             Uncheckable (Rule_Id,
                          False_Positive,
                          Get_Location (E),
-                         "unable to determine origin of " & Name_Image (N));
+                         "unable to determine origin of " & A4G_Bugs.Name_Image (N));
             return "";
          elsif Declaration_Kind (E) in
            A_Formal_Procedure_Declaration .. A_Formal_Package_Declaration_With_Box

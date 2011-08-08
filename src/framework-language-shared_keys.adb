@@ -51,6 +51,7 @@ package body Framework.Language.Shared_Keys is
 
       Locations  : constant Places_Set := (S_All       => False,
                                            S_Block     => Statement_Kind (Current_Scope) = A_Block_Statement,
+                                           S_Library   => Current_Depth = 0,
                                            S_Local     => not Is_Current_Scope_Global,
                                            S_Nested    => Current_Depth /= 0,
                                            S_Own       => Scope_Kind = A_Package_Body_Declaration,

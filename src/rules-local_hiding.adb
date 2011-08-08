@@ -38,6 +38,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -95,12 +96,11 @@ package body Rules.Local_Hiding is
       User_Message ("Control occurrences of local identifiers that hide an outer identical name");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Subrules_Flag_Utilities;
       Subrule : Subrules;
    begin
@@ -113,20 +113,20 @@ package body Rules.Local_Hiding is
                      Parameter_Error (Rule_Id, "subrule already specified");
                   end if;
                   Rule_Used    (Subrule) := True;
-                  Rule_Context (Subrule) := Basic.New_Context (Rule_Use_Type, Label);
+                  Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
                when Both =>
                   if Rule_Used /= (True_Subrules => False) then
                      Parameter_Error (Rule_Id, "subrule already specified");
                   end if;
                   Rule_Used    := (others => True);
-                  Rule_Context := (others => Basic.New_Context (Rule_Use_Type, Label));
+                  Rule_Context := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
             end case;
          end loop;
       else
          Rule_Used    (Strict) := True;
-         Rule_Context (Strict) := Basic.New_Context (Rule_Use_Type, Label);
+         Rule_Context (Strict) := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -385,7 +385,7 @@ package body Rules.Local_Hiding is
                      Failure ("Unexpected name in with clause", All_Names (I));
                end case;
                declare
-                  Short_Name : constant Wide_String := To_Upper (Name_Image (Name));
+                  Short_Name : constant Wide_String := To_Upper (A4G_Bugs.Name_Image (Name));
                   Full_Name  : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
                begin
                   -- Bind names to scope 0
@@ -404,8 +404,8 @@ package body Rules.Local_Hiding is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Local_Hiding;

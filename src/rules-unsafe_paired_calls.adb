@@ -54,8 +54,8 @@ with
 package body Rules.Unsafe_Paired_Calls is
    use Framework;
 
-   Rules_Used : Rule_Index := 0;
-   Save_Used  : Rule_Index;
+   Rules_Used : Control_Index := 0;
+   Save_Used  : Control_Index;
 
    type SP_Role is (Opening, Closing);
    type SP_Lock_Parameter_Kind is (None, Entity_Spec, In_Def, In_Out_Def);
@@ -74,7 +74,7 @@ package body Rules.Unsafe_Paired_Calls is
    type SP_Context is new Basic_Rule_Context with
       record
          Role         : SP_Role;
-         Rule_Numbers : Rule_Index_Set;
+         Rule_Numbers : Control_Index_Set;
          Lock         : Lock_Parameter;
       end record;
 
@@ -97,12 +97,11 @@ package body Rules.Unsafe_Paired_Calls is
       User_Message ("Controls calls like P/V operations that are not safely paired");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Utilities, Ada.Strings.Wide_Fixed;
       First_SP  : Entity_Specification;
       Second_SP : Entity_Specification;
@@ -114,23 +113,23 @@ package body Rules.Unsafe_Paired_Calls is
                                     LP            : in Lock_Parameter)
       is
          Existing  : Root_Context'Class := Association (Checked_Subprograms, Specification);
-         Rules_Set : Rule_Index_Set := (others => False);
+         Rules_Set : Control_Index_Set := (others => False);
       begin
          if Existing = No_Matching_Context then
             Rules_Set (Rules_Used) := True;
             Associate (Checked_Subprograms,
                        Specification,
-                       SP_Context'(Basic.New_Context (Rule_Type,Label) with Role, Rules_Set, LP));
+                       SP_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Role, Rules_Set, LP));
          else
             SP_Context (Existing).Rule_Numbers (Rules_Used) := True;
             Update (Checked_Subprograms, Existing);
          end if;
       end Associate_With_Set;
    begin
-      if Rules_Used = Rule_Index_Set'Last then
+      if Rules_Used = Control_Index_Set'Last then
          Parameter_Error (Rule_Id,
                           "this rule can be given at most"
-                          & Rule_Index'Wide_Image (Rule_Index_Set'Last)
+                          & Control_Index'Wide_Image(Control_Index_Set'Last)
                           & " times");
       end if;
       Rules_Used := Rules_Used + 1;
@@ -161,7 +160,7 @@ package body Rules.Unsafe_Paired_Calls is
          Associate_With_Set (First_SP,  Opening, (Kind => None));
          Associate_With_Set (Second_SP, Closing, (Kind => None));
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -349,7 +348,7 @@ package body Rules.Unsafe_Paired_Calls is
 
             -- Here we have a good call; the message always refers to the first call
             if (SP_Context (Other_Context).Rule_Numbers and Called_Context.Rule_Numbers)
-              = (Rule_Index_Set'Range => False)
+              = (Control_Index_Set'Range => False)
             then
                Report (Rule_Id,
                        Called_Context,
@@ -411,7 +410,7 @@ package body Rules.Unsafe_Paired_Calls is
                   return False;
                end if;
                if (SP_Context (Other_Context).Rule_Numbers and Called_Context.Rule_Numbers)
-                 = (Rule_Index_Set'Range => False)
+                 = (Control_Index_Set'Range => False)
                then
                   return False;
                end if;
@@ -662,8 +661,8 @@ package body Rules.Unsafe_Paired_Calls is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Unsafe_Paired_Calls;

@@ -51,15 +51,15 @@ pragma Elaborate (Framework.Language);
 package body Rules.Array_Declarations is
    use Framework, Thick_Queries;
 
-   type Array_Declaration_Names is (First, Max_Length);
-   package Array_Declaration_Flag_Utilities  is new Framework.Language.Flag_Utilities (Array_Declaration_Names);
+   type Subrules is (First, Max_Length);
+   package Subrules_Flag_Utilities  is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Usage is array (Array_Declaration_Names) of Rule_Types_Set;
+   type Usage is array (Subrules) of Control_Kinds_Set;
    Rule_Used : Usage := (others => (others => False));
    Save_Used : Usage;
 
-   Labels : array (Array_Declaration_Names, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Values : array (Array_Declaration_Names, Rule_Types) of Biggest_Natural := (others => (others => 0));
+   Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Values : array (Subrules, Control_Kinds) of Biggest_Natural := (others => (others => 0));
 
    ----------
    -- Help --
@@ -69,43 +69,43 @@ package body Rules.Array_Declarations is
       use Utilities;
    begin
       User_Message ("Rule: "& Rule_Id);
-      Array_Declaration_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
       User_Message ("Parameter(2): for first      : required value of the lower bound");
       User_Message ("              for max_length : maximum allowed length of the array");
       User_Message ("Controls various sizes related to array types or objects declarations");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Framework.Language, Array_Declaration_Flag_Utilities, Ada.Strings.Wide_Unbounded;
-      Stmt : Array_Declaration_Names;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrules_Flag_Utilities, Ada.Strings.Wide_Unbounded;
+      Subrule : Subrules;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
-      Stmt := Get_Flag_Parameter (Allow_Any => False);
-      if Rule_Used (Stmt) (Rule_Type) then
-         Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      if Rule_Used (Subrule) (Ctl_Kind) then
+         Parameter_Error (Rule_Id, "rule already specified for " & Control_Kinds'Wide_Image (Ctl_Kind));
       end if;
 
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
-      case Stmt is
+      case Subrule is
          when First =>
-            Values (Stmt, Rule_Type) := Get_Integer_Parameter;
+            Values (Subrule, Ctl_Kind) := Get_Integer_Parameter;
          when Max_Length =>
-            Values (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 1);
+            Values (Subrule, Ctl_Kind) := Get_Integer_Parameter (Min => 1);
       end case;
 
-      Labels    (Stmt, Rule_Type):= To_Unbounded_Wide_String (Label);
-      Rule_Used (Stmt)(Rule_Type):= True;
-    end Add_Use;
+      Labels    (Subrule, Ctl_Kind):= To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used (Subrule)(Ctl_Kind):= True;
+    end Add_Control;
 
    -------------
    -- Command --
@@ -166,59 +166,55 @@ package body Rules.Array_Declarations is
 
       procedure Process_First is
          Bounds : constant Asis.Element_List := Discrete_Constraining_Bounds (Definition);
+         Val    : Extended_Biggest_Int;
       begin
          for B in Bounds'Range loop
             if B rem 2 = 1 then
-               declare
-                  Image : constant Wide_String := Static_Expression_Value_Image (Bounds (B));
-                  Val   : Biggest_Int;
-               begin
-                  if Image /= "" then
-                     Val := Biggest_Int'Wide_Value (Image);
-                     if  Rule_Used (First) (Check) and Rule_Used (First) (Search) then
-                        if Val /= Values (First, Check) and Val /= Values (First, Search) then
-                           Report (Rule_Id,
-                                   To_Wide_String (Labels (First, Check)),
-                                   Check,
-                                   Get_Bound_Location ((B+1)/2),
-                                   "lower bound of array is not " & Biggest_Int_Img (Values (First, Check))
-                                   & " or " & Biggest_Int_Img (Values (First, Search))
-                                   & " (" & Biggest_Int_Img (Val) & ')');
-                        elsif Val /= Values (First, Search) then
-                           Report (Rule_Id,
-                                   To_Wide_String (Labels (First, Search)),
-                                   Search,
-                                   Get_Bound_Location ((B+1)/2),
-                                   "lower bound of array is not " & Biggest_Int_Img (Values (First, Search))
-                                   & " (" & Biggest_Int_Img (Val) & ')');
-                        end if;
-
-                     elsif Rule_Used (First) (Check) and then Val /= Values (First, Check) then
+               Val := Discrete_Static_Expression_Value (Bounds (B));
+               if Val /= Not_Static then
+                  if  Rule_Used (First) (Check) and Rule_Used (First) (Search) then
+                     if Val /= Values (First, Check) and Val /= Values (First, Search) then
                         Report (Rule_Id,
                                 To_Wide_String (Labels (First, Check)),
                                 Check,
-                                Get_Bound_Location ((B+1)/2),
+                                Get_Bound_Location ((B + 1) / 2),
                                 "lower bound of array is not " & Biggest_Int_Img (Values (First, Check))
+                                & " or " & Biggest_Int_Img (Values (First, Search))
                                 & " (" & Biggest_Int_Img (Val) & ')');
-
-                     elsif Rule_Used (First) (Search) and then Val /= Values (First, Search) then
+                     elsif Val /= Values (First, Search) then
                         Report (Rule_Id,
                                 To_Wide_String (Labels (First, Search)),
                                 Search,
-                                Get_Bound_Location ((B+1)/2),
+                                Get_Bound_Location ((B + 1) / 2),
                                 "lower bound of array is not " & Biggest_Int_Img (Values (First, Search))
                                 & " (" & Biggest_Int_Img (Val) & ')');
                      end if;
 
-                     if Rule_Used (First) (Count) and then Val /= Values (First, Count) then
-                        Report (Rule_Id,
-                                To_Wide_String (Labels (First, Count)),
-                                Count,
-                                Get_Bound_Location ((B+1)/2),
-                                "");
-                     end if;
+                  elsif Rule_Used (First) (Check) and then Val /= Values (First, Check) then
+                     Report (Rule_Id,
+                             To_Wide_String (Labels (First, Check)),
+                             Check,
+                             Get_Bound_Location ((B + 1) / 2),
+                             "lower bound of array is not " & Biggest_Int_Img (Values (First, Check))
+                             & " (" & Biggest_Int_Img (Val) & ')');
+
+                  elsif Rule_Used (First) (Search) and then Val /= Values (First, Search) then
+                     Report (Rule_Id,
+                             To_Wide_String (Labels (First, Search)),
+                             Search,
+                             Get_Bound_Location ((B + 1) / 2),
+                             "lower bound of array is not " & Biggest_Int_Img (Values (First, Search))
+                             & " (" & Biggest_Int_Img (Val) & ')');
                   end if;
-               end;
+
+                  if Rule_Used (First) (Count) and then Val /= Values (First, Count) then
+                     Report (Rule_Id,
+                             To_Wide_String (Labels (First, Count)),
+                             Count,
+                             Get_Bound_Location ((B + 1) / 2),
+                             "");
+                  end if;
+               end if;
             end if;
          end loop;
       end Process_First;
@@ -257,16 +253,16 @@ package body Rules.Array_Declarations is
       end Process_Max_Length;
 
    begin
-      if Rule_Used = (Array_Declaration_Names => (Rule_Types => False)) then
+      if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-       if Rule_Used (First) /= (Rule_Types => False) then
+       if Rule_Used (First) /= (Control_Kinds => False) then
           Process_First;
        end if;
 
-      if Rule_Used (Max_Length) /= (Rule_Types => False)
+      if Rule_Used (Max_Length) /= (Control_Kinds => False)
         and then Type_Kind (Definition) /= An_Unconstrained_Array_Definition
       then
          Process_Max_Length;
@@ -276,7 +272,7 @@ package body Rules.Array_Declarations is
 begin
    Rules_Manager.Register (Rule_Id,
                            Rules_Manager.Semantic,
-                           Help_CB    => Help'Access,
-                           Add_Use_CB => Add_Use'Access,
-                           Command_CB => Command'Access);
+                           Help_CB        => Help'Access,
+                           Add_Control_CB => Add_Control'Access,
+                           Command_CB     => Command'Access);
 end Rules.Array_Declarations;

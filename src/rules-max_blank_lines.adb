@@ -56,11 +56,11 @@ package body Rules.Max_Blank_Lines is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   Rule_Label : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Maximum    : array (Rule_Types) of Natural := (others => Natural'Last);
+   Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Maximum    : array (Control_Kinds) of Natural := (others => Natural'Last);
 
    Blank_Lines_Count : Natural;
-   Fail_Type : Rule_Types;
+   Fail_Type : Control_Kinds;
    Fail_Loc  : Location;
 
    ----------
@@ -75,16 +75,16 @@ package body Rules.Max_Blank_Lines is
       User_Message ("Control that there is no more than the indicated number of consecutive blank lines");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
    begin
-      if Maximum (Rule_Type) /= Natural'Last then
+      if Maximum (Ctl_Kind) /= Natural'Last then
          Parameter_Error (Rule_Id, "Rule already specified");
       end if;
 
@@ -92,10 +92,10 @@ package body Rules.Max_Blank_Lines is
          Parameter_Error (Rule_Id, "Maximum value required");
       end if;
 
-      Maximum    (Rule_Type) := Get_Integer_Parameter (Min => 0);
-      Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
+      Maximum    (Ctl_Kind) := Get_Integer_Parameter (Min => 0);
+      Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
       Rule_Used := True;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -142,7 +142,7 @@ package body Rules.Max_Blank_Lines is
 
       if Trim_All (Line) /= "" then
          if Fail_Loc /= Null_Location then
-            Report (Rule_Id, To_Wide_String (Rule_Label (Fail_Type)), Fail_Type, Fail_Loc,
+            Report (Rule_Id, To_Wide_String (Ctl_Labels (Fail_Type)), Fail_Type, Fail_Loc,
                     "Too many consecutive blank lines ("
                     & Integer_Img (Blank_Lines_Count)
                     & ')');
@@ -166,14 +166,14 @@ package body Rules.Max_Blank_Lines is
       end if;
 
       if Maximum (Count) /= Natural'Last and then Blank_Lines_Count = Maximum (Count)+1 then
-         Report (Rule_Id, To_Wide_String (Rule_Label (Count)), Count, Loc, "");
+         Report (Rule_Id, To_Wide_String (Ctl_Labels (Count)), Count, Loc, "");
       end if;
   end Process_Line;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Textual,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Max_Blank_Lines;

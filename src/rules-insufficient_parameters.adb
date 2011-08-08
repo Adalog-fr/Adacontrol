@@ -56,15 +56,15 @@ pragma Elaborate (Framework.Language);
 package body Rules.Insufficient_Parameters is
    use Framework;
 
-   Rule_Used : Rule_Types_Set := (others => False);
-   Save_Used : Rule_Types_Set;
+   Rule_Used : Control_Kinds_Set := (others => False);
+   Save_Used : Control_Kinds_Set;
 
-   Rule_Counts : array (Rule_Types) of Natural;
-   Rule_Labels : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Ctl_Counts : array (Control_Kinds) of Natural;
+   Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Insufficients_Context is new Root_Context with
       record
-         Insufficients : Rule_Types_Set;
+         Insufficients : Control_Kinds_Set;
       end record;
 
    Insufficient_Types : Context_Store;
@@ -82,44 +82,43 @@ package body Rules.Insufficient_Parameters is
       User_Message ("Control calls where absence of named notation can lead to confusion");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
    begin
-      if Rule_Used (Rule_Type) then
+      if Rule_Used (Ctl_Kind) then
          Parameter_Error (Rule_Id, "rule can be specified only once for each of check, search and count");
       end if;
 
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "number of ""insufficient"" parameters required");
       end if;
-      Rule_Counts (Rule_Type) := Get_Integer_Parameter (Min => 0);
+      Ctl_Counts (Ctl_Kind) := Get_Integer_Parameter (Min => 0);
 
       while Parameter_Exists loop
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
-            Value  : Rule_Types_Set := (others => False);
+            Value  : Control_Kinds_Set := (others => False);
          begin
-            Value (Rule_Type) := True;
+            Value (Ctl_Kind) := True;
             Associate (Insufficient_Types,
                        Entity,
                        Insufficients_Context'(Insufficients => Value));
          exception
             when Already_In_Store =>
                Value := Insufficients_Context (Association (Insufficient_Types, Entity)).Insufficients;
-               Value (Rule_Type) := True;
+               Value (Ctl_Kind) := True;
                Update (Insufficient_Types, Insufficients_Context'(Insufficients => Value));
          end;
       end loop;
 
-      Rule_Labels (Rule_Type) := To_Unbounded_Wide_String (Label);
-      Rule_Used   (Rule_Type) := True;
-   end Add_Use;
+      Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used  (Ctl_Kind) := True;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -153,7 +152,7 @@ package body Rules.Insufficient_Parameters is
    -- Is_Insufficient --
    ---------------------
 
-   function Is_Insufficient (Expr : Asis.Expression) return Rule_Types_Set is
+   function Is_Insufficient (Expr : Asis.Expression) return Control_Kinds_Set is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries, Utilities;
       Pref : Asis.Expression;
@@ -244,7 +243,7 @@ package body Rules.Insufficient_Parameters is
             | A_Not_In_Range_Membership_Test
               =>
             declare
-               Result : Rule_Types_Set := Is_Insufficient (Membership_Test_Expression (Expr));
+               Result : Control_Kinds_Set := Is_Insufficient (Membership_Test_Expression (Expr));
                Constr : Asis.Range_Constraint;
             begin
                Constr := Membership_Test_Range (Expr);
@@ -281,7 +280,7 @@ package body Rules.Insufficient_Parameters is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries, Utilities;
    begin
-      if Rule_Used = (Rule_Types => False) then
+      if Rule_Used = (Control_Kinds => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -293,8 +292,8 @@ package body Rules.Insufficient_Parameters is
 
       declare
          Parameters       : constant Asis.Association_List := Actual_Parameters (Element);
-         Nb_Insufficients : array (Rule_Types) of Natural := (others => 0);
-         Insufficiencies  : Rule_Types_Set;
+         Nb_Insufficients : array (Control_Kinds) of Natural := (others => 0);
+         Insufficiencies  : Control_Kinds_Set;
       begin
          for I in Parameters'Range loop
             if not Is_Nil (Formal_Parameter (Parameters (I))) then
@@ -304,38 +303,38 @@ package body Rules.Insufficient_Parameters is
 
             -- Positional notation
             Insufficiencies := Is_Insufficient (Actual_Parameter (Parameters (I)));
-            for T in Rule_Types loop
+            for T in Control_Kinds loop
                if Insufficiencies (T) then
                   Nb_Insufficients (T) := Nb_Insufficients (T) + 1;
                end if;
             end loop;
          end loop;
 
-         if Rule_Used (Check) and then Nb_Insufficients (Check) > Rule_Counts (Check) then
+         if Rule_Used (Check) and then Nb_Insufficients (Check) > Ctl_Counts (Check) then
             Report (Rule_Id,
-                    To_Wide_String (Rule_Labels (Check)),
+                    To_Wide_String (Ctl_Labels (Check)),
                     Check,
                     Get_Location (Element),
                     "call has "
                     & Integer_Img (Nb_Insufficients (Check))
                     & " ""insufficient"" parameters (maximum "
-                    & Integer_Img (Rule_Counts (Check))
+                    & Integer_Img (Ctl_Counts (Check))
                     & ')');
-         elsif Rule_Used (Search) and then Nb_Insufficients (Search) > Rule_Counts (Search) then
+         elsif Rule_Used (Search) and then Nb_Insufficients (Search) > Ctl_Counts (Search) then
             Report (Rule_Id,
-                    To_Wide_String (Rule_Labels (Search)),
+                    To_Wide_String (Ctl_Labels (Search)),
                     Search,
                     Get_Location (Element),
                     "call has "
                     & Integer_Img (Nb_Insufficients (Search))
                     & " ""insufficient"" parameters (maximum "
-                    & Integer_Img (Rule_Counts (Search))
+                    & Integer_Img (Ctl_Counts (Search))
                     & ')');
          end if;
 
-         if Rule_Used (Count) and then Nb_Insufficients (Count) > Rule_Counts (Count) then
+         if Rule_Used (Count) and then Nb_Insufficients (Count) > Ctl_Counts (Count) then
             Report (Rule_Id,
-                    To_Wide_String (Rule_Labels (Count)),
+                    To_Wide_String (Ctl_Labels (Count)),
                     Count,
                     Get_Location (Element),
                     "");
@@ -347,8 +346,8 @@ package body Rules.Insufficient_Parameters is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Insufficient_Parameters;

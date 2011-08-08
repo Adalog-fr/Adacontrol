@@ -1,6 +1,6 @@
 with Ada.Text_Io;
 
-pragma Elaborate_All (Ada.Text_Io);--## rule line off pragmas
+pragma Elaborate_All (Ada.Text_Io);--## rule line off pragmas ## some comment
 
 pragma Elaborate_All (Ada.Text_Io);
 

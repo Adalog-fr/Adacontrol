@@ -1,7 +1,7 @@
              check  expressions (slice);
              search expressions (real_equality);
 Logical    : check  expressions (and, or, xor, and_then, or_else);
-Others     : check  expressions (array_others, record_others);
+Others     : check  expressions (array_others, array_partial_others, record_others, record_partial_others);
 Unqualified: check  expressions (unqualified_aggregate);
 Aggregate  : search expressions (array_aggregate, record_aggregate);
 attributes : check  expressions (inconsistent_attribute_dimension);

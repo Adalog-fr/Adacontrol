@@ -65,12 +65,11 @@ package body Rules.Not_Elaboration_Calls is
       User_Message ("of the elaboration of a library package.");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
    begin
       if not Parameter_Exists then
@@ -81,7 +80,7 @@ package body Rules.Not_Elaboration_Calls is
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Subprograms, Entity, Basic.New_Context (Rule_Use_Type,Label));
+            Associate (Subprograms, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, "subprogram already given: " & Image (Entity));
@@ -90,7 +89,7 @@ package body Rules.Not_Elaboration_Calls is
 
       Rule_Used  := True;
 
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -170,8 +169,8 @@ package body Rules.Not_Elaboration_Calls is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Not_Elaboration_Calls;

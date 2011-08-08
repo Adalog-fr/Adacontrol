@@ -8,7 +8,8 @@ procedure T_Non_Static is
    type Acc is access Integer;
 
    -- Non static values:
-   V : Integer;
+   V  : Integer;
+   VA : Acc;
    type Ptr_Proc is access procedure;
    Ptr : Ptr_Proc;
 
@@ -55,6 +56,16 @@ procedure T_Non_Static is
    procedure Inst11 is new Gen1 (1, 2);
    procedure Inst12 is new Gen1 (V, V);                   -- Instantiation x2
    procedure Inst13 is new Gen1 (1);                      -- Instantiation
+
+   generic
+      X : in out Integer;
+   procedure Gen2;
+   procedure Gen2 is begin null; end;
+
+   procedure Inst21 is new Gen2 (V);
+   procedure Inst22 is new Gen2 (T_Non_Static.V);
+   procedure Inst23 is new Gen2 (T2(V));                  -- Instantiation
+   procedure Inst24 is new Gen2 (Va.all);                 -- Instantiation
 
    procedure Static is begin null; end;
    procedure Ren1 renames Static;

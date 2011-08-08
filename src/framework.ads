@@ -45,6 +45,9 @@ with
 pragma Elaborate_All (Binary_Map);
 
 package Framework is
+
+   Version : constant Wide_String := "1.8r7";
+
    -------------------------------------------------------------------
    -- General dimensioning constants                                --
    -------------------------------------------------------------------
@@ -53,9 +56,9 @@ package Framework is
    -- They can be used by rules to limit some capabilities.
    -- These limits are arbitrary and can be changed at will, no other change is needed.
 
-   Max_Identical_Rules : constant := 100;
+   Max_Controls_For_Rule : constant := 100;
    -- For rules that need an upper bound to the number of times they can
-   -- be specified
+   -- be specified in a control
 
    Max_Parameters : constant := 30;
    -- Maximum number of parameters declared by a subprogram or an entry
@@ -71,19 +74,20 @@ package Framework is
    -- The ASIS context                                              --
    -------------------------------------------------------------------
 
-   Adactl_Context : Asis.Context;
+   Adactl_Context : aliased Asis.Context;
 
    -------------------------------------------------------------------
    --  General types for rules                                      --
    -------------------------------------------------------------------
 
-   type Rule_Index is range 0 ..  Max_Identical_Rules;
-   type Rule_Index_Set is array (Rule_Index range 1 .. 32) of Boolean; -- Purposedly limited
-   pragma Pack (Rule_Index_Set);
+   type Control_Index is range 0 ..  Max_Controls_For_Rule;
+   type Control_Index_Set is array (Control_Index range 1 .. 32) of Boolean; -- Purposedly limited
+   pragma Pack (Control_Index_Set);
 
-   type Rule_Types is (Check, Search, Count);
-   type Rule_Types_Set is array (Rule_Types) of Boolean;
-   pragma Pack (Rule_Types_Set);
+   type Control_Kinds is (Check, Search, Count);
+   type Control_Kinds_Set is array (Control_Kinds) of Boolean;
+   pragma Pack (Control_Kinds_Set);
+   Empty_Control_Kinds_Set : constant Control_Kinds_Set := (others => False);
 
    type Uncheckable_Kinds is (False_Positive, False_Negative, Missing_Unit);
    subtype Uncheckable_Consequence is Uncheckable_Kinds range False_Positive .. False_Negative;
@@ -157,6 +161,7 @@ package Framework is
    -- A context is a rule-specific information
 
    type Root_Context is tagged null record;
+
    procedure Clear (Context : in out Root_Context);
    -- The default (inherited) Clear does nothing.
    -- Redefine clear if you extend Rule_Context with fields (like maps
@@ -166,7 +171,7 @@ package Framework is
    No_Matching_Context : constant Root_Context'Class;
 
    -- A basic context is what most rules need
-   -- It simply (logically) holds the Rule_Type and Rule_Label, but we need extra
+   -- It simply (logically) holds the Control_Kind and Control_Label, but we need extra
    -- mechanisms to allow specifying "Count" in addition to any "Search" or "Check"
    -- without causing double definitions in the context store. Therefore, this has to
    -- be private, and a constructor is provided.
@@ -176,10 +181,10 @@ package Framework is
       -- This package to prevent this operations from being primitive.
       -- Since New_Context could have been called Basic_New_Context, it is not
       -- really annoying to have to write Basic.New_Context...
-      function New_Context (With_Type : in Rule_Types; With_Label : in Wide_String) return Basic_Rule_Context;
+      function New_Context (With_Type : in Control_Kinds; With_Label : in Wide_String) return Basic_Rule_Context;
    end Basic;
-   function Rule_Type  (Context : in Basic_Rule_Context) return Rule_Types;
-   function Rule_Label (Context : in Basic_Rule_Context) return Wide_String;
+   function Control_Kind  (Context : in Basic_Rule_Context) return Control_Kinds;
+   function Control_Label (Context : in Basic_Rule_Context) return Wide_String;
 
 
    -------------------------------------------------------------------
@@ -304,12 +309,12 @@ private
    --  This way of defining No_Matching_Context ensures that it cannot
    --  be used for anything else than comparisons.
    type Not_Found_Context is new Root_Context with null record;
-   No_Matching_Context : constant Root_Context'Class := Not_Found_Context'(null record);
+   No_Matching_Context : aliased constant Root_Context'Class := Not_Found_Context'(null record);
 
    type Basic_Rule_Context is new Root_Context with
       record
-         Rule_Type   : Rule_Types;
-         Rule_Label  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+         Ctl_Kind    : Control_Kinds;
+         Ctl_Label   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          With_Count  : Boolean;
          Count_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
       end record;

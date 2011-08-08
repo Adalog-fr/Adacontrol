@@ -35,9 +35,9 @@ package Framework.Rules_Manager is
    Max_Rules : constant := 100; -- Max number of rules in AdaControl
    type Rules_Count is range 0 .. Max_Rules;
 
-   type Help_Procedure     is access procedure;
-   type Add_Use_Procedure  is access procedure (Label     : in Wide_String;
-                                                Rule_Type : in Rule_Types);
+   type Help_Procedure        is access procedure;
+   type Add_Control_Procedure is access procedure (Ctl_Label : in Wide_String;
+                                                   Ctl_Kind  : in Control_Kinds);
    type Rule_Action is (Clear, Suspend, Resume);
    type Command_Procedure  is access procedure (Action : Rule_Action);
    type Prepare_Procedure  is access procedure;
@@ -45,19 +45,21 @@ package Framework.Rules_Manager is
 
    type Extended_Rule_Kind is (Semantic, Textual, Semantic_Textual);
    subtype Rule_Kind is Extended_Rule_Kind range Semantic .. Textual;
-   procedure Register (Rule        : Wide_String;
-                       R_Kind      : Extended_Rule_Kind;
-                       Help_CB     : Help_Procedure;
-                       Add_Use_CB  : Add_Use_Procedure;
-                       Command_CB  : Command_Procedure;
-                       Prepare_CB  : Prepare_Procedure  := null;
-                       Finalize_CB : Finalize_Procedure := null);
+   procedure Register (Rule           : Wide_String;
+                       R_Kind         : Extended_Rule_Kind;
+                       Help_CB        : Help_Procedure;
+                       Add_Control_CB : Add_Control_Procedure;
+                       Command_CB     : Command_Procedure;
+                       Prepare_CB     : Prepare_Procedure  := null;
+                       Finalize_CB    : Finalize_Procedure := null);
 
    procedure Enter (Rule : Wide_String);
 
    --
    --  Declarations below this line are for the use of the framework
    --
+
+   Timing_Option : Boolean := False;
 
    function Has_Active_Rules (R_Kind : Rule_Kind) return Boolean;
 
@@ -68,11 +70,11 @@ package Framework.Rules_Manager is
    function Last_Rule return Wide_String;
    -- Name of last rule entered
 
-   procedure Help_All;
+   procedure Help_On_All_Rules;
    -- Displays all rules help
-   procedure Help (Rule_Id : in Wide_String);
+   procedure Help_On_Rule (Rule_Id : in Wide_String);
    -- Displays specific rule help
-   procedure Help_Names (Pretty : Boolean);
+   procedure Help_On_Names (Pretty : Boolean);
    -- Displays all rule names
 
    procedure Prepare_All;
@@ -83,11 +85,13 @@ package Framework.Rules_Manager is
    -- Calls the Finalize procedure for each rule, which is intended to do some actions
    -- at the end of each "Go" command
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types;
-                      Rule_Name : in Wide_String);
+   procedure Add_Control (Ctl_Label : in Wide_String;
+                          Ctl_Kind  : in Control_Kinds;
+                          Rule_Name : in Wide_String);
    -- Adds a new use of a rule.
 
    procedure Command_All (Action : Rule_Action);
    procedure Command (Rule_Id : in Wide_String; Action : Rule_Action);
+
+   procedure Report_Timings;
 end Framework.Rules_Manager;

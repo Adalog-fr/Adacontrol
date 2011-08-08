@@ -31,7 +31,7 @@
 
 package Adactl_Options is
 
-   type Action_Kinds is (Help, Help_Rule, Check, Process, Interactive_Process, Dependents);
+   type Action_Kinds is (Help, Check, Process, Interactive_Process, Dependents);
    subtype No_Asis_Actions is Action_Kinds range Help .. Check;
 
    Action : Action_Kinds;
@@ -47,7 +47,7 @@ package Adactl_Options is
    procedure Analyse_Options;
    -- Analyses and sets program options
 
-   procedure Help_Options;
+   procedure Help_On_Options;
    -- Help on command line options
 
    function Asis_Options return Wide_String;

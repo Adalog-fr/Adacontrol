@@ -83,13 +83,13 @@ package body Rules.Max_Call_Depth is
    -- We don't need to do anything special for generics, since we are starting from calls, they will
    -- always refer to (parts of) instantiations.
 
-   Rule_Used : Boolean := False;
-   Save_Used : Boolean;
-   Labels    : array (Rule_Types) of Unbounded_Wide_String;
+   Rule_Used  : Boolean := False;
+   Save_Used  : Boolean;
+   Ctl_Labels : array (Control_Kinds) of Unbounded_Wide_String;
 
    Unused   : constant Integer := -1;
    Infinite : constant Natural := Natural'Last;
-   Depths   : array (Rule_Types) of Integer := (others => Unused);
+   Depths   : array (Control_Kinds) of Integer := (others => Unused);
    -- Depth that triggers the message, i.e. allowed depth + 1
 
    package Depth_Map is new Binary_Map (Unbounded_Wide_String, Natural);
@@ -107,12 +107,11 @@ package body Rules.Max_Call_Depth is
       User_Message ("Control maximum call depth");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
    begin
@@ -120,12 +119,12 @@ package body Rules.Max_Call_Depth is
          Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
-      if Depths (Rule_Type) /= Unused then
+      if Depths (Ctl_Kind) /= Unused then
          Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
       if Is_Integer_Parameter then
-         Depths (Rule_Type) := Get_Integer_Parameter (Min => 0) + 1;
+         Depths (Ctl_Kind) := Get_Integer_Parameter (Min => 0) + 1;
          -- + 1 since we store the depth wich is an error
       else
          declare
@@ -134,7 +133,7 @@ package body Rules.Max_Call_Depth is
             if Param /= "FINITE" then
                Parameter_Error (Rule_Id, "depth or ""finite"" expected for parameter");
             end if;
-            Depths (Rule_Type) := Infinite;
+            Depths (Ctl_Kind) := Infinite;
          end;
       end if;
 
@@ -142,9 +141,9 @@ package body Rules.Max_Call_Depth is
          Parameter_Error (Rule_Id, "only one parameter allowed");
       end if;
 
-      Labels (Rule_Type) := To_Unbounded_Wide_String (Label);
-      Rule_Used          := True;
-   end Add_Use;
+      Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used             := True;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -420,10 +419,7 @@ package body Rules.Max_Call_Depth is
             when A_Procedure_Renaming_Declaration
               | A_Function_Renaming_Declaration
               =>
-               Renaming := A4G_Bugs.Renamed_Entity (Good_Decl);
-               if Expression_Kind (Renaming) = A_Selected_Component then
-                  Renaming := Selector (Renaming);
-               end if;
+               Renaming := Simple_Name (A4G_Bugs.Renamed_Entity (Good_Decl));
                case Expression_Kind (Renaming) is
                   when An_Explicit_Dereference =>
                      -- renaming of not static stuff
@@ -432,10 +428,7 @@ package body Rules.Max_Call_Depth is
                   when An_Indexed_Component =>
                      -- This can happen when renaming a member of an entry family as a procedure
                      -- (sigh)
-                     Renaming := Prefix (Renaming);
-                     if Expression_Kind (Renaming) = A_Selected_Component then
-                        Renaming := Selector (Renaming);
-                     end if;
+                     Renaming := Simple_Name (Prefix (Renaming));
                      Good_Decl := Corresponding_Name_Declaration (Renaming);
                   when An_Attribute_Reference
                     | An_Enumeration_Literal
@@ -540,19 +533,19 @@ package body Rules.Max_Call_Depth is
    procedure Process_Call (Call : in Asis.Element) is
       Depth : Natural;
 
-      procedure Do_Report (Rule_Type : Rule_Types) is
+      procedure Do_Report (Ctl_Kind : Control_Kinds) is
          use Framework.Reports, Utilities;
       begin
          if Depth = Infinite then
              Report (Rule_Id,
-                    To_Wide_String (Labels (Rule_Type)),
-                    Rule_Type,
+                    To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                    Ctl_Kind,
                     Get_Location (Call),
                     "Call to recursive entity");
         else
             Report (Rule_Id,
-                    To_Wide_String (Labels (Rule_Type)),
-                    Rule_Type,
+                    To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                    Ctl_Kind,
                     Get_Location (Call),
                     "Call has a depth of " & Integer_Img (Depth));
          end if;
@@ -579,7 +572,7 @@ package body Rules.Max_Call_Depth is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Max_Call_Depth;

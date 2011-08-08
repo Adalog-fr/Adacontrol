@@ -33,6 +33,22 @@ procedure T_Barrier_Expressions is
       return True;
    end Global;
 
+   protected Other_Prot is
+      function F return Boolean;
+      entry E;
+   end Other_Prot;
+   protected body Other_Prot is
+      function F return Boolean is
+      begin
+         return True;
+      end F;
+
+      entry E when Other_Prot.F is         -- variable, local_function
+      begin
+         null;
+      end E;
+   end Other_Prot;
+
    protected type Check is
       entry Simple_Boolean;
       entry Errors;
@@ -50,6 +66,8 @@ procedure T_Barrier_Expressions is
       ER : Extended_Record_Type;
    end Check;
 
+   External : Check;
+
    protected body Check is
       entry Simple_Boolean when B1 is                  -- Always OK
       begin
@@ -59,48 +77,54 @@ procedure T_Barrier_Expressions is
       entry Errors when
         (((B1)))                                      -- Parenthesized, OK
         or                                            -- logical_operator
-        (I in 1 .. Natural'Last                       -- logical_operator, any_component, value_attribute
+          (I in 1 .. Natural'Last                     -- logical_operator, any_component, value_attribute
            and then                                   -- logical_operator
-           (I + J ** K) mod I                         -- any_component x4, arithmetic_operator x3
+             (I + J ** K) mod I                       -- any_component x4, arithmetic_operator x3
            > 3                                        -- comparison_operator
-        )
+          )
         or                                            -- logical_operator
-        I = Integer (30.0)                            -- any_component, comparison_operator, conversion
+          I = Integer (30.0)                          -- any_component, comparison_operator, conversion
         or                                            -- logical_operator
-        I = Integer'(10)                              -- any_component, comparison_operator, conversion
+          I = Integer'(10)                            -- any_component, comparison_operator, conversion
         or                                            -- logical_operator
-        P = new Integer'(10)                          -- any_component, comparison_operator, allocation, conversion
+          P = new Integer'(10)                        -- any_component, comparison_operator, allocation, conversion
         or                                            -- logical_operator
-        R.I > 0                                       -- any_component, comparison_operator
-        or                                            -- logical_operator
-        S (S'First) = '1'                             -- indexing, any_component, comparison_operator, value_attribute
-        or                                            -- logical_operator
-        S (S'First .. 3) = "abc"                      -- indexing, any_component, comparison_operator, value_attribute
-        or                                            -- logical_operator
-        Local (I)                                     -- local_function, any_component
-        or                                            -- logical_operator
-          P.all /= 1                                  -- dereference, any_component, comparison_operator
-        or                                            -- logical_operator
+          R.I > 0                                     -- any_component, comparison_operator
+          or                                          -- logical_operator
+            S (S'First) = '1'                         -- indexing, any_component, comparison_operator, value_attribute
+          or                                          -- logical_operator
+            S (S'First .. 3) = "abc"                  -- indexing, any_component, comparison_operator, value_attribute
+          or                                          -- logical_operator
+            Local (I)                                 -- local_function, any_component
+          or                                          -- logical_operator
+            Check.Local (I)                           -- local_function, any_component
+          or                                          -- logical_operator
+            External.Local (I)                        -- variable, non_local_function_call, any_component
+          or                                          -- logical_operator
+            Other_Prot.F                              -- variable, non_local_function_call
+          or                                          -- logical_operator
+            P.all /= 1                                -- dereference, any_component, comparison_operator
+          or                                          -- logical_operator
             Pfunc.all (I)                             -- dereference, variable, any_component
-        or                                            -- logical_operator
+          or                                          -- logical_operator
             Pfunc (J)                                 -- dereference, variable, any_component
-        or                                            -- logical_operator
+          or                                          -- logical_operator
             Global                                    -- t_barrier_expressions.global
-        or                                            -- logical_operator
-        T'Terminated                                  -- value_attribute
-        or                                            -- logical_operator
-        Integer'Succ (I) = 2                          -- function_attribute, any_component, comparison_operator
-        or                                            -- logical_operator
-        R  = Record_Type'(I => 10)                    -- any_component, comparison_operator, conversion, record_aggregate
-        or                                            -- logical_operator
-        ER = Extended_Record_Type'(R with 10)         -- any_component x2, comparison_operator, conversion, record_extension
-        or                                            -- logical_operator
-        S = String'( 'a','b','c' )                    -- any_component, comparison_operator, conversion, array_aggregate
-        or                                            -- logical_operator
-        S = String'(1 => 'a', 2 => 'b', 3 => 'c')     -- any_component, comparison_operator, converson, array_aggregate
-        or                                            -- logical_operator
-        S = String'(1..Globi => ' ')                  -- any_component, operator_comparison, conversion, array_aggregate, variable
-         is
+          or                                          -- logical_operator
+            T'Terminated                              -- value_attribute
+          or                                          -- logical_operator
+            Integer'Succ (I) = 2                      -- function_attribute, any_component, comparison_operator
+          or                                          -- logical_operator
+            R  = Record_Type'(I => 10)                -- any_component, comparison_operator, conversion, record_aggregate
+          or                                          -- logical_operator
+            ER = Extended_Record_Type'(R with 10)     -- any_component x2, comparison_operator, conversion, record_extension
+          or                                          -- logical_operator
+            S = String'( 'a', 'b', 'c' )              -- any_component, comparison_operator, conversion, array_aggregate
+          or                                          -- logical_operator
+            S = String'(1 => 'a', 2 => 'b', 3 => 'c') -- any_component, comparison_operator, converson, array_aggregate
+          or                                          -- logical_operator
+            S = String'(1 .. Globi => ' ')            -- any_component, operator_comparison, conversion, array_aggregate, variable
+      is
       begin
          null;
       end;

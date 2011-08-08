@@ -1,15 +1,15 @@
-Min_Others_Span:    check  case_statement (min_others_span, 1);
-Min_Others_Span:    search case_statement (min_others_span, 100);
-Number_Empty_Others: count  case_statement (min_others_span, 1);
+Min_Others_Span:    check  case_statement (others_span, min 1);
+Min_Others_Span:    search case_statement (others_span, min 100);
+Number_Empty_Others: count  case_statement (others_span, min 1);
 
-Max_Values:      check  case_statement (max_values, 10);
-Max_Values:      search case_statement (Max_Values, 3);
-Number_big_case: count  case_statement (max_values, 100);
+Values:          check  case_statement (values, min 3, max 10);
+Max_Values:      search case_statement (values, max 3);
+Number_big_case: count  case_statement (values, max 100);
 
-Min_Paths:         check  case_statement (min_paths, 3);
-Min_Paths:         search case_statement (min_paths, 4);
-Number_small_case: count  case_statement (min_paths, 4);
+Min_Paths:         check  case_statement (paths, min 3);
+Min_Paths:         search case_statement (paths, min 4);
+Number_small_case: count  case_statement (paths, min 4);
 
-Range_Span:      check  case_statement (max_range_span, 5);
-Range_Span:      search case_statement (max_range_span, 4);
-Number_Big_Span: count  case_statement (max_range_span, 50);
+Range_Span:      check  case_statement (range_span, max 5);
+Range_Span:      search case_statement (range_span, max 4);
+Number_Big_Span: count  case_statement (range_span, max 50);

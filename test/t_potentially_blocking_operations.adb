@@ -8,7 +8,7 @@ procedure T_Potentially_Blocking_Operations is
       return True;
    end Func;
 
-   protected Prot1 is
+   protected type Prot1 is
       entry E;
       procedure P;
    end Prot1;
@@ -18,10 +18,12 @@ procedure T_Potentially_Blocking_Operations is
       procedure P2;
    end Prot2;
 
+   V1 : Prot1;
    protected body Prot1 is
       entry E when Func is    -- Potentially blocking in barrier
       begin
-         requeue Prot1.E;  -- External requeue to same object
+         requeue Prot1.E;  -- Internal requeue to same object, OK
+         requeue V1.E;     -- Possible external requeue to same object
       end E;
       procedure P is
       begin
@@ -44,7 +46,7 @@ procedure T_Potentially_Blocking_Operations is
 
    procedure Proc1 (B : Boolean) is
    begin
-      Prot1.E;
+      V1.E;
       if B then
          Proc1 (False);   -- Check recursion
       end if;
@@ -62,7 +64,7 @@ procedure T_Potentially_Blocking_Operations is
 
    procedure Proc3 is
    begin
-      Prot1.P;
+      V1.P;
    end Proc3;
 
    procedure Proc4 renames T_Potentially_Blocking_Operations.Proc3;
@@ -116,7 +118,7 @@ procedure T_Potentially_Blocking_Operations is
          R : Rec (False, True);     -- Task creation
          A : TT_Access;
       begin
-         Prot1.E;                   -- Potentially statement entry call
+         V1.E;                      -- Potentially statement entry call
          Proc1 (True);              -- Potentially blocking call
          Proc2;                     -- Potentially blocking call
          Proc4;                     -- External call to same object
@@ -139,6 +141,38 @@ procedure T_Potentially_Blocking_Operations is
          Abort_Task (Current_Task);   -- Potentially blocking call
       end Q;
    end Prot2;
+
+   -- Nasty forms of internal calls
+   protected Prot4 is
+      procedure Proc1;
+      procedure Proc2;
+   end Prot4;
+
+   protected body Prot4 is
+      procedure Proc1 is
+         protected Prot5 is
+            procedure Proc;
+         end Prot5;
+
+         protected body Prot5 is
+            procedure Proc is
+            begin
+               Proc2;
+               Prot4.Proc2;
+            end;
+         end Prot5;
+      begin
+         Prot5.Proc;
+         Prot4.Proc1;
+      end;
+
+      procedure Proc2 is
+      begin
+         null;
+      end;
+   end Prot4;
+
+
 begin
    null;
 end T_Potentially_Blocking_Operations;

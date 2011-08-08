@@ -51,8 +51,8 @@ with
 package body Adactl_Options is
 
    package Analyzer is
-      new Options_Analyzer (Binary_Options => "CDdeEhiIrsuvwx",
-                            Valued_Options => "fFlopSt",
+      new Options_Analyzer (Binary_Options => "CDdeEhiIrsTuvwx",
+                            Valued_Options => "fFlomMpSt",
                             Tail_Separator => "--");
 
    Unit_List    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
@@ -79,37 +79,48 @@ package body Adactl_Options is
 
    pragma No_Return (Option_Error);
 
-   ------------------
-   -- Help_Options --
-   ------------------
+   ---------------------
+   -- Help_On_Options --
+   ---------------------
 
-   procedure Help_Options is
+   procedure Help_On_Options is
       use Utilities, Framework.Reports;
    begin
-      User_Message ("Usage: adactl [-deirsuvw] [-f <rules file>] [-l <rules list>] [-o <output file>]");
-      User_Message ("          [-p <project file>] <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
-      User_Message ("       adactl -h [<rule id>... | all]");
-      User_Message ("       adactl -I [-deirsuvw] [-f <rules file>] [-l <rules list>] [-o <output file>]");
-      User_Message ("          [-p <project file>] <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
-      User_Message ("       adactl -D [-rsw] [-o <output file>]");
-      User_Message ("          [-p <project file>] <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
-      User_Message ("       adactl -C [-dv] [-f <rules file>] [-l <rules list>]");
+      User_Message ("Usage: adactl [-deEirsTuvwx]");
+      User_Message ("              [-p <project file>]     [-f <rules file>]    [-l < rules list > ]");
+      User_Message ("              [-o < output file > ]   [-t <trace file>]    [-F <format>]");
+      User_Message ("              [-S <statistics level>] [-m <warning limit>] [-M <message limit>]");
+      User_Message ("              <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
+      User_Message ("       adactl -h [<help item>...]");
+      User_Message ("       adactl -I [-deEirsTuvwx]");
+      User_Message ("              [-p <project file>]     [-f <rules file>]    [-l < rules list > ]");
+      User_Message ("              [-o < output file > ]   [-t <trace file>]    [-F <format>]");
+      User_Message ("              [-S <statistics level>] [-m <warning limit>] [-M <message limit>]");
+      User_Message ("              <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
+      User_Message ("       adactl -D [-rswx] [-p <project file>] [-o <output file>] ");
+      User_Message ("              <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
+      User_Message ("       adactl -C [-dvx] [-f <rules file>] [-l <rules list>]");
       User_Message ("");
 
       User_Message ("Special modes:");
-      User_Message ("   -h        prints this help message");
-      User_Message ("   -h rule   prints rule help");
-      User_Message ("   -h all    prints all rules help");
-      User_Message ("   -h list   prints all rules names");
-      User_Message ("   -I        interactive mode");
-      User_Message ("   -D        generate dependencies");
-      User_Message ("   -C        check rules syntax only");
+      User_Message ("   -h           prints general help message (options, rules, version, license)");
+      User_Message ("   -h <rule>... prints specific rule(s) help");
+      User_Message ("   -h all       prints all rules help");
+      User_Message ("   -h commands  prints commands help");
+      User_Message ("   -h license   prints license information");
+      User_Message ("   -h list      prints all rules names (GPS format)");
+      User_Message ("   -h options   prints command-line options help");
+      User_Message ("   -h rules     prints all rules names (normal format)");
+      User_Message ("   -h version   prints version information");
+      User_Message ("   -I           interactive mode");
+      User_Message ("   -D           generate dependencies");
+      User_Message ("   -C           check rules syntax only");
       User_Message ("Options:");
       User_Message ("   -d        enable debug mode");
       User_Message ("   -e        treat warnings (Search) as errors (Check)");
       User_Message ("   -E        print only errors (Check)");
       User_Message ("   -f file   use a file for the specification of rules");
-      User_Message ("   -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT)");
+      User_Message ("   -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)");
       User_Message ("   -i        ignore local deactivations");
       User_Message ("   -l rules  process with these rules");
       User_Message ("   -o file   specify an output file");
@@ -120,11 +131,12 @@ package body Adactl_Options is
                       & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ')');
       User_Message ("   -t file   specify a trace file");
+      User_Message ("   -T        Report execution time of rules");
       User_Message ("   -u        treat all parameters as Ada units");
       User_Message ("   -v        enable verbose mode");
       User_Message ("   -w        overwrite output file (works with -o)");
       User_Message ("   -x        exit when internal error");
-   end Help_Options;
+   end Help_On_Options;
 
    --------------------
    -- Gnat_Unit_Name --
@@ -153,7 +165,7 @@ package body Adactl_Options is
          end;
       end if;
 
-      return Translate (S (Unit_Name_First .. S'Last - 4), To_Mapping ("-", "."));
+      return Translate (S (Unit_Name_First .. S'Last - 4), To_Mapping ("-~", ".."));
 
    end Gnat_Unit_Name;
 
@@ -226,16 +238,39 @@ package body Adactl_Options is
    procedure Analyse_Options is
       use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
       use Utilities, Analyzer;
+
+      procedure Flag_To_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
+      begin
+         if Is_Present (Option) then
+            if Inverted then
+               Append (Options_Commands, "set " & Param & " off;");
+            else
+               Append (Options_Commands, "set " & Param & " on;");
+            end if;
+         end if;
+      end Flag_To_Command;
+
+      procedure Value_To_Command (Option : Character; Param : Wide_String; Required : Boolean := True) is
+      begin
+         if Is_Present (Option) then
+            Append (Options_Commands,
+                    "set " & Param & ' '
+                    & To_Wide_String (Value (Option, Explicit_Required => Required, Default => "")) & ';');
+         end if;
+      end Value_To_Command;
    begin
+
       --
       -- Help
       --
       if Is_Present (Option => 'h') then
+         Action := Help;
 
          if Parameter_Count = 0 then
-            Action := Help;
+            Options_Commands := To_Unbounded_Wide_String ("help OPTIONS, RULES;"
+                                                          & "message """";"
+                                                          & "help VERSION, LICENSE;");
          else
-            Action := Help_Rule;
             for I in Natural range 1.. Parameter_Count loop
                Options_Commands := Options_Commands & "help " & To_Wide_String (Parameter (I)) & ';';
             end loop;
@@ -258,53 +293,55 @@ package body Adactl_Options is
 
 
       --
-      -- Initialize options
+      -- Options that are not settable from the command language
       --
-
-      -- Output options
-      Utilities.Debug_Option   := Is_Present (Option => 'd');
-      Utilities.Verbose_Option := Is_Present (Option => 'v');
-      Overwrite_Option         := Is_Present (Option => 'w');
-
-      if Is_Present (Option => 'S') then
-         declare
-            Temp_Value : Integer;
-            use Framework.Reports;
-         begin
-            Temp_Value := Value ('S',
-                                 Default => Stats_Levels'Pos (Stats_Levels'Last),
-                                 Explicit_Required => False);
-            if Temp_Value not in 0 .. Stats_Levels'Pos (Stats_Levels'Last) then
-               Option_Error ("Value for S option must be in range 0 .."
-                               & Integer'Image (Stats_Levels'Pos (Stats_Levels'Last)));
-            end if;
-            Options_Commands := Options_Commands
-              & "set statistics " & Integer_Img (Temp_Value) & ';';
-         end;
-      end if;
-
-      if Is_Present (Option => 'o') then
-         -- modify current output
-         Options_Commands := Options_Commands
-           & "set output " & To_Wide_String (Value (Option => 'o', Explicit_Required => True)) & ';';
-      end if;
-
-      if Is_Present (Option => 't') then
-         -- modify current trace
-         Options_Commands := Options_Commands
-           & "set trace " & To_Wide_String (Value (Option => 't', Explicit_Required => True)) & ';';
-      end if;
-
-      Framework.Reports.Warning_As_Error_Option := Is_Present (Option => 'e');
-      Framework.Reports.Skip_Warning_Option     := Is_Present (Option => 'E');
-
-      -- Process options
       Recursive_Option := Is_Present (Option => 'r');
-      Ignore_Option    := Is_Present (Option => 'i');
-      Unit_Option      := Is_Present (Option => 'u');
       Spec_Option      := Is_Present (Option => 's');
+      Unit_Option      := Is_Present (Option => 'u');
+      Overwrite_Option := Is_Present (Option => 'w');
       Exit_Option      := Is_Present (Option => 'x');
 
+      --
+      -- Options that are translated into the command language
+      --
+
+      -- Command line parameters come first, since they define the default behaviour
+      -- for commands given in the file (-f) and -l options
+      Flag_To_Command  ('d', "debug");
+      Flag_To_Command  ('e', "warning_as_error");
+      Flag_To_Command  ('E', "warning", Inverted => True);
+      Value_To_Command ('F', "format");
+      Flag_To_Command  ('i', "ignore");
+      Value_To_Command ('m', "max_errors",   Required => False);
+      Value_To_Command ('M', "max_messages", Required => False);
+      Value_To_Command ('o', "output");
+      Value_To_Command ('S', "statistics");
+      Value_To_Command ('t', "trace");
+      Flag_To_Command  ('T', "timing");
+      Flag_To_Command  ('v', "verbose");
+
+      -- add commands from file
+      if Is_Present (Option => 'f') then
+         Append (Options_Commands,
+                 "source " & To_Wide_String (Value (Option => 'f', Explicit_Required => True)) & ';');
+      end if;
+
+      -- add commands from command line
+      -- Must stay after file, to allow changing parameters defined in file
+      -- (assuming there is no "go" command in the file)
+      if Is_Present (Option => 'l') then
+         Append (Options_Commands,
+                 Trim_All (To_Wide_String (Value (Option => 'l', Explicit_Required => True))));
+
+         if Element (Options_Commands, Length (Options_Commands)) /= ';' then
+            -- As a courtesy, provide the missing final ';'
+            Append (Options_Commands, ';');
+         end if;
+      end if;
+
+      --
+      -- Check options
+      --
       if Action /= Check and Parameter_Count = 0 then
          Option_Error ("At least one unit/file required");
       end if;
@@ -322,29 +359,9 @@ package body Adactl_Options is
          Option_Error("No rules specified");
       end if;
 
-      if Is_Present (Option => 'F') then
-         -- Output format
-         Options_Commands := Options_Commands
-           & "set format " & To_Wide_String (Value (Option => 'F', Explicit_Required => True)) & ';';
-      end if;
-
-      if Is_Present (Option => 'l') then
-         -- add rules uses from command line
-         Options_Commands := Options_Commands
-           & Trim_All (To_Wide_String (Value (Option => 'l', Explicit_Required => True)));
-
-         if Element (Options_Commands, Length (Options_Commands)) /= ';' then
-            -- As a courtesy, provide the missing final ';'
-            Options_Commands := Options_Commands & ';';
-         end if;
-      end if;
-
-      if Is_Present (Option => 'f') then
-         -- add rules uses from file
-         Options_Commands := Options_Commands
-                             & "source " & To_Wide_String (Value (Option => 'f', Explicit_Required => True)) & ';';
-      end if;
-
+      --
+      -- Add units
+      --
       if Action /= Check then
          for I in Natural range 1 .. Parameter_Count loop
             Add_Unit (To_Wide_String (Parameter (I)));
@@ -355,8 +372,6 @@ package body Adactl_Options is
    exception
       when Occur : Analyzer.Options_Error =>
          Option_Error (Occur);
-      when Overwrite_Error =>
-         Option_Error ("File " & Value (Option => 'o') & " already exists, use ""-w"" to overwrite");
    end Analyse_Options;
 
    ------------------

@@ -1,6 +1,7 @@
 with X_Usage;
 with Calendar;
 with Ada.Exceptions, Ada.Task_Identification;
+with System;
 procedure T_Usage is
    type Rec is
       record
@@ -162,4 +163,64 @@ Pseudo_Const:
          null;
       end if;
    end Pseudo_Const;
+
+   -- Types
+   declare
+      type T1 is (A, B, C);
+      type T2 is range 1 .. 10;
+      V1 : T2;
+
+      subtype S2 is T2;
+      subtype S3 is T2;
+      V2 : S2;
+   begin
+      null;
+   end;
+
+   -- Procedure and functions
+   declare
+      procedure P1 is begin null; end;
+      procedure P2;
+      procedure P2 is begin null; end;
+      function F1 return Integer;
+      function F1 return Integer is begin return 0; end;
+      function F2 return Integer is begin return 0; end;
+
+      type Acc_Proc is access procedure;
+
+      AP : Acc_Proc;
+      AF : System.Address;
+
+      I : Integer;
+   begin
+      P1;
+      I := F1;
+      Ap := P2'Access;
+      Af := F2'Address;
+   end;
+
+   -- Generics
+   declare
+      generic
+      package Gen1 is
+         procedure P;
+         procedure Q;
+      end Gen1;
+      package body Gen1 is
+         procedure P is begin null; end;
+         procedure Q is begin null; end;
+      end Gen1;
+
+      generic
+      package Gen2 is
+         procedure P;
+      end Gen2;
+      package body Gen2 is
+         procedure P is begin null; end;
+      end Gen2;
+
+      package Inst is new Gen1;
+   begin
+      Inst.P;
+   end;
 end T_Usage;

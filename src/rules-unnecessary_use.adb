@@ -80,7 +80,7 @@ package body Rules.Unnecessary_Use is
    type Subrules_Set is array (Subrules) of Boolean;
    Rule_Used : Subrules_Set := (others => False);
    Save_Used : Subrules_Set;
-   Contexts  : array (Subrules) of Basic_Rule_Context;
+   Ctl_Contexts  : array (Subrules) of Basic_Rule_Context;
 
    type User_Kind is (Nothing, Qualified_Name, Operator, Identifier);
    type Package_Info (Length_1, Length_2 : Positive) is
@@ -105,31 +105,31 @@ package body Rules.Unnecessary_Use is
       User_Message ("Control use clauses that can be removed, moved, or changed to use type.");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Subrules_Flag_Utilities;
 
-      S : Subrules;
+      Subrule : Subrules;
    begin
       if  Parameter_Exists then
          while Parameter_Exists loop
-            S := Get_Flag_Parameter (Allow_Any => False);
-            if Rule_Used (S) then
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
+            if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "subrule already specified");
             end if;
-            Contexts (S)   := Basic.New_Context (Rule_Type, Label);
-            Rule_Used (S) := True;
+            Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Rule_Used (Subrule)    := True;
          end loop;
       elsif Rule_Used /= (Subrules => False) then
          Parameter_Error (Rule_Id, "rule already specified");
       else
-         Contexts   := (others => Basic.New_Context (Rule_Type, Label));
+         Ctl_Contexts := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
          Rule_Used := (others => True);
       end if;
-   end Add_Use;
+   end Add_Control;
 
 
    -------------
@@ -202,7 +202,7 @@ package body Rules.Unnecessary_Use is
                   if Used_Packages.Current_Data.Name = Info.Name then
                      if Rule_Used (Nested) then
                         Report (Rule_Id,
-                                Contexts (Nested),
+                                Ctl_Contexts (Nested),
                                 Get_Location (Info.Elem),
                                 "use clause for """ & Info.Original_Name
                                 & """ in scope of use clause for same package at "
@@ -293,7 +293,7 @@ package body Rules.Unnecessary_Use is
                   if Info.User = Nothing and Used_Packages.Current_Origin = Specification then
                      if Rule_Used (Movable) then
                         Report (Rule_Id,
-                                Contexts (Movable),
+                                Ctl_Contexts (Movable),
                                 Get_Location (Info.Elem),
                                 "use clause can be moved to body: " & Info.Original_Name);
                      end if;
@@ -389,7 +389,7 @@ package body Rules.Unnecessary_Use is
                      when Nothing =>
                         if Rule_Used (Unused) then
                            Report (Rule_Id,
-                                   Contexts (Unused),
+                                   Ctl_Contexts (Unused),
                                    Get_Location (Info.Elem),
                                    "unused: """ & Info.Original_Name
                                    & Choose (Child_Warning,
@@ -399,7 +399,7 @@ package body Rules.Unnecessary_Use is
                      when Qualified_Name =>
                         if Rule_Used (Qualified) then
                            Report (Rule_Id,
-                                   Contexts (Qualified),
+                                   Ctl_Contexts (Qualified),
                                    Get_Location (Info.Elem),
                                    "all uses qualified: """ & Info.Original_Name
                                    & Choose (Child_Warning,
@@ -409,7 +409,7 @@ package body Rules.Unnecessary_Use is
                      when Operator =>
                         if Rule_Used (Operator) then
                            Report (Rule_Id,
-                                   Contexts (Operator),
+                                   Ctl_Contexts (Operator),
                                    Get_Location (Info.Elem),
                                    "only used for operators: """ & Info.Original_Name
                                    & Choose (Child_Warning,
@@ -431,8 +431,8 @@ package body Rules.Unnecessary_Use is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Unnecessary_Use;

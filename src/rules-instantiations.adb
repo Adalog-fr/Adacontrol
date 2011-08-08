@@ -154,12 +154,11 @@ package body Rules.Instantiations is
       User_Message ("Optionally, control is restricted to instantiations appearing at indicated locations");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Framework.Language.Shared_Keys, Instance_Info_List;
    begin
       if not Parameter_Exists then
@@ -179,7 +178,7 @@ package body Rules.Instantiations is
          if Has_Equal then
             Associate (Rule_Uses,
                        Generic_Name,
-                       Instantiation_Context'(Basic.New_Context (Rule_Type, Label) with
+                       Instantiation_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
                                               Has_Repeated  => True,
                                               Values        => Generic_Params,
                                               Places        => Places,
@@ -188,7 +187,7 @@ package body Rules.Instantiations is
          else
             Associate (Rule_Uses,
                        Generic_Name,
-                       Instantiation_Context'(Basic.New_Context (Rule_Type, Label) with
+                       Instantiation_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
                                               Has_Repeated => False,
                                               Values       => Generic_Params,
                                               Places       => Places),
@@ -199,7 +198,7 @@ package body Rules.Instantiations is
          when Already_In_Store =>
             Parameter_Error (Rule_Id, "this combination of parameters already specified for " & Image (Generic_Name));
       end;
-   end Add_Use;
+   end Add_Control;
 
    -----------
    -- Clear --
@@ -429,8 +428,8 @@ package body Rules.Instantiations is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Instantiations;

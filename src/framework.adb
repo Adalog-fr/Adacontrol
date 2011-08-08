@@ -48,6 +48,7 @@ with
 with
   A4G_Bugs,
   Thick_Queries,
+  Units_List,
   Utilities;
 
 package body Framework is
@@ -105,10 +106,10 @@ package body Framework is
    -------------------
 
    package body Basic is
-      function New_Context (With_Type : in Rule_Types; With_Label : in Wide_String) return Basic_Rule_Context is
+      function New_Context (With_Type : in Control_Kinds; With_Label : in Wide_String) return Basic_Rule_Context is
       begin
-         return (Rule_Type   => With_Type,
-                 Rule_Label  => To_Unbounded_Wide_String (With_Label),
+         return (Ctl_Kind    => With_Type,
+                 Ctl_Label   => To_Unbounded_Wide_String (With_Label),
                  With_Count  => False,
                  Count_Label => Null_Unbounded_Wide_String);
       end New_Context;
@@ -119,19 +120,19 @@ package body Framework is
    -- Rule_Type --
    ---------------
 
-   function Rule_Type (Context : in Basic_Rule_Context) return Rule_Types is
+   function Control_Kind (Context : in Basic_Rule_Context) return Control_Kinds is
    begin
-      return Context.Rule_Type;
-   end Rule_Type;
+      return Context.Ctl_Kind;
+   end Control_Kind;
 
    ----------------
    -- Rule_Label --
    ----------------
 
-   function Rule_Label (Context : in Basic_Rule_Context) return Wide_String is
+   function Control_Label (Context : in Basic_Rule_Context) return Wide_String is
    begin
-      return To_Wide_String (Context.Rule_Label);
-   end Rule_Label;
+      return To_Wide_String (Context.Ctl_Label);
+   end Control_Label;
 
    -------------------------------
    -- Entity_Specification_Kind --
@@ -201,20 +202,20 @@ package body Framework is
                raise Already_In_Store;
             end if;
 
-            if (Basic_Rule_Context (Context).Rule_Type = Count)
-              = (Basic_Rule_Context (Current.Value.all).Rule_Type = Count)
+            if (Basic_Rule_Context (Context).Ctl_Kind = Count)
+              = (Basic_Rule_Context (Current.Value.all).Ctl_Kind = Count)
             then
                -- Both are Count, or neither
                raise Already_In_Store;
             end if;
 
             -- One and only one is a Count
-            if Basic_Rule_Context (Current.Value.all).Rule_Type = Count then
-               Count_Label :=  Basic_Rule_Context (Current.Value.all).Rule_Label;
+            if Basic_Rule_Context (Current.Value.all).Ctl_Kind = Count then
+               Count_Label :=  Basic_Rule_Context (Current.Value.all).Ctl_Label;
                Free (Current.Value);
                Current.Value := new Root_Context'Class'(Context);
             else
-               Count_Label := Basic_Rule_Context (Context).Rule_Label;
+               Count_Label := Basic_Rule_Context (Context).Ctl_Label;
             end if;
             Basic_Rule_Context (Current.Value.all).With_Count  := True;
             Basic_Rule_Context (Current.Value.all).Count_Label := Count_Label;
@@ -289,7 +290,7 @@ package body Framework is
          if Element_Kind (Name) = A_Defining_Name then
             return Defining_Name_Image (E);
          else
-            return Name_Image (E);
+            return A4G_Bugs.Name_Image (E);
          end if;
       end Any_Name_Image;
 
@@ -328,7 +329,7 @@ package body Framework is
       elsif Is_Dispatching_Call (Name_Enclosing)
         and then Is_Equal (Good_Name, Called_Simple_Name (Name_Enclosing))
       then
-         Name_Image := To_Unbounded_Wide_String (To_Upper (Asis.Expressions.Name_Image (Good_Name)));
+         Name_Image := To_Unbounded_Wide_String (To_Upper (A4G_Bugs.Name_Image (Good_Name)));
          Result     := Fetch (Into.Simple_Names,
                               Name_Image,
                               Default_Value => Default_Context);
@@ -875,4 +876,6 @@ package body Framework is
       return False;
    end Is_Banned;
 
+begin
+   Units_List.Initialize (Adactl_Context'Access);
 end Framework;

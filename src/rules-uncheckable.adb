@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Ucheckable - Package body                                 --
+--  Rules.Uncheckable - Package body                                --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -42,7 +42,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Uncheckable is
    use Framework, Framework.Reports;
 
-   package Uncheckable_Flag_Utilities is new Framework.Language.Flag_Utilities (Uncheckable_Kinds);
+   subtype Subrules is Uncheckable_Kinds;
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Flags_Array is array (Uncheckable_Kinds) of Boolean;
    Rule_Used : Flags_Array := (others => False);
@@ -54,7 +55,7 @@ package body Rules.Uncheckable is
    ----------
 
    procedure Help is
-      use Utilities, Uncheckable_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
 
@@ -62,26 +63,25 @@ package body Rules.Uncheckable is
       User_Message ("Control occurrences of uncheckable constructs in other rules");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label     : in Wide_String;
-                      Rule_Type : in Rule_Types) is
-      use Framework.Language, Uncheckable_Flag_Utilities;
-      Flag : Uncheckable_Kinds;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Subrules_Flag_Utilities;
+      Subrule : Subrules;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            Flag := Get_Flag_Parameter (Allow_Any => False);
-            if Rule_Used (Flag) then
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
+            if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "value already given");
             end if;
-            Rule_Used (Flag) := True;
-            if Flag in Uncheckable_Consequence then
-               Set_Uncheckable (Flag, Rule_Type, Label);
+            Rule_Used (Subrule) := True;
+            if Subrule in Uncheckable_Consequence then
+               Set_Uncheckable (Subrule, Ctl_Kind, Ctl_Label);
             else
-               Missing_Unit_Context := Basic.New_Context (Rule_Type, Label);
+               Missing_Unit_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
             end if;
          end loop;
       else
@@ -92,12 +92,12 @@ package body Rules.Uncheckable is
             if Rule_Used (F) then
                Parameter_Error (Rule_Id, "value already given");
             end if;
-            Set_Uncheckable (F, Rule_Type, Label);
+            Set_Uncheckable (F, Ctl_Kind, Ctl_Label);
          end loop;
          Rule_Used := (others => True);
       end if;
 
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -134,7 +134,7 @@ package body Rules.Uncheckable is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access);
 end Rules.Uncheckable;

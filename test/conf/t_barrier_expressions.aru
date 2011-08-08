@@ -6,5 +6,7 @@ Should_not_appear: check barrier_expressions
     Arithmetic_Operator, Array_Aggregate,    Comparison_Operator, Conversion,
     Dereference,         Function_Attribute, Indexing,        Local_Function,
     Logical_Operator,    Record_Aggregate,   Value_Attribute,
-    T_Barrier_Expressions.Global
+    T_Barrier_Expressions.Global,
+    t_barrier_expressions.other_prot.f,
+    t_barrier_expressions.check.Local
 );

@@ -1,5 +1,7 @@
-t_type_initial_values.adb:2:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for this type
-t_type_initial_values.adb:3:9: Error: TYPE_INITIAL_VALUES: No initialization constant for this type matches pattern
-t_type_initial_values.adb:17:12: Error: TYPE_INITIAL_VALUES: No initialization constant defined for this type
-t_type_initial_values.adb:5:9: Error: TYPE_INITIAL_VALUES: No initialization constant for this type matches pattern
-t_type_initial_values.adb:8:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for this type
+t_type_initial_values.adb:18:12: Error: TYPE_INITIAL_VALUES: No initialization constant defined for type T5
+t_type_initial_values.adb:3:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for type Bool
+t_type_initial_values.adb:4:9: Error: TYPE_INITIAL_VALUES: No initialization constant matches pattern for type Int
+t_type_initial_values.adb:6:9: Error: TYPE_INITIAL_VALUES: No initialization constant matches pattern for type T1
+t_type_initial_values.adb:9:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for type T4
+x_initial_values.ads:4:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for type T
+x_initial_values.adb:2:9: Error: TYPE_INITIAL_VALUES: No initialization constant defined for type T2

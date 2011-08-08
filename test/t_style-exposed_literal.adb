@@ -22,6 +22,11 @@ procedure Exposed_Literal is
          B at 4 range 0 .. 31;                             -- OK
          C at 8 range 0 .. 31;                             -- OK
       end record;
+
+   type T is range 1 .. 10;                              -- OK
+   subtype Sub is T range 1 .. 5;                        -- OK
+
+   pragma JUNK ("ABCD");                                 -- OK
 begin
    I := 0;                                               -- OK
    I := 2;                                               -- Exposed_Literal (integer)
@@ -33,4 +38,14 @@ begin
    elsif S = "12345" then                                -- Exposed_Literal (string)
       C := 'A';                                          -- Exposed_Literal (character)
    end if;
+   S(5) := S(1);                                         -- OK
+   S (I + 5) := S (1);                                   -- Exposed_Literal (integer)
+   I := I**2;                                            -- OK
+   I := I**(2);                                          -- OK
+   I := 2**I;                                            -- Exposed_Literal (integer)
+
+   for I in 1 .. 10 loop                                 -- Exposed_Literal (integer)
+      null;
+   end loop;
+
 end Exposed_Literal;

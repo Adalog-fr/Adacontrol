@@ -175,6 +175,7 @@ package body Framework.Language is
       end Process_Error;
 
       procedure Process_Labelled_Command (Label : in Wide_String) is
+         -- Only controls can follow a label
       begin
          Next_Token;
          if Current_Token.Kind /= Colon then
@@ -192,13 +193,13 @@ package body Framework.Language is
          case Current_Token.Key is
             when Key_Check =>
                Next_Token;
-               Add_Use (Label, Check, Get_Rule_Name);
+               Add_Control (Label, Check, Get_Rule_Name);
             when Key_Search =>
                Next_Token;
-               Add_Use (Label, Search, Get_Rule_Name);
+               Add_Control (Label, Search, Get_Rule_Name);
             when Key_Count =>
                Next_Token;
-               Add_Use (Label, Count, Get_Rule_Name);
+               Add_Control (Label, Count, Get_Rule_Name);
             when others =>
                Syntax_Error ("Only ""Check"", ""Search"", or ""Count"" allowed after label",
                              Current_Token.Position);
@@ -219,7 +220,7 @@ package body Framework.Language is
             Syntax_Error ("""on"" or ""off"" expected", Current_Token.Position);
          end if;
       end State;
-   begin
+   begin   -- Compile
       -- Set up initial token
       begin
          Next_Token (No_Delay => True);
@@ -236,7 +237,7 @@ package body Framework.Language is
                   case Current_Token.Key is
                      when Key_Check =>
                         Next_Token;
-                        Add_Use ("", Check, Get_Rule_Name);
+                        Add_Control ("", Check, Get_Rule_Name);
                         Close_Command;
                         Last_Was_Go := False;
 
@@ -267,7 +268,7 @@ package body Framework.Language is
 
                      when Key_Count =>
                         Next_Token;
-                        Add_Use ("", Count, Get_Rule_Name);
+                        Add_Control ("", Count, Get_Rule_Name);
                         Close_Command;
                         Last_Was_Go := False;
 
@@ -283,27 +284,10 @@ package body Framework.Language is
                         if Current_Token.Kind = Semi_Colon then
                            Close_Command;
 
-                           User_Message ("Commands:");
-                           Help_Command;
-                           User_Message ("Rules:");
-                           Help_Names (Pretty => True);
-
-                        elsif Current_Token.Kind = Name and then Current_Token.Key = Key_All then
-                           Next_Token;
-                           Close_Command;
-
-                           Help_All;
-
-                        elsif Current_Token.Kind = Name
-                          and then To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length)) = "LIST"
-                        then
-                           Next_Token;
-                           Close_Command;
-
-                           Help_Names (Pretty => False);
-
+                           Help_Command ("COMMANDS");
+                           Help_Command ("RULES");
                         else
-                           -- The simpler solution is to provide help messages as rule names are parsed,
+                           -- The simpler solution is to provide help messages as parameters are parsed,
                            -- but this gives unpleasant behaviour in interactive mode when there is a
                            -- syntax error. Therefore, we first accumulate names, then give all helps.
                            declare
@@ -316,7 +300,8 @@ package body Framework.Language is
                                  end if;
                                  if Inx = Rule_Names'Last then
                                     -- This can happen only if the user specified the same rule
-                                    -- several times, and listed more names than there are rules.
+                                    -- several times, and listed more names than there are rules (or used
+                                    -- some of the special keywords in addition to rule names).
                                     -- Extremely unlikely in practice, but not a reason for not being careful...
                                     Syntax_Error ("Too many rule names in ""Help"" command", Current_Token.Position);
                                  end if;
@@ -329,7 +314,7 @@ package body Framework.Language is
                               end loop;
 
                               for I in Rules_Count range 1 .. Inx loop
-                                 Help (To_Wide_String (Rule_Names (I)));
+                                 Help_Command (To_Wide_String (Rule_Names (I)));
                               end loop;
 
                               -- Note: Close command *after* providing help, since in case of errors
@@ -365,7 +350,7 @@ package body Framework.Language is
 
                      when Key_Search =>
                         Next_Token;
-                        Add_Use ("", Search, Get_Rule_Name);
+                        Add_Control ("", Search, Get_Rule_Name);
                         Close_Command;
                         Last_Was_Go := False;
 
@@ -390,6 +375,34 @@ package body Framework.Language is
 
                                  Set_Format_Command (Format);
                               end;
+
+                           elsif Option = "MAX_ERRORS" then
+                              Next_Token;
+                              if Current_Token.Kind = Integer_Value then
+                                 if Current_Token.Value in 1 .. Thick_Queries.Biggest_Int (Natural'Last) then
+                                    Framework.Reports.Max_Errors := Natural (Current_Token.Value);
+                                    Next_Token;
+                                 else
+                                    Syntax_Error ("Incorrect value for Max_Errors", Current_Token.Position);
+                                 end if;
+                              else
+                                 Framework.Reports.Max_Errors := Natural'Last;
+                              end if;
+                              Close_Command;
+
+                           elsif Option = "MAX_MESSAGES" then
+                              Next_Token;
+                              if Current_Token.Kind = Integer_Value then
+                                 if Current_Token.Value in 1 .. Thick_Queries.Biggest_Int (Natural'Last) then
+                                    Framework.Reports.Max_Messages := Natural (Current_Token.Value);
+                                    Next_Token;
+                                 else
+                                    Syntax_Error ("Incorrect value for Max_Messages", Current_Token.Position);
+                                 end if;
+                              else
+                                 Framework.Reports.Max_Messages := Natural'Last;
+                              end if;
+                              Close_Command;
 
                            elsif Option = "OUTPUT" then
                               Next_Token (Force_String => True);
@@ -420,6 +433,30 @@ package body Framework.Language is
                               Next_Token;
                               Close_Command;
 
+                           elsif Option = "TAG1" then
+                              Next_Token;
+                              if Current_Token.Kind /= String_Value then
+                                 Syntax_Error ("String expected for tag value",
+                                               Current_Token.Position);
+                              end if;
+                              Framework.Reports.Adactl_Tag1
+                                := To_Unbounded_Wide_String (Current_Token.String_Text
+                                                             (1 .. Current_Token.String_Length));
+                              Next_Token;
+                              Close_Command;
+
+                           elsif Option = "TAG2" then
+                              Next_Token;
+                              if Current_Token.Kind /= String_Value then
+                                 Syntax_Error ("String expected for tag value",
+                                               Current_Token.Position);
+                              end if;
+                              Framework.Reports.Adactl_Tag2
+                                := To_Unbounded_Wide_String (Current_Token.String_Text
+                                                             (1 .. Current_Token.String_Length));
+                              Next_Token;
+                              Close_Command;
+
                            elsif Option = "TRACE" then
                               Next_Token (Force_String => True);
                               if Current_Token.Kind /= Name then
@@ -437,14 +474,18 @@ package body Framework.Language is
 
                            else  -- on/off options
                               Next_Token;
-                              if Option = "VERBOSE" then
-                                 Verbose_Option := State;
-                              elsif Option = "DEBUG" then
+                              if Option = "DEBUG" then
                                  Debug_Option := State;
                               elsif Option = "IGNORE" then
-                                 Ignore_Option := True;
+                                 Ignore_Option := State;
+                              elsif Option = "TIMING" then
+                                 Rules_Manager.Timing_Option := State;
+                              elsif Option = "VERBOSE" then
+                                 Verbose_Option := State;
                               elsif Option = "WARNING" then
                                  Skip_Warning_Option := not State;
+                              elsif Option = "WARNING_AS_ERROR" then
+                                 Warning_As_Error_Option := State;
                               else
                                  Syntax_Error ("Unrecognised parameter: """ & Option & '"', Current_Token.Position);
                               end if;

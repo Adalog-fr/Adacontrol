@@ -1,4 +1,141 @@
 ============
+== V1.8r7 ==
+============
+
+General
+-------
+New options -M and -m and corresponding commands ("set Max_Messages" and
+   "set Max_Errors"). -T ("set Timing on").
+Rearranged User Guide, clarified the notions of "rule", "control" and "command".
+
+New commands
+------------
+set warning_as_error
+set timing
+help commands|license|options|rules|version
+
+GPS
+---
+Now requires GPS > v4.0
+Improved messages (better statistics in locations window)
+In interactive mode, check syntax before launching Adacontrol for good.
+Added menu "create units file"
+Added option to store result in file and reload in GPS.
+Added option to use .adp file
+Added option to set ASIS options
+Added preferences for -m and -M options
+Added preference to choose whether to display AdaControl command and result
+
+Changes to existing rules
+-------------------------
+abnormal_function_return
+   accepts if and case statements, if all paths contain raise or return
+
+barrier_expressions
+   fixed bug, some local protected function calls were not properly recognized
+
+case_statement
+   allowed min/max values for all subrules
+
+declarations
+   added subrules multiple_protected_entries, unconstrained_subtype, 
+   controlled_type, constrained_array_variable, unconstrained_array_variable,
+   incomplete_type, deferred_constant, formal_type
+   
+   added location library
+
+expressions
+   added subrules array_partial_others, record_partial_others
+
+header_comments (model)
+   made repeated lines in pattern not greedy
+
+instantiations
+   added location library
+
+max_parameters
+   renamed to parameter_declarations, max_parameters now a subrule
+   added subrule min_parameters, max_defaulted_parameters, single_out_parameter
+
+naming_convention
+   added explicit rules for renamings. 
+   added "others" modifier.
+
+non_static
+   added parameters index_check
+
+potentially_blocking_operations
+   fixed bug that made some weird cases of internal calls appear as external calls
+
+reduceable_scope
+   controls declarations from package specs that are not used outside
+   the body
+
+simplifiable_expressions
+   added logical_not
+
+simplifiable_statements
+   added if_not
+
+statements
+   added unnamed_for_loop, unnamed_simple_loop, unnamed_while_loop, if_elsif,
+   effective_declare_block
+
+style (default_in):
+   fixed bug: rule was triggered for access parameters
+
+style (exposed_literal):
+   added places: index, exponent, pragma, type
+
+style (positional_parameter)
+   added modifier "not_operator" for "call"
+
+usage
+   added subrules: type, procedure, function, generic
+
+=============
+== V1.7r13 ==
+=============
+(Specific release, not released publicly)
+
+General
+-------
+Bug fix: type_initial_value did not work for types declared in library 
+         package specs.
+Bug fix: improper handling of return and goto in rule improper_initialization
+Fixed documentation for rule Type_Initial_Values
+
+New rules:
+----------
+object_declarations
+
+=============
+== V1.7r12 ==
+=============
+(Specific release, not released publicly)
+
+General
+-------
+Bug fix: fixed error in error recovery procedure
+ASIS bug workaround: failure in Name_Image (GNAT 6.0.x only)
+
+GPS
+---
+Added "Load result file" to AdaControl menu
+
+New commands
+------------
+set tag1
+set tag2
+
+Changes to existing rules
+-------------------------
+declarations
+   added parameters: 
+      binary_modular_type, non_binary_modular_type, access_all_type, 
+      access_constant_type
+
+============
 == V1.7r9 ==
 ============
 
@@ -56,6 +193,7 @@ multiple_assignments
 no_operator_usage
 not_selected_name
 simplifiable_statements
+type_initial_values (lacking documentation)
 units
 
 Changes to existing rules

@@ -62,17 +62,20 @@ package body Rules.Potentially_Blocking_Operations is
    --
    -- The SP_Property map keeps whether a given subprogram is potentially blocking.
    -- It is initialized with SP from the standard library known to be potentially blocking.
-   -- Since being potentially blocking is a property of the SP (independent on where it is called)
-   -- the map is never cleared, thus avoiding the same SP from being traversed twice.
+   -- Since being potentially blocking is a property of the SP (independently of where it is
+   -- called from) the map is never cleared, thus avoiding the same SP from being traversed
+   -- twice (even from different runs).
    --
    -- In the case where a SP is an instantiation, we analyse the corresponding generic and keep it
    -- SP_Property too. This way we do not need to re-analyze every instantiation, but more
-   -- importantly, this allows all instantiations from the generics in the IO library to be recognized
-   -- as potentially blocking.
+   -- importantly, this allows all instantiations from the generics in the IO library to be
+   -- recognized as potentially blocking.
+   --
+   -- Note: PTO below is an abbreviation for Protected Type or Object
 
    Rule_Used  : Boolean := False;
    Save_Used  : Boolean;
-   Rule_Type  : Rule_Types;
+   Rule_Kind  : Control_Kinds;
    Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type SP_Property_Record is
@@ -220,12 +223,11 @@ package body Rules.Potentially_Blocking_Operations is
       User_Message ("Control calls to potentially blocking operations from protected operations");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
@@ -239,8 +241,8 @@ package body Rules.Potentially_Blocking_Operations is
       end if;
 
       Rule_Used  := True;
-      Rule_Type  := Rule_Use_Type;
-      Rule_Label := To_Unbounded_Wide_String (Label);
+      Rule_Kind  := Ctl_Kind;
+      Rule_Label := To_Unbounded_Wide_String (Ctl_Label);
 
       -- We cannot initialize SP_Property at package elaboration time,
       -- because the context is not yet open.
@@ -251,7 +253,7 @@ package body Rules.Potentially_Blocking_Operations is
          Initialize_SP_Property;
          SP_Property_Initialized := True;
       end if;
-   end Add_Use;
+   end Add_Control;
 
    -------------
    -- Command --
@@ -303,6 +305,7 @@ package body Rules.Potentially_Blocking_Operations is
                             State   : in out Info) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Framework.Reports, Framework.Element_Queues;
+
       Is_Blocking    : Boolean;
       Referenced_PTO : Queue;
       Def            : Asis.Definition;
@@ -313,7 +316,7 @@ package body Rules.Potentially_Blocking_Operations is
          if To and not Is_Nil (State.PTO_Def) then
             Report (Rule_Id,
                     To_Wide_String (Rule_Label),
-                    Rule_Type,
+                    Rule_Kind,
                     Get_Location (Element),
                     Message);
          end if;
@@ -333,7 +336,7 @@ package body Rules.Potentially_Blocking_Operations is
             if Is_Equal (Ultimate_Expression_Type (Target), State.PTO_Def) then
                Report (Rule_Id,
                        To_Wide_String (Rule_Label),
-                       Rule_Type,
+                       Rule_Kind,
                        Get_Location (Element),
                        Choose (Declaration_Kind (Enclosing_Element (State.PTO_Def)) = A_Protected_Type_Declaration,
                                "possible ",
@@ -351,7 +354,7 @@ package body Rules.Potentially_Blocking_Operations is
                if Is_Equal (Ultimate_Expression_Type (Fetch (Current)), State.PTO_Def) then
                   Report (Rule_Id,
                           To_Wide_String (Rule_Label),
-                          Rule_Type,
+                          Rule_Kind,
                           Get_Location (Element),
                           Choose (Declaration_Kind (Enclosing_Element (State.PTO_Def)) = A_Protected_Type_Declaration,
                                   "possible ",
@@ -521,15 +524,10 @@ package body Rules.Potentially_Blocking_Operations is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use SP_Property_Map, Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Framework.Element_Queues;
       Decl : Asis.Declaration := Entity_Decl;
-      Name : Asis.Expression;
    begin
       -- Get rid of renamings
       while Declaration_Kind (Decl) in A_Renaming_Declaration loop
-         Name := A4G_Bugs.Renamed_Entity (Decl);
-         if Expression_Kind (Name) = A_Selected_Component then
-            Name := Selector (Name);
-         end if;
-         Decl := Corresponding_Name_Declaration (Name);
+         Decl := Corresponding_Name_Declaration (Simple_Name (A4G_Bugs.Renamed_Entity (Decl)));
       end loop;
 
       if Is_Banned (Decl, Rule_Id) then
@@ -670,8 +668,8 @@ package body Rules.Potentially_Blocking_Operations is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
-                                     Help_CB    => Help'Access,
-                                     Add_Use_CB => Add_Use'Access,
-                                     Command_CB => Command'Access,
-                                     Prepare_CB => Prepare'Access);
+                                     Help_CB        => Help'Access,
+                                     Add_Control_CB => Add_Control'Access,
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
 end Rules.Potentially_Blocking_Operations;

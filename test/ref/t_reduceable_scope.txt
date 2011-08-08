@@ -11,6 +11,7 @@ t_reduceable_scope.adb:113:17: Error: includes_blocks: P is not used
 t_reduceable_scope.adb:111:16: Error: includes_blocks: declaration of L can be moved inside procedure Inner1 at t_reduceable_scope.adb:114:10
 t_reduceable_scope.adb:111:10: Error: includes_blocks: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:113:7
 t_reduceable_scope.adb:111:7: Error: includes_blocks: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:114:10
+t_reduceable_scope.adb:21:7: Error: includes_blocks: Declaration of I can be moved into package body
 t_reduceable_scope.adb:59:14: Error: includes_blocks: Proc is not used
 t_reduceable_scope.adb:48:14: Error: includes_blocks: declaration of TT2 can be moved inside block at t_reduceable_scope.adb:70:4
 t_reduceable_scope.adb:20:12: Error: includes_blocks: declaration of Pack2 can be moved inside procedure P at t_reduceable_scope.adb:24:7

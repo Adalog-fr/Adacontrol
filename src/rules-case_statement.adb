@@ -47,6 +47,7 @@ with
 -- Adactl
 with
   Framework.Language,
+  Framework.Language.Shared_Keys,
   Framework.Rules_Manager,
   Framework.Reports;
 pragma Elaborate (Framework.Language);
@@ -55,63 +56,85 @@ package body Rules.Case_Statement is
 
    use Asis, Framework, Thick_Queries;
 
-   type Case_Statement_Names is (Min_Others_Span, Min_Paths, Max_Range_Span, Max_Values);
-   package Case_Statement_Flag_Utilities  is new Framework.Language.Flag_Utilities (Case_Statement_Names);
+   type Subrules is (Others_Span, Paths, Range_Span, Values);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Usage is array (Case_Statement_Names) of Rule_Types_Set;
+   type Usage is array (Subrules) of Control_Kinds_Set;
    Rule_Used : Usage := (others => (others => False));
    Save_Used : Usage;
 
-   Labels : array (Case_Statement_Names, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Values : array (Case_Statement_Names, Rule_Types) of Biggest_Natural := (others => (others => 0));
+   Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
+   type Bounds_Values is
+      record
+         Min, Max : Biggest_Natural;
+      end record;
+   Bounds : array (Subrules, Control_Kinds) of Bounds_Values := (others => (others => (0, 0)));
 
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Utilities;
+      use Utilities, Framework.Language.Shared_Keys;
    begin
       User_Message ("Rule: "& Rule_Id);
-      Case_Statement_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
-      User_Message ("Parameter(2): for min_others_span: minimum number of values allowed for others");
-      User_Message ("              for min_paths      : minimum number of 'when' allowed in the case statement");
-      User_Message ("              for max_range_span : maximum number of values allowed in a choice given as a range");
-      User_Message ("              for max_values     : maximum number of values allowed in the selector's subtype");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
+      User_Message ("Parameter(2..3): <bound> <value>");
+      User_Message ("                (at least one parameter required)");
+      Min_Max_Utilities.Help_On_Modifiers   (Header => "<bound>: ");
       User_Message ("Controls various sizes related to the case statement");
    end Help;
 
-   -------------
-   -- Add_Use --
-   -------------
+   -----------------
+   -- Add_Control --
+   -----------------
 
-   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Framework.Language, Case_Statement_Flag_Utilities, Ada.Strings.Wide_Unbounded;
-      Stmt : Case_Statement_Names;
+   procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Framework.Language, Framework.Language.Shared_Keys, Framework.Language.Shared_Keys.Min_Max_Utilities,
+          Subrules_Flag_Utilities;
+      use Ada.Strings.Wide_Unbounded;
+
+      Subrule_Name : Subrules;
+      Min_Given    : Boolean := False;
+      Max_Given    : Boolean := False;
+      Min_Val      : Biggest_Natural := 0;
+      Max_Val      : Biggest_Natural := Biggest_Natural'Last;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
-      Stmt := Get_Flag_Parameter (Allow_Any => False);
-      if Rule_Used (Stmt) (Rule_Type) then
-         Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+      Subrule_Name := Get_Flag_Parameter (Allow_Any => False);
+      if Rule_Used (Subrule_Name) (Ctl_Kind) then
+         Parameter_Error (Rule_Id, "rule already specified for " & Control_Kinds'Wide_Image (Ctl_Kind));
       end if;
 
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
-      case Stmt is
-         when Min_Others_Span | Min_Paths | Max_Values =>
-            Values (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 1);
-         when Max_Range_Span =>
-            Values (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 0);
-      end case;
+      while Parameter_Exists loop
+         case Get_Modifier (Required => True) is
+            when Min =>
+               if Min_Given then
+                  Parameter_Error (Rule_Id, "Min value given more than once");
+               end if;
+               Min_Val   :=  Get_Integer_Parameter (Min => 0);
+               Min_Given := True;
+            when Max =>
+               if Max_Given then
+                  Parameter_Error (Rule_Id, "Max value given more than once");
+               end if;
+               Max_Val   :=  Get_Integer_Parameter (Min => 0);
+               Max_Given := True;
+         end case;
+      end loop;
 
-      Labels    (Stmt, Rule_Type):= To_Unbounded_Wide_String (Label);
-      Rule_Used (Stmt)(Rule_Type):= True;
-    end Add_Use;
+      Bounds    (Subrule_Name, Ctl_Kind) := (Min_Val, Max_Val);
+      Labels    (Subrule_Name, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Rule_Used (Subrule_Name)(Ctl_Kind) := True;
+    end Add_Control;
 
    -------------
    -- Command --
@@ -131,13 +154,74 @@ package body Rules.Case_Statement is
       end case;
    end Command;
 
+   ------------------
+   -- Check_Report --
+   ------------------
+
+   procedure Check_Report (Subrule_Name : Subrules;
+                           Value        : Biggest_Natural;
+                           Message      : Wide_String;
+                           Elem         : Asis.Element)
+   is
+      use Ada.Strings.Wide_Unbounded;
+      use Framework.Reports;
+   begin
+      if Rule_Used (Subrule_Name) (Check) and then Value < Bounds (Subrule_Name, Check).Min then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Subrule_Name, Check)),
+                 Check,
+                 Get_Location (Elem),
+                 "too few " & Message
+                 & " (" & Biggest_Int_Img (Value) & ')');
+      elsif Rule_Used (Subrule_Name) (Search) and then Value < Bounds (Subrule_Name, Search).Min then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Subrule_Name, Search)),
+                 Search,
+                 Get_Location (Elem),
+                 "too few " & Message
+                 & " (" & Biggest_Int_Img (Value) & ')');
+      end if;
+
+      if Rule_Used (Subrule_Name) (Count) and then Value < Bounds (Subrule_Name, Count).Min then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Subrule_Name, Count)),
+                 Count,
+                 Get_Location (Elem),
+                 "");
+      end if;
+
+      if Rule_Used (Subrule_Name) (Check) and then Value > Bounds (Subrule_Name, Check).Max then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Subrule_Name, Check)),
+                 Check,
+                 Get_Location (Elem),
+                 "too many " & Message
+                 & " (" & Biggest_Int_Img (Value) & ')');
+      elsif Rule_Used (Subrule_Name) (Search) and then Value > Bounds (Subrule_Name, Search).Max then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Subrule_Name, Search)),
+                 Search,
+                 Get_Location (Elem),
+                 "too many " & Message
+                 & " (" & Biggest_Int_Img (Value) & ')');
+      end if;
+
+      if Rule_Used (Subrule_Name) (Count) and then Value > Bounds (Subrule_Name, Count).Max then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Subrule_Name, Count)),
+                 Count,
+                 Get_Location (Elem),
+                 "");
+      end if;
+   end Check_Report;
+
    ----------------------------
    -- Process_Case_Statement --
    ----------------------------
 
    procedure Process_Case_Statement (Statement : in Asis.Statement) is
-      use Ada.Strings.Wide_Unbounded;
-      use Asis.Elements, Asis.Statements, Framework.Reports;
+      use Asis.Elements, Asis.Statements;
+      use Framework.Reports;
 
       Non_Evaluable : exception;
 
@@ -183,8 +267,7 @@ package body Rules.Case_Statement is
       procedure Process_Min_Others_Range is
          use Asis.Declarations;
          Case_Paths   : constant Path_List := Statement_Paths (Statement);
-         Subtype_Span : Biggest_Int;
-         Others_Span  : Biggest_Int;
+         Subtype_Span : Extended_Biggest_Int;
       begin
          -- Don't waste time if there is no "when others" choice (must be last)
          if Definition_Kind (Case_Statement_Alternative_Choices
@@ -211,32 +294,10 @@ package body Rules.Case_Statement is
             end if;
          end if;
 
-         Others_Span  := Subtype_Span - Count_Non_Others_Choices (Case_Paths);
-         if Rule_Used (Min_Others_Span)(Check) and then Others_Span < Values (Min_Others_Span, Check) then
-               Report (Rule_Id,
-                       To_Wide_String (Labels (Min_Others_Span, Check)),
-                       Check,
-                       Get_Location (Case_Paths (Case_Paths'Last)),
-                       "too few values covered by ""others"" in case statement ("
-                       & Biggest_Int_Img (Others_Span)
-                       & ')');
-         elsif Rule_Used (Min_Others_Span)(Search) and then Others_Span < Values (Min_Others_Span, Search) then
-               Report (Rule_Id,
-                       To_Wide_String (Labels (Min_Others_Span, Search)),
-                       Search,
-                       Get_Location (Case_Paths (Case_Paths'Last)),
-                       "too few values covered by ""others"" in case statement ("
-                       & Biggest_Int_Img (Others_Span)
-                       & ')');
-         end if;
-
-         if Rule_Used (Min_Others_Span)(Count) and then Others_Span < Values (Min_Others_Span, Count) then
-               Report (Rule_Id,
-                       To_Wide_String (Labels (Min_Others_Span, Count)),
-                       Count,
-                       Get_Location (Case_Paths (Case_Paths'Last)),
-                       "");
-         end if;
+         Check_Report (Others_Span,
+                       Value   => Subtype_Span - Count_Non_Others_Choices (Case_Paths),
+                       Message => "values covered by ""others"" in case statement",
+                       Elem    => Case_Paths (Case_Paths'Last));
 
       exception
          when Non_Evaluable =>
@@ -244,95 +305,51 @@ package body Rules.Case_Statement is
       end Process_Min_Others_Range;
 
       --
-      -- max_values is the number of values covered by the sub type
+      -- max_values is the number of values covered by the subtype
       -- of the case selector
       --
       procedure Process_Max_Values is
-         Subtype_Span : Biggest_Int;
+         Subtype_Span : Extended_Biggest_Int;
       begin
          Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
                                                         (Case_Expression (Statement))) (1);
-
-         -- check if value if above or not
-         if Rule_Used (Max_Values)(Check) and then Subtype_Span > Values (Max_Values, Check) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Max_Values, Check)),
-                    Check,
-                    Get_Location (Statement),
-                       "too many values for subtype of selector in case statement ("
-                       & Biggest_Int_Img (Subtype_Span)
-                       & ')');
-         elsif Rule_Used (Max_Values)(Search) and then Subtype_Span > Values (Max_Values, Search) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Max_Values, Search)),
-                    Search,
-                    Get_Location (Statement),
-                       "too many values for subtype of selector in case statement ("
-                       & Biggest_Int_Img (Subtype_Span)
-                       & ')');
+         if Subtype_Span = Not_Static then
+            return;
          end if;
 
-         if Rule_Used (Max_Values)(Count) and then Subtype_Span > Values (Max_Values, Count) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Max_Values, Count)),
-                    Count,
-                    Get_Location (Statement),
-                    "");
-         end if;
+         Check_Report (Values,
+                       Value   => Subtype_Span,
+                       Message => "values for subtype of selector in case statement",
+                       Elem    => Statement);
 
       exception
          when Non_Evaluable =>
             return;
      end Process_Max_Values;
 
-      --
-      -- min_paths is the minimum value of "when" in the case
-      --
       procedure Process_Min_Paths is
-         Nbr_Of_Paths : constant Biggest_Int := Statement_Paths (Statement)'Length;
       begin
-         if Rule_Used (Min_Paths)(Check) and then Nbr_Of_Paths < Values (Min_Paths, Check) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Min_Paths, Check)),
-                    Check,
-                    Get_Location (Statement),
-                       "too few paths in case statement ("
-                       & Biggest_Int_Img (Nbr_Of_Paths)
-                       & ')');
-         elsif Rule_Used (Min_Paths)(Search) and then Nbr_Of_Paths < Values (Min_Paths, Search) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Min_Paths, Search)),
-                    Search,
-                    Get_Location (Statement),
-                       "too few paths in case statement ("
-                       & Biggest_Int_Img (Nbr_Of_Paths)
-                       & ')');
-         end if;
-
-         if Rule_Used (Min_Paths)(Count) and then Nbr_Of_Paths < Values (Min_Paths, Count) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Min_Paths, Count)),
-                    Count,
-                    Get_Location (Statement),
-                    "");
-         end if;
+         Check_Report (Paths,
+                       Value   => Statement_Paths (Statement)'Length,
+                       Message => "paths in case statement",
+                       Elem    => Statement);
       end Process_Min_Paths;
 
    begin
-      if Rule_Used = (Case_Statement_Names => (Rule_Types => False)) then
+      if Rule_Used = (Subrules => (Control_Kinds => False)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-       if Rule_Used (Max_Values) /= (Rule_Types => False) then
+       if Rule_Used (Values) /= (Control_Kinds => False) then
           Process_Max_Values;
        end if;
 
-       if Rule_Used (Min_Paths) /= (Rule_Types => False) then
+       if Rule_Used (Paths) /= (Control_Kinds => False) then
          Process_Min_Paths;
        end if;
 
-      if Rule_Used (Min_Others_Span) /= (Rule_Types => False) then
+      if Rule_Used (Others_Span) /= (Control_Kinds => False) then
          Process_Min_Others_Range;
       end if;
    end Process_Case_Statement;
@@ -344,12 +361,11 @@ package body Rules.Case_Statement is
    procedure Process_Path (Path : Asis.Path) is
       use Asis.Elements, Asis.Statements;
       use Framework.Reports, Utilities;
-      use Ada.Strings.Wide_Unbounded;
 
       Choices : constant Asis.Element_List := Case_Statement_Alternative_Choices (Path);
       Nb_Val  : Extended_Biggest_Natural;
    begin
-      if Rule_Used (Max_Range_Span) = (Rule_Types => False) then
+      if Rule_Used (Range_Span) = (Control_Kinds => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -373,31 +389,10 @@ package body Rules.Case_Statement is
                   return;
                end if;
 
-               if Rule_Used (Max_Range_Span) (Check) and then Nb_Val > Values (Max_Range_Span, Check) then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Max_Range_Span, Check)),
-                          Check,
-                          Get_Location (Choices (C)),
-                          "too many values in choice range ("
-                            & Biggest_Int_Img (Nb_Val)
-                            & ')');
-               elsif Rule_Used (Max_Range_Span) (Search) and then Nb_Val > Values (Max_Range_Span, Search) then
-                  Report (Rule_Id,
-                    To_Wide_String (Labels (Max_Range_Span, Search)),
-                    Search,
-                    Get_Location (Choices (C)),
-                          "too many values in choice range ("
-                       & Biggest_Int_Img (Nb_Val)
-                       & ')');
-               end if;
-
-               if Rule_Used (Max_Range_Span) (Count) and then Nb_Val > Values (Max_Range_Span, Count) then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Max_Range_Span, Count)),
-                          Count,
-                          Get_Location (Choices (C)),
-                          "");
-               end if;
+               Check_Report (Range_Span,
+                             Value => Nb_Val,
+                             Message => "values in choice range",
+                             Elem    => Choices (C));
 
             when others =>
                Failure ("Wrong definition in case path");
@@ -408,7 +403,7 @@ package body Rules.Case_Statement is
 begin
    Rules_Manager.Register (Rule_Id,
                            Rules_Manager.Semantic,
-                           Help_CB    => Help'Access,
-                           Add_Use_CB => Add_Use'Access,
-                           Command_CB => Command'Access);
+                           Help_CB        => Help'Access,
+                           Add_Control_CB => Add_Control'Access,
+                           Command_CB     => Command'Access);
 end Rules.Case_Statement;

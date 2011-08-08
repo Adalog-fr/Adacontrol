@@ -33,14 +33,14 @@ procedure T_Improper_Initialization is
                BC : Boolean;
                IC : Integer;
             end record;
-         TV  : T;                                                   -- not safely initialized
+         TV  : T;                                                   -- used before initialization
          X   : Integer;
          IV0 : Integer renames X;
          IV1 : Integer renames IV0;
       begin
          IV1   := 0;
          TV.BC := True;
-         if TV.IC = 0 then
+         if TV.IC = 0 then                                          -- use of uninitialized TV
             IP := 1;
          end if;
       end Proc_Renaming;
@@ -296,15 +296,34 @@ B2 :
                I1 := 1;
                I2 := 1;
             elsif B then
-               I2 := 3;
                return;
+               I1 := 3;
             else
-               I1 := 2;
                I2 := 2;
             end if;
          when False =>
             I1 := 0;
             I2 := 0;
       end case;
+   end;
+
+   declare
+      X : Integer := 1;
+      V : Integer;     -- not safely initialized
+   begin
+      if X = 0 then
+         case X is
+            when 1 =>
+               V := 1;
+               if X = 1 then
+                  goto Ailleurs;
+               end if;
+            when others =>
+               V := 0;
+         end case;
+      end if;
+
+   <<Ailleurs>>
+      X := 0;
    end;
 end T_Improper_Initialization;

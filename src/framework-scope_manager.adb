@@ -164,7 +164,12 @@ package body Framework.Scope_Manager is
    -- Scoped_Store --
    ------------------
 
-   Inactive_Message : constant Wide_String := "Call of scoped_store operation in inactive state";
+   Inactive_Message  : constant Wide_String := "Call of scoped_store operation in inactive state";
+
+   Clear_Stay_Active : Boolean := False;
+   -- This is set to True only when performing an emergency reset due to an internal error.
+   -- Not very pretty to communicate through global variables, but we do not want to complicate
+   -- the regular case just for this (normally never happening) case.
 
    package body Scoped_Store is
       use Utilities;
@@ -887,7 +892,9 @@ package body Framework.Scope_Manager is
          pragma Unreferenced (Scope);
          Temp : Link;
       begin
-         Is_Active := False;
+         if not Clear_Stay_Active then
+            Is_Active := False;
+         end if;
 
          while Head /= null loop
             Temp := Head;
@@ -1101,6 +1108,7 @@ package body Framework.Scope_Manager is
    begin
       Scope_Top         := 0;
       Non_Package_Depth := 0;
+      Clear_Stay_Active := not Deactivate;
 
       Current := Clear_Procs;
       while Current /= null loop
