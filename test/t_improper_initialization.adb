@@ -217,7 +217,9 @@ procedure T_Improper_Initialization is
       end F;
    begin
       CI := S (I)'Alignment;                           -- use of uninitialized I
-      CI := S (S2(I)'Alignment)'Alignment;             -- use of uninitialized I
+      CI := S (S2 (I)'Alignment)'Alignment;            -- use of uninitialized I
+      CI := S(1..I)'First;                             -- use of uninitialized I
+      CI := S(Integer range 1..I)'First;               -- use of uninitialized I
       A  := Attr'Address;
       CI := F'First;
       A  := AS'Address;

@@ -258,6 +258,8 @@ package body Rules.Improper_Initialization is
                      Traverse (Indices (I), Control, State);
                   end loop;
                end;
+            when A_Slice =>
+               Traverse (Slice_Range (Element), Control, State);
             when A_Function_Call =>
                declare
                   Params : constant Asis.Association_List := Function_Call_Parameters (Element);
