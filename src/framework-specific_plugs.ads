@@ -32,6 +32,10 @@
 -- All specific rules
 
 package Framework.Specific_Plugs is
+   -- If you insert plugs into this package, change this string
+   -- to identify your specific version
+   Specific_Version : constant Wide_String := "";
+
    procedure Enter_Unit  (Unit : in Asis.Compilation_Unit);
    procedure Exit_Unit   (Unit : in Asis.Compilation_Unit);
    procedure Enter_Scope (Element : in Asis.Element);
@@ -41,4 +45,7 @@ package Framework.Specific_Plugs is
 
    procedure Pre_Procedure  (Element : in     Asis.Element);
    procedure Post_Procedure (Element : in     Asis.Element);
+
+   procedure Text_Enter_Unit (Unit : in Asis.Compilation_Unit);
+   procedure Text_Analysis   (Line : Asis.Program_Text; Loc : Location);
 end Framework.Specific_Plugs;

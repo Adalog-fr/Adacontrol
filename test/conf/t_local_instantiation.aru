@@ -1,4 +1,5 @@
 check local_instantiation (ada.unchecked_deallocation);
+search local_instantiation;
 
 -- Not tested, resistance test:
 Local_Instantiation_Memory_Leak: Check Local_Instantiation (Enumeration_External.Regular_G,

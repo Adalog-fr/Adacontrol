@@ -29,6 +29,9 @@ Access_C  : check naming_convention (Access_to_class_type, "_class$");
 Access_SP : check naming_convention (Access_to_sp_type, "_sp$");
 access_Ta : check naming_convention (access_to_task_type, "_task$");
 
+Global_Only : check naming_convention (all, global not "^l_");
+Local_Only  : check naming_convention (all, local  not "^g_");
+
 -- Rules given in String_Matching_Portable syntax:
 -- Too_short: check naming_convention (all, "????*");
 -- Standard  : check naming_convention (all, not integer);
@@ -57,3 +60,6 @@ access_Ta : check naming_convention (access_to_task_type, "_task$");
 -- Access_C  : check naming_convention (Access_to_regular_type, "*_class");
 -- Access_SP : check naming_convention (Access_to_sp_type, "*_sp");
 -- access_Ta : check naming_convention (access_to_task_type, "*_task");
+-- Global_Only : check naming_convention (all, global not "l_*");
+-- Local_Only  : check naming_convention (all, local  not "g_*");
+

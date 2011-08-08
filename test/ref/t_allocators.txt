@@ -1,4 +1,8 @@
-t_allocators.adb:8:10: Found: ALLOCATORS: allocator
-t_allocators.adb:9:10: Found: ALLOCATORS: allocator
-t_allocators.adb:10:10: Error: ALLOCATORS: allocator for Standard.String
-t_allocators.adb:11:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:49:10: Found: ALLOCATORS: allocator for All
+t_allocators.adb:50:10: Found: ALLOCATORS: allocator for All
+t_allocators.adb:51:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:52:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:53:10: Error: specific_task: allocator for T_Allocators.T1
+t_allocators.adb:54:10: Error: all_tasks: allocator for Task
+t_allocators.adb:55:10: Error: specific_prot: allocator for T_Allocators.P1
+t_allocators.adb:56:10: Error: all_prot: allocator for Protected

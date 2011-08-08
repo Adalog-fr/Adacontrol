@@ -29,20 +29,16 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Asis
 with
   Asis.Declarations,
-  Asis.Definitions,
   Asis.Elements,
   Asis.Expressions;
 
 -- Adalog
 with
   A4G_Bugs,
+  Thick_Queries,
   Utilities;
 
 -- Adactl
@@ -67,9 +63,9 @@ package body Rules.Allocators is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <allocated type> (optional)");
+      User_Message ("Parameter(s): task | protected | <allocated type> (optional)");
       User_Message ("Control occurrences of allocators, either all of them,");
-      User_Message ("or just those for specific type(s)");
+      User_Message ("or just those for tasks, protected types, or specific type(s)");
    end Help;
 
    -------------
@@ -78,30 +74,24 @@ package body Rules.Allocators is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
-
+      Entity : Entity_Specification;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            declare
-               Entity : constant Entity_Specification := Get_Entity_Parameter;
-            begin
-               Associate (Entities, Entity, Simple_Context'(Rule_Type,
-                                                            To_Unbounded_Wide_String (Label)));
-            exception
-               when Already_In_Store =>
-                  Parameter_Error ("Type already given for rule " & Rule_Id
-                                     & ": " & Image (Entity));
-            end;
+            Entity := Get_Entity_Parameter;
+            Associate (Entities, Entity, Basic.New_Context (Rule_Type, Label));
          end loop;
-
       else
-         Associate_Default (Entities, Simple_Context'(Rule_Type,
-                                                      To_Unbounded_Wide_String (Label)));
+         Entity := Value ("ALL");
+         Associate (Entities, Entity, Basic.New_Context (Rule_Type, Label));
       end if;
 
       Rule_Used  := True;
+   exception
+      when Already_In_Store =>
+         Parameter_Error ("Type or keyword already given for rule " & Rule_Id
+                          & ": " & Image (Entity));
    end Add_Use;
 
    -------------
@@ -137,10 +127,35 @@ package body Rules.Allocators is
    -----------------------
 
    procedure Process_Allocator (Element : in Asis.Element) is
-      use Ada.Strings.Wide_Unbounded, Utilities;
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Expressions, Asis.Elements;
+      use Utilities, Thick_Queries;
+      use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
+
+      Found : Boolean;
+
+      procedure Check (Current_Context : Root_Context'Class) is
+         use Framework.Reports;
+      begin
+         if Current_Context = No_Matching_Context then
+            Found := False;
+            return;
+         end if;
+
+         if Last_Matching_Name (Entities) = "" then
+            Report (Rule_Id,
+                    Current_Context,
+                    Get_Location (Element),
+                    "allocator");
+         else
+            Report (Rule_Id,
+                    Current_Context,
+                    Get_Location (Element),
+                    "allocator for " & To_Title (Last_Matching_Name (Entities)));
+         end if;
+         Found := True;
+      end Check;
 
       E : Asis.Element;
+      Is_Class : Boolean := False;
    begin
       if not Rule_Used then
          return;
@@ -150,7 +165,7 @@ package body Rules.Allocators is
       -- Retrieve in E the good subtype mark
       case Expression_Kind (Element) is
          when An_Allocation_From_Subtype =>
-            E := Asis.Definitions.Subtype_Mark (Allocator_Subtype_Indication (Element));
+            E := Subtype_Simple_Name (Allocator_Subtype_Indication (Element));
 
          when An_Allocation_From_Qualified_Expression =>
             E := Converted_Or_Qualified_Subtype_Mark
@@ -162,13 +177,14 @@ package body Rules.Allocators is
 
       -- E can be an attribute, T'Base or T'Class
       -- T'Base has the same first named subtype as T
+      -- T'Base is only allowed for scalar types, therefore we cannot have T'Base'Class
       if Expression_Kind (E) = An_Attribute_Reference then
          case A4G_Bugs.Attribute_Kind (E) is
             when A_Base_Attribute =>
                E := Prefix (E);
             when A_Class_Attribute =>
-               --TBSL Handle this properly
-               E := Prefix (E);
+               E        := Prefix (E);
+               Is_Class := True;
             when others =>
                Failure ("Unexpected attribute", E);
          end case;
@@ -181,37 +197,32 @@ package body Rules.Allocators is
       end if;
 
       -- Retrieve the first subtype
-      E := Names(Corresponding_First_Subtype (Corresponding_Name_Declaration (E)))(1);
+      E := Corresponding_First_Subtype (Corresponding_Name_Declaration (E));
 
-      declare
-         use Framework.Reports;
-         Current_Context : Rule_Context'Class := Matching_Context (Entities, E);
-      begin
-         if Current_Context = No_Matching_Context then
-            return;
+      if Is_Class then
+         Check (Framework.Association (Entities,
+                                       Framework.Value (To_Upper (Full_Name_Image (Names (E)(1))) & "'CLASS")));
+      else
+         Check (Matching_Context (Entities, Names (E)(1)));
+      end if;
+
+      if not Found then
+         if Is_Type_Declaration_Kind (E, A_Task_Type_Declaration) then
+            Check (Framework.Association (Entities, Framework.Value ("TASK")));
+         elsif Is_Type_Declaration_Kind (E, A_Protected_Type_Declaration) then
+            Check (Framework.Association (Entities, Framework.Value ("PROTECTED")));
          end if;
+      end if;
 
-         if Last_Matching_Name (Entities) = "" then
-            Report (Rule_Id,
-                    To_Wide_String (Simple_Context (Current_Context).Rule_Label),
-                    Simple_Context (Current_Context).Rule_Type,
-                    Get_Location (Element),
-                    "allocator");
-         else
-            Report (Rule_Id,
-                    To_Wide_String (Simple_Context (Current_Context).Rule_Label),
-                    Simple_Context (Current_Context).Rule_Type,
-                    Get_Location (Element),
-                    "allocator for " & To_Title (Last_Matching_Name (Entities)));
-         end if;
-      end;
-
+      if not Found then
+         Check (Framework.Association (Entities, Framework.Value ("ALL")));
+      end if;
    end Process_Allocator;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Allocators;

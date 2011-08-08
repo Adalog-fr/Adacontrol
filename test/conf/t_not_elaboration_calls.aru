@@ -1,17 +1,2 @@
 search not_elaboration_calls (ada.text_io.put_line, ada.text_io.line, ada.text_io.count'Image);
-search not_elaboration_calls (all dispatch);
-
--- Not tested, resistance test:
-Heavy_Call_Not_In_Elab_Or_Init_Code: Check Not_Elaboration_Calls (Param.Boolean.Create,
-                                                                  Param.Boolean.Shared.Create,
-                                                                  Param.Debug.Create,
-                                                                  Param.Debug.Shared.Create,
-                                                                  Param.Duration.Create,
-                                                                  Param.Duration.Shared.Create,
-                                                                  Param.Float.Create,
-                                                                  Param.Float.Shared.Create,
-                                                                  Param.Integer.Create,
-                                                                  Param.Integer.Shared.Create,
-                                                                  Param.String.Create, -- No shared string (yet?)
-                                                                  Param.Time.Create,
-                                                                  Param.Time.Shared.Create);
+check  not_elaboration_calls (all dispatch);

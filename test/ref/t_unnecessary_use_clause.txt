@@ -1,4 +1,4 @@
-t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for "Ada.Text_Io in scope of use clause for same package at t_unnecessary_use_clause.adb:8:4
+t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for "Ada.Text_Io" in scope of use clause for same package at t_unnecessary_use_clause.adb:8:4
 t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
 t_unnecessary_use_clause.adb:41:7: Error: UNNECESSARY_USE_CLAUSE: unused: "Ada.Strings"
 t_unnecessary_use_clause.adb:8:4: Error: UNNECESSARY_USE_CLAUSE: unused: "Text_IO"

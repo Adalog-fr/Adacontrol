@@ -1,0 +1,7 @@
+              check  Usage (variable, from_spec, written);
+Constantable: search Usage (variable, read, not written);
+Removable:    search usage (object,   not read, not written);
+              check  usage (exception, from_spec);
+              check  usage (task, from_spec);
+              check  usage (protected, from_spec);
+              count  usage (object, from_spec, initialized);

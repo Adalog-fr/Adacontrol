@@ -1,0 +1,11 @@
+-- Control usage of features defined in annex G.
+--
+Annex_G: check entities (Ada.Numerics.Generic_Complex_Types,
+                         Ada.Numerics.Generic_Complex_Elementary_Functions,
+                         Ada.Text_IO.Complex_IO,
+                         Ada.Wide_Text_IO.Complex_IO);
+Annex_G: check entities (all 'Model_Mantissa,
+                         all 'Model_Emin,
+                         all 'Safe_First,
+                         all 'Safe_Last,
+                         all 'Model);

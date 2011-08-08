@@ -35,12 +35,10 @@ with
 
 -- Asis
 with
-  Asis,
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions,
-  Asis.Statements;
+  Asis.Expressions;
 
 -- Adalog
 with
@@ -53,6 +51,7 @@ with
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
+pragma Elaborate (Framework.Language);
 
 package body Rules.Simplifiable_expressions is
    use Framework, Ada.Strings.Wide_Unbounded;
@@ -60,28 +59,19 @@ package body Rules.Simplifiable_expressions is
    type Keywords is (K_Range, K_Logical_True, K_Logical_False, K_Parentheses, K_Logical);
    subtype To_Check is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
+   package Check_Flags_Utilities is new Framework.Language.Flag_Utilities (Keywords, "K_");
+   use Check_Flags_Utilities;
+
    type Usage_Entry is
       record
          Used  : Boolean := False;
          Label : Unbounded_Wide_String;
-         end record;
+      end record;
    type Usages is array (To_Check) of Usage_Entry;
 
    Context   : array (Rule_Types) of Usages;
    Rule_Used : Boolean;
    Save_Used : Boolean;
-
-   -----------
-   -- Image --
-   -----------
-
-   function Image (Check : To_Check) return Wide_String is
-      use Utilities;
-      Img : constant Wide_String := To_Lower (To_Check'Wide_Image (Check));
-   begin
-      -- Remove "K_"
-      return Img (3 .. Img'Last);
-   end Image;
 
    ----------
    -- Help --
@@ -90,13 +80,12 @@ package body Rules.Simplifiable_expressions is
    procedure Help is
       use Utilities;
    begin
-      User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): ranges | logical | logical_true | logical_false");
-      User_Message ("              | parentheses (optional, default=all)");
-      User_Message ("Control occurrence of various forms of expressions that could be made simpler:");
-      User_Message ("  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
-      User_Message ("  <expression> = (/=) True/False");
-      User_Message ("  if (<expression>) or case (<expression>)");
+      User_Message  ("Rule: " & Rule_Id);
+      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default=all)");
+      User_Message  ("Control occurrence of various forms of expressions that could be made simpler:");
+      User_Message  ("  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
+      User_Message  ("  <expression> = (/=) True/False");
+      User_Message  ("  Unnecessary parentheses");
    end Help;
 
    -------------
@@ -105,12 +94,9 @@ package body Rules.Simplifiable_expressions is
 
    procedure Add_Use (Label         : in Wide_String;
                       Rule_Use_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded, Framework.Language;
+      use Framework.Language;
 
       Key : Keywords;
-      function Get_Check_Parameter is new Get_Flag_Parameter (Flags     => Keywords,
-                                                               Allow_Any => False,
-                                                               Prefix    => "K_");
 
       procedure Add_Check (Check : To_Check) is
       begin
@@ -124,7 +110,7 @@ package body Rules.Simplifiable_expressions is
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            Key := Get_Check_Parameter;
+            Key := Get_Flag_Parameter (Allow_Any => False);
             if Key = K_Logical then
                Add_Check (K_Logical_True);
                Add_Check (K_Logical_False);
@@ -171,8 +157,7 @@ package body Rules.Simplifiable_expressions is
    ------------------
 
    procedure Process_Call (Call : in Asis.Expression) is
-      use Ada.Strings.Wide_Unbounded, Asis,
-          Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries;
+      use Asis, Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries;
 
       type Param_Kind is (Static_True, Static_False, Expr);
       function "+" (Left : Wide_String) return Unbounded_Wide_String renames To_Unbounded_Wide_String;
@@ -207,7 +192,6 @@ package body Rules.Simplifiable_expressions is
                  (Static_True  => +"Simplify expression '<expr> /= True' to 'not <expr>'",    -- <Expr> /= True
                   Static_False => +"Simplify expression '<expr> /= False' to just '<expr>'",  -- <Expr> /= False
                   Expr         => +"")));                                                     -- <Expr> /= <Expr>
-      Op : constant Asis.Operator_Kinds := Operator_Kind (Prefix (Call));
 
       function Get_Kind (Param : Asis.Expression) return Param_Kind is
          use Utilities;
@@ -230,57 +214,61 @@ package body Rules.Simplifiable_expressions is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Op in  An_Equal_Operator .. A_Not_Equal_Operator then
-         declare
-            P : constant Asis.Association_List := Function_Call_Parameters (Call);
-            L : constant Param_Kind := Get_Kind (Actual_Parameter (P(1)));
-            R : constant Param_Kind := Get_Kind (Actual_Parameter (P(2)));
-         begin
-            if Message_Table (Op, L, R) /= Null_Unbounded_Wide_String then
-               -- Report the highest priority from Check/Search
-               if Context (Check)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
-                  Report (Rule_Id,
-                          To_Wide_String (Context (Check)(K_Logical_False).Label),
-                          Check,
-                          Get_Location (Call),
-                          To_Wide_String (Message_Table (Op, L, R)));
-               elsif Context (Check)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
-                  Report (Rule_Id,
-                          To_Wide_String (Context (Check)(K_Logical_True).Label),
-                          Check,
-                          Get_Location (Call),
-                          To_Wide_String (Message_Table (Op, L, R)));
-               elsif Context (Search)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
-                  Report (Rule_Id,
-                          To_Wide_String (Context (Search)(K_Logical_False).Label),
-                          Search,
-                          Get_Location (Call),
-                          To_Wide_String (Message_Table (Op, L, R)));
-               elsif Context (Search)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
-                  Report (Rule_Id,
-                          To_Wide_String (Context (Search) (K_Logical_True).Label),
-                          Search,
-                          Get_Location (Call),
-                          To_Wide_String (Message_Table (Op, L, R)));
-               end if;
+      declare
+         Op : constant Asis.Operator_Kinds := Operator_Kind (Prefix (Call));
+      begin
+         if Op in  An_Equal_Operator .. A_Not_Equal_Operator then
+            declare
+               P : constant Asis.Association_List := Function_Call_Parameters (Call);
+               L : constant Param_Kind := Get_Kind (Actual_Parameter (P(1)));
+               R : constant Param_Kind := Get_Kind (Actual_Parameter (P(2)));
+            begin
+               if Message_Table (Op, L, R) /= Null_Unbounded_Wide_String then
+                  -- Report the highest priority from Check/Search
+                  if Context (Check)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
+                     Report (Rule_Id,
+                             To_Wide_String (Context (Check)(K_Logical_False).Label),
+                             Check,
+                             Get_Location (Call),
+                             To_Wide_String (Message_Table (Op, L, R)));
+                  elsif Context (Check)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
+                     Report (Rule_Id,
+                             To_Wide_String (Context (Check)(K_Logical_True).Label),
+                             Check,
+                             Get_Location (Call),
+                             To_Wide_String (Message_Table (Op, L, R)));
+                  elsif Context (Search)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
+                     Report (Rule_Id,
+                             To_Wide_String (Context (Search)(K_Logical_False).Label),
+                             Search,
+                             Get_Location (Call),
+                             To_Wide_String (Message_Table (Op, L, R)));
+                  elsif Context (Search)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
+                     Report (Rule_Id,
+                             To_Wide_String (Context (Search) (K_Logical_True).Label),
+                             Search,
+                             Get_Location (Call),
+                             To_Wide_String (Message_Table (Op, L, R)));
+                  end if;
 
-               -- Always report Count
-               if Context (Count)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
-                  Report (Rule_Id,
-                          To_Wide_String (Context (Count) (K_Logical_False).Label),
-                          Count,
-                          Get_Location (Call),
-                          To_Wide_String (Message_Table (Op, L, R)));
-               elsif Context (Count)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
-                  Report (Rule_Id,
-                          To_Wide_String (Context (Count) (K_Logical_True).Label),
-                          Count,
-                          Get_Location (Call),
-                          To_Wide_String (Message_Table (Op, L, R)));
+                  -- Always report Count
+                  if Context (Count)(K_Logical_False).Used and then (L = Static_False or R = Static_False) then
+                     Report (Rule_Id,
+                             To_Wide_String (Context (Count) (K_Logical_False).Label),
+                             Count,
+                             Get_Location (Call),
+                             To_Wide_String (Message_Table (Op, L, R)));
+                  elsif Context (Count)(K_Logical_True).Used and then (L = Static_True or R = Static_True) then
+                     Report (Rule_Id,
+                             To_Wide_String (Context (Count) (K_Logical_True).Label),
+                             Count,
+                             Get_Location (Call),
+                             To_Wide_String (Message_Table (Op, L, R)));
+                  end if;
                end if;
-            end if;
-         end;
-      end if;
+            end;
+         end if;
+      end;
    end Process_Call;
 
    -------------------
@@ -288,7 +276,7 @@ package body Rules.Simplifiable_expressions is
    -------------------
 
    procedure Process_Range (Definition : in Asis.Definition) is
-      use Ada.Strings.Wide_Unbounded, Asis, Asis.Declarations, Asis.Definitions,
+      use Asis, Asis.Declarations, Asis.Definitions,
         Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries, Utilities;
 
       procedure Do_Reports (Message : Wide_String) is
@@ -355,8 +343,8 @@ package body Rules.Simplifiable_expressions is
                   --      and are satic integers.
                   if ALB'LENGTH /= AUB'LENGTH
                     or else (ALB'LENGTH = 1  -- Implies AUB'LENGTH = 1
-                             and then Asis_Integer'Wide_Value (Value_Image (ALB (1))) /=
-                             Asis_Integer'Wide_Value (Value_Image (AUB (1))))
+                             and then ASIS_Integer'Wide_Value (Value_Image (ALB (1))) /=
+                             ASIS_Integer'Wide_Value (Value_Image (AUB (1))))
                   then
                      return;
                   end if;
@@ -432,8 +420,8 @@ package body Rules.Simplifiable_expressions is
 
                                  case Expression_Kind (L_Indexers (I)) is
                                     when An_Integer_Literal =>
-                                       if Asis_Integer'Wide_Value (Value_Image (L_Indexers (I)))
-                                         /= Asis_Integer'Wide_Value (Value_Image (U_Indexers (I)))
+                                       if ASIS_Integer'Wide_Value (Value_Image (L_Indexers (I)))
+                                         /= ASIS_Integer'Wide_Value (Value_Image (U_Indexers (I)))
                                        then
                                           return;
                                        end if;
@@ -444,7 +432,8 @@ package body Rules.Simplifiable_expressions is
                                           return;
                                        end if;
                                     when An_Identifier =>
-                                       case Declaration_Kind (Corresponding_Name_Declaration (L_Indexers (I))) is
+                                       case Declaration_Kind (Corresponding_Name_Declaration (L_Indexers (I)))
+                                       is
                                           when A_Constant_Declaration
                                             | A_Deferred_Constant_Declaration
                                             | A_Loop_Parameter_Specification
@@ -466,6 +455,10 @@ package body Rules.Simplifiable_expressions is
                            -- Here, both indexings are the same
                            LP := Prefix (LP);
                            UP := Prefix (UP);
+
+                        when An_Explicit_Dereference =>
+                           -- Certainly not static
+                           return;
 
                         when others =>
                           Failure ("Unexpected expression kind", LP);
@@ -514,7 +507,7 @@ package body Rules.Simplifiable_expressions is
          when A_Discrete_Range_Attribute_Reference =>
             -- We are interested only in the case where the prefix is a (sub)type
             declare
-               P : Asis.Expression := Prefix (Range_Attribute (Definition));
+               P    : Asis.Expression := Prefix (Range_Attribute (Definition));
                Decl : Asis.Declaration;
                Def  : Asis.Definition;
             begin
@@ -529,10 +522,16 @@ package body Rules.Simplifiable_expressions is
                      return;
                end case;
 
-               -- Get rid of subtypes
+               -- Get rid of subtypes, incomplete views...
                Decl := Corresponding_Name_Declaration (P);
                if Declaration_Kind (Decl) = A_Subtype_Declaration then
                   Decl := Corresponding_First_Subtype (Decl);
+               end if;
+
+               if Declaration_Kind (Decl) = A_Private_Type_Declaration
+                 or Declaration_Kind (Decl) = An_Incomplete_Type_Declaration
+               then
+                  Decl := Corresponding_Type_Declaration (Decl);
                end if;
 
                case Declaration_Kind (Decl) is
@@ -545,11 +544,11 @@ package body Rules.Simplifiable_expressions is
                      Def := Type_Declaration_View (Decl);
                      loop
                         if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
-                           Def := Type_Declaration_View (Corresponding_Root_Type (Def));
+                           Def := Type_Declaration_View (A4G_Bugs.Corresponding_Root_Type (Def));
                         elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
                            Def := Type_Declaration_View (Corresponding_First_Subtype
                                                          (Corresponding_Name_Declaration
-                                                          (Definitions.Subtype_Mark (Def))));
+                                                          (Subtype_Simple_Name (Def))));
                         else
                            exit;
                         end if;
@@ -601,11 +600,10 @@ package body Rules.Simplifiable_expressions is
                     | An_Object_Renaming_Declaration
                     =>
                      null;
+
                   when others =>
                      Failure ("Unexpected Element_Kind 2: " &
-                              Declaration_Kinds'Wide_Image (Declaration_Kind
-                                                            (Corresponding_Name_Declaration
-                                                             (P))));
+                              Declaration_Kinds'Wide_Image (Declaration_Kind (Decl)));
                end case;
             end;
 
@@ -618,41 +616,27 @@ package body Rules.Simplifiable_expressions is
       end case;
    end Process_Range;
 
-   ------------------------
-   -- Process_Case_Or_If --
-   ------------------------
+   ---------------------------
+   -- Process_Parenthesized --
+   ---------------------------
 
-   procedure Process_Case_Or_If (Stmt : in Asis.Element) is
-      use Asis, Asis.Elements, Asis.Statements, Utilities, Framework.Reports;
+   procedure Process_Parenthesized (Expr : in Asis.Expression) is
+      use Asis, Asis.Elements, Asis.Expressions, Framework.Reports;
 
-      Expr : Asis.Expression;
-      Message : constant Wide_String := "Unnecessary parentheses in expression of ""if"" or ""case""";
-   begin
-      if not Rule_Used then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      if Statement_Kind (Stmt) = A_Case_Statement then
-         Expr := Case_Expression (Stmt);
-      elsif Path_Kind (Stmt) in An_If_Path .. An_Elsif_Path then
-         Expr := Condition_Expression (Stmt);
-      else
-         Failure ("Not a case or if statement");
-      end if;
-
-      if Expression_Kind (Expr) = A_Parenthesized_Expression then
+      procedure Do_Report is
+         Message : constant Wide_String := "Unnecessary parentheses in expression";
+      begin
          if Context (Check)(K_Parentheses).Used then
             Report (Rule_Id,
                     To_Wide_String (Context (Check)(K_Parentheses).Label),
                     Check,
-                    Get_Location (Stmt),
+                    Get_Location (Expr),
                     Message);
          elsif Context (Search)(K_Parentheses).Used then
             Report (Rule_Id,
                     To_Wide_String (Context (Search)(K_Parentheses).Label),
                     Search,
-                    Get_Location (Stmt),
+                    Get_Location (Expr),
                     Message);
          end if;
 
@@ -660,15 +644,85 @@ package body Rules.Simplifiable_expressions is
             Report (Rule_Id,
                     To_Wide_String (Context (Count)(K_Parentheses).Label),
                     Count,
-                    Get_Location (Stmt),
+                    Get_Location (Expr),
                     Message);
          end if;
+      end Do_Report;
+
+      type Priority_Level is (Logical, Relational, Adding, Multiplying, Highest, Primary);
+      Priority : constant array (Asis.Operator_Kinds) of Priority_Level
+        := (Not_An_Operator                                              => Primary,
+            An_And_Operator          .. An_Xor_Operator                  => Logical,
+            An_Equal_Operator        .. A_Greater_Than_Or_Equal_Operator => Relational,
+            A_Plus_Operator          .. A_Unary_Minus_Operator           => Adding,
+            A_Multiply_Operator      .. A_Rem_Operator                   => Multiplying,
+            An_Exponentiate_Operator .. A_Not_Operator                   => Highest);
+
+      Enclosing : Asis.Element;
+      Enclosed  : Asis.Element;
+   begin
+      if not Rule_Used then
+         return;
       end if;
-   end Process_Case_Or_If;
+      Rules_Manager.Enter (Rule_Id);
+
+      Enclosing := Enclosing_Element (Expr);
+      if Element_Kind (Enclosing) = An_Association then
+         Enclosing := Enclosing_Element (Enclosing);
+      end if;
+
+      case Expression_Kind (Enclosing) is
+         when Not_An_Expression
+           | A_Parenthesized_Expression
+           =>
+            Do_Report;
+
+         when A_Function_Call =>
+            if Is_Prefix_Call (Enclosing) then
+               Do_Report;
+            else
+               Enclosed := Expression_Parenthesized (Expr);
+               case Expression_Kind (Enclosed) is
+                  when A_Function_Call =>
+                     if Is_Prefix_Call (Enclosed)
+                       or else  Priority (Operator_Kind (Prefix (Enclosing)))
+                              < Priority (Operator_Kind (Prefix (Enclosed)))
+                     then
+                        Do_Report;
+                     end if;
+                  when An_And_Then_Short_Circuit .. An_Or_Else_Short_Circuit =>
+                     null;
+                  when others =>
+                     Do_Report;
+               end case;
+            end if;
+
+         when An_And_Then_Short_Circuit
+           | An_Or_Else_Short_Circuit
+           =>
+            Enclosed := Expression_Parenthesized (Expr);
+            case Expression_Kind (Enclosed) is
+               when An_And_Then_Short_Circuit .. An_Or_Else_Short_Circuit =>
+                  if Expression_Kind (Enclosing) = Expression_Kind (Enclosed) then
+                     Do_Report;
+                     end if;
+               when A_Function_Call =>
+                  if Is_Prefix_Call (Enclosed) or else Priority (Operator_Kind (Prefix (Enclosed))) > Logical then
+                     Do_Report;
+                  end if;
+               when others =>
+                  Do_Report;
+            end case;
+
+         when others =>
+            null;
+      end case;
+
+   end Process_Parenthesized;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Simplifiable_expressions;

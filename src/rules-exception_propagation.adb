@@ -45,6 +45,7 @@ with
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
+pragma Elaborate (Framework.Language);
 
 -- Asis
 with
@@ -57,21 +58,29 @@ with
 package body Rules.Exception_Propagation is
    use Framework, Ada.Strings.Wide_Unbounded;
 
-   -- Note that "interface" will be a reserved work in Ada 2006
-   type Target_Kind is (Kw_Interface, Kw_Parameter, Kw_Task);
+   type Risk_Level is (No_Risk, Object_In_Declaration, Variable_In_Declaration, Call_In_Declaration, Always);
+
+   -- Note that "interface" is a reserved work in Ada 2005
+   type Target_Kind is (Kw_Interface, Kw_Parameter, Kw_Task, Kw_Declaration);
+
+   package Target_Kind_Utilities is new Framework.Language.Flag_Utilities (Target_Kind, Prefix => "KW_");
+   use Target_Kind_Utilities;
 
    type Usage is array (Target_Kind) of Boolean;
    Rule_Used : Usage := (others => False);
    Save_Used : Usage;
 
-   package Convention_Map is new Binary_Map (Unbounded_Wide_String, Simple_Context);
+   type EP_Rule_Context is new Basic_Rule_Context with
+      record
+         Check_Level : Risk_Level;
+      end record;
+   package Convention_Map is new Binary_Map (Unbounded_Wide_String, EP_Rule_Context);
    use Convention_Map;
 
-   Parameters  : Context_Store;
-   Conventions : Convention_Map.Map;
-   Task_Label  : Unbounded_Wide_String;
-   Task_Type   : Rule_Types;
-
+   Parameters          : Context_Store;
+   Conventions         : Convention_Map.Map;
+   Task_Context        : EP_Rule_Context;
+   Declaration_Context : EP_Rule_Context;
 
    ----------
    -- Help --
@@ -80,12 +89,13 @@ package body Rules.Exception_Propagation is
    procedure Help is
       use Utilities;
    begin
-      User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter 1     : interface | parameter | task");
-      User_Message ("Parameter 2 .. N: for interface: <convention name>");
-      User_Message ("                  for parameter: <full name of parameters known to expect call-backs>");
-      User_Message ("                  for task: nothing");
-      User_Message ("Control that certain kinds of subprograms (or tasks) cannot propagate exceptions");
+      User_Message  ("Rule: " & Rule_Id);
+      Help_On_Flags ("Parameter 1     : [<level>,]", Footer => "(<level> is required for declaration)");
+      User_Message  ("Parameter 2 .. N: for interface: <convention name>");
+      User_Message  ("                  for parameter: <full name of parameters known to expect call-backs>");
+      User_Message  ("                  for task: nothing");
+      User_Message  ("                  for declaration: nothing");
+      User_Message  ("Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions");
    end Help;
 
    -------------
@@ -93,20 +103,27 @@ package body Rules.Exception_Propagation is
    -------------
 
    procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded, Framework.Language, Utilities;
+      use Framework.Language, Utilities;
 
-      function Get_Target_Parameter is new Framework.Language.Get_Flag_Parameter (Flags     => Target_Kind,
-                                                                                  Allow_Any => False,
-                                                                                  Prefix    => "KW_");
-      Target  : Target_Kind;
+      Target      : Target_Kind;
+      Int_Value   : Integer;
+      Check_Level : Risk_Level := Always;
    begin
       if not Parameter_Exists then
          Parameter_Error ("Parameters required for rule " & Rule_Id);
       end if;
 
-      Target := Get_Target_Parameter;
+      if Is_Integer_Parameter then
+         Int_Value := Get_Integer_Parameter;
+         if Int_Value not in 0 .. 3 then
+            Parameter_Error ("Level must be 0 to 3");
+         end if;
+         Check_Level := Risk_Level'Val (Risk_Level'Pos (Always) - Int_Value);
+      end if;
+
+      Target := Get_Flag_Parameter (Allow_Any => False);
       case Target is
-         when KW_Interface =>
+         when Kw_Interface =>
             if not Parameter_Exists then
                Parameter_Error ("At least two parameters required for rule " & Rule_Id);
             end if;
@@ -117,16 +134,16 @@ package body Rules.Exception_Propagation is
                begin
                   Add (Conventions,
                        To_Unbounded_Wide_String (Convention),
-                       Simple_Context'(Rule_Type, To_Unbounded_Wide_String (Label)));
+                       EP_Rule_Context'(Basic.New_Context (Rule_Type, Label) with Check_Level));
                exception
                   when Already_In_Store =>
                      Parameter_Error ("Convention already given for rule " & Rule_Id
                                       & ": " & Convention);
                end;
             end loop;
-            Rule_Used (KW_Interface) := True;
+            Rule_Used (Kw_Interface) := True;
 
-         when KW_Parameter =>
+         when Kw_Parameter =>
             if not Parameter_Exists then
                Parameter_Error ("At least two parameters required for rule " & Rule_Id);
             end if;
@@ -135,28 +152,44 @@ package body Rules.Exception_Propagation is
                declare
                   Entity : constant Entity_Specification := Get_Entity_Parameter;
                begin
-                  Associate (Parameters, Entity, Simple_Context'(Rule_Type,
-                                                                 To_Unbounded_Wide_String (Label)));
+                  Associate (Parameters,
+                             Entity,
+                             EP_Rule_Context'(Basic.New_Context (Rule_Type, Label) with Check_Level));
                exception
                   when Already_In_Store =>
                      Parameter_Error ("Parameter already given for rule " & Rule_Id
                                       & ": " & Image (Entity));
                end;
             end loop;
-            Rule_Used (KW_Parameter) := True;
+            Rule_Used (Kw_Parameter) := True;
 
          when Kw_Task =>
             if Parameter_Exists then
                Parameter_Error ("No parameter for ""task""");
             end if;
 
-            if Rule_Used (KW_Task) then
+            if Rule_Used (Kw_Task) then
                Parameter_Error ("""task"" already given for rule " & Rule_Id);
             end if;
 
-            Task_Label          := To_Unbounded_Wide_String (Label);
-            Task_Type           := Rule_Type;
-            Rule_Used (KW_Task) := True;
+            Task_Context        := (Basic.New_Context (Rule_Type, Label) with Check_Level);
+            Rule_Used (Kw_Task) := True;
+
+         when Kw_Declaration =>
+            if Parameter_Exists then
+               Parameter_Error ("No parameter for ""declaration""");
+            end if;
+
+            if Rule_Used (Kw_Declaration) then
+               Parameter_Error ("""declaration"" already given for rule " & Rule_Id);
+            end if;
+
+            if Check_Level = Always then
+               Parameter_Error ("non 0 level required for ""declaration""");
+            end if;
+
+            Declaration_Context        := (Basic.New_Context (Rule_Type, Label) with Check_Level);
+            Rule_Used (Kw_Declaration) := True;
       end case;
    end Add_Use;
 
@@ -190,154 +223,252 @@ package body Rules.Exception_Propagation is
       Balance (Conventions);
    end Prepare;
 
-   ------------------------------
-   -- Can_Propagate_Exceptions --
-   ------------------------------
+   -------------------------
+   -- Post_Procedure_Null --
+   -------------------------
 
-   function Can_Propagate_Exceptions (SP_Body : Asis.Declaration) return Boolean is
+   procedure Post_Procedure_Null (Element : in     Asis.Element;
+                                  Control : in out Asis.Traverse_Control;
+                                  State   : in out Risk_Level) is
+      pragma Unreferenced (Element, Control, State);
+   begin
+      null;
+   end Post_Procedure_Null;
 
-      -- Procedure to check if a raise statement (or equivalent) is encountered
-      procedure Pre_Procedure (Element : in     Asis.Element;
-                               Control : in out Asis.Traverse_Control;
-                               State   : in out Boolean) is
+   --------------------------
+   -- Traverse_Declaration --
+   --------------------------
+
+   -- Procedure to check the level of "danger" of declarations
+   -- Never returns Always
+   procedure Pre_Procedure_Declaration (Element : in     Asis.Element;
+                                        Control : in out Asis.Traverse_Control;
+                                        State   : in out Risk_Level);
+
+   procedure Traverse_Declaration is new Asis.Iterator.Traverse_Element (Risk_Level,
+                                                                         Pre_Procedure_Declaration,
+                                                                         Post_Procedure_Null);
+
+   procedure Pre_Procedure_Declaration (Element : in     Asis.Element;
+                                        Control : in out Asis.Traverse_Control;
+                                        State   : in out Risk_Level) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
+      Good_Name : Asis.Element;
+   begin
+      case Element_Kind (Element) is
+         when A_Declaration =>
+            case Declaration_Kind (Element) is
+               when A_Variable_Declaration | A_Constant_Declaration =>
+                  State := Risk_Level'Max (State, Object_In_Declaration);
+
+               when A_Procedure_Body_Declaration
+                 | A_Function_Body_Declaration
+                 | A_Package_Body_Declaration
+                 | A_Task_Body_Declaration
+                 =>
+                  -- These cannot raise exceptions, and will be traversed later if necessary
+                  Control := Abandon_Children;
+
+               when others =>
+                  null;
+            end case;
+
+         when An_Expression =>
+            case Expression_Kind (Element) is
+               when A_Function_Call =>
+                  -- There is no higher risk in declarations
+                  State   := Call_In_Declaration;
+               when An_Identifier =>
+                  Good_Name := Ultimate_Name (Element);
+                  if Is_Nil (Good_Name)  -- Dynamic renaming
+                    or else Declaration_Kind (Corresponding_Name_Declaration (Element))
+                    = A_Variable_Declaration
+                  then
+                     State := Risk_Level'Max (State, Variable_In_Declaration);
+                  end if;
+               when An_Attribute_Reference =>
+                  -- Traverse prefix only
+                  Traverse_Declaration (Prefix (Element), Control, State);
+                  Control := Abandon_Children;
+               when others =>
+                  null;
+            end case;
+
+         when others =>
+            null;
+      end case;
+   end Pre_Procedure_Declaration;
+
+   --------------------------------
+   -- Exception_Propagation_Risk --
+   --------------------------------
+
+
+   function Exception_Propagation_Risk (SP_Body : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
+
+      -- Procedure to check if a raise statement (or equivalent) is encountered in a handler
+      -- returns No_Risk or Always only
+      procedure Pre_Procedure_Handler (Element : in     Asis.Element;
+                                       Control : in out Asis.Traverse_Control;
+                                       State   : in out Risk_Level) is
          use Asis, Asis.Elements, Utilities, Thick_Queries;
-         Callee : Asis.Expression;
+         SP : Asis.Expression;
       begin
          case Statement_Kind (Element) is
             when A_Raise_Statement =>
-               State   := True;
+               State   := Always;
                Control := Terminate_Immediately;
             when A_Procedure_Call_Statement =>
-               Callee := Called_Simple_Name (Element);
-
-               declare
-                  SP_Name : constant Wide_String := To_Upper (Full_Name_Image (Callee));
-               begin
-                  if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
-                    or else SP_Name = "ADA.EXCEPTIONS.RERAISE_EXCEPTION"
-                  then
-                     State   := True;
-                     Control := Terminate_Immediately;
-                  end if;
-               end;
+               SP := Called_Simple_Name (Element);
+               if not Is_Nil (SP) then
+                  -- It is nil for implicit or explicit dereference
+                  declare
+                     SP_Name : constant Wide_String := To_Upper (Full_Name_Image (SP));
+                  begin
+                     if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
+                       or else SP_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE"
+                     then
+                        State   := Always;
+                        Control := Terminate_Immediately;
+                     end if;
+                  end;
+               end if;
             when others =>
                null;
          end case;
-      end Pre_Procedure;
+      end Pre_Procedure_Handler;
 
-      procedure Post_Procedure (Element : in     Asis.Element;
-                                Control : in out Asis.Traverse_Control;
-                                State   : in out Boolean) is
-         pragma Unreferenced (Element, Control, State);
-      begin
-         null;
-      end Post_Procedure;
-
-      procedure Traverse is new Asis.Iterator.Traverse_Element (Boolean, Pre_Procedure, Post_Procedure);
+      procedure Traverse_Handler is new Asis.Iterator.Traverse_Element (Risk_Level,
+                                                                        Pre_Procedure_Handler,
+                                                                        Post_Procedure_Null);
 
       use Asis, Asis.Elements, Asis.Declarations, Asis.Statements;
-      Found       : Boolean;
+      Level       : Risk_Level;
       The_Control : Traverse_Control := Continue;
 
       Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
-   begin
+   begin -- Exception_Propagation_Risk
       -- Is there a handler ?
       if Handlers = Nil_Element_List then
-         return True;
+         return Always;
       end if;
 
-      -- Is there an others choice (it must be last)?
-      declare
-         Choices      : constant Asis.Element_List := Exception_Choices (Handlers (Handlers'last));
-         Others_Found : Boolean := False;
-      begin
-         for Choice in Choices'Range loop
-            if Definition_Kind (Choices (Choice)) = An_Others_Choice then
-               Others_Found := True;
-            end if;
-         end loop;
+      -- Is there an others choice (it must be last and the only choice)?
+      if Definition_Kind (Exception_Choices (Handlers (Handlers'last)) (1)) /= An_Others_Choice then
+         return Always;
+      end if;
 
-         if not Others_Found then
-            return True;
-         end if;
-      end;
-
-      -- Is there any raise statement?
-      Found := False;
+      -- Is there any raise statement in handler?
+      Level := No_Risk;
       for I in Handlers'Range loop
          declare
             Statements : constant Asis.Statement_List := Handler_Statements (Handlers (I));
          begin
             for J in Statements'Range loop
-               Traverse (Statements (J), The_Control, Found);
-               if Found then
-                  return True;
+               Traverse_Handler (Statements (J), The_Control, Level);
+               if Level = Always then
+                  return Always;
                end if;
             end loop;
          end;
       end loop;
 
-      return False;
-   end Can_Propagate_Exceptions;
+      -- Level is No_Risk here
+      -- No need to check declarations if not requested by the user
+      if Max_Level < Always then
+         declare
+            Declarations : constant Asis.Declaration_List := Body_Declarative_Items (SP_Body);
+         begin
+            The_Control := Continue;
+            for I in Declarations'Range loop
+               Traverse_Declaration (Declarations (I), The_Control, Level);
+               exit when Level >= Max_Level;
+               -- Highest risk detected, no need to go further
+            end loop;
+         end;
+      end if;
+
+      return Level;
+   end Exception_Propagation_Risk;
+
+   ------------------
+   -- Risk_Message --
+   ------------------
+
+   function Risk_Message (Risk : Risk_Level) return Wide_String is
+   begin
+      if Risk = Always then
+         return "";
+      end if;
+
+      return " (declaration at level" & Integer'Wide_Image (Risk_Level'Pos (Always) - Risk_Level'Pos (Risk)) & ')';
+   end Risk_Message;
 
    ------------------
    -- Process_Call --
    ------------------
 
-   procedure Process_Call (Call : Asis.Statement) is
-      use Ada.Strings.Wide_Unbounded, Asis, Asis.Statements, Asis.Elements, Asis.Expressions, Thick_Queries;
+   procedure Process_Call (Call : Asis.Element) is
+      use Asis, Asis.Statements, Asis.Elements, Asis.Expressions, Thick_Queries;
 
       -- Procedure to check if a 'Access or 'Address is encountered
       procedure Pre_Procedure (Element : in     Asis.Element;
                                Control : in out Asis.Traverse_Control;
-                               State   : in out Simple_Context)
+                               State   : in out EP_Rule_Context)
       is
          pragma Unreferenced (Control);
-         use Asis, Asis.Declarations;
+         use Asis.Declarations;
          use Framework.Reports;
          SP_Declaration : Asis.Declaration;
+         Risk           : Risk_Level;
+         Good_Prefix    : Asis.Expression;
       begin
          if Expression_Kind (Element) = An_Attribute_Reference
            and then A4G_Bugs.Attribute_Kind (Element) in An_Access_Attribute .. An_Address_Attribute
          then
-            case Expression_Kind (Prefix (Element)) is
-               when An_Explicit_Dereference =>
-                  -- Called subprogram is dynamic, nothing we can do
-                  return;
-               when A_Selected_Component =>
-                  SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name (Selector (Prefix (Element))));
-               when others =>
-                  SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name (Prefix (Element)));
-            end case;
+            Good_Prefix := Prefix (Element);
+            if Expression_Kind (Good_Prefix) = A_Selected_Component then
+               Good_Prefix := Selector (Good_Prefix);
+            end if;
+
+            if Expression_Kind (Good_Prefix) = An_Explicit_Dereference
+              or else Expression_Type_Kind (Good_Prefix) = An_Access_Type_Definition
+            then
+               -- Explicit or implicit dereference: called subprogram is dynamic, nothing we can do
+               return;
+            end if;
+            SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name (Good_Prefix));
 
             case Declaration_Kind (SP_Declaration) is
                when A_Procedure_Body_Declaration | A_Function_Body_Declaration =>
-                  if Can_Propagate_Exceptions (SP_Declaration) then
+                  Risk := Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
+                  if Risk >= State.Check_Level then
                      Report (Rule_Id,
-                             To_Wide_String (State.Rule_Label),
-                             State.Rule_Type,
+                             State,
                              Get_Location (SP_Declaration),
-                             "subprogram """
-                             &  Defining_Name_Image (Names (SP_Declaration)(1))
-                             & """ can propagate exceptions, used as call-back at "
-                             & Image (Get_Location (Call)));
+                             "subprogram """ &  Defining_Name_Image (Names (SP_Declaration)(1))
+                             & """ can propagate exceptions"
+                             & Risk_Message (Risk)
+                             & ", used as call-back at " & Image (Get_Location (Call)));
                   end if;
                when A_Procedure_Instantiation | A_Function_Instantiation =>
-                  if Can_Propagate_Exceptions (Corresponding_Body
-                                               (Corresponding_Name_Declaration
-                                                (Generic_Unit_name
-                                                 (SP_Declaration))))
-                  then
+                  Risk := Exception_Propagation_Risk (Corresponding_Body
+                                                      (Corresponding_Name_Declaration
+                                                       (Generic_Unit_Name
+                                                        (SP_Declaration))),
+                                                     State.Check_Level);
+                  if Risk >= State.Check_Level then
                      Report (Rule_Id,
-                             To_Wide_String (State.Rule_Label),
-                             State.Rule_Type,
+                             State,
                              Get_Location (Corresponding_Body
                                            (Corresponding_Name_Declaration
-                                            (Generic_Unit_name
+                                            (Generic_Unit_Name
                                              (SP_Declaration)))),
                              "generic """ &  Name_Image (Generic_Unit_Name (SP_Declaration))
-                             & """ can propagate exceptions, "
-                             & "instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
+                             & """ can propagate exceptions"
+                             & Risk_Message (Risk)
+                             & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
                              & """ at " & Image (Get_Location (SP_Declaration))
                              & " used as call-back at " & Image (Get_Location (Call))
                             );
@@ -350,16 +481,16 @@ package body Rules.Exception_Propagation is
 
       procedure Post_Procedure (Element : in     Asis.Element;
                                 Control : in out Asis.Traverse_Control;
-                                State   : in out Simple_Context) is
+                                State   : in out EP_Rule_Context) is
          pragma Unreferenced (Element, Control, State);
       begin
          null;
       end Post_Procedure;
 
-      procedure Traverse is new Asis.Iterator.Traverse_Element (Simple_Context, Pre_Procedure, Post_Procedure);
+      procedure Traverse is new Asis.Iterator.Traverse_Element (EP_Rule_Context, Pre_Procedure, Post_Procedure);
 
-   begin
-      if not Rule_Used (KW_Parameter) then
+   begin   -- Process_Call
+      if not Rule_Used (Kw_Parameter) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -379,18 +510,25 @@ package body Rules.Exception_Propagation is
          return;
       end if;
 
+      if Expression_Kind (Called_Simple_Name (Call)) = An_Attribute_Reference then
+         -- These are known to not have parameters that are access (or address) to SP
+         -- Moreover, the rest of the algorithm wouldn't work since parameters of
+         -- attributes SP have no "name"
+         return;
+      end if;
+
       declare
          Actuals : constant Asis.Association_List := Actual_Parameters (Call);
          The_Control : Asis.Traverse_Control := Asis.Continue;
       begin
          for I in Actuals'Range loop
             declare
-               Current_Context : Rule_Context'Class := Extended_Matching_Context (Parameters,
+               Current_Context : Root_Context'Class := Extended_Matching_Context (Parameters,
                                                                                   Formal_Name (Call, I));
             begin
                if Current_Context /= No_Matching_Context then
                   -- Parameter found
-                  Traverse (Actual_Parameter (Actuals (I)), The_Control, Simple_Context (Current_Context));
+                  Traverse (Actual_Parameter (Actuals (I)), The_Control, EP_Rule_Context (Current_Context));
 
                   -- The same formal parameter won't happen twice in the same call,
                   -- no need to check further
@@ -407,8 +545,9 @@ package body Rules.Exception_Propagation is
 
    procedure Process_Instantiation  (Instantiation : Asis.Declaration) is
       use Framework.Reports, Thick_Queries, Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      Risk : Risk_Level;
    begin
-      if not Rule_Used (KW_Parameter) then
+      if not Rule_Used (Kw_Parameter) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -418,8 +557,8 @@ package body Rules.Exception_Propagation is
       begin
          for I in Actuals'Range loop
             declare
-               Current_Context : Rule_Context'Class := Extended_Matching_Context (Parameters,
-                                                                                  Formal_Name (Instantiation, I));
+               Current_Context : constant Root_Context'Class
+                 := Extended_Matching_Context (Parameters, Formal_Name (Instantiation, I));
                SP_Declaration : Asis.Declaration;
            begin
                if Current_Context /= No_Matching_Context then
@@ -432,38 +571,38 @@ package body Rules.Exception_Propagation is
 
                      case Declaration_Kind (SP_Declaration) is
                         when A_Procedure_Body_Declaration | A_Function_Body_Declaration =>
-                           if Can_Propagate_Exceptions (SP_Declaration) then
+                           Risk := Exception_Propagation_Risk (SP_Declaration,
+                                                               EP_Rule_Context (Current_Context).Check_Level);
+                           if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,
-                                      To_Wide_String (Simple_Context (Current_Context).Rule_Label),
-                                      Simple_Context (Current_Context).Rule_Type,
+                                      Current_Context,
                                       Get_Location (SP_Declaration),
-                                      "subprogram """
-                                      &  Name_Image (Actual_Parameter (Actuals (I)))
-                                      & """ can propagate exceptions, used as call-back in instantiation at "
+                                      "subprogram """ &  Name_Image (Actual_Parameter (Actuals (I)))
+                                      & """ can propagate exceptions"
+                                      & Risk_Message (Risk)
+                                      & ", used as call-back in instantiation at "
                                       & Image (Get_Location (Instantiation)));
                            end if;
 
                         when A_Procedure_Instantiation | A_Function_Instantiation =>
-                           if Can_Propagate_Exceptions (Corresponding_Body
-                                                        (Corresponding_Name_Declaration
-                                                         (Generic_Unit_name
-                                                          (SP_Declaration))))
-                           then
+                           Risk := Exception_Propagation_Risk (Corresponding_Body
+                                                               (Corresponding_Name_Declaration
+                                                                (Generic_Unit_Name
+                                                                 (SP_Declaration))),
+                                                               EP_Rule_Context (Current_Context).Check_Level);
+                           if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,
-                                      To_Wide_String (Simple_Context (Current_Context).Rule_Label),
-                                      Simple_Context (Current_Context).Rule_Type,
+                                      Current_Context,
                                       Get_Location (Corresponding_Body
                                                     (Corresponding_Name_Declaration
-                                                     (Generic_Unit_name
+                                                     (Generic_Unit_Name
                                                       (SP_Declaration)))),
-                                      "generic """
-                                      &  Name_Image (Generic_Unit_Name (SP_Declaration))
-                                      & """ can propagate exceptions, instance """
-                                      &  Defining_Name_Image (Names (SP_Declaration)(1))
-                                      & """ at "
-                                      & Image (Get_Location (SP_Declaration))
-                                      & " used as call-back in instantiation at "
-                                      & Image (Get_Location (Instantiation))
+                                      "generic """ &  Name_Image (Generic_Unit_Name (SP_Declaration))
+                                      & """ can propagate exceptions"
+                                      & Risk_Message (Risk)
+                                      & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
+                                      & """ at " & Image (Get_Location (SP_Declaration))
+                                      & " used as call-back in instantiation at " & Image (Get_Location (Instantiation))
                                      );
                            end if;
 
@@ -487,11 +626,11 @@ package body Rules.Exception_Propagation is
    ----------------------------
 
    procedure Process_SP_Declaration (Element : in Asis.Declaration) is
-      use Ada.Strings.Wide_Unbounded, Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Utilities;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Utilities;
       use Framework.Reports;
       Spec_Declaration : Asis.Declaration;
    begin
-      if not Rule_Used (KW_Interface) then
+      if not Rule_Used (Kw_Interface) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -504,6 +643,7 @@ package body Rules.Exception_Propagation is
 
       declare
          All_Pragmas : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Spec_Declaration);
+         Risk        : Risk_Level;
       begin
          for I in All_Pragmas'Range loop
             case Pragma_Kind (All_Pragmas (I)) is
@@ -516,17 +656,17 @@ package body Rules.Exception_Propagation is
                                                                (Pragma_Argument_Associations
                                                                 (All_Pragmas (I))(1)))));
                   begin
-                     if Is_Present (Conventions, Convention)
-                       and then Can_Propagate_Exceptions (Element)
-                     then
-                        Report (Rule_Id,
-                                To_Wide_String (Fetch (Conventions, Convention).Rule_Label),
-                                Fetch (Conventions, Convention).Rule_Type,
-                                Get_Location (Element),
-                                "subprogram """
-                                & Defining_Name_Image (Names (Element)(1))
-                                & """ can propagate exceptions, interfaced to "
-                                & To_Wide_String (Convention));
+                     if Is_Present (Conventions, Convention) then
+                       Risk := Exception_Propagation_Risk (Element,  Fetch (Conventions, Convention).Check_Level);
+                       if Risk >= Fetch (Conventions, Convention).Check_Level then
+                          Report (Rule_Id,
+                                  Fetch (Conventions, Convention),
+                                  Get_Location (Element),
+                                  "subprogram """ & Defining_Name_Image (Names (Element)(1))
+                                  & """ can propagate exceptions"
+                                  & Risk_Message (Risk)
+                                  & ", interfaced to " & To_Wide_String (Convention));
+                       end if;
                      end if;
                   end;
 
@@ -543,27 +683,53 @@ package body Rules.Exception_Propagation is
 
    procedure Process_Task_Body (Task_Body : in Asis.Declaration) is
       use Framework.Reports, Asis.Declarations;
+      Risk : Risk_Level;
    begin
-      if not Rule_Used (KW_Task) then
+      if not Rule_Used (Kw_Task) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Can_Propagate_Exceptions (Task_Body) then
+      Risk := Exception_Propagation_Risk (Task_Body, Task_Context.Check_Level);
+      if Risk >= Task_Context.Check_Level then
          Report (Rule_Id,
-                 To_Wide_String (Task_Label),
-                 Task_Type,
+                 Task_Context,
                  Get_Location (Task_Body),
-                 "task """
-                 & Defining_Name_Image (Names (Task_Body)(1))
-                 & """ can propagate exceptions");
+                 "task """ & Defining_Name_Image (Names (Task_Body)(1))
+                 & """ can propagate exceptions"
+                 & Risk_Message (Risk));
       end if;
    end Process_Task_Body;
 
+   -------------------------
+   -- Process_Declaration --
+   -------------------------
+
+   procedure Process_Declaration (Declaration   : in Asis.Declaration) is
+      use Asis;
+      use Framework.Reports;
+
+      Risk        : Risk_Level := No_Risk;
+      The_Control : Traverse_Control := Continue;
+   begin
+      if not Rule_Used (Kw_Declaration) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Traverse_Declaration (Declaration, The_Control, Risk);
+      if Risk >= Declaration_Context.Check_Level then
+         Report (Rule_Id,
+                 Declaration_Context,
+                 Get_Location (Declaration),
+                 "declaration can propagate exceptions" & Risk_Message (Risk));
+      end if;
+   end Process_Declaration;
+
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Exception_Propagation;

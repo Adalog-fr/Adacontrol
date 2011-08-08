@@ -1,6 +1,6 @@
 with Ada.Unchecked_Deallocation;
-with Xfw_Pack;
-pragma Elaborate_All (Xfw_Pack);
+with Xfw_Naming;
+pragma Elaborate_All (Xfw_Naming);
 
 procedure Tfw_Naming is
 
@@ -44,6 +44,6 @@ exception
       P(1);
 
    when others =>
-      xfw_pack.Proc_1;
+      xfw_Naming.Proc_1;
 
 end Tfw_naming;

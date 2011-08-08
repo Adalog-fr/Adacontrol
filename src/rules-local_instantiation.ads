@@ -36,10 +36,7 @@ package Rules.Local_Instantiation  is
 
    -- This rule can be used to check/search for the instantiations that are
    -- done in a local scope
-   -- Parameters (1) => generic name
-   -- Parameters (2) => generic name
-   -- ...
-   -- Parameters (N) => generic name
+   -- Parameters (optional) => generic name
 
    Rule_Id : constant Wide_String := "LOCAL_INSTANTIATION";
 

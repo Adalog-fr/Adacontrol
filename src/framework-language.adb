@@ -29,8 +29,27 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+----------------------------------------------------------------------
+--  !!!  WARNING !!!                                                --
+--                                                                  --
+--  This  package  must  be the  target  of  a  pragma Elaborate    --
+--  for all rules that instantiate one of its generics.             --
+--                                                                  --
+--  Therefore, this package must  not contain a statement part, nor --
+--  call  any   function  (or instantiate any generic) as  part     --
+--  of  the  elaboration of its declarations.                       --
+--                                                                  --
+--  The package cannot be  made preelaborable due to dependencies   --
+--  to non-preelaborable units.                                     --
+--                                                                  --
+-- (and  if you  don't understand  what this  stuff is  about, just --
+--  stick to the rule!)                                             --
+----------------------------------------------------------------------
+
 -- Ada
 with
+  Ada.Characters.Handling,
+  Ada.Exceptions,
   Ada.IO_Exceptions,
   Ada.Strings.Wide_Fixed;
 
@@ -43,8 +62,8 @@ with
   Adactl_Options,
   Framework.Language.Commands,
   Framework.Language.Scanner,
-  Framework.Rules_Manager,
-  Ruler;
+  Framework.Reports,
+  Framework.Rules_Manager;
 package body Framework.Language is
    use Framework.Language.Scanner, Utilities;
 
@@ -83,7 +102,7 @@ package body Framework.Language is
    -- Get_Rule_Name --
    -------------------
 
-   function Get_Rule_Name return Wide_String is
+   function Get_Rule_Name (Allow_All : Boolean := False) return Wide_String is
    begin
       if Current_Token.Kind /= Name then
          Syntax_Error ("Rule identifier expected", Current_Token.Position);
@@ -93,7 +112,9 @@ package body Framework.Language is
          use Framework.Rules_Manager;
          Result : constant Wide_String := To_Upper (Current_Token.Text (1..Current_Token.Length));
       begin
-         if Is_Rule_Name (Result) then
+         if (Allow_All and Result = "ALL")
+           or else Is_Rule_Name (Result)
+         then
             Next_Token;
             if Current_Token.Kind = Left_Parenthesis then
                Next_Token;
@@ -125,237 +146,321 @@ package body Framework.Language is
    -------------
 
    procedure Compile is
-      use Rules_Manager, Framework.Language.Commands, Ada.IO_Exceptions;
+      use Rules_Manager, Framework.Language.Commands, Framework.Reports, Ada.IO_Exceptions, Ada.Characters.Handling;
+
+      procedure Process_Error (Occur : Ada.Exceptions.Exception_Occurrence) is
+         use Ada.Exceptions;
+      begin
+         User_Message ("Error in rule: " & To_Wide_String (Exception_Message (Occur)));
+         Rule_Error_Occurred := True;
+         -- Ignore till next semi-colon (or Eof)
+         loop
+            case Current_Token.Kind is
+               when Semi_Colon =>
+                  Close_Command;
+                  exit;
+               when Eof =>
+                  exit;
+               when others =>
+                  begin
+                     Next_Token (No_Delay => True);
+                  exception
+                     when User_Error =>
+                        -- Encountered bad characters => Ignore
+                        null;
+                  end;
+            end case;
+         end loop;
+      end Process_Error;
    begin
       -- Set up initial token
-      Next_Token;
+      begin
+         Next_Token (No_Delay => True);
+         -- No_Delay is true to get the error here if there is a parse error in the first token
+      exception
+         when Occur : others =>
+            Process_Error (Occur);
+      end;
 
-      while Current_Token.Kind /= EoF loop
-         Last_Was_Go := False;
+      while Current_Token.Kind /= Eof loop
+         begin
+            Last_Was_Go := False;
 
-         if Current_Token.Kind /= Name then
-            Syntax_Error ("Command or label expected", Current_Token.Position);
-         end if;
+            if Current_Token.Kind /= Name then
+               Syntax_Error ("Command or label expected", Current_Token.Position);
+            end if;
 
-         case Current_Token.Key is
-            when Key_Check =>
-               Next_Token;
-               Add_Use ("", Check, Get_Rule_Name);
-               Close_Command;
-
-            when Key_Clear =>
-               Next_Token;
-               if Current_Token.Kind /= Name then
-                  Syntax_Error ("""all"", ""counts"", or Rule name expected", Current_Token.Position);
-               end if;
-
-               if Current_Token.Key = Key_All then
+            case Current_Token.Key is
+               when Key_Check =>
                   Next_Token;
+                  Add_Use ("", Check, Get_Rule_Name);
                   Close_Command;
 
-                  Command_All (Clear);
-               else
-                  loop
-                     Command (Current_Token.Text (1 .. Current_Token.Length), Clear);
-                     Next_Token;
-                     exit when Current_Token.Kind /= Comma;
-                     Next_Token;
-                     if Current_Token.Kind /= Name then
-                        Syntax_Error ("Rule name expected", Current_Token.Position);
-                     end if;
-                  end loop;
-                  Close_Command;
-               end if;
-
-            when Key_Count =>
-               Next_Token;
-               Add_Use ("", Count, Get_Rule_Name);
-               Close_Command;
-
-            when Key_Go =>
-               Next_Token;
-               Close_Command;
-
-               Last_Was_Go := True;
-               Go_Command;
-
-            when Key_Help =>
-               Next_Token;
-               if Current_Token.Kind = Semi_Colon then
-                  Close_Command;
-
-                  User_Message ("Commands:");
-                  Help_Command;
-                  User_Message ("Rules:");
-                  Help_Names;
-
-               elsif Current_Token.Kind = Name and then Current_Token.Key = Key_All then
+               when Key_Clear =>
                   Next_Token;
-                  Close_Command;
+                  if Current_Token.Kind /= Name then
+                     Syntax_Error ("""all"" or Rule name expected", Current_Token.Position);
+                  end if;
 
-                  Help_All;
+                  if Current_Token.Key = Key_All then
+                     Next_Token;
+                     Close_Command;
 
-               else
-                  -- The simpler solution is to provide help messages as rule names are parsed,
-                  -- but this gives unpleasant behaviour in interactive mode when there is a
-                  -- syntax error. Therefore, we first accumulate names, then give all helps.
-                  declare
-                     Rule_Names : array (1 .. Number_Of_Rules) of Unbounded_Wide_String;
-                     Inx        : Natural := 0;
-                  begin
+                     Command_All (Clear);
+
+                  else
                      loop
-                        if Current_Token.Kind /= Name then
-                           Syntax_Error ("Rule name expected", Current_Token.Position);
-                        end if;
-                        if Inx = Rule_Names'Last then
-                           -- This can happen only if the user specified the same rule
-                           -- several times, and listed more names than there are rules.
-                           -- Extremely unlikely in practice, but not a reason for not being careful...
-                           Syntax_Error ("Too many rule names in ""Help"" command", Current_Token.Position);
-                        end if;
-                        Inx := Inx + 1;
-                        Rule_Names (Inx) := To_Unbounded_Wide_String (Current_Token.Text
-                                                                      (1 .. Current_Token.Length));
+                        Command (Current_Token.Text (1 .. Current_Token.Length), Clear);
                         Next_Token;
                         exit when Current_Token.Kind /= Comma;
                         Next_Token;
+                        if Current_Token.Kind /= Name then
+                           Syntax_Error ("Rule name expected", Current_Token.Position);
+                        end if;
                      end loop;
                      Close_Command;
+                  end if;
 
-                     for I in 1 .. Inx loop
-                        Help (To_Wide_String (Rule_Names (I)));
-                     end loop;
-                  end;
-               end if;
+               when Key_Count =>
+                  Next_Token;
+                  Add_Use ("", Count, Get_Rule_Name);
+                  Close_Command;
 
-            when Key_Inhibit =>
-               Next_Token;
-               Ruler.Inhibit (Get_Rule_Name);
-               Close_Command;
-
-            when Key_Message =>
-               Next_Token (Force_String => True);
-               if Current_Token.Kind /= Name then
-                  Syntax_Error ("Message expected", Current_Token.Position);
-               end if;
-               declare
-                  Mess : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
-               begin
+               when Key_Go =>
                   Next_Token;
                   Close_Command;
 
-                  User_Message (Mess);
-               end;
+                  Last_Was_Go := True;
+                  Go_Command;
 
-            when Key_Quit =>
-               Next_Token;
-               Close_Command;
-               exit;
+               when Key_Help =>
+                  Next_Token;
+                  if Current_Token.Kind = Semi_Colon then
+                     Close_Command;
 
-            when Key_Search =>
-               Next_Token;
-               Add_Use ("", Search, Get_Rule_Name);
-               Close_Command;
+                     User_Message ("Commands:");
+                     Help_Command;
+                     User_Message ("Rules:");
+                     Help_Names;
 
-            when Key_Set =>
-               Next_Token;
-               declare
-                  Option : constant Wide_String := To_Upper (Current_Token.Text (1 .. Current_Token.Length));
-                  State  : Boolean;
-                  use Adactl_Options;
-               begin
-                  if Option = "OUTPUT" then
-                     Next_Token (Force_String => True);
-                     if Current_Token.Kind /= Name then
-                        Syntax_Error ("File name expected", Current_Token.Position);
-                     end if;
+                  elsif Current_Token.Kind = Name and then Current_Token.Key = Key_All then
+                     Next_Token;
+                     Close_Command;
+
+                     Help_All;
+
+                  else
+                     -- The simpler solution is to provide help messages as rule names are parsed,
+                     -- but this gives unpleasant behaviour in interactive mode when there is a
+                     -- syntax error. Therefore, we first accumulate names, then give all helps.
                      declare
-                        Output : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
+                        Rule_Names : array (Rules_Count range 1 .. Number_Of_Rules) of Unbounded_Wide_String;
+                        Inx        : Rules_Count := 0;
                      begin
+                        loop
+                           if Current_Token.Kind /= Name then
+                              Syntax_Error ("Rule name expected", Current_Token.Position);
+                           end if;
+                           if Inx = Rule_Names'Last then
+                              -- This can happen only if the user specified the same rule
+                              -- several times, and listed more names than there are rules.
+                              -- Extremely unlikely in practice, but not a reason for not being careful...
+                              Syntax_Error ("Too many rule names in ""Help"" command", Current_Token.Position);
+                           end if;
+                           Inx := Inx + 1;
+                           Rule_Names (Inx) := To_Unbounded_Wide_String (Current_Token.Text
+                                                                         (1 .. Current_Token.Length));
+                           Next_Token;
+                           exit when Current_Token.Kind /= Comma;
+                           Next_Token;
+                        end loop;
+
+                        for I in Rules_Count range 1 .. Inx loop
+                           Help (To_Wide_String (Rule_Names (I)));
+                        end loop;
+
+                        -- Note: Close command *after* providing help, since in case of errors
+                        -- we assume that the command is not yet closed (see handler)
+                        Close_Command;
+                     end;
+                  end if;
+
+               when Key_Inhibit =>
+                  Next_Token;
+
+                  Inhibit_Command (Get_Rule_Name (Allow_All => True));
+                  Close_Command;
+
+               when Key_Message =>
+                  Next_Token (Force_String => True);
+                  if Current_Token.Kind /= Name then
+                     Syntax_Error ("Message expected", Current_Token.Position);
+                  end if;
+                  declare
+                     Mess : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
+                  begin
+                     Next_Token;
+                     Close_Command;
+
+                     User_Message (Mess);
+                  end;
+
+               when Key_Quit =>
+                  Next_Token;
+                  Close_Command;
+                  exit;
+
+               when Key_Search =>
+                  Next_Token;
+                  Add_Use ("", Search, Get_Rule_Name);
+                  Close_Command;
+
+               when Key_Set =>
+                  Next_Token;
+                  declare
+                     Option : constant Wide_String := To_Upper (Current_Token.Text (1 .. Current_Token.Length));
+                     State  : Boolean;
+                     use Adactl_Options;
+                  begin
+                     if Option = "FORMAT" then
+                        Next_Token;
+                        if Current_Token.Kind /= Name then
+                           Syntax_Error ("Format name expected", Current_Token.Position);
+                        end if;
+                        declare
+                           Format : constant Wide_String := To_Upper (Current_Token.Text (1 .. Current_Token.Length));
+                        begin
+                           Next_Token;
+                           Close_Command;
+
+                           Set_Format_Command (Format);
+                        end;
+
+                     elsif Option = "OUTPUT" then
+                        Next_Token (Force_String => True);
+                        if Current_Token.Kind /= Name then
+                           Syntax_Error ("File name expected", Current_Token.Position);
+                        end if;
+                        declare
+                           Output : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
+                        begin
+                           Next_Token;
+                           Close_Command;
+
+                           Set_Output_Command (Output);
+                        end;
+
+                     elsif Option = "STATISTICS" then
+                        Next_Token;
+                        if Current_Token.Kind /= Integer_Value
+                          or else Current_Token.Value not in 0 .. Stats_Levels'Pos (Stats_Levels'Last)
+                        then
+                           Syntax_Error ("Statistics level expected (0 .."
+                                           & Integer'Wide_Image (Stats_Levels'Pos (Stats_Levels'Last))
+                                           & ')',
+                                        Current_Token.Position);
+                        end if;
+                        Stats_Level := Stats_Levels'Val (Current_Token.Value);
                         Next_Token;
                         Close_Command;
 
-                        Set_Output_Command (Output);
-                     end;
+                     elsif Option = "TRACE" then
+                        Next_Token (Force_String => True);
+                        if Current_Token.Kind /= Name then
+                           Syntax_Error ("File name expected", Current_Token.Position);
+                        end if;
+                        declare
+                           Trace : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
+                        begin
+                           Next_Token;
+                           Close_Command;
 
-                  else
-                     Next_Token;
-                     if Is_String (Current_Token, "ON") then
-                        State := True;
-                     elsif Is_String (Current_Token, "OFF") then
-                        State := False;
+                           Set_Trace_Command (Trace);
+                        end;
+
                      else
-                        Syntax_Error ("""on"" or ""off"" expected", Current_Token.Position);
+                        Next_Token;
+                        if Is_String (Current_Token, "ON") then
+                           State := True;
+                        elsif Is_String (Current_Token, "OFF") then
+                           State := False;
+                        else
+                           Syntax_Error ("""on"" or ""off"" expected", Current_Token.Position);
+                        end if;
+
+                        if Option = "VERBOSE" then
+                           Verbose_Option := State;
+                        elsif Option = "DEBUG" then
+                           Debug_Option := State;
+                        elsif Option = "IGNORE" then
+                           Ignore_Option := True;
+                        elsif Option = "WARNING" then
+                           Skip_Warning_Option := not State;
+                        else
+                           Syntax_Error ("Unrecognised parameter: """ & Option &'"', Current_Token.Position);
+                        end if;
+                        Next_Token;
+                        Close_Command;
                      end if;
+                  end;
 
-                     if Option = "VERBOSE" then
-                        Verbose_Option := State;
-                     elsif Option = "DEBUG" then
-                        Debug_Option := State;
-                     elsif Option = "IGNORE" then
-                        Ignore_Option := True;
-                     else
-                        Syntax_Error ("Unrecognised parameter: """ & Option &'"', Current_Token.Position);
-                     end if;
-                     Next_Token;
-                     Close_Command;
-                  end if;
-               end;
-
-            when Key_Source =>
-               Next_Token (Force_String => True);
-               if Current_Token.Kind /= Name then
-                  Syntax_Error ("Expect file name after ""Source""", Current_Token.Position);
-               end if;
-
-               declare
-                  Source     : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
-                  Source_Pos : constant Location    := Current_Token.Position;
-               begin
-                  Next_Token;
-                  Close_Command;
-
-                  Source_Command (Source);
-               exception
-                  when Name_Error =>
-                     Syntax_Error ("Sourced file " & Source & " not found", Source_Pos);
-               end;
-
-            when Not_A_Key
-              | Profile_Keys -- Profile keys and "not" allowed as labels
-              | Key_Not
-              =>
-               -- Must be a label
-               declare
-                  Label : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
-               begin
-                  Next_Token;
-                  if Current_Token.Kind /= Colon then
-                     Syntax_Error ("Unknown command " & Label, Current_Token.Position);
-                  end if;
-                  Next_Token;
+               when Key_Source =>
+                  Next_Token (Force_String => True);
                   if Current_Token.Kind /= Name then
-                     Syntax_Error ("Unexpected element after label", Current_Token.Position);
+                     Syntax_Error ("Expect file name after ""Source""", Current_Token.Position);
                   end if;
 
-                  case Current_Token.Key is
-                     when Key_Check =>
-                        Next_Token;
-                        Add_Use (Label, Check, Get_Rule_Name);
-                     when Key_Search =>
-                        Next_Token;
-                        Add_Use (Label, Search, Get_Rule_Name);
-                      when Key_Count =>
-                        Next_Token;
-                        Add_Use (Label, Count, Get_Rule_Name);
-                    when others =>
-                        Syntax_Error ("Only ""Check"", ""Search"", or ""Count"" allowed after label",
-                                      Current_Token.Position);
-                  end case;
-               end;
-               Close_Command;
-         end case;
+                  declare
+                     Source     : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
+                     Source_Pos : constant Location    := Current_Token.Position;
+                  begin
+                     Next_Token;
+                     Source_Command (Source);
+                     Close_Command;
 
+                  exception
+                     when Name_Error =>
+                        Syntax_Error ("Sourced file " & Source & " not found", Source_Pos);
+                  end;
+
+               when Not_A_Key
+                 | Profile_Keys -- Profile keys and "not" allowed as labels
+                 | Key_Not
+                 =>
+                  -- Must be a label
+                  declare
+                     Label : constant Wide_String := Current_Token.Text (1 .. Current_Token.Length);
+                  begin
+                     Next_Token;
+                     if Current_Token.Kind /= Colon then
+                        Syntax_Error ("Unknown command " & Label, Current_Token.Position);
+                     end if;
+                     Next_Token;
+                     if Current_Token.Kind /= Name then
+                        Syntax_Error ("Unexpected element after label", Current_Token.Position);
+                     end if;
+
+                     case Current_Token.Key is
+                        when Key_Check =>
+                           Next_Token;
+                           Add_Use (Label, Check, Get_Rule_Name);
+                        when Key_Search =>
+                           Next_Token;
+                           Add_Use (Label, Search, Get_Rule_Name);
+                        when Key_Count =>
+                           Next_Token;
+                           Add_Use (Label, Count, Get_Rule_Name);
+                        when others =>
+                           Syntax_Error ("Only ""Check"", ""Search"", or ""Count"" allowed after label",
+                                         Current_Token.Position);
+                     end case;
+                  end;
+                  Close_Command;
+            end case;
+         exception
+            when Occur : Utilities.User_Error =>
+               Process_Error (Occur);
+         end;
       end loop;
    end Compile;
 
@@ -367,12 +472,21 @@ package body Framework.Language is
    -- Execute --
    -------------
 
-   procedure Execute (Commands : Wide_String) is
+   procedure Execute (Command_String : Wide_String) is
    begin
       Set_Prompt ("");
-      Start_Scan (From_String => True, Source => Commands);
+      Start_Scan (From_String => True, Source => Command_String);
       Compile;
    end Execute;
+
+   ---------------------
+   -- Source_Location --
+   ---------------------
+
+   function Source_Location return Location is
+   begin
+      return Current_Token.Position;
+   end Source_Location;
 
    ----------------------
    -- Parameter_Exists --
@@ -382,6 +496,32 @@ package body Framework.Language is
    begin
       return In_Parameters;
    end Parameter_Exists;
+
+   --------------------------
+   -- Is_Integer_Parameter --
+   --------------------------
+
+   function Is_Integer_Parameter return Boolean is
+   begin
+      if not In_Parameters then
+         Failure ("Is_Integer_Parameter called when not in parameters");
+      end if;
+
+      return Current_Token.Kind = Integer_Value;
+   end Is_Integer_Parameter;
+
+   ------------------------
+   -- Is_Float_Parameter --
+   ------------------------
+
+   function Is_Float_Parameter return Boolean is
+   begin
+      if not In_Parameters then
+         Failure ("Is_Float_Parameter called when not in parameters");
+      end if;
+
+      return Current_Token.Kind = Float_Value;
+   end Is_Float_Parameter;
 
    ---------------------------
    -- Get_Integer_Parameter --
@@ -393,20 +533,51 @@ package body Framework.Language is
          Failure ("Get_Integer_Parameter called when not in parameters");
       end if;
 
-      if Current_Token.Kind = Integer_Value then
-         declare
-            Result : constant Integer := Current_Token.Value;
-         begin
-            Next_Token;
-            Next_Parameter;
-            return Result;
-         end;
-      elsif Current_Token.Kind = Name then
-         Syntax_Error ("Integer parameter expected", Current_Token.Position);
-      else
-         Syntax_Error ("Parameter expected", Current_Token.Position);
-      end if;
+      case Current_Token.Kind is
+         when Integer_Value =>
+            declare
+               Result : constant Integer := Current_Token.Value;
+            begin
+               Next_Token;
+               Next_Parameter;
+               return Result;
+            end;
+         when Bad_Integer =>
+            Syntax_Error ("Bad integer value (too many digits?)", Current_Token.Position);
+         when Name | Bad_Float =>
+            Syntax_Error ("Integer parameter expected", Current_Token.Position);
+         when others =>
+           Syntax_Error ("Parameter expected", Current_Token.Position);
+      end case;
    end Get_Integer_Parameter;
+
+   -------------------------
+   -- Get_Float_Parameter --
+   -------------------------
+
+   function Get_Float_Parameter return Float is
+   begin
+      if not In_Parameters then
+         Failure ("Get_Float_Parameter called when not in parameters");
+      end if;
+
+      case Current_Token.Kind is
+         when Float_Value =>
+            declare
+               Result : constant Float := Current_Token.Fvalue;
+            begin
+               Next_Token;
+               Next_Parameter;
+               return Result;
+            end;
+         when Bad_Integer | Bad_Float =>
+            Syntax_Error ("Bad real value (too many digits?)", Current_Token.Position);
+         when Name =>
+            Syntax_Error ("Float parameter expected", Current_Token.Position);
+         when others =>
+            Syntax_Error ("Parameter expected", Current_Token.Position);
+      end case;
+   end Get_Float_Parameter;
 
    --------------------------
    -- Get_String_Parameter --
@@ -470,6 +641,23 @@ package body Framework.Language is
 
       function Profile_List return Wide_String is
          With_Access : Boolean := False;
+
+         function Formated_Name (Name : Wide_String) return Wide_String is
+         begin
+            if Qualified then
+               if With_Access then
+                  return '*' & Name;
+               else
+                  return Name;
+               end if;
+            else
+               if With_Access then
+                  return '*' & "STANDARD." & Name;
+               else
+                  return "STANDARD." & Name;
+               end if;
+            end if;
+         end Formated_Name;
       begin
          if Current_Token.Kind = Name and then Current_Token.Key = Key_Access then
             With_Access := True;
@@ -479,23 +667,6 @@ package body Framework.Language is
          -- If not qualified, assume the identifier is declared in Standard
          Qualified := False;
          declare
-            function Formated_Name (Name : Wide_String) return Wide_String is
-            begin
-               if Qualified then
-                  if With_Access then
-                     return '*' & Name;
-                  else
-                     return Name;
-                  end if;
-               else
-                  if With_Access then
-                     return '*' & "STANDARD." & Name;
-                  else
-                     return "STANDARD." & Name;
-                  end if;
-               end if;
-            end Formated_Name;
-
             Name1 : constant Wide_String := Formated_Name (Full_Name);
          begin
             if Current_Token.Kind = Semi_Colon then
@@ -515,11 +686,11 @@ package body Framework.Language is
             declare
                Result_Type : constant Wide_String := Full_Name;
             begin
-               -- If not qualified, assume the identifier is declared in Standard
-               if not Qualified then
-                  return ':' & "STANDARD." & Result_Type;
-               else
+               if Qualified then
                   return ':' & Result_Type;
+               else
+                  -- If not qualified, assume the identifier is declared in Standard
+                  return ':' & "STANDARD." & Result_Type;
                end if;
             end;
          end if;
@@ -533,11 +704,11 @@ package body Framework.Language is
                declare
                   Result_Type : constant Wide_String := Full_Name;
                begin
-                  -- If not qualified, assume the identifier is declared in Standard
-                  if not Qualified then
-                     return List1 & ':' & "STANDARD." & Result_Type;
-                  else
+                  if Qualified then
                      return List1 & ':' & Result_Type;
+                  else
+                     -- If not qualified, assume the identifier is declared in Standard
+                     return List1 & ':' & "STANDARD." & Result_Type;
                   end if;
                end;
             else
@@ -605,7 +776,6 @@ package body Framework.Language is
          end if;
       end Full_Name;
 
-      use Ada.Strings.Wide_Unbounded;
    begin  -- Get_Entity_Parameter
       if not In_Parameters then
          Failure ("Get_Entity_Parameter called when not in parameters");
@@ -679,46 +849,203 @@ package body Framework.Language is
       return Default;
    end Get_Modifier;
 
-   ------------------------
-   -- Get_Flag_Parameter --
-   ------------------------
+   -----------------------------
+   -- Get_Enumerated_Modifier --
+   -----------------------------
 
-   function Get_Flag_Parameter return Flags is
+   function Get_Enumerated_Modifier
+     (Default : in Index       := Index'First;
+      Prefix  : in Wide_String := "")
+     return Index
+   is
    begin
-      if not In_Parameters then
-         Failure ("Get_Flag_Parameter called when not in parameters");
-      end if;
-
       if Current_Token.Kind = Name then
-         declare
-            To_Compare : constant Wide_String := To_Upper (Prefix &
-                                                           Current_Token.Text (1 .. Current_Token.Length));
-         begin
-            for Key in Flags loop
-               if To_Compare = Flags'Wide_Image (Key) then
-                  if Allow_Any and then Key = Flags'First then
-                     -- Oops, the user specified the special value
-                     Syntax_Error ("Not a valid parameter: " & Current_Token.Text (1 .. Current_Token.Length),
-                                   Current_Token.Position);
+         for Idx in Index loop
+            if
+              To_Upper (Prefix & Current_Token.Text (1..Current_Token.Length)) =
+              To_Upper (Index'Wide_Image (Idx))
+            then
+               Next_Token;
+               return Idx;
+            end if;
+         end loop;
+      end if;
+      return Default;
+   end Get_Enumerated_Modifier;
+
+
+   --------------------
+   -- Flag_Utilities --
+   --------------------
+
+   package body Flag_Utilities is
+
+      ------------------------
+      -- Get_Flag_Parameter --
+      ------------------------
+
+      function Get_Flag_Parameter (Allow_Any : Boolean) return Flags is
+      begin
+         if not In_Parameters then
+            Failure ("Get_Flag_Parameter called when not in parameters");
+         end if;
+
+         if Current_Token.Kind = Name then
+            declare
+               To_Compare : constant Wide_String := To_Upper (Prefix &
+                                                              Current_Token.Text (1 .. Current_Token.Length));
+            begin
+               for Key in Flags loop
+                  if To_Compare = Flags'Wide_Image (Key) then
+                     if Allow_Any and then Key = Flags'First then
+                        -- Oops, the user specified the special value
+                        Syntax_Error ("Not a valid parameter: " & Current_Token.Text (1 .. Current_Token.Length),
+                                      Current_Token.Position);
+                     end if;
+
+                     Next_Token;
+                     Next_Parameter;
+                     return Key;
                   end if;
+               end loop;
+            end;
+         end if;
 
-                  Next_Token;
-                  Next_Parameter;
-                  return Key;
+         -- Here: not a Name, or unrecognized keyword
+         if Allow_Any then
+            -- Keep the current token
+            return Flags'First;
+         end if;
+
+         if Current_Token.Kind = Name then
+            Syntax_Error ("Unknown keyword """
+                            & Current_Token.Text (1 .. Current_Token.Length)
+                            & """, use option -h <rule name> for a list of allowable keywords",
+                          Current_Token.Position);
+         else
+            Syntax_Error ("Keyword expected, use option -h <rule name> for a list of allowable keywords",
+                          Current_Token.Position);
+         end if;
+      end Get_Flag_Parameter;
+
+      -----------
+      -- Image --
+      -----------
+
+      function Image (Item : Flags) return Wide_String is
+         Img : constant Wide_String := To_Lower (Flags'Wide_Image (Item));
+      begin
+            -- Remove prefix
+            return Img (Prefix'Length+1 .. Img'Last);
+      end Image;
+
+      -------------------
+      -- Help_On_Flags --
+      -------------------
+
+      procedure Help_On_Flags (Header      : Wide_String := "";
+                               Footer      : Wide_String := "";
+                               Extra_Value : Wide_String := "")
+      is
+         -- Pretty print of values of flags.
+         -- Values are arranged in columns.
+         -- The number of columns is computed assuming that each column is True_Width wide,
+         -- except for the first one that can contain Extra_Value if provided.
+         -- then the actual width is adjusted to what is actually needed, to make it prettier
+         -- looking. More sophisticated optimization would be overkill.
+         Display_Width : constant := 79;
+         True_Width    : constant Natural := Flags'Width - Prefix'Length;
+         Buffer        : Wide_String (1..Display_Width);
+         Index         : Natural;
+         Nb_Col        : constant Natural := 1 + (Display_Width - Header'Length
+                                                  - Natural'Max (True_Width, Extra_Value'Length) - 3 -- Width of 1st col
+                                                 ) / (True_Width + 3); -- 3 => " | "
+         Col_Widthes   : array (1 .. Nb_Col) of Natural := (1 => Extra_Value'Length, others => 0);
+         Current_Col   : Natural;
+         First_Flag    : Flags;
+      begin
+         Current_Col := 1;
+         for I in Flags loop
+            declare
+               Img : constant Wide_String := Image (I);
+            begin
+               if Img'Length > Col_Widthes (Current_Col) then
+                  Col_Widthes (Current_Col) := Img'Length;
                end if;
-            end loop;
-         end;
-      end if;
+               if Current_Col = Nb_Col then
+                  Current_Col := 1;
+               else
+                  Current_Col := Current_Col + 1;
+               end if;
+            end;
+         end loop;
 
-      -- Here: not a Name, or unrecognized keyword
-      if Allow_Any then
-         -- Keep the current token
-         return Flags'First;
-      end if;
+         Buffer := (others => ' ');
+         Buffer (1 .. Header'Length) := Header;
+         Index := Header'Length;
 
-      Syntax_Error ("Keyword expected, use option -h <rule name> for a list of allowable keywords",
-                    Current_Token.Position);
-   end Get_Flag_Parameter;
+         Current_Col := 1;
+         if Extra_Value = "" then
+            First_Flag  := Flags'First;
+         else
+            Index := Index + 1;  -- Add space
+            Buffer (Index + 1 .. Index + Extra_Value'Length) := Extra_Value;
+            Index := Index + Col_Widthes (Current_Col) + 1;
+
+            Buffer (Index + 1) := '|';
+            Index := Index + 1;
+
+            if Nb_Col = 1 then
+               User_Message (Buffer (1 .. Index));
+               Current_Col := 1;
+               Buffer := (others => ' ');
+               Index := Header'Length;
+            else
+               Current_Col := 2;
+            end if;
+
+            -- Gnat warns about Constraint_Error being raised by the following statement
+            -- when instantiated with a Flag type that has only one value.
+            -- But in this case, Extra_Value must be "", so it is OK.
+            pragma Warnings (Off);
+            First_Flag := Flags'Succ (Flags'First);
+            pragma Warnings (On);
+         end if;
+
+         for I in Flags range First_Flag .. Flags'Last loop
+            declare
+               Img : constant Wide_String := Image (I);
+            begin
+               Index := Index + 1;  -- Add space
+
+               Buffer (Index + 1 .. Index + Img'Length) := Img;
+               if I = Flags'Last then
+                  Index := Index + Img'Length;
+                  User_Message (Buffer (1 .. Index));
+                  exit;
+               else
+                  Index := Index + Col_Widthes (Current_Col) + 1;
+               end if;
+
+               Buffer (Index + 1) := '|';
+               Index := Index + 1;
+
+               if Current_Col = Nb_Col then
+                  User_Message (Buffer (1 .. Index));
+                  Current_Col := 1;
+                  Buffer := (others => ' ');
+                  Index := Header'Length;
+               else
+                  Current_Col := Current_Col + 1;
+               end if;
+            end;
+         end loop;
+
+         if Footer /= "" then
+            User_Message ((1..Header'Length + 1 => ' ') & Footer);
+         end if;
+      end Help_On_Flags;
+   end Flag_Utilities;
 
    ------------------
    -- Adjust_Image --
@@ -777,6 +1104,8 @@ package body Framework.Language is
       Syntax_Error (Message, Current_Token.Position);
    end Parameter_Error;
 
+   procedure Parameter_Error (Message : Wide_String; Position : Location) renames Syntax_Error;
+
    ----------------------
    -- Go_Command_Found --
    ----------------------
@@ -792,7 +1121,16 @@ package body Framework.Language is
 
    function Had_Failure return Boolean is
    begin
-      return Failure_Occured;
+      return Failure_Occurred;
    end Had_Failure;
+
+   ----------------
+   -- Had_Errors --
+   ----------------
+
+   function Had_Errors return Boolean is
+   begin
+      return Rule_Error_Occurred;
+   end Had_Errors;
 
 end Framework.Language;

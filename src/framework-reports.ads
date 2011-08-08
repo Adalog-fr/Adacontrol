@@ -38,12 +38,34 @@ package Framework.Reports is
                      Msg        : in Wide_String);
    -- Reports rule match to current output
 
+   procedure Report (Rule_Id    : in Wide_String;
+                     Context    : in Root_Context'class;
+                     Loc        : in Location;
+                     Msg        : in Wide_String;
+                     Count_Only : in Boolean := False);
+   -- Id, but get Rule_Label and Rule_Type from Context
+   -- Context must be either No_Matching_Context (and Report does nothing)
+   --   or a descendant of Simple_Context.
+
    --
    --  Declarations below this line are for the use of the framework
    --
-   Warning_As_Error_Option : Boolean := False;
 
-   function Error_Reported return Boolean;
-   procedure Report_Counts;
-   procedure Clear_Counts;
+   type Output_Format is (Gnat, CSV, CSVX, Source);
+   type Stats_Levels  is (None, General, Nulls_Only, Full);
+   Warning_As_Error_Option : Boolean       := False;
+   Skip_Warning_Option     : Boolean       := False;
+   Format_Option           : Output_Format := Gnat;
+   Stats_Level             : Stats_Levels  := None;
+
+   function Nb_Errors   return Natural;
+   function Nb_Warnings return Natural;
+
+   procedure Clear (Rule : Wide_String);
+   procedure Clear_All;
+   procedure Reset;
+   procedure Report_Counters;
+
+   procedure Init_Counts (Rule_Id : Wide_String; Rule_Label : Wide_String);
+   procedure Init_Stats  (Rule : Wide_String; Label : Wide_String);
 end Framework.Reports;

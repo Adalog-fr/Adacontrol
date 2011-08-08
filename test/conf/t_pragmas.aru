@@ -1,7 +1,14 @@
-check  pragmas (elaborate_all);
-search pragmas (pure);
-search pragmas (inconnu);
-nonstandard : check pragmas (nonstandard);
+specific_pragmas: check  pragmas (elaborate_all);
+specific_pragmas: search pragmas (pure);
+specific_pragmas: search pragmas (inconnu);
+nonstandard    : check pragmas (nonstandard);
+all_pragmas    : search pragmas (all);
+
+specific_pragmas: count  pragmas (elaborate_all);
+specific_pragmas: count pragmas (pure);
+specific_pragmas: count pragmas (inconnu);
+nonstandard: count pragmas (nonstandard);
+all_pragmas: count pragmas (all);
 
 -- More, just to check resistance:
 Elaborate        : Check Pragmas (Elaborate); 

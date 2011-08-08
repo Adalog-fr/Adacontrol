@@ -32,6 +32,9 @@
 package Framework.Rules_Manager is
    pragma Elaborate_Body;
 
+   Max_Rules : constant := 100; -- Max number of rules in AdaControl
+   type Rules_Count is range 0 .. Max_Rules;
+
    type Help_Procedure     is access procedure;
    type Add_Use_Procedure  is access procedure (Label     : in Wide_String;
                                                 Rule_Type : in Rule_Types);
@@ -40,12 +43,19 @@ package Framework.Rules_Manager is
    type Prepare_Procedure  is access procedure;
    type Finalize_Procedure is access procedure;
 
-   procedure Register (Rule     : Wide_String;
-                       Help     : Help_Procedure;
-                       Add_Use  : Add_Use_Procedure;
-                       Command  : Command_Procedure;
-                       Prepare  : Prepare_Procedure  := null;
-                       Finalize : Finalize_Procedure := null);
+   procedure Register_Semantic (Rule     : Wide_String;
+                                Help     : Help_Procedure;
+                                Add_Use  : Add_Use_Procedure;
+                                Command  : Command_Procedure;
+                                Prepare  : Prepare_Procedure  := null;
+                                Finalize : Finalize_Procedure := null);
+
+   procedure Register_Textual (Rule     : Wide_String;
+                               Help     : Help_Procedure;
+                               Add_Use  : Add_Use_Procedure;
+                               Command  : Command_Procedure;
+                               Prepare  : Prepare_Procedure  := null;
+                               Finalize : Finalize_Procedure := null);
 
    procedure Enter (Rule : Wide_String);
 
@@ -53,7 +63,10 @@ package Framework.Rules_Manager is
    --  Declarations below this line are for the use of the framework
    --
 
-   function Number_Of_Rules return Natural;
+   type Rule_Kind is (Semantic, Textual);
+   function Has_Active_Rules (Kind : Rule_Kind) return Boolean;
+
+   function Number_Of_Rules return Rules_Count;
 
    function Is_Rule_Name (Rule : Wide_String) return Boolean;
 

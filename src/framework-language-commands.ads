@@ -32,6 +32,12 @@
 private package Framework.Language.Commands is
    procedure Help_Command;
    procedure Go_Command;
-   procedure Set_Output_Command (Output_File : Wide_String);
-   procedure Source_Command     (Name        : Wide_String);
+   procedure Set_Format_Command (Format      : in Wide_String);
+   procedure Set_Output_Command (Output_File : in Wide_String);
+   procedure Set_Trace_Command  (Trace_File  : in Wide_String);
+   procedure Source_Command     (Name        : in Wide_String);
+   procedure Inhibit_Command    (Rule_Name   : in Wide_String);
+   -- Inhibit given rule for all units passed as parameters
+   -- Unit names to be parsed using normal parameter parsing procedures
+
 end Framework.Language.Commands;

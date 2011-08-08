@@ -1,0 +1,3 @@
+t_special_comments.adb:4:7: Error: SPECIAL_COMMENTS: "TBSL"
+t_special_comments.adb:5:7: Error: SPECIAL_COMMENTS: "TBSL=To be supplied later"
+t_special_comments.adb:6:6: Error: Rule_Off: "## rule off all"

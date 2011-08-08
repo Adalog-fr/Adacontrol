@@ -1,4 +1,4 @@
--- Here is a rule to check for the usage of any predefined Ada unit
+-- Control usage of all predefined Ada unit
 -- Comment out the lines for the units you want to allow
 
 Predefined_Unit : check entities (

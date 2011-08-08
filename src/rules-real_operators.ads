@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Real_Operators - Package specification                            --
+--  Rules.Real_Operators - Package specification                    --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --

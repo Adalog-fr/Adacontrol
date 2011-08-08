@@ -1,0 +1,3 @@
+t_abnormal_function_return.adb:7:7: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
+t_abnormal_function_return.adb:10:9: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"
+t_abnormal_function_return.adb:12:10: Error: ABNORMAL_FUNCTION_RETURN: Sequence of statements not terminated by "return" or "raise"

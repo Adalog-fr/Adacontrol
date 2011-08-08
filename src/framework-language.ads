@@ -30,30 +30,39 @@
 ----------------------------------------------------------------------
 
 package Framework.Language is
+
    --  Process the language used by rules files
    --  Syntax:
    --  <Program> ::= {<commmand> ";"}
-   --  <command> ::= [<label> ":"] "check"|"search"|"count <Name>
-   --                       ["(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")"]
+   --  <command> ::= [ <label> ":" ] "check"|"search"|"count <Name>
+   --                       [ "(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")" ]
    --              | "quit"
    --              | "go"
-   --              | "help"  ["all" | <name>{,<name>}]
-   --              | "clear" [<name> {,<name>}]
+   --              | "help"  [ "all" | <name>{,<name>} ]
+   --              | "clear" [ <name> {,<name>} ]
    --              | "source" <file>
    --  Ada-like comments (--) and Shell-like comments (#) are allowed.
 
+   function Source_Location return Location;
+   -- Location of the current token in the rule file
+
    function Parameter_Exists return Boolean;
    --  Returns true if there are parameters left to parse
+   function Is_Integer_Parameter return Boolean;
+   --  Returns true if next parameter is an integer
+   function Is_Float_Parameter return Boolean;
+   --  Returns true if next parameter is a float
 
    --  Following functions return the next parameter, or raise Syntax_Error
    --  They have side effects (i.e. they advance to the next parameter)
    function Get_Integer_Parameter return Integer;
+   function Get_Float_Parameter   return Float;
    function Get_String_Parameter  return Wide_String;
    function Get_Entity_Parameter  return Entity_Specification;
 
    -- Following function returns True if the current token is True_KW
    -- and False if the current token is False_KW (the token is consumed)
-   -- Otherwise, returns False and does not change the current token
+   -- Otherwise, returns Default and does not change the current token
    -- True_KW and False_KW must be given in upper-case.
    -- An empty string is allowed for either of them, meaning there is no
    -- corresponding keyword
@@ -61,27 +70,49 @@ package Framework.Language is
                           False_KW : Wide_String := "";
                           Default  : Boolean     := False) return Boolean;
 
-   --  The following procedure can be instantiated to parse "flag"
+   -- A new version of Get_Modifier that allow multiple choice for the modifier.
+   -- This version is generic since it is possible to use any enumerated type to
+   -- control the behavior of the program.
+   -- Default is the default value returned when no modifier has been matched.
+   -- Prefix is the prefix used for the enumeration since it may be necessary to
+   -- use reserved Ada keywords for the modifier.
+   generic
+      type Index is (<>);
+   function Get_Enumerated_Modifier
+     (Default : in Index       := Index'First;
+      Prefix  : in Wide_String := "")
+     return Index;
+
+   --  The following package can be instantiated to parse "flag"
    --  parameters (keywords). The flags are the 'Image of the values
    --  of type Flags, with the initial Prefix removed (if not "").
    --  This allows having flags that are the same as Ada keywords
-   --  If Allow_Not is True, the form "not <param>" is allowed, and
-   --    the Value parameter is set to True for "<param>" and False for
-   --    "not <param>".  Value is always True if Allow_Not is False.
    --  If Allow_Any is False, it is an error if the current token is
    --    not a flag. Otherwise, if the current token is not a flag,
    --    Flags'First is returned and the current token is not consumed
    --    in order to retrieve it with other Get_XXX_Parameter functions,
    --    unless it is itself Flags'First (which makes an error)
+   --
+   -- WARNING !!
+   -- If you instantiate this package immediately inside a library package,
+   -- you must put a "pragma Elaborate (Framework.Language);", or circularity
+   -- will result.
    generic
       type Flags is (<>);
-      Allow_Any : Boolean;
-      Prefix    : Wide_String := "";
-   function Get_Flag_Parameter return Flags;
+      Prefix : Wide_String := "";
+   package Flag_Utilities is
+      function Get_Flag_Parameter (Allow_Any : Boolean) return Flags;
+
+      function Image (Item : Flags) return Wide_String;
+      procedure Help_On_Flags (Header      : Wide_String := "";
+                               Footer      : Wide_String := "";
+                               Extra_Value : Wide_String := "");
+   end Flag_Utilities;
 
    -- Procedure to be called by rules if there is something wrong with the
    -- parameters
    procedure Parameter_Error (Message : Wide_String);
+   procedure Parameter_Error (Message : Wide_String; Position : Location);
    pragma No_Return (Parameter_Error);
 
    function Adjust_Image (Original : Wide_String) return Wide_String;
@@ -91,12 +122,13 @@ package Framework.Language is
    --   we use "access" rather than "*" for access parameters
 
 
+   ---------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
 
    --  Compile and execute a set of commands
-   procedure Execute (Commands : Wide_String);
+   procedure Execute (Command_String : Wide_String);
 
    function Go_Command_Found return Boolean;
    --  Returns true if the last compiled command was "Go;"
@@ -104,8 +136,12 @@ package Framework.Language is
    function Had_Failure return Boolean;
    --  Returns true if an exception was raised by a "Go" command
 
+   function Had_Errors return Boolean;
+   --  Returns true if there was a syntax error in a rule file
+
 private
-   -- Declaration for child:
-   Failure_Occured : Boolean := False;
+   -- Declarations for child units:
+   Failure_Occurred    : Boolean := False;
+   Rule_Error_Occurred : Boolean := False;
    procedure Compile;
 end Framework.Language;

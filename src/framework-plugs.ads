@@ -39,4 +39,7 @@ package Framework.Plugs is
 
    procedure Pre_Procedure  (Element : in     Asis.Element);
    procedure Post_Procedure (Element : in     Asis.Element);
+
+   procedure Text_Enter_Unit (Unit : in Asis.Compilation_Unit);
+   procedure Text_Analysis   (Line : Asis.Program_Text; Loc : Location);
 end Framework.Plugs;

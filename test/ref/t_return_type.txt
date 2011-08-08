@@ -1,0 +1,23 @@
+t_return_type.adb:24:44: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:40:32: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:65:33: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type-empty_string.adb:4:30: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:86:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
+t_return_type.adb:103:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
+t_return_type.adb:132:53: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:153:55: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type.adb:173:40: Error: Return_Task: function returns task type
+t_return_type.adb:197:45: Error: Return_Protected: function returns protected type
+t_return_type.adb:220:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:262:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
+t_return_type.adb:281:51: Error: Return_Task: function returns task type
+t_return_type.adb:281:51: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:294:13: Error: Return_Task: function returns task type
+t_return_type.adb:322:13: Error: Return_Protected: function returns protected type
+t_return_type.adb:322:13: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:337:13: Error: Return_Protected: function returns protected type
+t_return_type.adb:365:4: Error: Return_Task: function returns task type from instantiation
+t_return_type.adb:369:4: Error: Return_Protected: function returns protected type from instantiation
+t_return_type.adb:378:4: Error: Return_Task: function returns task type from instantiation
+t_return_type.adb:378:4: Error: Return_Protected: function returns protected type from instantiation
+t_return_type.adb:378:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation

@@ -1,0 +1,22 @@
+-- Control usage of obsolescent features, as listed in
+-- annex J.
+--
+-- Currently not checked:
+--   Character replacement
+--   Reduced accuracy subtypes
+--   Constrained attribute
+--   Interrupt entries
+--   Specifying 'Storage_Size for tasks
+Obsolescent_Unit: check entities (Unchecked_Conversion,
+                                  Unchecked_Deallocation,
+                                  Sequential_IO,
+                                  Direct_IO,
+                                  Text_IO,
+                                  IO_Exceptions,
+                                  Calendar,
+                                  Machine_Code);
+Obsolescent_Package: check entities (Standard.Ascii);
+Obsolescent_Exception : check entities (Numeric_Error);
+Obsolescent_Representation_Clause: check representation_clauses 
+                                  (at, 
+                                   at_mod);

@@ -1,0 +1,14 @@
+No_Closing_Name        : check style(no_closing_name, 5);
+No_Closing_Name        : search style (no_closing_name);
+Casing                 : search style(casing);
+Positional_Association : check style(positional_association);
+No_Default_In          : search style(default_in);
+Negative_Condition     : check style (negative_condition);
+Literals               : check style (literal,     10,  3);
+Base_2_Literals        : check style (literal,      2,  4);
+Base_16_Literals       : check style (literal,     16,  4);
+Not_Base_7             : check style (literal, not  7);
+Not_Base_13            : check style (literal, not 13);
+Spans                  : check style (multiple_elements);
+Exposed                : check style (exposed_literal, 0, 1, 0.0, 1.0);
+count style (positional_association, call);

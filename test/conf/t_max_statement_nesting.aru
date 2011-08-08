@@ -1,0 +1,8 @@
+"check   if": check max_statement_nesting (if, 3);
+"check case": check max_statement_nesting (case, 3);
+"check loop": check max_statement_nesting (loop, 3);
+"search all": search max_statement_nesting (all, 4);
+"count   if": count max_statement_nesting (if, 3);
+"count case": count max_statement_nesting (case, 3);
+"count loop": count max_statement_nesting (loop, 3);
+"count  all": count max_statement_nesting (all, 4);

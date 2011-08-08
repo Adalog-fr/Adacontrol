@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Asis
 with
   Asis.Clauses,
@@ -68,9 +64,10 @@ package body Rules.Unnecessary_Use is
    --
    -- When we encounter an identifier, we take the Full_Name_Image of the package that
    -- encloses *immediately* its declaration (see below for a proof of why it works).
-   -- If it matches a package in store, that package is used, and removed from the store.
+   -- If it matches a package in store, that package is used, and marked as such.
    --
-   -- When we exit a scope, any remaining package for that scope has not been used.
+   -- When we exit a scope, any remaining package for that scope which is not marked
+   -- has not been used.
    --
    -- Note that we do *not* consider whether the package name has actually been used in
    -- the naming of the identifier. i.e., package Pack will be considered as used in the
@@ -90,14 +87,14 @@ package body Rules.Unnecessary_Use is
 
    Rule_Used  : Boolean := False;
    Save_Used  : Boolean;
-   Rule_Type  : Rule_Types;
-   Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Context    : Basic_Rule_Context;
 
    type Package_Info (Length_1, Length_2 : Positive) is
       record
          Elem            : Asis.Element;
          Name            : Wide_String (1..Length_1);
          Original_Name   : Wide_String (1..Length_2);
+         Used            : Boolean;
       end record;
 
    package Used_Packages is new Framework.Scope_Manager.Scoped_Store (Package_Info);
@@ -118,9 +115,7 @@ package body Rules.Unnecessary_Use is
    -- Add_Use --
    -------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
+   procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
       use Framework.Language;
 
    begin
@@ -132,9 +127,8 @@ package body Rules.Unnecessary_Use is
          Parameter_Error (Rule_Id & ": this rule can be specified only once");
       end if;
 
-      Rule_Type  := Rule_Use_Type;
-      Rule_Label := To_Unbounded_Wide_String (Label);
-      Rule_Used  := True;
+      Context   := Basic.New_Context (Rule_Type, Label);
+      Rule_Used := True;
    end Add_Use;
 
 
@@ -143,12 +137,11 @@ package body Rules.Unnecessary_Use is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+      use Framework.Rules_Manager;
    begin
       case Action is
          when Clear =>
             Rule_Used  := False;
-            Rule_Label := Null_Unbounded_Wide_String;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -162,44 +155,18 @@ package body Rules.Unnecessary_Use is
    ------------------------
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
-      use Asis.Clauses, Asis.Elements, Asis.Expressions, Thick_Queries;
+      use Asis.Clauses, Thick_Queries;
 
       function Build_Info (Name_Elem : Asis.Element) return Package_Info is
-         use Asis;
-         Good_Name_Elem : Asis.Element := Name_Elem;
+         Name_String     : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Name_Elem)));
+         Original_String : constant Wide_String := Extended_Name_Image (Name_Elem);
       begin
-         -- Get rid of selected names
-         case Expression_Kind (Good_Name_Elem) is
-            when A_Selected_Component =>
-               Good_Name_Elem := Selector (Good_Name_Elem);
-            when An_Identifier =>
-               null;
-            when others =>
-               Utilities.Failure ("Not a name in use clause", Good_Name_Elem);
-         end case;
-
-         if Declaration_Kind (Corresponding_Name_Declaration (Good_Name_Elem))
-           in A_Renaming_Declaration
-         then
-            -- Get rid of renamings (Text_IO!)
-            Good_Name_Elem := A4G_Bugs.Corresponding_Base_Entity (Corresponding_Name_Declaration (Good_Name_Elem));
-
-            -- We can get a selected component here...
-            if Expression_Kind (Good_Name_Elem) = A_Selected_Component then
-               Good_Name_Elem := Selector (Good_Name_Elem);
-            end if;
-         end if;
-
-         declare
-            Name_String     : constant Wide_String := To_Upper (Full_Name_Image (Good_Name_Elem));
-            Original_String : constant Wide_String := Extended_Name_Image (Name_Elem);
-         begin
-            return (Length_1      => Name_String'Length,
-                    Length_2      => Original_String'Length,
-                    Elem          => Clause,
-                    Name          => Name_String,
-                    Original_Name => Original_String);
-         end;
+         return (Length_1      => Name_String'Length,
+                 Length_2      => Original_String'Length,
+                 Elem          => Clause,
+                 Name          => Name_String,
+                 Original_Name => Original_String,
+                 Used          => False);
       end Build_Info;
 
    begin
@@ -214,7 +181,7 @@ package body Rules.Unnecessary_Use is
          --
          for I in Names'Range loop
             declare
-               use Framework.Scope_Manager, Framework.Reports, Ada.Strings.Wide_Unbounded;
+               use Framework.Scope_Manager, Framework.Reports;
                Info : constant Package_Info := Build_Info (Names (I));
             begin
                -- Check if already there
@@ -222,11 +189,10 @@ package body Rules.Unnecessary_Use is
                while Used_Packages.Data_Available loop
                   if Used_Packages.Current_Data.Name = Info.Name then
                      Report (Rule_Id,
-                             To_Wide_String (Rule_Label),
-                             Rule_Type,
+                             Context,
                              Get_Location (Info.Elem),
                              "use clause for """ & Info.Original_Name
-                             & " in scope of use clause for same package at "
+                             & """ in scope of use clause for same package at "
                              & Image (Get_Location (Used_Packages.Current_Data.Elem)));
                   end if;
 
@@ -336,7 +302,8 @@ package body Rules.Unnecessary_Use is
                   E := Corresponding_First_Subtype (E);
                end;
            elsif Element_Kind (E) = An_Association
-              or Declaration_Kind (E) in A_Renaming_Declaration
+             or Declaration_Kind (E) in A_Renaming_Declaration
+             or Declaration_Kind (E) in A_Generic_Instantiation
             then
                -- This is an actual in an instantiation, or something similar where
                -- the function name appears, but it's not a call.
@@ -352,7 +319,7 @@ package body Rules.Unnecessary_Use is
                -- These are not visible outside the generic, so we don't care
                return "";
             else
-               Failure ("Enclosing_Package_Name, unexpected nil_element", E);
+               Failure ("Enclosing_Package_Name, unexpected nil_element", N);
             end if;
          end if;
 
@@ -405,19 +372,19 @@ package body Rules.Unnecessary_Use is
          Used_Packages.Reset (All_Scopes);
          while Used_Packages.Data_Available loop
             declare
-               use Framework.Reports, Ada.Strings.Wide_Unbounded;
-               Info : constant Package_Info := Used_Packages.Current_Data;
+               use Framework.Reports;
+               Info : Package_Info := Used_Packages.Current_Data;
             begin
                if Enclosing_Name = Info.Name then
-                  if Used_Packages.Is_Current_Transmitted_From_Spec then
+                  if not Info.Used and Used_Packages.Current_Origin = Specification then
                      Report (Rule_Id,
-                             To_Wide_String (Rule_Label),
-                             Rule_Type,
+                             Context,
                              Get_Location (Info.Elem),
                              "use clause for " & Info.Original_Name
                                & " can be moved to body");
                   end if;
-                  Used_Packages.Delete_Current;
+                  Info.Used := True;
+                  Used_Packages.Update_Current (Info);
                   exit;
               else
                   Used_Packages.Next;
@@ -432,14 +399,14 @@ package body Rules.Unnecessary_Use is
    ---------------------------
 
    procedure Process_Instantiation (Instantiation : Asis.Declaration) is
-      -- Process all names found as actuals.
-      -- We really need to do that only for those actuals that are defaulted, but there is
-      -- no way to tell. Note that this implies that parameters that are not defaulted will
-      -- be processed twice, once here and once when the ruler will find them.
-      -- What's the heck...
+      -- Names used in actuals that are explicitely provided are processed by the ruler as identifiers.
+      -- Names that are part of default expressions follow the visibility rules at the place of
+      -- the declaration of the generic, and therefore should not be processed here.
+      -- However, names that correspond to defaulted associations for "is box" formal subprograms
+      -- follow the visibility rules at the point of instantiation, and must therefore be processed
+      -- here.
       use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
 
-      Actual : Asis.Element;
    begin
       if not Rule_Used then
          return;
@@ -451,24 +418,13 @@ package body Rules.Unnecessary_Use is
                                                                                Normalized => True);
       begin
          for I in Associations'Range loop
-            Actual := Actual_Parameter (Associations (I));
-            case Expression_Kind (Actual) is
-               when An_Identifier =>
-                  Process_Identifier (Actual);
-
-               when A_Selected_Component =>
-                  -- We must process all names in the selected component
-                  loop
-                     Process_Identifier (Selector (Actual));
-                     Actual := Prefix (Actual);
-                     exit when Expression_Kind (Actual) /= A_Selected_Component;
-                  end loop;
-                  -- The first name must still be processed
-                  Process_Identifier (Actual);
-
-               when others =>
-                  null;
-            end case;
+            if Is_Defaulted_Association (Associations (I))
+              and then Default_Kind (Enclosing_Element
+                                     (Formal_Parameter
+                                      (Associations (I)))) = A_Box_Default
+            then
+               Process_Identifier (Actual_Parameter (Associations (I)));
+            end if;
          end loop;
       end;
    end Process_Instantiation;
@@ -479,9 +435,10 @@ package body Rules.Unnecessary_Use is
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
       use Framework.Reports, Framework.Scope_Manager;
-      use Ada.Strings.Wide_Unbounded, Asis, Asis.Elements, Asis.Declarations;
+      use Asis, Asis.Elements, Asis.Declarations;
 
-      Is_Package_Spec : constant Boolean := Declaration_Kind (Scope) = A_Package_Declaration;
+      Is_Package_Spec : constant Boolean := Declaration_Kind (Scope) = A_Package_Declaration or
+                                            Declaration_Kind (Scope) = A_Generic_Package_Declaration;
    begin
       if not Rule_Used then
          return;
@@ -490,37 +447,35 @@ package body Rules.Unnecessary_Use is
 
       Used_Packages.Reset (Current_Scope_Only);
       while Used_Packages.Data_Available loop
-         if Is_Package_Spec and then not Is_Nil (Corresponding_Body (Scope)) then
-            -- It is a package spec with a body
-            -- => delay messages until the end of the body
-            Used_Packages.Next;
-
-         else
+         -- For a package spec with a body, delay messages until the end of the body
+         if not Is_Package_Spec or else Is_Nil (Corresponding_Body (Scope)) then
             declare
                Info : constant Package_Info := Used_Packages.Current_Data;
                Child_Warning : constant Boolean
-                 := (Is_Package_Spec or Used_Packages.Is_Current_Transmitted_From_Spec)
+                 := (Is_Package_Spec or Used_Packages.Current_Origin = Specification)
                  and Current_Depth = 1;
             begin
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Label),
-                       Rule_Type,
-                       Get_Location (Info.Elem),
-                       "unused: """ & Info.Original_Name
-                         & Choose (Child_Warning,
-                                   """ (possible usage in child units)",
-                                   """")
-                      );
-               Used_Packages.Delete_Current;  -- Moves to next
+               if not Info.Used and Used_Packages.Current_Origin /= Parent then
+                  Report (Rule_Id,
+                          Context,
+                          Get_Location (Info.Elem),
+                          "unused: """ & Info.Original_Name
+                          & Choose (Child_Warning,
+                                    """ (possible usage in child units)",
+                                    """")
+                         );
+               end if;
             end;
          end if;
+
+         Used_Packages.Next;
       end loop;
 
    end Process_Scope_Exit;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Unnecessary_Use;

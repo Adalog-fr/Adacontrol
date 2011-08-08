@@ -2,8 +2,8 @@ T1: search instantiations (ada.unchecked_deallocation);
 T2: search instantiations (ada.unchecked_deallocation, standard.natural);
 T3: search instantiations (ada.unchecked_deallocation, standard.integer);
 T4: search instantiations (ada.unchecked_deallocation, standard.string, <>);
-T5: search instantiations (ada.unchecked_deallocation, standard.string, t_instantiations.string_access);
-T6: search instantiations (ada.unchecked_conversion, <>, t_instantiations.Integer_Access);
+T5: check  instantiations (ada.unchecked_deallocation, standard.string, t_instantiations.string_access);
+T6: check  instantiations (ada.unchecked_conversion, <>, t_instantiations.Integer_Access);
 
 -- Not tested, resistance test:
 Boolean_Buf_Duplicate_Instance:     Check Instantiations (Buffer.Enumeration_G,  Standard.Boolean);

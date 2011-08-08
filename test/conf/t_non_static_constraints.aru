@@ -1,0 +1,2 @@
+check	non_static_constraints (index);
+check	non_static_constraints (discriminant);

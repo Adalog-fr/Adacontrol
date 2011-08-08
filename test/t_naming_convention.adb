@@ -1,4 +1,4 @@
-procedure T_naming_convention is
+package body T_naming_convention is
    My_Const  : constant Integer := 1;
    My_Number : constant := 1.0;
    C_Max     : constant := 1; -- OK
@@ -219,6 +219,24 @@ procedure T_naming_convention is
       type A4 is access F4;
       type T_Access_4_Tagged is access F4; -- OK
    end Gen_Pack;
+
+   -- Separate unit
+   procedure Sep is separate;
+
+   -- Local/Global
+   procedure L_Proc is
+   begin
+      null;
+   end L_Proc;
+
+   package body Inner is
+      procedure L_Proc is
+         L_X3 : Standard.Integer;
+         G_X3 : Standard.Integer;
+      begin
+         null;
+      end L_Proc;
+   end Inner;
 
 begin
 <<B1>>

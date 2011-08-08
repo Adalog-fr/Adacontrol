@@ -1,0 +1,86 @@
+t_style.adb:1:10: Found: Casing: Wrong casing of "Text_io", should be "Text_IO"
+t_style.adb:4:4: Error: No_Closing_Name: name not repeated at the end
+t_style.adb:5:24: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:17:40: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:16:10: Found: No_Default_In: default IN mode used for formal object declaration
+t_style.adb:28:10: Found: No_Default_In: default IN mode used for formal object declaration
+t_style.adb:29:28: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:32:27: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:35:24: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:39:27: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:53:21: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:55:17: Found: Casing: Wrong casing of "i", should be "I"
+t_style.adb:58:7: Found: Casing: Wrong casing of "Int", should be "int"
+t_style.adb:59:7: Found: Casing: Wrong casing of "ada", should be "Ada"
+t_style.adb:59:19: Found: Casing: Wrong casing of "put_line", should be "Put_Line"
+t_style.adb:59:28: Error: Positional_Association: named association not used in call
+t_style.adb:59:51: Found: Casing: Wrong casing of "INT", should be "int"
+t_style.adb:60:7: Found: Casing: Wrong casing of "iNT", should be "int"
+t_style.adb:60:14: Found: Casing: Wrong casing of "fOo", should be "foo"
+t_style.adb:60:18: Error: Positional_Association: named association not used in call
+t_style.adb:60:18: Found: Casing: Wrong casing of "INt", should be "int"
+t_style.adb:61:7: Found: Casing: Wrong casing of "ada", should be "Ada"
+t_style.adb:61:11: Found: Casing: Wrong casing of "text_io", should be "Text_IO"
+t_style.adb:61:19: Found: Casing: Wrong casing of "put_line", should be "Put_Line"
+t_style.adb:61:28: Error: Positional_Association: named association not used in call
+t_style.adb:61:51: Found: Casing: Wrong casing of "inT", should be "int"
+t_style.adb:83:25: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:87:24: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:87:37: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:99:10: Found: No_Default_In: default IN mode used for formal object declaration
+t_style.adb:108:10: Found: No_Default_In: default IN mode used for formal object declaration
+t_style.adb:117:10: Found: No_Default_In: default IN mode used for formal object declaration
+t_style.adb:127:30: Found: Casing: Wrong casing of "pgen", should be "Pgen"
+t_style.adb:128:29: Found: Casing: Wrong casing of "fgen", should be "Fgen"
+t_style.adb:129:31: Found: Casing: Wrong casing of "pgen", should be "Pgen"
+t_style.adb:129:36: Error: Positional_Association: named association not used in instantiation
+t_style.adb:130:30: Found: Casing: Wrong casing of "fgen", should be "Fgen"
+t_style.adb:130:35: Error: Positional_Association: named association not used in instantiation
+t_style.adb:132:40: Error: Positional_Association: named association not used in instantiation
+t_style.adb:135:27: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:146:27: Error: Positional_Association: named association not used in call
+t_style.adb:148:13: Error: Positional_Association: named association not used in call
+t_style.adb:148:16: Error: Positional_Association: named association not used in call
+t_style.adb:150:19: Error: Positional_Association: named association not used in aggregate
+t_style.adb:150:21: Error: Positional_Association: named association not used in aggregate
+t_style.adb:150:23: Error: Positional_Association: named association not used in aggregate
+t_style.adb:153:35: Error: Positional_Association: named association not used in aggregate
+t_style.adb:154:15: Error: Positional_Association: named association not used in aggregate
+t_style.adb:154:17: Error: Positional_Association: named association not used in aggregate
+t_style.adb:154:19: Error: Positional_Association: named association not used in aggregate
+t_style.adb:154:21: Error: Positional_Association: named association not used in aggregate
+t_style.adb:154:23: Error: Positional_Association: named association not used in aggregate
+t_style.adb:155:21: Error: Exposed: integer value 2 not allowed outside constant declaration
+t_style.adb:155:27: Error: Exposed: integer value 3 not allowed outside constant declaration
+t_style.adb:155:33: Error: Exposed: integer value 4 not allowed outside constant declaration
+t_style.adb:155:39: Error: Exposed: integer value 5 not allowed outside constant declaration
+t_style.adb:156:23: Error: Positional_Association: named association not used in call
+t_style.adb:162:7: Error: No_Closing_Name: name not repeated at the end
+t_style.adb:162:20: Found: No_Default_In: default IN mode used for parameter specification
+t_style.adb:169:7: Found: No_Closing_Name: name not repeated at the end
+t_style.adb:173:7: Found: No_Closing_Name: name not repeated at the end
+t_style.adb:178:7: Found: No_Closing_Name: name not repeated at the end
+t_style.adb:189:31: Error: Literals: number representation does not follow convention
+t_style.adb:191:31: Error: Literals: number representation does not follow convention
+t_style.adb:195:31: Error: Literals: number representation does not follow convention
+t_style.adb:201:31: Error: Literals: number representation does not follow convention
+t_style.adb:205:31: Error: Literals: number representation does not follow convention
+t_style.adb:213:32: Error: Not_Base_7: based representation not allowed
+t_style.adb:214:31: Error: Not_Base_13: based representation not allowed
+t_style.adb:221:31: Error: Base_16_Literals: number representation does not follow convention
+t_style.adb:223:32: Error: Not_Base_7: based representation not allowed
+t_style.adb:226:31: Error: Base_16_Literals: number representation does not follow convention
+t_style.adb:237:12: Error: Exposed: integer value 2 not allowed outside constant declaration
+t_style.adb:239:12: Error: Exposed: real value 2.0 not allowed outside constant declaration
+t_style.adb:242:26: Error: Spans: declaration does not start line
+t_style.adb:244:12: Error: Spans: declaration does not start line
+t_style.adb:246:21: Error: Spans: clause does not start line
+t_style.adb:262:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:268:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:274:20: Error: Spans: statement does not start line
+t_style.adb:275:26: Error: Spans: statement does not start line
+t_style.adb:277:22: Error: Spans: statement does not start line
+t_style.adb:278:22: Error: Spans: statement does not start line
+
+Counts summary:
+STYLE: 7

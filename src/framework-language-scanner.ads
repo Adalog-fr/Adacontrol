@@ -37,13 +37,15 @@ private package Framework.Language.Scanner is
 
    Max_ID_Length : constant := 250;
 
-   type Token_Kind is (Name, Integer_Value,
+   type Token_Kind is (Name, Integer_Value, Float_Value,
+
+                       Bad_Token, Bad_Integer, Bad_Float,
 
                        Left_Bracket, Right_Bracket, Left_Parenthesis, Right_Parenthesis,
                        Left_Angle,   Right_Angle,
                        Tick, Colon,  Semi_Colon, Comma, Period,
 
-                       EoF);
+                       Eof);
 
    --Tokens made of a single character
    subtype Character_Token_Kind is Token_Kind range Left_Bracket .. Period;
@@ -69,14 +71,16 @@ private package Framework.Language.Scanner is
                Key    : Key_Kind;
             when Integer_Value =>
                Value : Integer;
+            when Float_Value =>
+               Fvalue : Float;
             when others =>
                null;
          end case;
       end record;
 
-   function Is_String (T : Token; Value : Wide_String) return Boolean;
-   -- Returns whether the T is a Name whose content is the given value
-   -- Casing is irrelevant, Value must be given in upper case.
+   function Is_String (T : Token; Expected : Wide_String) return Boolean;
+   -- Returns whether the T is a Name whose content is the given expected value
+   -- Casing is irrelevant, Expected must be given in upper case.
 
    procedure Start_Scan (From_String : Boolean; Source : Wide_String);
    procedure Set_Prompt (Prompt : Wide_String);
@@ -86,9 +90,10 @@ private package Framework.Language.Scanner is
 
    function Image (T : Token) return Wide_String;
 
-   procedure Next_Token (Force_String : Boolean := False);
-   -- Advance to next token; If Force_String, take all characters
-   -- until the next space or semi-colon as a string token
+   procedure Next_Token (Force_String : Boolean := False; No_Delay : Boolean := False);
+   -- Advance to next token;
+   -- If Force_String, take all characters until the next space or semi-colon as a string token
+   -- If No_Delay, do it immediately
 
    type Scanner_State is private;
    procedure Save_State    (State : out Scanner_State);
@@ -108,6 +113,10 @@ private
          At_Eol           : Boolean;
          Source_String    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          Source_Last      : Natural;
+
+         Buffer   : Wide_String (1..200);
+         Buf_Inx  : Natural;
+         Buf_Last : Natural;
 
          Current_File   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          Current_Line   : Asis.Text.Line_Number;

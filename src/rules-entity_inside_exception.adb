@@ -29,13 +29,8 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Asis
 with
-  Asis,
   Asis.Elements,
   Asis.Expressions,
   Asis.Iterator;
@@ -80,7 +75,6 @@ package body Rules.Entity_Inside_Exception is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
    begin
@@ -92,7 +86,7 @@ package body Rules.Entity_Inside_Exception is
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Entities, Entity, Simple_Context'(Rule_Type, To_Unbounded_Wide_String (Label)));
+            Associate (Entities, Entity, Basic.New_Context (Rule_Type, Label));
          exception
             when Already_In_Store =>
                Parameter_Error (Image (Entity) & " is already used in rule " & Rule_Id);
@@ -135,19 +129,14 @@ package body Rules.Entity_Inside_Exception is
    ------------------------
 
    procedure Process_Identifier (Identifier : in Asis.Identifier) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Reports, Utilities;
 
-      Identifier_Location   : Location;
-      Use_Context           : constant Rule_Context'Class
-        := Matching_Context (Entities, Identifier);
+      Use_Context : constant Root_Context'Class := Matching_Context (Entities, Identifier);
    begin
       if Use_Context /= No_Matching_Context then
-         Identifier_Location := Get_Location (Identifier);
          Report (Rule_Id,
-                 To_Wide_String (Simple_Context (Use_Context).Rule_Label),
-                 Simple_Context (Use_Context).Rule_Type,
-                 Identifier_Location,
+                 Use_Context,
+                 Get_Location (Identifier),
                  "use of """ & To_Title (Last_Matching_Name (Entities)) & '"');
       end if;
    end Process_Identifier;
@@ -156,18 +145,11 @@ package body Rules.Entity_Inside_Exception is
    -- Traverse --
    --------------
 
-   type State_Information is null record;
-
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out State_Information);
+                            State   : in out Null_State);
 
-   procedure Post_Procedure (Element : in     Asis.Element;
-                             Control : in out Asis.Traverse_Control;
-                             State   : in out State_Information);
-
-   procedure Traverse is new Asis.Iterator.Traverse_Element
-     (State_Information, Pre_Procedure, Post_Procedure);
+   procedure Traverse is new Asis.Iterator.Traverse_Element (Null_State, Pre_Procedure, Null_State_Procedure);
 
    -------------------
    -- Pre_Procedure --
@@ -175,7 +157,7 @@ package body Rules.Entity_Inside_Exception is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out State_Information) is
+                            State   : in out Null_State) is
       use Asis;
       use Asis.Elements, Asis.Expressions;
    begin
@@ -208,18 +190,6 @@ package body Rules.Entity_Inside_Exception is
       end case;
    end Pre_Procedure;
 
-   --------------------
-   -- Post_Procedure --
-   --------------------
-
-   procedure Post_Procedure (Element : in     Asis.Element;
-                             Control : in out Asis.Traverse_Control;
-                             State   : in out State_Information) is
-      pragma Unreferenced (Element, Control, State);
-   begin
-      null;
-   end Post_Procedure;
-
    -------------------------------
    -- Process_Exception_Handler --
    -------------------------------
@@ -228,7 +198,7 @@ package body Rules.Entity_Inside_Exception is
       use Asis;
 
       Control : Traverse_Control  := Continue;
-      State   : State_Information;
+      State   : Null_State;
    begin
       if not Rule_Used then
          return;
@@ -239,9 +209,9 @@ package body Rules.Entity_Inside_Exception is
    end Process_Exception_Handler;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Entity_Inside_Exception;

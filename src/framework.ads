@@ -45,16 +45,46 @@ with
 pragma Elaborate_All (Binary_Map);
 
 package Framework is
+   -------------------------------------------------------------------
+   -- General dimensioning constants                                --
+   -------------------------------------------------------------------
 
-   --
-   --  General types for rules
-   --
+   -- These constants define limits about what "reasonable" programs may contain.
+   -- They can be used by rules to limit some capabilities.
+   -- These limits are arbitrary and can be changed at will, no other change is needed.
 
+   Max_Identical_Rules : constant := 100;
+   -- For rules that need an upper bound to the number of times they can
+   -- be specified
+
+   Max_Parameters : constant := 30;
+   -- Maximum number of parameters declared by a subprogram or an entry
+
+   Max_Loop_Nesting : constant := 20;
+   -- Maximum depth of nested loops
+
+   Max_Scopes : constant := 50;
+   -- Maximum depth of scopes nesting.
+
+
+   -------------------------------------------------------------------
+   -- The ASIS context                                              --
+   -------------------------------------------------------------------
+
+   Adactl_Context : Asis.Context;
+
+   -------------------------------------------------------------------
+   --  General types for rules                                      --
+   -------------------------------------------------------------------
+
+   type Rule_Index is range 0 ..  Max_Identical_Rules;
    type Rule_Types is (Check, Search, Count);
+   type Rule_Types_Set is array (Rule_Types) of Boolean;
 
-   --------------------------------------
-   --  Location                        --
-   --------------------------------------
+
+   -------------------------------------------------------------------
+   --  Location                                                     --
+   -------------------------------------------------------------------
 
    -- A location is the position of an element in a file
 
@@ -67,61 +97,84 @@ package Framework is
    function Get_Location (E : in Asis.Element) return Location;
    -- Returns location of an element
 
+   function Get_Previous_Word_Location (E : in Asis.Element) return Location;
+   -- Returns the location of the first "word" (identifier of keyword) that immediately
+   -- precedes E.
+
    function Get_File_Name (L : in Location) return Wide_String;
    -- Returns location file name
 
    function Get_First_Line (L : in Location) return Natural;
    -- Returns location first line
 
-   function Image (L : in Location) return Wide_String;
+   function Get_First_Column (L : in Location) return Natural;
+   -- Returns location first column
+
+   Default_Short_Name : Boolean := False;
+   function Image (L : in Location; Short_Name : in Boolean := Default_Short_Name) return Wide_String;
    -- Returns image of a location
    -- i.e. file:1:1
+   -- If Short_Name = True, strip File name from any path
 
-   function Value (S : Wide_String) return Location;
+   function Value (S : in Wide_String) return Location;
    -- Returns location value of a string
    -- raises Constraint_Error for an incorrect input string
 
 
-   --------------------------------------
-   --  Entity_Specification            --
-   --------------------------------------
+   -------------------------------------------------------------------
+   --  Entity_Specification                                         --
+   -------------------------------------------------------------------
 
    -- An Entity_Specification is the structure that corresponds to
    -- the specification of an Ada entity in the command language
 
    type Entity_Specification is private;
-   function Image (Entity : Entity_Specification) return Wide_String;
-   function Value (Name : Wide_String) return Entity_Specification;
-   function Is_Box (Entity : Entity_Specification) return Boolean;
+   function Image   (Entity : in Entity_Specification) return Wide_String;
+   function Value   (Name   : in Wide_String)          return Entity_Specification;
+   function Is_Box  (Entity : in Entity_Specification) return Boolean;
+   function Matches (Name   : in Asis.Element; Entity : in Entity_Specification) return Boolean;
+   -- Appropriate element kinds for Matches:
+   --   like Matching_Context, see below
 
-   --------------------------------------
-   --  Rule_Context                    --
-   --------------------------------------
 
-   -- A context is a rule-specific information associated
-   -- to an entity specification
+   -------------------------------------------------------------------
+   --  Contexts                                                     --
+   -------------------------------------------------------------------
 
-   type Rule_Context is tagged null record;
-   procedure Clear (Context : in out Rule_Context);
+   -- A context is a rule-specific information
+
+   type Root_Context is tagged null record;
+   procedure Clear (Context : in out Root_Context);
    -- The default (inherited) Clear does nothing.
    -- Redefine clear if you extend Rule_Context with fields (like maps
    -- or access value) that need finalization when the context store is cleared.
 
-   Empty_Context       : constant Rule_Context := (null record);
-   No_Matching_Context : constant Rule_Context'Class;
+   Empty_Context       : constant Root_Context := (null record);
+   No_Matching_Context : constant Root_Context'Class;
 
-   -- A simple context is what most rules will need
-   type Simple_Context is new Rule_Context with
-      record
-         Rule_Type  : Rule_Types;
-         Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-      end record;
+   -- A basic context is what most rules need
+   -- It simply (logically) holds the Rule_Type and Rule_Label, but we need extra
+   -- mechanisms to allow specifying "Count" in addition to any "Seach" or "Check"
+   -- without causing double definitions in the context store. Therefore, this has to
+   -- be private, and a constructor is provided.
+   type Basic_Rule_Context is new Root_Context with private;
 
-   --------------------------------------
-   --  Context_Store                   --
-   --------------------------------------
+   package Basic is
+      -- This package to prevent these operations from being primitive.
+      -- Since New_Context et alt. could have been called Basic_New_Context, it is not
+      -- really annoying to have to write Basic.New_Context...
+      function New_Context (Rule_Type : in Rule_Types; Rule_Label : in Wide_String) return Basic_Rule_Context;
+      function Rule_Type   (Context   : in Basic_Rule_Context) return Rule_Types;
+      function Rule_Label  (Context   : in Basic_Rule_Context) return Wide_String;
+   end Basic;
+
+
+   -------------------------------------------------------------------
+   --  Context_Store                                                --
+   -------------------------------------------------------------------
 
    -- A context_store associates a context to a specific entity specification
+   -- (or by cheating a little bit) to any string.
 
    type Context_Store is limited private;
    Already_In_Store : exception;
@@ -132,19 +185,20 @@ package Framework is
 
    procedure Associate (Into          : in out Context_Store;
                         Specification : in     Entity_Specification;
-                        Context       : in     Rule_Context'Class;
+                        Context       : in     Root_Context'Class;
                         Additive      : in     Boolean := False);
    -- If Additive is False, only one context can be associated to the specification
    --    (or Already_In_Store is raised)
-   -- If Additive is True, several contexts can be associated to a specification
+   -- If Additive is True, several /different/ contexts can be associated to a specification
+   --    (Already_In_Store is raised if the same context value is associated twice)
 
    procedure Associate_Default (Into    : in out Context_Store;
-                                Context : in     Rule_Context'Class);
+                                Context : in     Root_Context'Class);
    -- If a default context is defined, it will be returned by Matching_Context if
    -- the name is not matched, instead of No_Matching_Context.
 
-   function Matching_Context (Into : Context_Store;
-                              Name : Asis.Element) return Rule_Context'Class;
+   function Matching_Context (Into : in Context_Store;
+                              Name : in Asis.Element) return Root_Context'Class;
    -- Retrieves the context associated to the element if there is a match
    -- Returns No_Matching_Context otherwise (including if Name is a Nil_Element).
    --
@@ -165,31 +219,39 @@ package Framework is
    --   The name matches an "all" association without overloading
    --   There is a default association (matches everything)
 
-   function Extended_Matching_Context (Into : Context_Store;
-                                       Name : Asis.Element) return Rule_Context'Class;
-   -- Same as Matching_Context, but extends the search to corresponding generics if Name is
-   -- an instantiation or part of an instantiation
-   -- Restricted to identifiers.
+   function Extended_Matching_Context (Into : in Context_Store;
+                                       Name : in Asis.Element) return Root_Context'Class;
+   -- Same as Matching_Context, but extends the search to the original name for renamings
+   -- and corresponding generics if Name is an instantiation or part of an instantiation
 
-   function Next_Matching_Context (Into : Context_Store) return Rule_Context'Class;
+   function Next_Matching_Context (Into : in Context_Store) return Root_Context'Class;
    --  Use to retrieve other contexts of an additive association
    --  Returns the default (or No_Matching_Context) when exhausted
 
-   function Last_Matching_Name (Into : Context_Store) return Wide_String;
-   -- Name that found the context in the last query to Matching_Context
+   function Last_Matching_Name (Into : in Context_Store) return Wide_String;
+   -- Name that found the context in the last query to Matching_Context or Association
 
    procedure Update (Into    : in out Context_Store;
-                     Context : in     Rule_Context'Class);
+                     Context : in     Root_Context'Class);
    -- Updates context last returned by Matching_Context or Association
 
    function  Association (Into          : in Context_Store;
-                          Specification : in Entity_Specification) return Rule_Context'Class;
+                          Specification : in Entity_Specification) return Root_Context'Class;
    -- Returns the first Context associated to the specification
    -- (currently used only for non-additive associations; this may change in the future)
 
    procedure Dissociate (From          : in out Context_Store;
                          Specification : in     Entity_Specification);
    -- Removes context associated to specification
+
+
+   -------------------------------------------------------------------
+   --  Banned entities                                              --
+   -------------------------------------------------------------------
+
+   function Is_Banned (Element : in Asis.Element; For_Rule : in Wide_String) return Boolean;
+   -- Returns True if Element is declared within a banned unit for rule For_Rule.
+   -- A banned unit is one which is the target of an inhibit all command.
 
 private
    use Ada.Strings.Wide_Unbounded;
@@ -203,7 +265,7 @@ private
       First_Line   : Asis.Text.Line_Number        := 0;
       First_Column : Asis.Text.Character_Position := 0;
    end record;
-   Null_Location : constant Location := (Null_Unbounded_Wide_string, 0, 0);
+   Null_Location : constant Location := (Null_Unbounded_Wide_String, 0, 0);
 
 
    --
@@ -227,15 +289,22 @@ private
 
    --  This way of defining No_Matching_Context ensures that it cannot
    --  be used for anything else than comparisons.
-   type Not_Found_Context is new Rule_Context with null record;
-   No_Matching_Context : constant Rule_Context'Class
-     := Not_Found_Context'(null record);
+   type Not_Found_Context is new Root_Context with null record;
+   No_Matching_Context : constant Root_Context'Class := Not_Found_Context'(null record);
+
+   type Basic_Rule_Context is new Root_Context with
+      record
+         Rule_Type   : Rule_Types;
+         Rule_Label  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+         With_Count  : Boolean;
+         Count_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+      end record;
 
    --
    -- Context_Store
    --
 
-   type Context_Access is access Rule_Context'Class;
+   type Context_Access is access Root_Context'Class;
    type Context_Node;
    type Context_Node_Access is access Context_Node;
    type Context_Node is
@@ -259,5 +328,16 @@ private
          Last_Returned    : Context_Node_Access;
          Last_Name        : Unbounded_Wide_String;
       end record;
+
+   --
+   -- Inhibition
+   --
+
+   type Inhibited_Rule is new Root_Context with
+      record
+         Rule_Name : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+         Is_Banned : Boolean;
+      end record;
+   Inhibited : Framework.Context_Store;
 
 end Framework;

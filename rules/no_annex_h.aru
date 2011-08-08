@@ -1,0 +1,3 @@
+-- Control usage of features defined in annex H.
+--
+Annex_H: check pragmas (Normalize_Scalars, Reviewable, Inspection_Point);

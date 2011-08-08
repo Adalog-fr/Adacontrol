@@ -1,6 +1,8 @@
 t_local_instantiation.adb:7:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
 t_local_instantiation.adb:10:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+t_local_instantiation.adb:13:7: Found: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Conversion"
 t_local_instantiation.adb:21:10: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
 t_local_instantiation.adb:24:10: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
+t_local_instantiation.adb:27:10: Found: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Conversion"
 t_local_instantiation.adb:36:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
 t_local_instantiation.adb:39:7: Error: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"

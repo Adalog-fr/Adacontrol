@@ -1,0 +1,8 @@
+t_terminating_tasks.adb:17:7: Error: TERMINATING_TASKS: last statement is not an unconditional loop
+t_terminating_tasks.adb:31:7: Error: TERMINATING_TASKS: last statement is not an unconditional loop
+t_terminating_tasks.adb:51:7: Error: TERMINATING_TASKS: last statement is not an unconditional loop
+t_terminating_tasks.adb:69:7: Error: TERMINATING_TASKS: unconditional loop exited from t_terminating_tasks.adb:71:10
+t_terminating_tasks.adb:86:3: Error: TERMINATING_TASKS: unconditional loop exited from t_terminating_tasks.adb:92:13
+t_terminating_tasks.adb:107:7: Error: TERMINATING_TASKS: unconditional loop exited from t_terminating_tasks.adb:112:13
+t_terminating_tasks.adb:107:7: Error: TERMINATING_TASKS: terminate alternative at t_terminating_tasks.adb:114:13
+t_terminating_tasks.adb:161:7: Error: TERMINATING_TASKS: terminate alternative at t_terminating_tasks.adb:166:13

@@ -15,4 +15,10 @@ defects in the implementation of ASIS (contact your compiler provider
 for support on these problems). However, Adalog will do its best
 effort to find workarounds for such problems.
 
-For pricing information about this service, please contact info@adalog.fr
+In addition, Adalog can provide consulting services for defining
+conding standards, as well as consulting services in all areas related
+to Ada, real-time, compilation, etc. See http://www.adalog.fr for
+details.
+
+For pricing information about these services, please contact
+info@adalog.fr

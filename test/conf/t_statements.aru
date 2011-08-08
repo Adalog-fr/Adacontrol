@@ -1,2 +1,10 @@
-Sequential_Stmts: search statements (goto, raise, exit, unnamed_exit, case_others);
-Tasking_Stmts:     check statements (delay, delay_until, abort, requeue, asynchronous_select);
+Sequential_Stmts: search statements (goto,                  raise,           exit,             unnamed_exit, 
+                                     case_others,           no_else,         case_others_null, exception_others,
+                                     exception_others_null, untyped_for,     while_true,       procedure_return, 
+                                     accept_return,         function_return, entry_return,     raise_standard,   
+                                     unnamed_multiple_loop);
+Tasking_Stmts:    check statements (delay,             delay_until,            abort,            requeue, 
+                                    selective_accept,  conditional_entry_call, timed_entry_call, asynchronous_select, 
+                                    terminate);
+Loop_Stmts:       check statements (exit_for_loop, exit_while_loop, unconditional_exit, multiple_exits, 
+                                    loop_return);

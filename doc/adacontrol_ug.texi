@@ -1,21 +1,21 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.4
+@settitle AdaControl User Guide V1.5r24
 @c %**end of header
 @macro rule{text}
 @sp 1
 @noindent @b{\text\}
 @end macro
-    
+
 @titlepage
 @title AdaControl User Guide
-     
+
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 @end titlepage
-     
+
 @ifnottex
 @node Top, Introduction, (dir), (dir)
 @top AdaControl User Guide
@@ -23,7 +23,7 @@ This is the AdaControl User Guide. It describes how to install and use
 AdaControl. Please refer to the AdaControl Programmer Manual to learn
 how to add new kinds of rules to AdaControl.
 @end ifnottex
-     
+
 Last edited: @today{}
 
 @menu
@@ -32,6 +32,7 @@ Last edited: @today{}
 * Program Usage::               
 * Rules Usage::                 
 * Examples of using AdaControl for common programming rules::  
+* Non upward-compatible changes::  
 @end menu
 
 AdaControl is Copyright @copyright{} 2005
@@ -46,7 +47,7 @@ should have received a copy of the GNU General Public License
 distributed with this program; see file COPYING.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
-                                                                  
+
 As a special exception, if other files instantiate generics from this
 program, or if you link units from this program with other files to
 produce an executable, this does not by itself cause the resulting
@@ -54,11 +55,11 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005 Eurocontrol/Adalog. This
-document may be copied, in whole or in part, in any form or by any
-means, as is or with alterations, provided that (1) alterations are
-clearly marked as alterations and (2) this copyright notice is
-included unmodified in any copy.
+This document is Copyright @copyright{} 2005-2006
+Eurocontrol/Adalog. This document may be copied, in whole or in part,
+in any form or by any means, as is or with alterations, provided that
+(1) alterations are clearly marked as alterations and (2) this
+copyright notice is included unmodified in any copy.
 
 @iftex
 @contents
@@ -72,19 +73,21 @@ rules. It is not intended to supplement checks made by the compiler,
 but rather to search for particular violations of good-practice rules,
 or to check that some rules are obeyed project-wide.
 
-The development of AdaControl was funded by Eurocontrol
+The development of AdaControl was initially funded by Eurocontrol
 (@uref{http://www.eurocontrol.int}), which needed a tool to help in
 verifying the million+ lines of code that does Air Traffic Flow
 Management over Europe. Because it was felt that such a tool would
 benefit the community at-large, and that further improvements made by
 the community would benefit Eurocontrol, it was decided to release
-AdaControl as free software.
+AdaControl as free software. Later, Eurocontrol, Belgocontrol, and
+CSEE-Transport sponsored the development of more rules.
 
 The requirements for AdaControl were written by Philippe Waroquiers
 (Eurocontrol-Brussels), who also conducted extensive testing on the
 Eurocontrol software. The software was developped by Arnaud Lecanu and
 Jean-Pierre Rosen (Adalog). Some rules were contributed by Richard Toy
-(Eurocontrol-Maastricht).
+(Eurocontrol-Maastricht), Pierre-Louis Escouflaire (Adalog), and Alain
+Fontaine.
 
 Commercial support is available for AdaControl, see file
 @code{doc/support.txt}. If you plan to use AdaControl for industrial
@@ -94,7 +97,11 @@ own needs, please contact Adalog at
 
 See file @code{HISTORY} for a description of the various versions of
 AdaControl, including enhancements of the current version over the
-previous ones.
+previous ones. Users of a previous version are warned that the rules
+are not 100% upward-compatible: this was necessary to make the rules
+more consistent and easier to use. However, the incompatibilities are
+straightforward to fix and should affect only a very limited number of
+files. @pxref{Non upward-compatible changes} for details.
 
 @node Installation, Program Usage, Introduction, Top
 @chapter Installation
@@ -114,7 +121,6 @@ AdaControl}.
 * Prerequisites::               
 * Building AdaControl::         
 * Customizing AdaControl::      
-* Integrating AdaControl into GPS::  
 @end menu
 
 @node Prerequisites, Building AdaControl, Installation, Installation
@@ -139,11 +145,19 @@ easy changes in the package @code{Implementation_Options} to give
 proper parameters to the @code{Associate} procedure of ASIS.  Rules
 that need string pattern matchings need the package
 @code{Gnat.Regpat}. If you compile AdaControl with another compiler,
-you can either port @code{Gnat.Regpat} to you system, or use a
+you can either port @code{Gnat.Regpat} to your system, or use a
 (limited) portable implementation of a simple pattern matching
 (package @code{String_Matching_Portable}). Edit the file
 @code{string_matching.ads} and change it as indicated in the comments.
 No other change should be necessary.
+
+Alternatively, if you are using another compiler, you can try and
+compile your program with GNAT just to be able to run
+AdaControl. However, compilers often differ in their support of
+representation clauses, which can cause your program to be rejected by
+GNAT. In that case, we provide a sed script to comment-out all
+representation clauses; this can be sufficient to allow you to use
+AdaControl. @xref{unrepr.sed}.
 
 @node Building AdaControl, Customizing AdaControl, Prerequisites, Installation
 @section Building AdaControl
@@ -152,12 +166,6 @@ to match the  commands and paths of the target system. The following
 variables are to be set:
 @itemize
 @item
-EXT
-@item
-SEP
-@item
-RM
-@item
 ASIS_TOP
 @item
 ASIS_INCLUDE
@@ -165,6 +173,10 @@ ASIS_INCLUDE
 ASIS_OBJ
 @item
 ASIS_LIB
+@item
+RM
+@item
+EXT
 @end itemize
 
 How to set these variables properly is documented in @code{Makefile}.
@@ -183,6 +195,12 @@ $ make help
 
 NOTE: Building AdaControl needs the ``make'' command provide with GNAT; it
 works both with WIN32 shell and UNIX shell.
+
+To add AdaControl support to GPS, simply copy all the files from the
+@code{GPS} directory into the @code{<GPS_dir>/share/gps/plug-ins}
+directory. Copy also the files @code{doc/adacontrol_ug.html} and
+@code{doc/adacontrol_pm.html} into the @code{<GPS_dir>/share/doc/gps/html}
+to access AdaControl's guides from the "Help" menu of GPS.
 
 @section Testing AdaControl
 Testing AdaControl needs a UNIX shell, so it works only with UNIX
@@ -203,12 +221,13 @@ format, this may explain the difference. Try running @code{dos2unix}
 on the content of the @code{res/} directory, then do a @code{diff} on
 the content of the @code{res/} and @code{ref/} directories.
 @item
-If you compiled with GNAT 3.15p, there are known bugs and
-unimplemented features that will not allow AdaControl to run correctly
-in some cases. Upgrade to a more recent version of Gnat.
+If you compiled with an old version of Gnat (and especially 3.15p),
+there are known bugs and unimplemented features that will not allow
+AdaControl to run correctly in some cases. We strongly recommend to
+always use the most recent version of Gnat.
 @end itemize
 
-@node Customizing AdaControl, Integrating AdaControl into GPS, Building AdaControl, Installation
+@node Customizing AdaControl,  , Building AdaControl, Installation
 @section Customizing AdaControl
 If there are some rules that you are not interested in, it is very easy
 to remove them from AdaControl:
@@ -248,25 +267,11 @@ incorporate all good suggestions, but we can't of course commit to any
 dead-line in that case.
 @end enumerate
 
-@node Integrating AdaControl into GPS,  , Customizing AdaControl, Installation
-@section Integrating AdaControl into GPS
-It is possible to integrate AdaControl into GPS and make it directly
-available from GPS' menus. Simply copy the file @code{src/adacontrol.xml}
-into the @code{<GPS_dir>/share/gps/customize} directory.
-
-GPS now features an ``AdaControl'' entry in the ``Tools'' menu, which
-can be used to run AdaControl on the currently edited file. All
-parameters (including the rule or rule file to use) can be set from
-the ``Project/Edit Project Properties'' menu. If you check
-``AdaControl rules files'' in the ``Languages'' tab, GPS will
-recognize files with extension @code{.aru} as AdaControl rules files,
-and provide appropriate colorization. AdaControl options can be set
-from the ``Switches/AdaControl'' tab.
-
 @node Program Usage, Rules Usage, Installation, Top
 @chapter Program Usage
 @menu
-* Running AdaControl::          
+* Running AdaControl from the command line::  
+* Running AdaControl from GPS::  
 * Rules syntax::                
 * Commands::                    
 * Command line options and parameters::  
@@ -277,11 +282,11 @@ from the ``Switches/AdaControl'' tab.
 * In case of trouble::          
 @end menu
 
-@node Running AdaControl, Rules syntax, Program Usage, Program Usage
-@section Running AdaControl
+@node Running AdaControl from the command line, Running AdaControl from GPS, Program Usage, Program Usage
+@section Running AdaControl from the command line
 AdaControl is a command-line program, i.e. it's callable directly by a
 system shell, and can be integrated in GUIs such as GPS
-(@pxref{Integrating AdaControl into GPS}) or emacs (@pxref{Types and
+(@pxref{Running AdaControl from GPS}) or emacs (@pxref{Rule types and
 report messages}). It is very simple to use. It takes, as parameters, a
 list of units to process and a set of rules to apply.  AdaControl
 produces error and/or found messages to the standard output. The type
@@ -308,48 +313,149 @@ produces the following result (displayed to standard output):
 pack.ads:2:4: Found: PRAGMAS: use of pragma Pure
 @end example
 
-@node Rules syntax, Commands, Running AdaControl, Program Usage
+Caveat:
+
+If your project includes source files located in several directories,
+the ADA_INCLUDE_PATH environment variable is not always considered by
+ASIS, resulting in error messages that tell you that the bodies of
+some units have not been found (and hence not processed). This problem
+has been fixed in  Gnat dated later than Sept. 1st, 2006. If this
+happens, either provide your source directories as ``-I'' options
+(@pxref{ASIS options}), or generate the tree files manually
+(@pxref{Generating tree files manually}). Note that this problem does
+not happen if you are using Emacs project files (@pxref{Project
+files}), nor if you are running AdaControl from GPS.
+
+AdaControl can process only Ada-95, not Ada-2005, since there no ASIS
+for Ada-2005 yet.  If you are using a version of GNAT where Ada-2005
+is the default (especially GNAT-GPL), and in the rare cases where your
+program would not compile in Ada-2005 mode (notably if you have a
+function that returns a task type), you must force Ada-95 mode by
+having a ``gnat.adc'' file that contains a @code{@b{pragma} Ada_95},
+since the corresponding option cannot be passed to the compiler in
+``compile on the fly'' mode. Alternatively, you can generate the
+tree files manually (@pxref{Generating tree files manually}) with the
+``-gnat95'' option.
+
+@node Running AdaControl from GPS, Rules syntax, Running AdaControl from the command line, Program Usage
+@section Running AdaControl from GPS
+If you want to use AdaControl from GPS, make sure you have copied
+the necessary files into the required places. @xref{Building AdaControl}.
+
+AdaControl integrates nicely into GPS, making it even easier to
+use. It can  be launched from menu commands, and parameters can be set
+like any other GPS project parameters.  When run from within GPS,
+AdaControl will automatically retrieve all needed directories from the
+current GPS project. After running AdaControl, the ``locations'' panel
+will open, and you can retrieve the locations of errors from there,
+just like with a regular compilation. Errors will be marked in red in
+the source, warning will be marked orange, and you will have
+corresponding marks showing the places of errors and warnings in the
+speedbar.
+
+To use AdaControl from GPS, you must first define a rules file in the
+``Library'' tab from the ``Project/Edit Project Properties'' menu. All
+``Control ...'' entries below are greyed-out if no rules file is
+currently defined.
+
+GPS now features an ``AdaControl'' entry in the ``Tools'' menu, with
+several submenus:
+@itemize @bullet
+@item
+``Control Current File'' runs AdaControl on the currently edited file;
+this menu is greyed-out if no file window is currently active,
+or if the associated language is not ``Ada''.
+@item
+``Control Root Project'' runs AdaControl on all units that are part of
+the root project.
+@item
+``Control Units from List'' runs AdaControls on units given in a
+indirect file. The name of the indirect file can be set from the
+``Library'' tab from the ``Project/Edit Project Properties''
+menu. This menu is greyed-out if no indirect file is currently defined.
+@item
+``Delete Tree Files'' removes existing tree files from the current
+directory.  This is convenient when AdaControl complains that the tree
+files are not up-to-date. Note that you can set the preferences for
+automatic deletion of tree files after each run (see below).
+@item
+``Create .adp project'' create an Emacs-style project file from the
+current GPS project, which can be used with the ``-p'' option if you
+want to run AdaControl from the command line. This file has the same
+name as the current GPS project, with a ``.adp''
+extension. @xref{Project files}.
+@end itemize
+
+There is also a button representing Lady Ada in a magnifier glass in
+the toolbar; clicking this button will launch AdaControl on the currently
+selected file.
+
+The tab ``switches'' from the ``Project/Edit Project Properties'' menu
+includes a page for AdaControl, which allows you to set various parameters.
+
+There is an entry for AdaControl in the ``edit/preferences'' menu, with one
+check box: ``delete trees''. If this box is checked, tree files are automatically
+deleted after each run of AdaControl. This avoids having problems with out-of-date
+tree files, at the expanse of slightly slowing down AdaControl if you run it
+several times in a row without changing the source files.
+
+If you check ``AdaControl rules files'' in the ``Languages'' tab, GPS
+will recognize files with extension @code{.aru} as AdaControl rules
+files, and provide appropriate colorization.
+
+And of course, the AdaControl User Manual (this manual) and the AdaControl
+Programmer Manual are available from the "Help/AdaControl" menu of GPS. In addition,
+there is a "Help on rule" entry in this menu. This entry opens a dialog: give it
+the name of one or several rules (separated by spaces) to display the rule(s)
+purpose and the syntax of its parameters. If you leave the rule name empty, it
+will display the general help of AdaControl (including the list of rules).
+
+@node Rules syntax, Commands, Running AdaControl from GPS, Program Usage
 @section Rules syntax
 AdaControl is about @i{checking rules}. Each rule has a name, and may
 require parameters. Which rules are to be checked is specified either
 on the command line or in a rules file; in either case, the syntax for
 specifying rules is as follows:
 @example
-[<label> ":"] "check"|"search"|"count" <Name> 
+[<label> ":"] "check"|"search"|"count" <Name>
     ["(" [<modifiers>] <parameter> @{"," [<modifiers>] <parameter>@}")"] ";"
 @end example
 
 If present, the label gives a name to the rule; it will be printed
 whenever the rule is activated, and can be used to disable the rule.
 @xref{Disabling rules}. If no label is present, the rule name is
-printed instead. Note that there is no problem in specifying the same
-label for several rules.
+printed instead. The label must have the syntax of an Ada identifier,
+or else the label must be included within double quotes (@code{"}), in
+which case it can contain any character. Note that there is no
+problem in specifying the same label for several rules.
 
 Each rule consists of a rule type followed by a rule name, and
 (optionally) parameters. Some parameters may be preceded by modifiers
 (such as ``not'' or ``case_sensitive''). The meaning of the rule
 parameters and modifiers depends on the rule. The case of the rule
-type, rule name, and parameters is not significant. A syntax error in
-a rule causes the execution to stop.
+type, rule name, and parameters is not significant. If a syntax error
+is encountered in a rule, an appropriate error message is output, and
+analysis of the rules file continues in order to output all errors,
+but no analysis of user code will be performed.
 
 Since wide characters are allowed in Ada programs, AdaControl accepts
 wide characters in rules as well. With GNAT, the encoding scheme is
 Hex ESC encoding (see the GNAT User-Guide/Reference-Manual). This is
 the prefered method, since few people require wide characters in
-programs anyway, and that keeping the defaul bracket encoding would
+programs anyway, and that keeping the default bracket encoding would
 not conveniently allow brackets for regular expressions, like those
 required for the rule ``Naming_Convention''
 (@pxref{Naming_Convention}).
 
 @menu
-* Types and report messages::   
+* Rule types and report messages::  
 * Parameters::                  
 * Specifying an Ada entity name::  
 * Multiple rules::              
 @end menu
 
-@node Types and report messages, Parameters, Rules syntax, Rules syntax
-@subsection Types and report messages
+@node Rule types and report messages, Parameters, Rules syntax, Rules syntax
+@subsection Rule types and report messages
 There are three rule types:
 
 @itemize
@@ -378,8 +484,8 @@ rule label (or if no label is given, the rule name is taken instead);
 if you give the same label to different rules, this allows you to
 accumulate the counts.
 
-A report message (except for the final report of ``count'') is made of (separated by ':'):
-
+A report message (except for the final report of ``count'') comprises
+the following elements:
 @itemize
 @item
 the file name (where the rule matches)
@@ -388,27 +494,69 @@ the line number (where the rule matches)
 @item
 the column number (where the rule matches)
 @item
-the rule id (the rule that matches) or the rule label if there is one.
+the rule label (if there is one) and/or the rule id (the rule that matches).
 @item
-a message (why the rule matches)
+a message (why the rule matches). A rule whose type is ``check'' will
+produce an error report message (i.e. containing the keyword ERROR)
+and a rule use whose type is ``search'' will produce a found report
+message (i.e. containing the keyword FOUND).
 @end itemize
 
-A rule whose type is ``check'' will produce an error report message
-(i.e. containing the keyword ERROR) and a rule use whose type is
-``search'' will produce a found report message (i.e. containing the
-keyword FOUND).
+The formatting of the report message depends on the format option,
+which can be selected with the ``-F'' command-line option or the ``set
+format'' command.
 
-Note that the format used for report messages is the same as the one
-used by GNAT error messages. Editors (like Emacs or GPS) that
-recognize this format allow you to go directly to the place of the
-message by clicking on it.
+If the format is ``Gnat'' (the default) or ``Gnat_Short'', items are
+separated by ':'; this is the same format as the one used by GNAT
+error messages. Editors (like Emacs or GPS) that recognize this format
+allow you to go directly to the place of the message by clicking on
+it.  In order to avoid too long messages, only the rule label appears,
+unless there is none, in which case it is replaced with the rule id.
 
-@node Parameters, Specifying an Ada entity name, Types and report messages, Rules syntax
+If the format is ``CSV'' or ``CSV_Short'', items are separated by ','
+and surrounded by double quotes. This is the ``Comma Separated
+Values'' format, which can be read by any known spreadsheet program,
+except Excel(tm), which uses the semicolon and not the comma to
+separate fields. Therefore, the formats ``CSVX'' and ``CSVX_Short'' do
+the same thing, but using semi-colons (';') instead of commas. Both
+the rule label (replaced by an empty column if there is none) and the
+rule id appear.
+
+If the format is ``source'' or ``source_short'', the offending source
+line is output, and the message is output behind it, with a ``!''
+pointing to the exact location of the problem.
+
+With recent versions of Gnat, the file name includes the full path of
+the source file. If the ``_Short'' form of the format option is used,
+the file name is stripped from any path. This can make it easier to
+compare the results of controlling units from various directories.
+Note that with older versions of Gnat, the file name never includes
+the full path, and the ``_Short'' form of the format option has no
+effect.
+
+After each ``go'' command, statistics may be output, depending on the
+statistics level which is set with the ``-S'' option or the ``set
+statistics'' command. The meaning of the various levels is as follows:
+@itemize
+@item
+0: No statistics are output (default)
+@item
+1: A count of error and warning messages is output
+@item
+2: The rule name and label (if any) of any rule @i{not} triggered are
+output
+@item
+3: The rule name and label (if any) of every rule is output, together
+with a count of each triggering type (check, search, count), or ``not
+triggered'' if the rule was not triggered.
+@end itemize
+
+@node Parameters, Specifying an Ada entity name, Rule types and report messages, Rules syntax
 @subsection Parameters
 Some rules work with parameters. Parameters can be:
 @itemize
 @item
-an Ada entity name 
+an Ada entity name
 @item
 an Ada keyword
 @item
@@ -417,8 +565,8 @@ a keyword for the rule
 a numerical value
 @end itemize
 
-A numerical value is given with the syntax of an Ada integer litteral
-(underscores are allowed as in Ada). Based litterals are not currently
+A numerical value is given with the syntax of an Ada integer literal
+(underscores are allowed as in Ada). Based literals are not currently
 supported; if somebody can justify a need for them, we'll be happy to
 add this feature later...
 
@@ -471,8 +619,8 @@ distinguish between overloaded names, you can specify a profile after
 the element's name. A profile has the syntax:
 
 @example
-"@{" [ ["access"] <type-name> 
-     @{ ";" ["access"] <type-name> @} ] 
+"@{" [ ["access"] <type-name>
+     @{ ";" ["access"] <type-name> @} ]
      ["return" <type-name>] "@}"
 @end example
 
@@ -539,9 +687,9 @@ example, given:
 Ada entities names are:
 @itemize
 @item
-@code{Pack.B@{return Pack.T1@}} 
+@code{Pack.B@{return Pack.T1@}}
 @item
-@code{Pack.B@{return Pack.T2@}} 
+@code{Pack.B@{return Pack.T2@}}
 @end itemize
 
 @subsubsection Operators
@@ -589,7 +737,7 @@ if you have the following program:
 @end example
 You can refer to @code{I} as @code{P._anonymous_.I}, and to @code{J}
 as @code{P._anonymous_._anonymous_.J}.
- 
+
 @subsubsection Record and protected types components
 You can designate the name of a record or protected type component (a
 ``field'' name), but to identify it uniquely, you must precede its name
@@ -617,12 +765,12 @@ type by prefixing it by the access type. For example, given:
 @end example
 
 The Ada entity name of the formal is @code{P.T.X}.
- 
+
 @node Multiple rules,  , Specifying an Ada entity name, Rules syntax
 @subsection Multiple rules
 Most rules can be given more than once (with different
 parameters). There is no difference between a single or a multiple
-configuration rule use: ouputs, efficiency, etc. are the same.
+configuration rule use: outputs, efficiency, etc. are the same.
 
 The following configuration files produce an identical configuration:
 @example
@@ -745,10 +893,17 @@ would output all usages of @code{Pack1} together with all usages of
 @subsection Set command
 Syntax:
 @example
+set Format Gnat | Gnat_Short | CSV | CSV_Short | source | source_short
 set Output <output file>;
-set Verbose | Debug | Ignore  On | Off
+set Statistics <level>
+set Trace <trace file>;
+set Verbose | Debug | Ignore | Warning  On | Off
 @end example
-In the first form, this command redirects the output of subsequent
+In the first form, this commands selects the output format for the
+messages, like the ``-F'' option; see @ref{Rule types and report messages}
+for details.
+
+In the second form, this command redirects the output of subsequent
 checks to the indicated file. If the string @code{console} (case
 irrelevant) is given as the <output file>, output is redirected to the
 console.
@@ -763,10 +918,21 @@ the output file exactly the same way: if you specify it once as
 ``result.txt'', and then as ``./result.txt'', the second one will
 overwrite the first one.
 
-In the second form, this command allows to activate (``on'') or
+In the third form, this command redirects the trace messages of the
+``-d'' option to the indicated file. If the string @code{console}
+(case irrelevant) is given as the <trace file>, trace messages are
+redirected to the console.  As with the ``-t'' option, if the file
+exists, output is appended to it.
+
+In the fourth form, this command allows to set the statistics level,
+like the ``-S'' option;  see @ref{Rule types and report messages} for
+details.
+
+In the fifth form, this command allows to activate (``on'') or
 deactivate (``off'') options. ``Verbose'' corresponds to the ``-v''
-option, ``Debug'' to the ``-d'' option, and ``Ignore'' to the ``-i''
-option. See @ref{Verbose and debug mode} and @ref{Local deactivation
+option, ``Debug'' to the ``-d'' option, ``Ignore'' to the ``-i''
+option, and ``Warning'' to the ``-E'' option. See @ref{Verbose and
+debug mode}, @ref{Treatment of warnings}, and @ref{Local deactivation
 ignoring} for details.
 
 @node Source command, Inhibit command, Set command, Commands
@@ -790,11 +956,16 @@ pass temporarily control to the user in interactive mode.
 @subsection Inhibit command
 Syntax:
 @example
-Inhibit <rule name> (<unit> @{,<unit>@});
+Inhibit <rule name>|all ([all] <unit> @{,[all] <unit>@});
 @end example
-This command will inhibit execution of the rule for the indicated
-unit(s). There are several reasons why you might want to inhibit a
-rule for certain units:
+This command will inhibit execution of the rule (or all rules if
+``all'' is specified in place of a rule name) for the indicated
+unit(s). In addition, if ``all'' is given in front of the unit name,
+the unit will not be accessed at all, even from rules that follow call
+graphs, and could thus access this unit while analyzing other units.
+
+There are several reasons why you might want to inhibit a rule for
+certain units:
 @itemize
 @item
 The unit is known not to obey the rule in many places, and you don't
@@ -809,18 +980,21 @@ appropriate version of GNAT, you don't want to be bothered by the
 error messages.
 @end itemize
 
+The ``all'' option is intended for the last case, to prevent ASIS bugs
+from spoiling any unit that calls something from an offending unit.
+
 @node Example of commands,  , Inhibit command, Commands
 @subsection Example of commands
 Below is an example of a file with multiple commands:
 @example
 message "Searching Unchecked_Conversion";
 search entitities (ada.unchecked_conversion);
-output uc_usage.txt;
+set output uc_usage.txt;
 go;
 clear all;
 message "Searching 'Address";
 search attribute (address);
-output address_usage.txt;
+set output address_usage.txt;
 go;
 @end example
 This file will output all usages of @code{Ada.Unchecked_Conversion}
@@ -840,12 +1014,17 @@ themselves. Options and parameters can be given in any order.
 The complete syntax for invoking AdaControl is:
 
 @example
-adactl [-deiIrsuvw] [-f <rules file>] [-l <rules list>] [-o <output file>]
-       [-p <project file>] @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
+adactl [-deEiIrsuvw] [-f <rules file>] [-l <rules list>] [-o <output file>]
+       [-F <format>] [-p <project file>] [-S <statistics level>]
+       @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
 or
 @example
 adactl -h [<rule id>... | all]
+@end example
+or
+@example
+adactl -C [-v] [-f <rules file>] [-l <rules list>]
 @end example
 or
 @example
@@ -855,19 +1034,21 @@ adactl -D [-rsw] [-o <output file>] [-p <project file>]
 Using AdaControl with the ``-D'' option is described later. @xref{Helpful utilities}.
 @menu
 * Getting help::                
+* Checking rules syntax::       
 * Input units::                 
 * Specifying rules::            
 * Output file::                 
+* Output format::               
 * Interactive mode::            
 * Local deactivation ignoring::  
 * Verbose and debug mode::      
-* Treat warnings as errors::    
+* Treatment of warnings::       
 * Exit on error::               
 * Project files::               
 * ASIS options::                
 @end menu
 
-@node Getting help, Input units, Command line options and parameters, Command line options and parameters
+@node Getting help, Checking rules syntax, Command line options and parameters, Command line options and parameters
 @subsection Getting help
 The ``-h'' option alone displays a help message about usage of the
 AdaControl program, the various options,  and  the rule names.  If the
@@ -885,15 +1066,35 @@ adactl -h all
 Note that if the ``-h'' option is given, no other option is analyzed
 and no further processing happens.
 
-@node Input units, Specifying rules, Getting help, Command line options and parameters
+@node Checking rules syntax, Input units, Getting help, Command line options and parameters
+@subsection Checking rules syntax
+If the ``-C'' option is given, AdaControl will simply check the syntax
+of the rule provided with the ``-l'' option, or of the rules provided
+in the file named by the ``-f'' option (at least one of these options
+must be provided). No other processing will happen.
+
+AdaControl will exit with a return code of 0 if the syntax is correct,
+and 2 if any errors are found. A confirming message that no errors
+were found is output if the ``-v'' option is given.
+
+This option is especially useful when you have modified a rules file,
+before trying it on many units. The way AdaControl works, it must open
+the ASIS context (a lengthy operation) @i{before} analyzing the
+rules. This option can therefore save a lot of time if the rules file
+contains errors.
+
+@node Input units, Specifying rules, Checking rules syntax, Command line options and parameters
 @subsection Input units
 Units to be processed are simply given as parameters on the command
 line. Note that they are Ada compilation unit names, not file names:
 case is not significant, and there should be no extension! Of course,
 child units  are allowed following normal Ada naming rules:
-@code{Parent.Child}.  Note that when a unit is processed, all its
-subunits are processed at the same time; therefore, there is no need
-to specify subunits.
+@code{Parent.Child}, but be aware that specifying a child unit will
+automatically include its parent unit in the analysis.  All subunits
+are processed during the analysis of the including unit; there is
+therefore no need to specify subunits explicitely. If you do specify a
+subunit explicitly, it will result in the whole enclosing unit being
+analyzed.
 
 However, as a convenience to the user, units can be specified as file
 names, provided they follow the default GNAT naming convention. More
@@ -969,7 +1170,7 @@ option. Rules list must be quoted with ``"''.
 Ex:
 @example
 adactl pack.ads proc.adb -l "check instantiations (My_Generic);"
-@end example	
+@end example
 It is possible to pass several rules separated by ``;'' as usual, but
 as a convenience to the user, the last ``;'' may be omitted.
 
@@ -988,7 +1189,7 @@ adactl -f my_rules.aru proc.adb
 A rule file must contain at least one rule. The layout of rules is
 free (i.e. a rule can extend over several lines, and spaces are
 allowed between syntactic elements). A rule file may also contain
-comment lines. Comments begin with a ``#'' or a ``-@--'', and extend to
+comment lines. Comments begin with a ``#'' or a ``-@w{}-'', and extend to
 the end of the line. Comments can be placed anywhere in the file.
 
 Ex:
@@ -1001,14 +1202,14 @@ search rule3 (param1,
 -- Comment in the middle
               param2,
               param3, param4);
-search rule4;   -- A rule without parameters 
+search rule4;   -- A rule without parameters
 @end example
 
 Note that the ``-l'' and ``-f'' options are @i{not} exclusive: if both
 are specified, the rules to be checked include those in the file and
 those given on the command line.
 
-@node Output file, Interactive mode, Specifying rules, Command line options and parameters
+@node Output file, Output format, Specifying rules, Command line options and parameters
 @subsection Output file
 By default, the standard output is used for output. The default output
 can be changed by specifying an output file with the ``-o'' option.
@@ -1024,7 +1225,7 @@ itself are output to the standard error file.
 If the output file exists, new messages are appended to it. This
 allows running AdaControl under several directories that make up the
 project, and gathering the results in a single file. However, if the
-``-w'' option is given, AdaContol overwrites the output file if it
+``-w'' option is given, AdaControl overwrites the output file if it
 exists.
 
 Ex:
@@ -1032,7 +1233,22 @@ Ex:
 adactl -w -f my_rules.aru -o my_output.txt proc.adb
 @end example
 
-@node Interactive mode, Local deactivation ignoring, Output file, Command line options and parameters
+@node  Output format, Interactive mode, Output file, Command line options and parameters
+@subsection Output format
+The ``-F'' option selects the output format. It must be followed by
+``Gnat'', ``Gnat_Short'', ``CSV'', or ``CSV_Short'' (case
+insensitive).  By default, the output is in ``Gnat'' format. See
+@ref{Rule types and report messages} for details.
+
+The ``-S'' option selects which statistics are output. It must be
+followed by a value in the range 0..3.  See @ref{Rule types and report
+messages} for details on the various statistics levels.
+
+@example
+adactl -F CSV -S 2 -f my_rules.aru -o my_output.csv proc.adb
+@end example
+
+@node Interactive mode, Local deactivation ignoring, Output format, Command line options and parameters
 @subsection Interactive mode
 The ``-I'' option tells AdaControl to operate interactively. In this
 mode, commands and rules specified with ``-l'' or ``-f'' options are
@@ -1045,6 +1261,12 @@ for files; especially, each rule or command must be terminated with a
 ``;''. Note that the prompt (``Command:'') becomes ``.......:'' when
 AdaControl requires more input because a command is not completely
 given, and especially if you forget the final ``;''.
+
+As with files, it is possible to give several commands on a single
+line in interactive mode. Note that if a command contains syntax
+errors, all ``go'' commands on the same line are temporarily
+disabled. Other commands that do not have errors are normally
+processed however.
 
 The interactive mode is useful when you want to do some analysis of
 your code, but don't know beforehand what you want to check. Since the
@@ -1064,12 +1286,13 @@ Ex:
 adactl -i -f my_rules.aru proc.adb
 @end example
 
-@node Verbose and debug mode, Treat warnings as errors, Local deactivation ignoring, Command line options and parameters
+@node Verbose and debug mode, Treatment of warnings, Local deactivation ignoring, Command line options and parameters
 @subsection Verbose and debug mode
 In the default mode, AdaControl displays only rule messages. It is
 possible to get more information with the verbose option (``-v''). In
 this mode, AdaControl displays unit names as they are processed, and
-prints its global execution time when it finishes.
+prints the number of errors, the number of warnings, and its global
+execution time when it finishes.
 
 Ex:
 @example
@@ -1079,25 +1302,41 @@ It is also possible to get more information in case of a program error
 by using the debug mode. Debug mode is enabled by using the ``-d''
 option.
 
+Note that in this mode, AdaControl may, in rare occasions (and only
+with some versions of Gnat), display ASIS ``bug boxes''; this does not
+mean that something went wrong with the program, but simply that an
+ASIS failure was properly handled by AdaControl.
+
 Ex:
 @example
 adactl -d -f my_rules.aru proc.adb
 @end example
 
-@node Treat warnings as errors, Exit on error, Verbose and debug mode, Command line options and parameters
-@subsection Treat warnings as errors
+In addition, output of the messages printed by the ``-d'' option can
+be directed to a file (instead of being printed on the standard error
+file). This is done by the ``-t'' option, which must be followed by
+the file name.If the trace file exists, new messages are appended to
+it.
+
+@node Treatment of warnings, Exit on error, Verbose and debug mode, Command line options and parameters
+@subsection Treatment of warnings
 The ``-e'' option tells AdaControl to treat warnings as errors,
 i.e. to report a return code of 1 even if only ``search'' rules were
 triggered. @xref{Return codes}. It does not change the messages
 however.
 
-@node Exit on error, Project files, Treat warnings as errors, Command line options and parameters
+Conversely, the ``-E'' option tells AdaControl to @i{not} report
+warnings at all, i.e. only errors are reported. However, if you ask
+for statistics, the number of warning messages is still
+counted. @xref{Rule types and report messages}.
+
+@node Exit on error, Project files, Treatment of warnings, Command line options and parameters
 @subsection Exit on error
-If an error is encountered during processing a unit, AdaControl will
-continue to process other units. However, if the ``-x'' option is
-given, AdaControl will stop on the first error encountered. This
-option is mainly useful if you want to debug AdaControl itself (or
-your own rules). @xref{In case of trouble}.
+If an internal error is encountered during the processing of a unit,
+AdaControl will continue to process other units. However, if the
+``-x'' option is given, AdaControl will stop on the first error
+encountered. This option is mainly useful if you want to debug
+AdaControl itself (or your own rules). @xref{In case of trouble}.
 
 Ex:
 @example
@@ -1118,31 +1357,34 @@ adactl -f my_rules.aru -p proj.adp proc.adb
 @end example
 
 @subsubsection GPS project files
-Currently, ASIS does not accept the ``-P'' option for GPS style project
-files. Should this change in the future, a ``-P'' option could be passed
-as described for the ``-I'' option. @xref{ASIS options}.
+When run from GPS, AdaControl will automatically use the source
+directories from the current (root) project. However, if you run it
+from the command line, it will not accept ``.gpr'' project files,
+because ASIS does not currently accept the ``-P'' option like other
+Gnat commands do. Should this change in the future, a ``-P'' option
+could be passed as described for the ``-I'' option. @xref{ASIS
+options}.
 
-In the meantime, it is possible to use GPS project files by first
-compiling the modules to be checked with the ``-gnatct'' option (and
-of course the ``-P'' option for the project); this will save the
-so-called ``tree files'', which will appear with an ``.adt''
-extension. AdaControl will use the tree files if they are available
-(and up to date), thus saving the recompilation and the need to
-specify any ``-I'' or ``-P'' option.
-
-After running the tool, the tree files can be deleted. 
+In the mean time, you can generate a ``.adp'' project file from a
+``.gpr'' project file from within GPS, by using the
+``Tools/AdaControl/Generate .adp project'' menu. @xref{Running
+AdaControl from GPS}. Alternatively, it is also possible to use GPS
+project files by generating the tree files manually. @pxref{Generating
+tree files manually} for details.
 
 @node ASIS options,  , Project files, Command line options and parameters
 @subsection ASIS options
-Everything that appears on the command line after ``-@--'' will be
+Everything that appears on the command line after ``-@w{}-'' will be
 treated as an ASIS option, as described in the ASIS user manual.
 
 Casual users don't need to care about ASIS options, except in one
-case: if the units that you are processing reference other units whose
-source is not in the same directory, AdaControl needs to know how to
-access these units (as GNAT would). This can be done either using an
-Emacs project file (the ``-p'' option), or by passing a ``-I'' option
-to ASIS, or by using ADA_INCLUDE_PATH.
+case: if you are running AdaControl from the command line (not from
+GPS), and if the units that you are processing reference other units
+whose source is not in the same directory, AdaControl needs to know
+how to access these units (as GNAT would). This can be done either
+by using an Emacs project file (the ``-p'' option), by passing a ``-I''
+option to ASIS, or by putting the appropriate directories into the
+ADA_INCLUDE_PATH environment variable.
 
 It is possible to include one or several ``-I'' options to reference
 other directories where sources can be found. The syntax is the same
@@ -1177,7 +1419,7 @@ specification of units.
 It is possible to disable rules on parts of the source
 code by placing a tag (special Ada comment) in the source code. This
 can be done in two ways: block disabling or line disabling. The
-disabling tag is ``-@--##''. Both ways take a list of rules to disable
+disabling tag is ``-@w{}-##''. Both ways take a list of rules to disable
 as parameters. A list of rules is a list of rule names or
 rule labels, separated by spaces. Alternatively, the list of rules can
 be the word ``all'' to disable all rules.
@@ -1218,13 +1460,13 @@ Ex:
 I := I + 1; --## rule line off rule3 rule_label_1
 @end example
 Conversely, it is possible to re-enable a rule for just the current
-line in a block where rules are disabled: 
+line in a block where rules are disabled:
 
-Syntax: 
+Syntax:
 @example
 Ada code line --## rule line on <rule_list>
 @end example
-Ex: 
+Ex:
 @example
 I := I + 1; --## rule line on rule3
 @end example
@@ -1237,6 +1479,7 @@ with AdaControl.
 @menu
 * pfni::                        
 * Adactl -D::                   
+* unrepr.sed::                  
 @end menu
 
 @node pfni, Adactl -D, Helpful utilities, Helpful utilities
@@ -1281,7 +1524,7 @@ has several overloadings and you are not sure which one is called, use
 @code{pfni} with the ``-o'' option on that line: the program will tell
 you the full name and profile of the called subprogram.
 
-@node Adactl -D,  , pfni, Helpful utilities
+@node Adactl -D, unrepr.sed, pfni, Helpful utilities
 @subsection Adactl -D
 When run with the ``-D'' option, AdaControl simply outputs the list of
 units that would be processed.
@@ -1293,6 +1536,28 @@ units. @xref{Input units}. Note that if you use the recursive (``-r'')
 option, it is more efficient to create the list of units once and then
 use the indirect file than to specify all applicable units each
 time AdaControl is run.
+
+@node unrepr.sed,  , Adactl -D, Helpful utilities
+@subsection unrepr.sed
+This file (provided in the ``src'' directory) is a sed script that
+comments out all representation clauses. It is typically useful if you
+use a different compiler that accepts representation clauses not
+supported by GNAT.
+
+Typically, you would copy all your sources in a different directory,
+copy ``unrepr.sed'' in that directory, then run:
+@example
+sed -i -f unrepr.sed *.ads *.adb
+@end example
+You can now run AdaControl on the patched files. Of course, you won't
+be able to check rules related to representation clauses any more...
+
+Note that the script adds ``-@w{}-UNREPR '' to all representation
+clauses. Its effect can thus easily be undone with the following
+commad:
+@example
+sed -i -e "s/--UNREPR //" *.ads *.adb
+@end example
 
 @node Optimizing  AdaControl, In case of trouble, Helpful utilities, Program Usage
 @section Optimizing  AdaControl
@@ -1318,14 +1583,15 @@ AdaControl, it will print in the end the elapsed time for running the
 tests; this is very helpful to make timing comparisons.
 
 Note: all options described in this section are ASIS options,
-i.e. they must appear last on the command line, after a ``-@--''.
+i.e. they must appear last on the command line, after a ``-@w{}-''.
 
 @menu
 * Tree files and the ASIS context::  
+* Generating tree files manually::  
 * Choosing an appropriate combination of options::  
 @end menu
 
-@node Tree files and the ASIS context, Choosing an appropriate combination of options, Optimizing  AdaControl, Optimizing  AdaControl
+@node Tree files and the ASIS context, Generating tree files manually, Optimizing  AdaControl, Optimizing  AdaControl
 @subsection Tree files and the ASIS context
 Since AdaControl is an ASIS application, it is useful to explain here
 how ASIS works. ASIS (and therefore AdaControl) works on a set of
@@ -1337,9 +1603,9 @@ be processed.
 
 ASIS works by exploring tree files (same name as the corresponding Ada
 unit, with a ``.adt'' extension), which are ``predigested'' views of
-the corresponding Ada units. Such tree files are obtained by compiling
-the units with the ``-gnatc -gnatt'' options. Alternatively, the tree
-files can be generated automatically when needed.
+the corresponding Ada units. By default, the tree files are generated
+automatically when needed, and kept after each run, so that subsequent
+runs do not have to recreate them.
 
 A context in ASIS-for-Gnat is a set of tree files. Which trees are
 part of the context is defined by the ``-C'' option:
@@ -1374,7 +1640,41 @@ with the ``-C1'' and ``-CN'' options.
 
 The default combination used by AdaControl is ``-CA -FM''.
 
-@node Choosing an appropriate combination of options,  , Tree files and the ASIS context, Optimizing  AdaControl
+@node Generating tree files manually, Choosing an appropriate combination of options, Tree files and the ASIS context, Optimizing  AdaControl
+@subsection Generating tree files manually
+It is also possible to generate the tree files manually before running
+AdaControl. Although this mode of operation is less practical, it is
+recommended by AdaCore for any ASIS tool that deals with many
+compilation units.  Some reasons why you might want to generate the
+tree files manually are:
+@itemize @bullet
+@item
+Your project uses GNAT project files;
+@item
+Your project has several source directories (ASIS had problems with
+ADA_INCLUDE_PATH, until releases dated later than Sept. 1st,
+2006). Note that an alternative solution is to specify source
+directories with the -I option;
+@item
+It is faster to generate tree files once than to use ``compile on the
+fly'' mode.
+@end itemize
+
+To generate tree files manually, simply recompile your project with
+the ``-gnatct'' option.  This option can be passed to @code{gnatmake}
+normally. Of course, you will need all other options needed by your
+project (like the ``-P'' option if you are using GNAT project files).
+
+Tree files may be copied into a different directory if you don't want
+your current directory to be cluttered by them. In this case, use the
+``-T'' ASIS option to indicate the directory where the tree files are
+located.
+
+If you chose to generate the tree files manually, you may want to
+specify the ``-FT'' ASIS option (see above) to prevent from accidental
+automatic recompilation.
+
+@node Choosing an appropriate combination of options,  , Generating tree files manually, Optimizing  AdaControl
 @subsection Choosing an appropriate combination of options
 In order to optimize the use of AdaControl, it is important to remember
 that reading tree files is a time-consuming operation. On the other
@@ -1395,6 +1695,11 @@ options.
 If you want to run AdaControl on all units of your program, use the
 ``-D'' option to create a file containing the list of all required
 units, then use this file as an indirect file.
+@item
+Avoid having unnecessary tree files. All tree files in the context are
+read by ASIS, even if they are not later used.  If you don't want to
+run AdaControl on the whole project, deleting tree files from a
+previous run can save a lot of time.
 @item
 When using an indirect file, the order in which units are given may
 influence the speed of the program. As a rule of thumb, units that are
@@ -1441,7 +1746,9 @@ this case.
 However, if it is run with the ``-x'' option (eXit on error), it will
 stop immediately, and no further processing will happen.
 
-If you don't want the garbage from a failing rule to pollute your report, you may chose to disable the rule for the unit that has a problem. @xref{Inhibit command}.
+If you don't want the garbage from a failing rule to pollute your
+report, you may chose to disable the rule for the unit that has a
+problem. @xref{Inhibit command}.
 
 If you encounter a problem while using AdaControl, you are very
 welcome to report it to
@@ -1462,85 +1769,379 @@ run-time values. For example, it is not possible to check rules
 applying to an entity when this entity is aliased and accessed through
 an access value, or rules applying to subprogram calls when the call
 is a dispatching call.
+
 @menu
+* Abnormal_Function_Return::    
 * Allocators::                  
+* Case_Statement::              
+* Control_Characters::          
 * Declarations::                
 * Default_Parameter::           
+* Directly_Accessed_Globals::   
 * Entities::                    
 * Entity_Inside_Exception::     
 * Exception_Propagation::       
+* Global_References::           
+* Header_Comments::             
+* If_For_Case::                 
 * Instantiations::              
 * Local_Hiding::                
 * Local_Instantiation::         
+* Max_Blank_Lines::             
+* Max_Line_Length::             
 * Max_Nesting::                 
+* Max_Statement_Nesting::       
+* Movable_Accept_Statements::   
 * Naming_Convention::           
-* No_Closing_Name::             
+* No_Safe_Initialization::      
+* Non_Static_Constraints::      
 * Not_Elaboration_Calls::       
 * Parameter_Aliasing::          
+* Positional_Parameters::       
+* Potentially_Blocking_Operations::  
 * Pragmas::                     
 * Real_Operators::              
+* Reduceable_Scope::            
 * Representation_Clauses::      
+* Return_Type::                 
 * Side_Effect_Parameters::      
 * Silent_Exceptions::           
 * Simplifiable_Expressions::    
-* Specification_Objects::       
+* Special_Comments::            
 * Statements::                  
+* Style::                       
+* Terminating_Tasks::           
 * Unnecessary_Use_Clause::      
+* Unsafe_Paired_Calls::         
+* Usage::                       
 * Use_Clauses::                 
-* When_Others_Null::            
+* With_Clauses::                
 @end menu
 
-@node Allocators, Declarations, Rules Usage, Rules Usage
+@node Abnormal_Function_Return, Allocators, Rules Usage, Rules Usage
+@section Abnormal_Function_Return
+@subsection Syntax
+@example
+<check|search|count> abnormal_function_return;
+@end example
+@subsection Action
+This rule controls that the sequence of statements of each function
+body, as well as  each exception handler, ends either with a
+@code{@b{return}} statement or a @code{@b{raise}} statement (or
+equivalently, a call to @code{Ada.Exceptions.Raise_Exception} or
+@code{Ada.Exceptions.Reraise_Occurrence}). Note that this last
+statement can be embedded in blocks (i.e., it can be followed by any
+number of @code{@b{end}} for block statements, but nothing else).
+
+This is a sufficient (but of course not necessary) condition to ensure
+that no function raises @code{Program_Error} due to reaching the end
+of its statements without encountering a @code{@b{return}}.
+
+This rule can be specified only once.
+
+Ex:
+@example
+check abnormal_function_return
+@end example
+
+@subsection tip
+This rule checks that a function always returns correctly, but does not
+prevent multiple @code{@b{return}} statements in functions. If you want
+to ensure that there is exactly one @code{@b{return}} statement in functions,
+and that this statement is always the last one, use this rule together with
+the rule @code{statements(function_return)}.
+@xref{Statements}.
+
+@node Allocators, Case_Statement, Abnormal_Function_Return, Rules Usage
 @section Allocators
 @subsection Syntax
 @example
-<check|search|count> allocators [(<type name list>)];
+<check|search|count> allocators
+   [(task|protected|<type name> @{, task|protected|<type name>@})];
 @end example
 
 @subsection Action
-This rule controls usage of allocators.  If type names
-are given, only allocators whose allocated type is mentioned are
-controlled, otherwise all allocators are controlled. This
-rule is especially useful for finding memory leaks, since it tells all
-the places where dynamic allocation occurs.
+This rule controls usage of allocators.  If type names are given, only
+allocators whose allocated type is mentioned are controlled; if
+``task'' or ``protected'' is given, allocators for task types or
+protected types (respectively) are controlled; otherwise all
+allocators are controlled. This rule is especially useful for finding
+memory leaks, since it tells all the places where dynamic allocation
+occurs.
 
 Ex:
 @example
 search allocators (standard.string);
+check allocators (T'Class);
 @end example
 
 @subsection Tips
-If the allocated type is @code{T'Base} or @code{T'Class}, it
-will currently be found as T. This can be improved in the future.
+The type given in the rule is the first named subtype, and the rule
+will also find allocators that use a subtype of this type; especially,
+if the allocated type is @code{T'Base}, it will be found as T.
 
-@node  Declarations, Default_Parameter, Allocators, Rules Usage
+The type mentionned in the rule is the one following the
+@code{@b{new}} keyword, which is not necessarily the same as the
+expected type in presence of implicit conversions like this:
+
+@example
+   @b{type} T @b{is} @b{tagged} ...;
+   @b{type} Class_Access @b{is} @b{access} T'Class;
+   X : Class_Access;
+begin
+   X := @b{new} T;
+@end example
+
+This allocator will be found for type @code{T}, not for type @code{T'Class}.
+
+@node  Case_Statement, Control_Characters, Allocators, Rules Usage
+@section Case_Statement
+@subsection Syntax
+@example
+<check|search|count> Case_Statement (min_others_range, <minimum_span>);
+<check|search|count> Case_Statement (max_values, <maximum_span>);
+<check|search|count> Case_Statement (min_paths, <minimum_span>);
+@end example
+
+@subsection Action
+This rule controls various sizings in case statement, depending on the
+keyword given as the first parameter:
+
+@itemize
+@item
+``min_others_range'' controls ``when others'' case alternatives that
+cover less than the specified number of values. The <minimum_span>
+must be at least 1 (i.e., if 1 is specified, the rule will signal
+``when others'' that cover no value at all).
+
+@item
+``max_values'' controls @code{@b{case}} statements where the subtype
+of the case selector covers more values than the specified number of
+values.
+
+@item
+``min_paths'' controls @code{@b{case}} statements with less paths
+(i.e. @code{@b{when}} branches) than the specified number of values.
+@end itemize
+
+This rule can be specified at most once for each subrule and for each
+of ``check'', ``search'' and ``count''. It is thus possible for each
+subrule to have a value considered a warning, and a value considered
+an error.
+
+Ex:
+@example
+check  Case_Statement (min_others_range, 1);
+search Case_Statement (min_others_range, 5);
+
+check  Case_Statement (max_values, 10);
+check  Case_Statement (min_paths, 5);
+@end example
+
+
+@node Control_Characters, Declarations, Case_Statement, Rules Usage
+@section Control_Characters
+@subsection Syntax
+@example
+<check|search|count> control_characters;
+@end example
+
+@subsection Action
+This rule controls the occurrence in the source file of the control
+characters that are allowed by the language (ASCII HT,  ASCII VT and
+ASCII FF). Since it has no parameters, this rule can be given only
+once.
+
+Ex:
+@example
+check control_characters;
+@end example
+
+@node  Declarations, Default_Parameter, Control_Characters, Rules Usage
 @section Declarations
 @subsection Syntax
 @example
-<check|search|count> declarations (Declaration_kw @{, Declaration_kw@};
-Declaration_kw ::= access | access_subprogram | aliased |
-                   exception | task | tagged
+<check|search|count> declarations (<declaration_kw> @{, <declaration_kw>@};
+
+declaration_kw ::=
+   access_protected_type       | access_subprogram_type |
+   access_task_type            | access_type            |
+   aliased                     | array                  |
+   array_type                  | child_unit             |
+   constant                    | constrained_array_type |
+   decimal_fixed_type          | defaulted_discriminant |
+   defaulted_generic_parameter | defaulted_parameter    |
+   derived_type                | discriminant           |
+   enumeration_type            | entry                  |
+   exception                   | extension              |
+   fixed_type                  | float_type             |
+   formal_function             | formal_in_out          |
+   formal_package              | formal_procedure       |
+   generic                     | handlers               |
+   integer_type                | modular_type           |
+   multiple_names              | named_number           |
+   not_operator_renames        | null_extension         |
+   null_ordinary_record_type   | null_tagged_type       |
+   operator                    | ordinary_fixed_type    |
+   ordinary_record_type        | package_statements     |
+   protected                   | protected_entry        |
+   protected_type              | record_type            |
+   renames                     | separate               |
+   signed_type                 | single_array           |
+   single_protected            | single_task            |
+   subtype                     | tagged_type            |
+   task                        | task_entry             |
+   task_type                   | type                   |
+   unconstrained_array_type
 @end example
 
 @subsection action
-This rule controls usage of certain Ada declarations. Declaration
-keywords that are Ada keywords match the corresponding Ada
-declarations. Note that @code{task} will match task type declarations
-as well as single tasks declarations; @code{access} will match all
-access type declarations, while @code{access_subprogram} will match
-only access to procedure or function declarations.
+This rule controls usage of certain Ada declarations. The rule can be specified at most once
+for each declaration keyword.
+@itemize @bullet
+@item
+Declaration keywords that are Ada keywords match the corresponding Ada
+declarations.
+@item
+@code{access_type} controls all access type declarations, while
+@code{access_subprogram_type}, @code{access_protected_type}, and
+@code{access_task_type} control only access to procedures or functions,
+access to protected types, or access to task types, respectively.
+@item
+@code{array} controls all array definitions (array types and single
+arrays), while @code{array_type} controls only array types and
+@code{single_array} controls only single arrays (objects of an
+anonymous array type. @code{constrained_array_type} controls only
+constrained array types, while @code{unconstrained_array_type}
+controls only unconstrained array types.
+@item
+@code{child_unit} controls the declaration of all child units.
+@item
+@code{defaulted_parameter} controls subprogram or entry (@b{in})
+parameters that provide a default value, while
+@code{defaulted_generic_parameter} controls generic formal objects
+that provide a default value.
+@item
+@code{derived_type} controls regular derived types, but not type
+extensions (derivations of tagged types). These are controlled by
+@code{extension}.
+@item
+@code{discriminant} controls all declarations of types with
+discriminants, while @code{defaulted_discriminants} controls only
+those where defaults are provided for the discriminants.
+@item
+@code{exception} controls exception declarations.
+@item
+@code{fixed_type} controls all declarations of fixed point types while
+@code{ordinary_fixed_type} controls only ordinary (binary) fixed point
+types, and @code{decimal_fixed_type} controls only decimal fixed point
+types.
+@item
+@code{float_type} controls declarations of floating point types.
+@item
+@code{formal_in_out} controls @i{generic} formal @code{in} @code{out}
+parameters
+@item
+@code{formal_function}, @code{formal_package}, and
+@code{formal_procedure} control generic formal functions, packages,
+and procedures, respectively.
+@item
+@code{handlers} controls the presence of exception handlers in any
+handled sequence of statements.
+@item
+@code{integer_type} controls all declarations of integer types, while
+@code{signed_type} controls only signed integer types, and
+@code{modular_type} controls only modular types.
+@item
+@code{multiple_names} controls declarations where more than one
+defining identifier is given in the same declaration.
+@item
+@code{named_number} controls declarations of named numbers,
+i.e. untyped constants.
+@item
+@code{not_operator_renames} controls all renaming declarations, except
+those that are renamings of an operator.
+@item
+@code{null_extension} controls record extensions (derived tagged
+types) that contain no new elements.  Similarly,
+@code{null_ordinary_record_type} and @code{null_tagged_type} control
+ordinary records and tagged types that contain no elements. Note that
+the record definitions may be plain ``@code{@b{null}}
+@code{@b{record}}'' definitions, or full record definitions that
+contain only null components. However, a definition is not considered
+null if it contains a variant part.
+@item
+@code{operator} controls the definition of operators (things like
+@code{"+"}); note that the message is given on the specification if
+there is an explicit specification, on the body otherwise.
+@item
+@code{package_statements} controls the presence of elaboration
+statements in the bodies of packages (or generic packages).
+@item
+@code{record_type} controls all record type declarations (tagged or
+not), while @code{ordinary_record_type} controls only non-tagged
+record types, and @code{tagged_type} controls only tagged record types.
+@item
+@code{subtype} control all explicit subtype declarations (i.e. not all
+anonymous subtypes that appear at various places in the  language).
+@item
+@code{task} controls task type declarations as well as single tasks
+declarations while @code{single_task} and @code{task_type} control
+only single task declarations or task type declarations respectively
+(and similarly for @code{protected}).
+@item
+@code{type} controls all type (but not subtype) declarations.
+@end itemize
 
 Ex:
 @example
 search declarations (task, exception);
 @end example
 
-@node Default_Parameter, Entities, Declarations, Rules Usage
+@subsection Tips
+Certain keywords are @i{not} exclusive, and it may be the case that
+several keywords apply to the same declaration; in this case, the most
+specific one is reported.  For example, if you specify:
+@example
+check declarations (record_type, tagged_type);
+@end example
+regular record types will be reported as ``record_type'', while tagged
+types will be reported as ``tagged_type'' (but not both). However, if several
+keywords apply for @i{different} rule types, like:
+@example
+check declarations (tagged_type);
+search declarations (record_type);
+@end example
+then both are reported (for a tagged type declaration).
+
+Some of the keyword do not seem very useful; it would be strange to
+have a programming rule that prevents all type declarations... But
+bear in mind that AdaControl can be used not only for checking, but
+also for searching; finding all type declarations in a set of units
+can make sense.
+
+@subsection Limitation
+It is currently not possible to specify different rule types for the
+same declaration keyword; especially, it is not possible to specify
+both @code{search} (or @code{check}) and @code{count} for the same
+declaration keyword.  However, it is possible to specify different
+rule types for @i{different} declaration keywords, even if they
+overlap.  For example, the following will report all task entries, and
+count all entries (whether task entries or protected entries):
+@example
+search declarations (task_entry);
+count  declarations (entry);
+@end example
+
+This limitation is expected to be removed in the next version of
+AdaControl.
+
+@node Default_Parameter, Directly_Accessed_Globals, Declarations, Rules Usage
 @section Default_Parameter
 @subsection Syntax
 @example
-<check|search|count> default_parameter 
-   (<entity>, <formal name>, ["not"] "used" );
+<check|search|count> default_parameter
+   (<entity>, <formal name>, [not] used);
 @end example
 
 @subsection Action
@@ -1552,11 +2153,11 @@ name>, then:
 @itemize @bullet
 @item
 If the string @code{used} (case irrelevant) is given as the third
-parameter, the rule is fired if there is no corresponding actual
+parameter, the rule reports when there is no corresponding actual
 parameter (i.e. the default value is used for the parameter).
 @item
 If the string @code{not used} (case irrelevant) is given as the third
-parameter, the rule is fired if there is an explicit corresponding
+parameter, the rule reports when there is an explicit corresponding
 actual parameter (i.e. the default is not used for the parameter).
 @item
 If the string given as the third parameter is anything else, it is an
@@ -1575,11 +2176,79 @@ this rule may give an ASIS error (ASIS_FAILED, with a diagnosis of
 ``Not Implemented Query'' if used for subprogram calls. It allways
 works OK with instantiations.
 
-@node Entities, Entity_Inside_Exception, Default_Parameter, Rules Usage
+@node Directly_Accessed_Globals, Entities, Default_Parameter, Rules Usage
+@section Directly_Accessed_Globals
+@subsection Syntax
+@example
+<check|search|count> Directly_Accessed_Globals [(<kind_kw> @{,<kind_kw>@})];
+kind_kw ::= plain | accept | protected
+@end example
+@subsection Action
+This rule controls global variables declared directly in (generic)
+package bodies that are accessed outside of dedicated callable
+entities (i.e. procedure or function, possibly protected, protected
+entries, and @code{@b{accept}} statements).
+
+This rule can be specified only once.  The parameters indicate which
+kinds of callable entity are allowed: ``plain'' for non-protected
+subprograms, ``protected'' for protected subprograms, and ``accept''
+for @code{@b{accept}} statements). Without parameters, all forms are
+allowed.
+
+More precisely, this rule ensures that the global variables are read
+from a single callable entity, and  written by a single callable
+entity. Note that the same callable entity can read and write a
+variable, but in this case no other callable entity is allowed to read
+or write the variable.
+@itemize @bullet
+@item
+Subprograms used to read/write the variables must be declared at the
+same level as the variable itself (i.e. not nested), and must not be
+generic.
+@item
+Protected subprograms used to read/write the variables must both be
+part of the same single protected object, which must be declared at
+the same level as the variable itself (i.e. not nested); they are not
+allowed to be declared in a protected @i{type}, since if there are
+several protected objects of the same type, mutual exclusion would not
+be enforced.
+@item
+@code{@b{accept}} statements used to read/write the variables must
+both be part of the same single task object, which must be declared at
+the same level as the variable itself (i.e. not nested); they are not
+allowed to be declared in a task @i{type}, since if there are several
+task objects of the same type, mutual exclusion would not be enforced.
+@end itemize
+In short, this rule enforces that all global variables are accessed by
+dedicated access subprograms, and that only those subprograms access
+the variables directly. If given with the keyword ``protected'' and/or
+``accept'', it enforces that global variables are accessed only by
+dedicated protected subprograms or tasks, ensuring that no race condition is
+possible.
+
+Ex:
+@example
+check directly_accessed_globals
+@end example
+
+@subsection Tips
+Note that this rule controls global variables from package @i{bodies}, not those from
+the specification. This is intended, since it makes little sense to declare a variable in
+a specification, and then require it not to be accessed directly, but through provided subprograms.
+Obviously, in this case the variable should be moved to the body.
+
+Note that AdaControl can check that no variable is declared in a package specification with
+the following rule:
+@example
+check usage (variable, from_spec);
+@end example
+@pxref{Usage} for details.
+
+@node Entities, Entity_Inside_Exception, Directly_Accessed_Globals, Rules Usage
 @section Entities
 @subsection Syntax
 @example
-<check|search|count> entities (<name list>);
+<check|search|count> entities (<name> @{, <name>@});
 @end example
 
 @subsection Action
@@ -1588,30 +2257,50 @@ intended to replace cross-references, but can be quite handy to check,
 for example, that a program does not contain any more calls to
 debugging procedures before fielding it.
 
+Note that this rules reports on the use of the @i{entity}, not the
+@i{name}: if an entity has been renamed, it will be found under its
+various names.  Similarly, if the given entity is a generic or part of
+a generic, all corresponding uses in instances will be reported.
+
 Ex:
 @example
 search entities (Debug.Trace);
+check  entities (Ada.Text_IO.Float_IO.Put);
 @end example
+The second line will report on any use of a @code{Put} from any
+instantiation of @code{Float_IO}.
 
 @subsection Tips
-This rule can also be used to check for all occurrences of certain attributes with the ``@code{all <Attribute>}'' syntax. For example, the following will report on any usage of @code{'Unchecked_Access}:
+This rule can also be used to check for all occurrences of certain
+attributes with the ``@code{all <Attribute>}'' syntax. For example,
+the following will report on any usage of @code{'Unchecked_Access}:
 @example
 check entities (all 'Unchecked_Access);
 @end example
 
 In certain contexts, only a limited set of the Ada predefined units is
-allowed. The @code{rules} directory of Adacontrol contains a file
-named @code{no_standard_unit.aru}. This file contains an Entity rule
-that forbids the use of any predefined Ada unit. Comment out the lines
-for the units that you want to allow.  You can then simply ``source''
-this files from your own rule file (or copy the content) if you want
-to disallow other units.
+allowed. For example, it can be useful to forbid entities from
+@code{Standard}, @code{System}, or entities defined in special needs
+annexes. The @code{rules} directory of Adacontrol contains files with
+Entity rules that forbid the use of various predefined Ada
+units. Comment out the lines for the units that you want to allow.
+You can then simply ``source'' these files from your own rule file (or
+copy the content) if you want to disallow these units. @xref{Rules
+files provided with AdaControl}.
+
+@subsection Limitation
+Gnat defines @code{Unchecked_Conversion} and
+@code{Unchecked_Deallocation} as separate entities, rather than
+renamings of @code{Ada.Unchecked_Conversion} and
+@code{Ada.Unchecked_Deallocation}. As a consequence, it is necessary
+to specify explicitely both forms if you want to make sure that the
+corresponding generics are not used.
 
 @node Entity_Inside_Exception, Exception_Propagation, Entities, Rules Usage
 @section Entity_Inside_Exception
 @subsection Syntax
 @example
-<check|search|count> entity_inside_exception (<name list>);
+<check|search|count> entity_inside_exception (<name> @{, <name>@});
 @end example
 
 @subsection Action
@@ -1623,31 +2312,51 @@ Ex:
 check entity_inside_exception (ada.text_io.put_line);
 @end example
 
-@node Exception_Propagation, Instantiations, Entity_Inside_Exception, Rules Usage
+@node Exception_Propagation, Global_References, Entity_Inside_Exception, Rules Usage
 @section Exception_Propagation
 @subsection Syntax
 @example
-<check|search|count> exception_propagation 
-   (interface, <convention> @{, <convention> @});
-<check|search|count> exception_propagation 
-   (parameter, <parameter name> @{, <parameter name>@});
-<check|search|count> exception_propagation 
-   (task);
+<check|search|count> exception_propagation
+   ([<level>,] interface, <convention> @{, <convention> @});
+<check|search|count> exception_propagation
+   ([<level>,] parameter, <parameter name> @{, <parameter name>@});
+<check|search|count> exception_propagation
+   ([<level>,] task);
+<check|search|count> exception_propagation
+   (<level>, declaration);
 @end example
 
 @subsection Action
-This rule controls subprograms or tasks that can propagate exceptions,
-while being used in contexts where it is desirable to ensure that no
-exception can be propagated. A subprogram or task is considered as not
-propagating if:
+This rule controls subprograms, tasks, or all declarations that can
+propagate exceptions, while being used in contexts where it is
+desirable to ensure that no exception can be propagated.
+
+A subprogram or task is considered as not propagating if:
 @enumerate
 @item
-it has an exception handlers with a ``@b{@code{when others}}'' choice
+it has an exception handlers with a ``@code{@b{when others}}'' choice
 @item
-no exception handler contains a @b{@code{raise}} statement, nor any
+no exception handler contains a @code{@b{raise}} statement, nor any
 call to @code{Ada.Exception.Raise_Exception} or
 @code{Ada.Exception.Reraise_Occurrence}.
 @end enumerate
+
+A declaration is considered propagating if it includes elements that
+could propagate exceptions. The strength of the check depends on the
+given <level>.  The possible values and their effect are:
+@itemize @bullet
+@item
+0: expressions in declarative parts are not considered (anything
+allowed, default behaviour for ``interface'', ``parameter'' and
+``task''. Not allowed for ``declaration'').
+@item
+1: no function calls (including operators) are allowed in expressions.
+@item
+2: same as 1, plus no use of variables in expressions allowed.
+@item
+3: same as 2, plus no declaration of objects (constants or variables)
+allowed (not very useful for ``declaration'').
+@end itemize
 
 It is dangerous to call an Ada subprogram that can propagate
 exceptions from a language that has no exception (and especially
@@ -1672,21 +2381,36 @@ generic. In this case, the rule will report on any subprogram that can
 propagate exceptions and is used as an actual in an instantiation for
 the given formal.
 
-Finally, since tasks die silently if an exception is propagated out of
+Since tasks die silently if an exception is propagated out of
 their body, it is generally desirable to ensure that every task has an
 exception handler that (at least) reports that the task is being
-completed due to an exception.
+completed due to an exception. In its third form, the rule will report
+on any task that can propagate exceptions.
+
+For these three forms, ensuring that a handler is present protects
+against exceptions raised in the sequence of statements, but not
+against exceptions raised by declarations. In addition, the (optional)
+@code{<level>} parameter can be used to control the use of certain
+constructs in the declarative part of subprograms or tasks, in order
+to minimize the possibility of exceptions being raised.
+
+Finally, it is sometimes desirable to make sure that no declaration
+raises an exception, ever. In its fourth form, the rule will report on
+any declaration that can propagate exceptions, irrespectively of where
+it appears.  In this case, the specification of <level> is required
+and cannot be 0.
 
 Ex:
 @example
 check exception_propagation (interface, C);
 check exception_propagation (parameter, Pack.Register.CB);
 check exception_propagation (task);
+check exception_propagation (2, declaration);
 @end example
 
 The first line will report on any subprogram to which a
 @code{@b{pragma} Interface (C,...)} applies that can propagate
-exceptions. 
+exceptions.
 
 If @code{Proc} is a procedure that can propagate exceptions, the
 second line will report on every call like:
@@ -1696,6 +2420,9 @@ Pack.Register (CB => Proc'Access);
 
 The third line will report on any task that can terminate silently due
 to an unhandled exception.
+
+The fourth line will report on any declaration that makes use of
+function calls or variables.
 
 @subsection Tips
 Note that the registration procedure can be designated by an access
@@ -1732,7 +2459,141 @@ appear in dispatching calls are not considered. This limitation will
 be removed as soon as we find a way to work around this problem, but
 the issue is quite difficult!
 
-@node Instantiations, Local_Hiding, Exception_Propagation, Rules Usage
+@node  Global_References, Header_Comments, Exception_Propagation, Rules Usage
+@section Global_References
+@subsection Syntax
+@example
+<check|search|count> global_references
+   (all|multiple|multiple_non_atomic,
+    task|protected|<Entity_name> @{, task|protected|<Entity_name>@});
+@end example
+
+@subsection Action
+This rule controls access to global variables from several
+entities. The @code{<Entity_name>} must be subprograms, task types,
+single task objects, protected types, or single protected objects. The
+special keywords @code{task} and @code{protected} are used to refer to
+all tasks and to all protected entities, respectively.
+
+If the first parameter is @code{all}, all references to global
+elements from the indicated entities are reported. If the first
+parameter is @code{multiple}, only global elements that are accessed
+by more than one of the indicated entities (i.e. shared elements) are
+reported. Note however that if a reference is found from a task type
+or protected type, it is always reported, since there are potentially
+several objects of the same type. If the first parameter is
+@code{multiple_non_atomic}, references reported are the same as with
+@code{multiple}, except that global variables that are @code{atomic}
+or @code{atomic_components} and written from at most one of the
+indicated entities are not reported. Note that this latter case
+corresponds to a safe reader/writer use of atomic variables.
+
+This rule follows the call graph, and therefore finds references from
+subprogram and protected calls made (directly or indirectly) from the
+indicated entities. However, calls to subprograms from the Ada
+standard library are not followed.
+
+Ex:
+@example
+-- Find global variables used by P1 or P2:
+search global_references (all, P1, P2);
+
+-- Find possible race conditions:
+check global_references (multiple, task, protected);
+@end example
+
+This rule can be given several times, and conflicts (with
+@code{multiple}) are reported on a per-rule basis, i.e. given:
+@example
+check global_references (multiple, P1, P2);
+check global_references (multiple, P1, P3);
+@end example
+
+the first rule will report on global variables shared between P1 and
+P2, and the second rule will report on global variables shared between
+P1 and P3.
+
+@subsection Tips
+The notion of ``global'' is relative, i.e. it designates every
+variable whose scope encloses (strictly) the indicated entities. This
+means that a same reference may or may not be global, depending on the
+indicated entity. Consider:
+
+@example
+@b{procedure} Outer @b{is}
+   Inner_V : Integer;
+
+   @b{procedure} Inner_P @b{is}
+   @b{begin}
+      Inner_V := 1;
+   @b{end} Inner_P;
+@b{begin}
+   Inner_P;
+@b{end} Outer;
+@end example
+
+The rule
+@example
+check global_references (all, outer);
+@end example
+will not report any global reference, while the rule
+@example
+check global_references (all, outer.inner_p);
+@end example
+will report a reference to @code{Inner_V}. This is as it should be,
+since there is no race condition if several tasks call @code{Outer},
+while there is a risk if several tasks (declared inside @code{Outer})
+call @code{Inner_P}.
+
+@node Header_Comments, If_For_Case, Global_References, Rules Usage
+@section Header_Comments
+@subsection Syntax
+@example
+<check|search|count> header_comments (<comment lines>);
+@end example
+@subsection Action
+This rule controls that every compilation unit starts with at least
+the indicated number of comment lines.
+
+Checking that the headers follow the project's standard requires
+manual inspection, but this rule is useful to control that mandatory
+unit headers have not been inadvertantly forgotten.
+
+Ex:
+@example
+check header_comments (10);
+@end example
+
+@node If_For_Case, Instantiations, Header_Comments, Rules Usage
+@section If_For_Case
+@subsection Syntax
+@example
+<check|search|count> if_for_case;
+@end example
+@subsection Action
+This rule controls usage of @b{@code{if}} statements that could be replaced by case statements. An  @b{@code{if}}
+statement is assumed to be replaceable if it has at least one  @b{@code{elsif}} and all conditions are comparisons (or membership
+tests, possibly connected by logical operators) of the same discrete variable with static values. Typically, this rule will spot constructs like:
+@example
+   @b{if} X = 1 @b{then}
+      ...
+   @b{elsif} X = 2 or X = 3 or X = 4 @b{then}
+      ...
+   @b{elsif} X >= 5 and X <= 10 @b{then}
+      ...
+   @b{elsif} X in 11 .. 20 @b{then}
+      ...
+   @b{else}
+      ...
+   @b{end} @b{if};
+@end example
+
+Ex:
+@example
+check if_for_case;
+@end example
+
+@node Instantiations, Local_Hiding, If_For_Case, Rules Usage
 @section Instantiations
 @subsection Syntax
 @example
@@ -1805,11 +2666,12 @@ Ex:
 search local_hiding;
 @end example
 
-@node Local_Instantiation, Max_Nesting, Local_Hiding, Rules Usage
+@node Local_Instantiation, Max_Blank_Lines, Local_Hiding, Rules Usage
 @section Local_Instantiation
 @subsection Syntax
 @example
-<check|search|count> local_instantiation (<generic name list>);
+<check|search|count> local_instantiation
+   [(<generic name> @{, <generic name>@})];
 @end example
 
 @subsection Action
@@ -1818,12 +2680,58 @@ This rule controls instantiations that are done in a local scope
 library package). Instantiations that appear in a generic package are
 not flagged (unless the generic package is itself in a local scope).
 
+Without parameter, the rule controls all local instantiations,
+otherwise it controls only instantiations of the indicated generics.
+
 Ex:
 @example
-search local_instantiation (ada.unchecked_deallocation);
+check local_instantiation (ada.unchecked_deallocation);
+search local_instantiation;
 @end example
 
-@node Max_Nesting, Naming_Convention, Local_Instantiation, Rules Usage
+@node Max_Blank_Lines, Max_Line_Length, Local_Instantiation, Rules Usage
+@section Max_Blank_Lines
+@subsection Syntax
+@example
+<check|search|count> max_blank_lines (<max allowed blank lines>);
+@end example
+
+@subsection Action
+This rule controls the occurrence of more than the indicated number of
+consecutive blank lines (empty lines, or lines that contain only
+spaces). This rule can be given once for each of check, search, and
+count. This way, it is possible to have a number of blank lines
+considered a warning (search), and one considered an error (check). Of
+course, this makes sense only if the number for search is less than
+the one for check.
+
+Ex:
+@example
+search max_blank_lines (2);
+check max_blank_lines (5);
+@end example
+
+@node  Max_Line_Length, Max_Nesting, Max_Blank_Lines, Rules Usage
+@section Max_Line_Length
+@subsection Syntax
+@example
+<check|search|count> max_line_length (<max allowed length>);
+@end example
+
+@subsection Action
+This rule controls the maximum length of source lines.  This rule can
+be given once for each of check, search, and count. This way, it
+is possible to have a length considered a warning (search), and one
+considered an error (check). Of course, this makes sense only if the
+length for search is less than the one for check.
+
+Ex:
+@example
+search max_line_length (80);
+check max_line_length (120);
+@end example
+
+@node Max_Nesting, Max_Statement_Nesting, Max_Line_Length, Rules Usage
 @section Max_Nesting
 @subsection Syntax
 @example
@@ -1834,8 +2742,8 @@ search local_instantiation (ada.unchecked_deallocation);
 This rule controls the nesting of declarative
 constructs (like subprograms, packages, generics, block
 statements@dots{}) that exceed a given depth. Nesting of statements
-(@b{@code{loop}}, @b{@code{case}}) is not considered. This rule can be
-given once for each of for check, search, and count. This way, it
+(@code{@b{loop}}, @code{@b{case}}) is not considered. This rule can be
+given once for each of check, search, and count. This way, it
 is possible to have a level considered a warning (search), and one
 considered an error (check). Of course, this makes sense only if the
 level for search is less than the one for check.
@@ -1846,13 +2754,81 @@ search max_nesting (5);
 check max_nesting (7);
 @end example
 
-@node Naming_Convention, No_Closing_Name, Max_Nesting, Rules Usage
+@node Max_Statement_Nesting, Movable_Accept_Statements, Max_Nesting, Rules Usage
+@section Max_Statement_Nesting
+@subsection Syntax
+@example
+<check|search|count> Max_Statement_Nesting (<stmt_kw>, <max allowed depth>);
+<stmt_kw> ::= if | case | loop | all
+@end example
+@subsection Action
+This rule controls the nesting of compound statements. If one of
+``if'', ``case'', or ``loop'' is specified, it controls the nesting of
+statements of the same kind, i.e. an @code{@b{if}} within a
+@code{@b{loop}} within an @code{@b{if}} counts only 2 for the ``if''
+keyword. If ``all'' is specified, all kinds of compound statements are
+counted together, i.e. an @code{@b{if}} within a @code{@b{loop}}
+within an @code{@b{if}} counts for 3. This rule can be given once for
+each of check, search, and count. This way, it is possible to have a
+level considered a warning (search), and one considered an error
+(check). Of course, this makes sense only if the level for search is
+less than the one for check.
+
+Ex:
+@example
+check max_statement_nesting (loop, 3);
+search max_statement_nesting (all, 5);
+@end example
+
+@node Movable_Accept_Statements, Naming_Convention, Max_Statement_Nesting, Rules Usage
+@section Movable_Accept_Statements
+@subsection Syntax
+@example
+<check|search|count> movable_accept_statements
+   (certain|possible [, <entity_list>])
+<entity_list> ::= <entity name> @{, <entity name>@}
+@end example
+@subsection Action
+This rule controls statements that are inside accept statements and
+could safely be moved outside.  Since it is good practice to block a
+client for the shortest time possible, any action that does not depend
+on the accept parameters should not be part of an accept statement.
+
+Statements that involve synchronisation (delay statements, accept or
+entry calls...) are not movable.  Statements (including compound
+statements) that reference the parameters of the enclosing accept are
+not movable.  In addition, statements that use entities whose names
+are given as parameters to the rule are never considered movable. Note
+that if a generic entity name is given, or the name of an entity
+declared in a generic package, all statements that use the
+corresponding instantiated entity are considered not movable.
+
+If the first parameter of the rule is @code{certain}, only statements
+after the last non-movable statement are reported.  If the first
+parameter is @code{possible}, a simple data flow analysis is
+performed, and every statement that does not reference a variable that
+appears to depend (directly or indirectly) on a parameter is also
+reported.
+
+Ex:
+@example
+check movable_accept_statements (possible, Log.Report_Rendezvous);
+@end example
+
+@subsection Tips
+The entity names given to the rule can be, for example, procedures
+whose execution must be part of the accept statement for logical
+reasons. They can also be global variables,  when the rendezvous is
+intended to prevent concurrent access to these variables.
+
+@node Naming_Convention, No_Safe_Initialization, Movable_Accept_Statements, Rules Usage
 @section Naming_Convention
 @subsection Syntax
 @example
 <check|search|count> naming_convention
-   ([root] <Filter_Kind>, 
-    [case_sensitive | case_insensitive] [not] "<Pattern>" @{, ...@});
+   ([root] <Filter_Kind>,
+    [any|local|global] [case_sensitive|case_insensitive] [not] "<Pattern>"
+    @{, ...@});
 <Filter_Kind> ::= All |
                     Type |
                        Discrete_Type |
@@ -1938,14 +2914,23 @@ the project's naming conventions. The first parameter defines the kind
 of declaration to which the rule is applicable, and other parameters
 define patterns, using the full Regexp syntax. Please refer to the
 @code{regexp} reference manual, or to the comments in file
-@code{gnat-regpat.ads} for details. If a pattern is preceded by
-``not'', then the pattern must @i{not} be matched (i.e. the rule is
-fired if there is a match). Note that the pattern needs not include
-any wildcard, but if it does, it must be enclosed in quotes. If
-``case_sensitive'' is specified, pattern matching considers
+@code{gnat-regpat.ads} for details. Note that the pattern needs not
+include any wildcard, but if it does, it must be enclosed in quotes.
+
+If ``global'' or ``local'' is specified, the pattern applies only to
+global (resp. local) declarations.  Otherwise (``any'' or not
+specified), the pattern applies to all identifiers, irrespectively of
+where they are declared. An identifier is considered global if it is
+declared in a package or a  generic package, possibly nested in other
+packages or generic packages.
+
+If ``case_sensitive'' is specified, pattern matching considers
 casing. Otherwise (default or ``case_insensitive''), casing is
 irrelevant. Note that the rule checks the name only at the place where
 it is declared; casing might be different when the name is used later.
+
+If a pattern is preceded by ``not'', then the pattern must @i{not} be
+matched (i.e. the rule reports when there is a match).
 
 The rule will be activated if an identifier is declared that does not
 match any of the ``positive'' patterns (the ones without ``not''), or
@@ -1983,22 +2968,25 @@ privacy breaking).
 Ex:
 @example
 -- All identifiers must have at least 3 characters:
-check naming_convention (all, "...");   
+check naming_convention (all, "...");
 
 -- Predefined name is forbidden:
 check naming_convention (all, not Integer);
 
 -- Types must either start or end with T
-check naming_convention (type, case_sensitive "^T_", 
-                               case_sensitive "_T$");  
+check naming_convention (type, case_sensitive "^T_",
+                               case_sensitive "_T$");
 
--- Exception to the rule for "all": 
+-- Exception to the rule for "all":
 -- No minimum length for "for loop" identifiers
-check naming_convention (root loop_parameter, ".");
+check naming_convention (root loop_control, ".");
 
 -- "Upper_Initials" naming convention:
 check naming_convention
    (all, case_sensitive "^[A-Z][a-z0-9]*(_[A-Z0-9][a-z0-9]*)*$");
+
+-- All global variables must start with "G_"
+check naming_convention (variable, global "G_");
 @end example
 
 @subsection Tips
@@ -2035,39 +3023,74 @@ This rule does not support wide characters outside the basic Latin-1 set.
 If you compiled with the @code{Portable_String_Matching} package, only
 basic (``*'' and ``?'') wildcards are available.
 
-@node No_Closing_Name, Not_Elaboration_Calls, Naming_Convention, Rules Usage
-@section No_Closing_Name
+@node No_Safe_Initialization, Non_Static_Constraints, Naming_Convention, Rules Usage
+@section No_Safe_Initialization
 @subsection Syntax
 @example
-<check|search|count> no_closing_name [(<acceptable length>)];
+<check|search|count> no_safe_initialization [(<check_kind> [,<check_kind>])]
+check_kind ::= out_parameter | variable
 @end example
-
 @subsection Action
-This rule controls declarations, like package or subprograms, that
-allow (but do not require) repeating the name at the end of the
-declaration, and where the closing name is omitted (which is
-considered bad style in general). However, it can be acceptable to
-allow the omission of closing names for very short constructs;
-therefore this rule has an optional parameter specifying the maximum
-number of lines of a construct for which omitting the closing name is
-allowed. This rule can be given only once for each of check, search
-and count. This way, it is possible to have a length considered a
-warning (search), and one considered an error (check). Of course, this
-makes sense only if the length for search is less than the one for
-check. If no length is specified, all occurrences of missing closing
-names are signaled.
+This rule controls variables and/or @code{@b{out}} parameters that are
+not ``safely'' initialized.  A variable (or @code{@b{out}} parameter)
+is considered safely initialized if there is an initialization
+expression in its declaration, or if it is given a value in the first
+statements of the corresponding body, until anything other than
+assignments or procedure calls is encountered. The value can be given
+either through assignment or by having the variable as an
+@code{@b{out}} parameter of a procedure call. This rule can be given
+only once for each value of <check_kind>. Without parameters, it is
+equivalent to giving both.
+
+Note that the variable must be assigned to globally, i.e. assigning to
+some elements of an array, or some fields of a record, does not count
+as an initialization of the variable.
 
 Ex:
 @example
-search no_closing_name;
-check no_closing_name (5);
+check no_safe_initialization (out_parameter);
 @end example
 
-@node Not_Elaboration_Calls, Parameter_Aliasing, No_Closing_Name, Rules Usage
+@subsection Limitation
+Due to a weakness of the ASIS standard, dispatching calls and calls to
+procedures that are attributes are not considered for the
+initialization of variables. Note that for attributes, only
+@code{'Read} and @code{'Input} have an @code{@b{out}} parameter.
+
+In the rare case where a variable is initialized by a dispatching call
+or an attribute call, this limitation will result in a false
+positive. It is then easy to disable the rule for this
+variable. @xref{Disabling rules}.
+
+@node Non_Static_Constraints, Not_Elaboration_Calls, No_Safe_Initialization, Rules Usage
+@section Non_Static_Constraints
+@subsection Syntax
+@example
+<check|search|count> non_static_constraints
+   [(constraint_kind @{, constraint_kind@})];
+constraint_kind ::= index | discriminant
+@end example
+
+@subsection Action
+This rule controls that expressions used in index constraints (if the
+keyword @code{index} is given) or in discriminant constraints (if the
+keyword @code{discriminant} is given) are static. If no keyword is
+given, both kinds of constraints are controlled.
+
+This rule is useful in contexts where the space occupied by data
+structures must be computable from the program text.
+
+Ex:
+@example
+check non_static_constraints (index);
+@end example
+
+@node Not_Elaboration_Calls, Parameter_Aliasing, Non_Static_Constraints, Rules Usage
 @section Not_Elaboration_Calls
 @subsection Syntax
 @example
-<check|search|count> not_elaboration_calls (<subprogram name list>);
+<check|search|count> not_elaboration_calls
+   (<subprogram name> @{, <subprogram name>@});
 @end example
 
 @subsection Action
@@ -2091,18 +3114,18 @@ Note also that calls that cannot be statically determined, like calls
 to dispatching operations or calls through pointers to subprograms
 cannot be detected either.
 
-@node  Parameter_Aliasing, Pragmas, Not_Elaboration_Calls, Rules Usage
+@node  Parameter_Aliasing, Positional_Parameters, Not_Elaboration_Calls, Rules Usage
 @section Parameter_Aliasing
 @subsection Syntax
 @example
-<check|search|count> parameter_aliasing [(Certain | Possible | Unlikely)];
+<check|search|count> parameter_aliasing [(Certain|Possible|Unlikely)];
 @end example
 
 @subsection Action
 This rule controls aliased use of variables in subprogram
 calls. Specifically, this rule will identify calls where the same
-variable is given as an actual to more than one @b{@code{out}} or
-@b{@code{in out}} parameter, like in the following example:
+variable is given as an actual to more than one @code{@b{out}} or
+@code{@b{in out}} parameter, like in the following example:
 @example
 @b{procedure} Proc (X, Y : @b{out} Integer);
    ...
@@ -2127,14 +3150,14 @@ Swap (Tab (I), Tab (J));
 there is no aliasing, unless @code{I} equals @code{J}.
 
 If all expressions used for indexing in both variables are integer or
-enumeration litterals, the rule will be able to eliminate the
+enumeration literals, the rule will be able to eliminate the
 diagnosis of aliasing (if the values are different). This does not
 cover all cases of static expressions, but will avoid unnecessary
 messages in cases like:
 @example
 Swap (Tab (1), Tab (2));
 @end example
- 
+
 @item
 Unlikely: In addition, cases where aliasing may occur due to access
 variables pointing to the same variable are output. These may or may
@@ -2175,24 +3198,145 @@ Due to a weakness of the ASIS standard, dispatching calls  are not
 considered. This limitation will be removed as soon as we find a way
 to work around this problem, but the issue is quite difficult!
 
-@node Pragmas, Real_Operators, Parameter_Aliasing, Rules Usage
+@node Positional_Parameters, Potentially_Blocking_Operations, Parameter_Aliasing, Rules Usage
+@section Positional_Parameters
+@subsection Syntax
+@example
+<check|search|count> positional_parameters (maximum, <Max_Allowed>);
+<check|search|count> positional_parameters (insufficient, <Max_Allowed>
+                                           @{, <Type_Name>@});
+@end example
+@subsection Action
+This rule controls calls to subprograms and entries that use
+positional (not named) notation.  In the first form, <Max_Allowed> is
+the maximum number of parameters allowed to use positional notation.
+In the second form, <Max_Allowed> is the maximum number of parameters
+allowed to use positional notation that do not provide sufficient
+information to correctly identify the parameter's purpose. <Type_Name>
+designate enumeration types whose values should be included in the
+check.  An actual parameter is deemed "insufficient" if it is an
+expression whose primaries are all numeric literals, or enumeration
+literals belonging to one of the types passed as parameters to the
+rule (Boolean for example).
+
+This rule can be given once for each of check, search, and count, for
+each form. This way, it is possible to have a level considered a
+warning (search), and one considered an error (check). It is allowed
+to specify both forms, but of course it makes sense only if the
+<Max_Allowed> for ``maximum'' is greater than the <Max_Allowed> for
+``insufficient''.
+
+Ex:
+@example
+search Positional_Parameters (Insufficient, 1, Boolean);
+check  Positional_Parameters (Insufficient, 2, Boolean);
+search Positional_Parameters (Maximum, 3);
+@end example
+
+@subsection Tips
+This rule does not apply to operators that use infix notation, nor to
+calls to subprograms that are attributes, since named notation is not
+allowed for these.
+
+There is a slight overlap between this rule and the ``style
+(positional_association, call)'' rule (@pxref{Style}), namely:
+@example
+check style (positional_association, call)
+@end example
+is the same as:
+@example
+check positional_parameters (maximum, 0);
+@end example
+
+The idea is that the former is intended to implement a programming
+rule like ``all positional association is forbidden'', while the later
+corresponds to programming patterns that allow positional associations
+in well defined cases (either when a fixed number of positional
+parameters are allowed, or when non ``insufficient'' parameters are
+allowed).
+
+@node  Potentially_Blocking_Operations, Pragmas, Positional_Parameters, Rules Usage
+@section Potentially_Blocking_Operations
+@subsection Syntax
+@example
+<check|search|count> potentially_blocking_operations;
+@end example
+
+@subsection Action
+This rule controls usage of potentially blocking operations (as
+defined in LRM 9.5.1 (8..16)) from within protected operations. It
+does follow the call graph, therefore identifying indirect potentially
+blocking operations. All protected types in the program are controlled.
+
+Of course, calls to standard subprograms (notably IOs) that are
+defined to be potentially blocking are recognized.
+
+Ex:
+@example
+check potentially_blocking_operation;
+@end example
+
+@subsection Limitation
+There is one case defined in LRM E.4(17) which is not recognized:
+remote subprograms calls.
+
+@subsection Tips
+This rule is very clever at finding potentially blocking operations
+resulting from external calls (or requeues) to the current protected
+object, even if this happens through a long chain of subprogram
+calls. Typically, this happens when a protected operation calls a
+subprogram, which in turn makes a call to an operation of the same
+protected object. Such calls generally result in dead-locks.
+
+Therefore, it is advisable to run this rule on any program that
+exhibits mysterious (and hard to find) deadlocks that seem to involve
+protected objects.
+
+When a single protected object is being analyzed, the rule will
+diagnose a circularity if there is a call to an operation of the same
+object in the call chain; however, if a protected type is being
+analyzed, the rule will diagnose a circularity if there is a call to
+any object of the same type in the call chain. Although it is possible
+to construct examples of this latter case where there is no risk of
+deadlock, it is so contrieved that it certainly deserves being looked
+at. But since the call is not 100% certain to be potentially blocking,
+the message will tell ``possible external call'' instead of ``external
+call'' in this case.
+
+@node Pragmas, Real_Operators, Potentially_Blocking_Operations, Rules Usage
 @section Pragmas
 @subsection Syntax
 @example
-<check|search|count> pragmas (nonstandard | <pragma name> @{, ...@});
+<check|search|count> pragmas
+    (all|nonstandard|<pragma name> @{, <pragma name>@});
 @end example
 
 @subsection Action
 This rule controls usage of one or several specific pragmas. If the
 special name ``nonstandard'' is given, then all implementation-defined
-and unrecognized pragmas will be controlled.
-
-Ex:
+and unrecognized pragmas will be controlled.  If the special name
+``all'' is given, then all pragmas will be controlled.  Ex:
 @example
 check pragmas (elaborate_all, elaborate_body);
 @end example
 
-@node Real_Operators, Representation_Clauses, Pragmas, Rules Usage
+@subsection Tips
+If ``all'' and/or ``nonstandard'' is given together with a specific
+pragma name in a ``search'' or ``check'' rule, a message is issued
+only for the most specific occurrence. However, for ``count'', all
+appropriate occurrences are counted, i.e. given the following rules:
+@example
+C1 : count pragmas (annotate);
+C2 : count pragmas (nonstandard);
+C3 : count pragmas (all);
+@end example
+Counter C1 will report the number of occurrences of @code{@b{pragma}
+Annotate} (a non-standard Gnat pragma), counter C2 will report the
+number of non-standard pragmas (including occurrences of
+@code{Annotate}), and counter C3 will report the total number of
+pragmas (including occurrences of @code{Annotate}).
+
+@node Real_Operators, Reduceable_Scope, Pragmas, Rules Usage
 @section Real_Operators
 @subsection Syntax
 @example
@@ -2208,12 +3352,38 @@ Ex:
 check real_operators;
 @end example
 
-@node  Representation_Clauses, Side_Effect_Parameters, Real_Operators, Rules Usage
+@node Reduceable_Scope, Representation_Clauses, Real_Operators, Rules Usage
+@section Reduceable_Scope
+@subsection Syntax
+@example
+<check|search|count> reduceable_scope [no_blocks]
+@end example
+@subsection Action
+This rule controls declarations that could be moved to some inner
+scope. More precisely, it will report on any declaration that is
+referenced only from a single, inner scope. However, entities that are
+used in a 'Access or 'Address attribute are never reported, since
+moving them would change their accessibility level.
+
+If @code{no_blocks} is specified, the rule will not consider blocks as
+possible targets for a reduced scope.
+
+As a side effect, the rule will report about entities that are
+declared but not used.
+
+Ex:
+@example
+check reduceable_scope;
+@end example
+
+@node  Representation_Clauses, Return_Type, Reduceable_Scope, Rules Usage
 @section Representation_Clauses
 @subsection Syntax
 @example
-<check|search|count> representation_clauses 
-   [( at | at_mod | enumeration | record | <attribute>, ... )];
+<check|search|count> representation_clauses
+   [(<repr_kw>|<attribute> @{, <repr_kw>|<attribute>@}, ... )];
+
+repr_kw ::= at | at_mod | enumeration | record
 @end example
 
 @subsection Action
@@ -2239,15 +3409,61 @@ All_Input: check representation_clauses ('input, 'class'input);
 count representation_clauses ('SIZE);
 @end example
 
-@node Side_Effect_Parameters, Silent_Exceptions, Representation_Clauses, Rules Usage
+@node Return_Type, Side_Effect_Parameters, Representation_Clauses, Rules Usage
+@section Return_Type
+@subsection Syntax
+@example
+<check|search|count> return_type [(<type_kind> @{, <type_kind>@})];
+type_kind ::= class_wide          | unconstrained_discriminated |
+              unconstrained_array | task | protected
+@end example
+@subsection Action
+This rule controls functions whose return type belongs to one of the indicated type kinds:
+@itemize @bullet
+@item
+@code{class_wide} controls class-wide types
+@item
+@code{unconstrained_discriminated} controls types with discriminants
+(but not constrained subtypes of such types)
+@item
+@code{unconstrained_array} controls unconstrained array types
+@item
+@code{task} controls task types, or composite types that include tasks
+as subcomponents.
+@item
+@code{protected} controls protected types, or composite types that include protected
+objects as subcomponents.
+@end itemize
+
+If no type kind is specified, all type kinds are controlled. Note that
+more than one kind may apply to a type: for example, a function can
+return a class-wide type with discriminants that includes tasks and
+protected objects as subcomponents. In this case, several messages are
+issued for the same type.
+
+Ex:
+@example
+check return_type (unconstrained_discriminated, unconstrained_array);
+@end example
+
+@subsection Limitations
+There is a (very rare) case where AdaControl does not properly
+recognize that a function returns a class-wide type. This is due to an
+ASIS bug fixed in version 5.05, and therefore appears only with
+earlier versions of the compiler. This happens when a generic unit
+contains functions whose return type is a generic indefinite formal
+type, and this generic is instantiated with a class-wide type.
+
+@node Side_Effect_Parameters, Silent_Exceptions, Return_Type, Rules Usage
 @section Side_Effect_Parameters
 @subsection Syntax
 @example
-<check|search|count> Side_Effect_Parameters (<function name list>);
+<check|search|count> Side_Effect_Parameters
+   (<function name> @{, <function name>@});
 @end example
 
 @subsection Action
-This controls subprogram calls or generic instantiations where
+This rule controls subprogram calls or generic instantiations where
 different actual parameters call functions known to have side
 effects. This is dangerous practice, since correct behaviour may
 depend on a certain evaluation order of parameters, which is not
@@ -2255,7 +3471,7 @@ specified by the language.
 
 All functions mentionned as parameters in the rule are assumed to
 interfere, i.e. the rule will signal if any of these functions is
-called more than once in the parameters of a call. 
+called more than once in the parameters of a call.
 
 It is allowed to give the name of a generic function, or of a function
 declared in a generic package; in this case, all functions resulting
@@ -2288,14 +3504,35 @@ to calling a side-effect function through the default value.
 @section Silent_Exceptions
 @subsection Syntax
 @example
-<check|search|count> Silent_Exceptions (<procedure name list>);
+<check|search|count> Silent_Exceptions
+   (<subprogram name>|raise @{, <subprogram name>@});
 @end example
 
 @subsection Action
 This rule controls exception handlers that can cause exceptions to
 silently disappear, i.e. handlers that do @i{not} call one of the
-given procedures (for example a reporting procedure) nor re-raise an
-exception. Entry calls are accepted as well as procedure calls.
+given subprograms (for example a reporting procedure) nor re-raise an
+exception.
+
+The parameters are the Ada callable constructs considered
+``reporting''. In addition to subprogram and entry names, the special
+names ``raise'', ``return'' and ``requeue'' mark raise statements,
+return statements, and requeue statements (respectively) as
+reporting. If a generic procedure or function is given to the rule,
+then all corresponding instances are considered reporting
+subprograms. If a generic package is given, any instantiation (in an
+inner block of the handler) is considered reporting.
+
+Note that the purpose of this rule is to require the reporting calls
+to be ``eye-visible'', i.e. textually written in the exception
+handler. For example, the rule will accept a call to a procedure
+inside the sequence of statements of a package body declared in some
+inner block; however, it will not accept the same call if it is in the
+sequence of statements of a package instantiation (unless the generic
+package is itself mentionned as reporting), because the call is not
+``eye-visible''. For the same reason, a call to a reporting function
+which happens as the default value of an omitted parameter in some
+other call will not be accepted.
 
 This rule can be given once for each of check, search and count. This
 way, it is possible to have a level considered a warning (search), and
@@ -2303,17 +3540,18 @@ one considered an error (check).
 
 Ex:
 @example
-check silent_exceptions (reports.trace);
+check silent_exceptions (raise, reports.trace);
 @end example
 
-If the @b{@code{raise}} statements or procedure calls appear only in
-@b{@code{if}} or @b{@code{case}} statements, but not in all possible
-paths, or if they appear only in the body of @b{@code{loop}}
+If the @code{@b{raise}} statements or subprogram calls appear only in
+@code{@b{if}} or @code{@b{case}} statements, but not in all possible
+paths, or if they appear only in the body of @code{@b{loop}}
 statements, the rule will issue a message asking for a manual
 verification, since it cannot be statically determined whether the
 proper treatment happens in every case.
 
-The procedures @code{Ada.Exceptions.Raise_Exception} and
+If ``raise'' is given as a parameter, the procedures
+@code{Ada.Exceptions.Raise_Exception} and
 @code{Ada.Exceptions.Reraise_Occurrence} are automatically added to
 the list of procedures for both Check and Search, unless they are
 explicitely specified as a parameter in a rule. This way, it is
@@ -2321,17 +3559,37 @@ possible to consider them as reporting procedures for Check (for
 example) and not for Search.
 
 @subsection Limitations
+Currently, ``return'' includes all return statements. It would be nice
+to separate function returns from procedure or accept returns. This is
+expected to be done in the next version of AdaControl.
+
 There are two cases that are not statically checkable, and
 thus may not be identified by this rule: if an exception is raised in
 an inner block statement and handled locally, and if the exception
 handler aborts the current task.
 
-@node Simplifiable_Expressions, Specification_Objects, Silent_Exceptions, Rules Usage
+If a reporting function is given, there are a few cases where the
+calls will not be recognized:
+@itemize @bullet
+@item
+inside a pragma
+@item
+in a representation clause
+@item
+in a code statement (i.e. as a field of a machine code instruction)
+@end itemize
+This limitation is intentional: these are such weird places to call a
+reporting function that it seems better to draw attention to it...
+
+@node Simplifiable_Expressions, Special_Comments, Silent_Exceptions, Rules Usage
 @section Simplifiable_Expressions
 @subsection Syntax
 @example
-<check|search|count> Simplifiable_Expressions [(keyword)];
-keyword ::= range | logical | logical_true | logical_false | parentheses
+<check|search|count> Simplifiable_Expressions
+   [(<Expression_kw> @{, <Expression_kw>@})];
+
+Expression_kw ::= range         | logical     | logical_true |
+                  logical_false | parentheses
 @end example
 
 @subsection Action
@@ -2343,141 +3601,320 @@ the form @code{<expr> = True} (or @code{/=}), and ``logical_false''
 does the same for comparisons with @code{false}. ``logical'' is the
 same as specifying both ``logical_true'' and
 ``logical_false''. ``parentheses'' controls unnecessary parentheses
-surrounding the expression of an ``if'' or ``case'' statement.
+like those surrounding the expression of an assignment, an ``if'' or a ``case''
+statement, or those that are not required by operators precedence rules.
 
 Ex:
 @example
-check simplifiable_expressions (range, logical);
-@end example
-
-@node Specification_Objects, Statements, Simplifiable_Expressions, Rules Usage
-@section Specification_Objects
-@subsection Syntax
-@example
-<check|search|count> specification_objects 
-   [( [not] constant|read|written|initialized @{, ...@})];
-@end example
-
-@subsection action
-This rule controls usage of objects (variables and constants) declared
-in (generic) package specifications. Variables are often discouraged
-in package specifications, or need at least some extra
-control. Constants that are never used (not even in the package
-itself) are also suspicious. Moreover, some useful compiler warnings
-(like those about variables that should be declared constants) are not
-output for variables declared in library packages (at least with
-GNAT). This rule can do the same thing, project wide.
-
-By default (without any parameter), this rule will report about usage
-of each object declared in a package specification which is part of
-the processed units; usage of objects whose declaration is not
-processed (like, typically, elements declared in standard packages
-like @code{Ada.Text_IO}, are not reported). The report includes the
-kind of package that declares the object (normal package,
-instantiation, or generic) and whether it is known to be initialized,
-read, and/or written. Variables of an access type and variables of an
-array type whose components are of an access type (or arrays of an
-access type, etc.) are always considered initialized, since they are
-initialized to @code{null} by the compiler. Some combinations give an
-extra useful message (for example, a variable which is initialized and
-read but not written will produce a ``could be declared constant''
-message).
-
-In the case of objects declared in generic packages, the rule will
-report on usage of the objects for each instantiation, as well as on
-global usage for the generic itself. Usage for an instantiation will
-include usage in the generic itself (i.e. if the generic writes to a
-variable, the variable will be marked as ``written'' for each
-instantiation). Usage for the generic itself is the union of all
-usages in all instantiations (i.e., if a variable from any
-instantiation is written to, the variable from the generic will be
-marked as written). Therefore, if the rule reports that a variable in
-a generic package can be declared constant, it means that no instance
-of this variable from any instantiation is being written to. But bear
-in mind that this can be trusted only if all units from the program
-are analyzed. @xref{limitation}.
-
-It is possible to specify as parameter(s) one or several of the
-keywords (case irrelevant) @code{constant} @code{read}, @code{written}, or
-@code{initialized}, possibly preceded by @code{not}. The rule will
-output the information only for objects that match all the
-conditions given. The rule can be given once and only once for each
-combination of the parameters.
-
-Ex:
-@example
-search specification_objects (not read);
-check specification_objects  (not initialized, not written, read);
+search simplifiable_expressions (parentheses);
+check  simplifiable_expressions (range, logical);
 @end example
 
 @subsection Tips
-An unspecified parameter in a rule stands for two rules (positive and
-negative form of the missing parameter). I.e.:
+There are cases where parentheses may seem unnecessary, but are
+(purposedly) not reported by this rule. Consider for example:
 @example
-search specification_objects (read, written);
+   X := A + (B + C);
 @end example
-is the same as:
+Removing the parentheses would change the expression to mean:
 @example
-search specification_objects (read, written, initialized);
-search specification_objects (read, written, not initialized);
+   X := (A + B) + C;
 @end example
-Therefore, the following example will complain on the second line that
-the rule has already been given for this combination of parameters:
+If the @code{"+"} operator has be redefined and is no more
+associative, this would actually change the meaning of the program. In
+a less contrieved example, note that:
 @example
-search specification_objects (read, written);
-search specification_objects (read, written, not initialized);
+  X mod (A*B)
+@end example
+is @i{not} the same as:
+@example
+  X mod A * B
+@end example
+For these reasons, and to make the rule easier to understand for the
+user, the rule does not report unnecessary parentheses between
+operators of identical priority levels.
+
+@node  Special_Comments, Statements, Simplifiable_Expressions, Rules Usage
+@section Special_Comments
+@subsection Syntax
+@example
+<check|search|count> Special_Comments ("<pattern>" @{, "<pattern>"@});
 @end example
 
-Constants will be reported only for rules that apply (implicitely or
-explicitely) to ``initialized, not written'' since this is guaranteed
-by the language. The message tells it is a constant, but does not
-report ``initialized, not written''. Use ``not constant'' if you don't
-want reports about constants. Note that the notion of constants for
-this rule includes named numbers.
+@subsection Action
+This rule controls comments that match one of the given patterns. Only
+the ``useful'' part of the comment is matched against the patterns,
+i.e. the part after the ``@code{--}'' and spaces following
+it. Patterns are given using the full Regexp syntax. Please refer to
+the @code{regexp} reference manual, or to the comments in file
+@code{gnat-regpat.ads} for details. Note that the pattern needs not
+include any wildcard, but if it does, it must be enclosed in
+quotes. Pattern matching is always case insensitive.
 
-@anchor{limitation}
-@subsection Limitation
-The report of this rule is output at the end of the run, and is
-meaningful only for the units that have been processed; i.e., if it
-reports ``variable not read'', it should be understood as ``not read
-by the units given''.
+This rule is especially useful to find lines with comments like
+``TBSL'' (To Be Supplied Later), which are often used to mark places
+where something should be done before releasing the program.
 
-In order to have meaningful results, it is therefore advisable to use
-this rule on the complete closure of the program.
+Ex:
+@example
+check special_comments ("TBSL");
 
-Due to a weakness of the ASIS standard, specification variables that
-appear as [@b{@code{in}}] @b{@code{out}} parameters in dispatching
-calls are not marked as ``written''. This limitation will be removed
-as soon as we find a way to work around this problem, but the issue is
-quite difficult!
+-- Report places where rules are disabled:
+search special_comments ("##.* off");
+@end example
 
-@node Statements, Unnecessary_Use_Clause, Specification_Objects, Rules Usage
+@subsection Tips
+Remember that a Regexp matches if the pattern matches any part of the
+identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
+the comment, or both.
+
+@subsection Limitations
+This rule does not support wide characters outside the basic Latin-1 set.
+
+If you compiled with the @code{Portable_String_Matching} package, only
+basic (``*'' and ``?'') wildcards are available.
+
+@node Statements, Style, Special_Comments, Rules Usage
 @section Statements
 @subsection Syntax
 @example
-<check|search|count> statements (statement_kw @{, statement_kw@};
-Statement_kw ::= abort | asynchronous_select | case_others | delay |
-                 delay_until | exit | goto | raise | requeue
+<check|search|count> statements (<statement_kw> @{, <statement_kw>@};
+
+statement_kw ::=
+   abort            | accept_return         | asynchronous_select    |
+   case_others      | case_others_null      | conditional_entry_call |
+   delay            | delay_until           | entry_return           |
+   exception_others | exception_others_null | exit                   |
+   exit_for_loop    | exit_while_loop       | function_return        |
+   goto             | loop_return           | multiple_exits         |
+   no_else          | procedure_return      | raise                  |
+   raise_standard   | requeue               | selective_accept       |
+   terminate        | timed_entry_call      | unconditional_exit     |
+   unnamed_exit     | unnamed_multiple_loop | untyped_for            |
+   while_true
 @end example
 
-@subsection action
-This rule controls usage of certain Ada statements. Statement keywords
-that are Ada keywords match the corresponding Ada statements; note
-that @code{delay} will match only relative @b{@code{delay}} statements
-(i.e. it will not match the @b{@code{delay until}}
-statement). @code{asynchronous_select} matches the @b{@code{select}}
-... @b{@code{then abort}} statement. @code{case_others} matches a
-@b{@code{when others}} path in a @b{@code{case}}
-statement. @code{unnamed_exit} matches an @b{@code{exit}} statement
-without a loop name that exits from a named loop.
+@subsection Action
+This rule controls usage of certain Ada statements.
+@itemize @bullet
+@item
+Statement keywords that are Ada keywords control the corresponding Ada
+statements; note that @code{delay} will control only relative
+@code{@b{delay}} statements (i.e. it will not control the @code{@b{delay
+until}} statement).
+@item
+@code{accept_return} controls return statements that return from an
+@code{@b{accept}} statement, @code{entry_return} controls return
+statements that return from a (protected) entry body, and
+@code{procedure_return} controls return statements that return from a
+procedure. @code{loop_return} controls return statements that appear
+inside a @code{@b{loop}} statement.
+@item
+@code{asynchronous_select} controls the @code{@b{select}}
+... @code{@b{then abort}} statement. @code{conditional_entry_call}
+controls the @code{@b{select}} ... @code{@b{else}}
+statement. @code{timed_entry_call} controls the @code{@b{select}}
+... @code{@b{or delay}} statement. @code{selective_accept} controls
+the regular @code{@b{select}} statement.
+@item
+@code{case_others} controls any @code{@b{when others}} path in a
+@code{@b{case}} statement, while @code{case_others_null} controls only
+@code{@b{when others}} paths in a @code{@b{case}} statement that
+contain only @code{@b{null}} statements.
+@item
+@code{exit} controls all exit statements, while @code{exit_for_loop}
+and @code{exit_while_loop} control @code{@b{exit}} statements that
+terminate @code{@b{for}} and @code{@b{while}} loops,
+respectively. @code{unconditional_exit} controls @code{@b{exit}}
+statements without a @code{@b{when}} condition.  @code{multiple_exits}
+controls loop that have more than one @code{@b{exit}} statement.
+@item
+@code{exception_others} controls any @code{@b{when others}} exception
+handler, while @code{exception_others_null} controls only @code{@b{when
+others}} exception handlers that contain only @code{@b{null}}
+statements.
+@item
+@code{function_return} controls return statements from functions. Obviously,
+return statements cannot be forbidden in functions; this keyword controls that
+there is only one return statement in the body of functions, and at most
+one return statement in each exception handler of the exception part of
+functions.
+@item
+@code{no_else} controls @code{if} statements that have no @code{else} path.
+@item
+@code{raise_standard} controls @code{raise} statements that raise one
+of the predefined exceptions (those declared in package @code{Standard}).
+@item
+@code{unnamed_exit} controls @code{@b{exit}} statements without a
+loop name that exits from a named loop.
+@item
+@code{unnamed_multiple_loop} controls nested loops that are not named
+(i.e.  under this rule, only loops that contain no inner loop, and are
+not nested in another loop, are allowed not to be named).  The kind of
+loop (plain, @code{@b{for}}, @code{@b{while}}) is not considered.
+@item
+@code{untyped_for} controls @code{for} loops whose that uses a range
+without an explicitely named type (i.e. @code{for I in 1..10 loop})
+@item
+@code{while_true} controls @code{while} loop statements where the
+condition is a plain @code{True}.
+@end itemize
 
 Ex:
 @example
 search statements (delay);
 check  statements (goto, abort);
+check  statements (case_others_null, exception_others_null);
 @end example
 
-@node Unnecessary_Use_Clause, Use_Clauses, Statements, Rules Usage
+@subsection Tips
+@code{while_true} may seem a strange thing to check, since no Ada
+programmer is supposed to write this. However, experience shows that
+it is a good indicator of code written by people who did not get
+proper Ada training. Such code is certainly worth a peer review...
+
+@node Style, Terminating_Tasks, Statements, Rules Usage
+@section Style
+@subsection Syntax
+@example
+<check|search|count> style;
+<check|search|count> style (no_closing_name [, <max_lines>]);
+<check|search|count> style (casing [, <casing_kw>]);
+<check|search|count> style (positional_association @{,<context_kw>@});
+<check|search|count> style (default_in);
+<check|search|count> style (negative_condition);
+<check|search|count> style (multiple_elements);
+<check|search|count> style (literal, [not] <base> [, <block_size>]);
+<check|search|count> style (exposed_literal @{, <value>@});
+
+casing_kw  ::= uppercase | lowercase | titlecase | original
+context_kw ::= pragma | discriminant | call | instantiation | aggregate
+value      ::= <integer number> | <real number>
+@end example
+
+@subsection Action
+This rules controls usage of various Ada coding style. The first
+parameter specifies which style aspect is to be checked:
+
+@itemize @bullet
+@item
+``no_closing_name'' controls declarations, like package or subprograms,
+that allow (but do not require) repeating the name at the end of the
+declaration, and where the closing name is omitted (which is
+considered bad style in general). However, it can be acceptable to
+allow the omission of closing names for very short constructs;
+therefore this rule has an optional parameter specifying the maximum
+number of lines of a construct for which omitting the closing name is
+allowed. This rule can be given only once for each of check, search
+and count. This way, it is possible to have a length considered a
+warning (search), and one considered an error (check). Of course, this
+makes sense only if the length for search is less than the one for
+check. If no length is specified, all occurrences of missing closing
+names are signaled.
+@item
+``casing'' controls that identifiers use the appropriate
+casing. ``original'' (which is the default) means that identifiers
+must use the same casing as in their declaration.
+@item
+``positional_association'' controls pragmas, discriminants, calls,
+aggregates, or instantiations that use positional associations.  Extra
+parameters specify which kind of construct to check; if not specified,
+all constructs are controlled. Note that for calls, positional
+association is @i{not} reported for operators that use infix notation
+nor for calls to subprograms that are attributes, since named notation
+is not allowed in these cases. For calls, another rule provides more
+fine-grained control: @xref{Positional_Parameters}.
+@item
+``default_in'' controls subprograms, entries and generics declarations
+that omit an explicit @code{in} mode for a parameter.
+@item
+``negative_condition'' controls ``if'' statements with an ``else''
+part and no ``elsif'', where the condition starts with a
+@code{@b{not}}, and should therefore preferably be expressed
+positively.
+@item
+``multiple_elements'' controls clauses, declarations, and statements
+that do not start on a line of their own (i.e. when there are more
+than one of these on the same line).
+@item
+``literal'' controls the presentation of numeric literals, depending
+on the base (wich, as required by Ada rules, must be in the range
+2..16). If ``not <base>'' is specified as the second parameter, the
+given base may not be used for based literals. Otherwise, there must
+be a third (integer) parameter to specify the size of blocks of digits
+for that base, i.e. there must be an underscore character to separate
+digits every <block_size> position. Typically, <block_size> is 3 for
+base 10, 4 for base 2, etc.
+@item
+``exposed_literal'' controls the usage of numeric literals (aka
+``magic numbers''), that appear outside of constants or named numbers
+declarations. The (optional) indicated values are allowed at any
+place. Commonly allowed values are 0, 1, 1.0, and 0.0. At most 20
+integer literals and 20 float literals may be specified.
+@end itemize
+
+Ex:
+@example
+search style (no_closing_name);
+search style (no_closing_name, 5);
+check style (casing);
+search style (positional_association);
+check style (positional_association, aggregate, call);
+check style (default_in);
+check style (literal, 10, 3);
+check style (exposed_literal);
+check style (exposed_literal, 0, 1, 0.0, 1.0);
+@end example
+
+Without parameter, the rule will control all style aspects with
+appropriate parameter values i.e. it is equivalent to the following:
+@example
+style (no_closing_name);
+style (casing, original);
+style (positional_association);
+style (default_in);
+style (negative_condition)
+style (multiple_elements)
+style (literal, 10, 3);
+style (exposed_literal, 0, 1, 0.0, 1.0);
+@end example
+
+@subsection Tips
+There are two kinds of calls where the rule does not complain about
+usage of positional association: infix operator calls (since requiring
+named notation would not allow infix notation any more), and calls to
+subprograms that are attributes (since named notation is not allowed
+for these).
+
+@node Terminating_Tasks, Unnecessary_Use_Clause, Style, Rules Usage
+@section Terminating_Tasks
+@subsection Syntax
+@example
+<check|search|count> terminating_tasks
+@end example
+@subsection Action
+This rule controls task that can terminate. A task is considered a
+terminating task if its last statement is not an unconditional loop,
+or this if this loop is exited. It is also considered terminating if
+it contains a selective accept with a @code{@b{terminate}} alternative.
+
+Since this rule has no parameters, it can be given only once.
+
+Ex:
+@example
+check terminating_tasks
+@end example
+
+@subsection Tips
+There is still one case where a task terminates, which is not reported
+by this rule: when a task is aborted. This is intended, since there
+are cases (like  mode changes) where a logically non-terminating task
+is aborted.
+
+If aborts are also to be reported, use the rule ``statements
+(abort)''. @xref{Statements}.
+
+@node Unnecessary_Use_Clause, Unsafe_Paired_Calls, Terminating_Tasks, Rules Usage
 @section Unnecessary_Use_Clause
 @subsection Syntax
 @example
@@ -2485,27 +3922,27 @@ check  statements (goto, abort);
 @end example
 
 @subsection Action
-This rule controls @b{@code{use}} clauses that do not serve any
+This rule controls @code{@b{use}} clauses that do not serve any
 purpose and can safely be removed. This happens in two cases:
 @itemize
 @item
-A @b{@code{use}} clause is given, but no element from the
+A @code{@b{use}} clause is given, but no element from the
 corresponding package is mentionned in its scope.
 @item
-A @b{@code{use}} clause is given within the scope of an enclosing
-@b{@code{use}} clause for the same package.
+A @code{@b{use}} clause is given within the scope of an enclosing
+@code{@b{use}} clause for the same package.
 @end itemize
 
-In the first case, just remove the @b{@code{use}} clause. In the
+In the first case, just remove the @code{@b{use}} clause. In the
 second case, the rule will signal the location of the enclosing
-@b{@code{use}} clause. If you also have a message that the outer
-@b{@code{use}} clause is unnecessary, this means that all references
-to the package appear inside the inner @b{@code{use}} clauses, and
+@code{@b{use}} clause. If you also have a message that the outer
+@code{@b{use}} clause is unnecessary, this means that all references
+to the package appear inside the inner @code{@b{use}} clauses, and
 that the outer one can be removed. If not, you can either remove the
-inner @b{@code{use}} clauses, or remove the outer one and add more
-local @b{@code{use}} clauses where necessary.
+inner @code{@b{use}} clauses, or remove the outer one and add more
+local @code{@b{use}} clauses where necessary.
 
-This rule will also signal @b{@code{use}} clauses given in a package
+This rule will also signal @code{@b{use}} clauses given in a package
 specification that can safely be moved to the body. Since this rule
 has no parameters, it can be given only once (otherwise, it is an
 error).
@@ -2517,16 +3954,16 @@ search unnecessary_use_clause;
 
 @subsection Limitations
 There are some rare cases where the rule may signal that a
-@b{@code{use}} clause is not necessary, where it actually is. There is
-no risk associated to this since if you remove the @b{@code{use}}
-clause, the program will not compile. 
+@code{@b{use}} clause is not necessary, where it actually is. There is
+no risk associated to this since if you remove the @code{@b{use}}
+clause, the program will not compile.
 
 The first one comes from a limitation of the ASIS standard: if the
-@i{only} use of the @b{@code{use}} clause is for making the ``root''
+@i{only} use of the @code{@b{use}} clause is for making the ``root''
 definition of a dispatching call visible.
 
 The second one comes from a limitation in ASIS-for-Gnat. This happens
-when the @i{only} use of the @b{@code{use}} clause is for making an
+when the @i{only} use of the @code{@b{use}} clause is for making an
 implicitely declared operation (an operation which is declared by the
 compiler as part of a type derivation) visible, and when:
 @itemize
@@ -2545,11 +3982,273 @@ feature. @xref{Disabling rules}. Note that for the third alternative
 of the second case, you can also qualify one of the parameters, so it
 is not universal any more.
 
-@node Use_Clauses, When_Others_Null, Unnecessary_Use_Clause, Rules Usage
+@node Unsafe_Paired_Calls, Usage, Unnecessary_Use_Clause, Rules Usage
+@section Unsafe_Paired_Calls
+@subsection Syntax
+@example
+<check|search|count> unsafe_paired_calls
+   (<Opening procedure>, <Closing procedure> [, <Lock type>]);
+@end example
+
+@subsection Action
+This rule controls usage of calls to operations that are normally
+paired (like P/V operations) and do not follow the "safe" pattern
+defined below.  The following explanations are given in terms of
+``locks'' since this is the primary use of this rule, however the rule
+can be used for any calls that need to be properly paired.
+
+The rule can deal with three different kinds of locks:
+@itemize @bullet
+@item
+@i{abstract state machines}: There is no ``lock'' object, locking is
+done directly inside the procedures. The <Lock type> parameter of the
+rule must not be provided in that case.
+@item
+@i{object abstract data types}: The procedure operates on an object
+(generally of a private type) representing the ``lock'' object, passed
+as an ``in out'' parameter. The third parameter must be the
+corresponding type, and the rule will control that all matching pairs of
+calls refer statically to the same variable.
+@item
+@i{reference abstract data types}: The procedure operates on a
+reference that designates the ``lock'' object, passed as an
+``in''parameter. The third parameter must be the corresponding type,
+which must be discrete or access, and the rule will control that all
+matching pairs of calls refer statically to the same value (for
+discrete types) or to the same constant  (for access types).
+@end itemize
+
+The "safe" pattern is defined as follows:
+@itemize @bullet
+@item
+A call to the first procedure is the first statement of a
+handled sequence of statements;
+@item
+A call to the second procedure is the last statement of the same
+handled sequence of statements;
+@item
+Corresponding calls of a pair use the appropriate value for the
+``lock'' parameter (if any), as explained above.
+@item
+There is no other call to either operation in the statements of the
+handled sequence of statements, except in nested blocks or accept
+statements; calls in such inner statements shall not reference the
+same values or variables as outer ones.
+@item
+There is an exception handler for "others" in the
+handled sequence of statements.
+@item
+Every exception handler of the handled sequence of statements includes
+a single call to the second operation, using the appropriate value or
+variable for the lock parameter.
+@end itemize
+
+Typically, the ``safe'' pattern corresponds to the following structures:
+@example
+-- Abstract state machine
+@b{begin}
+   P;
+   -- Do something
+   V;
+@b{exception}
+   @b{when} @b{others} =>
+      V;
+      -- handle exception
+@b{end};
+
+-- Object abstract data type
+@b{declare}
+   My_Lock : Lock_Type;
+@b{begin}
+   P (My_Lock);
+   -- Do something
+   V (My_Lock);
+@b{exception}
+   @b{when} @b{others} =>
+      V (My_Lock);
+      -- handle exception
+@b{end};
+
+-- Reference abstract data type
+@b{declare}
+   Lock_Ptr : @b{constant} Lock_Access := Get_Lock;
+@b{begin}
+   P (Lock_Ptr);
+   -- Do something
+   V (Lock_Ptr);
+@b{exception}
+   @b{when} @b{others} =>
+      V (Lock_Ptr);
+      -- handle exception
+@b{end};
+@end example
+
+Ex:
+@example
+check unsafe_paired_calls (Semaphore.P, Semaphore.V, Semaphore.Lock_Access);
+@end example
+
+@subsection Tips
+If the <Lock type> parameter is provided, both procedures must have a
+single parameter of the given type, it must not correspond to an
+``out'' parameter, and if it corresponds to an ``in'' parameter, the
+type must be discrete or access.
+
+Normally, the legality of a rule is checked when the rules file is
+parsed, and execution does not start if there is any error. However,
+the legality of the provided type can be checked only during the
+analysis. If the type is incorrect for some reason, a proper error
+message is issued and execution stops immediately.
+
+@subsection Limitation
+Due to a weakness of the ASIS standard, dispatching calls  are not
+considered. Especially, this means that the <Lock type> cannot be
+class-wide.  This limitation will be removed as soon as we find a way
+to work around this problem, but the issue is quite difficult!
+
+@node  Usage, Use_Clauses, Unsafe_Paired_Calls, Rules Usage
+@section Usage
+@subsection Syntax
+@example
+<check|search|count> usage
+   (variable|constant|object @{,[not] from_spec|read|written|initialized@});
+<check|search|count> usage
+   (exception @{,[not] from_spec|raised|handled@});
+<check|search|count> usage
+   (task @{,[not] from_spec|called|aborted@});
+<check|search|count> usage
+   (protected @{,[not] from_spec|called@});
+<check|search|count> usage
+   (all [,[not] from_spec]);
+@end example
+
+@subsection action
+This rule controls how certain entitities (variables, constants,
+exceptions, tasks and protected objects) are used. The first parameter
+defines the class of entities to be controlled (``object'' stands for
+both ``constant'' and ``variable'', and ``all'' stands for all
+classes). If only one parameter is given, usage of all entities
+belonging to the indicated class are reported . Otherwise, other
+parameter(s) are keyword that restrict the kind of usage being
+controlled.
+
+``[not] from_spec'' restrict entities being checked to those that
+appear in (generic) package specifications.  Other keywords carry
+their obvious meaning, and are allowed only where appropriate. The
+rule will output the information only for objects that match all the
+conditions given. A combination of parameters can be given only once
+for each of ``check'', ``search'', and ``count''.
+
+The report includes the kind of unit that declares the entity (normal
+unit, instantiation, or generic unit) and whether the entity is known
+to be initialized, read, written, raised, handled, called, or aborted,
+depending on the entity's class. Some combinations give an extra
+useful message (for example, a variable which is initialized and read
+but not written will produce a ``could be declared constant'' message).
+
+Variables of an access type and variables of an array type whose
+components are of an access type (or arrays of an access type, etc.)
+are always considered initialized, since they are initialized to
+@code{null} by the compiler. Exceptions raised by calling
+@code{Raise_Exception} and tasks aborted by calling @code{Abort_Task}
+are properly recognized as exceptions begin raised and tasks being
+aborted, respectively.
+
+In the case of entities declared in generic packages, the rule will
+report on usage of the entities for each instantiation, as well as on
+global usage for the generic itself. Usage for an instantiation will
+include usage in the generic itself (i.e. if the generic writes to a
+variable, the variable will be marked as ``written'' for each
+instantiation). Usage for the generic itself is the union of all
+usages in all instantiations (i.e., if a variable from any
+instantiation is written to, the variable from the generic will be
+marked as written). Therefore, if the rule reports that a variable in
+a generic package can be declared constant, it means that no instance
+of this variable from any instantiation is being written to. But bear
+in mind that this can be trusted only if all units from the program
+are analyzed. @xref{limitation}.
+
+Note that usage of entities whose declaration is not processed (like,
+typically, elements declared in standard packages like
+@code{Ada.Text_IO}), is not reported.
+
+Ex:
+@example
+-- No variable in package spec; check usage otherwise
+Package_Variable: check usage  (variable, from_spec);
+Constantable    : search usage (variable, not from_spec, read,
+                                          initialized, not written);
+Uninitialized   : check usage  (variable, not from_spec, read,
+                                          not initialized, not written);
+Removable       : search usage (object,   not from_spec, not read);
+
+check usage (exception, not raised);
+check usage (task,      aborted);
+check usage (protected, not called);
+count usage (task);
+@end example
+
+@subsection Tips
+Constants that are never used, exceptions that are never raised or
+handled, tasks that are never called, etc. are suspicious. Moreover,
+some useful compiler warnings (like those about variables that should
+be declared constants) are not output for variables declared in
+library packages, and even in some other contexts (at least with
+GNAT). This rule can check these kind of things, project wide.
+
+Some of these checks make sense only for entities declared in package
+specifications; for example, variables are often discouraged in
+package specifications, or need at least some extra control. That's
+why it can be useful to restrict some checks to package specifications.
+
+Note that an unspecified parameter in a rule stands for two rules
+(positive and negative form of the missing parameter). I.e.:
+@example
+search usage (variable, from_spec, read, written);
+@end example
+is the same as:
+@example
+search usage (variable, from_spec, read, written, initialized);
+search usage (variable, from_spec, read, written, not initialized);
+@end example
+Therefore, the following example will complain on the second line that
+the rule has already been given for this combination of parameters:
+@example
+search usage (variable, from_spec, read, written);
+search usage (variable, from_spec, read, written, not initialized);
+@end example
+
+Note that the notion of constants for this rule includes named numbers.
+
+@anchor{limitation}
+@subsection Limitations
+The report of this rule is output at the end of the run, and is
+meaningful only for the units that have been processed; i.e., if it
+reports ``variable not read'', it should be understood as ``not read
+by the units given''. In order to have meaningful results, it is
+therefore advisable to use this rule on the complete closure of the
+program.
+
+An exception can be raised by passing its @code{'Identity} to a
+procedure that will in turn call @code{Raise_Exception} (and similarly
+for @code{Abort_Task}). These cases are not statically determinable,
+and therefore not recognized by AdaControl. However, these cases can
+be identified by searching the use of the @code{'Identity} attribute
+with the following rule:
+@example
+check entity (all 'Identity);
+@end example
+
+Due to a weakness of the ASIS standard, usages of variables used as
+parameters to dispatching calls are ignored. This limitation will be
+removed as soon as we find a way to work around this problem, but the
+issue is quite difficult!
+
+@node Use_Clauses, With_Clauses, Usage, Rules Usage
 @section Use_Clauses
 @subsection Syntax
 @example
-<check|search|count> use_clauses (<package name list>);
+<check|search|count> use_clauses [(<package name> @{, <package name>@})];
 @end example
 
 @subsection Action
@@ -2566,30 +4265,64 @@ Ex:
 check use_clauses (Ada.Text_IO, Ada.Wide_Text_IO);
 @end example
 
-@node When_Others_Null,  , Use_Clauses, Rules Usage
-@section When_Others_Null
+@node With_Clauses,  , Use_Clauses, Rules Usage
+@section With_Clauses
 @subsection Syntax
 @example
-<check|search|count> when_others_null [(exception | case, ...)]
+<check|search|count> with_clauses [(<with_kw> [, <with_kw>])];
+with_kw ::= multiple_names|reduceable|inherited
 @end example
-
 @subsection Action
-This rule controls ``when others'' case alternatives or exception
-handlers that contain only null statements. If no parameter is
-specified, both exception handlers and case statements are
-searched. Otherwise, it is possible to specify ``exception'' to search
-only exception handlers, or ``case'' to search only case statements.
+This rule controls @code{@b{with}} clauses that should be removed or
+moved to a better place. Each of the keywords can be given at most
+once. If no keyword is given, both @code{reduceable} and
+@code{inherited} are assumed.
 
-This rule can be specified at most twice, once for ``case'' and once
-for ``exception''.
+If the keyword @code{multiple_names} is given, the rule will report on
+any @code{@b{with}} clause that mentions more than one unit name.
+
+If the keyword @code{reduceable} is given, the rule will report:
+@itemize @bullet
+@item
+Redundant @code{@b{with}} clauses, i.e. clauses given more than once
+for the same unit. This includes the case where the same
+@code{@b{with}} clause is given in a specification and the
+corresponding body, and the case of renamings of a same unit
+(i.e. @code{Text_IO} and @code{Ada.Text_IO}). Note that giving a
+@code{@b{with}} clause in a unit, and repeating it in a child unit (or
+subunit) is @i{not} considered redundant.
+@item
+Unused @code{@b{with}} clauses, i.e. when nothing from the withed unit
+is referenced in the corresponding unit. Use of a package name in a
+@code{@b{use}} clause is @i{not} considered a usage of the
+package. The rule signals when a withed unit is not used in a unit,
+but used in one or more of its subunits. If an unused @code{@b{with}}
+clause is given on a package specification, the message reminds that
+it migh be useful for child units.
+@item
+Moveable @code{@b{with}} clauses, i.e. when the withed unit is not
+used in the specification, but only in the body, and should be moved
+to the body.
+@end itemize
+
+If the keyword @code{inherited} is given, the rule will report when  a
+child unit or a subunit uses a unit which is not directly withed,
+i.e. when withed only from a parent (or enclosing) unit. Although Ada
+rules imply that a @code{@b{with}} clause carries on to child units
+and subunits, it can be considered better practice to ensure that
+every compilation unit withes directly the units it needs.
 
 Ex:
 @example
-check  when_others_null (exception);
-search when_others_null (case);
+check with_clauses (multiple_names, reduceable);
+search with_clauses (inherited);
 @end example
 
-@node Examples of using AdaControl for common programming rules,  , Rules Usage, Top
+@subsection Tips
+A @code{@b{with}} clause can safely be removed if it is unused, and no
+child unit (or subunit) reports that the unit is inherited.
+
+@node Examples of using AdaControl for common programming rules, Non upward-compatible changes, Rules Usage, Top
 @chapter Examples of using AdaControl for common programming rules
 
 In most projects, there are @i{programming rules} that define the way
@@ -2598,6 +4331,54 @@ occurrences of certain kinds of constructs. In this chapter, we give
 examples of commonly found programming rules, and how the corresponding
 checks can be written.
 
+@menu
+* Rules files provided with AdaControl::  
+* Automatically checkable rules::  
+* Rules that need manual inspection::  
+@end menu
+
+@node Rules files provided with AdaControl, Automatically checkable rules, Examples of using AdaControl for common programming rules, Examples of using AdaControl for common programming rules
+@section Rules files provided with AdaControl
+The @code{rules} directory provides rules files that can be sourced to
+enforce some commonly encountered general rules.
+
+@rule{Identifiers from Standard shall not be redefined}
+
+Use file @code{no_standard_entity.aru}.
+
+@rule{Identifiers from System shall not be redefined}
+
+Use file @code{no_system_entity.aru}.
+
+@rule{Standard package XXX shall not be used}
+
+File @code{no_standard_unit.aru} controls usage of @i{all} standard
+packages. Comment out those that you do want to allow.
+
+@rule{Obsolescent features shall not be used}
+
+Use file @code{no_obsolescent_features.aru}. Not all obsolescent features are
+controlled, but most of them (those that are most worth checking) are.
+
+@rule{Features from annex X shall not be used}
+
+Use file @code{no_annex_X.aru}.
+
+@rule{The Ravenscar profile shall be enforced}
+
+Use file @code{ravenscar.aru}.
+
+Note that not all of the restrictions of the Ravenscar profile are
+currently controlled, but many are, and we expect later releases of
+AdaControl to increase the number of controlled features. In some
+cases (like ``Detect_Blocking''),  AdaControl does a better job than
+the profile, since it can detect statically situations that the
+profile only requires to be detected at run-time. The rule file is
+also slightly more restrictive than the profile; for example, the
+restriction ``no_task_allocation'' only disallows task allocators,
+while this rule file controls the declaration of access types on tasks.
+
+@node Automatically checkable rules, Rules that need manual inspection, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules
 @section Automatically checkable rules
 Below are examples of rules that can be directly checked by AdaControl.
 
@@ -2613,7 +4394,7 @@ check naming_convention (type, "^T_");
 
 @rule{All program units must repeat their name after the ``end''}
 @example
-check no_closing_name;
+check style (no_closing_name);
 @end example
 
 @rule{Pragma Suppress is not allowed}
@@ -2646,16 +4427,16 @@ check entities (ada.unchecked_conversion);
 @rule{No global variable shall be declared in the visible part of a package
 specification}
 @example
-check specification_objects (not constant);
+check usage (variable, from_spec);
 @end example
 
 @rule{Predefined numeric types of the language shall not be used}
 @example
-check entities (standard.Integer, 
-                standard.short_integer, 
+check entities (standard.Integer,
+                standard.short_integer,
                 standard.long_integer,
-                standard.Float, 
-                standard.short_float, 
+                standard.Float,
+                standard.short_float,
                 standard.long_float);
 @end example
 
@@ -2684,7 +4465,7 @@ check Local_Hiding;
 
 @rule{There shall be no IOs in exception handlers}
 @example
-check entity_inside_exception (ada.Text_IO.put, ada.Text_IO.put_line, 
+check entity_inside_exception (ada.Text_IO.put, ada.Text_IO.put_line,
                                ada.Text_IO.get, ada.Text_IO.get_line);
 @end example
 Note that this checks for all overloaded procedures, but only those
@@ -2692,7 +4473,7 @@ dealing with characters and strings (those defined directly within
 Ada.Text_IO). If the names ``get'' and ``put'' are not used for
 anything else than IOs, a more general form can be given as:
 @example
-check entity_inside_exception (all get,      all put, 
+check entity_inside_exception (all get,      all put,
                                all get_line, all put_line);
 @end example
 This will check that no entity with the corresponding names appear in
@@ -2714,6 +4495,18 @@ check instantiations (ada.unchecked_conversion, <>, system.address);
 check use_clauses(ada.text_IO);
 @end example
 
+@rule{Use explicit list of values in case statements rather than ``when others''if the ``when others'' would cover less than 10 values}
+@example
+check Case_Statement(min_others_range, 10);
+@end example
+
+@rule{Exceptions shall not be handled except by main program}
+@example
+check declaration (handlers)
+@end example
+This check will be disabled for the exception handler of the main program.
+
+@node Rules that need manual inspection,  , Automatically checkable rules, Examples of using AdaControl for common programming rules
 @section Rules that need manual inspection
 Below are examples of rules that require manual inspection, but where
 AdaControl can be used to identify suspicious areas.
@@ -2734,4 +4527,64 @@ search Allocators;
 @end example
 This rule identifies all allocations, and thus can be used to check
 that all allocated elements are properly deallocated.
+
+@node  Non upward-compatible changes,  , Examples of using AdaControl for common programming rules, Top
+@chapter Non upward-compatible changes
+This chapter is intended to users of a previous version of AdaControl,
+who want to migrate rule files to the latest version. Although we
+understand the burden of non upward-compatible changes, we consider
+that making AdaControl more powerful and easier to use is sometimes
+more important than strict compatibility. Moreover, in most cases the
+changes are very straightforward and can be done with scripts.
+
+@section Migrating from 1.4r20
+@subsection GPS integration
+The XML file used to describe AdaControl features to GPS used to be
+called @code{adactl.xml}. It is now called @code{zadactl.xml}, since
+GPS processes its initialization files in alphabetical order. This
+avoids shuffling the menus when AdaControl support is activated.
+
+Make sure to remove the old @code{adactl.xml} file from the GPS
+plug-ins directory before installing the new version.
+
+@subsection Declarations
+The parameters ``access'' and ``access_subprogram'' have been changed
+to ``access_type'' and ``access_subprogram_type'', for consistency
+with the new parameters.
+
+@subsection No_Closing_Name
+This rule is now part of the ``style'' rule. Change:
+@example
+check|search|count No_Closing_Name;
+@end example
+to:
+@example
+check|search|count Style (No_Closing_Name);
+@end example
+
+@subsection Specification_Objects
+This rule is now part of the ``usage'' rule. Change:
+@example
+check|search|count Specification_Objects (<parameters>);
+@end example
+to:
+@example
+check|search|count Usage (Object, From_Spec, <parameters>);
+@end example
+
+@subsection Statement
+Name changed from ``statement'' to ``statements'' (added an 's'), to
+be consistent with other rules.
+
+@subsection When_Others_Null
+This rule is now part of the ``statements'' rule. Change:
+@example
+check|search|count When_Others_Null (case);
+check|search|count When_Others_Null (exception);
+@end example
+to:
+@example
+check|search|count Statements (case_others_null);
+check|search|count Statements (exception_others_null);
+@end example
 @bye

@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Adalog
 with
   Thick_Queries,
@@ -75,7 +71,7 @@ package body Rules.Not_Elaboration_Calls is
 
    procedure Add_Use (Label         : in Wide_String;
                       Rule_Use_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded, Framework.Language;
+      use Framework.Language;
    begin
       if not Parameter_Exists then
          Parameter_Error ("At least one parameter required for rule " & Rule_Id);
@@ -85,8 +81,7 @@ package body Rules.Not_Elaboration_Calls is
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Subprograms, Entity, Simple_Context'(Rule_Use_Type,
-                                                            To_Unbounded_Wide_String (Label)));
+            Associate (Subprograms, Entity, Basic.New_Context (Rule_Use_Type,Label));
          exception
             when Already_In_Store =>
                Parameter_Error ("Subprogram already given for rule " & Rule_Id
@@ -131,21 +126,19 @@ package body Rules.Not_Elaboration_Calls is
    ------------------
 
    procedure Process_Call (Call : in Asis.Element) is
-      use Ada.Strings.Wide_Unbounded, Thick_Queries;
+      use Thick_Queries;
       use Asis, Asis.Elements;
-      Called_Subprogram  : Asis.Expression;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Called_Subprogram := Called_Simple_Name (Call);
       declare
          use Framework.Reports, Framework.Scope_Manager;
-         Current_Context : Rule_Context'Class := Matching_Context (Subprograms,
-                                                                   Called_Subprogram);
-         Scopes          : constant Asis.Element_List := Active_Scopes;
+         Current_Context : constant Root_Context'Class := Matching_Context (Subprograms,
+                                                                            Called_Simple_Name (Call));
+         Scopes          : constant Scope_List := Active_Scopes;
       begin
          if Current_Context = No_Matching_Context then
             return;
@@ -161,8 +154,7 @@ package body Rules.Not_Elaboration_Calls is
                  | An_Entry_Body_Declaration
                  =>
                   Report (Rule_Id,
-                          To_Wide_String (Simple_Context (Current_Context).Rule_Label),
-                          Simple_Context (Current_Context).Rule_Type,
+                          Current_Context,
                           Get_Location (Call),
                           "call of """ & To_Title (Last_Matching_Name (Subprograms)) & '"');
                when others =>
@@ -177,9 +169,9 @@ package body Rules.Not_Elaboration_Calls is
    end Process_Call;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Not_Elaboration_Calls;

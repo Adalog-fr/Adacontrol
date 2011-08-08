@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- ASIS
 with
   Asis.Declarations,
@@ -54,17 +50,37 @@ with
 package body Rules.Side_Effect_Parameters is
    use Framework, Utilities;
 
-   type Rule_Index is range 0 ..  Max_Identical_Rules;
+   -- Algorithm:
+   --
+   -- For each subprogram call or generic instantiation, we traverse manually each of the
+   -- actual parameters.
+   --
+   -- Each occurrence of a check/search command is given a unique Rule_ID number (hence limiting
+   -- the number of check/search command that can be given - adjustable by setting the Max_Identical_Rules
+   -- constant).
+   --
+   -- If during the traversal we encounter a call to a "bad function" from rule N, and slot N of the Called_By
+   -- table is empty, we store in the slot the position number of the parameter that includes the call.
+   -- If the slot is not empty, then there is a conflict, and the value of the slot gives the position of
+   -- the conflicting element.
+   --
+   -- Note that we store only the first "bad function". This means that if there is a conflict between
+   -- parameters 1, 2, and 3, we will output that "2 conflicts with 1" and that "3 conflicts with 1", but
+   -- not that "2 conflicts with 3". That seems good enough.
+   --
+   -- The Called_Func table is similar to Called_By and holds a reference to the corresponding function for
+   -- more precise error mesages.
+
    Rules_Used : Rule_Index := 0;
    Save_Used  : Rule_Index;
 
-   type Entity_Context is new Simple_Context with
+   type Entity_Context is new Basic_Rule_Context with
       record
          Rule_Id : Rule_Index;
       end record;
 
    Bad_Functions  : Context_Store;
-   Called_By   : array (Rule_Index) of Asis.Asis_Natural;
+   Called_By   : array (Rule_Index) of Asis.ASIS_Natural;
    Called_Func : array (Rule_Index) of Asis.Element;
 
    ----------
@@ -85,7 +101,6 @@ package body Rules.Side_Effect_Parameters is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
       Entity : Entity_Specification;
@@ -104,10 +119,10 @@ package body Rules.Side_Effect_Parameters is
 
       while Parameter_Exists loop
          Entity := Get_Entity_Parameter;
-         Associate (Bad_Functions, Entity, Entity_Context'(Rule_Type,
-                                                           To_Unbounded_Wide_String (Label),
-                                                           Rules_Used),
-                                                           Additive => True);
+         Associate (Bad_Functions,
+                    Entity,
+                    Entity_Context'(Basic.New_Context (Rule_Type, Label) with Rules_Used),
+                    Additive => True);
       end loop;
    end Add_Use;
 
@@ -203,15 +218,14 @@ package body Rules.Side_Effect_Parameters is
       end Func_Image;
 
       procedure Check (Good_Context : Entity_Context) is
-         use Framework.Reports, Ada.Strings.Wide_Unbounded;
+         use Framework.Reports;
       begin
          if Called_By (Good_Context.Rule_Id) = 0 then
             Called_By (Good_Context.Rule_Id)   := State.Param_Pos;
             Called_Func (Good_Context.Rule_Id) := Func_Name;
          else
             Report (Rule_Id,
-                    To_Wide_String (Good_Context.Rule_Label),
-                    Good_Context.Rule_Type,
+                    Good_Context,
                     Get_Location (Element),
                     "Call of """
                     & Func_Image (Func_Name)
@@ -244,8 +258,14 @@ package body Rules.Side_Effect_Parameters is
                         null;
                   end case;
 
+                  if Expression_Type_Kind (Func_Name) = An_Access_Type_Definition then
+                     -- Implicit dereference
+                     -- Function is called through pointer => not statically determinable
+                     return;
+                  end if;
+
                   declare
-                     Context : constant Rule_Context'Class
+                     Context : constant Root_Context'Class
                        := Extended_Matching_Context (Bad_Functions, Ultimate_Name (Func_Name));
                   begin
                      if Context = No_Matching_Context then
@@ -255,7 +275,7 @@ package body Rules.Side_Effect_Parameters is
 
                      loop
                         declare
-                           Next_Context : constant Rule_Context'Class := Next_Matching_Context (Bad_Functions);
+                           Next_Context : constant Root_Context'Class := Next_Matching_Context (Bad_Functions);
                         begin
                            if Next_Context = No_Matching_Context then
                               return;
@@ -323,6 +343,11 @@ package body Rules.Side_Effect_Parameters is
          Control      : Traverse_Control  := Continue;
          State        : State_Information;
       begin
+         if Associations'Length < 2 then
+            -- no need to check if there is only 1 (or 0!) parameter
+            return;
+         end if;
+
          for I in Associations'Range loop
             State := (I, Associations'Unchecked_Access);
             Traverse (Actual_Parameter (Associations (I)), Control, State);
@@ -331,9 +356,9 @@ package body Rules.Side_Effect_Parameters is
    end Process_Call_Or_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Side_Effect_Parameters;

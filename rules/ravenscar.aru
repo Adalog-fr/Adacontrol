@@ -1,0 +1,53 @@
+-- These rules enforce some of the restriction of the Ravenscar profile
+-- It is expected that new versions of AdaControl will allow more of the
+-- Ravenscar profile to be checked.
+
+-- Each rule's label matches the corresponding pragma or restriction
+-- from the Ravenscar profile
+-- Those that are currently not checked appear as comments.
+
+--
+--Pragmas:
+--
+
+--Task_Dispatching_Policy
+--Locking_Policy
+Detect_Blocking: check Potentially_Blocking_Operations;
+
+--
+-- Restrictions:
+--
+
+No_Abort_Statement    : check Statements (Abort);
+No_Dynamic_Attachment : check Entities (Ada.Interrupts.Is_Reserved, 
+                                        Ada.Interrupts.Is_Attached, 
+                                        Ada.Interrupts.Current_Handler, 
+                                        Ada.Interrupts.Attach_Handler, 
+                                        Ada.Interrupts.Exchange_Handler, 
+                                        Ada.Interrupts.Detach_Handler, 
+                                        Ada.Interrupts.Reference);
+No_Dynamic_Priorities : check entities (all 'priority, Ada.Dynamic_Priorities);
+--No_Implicit_Heap_Allocations
+--No_Local_Protected_Objects
+--No_Local_Timing_Events
+No_Protected_Type_Allocators : check Declarations (access_protected_type);
+No_Relative_Delay            : check Statements (delay);
+No_Requeue_Statements        : check Statements (requeue);
+No_Select_Statements         : check Statements (selective_accept, 
+                                                 conditional_entry_call,
+                                                 timed_entry_call,
+                                                 asynchronous_select);
+No_Specific_Termination_Handlers : Check Entities (Ada.Task_Termination.Set_Specific_Handler,
+                                                   Ada.Task_Termination.Specific_Handler);
+No_Task_Allocators : check declarations (access_task_type);
+--No_Task_Hierarchy
+No_Task_Termination : check Terminating_Tasks;
+--Simple_Barriers
+--Max_Entry_Queue_Length
+--Max_Protected_Entries
+Max_Task_Entries : check Declarations (Task_Entry);
+No_Dependence    : check Entities (Ada.Asynchronous_Task_Control,
+                                   Ada.Calendar,
+                                   Ada.Execution_Time.Group_Budget,
+                                   Ada.Execution_Time.Timers,
+                                   Ada.Task_Attributes);

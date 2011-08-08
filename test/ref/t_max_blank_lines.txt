@@ -1,0 +1,5 @@
+t_max_blank_lines.adb:6:1: Found: MAX_BLANK_LINES: Too many consecutive blank lines (2)
+t_max_blank_lines.adb:10:1: Error: Too_Many: Too many consecutive blank lines (3)
+
+Counts summary:
+MAX_BLANK_LINES: 3

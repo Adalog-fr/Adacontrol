@@ -113,10 +113,19 @@ procedure Pfni is
    ----------------
 
    procedure Print_Help is
-      use Ada.Wide_Text_IO;
    begin
+      Put_Line ("PFNI : Print Full Name Image");
       Put_Line ("Usage: pfni [-sofd] [-p <project-file>] <unit>[:<line_number>[:<column_number>]] -- <ASIS options>");
       Put_Line ("   or: pfni -h");
+      New_Line;
+
+      Put_Line ("Options:");
+      Put_Line ("   -d      enable debug mode");
+      Put_Line ("   -f      full output (each occurrence of names)");
+      Put_Line ("   -h      prints this help message");
+      Put_Line ("   -o      output overloading information");
+      Put_Line ("   -p file specify an emacs ada-mode project file (.adp)");
+      Put_Line ("   -s      process specifications only");
    end Print_Help;
 
    ----------------
@@ -183,13 +192,18 @@ procedure Pfni is
    is
       pragma Unreferenced (State);
       use Asis.Text;
+      Pref : Asis.Expression;
    begin
       case Element_Kind (Element) is
          when An_Expression =>
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
                   if Full_Option then
-                     Print_Name (Prefix (Element));
+                     Pref := Prefix (Element);
+                     if Expression_Kind (Pref) = A_Selected_Component then
+                        Pref := Selector (Pref);
+                     end if;
+                     Print_Name (Pref);
                   end if;
                   -- Do not recurse into the attribute name itself
                   Control := Abandon_Children;
@@ -242,7 +256,7 @@ procedure Pfni is
    The_Control    : Traverse_Control := Continue;
    The_Info       : Info;
 
-   use Ada.Wide_Text_IO, Ada.Characters.Handling, Asis.Exceptions;
+   use Ada.Characters.Handling, Asis.Exceptions;
    use Implementation_Options;
    use Ada.Strings.Wide_Unbounded;
 begin
@@ -312,15 +326,22 @@ exception
             User_Message ("Inconsistent tree, please remove *.adt files");
          when others =>
             Asis_Exception_Messages;
+            if Debug_Option then
+               raise;
+            end if;
       end case;
    when ASIS_Inappropriate_Compilation_Unit =>
       User_Message ("Unit " & To_Wide_String (Unit_Spec.File_Name) & " not found in context");
    when
-     ASIS_Inappropriate_Context          |
-     ASIS_Inappropriate_Container        |
-     ASIS_Inappropriate_Element          |
-     ASIS_Inappropriate_Line             |
-     ASIS_Inappropriate_Line_Number      =>
+     ASIS_Inappropriate_Context
+     | ASIS_Inappropriate_Container
+     | ASIS_Inappropriate_Element
+     | ASIS_Inappropriate_Line
+     | ASIS_Inappropriate_Line_Number
+     =>
       Asis_Exception_Messages;
+      if Debug_Option then
+         raise;
+      end if;
 
 end Pfni;

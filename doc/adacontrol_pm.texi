@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.4
+@settitle AdaControl Programmer Manual V1.5r24
 @c %**end of header
 
 @titlepage
@@ -128,7 +128,7 @@ functionnalities.
 * The package Rules::           
 * The package Utilities::       
 * The package Thick_Queries::   
-* The package Binary_Map::      
+* The packages Linear_Queue and Binary_Map::  
 * The package A4G_Bugs::        
 @end menu
 
@@ -138,6 +138,10 @@ The package Framework includes general services, needed by most
 rules. These include:
 
 @itemize @bullet
+@item
+The definition of some constants that are used to fix a bound to the
+number of allowable constructs. Use these constants to dimension
+tables for example.
 @item
 The notion of @i{location}, with associated subprograms. A location is
 a place within a source file where some construct happens.
@@ -207,11 +211,23 @@ functions. The two former functions return the parameter as an
 returns an entity specification, i.e. a descriptor for something which
 is expected to be a general specification for an Ada entity (including
 overloading information, for example). Such an entity can be used as a
-key for a context. There is also a generic procedure
-@code{Get_Flag_Parameter} that can be instantiated for the case of
-flags (keywords) parameters @xref{The package Framework}. Finally,
-there is a @code{Get_Modifier} to process modifiers (things like
+key for a context. 
+
+There is a @code{Get_Modifier} to process modifiers (things like
 ``not'' or ``case_sensitive'' in front of a parameter).
+
+There is also a generic package @code{Flag_Utilities} to help manage
+flags (keywords) parameters defined by an enumerated type. An
+instantiation of this package provides a @code{Get_Flag_Parameter}
+procedure to parse the flags (as for other values above), an
+@code{Image} function to get a string representation of a flag, and a
+@code{Help_On_Flags} function to print the help message that
+enumerates all possible flag values. Note that if you instantiate
+@code{Flag_Utilities} in a library package (as will be the case most
+of the time), you @i{must} put a @code{pragma Elaborate
+(Framework.Language);} on top of the package. Failing to do so will
+result in circular elaboration problems (@code{pragma Elaborate_All},
+as implicitely provided by GNAT, does @i{not} work).
 
 @node The package Framework.Scope_Manager, The package Framework.Plugs, The package Framework.Language, The framework and utilities packages
 @section The package Framework.Scope_Manager
@@ -223,6 +239,13 @@ of information to a scope. Scopes are automatically managed: the
 information will disappear when the corresponding scope is exited,
 except for information associated to package specifications that will
 be restored when the corresponding body is entered.
+
+The scope manager follows strictly the visibility rules for child
+units: when entering a public child unit, the scope from the visible
+part of the parent is restored, and when entering the private part of
+the child, the scope of the private part of the parent is restored. In
+the case of a private child, the full scope of the parent is restored
+upon entering.
 
 See the package specification for more details.
 
@@ -238,9 +261,8 @@ framework}.
 
 @node The package Rules, The package Utilities, The package Framework.Plugs, The framework and utilities packages
 @section The package Rules
-The package @code{Rules} contains only the definition of some
-constants that can be used to dimension data structures. It's main
-purpose is to serve as the parent package of all rules.
+The package @code{Rules} is empty. It's  purpose is to serve as the
+parent package of all rules.
 
 @node The package Utilities, The package Thick_Queries, The package Rules, The framework and utilities packages
 @section The package Utilities
@@ -263,22 +285,29 @@ String handling services, see package specification
 @item
 Error management. The @code{Error} procedure is not to be called
 directly, use @code{Framework.Language.Parameter_Error} instead to
-report errors in user provided parameters. The @code{Failure}
-procedure is used to report internal failures. It is frequent in ASIS
-programming to have a big case statement over the various kinds of
-elements, of which only a few values are interesting or possible given
-the context. We strongly encourage to call @code{Failure} in the
-@b{when others} part of the case statement to trap unexpected
-cases. Note that the procedure is overloaded with a version that
-allows to print information about the failing element.  
+report errors in user provided parameters. In most cases, parameters
+are checked in the @code{Add_Use} procedure, and therefore errors are
+reported during the parsing of the commands. In some cases, incorrect
+parameters are discovered while traversing the code. It is acceptable
+to call @code{Framework.Language.Parameter_Error} at any time, but be
+aware that this will immediately stop all analysis. See the
+@code{Rules.Unsafe_Paired_Calls} for an example of this.
+
+The @code{Failure} procedure is used to report internal failures. It
+is frequent in ASIS programming to have a big case statement over the
+various kinds of elements, of which only a few values are interesting
+or possible given the context. We strongly encourage to call
+@code{Failure} in the @b{when others} part of the case statement to
+trap unexpected cases. Note that the procedure is overloaded with a
+version that allows to print information about the failing element.
 
 @item
 Debugging facilities. Several @code{Trace} procedures allow you to
-output a message, possibly with the context of an ASIS element of
-element list. There is also an @code{Assert} procedure that calls
-@code{Failure} if its condition is false; well placed @code{Assert}
-calls are very helpfull in debugging. Note that traces are output only
-in debug mode.
+output a message, possibly with a boolean value, or the context of an
+ASIS element or element list. There is also an @code{Assert} procedure
+that calls @code{Failure} if its condition is false; well placed
+@code{Assert} calls are very helpfull in debugging. Note that traces
+are output only in debug mode.
 
 @item
 Other facilities for managing the output that are called by the
@@ -286,24 +315,35 @@ framework, but not useful for writing rules.
 
 @end itemize
 
-@node The package Thick_Queries, The package Binary_Map, The package Utilities, The framework and utilities packages
+@node The package Thick_Queries, The packages Linear_Queue and Binary_Map, The package Utilities, The framework and utilities packages
 @section The package Thick_Queries
 This package contains high level services that are built on top of
 Asis queries, and can therefore be quite useful to the writing of
 rules. These queries are documented in the specification of the
 package.
 
-@node The package Binary_Map, The package A4G_Bugs, The package Thick_Queries, The framework and utilities packages
-@section The package Binary_Map
-This generic package can be instantiated with a @code{Key_Type} and a
-@code{Value_Type}, and associates values of @code{Value_Type} to
-values of the @code{Key_Type}. The mapping uses a binary tree; if you
-use it to keep user information, it is appropriate to rebalance the
-tree before starting the actual processing. @xref{Prepare}.
+@node The packages Linear_Queue and Binary_Map, The package A4G_Bugs, The package Thick_Queries, The framework and utilities packages
+@section The packages Linear_Queue and Binary_Map
+These packages provide simple generic containers that are needed by several rules.
+
+The generic package @code{Linear_Queue} can be instantiated with any
+(non-limited) @code{Component} type, and provides a simple queue of
+elements. Note that this queue has @i{value} semantics: when a queue
+is assigned, its content is duplicated. Queues are controlled, and
+therefore all internal storage allocations are internally managed. The
+package @code{Framework.Element_Queue} is an instantiation of
+@code{Linear_Queue} with the type @code{Asis.Element}.
+
+The generic package @code{Binary_Map} can be instantiated with a
+@code{Key_Type} and a @code{Value_Type}, and associates values of
+@code{Value_Type} to values of the @code{Key_Type}. The mapping uses a
+binary tree; if you use it to keep user information, it is appropriate
+to rebalance the tree before starting the actual
+processing. @xref{Prepare}.
 
 See existing rules for examples of using this package.
 
-@node The package A4G_Bugs,  , The package Binary_Map, The framework and utilities packages
+@node The package A4G_Bugs,  , The packages Linear_Queue and Binary_Map, The framework and utilities packages
 @section The package A4G_Bugs
 AdaControl is quite demanding on the ASIS implementation, and we found
 some bugs in ASIS-for-GNAT during its development. These have been
@@ -325,6 +365,12 @@ replacement in @code{A4G_Bugs}.
 
 @node Writing a new rule, Plugging-in a new rule into the framework, The framework and utilities packages, Top
 @chapter Writing a new rule
+There are two kinds of rules: @i{semantic} rules, which operate on Ada
+elements, and @i{textual} rules, which operate on the source text. A
+rule cannot be of both kinds (although a semantic rule can access the
+text of an Ada construct with the  facilities provided by the package
+@code{Asis.Text}).
+
 All rules currently provided follow a common pattern, described below;
 it is recommended that new rules do the same, in order to make
 maintenance easier.
@@ -333,10 +379,11 @@ The first thing to do before adding a new rule is to read the source
 for existing rules, as they provide good examples of how a rule is
 implemented. For an example of a simple rule, see @code{Rules.Entity};
 for an example of a sophisticated one, see
-@code{Rules.Unnecessary_Use}. Note that @code{Rules.Entity} can be
-used as a template for writing new rules, as most rules will follow
-the same general structure, just making more elaborated processing of
-relevant entities.
+@code{Rules.Unnecessary_Use}. For an example of a textual rule, see
+@code{Rules.Max_Line_Length}. Note that @code{Rules.Entity} can be
+used as a template for writing new semantic rules, as most rules will
+follow the same general structure, just making more elaborated
+processing of relevant entities.
 
 @section General considerations
 A rule is implemented as a child package of package @code{Rules}. The
@@ -382,17 +429,25 @@ appropriate places, and therefore must be declared in the
 specification of the rule. @xref{Plugging-in a new rule into the
 framework}.
 
-These procedures take one parameter of type
+Process procedures of a semantic rule take one parameter of type
 @code{Asis.Element}. Although all element kinds are equivalent from
 the point of view of Ada's type checking, it is recommended to follow
 general ASIS practice, and to define the parameter with the ASIS
 element kind expected by the procedure.
 
-Ex:
+Process procedures of a textual rule take two parameters: an input
+line, and the corresponding location.
+
+ Ex:
 @example
+-- Semantic rule:
 @b{procedure} Process_Pragma (Pragma_Element : @b{in} Asis.Pragma_Element);
 -- Expected Element_Kinds:
 --    A_Pragma
+
+-- Textual rule:
+@b{procedure} Process_Line (Line : @b{in} Asis.Program_Text; 
+                       Loc  : @b{in} Framework.Location);
 @end example
 
 @section Body
@@ -404,15 +459,16 @@ The body must contain a @code{Help}, an @code{Add_Use}, and a
 @code{Command} procedure. It may also optionnally contain a
 @code{Prepare} and a @code{Finalize} procedure. These procedures are
 call-backs that are registered to the framework by calling
-@code{Framework.Rules_Manager.Register} in the statements part of the
-body. This procedure has @b{@code{null}} defaults for the optional
-subprograms.
+@code{Framework.Rules_Manager.Register_Semantic} (for semantic rules)
+or @code{Framework.Rules_Manager.Register_Textual} (for textual
+rules) in the statements part of the body. These procedures have
+@b{@code{null}} defaults for the optional subprograms.
 
 @subsection Help
 Help is a procedure that displays a short help message to the standard
 output for the rule. It takes no parameter.
 
-The procedure Help is called when the user specifies a ``-h'' option
+The procedure @code{Help} is called when the user specifies a ``-h'' option
 for the rule. It must display a useful message by calling
 @code{Utilities.User_Message}. In order to have a uniform presentation
 for all rules, the message must be structured as follows:
@@ -478,7 +534,7 @@ context table.
 @subsection Command
 @code{Command} is a procedure used by the framework to send
 ``commands'' to the rule in order to change its state. It has a
-paraemeter of an enumeration type that can take the values
+parameter of an enumeration type that can take the values
 @code{Clear}, @code{Suspend}, and @code{Resume}.
 
 @itemize
@@ -524,7 +580,7 @@ Ex:
 @subsection Prepare
 @code{Prepare} is a procedure that performs some initialisations that
 must be done after adding uses of the rule and before processing the
-units. It is optionnal (i.e. a @code{@b{null}} pointer can be passed
+units. It is optional (i.e. a @code{@b{null}} pointer can be passed
 for it to the @code{Register} procedure, or simply not mentionned
 since @code{@b{null}} is the default).
 
@@ -546,11 +602,23 @@ A @code{Process} procedure should return immediately if no
 corresponding @code{Add_Use} has ever been called. In most cases, this
 is conveniently done by having a @code{Rule_Used} global boolean
 variable which is set to @code{True} in @code{Add_Use}, and checked at
-the beginning of @code{Process}.
+the beginning of @code{Process}. For efficiency reasons, avoid doing
+any call to the ASIS library before this check. This means that if you
+need objects initialized with such calls, they should be declared in a
+block @i{after} the test, rather than in the declarative part of the
+@code{Process} procedure.
 
 After this test, the rule should immediately call
 @code{Rules_Manager.Enter} (with the rule name as the parameter). In
 case of a problem, this allows the system to report which rule failed.
+
+A special case arises for rules that follow the call graph. Such rules
+may traverse elements outside the current unit, but should avoid
+analyzing units to which an @code{inhibit all} applies (so-called
+@i{banned} units). The framework features an @code{Is_Banned} function
+that tells if an element should not be traversed due to it being
+declared in a banned unit. See @code{Rules.Global_References} for an
+example of this.
 
 @subsection Finalize
 @code{Finalize} is called at the end of a "Go" command, after all
@@ -570,20 +638,80 @@ Ex:
 
 @subsection Package statements
 The package body statements part should include a call to
-@code{Framework.Rules_Manager.Register} in order to register the rule
-and its associated @code{Help}, @code{Add_Use}, @code{Command}, and
-optionally @code{Prepare} and @code{Finalize}, procedures.
+@code{Framework.Rules_Manager.Register_Semantic} or
+@code{Framework.Rules_Manager.Register_Textual} in order to register
+the rule and its associated @code{Help}, @code{Add_Use},
+@code{Command}, and optionally @code{Prepare} and @code{Finalize},
+procedures.
 
 Ex:
 @example
 @b{begin}
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 @b{end} Rules.Pragmas;
 @end example
+
+@section Programming rules and tips
+@subsection style
+We try to maintain a consistent style in AdaControl, therefore the code you write should
+match the style of the rest of the program. Have a look at other rules, and run @code{src/verif.aru}
+on your code. In addition, please note the following:
+@itemize @bullet
+@item
+The @code{@b{use}} clause is allowed, but its scope should be
+restricted to the innermost declarative region where it is useful. Use
+a @code{@b{use}} clause for ASIS units, and another one for other
+units.  Sort units alphabetically in the clause.
+@item
+The only output of a rule should be by calling
+@code{Report}. Especially, no rule should use @code{Wide_Text_IO}
+directly.
+@item
+The framework should be sufficient for all your needs. If you have a
+special need that you think cannot be satisfied by the current
+framework, get in touch with us and we'll discuss it.
+@end itemize
+
+@subsection Things to care about
+Each time you want the name of something, remember that the name may
+be given in selected notation. For many queries, you should inspect
+the returned expression to see if its @code{Expression_Kind} is
+@code{A_Selected_Component}, and take the @code{Selector} if it is.
+
+When designing a rule, consider the implications of renamings and
+generics.
+
+@subsection Using ASIS efficiently.
+Remember that ASIS queries can be costly. Declare local variables (or
+constants) rather than evaluating several times the same query.
+
+There are issues with some ASIS queries. The rule whose label is
+``Avoid_Query'' in @code{verif.aru} will remind you if you use one of
+these queries.
+@table @asis
+@item Asis.Definitions.Subtype_Mark
+There might be confusion with @code{Asis.Subtype_Mark}; moreover, you
+normally want to get rid of selected components (see above).  Use
+@code{Thick_Queries.Subtype_Simple_Name} instead.
+
+@item Asis.Definitions.Corresponding_Root_Type
+This query return a @code{Nil_Element} if any type in the derivation
+chain is a @code{'Base} attribute (to be honnest, versions of ASIS
+before the latest 5.05 will loop indefinitely in this case). Use
+@code{Thick_Queries.Corresponding_Root_Type_Name} instead, and consider what
+you want to do if there is a @code{'Base} in the derivation chain.
+
+@item Asis.Definitions.Corresponding_Parent_Subtype
+This query suffers from the same problem as
+@code{Corresponding_Root_Type}. Don't use it, rather take
+the@code{Subtype_Simple_name} of the @code{Parent_Subtype_Indication},
+and do your own analysis, depending on whether the returned
+@code{Expression_Kind} is @code{An_Attribute_Reference} or not.
+@end table
 
 @node Plugging-in a new rule into the framework, Testing and debugging a rule, Writing a new rule, Top
 @chapter Plugging-in a new rule into the framework
@@ -591,6 +719,7 @@ Ex:
 @menu
 * Normal case::                 
 * Specific rules::              
+* User documentation::          
 @end menu
 
 @node Normal case, Specific rules, Plugging-in a new rule into the framework, Plugging-in a new rule into the framework
@@ -625,7 +754,9 @@ the usual @code{Pre_Procedure} used in the instantiation of
 @code{An_Operator_Symbol}, or @code{An_Enumeration_Literal} node that
 corresponds to a real identifier, i.e. not to a pragma name or other
 forms of irrelevant names. This avoids special cases in rules dealing
-with identifiers.
+with identifiers.*
+@item
+@code{Text_Analysis}: Called on every source line of the code.
 @end itemize
 
 These procedures have the usual "big case" structure of an ASIS
@@ -646,7 +777,8 @@ Ex:
 
 @item
 Add calls to the rule's @code{Process} procedure(s) at the appropriate
-place(s) in the body of the provided procedures.
+place(s) in the body of the provided procedures. For textual rules,
+@code{Text_Analysis} is the only appropriate place.
 
 Ex:
 @example
@@ -680,7 +812,7 @@ appropriate, it is better practice to plug calls to @code{Process}
 procedures here, rather than all over the place in various
 alternatives of the big case statement.
 
-@node Specific rules,  , Normal case, Plugging-in a new rule into the framework
+@node Specific rules, User documentation, Normal case, Plugging-in a new rule into the framework
 @section Specific rules
 In some cases, you may want to keep your rules separate from the
 general purpose ones. This may happen if you have developped some very
@@ -699,6 +831,22 @@ the public release of AdaControl will ever be plugged-in into this
 package. This way, you can keep your rules separate from the public
 ones, and you can upgrade to a new version of AdaControl without
 needing to merge the modifications for your rules.
+
+If you have specific rules plugged into
+@code{Framework.Specific_Plugs}, change the constant
+@code{Specific_Version} in the specification of the package to
+something that identifies the specific version (like your company's
+name for example). This way, the version number of AdaControl will
+show that it is a specific version.
+
+@node User documentation,  , Specific rules, Plugging-in a new rule into the framework
+@section User documentation
+Of course, you should update the user's guide with the information
+about your rules.  This guide is written in Texinfo, see
+@uref{http://www.gnu.org/software/texinfo/}. Note however that you
+don't need to understand all the possibilities of Texinfo to update
+the manual; look at the description of other rules, the few commands
+you need will be quite straightforward to understand.
 
 @node Testing and debugging a rule,  , Plugging-in a new rule into the framework, Top
 @chapter Testing and debugging a rule
@@ -741,12 +889,17 @@ In addition, a small stand-alone utility called @code{ptree} is
 provided. It prints the logical nesting of ASIS elements for a
 unit. The syntax of Ptree is:
 @example
-ptree [-sS] [-p <project_file>] <unit> -- <ASIS_Options>
+ptree [-sS] [-p <project_file>] <unit>[:<line>[:<column>]] -- <ASIS_Options>
 @end example
 If the ``-s'' option is given, @code{ptree} processes the
 specification of the unit, otherwise it processes the body. If the -S
 option is given, the span of each element is also printed. The -p
 option and <ASIS_Options> have the same meaning as in AdaControl itself.
+
+If a ``:<line>'' or ``:<line>:<column>'' is mentionned behind the unit
+name, only the constructs that cover the indicated position are
+output. This is useful if you are interested in just one particular
+structure in a big unit.
 
 If you come across a situation where you don't understand the logical
 nesting of elements, try to reduce it to a very simple example, then
@@ -784,12 +937,14 @@ other units, name them like @code{x_name} or
 and put your rule file under the name @code{t_name.aru} (with the same
 @code{name} of course).
 
-Go back to the @code{test} directory, and run
-@code{test.sh}. All tests should report PASSED, except the
-@code{tfw_help} test. Your test will not be reported, because its
-expected output is not yet in the directory @code{test/ref}, and test
+Go back to the @code{test} directory, and run @code{test.sh}. All
+tests should report PASSED, except the @code{tfw_help} and
+@code{tfw_check} tests. Your test will not be reported, because its
+expected output is not yet in the directory @code{test/ref}; test
 @code{tfw_help} will report FAILED because this test prints all help
-messages, and that the help message for your rule has been added.
+messages, and that the help message for your rule has been added; test
+@code{tfw_check} will report FAILED because there is now one extra
+message (from the extra rule file) saying ``No error found''.
 
 Check that the result of your test is OK (in the file
 @code{test/res/t_name.txt}), and copy this file to the directory
@@ -798,11 +953,24 @@ Check that the result of your test is OK (in the file
 diff test/ref/tfw_help.txt test/res/tfw_help.txt
 @end example
 and check that the only difference is the addition of the help message
-from your rule. Then copy @code{test/res/tfw_help.txt} to the
-directory @code{test/ref/}.
+from your rule.
+ 
+Do the following command:
+@example
+diff test/ref/tfw_check.txt test/res/tfw_check.txt
+@end example
+and check that the only difference is the addition of one ``No error
+found'' message.  
 
-Run @code{test.sh} again: it should print PASSED for all tests,
-including yours. All you have to do then is to send your modifications
+Then copy @code{test/res/tfw_help.txt} to the directory
+@code{test/ref/}.  Run @code{test.sh} again: it should print PASSED
+for all tests, including yours. Pay special attention to the last
+test, called @code{tfw_stress}. This test runs all rules against all
+test units. If it fails, the file @code{res/tfw_stress.txt} contains
+the whole listing of the run (with @code{-dv} options), so you'll find
+all the context of the problem.
+
+When everything is OK, all you have to do is send your modifications
 (including the tests) to
 @uref{mailto::rosen@@adalog.fr,,rosen@@adalog.fr}, for inclusion in
 the next release of AdaControl!

@@ -38,6 +38,7 @@ with   -- Standard Ada units
   Ada.Characters.Handling,
   Ada.Exceptions,
   Ada.Strings.Wide_Fixed,
+  Ada.Strings.Wide_Unbounded,
   Ada.Integer_Wide_Text_IO,
   Ada.Wide_Text_IO;
 
@@ -59,21 +60,71 @@ procedure Ptree is
    use Asis;
    use Compilation_Units, Elements;
 
+   type Location is record
+      File_Name    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+      First_Line   : Asis.Text.Line_Number        := 0;
+      First_Column : Asis.Text.Character_Position := 0;
+   end record;
+
    -- Text is indentent at least from Col_Base, then with a step of Col_Step
    Col_Base : constant := 30;
    Col_Step : constant := 10;
 
    Span_Option : Boolean;
+   Unit_Spec   : Location;
    package Options is new Options_Analyzer (Binary_Options => "hsbS",
-                                            Valued_Options => "p");
+                                            Valued_Options => "p",
+                                            Tail_Separator => "--");
    use Options;
+
+   ----------------
+   -- Print_Help --
+   ----------------
 
    procedure Print_Help is
       use Ada.Wide_Text_IO;
    begin
-      Put_Line ("Usage: ptree [-sS] [-p p<roject_file> <unit> -- <ASIS_Options>");
+      Put_Line ("PTREE: prints the logical nesting of ASIS elements for a unit");
+      Put_Line ("Usage: ptree [-sS] [-p <project_file>] <unit>[:<line_number>[:<column_number>]] -- <ASIS_Options>");
       Put_Line ("   or: ptree -h");
+      New_Line;
+
+      Put_Line ("Options:");
+      Put_Line ("   -h      prints this help message");
+      Put_Line ("   -p file specify an emacs ada-mode project file (.adp)");
+      Put_Line ("   -s      process specifications only");
+      Put_Line ("   -S      print span of each element");
    end Print_Help;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (S : Wide_String) return Location is
+      use Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded, Asis.Text;
+
+      Pos_Colon1 : Natural;
+      Pos_Colon2 : Natural;
+      Result : Location;
+   begin
+      Pos_Colon1 := Index (S, ":");
+      if Pos_Colon1 = 0 then
+         return (To_Unbounded_Wide_String (S), 0, 0);
+      end if;
+
+      Result.File_Name := To_Unbounded_Wide_String (S (S'First .. Pos_Colon1-1));
+
+      Pos_Colon2 := Index (S (Pos_Colon1 + 1 .. S'Last), ":");
+      if Pos_Colon2 = 0 then
+         Pos_Colon2 := S'Last + 1;
+      end if;
+      Result.First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Colon2 - 1));
+      if Pos_Colon2 < S'Last then
+         Result.First_Column := Character_Position'Wide_Value (S (Pos_Colon2+1 .. S'Last));
+      end if;
+
+      return Result;
+   end Value;
 
    --------------------------------------------------------------------------
    -- The analyzer                                                         --
@@ -119,7 +170,7 @@ procedure Ptree is
             Put (')');
          when A_Path =>
             Put (" (");
-            Put (Path_KInds'Wide_Image (Path_Kind (Element)));
+            Put (Path_Kinds'Wide_Image (Path_Kind (Element)));
             Put (')');
          when A_Clause =>
             Put (" (");
@@ -130,10 +181,8 @@ procedure Ptree is
       end case;
    end Put_Kind;
 
-   procedure Put_Span (Element : in Asis.Element) is
-      use Asis.Text;
+   procedure Put_Span (The_Span : Asis.Text.Span) is
       use Ada.Wide_Text_IO, Ada.Integer_Wide_Text_IO;
-      The_Span : constant Span := Element_Span (Element);
    begin
       if Span_Option then
          Put (" [");
@@ -154,11 +203,25 @@ procedure Ptree is
    is
       pragma Unreferenced (Control);
       use Ada.Wide_Text_IO, Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
+      The_Span : constant Span := Element_Span (Element);
    begin
-      for I in 1..State loop
+      State := State + 1;
+
+      -- Chech if in range
+      if Unit_Spec.First_Line /= 0 then
+         if The_Span.First_Line > Unit_Spec.First_Line or The_Span.Last_Line < Unit_Spec.First_Line then
+            return;
+         elsif Unit_Spec.First_Column /= 0 and then
+           (The_Span.First_Line = Unit_Spec.First_Line
+            and (The_Span.First_Column > Unit_Spec.First_Column or The_Span.Last_Column < Unit_Spec.First_Column))
+         then
+            return;
+         end if;
+      end if;
+
+      for I in 1..State-1 loop
          Put ("| ");
       end loop;
-      State := State + 1;
 
       Put ("+-");
       Put (Element_Kinds'Wide_Image (Element_Kind (Element)));
@@ -184,7 +247,7 @@ procedure Ptree is
             if Stop = 0 then
                if First_Line then
                   Put (Trim (Source (Start..Source'Last), Both));
-                  Put_Span (Element);
+                  Put_Span (The_Span);
                   Put_Kind (Element);
                else
                   Put (Source (Start..Source'Last));
@@ -195,7 +258,7 @@ procedure Ptree is
             else
                if First_Line then
                   Put (Trim (Source (Start..Stop-1), Both));
-                  Put_Span (Element);
+                  Put_Span (The_Span);
                   Put_Kind (Element);
                else
                   Put (Source (Start..Stop-1));
@@ -239,6 +302,7 @@ begin
       return;
    end if;
    Span_Option := Is_Present (Option => 'S');
+   Unit_Spec   := Value (To_Wide_String (Parameter (1)));
 
    Implementation.Initialize;
    Ada_Environments.Associate (My_Context, "Ptree",
@@ -248,7 +312,8 @@ begin
    Ada_Environments.Open (My_Context);
 
    declare
-      Unit_Name : constant Wide_String := To_Wide_String (Parameter (1));
+      use Ada.Strings.Wide_Unbounded;
+      Unit_Name : constant Wide_String := To_Wide_String (Unit_Spec.File_Name);
    begin
       if Is_Present (Option => 's') then
          My_Unit := Library_Unit_Declaration (Unit_Name, My_Context);

@@ -1,0 +1,2 @@
+check  with_clauses (reduceable);
+search with_clauses (inherited);

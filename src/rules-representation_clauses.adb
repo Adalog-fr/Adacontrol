@@ -35,9 +35,9 @@ with
 
 -- ASIS
 with
-  ASIS.Clauses,
-  ASIS.Elements,
-  ASIS.Expressions;
+  Asis.Clauses,
+  Asis.Elements,
+  Asis.Expressions;
 
 -- Adalog
 with
@@ -50,11 +50,15 @@ with
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
+pragma Elaborate (Framework.Language);
 
 package body Rules.Representation_Clauses is
    use Framework, Ada.Strings.Wide_Unbounded, Utilities;
 
    type Clause_Names is (Cl_Attribute, Cl_At, CL_At_Mod, Cl_Enumeration, Cl_Record);
+
+   package Clause_Flags_Utilities is new Framework.Language.Flag_Utilities (Clause_Names, "CL_");
+   use Clause_Flags_Utilities;
 
    -- Clause => Label
    package Context_Map is new Binary_Map (Unbounded_Wide_String, Unbounded_Wide_String);
@@ -64,15 +68,15 @@ package body Rules.Representation_Clauses is
    Rule_Used : Boolean;
    Save_Used : Boolean;
    Key       : array (Clause_Names range Clause_Names'Succ (Cl_Attribute) .. Clause_Names'Last)
-     of Unbounded_Wide_String;
-   Key_All   : Unbounded_Wide_String := To_Unbounded_Wide_String ("all");
+                  of Unbounded_Wide_String;
+   Key_All   : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("all");
 
    ----------------
    -- Proper_Key --
    ----------------
 
-   function Proper_Key (Key : Unbounded_Wide_String) return Wide_String is
-      Img : constant Wide_String := To_Wide_String (Key);
+   function Proper_Key (The_Key : Unbounded_Wide_String) return Wide_String is
+      Img : constant Wide_String := To_Wide_String (The_Key);
    begin
       if Img (1) = ''' then
          -- attribute
@@ -88,11 +92,10 @@ package body Rules.Representation_Clauses is
    ----------
 
    procedure Help is
-      use Utilities;
    begin
-      User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): at | at_mod | enumeration | record | <specifiable attribute> (optional)");
-      User_Message ("Control occurrences of representation clauses");
+      User_Message  ("Rule: " & Rule_Id);
+      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional)", Extra_Value => "<specifiable attribute>");
+      User_Message  ("Control occurrences of representation clauses");
    end Help;
 
    -------------
@@ -101,14 +104,10 @@ package body Rules.Representation_Clauses is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
-      Clause  : Clause_Names;
-      Key     : Unbounded_Wide_String;
+      Clause : Clause_Names;
+      Param  : Unbounded_Wide_String;
 
-      function Get_Clause_Parameter is new Get_Flag_Parameter (Flags     => Clause_Names,
-                                                               Allow_Any => True,
-                                                               Prefix    => "CL_");
    begin
       if Parameter_Exists then
          if Is_Present (Usage (Rule_Type), Key_All) then
@@ -122,22 +121,22 @@ package body Rules.Representation_Clauses is
       end if;
 
       while Parameter_Exists loop
-         Clause := Get_Clause_Parameter;
+         Clause := Get_Flag_Parameter (Allow_Any => True);
          if Clause = Cl_Attribute then
-            Key := To_Unbounded_Wide_String (To_Upper (Get_String_Parameter));
-            if Element (Key, 1) /= ''' then
+            Param := To_Unbounded_Wide_String (To_Upper (Get_String_Parameter));
+            if Element (Param, 1) /= ''' then
                Parameter_Error ("Parameter must be at, at_mod, enumeration, record, or an attribute");
             end if;
          else
-            Key := To_Unbounded_Wide_String (Clause_Names'Wide_Image (Clause));
+            Param := To_Unbounded_Wide_String (Clause_Names'Wide_Image (Clause));
          end if;
 
-         if Is_Present (Usage (Rule_Type), Key) then
+         if Is_Present (Usage (Rule_Type), Param) then
             Parameter_Error ("Clause already given for rule " & Rule_Id
-                             & ": " & Proper_Key (Key));
+                             & ": " & Proper_Key (Param));
          end if;
 
-         Add (Usage (Rule_Type), Key, To_Unbounded_Wide_String (Label));
+         Add (Usage (Rule_Type), Param, To_Unbounded_Wide_String (Label));
       end loop;
 
       Rule_Used := True;
@@ -168,7 +167,7 @@ package body Rules.Representation_Clauses is
    --------------------
 
    procedure Process_Clause (Element : in Asis.Representation_Clause) is
-      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries, Utilities;
+      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions, Framework.Reports, Thick_Queries;
       Attribute : Unbounded_Wide_String;
 
       procedure Check_Usage (Clause : Clause_Names; Message : Wide_String) is
@@ -231,7 +230,7 @@ package body Rules.Representation_Clauses is
 
       case Representation_Clause_Kind (Element) is
          when Not_A_Representation_Clause =>
-            Failure ("Not a representation clause in " & Rule_ID);
+            Failure ("Not a representation clause in " & Rule_Id);
 
          when An_Attribute_Definition_Clause =>
             Attribute := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image
@@ -259,7 +258,7 @@ package body Rules.Representation_Clauses is
                   when An_Output_Attribute =>
                      Attribute := To_Unbounded_Wide_String ("'CLASS'OUTPUT");
                   when others =>
-                     Failure ("Unexpected double attribute in " & Rule_ID, Element);
+                     Failure ("Unexpected double attribute in " & Rule_Id, Element);
                end case;
             end if;
 
@@ -272,7 +271,7 @@ package body Rules.Representation_Clauses is
             Check_Usage (Cl_Record, "use of record representation clause");
 
             if not Is_Nil (Mod_Clause_Expression (Element)) then
-               Check_Usage (Cl_At_Mod, "use of Ada 83 alignment clause");
+               Check_Usage (CL_At_Mod, "use of Ada 83 alignment clause");
             end if;
 
          when An_At_Clause =>
@@ -285,8 +284,8 @@ begin
       Key (K) := To_Unbounded_Wide_String (Clause_Names'Wide_Image (K));
    end loop;
 
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Representation_Clauses;

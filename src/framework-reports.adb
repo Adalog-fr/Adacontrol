@@ -33,9 +33,7 @@
 with
   Ada.Characters.Handling,
   Ada.Strings.Wide_Fixed,
-  Ada.Characters.Wide_Latin_1,
-  Ada.Strings.Wide_Maps,
-  Ada.Wide_Text_Io;
+  Ada.Wide_Text_IO;
 
 -- Adalog
 with
@@ -47,221 +45,156 @@ with
   Adactl_Options;
 
 package body Framework.Reports is
-   use Ada.Strings.Wide_Unbounded;
+
+   CSV_Separator : constant array (Output_Format range CSV..CSVX) of Wide_Character := (',', ';');
 
    Not_Found   : constant             := 0;
    Adactl_Mark : constant Wide_String := "##";
    Adactl_Tag  : constant Wide_String := "--" & Adactl_Mark;
 
-   Error_Found : Boolean := False;
-
+   Error_Count   : Natural := 0;
+   Warning_Count : Natural := 0;
 
    package Counters is new Binary_Map (Unbounded_Wide_String, Natural);
-   Rule_Counter : Counters.Map;
+   Rule_Counter   : Counters.Map;
+   Stats_Counters : array (Rule_Types) of Counters.Map;
 
-   subtype Word is Unbounded_Wide_String;
-   type Words_List is array (Natural range <>) of Word;
-   -- Provides a multipurpose list of words
+   -----------
+   -- Reset --
+   -----------
 
-   --------------------------
-   -- To_Upper_Wide_String --
-   --------------------------
-
-   function To_Upper_Wide_String (W : in Word) return Wide_String is
-      -- Returns a converted upper case wide string from a word
-      use Utilities;
+   procedure Reset_One (Key : Unbounded_Wide_String; Counter_Value : in out Natural) is
+      pragma Unreferenced (Key);
    begin
-      return To_Upper (To_Wide_String (W));
-   end To_Upper_Wide_String;
-
-   -----------
-   -- Split --
-   -----------
-
-   function Split (S : in Wide_String) return Words_List is
-      -- Returns the Parameters list split from a line.
-      -- Separators are space and horizontal tabulation.
-      -- Lower bound of result is always 1.
-      use Ada.Characters.Wide_Latin_1;
-      use Ada.Strings;
-      use Ada.Strings.Wide_Maps;
-      use Ada.Strings.Wide_Fixed;
-      use Ada.Strings.Wide_Unbounded;
-
-      Separator_Set : constant Wide_Character_Set := To_Set (Wide_Space & Ht);
-      Dummy_Length : constant Natural             := Count (S, Separator_Set) + 1;
-
-      S_First : Natural := S'First;
-      S_Last  : Natural;
-      First   : Natural := 0;
-      Last    : Natural := 0;
-      Count   : Natural := 0;
-      Dummy   : Words_List (1..Dummy_Length)
-        := (others => Null_Unbounded_Wide_String);
-   begin
-      S_Last := Index (S, Adactl_Mark);
-      if S_Last = Not_Found then
-         S_Last := S'Last;
-      end if;
-
-      loop
-         Find_Token (S (S_First..S_Last), Separator_Set, Outside, First, Last);
-
-         if First = S_First and Last = 0 then
-            exit;
-         end if;
-
-         Count := Count + 1;
-         Dummy (Count) := To_Unbounded_Wide_String (S (First..Last));
-         S_First := Last + 1;
-      end loop;
-
-      return (Dummy (1 .. Count));
-   end Split;
-
-   -----------
-   -- Is_In --
-   -----------
-
-   function Is_In (Rule_Id : in Wide_String;
-                   Words   : in Words_List)
-                  return Boolean is
-      use Utilities;
-   begin
-      for I in Words'Range loop
-         if To_Upper_Wide_String (Words (I)) = To_Upper (Rule_Id) then
-            return True;
-         end if;
-      end loop;
-
-      -- end of words is reached, rule is not in words
-      return False;
-   end Is_In;
+      Counter_Value := 0;
+   end Reset_One;
+   procedure Reset is new Counters.Iterate (Reset_One);
 
    ------------
    -- Update --
    ------------
 
-   procedure Update (Rule_Id    : in     Wide_String;
-                     Rule_Label : in     Wide_String;
-                     Line       : in     Wide_String;
-                     Active     : in out Boolean) is
-      use Ada.Strings.Wide_Fixed;
+   procedure Update (Rule_Id     : in     Wide_String;
+                     Rule_Label  : in     Wide_String;
+                     Line        : in     Wide_String;
+                     Single_Line : in     Boolean;
+                     Active      : in out Boolean) is
+      use Utilities, Ada.Strings.Wide_Fixed;
 
-      Pos : constant Natural := Index (Line, Adactl_Tag);
-   begin
+      Pos : Natural := Index (Line, Adactl_Tag);
 
-      if Pos /= Not_Found then
-         declare
-            Words : Words_List := Split (Line (Pos + Adactl_Tag'Length .. Line'Last));
-         begin
-            if Words'Length >= 3 then
-               -- Words (Words'First) = Adactl_Tag
-               if To_Upper_Wide_String (Words (1)) = "RULE" then
-                  declare
-                     S : constant Wide_String := To_Upper_Wide_String (Words (2));
-                  begin
-                     if Is_In (Rule_Id,    Words (3 .. Words'Last)) or else
-                        Is_In (Rule_Label, Words (3 .. Words'Last)) or else
-                        Is_In ("ALL",      Words (3 .. Words'Last))
-                     then
-                        if S = "ON" then
-                           Active := True;
-                        elsif S = "OFF" then
-                           Active := False;
-                        end if;
-                     end if;
-                  end;
-               end if;
+      function Next_Word return Wide_String is
+         Quoted : Boolean;
+         Start  : Positive := Pos;
+         Stop   : Positive;
+      begin
+         loop
+            if Start > Line'Last then
+               return "";
+            elsif Line (Start) <= ' ' then
+               Start := Start+1;
+            elsif Start <= Line'Last - Adactl_Mark'Length + 1
+              and then Line (Start .. Start + Adactl_Mark'Length -1) = Adactl_Mark
+            then
+               return "";
+            else
+               exit;
             end if;
-         end;
+         end loop;
+
+         Quoted := Line (Start) = '"';
+         if Quoted then
+            Start := Start + 1;
+         end if;
+         Stop := Start;
+
+         loop
+            if Quoted then
+               exit when Line (Stop) = '"';
+               if Stop = Line'Last then
+                  -- badly formed quoted syntax
+                  return "";
+               end if;
+
+            else
+               exit when Stop > Line'Last;
+               exit when Line (Stop) <= ' ';
+            end if;
+            Stop := Stop + 1;
+         end loop;
+
+         if Quoted then
+            Pos := Stop + 1;
+            return To_Upper (Line (Start .. Stop-1));
+         else
+            Pos := Stop;
+            return To_Upper (Line (Start .. Stop-1));
+         end if;
+      end Next_Word;
+
+   begin
+      if Pos = Not_Found then
+         return;
       end if;
+      Pos := Pos + Adactl_Tag'Length;
+
+      if Next_Word /= "RULE" then
+         return;
+      end if;
+
+      declare
+         Switch   : constant Wide_String := Next_Word;
+         Activity : Boolean;
+      begin
+         if Single_Line then
+            if Switch /= "LINE" then
+               return;
+            end if;
+
+            declare
+               Switch2 : constant Wide_String := Next_Word;
+            begin
+               if Switch2 = "ON" then
+                  Activity := True;
+               elsif Switch2 = "OFF" then
+                  Activity := False;
+               else
+                  -- Illegal syntax, ignore
+                  return;
+               end if;
+            end;
+
+         else
+            if Switch = "ON" then
+               Activity := True;
+            elsif Switch = "OFF" then
+               Activity := False;
+            else
+               -- Illegal syntax, ignore
+               return;
+            end if;
+         end if;
+
+         loop
+            declare
+               Current : constant Wide_String := Next_Word;
+            begin
+               exit when Current = "";
+               if        Current = To_Upper (Rule_Id)
+                 or else Current = To_Upper (Rule_Label)
+                 or else Current = "ALL"
+               then
+                  Active := Activity;
+                  return;
+               end if;
+            end;
+         end loop;
+      end;
+
       -- in others cases (i.e. no deactivation, bad syntax or a single line
       -- deactivation)
       -- Active does not change
    end Update;
-
-   ------------------------
-   -- Single_Line_Update --
-   ------------------------
-
-   procedure Single_Line_Update (Rule_Id    : in     Wide_String;
-                                 Rule_Label : in     Wide_String;
-                                 Line       : in     Wide_String;
-                                 Active     : in out Boolean) is
-      use Ada.Strings.Wide_Fixed;
-      Pos : constant Natural := Index (Line, Adactl_Tag);
-   begin
-
-      if Pos /= Not_Found then
-         declare
-            Words : Words_List := Split (Line (Pos + Adactl_Tag'Length .. Line'Last));
-         begin
-            if Words'Length >= 4 then
-               if To_Upper_Wide_String (Words (1)) = "RULE" and
-                  To_Upper_Wide_String (Words (2)) = "LINE"
-               then
-                  declare
-                     S : constant Wide_String := To_Upper_Wide_String (Words (3));
-                  begin
-                     if Is_In (Rule_Id,    Words (4 .. Words'Last)) or else
-                        Is_In (Rule_Label, Words (4 .. Words'Last)) or else
-                        Is_In ("ALL",      Words (4 .. Words'Last))
-                     then
-                        if S = "ON" then
-                           Active := True;
-                        elsif S = "OFF" then
-                           Active := False;
-                        end if;
-                     end if;
-                  end;
-               end if;
-            end if;
-         end;
-      end if;
-      -- in others cases (i.e. no deactivation or bad syntax)
-      -- Active does not change
-   end Single_Line_Update;
-
-   ---------------
-   -- Is_Active --
-   ---------------
-
-   function Is_Active (Rule_Id    : in Wide_String;
-                       Rule_Label : in Wide_String;
-                       Loc        : in Framework.Location)
-                      return Boolean is
-      use Ada.Characters.Handling;
-      use Ada.Wide_Text_Io;
-      use Framework;
-      File      : File_Type;
-      Line      : Wide_String (1..1024);
-      Line_Last : Natural               := 0;
-      Active    : Boolean               := True;
-   begin
-      Open (File,
-            In_File,
-            To_String (Get_File_Name (Loc)),
-            Form => Implementation_Options.Form_Parameters);
-
-      for I in 1 .. Get_First_Line (Loc) - 1 loop
-         Get_Line (File, Line, Line_Last);
-         Update (Rule_Id, Rule_Label, Line (Line'First .. Line_Last), Active);
-      end loop;
-
-      Get_Line (File, Line, Line_Last);
-      Single_Line_Update (Rule_Id, Rule_Label, Line (Line'First .. Line_Last), Active);
-
-      Close (File);
-
-      return Active;
-
-   exception
-      when Name_Error =>
-         -- if file is not found ???,
-         -- consider that rule is active
-         return True;
-   end Is_Active;
 
    ------------
    -- Report --
@@ -274,49 +207,215 @@ package body Framework.Reports is
                      Msg        : in Wide_String) is
       use Utilities, Adactl_Options;
 
-      Label : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
+      Label     : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
+      Line      : Wide_String (1..1024);
+      Line_Last : Natural := 0;
 
       procedure Issue_Message (Title : Wide_String) is
          use Ada.Wide_Text_IO;
+
+         function Quote (Item : Wide_String) return Wide_String is
+            use Ada.Strings.Wide_Fixed;
+            Result : Wide_String (Item'First .. Item'Last + Count (Item, """") + 2);
+            Index  : Positive;
+         begin
+            Index := Result'First;
+            Result (Index) := '"';
+
+            for I in Item'Range loop
+               if Item (I) = '"' then
+                  Index := Index + 1;
+                  Result (Index) := '"';
+               end if;
+               Index := Index + 1;
+               Result (Index) := Item (I);
+            end loop;
+            Result (Result'Last) := '"';
+
+            return Result;
+         end Quote;
+
+         Current_Col : Ada.Wide_Text_IO.Count;
       begin
-         Put (Image (Loc));
-         Put (": ");
-         Put (Title);
-         Put (": ");
-         Put (Label);
-         Put (": ");
-         Put (Msg);
-         New_Line;
+         case Format_Option is
+            when Gnat =>
+               Put (Image (Loc));
+               Put (": ");
+               Put (Title);
+               Put (": ");
+               Put (Label);
+               Put (": ");
+               Put (Msg);
+               New_Line;
+            when CSV | CSVX =>
+               Put (Image (Loc));
+               Put (CSV_Separator (Format_Option));
+               Put (Title);
+               Put (CSV_Separator (Format_Option));
+               Put (Choose (Rule_Label, Otherwise => """"""));
+               Put (CSV_Separator (Format_Option));
+               Put (Rule_Id);
+               Put (CSV_Separator (Format_Option));
+               Put (Quote (Msg));
+               New_Line;
+            when Source =>
+               Put (Image (Loc));
+               Put (": ");
+               Current_Col := Col (Current_Output);
+               Put (Line (1 .. Line_Last));
+               New_Line;
+               Set_Col (Current_Col + Ada.Wide_Text_IO.Count (Get_First_Column (Loc)) - 1);
+               Put ("! ");
+               Put (Title);
+               Put (": ");
+               Put (Label);
+               Put (": ");
+               Put (Msg);
+               New_Line;
+         end case;
       end Issue_Message;
 
       use Counters;
+      Active : Boolean := True;
+
    begin
-      if Ignore_Option or else Is_Active (Rule_Id, Rule_Label, Loc) then
+      if not Ignore_Option or Format_Option = Source then
+         declare
+            use Ada.Characters.Handling, Ada.Wide_Text_IO;
+            File : File_Type;
+         begin
+            Open (File,
+                  In_File,
+                  To_String (Get_File_Name (Loc)),
+                  Form => Implementation_Options.Form_Parameters);
+
+            for I in Natural range 1 .. Get_First_Line (Loc) - 1 loop
+               Get_Line (File, Line, Line_Last);
+               if not Ignore_Option then
+                  Update (Rule_Id, Rule_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
+               end if;
+            end loop;
+
+            Get_Line (File, Line, Line_Last);
+            if not Ignore_Option then
+               Update (Rule_Id, Rule_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
+            end if;
+
+            Close (File);
+         exception
+            when Name_Error =>
+               -- if file is not found ???,
+               -- consider that rule is active
+               null;
+            when others =>
+               if Is_Open (File) then
+                  Close (File);
+               end if;
+               raise;
+         end;
+      end if;
+
+      -- Here, Line is the good source line
+
+      if Active then
          case Rule_Type is
             when Check =>
-               Error_Found := True;
+               Error_Count := Error_Count + 1;
                Issue_Message ("Error");
             when Search =>
                if Warning_As_Error_Option then
-                  Error_Found := True;
+                  Error_Count := Error_Count + 1;
+               else
+                  Warning_Count := Warning_Count + 1;
                end if;
-               Issue_Message ("Found");
+
+               if Warning_As_Error_Option or else not Skip_Warning_Option then
+                  Issue_Message ("Found");
+               end if;
             when Count =>
                Add (Rule_Counter,
                     To_Unbounded_Wide_String (Label),
-                    Fetch (Rule_Counter, To_Unbounded_Wide_String (Label), Default_Value => 0) + 1);
+                    Fetch (Rule_Counter, To_Unbounded_Wide_String (Label)) + 1);
          end case;
+
+         if Stats_Level >= Nulls_Only then
+            declare
+               Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule_Id
+                                                                                   & Choose (Rule_Label = "",
+                                                                                             "",
+                                                                                             "." & Rule_Label));
+            begin
+               Add (Stats_Counters (Rule_Type), Key, Fetch (Stats_Counters (Rule_Type), Key) + 1);
+            end;
+         end if;
       end if;
    end Report;
 
-   --------------------
-   -- Error_Reported --
-   --------------------
+   ------------
+   -- Report --
+   ------------
 
-   function Error_Reported return Boolean is
+   procedure Report (Rule_Id    : in Wide_String;
+                     Context    : in Root_Context'class;
+                     Loc        : in Location;
+                     Msg        : in Wide_String;
+                     Count_Only : in Boolean := False)
+   is
    begin
-      return Error_Found;
-   end Error_Reported;
+      if Context = No_Matching_Context then
+         return;
+      end if;
+
+      declare
+         Basic_Context : Basic_Rule_Context renames Basic_Rule_Context (Context);
+      begin
+         if not Count_Only then
+            Report (Rule_Id,
+                    To_Wide_String (Basic_Context.Rule_Label),
+                    Basic_Context.Rule_Type,
+                    Loc,
+                    Msg);
+         end if;
+
+         if Basic_Context.With_Count then
+            Report (Rule_Id,
+                    To_Wide_String (Basic_Context.Count_Label),
+                    Count,
+                    Loc,
+                    Msg);
+         end if;
+      end;
+   end Report;
+
+   ---------------
+   -- Nb_Errors --
+   ---------------
+
+   function Nb_Errors return Natural is
+   begin
+      return Error_Count;
+   end Nb_Errors;
+
+   -----------------
+   -- Nb_Warnings --
+   -----------------
+
+   function Nb_Warnings return Natural is
+   begin
+      return Warning_Count;
+   end Nb_Warnings;
+
+   -----------------
+   -- Init_Counts --
+   -----------------
+
+   procedure Init_Counts (Rule_Id : Wide_String; Rule_Label : Wide_String) is
+      use Counters, Utilities;
+
+      Label : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
+   begin
+      Add (Rule_Counter, To_Unbounded_Wide_String (Label), 0);
+  end Init_Counts;
 
    -------------------
    -- Report_Counts --
@@ -325,11 +424,11 @@ package body Framework.Reports is
    procedure Report_Counts is
       use Counters, Ada.Wide_Text_IO;
 
-      procedure Report_One_Count (Key : in Unbounded_Wide_String; Value : in out Natural) is
+      procedure Report_One_Count (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
       begin
          Put (To_Wide_String (Key));
          Put (":");
-         Put (Natural'Wide_Image (Value));
+         Put (Natural'Wide_Image (Counter_Value));
          New_Line;
       end Report_One_Count;
 
@@ -344,14 +443,139 @@ package body Framework.Reports is
       Report_All_Counts (Rule_Counter);
    end Report_Counts;
 
-   ------------------
-   -- Clear_Counts --
-   ------------------
+   ---------------
+   -- Clear_All --
+   ---------------
 
-   procedure Clear_Counts is
+   procedure Clear_All is
       use Counters;
    begin
       Clear (Rule_Counter);
-   end Clear_Counts;
+      for R in Rule_Types loop
+         Clear (Stats_Counters (R));
+      end loop;
+   end Clear_All;
 
+
+   -----------
+   -- Reset --
+   -----------
+
+   procedure Reset is
+   begin
+      Warning_Count := 0;
+      Error_Count   := 0;
+      Reset (Rule_Counter);
+
+      for R in Rule_Types loop
+         Reset (Stats_Counters (R));
+      end loop;
+   end Reset;
+
+
+   ----------------
+   -- Init_Stats --
+   ----------------
+
+   procedure Init_Stats (Rule, Label : Wide_String) is
+      use Counters, Utilities;
+      Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule & Choose (Label = "", "", "." & Label));
+   begin
+      for R in Rule_Types loop
+        Add (Stats_Counters (R), Key, 0);
+      end loop;
+   end Init_Stats;
+
+
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear (Rule : Wide_String) is
+      use Counters;
+
+      procedure Check_Delete_One (Key : in Unbounded_Wide_String; Counter_Value : in out Integer) is
+         pragma Unreferenced (Counter_Value);
+      begin
+         if Head (Key, Rule'Length) = Rule then
+            raise Delete_Current;
+         end if;
+      end Check_Delete_One;
+
+      procedure Check_Delete is new Iterate (Check_Delete_One);
+
+   begin
+      Check_Delete (Rule_Counter);
+      -- TBSL: delete entries whose name is a label associated to the rule
+
+      for R in Rule_Types loop
+         Check_Delete (Stats_Counters (R));
+      end loop;
+   end Clear;
+
+
+   ------------------
+   -- Report_Stats --
+   ------------------
+
+   procedure Report_Stats is
+      use Counters, Ada.Wide_Text_IO;
+
+      procedure Report_One_Stat (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
+         use Utilities;
+         Triggered_Count : Natural := Counter_Value;
+      begin
+         for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
+            Triggered_Count := Triggered_Count + Fetch (Stats_Counters (R), Key);
+         end loop;
+
+         if Triggered_Count = 0 or else Stats_Level = Full then
+            Put (To_Wide_String (Key));
+            Put (": ");
+            if Triggered_Count = 0 then
+               Put ("not triggered");
+            else
+               Put (To_Title (Rule_Types'Wide_Image (Rule_Types'First)));
+               Put (Natural'Wide_Image (Counter_Value));
+
+               for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
+                  Put (", ");
+                  Put (To_Title (Rule_Types'Wide_Image (R)));
+                  Put(" =");
+                  Put (Natural'Wide_Image (Fetch (Stats_Counters (R), Key)));
+               end loop;
+            end if;
+            New_Line;
+         end if;
+      end Report_One_Stat;
+
+      procedure Report_All_Stats is new Iterate (Report_One_Stat);
+   begin
+      if Stats_Level = None then
+         return;
+      end if;
+
+      if Stats_Level >= Nulls_Only then
+         New_Line;
+         Put_Line ("Rules usage statistics:");
+         Report_All_Stats (Stats_Counters (Rule_Types'First));
+      end if;
+
+      if Stats_Level >= General then
+         New_Line;
+         Put ("Issued messages: Errors =" & Natural'Wide_Image (Nb_Errors));
+         Put (", Warnings =" & Natural'Wide_Image (Nb_Warnings));
+         New_Line;
+      end if;
+   end Report_Stats;
+
+   ---------------------
+   -- Report_Counters --
+   ---------------------
+
+   procedure Report_Counters is
+   begin
+      Report_Counts;
+      Report_Stats;
+   end Report_Counters;
 end Framework.Reports;

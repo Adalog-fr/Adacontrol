@@ -31,15 +31,16 @@
 
 -- Ada
 with
-  Ada.Unchecked_Deallocation,
-  Ada.Strings.Wide_Fixed,
-  Ada.Strings.Wide_Unbounded;
+  Ada.Characters.Handling,
+  Ada.Exceptions,
+  Ada.Unchecked_Deallocation;
 
 -- ASIS
 with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
+  Asis.Exceptions,
   Asis.Expressions,
   Asis.Statements;
 
@@ -54,11 +55,12 @@ with
 with
   Framework.Language,
   Framework.Rules_Manager,
-  Framework.Reports;
-
+  Framework.Reports,
+  Framework.Scope_Manager;
+pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
-   use Framework, Ada.Strings.Wide_Unbounded;
+   use Framework;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -90,7 +92,7 @@ package body Rules.Naming_Convention is
                            K_Access_To_SP_Type,
                            K_Access_To_Task_Type,
                            K_Access_To_Protected_Type,
-                      K_Private_Type,
+                       K_Private_Type,
                           K_Private_Extension,
                        K_Generic_Formal_Type,
                     K_Variable,
@@ -129,7 +131,7 @@ package body Rules.Naming_Convention is
                        K_Entry,
                           K_Task_Entry,
                           K_Protected_Entry,
-                   K_Package,
+                    K_Package,
                        K_Regular_Package,
                        K_Generic_Formal_Package,
                     K_Task,
@@ -144,15 +146,23 @@ package body Rules.Naming_Convention is
                        K_Generic_Sp,
                           K_Generic_Procedure,
                           K_Generic_Function
-                );
+                 );
+
+   package Keys_Flags_Utilities is new Framework.Language.Flag_Utilities (Keys, "K_");
+   use Keys_Flags_Utilities;
+
    type Key_Set_Index is range 1 .. Keys'Pos (Keys'Last) + 1;
    type Key_Set is array (Key_Set_Index range <>) of Keys;
+
+   type Visibility is (Scope_Any, Scope_Global, Scope_Local);
+   function Get_Visibility_Modifier is new Framework.Language.Get_Enumerated_Modifier (Index => Visibility);
 
    type Usage_Rec;
    type Usage_Rec_Access is access Usage_Rec;
    type Pattern_Access is access String_Matching.Compiled_Pattern;
-   type Usage_Rec is new Simple_Context with
+   type Usage_Rec is new Basic_Rule_Context with
       record
+         Scope   : Visibility;
          Is_Not  : Boolean;
          Pattern : Pattern_Access;
          Next    : Usage_Rec_Access;
@@ -172,7 +182,7 @@ package body Rules.Naming_Convention is
    procedure Clear (Rec : in out Usage_Rec_Access) is
       procedure Free is new Ada.Unchecked_Deallocation (Usage_Rec, Usage_Rec_Access);
       procedure Free is new Ada.Unchecked_Deallocation (String_Matching.Compiled_Pattern, Pattern_Access);
-      Temp : Usage_Rec_Access := Rec;
+      Temp : Usage_Rec_Access;
    begin
       while Rec /= null loop
          Temp := Rec.Next;
@@ -182,56 +192,17 @@ package body Rules.Naming_Convention is
       end loop;
    end Clear;
 
-   -----------
-   -- Image --
-   -----------
-
-   function Image (Key : Keys) return Wide_String is
-      use Utilities;
-      Img : constant Wide_String := To_Lower (Keys'Wide_Image (Key));
-   begin
-      -- Remove "K_"
-      return Img (3 .. Img'Last);
-   end Image;
-
    ----------
    -- Help --
    ----------
 
    procedure Help is
       use Utilities;
-      procedure Print_Kw is
-         Header : constant Wide_String := "Parameter 1: ";
-         use Ada.Strings.Wide_Fixed;
-
-         Spacing : constant Natural     := Keys'Wide_Width - 2 + 1;
-         Line    : Wide_String (1..79)  := (others => ' ');
-         Pos     : Natural;
-      begin
-         Overwrite (Line, 1, Header);
-         Pos := Header'Length + 1;
-         Overwrite (Line, Pos, Image (Keys'First));
-         Pos := Pos + Spacing;
-
-         for Value in Keys range Keys'Succ(Keys'First) .. Keys'Last loop
-            Overwrite (Line, Pos, "| " & Image (Value));
-            Pos := Pos +  2 + Spacing;
-            if Pos + Keys'Wide_Width -1 > Line'Last then
-               User_Message (Line (1 .. Pos-2));
-               Line := (others => ' ');
-               Pos := Header'Length + 1 - 2;
-           end if;
-         end loop;
-
-         if Line /= (Line'range => ' ') then
-            User_Message (Line (Line'First .. Pos-1));
-         end if;
-      end Print_Kw;
    begin
-      User_Message ("Rule: " & Rule_Id);
-      Print_Kw;
-      User_Message ("Parameter 2..N: [not] [case_sensitive|case_insensitive] ""<name pattern>""");
-      User_Message ("Control the form of allowed (or forbidden) names in declarations");
+      User_Message  ("Rule: " & Rule_Id);
+      Help_On_Flags ("Parameter 1: ");
+      User_Message  ("Parameter 2..N: [any|local|global] [case_sensitive|case_insensitive] [not] ""<name pattern>""");
+      User_Message  ("Control the form of allowed (or forbidden) names in declarations");
    end Help;
 
    -------------
@@ -240,11 +211,8 @@ package body Rules.Naming_Convention is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Framework.Language, String_Matching;
+      use Ada.Characters.Handling, Ada.Exceptions, Framework.Language, String_Matching;
 
-      function Get_Key_Parameter is new Get_Flag_Parameter (Flags     => Keys,
-                                                            Allow_Any => False,
-                                                            Prefix    => "K_");
       Key     : Keys;
       Is_Root : Boolean;
    begin
@@ -252,7 +220,7 @@ package body Rules.Naming_Convention is
          Parameter_Error ("Kind of filter required for rule " & Rule_Id);
       end if;
       Is_Root := Get_Modifier ("ROOT");
-      Key     := Get_Key_Parameter;
+      Key     := Get_Flag_Parameter (Allow_Any => False);
 
       if not Parameter_Exists then
          Parameter_Error ("At least one pattern required for rule " & Rule_Id);
@@ -260,21 +228,24 @@ package body Rules.Naming_Convention is
 
       while Parameter_Exists loop
          declare
+            Scope       : constant Visibility  := Get_Visibility_Modifier (Default => Scope_Any, Prefix => "SCOPE_");
             Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
                                                                 False_KW => "CASE_SENSITIVE",
-                                                                Default => True);
+                                                                Default  => True);
             Is_Not      : constant Boolean     := Get_Modifier ("NOT");
             Pattern     : constant Wide_String := Get_String_Parameter;
          begin
             Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
-                            First   => new Usage_Rec'(Rule_Type,
-                                                      To_Unbounded_Wide_String (Label),
+                            First   => new Usage_Rec'(Basic.New_Context (Rule_Type, Label) with
+                                                      Scope   => Scope,
                                                       Is_Not  => Is_Not,
-                                                      Pattern => new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
+                                                      Pattern =>
+                                                        new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
                                                       Next    => Usage (Key).First));
          exception
-            when Pattern_Error =>
-               Parameter_Error ("Incorrect pattern: " & Pattern);
+            when Occur: Pattern_Error =>
+               Parameter_Error ("Incorrect pattern: " & Pattern
+                                  & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
          end;
       end loop;
 
@@ -308,15 +279,21 @@ package body Rules.Naming_Convention is
    ---------------------------
 
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
-      use Utilities, Thick_Queries, String_Matching,
-        Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions,
-        Asis.Statements, Framework.Reports;
+      use Asis, Asis.Declarations, Asis.Definitions,
+          Asis.Elements, Asis.Expressions, Asis.Statements;
+      use String_Matching, Thick_Queries, Utilities;
+      use Framework.Reports;
 
-      procedure Check_One (Name_Str : Wide_String; Key : Keys) is
+      procedure Check_One (Name_Str : in Wide_String; Key : in Keys) is
+         use Framework.Scope_Manager;
+
          Current              : Usage_Rec_Access := Usage (Key).First;
          Matches              : Boolean;
          All_Not_Patterns     : Boolean := True;
          Positive_Match_Found : Boolean := False;
+
+         Last_Checked         : Usage_Rec_Access := null;
+         Is_Global            : constant Boolean := Is_Current_Scope_Global;
       begin
          if Current = null then
             -- No rule
@@ -324,24 +301,31 @@ package body Rules.Naming_Convention is
          end if;
 
          loop
-            Matches := Match (Name_Str, Current.Pattern.all);
-            if Matches then
-               if Current.Is_Not then
-                  Report (Rule_Id,
-                          To_Wide_String (Current.Rule_Label),
-                          Current.Rule_Type,
-                          Get_Location (Name),
-                          "Name does not follow naming rule for """
-                          & Image (Key)
-                          & """: """
-                          & Defining_Name_Image (Name)& '"');
-                  return;
-               else
-                  -- We must continue in case there is a "not" match farther
-                  Positive_Match_Found := True;
+            if Current.Scope = Scope_Any
+              or else (Current.Scope = Scope_Local  and then not Is_Global)
+              or else (Current.Scope = Scope_Global and then     Is_Global)
+            then
+               Last_Checked := Current;
+
+               Matches := Match (Name_Str, Current.Pattern.all);
+               if Matches then
+                  if Current.Is_Not then
+                     Report (Rule_Id,
+                             Current.all,
+                             Get_Location (Name),
+                             "Name does not follow naming rule for """
+                             & Image (Key)
+                             & """: """
+                             & Defining_Name_Image (Name) & '"');
+                     return;
+                  else
+                     -- We must continue in case there is a "not" match farther
+                     Positive_Match_Found := True;
+                  end if;
+               elsif not Current.Is_Not then
+                  All_Not_Patterns := False;
                end if;
-            elsif not Current.Is_Not then
-               All_Not_Patterns := False;
+
             end if;
 
             exit when Current.Next = null;
@@ -352,21 +336,20 @@ package body Rules.Naming_Convention is
             return;
 
          -- No match found here. It is an error, unless all patterns were "not" patterns.
-         -- Current points to the last rule, which is the first one specified
+         -- Last_Checked points to the last applicable rule, which is the first one specified
          -- since we chain on head.
          elsif not All_Not_Patterns then
             Report (Rule_Id,
-                    To_Wide_String (Current.Rule_Label),
-                    Current.Rule_Type,
+                    Last_Checked.all,
                     Get_Location (Name),
                     "Name does not follow naming rule for """
-                    & Image (Key)
-                    & """: """
-                    & Defining_Name_Image (Name)& '"');
+                      & Image (Key)
+                      & """: """
+                      & Defining_Name_Image (Name) & '"');
          end if;
       end Check_One;
 
-   begin
+   begin    -- Process_Defining_Name
       if not Rule_Used then
          return;
       end if;
@@ -376,24 +359,32 @@ package body Rules.Naming_Convention is
          Decl      : Asis.Declaration     := Enclosing_Element (Name);
          Name_Str  : constant Wide_String := Defining_Name_Image (Name);
          Renamed   : Asis.Element;
+         Renamed_T : Asis.Element;
          Decl_Kind : Asis.Declaration_Kinds;
          Def       : Asis.Definition;
          Accessed  : Asis.Element;
 
          -- Applicable rules must be given in order of decreasing generality
-         procedure Check (Set : Key_Set) is
+         procedure Check (Set : in Key_Set) is
          begin
             for I in reverse Set'Range loop
                Check_One (Name_Str, Set (I));
                exit when Usage (Set (I)).Is_Root;
             end loop;
          end Check;
+
       begin
-         if Defining_Name_Kind (Decl) = A_Defining_Expanded_Name then
+         while Defining_Name_Kind (Decl) = A_Defining_Expanded_Name loop
             -- Name was the name of a child compilation unit
             Decl := Enclosing_Element (Decl);
-         end if;
+         end loop;
 
+         -- Every path in the following case statement must end with a call to Check,
+         -- and perform nothing after.
+         -- There is nothing after the case statement.
+         -- It is therefore irrelevant whether the call to Check is followed by a return or not.
+         -- In most cases, there is no return, however in some cases there is a return when the
+         -- call to check is deep in the statements, to simplify the structure.
          case Element_Kind (Decl) is
             when A_Statement =>  ------------------------------------------------- Statements
                declare
@@ -424,15 +415,26 @@ package body Rules.Naming_Convention is
             when A_Declaration =>  ----------------------------------------------- Declarations
                Decl_Kind := Declaration_Kind (Decl);
 
-               if Decl_Kind in A_Full_Type_Declaration
-                 and then Declaration_Kind (Corresponding_Type_Declaration (Decl))
-                          in A_Private_Type_Declaration .. A_Private_Extension_Declaration
-               then
-                  -- This declaration is a full declaration of a private type.
-                  -- It does not follow the rules for its own kind, but the ones for private
-                  -- types (which are checked for the private declaration)
-                  return;
-               end if;
+               begin
+                  if Decl_Kind in A_Full_Type_Declaration
+                    and then Declaration_Kind (Corresponding_Type_Declaration (Decl))
+                              in A_Private_Type_Declaration .. A_Private_Extension_Declaration
+                  then
+                     -- This declaration is a full declaration of a private type.
+                     -- It does not follow the rules for its own kind, but the ones for private
+                     -- types (which are checked for the private declaration)
+                     return;
+                  end if;
+               exception
+                  when Asis.Exceptions.ASIS_Failed =>
+                     -- A4G BUG in Gnat/GPL, Gnat/GAP, fixed in 5.04 and above
+                     -- Corresponding_Type_Declaration fails for types declared in child units
+                     -- and separate units.
+                     -- Apparently, this does not happen for full declarations of private types,
+                     -- therefore we can ignore the problem
+                     A4G_Bugs.Trace_Bug ("Rules.Naming_Convention.Process_Defining_Name");
+                     null;
+               end;
 
                case Decl_Kind is
                   when A_Renaming_Declaration =>
@@ -443,6 +445,7 @@ package body Rules.Naming_Convention is
                            -- There are cases (like renaming of an indexed component) where
                            -- we want to go up a renaming, but Corrresponding_Base_Entity doesn't.
                            -- Hence the loop.
+                           -- We can't use Ultimate_Name, because we need a different treatment of dereferences
                            Going_Up_Renamings:
                              while Decl_Kind in A_Renaming_Declaration loop
                                 Renamed := A4G_Bugs.Corresponding_Base_Entity (Decl);
@@ -459,10 +462,22 @@ package body Rules.Naming_Convention is
                                          Decl_Kind := A_Constant_Declaration;
                                          exit Going_Up_Renamings;
                                       when An_Explicit_Dereference =>
-                                         case Access_Type_Kind (Type_Declaration_View
-                                                                (A4G_Bugs.Corresponding_Expression_Type
-                                                                 (Prefix (Renamed))))
-                                         is
+                                         Renamed_T := A4G_Bugs.Corresponding_Expression_Type (Prefix (Renamed));
+                                         if Is_Nil (Renamed_T) then
+                                            -- This implies that the prefix is an access type without a real declaration
+                                            -- => must be an anonymous access type, and the prefix is a formal parameter
+                                            Renamed   := Prefix (Renamed);
+                                            if Expression_Kind (Renamed) = A_Selected_Component then
+                                               Renamed := Selector (Renamed);
+                                            end if;
+                                            Decl := Corresponding_Name_Declaration (Renamed);
+                                            Assert (Declaration_Kind (Decl) = A_Parameter_Specification,
+                                                    "wrong declaration kind with dereference of Nil accessed type");
+                                            Decl_Kind := A_Parameter_Specification;
+                                            exit Going_Up_Renamings;
+                                        end if;
+
+                                         case Access_Type_Kind (Type_Declaration_View (Renamed_T)) is
                                             when A_Pool_Specific_Access_To_Variable
                                               | An_Access_To_Variable
                                               =>
@@ -526,7 +541,7 @@ package body Rules.Naming_Convention is
                         Def       := Type_Declaration_View (Decl);
                         if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
                            -- Subtype of a derived type
-                           Decl      := Corresponding_Root_Type (Def);
+                           Decl      := A4G_Bugs.Corresponding_Root_Type (Def);
                            Decl_Kind := Declaration_Kind (Decl);
                         end if;
                      end if;
@@ -539,7 +554,7 @@ package body Rules.Naming_Convention is
                      -- For derived types, get Decl and Decl_Kind from the corresponding type
                      Def := Type_Declaration_View (Decl);
                      if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
-                        Decl      := Corresponding_Root_Type (Def);
+                        Decl      := A4G_Bugs.Corresponding_Root_Type (Def);
                         Decl_Kind := Declaration_Kind (Decl);
                      end if;
 
@@ -581,101 +596,115 @@ package body Rules.Naming_Convention is
                            Check ((K_All, K_Type, K_Record_Type, K_Tagged_Type));
                         when An_Access_Type_Definition =>
                            if Access_Type_Kind (Def) in Access_To_Subprogram_Definition then
-                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_Sp_Type));
-                           else
-                              Accessed := Definitions.Subtype_Mark (Definitions.Access_To_Object_Definition (Def));
-                              if A4G_Bugs.Attribute_Kind (Accessed) = A_Class_Attribute then
-                                 -- Directly: type T is access T'Class
-                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
-                              else
-                                 -- Ignore a possible 'Base
-                                 if A4G_Bugs.Attribute_Kind (Accessed) = A_Base_Attribute then
-                                    Accessed := Prefix (Accessed);
-                                 end if;
+                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_SP_Type));
+                              return;
+                           end if;
 
-                                 -- Remove prefixes
-                                 if Expression_Kind (Accessed) = A_Selected_Component then
-                                    Accessed := Selector (Accessed);
-                                 end if;
+                           -- Here, we have an acces to object
+                           Accessed := Subtype_Simple_Name (Definitions.Access_To_Object_Definition (Def));
+                           if A4G_Bugs.Attribute_Kind (Accessed) = A_Class_Attribute then
+                              -- Directly: type T is access T'Class
+                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
+                              return;
+                           end if;
 
-                                 -- Here, we should have a plain (sub)type identifier
+                           -- Ignore a possible 'Base
+                           if A4G_Bugs.Attribute_Kind (Accessed) = A_Base_Attribute then
+                              Accessed := Prefix (Accessed);
+                           end if;
 
-                                 Accessed := Corresponding_Name_Declaration (Accessed);
-                                 if Declaration_Kind (Accessed) = An_Incomplete_Type_Declaration then
-                                    Accessed := Corresponding_Type_Declaration (Accessed);
-                                 end if;
+                           -- Remove prefixes
+                           if Expression_Kind (Accessed) = A_Selected_Component then
+                              Accessed := Selector (Accessed);
+                           end if;
 
-                                 if Declaration_Kind (Accessed) = A_Subtype_Declaration
-                                   and then Is_Class_Wide_Subtype (Accessed)
-                                 then
-                                    -- Annoying special case: the access type designates a subtype that names
-                                    -- a class-wide type. (i.e. subtype ST is T'Class; type Acc is access ST;)
-                                    Check ((K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
+                           -- Here, we should have a plain (sub)type identifier
 
-                                 else
-                                    -- Get rid of subtyping and derivations on the accessed type
-                                    -- But we may have a mixture of formal or non-formal derivations...
-                                    loop
-                                       Accessed := Corresponding_First_Subtype (Accessed);
-                                       Def      := Type_Declaration_View (Accessed);
-                                       if Type_Kind (Def)
-                                         in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
-                                       then
-                                          Accessed := Corresponding_Root_Type (Def);
-                                       elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
-                                          Accessed := Corresponding_Name_Declaration (Definitions.Subtype_Mark (Def));
-                                       else
-                                          exit;
-                                       end if;
-                                    end loop;
-
-                                    case Declaration_Kind (Accessed) is
-                                       when An_Ordinary_Type_Declaration =>
-                                          case Type_Kind (Type_Declaration_View (Accessed)) is
-                                             when Not_A_Type_Definition =>
-                                                Failure ("Unexpected accessed type 1", Accessed);
-                                             when A_Tagged_Record_Type_definition
-                                               | A_Derived_Record_Extension_Definition
-                                               =>
-                                                Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
-                                             when others =>
-                                                Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
-                                          end case;
-                                       when A_Task_Type_Declaration =>
-                                          Check ((K_All, K_Type, K_Access_Type, K_Access_To_Task_Type));
-                                       when A_Protected_Type_Declaration =>
-                                          Check ((K_All, K_Type, K_Access_Type, K_Access_To_Protected_Type));
-                                       when A_Private_Type_Declaration =>
-                                          Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
-                                       when A_Private_Extension_Declaration =>
-                                          Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
-                                       when A_Formal_Type_Declaration  =>
-                                          case Formal_Type_Kind (Type_Declaration_View (Accessed)) is
-                                             when Not_A_Formal_Type_Definition =>
-                                                Failure ("not a formal type definition");
-                                             when A_Formal_Derived_Type_Definition =>
-                                                Failure ("Unexpected formal derived type", Accessed);
-                                             when A_Formal_Discrete_Type_Definition
-                                               | A_Formal_Signed_Integer_Type_Definition
-                                               | A_Formal_Modular_Type_Definition
-                                               | A_Formal_Floating_Point_Definition
-                                               | A_Formal_Ordinary_Fixed_Point_Definition
-                                               | A_Formal_Decimal_Fixed_Point_Definition
-                                               | A_Formal_Access_Type_Definition
-                                               | A_Formal_Private_Type_Definition
-                                               | A_Formal_Unconstrained_Array_Definition
-                                               | A_Formal_Constrained_Array_Definition
-                                                =>
-                                                Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
-                                             when A_Formal_Tagged_Private_Type_Definition =>
-                                                Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
-                                          end case;
-                                       when others =>
-                                          Failure ("Unexpected accessed type 2", Accessed);
-                                    end case;
-                                 end if;
+                           Accessed := Corresponding_Name_Declaration (Accessed);
+                           if Declaration_Kind (Accessed) = An_Incomplete_Type_Declaration then
+                              Accessed := Corresponding_Type_Declaration (Accessed);
+                              if Is_Nil (Accessed) then
+                                 -- The full declaration of the accessed type is not in the context.
+                                 -- We cannot know the real nature of the accessed type.
+                                 -- Limit the check to Access_Type, and hope the user will rerun AdaControl
+                                 -- on the full program.
+                                 Check ((K_All, K_Type, K_Access_Type));
+                                 return;
                               end if;
                            end if;
+
+                           if Declaration_Kind (Accessed) = A_Subtype_Declaration
+                             and then Is_Class_Wide_Subtype (Accessed)
+                           then
+                              -- Annoying special case: the access type designates a subtype that names
+                              -- a class-wide type. (i.e. subtype ST is T'Class; type Acc is access ST;)
+                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
+                              return;
+                           end if;
+
+                           -- Get rid of subtyping and derivations on the accessed type
+                           -- But we may have a mixture of formal or non-formal derivations...
+                           loop
+                              Accessed := Corresponding_First_Subtype (Accessed);
+                              Def      := Type_Declaration_View (Accessed);
+                              if Type_Kind (Def)
+                                in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
+                              then
+                                 Accessed := A4G_Bugs.Corresponding_Root_Type (Def);
+                              elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
+                                 Accessed := Corresponding_Name_Declaration (Subtype_Simple_Name (Def));
+                              else
+                                 exit;
+                              end if;
+                           end loop;
+
+                           case Declaration_Kind (Accessed) is
+                              when An_Ordinary_Type_Declaration =>
+                                 case Type_Kind (Type_Declaration_View (Accessed)) is
+                                    when Not_A_Type_Definition =>
+                                       Failure ("Unexpected accessed type 1", Accessed);
+                                    when A_Tagged_Record_Type_Definition
+                                      | A_Derived_Record_Extension_Definition
+                                      =>
+                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                                    when others =>
+                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                                 end case;
+                              when A_Task_Type_Declaration =>
+                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Task_Type));
+                              when A_Protected_Type_Declaration =>
+                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Protected_Type));
+                              when A_Private_Type_Declaration =>
+                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                              when A_Private_Extension_Declaration =>
+                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                              when A_Formal_Type_Declaration  =>
+                                 case Formal_Type_Kind (Type_Declaration_View (Accessed)) is
+                                    when Not_A_Formal_Type_Definition =>
+                                       Failure ("not a formal type definition");
+                                    when A_Formal_Derived_Type_Definition =>
+                                       Failure ("Unexpected formal derived type", Accessed);
+                                    when A_Formal_Discrete_Type_Definition
+                                      | A_Formal_Signed_Integer_Type_Definition
+                                      | A_Formal_Modular_Type_Definition
+                                      | A_Formal_Floating_Point_Definition
+                                      | A_Formal_Ordinary_Fixed_Point_Definition
+                                      | A_Formal_Decimal_Fixed_Point_Definition
+                                      | A_Formal_Access_Type_Definition
+                                      | A_Formal_Private_Type_Definition
+                                      | A_Formal_Unconstrained_Array_Definition
+                                      | A_Formal_Constrained_Array_Definition
+                                      =>
+                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                                    when A_Formal_Tagged_Private_Type_Definition =>
+                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                                    when others => -- Compatibility Ada 2005
+                                       null;
+                                 end case;
+                              when others =>
+                                 Failure ("Unexpected accessed type 2", Accessed);
+                           end case;
+
                         when others =>
                            Failure ("Unexpected type kind: " & Type_Kinds'Wide_Image (Type_Kind (Def)));
                      end case;
@@ -771,7 +800,7 @@ package body Rules.Naming_Convention is
                      if Type_Kind (Def)
                        in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
                      then
-                        Def := Type_Declaration_View (Corresponding_Root_Type (Def));
+                        Def := Type_Declaration_View (A4G_Bugs.Corresponding_Root_Type (Def));
                         if Definition_Kind (Def) = A_Type_Definition then
                            -- Must be a record type. Go to the record definition to match the
                            -- case of the underived type
@@ -901,6 +930,9 @@ package body Rules.Naming_Convention is
 
                   when A_Renaming_Declaration =>
                      Failure ("Unexpected renaming", Decl);
+
+                  when others =>   -- Compatibility Ada 2005
+                     null;
                end case;
 
             when others =>
@@ -910,8 +942,8 @@ package body Rules.Naming_Convention is
    end Process_Defining_Name;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Naming_Convention;

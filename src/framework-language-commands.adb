@@ -33,6 +33,7 @@
 with
   Ada.Characters.Handling,
   Ada.Exceptions,
+  Ada.Strings.Wide_Fixed,
   Ada.Wide_Text_IO;
 
 -- Asis
@@ -50,10 +51,10 @@ with
   Adactl_Options,
   Framework.Language.Scanner,
   Framework.Reports,
+  Framework.Ruler,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
-  Implementation_Options,
-  Ruler;
+  Implementation_Options;
 
 package body Framework.Language.Commands is
    use Utilities;
@@ -61,28 +62,33 @@ package body Framework.Language.Commands is
    --  Output management
    Console_Name : constant Wide_String := "CONSOLE";
 
-   Adactl_Output : Ada.Wide_Text_Io.File_Type;
+   Adactl_Output : Ada.Wide_Text_IO.File_Type;
 
    type No_Data is null record;
    package Seen_Files_Map is new Binary_Map (Unbounded_Wide_String, No_Data);
    Seen_Files : Seen_Files_Map.Map;
-
 
    ------------------
    -- Help_Command --
    ------------------
 
    procedure Help_Command is
+      use Framework.Reports;
    begin
-      User_Message ("   Quit;");
-      User_Message ("   Go;");
-      User_Message ("   Message ""<message>"";");
-      User_Message ("   Help [ all|<rule name>{,<rule name>} ];");
       User_Message ("   Clear all|<rule name> ;");
+      User_Message ("   Go;");
+      User_Message ("   Help [ all|<rule name>{,<rule name>} ];");
+      User_Message ("   Inhibit <rule name> (<unit>{,<unit>});");
+      User_Message ("   Message ""<message>"";");
+      User_Message ("   Quit;");
+      User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short ;");
       User_Message ("   Set output ""<output file>"" ;");
-      User_Message ("   Set verbose|debug|ignore on|off ;");
+      User_Message ("   Set statistics <level: 0 .."
+                      & Integer'Wide_Image (Stats_Levels'Pos (Stats_Levels'Last))
+                      & ">;");
+      User_Message ("   Set verbose|debug|ignore|warning on|off ;");
+      User_Message ("   Search|Check|Count <rule name> [ ( <parameters> ) ];");
       User_Message ("   Source <input file> ;");
-      User_Message ("   Search|Check <rule name> [ ( <parameters> ) ];");
    end Help_Command;
 
    ----------------
@@ -97,7 +103,7 @@ package body Framework.Language.Commands is
       is
          use Ada.Exceptions, Asis.Exceptions, Ada.Characters.Handling;
       begin
-         Failure_Occured := True;
+         Failure_Occurred := True;
 
          -- Clean-up:
          Ruler.Reset;
@@ -106,7 +112,7 @@ package body Framework.Language.Commands is
          User_Message ("============= Phase: " & Phase & " =============");
          Reraise_Occurrence (Occur);
       exception
-         when Occur : ASIS_Failed
+         when Local_Occur : ASIS_Failed
            | ASIS_Inappropriate_Context
            | ASIS_Inappropriate_Container
            | ASIS_Inappropriate_Compilation_Unit
@@ -114,7 +120,7 @@ package body Framework.Language.Commands is
            | ASIS_Inappropriate_Line
            | ASIS_Inappropriate_Line_Number
            =>
-            User_Message ("ASIS error: " & To_Wide_String (Exception_Name (Occur)));
+            User_Message ("ASIS error: " & To_Wide_String (Exception_Name (Local_Occur)));
             User_Message ("In rule: " & Framework.Rules_Manager.Last_Rule);
             if Unit_Name /= "" then
                User_Message ("For unit: " & Unit_Name);
@@ -126,13 +132,13 @@ package body Framework.Language.Commands is
                raise;
             end if;
 
-         when Occur : others =>
-            User_Message ("Internal error: " & To_Wide_String (Exception_Name (Occur)));
+         when Local_Occur : others =>
+            User_Message ("Internal error: " & To_Wide_String (Exception_Name (Local_Occur)));
             User_Message ("       In rule: " & Framework.Rules_Manager.Last_Rule);
             if Unit_Name /= "" then
                User_Message ("      For unit: " & Unit_Name);
             end if;
-            User_Message ("       Message: " & To_Wide_String (Exception_Message (Occur)));
+            User_Message ("       Message: " & To_Wide_String (Exception_Message (Local_Occur)));
 
             -- Propagate the exception only if Exit_Option set
             if Adactl_Options.Exit_Option then
@@ -140,23 +146,36 @@ package body Framework.Language.Commands is
             end if;
       end Handle_Exception;
 
-      use Ada.Wide_Text_IO;
-   begin
+      use Ada.Wide_Text_IO, Adactl_Options;
+   begin  -- Go_Command
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
       begin
          Framework.Rules_Manager.Prepare_All;
       exception
-         when Occur : others => Handle_Exception ("Preparation", Occur);
+         when Utilities.User_Error =>
+            -- Call to Parameter_Error while preparing => propagate silently
+            raise;
+         when Occur : others =>
+            Handle_Exception ("Preparation", Occur);
       end;
 
       Units_List.Reset;
-      Framework.Reports.Clear_Counts;
+      Framework.Reports.Reset;
 
-      while not Units_List.Is_Exhausted loop
+      for I in Natural range 1 .. Units_List.Length loop
          begin
             Ruler.Process(Unit_Name  => Units_List.Current_Unit,
+                          Unit_Pos   => I,
                           Spec_Only  => Adactl_Options.Spec_Option);
          exception
-            when Occur : others => Handle_Exception ("Processing", Occur, Units_List.Current_Unit);
+            when Utilities.User_Error =>
+               -- Call to Parameter_Error while traversing => propagate silently
+               raise;
+            when Occur : others =>
+               Handle_Exception ("Processing", Occur, Units_List.Current_Unit);
          end;
 
          Units_List.Skip;
@@ -165,15 +184,94 @@ package body Framework.Language.Commands is
       begin
          Framework.Rules_Manager.Finalize_All;
       exception
-         when Occur : others => Handle_Exception ("Finalize", Occur);
+         -- There should be no call to Parameter_Error here...
+         when Occur : others =>
+            Handle_Exception ("Finalize", Occur);
       end;
 
-      Framework.Reports.Report_Counts;
+      Framework.Reports.Report_Counters;
 
       if Is_Open (Adactl_Output) then
          Flush (Adactl_Output);
       end if;
    end Go_Command;
+
+   ---------------------
+   -- Inhibit_Command --
+   ---------------------
+
+   procedure Inhibit_Command (Rule_Name : in Wide_String) is
+      use Framework, Framework.Language;
+   begin
+      if not Parameter_Exists then
+         Parameter_Error ("Missing unit names in ""Inhibit"" command");
+      end if;
+
+      while Parameter_Exists loop
+         declare
+            Is_All : constant Boolean := Get_Modifier ("ALL", Default => False);
+            Entity : constant Entity_Specification := Get_Entity_Parameter;
+         begin
+            -- Check that inhibition is not already specified
+            -- (otherwise, the suspend/resume mechanism won't work since
+            -- suspensions are not stacked)
+            if Rule_Name = "ALL" then
+               -- Can be given only once for each unit, and is incompatible with a specific rule name
+               --   => Associate in non additive mode
+               --   => will raise Parameter_Error if already specified for any rule
+               Associate (Inhibited,
+                          Entity,
+                          Inhibited_Rule'(Rule_Name =>To_Unbounded_Wide_String (Rule_Name), Is_Banned => Is_All),
+                          Additive => False);
+            else
+               -- Check that it is not already specified for "ALL". If it is, it is the only association,
+               -- per previous test
+               declare
+                  Cont : constant Root_Context'Class := Association (Inhibited, Entity);
+               begin
+                  if Cont /= No_Matching_Context and then Inhibited_Rule (Cont).Rule_Name = "ALL" then
+                     raise Already_In_Store;
+                  end if;
+               end;
+
+               Associate (Inhibited,
+                          Entity,
+                          Inhibited_Rule'(Rule_Name =>To_Unbounded_Wide_String (Rule_Name), Is_Banned => Is_All),
+                          Additive => True);
+            end if;
+         exception
+            when Already_In_Store =>
+               Parameter_Error ("Rule " & Rule_Name & " already inhibited for " & Image (Entity));
+         end;
+      end loop;
+   end Inhibit_Command;
+
+   ------------------------
+   -- Set_Format_Command --
+   ------------------------
+
+   procedure Set_Format_Command (Format : Wide_String) is
+      use Framework.Reports, Ada.Strings.Wide_Fixed;
+      Sep_Pos : Natural := Index (Format, "_");
+   begin
+      if Sep_Pos = 0 then
+         Sep_Pos            := Format'Last + 1;
+         Default_Short_Name := False;
+      elsif To_Upper (Format (Sep_Pos .. Format'Last)) = "_SHORT" then
+        Default_Short_Name := True;
+      else
+         raise Constraint_Error;
+      end if;
+
+      Format_Option := Output_Format'Wide_Value (Format (Format'First .. Sep_Pos - 1));
+   exception
+      when Constraint_Error =>
+         Parameter_Error ("""Gnat"", ""Gnat_Short"", "
+                            & """CSV"", ""CSV_Short"", "
+                            & """CSVX"", ""CSVX_Short"", "
+                            & """Source"", ""Source_Short"" "
+                            & "expected for format");
+   end Set_Format_Command;
 
    ------------------------
    -- Set_Output_Command --
@@ -203,6 +301,15 @@ package body Framework.Language.Commands is
       end if;
    end Set_Output_Command;
 
+   -----------------------
+   -- Set_Trace_Command --
+   -----------------------
+
+  procedure Set_Trace_Command (Trace_File : Wide_String) is
+  begin
+     Utilities.Set_Trace (Trace_File);
+  end Set_Trace_Command;
+
    --------------------
    -- Source_Command --
    --------------------
@@ -212,25 +319,25 @@ package body Framework.Language.Commands is
 
       -- Note that these procedures are passed the value of Current_Input.
       -- This allows to restore it at the end, although it is limited.
-      procedure Compile_File (Name           : Wide_String;
+      procedure Compile_File (File_Name      : Wide_String;
                               Previous_Input : File_Type) is
          use Ada.Characters.Handling;
          File      : File_Type;
       begin
-         if Name = "-" then
+         if File_Name = "-" then
             -- By convention: treat Standard_Input as file (not interactive)
             Set_Input (Standard_Input);
          else
-            Open (File, In_File, To_String (Name), Form => Implementation_Options.Form_Parameters);
+            Open (File, In_File, To_String (File_Name), Form => Implementation_Options.Form_Parameters);
             Set_Input (File);
          end if;
          Set_Prompt ("");
-         Start_Scan (From_String => False, Source => Name);
+         Start_Scan (From_String => False, Source => File_Name);
 
          Compile;
 
          Set_Input (Previous_Input);
-         if Name /= "-" then
+         if File_Name /= "-" then
             Close (File);
          end if;
       exception
@@ -243,22 +350,13 @@ package body Framework.Language.Commands is
       end Compile_File;
 
       procedure Compile_Console (Previous_Input : File_Type) is
-         use Ada.Characters.Handling;
       begin
          Set_Input (Standard_Input);
-         loop
-            begin
-               Set_Prompt ("Command");
-               Start_Scan (From_String => False, Source => "Console");
+         Set_Prompt ("Command");
+         Start_Scan (From_String => False, Source => "Console");
 
-               Compile;
+         Compile;
 
-               exit;
-            exception
-               when Occur : Utilities.User_Error =>
-                  User_Message ("Command error: " & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
-            end;
-         end loop;
          Set_Input (Previous_Input);
       end Compile_Console;
 

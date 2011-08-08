@@ -42,28 +42,35 @@
 with
   Asis;
 package Framework.Scope_Manager is
-   type Iterator_Mode is (All_Scopes, Current_Scope_Only);
-
-   Max_Scopes : constant := 50;
-   -- Maximum depth of scopes nesting.
-   -- The value is arbitrary, but should be (largely) sufficient.
-   -- Can be safely increased by just changing the constant if necessary.
+   type Iterator_Mode is (All_Scopes, Unit_Scopes, Current_Scope_Only);
 
    type Scope_Range is range 0 .. Max_Scopes;
    -- Level 0 is useful as a special value.
    -- The value returned by Current_Depth is always at least 1.
 
-   function Current_Depth return Scope_Range;
-   function Current_Scope return Asis.Element;
-   function Enclosing_Scope return Asis.Element;
-   function Active_Scopes return Asis.Element_List;
+   type Scope_List is array (Scope_Range range <>) of Asis.Element;
 
-   -- The following declaration is for use in the private part of Scoped_Store,
-   -- no use for the users of this package. (No harm either).
+   type Declaration_Origin is (Same_Unit, Specification, Parent);
+   -- Declaration_Origin is Specification if the current scope is a body and the info
+   -- comes from the corresponding specification.
+
+   function Current_Depth   return Scope_Range;
+   function Current_Scope   return Asis.Element;
+   function Enclosing_Scope return Asis.Element;
+   function Active_Scopes   return Scope_List;
+   function In_Private_Part (Scope : Scope_Range := Current_Depth) return Boolean;
+   function In_Context_Clauses return Boolean;
+   function Is_Current_Scope_Global return Boolean;
+   -- Current scope is global if itself and all enclosing scopes are all
+   -- packages or generic packages
+
    type Scoping_Procedure is access procedure (Scope : Asis.Element);
+   -- This declaration is for use in the private part of Scoped_Store,
+   -- no use for the users of this package. (No harm either).
 
    generic
       type Data (<>) is private;
+      with function Equivalent_Keys (L, R : Data) return Boolean is "=";
    package Scoped_Store is
       -- This package manages user data that are to be associated to a scope.
       -- It is managed as a stack. Data associated to a scope are automatically
@@ -71,7 +78,7 @@ package Framework.Scope_Manager is
       -- Data pushed when processing a package spec, a generic package spec, a
       -- task spec or a protected spec is temporarily removed at the end of the spec,
       -- and restored at the beginning of the corresponding body. It is deleted at the
-      -- end of the body.
+      -- end of the body, unless it is a compilation unit.
 
       procedure Push (Info : in Data);
       -- Adds Info on top of stack, associated to current scope
@@ -84,9 +91,22 @@ package Framework.Scope_Manager is
       -- Data are returned by Get_Current_Data from top to bottom but not removed
       -- from the stack.
       --
-      -- If the mode of Reset is Current_Scope_Only, only data associated to the
-      -- current scope are returned by the iterator. If the mode is All_Scopes,
-      -- all data are returned.
+      -- In the first form of Reset, the iterator is set to the top of the statck.
+      -- If the mode of Reset is Current_Scope_Only, only data associated to the current scope
+      -- are returned by the iterator.
+      -- If the mode of Reset is Unit_Scopes, only data associated to the scope of the current
+      -- compilation unit and above are returned.
+      -- If the mode is All_Scopes, all data are returned.
+      --
+      -- In the second form of Reset, the iterator is initialized on the data with
+      -- Equivalent_Keys to the provided Info (Data_Available returns False if not found).
+      -- If the mode of Reset is Current_Scope_Only, only data associated to the scope
+      -- of Info are returned by the iterator.
+      -- If the mode of Reset is Unit_Scopes, only data associated to the scope
+      -- of the compilation unit of Info and above are returned by the iterator.
+      -- If the mode is All_Scopes, all data from Info to the bottom of the stack are returned.
+      --
+      -- Continue is like the second form of Reset, starting from the current position.
       --
       -- Next moves to the next element. If the iterator is exhausted (i.e.
       -- Data_Available is False), it raises Constraint_Error.
@@ -103,11 +123,14 @@ package Framework.Scope_Manager is
       -- not be used while iterating.
 
       procedure Reset (Mode : Iterator_Mode);
+      procedure Reset (Info : Data; Mode : Iterator_Mode);
+      procedure Continue (Mode : Iterator_Mode);
       procedure Next;
-      function  Data_Available                   return Boolean;
-      function  Current_Data                     return Data;
-      function  Current_Data_Scope               return Asis.Element;
-      function  Is_Current_Transmitted_From_Spec return Boolean;
+      function  Data_Available     return Boolean;
+      function  Current_Data       return Data;
+      function  Current_Data_Level return Scope_Range;
+      function  Current_Data_Scope return Asis.Element;
+      function  Current_Origin     return Declaration_Origin;
       procedure Update_Current (Info : in Data);
       procedure Delete_Current;
 
@@ -115,24 +138,30 @@ package Framework.Scope_Manager is
       -- The following declarations are here because they are not allowed
       -- in a generic body.
 
-      procedure Enter_Scope (Scope : Asis.Element);
-      procedure Exit_Scope  (Scope : Asis.Element);
-      procedure Clear_All   (Scope : Asis.Element);
-      -- The parameter of Clear_All is not used, it is there just to
-      -- match the profile.
+      procedure Enter_Scope   (Scope : Asis.Element);
+      procedure Enter_Private (Scope : Asis.Element);
+      procedure Exit_Scope    (Scope : Asis.Element);
+      procedure Clear_All     (Scope : Asis.Element);
+      -- The parameters of Enter_Private and Clear_All are not used,
+      -- they are here just to match the profile.
 
-      Enter_Access : constant Scoping_Procedure := Enter_Scope'Access;
-      Exit_Access  : constant Scoping_Procedure := Exit_Scope'Access;
-      Clear_Access : constant Scoping_Procedure := Clear_All'Access;
+      Enter_Access   : constant Scoping_Procedure := Enter_Scope'Access;
+      Private_Access : constant Scoping_Procedure := Enter_Private'Access;
+      Exit_Access    : constant Scoping_Procedure := Exit_Scope'Access;
+      Clear_Access   : constant Scoping_Procedure := Clear_All'Access;
    end Scoped_Store;
 
+   ----------------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
 
-   procedure Enter_Unit (Unit : in Asis.Compilation_Unit);
-   procedure Enter_Scope (Scope : Asis.Element);
-   procedure Exit_Scope  (Scope : Asis.Element);
+   procedure Enter_Unit  (Unit  : in Asis.Compilation_Unit);
+   procedure Enter_Scope (Scope : in Asis.Element; Is_Unit : Boolean := False);
+   procedure Enter_Private_Part;
+   procedure Exit_Unit   (Unit  : in Asis.Compilation_Unit);
+   procedure Exit_Scope  (Scope : in Asis.Element; Force : Boolean := False);
+   procedure Exit_Context_Clauses;
 
    procedure Reset;
    -- Cleans up all active scope and all Scoped_Store data

@@ -1,0 +1,9 @@
+check global_references                 (all, t_global_references.P1);
+check global_references                 (all, t_global_references.P1.Inner_P);
+Glob_From_Task: check global_references (all, t_global_references.T1);
+
+Conflicts: check global_references (Multiple, task, protected);
+
+Atomic_No_Conflict : check global_references (multiple_non_atomic, t_global_references.Atom1, t_global_references.Atom2);
+Atomic_Conflict    : check global_references (multiple_non_atomic, t_global_references.Atom1, t_global_references.Atom3);
+Atomic_Task_Type   : check global_references (multiple_non_atomic, t_global_references.T2);

@@ -38,9 +38,26 @@ t_simplifiable_expressions.adb:188:13: Error: Range_Or_True: Simplify expression
 t_simplifiable_expressions.adb:190:13: Error: Range_Or_True: Simplify expression 'True /= <expr>' to 'not <expr>'
 t_simplifiable_expressions.adb:194:13: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
 t_simplifiable_expressions.adb:194:27: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-t_simplifiable_expressions.adb:202:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression of "if" or "case"
-t_simplifiable_expressions.adb:204:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression of "if" or "case"
-t_simplifiable_expressions.adb:208:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression of "if" or "case"
+t_simplifiable_expressions.adb:201:22: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:210:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:213:10: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:215:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:224:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:233:10: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:237:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:238:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:240:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:241:19: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:242:20: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:243:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:244:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:251:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:253:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:258:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:259:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:261:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:262:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions.adb:263:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 43
+SIMPLIFIABLE_EXPRESSIONS: 60

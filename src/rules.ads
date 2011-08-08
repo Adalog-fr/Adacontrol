@@ -28,19 +28,17 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
-
+with  -- ASIS
+  Asis;
 package Rules is
-   pragma Pure (Rules);
+   pragma Elaborate_Body (Rules);
+private
+   -- Declarations to make writing rules easier
 
-   -- These constants define limits about what "reasonable" programs
-   -- may contain.
-   -- They can be used by rules to limit some capabilities.
-   -- The user may change the limits at will, no other change is needed.
+   -- For simple instantiations of Traverse_Element:
+   type Null_State is null record;
 
-   Max_Identical_Rules : constant := 100;
-   -- For rules that need an upper bound to the number of times they can
-   -- be specified
-
-   Max_Parameters : constant := 30;
-   -- Maximum number of parameters declared by a subprogram or an entry
+   procedure Null_State_Procedure (Element : in     Asis.Element;
+                                   Control : in out Asis.Traverse_Control;
+                                   State   : in out Null_State);
 end Rules;

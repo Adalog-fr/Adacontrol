@@ -1,0 +1,5 @@
+: check unnecessary_use_clause;
+NSR79:check naming_convention ("^T_");
+go;
+search not_a_rule;
+go;

@@ -1,0 +1,4 @@
+check positional_parameters (insufficient, 2, standard.boolean, t_positional_parameters.enum1);
+count positional_parameters (insufficient, 1);
+
+check positional_parameters (maximum, 2);

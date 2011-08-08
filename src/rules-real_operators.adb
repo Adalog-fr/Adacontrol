@@ -35,7 +35,6 @@ with
 
 -- Asis
 with
-  Asis,
   Asis.Elements,
   Asis.Expressions;
 
@@ -124,7 +123,7 @@ package body Rules.Real_Operators is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      -- Ruler calls us for all operators.  Check type of operator.
+      -- This rule is plugged for all operators.  Check type of operator.
       case Operator_Kind (Prefix (Call)) is
          when An_Equal_Operator
            | A_Not_Equal_Operator
@@ -144,10 +143,11 @@ package body Rules.Real_Operators is
                Parsed_First_Parameter : Boolean := False;
                F : constant Asis.Association_List := Function_Call_Parameters (Call);
             begin
-               Parameter_Loop: for I in F'RANGE loop
+            Parameter_Loop:
+               for I in F'Range loop
                   declare
-                     P : constant Asis.Expression  := Actual_Parameter (F (I));
-                     T : constant Asis.Declaration := Ultimate_Expression_Type (P);
+                     P : constant Asis.Expression := Actual_Parameter (F (I));
+                     T : constant Asis.Definition := Ultimate_Expression_Type (P);
                   begin
                      case Type_Kind (T) is
                         when A_Root_Type_Definition =>
@@ -187,7 +187,7 @@ package body Rules.Real_Operators is
                             To_Wide_String (Rule_Label),
                             Rule_Type,
                             Get_Location (Call),
-                            "equality or inequality with Binary Fixed Point");
+                            "equality or inequality with Ordinary Fixed Point");
                             exit Parameter_Loop;
                          when A_Decimal_Fixed_Point_Definition => -- 3.5.9(4)
                            Report
@@ -211,8 +211,8 @@ package body Rules.Real_Operators is
    end Process_Function_Call;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Real_Operators;

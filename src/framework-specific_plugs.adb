@@ -106,4 +106,22 @@ package body Framework.Specific_Plugs is
       end case;
    end Post_Procedure;
 
+   ---------------------
+   -- Text_Enter_Unit --
+   ---------------------
+
+   procedure Text_Enter_Unit (Unit : in Asis.Compilation_Unit) is
+   begin
+      null;
+   end Text_Enter_Unit;
+
+   -------------------
+   -- Text_Analysis --
+   -------------------
+
+   procedure Text_Analysis (Line : Asis.Program_Text; Loc : Location) is
+   begin
+      null;
+   end Text_Analysis;
+
 end Framework.Specific_Plugs;

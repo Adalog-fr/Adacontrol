@@ -1,0 +1,29 @@
+t_case_statement.adb:13:7: Error: Max_Values: too many values for subtype of selector in case statement ( 11)
+t_case_statement.adb:17:10: Error: Min_Others_Range: too few values covered by "others" in case statement ( 0)
+t_case_statement.adb:20:7: Error: Max_Values: too many values for subtype of selector in case statement ( 11)
+t_case_statement.adb:20:7: Error: Min_Paths: too few paths in case statement ( 2)
+t_case_statement.adb:22:10: Found: Min_Others_Range: too few values covered by "others" in case statement ( 5)
+t_case_statement.adb:25:7: Error: Max_Values: too many values for subtype of selector in case statement ( 11)
+t_case_statement.adb:25:7: Error: Min_Paths: too few paths in case statement ( 2)
+t_case_statement.adb:27:10: Found: Min_Others_Range: too few values covered by "others" in case statement ( 5)
+t_case_statement.adb:30:7: Error: Max_Values: too many values for subtype of selector in case statement ( 191)
+t_case_statement.adb:30:7: Found: Min_Paths: too few paths in case statement ( 3)
+t_case_statement.adb:33:10: Found: Min_Others_Range: too few values covered by "others" in case statement ( 97)
+t_case_statement.adb:45:7: Found: Max_Values: too many values for subtype of selector in case statement ( 10)
+t_case_statement.adb:45:7: Found: Min_Paths: too few paths in case statement ( 3)
+t_case_statement.adb:48:10: Error: Min_Others_Range: too few values covered by "others" in case statement ( 0)
+t_case_statement.adb:51:7: Found: Max_Values: too many values for subtype of selector in case statement ( 10)
+t_case_statement.adb:51:7: Error: Min_Paths: too few paths in case statement ( 2)
+t_case_statement.adb:53:10: Found: Min_Others_Range: too few values covered by "others" in case statement ( 6)
+t_case_statement.adb:71:10: Error: Min_Paths: too few paths in case statement ( 1)
+t_case_statement.adb:75:10: Error: Min_Paths: too few paths in case statement ( 2)
+t_case_statement.adb:80:10: Error: Min_Paths: too few paths in case statement ( 2)
+t_case_statement.adb:100:7: Error: Min_Paths: too few paths in case statement ( 2)
+t_case_statement.adb:102:10: Found: Min_Others_Range: too few values covered by "others" in case statement ( 17)
+t_case_statement.adb:112:7: Error: Max_Values: too many values for subtype of selector in case statement ( 4294967296)
+t_case_statement.adb:118:10: Found: Min_Others_Range: too few values covered by "others" in case statement ( 23)
+
+Counts summary:
+Number_Empty_Others: 2
+Number_big_case: 2
+Number_small_case: 9

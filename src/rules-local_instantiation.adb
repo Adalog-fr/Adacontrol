@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Asis
 with
   Asis.Elements,
@@ -40,6 +36,7 @@ with
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities;
 
 -- Adactl
@@ -65,7 +62,7 @@ package body Rules.Local_Instantiation  is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <generic name>");
+      User_Message ("Parameter(s) (optional): <generic name>");
       User_Message ("Control instantiations that are done in a local scope.");
    end Help;
 
@@ -75,22 +72,19 @@ package body Rules.Local_Instantiation  is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
    begin
        if  not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Associate_Default (Rule_Uses, Basic.New_Context (Rule_Type, Label));
+         return;
       end if;
 
       while Parameter_Exists loop
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Rule_Uses,
-                       Entity,
-                       Simple_Context'(Rule_Type  => Rule_Type,
-                                       Rule_Label => To_Unbounded_Wide_String (Label)));
+            Associate (Rule_Uses, Entity, Basic.New_Context (Rule_Type, Label));
          exception
             when Already_In_Store =>
                Parameter_Error (Image (Entity) & " is already used in rule " & Rule_Id);
@@ -134,7 +128,6 @@ package body Rules.Local_Instantiation  is
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration) is
       use Asis.Declarations;
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Reports;
    begin
       if not Rule_Used then
@@ -143,10 +136,10 @@ package body Rules.Local_Instantiation  is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         use Framework.Scope_Manager, Asis, Asis.Elements, Utilities;
-         Current_Context : Rule_Context'Class
+         use Framework.Scope_Manager, Asis, Asis.Elements, Thick_Queries;
+         Current_Context : constant Root_Context'Class
            := Matching_Context (Rule_Uses, Generic_Unit_Name (Instantiation));
-         Scopes          : constant Asis.Element_List := Active_Scopes;
+         Scopes          : constant Scope_List := Active_Scopes;
       begin
          if Current_Context = No_Matching_Context then
             return;
@@ -170,10 +163,10 @@ package body Rules.Local_Instantiation  is
                        | An_Entry_Body_Declaration
                        =>
                         Report (Rule_Id,
-                                To_Wide_String ( Simple_Context (Current_Context).Rule_Label),
-                                Simple_Context (Current_Context).Rule_Type,
+                                Current_Context,
                                 Get_Location (Instantiation),
-                                "local instantiation of """ & To_Title (Last_Matching_Name (Rule_Uses)) & '"');
+                                "local instantiation of """
+                                & Full_Name_Image (Generic_Unit_Name (Instantiation)) & '"');
                      when others =>
                         -- This covers :
                         --   all specifications (no call can happen there)
@@ -185,10 +178,10 @@ package body Rules.Local_Instantiation  is
                   case Statement_Kind (Scopes (I)) is
                      when A_Block_Statement =>
                         Report (Rule_Id,
-                                To_Wide_String ( Simple_Context (Current_Context).Rule_Label),
-                                Simple_Context (Current_Context).Rule_Type,
+                                Current_Context,
                                 Get_Location (Instantiation),
-                                "local instantiation of """ & To_Title (Last_Matching_Name (Rule_Uses)) & '"');
+                                "local instantiation of """
+                                & Full_Name_Image (Generic_Unit_Name (Instantiation)) & '"');
                      when others =>
                         null;
                   end case;
@@ -201,9 +194,9 @@ package body Rules.Local_Instantiation  is
    end Process_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Local_Instantiation;

@@ -63,6 +63,5 @@ package Rules.Unnecessary_Use  is
    --    A_Generic_Instantiation
 
    procedure Process_Scope_Exit (Scope : in Asis.Element);
-   -- Applies the rule
 
 end Rules.Unnecessary_Use;

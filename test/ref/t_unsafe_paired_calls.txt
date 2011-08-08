@@ -1,0 +1,26 @@
+t_unsafe_paired_calls.adb:30:4: Error: No_Parameter: construct must have exception handlers
+t_unsafe_paired_calls.adb:51:7: Error: No_Parameter: construct must have exception handlers
+t_unsafe_paired_calls.adb:101:7: Error: No_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P
+t_unsafe_paired_calls.adb:100:4: Error: No_Parameter: construct must have exception handlers
+t_unsafe_paired_calls.adb:107:7: Error: No_Parameter: construct must start with operation matching T_Unsafe_Paired_Calls.V
+t_unsafe_paired_calls.adb:112:7: Error: No_Parameter: call to T_Unsafe_Paired_Calls.P is not the first of a sequence of statements
+t_unsafe_paired_calls.adb:113:7: Error: No_Parameter: call to T_Unsafe_Paired_Calls.V is not the last of a sequence of statements
+t_unsafe_paired_calls.adb:115:10: Error: No_Parameter: call to T_Unsafe_Paired_Calls.P is not the first of a sequence of statements
+t_unsafe_paired_calls.adb:117:10: Error: No_Parameter: call to T_Unsafe_Paired_Calls.V is not the last of a sequence of statements
+t_unsafe_paired_calls.adb:122:4: Error: No_Parameter: construct must have exception handlers
+t_unsafe_paired_calls.adb:128:4: Error: No_Parameter: construct must have a "when others" exception handler
+t_unsafe_paired_calls.adb:142:7: Error: No_Parameter: handler must have a call to T_Unsafe_Paired_Calls.V
+t_unsafe_paired_calls.adb:151:7: Error: No_Parameter: handler must have only one call to T_Unsafe_Paired_Calls.V
+t_unsafe_paired_calls.adb:159:10: Error: No_Parameter: nested call to T_Unsafe_Paired_Calls.P
+t_unsafe_paired_calls.adb:193:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P (different or non static lock value)
+t_unsafe_paired_calls.adb:195:7: Error: In_Parameter: construct must start with call matching T_Unsafe_Paired_Calls.V (different or non static lock value)
+t_unsafe_paired_calls.adb:202:7: Error: In_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value  1
+t_unsafe_paired_calls.adb:204:7: Error: No_Parameter: construct must start with operation matching T_Unsafe_Paired_Calls.V
+t_unsafe_paired_calls.adb:211:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value  1
+t_unsafe_paired_calls.adb:213:7: Error: In_Parameter: construct must start with call matching T_Unsafe_Paired_Calls.V with lock value  2
+t_unsafe_paired_calls.adb:215:7: Error: In_Parameter: handler must have a call to T_Unsafe_Paired_Calls.V with lock value  2
+t_unsafe_paired_calls.adb:237:10: Error: In_Parameter: nested call to T_Unsafe_Paired_Calls.P with lock value  1
+t_unsafe_paired_calls.adb:263:7: Error: InOut_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1
+t_unsafe_paired_calls.adb:265:7: Error: InOut_Parameter: construct must start with call matching T_Unsafe_Paired_Calls.V with lock variable T_Unsafe_Paired_Calls.S2
+t_unsafe_paired_calls.adb:276:7: Error: InOut_Parameter: handler must have a call to T_Unsafe_Paired_Calls.V with lock variable T_Unsafe_Paired_Calls.S1
+t_unsafe_paired_calls.adb:298:10: Error: InOut_Parameter: nested call to T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1

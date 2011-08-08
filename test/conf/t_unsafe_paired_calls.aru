@@ -1,0 +1,10 @@
+No_Parameter: check unsafe_paired_calls (t_unsafe_paired_calls{}.p{}, t_unsafe_paired_calls{}.v{});
+In_Parameter: check unsafe_paired_calls (t_unsafe_paired_calls{}.p{standard.character; standard.integer}, 
+                                         t_unsafe_paired_calls{}.v{standard.character; standard.integer},
+                                         standard.integer);
+In_Parameter: check unsafe_paired_calls (t_unsafe_paired_calls{}.p{t_unsafe_paired_calls{}.Acc}, 
+                                         t_unsafe_paired_calls{}.v{t_unsafe_paired_calls{}.Acc},
+                                         t_unsafe_paired_calls{}.Acc);
+InOut_Parameter: check unsafe_paired_calls (t_unsafe_paired_calls{}.p{t_unsafe_paired_calls{}.sema}, 
+                                            t_unsafe_paired_calls{}.v{t_unsafe_paired_calls{}.sema},
+                                            t_unsafe_paired_calls{}.sema);

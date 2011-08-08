@@ -92,7 +92,7 @@ package body Framework.Language.Scanner is
    Buf_Last : Natural := 0;
 
    procedure Next_Char is
-      use Ada.Strings.Wide_Unbounded, Ada.Strings.Wide_Fixed;
+      use Ada.Strings.Wide_Fixed;
    begin
       if Buf_Inx = Buf_Last and Buf_Last = Buffer'Last then
          -- Buffer was too short, read next part
@@ -114,6 +114,9 @@ package body Framework.Language.Scanner is
          else
             if Current_Prompt /= Null_Unbounded_Wide_String then
                if Prompt_Active then
+                  -- Here, we have fresh new user input
+                  -- => Cancel any previous error flag
+                  Rule_Error_Occurred := False;
                   Put (Current_Error, To_Wide_String (Current_Prompt) & ": ");
                else
                   Put (Current_Error, Length (Current_Prompt) * '.' & ": ");
@@ -181,7 +184,7 @@ package body Framework.Language.Scanner is
    Char_Tokens : constant Wide_String (Token_Kind'Pos (Character_Token_Kind'First) ..
                                        Token_Kind'Pos (Character_Token_Kind'Last))
      := "{}()<>':;,.";
-   Char_Token_Values : array (Char_Tokens'Range) of Token
+   Char_Token_Values : constant array (Char_Tokens'Range) of Token
      := ((Kind => Left_Bracket,      Position => Null_Location),
          (Kind => Right_Bracket,     Position => Null_Location),
          (Kind => Left_Parenthesis,  Position => Null_Location),
@@ -198,7 +201,6 @@ package body Framework.Language.Scanner is
       use Ada.Strings.Wide_Fixed, Ada.Characters.Handling;
       use Utilities;
 
-      Value        : Integer;
       First_Line   : Asis.Text.Line_Number;
       First_Column : Asis.Text.Character_Position;
 
@@ -236,7 +238,7 @@ package body Framework.Language.Scanner is
                   exit when Cur_Char = ';';
                else
                   exit when Cur_Char <= ' ';
-                  exit when not Is_letter (To_Character (Cur_Char))
+                  exit when not Is_Letter (To_Character (Cur_Char))
                     and not Is_Digit (To_Character (Cur_Char))
                     and Cur_Char /= '_';
                end if;
@@ -252,22 +254,62 @@ package body Framework.Language.Scanner is
          end loop;
       end Get_Name;
 
+      function Get_Integer return Integer is
+         -- Precondition: Cur_Char in '0..9' or '-'
+         Result   : Integer;
+         Negative : Boolean := False;
+      begin
+         if Cur_Char = '-' then
+            Negative := True;
+            Next_Char;
+         end if;
+         Result := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
+         loop
+            Next_Char;
+            exit when At_Eol;
+            if Cur_Char = '_' then
+               Next_Char;
+               if Cur_Char = '_' then
+                  Syntax_Error ("Consecutive underscores not allowed in numbers",
+                                (Current_File, Current_Line, Current_Column));
+               elsif Cur_Char not in '0'..'9' then
+                  Syntax_Error ("Trailing underscores not allowed in numbers",
+                                (Current_File, Current_Line, Current_Column));
+               end if;
+            end if;
+            if Cur_Char in '0' .. '9' then
+               Result := Result*10 + Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
+            elsif Is_Letter (To_Character (Cur_Char)) then
+               Syntax_Error ("Letter not allowed in numbers",
+                             (Current_File, Current_Line, Current_Column));
+            else
+               -- Must be a separator here
+               exit;
+            end if;
+         end loop;
+
+         if Negative then
+            Result := -Result;
+         end if;
+         return Result;
+      end Get_Integer;
+
    begin
       Token_Delayed := False;
 
-      if The_Token.Kind = EoF then
-         -- EoF found => stay there
+      if The_Token.Kind = Eof then
+         -- Eof found => stay there
          return;
       end if;
 
       loop
-         if At_EoL then
+         if At_Eol then
             -- Skip empty lines
             Next_Char;
          elsif Cur_Char = '#' or else (Cur_Char = '-' and then Look_Ahead_Char = '-') then
             -- Skip comment
             while not At_Eol loop
-               Next_char;
+               Next_Char;
             end loop;
          elsif Cur_Char > ' ' then
             exit;
@@ -290,31 +332,50 @@ package body Framework.Language.Scanner is
                The_Token.Position := (Current_File, First_Line, First_Column);
                Next_Char;
 
-            when '0' .. '9' =>
-               Value := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
-               loop
-                  Next_Char;
-                  exit when At_Eol;
-                  if Cur_Char = '_' then
+            when '0' .. '9' | '-' =>
+               declare
+                  Integer_Part    : Integer;
+                  Fractional_Part : Float;
+               begin
+                  begin
+                     Integer_Part := Get_Integer;
+                  exception
+                     when Constraint_Error =>
+                        The_Token := (Kind     => Bad_Integer,
+                                      Position => (Current_File, First_Line, First_Column));
+                        return;
+                  end;
+
+                  if Cur_Char = '.' then
                      Next_Char;
-                     if Cur_Char = '_' then
-                        Syntax_Error ("Consecutive underscores not allowed in numbers", The_Token.Position);
-                     elsif Cur_Char not in '0'..'9' then
-                        Syntax_Error ("Trailing underscores not allowed in numbers", The_Token.Position);
+                     if Cur_Char not in '0' .. '9' then
+                        Syntax_Error ("Illegal real value", (Current_File, Current_Line, Current_Column));
                      end if;
-                  end if;
-                  if Cur_Char in '0' .. '9' then
-                     Value := Value*10 + Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
-                  elsif Is_Letter (To_Character (Cur_Char)) then
-                     Syntax_Error ("Letter not allowed in numbers", The_Token.Position);
+
+                     begin
+                        Fractional_Part := Float (Get_Integer);
+                     exception
+                        when Constraint_Error =>
+                           The_Token := (Kind     => Bad_Float,
+                                         Position => (Current_File, First_Line, First_Column));
+                           return;
+                     end;
+
+                     while Fractional_Part >= 1.0 loop
+                        Fractional_Part := Fractional_Part / 10.0;
+                     end loop;
+                     if Integer_Part < 0 then
+                        Fractional_Part := -Fractional_Part;
+                     end if;
+                     The_Token := (Kind     => Float_Value,
+                                   Position => (Current_File, First_Line, First_Column),
+                                   Fvalue   => Float (Integer_Part) + Fractional_Part);
                   else
-                     -- Must be a separator here
-                     exit;
+                     The_Token := (Kind     => Integer_Value,
+                                   Position => (Current_File, First_Line, First_Column),
+                                   Value    => Integer_Part);
                   end if;
-               end loop;
-               The_Token := (Kind     => Integer_Value,
-                             Position => (Current_File, First_Line, First_Column),
-                             Value    => Value);
+               end;
 
             when '"' | 'a'..'z' | 'A'..'Z' | '_' => -- We allow '_' because of "_anonymous_"
                Get_Name (Extended => False);
@@ -324,7 +385,7 @@ package body Framework.Language.Scanner is
                   To_Check : constant Wide_String
                     := "KEY_" & To_Upper (The_Token.Text (1..The_Token.Length));
                begin
-                  for Key in Key_Kind'First .. Key_Kind'Pred (Not_A_Key) loop
+                  for Key in Key_Kind range Key_Kind'First .. Key_Kind'Pred (Not_A_Key) loop
                      if To_Check = Key_Kind'Wide_Image (Key) then
                         The_Token.Key := Key;
                         exit;
@@ -333,14 +394,23 @@ package body Framework.Language.Scanner is
                end;
 
             when others =>
-               Syntax_Error ("Unexpected character: " & Cur_Char,
-                             (Current_File, Current_Line, Current_Column));
+               declare
+                  Bad_Char : constant Wide_Character := Cur_Char;
+               begin
+                  Next_Char;
+                  Syntax_Error ("Unexpected character: " & Bad_Char,
+                                (Current_File, Current_Line, Current_Column));
+               end;
          end case;
       end if;
    exception
       when End_Error =>
-         The_Token := (Kind => EoF,
+         The_Token := (Kind => Eof,
                        Position => (Current_File, Current_Line, Current_Column));
+      when others =>
+         The_Token := (Kind     => Bad_Token,
+                       Position => (Current_File, First_Line, First_Column));
+         raise;
    end Actual_Next_Token;
 
    ------------------------------------------------------------------
@@ -363,10 +433,14 @@ package body Framework.Language.Scanner is
    -- Next_Token --
    ----------------
 
-   procedure Next_Token (Force_String : Boolean := False) is
+   procedure Next_Token (Force_String : Boolean := False; No_Delay : Boolean := False) is
    begin
-      Token_Delayed := True;
-      String_Token  := Force_String;
+      if No_Delay then
+         Actual_Next_Token (Force_String);
+      else
+         Token_Delayed := True;
+         String_Token  := Force_String;
+      end if;
    end Next_Token;
 
    ----------------
@@ -392,8 +466,7 @@ package body Framework.Language.Scanner is
    -- Start_Scan --
    ----------------
 
-   procedure Start_Scan (From_String : boolean; Source : Wide_String) is
-      use Ada.Strings.Wide_Unbounded;
+   procedure Start_Scan (From_String : Boolean; Source : Wide_String) is
    begin
       Origin_Is_String := From_String;
       Current_Line     := 1;
@@ -425,11 +498,11 @@ package body Framework.Language.Scanner is
       Cur_Char      := Buffer (Buf_Inx);
       At_Eol        := False;
       Prompt_Active := False;
-      The_Token     := (Kind => Semi_Colon, Position => The_Token.Position); -- Make sure it is not EoF
+      The_Token     := (Kind => Semi_Colon, Position => The_Token.Position); -- Make sure it is not Eof
 
    exception
       when End_Error =>
-         The_Token := (Kind     => EoF,
+         The_Token := (Kind     => Eof,
                        Position => (Current_File, Current_Line, Current_Column));
   end Start_Scan;
 
@@ -444,14 +517,30 @@ package body Framework.Language.Scanner is
             return T.Text (1 .. T.Length);
          when Integer_Value =>
             declare
-               Image : constant Wide_String := Integer'Wide_Image (T.Value);
+               Result : constant Wide_String := Integer'Wide_Image (T.Value);
             begin
-               return Image (2 .. Image'Length);
+               if T.Value < 0 then
+                  return Result;
+               else
+                  return Result (2 .. Result'Length);
+               end if;
             end;
+         when Float_Value =>
+            declare
+               Result : constant Wide_String := Float'Wide_Image (T.Fvalue);
+            begin
+               if T.Fvalue < 0.0 then
+                  return Result;
+               else
+                  return Result (2 .. Result'Length);
+               end if;
+            end;
+         when Bad_Integer | Bad_Float | Bad_Token =>
+            return "#####";
          when Character_Token_Kind =>
             return (1 => Char_Tokens (Character_Token_Kind'Pos (T.Kind)));
-         when EoF =>
-            Utilities.Failure ("Token image for EoF");
+         when Eof =>
+            Utilities.Failure ("Token image for Eof");
       end case;
    end Image;
 
@@ -468,6 +557,11 @@ package body Framework.Language.Scanner is
                 At_Eol,
                 Source_String,
                 Source_Last,
+
+                Buffer,
+                Buf_Inx,
+                Buf_Last,
+
                 Current_File,
                 Current_Line,
                 Current_Column,
@@ -488,6 +582,11 @@ package body Framework.Language.Scanner is
       At_Eol           := State.At_Eol;
       Source_String    := State.Source_String;
       Source_Last      := State.Source_Last;
+
+      Buffer           := State.Buffer;
+      Buf_Inx          := State.Buf_Inx;
+      Buf_Last         := State.Buf_Last;
+
       Current_File     := State.Current_File;
       Current_Line     := State.Current_Line;
       Current_Column   := State.Current_Column;
@@ -499,14 +598,14 @@ package body Framework.Language.Scanner is
    -- Is_String --
    ---------------
 
-   function Is_String (T : Token; Value : Wide_String) return Boolean is
+   function Is_String (T : Token; Expected : Wide_String) return Boolean is
       use Utilities;
    begin
       if T.Kind /= Name then
          return False;
       end if;
 
-      return To_Upper (T.Text (1 .. T.Length)) = Value;
+      return To_Upper (T.Text (1 .. T.Length)) = Expected;
    end Is_String;
 
 end Framework.Language.Scanner;

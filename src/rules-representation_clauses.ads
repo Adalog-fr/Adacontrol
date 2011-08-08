@@ -43,7 +43,7 @@ package Rules.Representation_Clauses is
    -- Parameter(N): Clause name
    -- If no parameter is given, all representation clauses are checked/searched
    --
-   -- Clause names: "at", "at_mod", "enumeration", "record",
+   -- Clause names: "all", "at", "at_mod", "enumeration", "record",
    --   or any specifiable attribute
 
    Rule_Id : constant Wide_String := "REPRESENTATION_CLAUSES";

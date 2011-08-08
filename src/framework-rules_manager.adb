@@ -37,42 +37,48 @@ with
 with
   Utilities,
   Binary_Map;
-
--- Pragmas
 pragma Elaborate_All (Utilities);
 pragma Elaborate_All (Binary_Map);
 
-package body Framework.Rules_Manager is
+-- Adacontrol
+with
+  Framework.Reports;
 
+package body Framework.Rules_Manager is
    Last_Rule_Name   : Wide_String (1..50);  -- 50 arbitrary, but largely sufficient
    Last_Rule_Length : Natural := 0;
    Max_Name_Length  : Natural := 0;
 
-   Nb_Rules : Natural := 0;
+   Nb_Rules : Rules_Count := 0;
 
-   type Element is record
+   type Rule_Info is record
+      Kind     : Rule_Kind;
       Help     : Help_Procedure;
       Add_Use  : Add_Use_Procedure;
       Command  : Command_Procedure;
       Prepare  : Prepare_Procedure;
       Finalize : Finalize_Procedure;
+      Used     : Boolean;
    end record;
 
    package Rule_List is new Binary_Map (Ada.Strings.Wide_Unbounded.Unbounded_Wide_String,
-                                        Element);
+                                        Rule_Info);
    Rule_Map : Rule_List.Map;
+
+   Kinds_Count : array (Rule_Kind) of Rules_Count := (others => 0);
 
    --------------
    -- Register --
    --------------
 
    procedure Register (Rule     : Wide_String;
+                       Kind     : Rule_Kind;
                        Help     : Help_Procedure;
                        Add_Use  : Add_Use_Procedure;
                        Command  : Command_Procedure;
                        Prepare  : Prepare_Procedure  := null;
                        Finalize : Finalize_Procedure := null) is
-      use Utilities, Ada.Strings.Wide_Unbounded;
+      use Utilities;
    begin
       if Help = null or Add_Use = null or Command = null then
          Failure ("Missing Help, Add_Use or Clear procedure");
@@ -80,12 +86,41 @@ package body Framework.Rules_Manager is
 
       Rule_List.Add (Rule_Map,
                      To_Unbounded_Wide_String (To_Upper (Rule)),
-                     (Help, Add_Use, Command, Prepare, Finalize));
+                     (Kind, Help, Add_Use, Command, Prepare, Finalize, Used => False));
       Nb_Rules := Nb_Rules + 1;
+
       if Rule'Length > Max_Name_Length then
          Max_Name_Length := Rule'Length;
       end if;
    end Register;
+
+   -----------------------
+   -- Register_Semantic --
+   -----------------------
+
+   procedure Register_Semantic (Rule     : Wide_String;
+                                Help     : Help_Procedure;
+                                Add_Use  : Add_Use_Procedure;
+                                Command  : Command_Procedure;
+                                Prepare  : Prepare_Procedure  := null;
+                                Finalize : Finalize_Procedure := null) is
+   begin
+      Register (Rule, Semantic, Help, Add_Use, Command, Prepare, Finalize);
+   end Register_Semantic;
+
+   ----------------------
+   -- Register_Textual --
+   ----------------------
+
+   procedure Register_Textual (Rule     : Wide_String;
+                               Help     : Help_Procedure;
+                               Add_Use  : Add_Use_Procedure;
+                               Command  : Command_Procedure;
+                               Prepare  : Prepare_Procedure  := null;
+                               Finalize : Finalize_Procedure := null) is
+   begin
+      Register (Rule, Textual, Help, Add_Use, Command, Prepare, Finalize);
+   end Register_Textual;
 
    -----------
    -- Enter --
@@ -121,7 +156,7 @@ package body Framework.Rules_Manager is
    ----------
 
    procedure Help (Rule_Id : in Wide_String) is
-      use Ada.Strings.Wide_Unbounded, Utilities, Rule_List;
+      use Utilities, Rule_List;
 
       Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Rule_Id));
    begin
@@ -136,11 +171,11 @@ package body Framework.Rules_Manager is
    --------------
 
    procedure Help_All is
-      procedure One_Help (Key : in Unbounded_Wide_String; Value : in out Element) is
+      procedure One_Help (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
          pragma Unreferenced (Key);
          use Utilities;
       begin
-         Value.Help.all;
+         Info.Help.all;
          User_Message ("");
       end One_Help;
 
@@ -158,8 +193,8 @@ package body Framework.Rules_Manager is
       Spaces : constant Unbounded_Wide_String := 3 * ' ';
       Line : Unbounded_Wide_String := Spaces;
 
-      procedure One_Name (Key : in Unbounded_Wide_String; Value : in out Element) is
-         pragma Unreferenced (Value);
+      procedure One_Name (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
+         pragma Unreferenced (Info);
          Name : constant Wide_String := To_Wide_String (Key);
       begin
          if Length (Line) + Max_Name_Length + 1 >= 80 then
@@ -183,10 +218,22 @@ package body Framework.Rules_Manager is
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types;
                       Rule_Name : in Wide_String) is
-      use Rule_List;
+      use Rule_List, Framework.Reports;
+
+      -- Existence of rule checked by the language (ours, not Ada!)
+      Info : Rule_Info := Fetch (Rule_Map, To_Unbounded_Wide_String (Rule_Name));
    begin
-      -- Existence of rule checked by the language
-      Fetch (Rule_Map, To_Unbounded_Wide_String (Rule_Name)).Add_Use (Label, Rule_Type);
+      Info.Add_Use (Label, Rule_Type);
+      if not Info.Used then
+         Kinds_Count (Info.Kind) := Kinds_Count (Info.Kind) + 1;
+         Info.Used := True;
+         Add (Rule_Map, To_Unbounded_Wide_String (Rule_Name), Info);
+      end if;
+
+      if Rule_Type = Count then
+         Init_Counts (Rule_Name, Label);
+      end if;
+      Init_Stats (Rule_Name, Label);
    end Add_Use;
 
    -----------------
@@ -194,11 +241,11 @@ package body Framework.Rules_Manager is
    -----------------
 
    procedure Prepare_All is
-      procedure Prepare_One (Key : in Unbounded_Wide_String; Value : in out Element) is
+      procedure Prepare_One (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
          pragma Unreferenced (Key);
       begin
-         if Value.Prepare /= null then
-            Value.Prepare.all;
+         if Info.Prepare /= null then
+            Info.Prepare.all;
          end if;
       end Prepare_One;
 
@@ -213,11 +260,11 @@ package body Framework.Rules_Manager is
    ------------------
 
    procedure Finalize_All is
-      procedure Finalize_One (Key : in Unbounded_Wide_String; Value : in out Element) is
+      procedure Finalize_One (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
          pragma Unreferenced (Key);
       begin
-         if Value.Finalize /= null then
-            Value.Finalize.all;
+         if Info.Finalize /= null then
+            Info.Finalize.all;
          end if;
       end Finalize_One;
 
@@ -231,15 +278,28 @@ package body Framework.Rules_Manager is
    -----------------
 
    procedure Command_All (Action : Rule_Action) is
-      procedure One_Command (Key : in Unbounded_Wide_String; Value : in out Element) is
+      procedure One_Command (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
          pragma Unreferenced (Key);
       begin
-         Value.Command (Action);
+         Info.Command (Action);
+         case Action is
+            when Clear =>
+               Info.Used := False;
+            when others =>
+               null;
+         end case;
       end One_Command;
 
       procedure Command_Iterate is new Rule_List.Iterate (One_Command);
    begin
       Command_Iterate (Rule_Map);
+      case Action is
+         when Clear =>
+            Kinds_Count  := (others => 0);
+            Framework.Reports.Clear_All;
+         when others =>
+            null;
+      end case;
   end Command_All;
 
   -------------
@@ -247,11 +307,25 @@ package body Framework.Rules_Manager is
   -------------
 
   procedure Command (Rule_Id : in Wide_String; Action : Rule_Action) is
-      use Ada.Strings.Wide_Unbounded, Utilities, Rule_List;
+      use Utilities, Rule_List;
 
-      Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Rule_Id));
-   begin
-      Fetch (Rule_Map, Rule_Name).Command (Action);
+      Good_Id   : constant Wide_String           := To_Upper (Rule_Id);
+      Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Good_Id);
+  begin
+     declare
+        Info : Rule_Info :=  Fetch (Rule_Map, Rule_Name);
+     begin
+        Info.Command (Action);
+        case Action is
+           when Clear =>
+              Kinds_Count (Info.Kind) := Kinds_Count (Info.Kind) - 1;
+              Info.Used := False;
+              Add (Rule_Map, Rule_Name, Info);
+              Framework.Reports.Clear (Good_Id);
+           when others =>
+              null;
+        end case;
+     end;
    exception
       when Not_Present =>
          Error ("Unknown rule: " & To_Wide_String (Rule_Name));
@@ -261,9 +335,18 @@ package body Framework.Rules_Manager is
   -- Number_Of_Rules --
   ---------------------
 
-  function Number_Of_Rules return Natural is
+  function Number_Of_Rules return Rules_Count is
   begin
      return Nb_Rules;
   end Number_Of_Rules;
+
+  ----------------------
+  -- Has_Active_Rules --
+  ----------------------
+
+  function Has_Active_Rules (Kind : Rule_Kind) return Boolean is
+  begin
+     return Kinds_Count (Kind) /= 0;
+  end Has_Active_Rules;
 
 end Framework.Rules_Manager;

@@ -197,7 +197,7 @@ package body Rules.Max_Nesting is
                  To_Wide_String (Rule_Count_Label),
                  Count,
                  Get_Location (Scope),
-                 "nesting deeper than" & Scope_Range'Wide_Image (Check_Depth-1));
+                 "nesting deeper than" & Scope_Range'Wide_Image (Count_Depth-1));
       end if;
   end Process_Scope_Enter;
 
@@ -226,8 +226,8 @@ package body Rules.Max_Nesting is
    end Process_Scope_Exit;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Max_Nesting;

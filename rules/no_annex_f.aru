@@ -1,0 +1,5 @@
+-- Control usage of features defined in annex F.
+--
+Annex_F: check representation_clauses ('Machine_Radix);
+Annex_F: check entities (Ada.Decimal);
+Annex_F: check entities (Ada.Text_IO.Editing, Ada.Wide_Text_IO.Editing);

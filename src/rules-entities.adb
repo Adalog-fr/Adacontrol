@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Adalog
 with
   Utilities;
@@ -49,7 +45,7 @@ package body Rules.Entities is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   Entities  : Context_Store;
+   Searched_Entities  : Context_Store;
 
    ----------
    -- Help --
@@ -69,7 +65,6 @@ package body Rules.Entities is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
    begin
@@ -81,8 +76,7 @@ package body Rules.Entities is
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Entities, Entity, Simple_Context'(Rule_Type,
-                                                         To_Unbounded_Wide_String (Label)));
+            Associate (Searched_Entities, Entity, Basic.New_Context (Rule_Type,Label));
          exception
             when Already_In_Store =>
                Parameter_Error ("Entity already given for rule " & Rule_Id
@@ -103,7 +97,7 @@ package body Rules.Entities is
       case Action is
          when Clear =>
             Rule_Used := False;
-            Clear (Entities);
+            Clear (Searched_Entities);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -118,7 +112,7 @@ package body Rules.Entities is
 
    procedure Prepare is
    begin
-      Balance (Entities);
+      Balance (Searched_Entities);
    end Prepare;
 
    ------------------------
@@ -126,7 +120,7 @@ package body Rules.Entities is
    ------------------------
 
    procedure Process_Identifier (Element : in Asis.Expression) is
-      use Ada.Strings.Wide_Unbounded;
+      use Framework.Reports, Utilities;
    begin
       if not Rule_Used then
          return;
@@ -134,26 +128,21 @@ package body Rules.Entities is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         use Framework.Reports, Utilities;
-         Current_Context : Rule_Context'Class := Matching_Context (Entities, Element);
+         Current_Context : constant Root_Context'Class := Extended_Matching_Context (Searched_Entities, Element);
       begin
-         if Current_Context = No_Matching_Context then
-            return;
+         if Current_Context /= No_Matching_Context then
+            Report (Rule_Id,
+                    Current_Context,
+                    Get_Location (Element),
+                    "use of element """ & To_Title (Last_Matching_Name (Searched_Entities)) & '"');
          end if;
-
-         Report (Rule_Id,
-                 To_Wide_String (Simple_Context (Current_Context).Rule_Label),
-                 Simple_Context (Current_Context).Rule_Type,
-                 Get_Location (Element),
-                 "use of element """ & To_Title (Last_Matching_Name (Entities)) & '"');
       end;
-
    end Process_Identifier;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Entities;

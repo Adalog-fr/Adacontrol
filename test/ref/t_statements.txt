@@ -1,11 +1,72 @@
-t_statements.adb:9:10: Error: Tasking_Stmts: use of statement "requeue"
-t_statements.adb:16:4: Error: Tasking_Stmts: use of statement "delay"
-t_statements.adb:17:4: Error: Tasking_Stmts: use of statement "delay_until"
-t_statements.adb:18:4: Found: Sequential_Stmts: use of statement "goto"
-t_statements.adb:20:4: Error: Tasking_Stmts: use of statement "abort"
-t_statements.adb:23:7: Found: Sequential_Stmts: use of statement "exit"
-t_statements.adb:27:7: Found: Sequential_Stmts: use of statement "unnamed_exit"
-t_statements.adb:28:7: Found: Sequential_Stmts: use of statement "exit"
-t_statements.adb:31:4: Error: Tasking_Stmts: use of statement "asynchronous_select"
-t_statements.adb:40:12: Found: Sequential_Stmts: use of "others" in "case" statement
-t_statements.adb:44:4: Found: Sequential_Stmts: use of statement "raise"
+t_statements.adb:9:7: Error: Tasking_Stmts: use of statement "selective_accept"
+t_statements.adb:11:13: Error: Tasking_Stmts: use of statement "requeue"
+t_statements.adb:15:13: Found: Sequential_Stmts: use of statement "accept_return"
+t_statements.adb:17:10: Error: Tasking_Stmts: use of statement "terminate"
+t_statements.adb:29:7: Found: Sequential_Stmts: use of statement "procedure_return"
+t_statements.adb:37:10: Found: Sequential_Stmts: return statement already given at t_statements.adb:35:10
+t_statements.adb:57:13: Found: Sequential_Stmts: return statement already given at t_statements.adb:55:13
+t_statements.adb:43:13: Found: Sequential_Stmts: use of statement "no_else"
+t_statements.adb:53:12: Found: Sequential_Stmts: use of "when others" in exception handler
+t_statements.adb:67:10: Found: Sequential_Stmts: use of statement "entry_return"
+t_statements.adb:73:4: Error: Tasking_Stmts: use of statement "delay"
+t_statements.adb:74:4: Error: Tasking_Stmts: use of statement "delay_until"
+t_statements.adb:75:4: Found: Sequential_Stmts: use of statement "goto"
+t_statements.adb:77:4: Error: Tasking_Stmts: use of statement "abort"
+t_statements.adb:80:7: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:80:7: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:85:7: Error: Loop_Stmts: exit statement already given at t_statements.adb:84:7
+t_statements.adb:84:7: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:84:7: Found: Sequential_Stmts: use of statement "unnamed_exit"
+t_statements.adb:84:7: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:85:7: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:85:7: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:88:4: Error: Tasking_Stmts: use of statement "asynchronous_select"
+t_statements.adb:97:12: Found: Sequential_Stmts: null "when others" in "case" statement
+t_statements.adb:105:12: Found: Sequential_Stmts: use of "when others" in "case" statement
+t_statements.adb:117:4: Found: Sequential_Stmts: use of statement "raise_standard"
+t_statements.adb:119:4: Found: Sequential_Stmts: use of statement "raise"
+t_statements.adb:121:4: Found: Sequential_Stmts: use of statement "no_else"
+t_statements.adb:125:4: Found: Sequential_Stmts: use of statement "no_else"
+t_statements.adb:148:12: Found: Sequential_Stmts: null "when others" in exception handler
+t_statements.adb:155:12: Found: Sequential_Stmts: use of "when others" in exception handler
+t_statements.adb:160:4: Found: Sequential_Stmts: use of statement "while_true"
+t_statements.adb:163:4: Found: Sequential_Stmts: use of statement "untyped_for"
+t_statements.adb:174:4: Found: Sequential_Stmts: Outer loop is not named, inner loop at t_statements.adb:176:7
+t_statements.adb:176:7: Found: Sequential_Stmts: Nested loop is not named
+t_statements.adb:184:7: Found: Sequential_Stmts: Nested loop is not named
+t_statements.adb:189:4: Found: Sequential_Stmts: Outer loop is not named, inner loop at t_statements.adb:191:7
+t_statements.adb:203:4: Found: Sequential_Stmts: Outer loop is not named, inner loop at t_statements.adb:205:7
+t_statements.adb:208:7: Found: Sequential_Stmts: Nested loop is not named
+t_statements.adb:215:4: Found: Sequential_Stmts: Outer loop is not named, inner loop at t_statements.adb:217:10
+t_statements.adb:217:10: Found: Sequential_Stmts: Nested loop is not named
+t_statements.adb:223:4: Found: Sequential_Stmts: Outer loop is not named, inner loop at t_statements.adb:228:13
+t_statements.adb:228:13: Found: Sequential_Stmts: Nested loop is not named
+t_statements.adb:261:10: Error: Tasking_Stmts: use of statement "conditional_entry_call"
+t_statements.adb:266:10: Error: Tasking_Stmts: use of statement "timed_entry_call"
+t_statements.adb:268:13: Error: Tasking_Stmts: use of statement "delay"
+t_statements.adb:320:10: Error: Loop_Stmts: exit statement already given at t_statements.adb:276:7
+t_statements.adb:276:7: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:309:19: Error: Loop_Stmts: exit statement already given at t_statements.adb:307:16
+t_statements.adb:312:22: Error: Loop_Stmts: exit statement already given at t_statements.adb:307:16
+t_statements.adb:293:34: Found: Sequential_Stmts: use of statement "no_else"
+t_statements.adb:294:37: Error: Loop_Stmts: use of statement "loop_return"
+t_statements.adb:294:37: Found: Sequential_Stmts: use of statement "accept_return"
+t_statements.adb:298:28: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:298:28: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:302:22: Found: Sequential_Stmts: use of statement "procedure_return"
+t_statements.adb:307:16: Found: Sequential_Stmts: use of statement "unnamed_exit"
+t_statements.adb:307:16: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:308:16: Found: Sequential_Stmts: use of statement "untyped_for"
+t_statements.adb:315:19: Error: Loop_Stmts: exit statement already given at t_statements.adb:313:22
+t_statements.adb:309:19: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:309:19: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:310:19: Found: Sequential_Stmts: Nested loop is not named
+t_statements.adb:311:22: Error: Loop_Stmts: use of statement "exit_while_loop"
+t_statements.adb:312:22: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:313:22: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:313:22: Error: Loop_Stmts: use of statement "exit_for_loop"
+t_statements.adb:315:19: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:315:19: Found: Sequential_Stmts: use of statement "unnamed_exit"
+t_statements.adb:315:19: Error: Loop_Stmts: use of statement "exit_for_loop"
+t_statements.adb:320:10: Error: Loop_Stmts: use of statement "unconditional_exit"
+t_statements.adb:320:10: Found: Sequential_Stmts: use of statement "exit"

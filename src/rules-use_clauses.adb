@@ -58,7 +58,7 @@ package body Rules.Use_Clauses is
    Labels    : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Usage_Type is array (Rule_Types) of Boolean;
-   type Package_Context is new Rule_Context with
+   type Package_Context is new Root_Context with
       record
          Allowed : Usage_Type;
       end record;
@@ -90,8 +90,7 @@ package body Rules.Use_Clauses is
    begin
       if Rule_Used (Use_Rule_Type) then
          Parameter_Error (Rule_Id &
-                            ": this rule can be specified only once for check " &
-                            "and once for search");
+                            ": this rule can be specified only once for each of check, search and count");
       end if;
       Labels    (Use_Rule_Type) := To_Unbounded_Wide_String (Label);
       Rule_Used (Use_Rule_Type) := True;
@@ -147,7 +146,7 @@ package body Rules.Use_Clauses is
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
       use Ada.Strings.Wide_Unbounded, Asis.Clauses, Thick_Queries;
-      use Framework, Framework.Reports;
+      use Framework.Reports;
 
    begin
       if Rule_Used = (Rule_Used'Range => False) Then
@@ -160,7 +159,7 @@ package body Rules.Use_Clauses is
       begin
          for N in Names'Range loop
             declare
-               Context : Rule_Context'Class := Matching_Context (Allowed_Packages, Names (N));
+               Context : constant Root_Context'Class := Matching_Context (Allowed_Packages, Names (N));
             begin
                for R in Rule_Types loop
                   if Rule_Used (R) and then
@@ -181,9 +180,9 @@ package body Rules.Use_Clauses is
    end Process_Use_Clause;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Use_Clauses;

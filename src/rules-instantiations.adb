@@ -62,7 +62,7 @@ package body Rules.Instantiations is
 
    type Generic_Parameter_List is access Generic_Parameters;
 
-   type Instantiation_Context is new Simple_Context with
+   type Instantiation_Context is new Basic_Rule_Context with
       record
          Count  : Natural;
          Values : Generic_Parameter_List;
@@ -91,7 +91,7 @@ package body Rules.Instantiations is
       Append (Dummy, "(");
       Append (Dummy, Image (Values (Values'First)));
 
-      for I in Values'First + 1 .. Values'Last loop
+      for I in Positive range Values'First + 1 .. Values'Last loop
          Append (Dummy, ", ");
          Append (Dummy, Image (Values (I)));
       end loop;
@@ -138,7 +138,6 @@ package body Rules.Instantiations is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
    begin
       if not Parameter_Exists then
@@ -155,16 +154,13 @@ package body Rules.Instantiations is
 
          Associate (Rule_Uses,
                     Generic_Name,
-                    Instantiation_Context'(Rule_Type,
-                                           To_Unbounded_Wide_String (Label),
-                                           0,
-                                           Generic_Params),
+                    Instantiation_Context'(Basic.New_Context (Rule_Type, Label) with 0, Generic_Params),
                     Additive => True);
          Rule_Used := True;
       exception
          when Already_In_Store =>
             Parameter_Error ("This combination of parameters already specified for " & Image (Generic_Name)
-                             & " in rule " & Rule_ID);
+                             & " in rule " & Rule_Id);
       end;
    end Add_Use;
 
@@ -285,8 +281,8 @@ package body Rules.Instantiations is
    procedure Process_Instantiation (Instantiation : in Asis.Declaration) is
       use Asis.Declarations;
 
-      procedure Process_Context (Context : Rule_Context'Class; Finished : out Boolean) is
-         use Asis, Framework.Reports, Ada.Strings.Wide_Unbounded;
+      procedure Process_Context (Context : Root_Context'Class; Finished : out Boolean) is
+         use Asis, Framework.Reports;
       begin
          if Context = No_Matching_Context then
             Finished := True;
@@ -302,8 +298,7 @@ package body Rules.Instantiations is
                Good_Context.Count := Good_Context.Count + 1;
                Update (Rule_Uses, Good_Context);
                Report (Rule_Id,
-                       To_Wide_String (Good_Context.Rule_Label),
-                       Good_Context.Rule_Type,
+                       Good_Context,
                        Get_Location (Instantiation),
                        "instantiation of """ & To_Title (Last_Matching_Name (Rule_Uses))
                          & """ (" & Natural'Wide_Image (Good_Context.Count) & ")");
@@ -316,8 +311,7 @@ package body Rules.Instantiations is
                      Good_Context.Count := Good_Context.Count + 1;
                      Update (Rule_Uses, Good_Context);
                      Report (Rule_Id,
-                             To_Wide_String (Good_Context.Rule_Label),
-                             Good_Context.Rule_Type,
+                             Good_Context,
                              Get_Location (Instantiation),
                              "instantiation of """ & To_Title (Last_Matching_Name (Rule_Uses))
                                & """ (" & Natural'Wide_Image (Good_Context.Count) & ")"
@@ -342,9 +336,9 @@ package body Rules.Instantiations is
    end Process_Instantiation;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access,
-                                     Prepare => Prepare'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access,
+                                              Prepare => Prepare'Access);
 end Rules.Instantiations;

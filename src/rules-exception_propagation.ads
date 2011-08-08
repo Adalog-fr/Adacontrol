@@ -46,7 +46,8 @@ package Rules.Exception_Propagation is
    Rule_Id : constant Wide_String := "EXCEPTION_PROPAGATION";
 
    procedure Process_SP_Declaration (Element       : in Asis.Declaration);
-   procedure Process_Call           (Call          : in Asis.Statement);
+   procedure Process_Call           (Call          : in Asis.Element);
    procedure Process_Instantiation  (Instantiation : in Asis.Declaration);
    procedure Process_Task_Body      (Task_Body     : in Asis.Declaration);
+   procedure Process_Declaration    (Declaration   : in Asis.Declaration);
 end Rules.Exception_Propagation;

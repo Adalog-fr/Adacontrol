@@ -1,2 +1,7 @@
 search allocators;
 check allocators (standard.string);
+
+specific_task : check allocators (T_Allocators.T1);
+all_tasks     : check allocators (task);
+specific_prot : check allocators (T_Allocators.P1);
+all_prot      : check allocators (protected);

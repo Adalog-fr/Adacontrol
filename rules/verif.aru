@@ -1,9 +1,14 @@
+-- Required:
 check unnecessary_use_clause;
-check no_closing_name;
-check entities (debug);
+check style (no_closing_name);
+check style (casing, original);
+check style (negative_condition);
 check max_nesting (6);
+check parameter_aliasing (certain);
+check simplifiable_expressions (range, logical);
+check if_for_case;
+
+-- Acceptable, but should be looked at:
 search max_nesting (4);
 search local_hiding;
-check  parameter_aliasing (certain);
 search parameter_aliasing (possible);
-check simplifiable_expressions (range, logical);

@@ -46,6 +46,7 @@ with
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities,
   Units_List;
 
@@ -54,12 +55,15 @@ with
   Adactl_Options,
   Framework.Language,
   Framework.Reports,
-  Ruler;
+  Framework.Rules_Manager,
+  Framework.Specific_Plugs;
 
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Exceptions, Ada.Calendar;
    use Asis.Exceptions, Asis.Implementation;
    use Utilities, Adactl_Options;
+
+   Version : constant Wide_String := "1.5r24";
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -71,26 +75,41 @@ procedure Adactl is
 
    use Framework.Language;
 begin
+   Thick_Queries.Set_Error_Procedure (Utilities.Failure'access);
 
    Analyse_Options;
 
-   if Action /= Help then
+   if Action not in No_Asis_Actions then
       --
       -- Init
       --
       User_Log ("Loading units, please wait...");
       Asis.Implementation.Initialize (Initialize_String);
-      Asis.Ada_Environments.Associate (Ruler.My_Context, "Adactl", Asis_Options);
-      Asis.Ada_Environments.Open (Ruler.My_Context);
+      Asis.Ada_Environments.Associate (Framework.Adactl_Context, "Adactl", Asis_Options);
+      Asis.Ada_Environments.Open (Framework.Adactl_Context);
       Units_List.Register (Unit_Spec  => Ada_Units_List,
                            Recursive  => Recursive_Option,
                            Add_Stubs  => False,
-                           My_Context => Ruler.My_Context);
+                           My_Context => Framework.Adactl_Context);
    end if;
 
    case Action is
       when Help =>
-         null;           -- Help message printed from Analyse_Options
+         Help_Options;
+         User_Message ("Rules:");
+         Framework.Rules_Manager.Help_Names;
+         User_Message ("");
+         User_Message ("ADACTL v. "
+                         & Version
+                         & Choose (Framework.Specific_Plugs.Specific_Version = "",
+                                   "",
+                                   '-' & Framework.Specific_Plugs.Specific_Version)
+                         & ", ASIS version: " & ASIS_Implementor_Version);
+      User_Message ("Copyright (C) 2004-2006 Eurocontrol/Adalog and others.");
+      User_Message ("This software is covered by the GNU Modified General Public License.");
+
+      when Help_Rule =>
+         Execute (Command_Line_Commands);
 
       when Dependents =>
          Execute (Command_Line_Commands);  -- For a possible -o option
@@ -110,6 +129,9 @@ begin
          Execute (Command_Line_Commands);
          Execute ("source console;");
 
+      when Check =>
+         Execute (Command_Line_Commands);
+         -- Note that "Go" commands are not executed when Action=Check
    end case;
 
    if Action /= Help then
@@ -119,16 +141,20 @@ begin
       --
       -- Clean up ASIS
       --
-      Asis.Ada_Environments.Close (Ruler.My_Context);
-      Asis.Ada_Environments.Dissociate (Ruler.My_Context);
-      Asis.Implementation.Finalize;
+      if Action > Check then
+         Asis.Ada_Environments.Close (Framework.Adactl_Context);
+         Asis.Ada_Environments.Dissociate (Framework.Adactl_Context);
+         Asis.Implementation.Finalize;
+      end if;
 
       --
       -- Finalize
       --
       if Framework.Language.Had_Failure then
          Ada.Command_Line.Set_Exit_Status (Failure);
-      elsif Framework.Reports.Error_Reported then
+      elsif Framework.Language.Had_Errors then
+         Ada.Command_Line.Set_Exit_Status (Bad_Command);
+      elsif Framework.Reports.Nb_Errors > 0 then
          Ada.Command_Line.Set_Exit_Status (Checks_Failed);
       else
          Ada.Command_Line.Set_Exit_Status (OK);
@@ -138,30 +164,66 @@ begin
          Exec_Time_String : constant Wide_String
            := Integer'Wide_Image (Integer ((Clock - Start_Time)*10));
       begin
-         User_Log ("Execution_Time: "
-                   & Choose (Exec_Time_String (2 .. Exec_Time_String'Last - 1), "0")
-                   & '.'
-                   & Exec_Time_String (Exec_Time_String'Last)
-                   & "s.");
+         if Framework.Language.Had_Errors then
+            User_Log ("Syntax errors found");
+         elsif Action = Check then
+            User_Log ("No syntax error");
+         else
+            User_Log ("Total execution time: "
+                      & Choose (Exec_Time_String (2 .. Exec_Time_String'Last - 1), "0")
+                      & '.'
+                      & Exec_Time_String (Exec_Time_String'Last)
+                      & "s.");
+         end if;
       end;
    end if;
 
 exception
    when Occur : Options_Error | Units_List.Specification_Error =>
-      Ada.Command_Line.Set_Exit_Status (Bad_Command);
       User_Message ("Parameter or option error: " & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       User_Message ("try -h for help");
-
-   when Occur : Utilities.User_Error =>
-      User_Message ("Error in rule: " & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
+      Ada.Command_Line.Set_Exit_Status (Bad_Command);
 
    when Asis.Exceptions.ASIS_Failed =>
       case Status is
          when Asis.Errors.Use_Error =>
-            Ada.Command_Line.Set_Exit_Status (Bad_Command);
             User_Message (Diagnosis);
+            Ada.Command_Line.Set_Exit_Status (Bad_Command);
          when others =>
             Ada.Command_Line.Set_Exit_Status (Failure);
-            raise; -- To get stack trace
+            if Exit_Option then
+               -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
+               -- Therefore, we reraise the exception (to get stack trace) only with -x option
+               raise;
+            end if;
       end case;
+
+   when Occur : Asis.Exceptions.ASIS_Inappropriate_Context
+     | Asis.Exceptions.ASIS_Inappropriate_Compilation_Unit
+     | Asis.Exceptions.ASIS_Inappropriate_Element
+     | Asis.Exceptions.ASIS_Inappropriate_Line
+     | Asis.Exceptions.ASIS_Inappropriate_Line_Number
+     =>
+      -- Presumably, an Adactl error
+      User_Message ("Unexpected ASIS exception at main level ("
+                    & To_Wide_String (Ada.Exceptions.Exception_Name (Occur))
+                    & ") : "
+                    & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
+      User_Message (Diagnosis);
+      Ada.Command_Line.Set_Exit_Status (Failure);
+      if Exit_Option then
+         -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
+         -- Therefore, we reraise the exception (to get stack trace) only with -x option
+         raise;
+      end if;
+
+   when Occur : others =>
+      User_Message ("Unexpected exception at main level: "
+                    & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
+      Ada.Command_Line.Set_Exit_Status (Failure);
+      if Exit_Option then
+         -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
+         -- Therefore, we reraise the exception (to get stack trace) only with -x option
+         raise;
+      end if;
 end Adactl;

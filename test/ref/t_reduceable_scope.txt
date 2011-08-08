@@ -1,0 +1,15 @@
+t_reduceable_scope.adb:72:20: Error: REDUCEABLE_SCOPE: Inner1 is not used
+t_reduceable_scope.adb:71:17: Error: REDUCEABLE_SCOPE: P is not used
+t_reduceable_scope.adb:69:16: Error: REDUCEABLE_SCOPE: declaration of L can be moved inside procedure P at t_reduceable_scope.adb:71:7
+t_reduceable_scope.adb:69:10: Error: REDUCEABLE_SCOPE: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:71:7
+t_reduceable_scope.adb:69:7: Error: REDUCEABLE_SCOPE: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:72:10
+t_reduceable_scope.adb:98:23: Error: REDUCEABLE_SCOPE: Inner11 is not used
+t_reduceable_scope.adb:97:20: Error: REDUCEABLE_SCOPE: Inner1 is not used
+t_reduceable_scope.adb:96:17: Error: REDUCEABLE_SCOPE: P is not used
+t_reduceable_scope.adb:94:16: Error: REDUCEABLE_SCOPE: declaration of L can be moved inside procedure Inner1 at t_reduceable_scope.adb:97:10
+t_reduceable_scope.adb:94:10: Error: REDUCEABLE_SCOPE: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:96:7
+t_reduceable_scope.adb:94:7: Error: REDUCEABLE_SCOPE: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:97:10
+t_reduceable_scope.adb:45:14: Error: REDUCEABLE_SCOPE: declaration of TT2 can be moved inside block at t_reduceable_scope.adb:60:4
+t_reduceable_scope.adb:17:12: Error: REDUCEABLE_SCOPE: declaration of Pack2 can be moved inside procedure P at t_reduceable_scope.adb:21:7
+t_reduceable_scope.adb:8:14: Error: REDUCEABLE_SCOPE: Unused is not used
+t_reduceable_scope.adb:5:12: Error: REDUCEABLE_SCOPE: declaration of Pack1 can be moved inside procedure Unused at t_reduceable_scope.adb:8:4

@@ -6,12 +6,63 @@ Test_Parameter:
       type Acc_Proc is access procedure;
       type Acc_Registration_Proc is access procedure (CB : Acc_Proc);
 
-      procedure Make_CB (CB : Acc_Proc) is
+      procedure Make_CB_L0 (CB : Acc_Proc) is
       begin
          Cb.all;
-      end Make_CB;
+      end Make_CB_L0;
 
-      procedure Proc1 is begin null; end;
+      procedure Make_CB_L1 (CB : Acc_Proc) is
+      begin
+         Cb.all;
+      end Make_CB_L1;
+
+      procedure Make_CB_L2 (CB : Acc_Proc) is
+      begin
+         Cb.all;
+      end Make_CB_L2;
+
+      procedure Make_CB_L3 (CB : Acc_Proc) is
+      begin
+         Cb.all;
+      end Make_CB_L3;
+
+     -- Level 0
+      procedure Proc10 is
+      begin
+         null;
+      end;
+
+      -- Level 1
+      procedure Proc11 is
+         X : Integer;
+         Y : Integer := X + 1;
+      begin
+         null;
+      exception
+         when others =>
+            null;
+      end;
+
+      -- Level 2
+      procedure Proc12 is
+         X : Integer;
+         Y : Integer := X;
+      begin
+         null;
+      exception
+         when others =>
+            null;
+      end;
+
+      -- Level 3
+      procedure Proc13 is
+         X : Integer;
+      begin
+         null;
+      exception
+         when others =>
+            null;
+      end;
 
       procedure Proc2 is
       begin
@@ -72,24 +123,48 @@ Test_Parameter:
       procedure Gen4;
       procedure Gen4 is begin null; end;
 
-      procedure Inst4 is new Gen4 (Proc1);
+      procedure Inst4 is new Gen4 (Proc10);
       procedure Inst5 is new Gen4 (Inst1);
 
-      Ptr1 : constant Acc_Proc := Proc1'Access;
-      Ptr2 : constant Acc_Registration_Proc := Make_CB'Access;
+      Ptr1 : constant Acc_Proc := Proc10'Access;
+      Ptr2 : constant Acc_Registration_Proc := Make_CB_L0'Access;
    begin
-      Make_Cb (Proc1'Access);                 -- Propagating
-      Make_Cb (Test_Parameter.Proc2'Access);  -- Propagating, qualified name
-      Make_Cb (Proc3'Access);                 -- Propagating
-      Make_Cb (Inst1'Access);                 -- Propagating, instantiation
+      -- Level 0
+      Make_Cb_L0 (Proc10'Access);                -- Propagating
+      Make_Cb_L0 (Proc11'Access);                -- Not Propagating
+      Make_Cb_L0 (Proc12'Access);                -- Not Propagating
+      Make_Cb_L0 (Proc13'Access);                -- Not Propagating
 
-      Make_Cb (Ptr1.all'Access);              -- Not able to diagnose
-      Ptr2 (CB => Proc1'Access);              -- Access to registration proc
-      Ptr2.all (Proc1'Access);                -- id., explicit dereference
+       -- Level 1
+      Make_Cb_L1 (Proc10'Access);                -- Propagating
+      Make_Cb_L1 (Proc11'Access);                -- Propagating
+      Make_Cb_L1 (Proc12'Access);                -- Not Propagating
+      Make_Cb_L1 (Proc13'Access);                -- Not Propagating
 
-      Inst2 (Proc1'Access);                   -- Registration proc from generic
+        -- Level 2
+      Make_Cb_L2 (Proc10'Access);                -- Propagating
+      Make_Cb_L2 (Proc11'Access);                -- Propagating
+      Make_Cb_L2 (Proc12'Access);                -- Propagating
+      Make_Cb_L2 (Proc13'Access);                -- Not Propagating
 
-      Make_Cb2 (Proc1'Access);                -- Registration proc part of generic
+        -- Level 3
+      Make_Cb_L3 (Proc10'Access);                -- Propagating
+      Make_Cb_L3 (Proc11'Access);                -- Propagating
+      Make_Cb_L3 (Proc12'Access);                -- Propagating
+      Make_Cb_L3 (Proc13'Access);                -- Propagating
+
+      Make_Cb_L0 (Test_Parameter.Proc2'Access);  -- Propagating, qualified name
+      Make_Cb_L0 (Proc3'Access);                 -- Propagating
+      Make_Cb_L0 (Inst1'Access);                 -- Propagating, instantiation
+
+
+      Make_Cb_L0 (Ptr1.all'Access);             -- Not able to diagnose
+      Ptr2 (CB => Proc10'Access);              -- Access to registration proc
+      Ptr2.all (Proc10'Access);                -- id., explicit dereference
+
+      Inst2 (Proc10'Access);                   -- Registration proc from generic
+
+      Make_Cb2 (Proc10'Access);               -- Registration proc part of generic
    end Test_Parameter;
 
 Test_Convention:

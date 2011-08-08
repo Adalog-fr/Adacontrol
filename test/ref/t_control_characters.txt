@@ -1,0 +1,4 @@
+t_control_characters.adb:6:1: Error: CONTROL_CHARACTERS: Control character found
+t_control_characters.adb:8:1: Error: CONTROL_CHARACTERS: Control character found before "X"
+t_control_characters.adb:10:16: Error: CONTROL_CHARACTERS: Control character found after "Integer;"
+t_control_characters.adb:12:7: Error: CONTROL_CHARACTERS: Control character found between ":" and "Integer;"

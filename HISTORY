@@ -1,4 +1,152 @@
 =============
+== V1.5r24 ==
+=============
+
+General
+-------
+Do no stop analysis of rules file at first error
+
+Option to just check syntax (-C)
+
+Option to specify a trace file (-t, set trace)
+
+Option to not print warnings (-E, set warnings on/off).
+
+Option to report statistics (-S, set statistics)
+
+Option to output result in various formats
+ (-F, set format gnat/gnat_short/csv/csv_short/csvx/csvx_short/source/source_short)
+
+Improved processing of child units: parent context is properly restored.
+
+-v option displays progression indicator, tells units not found, does
+   not print messages about controlling units that cannnot exist (SP
+   bodies without specs, package specs that cannot have bodies) reports
+   execution time.
+
+Less tree swapping in Local_Hiding, should result in sensible speed improvement
+
+Improved integration into GPS
+
+New rules:
+----------
+Abnormal_Function_Return
+Case_Statement
+Directly_Accessed_Globals
+Header_Comments
+If_For_Case
+Global_References
+Max_Blank_Lines
+Max_Line_Length
+Max_Statement_Nesting
+Movable_Accept_Statements
+No_Safe_Initialization
+No_Tabs
+Non_Static_Constraints
+Positional_Parameters
+Potentially_Blocking_Operations
+Reduceable_Scope
+Return_Type
+Special_Comments
+Style
+Terminating_Tasks
+Unsafe_Paired_Calls
+Usage
+With_Clauses
+
+Changes to existing rules
+-------------------------
+Allocators:
+  Treat T'Class as T'Class, no more as T
+  added task and protected
+
+Declarations:
+  added parameters:
+        access_protected_type, access_task_type, array, array_type,
+        child_unit, constant, constrained_array_type,
+        decimal_fixed_type, defaulted_discriminant,
+        defaulted_generic_parameter, defaulted_parameter,
+        derived_type, discriminant, enumeration_type, entry,
+        extension, fixed_type, float_type, formal_function,
+        formal_in_out, formal_package, formal_procedure, generic,
+        handlers, integer_type, modular_type, multiple_names,
+        named_number, not_operator_renames, null_extension, operator,
+        null_ordinary_record_type, null_tagged_type,
+        ordinary_fixed_type, ordinary_record_type, package_statements,
+        protected, protected_entry, protected_type, renames, separate,
+        signed_type, single_array, single_protected, single_task,
+        subtype, tagged_type, task_entry, task_type, type,
+        unconstrained_array_type
+  changed parameters:
+         access => access_type, access_subprogram => accept_subprogram_type
+
+Entities:
+  Follows renamings and instantiations
+
+Exception_Propagation:
+  added a level of checking to specify the possibility of exceptions being raised
+  during the elaboration of declarative parts
+  added "declaration" keyword
+
+Local_Instantiation:
+  without parameter, all local instantiations are controlled
+
+Naming_Convention:
+  added any|local|global modifier
+
+No_Closing_Name:
+  no more a rule of its own, now a subrule of style
+
+Parameter_Aliasing:
+  new algorithm, handles more static cases where there is no true aliasing
+
+Pragmas:
+  allow "all" as parameter
+
+Silent_Exceptions:
+  Bug fix when complicated exit in loops
+  handle function calls and generic instantiations.
+  More clever analysis of for loops
+  Can specify "return" and "requeue" as non-silent actions
+
+Simplifiable_Expressions:
+   All cases of unnecessary parentheses are now controlled.
+
+Specification_Objects
+   The rule is now part of Usage (object, from_spec)
+   Better treatment of references to objects through formals in-out from within instantiations
+
+Statement:
+   Changed name to statements (with an "s", for consistency with other rules)
+   Added parameters: Accept_Return, Asynchronous_Select,
+         Case_Others_Null, Conditional_Entry_Call,  Entry_Return,
+         Exception_Others, Exception_Others_Null, Exit_For_Loop,
+         Exit_While_Loop,  Function_Return, Loop_Return,
+         Multiple_Exits, No_Else, Procedure_Return, Raise_Standard,
+         Selective_Accept, Timed_Entry_Call, Unconditional_Exit,
+         Unnamed_Multiple_Loop,  Untyped_For, While_True
+
+Unnecessary_Use:
+  Bug fix
+  works with use clauses coming from parent units
+
+When_Others_Null
+  no more a rule of its own, now a subrule of statements
+
+Commands
+--------
+Inhibit:
+   Added "all" for rule names, "all" for units
+
+Framework:
+----------
+Added boolean trace procedure
+Added support for "textual" rules
+Evaluator for static expressions and static ranges
+Support for float parameters, negative values for integer and float parameters
+... and a few other utilities
+
+=============
 == V1.4r20 ==
 =============
 

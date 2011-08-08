@@ -29,10 +29,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
 -- Asis
 with
   Asis.Clauses,
@@ -65,16 +61,16 @@ package body Rules.Local_Hiding is
    -- is already the procedure itself, but the name must be attached to where the procedure is declared,
    -- i.e. the enclosing scope.
 
-   Rule_Used  : Boolean := False;
-   Save_Used  : Boolean;
-   Rule_Type  : Rule_Types;
-   Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Rule_Used    : Boolean := False;
+   Save_Used    : Boolean;
+   Rule_Context : Basic_Rule_Context;
 
    type Identifier_Data (Length : Positive) is
       record
-         Name       : Wide_String (1..Length);
-         Short_Last : Positive;
-         Elem       : Asis.Element;
+         Name        : Wide_String (1..Length);
+         Short_Last  : Positive;
+         Elem        : Asis.Element;
+         Is_Callable : Boolean;
       end record;
    package Visible_Identifiers is new Framework.Scope_Manager.Scoped_Store (Identifier_Data);
 
@@ -95,7 +91,6 @@ package body Rules.Local_Hiding is
 
    procedure Add_Use (Label         : in Wide_String;
                       Rule_Use_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
    begin
@@ -106,9 +101,8 @@ package body Rules.Local_Hiding is
       if Rule_Used then
          Parameter_Error (Rule_Id & ": this rule can be specified only once");
       else
-         Rule_Type  := Rule_Use_Type;
-         Rule_Label := To_Unbounded_Wide_String (Label);
-         Rule_Used  := True;
+         Rule_Context := Basic.New_Context (Rule_Use_Type, Label);
+         Rule_Used    := True;
       end if;
    end Add_Use;
 
@@ -117,12 +111,11 @@ package body Rules.Local_Hiding is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+      use Framework.Rules_Manager;
    begin
       case Action is
          when Clear =>
             Rule_Used  := False;
-            Rule_Label := Null_Unbounded_Wide_String;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -158,6 +151,9 @@ package body Rules.Local_Hiding is
                      return True;
                   when A_Declaration =>
                      return Declaration_Kind (Enclosing_Element (Decl)) in A_Renaming_Declaration;
+                  when A_Statement =>
+                     -- This happens only for parameters of accept statements
+                     return False;
                   when others =>
                      Failure ("Unexpected enclosing of name declaration", Decl_Enclosing);
                end case;
@@ -169,27 +165,38 @@ package body Rules.Local_Hiding is
       -- This function returns True if Left and Right are the same scopes,
       -- or if Left is a body and Right is the corresponding specification
       function Are_Equivalent_Scopes (Left, Right : Asis.Element) return Boolean is
+         Decl : Asis.Declaration;
       begin
          if Is_Equal (Left, Right) then
             return True;
          end if;
-
          case Element_Kind (Left) is
             when A_Statement
               | An_Exception_Handler
               =>
                return False;
             when others =>
-               if Is_Nil (Corresponding_Declaration (Left)) then
+               -- Corresponding_Declaration cannot be called on some declarations
+               -- if it were, it would simply return its argument, so let's do it by hand
+               case Declaration_Kind (Left) is
+                  when An_Entry_Declaration
+                    | A_Formal_Procedure_Declaration
+                    | A_Formal_Function_Declaration
+                    =>
+                     Decl := Left;
+                  when others =>
+                     Decl := Corresponding_Declaration (Left);
+               end case;
+               if Is_Nil (Decl) then
                   -- No corresponding specification
                   return False;
                else
-                  return Is_Equal (Corresponding_Declaration (Left), Right);
+                  return Is_Equal (Decl, Right);
                end if;
          end case;
       end Are_Equivalent_Scopes;
 
-   begin
+   begin   -- Process_Defining_Name
       if not Rule_Used then
          return;
       end if;
@@ -200,12 +207,20 @@ package body Rules.Local_Hiding is
       end if;
 
       declare
-         use Framework.Reports, Framework.Scope_Manager, Asis.Elements;
-         use Ada.Strings.Wide_Unbounded;
+         use Framework.Reports, Framework.Scope_Manager;
+         function Enclosing_Scope (N : Asis.Element) return Asis.Element is
+            Result : Asis.Element := Enclosing_Element (N);
+         begin
+            while Defining_Name_Kind (Result) = A_Defining_Expanded_Name loop
+               Result := Enclosing_Element (Result);
+            end loop;
+            return Result;
+         end Enclosing_Scope;
+
          Short_Name    : constant Wide_String := To_Upper (Defining_Name_Image (Name));
          Full_Name     : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
          Callable_Name : constant Boolean     := Is_Callable_Construct (Name);
-         Is_Scope_Name : constant Boolean     := Is_Equal (Enclosing_Element (Name), Current_Scope);
+         Is_Scope_Name : constant Boolean     := Is_Equal (Enclosing_Scope (Name), Current_Scope);
          -- Is_Scope_Name is True if Name is the defining name for the current scope
          -- => it belongs to the enclosing scope
 
@@ -214,7 +229,7 @@ package body Rules.Local_Hiding is
             -- otherwise, compare without profile
          begin
             if Callable_Name then
-               if Is_Callable_Construct (Check.Elem) then
+               if Check.Is_Callable then
                   return Check.Name = Full_Name;
                else
                   return Check.Name (1 .. Check.Short_Last) = Short_Name;
@@ -224,36 +239,39 @@ package body Rules.Local_Hiding is
             end if;
          end Is_Same;
 
-
       begin
-         Visible_Identifiers.Reset (All_Scopes);
-         while Visible_Identifiers.Data_Available loop
-            if Is_Same (Visible_Identifiers.Current_Data) then
+         if Is_Scope_Name then
+            Scope := Enclosing_Scope;
+         else
+            Scope := Current_Scope;
+         end if;
 
-               -- Discard the case where we find a name declared within a scope equivalent
-               -- to the scope of Name:
-               -- this corresponds for example to a spec and corresponding body, incomplete
-               -- type and corresponding full declarations...
-               -- These must correspond to the same entity, otherwise it would not be allowed
-               -- by the compiler.
-               if Is_Scope_Name then
-                  Scope := Enclosing_Scope;
-               else
-                  Scope := Current_Scope;
+         -- If scope is nil, it is the defining name of a library unit
+         -- => cannot hide anything
+         if not Is_Nil (Scope) then
+            Visible_Identifiers.Reset (All_Scopes);
+            while Visible_Identifiers.Data_Available loop
+               if Is_Same (Visible_Identifiers.Current_Data) then
+
+                  -- Discard the case where we find a name declared within a scope equivalent
+                  -- to the scope of Name:
+                  -- this corresponds for example to a spec and corresponding body, incomplete
+                  -- type and corresponding full declarations...
+                  -- These must correspond to the same entity, otherwise it would not be allowed
+                  -- by the compiler.
+                  if not Are_Equivalent_Scopes (Scope, Visible_Identifiers.Current_Data_Scope) then
+                     Report (Rule_Id,
+                             Rule_Context,
+                             Get_Location (Name),
+                             '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                             & """ hides declaration at "
+                             & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
+                     exit;
+                  end if;
                end if;
-               if not Are_Equivalent_Scopes (Scope, Visible_Identifiers.Current_Data_Scope) then
-                  Report (Rule_Id,
-                          To_Wide_String (Rule_Label),
-                          Rule_Type,
-                          Get_Location (Name),
-                          '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
-                            & """ hides declaration at "
-                            & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
-                  exit;
-               end if;
-            end if;
-            Visible_Identifiers.Next;
-         end loop;
+               Visible_Identifiers.Next;
+            end loop;
+         end if;
 
          if Is_Scope_Name then
             -- This is the defining name of the program unit that defines the current scope
@@ -261,12 +279,14 @@ package body Rules.Local_Hiding is
             Visible_Identifiers.Push_Enclosing ((Full_Name'Length,
                                                  Full_Name,
                                                  Short_Name'Length,
-                                                 Name));
+                                                 Name,
+                                                 Callable_Name));
          else
             Visible_Identifiers.Push ((Full_Name'Length,
                                        Full_Name,
                                        Short_Name'Length,
-                                       Name));
+                                       Name,
+                                       Callable_Name));
          end if;
       end;
    end Process_Defining_Name;
@@ -278,43 +298,47 @@ package body Rules.Local_Hiding is
    procedure Process_With_Clause (With_Clause : Asis.Clause) is
       -- Names in with clauses cannot hide anything, but can be hidden
       use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions, Thick_Queries;
-
-      All_Names : constant Asis.Element_List := Clause_Names (With_Clause);
-      Name      : Asis.Expression;
-      Current   : Asis.Expression;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      for I in All_Names'Range loop
-         Current := All_Names (I);
-         loop
-            case Expression_Kind (Current) is
-               when An_Identifier =>
-                  Name := Current;
-               when A_Selected_Component =>
-                  Name := Selector (Current);
-               when others =>
-                  Failure ("Unexpected name in with clause", All_Names (I));
-            end case;
-            declare
-               Short_Name : constant Wide_String := To_Upper (Name_Image (Name));
-               Full_Name  : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
-            begin
-               -- Bind names to scope 0
-               Visible_Identifiers.Push_Enclosing ((Full_Name'Length, Full_Name, Short_Name'Length, Name));
-            end;
-            exit when Expression_Kind (Current) = An_Identifier;
-            Current := Prefix (Current);
+      declare
+         All_Names : constant Asis.Element_List := Clause_Names (With_Clause);
+         Name      : Asis.Expression;
+         Current   : Asis.Expression;
+      begin
+         for I in All_Names'Range loop
+            Current := All_Names (I);
+            loop
+               case Expression_Kind (Current) is
+                  when An_Identifier =>
+                     Name := Current;
+                  when A_Selected_Component =>
+                     Name := Selector (Current);
+                  when others =>
+                     Failure ("Unexpected name in with clause", All_Names (I));
+               end case;
+               declare
+                  Short_Name : constant Wide_String := To_Upper (Name_Image (Name));
+                  Full_Name  : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
+               begin
+                  -- Bind names to scope 0
+                  Visible_Identifiers.Push_Enclosing ((Full_Name'Length, Full_Name,
+                                                       Short_Name'Length, Name,
+                                                       Is_Callable_Construct (Name)));
+               end;
+               exit when Expression_Kind (Current) = An_Identifier;
+               Current := Prefix (Current);
+            end loop;
          end loop;
-      end loop;
+      end;
    end Process_With_Clause;
 
 begin
-   Framework.Rules_Manager.Register (Rule_Id,
-                                     Help    => Help'Access,
-                                     Add_Use => Add_Use'Access,
-                                     Command => Command'Access);
+   Framework.Rules_Manager.Register_Semantic (Rule_Id,
+                                              Help    => Help'Access,
+                                              Add_Use => Add_Use'Access,
+                                              Command => Command'Access);
 end Rules.Local_Hiding;

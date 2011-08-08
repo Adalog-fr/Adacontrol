@@ -1,0 +1,7 @@
+-- Control usage of features defined in annex D.
+--
+Annex_D: check pragmas  (Priority, Interrupt_Priority);
+Annex_D: check entities (System.Priority, System.Interrupt_Priority, System.Any_Priority);
+Annex_D: check pragmas  (Task_Dispatching_Policy, Locking_Policy, Queuing_Policy);
+Annex_D: check entities (Ada.Dynamic_Priorities, Ada.Real_Time);
+Annex_D: check entities (Ada.Synchronous_Task_Control, Ada.Asynchronous_Task_Control);
