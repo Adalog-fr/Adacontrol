@@ -1,3 +1,83 @@
+============
+== V1.6r4 ==
+============
+
+General
+-------
+Option to just list rules (-h list)
+
+Form of syntax/parameter messages made consistent with form of report messages
+
+GPS
+---
+Rules menu for "Help/AdaControl/Help on rule"
+
+Choose "help on rule" style in preferences
+
+Added "Check rules file" and option to check form file/single rule in
+AdaControl menu
+
+Switches to output to file
+
+Possibility to redefine the command to run AdaControl through languages tab
+
+Preferences: check box to delete .ali files.
+
+New rules:
+----------
+Array_Declarations
+Expressions
+Max_Call_Depth
+Max_Parameters
+Other_Dependencies
+Uncheckable
+Unsafe_Unchecked_Conversion
+
+Changes to existing rules
+-------------------------
+case_statement
+   added parameter: max_range_span
+   changed parameters: min_others_range into min_others_span
+
+declarations: 
+   added parameters: 
+     in_out_parameter, out_parameter, initialized_record_field, limited_private_type, 
+     non_limited_private_type, private_extension, uninitialized_record_field, 
+     initialized_protected_field, uninitialized_protected_field, nested_package,
+     nested_generic_function, nested_generic_package, nested_generic_procedure,
+     nested_function_instantiation, nested_package_instantiation, nested_procedure_instantiation,
+     non_identical_renaming
+  changed parameters:
+     formal_in_out => in_out_generic_parameter
+     renames => renaming
+     not_operator_renames => not_operator_renaming
+
+default_parameter: possibility to replace the <entity name> and <formal name> by "all"
+   Fixed problem that prevented analysis of subprogram calls
+
+header_comments: added a parameter, possibility to provide a pattern file
+
+no_safe_initialization: now considers case and if statements
+
+non_static_constraints: changed name of rule to non_static, added parameter instantiation
+
+real_operators: no more a rule of its own, now expressions(real_equality)
+
+max_statement_nesting:
+  added parameter: block (also in "all")
+
+statements:
+   added parameter: block, dispatching_callreraise, unnamed_block, unnamed_loop_exited, while_loop
+
+style:
+   added support for character and string literals.
+   parameters added to "exposed_literal" subrule to specify the kind of literals and places
+   parameters added to "multiple_elements" subrule to specify the kind of element
+   split parameter "aggregate" for "positional_association" subrule in "array_aggregate" + "record_aggregate"
+   added renamed_entity parameter
+
+unsafe_paired_calls: added possibility of having multiple opening/closing procedure for the same closing/opening one.
+
 =============
 == V1.5r24 ==
 =============
@@ -78,7 +158,7 @@ Declarations:
         subtype, tagged_type, task_entry, task_type, type,
         unconstrained_array_type
   changed parameters:
-         access => access_type, access_subprogram => accept_subprogram_type
+        access => access_type, access_subprogram => accept_subprogram_type
 
 Entities:
   Follows renamings and instantiations

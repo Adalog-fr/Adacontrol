@@ -35,13 +35,6 @@ with
 
 package Rules.Default_Parameter is
 
-   -- This rule can be used to check/search for subprogram calls or
-   -- generic instantiations that use (or not) the default value for
-   -- a given parameter
-   -- Parameters (1): Subprogram or generic name
-   -- Parameters (2): Formal parameter name
-   -- Parameters (3): "Used" or "Not_Used"
-
    Rule_Id : constant Wide_String := "DEFAULT_PARAMETER";
 
    procedure Process_Call_Or_Instantiation (Element : in Asis.Element);

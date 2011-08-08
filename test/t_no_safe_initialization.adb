@@ -27,7 +27,8 @@ procedure T_No_Safe_Initialization is
                IC : Integer;
             end record;
          TV  : T;                                                               -- should trigger
-         IV0 : Integer renames TV.IC;
+         X   : Integer;
+         IV0 : Integer renames X;
          IV1 : Integer renames IV0;
       begin
          IV1   := 0;
@@ -38,9 +39,9 @@ procedure T_No_Safe_Initialization is
       end Proc_Renaming;
 
       -- A_Procedure_Body_Declaration
-      -- (IP, IV2) not initialized from the beginning of the body
+      -- IP not initialized from the beginning of the body
       procedure Proc_No_Full_Init (IP : out Integer) is                         -- should trigger
-         IV1, IV2 : Integer;                                                    -- should trigger
+         IV1, IV2 : Integer;
          IV3      : Integer := 3;
          IV4      : Integer;
       begin
@@ -53,7 +54,7 @@ procedure T_No_Safe_Initialization is
       end Proc_No_Full_Init;
 
       -- A_Procedure_Body_Declaration
-      -- (IP1, IP2, BP, CV2) not initialized from the beginning of the body
+      -- (IP1, IP2, BP) not initialized from the beginning of the body
       procedure Proc_No_Full_Init_2 (DP       : in     Digit;
                                      IP1, IP2 :    out Integer;                 -- should trigger (x2)
                                      BP       :    out Boolean)                 -- should trigger
@@ -62,7 +63,7 @@ procedure T_No_Safe_Initialization is
          FV1         : Float := 1.025;
          Pi          : constant Float := 3.141593;
          Gold_Number : constant Float := 1.618034;
-         CV1, CV2    : Character;                                               -- should trigger (x1)
+         CV1, CV2    : Character;
       begin
          CV1 := 'y';
          if 2.0 * Gold_Number + FV1 > Pi + 2.0 * FV1 then
@@ -70,12 +71,15 @@ procedure T_No_Safe_Initialization is
          else
             CV2 := 'n';
          end if;
-         BP := (CV1 = CV2);
-         if BP then
+         if CV1 = 'a' then
             IP1 := Integer (Gold_Number);
          else
             IP2 := Integer (Pi);
          end if;
+         for I in 1 .. 10 loop
+            null;
+         end loop;
+         BP := (CV1 = CV2);
       end Proc_No_Full_Init_2;
 
 
@@ -84,15 +88,18 @@ procedure T_No_Safe_Initialization is
       ------------------------------
 
       -- A_Procedure_Body_Declaration
-      -- (IV2, IV3) not initialized from the beginning of the body
+      -- (IV3) not initialized from the beginning of the body
       function Func_Not_Full_Init (IP : in Integer) return Integer is
          Two      : constant Integer := 2;
          Five     : constant Integer := 5;
          IV1      : Integer := IP + Two;
-         IV2, IV3 : Integer;                                                    -- should trigger (x2)
+         IV2, IV3 : Integer;                                                    -- should trigger (x1)
       begin
          if IV1 mod Five > IP then
             IV2 := Two;
+            if IV2 = 1 then
+               return 0;
+            end if;
             IV3 := Five;
          else
             IV2 := Five;
@@ -106,8 +113,8 @@ procedure T_No_Safe_Initialization is
       -- Checking tasks bodies --
       ---------------------------
       task type TT is
-         entry Entry_1 (IP : in     Integer);
-         entry Entry_2 (IP :    out Integer);
+         entry Entry_1 (IP : out Integer);
+         entry Entry_2 (IP : out Integer);
       end TT;
 
       task body TT is
@@ -115,16 +122,18 @@ procedure T_No_Safe_Initialization is
          Five     : constant Integer := 5;
          IV1      : Integer;                                                    -- should trigger
          IV2, IV3 : Integer;                                                    -- should trigger (x2)
+         B        : Boolean;
       begin
-         accept Entry_1 (IP : in     Integer) do
+         accept Entry_1 (IP : out Integer) do
             IV1 := IP + Two;
-            if IV1 mod Five > IP then
-               IV2 := Two;
-               IV3 := Five;
-            else
-               IV2 := Five;
-               IV3 := Two;
-            end if;
+            case B is
+               when True =>
+                  IV2 := Two;
+                  IP  := Five;
+               when False =>
+                  IV2 := Five;
+                  IP  := Two;
+            end case;
          end Entry_1;
 
          accept Entry_2 (IP :    out Integer) do
@@ -173,19 +182,24 @@ procedure T_No_Safe_Initialization is
          begin
             if DP = DV then
                BP := True;
-            else
-               BP := False;
             end if;
          end Is_Equal;
 
          procedure Reset is
+            IV : Integer;                                                      -- should trigger
+            B  : Boolean := False;
          begin
-            Is_Set := False;
+            case B is
+               when True =>
+                  IV := 0;
+               when False =>
+                  B := True;
+            end case;
          end Reset;
       end PT;
 
       Pi  : constant Float := 3.141593;
-      BVB : Boolean;                                                            -- should trigger
+      BVB : Boolean;
 
    begin
       BVS := False;

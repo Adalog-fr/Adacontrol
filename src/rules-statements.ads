@@ -35,20 +35,12 @@ with
 
 package Rules.Statements is
 
-   -- This rule can be used to check/search for the occurrence of some Ada statements
-   -- Parameter(1): Statement name
-   -- Parameter(2): Statement name
-   -- ...
-   -- Parameter(N): Statement name
-   --
-   -- Statement names: abort, asynchronous_select, case_others, delay,  delay_until,
-   --                  exit, goto, raise, requeue, terminate
-
    Rule_Id : constant Wide_String := "STATEMENTS";
 
-   procedure Process_Statement     (Element       : in Asis.Statement);
-   procedure Process_Others        (Definition    : in Asis.Definition);
-   procedure Process_Function_Body (Function_Body : in Asis.Declaration);
+   procedure Process_Statement         (Element       : in Asis.Statement);
+   procedure Process_Others            (Definition    : in Asis.Definition);
+   procedure Process_Function_Body     (Function_Body : in Asis.Declaration);
+   procedure Process_Function_Call     (Call          : in Asis.Expression);
 
    procedure Pre_Process_Loop  (Stmt : in Asis.Statement);
    procedure Post_Process_Loop (Stmt : in Asis.Statement);

@@ -77,7 +77,7 @@ package Framework.Rules_Manager is
    -- Displays all rules help
    procedure Help (Rule_Id : in Wide_String);
    -- Displays specific rule help
-   procedure Help_Names;
+   procedure Help_Names (Pretty : Boolean);
    -- Displays all rule names
 
    procedure Prepare_All;

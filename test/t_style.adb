@@ -56,9 +56,9 @@ procedure t_style is
       end foo;
    begin
       Int := 1;                                           -- Casing
-      ada.Text_IO.put_line("Var :"& Integer'Image(INT));  -- Casing
+      ada.Text_IO.put_line("Var :"& Integer'Image(INT));  -- Casing, Exposed_Literal (String)
       iNT := fOo(INt);                                    -- Casing
-      ada.text_io.put_line("Var :"& Integer'Image(inT));  -- Casing
+      ada.text_io.put_line("Var :"& Integer'Image(inT));  -- Casing, Exposed_Literal (String)
    end Identifier;
 
 
@@ -151,8 +151,8 @@ procedure t_style is
       RecordIT := Trecord'(D => 1);
       RecordITE := (RecordIT with E => 1);
       RecordITE := (RecordIT with 1);                    -- Positional_Association
-      tab := (1,0,1,0,1);                                -- Positional_Association
-      tab := (1=>0, 2=>1, 3=>0, 4=>1, 5=>0);
+      tab := (1,0,1,0,1);                                -- Positional_Association x5
+      tab := (1=>0, 2=>1, 3=>0, 4=>1, 5=>0);             -- Exposed_Literal (Integer) x4
       Taske.EntryCall(1);                                -- Positional_Association
       Taske.EntryCall(I => 1);
 
@@ -183,26 +183,63 @@ procedure t_style is
       null;
    end No_closing_name;
 
+   procedure Renamed_Entity is
+      I : Integer;
+      function F return Integer is
+      begin
+         return 1;
+      end F;
+
+      package Pack is
+         V : Integer;
+      end Pack;
+
+   begin
+      I := 1;        --OK
+      Pack.V := F;  -- OK
+
+      declare
+         function RenF return Integer renames F;
+         package RenPack renames Pack;
+         RenI : Integer renames I;
+         function Succ (I : in Integer) return Integer renames Integer'Succ;   -- Uncheckable
+         function "-" (L, R : in Integer) return Integer renames Standard."+"; -- Uncheckable
+         J : Integer;
+      begin
+         I := 1;                -- Renamed_Entity
+         Pack.V := F;           -- Renamed_Entity (x2)
+
+         RenI := 1;             -- OK
+         RenPack.V := RenF;     -- OK
+
+         J := Integer'Succ (J); -- Not checked
+         J := J + 1;            -- Not checked
+      end;
+
+      I := 1;        --OK
+      Pack.V := F;  -- OK
+   end Renamed_Entity;
+
    -- Integer literals
    I1   : constant Integer := 0;
    I2   : constant Integer := 10_000;
-   I3   : constant Integer := 1_0000;                       -- Literal
+   I3   : constant Integer := 1_0000;                       -- Numeric_Literal
 
-   I4   : constant Integer := 1_2_3_4_5_6;                  -- Literal
+   I4   : constant Integer := 1_2_3_4_5_6;                  -- Numeric_Literal
 
    IE1  : constant Integer := 1e9;
    IE2  : constant Integer := 1_000e6;
-   IE3  : constant Integer := 1_0000e5;                     -- Literal
+   IE3  : constant Integer := 1_0000e5;                     -- Numeric_Literal
 
 
    -- Real literals
    R1   : constant Float   := 0.0;
    R2   : constant Float   := 3.141_592;
-   R3   : constant Float   := 1.61_80_33;                   -- Literal
+   R3   : constant Float   := 1.61_80_33;                   -- Numeric_Literal
 
    RE1  : constant Float   := 1.0e-9;
    RE2  : constant Float   := 0.314_159e1;
-   RE3  : constant Float   := 16_18.03_39E-3;               -- Literal
+   RE3  : constant Float   := 16_18.03_39E-3;               -- Numeric_Literal
 
 
    -- Based literals
@@ -210,33 +247,55 @@ procedure t_style is
    BI2  : constant Integer :=  8#0000_0177#;                -- OK (not specified)
    BI3  : constant Integer := 16#0000_00FF#;
 
-   BI4  : constant Integer :=  7#0064_3502#;                -- Literal (not allowed)
-   BI5  : constant Integer := 13#003A_5BC8#;                -- Literal (not allowed)
+   BI4  : constant Integer :=  7#0064_3502#;                -- Numeric_Literal (not allowed)
+   BI5  : constant Integer := 13#003A_5BC8#;                -- Numeric_Literal (not allowed)
 
    BIE1 : constant Integer :=  2#0000_1010#E6;
    BIE2 : constant Integer := 16#0000_000A#E6;
 
    BR1  : constant Float   :=  2#1111_1111.1111_1111#;
    BR2  : constant Float   := 16#0000_00FF.FF00_0000#;
-   BR3  : constant Float   := 16#41_89_AF_3B.FF_01_00_00#;  -- Literal
+   BR3  : constant Float   := 16#41_89_AF_3B.FF_01_00_00#;  -- Numeric_Literal
 
-   BR4  : constant Float   :=  7#0064_3502.2053_4600#;      -- Literal (not allowed)
+   BR4  : constant Float   :=  7#0064_3502.2053_4600#;      -- Numeric_Literal (not allowed)
 
    BRE1 : constant Float   :=  2#0100_0001.1100_0000#E6;
-   BRE2 : constant Float   := 16#C0_AF_E3.70_06#E1;         -- Literal
+   BRE2 : constant Float   := 16#C0_AF_E3.70_06#E1;         -- Numeric_Literal
 
    procedure Exposed_Literal is
-      II : constant Integer  := 4;                          -- OK;
-      FX : constant Float    := 4.5;                        -- OK;
-      NI : constant          := 4;                          -- OK;
-      NF : constant          := 4.5;                        -- OK;
-      I : Integer;
-      F : Float;
+      II : constant Integer   := 4;                         -- OK
+      FX : constant Float     := 4.5;                       -- OK
+      NI : constant           := 5;                         -- OK
+      NF : constant           := 4.5;                       -- OK
+      SS : constant String    := "AdaControl";              -- OK
+      CC : constant Character := 'a';                       -- OK
+      I  : Integer := 5;                                    -- OK
+      F  : Float;
+      S  : String (1..NI);
+      C  : Character;
+      type Enum is (A);
+      for Enum use (A => 5);                                -- OK
+      type Rec is
+         record
+            A,B,C : Integer;
+         end record;
+      for Rec use
+         record
+            A at 0 range 0..31;                             -- OK
+            B at 4 range 0..31;                             -- OK
+            C at 8 range 0..31;                             -- OK
+         end record;
    begin
       I := 0;                                               -- OK
-      I := 2;                                               -- Exposed_Literal
+      I := 2;                                               -- Exposed_Literal (integer)
       F := 1.0;                                             -- OK
-      F := 2.0;                                             -- Exposed_Literal
+      F := 2.0;                                             -- Exposed_Literal (real)
+      S := "rosen";                                         -- OK
+      if S = "" then                                        -- OK
+         S := "12345";                                      -- Exposed_Literal (string)
+      elsif S = "12345" then                                -- Exposed_Literal (string)
+         C := 'A';                                          -- Exposed_Literal (character)
+      end if;
    end Exposed_Literal;
 
    Decl1 : Integer := 0; Decl2 : Integer := 0;              -- Multiple_Elements

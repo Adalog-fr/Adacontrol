@@ -47,9 +47,21 @@ package Framework.Reports is
    -- Context must be either No_Matching_Context (and Report does nothing)
    --   or a descendant of Simple_Context.
 
+   type Uncheckable_Consequence is (False_Positive, False_Negative);
+   procedure Uncheckable (Rule_Id : in Wide_String;
+                          Risk    : in Uncheckable_Consequence;
+                          Loc     : in Location;
+                          Msg     : in Wide_String);
+   -- Called when a rule cannot check something, because f.e. it depends on a non
+   -- statically analyzable construct
+
    --
    --  Declarations below this line are for the use of the framework
    --
+
+   -- These are for the rule Uncheckable
+   procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Rule_Type : Rule_Types; Label : Wide_String);
+   procedure Reset_Uncheckable;
 
    type Output_Format is (Gnat, CSV, CSVX, Source);
    type Stats_Levels  is (None, General, Nulls_Only, Full);

@@ -52,16 +52,18 @@ pragma Elaborate (Framework.Language);
 package body Rules.Statements is
    use Framework;
 
-   type Statement_Names is (Stmt_Abort,            Stmt_Accept_Return,         Stmt_Asynchronous_Select,
-                            Stmt_Case_Others,      Stmt_Case_Others_Null,      Stmt_Conditional_Entry_Call,
-                            Stmt_Delay,            Stmt_Delay_Until,           Stmt_Entry_Return,
-                            Stmt_Exception_Others, Stmt_Exception_Others_Null, Stmt_Exit,
-                            Stmt_Exit_For_Loop,    Stmt_Exit_While_Loop,       Stmt_Function_Return,
-                            Stmt_Goto,             Stmt_Loop_Return,           Stmt_Multiple_Exits,
-                            Stmt_No_Else,          Stmt_Procedure_Return,      Stmt_Raise,
-                            Stmt_Raise_Standard,   Stmt_Requeue,               Stmt_Selective_Accept,
-                            Stmt_Terminate,        Stmt_Timed_Entry_Call,      Stmt_Unconditional_Exit,
-                            Stmt_Unnamed_Exit,     Stmt_Unnamed_Multiple_Loop, Stmt_Untyped_For,
+   type Statement_Names is (Stmt_Abort,                  Stmt_Accept_Return,         Stmt_Asynchronous_Select,
+                            Stmt_Block,                  Stmt_Case_Others,           Stmt_Case_Others_Null,
+                            Stmt_Conditional_Entry_Call, Stmt_Delay,                 Stmt_Delay_Until,
+                            Stmt_Dispatching_Call,       Stmt_Entry_Return,          Stmt_Exception_Others,
+                            Stmt_Exception_Others_Null,  Stmt_Exit,                  Stmt_Exit_For_Loop,
+                            Stmt_Exit_While_Loop,        Stmt_Function_Return,       Stmt_Goto,
+                            Stmt_Loop_Return,            Stmt_Multiple_Exits,        Stmt_No_Else,
+                            Stmt_Procedure_Return,       Stmt_Raise,                 Stmt_Raise_Standard,
+                            Stmt_Requeue,                Stmt_Reraise,               Stmt_Selective_Accept,
+                            Stmt_Terminate,              Stmt_Timed_Entry_Call,      Stmt_Unconditional_Exit,
+                            Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,          Stmt_Unnamed_Loop_Exited,
+                            Stmt_Unnamed_Multiple_Loop,  Stmt_Untyped_For,           Stmt_While_Loop,
                             Stmt_While_True);
 
    package Statement_Flags_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
@@ -125,7 +127,7 @@ package body Rules.Statements is
    begin
       case Action is
          when Clear =>
-            Rule_Used   := (others => False);
+            Rule_Used  := (others => False);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);
@@ -172,6 +174,11 @@ package body Rules.Statements is
             Do_Report (Stmt_Abort);
          when An_Asynchronous_Select_Statement =>
             Do_Report (Stmt_Asynchronous_Select);
+         when A_Block_Statement =>
+            Do_Report (Stmt_Block);
+            if Is_Nil (Statement_Identifier (Element)) then
+               Do_Report (Stmt_Unnamed_Block);
+            end if;
          when A_Conditional_Entry_Call_Statement =>
             Do_Report (Stmt_Conditional_Entry_Call);
          when A_Delay_Relative_Statement =>
@@ -182,11 +189,13 @@ package body Rules.Statements is
             if Is_Nil (Exit_Condition (Element)) then
                Do_Report (Stmt_Unconditional_Exit);
             end if;
-            if Is_Nil (Exit_Loop_Name (Element))
-              and then not Is_Nil (Statement_Identifier (Corresponding_Loop_Exited (Element)))
-            then
-               Do_Report (Stmt_Unnamed_Exit);
+
+            if Is_Nil (Statement_Identifier (Corresponding_Loop_Exited (Element))) then
+               Do_Report (Stmt_Unnamed_Loop_Exited);
+            elsif Is_Nil (Exit_Loop_Name (Element)) then
+                  Do_Report (Stmt_Unnamed_Exit);
             end if;
+
             if Rule_Used (Stmt_Exit_For_Loop)
               and then Statement_Kind (Corresponding_Loop_Exited (Element)) = A_For_Loop_Statement
             then
@@ -215,22 +224,30 @@ package body Rules.Statements is
                   Do_Report (Stmt_No_Else);
                end if;
             end;
+         when A_Procedure_Call_Statement =>
+            if Is_Dispatching_Call (Element) then
+               Do_Report (Stmt_Dispatching_Call);
+            end if;
          when A_Raise_Statement =>
-            if Rule_Used (Stmt_Raise_Standard) then
-               declare
-                  Exc : constant Asis.Expression := Raised_Exception (Element);
-               begin
-                  if Is_Nil (Exc) then
+            declare
+               Exc : constant Asis.Expression := Raised_Exception (Element);
+            begin
+               if Is_Nil (Exc) then
+                  if Rule_Used (Stmt_Reraise) then
+                     Do_Report (Stmt_Reraise);
+                  else
                      Do_Report (Stmt_Raise);
-                  elsif Starts_With (To_Upper (Full_Name_Image (Exc)), "STANDARD.") then
+                  end if;
+               elsif Starts_With (To_Upper (Full_Name_Image (Exc)), "STANDARD.") then
+                  if Rule_Used (Stmt_Raise_Standard) then
                      Do_Report (Stmt_Raise_Standard);
                   else
                      Do_Report (Stmt_Raise);
                   end if;
-               end;
-            else
-               Do_Report (Stmt_Raise);
-            end if;
+               else
+                  Do_Report (Stmt_Raise);
+               end if;
+            end;
          when A_Requeue_Statement | A_Requeue_Statement_With_Abort =>
             Do_Report (Stmt_Requeue);
          when A_Return_Statement =>
@@ -259,6 +276,7 @@ package body Rules.Statements is
          when A_Timed_Entry_Call_Statement =>
             Do_Report (Stmt_Timed_Entry_Call);
          when A_While_Loop_Statement =>
+            Do_Report (Stmt_While_Loop);
             declare
                Expr   : constant Asis.Expression := While_Condition (Element);
                E_Kind : constant Asis.Expression_Kinds := Expression_Kind (Expr);
@@ -273,6 +291,7 @@ package body Rules.Statements is
             null;
       end case;
    end Process_Statement;
+
 
    --------------------
    -- Process_Others --
@@ -313,7 +332,7 @@ package body Rules.Statements is
                     "null ""when others"" in exception handler");
          elsif Rule_Used (Stmt_Exception_Others) then
             Report (Rule_Id,
-                    Usage (Stmt_Exception_Others_Null),
+                    Usage (Stmt_Exception_Others),
                     Get_Location (Definition),
                     "use of ""when others"" in exception handler");
          end if;
@@ -414,6 +433,28 @@ package body Rules.Statements is
          end loop;
       end;
    end Process_Function_Body;
+
+   ---------------------------
+   -- Process_Function_Call --
+   ---------------------------
+
+   procedure Process_Function_Call (Call : in Asis.Expression) is
+      use Asis.Statements;
+      use Framework.Reports;
+   begin
+      if not Rule_Used (Stmt_Dispatching_Call) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if Is_Dispatching_Call (Call) then
+         Report (Rule_Id,
+                 Usage (Stmt_Dispatching_Call),
+                 Get_Location (Call),
+                 "use of statement """ & Image (Stmt_Dispatching_Call) & '"');
+      end if;
+   end Process_Function_Call;
+
 
    --------------------------
    -- Process_Loop_Statements
@@ -567,9 +608,7 @@ package body Rules.Statements is
       use Asis, Asis.Elements;
       use Framework.Scope_Manager;
    begin
-      if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
-        and not Rule_Used (Stmt_Loop_Return)
-      then
+      if Rule_Used = (Statement_Names => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -598,9 +637,7 @@ package body Rules.Statements is
       use Asis, Asis.Elements;
       use Framework.Scope_Manager;
    begin
-      if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
-        and not Rule_Used (Stmt_Loop_Return)
-      then
+      if Rule_Used = (Statement_Names => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);

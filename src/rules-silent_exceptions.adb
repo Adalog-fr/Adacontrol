@@ -538,7 +538,7 @@ package body Rules.Silent_Exceptions is
                   when 0 =>
                      -- Never executed
                      null;
-                  when Non_Static =>
+                  when Not_Static =>
                      -- Consider we have a parallel branch which is (others => No_Path) for the case
                      -- where the loop is not executed
                      Result := Result

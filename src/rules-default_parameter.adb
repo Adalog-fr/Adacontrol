@@ -37,12 +37,10 @@ with
 with
   Asis.Declarations,
   Asis.Elements,
-  Asis.Expressions,
-  Asis.Statements;
+  Asis.Expressions;
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -54,6 +52,7 @@ with
   Framework.Reports;
 pragma Elaborate (Framework.Language);
 package body Rules.Default_Parameter is
+   use Ada.Strings.Wide_Unbounded;
    use Framework, Utilities;
 
    Rule_Used : Boolean := False;
@@ -63,14 +62,16 @@ package body Rules.Default_Parameter is
    subtype Key_Used is Usage_Kind range Used .. Used;
 
    package Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Key_Used);
-   use Usage_Kind_Utilities;
+
+   type Entity_Kind is (E_Name, E_All);
+   package Entity_Kind_Utilities is new Framework.Language.Flag_Utilities (Entity_Kind, Prefix => "E_");
 
    type Usage_Rec is new Basic_Rule_Context with
       record
-         Active     : Boolean;
+         Active : Boolean;
       end record;
    type Usage_Tab is array (Usage_Kind) of Usage_Rec;
-
+   Empty_Usage : constant Usage_Tab := (others => (Basic_Rule_Context with Active => False));
 
    package Parameter_Tree is new Binary_Map
      (Key_Type   => Ada.Strings.Wide_Unbounded.Unbounded_Wide_String,
@@ -86,15 +87,39 @@ package body Rules.Default_Parameter is
 
    Entities : Context_Store;
 
+   Key_All    : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("ALL");
+   Entity_All : constant Entity_Specification  := Value ("ALL");
+
+   -------------
+   -- Or_Else --
+   -------------
+
+   function Or_Else (L, R : Usage_Tab) return Usage_Tab is
+      Result : Usage_Tab;
+   begin
+      if L (Used).Active then
+         Result (Used) := L (Used);
+      else
+         Result (Used) := R (Used);
+      end if;
+       if L (Not_Used).Active then
+         Result (Not_Used) := L (Not_Used);
+      else
+         Result (Not_Used) := R (Not_Used);
+       end if;
+       return Result;
+  end Or_Else;
+
    ----------
    -- Help --
    ----------
 
    procedure Help is
+      use Usage_Kind_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      User_Message  ("Parameter 1: <Subprogram or generic name>");
-      User_Message  ("Parameter 2: <Formal parameter name>");
+      User_Message  ("Parameter 1: <Subprogram or generic name> | all");
+      User_Message  ("Parameter 2: <Formal parameter name> | all");
       Help_On_Flags ("Parameter 3: [not]");
       User_Message  ("Control subprogram calls or generic instantiations that use (or not)");
       User_Message  ("the default value for a given parameter");
@@ -106,19 +131,25 @@ package body Rules.Default_Parameter is
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
-      use Framework.Language;
+      use Framework.Language, Usage_Kind_Utilities, Entity_Kind_Utilities;
 
-      Entity : Entity_Specification;
+      Entity      : Entity_Specification;
+      E_Kind      : Entity_Kind;
       Formals_Map : Parameter_Tree.Map;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Missing subprogram or generic name for rule " & Rule_Id);
+         Parameter_Error (Rule_Id & ": missing subprogram or generic name");
       end if;
-      Entity := Get_Entity_Parameter;
 
+      E_Kind := Get_Flag_Parameter (Allow_Any => True);
+      case E_Kind is
+         when E_Name =>
+            Entity := Get_Entity_Parameter;
+         when E_All =>
+            Entity := Entity_All;
+      end case;
       if not Parameter_Exists then
-         Parameter_Error ("Missing formal name for rule " & Rule_Id);
+         Parameter_Error (Rule_Id & ": missing formal name");
       end if;
 
       declare
@@ -128,12 +159,12 @@ package body Rules.Default_Parameter is
       begin
          if Parameter_Exists then
             Affirmative := not Get_Modifier ("NOT");
-            Usage       := Get_Flag_Parameter (Allow_Any => False);
+            Usage       := Get_Flag_Parameter (Allow_Any => False);  -- "used" (or error)
             if not Affirmative then
                Usage := Not_Used;
             end if;
          else
-            Usage := Used;
+            Parameter_Error ("""used"" or ""not used"" expected");
          end if;
 
          begin
@@ -148,15 +179,14 @@ package body Rules.Default_Parameter is
          declare
             Val : Usage_Tab := Parameter_Tree.Fetch (Formals_Map,
                                                      To_Unbounded_Wide_String (Formal),
-                                                     Default_Value => (others =>
-                                                                         (Basic.New_Context (Search, "") with False)));
+                                                     Default_Value => Empty_Usage);
          begin
+            if Val (Usage).Active then
+               Parameter_Error ("This combination of parameters already specified");
+            end if;
             Val (Usage) := (Basic.New_Context (Rule_Type, Label) with True);
             Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Formal), Val);
             Update (Entities, Entity_Context'(Formals_Map => Formals_Map));
-         exception
-            when Already_In_Store =>
-               Parameter_Error ("Formal already specified: " & Formal);
          end;
       end;
       Rule_Used  := True;
@@ -207,28 +237,83 @@ package body Rules.Default_Parameter is
    -----------------------------------
 
    procedure Process_Call_Or_Instantiation (Element : in Asis.Element) is
-      use Ada.Strings.Wide_Unbounded;
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
       use Parameter_Tree, Thick_Queries;
 
-      function Get_Association_List (E : in Asis.Element) return Asis.Association_List is
+      Name : Asis.Expression;
+
+      function Get_Formals_List return Asis.Element_List is
+         Gen_Name : Asis.Expression;
       begin
-         if Expression_Kind (Element) = A_Function_Call then
-            return Function_Call_Parameters (E, Normalized => True);
+         if Expression_Kind (Name) = An_Attribute_Reference then
+            -- Calls to attributes must be ignored, since they have no formal name (and no default value)
+            return Nil_Element_List;
+         elsif Expression_Kind (Element) = A_Function_Call then
+            return Called_Profile (Element);
          elsif Statement_Kind (Element) = A_Procedure_Call_Statement or
            Statement_Kind (Element) = An_Entry_Call_Statement
          then
-            return Call_Statement_Parameters (E, Normalized => True);
+            return Called_Profile (Element);
          elsif Declaration_Kind (Element) in A_Generic_Instantiation
            or Declaration_Kind (Element) = A_Formal_Package_Declaration
          then
-            return Generic_Actual_Part (E, Normalized => True);
+            Gen_Name := Ultimate_Name (Generic_Unit_Name (Element));
+            if Expression_Kind (Gen_Name) = A_Selected_Component then
+               Gen_Name := Selector (Gen_Name);
+            end if;
+            return Generic_Formal_Part (Corresponding_Name_Declaration (Gen_Name));
          else
             Failure ("Unexpected element in Process for Default_Parameter", Element);
          end if;
-      end Get_Association_List;
+      end Get_Formals_List;
 
-      Name : Asis.Expression;
+      procedure Check (Name : Asis.Expression; Name_Context, All_Context : Root_Context'Class) is
+         use Framework.Reports;
+         Formal_Key : constant Unbounded_Wide_String
+           := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Name)));
+         Usage   : Usage_Tab := Empty_Usage;
+         Is_Defaulted : constant Boolean := Is_Nil (Actual_Expression (Element, Name, Return_Default => False));
+      begin
+         -- Build usage in order of preferences:
+         --    Sp_Name, Formal_Name
+         --    Sp_Name, All
+         --    All,     Formal_Name
+         --    All,     All
+         if Name_Context /= No_Matching_Context then
+            if Is_Present (Entity_Context (Name_Context).Formals_Map, Formal_Key) then
+               Usage := Fetch (Entity_Context (Name_Context).Formals_Map, Formal_Key);
+            end if;
+            if Is_Present (Entity_Context (Name_Context).Formals_Map, Key_All) then
+               Usage := Or_Else (Usage, Fetch (Entity_Context (Name_Context).Formals_Map, Key_All));
+            end if;
+         end if;
+         if All_Context /= No_Matching_Context then
+            if Is_Present (Entity_Context (All_Context).Formals_Map, Formal_Key) then
+               Usage := Or_Else (Usage, Fetch (Entity_Context (All_Context).Formals_Map, Formal_Key));
+            end if;
+            if Is_Present (Entity_Context (All_Context).Formals_Map, Key_All) then
+               Usage := Or_Else (Usage, Fetch (Entity_Context (All_Context).Formals_Map, Key_All));
+            end if;
+         end if;
+
+         if Usage (Used).Active then
+            if Is_Defaulted then
+               Report (Rule_Id,
+                       Usage (Used),
+                       Get_Location (Element),
+                       "default use of formal """ & Defining_Name_Image (Name) & '"');
+            end if;
+         end if;
+
+         if Usage (Not_Used).Active then
+            if not Is_Defaulted then
+               Report (Rule_Id,
+                       Usage (Not_Used),
+                       Get_Location (Element),
+                       "non default use of formal """ & Defining_Name_Image (Name) & '"');
+            end if;
+         end if;
+      end Check;
    begin
       if not Rule_Used then
          return;
@@ -242,64 +327,66 @@ package body Rules.Default_Parameter is
          when An_Expression =>
             -- Must be A_Function_Call
             Name := Called_Simple_Name (Element);
-            -- Avoid using Called_Simple_Name for (non attribute) functions due to ASIS bug
-            if Expression_Kind (Name) /= An_Attribute_Reference then
-               declare
-                  Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Function (Element);
-               begin
-                  if Is_Nil (Called) then
-                     -- Some predefined stuff
-                     Name := Nil_Element;
-                  else
-                     Name := Names (Called)(1);
-                  end if;
-               end;
-            end if;
+-- The following sequence was necessary due to a bug in Called_Simple_Name for functions
+-- Kept as comments until proven not useful on any supported platform.
+--              if Expression_Kind (Name) /= An_Attribute_Reference then
+--                 declare
+--                    Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Function (Element);
+--                 begin
+--                    if Is_Nil (Called) then
+--                       -- Some predefined stuff
+--                       Name := Nil_Element;
+--                    else
+--                       Name := Names (Called)(1);
+--                    end if;
+--                 end;
+--              end if;
          when others =>
             -- Must be a procedure or entry call
             Name := Called_Simple_Name (Element);
       end case;
 
       declare
-         use Framework.Reports;
-         Current_Context : constant Root_Context'Class := Matching_Context (Entities, Name);
+         Name_Context : constant Root_Context'Class := Matching_Context      (Entities, Name);
+         All_Context  : constant Root_Context'Class := Framework.Association (Entities, Entity_All);
       begin
-         if Current_Context = No_Matching_Context then
+         if Name_Context = No_Matching_Context and All_Context = No_Matching_Context then
             return;
          end if;
 
          declare
-            Associations    : constant Asis.Association_List := Get_Association_List (Element);
-            Formal          : Asis.Element;
-            Formals_Context : Entity_Context renames Entity_Context (Current_Context);
-            Usage           : Usage_Tab;
+            Formals : constant Asis.Element_List := Get_Formals_List;
          begin
-            for I in Associations'Range loop
-               Formal := Formal_Parameter (Associations (I));
-               if Is_Present (Formals_Context.Formals_Map,
-                              To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal))))
-               then
-                  Usage := Fetch (Formals_Context.Formals_Map,
-                                  To_Unbounded_Wide_String (To_Upper
-                                                            (Defining_Name_Image (Formal))));
-                  if Usage (Used).Active then
-                     if Is_Defaulted_Association (Associations (I)) then
-                        Report (Rule_Id,
-                                Usage (Used),
-                                Get_Location (Element),
-                                "default use of formal """ & Defining_Name_Image (Formal) & '"');
-                     end if;
-                  end if;
-
-                  if Usage (Not_Used).Active then
-                     if not Is_Defaulted_Association (Associations (I)) then
-                        Report (Rule_Id,
-                                Usage (Not_Used),
-                                Get_Location (Element),
-                                "non default use of formal """ & Defining_Name_Image (Formal) & '"');
-                     end if;
-                  end if;
-               end if;
+            for I in Formals'Range loop
+               case Element_Kind (Formals (I)) is
+                  when A_Clause =>
+                     -- Use clause in generic formal part
+                     null;
+                  when A_Declaration =>
+                     case Declaration_Kind (Formals (I)) is
+                        when A_Parameter_Specification
+                           | A_Formal_Object_Declaration
+                             =>
+                           if not Is_Nil (Initialization_Expression (Formals (I))) then
+                              declare
+                                 Formal_Names : constant Asis.Expression_List := Names (Formals (I));
+                              begin
+                                 for F in Formal_Names'Range loop
+                                    Check (Formal_Names (F), Name_Context, All_Context);
+                                 end loop;
+                              end;
+                           end if;
+                        when A_Formal_Procedure_Declaration
+                           | A_Formal_Function_Declaration
+                             =>
+                           null; -- TBSL
+                        when others =>
+                           -- Others cases have no possible default value
+                           null;
+                     end case;
+                  when others =>
+                     Failure ("Bad formal", Formals (I));
+               end case;
             end loop;
          end;
       end;

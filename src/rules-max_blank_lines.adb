@@ -31,7 +31,6 @@
 
 -- Ada
 with
-  Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Unbounded;
 
 -- Adalog
@@ -90,10 +89,7 @@ package body Rules.Max_Blank_Lines is
       end if;
 
       if Maximum (Rule_Type) = Natural'Last then
-         Maximum (Rule_Type) := Get_Integer_Parameter;
-         if Maximum (Rule_Type) < 0 then
-            Parameter_Error ("Number of lines value must be at least 0");
-         end if;
+         Maximum    (Rule_Type) := Get_Integer_Parameter (Min => 0);
          Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
       else
          Parameter_Error ("Rule already specified");
@@ -136,18 +132,19 @@ package body Rules.Max_Blank_Lines is
    ------------------
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded;
+      use Framework.Reports, Ada.Strings.Wide_Unbounded;
+      use Utilities;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Trim (Line, Both) /= "" then
+      if Trim_All (Line) /= "" then
          if Fail_Loc /= Null_Location then
             Report (Rule_Id, To_Wide_String (Rule_Label (Fail_Type)), Fail_Type, Fail_Loc,
                     "Too many consecutive blank lines ("
-                    & Trim (Integer'Wide_Image (Blank_Lines_Count), Left)
+                    & Integer_Img (Blank_Lines_Count)
                     & ')');
             Fail_Loc := Null_Location;
          end if;

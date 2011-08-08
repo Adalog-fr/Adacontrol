@@ -43,6 +43,6 @@ package Rules.Max_Statement_Nesting  is
 
    Rule_Id : constant Wide_String := "MAX_STATEMENT_NESTING";
 
-   procedure Process_Statement (Stmt : in Asis.Statement);
+   procedure Process_Statement (Statement : in Asis.Statement);
 
 end Rules.Max_Statement_Nesting;

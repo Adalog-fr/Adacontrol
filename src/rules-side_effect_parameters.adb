@@ -185,7 +185,7 @@ package body Rules.Side_Effect_Parameters is
                             Control : in out Asis.Traverse_Control;
                             State   : in out State_Information) is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Thick_Queries;
+      use Framework.Reports, Thick_Queries;
 
       Func_Name : Asis.Element;
 
@@ -218,7 +218,6 @@ package body Rules.Side_Effect_Parameters is
       end Func_Image;
 
       procedure Check (Good_Context : Entity_Context) is
-         use Framework.Reports;
       begin
          if Called_By (Good_Context.Rule_Id) = 0 then
             Called_By (Good_Context.Rule_Id)   := State.Param_Pos;
@@ -253,6 +252,10 @@ package body Rules.Side_Effect_Parameters is
                         Func_Name := Selector (Func_Name);
                      when An_Explicit_Dereference =>
                         -- Function is called through pointer => not statically determinable
+                        Uncheckable (Rule_Id,
+                                     False_Negative,
+                                     Get_Location (Element),
+                                     "Call through access to subprogram");
                         return;
                      when others =>
                         null;
@@ -261,6 +264,10 @@ package body Rules.Side_Effect_Parameters is
                   if Expression_Type_Kind (Func_Name) = An_Access_Type_Definition then
                      -- Implicit dereference
                      -- Function is called through pointer => not statically determinable
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (Element),
+                                  "Call through access to subprogram");
                      return;
                   end if;
 

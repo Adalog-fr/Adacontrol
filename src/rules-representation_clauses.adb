@@ -65,7 +65,7 @@ package body Rules.Representation_Clauses is
    use Context_Map;
 
    Usage     : array (Rule_Types) of Context_Map.Map;
-   Rule_Used : Boolean;
+   Rule_Used : Boolean := False;
    Save_Used : Boolean;
    Key       : array (Clause_Names range Clause_Names'Succ (Cl_Attribute) .. Clause_Names'Last)
                   of Unbounded_Wide_String;

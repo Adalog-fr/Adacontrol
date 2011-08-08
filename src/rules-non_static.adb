@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Non_Static_Constraints - Package body                     --
+--  Rules.Non_Static - Package body                                 --
 --                                                                  --
 --  This software  is (c) Adalog  2004-2005. The Ada  Controller is --
 --  free software;  you can redistribute it and/or  modify it under --
@@ -31,10 +31,13 @@
 -- Asis
 with
   Asis.Definitions,
+  Asis.Declarations,
+  Asis.Elements,
   Asis.Expressions;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -48,26 +51,10 @@ with
 
 pragma Elaborate (Framework.Language);
 
-package body Rules.Non_Static_Constraints is
+package body Rules.Non_Static is
    use Framework;
 
-   -- Algorithm:
-   --   Proceed with Process_Constrained_Array_Definition, Process_Discriminant or
-   --   Process_Index_Constraint whether matching a constrained array definition, a
-   --   discriminant constraint or an index constraint.
-   --
-   --   For each constraint or definition, we first retrieve the ranges.
-   --   We then process differently on the constraint list we retrieved to check if
-   --   any of the constraints cannot be statically determined.
-   --   Reports are shown when matching a non-static constraint.
-   --
-   -- Note:
-   --   When matching a constrained array definition or an index constraint, we
-   --   first retrieve the ranges in different ways, but checking the "static-ity"
-   --   is done in a common way.
-   --
-
-   type Available_Keyword is (K_Index, K_Discriminant);
+   type Available_Keyword is (K_Index_Constraint, K_Discriminant_Constraint, K_Instantiation);
 
    package Keyword_Flag_Utilities is new Framework.Language.Flag_Utilities (Available_Keyword, "K_");
 
@@ -87,7 +74,7 @@ package body Rules.Non_Static_Constraints is
       use Keyword_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter 1:", Footer => "(optional)");
+      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default = all)");
       User_Message ("Control that index and discriminant constraints use only static expressions");
    end Help;
 
@@ -104,9 +91,7 @@ package body Rules.Non_Static_Constraints is
       procedure Add_One (Key : Available_Keyword) is
       begin
          if Rule_Used (Key) then
-            Parameter_Error ("Rule " & Rule_Id &
-                             " can be specified only once for ""index""" &
-                             " and once for ""discriminant"".");
+            Parameter_Error (Rule_Id & ": parameter already specified: " & Image (Key));
          end if;
 
          Rule_Used (Key) := True;
@@ -150,15 +135,15 @@ package body Rules.Non_Static_Constraints is
    -- Check_Static_Index --
    ------------------------
 
-   procedure Check_Static_Index (Elem : Asis.Element; Constraint_List : Asis.Element_List) is
+   procedure Check_Static_Index (Constraint_List : Asis.Element_List) is
       use Framework.Reports, Thick_Queries;
    begin
       for I in Constraint_List'Range loop
-         if Discrete_Constraining_Lengths (Constraint_List (I))(1) = Non_Static then
+         if Discrete_Constraining_Lengths (Constraint_List (I))(1) = Not_Static then
             Report (Rule_Id,
-                    Usage (K_Index),
-                    Get_Location (Elem),
-                    "array definition non-statically constrained");
+                    Usage (K_Index_Constraint),
+                    Get_Location (Constraint_List (I)),
+                    "array index non-statically constrained");
          end if;
       end loop;
    end Check_Static_Index;
@@ -171,13 +156,29 @@ package body Rules.Non_Static_Constraints is
    procedure Process_Constrained_Array_Definition (Elem : Asis.Type_Definition) is
       use Asis.Definitions;
    begin
-      if not Rule_Used (K_Index) then
+      if not Rule_Used (K_Index_Constraint) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check_Static_Index (Elem, Discrete_Subtype_Definitions (Elem));
+      Check_Static_Index (Discrete_Subtype_Definitions (Elem));
    end Process_Constrained_Array_Definition;
+
+
+   ----------------------------
+   -- Process_Discrete_Range --
+   ----------------------------
+
+   procedure Process_Index_Constraint (Elem : Asis.Discrete_Range) is
+      use Asis.Definitions;
+   begin
+      if not Rule_Used (K_Index_Constraint) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Check_Static_Index (Discrete_Ranges (Elem));
+   end Process_Index_Constraint;
 
 
    -------------------------------------
@@ -188,7 +189,7 @@ package body Rules.Non_Static_Constraints is
       use Asis.Definitions, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
    begin
-      if not Rule_Used (K_Discriminant) then
+      if not Rule_Used (K_Discriminant_Constraint) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -199,34 +200,121 @@ package body Rules.Non_Static_Constraints is
          for I in Constraint_List'Range loop
             if Static_Expression_Value_Image (Discriminant_Expression (Constraint_List (I))) = "" then
                Report (Rule_Id,
-                       Usage (K_Discriminant),
-                       Get_Location (Elem),
+                       Usage (K_Discriminant_Constraint),
+                       Get_Location (Constraint_List (I)),
                        "discriminant non-statically constrained");
             end if;
          end loop;
       end;
    end Process_Discriminant_Constraint;
 
+   ---------------------------
+   -- Process_Instantiation --
+   ---------------------------
 
-   ----------------------------
-   -- Process_Discrete_Range --
-   ----------------------------
+   procedure Process_Instantiation (Elem : Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Thick_Queries, Utilities;
 
-   procedure Process_Index_Constraint (Elem : Asis.Discrete_Range) is
-      use Asis.Definitions;
+      procedure Do_Report (Assoc : Asis.Association) is
+         use Framework.Reports;
+      begin
+         Report (Rule_Id,
+                 Usage (K_Instantiation),
+                 Get_Location (Elem),
+                 "Actual for "
+                 & Defining_Name_Image (Formal_Parameter (Assoc))
+                 & " in instantiation is not static"
+                 & Choose (Is_Defaulted_Association (Assoc), " (default value)", ""));
+      end Do_Report;
+
+      function Is_Static_Object (Obj : Asis.Expression) return Boolean is
+      begin
+         case Expression_Kind (Obj) is
+            when A_Selected_Component =>
+               return Is_Static_Object (Selector (Obj)) and then Is_Static_Object (Prefix (Obj));
+            when An_Indexed_Component =>
+               if Is_Static_Object (Prefix (Obj)) then
+                  declare
+                     Indexes : constant Asis.Expression_List := Index_Expressions (Obj);
+                  begin
+                     for I in Indexes'Range loop
+                        if Static_Expression_Value_Image (Indexes (I)) = "" then
+                           return False;
+                        end if;
+                     end loop;
+                     return True;
+                  end;
+               else
+                  return False;
+               end if;
+            when An_Explicit_Dereference =>
+               return False;
+            when others =>
+               return not Is_Nil (Ultimate_Name (Obj));
+         end case;
+      end Is_Static_Object;
+
    begin
-      if not Rule_Used (K_Index) then
+      if not Rule_Used (K_Instantiation) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check_Static_Index (Elem, Discrete_Ranges (Elem));
-   end Process_Index_Constraint;
-
+      declare
+         Actuals    : constant Asis.Association_List := Generic_Actual_Part (Elem, Normalized => True);
+         Param_Decl : Asis.Declaration;
+      begin
+         for A in Actuals'Range loop
+            Param_Decl := Enclosing_Element (Formal_Parameter (Actuals (A)));
+            case Declaration_Kind (Param_Decl) is
+               when A_Formal_Object_Declaration =>
+                  case Mode_Kind (Param_Decl) is
+                     when An_In_Mode | A_Default_In_Mode =>
+                        if Static_Expression_Value_Image (Actual_Parameter (Actuals (A))) = "" then
+                           Do_Report (Actuals (A));
+                        end if;
+                     when An_In_Out_Mode =>
+                        if Is_Static_Object (Actual_Parameter (Actuals (A))) then
+                           Do_Report (Actuals (A));
+                        end if;
+                     when others =>
+                        Failure ("Bad formal object mode");
+                  end case;
+               when A_Formal_Type_Declaration
+                  | A_Formal_Package_Declaration
+                  | A_Formal_Package_Declaration_With_Box
+                    =>
+                  -- These are always static (and cannot be renamed!)
+                  null;
+               when A_Formal_Procedure_Declaration
+                  | A_Formal_Function_Declaration
+                 =>
+                  case Expression_Kind (Actual_Parameter (Actuals (A))) is
+                     when An_Attribute_Reference =>
+                        -- Protects from calling Ultimate_Name (in when others) with an attribute reference
+                        null;
+                     when A_Function_Call =>
+                        -- A4G still confused when the actual is an attribute
+                        -- (Actually, it is the case above)
+                        A4G_Bugs.Trace_Bug ("Non_Static: Function_Call in place of Attribute_Reference");
+                     when An_Explicit_Dereference =>
+                        Do_Report (Actuals (A));
+                     when others =>
+                        if Is_Nil (Ultimate_Name (Actual_Parameter (Actuals (A)))) then
+                           Do_Report (Actuals (A));
+                        end if;
+                  end case;
+               when others =>
+                  Failure ("Not a formal parameter declaration");
+            end case;
+         end loop;
+      end;
+   end Process_Instantiation;
 
 begin
    Framework.Rules_Manager.Register_Semantic (Rule_Id,
                                               Help    => Help'Access,
                                               Add_Use => Add_Use'Access,
                                               Command => Command'Access);
-end Rules.Non_Static_Constraints;
+end Rules.Non_Static;

@@ -276,7 +276,7 @@ package body Framework.Ruler is
       use Ada.Strings.Wide_Fixed, Framework, Rules_Manager, Utilities;
       Element_From_Unit : constant Asis.Element := Unit_Declaration (Unit);
       Unit_Lines : constant Line_List := Lines (Element  => Element_From_Unit,
-                                                The_Span => Compilation_Unit_Span (Element_From_Unit));
+                                                The_Span => Compilation_Span (Element_From_Unit));
       File_Name : constant Wide_String := Get_File_Name (Get_Location (Element_From_Unit));
    begin
       Framework.Plugs.         Text_Enter_Unit (Unit);
@@ -720,7 +720,7 @@ package body Framework.Ruler is
               User_Log (Progress_Indicator & "Controlling " & Unit_Name & " body");
               Do_Process (Unit_Body);
            end if;
-        end if;
+         end if;
       end if;
    end Process;
 

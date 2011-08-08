@@ -79,6 +79,7 @@ package body Rules.No_Safe_Initialization is
                                               Ada.Strings.Wide_Unbounded."<",
                                               Ada.Strings.Wide_Unbounded.">");
 
+
    ----------
    -- Help --
    ----------
@@ -144,6 +145,195 @@ package body Rules.No_Safe_Initialization is
       end case;
    end Command;
 
+
+   ------------------------
+   -- Process_Statements --
+   ------------------------
+
+   Statements_Break : exception;
+   -- Raised when a breaking statement (return, goto...) is encountered
+   -- This terminates the analysis of all path that are enclosing this statement, but not
+   -- of paths parallel to the path that contains the breaking statement.
+   -- Of course, you should thing about this recursively...
+   procedure Process_Statements (Object_Map : in out Object_Info_Map.Map; Statement_List : in Asis.Statement_List) is
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Framework.Reports, Thick_Queries, Utilities;
+      use Object_Info_Map;
+
+      procedure Update (Name : Asis.Expression) is
+         use Ada.Strings.Wide_Unbounded;
+
+         Good_Name : Asis.Expression := Name;
+         Info      : Object_Information;
+      begin
+         loop
+            case Expression_Kind (Good_Name) is
+               when An_Identifier =>
+                  -- Retrieve the assigned variable definition
+                  Good_Name := Ultimate_Name (Good_Name);
+                  if Is_Nil (Good_Name) then
+                     -- Renaming of something dynamic, ignore
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (Name),
+                                  "Entity is not statically determinable");
+                     return;
+                  end if;
+                  exit;
+
+               when A_Selected_Component =>
+                  Good_Name := Selector (Good_Name);
+
+               when A_Type_Conversion =>
+                  Good_Name := Converted_Or_Qualified_Expression (Good_Name);
+
+               when A_Slice
+                 | An_Indexed_Component
+                 | An_Explicit_Dereference
+                 =>
+                  -- Assignment to part of a variable, ignore
+                  return;
+
+               when others =>
+                  Failure (Rule_Id & ": invalid expression kind", Good_Name);
+            end case;
+         end loop;
+
+         case Declaration_Kind (Corresponding_Name_Declaration (Good_Name)) is
+            when A_Variable_Declaration | A_Parameter_Specification =>
+               declare
+                  Name_Image : constant Unbounded_Wide_String
+                    := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
+               begin
+                  if Is_Present (Object_Map, Name_Image) then
+                     Info           := Fetch (Object_Map, Name_Image);
+                     Info.Reference := Assigned;
+                     Add (Object_Map, Name_Image, Info);
+                  end if;
+               end;
+            when others =>
+               -- A record component or protected component...
+               null;
+         end case;
+      end Update;
+
+      function Clean_Map (Source : Map) return Map is
+         Source_Copy : Map := Source;  -- Because we need a variable for iterate
+         Result : Map;
+         procedure Make_One (Key   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+                             Value : in out Object_Information)
+         is
+            New_Val : Object_Information := Value;
+         begin
+            New_Val.Reference := None;
+            Add (Result, Key, New_Val);
+         end Make_One;
+         procedure Make_All is new Iterate (Make_One);
+      begin
+         Make_All (Source_Copy);
+         return Result;
+      end Clean_Map;
+
+      procedure Refresh_One (Key   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+                            Value : in out Object_Information)
+      is
+         pragma Unreferenced (Key);
+      begin
+         if Value.Reference = None then
+            raise Delete_Current;
+         else
+            Value.Reference := None;
+         end if;
+      end Refresh_One;
+      procedure Refresh is new Iterate (Refresh_One);
+
+      procedure Update_One (Key   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+                            Value : in out Object_Information)
+      is
+         pragma Unreferenced (Value);
+         Info : Object_Information;
+      begin
+         Info           := Fetch (Object_Map, Key);
+         Info.Reference := Assigned;
+         Add (Object_Map, Key, Info);
+      end Update_One;
+      procedure Update_Local is new Iterate (Update_One);
+
+   begin   -- Process_Statements
+      for Stmt_Index in Statement_List'range loop
+         case Statement_Kind (Statement_List (Stmt_Index)) is
+            when An_Assignment_Statement =>
+               Update (Assignment_Variable_Name (Statement_List (Stmt_Index)));
+
+            when An_Entry_Call_Statement | A_Procedure_Call_Statement =>
+               -- Check for out parameters in procedure and entry calls
+               declare
+                  Actuals : constant Asis.Association_List
+                    := Call_Statement_Parameters (Statement_List (Stmt_Index));
+                  Formal  : Asis.Defining_Name;
+               begin
+                  for Actual_Index in Actuals'Range loop
+                     Formal := Formal_Name (Statement_List (Stmt_Index), Actual_Index);
+                     -- Formal is nil for calls to a dispatching operation
+                     -- We don't know the mode => pretend we do nothing
+                     -- (consistent with the fact that dispatching calls are ignored)
+                     if Is_Nil (Formal) then
+                        Uncheckable (Rule_Id,
+                                     False_Positive,
+                                     Get_Location (Statement_List (Stmt_Index)),
+                                     "Dispatching_Call");
+                     else
+                        case Mode_Kind (Enclosing_Element (Formal)) is
+                           when Not_A_Mode =>
+                              Failure (Rule_Id & ": Not_A_Mode");
+                           when An_Out_Mode =>
+                              Update (Actual_Parameter (Actuals (Actual_Index)));
+                           when others =>
+                              null;
+                        end case;
+                     end if;
+                  end loop;
+               end;
+
+            when An_If_Statement
+               | A_Case_Statement
+                 =>
+               declare
+                  Paths     : constant Asis.Path_List := Statement_Paths (Statement_List (Stmt_Index));
+                  Local_Map : Map;
+                  Had_Break : Boolean := False;
+               begin
+                  -- Don't consider it if it is an "if" without an else path
+                  if Path_Kind (Paths (Paths'Last)) not in An_If_Path .. An_Elsif_Path then
+                     Local_Map := Clean_Map (Object_Map);
+                     for Path_Index in Paths'Range loop
+                        begin
+                           Process_Statements (Local_Map, Sequence_Of_Statements (Paths (Path_Index)));
+                        exception
+                           when Statements_Break =>
+                              Had_Break := True;
+                        end;
+                        Refresh (Local_Map);
+                     end loop;
+                     Update_Local (Local_Map);
+                     Clear (Local_Map);
+                     if Had_Break then
+                        raise Statements_Break;
+                     end if;
+                  end if;
+               end;
+
+            when A_Goto_Statement
+               | A_Return_Statement
+                 =>
+                 raise Statements_Break;
+
+            when others =>
+               -- End of intialization statements
+               exit;
+         end case;
+      end loop;
+   end Process_Statements;
 
    -----------------------
    -- Process_Structure --
@@ -245,60 +435,6 @@ package body Rules.No_Safe_Initialization is
          end;
       end Add_Variables;
 
-      procedure Update (Name : Asis.Expression) is
-         use Asis, Asis.Elements, Asis.Expressions;
-         use Thick_Queries, Utilities;
-
-         Good_Name : Asis.Expression := Name;
-         Info      : Object_Information;
-      begin
-         loop
-            case Expression_Kind (Good_Name) is
-               when An_Identifier =>
-                  -- Retrieve the assigned variable definition
-                  Good_Name := Ultimate_Name (Good_Name);
-                  if Is_Nil (Good_Name) then
-                     -- Renaming of something dynamic, ignore
-                     return;
-                  end if;
-                  exit;
-
-               when A_Selected_Component =>
-                  Good_Name := Selector (Good_Name);
-
-               when A_Type_Conversion =>
-                  Good_Name := Converted_Or_Qualified_Expression (Good_Name);
-
-               when A_Slice
-                 | An_Indexed_Component
-                 | An_Explicit_Dereference
-                 =>
-                  -- Assignment to part of a variable, ignore
-                  return;
-
-               when others =>
-                  Failure (Rule_Id & ": invalid expression kind", Good_Name);
-            end case;
-         end loop;
-
-         case Declaration_Kind (Corresponding_Name_Declaration (Good_Name)) is
-            when A_Variable_Declaration | A_Parameter_Specification =>
-               declare
-                  Name_Image : constant Unbounded_Wide_String
-                    := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
-               begin
-                  if Is_Present (Object_Map, Name_Image) then
-                     Info           := Fetch (Object_Map, Name_Image);
-                     Info.Reference := Assigned;
-                     Add (Object_Map, Name_Image, Info);
-                  end if;
-               end;
-            when others =>
-               -- A record component or protected component...
-               null;
-         end case;
-      end Update;
-
       procedure Report_One (Key : Unbounded_Wide_String; Info : in out Object_Information) is
          pragma Unreferenced (Key);
          use Asis.Declarations;
@@ -324,8 +460,7 @@ package body Rules.No_Safe_Initialization is
 
       procedure Report_All is new Iterate (Report_One);
 
-      use Thick_Queries, Utilities;
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Thick_Queries;
    begin -- Process_Structure
 
       if Rule_Used = Usage_Flags'(others => False) then
@@ -336,49 +471,13 @@ package body Rules.No_Safe_Initialization is
       Add_Out_Parameters (Elem);
       Add_Variables      (Elem);
 
-      declare
-         Statement_List : constant Asis.Statement_List := Thick_Queries.Statements (Elem);
       begin
-
-         -- Update references from variables and out parameters assignments
-         for Stmt_Index in Statement_List'range loop
-            case Statement_Kind (Statement_List (Stmt_Index)) is
-               when An_Assignment_Statement =>
-                  Update (Assignment_Variable_Name (Statement_List (Stmt_Index)));
-
-               when An_Entry_Call_Statement | A_Procedure_Call_Statement =>
-                  -- Check for out parameters in procedure and entry calls
-                  declare
-                     Actuals : constant Asis.Association_List
-                       := Call_Statement_Parameters (Statement_List (Stmt_Index));
-                     Formal  : Asis.Defining_Name;
-                  begin
-                     for Actual_Index in Actuals'Range loop
-                        Formal := Formal_Name (Statement_List (Stmt_Index), Actual_Index);
-                        -- Formal is nil for calls to a dispatching operation
-                        -- We don't know the mode => pretend we do nothing
-                        -- (consistent with the fact that dispatching calls are ignored)
-                        if not Is_Nil (Formal) then
-                           case Mode_Kind (Enclosing_Element (Formal)) is
-                              when Not_A_Mode =>
-                                 Failure (Rule_Id & ": Not_A_Mode");
-                              when An_Out_Mode =>
-                                 Update (Actual_Parameter (Actuals (Actual_Index)));
-                              when others =>
-                                 null;
-                           end case;
-                        end if;
-                     end loop;
-                  end;
-
-               when others =>
-                  -- End of intialization statements
-                  exit;
-            end case;
-         end loop;
-
-        Report_All (Object_Map);
+         Process_Statements (Object_Map, Thick_Queries.Statements (Elem));
+      exception
+         when Statements_Break =>
+            null;
       end;
+      Report_All (Object_Map);
 
       Clear (Object_Map);
    exception

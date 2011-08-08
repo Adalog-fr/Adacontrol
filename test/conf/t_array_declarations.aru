@@ -1,0 +1,7 @@
+check  array_declarations (first, 0);
+search array_declarations (first, 1);
+Not_2: count  array_declarations (first, 2);
+
+check  array_declarations (max_length, 5);
+search array_declarations (max_length, 4);
+Too_Long: count  array_declarations (max_length, 5);

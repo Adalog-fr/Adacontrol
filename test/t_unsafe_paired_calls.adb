@@ -1,4 +1,6 @@
 procedure T_Unsafe_Paired_Calls is
+   procedure Not_A_Lock is begin null; end;
+
    procedure P is begin null; end;
    procedure V is begin null; end;
 
@@ -15,6 +17,11 @@ procedure T_Unsafe_Paired_Calls is
    type Sema is null record;
    procedure P (S : in out Sema) is begin null; end;
    procedure V (S : in out Sema) is begin null; end;
+
+   procedure MultP1 is begin null; end;
+   procedure MultV1 is begin null; end;
+   procedure MultP2 is begin null; end;
+   procedure MultV2 is begin null; end;
 
    -- Check procedure body
    procedure P1 is   -- OK
@@ -108,6 +115,15 @@ begin
    end;
 
    begin
+      P;              -- Error: not paired
+      null;
+      Not_A_Lock;
+   exception
+      when others =>  -- Error: not paired
+        Not_A_Lock;
+   end;
+
+   begin
       null;
       P;             -- Error: not first/last
       V;             -- Error: not first/last
@@ -125,11 +141,11 @@ begin
       V;
    end;
 
-   begin             -- Error: no when others
+   begin
       P;
       null;
       V;
-   exception
+   exception        -- Error: no when others
       when Constraint_Error =>
          V;
    end;
@@ -194,16 +210,16 @@ begin
       null;
       V (A2);        -- Error: wrong values
    exception
-      when others =>
+      when others => -- Error: wrong values
          V (A2);
    end;
 
    begin
-      P ('a', 1);   -- Error: not same procedure
+      P ('a', 1);    -- Error: not same procedure
       null;
-      V;            -- Error: not same procedure
+      V;             -- Error: not same procedure
    exception
-      when others =>
+      when others => -- Error: not same procedure
          V;
    end;
 
@@ -264,7 +280,7 @@ begin
       null;
       V (S2);        -- Error: not same parameter
    exception
-      when others =>
+      when others => -- Error: not same parameter
          V (S2);
    end;
 
@@ -307,4 +323,25 @@ begin
          V (S1);
    end;
 
+   -- Check multiple matches
+   begin                -- OK
+      MultP1;
+      MultV1;
+   exception
+      when others => MultV2;
+   end;
+
+   begin                -- OK
+      MultP2;
+      MultV2;
+   exception
+      when others => MultV2;
+   end;
+
+   begin
+      MultP2;           -- Error: not paired
+      MultV1;           -- Error: not paired
+   exception
+      when others => MultV2;
+   end;
 end T_Unsafe_Paired_Calls;

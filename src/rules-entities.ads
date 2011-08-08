@@ -35,12 +35,6 @@ with
 
 package Rules.Entities is
 
-   -- This rule can be used to check/search for the occurrence of any Ada entity
-   -- Parameter(1): Entity name
-   -- Parameter(2): Entity name
-   -- ...
-   -- Parameter(N): Entity name
-
    Rule_Id : constant Wide_String := "ENTITIES";
 
    procedure Process_Identifier (Element : in Asis.Expression);

@@ -32,10 +32,14 @@
 -- Ada
 with
   Ada.Characters.Handling,
-  Ada.Strings.Wide_Unbounded;
+  Ada.Exceptions,
+  Ada.Strings.Wide_Unbounded,
+  Ada.Wide_Text_IO;
 
 -- Adalog
 with
+  Implementation_Options,
+  String_Matching,
   Utilities;
 
 -- Adactl
@@ -43,70 +47,164 @@ with
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
+pragma Elaborate (Framework.Language);
 
 package body Rules.Header_Comments is
    use Framework;
 
+   subtype Pattern_String is Wide_String (1 .. 512);  -- Size is arbitrary, should be sufficient
+
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   Rule_Label   : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Comments     : array (Rule_Types) of Natural := (others => 0);
-   Max_Comments : Natural;
-   Search_Check_Reported : Boolean;
-   Count_Reported        : Boolean;
+   Uninitialized : constant Integer := 0;
+
+   Rule_Label : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Comments   : array (Rule_Types) of Integer := (others => Uninitialized);
+
+   type Header_Kind is (Minimum, Model);
+   package Header_Flag_Utilities is new Framework.Language.Flag_Utilities (Header_Kind);
+
+   Reported       : array (Rule_Types) of Boolean;
+   Model_File     : Ada.Wide_Text_IO.File_Type;
+   Model_Rule     : Rule_Types;
+   Model_Label    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Model_Reported : Boolean;
 
    Wide_HT : constant Wide_Character := Ada.Characters.Handling.To_Wide_Character (ASCII.HT);
 
-   ----------
-   -- Help --
-   ----------
-
-   procedure Help is
-      use Utilities;
-   begin
-      User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter: <Required number of comment lines>");
-      User_Message ("Control that  each unit starts with (at least indicated number of comment lines");
-   end Help;
+   -- The same pattern can be used several times, hence it needs to be global
+   pragma Warnings (Off);
+   -- Gnat warns that Pattern and Last may be referenced before they have a value,
+   -- but this cannot happen because Repeat is initialized to False (in Enter_Unit)
+   Pattern : Pattern_String;
+   Last    : Natural;
+   pragma Warnings (Off);
+   Repeat : Boolean;
 
    -------------
    -- Add_Use --
    -------------
 
    procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
-      use Framework.Language;
+      use Ada.Characters.Handling, Ada.Exceptions, Ada.Strings.Wide_Unbounded, Ada.Wide_Text_IO;
+      use Framework.Language, String_Matching, Header_Flag_Utilities;
 
+      Buff : Pattern_String;
+      Last : Natural;
+      Kind : Header_Kind;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Number of comment lines required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id & ": kind of check required");
       end if;
+      Kind := Get_Flag_Parameter (Allow_Any => False);
 
-      if Comments (Rule_Type) = 0 then
-         Comments (Rule_Type) := Get_Integer_Parameter;
-         if Comments (Rule_Type) <= 0 then
-            Parameter_Error ("Comments value must be at least 1");
-         end if;
-         Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
-      else
-         Parameter_Error ("Rule already specified");
-      end if;
+      case Kind is
+         when Minimum =>
+            if Comments (Rule_Type) /= Uninitialized then
+               Parameter_Error (Rule_Id & ": Rule already specified");
+            elsif not Parameter_Exists then
+               Parameter_Error (Rule_Id & ": Number of comment lines required");
+            end if;
+            Comments   (Rule_Type) := Get_Integer_Parameter (Min => 1);
+            Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
+
+         when Model =>
+            if Is_Open (Model_File) then
+               Parameter_Error (Rule_Id & ": Model file already specified");
+            elsif not Parameter_Exists then
+               Parameter_Error (Rule_Id & ": Name of model file required");
+            end if;
+
+            begin
+               Open (Model_File,
+                     In_File,
+                     To_String (Get_File_Parameter),
+                     Form => Implementation_Options.Form_Parameters);
+            exception
+               when Name_Error =>
+                  Parameter_Error (Rule_Id & ": model file not found");
+            end;
+            -- check all patterns now to avoid problems while checking.
+            loop
+               begin
+                  Get_Line (Model_File, Buff, Last);
+                  if Buff (1 .. Last) = "*" then
+                     begin
+                        Get_Line (Model_File, Buff, Last);
+                        if Buff (1 .. Last) = "*" then
+                           Parameter_Error (Rule_Id & ": several ""*"" lines in a row at "
+                                              & To_Wide_String (Name (Model_File)) & ':'
+                                              & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
+                        end if;
+                     exception
+                        when End_Error =>
+                           Parameter_Error (Rule_Id & ": pattern file terminated by ""*"" line");
+                     end;
+                  end if;
+
+                  if Last = Buff'Last then
+                     Parameter_Error (Rule_Id & ": pattern too long at "
+                                        & To_Wide_String (Name (Model_File)) & ':'
+                                        & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
+                  elsif Last /= 0 then
+                     declare
+                        Pat : constant Compiled_Pattern := Compile (Buff (1 .. Last));
+                        pragma Unreferenced (Pat);
+                     begin
+                        null;
+                     end;
+                  end if;
+               exception
+                  when Occur : Pattern_Error =>
+                     Parameter_Error (Rule_Id & ": Incorrect pattern at "
+                                        & To_Wide_String (Name (Model_File)) & ':'
+                                        & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
+                                        & ": " & Buff (1 .. Last)
+                                        & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
+                  when End_Error =>
+                     exit;
+               end;
+            end loop;
+            Model_Rule  := Rule_Type;
+            Model_Label := To_Unbounded_Wide_String (Label);
+      end case;
+
       Rule_Used := True;
    end Add_Use;
+
+   ----------
+   -- Help --
+   ----------
+
+   procedure Help is
+      use Utilities, Header_Flag_Utilities;
+   begin
+      User_Message ("Rule: " & Rule_Id);
+      Help_On_Flags ("Parameter (1):");
+      User_Message ("For minimum:");
+      User_Message ("   Parameter (2) : <Required number of comment lines>");
+      User_Message ("For model:");
+      User_Message ("   Parameter (2) : <model file>");
+      User_Message ("Control that  each unit starts with at least indicated number of comment lines");
+      User_Message ("or matches the specified model");
+   end Help;
 
    -------------
    -- Command --
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Ada.Wide_Text_IO;
       use Framework.Rules_Manager;
    begin
       case Action is
          when Clear =>
             Rule_Used    := False;
-            Comments     := (others => 0);
-            Max_Comments := 0;
+            Comments     := (others => Uninitialized);
+            if Is_Open (Model_File) then
+               Close (Model_File);
+            end if;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -115,78 +213,114 @@ package body Rules.Header_Comments is
       end case;
    end Command;
 
-   -------------
-   -- Prepare --
-   -------------
+   ----------------
+   -- Enter_Unit --
+   ----------------
 
-   procedure Prepare is
+   procedure Enter_Unit is
+      use Ada.Wide_Text_IO;
    begin
-      Max_Comments := 0;
       for R in Rule_Types loop
-         Max_Comments := Natural'Max (Max_Comments, Comments (R));
+         Reported (R) := Comments (R) = Uninitialized;
       end loop;
-   end Prepare;
-
-  ----------------
-  -- Enter_Unit --
-  ----------------
-
-  procedure Enter_Unit is
-  begin
-     Search_Check_Reported := False;
-     Count_Reported        := False;
-  end Enter_Unit;
+      Model_Reported := False;
+      if Is_Open (Model_File) then
+         Reset (Model_File, In_File);
+         Repeat := False;
+      end if;
+   end Enter_Unit;
 
    ------------------
    -- Process_Line --
    ------------------
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, Ada.Strings.Wide_Unbounded;
+      use Framework.Reports;
+      use Ada.Strings.Wide_Unbounded;
       Line_Num : Natural;
+
+      procedure Check_Comments_Number (Rule_Type : Rule_Types) is
+      begin
+         if Comments (Rule_Type) < 1 or Reported (Rule_Type) then
+            return;
+         end if;
+
+         if Line_Num > Comments (Rule_Type) then
+            Reported (Rule_Type) := True;
+            return;
+         end if;
+
+         for Inx in Natural range Line'First .. Line'Last - 1 loop
+            if Line (Inx) /= ' ' and Line (Inx) /= Wide_HT then
+               if Line (Inx) = '-' and Line (Inx + 1) = '-' then
+                  -- OK, comment line
+                  return;
+               end if;
+            end if;
+         end loop;
+
+         -- Here we have a non-comment line in the range where a check is required
+         Report (Rule_Id, To_Wide_String (Rule_Label (Rule_Type)), Rule_Type, Loc,
+                 "not enough header comment lines");
+         Reported (Rule_Type) := True;
+         if Rule_Type = Check and Comments (Search) >= 1 then
+            Reported (Search) := True;
+         end if;
+      end Check_Comments_Number;
+
+      procedure Check_Model is
+         use String_Matching;
+         use Ada.Wide_Text_IO;
+      begin
+         if not Is_Open (Model_File) or Model_Reported then
+            return;
+         end if;
+
+         if not Repeat then
+            Get_Line (Model_File, Pattern, Last);
+            if Pattern (1 .. Last) = "*" then
+               Repeat := True;
+               Get_Line (Model_File, Pattern, Last);
+            end if;
+         end if;
+
+         if (Last = 0 and Line'Length /= 0)
+           or else not Match (Line, Pattern (1..Last))
+         then
+            if Repeat then
+               -- maybe the end of the repeated pattern
+               Repeat := False;
+               -- give it another chance
+               Check_Model;
+            else
+               Report (Rule_Id, To_Wide_String (Model_Label), Model_Rule, Loc,
+                       "line does not match pattern");
+               Model_Reported := True;
+            end if;
+         end if;
+      exception
+         when End_Error =>
+            Model_Reported := True;
+      end Check_Model;
+
    begin
-      if not Rule_Used then
+      if not Rule_Used or Reported = (Rule_Types => True) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       Line_Num := Get_First_Line (Loc);
-      if Line_Num > Max_Comments then
-         return;
-      end if;
 
-      for Inx in Natural range Line'First .. Line'Last - 1 loop
-         if Line (Inx) /= ' ' and Line (Inx) /= Wide_HT then
-            if Line (Inx) = '-' and Line (Inx+1) = '-' then
-               -- OK, comment line
-               return;
-            end if;
-         end if;
+      for R in Rule_Types loop
+         Check_Comments_Number (R);
       end loop;
 
-      -- Here we have a non-comment line in the range where a check is required
-      if not Search_Check_Reported then
-         if Line_Num <= Comments (Check) then
-            Report (Rule_Id, To_Wide_String (Rule_Label (Check)), Check, Loc,
-                    "not enough header comment lines");
-            Search_Check_Reported := True;
-         elsif Line_Num <= Comments (Search) then
-            Report (Rule_Id, To_Wide_String (Rule_Label (Search)), Search, Loc,
-                    "not enough header comment lines");
-            Search_Check_Reported := True;
-         end if;
-      end if;
-
-      if not Count_Reported and Line_Num <= Comments (Count) then
-         Report (Rule_Id, To_Wide_String (Rule_Label (Count)), Count, Loc, "");
-         Count_Reported := True;
-      end if;
+      Check_Model;
   end Process_Line;
 
 begin
    Framework.Rules_Manager.Register_Textual (Rule_Id,
                                              Help    => Help'Access,
                                              Add_Use => Add_Use'Access,
-                                             Command => Command'Access,
-                                             Prepare => Prepare'Access);
+                                             Command => Command'Access);
 end Rules.Header_Comments;

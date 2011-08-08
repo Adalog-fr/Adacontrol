@@ -1,19 +1,16 @@
-t_no_safe_initialization.adb:188:7: Found: Variables: variable "BVB" not safely initialized
 t_no_safe_initialization.adb:23:32: Error: Parameters: out parameter "IP" not safely initialized
 t_no_safe_initialization.adb:29:10: Found: Variables: variable "TV" not safely initialized
-t_no_safe_initialization.adb:42:36: Error: Parameters: out parameter "IP" not safely initialized
-t_no_safe_initialization.adb:43:15: Found: Variables: variable "IV2" not safely initialized
-t_no_safe_initialization.adb:59:38: Error: Parameters: out parameter "BP" not safely initialized
-t_no_safe_initialization.adb:65:15: Found: Variables: variable "CV2" not safely initialized
-t_no_safe_initialization.adb:58:38: Error: Parameters: out parameter "IP1" not safely initialized
-t_no_safe_initialization.adb:58:43: Error: Parameters: out parameter "IP2" not safely initialized
-t_no_safe_initialization.adb:92:10: Found: Variables: variable "IV2" not safely initialized
-t_no_safe_initialization.adb:92:15: Found: Variables: variable "IV3" not safely initialized
-t_no_safe_initialization.adb:116:10: Found: Variables: variable "IV1" not safely initialized
-t_no_safe_initialization.adb:117:10: Found: Variables: variable "IV2" not safely initialized
-t_no_safe_initialization.adb:117:15: Found: Variables: variable "IV3" not safely initialized
-t_no_safe_initialization.adb:134:26: Error: Parameters: out parameter "IP" not safely initialized
-t_no_safe_initialization.adb:138:26: Error: Parameters: out parameter "IP" not safely initialized
-t_no_safe_initialization.adb:170:27: Error: Parameters: out parameter "BP" not safely initialized
-t_no_safe_initialization.adb:201:13: Found: Variables: variable "Var2" not safely initialized
-t_no_safe_initialization.adb:215:7: Found: Variables: variable "IV" not safely initialized
+t_no_safe_initialization.adb:43:36: Error: Parameters: out parameter "IP" not safely initialized
+t_no_safe_initialization.adb:60:38: Error: Parameters: out parameter "BP" not safely initialized
+t_no_safe_initialization.adb:59:38: Error: Parameters: out parameter "IP1" not safely initialized
+t_no_safe_initialization.adb:59:43: Error: Parameters: out parameter "IP2" not safely initialized
+t_no_safe_initialization.adb:125:10: Found: Variables: variable "B" not safely initialized
+t_no_safe_initialization.adb:123:10: Found: Variables: variable "IV1" not safely initialized
+t_no_safe_initialization.adb:124:10: Found: Variables: variable "IV2" not safely initialized
+t_no_safe_initialization.adb:124:15: Found: Variables: variable "IV3" not safely initialized
+t_no_safe_initialization.adb:143:26: Error: Parameters: out parameter "IP" not safely initialized
+t_no_safe_initialization.adb:147:26: Error: Parameters: out parameter "IP" not safely initialized
+t_no_safe_initialization.adb:179:27: Error: Parameters: out parameter "BP" not safely initialized
+t_no_safe_initialization.adb:189:13: Found: Variables: variable "IV" not safely initialized
+t_no_safe_initialization.adb:215:13: Found: Variables: variable "Var2" not safely initialized
+t_no_safe_initialization.adb:229:7: Found: Variables: variable "IV" not safely initialized

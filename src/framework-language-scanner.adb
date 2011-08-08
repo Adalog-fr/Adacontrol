@@ -68,18 +68,6 @@ package body Framework.Language.Scanner is
    Current_Prompt : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Prompt_Active  : Boolean := False;
 
-   ------------------
-   -- Syntax_Error --
-   ------------------
-
-   procedure Syntax_Error (Message : Wide_String; Position : Location) is
-      use Utilities;
-   begin
-      Error (Image (Position)
-               & ": "
-               & Message);
-   end Syntax_Error;
-
    ---------------
    -- Next_Char --
    ---------------
@@ -199,7 +187,7 @@ package body Framework.Language.Scanner is
 
    procedure Actual_Next_Token (Force_String : Boolean := False) is
       use Ada.Strings.Wide_Fixed, Ada.Characters.Handling;
-      use Utilities;
+      use Thick_Queries, Utilities;
 
       First_Line   : Asis.Text.Line_Number;
       First_Column : Asis.Text.Character_Position;
@@ -254,9 +242,9 @@ package body Framework.Language.Scanner is
          end loop;
       end Get_Name;
 
-      function Get_Integer return Integer is
+      function Get_Integer return Biggest_Int is
          -- Precondition: Cur_Char in '0..9' or '-'
-         Result   : Integer;
+         Result   : Biggest_Int;
          Negative : Boolean := False;
       begin
          if Cur_Char = '-' then
@@ -269,13 +257,16 @@ package body Framework.Language.Scanner is
             exit when At_Eol;
             if Cur_Char = '_' then
                Next_Char;
-               if Cur_Char = '_' then
-                  Syntax_Error ("Consecutive underscores not allowed in numbers",
-                                (Current_File, Current_Line, Current_Column));
-               elsif Cur_Char not in '0'..'9' then
-                  Syntax_Error ("Trailing underscores not allowed in numbers",
-                                (Current_File, Current_Line, Current_Column));
-               end if;
+               case Cur_Char is
+                  when '_' =>
+                     Syntax_Error ("Consecutive underscores not allowed in numbers",
+                                   (Current_File, Current_Line, Current_Column));
+                  when '0'..'9' =>
+                     null;
+                  when others =>
+                     Syntax_Error ("Trailing underscores not allowed in numbers",
+                                   (Current_File, Current_Line, Current_Column));
+               end case;
             end if;
             if Cur_Char in '0' .. '9' then
                Result := Result*10 + Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
@@ -294,7 +285,7 @@ package body Framework.Language.Scanner is
          return Result;
       end Get_Integer;
 
-   begin
+   begin   -- Actual_Next_Token
       Token_Delayed := False;
 
       if The_Token.Kind = Eof then
@@ -334,7 +325,7 @@ package body Framework.Language.Scanner is
 
             when '0' .. '9' | '-' =>
                declare
-                  Integer_Part    : Integer;
+                  Integer_Part    : Biggest_Int;
                   Fractional_Part : Float;
                begin
                   begin
@@ -496,7 +487,7 @@ package body Framework.Language.Scanner is
 
       Buf_Inx       := 1;
       Cur_Char      := Buffer (Buf_Inx);
-      At_Eol        := False;
+      At_Eol        := Buf_Inx > Buf_Last;   -- True for empty input string
       Prompt_Active := False;
       The_Token     := (Kind => Semi_Colon, Position => The_Token.Position); -- Make sure it is not Eof
 
@@ -511,13 +502,14 @@ package body Framework.Language.Scanner is
    -----------
 
    function Image (T : Token) return Wide_String is
+      use Thick_Queries;
    begin
       case T.Kind is
          when Name =>
             return T.Text (1 .. T.Length);
          when Integer_Value =>
             declare
-               Result : constant Wide_String := Integer'Wide_Image (T.Value);
+               Result : constant Wide_String := Biggest_Int'Wide_Image (T.Value);
             begin
                if T.Value < 0 then
                   return Result;
@@ -607,6 +599,20 @@ package body Framework.Language.Scanner is
 
       return To_Upper (T.Text (1 .. T.Length)) = Expected;
    end Is_String;
+
+   -------------------
+   -- Reference_Dir --
+   -------------------
+
+   function Reference_Dir return Wide_String is
+      F_Name : constant Wide_String := To_Wide_String (Current_File);
+      Last : Natural := F_Name'Last;
+   begin
+      while Last >= 1 and then (F_Name (Last) /= '/' and F_Name (Last) /= '\') loop
+         Last := Last - 1;
+      end loop;
+      return F_Name (1..Last);
+   end Reference_Dir;
 
 end Framework.Language.Scanner;
 

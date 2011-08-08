@@ -151,7 +151,7 @@ package body Framework.Language is
       procedure Process_Error (Occur : Ada.Exceptions.Exception_Occurrence) is
          use Ada.Exceptions;
       begin
-         User_Message ("Error in rule: " & To_Wide_String (Exception_Message (Occur)));
+         User_Message (To_Wide_String (Exception_Message (Occur)));
          Rule_Error_Occurred := True;
          -- Ignore till next semi-colon (or Eof)
          loop
@@ -241,13 +241,21 @@ package body Framework.Language is
                      User_Message ("Commands:");
                      Help_Command;
                      User_Message ("Rules:");
-                     Help_Names;
+                     Help_Names (Pretty => True);
 
                   elsif Current_Token.Kind = Name and then Current_Token.Key = Key_All then
                      Next_Token;
                      Close_Command;
 
                      Help_All;
+
+                  elsif Current_Token.Kind = Name
+                    and then To_Upper (Current_Token.Text (1..Current_Token.Length)) = "LIST"
+                  then
+                     Next_Token;
+                     Close_Command;
+
+                     Help_Names (Pretty => False);
 
                   else
                      -- The simpler solution is to provide help messages as rule names are parsed,
@@ -527,7 +535,11 @@ package body Framework.Language is
    -- Get_Integer_Parameter --
    ---------------------------
 
-   function Get_Integer_Parameter return Integer is
+   function Get_Integer_Parameter (Min : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'First;
+                                   Max : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'Last)
+                                   return Thick_Queries.Biggest_Int
+   is
+      use Thick_Queries;
    begin
       if not In_Parameters then
          Failure ("Get_Integer_Parameter called when not in parameters");
@@ -536,12 +548,31 @@ package body Framework.Language is
       case Current_Token.Kind is
          when Integer_Value =>
             declare
-               Result : constant Integer := Current_Token.Value;
+               Result : constant Biggest_Int := Current_Token.Value;
             begin
                Next_Token;
                Next_Parameter;
+               if Result not in Min .. Max then
+                  if Max = Biggest_Int'Last then
+                     Syntax_Error ("Parameter must be >="
+                                   & Biggest_Int'Wide_Image (Min),
+                                   Current_Token.Position);
+                  elsif Min = Biggest_Int'First then
+                     Syntax_Error ("Parameter must be <="
+                                   & Biggest_Int'Wide_Image (Max),
+                                   Current_Token.Position);
+                  else
+                     Syntax_Error ("Parameter must be in range"
+                                   & Biggest_Int'Wide_Image (Min)
+                                   & " .."
+                                   & Biggest_Int'Wide_Image (Max),
+                                   Current_Token.Position);
+                  end if;
+               end if;
                return Result;
             end;
+         when Float_Value =>
+            Syntax_Error ("Integer value expected", Current_Token.Position);
          when Bad_Integer =>
             Syntax_Error ("Bad integer value (too many digits?)", Current_Token.Position);
          when Name | Bad_Float =>
@@ -549,6 +580,33 @@ package body Framework.Language is
          when others =>
            Syntax_Error ("Parameter expected", Current_Token.Position);
       end case;
+   end Get_Integer_Parameter;
+
+   function Get_Integer_Parameter (Min : Integer := Integer'First;
+                                   Max : Integer := Integer'Last)
+                                   return Integer
+   is
+      use Thick_Queries;
+      Result : constant Biggest_Int := Get_Integer_Parameter;
+   begin
+      if Result not in Biggest_Int (Min) .. Biggest_Int (Max) then
+         if Max = Integer'Last then
+            Syntax_Error ("Parameter must be >="
+                          & Integer'Wide_Image (Min),
+                          Current_Token.Position);
+         elsif Min = Integer'First then
+            Syntax_Error ("Parameter must be <="
+                          & Integer'Wide_Image (Max),
+                          Current_Token.Position);
+         else
+            Syntax_Error ("Parameter must be in range"
+                          & Integer'Wide_Image (Min)
+                          & " .."
+                          & Integer'Wide_Image (Max),
+                          Current_Token.Position);
+         end if;
+      end if;
+      return Integer (Result);
    end Get_Integer_Parameter;
 
    -------------------------
@@ -565,6 +623,15 @@ package body Framework.Language is
          when Float_Value =>
             declare
                Result : constant Float := Current_Token.Fvalue;
+            begin
+               Next_Token;
+               Next_Parameter;
+               return Result;
+            end;
+         when Integer_Value =>
+            -- Well, we can accept it...
+            declare
+               Result : constant Float := Float (Current_Token.Value);
             begin
                Next_Token;
                Next_Parameter;
@@ -827,6 +894,28 @@ package body Framework.Language is
         end;
      end if;
    end Get_Entity_Parameter;
+
+   ------------------------
+   -- Get_File_Parameter --
+   ------------------------
+
+   function Get_File_Parameter return Wide_String is
+      Name : constant Wide_String := Get_String_Parameter;
+   begin
+      if Name = "" then
+         Syntax_Error ("Empty file name", Current_Token.Position);
+      end if;
+
+      if (Name (1) = '/' or Name (1) = '\')
+        or else (Name'Length >= 3 and Name (2) = ':' and (Name (3) = '/' or Name (3) = '\'))
+      then
+         -- Absolute path
+         return Name;
+      end if;
+
+     -- Here we have a relative path, make it relative to the directory of the rules file
+     return Reference_Dir & Name;
+   end Get_File_Parameter;
 
    ------------------
    -- Get_Modifier --
@@ -1101,10 +1190,26 @@ package body Framework.Language is
 
    procedure Parameter_Error (Message : Wide_String) is
    begin
-      Syntax_Error (Message, Current_Token.Position);
+      Parameter_Error (Message, Current_Token.Position);
    end Parameter_Error;
 
-   procedure Parameter_Error (Message : Wide_String; Position : Location) renames Syntax_Error;
+   procedure Parameter_Error (Message : Wide_String; Position : Location) is
+   begin
+      Error (Image (Position) & ": "
+               & "Parameter: "
+               & Message);
+   end Parameter_Error;
+
+   ------------------
+   -- Syntax_Error --
+   ------------------
+
+   procedure Syntax_Error (Message : Wide_String; Position : Location) is
+   begin
+      Error (Image (Position) & ": "
+               & "Syntax: "
+               & Message);
+   end Syntax_Error;
 
    ----------------------
    -- Go_Command_Found --

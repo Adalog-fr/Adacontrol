@@ -35,12 +35,6 @@ with
 
 package Rules.Style is
 
-   -- This rule can be used to check/search for the occurrence of some Ada style
-   -- Parameter(1): Style name
-   -- Parameter(2): Style name
-   -- Parameter(3): Style name
-   -- Parameter(4): Style name
-
    Rule_Id : constant Wide_String := "STYLE";
 
    procedure Process_Construct    (Construct   : in Asis.Declaration);
@@ -48,8 +42,10 @@ package Rules.Style is
    procedure Process_Association  (Association : in Asis.Element);
    procedure Process_Declaration  (Declaration : in Asis.Declaration);
    procedure Process_If_Statement (Statement   : in Asis.Statement);
-   procedure Process_Number       (Expression  : in Asis.Expression);
-
+   procedure Process_Literal      (Expression  : in Asis.Expression);
+   procedure Process_Renaming     (Ren         : in Asis.Declaration);
+   -- Process_Renaming is plugged as Post_Procedure, since the occurrence of an identifier
+   -- is still allowed within the renaming itself.
    procedure Process_Element      (Element     : in Asis.Element);
 
 end Rules.Style;

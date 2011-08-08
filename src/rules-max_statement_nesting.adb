@@ -53,10 +53,11 @@ package body Rules.Max_Statement_Nesting is
 
    use Asis, Framework;
 
-   type Statement_Names is (Stmt_If, Stmt_Case, Stmt_Loop, Stmt_All);
+   -- Note: Stmt_All must stay last.
+   type Statement_Names is (Stmt_Block, Stmt_Case, Stmt_If, Stmt_Loop, Stmt_All);
    package Statement_Flag_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
 
-   subtype Controlled_Statements is Asis.Statement_Kinds range An_If_Statement .. A_For_Loop_Statement;
+   subtype Controlled_Statements is Asis.Statement_Kinds range An_If_Statement .. A_Block_Statement;
 
    type Usage is array (Statement_Names) of Rule_Types_Set;
    Rule_Used : Usage := (others => (others => False));
@@ -86,7 +87,6 @@ package body Rules.Max_Statement_Nesting is
                        Rule_Type : in Rule_Types) is
       use Framework.Language, Statement_Flag_Utilities, Ada.Strings.Wide_Unbounded;
       Stmt : Statement_Names;
-      Val  : Integer;
     begin
       if not Parameter_Exists then
          Parameter_Error ("Two parameters required for rule " & Rule_Id);
@@ -101,15 +101,9 @@ package body Rules.Max_Statement_Nesting is
          Parameter_Error ("Two parameters required for rule " & Rule_Id);
       end if;
 
-      Val := Get_Integer_Parameter;
-      if Val >= 1 then
-         Values (Stmt, Rule_Type) := Val;
-      else
-         Parameter_Error (Rule_Id & ": value must be >= 1");
-      end if;
-
-      Labels    (Stmt, Rule_Type):= To_Unbounded_Wide_String (Label);
-      Rule_Used (Stmt)(Rule_Type):= True;
+      Values    (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 1);
+      Labels    (Stmt, Rule_Type) := To_Unbounded_Wide_String (Label);
+      Rule_Used (Stmt)(Rule_Type) := True;
     end Add_Use;
 
    -------------
@@ -134,49 +128,71 @@ package body Rules.Max_Statement_Nesting is
    -- Process_Statement --
    -----------------------
 
-   procedure Process_Statement (Stmt : in Asis.Statement) is
-      use Ada.Strings.Wide_Unbounded, Asis.Elements, Framework.Reports, Thick_Queries;
-      Unit_Name  : constant Asis.Defining_Name := Enclosing_Program_Unit (Stmt, Including_Accept => True);
-      Elem       : Asis.Element                := Stmt;
-      If_Count   : Natural := 0;
-      Case_Count : Natural := 0;
-      Loop_Count : Natural := 0;
-      All_Count  : Natural := 0;
+   procedure Process_Statement (Statement : in Asis.Statement) is
+      use Ada.Strings.Wide_Unbounded;
+      use Asis.Elements;
+      use Statement_Flag_Utilities, Framework.Reports, Thick_Queries;
+      Unit_Name : constant Asis.Defining_Name := Enclosing_Program_Unit (Statement, Including_Accept => True);
+      Elem      : Asis.Element := Statement;
+      Counts    : array (Statement_Names) of Natural := (others => 0);
+
+      procedure Count (Stmt : Statement_Names) is
+      begin
+         if Rule_Used (Stmt) /= (Rule_Types => False)
+           or else Rule_Used (Stmt_All) /= (Rule_Types => False)
+         then
+            Counts (Stmt)     := Counts (Stmt) + 1;
+            Counts (Stmt_All) := Counts (Stmt_All) + 1;
+         end if;
+      end Count;
+
+      procedure Do_Report (Stmt : Statement_Names) is
+      begin
+         if Rule_Used (Stmt)(Check) and then Counts (Stmt) > Values (Stmt, Check) then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Stmt, Check)),
+                    Check,
+                    Get_Location (Statement),
+                    Image (Stmt) & " statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt, Check)));
+         elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Values (Stmt, Search) then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Stmt, Search)),
+                    Search,
+                    Get_Location (Statement),
+                    Image (Stmt) & " statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt, Search)));
+         end if;
+
+         if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Values (Stmt, Count) then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Stmt, Count)),
+                    Count,
+                    Get_Location (Statement),
+                    Image (Stmt) & " statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt, Count)));
+         end if;
+
+      end Do_Report;
    begin
       if Rule_Used = (Statement_Names => (Rule_Types => False)) then
          return;
       end if;
 
-      if Statement_Kind (Stmt) not in Controlled_Statements then
+      if Statement_Kind (Statement) not in Controlled_Statements then
          return;
       end if;
 
       loop
          case Statement_Kind (Elem) is
-            when An_If_Statement =>
-               if Rule_Used (Stmt_If) /= (Rule_Types => False)
-                 or else Rule_Used (Stmt_All) /= (Rule_Types => False)
-               then
-                  If_Count  := If_Count + 1;
-                  All_Count := All_Count + 1;
-               end if;
+            when A_Block_Statement =>
+               Count (Stmt_Block);
             when A_Case_Statement =>
-               if Rule_Used (Stmt_Case) /= (Rule_Types => False)
-                 or else Rule_Used (Stmt_All) /= (Rule_Types => False)
-               then
-                  Case_Count := Case_Count + 1;
-                  All_Count  := All_Count + 1;
-               end if;
+               Count (Stmt_Case);
+            when An_If_Statement =>
+               Count (Stmt_If);
             when A_Loop_Statement
                | A_While_Loop_Statement
                | A_For_Loop_Statement
                =>
-               if Rule_Used (Stmt_Loop) /= (Rule_Types => False)
-                 or else Rule_Used (Stmt_All) /= (Rule_Types => False)
-               then
-                  Loop_Count := Loop_Count + 1;
-                  All_Count  := All_Count + 1;
-               end if;
+               Count (Stmt_Loop);
             when others =>
                null;
          end case;
@@ -185,62 +201,20 @@ package body Rules.Max_Statement_Nesting is
            or else not Is_Equal (Unit_Name, Enclosing_Program_Unit (Elem, Including_Accept => True));
       end loop;
 
-      for T in Rule_Types loop
-         if Rule_Used (Stmt_All)(T) and then All_Count > Values (Stmt_All, T) then
-            Report (Rule_Id,
-                    To_Wide_String (Labels (Stmt_All, T)),
-                    T,
-                    Get_Location (Stmt),
-                    "All statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt_All, T)));
-         end if;
-      end loop;
+      Do_Report (Stmt_All);
 
-      case Controlled_Statements (Statement_Kind (Stmt)) is
+      case Controlled_Statements (Statement_Kind (Statement)) is
+         when A_Block_Statement =>
+            Do_Report (Stmt_Block);
          when An_If_Statement =>
-            if Rule_Used (Stmt_If) /= (Rule_Types => False)
-              or else Rule_Used (Stmt_All) /= (Rule_Types => False)
-            then
-               for T in Rule_Types loop
-                  if Rule_Used (Stmt_If)(T) and then If_Count > Values (Stmt_If, T) then
-                     Report (Rule_Id,
-                             To_Wide_String (Labels (Stmt_If, T)),
-                             T,
-                             Get_Location (Stmt),
-                             "If nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt_If, T)));
-                  end if;
-               end loop;
-            end if;
+            Do_Report (Stmt_If);
          when A_Case_Statement =>
-            if Rule_Used (Stmt_Case) /= (Rule_Types => False)
-              or else Rule_Used (Stmt_All) /= (Rule_Types => False)
-            then
-               for T in Rule_Types loop
-                  if Rule_Used (Stmt_Case)(T) and then Case_Count > Values (Stmt_Case, T) then
-                     Report (Rule_Id,
-                             To_Wide_String (Labels (Stmt_Case, T)),
-                             T,
-                             Get_Location (Stmt),
-                             "Case nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt_Case, T)));
-                  end if;
-               end loop;
-            end if;
+            Do_Report (Stmt_Case);
          when A_Loop_Statement
             | A_While_Loop_Statement
             | A_For_Loop_Statement
             =>
-            if Rule_Used (Stmt_Loop) /= (Rule_Types => False)
-              or else Rule_Used (Stmt_All) /= (Rule_Types => False)
-            then
-               for T in Rule_Types loop
-                  if Rule_Used (Stmt_Loop)(T) and then Loop_Count > Values (Stmt_Loop, T) then
-                     Report (Rule_Id,
-                             To_Wide_String (Labels (Stmt_Loop, T)),
-                             T,
-                             Get_Location (Stmt),
-                             "Loop nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt_Loop, T)));
-                  end if;
-               end loop;
-            end if;
+            Do_Report (Stmt_Loop);
       end case;
    end Process_Statement;
 

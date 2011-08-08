@@ -1,10 +1,8 @@
-search  default_parameter (t_default_parameter.gen, x, used);
-search  default_parameter (t_default_parameter.gen, y, used);
-check   default_parameter (t_default_parameter.gen, x, not used);
-check   default_parameter (t_default_parameter.gen, y, not used);
+       search  default_parameter (t_default_parameter.gen, x,   used);
+       search  default_parameter (t_default_parameter.gen, y,   used);
+All_1: check   default_parameter (t_default_parameter.gen, all, not used);
 
-# Commented out because of GNAT bug:
-#search  default_parameter (t_default_parameter.proc, x, used);
-#search  default_parameter (t_default_parameter.proc, y, used);
-#search  default_parameter (t_default_parameter.proc, x, not used);
-#search  default_parameter (t_default_parameter.proc, y, not used);
+       search  default_parameter (t_default_parameter.proc, x,   used);
+       search  default_parameter (t_default_parameter.proc, y,   used);
+All_2: search  default_parameter (all,                      all, not used);
+

@@ -28,18 +28,26 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
-
+with  -- Adalog
+   Thick_Queries;
 package Framework.Language is
 
    --  Process the language used by rules files
    --  Syntax:
    --  <Program> ::= {<commmand> ";"}
-   --  <command> ::= [ <label> ":" ] "check"|"search"|"count <Name>
+   --  <command> ::= [ <label> ":" ] "check"|"search"|"count" <Name>
    --                       [ "(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")" ]
-   --              | "quit"
+   --              | "clear" "all" | <name> {,<name>}
    --              | "go"
-   --              | "help"  [ "all" | <name>{,<name>} ]
-   --              | "clear" [ <name> {,<name>} ]
+   --              | "help"  [ "all" | "list" | <name>{,<name>} ]
+   --              | "inhibit" "all" | <rule_name> "(" [ "all" <unit> {, "all" <unit>} ")"
+   --              | "message" <any_string>
+   --              | "quit"
+   --              | "set" "format" <format_name> |
+   --                      "output" <file_name>   |
+   --                      "statistics" <level>   |
+   --                      "trace" <file_name>    |
+   --                      "debug" | "ignore" | "verbose" | "warning"  "on" | "off"
    --              | "source" <file>
    --  Ada-like comments (--) and Shell-like comments (#) are allowed.
 
@@ -55,10 +63,18 @@ package Framework.Language is
 
    --  Following functions return the next parameter, or raise Syntax_Error
    --  They have side effects (i.e. they advance to the next parameter)
-   function Get_Integer_Parameter return Integer;
+   function Get_Integer_Parameter (Min : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'First;
+                                   Max : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'Last)
+                                   return Thick_Queries.Biggest_Int;
+   function Get_Integer_Parameter (Min : Integer := Integer'First;
+                                   Max : Integer := Integer'Last)
+                                   return Integer;
    function Get_Float_Parameter   return Float;
    function Get_String_Parameter  return Wide_String;
    function Get_Entity_Parameter  return Entity_Specification;
+   function Get_File_Parameter    return Wide_String;
+   -- If the parameter is not an absolute file name, it is made relative to the
+   -- directory of the rules file, or to the current directory if there is none
 
    -- Following function returns True if the current token is True_KW
    -- and False if the current token is False_KW (the token is consumed)
@@ -143,5 +159,10 @@ private
    -- Declarations for child units:
    Failure_Occurred    : Boolean := False;
    Rule_Error_Occurred : Boolean := False;
+
    procedure Compile;
+
+   procedure Syntax_Error (Message : Wide_String; Position : Location);
+   pragma No_Return (Syntax_Error);
+
 end Framework.Language;

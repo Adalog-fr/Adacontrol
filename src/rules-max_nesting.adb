@@ -91,7 +91,7 @@ package body Rules.Max_Nesting is
                           ": max nesting value expected");
       end if;
 
-      Max_Nesting := Get_Integer_Parameter;
+      Max_Nesting := Get_Integer_Parameter (Min => 0);
 
       case Rule_Use_Type is
          when Check =>

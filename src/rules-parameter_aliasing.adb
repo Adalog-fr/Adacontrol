@@ -31,7 +31,6 @@
 
 -- Ada
 with
-  Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Unbounded;
 
 -- Asis
@@ -180,6 +179,7 @@ package body Rules.Parameter_Aliasing is
 
       if Is_Dispatching_Call (Call) then
          -- Improvement needed here, but it's quite difficult
+         Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
          return;
       end if;
 
@@ -200,16 +200,16 @@ package body Rules.Parameter_Aliasing is
             -- plain identifier.
             -- This kludge is needed because currently the function Formal_Name is
             -- inconsistent, depending on whether the actual association is positionnal or named
-            use Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
+            use Asis.Text;
 
             Name : constant Asis.Name := Formal_Name (Call, Position);
          begin
             if Element_Kind (Name) = A_Defining_Name then
                return '"' & Defining_Name_Image (Name) & " => "
-                 & Trim (Element_Image (Actual_Parameter (Actuals (Position))), Both) & '"';
+                 & Trim_All (Element_Image (Actual_Parameter (Actuals (Position)))) & '"';
             else
                return '"' & Name_Image (Name) & " => "
-                 & Trim (Element_Image (Actual_Parameter (Actuals (Position))), Both) & '"';
+                 & Trim_All (Element_Image (Actual_Parameter (Actuals (Position)))) & '"';
             end if;
          end Association_Image;
 

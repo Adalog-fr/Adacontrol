@@ -223,7 +223,7 @@ package body Adactl_Options is
    ---------------------
 
    procedure Analyse_Options is
-      use Ada.Characters.Handling, Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded;
+      use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
       use Utilities, Analyzer;
    begin
       --
@@ -330,7 +330,7 @@ package body Adactl_Options is
       if Is_Present (Option => 'l') then
          -- add rules uses from command line
          Options_Commands := Options_Commands
-           & Trim (To_Wide_String (Value (Option => 'l', Explicit_Required => True)), Both);
+           & Trim_All (To_Wide_String (Value (Option => 'l', Explicit_Required => True)));
 
          if Element (Options_Commands, Length (Options_Commands)) /= ';' then
             -- As a courtesy, provide the missing final ';'
@@ -341,7 +341,7 @@ package body Adactl_Options is
       if Is_Present (Option => 'f') then
          -- add rules uses from file
          Options_Commands := Options_Commands
-           & "source " & To_Wide_String (Value (Option => 'f', Explicit_Required => True)) & ';';
+                             & "source " & To_Wide_String (Value (Option => 'f', Explicit_Required => True)) & ';';
       end if;
 
       if Action /= Check then

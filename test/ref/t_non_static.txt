@@ -1,0 +1,9 @@
+t_non_static.adb:11:24: Error: NON_STATIC: array index non-statically constrained
+t_non_static.adb:15:15: Error: NON_STATIC: array index non-statically constrained
+t_non_static.adb:16:16: Error: NON_STATIC: array index non-statically constrained
+t_non_static.adb:23:10: Error: NON_STATIC: discriminant non-statically constrained
+t_non_static.adb:33:4: Found: NON_STATIC: Actual for X in instantiation is not static
+t_non_static.adb:33:4: Found: NON_STATIC: Actual for Y in instantiation is not static
+t_non_static.adb:34:4: Found: NON_STATIC: Actual for Y in instantiation is not static (default value)
+t_non_static.adb:48:4: Found: NON_STATIC: Actual for FP in instantiation is not static
+t_non_static.adb:49:4: Found: NON_STATIC: Actual for FP in instantiation is not static

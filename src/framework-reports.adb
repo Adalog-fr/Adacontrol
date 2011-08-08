@@ -55,6 +55,10 @@ package body Framework.Reports is
    Error_Count   : Natural := 0;
    Warning_Count : Natural := 0;
 
+   Uncheckable_Used   : array (Uncheckable_Consequence) of Boolean := (others => False);
+   Uncheckable_Types  : array (Uncheckable_Consequence) of Rule_Types;
+   Uncheckable_Labels : array (Uncheckable_Consequence) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
    package Counters is new Binary_Map (Unbounded_Wide_String, Natural);
    Rule_Counter   : Counters.Map;
    Stats_Counters : array (Rule_Types) of Counters.Map;
@@ -386,6 +390,51 @@ package body Framework.Reports is
          end if;
       end;
    end Report;
+
+   -----------------
+   -- Uncheckable --
+   -----------------
+
+   Risk_Message : constant array (Uncheckable_Consequence) of Wide_String (1 .. 8)
+     := ("positive", "negative");
+
+   procedure Uncheckable (Rule_Id : in Wide_String;
+                          Risk    : in Uncheckable_Consequence;
+                          Loc     : in Location;
+                          Msg     : in Wide_String)
+   is
+      use Utilities;
+      Rule_Label : constant Wide_String := To_Wide_String (Uncheckable_Labels (Risk));
+   begin
+      if Uncheckable_Used (Risk) then
+         Report (Rule_Id,
+                 Rule_Label,
+                 Uncheckable_Types  (Risk),
+                 Loc,
+                 Choose (Rule_Label /= "", "in rule " & Rule_Id & ": ", "")
+                   & "Possible false " & Risk_Message (Risk) & ": " & Msg);
+      end if;
+   end Uncheckable;
+
+   -----------------------
+   -- Reset_Uncheckable --
+   -----------------------
+
+   procedure Reset_Uncheckable is
+   begin
+      Uncheckable_Used := (others => False);
+   end Reset_Uncheckable;
+
+   ---------------------
+   -- Set_Uncheckable --
+   ---------------------
+
+   procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Rule_Type : Rule_Types; Label : Wide_String) is
+   begin
+      Uncheckable_Used   (Risk) := True;
+      Uncheckable_Types  (Risk) := Rule_Type;
+      Uncheckable_Labels (Risk) := To_Unbounded_Wide_String (Label);
+   end Set_Uncheckable;
 
    ---------------
    -- Nb_Errors --

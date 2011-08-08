@@ -1,0 +1,25 @@
+t_max_statement_nesting.adb:12:22: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:12:22: Error: check   loop: loop statements nesting deeper than 3
+t_max_statement_nesting.adb:27:13: Error: check     if: if statements nesting deeper than 3
+t_max_statement_nesting.adb:30:16: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:49:22: Error: check   case: case statements nesting deeper than 3
+t_max_statement_nesting.adb:51:28: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:79:34: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:80:37: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:81:40: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:83:46: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:83:46: Error: check   loop: loop statements nesting deeper than 3
+t_max_statement_nesting.adb:102:28: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:103:31: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:105:37: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:119:16: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:119:16: Found: search block: block statements nesting deeper than 1
+t_max_statement_nesting.adb:120:19: Found: search   all: all statements nesting deeper than 4
+t_max_statement_nesting.adb:120:19: Error: check     if: if statements nesting deeper than 3
+
+Counts summary:
+count     if: 2
+count    all: 12
+count   case: 1
+count   loop: 2
+count  block: 1

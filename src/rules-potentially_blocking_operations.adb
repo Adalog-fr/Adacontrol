@@ -324,7 +324,7 @@ package body Rules.Potentially_Blocking_Operations is
          Current : Framework.Element_Queues.Cursor;
       begin
          -- Update referenced PTO
-         Concat (State.Referenced_PTO, Referenced_PTO);
+         Append (State.Referenced_PTO, Referenced_PTO);
 
          if not Is_Nil (Target) then
             -- This call is itself an external call
@@ -524,7 +524,7 @@ package body Rules.Potentially_Blocking_Operations is
    begin
       -- Get rid of renamings
       while Declaration_Kind (Decl) in A_Renaming_Declaration loop
-         Name := Renamed_Entity (Decl);
+         Name := A4G_Bugs.Renamed_Entity (Decl);
          if Expression_Kind (Name) = A_Selected_Component then
             Name := Selector (Name);
          end if;

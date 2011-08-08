@@ -73,9 +73,9 @@ package body Rules.Unsafe_Paired_Calls is
       end record;
    type SP_Context is new Basic_Rule_Context with
       record
-         Role        : SP_Role;
-         Rule_Number : Rule_Index;
-         Lock        : Lock_Parameter;
+         Role         : SP_Role;
+         Rule_Numbers : Rule_Index_Set;
+         Lock         : Lock_Parameter;
       end record;
 
    Checked_Subprograms  : Context_Store;
@@ -108,11 +108,29 @@ package body Rules.Unsafe_Paired_Calls is
       Second_SP : Entity_Specification;
       Lock_Type : Entity_Specification;
       Lock_Pos  : Location;
+
+      procedure Associate_With_Set (Specification : in Entity_Specification;
+                                    Role          : in SP_Role;
+                                    LP            : in Lock_Parameter)
+      is
+         Existing  : Root_Context'Class := Association (Checked_Subprograms, Specification);
+         Rules_Set : Rule_Index_Set := (others => False);
+      begin
+         if Existing = No_Matching_Context then
+            Rules_Set (Rules_Used) := True;
+            Associate (Checked_Subprograms,
+                       Specification,
+                       SP_Context'(Basic.New_Context (Rule_Type,Label) with Role, Rules_Set, LP));
+         else
+            SP_Context (Existing).Rule_Numbers (Rules_Used) := True;
+            Update (Checked_Subprograms, Existing);
+         end if;
+      end Associate_With_Set;
    begin
-      if Rules_Used = Rule_Index'Last then
-         Parameter_Error ("Rule cannot be specified more than"
-                          & Rule_Index'Wide_Image (Rule_Index'Last)
-                          & " times: " & Rule_Id);
+      if Rules_Used = Rule_Index_Set'Last then
+         Parameter_Error (Rule_Id & ": this rule can be given at most"
+                          & Rule_Index'Wide_Image (Rule_Index_Set'Last)
+                          & " times");
       end if;
       Rules_Used := Rules_Used + 1;
 
@@ -136,28 +154,12 @@ package body Rules.Unsafe_Paired_Calls is
             Parameter_Error ("Class wide type not allowed for lock parameter");
          end if;
 
-         Associate (Checked_Subprograms,
-                    First_SP,
-                    SP_Context'(Basic.New_Context (Rule_Type,Label)
-                                with Opening, Rules_Used, (Entity_Spec, Lock_Pos, Lock_Type)));
-         Associate (Checked_Subprograms,
-                    Second_SP,
-                    SP_Context'(Basic.New_Context (Rule_Type,Label)
-                                with Closing, Rules_Used, (Entity_Spec, Lock_Pos, Lock_Type)));
+         Associate_With_Set (First_SP,  Opening, (Entity_Spec, Lock_Pos, Lock_Type));
+         Associate_With_Set (Second_SP, Closing, (Entity_Spec, Lock_Pos, Lock_Type));
       else
-         Associate (Checked_Subprograms,
-                    First_SP,
-                    SP_Context'(Basic.New_Context (Rule_Type,Label)
-                                with Opening, Rules_Used, (Kind => None)));
-         Associate (Checked_Subprograms,
-                    Second_SP,
-                    SP_Context'(Basic.New_Context (Rule_Type,Label)
-                                with Closing, Rules_Used, (Kind => None)));
+         Associate_With_Set (First_SP,  Opening, (Kind => None));
+         Associate_With_Set (Second_SP, Closing, (Kind => None));
       end if;
-
-   exception
-      when Already_In_Store =>
-         Parameter_Error ("Entity already given for rule " & Rule_Id);
    end Add_Use;
 
    -------------
@@ -189,6 +191,16 @@ package body Rules.Unsafe_Paired_Calls is
    end Prepare;
 
    ------------------
+   -- Call_Context --
+   ------------------
+
+   function Call_Context (Call : Asis.Statement) return Root_Context'Class is
+      use Thick_Queries;
+   begin
+      return Matching_Context (Checked_Subprograms, Ultimate_Name (Called_Simple_Name (Call)));
+   end Call_Context;
+
+   ------------------
    -- Process_Call --
    ------------------
 
@@ -198,19 +210,18 @@ package body Rules.Unsafe_Paired_Calls is
 
       function Call_Image (The_Call : Asis.Statement) return Wide_String is
          -- Precondition: the matching context exists
-         Call_Context : constant SP_Context := SP_Context (Matching_Context (Checked_Subprograms,
-                                                                             Called_Simple_Name (The_Call)));
-         Sp_Image     : constant Wide_String := Full_Name_Image (Called_Name (The_Call));
+         Called_Context : constant SP_Context := SP_Context (Call_Context (The_Call));
+         Sp_Image       : constant Wide_String := Full_Name_Image (Called_Name (The_Call));
       begin
-         case Call_Context.Lock.Kind is
+         case Called_Context.Lock.Kind is
             when None =>
                return Sp_Image;
             when In_Def =>
                -- The lock value can be a static expression of a discrete type, or
                -- a constant of any type, or anything else (since it is an error).
                declare
-                  Val_Image : constant Wide_String := Static_Expression_Value_Image (Actual_Expression
-                                                                                     (Call, Call_Context.Lock.Formal));
+                  Val_Image : constant Wide_String
+                    := Static_Expression_Value_Image (Actual_Expression (The_Call, Called_Context.Lock.Formal));
                begin
                   if Val_Image = "" then
                      return Sp_Image & " (different or non static lock value)";
@@ -221,7 +232,7 @@ package body Rules.Unsafe_Paired_Calls is
             when In_Out_Def =>
                return Sp_Image
                  & " with lock variable "
-                 & Full_Name_Image (Actual_Expression (Call, Call_Context.Lock.Formal));
+                 & Full_Name_Image (Actual_Expression (The_Call, Called_Context.Lock.Formal));
             when Entity_Spec =>
                Failure ("lock field not initialized");
          end case;
@@ -294,28 +305,28 @@ package body Rules.Unsafe_Paired_Calls is
          Update (Checked_Subprograms, Lock_Context);
       end Check_Lock_Parameter;
 
-   begin   -- Process_Call
-      if Rules_Used = 0 then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
+      procedure Check_Other_SP_Call (Called_Context : in SP_Context;
+                                     First_Call     : in Asis.Statement;
+                                     Other_Call     : in Asis.Statement;
+                                     Where          : in Wide_String)
+      is
+         -- Checks that Other_Call is a procedure or entry call and the called entity is the other one
+         -- from the pair.
+      begin
+         if Statement_Kind (Other_Call) /= A_Procedure_Call_Statement
+           and Statement_Kind (Other_Call) /= An_Entry_Call_Statement
+         then
+            Report (Rule_Id,
+                    Called_Context,
+                    Get_Location (Call),
+                    "construct must " & Where & " with operation matching " & Call_Image (Call));
+            return;
+         end if;
 
-      if Is_Dispatching_Call (Call) then
-         return;
-      end if;
-
-      declare
-         Called_Context : Root_Context'Class    := Matching_Context (Checked_Subprograms, Called_Simple_Name (Call));
-         Enclosing      : constant Asis.Element := Enclosing_Element (Call);
-
-         procedure Check_Other_SP_Call (Other_Call : Asis.Statement; Where : Wide_String)  is
-            -- Checks that Other_Call is a procedure or entry call and the called entity is the other one
-            -- from the pair.
-            Good_Context : SP_Context renames SP_Context (Called_Context);
+         declare
+            Other_Context : Root_Context'Class := Call_Context (Other_Call);
          begin
-            if Statement_Kind (Other_Call) /= A_Procedure_Call_Statement
-              and Statement_Kind (Other_Call) /= An_Entry_Call_Statement
-            then
+            if Other_Context = No_Matching_Context then
                Report (Rule_Id,
                        Called_Context,
                        Get_Location (Call),
@@ -323,197 +334,223 @@ package body Rules.Unsafe_Paired_Calls is
                return;
             end if;
 
-            declare
-               Other_Context : Root_Context'Class := Matching_Context (Checked_Subprograms,
-                                                                       Ultimate_Name (Called_Name (Other_Call)));
-            begin
-               Check_Lock_Parameter (Other_Call, SP_Context (Other_Context));
+            Check_Lock_Parameter (Other_Call, SP_Context (Other_Context));
 
-               if Other_Context = No_Matching_Context then
-                  Report (Rule_Id,
-                          Called_Context,
-                          Get_Location (Call),
-                          "construct must " & Where & " with operation matching " & Call_Image (Call));
-               elsif SP_Context (Other_Context).Rule_Number /= SP_Context (Called_Context).Rule_Number then
-                  Report (Rule_Id,
-                          Called_Context,
-                          Get_Location (Call),
-                          "construct must " & Where & " with operation matching " & Call_Image (Call));
-               else
-                  case Good_Context.Lock.Kind is
-                     when None =>
-                        return;
-                     when Entity_Spec =>
-                        Failure ("Lock not updated");
-                     when In_Def =>
-                        if not Same_Value (Actual_Expression (Call, Good_Context.Lock.Formal),
-                                           Actual_Expression (Other_Call, SP_Context (Other_Context).Lock.Formal))
-                        then
-                           Report (Rule_Id,
-                                   Called_Context,
-                                   Get_Location (Call),
-                                   "construct must " & Where & " with call matching " & Call_Image (Call));
-                        end if;
-                     when In_Out_Def =>
-                        declare
-                           Lock_Object : constant Asis.Expression
-                             := Actual_Expression (Call, Good_Context.Lock.Formal);
-                           Other_Lock_Object :constant Asis.Expression
-                             := Actual_Expression (Other_Call, SP_Context (Other_Context).Lock.Formal);
-                        begin
-                           if Variables_Proximity (Lock_Object, Other_Lock_Object) /= Same_Variable then
-                              Report (Rule_Id,
-                                      Called_Context,
-                                      Get_Location (Call),
-                                      "construct must " & Where & " with call matching " & Call_Image (Call));
-                           end if;
-                        end;
-                  end case;
-               end if;
-            end;
-         end Check_Other_SP_Call;
-
-         function Is_Same_Lock (Other_Call : Asis.Statement) return Boolean is
-            -- Returns True if Other_Call is a call to the same procedure or entry as Call, and either
-            -- Lock.Kind is none, or the Lock parameters are the same
-            use Asis.Expressions;
-
-            Good_Context : SP_Context renames SP_Context (Called_Context);
-         begin
-            if Is_Equal (Corresponding_Name_Definition (Ultimate_Name (Called_Name (Call))),
-                         Corresponding_Name_Definition (Ultimate_Name (Called_Name (Other_Call))))
+            -- Here we have a good call; the message always refers to the first call
+            if (SP_Context (Other_Context).Rule_Numbers and Called_Context.Rule_Numbers)
+              = (Rule_Index_Set'Range => False)
             then
-               case Good_Context.Lock.Kind is
+               Report (Rule_Id,
+                       Called_Context,
+                       Get_Location (Call),
+                       "construct must end with operation matching " & Call_Image (First_Call));
+            else
+               case Called_Context.Lock.Kind is
                   when None =>
-                     return True;
+                     return;
                   when Entity_Spec =>
                      Failure ("Lock not updated");
                   when In_Def =>
-                     return Same_Value (Actual_Expression (Call, Good_Context.Lock.Formal),
-                                        Actual_Expression (Other_Call, Good_Context.Lock.Formal));
+                     if not Same_Value (Actual_Expression (Call,       Called_Context.Lock.Formal),
+                                        Actual_Expression (Other_Call, SP_Context (Other_Context).Lock.Formal))
+                     then
+                        Report (Rule_Id,
+                                Called_Context,
+                                Get_Location (Call),
+                                "construct must end with call matching " & Call_Image (First_Call));
+                     end if;
                   when In_Out_Def =>
                      declare
-                        Lock_Object : constant Asis.Expression      := Actual_Expression (Call,
-                                                                                          Good_Context.Lock.Formal);
-                        Other_Lock_Object :constant Asis.Expression := Actual_Expression (Other_Call,
-                                                                                          Good_Context.Lock.Formal);
+                        Lock_Object : constant Asis.Expression
+                          := Actual_Expression (Call, Called_Context.Lock.Formal);
+                        Other_Lock_Object :constant Asis.Expression
+                          := Actual_Expression (Other_Call, SP_Context (Other_Context).Lock.Formal);
                      begin
-                        return Variables_Proximity (Lock_Object, Other_Lock_Object) = Same_Variable;
+                        if Variables_Proximity (Lock_Object, Other_Lock_Object) /= Same_Variable then
+                           Report (Rule_Id,
+                                   Called_Context,
+                                   Get_Location (Call),
+                                   "construct must end with call matching " & Call_Image (First_Call));
+                        end if;
                      end;
                end case;
-            else
-               return False;
             end if;
-         end Is_Same_Lock;
+         end;
+      end Check_Other_SP_Call;
 
-         procedure Check_First (Stats : Asis.Statement_List; Handlers : Asis.Exception_Handler_List) is
-         begin
-            Check_Lock_Parameter (Call, SP_Context (Called_Context));
-
-            -- This call must be the first statement
-            if not Is_Equal (Call, Stats (Stats'First)) then
-               Report (Rule_Id,
-                       Called_Context,
-                       Get_Location (Call),
-                       "call to " & Full_Name_Image (Called_Name (Call))
-                       & " is not the first of a sequence of statements");
-               return;
-            end if;
-
-            -- No call to same SP in enclosing scopes
-            -- Note that this check is done (and this SP later added) when we encounter
-            -- a *call*, i.e. after the declarative part of the enclosing unit.
-            -- Therefore, this will *not* prevent having P/V pairs in enclosed subprograms,
-            -- even if the outer one also has P/V pairs, as it should be.
-            Active_Procs.Reset (Scope_Manager.All_Scopes);
-            while Active_Procs.Data_Available loop
-               if Is_Same_Lock (Active_Procs.Current_Data) then
-                  Report (Rule_Id,
-                          Called_Context,
-                          Get_Location (Call),
-                          "nested call to " & Call_Image (Call));
+      type Comparison_Kind is (Exact, Equivalent);
+      function Is_Same_Lock (Called_Context : SP_Context;
+                             Other_Call     : Asis.Statement;
+                             Comparison     : Comparison_Kind) return Boolean
+      is
+         -- Returns True if Other_Call is a call to the same procedure or entry as Call, and either
+         -- Lock.Kind is none, or the Lock parameters are the same
+         use Asis.Expressions;
+         Other_Context : constant Root_Context'Class := Call_Context (Other_Call);
+      begin
+         case Comparison is
+            when Exact =>
+               if not Is_Equal (Corresponding_Name_Definition (Ultimate_Name (Called_Name (Call))),
+                                Corresponding_Name_Definition (Ultimate_Name (Called_Name (Other_Call))))
+               then
+                  return False;
                end if;
-               Active_Procs.Next;
-            end loop;
+            when Equivalent =>
+               if Other_Context = No_Matching_Context then
+                  return False;
+               end if;
+               if (SP_Context (Other_Context).Rule_Numbers and Called_Context.Rule_Numbers)
+                 = (Rule_Index_Set'Range => False)
+               then
+                  return False;
+               end if;
+         end case;
 
-            -- OK, add ourself
-            Active_Procs.Push (Call);
+         case Called_Context.Lock.Kind is
+            when None =>
+               return True;
+            when Entity_Spec =>
+               Failure ("Lock not updated");
+            when In_Def =>
+               return Same_Value (Actual_Expression (Call,       Called_Context.Lock.Formal),
+                                  Actual_Expression (Other_Call, SP_Context(Other_Context).Lock.Formal));
+            when In_Out_Def =>
+               declare
+                  Lock_Object : constant Asis.Expression      := Actual_Expression (Call, Called_Context.Lock.Formal);
+                  Other_Lock_Object :constant Asis.Expression := Actual_Expression
+                                                                   (Other_Call,
+                                                                    SP_Context(Other_Context).Lock.Formal);
+               begin
+                  return Variables_Proximity (Lock_Object, Other_Lock_Object) = Same_Variable;
+               end;
+         end case;
+      end Is_Same_Lock;
 
-            -- Last statement must be corresponding call
-            Check_Other_SP_Call (Stats (Stats'Last), "end");
+      procedure Check_First (Called_Context : SP_Context;
+                             Stats          : Asis.Statement_List;
+                             Handlers       : Asis.Exception_Handler_List)
+      is
+      begin
+         -- This call must be the first statement
+         if not Is_Equal (Call, Stats (Stats'First)) then
+            Report (Rule_Id,
+                    Called_Context,
+                    Get_Location (Call),
+                    "call to " & Full_Name_Image (Called_Name (Call))
+                      & " is not the first of a sequence of statements");
+            return;
+         end if;
 
-            -- Construct must have exception handlers
-            if Is_Nil (Handlers) then
-               Report (Rule_Id,
-                       Called_Context,
-                       Get_Location (Enclosing),
-                       "construct must have exception handlers");
-               return;
-            end if;
-
-            -- Construct must have a "when others" exception handler
-            if Definition_Kind (Exception_Choices (Handlers (Handlers'Last))(1)) /= An_Others_Choice then
-               Report (Rule_Id,
-                       Called_Context,
-                       Get_Location (Enclosing),
-                       "construct must have a ""when others"" exception handler");
-               return;
-            end if;
-         end Check_First;
-
-         procedure Check_Last (Stats : Asis.Statement_List; Handlers : Asis.Exception_Handler_List) is
-         begin
-            Check_Lock_Parameter (Call, SP_Context (Called_Context));
-
-            -- This call must be the last statement
-            if not Is_Equal (Call, Stats (Stats'Last)) then
+         -- No call to same SP in enclosing scopes
+         -- Note that this check is done (and this SP later added) when we encounter
+         -- a *call*, i.e. after the declarative part of the enclosing unit.
+         -- Therefore, this will *not* prevent having P/V pairs in enclosed subprograms,
+         -- even if the outer one also has P/V pairs, as it should be.
+         Active_Procs.Reset (Scope_Manager.All_Scopes);
+         while Active_Procs.Data_Available loop
+            if Is_Same_Lock (Called_Context, Active_Procs.Current_Data, Exact) then
                Report (Rule_Id,
                        Called_Context,
                        Get_Location (Call),
-                       "call to " & Full_Name_Image (Called_Name (Call))
-                       & " is not the last of a sequence of statements");
-               return;
+                       "nested call to " & Call_Image (Call));
             end if;
+            Active_Procs.Next;
+         end loop;
 
-            -- First statement must be corresponding call
-            Check_Other_SP_Call (Stats (Stats'First), "start");
+         -- OK, add ourself
+         Active_Procs.Push (Call);
 
-            -- Every handler must include directly one and only one call to this SP
-            for I in Handlers'Range loop
-               declare
-                  Handler_Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
-                  Call_Count    : Asis.ASIS_Natural := 0;
-               begin
-                  for J in Handler_Stats'Range loop
-                     if (Statement_Kind (Handler_Stats (J)) = A_Procedure_Call_Statement
-                         or Statement_Kind (Handler_Stats (J)) = An_Entry_Call_Statement)
-                       and then Is_Same_Lock (Handler_Stats (J))
-                     then
-                        Call_Count := Call_Count + 1;
-                     end if;
-                  end loop;
-                  case Call_Count is
-                     when 0 =>
-                        Report (Rule_Id,
-                                Called_Context,
-                                Get_Location (Handlers (I)),
-                                "handler must have a call to " & Call_Image (Call));
-                     when 1 =>
-                        --OK
-                        null;
-                     when others =>
-                        Report (Rule_Id,
-                                Called_Context,
-                                Get_Location (Handlers (I)),
-                                "handler must have only one call to " & Call_Image (Call));
-                  end case;
-               end;
-            end loop;
-         end Check_Last;
-     begin
+         -- Last statement must be corresponding call
+         Check_Other_SP_Call (Called_Context, Call, Stats (Stats'Last), "end");
+
+         -- Construct must have exception handlers
+         if Is_Nil (Handlers) then
+            Report (Rule_Id,
+                    Called_Context,
+                    Get_Location (Enclosing_Element (Call)),
+                    "construct must have exception handlers");
+            return;
+         end if;
+
+         -- Here, we have at least one exception handler
+         -- Construct must have a "when others" exception handler
+         if Definition_Kind (Exception_Choices (Handlers (Handlers'Last))(1)) /= An_Others_Choice then
+            Report (Rule_Id,
+                    Called_Context,
+                    Get_Previous_Word_Location (Handlers (Handlers'First)),
+                    "construct must have a ""when others"" exception handler");
+            return;
+         end if;
+
+         -- Every handler must include directly one and only one call to an SP matching the opening call
+         for I in Handlers'Range loop
+            declare
+               Handler_Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
+               Call_Count    : Asis.ASIS_Natural := 0;
+            begin
+               for J in Handler_Stats'Range loop
+                  if (Statement_Kind (Handler_Stats (J)) = A_Procedure_Call_Statement
+                        or Statement_Kind (Handler_Stats (J)) = An_Entry_Call_Statement)
+                    and then Is_Same_Lock (Called_Context, Handler_Stats (J), Equivalent)
+                  then
+                     Call_Count := Call_Count + 1;
+                  end if;
+               end loop;
+               case Call_Count is
+                  when 0 =>
+                     Report (Rule_Id,
+                             Called_Context,
+                             Get_Location (Handlers (I)),
+                             "handler must have a call to subprogram matching " & Call_Image (Call));
+                  when 1 =>
+                     --OK
+                     null;
+                  when others =>
+                     Report (Rule_Id,
+                             Called_Context,
+                             Get_Location (Handlers (I)),
+                             "handler must have only one call to subprogram matching " & Call_Image (Call));
+               end case;
+            end;
+         end loop;
+      end Check_First;
+
+      procedure Check_Last (Called_Context : SP_Context; Stats : Asis.Statement_List) is
+      begin
+          -- This call must be the last statement
+         if not Is_Equal (Call, Stats (Stats'Last)) then
+            Report (Rule_Id,
+                    Called_Context,
+                    Get_Location (Call),
+                    "call to " & Full_Name_Image (Called_Name (Call))
+                      & " is not the last of a sequence of statements");
+            return;
+         end if;
+
+         -- First statement must be corresponding call
+         Check_Other_SP_Call (Called_Context, Stats (Stats'First), Stats (Stats'First), "start");
+      end Check_Last;
+
+   begin   -- Process_Call
+      if Rules_Used = 0 then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Called_Context : Root_Context'Class    := Call_Context (Call);
+         Enclosing      : constant Asis.Element := Enclosing_Element (Call);
+      begin
          if Called_Context = No_Matching_Context then
             return;
          end if;
+
+         if Is_Dispatching_Call (Call) then
+            Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
+            return;
+         end if;
+
+         Check_Lock_Parameter (Call, SP_Context (Called_Context));
 
          case SP_Context (Called_Context).Role is
             when Opening =>
@@ -526,7 +563,9 @@ package body Rules.Unsafe_Paired_Calls is
                           | A_Task_Body_Declaration
                           | An_Entry_Body_Declaration
                           =>
-                           Check_First (Body_Statements (Enclosing), Body_Exception_Handlers (Enclosing));
+                           Check_First (SP_Context (Called_Context),
+                                        Body_Statements (Enclosing),
+                                        Body_Exception_Handlers (Enclosing));
                         when others =>
                            Report (Rule_Id,
                                    Called_Context,
@@ -538,9 +577,13 @@ package body Rules.Unsafe_Paired_Calls is
                   when A_Statement =>
                      case Statement_Kind (Enclosing) is
                         when A_Block_Statement =>
-                           Check_First (Block_Statements (Enclosing), Block_Exception_Handlers (Enclosing));
+                           Check_First (SP_Context (Called_Context),
+                                        Block_Statements (Enclosing),
+                                        Block_Exception_Handlers (Enclosing));
                         when An_Accept_Statement =>
-                           Check_First (Accept_Body_Statements (Enclosing), Accept_Body_Exception_Handlers (Enclosing));
+                           Check_First (SP_Context (Called_Context),
+                                        Accept_Body_Statements (Enclosing),
+                                        Accept_Body_Exception_Handlers (Enclosing));
                         when others =>
                            Report (Rule_Id,
                                    Called_Context,
@@ -567,7 +610,7 @@ package body Rules.Unsafe_Paired_Calls is
                           | A_Task_Body_Declaration
                           | An_Entry_Body_Declaration
                           =>
-                           Check_Last (Body_Statements (Enclosing), Body_Exception_Handlers (Enclosing));
+                           Check_Last (SP_Context (Called_Context), Body_Statements (Enclosing));
                         when others =>
                            Report (Rule_Id,
                                    Called_Context,
@@ -579,9 +622,9 @@ package body Rules.Unsafe_Paired_Calls is
                   when A_Statement =>
                      case Statement_Kind (Enclosing_Element (Call)) is
                         when A_Block_Statement =>
-                           Check_Last (Block_Statements (Enclosing), Block_Exception_Handlers (Enclosing));
+                           Check_Last (SP_Context (Called_Context), Block_Statements (Enclosing));
                         when An_Accept_Statement =>
-                           Check_Last (Accept_Body_Statements (Enclosing), Accept_Body_Exception_Handlers (Enclosing));
+                           Check_Last (SP_Context (Called_Context), Accept_Body_Statements (Enclosing));
                         when others =>
                            Report (Rule_Id,
                                    Called_Context,
@@ -591,6 +634,7 @@ package body Rules.Unsafe_Paired_Calls is
                      end case;
 
                   when An_Exception_Handler =>
+                     -- This is checked from the corresponding sequence of statements
                      null;
 
                   when others =>
@@ -600,10 +644,8 @@ package body Rules.Unsafe_Paired_Calls is
                              "call to " & Full_Name_Image (Called_Name (Call))
                              & " is not the last of a sequence of statements");
                end case;
-
          end case;
       end;
-
    end Process_Call;
 
 begin

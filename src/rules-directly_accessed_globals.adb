@@ -192,6 +192,10 @@ package body Rules.Directly_Accessed_Globals is
       Good_Name := Ultimate_Name (Name);
       if Is_Nil (Good_Name) then
          -- Dynamic renaming...
+         Uncheckable (Rule_Id,
+                      False_Negative,
+                      Get_Location (Name),
+                      "Name is dynamic renaming");
          return;
       end if;
 

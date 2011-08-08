@@ -188,25 +188,32 @@ package body Framework.Rules_Manager is
    -- Help_Names --
    ----------------
 
-   procedure Help_Names is
+   procedure Help_Names (Pretty : Boolean) is
       use Utilities;
       Spaces : constant Unbounded_Wide_String := 3 * ' ';
-      Line : Unbounded_Wide_String := Spaces;
+      Line : Unbounded_Wide_String;
 
       procedure One_Name (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
          pragma Unreferenced (Info);
          Name : constant Wide_String := To_Wide_String (Key);
       begin
-         if Length (Line) + Max_Name_Length + 1 >= 80 then
-            User_Message (To_Wide_String (Line));
-            Line := Spaces;
+         if Pretty then
+            if Length (Line) + Max_Name_Length + 1 >= 80 then
+               User_Message (To_Wide_String (Line));
+               Line := Spaces;
+            end if;
+            Append (Line, To_Title (Name) & (Max_Name_Length - Name'Length +1) * ' ');
+         else
+            User_Message (To_Title (Name));
          end if;
-         Append (Line, To_Title (Name) & (Max_Name_Length - Name'Length +1) * ' ');
       end One_Name;
 
       procedure Help_Iterate is new Rule_List.Iterate (One_Name);
 
    begin
+      if Pretty then
+         Line := Spaces;
+      end if;
       Help_Iterate (Rule_Map);
       User_Message (To_Wide_String (Line));
    end Help_Names;

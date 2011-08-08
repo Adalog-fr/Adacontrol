@@ -1,0 +1,2 @@
+t_other_dependencies.adb:1:15: Error: OTHER_DEPENDENCIES: unit depends on "Ada.Direct_Io"
+t_other_dependencies.adb:2:6: Error: OTHER_DEPENDENCIES: unit depends on "Ada.Sequential_Io"

@@ -1,5 +1,7 @@
 with Ada.Exceptions;
+with X_Uncheckable;
 procedure T_exception_propagation is
+   use X_Uncheckable;
 begin
 Test_Parameter:
    declare
@@ -128,6 +130,7 @@ Test_Parameter:
 
       Ptr1 : constant Acc_Proc := Proc10'Access;
       Ptr2 : constant Acc_Registration_Proc := Make_CB_L0'Access;
+
    begin
       -- Level 0
       Make_Cb_L0 (Proc10'Access);                -- Propagating
@@ -158,13 +161,16 @@ Test_Parameter:
       Make_Cb_L0 (Inst1'Access);                 -- Propagating, instantiation
 
 
-      Make_Cb_L0 (Ptr1.all'Access);             -- Not able to diagnose
-      Ptr2 (CB => Proc10'Access);              -- Access to registration proc
-      Ptr2.all (Proc10'Access);                -- id., explicit dereference
+      Make_Cb_L0 (Ptr1.all'Access);             -- Uncheckable
+      Make_Cb_L0 (Dyn_Ren_Proc'Access);         -- Uncheckable
+      Dispatch (Dyn_Tagged);                    -- Uncheckable
 
-      Inst2 (Proc10'Access);                   -- Registration proc from generic
+      Ptr2 (CB => Proc10'Access);               -- Access to registration proc
+      Ptr2.all (Proc10'Access);                 -- id., explicit dereference
 
-      Make_Cb2 (Proc10'Access);               -- Registration proc part of generic
+      Inst2 (Proc10'Access);                    -- Registration proc from generic
+
+      Make_Cb2 (Proc10'Access);                 -- Registration proc part of generic
    end Test_Parameter;
 
 Test_Convention:

@@ -1,5 +1,6 @@
 procedure T_Directly_Accessed_Globals is
    package P1 is
+      function Get_Next return Integer;
    end P1;
    package body P1 is    -- OK
       I1 : Integer;
@@ -18,7 +19,7 @@ procedure T_Directly_Accessed_Globals is
          if S2 = "" then
             null;
          end if;
-     end Read;
+      end Read;
 
       procedure Write is
       begin
@@ -109,15 +110,15 @@ procedure T_Directly_Accessed_Globals is
       S2 : Character renames S1 (I1);         -- Not from subprogram I1, OK S1
 
       package Pack is
-         G1 : Integer;                        -- OK, not package body
+         G1 : aliased Integer;                        -- OK, not package body
       end Pack;
 
       package body Pack is
          G2, G3, G4 : Integer;                -- G2 not read, G3 not written, G4 not read/written
-
+         U1 : Integer renames P1.Get_Next;    -- Uncheckable
          procedure P1 is
          begin
-            G2 := 1;
+            G2 := U1;
          end P1;
 
          procedure P2 is
@@ -136,7 +137,7 @@ procedure T_Directly_Accessed_Globals is
          if S2 = 'a' then
             null;
          end if;
-     end Read1;
+      end Read1;
 
       procedure Write is
       begin

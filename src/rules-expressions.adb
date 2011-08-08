@@ -1,8 +1,7 @@
 ----------------------------------------------------------------------
---  Rules.Real_Operators - Package body                             --
+--  Rules.Expressions - Package body                                --
 --                                                                  --
---  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  This software  is (c) SAGEM DS and  Adalog  2004-2005.  The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -29,11 +28,7 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada
-with
-  Ada.Strings.Wide_Unbounded;
-
--- Asis
+-- ASIS
 with
   Asis.Elements,
   Asis.Expressions;
@@ -48,14 +43,20 @@ with
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
+pragma Elaborate (Framework.Language);
 
-package body Rules.Real_Operators is
+package body Rules.Expressions is
    use Framework;
 
-   Rule_Used  : Boolean := False;
-   Save_Used  : Boolean;
-   Rule_Type  : Rule_Types;
-   Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   type Expression_Names is (E_Real_Equality, E_Slice);
+
+   package Usage_Flags_Utilities is new Framework.Language.Flag_Utilities (Expression_Names, "E_");
+   use Usage_Flags_Utilities;
+
+   type Usage_Flags is array (Expression_Names) of Boolean;
+   Rule_Used : Usage_Flags := (others => False);
+   Save_Used : Usage_Flags;
+   Usage     : array (Expression_Names) of Basic_Rule_Context;
 
    ----------
    -- Help --
@@ -65,31 +66,34 @@ package body Rules.Real_Operators is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): None");
-      User_Message ("Control occurrences of = or /= operators with real types");
+      Help_On_Flags (Header => "Parameter (s):");
+      User_Message ("Control occurrences of Ada expressions");
    end Help;
 
    -------------
    -- Add_Use --
    -------------
 
-   procedure Add_Use (Label         : in Wide_String;
-                      Rule_Use_Type : in Rule_Types) is
-      use Ada.Strings.Wide_Unbounded;
+   procedure Add_Use (Label     : in Wide_String;
+                      Rule_Type : in Rule_Types) is
       use Framework.Language;
+      Expr : Expression_Names;
 
    begin
-      if Parameter_Exists then
-         Parameter_Error ("No parameter for rule " & Rule_Id);
+      if not Parameter_Exists then
+         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
       end if;
 
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
-      else
-         Rule_Type  := Rule_Use_Type;
-         Rule_Label := To_Unbounded_Wide_String (Label);
-         Rule_Used  := True;
-      end if;
+      while Parameter_Exists loop
+         Expr := Get_Flag_Parameter (Allow_Any => False);
+         if Rule_Used (Expr) then
+            Parameter_Error ("Expression already given for rule " & Rule_Id
+                             & ": " & Image (Expr));
+         end if;
+
+         Rule_Used (Expr) := True;
+         Usage (Expr)     := Basic.New_Context (Rule_Type, Label);
+      end loop;
    end Add_Use;
 
    -------------
@@ -101,24 +105,42 @@ package body Rules.Real_Operators is
    begin
       case Action is
          when Clear =>
-            Rule_Used := False;
+            Rule_Used := (others => False);
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := False;
+            Rule_Used := (others => False);
          when Resume =>
             Rule_Used := Save_Used;
       end case;
    end Command;
+
+   ---------------
+   -- Do_Report --
+   ---------------
+
+   procedure Do_Report (Expr : Expression_Names; Loc : Location) is
+      use Framework.Reports;
+   begin
+      if not Rule_Used (Expr) then
+         return;
+      end if;
+
+      Report (Rule_Id,
+              Usage (Expr),
+              Loc,
+              "use of expression """ & Image (Expr) & '"');
+   end Do_Report;
+
 
    ---------------------------
    -- Process_Function_Call --
    ---------------------------
 
    procedure Process_Function_Call (Call : in Asis.Expression) is
-      use Ada.Strings.Wide_Unbounded, Asis, Asis.Elements,
-          Asis.Expressions, Framework.Reports, Thick_Queries;
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Reports, Thick_Queries;
    begin
-      if not Rule_Used then
+      if not Rule_Used (E_Real_Equality) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -155,16 +177,14 @@ package body Rules.Real_Operators is
                               when A_Root_Real_Definition => -- 3.4.1(8)
                                  Report
                                  (Rule_Id,
-                                  To_Wide_String (Rule_Label),
-                                  Rule_Type,
+                                  Usage (E_Real_Equality),
                                   Get_Location (Call),
                                   "equality or inequality with Root Real !!!");
                               when A_Universal_Real_Definition => -- 3.4.1(6)
                                  if Parsed_First_Parameter then
                                     Report
                                     (Rule_Id,
-                                     To_Wide_String (Rule_Label),
-                                     Rule_Type,
+                                     Usage (E_Real_Equality),
                                      Get_Location (Call),
                                      "equality or inequality with two Universal Real constants !!!");
                                  else
@@ -176,24 +196,21 @@ package body Rules.Real_Operators is
                         when A_Floating_Point_Definition => -- 3.5.7(2)
                            Report
                            (Rule_Id,
-                            To_Wide_String (Rule_Label),
-                            Rule_Type,
+                            Usage (E_Real_Equality),
                             Get_Location (Call),
                             "equality or inequality with Floating Point");
                             exit Parameter_Loop;
                         when An_Ordinary_Fixed_Point_Definition => -- 3.5.9(3)
                            Report
                            (Rule_Id,
-                            To_Wide_String (Rule_Label),
-                            Rule_Type,
+                            Usage (E_Real_Equality),
                             Get_Location (Call),
                             "equality or inequality with Ordinary Fixed Point");
                             exit Parameter_Loop;
                          when A_Decimal_Fixed_Point_Definition => -- 3.5.9(4)
                            Report
                            (Rule_Id,
-                            To_Wide_String (Rule_Label),
-                            Rule_Type,
+                            Usage (E_Real_Equality),
                             Get_Location (Call),
                             "equality or inequality with Decimal Fixed Point");
                             exit Parameter_Loop;
@@ -210,9 +227,33 @@ package body Rules.Real_Operators is
       end case;
    end Process_Function_Call;
 
+   ------------------------
+   -- Process_Expression --
+   ------------------------
+
+   procedure Process_Expression (Expression : in Asis.Expression) is
+      use Asis, Asis.Elements;
+   begin
+      if Rule_Used = (Expression_Names => False) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      case Expression_Kind (Expression) is
+         when A_Function_Call =>
+            Process_Function_Call (Expression);
+
+         when A_Slice =>
+            Do_Report (E_Slice, Get_Location (Expression));
+
+         when others =>
+            null;
+      end case;
+   end Process_Expression;
+
 begin
    Framework.Rules_Manager.Register_Semantic (Rule_Id,
                                               Help    => Help'Access,
                                               Add_Use => Add_Use'Access,
                                               Command => Command'Access);
-end Rules.Real_Operators;
+end Rules.Expressions;

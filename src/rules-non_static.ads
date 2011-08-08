@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Non_Static_Constraints - Package specification            --
+--  Rules.Non_Static - Package specification                        --
 --                                                                  --
 --  This software  is (c) Adalog  2004-2005. The Ada  Controller is --
 --  free software;  you can redistribute it and/or  modify it under --
@@ -31,19 +31,14 @@
 -- Asis
 with Asis;
 
-package Rules.Non_Static_Constraints is
+package Rules.Non_Static is
 
-   -- This rule can be used to check/search non-static constraints within array
-   -- definitions, array declarations and discriminated structures
-   --
-   -- Parameter (1) => index | discriminant
-   --
-
-   Rule_Id : constant Wide_String := "NON_STATIC_CONSTRAINTS";
+   Rule_Id : constant Wide_String := "NON_STATIC";
 
 
    procedure Process_Constrained_Array_Definition (Elem : Asis.Type_Definition);
-   procedure Process_Discriminant_Constraint      (Elem : Asis.Constraint);
    procedure Process_Index_Constraint             (Elem : Asis.Discrete_Range);
+   procedure Process_Discriminant_Constraint      (Elem : Asis.Constraint);
+   procedure Process_Instantiation                (Elem : Asis.Declaration);
 
-end Rules.Non_Static_Constraints;
+end Rules.Non_Static;

@@ -448,7 +448,7 @@ package body Rules.Naming_Convention is
                            -- We can't use Ultimate_Name, because we need a different treatment of dereferences
                            Going_Up_Renamings:
                              while Decl_Kind in A_Renaming_Declaration loop
-                                Renamed := A4G_Bugs.Corresponding_Base_Entity (Decl);
+                                Renamed := A4G_Bugs.Renamed_Entity (Decl);
 
                                 loop
                                    case Expression_Kind (Renamed) is
@@ -461,6 +461,13 @@ package body Rules.Naming_Convention is
                                       when A_Function_Call =>
                                          Decl_Kind := A_Constant_Declaration;
                                          exit Going_Up_Renamings;
+                                      when A_Type_Conversion =>
+                                         Renamed := Converted_Or_Qualified_Expression (Renamed);
+                                      when An_Identifier
+                                        | An_Enumeration_Literal
+                                        | A_Character_Literal
+                                        =>
+                                         exit;
                                       when An_Explicit_Dereference =>
                                          Renamed_T := A4G_Bugs.Corresponding_Expression_Type (Prefix (Renamed));
                                          if Is_Nil (Renamed_T) then
@@ -488,15 +495,6 @@ package body Rules.Naming_Convention is
                                                Failure ("Unexpected type for dereference", Renamed);
                                          end case;
                                          exit Going_Up_Renamings;
-                                      when A_Type_Conversion =>
-                                         Renamed := Converted_Or_Qualified_Expression (Renamed);
-                                      when An_Identifier
-                                        | An_Enumeration_Literal
-                                        | A_Character_Literal
-                                        =>
-                                         Decl      := Corresponding_Name_Declaration (Renamed);
-                                         Decl_Kind := Declaration_Kind (Decl);
-                                         exit;
                                       when others =>
                                          Failure ("Unexpected expression kind in renaming: "
                                                   & Expression_Kinds'Wide_Image (Expression_Kind (Renamed)),

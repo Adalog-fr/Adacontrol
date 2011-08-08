@@ -1,9 +1,8 @@
 ----------------------------------------------------------------------
---  Rules.Real_Operators - Package specification                    --
+--  Rules.Max_Parameters - Package specification                    --
 --                                                                  --
---  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Controller  is free  software;  you can redistribute  it and/or --
+--  This software  is (c) SAGEM DS and  Adalog  2004-2006.  The Ada --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -33,14 +32,10 @@
 with
   Asis;
 
-package Rules.Real_Operators is
+package Rules.Max_Parameters is
 
-   -- This rule can be used to check/search for the occurrence = or
-   -- /= operators with real types
-   -- Parameter(s): None
+   Rule_Id : Constant Wide_String := "MAX_PARAMETERS";
 
-   Rule_Id : constant Wide_String := "REAL_OPERATORS";
+   procedure Process_Declaration (Declaration : Asis.Declaration);
 
-   procedure Process_Function_Call (Call : in Asis.Expression);
-
-end Rules.Real_Operators;
+end Rules.Max_Parameters;

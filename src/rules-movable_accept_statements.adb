@@ -403,6 +403,7 @@ package body Rules.Movable_Accept_Statements  is
                   -- Check if the identifier is A_Parameter_Specification, An_Object_Declaration or
                   -- An_Object_Renaming_Declaration and process it
                   declare
+                     use Framework.Reports;
                      Identifier             : Asis.Expression    := Element;
                      Identifier_Definition  : Asis.Defining_Name :=
                        Corresponding_Name_Definition (Identifier);
@@ -417,6 +418,14 @@ package body Rules.Movable_Accept_Statements  is
                            -- Getting the last renamed and/or enclosing element for record components
                            while Declaration_Kind (Identifier_Declaration) = An_Object_Renaming_Declaration loop
                               Identifier := Ultimate_Name (Identifier);
+                              if Is_Nil (Identifier) then
+                                 -- Dynamic renaming
+                                 Uncheckable (Rule_Id,
+                                              False_Negative,
+                                              Get_Location (Element),
+                                              "Entity is not statically determinable");
+                                 return;
+                              end if;
                               Identifier_Definition  := Corresponding_Name_Definition (Identifier);
                               Identifier_Declaration := Enclosing_Element (Identifier_Definition);
                               while Declaration_Kind (Identifier_Declaration) = A_Component_Declaration loop

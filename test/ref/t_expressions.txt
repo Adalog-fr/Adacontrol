@@ -1,0 +1,17 @@
+t_expressions.adb:6:10: Error: EXPRESSIONS: use of expression "slice"
+t_expressions.adb:55:10: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:57:13: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:59:13: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:61:13: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:63:13: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:65:13: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:67:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions.adb:69:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions.adb:71:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions.adb:73:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions.adb:75:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions.adb:77:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions.adb:79:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions.adb:81:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions.adb:83:13: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions.adb:85:13: Found: EXPRESSIONS: equality or inequality with two Universal Real constants !!!

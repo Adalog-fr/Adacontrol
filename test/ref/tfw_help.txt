@@ -7,11 +7,19 @@ Parameter(s): task | protected | <allocated type> (optional)
 Control occurrences of allocators, either all of them,
 or just those for tasks, protected types, or specific type(s)
 
+Rule: ARRAY_DECLARATIONS
+Parameter(1): first | max_length
+Parameter(2): for first      : required value of the lower bound
+              for max_length : maximum allowed length of the array
+Controls various sizes related to array types or objects declarations
+
 Rule: CASE_STATEMENT
-Parameter(1): min_others_range | max_values | min_paths
-Parameter(2): for min_others_range: minimum number of values allowed for others
-              for max_values      : maximum number of values allowed in the selector's subtype
-              for min_paths       : minimum number of 'when' allowed in the case statement
+Parameter(1): min_others_span | min_paths | max_range_span |
+              max_values
+Parameter(2): for min_others_span: minimum number of values allowed for others
+              for min_paths      : minimum number of 'when' allowed in the case statement
+              for max_range_span : maximum number of values allowed in a choice given as a range
+              for max_values     : maximum number of values allowed in the selector's subtype
 Controls various sizes related to the case statement
 
 Rule: CONTROL_CHARACTERS
@@ -19,40 +27,48 @@ Parameter: None
 Controls source lines that contain the control characters allowed by the language
 
 Rule: DECLARATIONS
-Parameter (s): access_protected_type       | access_subprogram_type |
-               access_task_type            | access_type            |
-               aliased                     | array                  |
-               array_type                  | child_unit             |
-               constant                    | constrained_array_type |
-               decimal_fixed_type          | defaulted_discriminant |
-               defaulted_generic_parameter | defaulted_parameter    |
-               derived_type                | discriminant           |
-               enumeration_type            | entry                  |
-               exception                   | extension              |
-               fixed_type                  | float_type             |
-               formal_function             | formal_in_out          |
-               formal_package              | formal_procedure       |
-               generic                     | handlers               |
-               integer_type                | modular_type           |
-               multiple_names              | named_number           |
-               not_operator_renames        | null_extension         |
-               null_ordinary_record_type   | null_tagged_type       |
-               operator                    | ordinary_fixed_type    |
-               ordinary_record_type        | package_statements     |
-               protected                   | protected_entry        |
-               protected_type              | record_type            |
-               renames                     | separate               |
-               signed_type                 | single_array           |
-               single_protected            | single_task            |
-               subtype                     | tagged_type            |
-               task                        | task_entry             |
-               task_type                   | type                   |
-               unconstrained_array_type
+Parameter(s): access_protected_type          | access_subprogram_type        |
+              access_task_type               | access_type                   |
+              aliased                        | array                         |
+              array_type                     | child_unit                    |
+              constant                       | constrained_array_type        |
+              decimal_fixed_type             | defaulted_discriminant        |
+              defaulted_generic_parameter    | defaulted_parameter           |
+              derived_type                   | discriminant                  |
+              enumeration_type               | entry                         |
+              exception                      | extension                     |
+              fixed_type                     | float_type                    |
+              formal_function                | formal_package                |
+              formal_procedure               | generic                       |
+              handlers                       | in_out_generic_parameter      |
+              in_out_parameter               | initialized_record_field      |
+              initialized_protected_field    | integer_type                  |
+              limited_private_type           | modular_type                  |
+              multiple_names                 | named_number                  |
+              nested_package                 | nested_generic_function       |
+              nested_generic_package         | nested_generic_procedure      |
+              nested_function_instantiation  | nested_package_instantiation  |
+              nested_procedure_instantiation | non_identical_renaming        |
+              non_limited_private_type       | not_operator_renaming         |
+              null_extension                 | null_ordinary_record_type     |
+              null_tagged_type               | operator                      |
+              ordinary_fixed_type            | ordinary_record_type          |
+              out_parameter                  | package_statements            |
+              private_extension              | protected                     |
+              protected_entry                | protected_type                |
+              record_type                    | renaming                      |
+              separate                       | signed_type                   |
+              single_array                   | single_protected              |
+              single_task                    | subtype                       |
+              tagged_type                    | task                          |
+              task_entry                     | task_type                     |
+              type                           | unconstrained_array_type      |
+              uninitialized_record_field     | uninitialized_protected_field
 Control occurrences of Ada declarations
 
 Rule: DEFAULT_PARAMETER
-Parameter 1: <Subprogram or generic name>
-Parameter 2: <Formal parameter name>
+Parameter 1: <Subprogram or generic name> | all
+Parameter 2: <Formal parameter name> | all
 Parameter 3: [not] used
 Control subprogram calls or generic instantiations that use (or not)
 the default value for a given parameter
@@ -80,6 +96,10 @@ Parameter 2 .. N: for interface: <convention name>
                   for declaration: nothing
 Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions
 
+Rule: EXPRESSIONS
+Parameter (s): real_equality | slice
+Control occurrences of Ada expressions
+
 Rule: GLOBAL_REFERENCES
 Parameter(1):  all                 | multiple |
                multiple_non_atomic
@@ -88,8 +108,13 @@ Control global (in a relative sense) variables referenced
 directly or indirectly from some specific constructs
 
 Rule: HEADER_COMMENTS
-Parameter: <Required number of comment lines>
-Control that  each unit starts with (at least indicated number of comment lines
+Parameter (1): minimum | model
+For minimum:
+   Parameter (2) : <Required number of comment lines>
+For model:
+   Parameter (2) : <model file>
+Control that  each unit starts with at least indicated number of comment lines
+or matches the specified model
 
 Rule: IF_FOR_CASE
 Parameter(s): none
@@ -113,6 +138,10 @@ Rule: MAX_BLANK_LINES
 Parameter: <Max allowed consecutive blank lines>
 Control that there is no more than the indicated number of consecutive blank lines
 
+Rule: MAX_CALL_DEPTH
+Parameter: <Allowed depth> | finite
+Control maximum call depth
+
 Rule: MAX_LINE_LENGTH
 Parameter: <Max allowed length>
 Control that no source line is longer than the indicated maximum
@@ -121,8 +150,16 @@ Rule: MAX_NESTING
 Parameter 1: <maximum allowed nesting level>
 Control scopes nested deeper than a given limit.
 
+Rule: MAX_PARAMETERS
+Parameter(1): maximum allowed number of parameters
+Parameter(2..): function            | procedure          |
+                protected_entry     | protected_function |
+                protected_procedure | task_entry
+                (optional, default = all)
+Controls the maximum allowed number of parameters for callable entities
+
 Rule: MAX_STATEMENT_NESTING
-Parameter 1: if | case | loop | all
+Parameter 1: block | case | if | loop | all
 Parameter 2: nesting depth
 Control max nesting of compound statements
 
@@ -175,9 +212,10 @@ Parameter 1:  all                      | type                    |
 Parameter 2..N: [any|local|global] [case_sensitive|case_insensitive] [not] "<name pattern>"
 Control the form of allowed (or forbidden) names in declarations
 
-Rule: NON_STATIC_CONSTRAINTS
-Parameter 1: index | discriminant
-             (optional)
+Rule: NON_STATIC
+Parameter(s): index_constraint | discriminant_constraint |
+              instantiation
+              (optional, default = all)
 Control that index and discriminant constraints use only static expressions
 
 Rule: NOT_ELABORATION_CALLS
@@ -189,6 +227,10 @@ Rule: NO_SAFE_INITIALIZATION
 Parameter(s):  out_parameter | variable
 Control out parameters and local variables that are not initialized.
 before the first compound statement
+
+Rule: OTHER_DEPENDENCIES
+Parameter(s): <Unit name>
+Control semantic dependencies (with clauses) to units other than those indicated
 
 Rule: PARAMETER_ALIASING
 Parameter 1: unlikely | possible | certain
@@ -210,10 +252,6 @@ Control calls to potentially blocking operations from protected operations
 Rule: PRAGMAS
 Parameter(s): all | nonstandard | <pragma names>
 Control usage of specific pragmas
-
-Rule: REAL_OPERATORS
-Parameter(s): None
-Control occurrences of = or /= operators with real types
 
 Rule: REDUCEABLE_SCOPE
 Parameter:  no_blocks
@@ -258,43 +296,60 @@ Parameter(s): Special comment pattern
 Control comments that match the specified pattern
 
 Rule: STATEMENTS
-Parameter(s): abort                 | accept_return          |
-              asynchronous_select   | case_others            |
-              case_others_null      | conditional_entry_call |
-              delay                 | delay_until            |
-              entry_return          | exception_others       |
-              exception_others_null | exit                   |
-              exit_for_loop         | exit_while_loop        |
-              function_return       | goto                   |
-              loop_return           | multiple_exits         |
-              no_else               | procedure_return       |
-              raise                 | raise_standard         |
-              requeue               | selective_accept       |
-              terminate             | timed_entry_call       |
-              unconditional_exit    | unnamed_exit           |
-              unnamed_multiple_loop | untyped_for            |
+Parameter(s): abort                  | accept_return         |
+              asynchronous_select    | block                 |
+              case_others            | case_others_null      |
+              conditional_entry_call | delay                 |
+              delay_until            | dispatching_call      |
+              entry_return           | exception_others      |
+              exception_others_null  | exit                  |
+              exit_for_loop          | exit_while_loop       |
+              function_return        | goto                  |
+              loop_return            | multiple_exits        |
+              no_else                | procedure_return      |
+              raise                  | raise_standard        |
+              requeue                | reraise               |
+              selective_accept       | terminate             |
+              timed_entry_call       | unconditional_exit    |
+              unnamed_block          | unnamed_exit          |
+              unnamed_loop_exited    | unnamed_multiple_loop |
+              untyped_for            | while_loop            |
               while_true
 Control occurrences of Ada statements
 
 Rule: STYLE
-Parameter(1):  negative_condition | default_in             |
-               no_closing_name    | positional_association |
-               casing             | literal                |
-               multiple_elements  | exposed_literal
-Parameter (2):   For no_closing_name   : maximum number of lines for allowing no closing name
-                 For named_association : call      | Instantiation | Aggregate
-                 For casing            : Uppercase | Lowercase     | Titlecase | Original
-                                       (default = Original)
-                 For element_span      : none
-                 For literal           : [not] <base>
-                 For exposed_literal   : <value>
-Parameter (3):   For literal           : <block_size>
-                 For exposed_literal   : <value>
-Parameter (4..): For exposed_literal   : <value>
+Parameter(1): casing             | default_in             |
+              exposed_literal    | multiple_elements      |
+              negative_condition | no_closing_name        |
+              numeric_literal    | positional_association |
+              renamed_entity
+For casing:
+   Parameter (2): uppercase | lowercase | titlecase | original
+                  (default = Original)
+For exposed_literal:
+   Parameter (2): integer | real | character | string
+   Parameter (3..): <value> | <place>
+For multiple_elements:
+   Parameter (2..): clause | declaration | statement
+                    (default = all)
+For no_closing_name:
+   Parameter (2): maximum number of lines allowed
+For numeric_literal:
+   Parameter (2): [not] <base>
+   Parameter (3): <block_size>
+For positional_association:
+   Parameter (2..): pragma        | discriminant    | call             |
+                    instantiation | array_aggregate | record_aggregate
+                    (default = all)
 Control various Ada style issues
 
 Rule: TERMINATING_TASKS
 Control task termination.
+
+Rule: UNCHECKABLE
+Parameter(s): false_positive | false_negative
+              (optional, default = all)
+Control occurrences of uncheckable constructs in other rules
 
 Rule: UNNECESSARY_USE_CLAUSE
 Parameter(s): none
@@ -306,6 +361,10 @@ Parameter(1): First subprogram
 Parameter(2): Second subprogram
 Parameter(3): (optional) type of lock parameter
 Controls calls like P/V operations that are not safely paired
+
+Rule: UNSAFE_UNCHECKED_CONVERSION
+Parameter(s): none
+Control unsafe usage of Unchecked_Conversion
 
 Rule: USAGE
 Parameter(s): variable | object {, [not] from_spec | initialized | read | written}

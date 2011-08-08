@@ -31,7 +31,6 @@
 
 -- Ada
 with
-  Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Unbounded;
 
 -- Adalog
@@ -79,7 +78,12 @@ package body Rules.Max_Line_Length is
       end if;
 
       if Maximum (Rule_Type) = Natural'Last then
-         Maximum (Rule_Type) := Get_Integer_Parameter;
+         begin
+            Maximum (Rule_Type) := Get_Integer_Parameter (Min => 10, Max => Natural'Last-1);
+         exception
+            when Constraint_Error =>
+               Parameter_Error (Rule_Id & ": Maximum value negative or too big");
+         end;
          if Maximum (Rule_Type) <= 10 then -- Must be at least as long as the longest KW...
             Parameter_Error ("Maximum value must be at least 10");
          end if;
@@ -114,7 +118,7 @@ package body Rules.Max_Line_Length is
    ------------------
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded;
+      use Framework.Reports, Utilities, Ada.Strings.Wide_Unbounded;
    begin
       if not Rule_Used then
          return;
@@ -123,14 +127,14 @@ package body Rules.Max_Line_Length is
 
       if Line'Length > Maximum (Check) then
          Report (Rule_Id, To_Wide_String (Rule_Label (Check)), Check, Loc,
-                 "line too long (" & Trim (Integer'Wide_Image (Line'Length), Left) & ')');
+                 "line too long (" & Integer_Img (Line'Length) & ')');
       elsif Line'Length > Maximum (Search) then
          Report (Rule_Id, To_Wide_String (Rule_Label (Search)), Search, Loc,
-                 "line too long ("& Trim (Integer'Wide_Image (Line'Length), Left) & ')');
+                 "line too long ("& Integer_Img (Line'Length) & ')');
       end if;
 
       if Line'Length > Maximum (Count) then
-         Report (Rule_Id, To_Wide_String (Rule_Label (Count)), Count, Loc, "line too long");
+         Report (Rule_Id, To_Wide_String (Rule_Label (Count)), Count, Loc, "");
       end if;
   end Process_Line;
 

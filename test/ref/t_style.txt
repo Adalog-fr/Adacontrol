@@ -14,6 +14,7 @@ t_style.adb:58:7: Found: Casing: Wrong casing of "Int", should be "int"
 t_style.adb:59:7: Found: Casing: Wrong casing of "ada", should be "Ada"
 t_style.adb:59:19: Found: Casing: Wrong casing of "put_line", should be "Put_Line"
 t_style.adb:59:28: Error: Positional_Association: named association not used in call
+t_style.adb:59:28: Error: Exposed: string literal "Var :" not in allowed construct
 t_style.adb:59:51: Found: Casing: Wrong casing of "INT", should be "int"
 t_style.adb:60:7: Found: Casing: Wrong casing of "iNT", should be "int"
 t_style.adb:60:14: Found: Casing: Wrong casing of "fOo", should be "foo"
@@ -23,6 +24,7 @@ t_style.adb:61:7: Found: Casing: Wrong casing of "ada", should be "Ada"
 t_style.adb:61:11: Found: Casing: Wrong casing of "text_io", should be "Text_IO"
 t_style.adb:61:19: Found: Casing: Wrong casing of "put_line", should be "Put_Line"
 t_style.adb:61:28: Error: Positional_Association: named association not used in call
+t_style.adb:61:28: Error: Exposed: string literal "Var :" not in allowed construct
 t_style.adb:61:51: Found: Casing: Wrong casing of "inT", should be "int"
 t_style.adb:83:25: Found: No_Default_In: default IN mode used for parameter specification
 t_style.adb:87:24: Found: No_Default_In: default IN mode used for parameter specification
@@ -41,46 +43,54 @@ t_style.adb:135:27: Found: No_Default_In: default IN mode used for parameter spe
 t_style.adb:146:27: Error: Positional_Association: named association not used in call
 t_style.adb:148:13: Error: Positional_Association: named association not used in call
 t_style.adb:148:16: Error: Positional_Association: named association not used in call
-t_style.adb:150:19: Error: Positional_Association: named association not used in aggregate
-t_style.adb:150:21: Error: Positional_Association: named association not used in aggregate
-t_style.adb:150:23: Error: Positional_Association: named association not used in aggregate
-t_style.adb:153:35: Error: Positional_Association: named association not used in aggregate
-t_style.adb:154:15: Error: Positional_Association: named association not used in aggregate
-t_style.adb:154:17: Error: Positional_Association: named association not used in aggregate
-t_style.adb:154:19: Error: Positional_Association: named association not used in aggregate
-t_style.adb:154:21: Error: Positional_Association: named association not used in aggregate
-t_style.adb:154:23: Error: Positional_Association: named association not used in aggregate
-t_style.adb:155:21: Error: Exposed: integer value 2 not allowed outside constant declaration
-t_style.adb:155:27: Error: Exposed: integer value 3 not allowed outside constant declaration
-t_style.adb:155:33: Error: Exposed: integer value 4 not allowed outside constant declaration
-t_style.adb:155:39: Error: Exposed: integer value 5 not allowed outside constant declaration
+t_style.adb:150:19: Error: Positional_Association: named association not used in record_aggregate
+t_style.adb:150:21: Error: Positional_Association: named association not used in record_aggregate
+t_style.adb:150:23: Error: Positional_Association: named association not used in record_aggregate
+t_style.adb:153:35: Error: Positional_Association: named association not used in record_aggregate
+t_style.adb:154:15: Error: Positional_Association: named association not used in array_aggregate
+t_style.adb:154:17: Error: Positional_Association: named association not used in array_aggregate
+t_style.adb:154:19: Error: Positional_Association: named association not used in array_aggregate
+t_style.adb:154:21: Error: Positional_Association: named association not used in array_aggregate
+t_style.adb:154:23: Error: Positional_Association: named association not used in array_aggregate
+t_style.adb:155:21: Error: Exposed: integer literal 2 not in allowed construct
+t_style.adb:155:27: Error: Exposed: integer literal 3 not in allowed construct
+t_style.adb:155:33: Error: Exposed: integer literal 4 not in allowed construct
+t_style.adb:155:39: Error: Exposed: integer literal 5 not in allowed construct
 t_style.adb:156:23: Error: Positional_Association: named association not used in call
 t_style.adb:162:7: Error: No_Closing_Name: name not repeated at the end
 t_style.adb:162:20: Found: No_Default_In: default IN mode used for parameter specification
 t_style.adb:169:7: Found: No_Closing_Name: name not repeated at the end
 t_style.adb:173:7: Found: No_Closing_Name: name not repeated at the end
 t_style.adb:178:7: Found: No_Closing_Name: name not repeated at the end
-t_style.adb:189:31: Error: Literals: number representation does not follow convention
-t_style.adb:191:31: Error: Literals: number representation does not follow convention
-t_style.adb:195:31: Error: Literals: number representation does not follow convention
-t_style.adb:201:31: Error: Literals: number representation does not follow convention
-t_style.adb:205:31: Error: Literals: number representation does not follow convention
-t_style.adb:213:32: Error: Not_Base_7: based representation not allowed
-t_style.adb:214:31: Error: Not_Base_13: based representation not allowed
-t_style.adb:221:31: Error: Base_16_Literals: number representation does not follow convention
-t_style.adb:223:32: Error: Not_Base_7: based representation not allowed
-t_style.adb:226:31: Error: Base_16_Literals: number representation does not follow convention
-t_style.adb:237:12: Error: Exposed: integer value 2 not allowed outside constant declaration
-t_style.adb:239:12: Error: Exposed: real value 2.0 not allowed outside constant declaration
-t_style.adb:242:26: Error: Spans: declaration does not start line
-t_style.adb:244:12: Error: Spans: declaration does not start line
-t_style.adb:246:21: Error: Spans: clause does not start line
-t_style.adb:262:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:268:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:274:20: Error: Spans: statement does not start line
-t_style.adb:275:26: Error: Spans: statement does not start line
-t_style.adb:277:22: Error: Spans: statement does not start line
-t_style.adb:278:22: Error: Spans: statement does not start line
+t_style.adb:205:64: Error: STYLE: Possible false negative: renaming of attribute
+t_style.adb:206:75: Error: STYLE: Possible false negative: renaming of predefined operation
+t_style.adb:209:10: Error: Renamed_Entity: I has been renamed at t_style.adb:204:10
+t_style.adb:210:10: Error: Renamed_Entity: Pack has been renamed at t_style.adb:203:10
+t_style.adb:210:20: Error: Renamed_Entity: F has been renamed at t_style.adb:202:10
+t_style.adb:226:31: Error: Literals: number representation does not follow convention
+t_style.adb:228:31: Error: Literals: number representation does not follow convention
+t_style.adb:232:31: Error: Literals: number representation does not follow convention
+t_style.adb:238:31: Error: Literals: number representation does not follow convention
+t_style.adb:242:31: Error: Literals: number representation does not follow convention
+t_style.adb:250:32: Error: Not_Base_7: based representation not allowed
+t_style.adb:251:31: Error: Not_Base_13: based representation not allowed
+t_style.adb:258:31: Error: Base_16_Literals: number representation does not follow convention
+t_style.adb:260:32: Error: Not_Base_7: based representation not allowed
+t_style.adb:263:31: Error: Base_16_Literals: number representation does not follow convention
+t_style.adb:290:12: Error: Exposed: integer literal 2 not in allowed construct
+t_style.adb:292:12: Error: Exposed: real literal 2.0 not in allowed construct
+t_style.adb:295:15: Error: Exposed: string literal "12345" not in allowed construct
+t_style.adb:296:17: Error: Exposed: string literal "12345" not in allowed construct
+t_style.adb:297:15: Error: Exposed: character literal 'A' not in allowed construct
+t_style.adb:301:26: Error: Spans: declaration does not start line
+t_style.adb:303:12: Error: Spans: declaration does not start line
+t_style.adb:305:21: Error: Spans: clause does not start line
+t_style.adb:321:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:327:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:333:20: Error: Spans: statement does not start line
+t_style.adb:334:26: Error: Spans: statement does not start line
+t_style.adb:336:22: Error: Spans: statement does not start line
+t_style.adb:337:22: Error: Spans: statement does not start line
 
 Counts summary:
 STYLE: 7

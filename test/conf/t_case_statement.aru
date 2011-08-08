@@ -1,6 +1,6 @@
-Min_Others_Range:    check  case_statement (min_others_range, 1);
-Min_Others_Range:    search case_statement (min_others_range, 100);
-Number_Empty_Others: count  case_statement (min_others_range, 1);
+Min_Others_Span:    check  case_statement (min_others_span, 1);
+Min_Others_Span:    search case_statement (min_others_span, 100);
+Number_Empty_Others: count  case_statement (min_others_span, 1);
 
 Max_Values:      check  case_statement (max_values, 10);
 Max_Values:      search case_statement (Max_Values, 3);
@@ -9,3 +9,10 @@ Number_big_case: count  case_statement (max_values, 100);
 Min_Paths:         check  case_statement (min_paths, 3);
 Min_Paths:         search case_statement (min_paths, 4);
 Number_small_case: count  case_statement (min_paths, 4);
+
+Range_Span:      check  case_statement (max_range_span, 5);
+Range_Span:      search case_statement (max_range_span, 4);
+Number_Big_Span: count  case_statement (max_range_span, 50);
+
+-- This rule calls uncheckable, but we have no example on how to trigger them
+check uncheckable;

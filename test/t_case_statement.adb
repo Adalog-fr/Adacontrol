@@ -13,24 +13,24 @@ begin
       case Integer_Subtype (Integer_Case) is          -- Max_Values check, Min_Paths OK
          when 10 .. 11 => null;
          when 12 .. 15 => null;
-         when 16 .. 20 => null;
-         when others => null;                         -- Others covers 0, check, count
+         when 16 .. 20 => null;                       -- Range_Span search
+         when others => null;                         -- Min_Others covers 0, check, count
       end case;
 
       case Integer_Subtype (Integer_Case) is          -- Max_Values check, Min_Paths check, count
-         when 10 .. 15 => null;
-         when others => null;                         -- Others covers 5, search
+         when 10 .. 15 => null;                       -- Range_Span Check
+         when others => null;                         -- Min_Others covers 5, search
       end case;
 
       case Integer_Subtype (Derived_Integer_Case) is  -- Max_Values check, Min_Paths check, count
-         when 10 .. 15 => null;
-         when others => null;                         -- Others covers 5, search
+         when 10 .. 15 => null;                       -- Range_Span check
+         when others => null;                         -- Min_Others covers 5, search
       end case;
 
-      case Derived_Integer_Case is                    -- Max_Values check, Min_Paths search, count
-         when 10 .. 99 => null;
+      case Derived_Integer_Case is                    -- Max_Values check, count, Min_Paths search, count
+         when 10 .. 99 => null;                       -- Range_Span check, count
          when 100 | 102 | 104 | 106 => null;
-         when others => null;                         -- Others covers 97, search
+         when others => null;                         -- Min_Others covers 97, search
       end case;
    end;
 
@@ -42,15 +42,15 @@ begin
 
       Mixed_Enumeration_Case : Mixed_Enumeration_Type := 'A';
    begin
-      case Mixed_Enumeration_Case is                  -- Max_Values search, Min_Paths search, count
-         when 'A' .. 'E' => null;
-         when Mixed_Enumeration_Non_Characters => null;
-         when others => null;                         -- Others covers 0, check, count
+      case Mixed_Enumeration_Case is                    -- Max_Values search, Min_Paths search, count
+         when 'A' .. 'E' => null;                       -- Range_Span found
+         when Mixed_Enumeration_Non_Characters => null; -- Range_Span found
+         when others => null;                           -- Min_Others covers 0, check, count
       end case;
 
       case Mixed_Enumeration_Case is                  -- Max_Values search, Min_Paths check, count
          when Mixed_Enumeration_Both_Types => null;
-         when others => null;                         -- Others covers 6, search
+         when others => null;                         -- Min_Others covers 6, search
       end case;
    end;
 
@@ -69,18 +69,18 @@ begin
          G_Mod_V  : G_Mod  := G_Mod'LAST;
       begin
          case G_Enum_V is                             -- Min_Paths check, count
-            when others => null;                      -- Others covers unknown
+            when others => null;                      -- Min_Others covers unknown
          end case;
 
          case G_Int_V is                              -- Min_Paths check, count
-            when 10 .. 15 => null;
-            when others => null;                      -- Others covers unknown
+            when 10 .. 15 => null;                    -- Range_Span check
+            when others => null;                      -- Min_Others covers unknown
          end case;
 
          case G_Mod_V is                              -- Min_Paths check, count
-            when 200 .. 255 |
-              0 .. 198 => null;
-            when others => null;                      -- Others covers unknown
+            when 200 .. 255 |                         -- Range_Span check, count
+              0 .. 198 => null;                       -- Range_Span check, count
+            when others => null;                      -- Min_Others covers unknown
          end case;
       end G_Inner;
    begin
@@ -99,7 +99,7 @@ begin
    begin
       case I is                                       -- Min_Paths check, count
          when 1..3 => null;
-         when others => null;                         -- Others covers 17, search
+         when others => null;                         -- Min_Others covers 17, search
       end case;
    end;
 
@@ -109,13 +109,13 @@ begin
       A : constant := 20;
       B : constant Integer := 30;
    begin
-      case I is                                       -- Max_Values check
-         when Integer'First .. Integer'Pred (-10) => null;
-         when -9 .. 0 => null;
-         when 1+2 .. 5+3 => null;
+      case I is                                             -- Max_Values check, count
+         when Integer'First .. Integer'Pred (-10) => null;  -- Range_Span check, count
+         when -9 .. 0 => null;                              -- Range_Span check
+         when 1+2 .. 5+3 => null;                           -- Range_Span check
          when A .. B => null;
-         when 40 .. Integer'Last => null;
-         when others => null;                         -- Others covers 23, search
+         when 40 .. Integer'Last => null;                   -- Range_Span check, count
+         when others => null;                               -- Min_Others covers 23, search
       end case;
    end;
 

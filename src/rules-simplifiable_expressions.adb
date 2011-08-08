@@ -70,7 +70,7 @@ package body Rules.Simplifiable_expressions is
    type Usages is array (To_Check) of Usage_Entry;
 
    Context   : array (Rule_Types) of Usages;
-   Rule_Used : Boolean;
+   Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
    ----------
@@ -456,7 +456,7 @@ package body Rules.Simplifiable_expressions is
                            LP := Prefix (LP);
                            UP := Prefix (UP);
 
-                        when An_Explicit_Dereference =>
+                        when A_Function_Call | An_Explicit_Dereference =>
                            -- Certainly not static
                            return;
 

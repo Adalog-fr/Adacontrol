@@ -1,12 +1,11 @@
 <?xml version="1.0" ?>
 
 <!--  This file adds support for AdaControl -->
-
 <AdaControl>
  
  <!--  Rules syntax -->
  <Language>
-  <Name>AdaControl Rules File</Name>
+  <Name>AdaControl</Name>
   <Extension>.aru</Extension>
   <Keywords>^(check|clear|count|go|help|inhibit|message|quit|search|source|set)\b</Keywords>
 
@@ -20,19 +19,9 @@
 
   <Categories>
    <Category>
-    <Name>entry</Name>
-    <Pattern>^[ \t]*(\w+)[ \t]*:</Pattern>
-    <Index>1</Index>
-   </Category>
-   <Category>
-    <Name>namespace</Name>
-    <Pattern>(check|search)[ \t]+(\w+)</Pattern>
-    <Index>2</Index>
-   </Category>
-   <Category>
-    <Name>type</Name>
-    <Pattern>(check|search)</Pattern>
-    <Index>1</Index>
+    <Name>procedure</Name>
+    <Pattern>^[ \t]*((\w+|".*"):)[ \t]*?(check|search|count)[ \t]+(\w+)</Pattern>
+    <Index>4</Index>
    </Category>
   </Categories>
 
@@ -46,78 +35,97 @@
                type="boolean" 
                tip="Delete all tree files after each run of AdaControl"/>
 
- <!--  Attributes  -->
-  <project_attribute
-      name="Rules_File"
-      package="Ide"
-      editor_page="Library"
-      editor_section="AdaControl"
-      description="Name of the file containing the rules to control" 
-      label="Rules file" >
+ <preference name="delete-ali"
+               page="AdaControl"
+               label="Delete .ali files with tree files"
+               default="False"
+               type="boolean" 
+               tip="Delete also .ali files whenever the tree files are deleted"/>
 
-      <string type="file" />
-  </project_attribute>
+ <preference name="separate-rules"
+               page="AdaControl"
+               label="Use separate categories"
+               default="False"
+               type="boolean" 
+               tip="Make a category for each rule in the locations window"/>
 
-  <project_attribute
-      name="Units_File"
-      package="Ide"
-      editor_page="Library"
-      editor_section="AdaControl"
-      description="Name of the file containing the project's units" 
-      label="Units file" >
-
-      <string type="file" />
-  </project_attribute>
+<preference name="help-format"
+               page="AdaControl"
+               label="Help on rule"
+               default="0"
+               type="choices" >
+  <choice>Pop-up</choice>
+  <choice>User Guide</choice>
+</preference>
 
 
- <!--  Tools  -->
+ <!--  Tool  -->
  <tool name="AdaControl" package="Ide">
   <language>Ada</language>
-  <switches lines="3" columns="1" separator="&#32;">
 
-   <title line="1" column="1"> Processing </title>
-   <check label="Recursive mode" switch="-r" line="1" column="1"
+  <switches lines="4" columns="1" separator="&#32;">
+   <title line="1" column="1"> Files </title>
+   <field line="1" column="1" 
+     label="Rules file" switch="-f" separator="&#32;" as-file="true" />
+   <field line="1" column="1" 
+     label="Units file" switch="@" separator="" as-file="true" />
+
+   <title line="2" column="1"> Processing </title>
+   <check line="2" column="1" label="Recursive mode" switch="-r" 
     tip="Process recursively all units the given units depend on"/>
-   <check label="Ignore local deactivation" switch="-i" line="1" column="1"
+   <check line="2" column="1" label="Ignore local deactivation" switch="-i"
     tip="Ignore local deactivation tags in source file"/>
-   <check label="Process specs only" switch="-s" line="1" column="1"/>
-   <check label="Compilation unit mode" switch="-u" line="1" column="1"
+   <check line="2" column="1" label="Process specs only" switch="-s"/>
+   <check line="2" column="1" label="Compilation unit mode" switch="-u"
     tip="Treat all source names as compilation units even if they look like file names"/>
 
-   <title line="2" column="1"> Output </title>
-   <check label="Display only errors" switch="-E" line="2" column="1"
+   <title line="3" column="1"> Output </title>
+   <check line="3" column="1" label="Display only errors" switch="-E"
     tip="Print only errors (Check)"/>
-   <check label="Warnings as errors" switch="-e" line="2" column="1"
+   <check line="3" column="1" label="Warnings as errors" switch="-e"
     tip="Treat warnings (Search) as errors (Check)"/>
-   <combo label="Statistics" switch="-S" noswitch="0" line="2" column="1" 
+   <combo line="3" column="1" label="Statistics" switch="-S" noswitch="0" 
     tip="Define the statistics displayed in the Message window at the end or the run">
     <combo-entry label="None"                      value="0" />
     <combo-entry label="Errors and warnings count" value="1" />
     <combo-entry label="Report untriggered rules"  value="2" />
     <combo-entry label="Full rules statistics"     value="3" />
    </combo>
+   <radio line="3" column="1">
+     <radio-entry label="Send results to GPS" 
+        tip="Send the output to the locations window in GPS"/>
+     <radio-entry label="Send results to File"  
+        tip="Send the output to a file (file name below is required)"
+        switch="-NOGPS" />
+   </radio>
+   <field line="3" column="1" 
+     label="File name" switch="-o" separator="&#32;" as-file="true" />
+   <combo line="3" column="1" label="File format" switch="-F" noswitch="0"
+    tip="Define the output format when destination is file">
+    <combo-entry label="Gnat, short file names"   value="gnat_short" />
+    <combo-entry label="Gnat, long file names"    value="gnat" />
+    <combo-entry label="CSV, short file names"    value="csv_short" />
+    <combo-entry label="CSV, long file names"     value="csv" />
+    <combo-entry label="CSVX, short file names"   value="csvx_short" />
+    <combo-entry label="CSVX, long file names"    value="csvx" />
+    <combo-entry label="Source, short file names" value="source_short" />
+    <combo-entry label="Source, long file names"  value="source" />
+   </combo>
 
-   <title line="3" column="1"> Debug </title>
-   <check label="Debug messages" switch="-d" line="3" column="1"
+   <title line="4" column="1"> Debug </title>
+   <check line="4" column="1" label="Debug messages" switch="-d"
     tip="Displays debug information (not useful for normal user)"/>
-   <check label="Halt on error" switch="-x" line="3" column="1"
+   <check line="4" column="1" label="Halt on error" switch="-x"
     tip="Terminate AdaControl if a fatal error is encountered"/>
   </switches> 
  </tool>
 
 
  <!--  Actions  -->
- <action name="Check_Project" show-command="false" output="none">
-  <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
-  <shell>MDI.save_all False</shell>  
-  <shell>Locations.remove_category AdaControl</shell>
-  <shell>MDI.get "Messages"</shell>
-  <shell>MDIWindow.raise_window %1</shell>
-  <shell>Project %P</shell>
-  <shell>Project.get_tool_switches_as_string %1 AdaControl</shell>
-  <shell>Project.get_attribute_as_string %2 rules_file Ide</shell>
-  <shell lang="Python">adactl.Project_units()</shell>
-  <shell lang="python">adactl.Ioptions()</shell>
+<action name="AdaControl" show-command="false" output="none">
+  <shell lang="python">adactl.pre_clean()   </shell>
+  <shell lang="python">adactl.command_name()</shell>
+  <shell lang="python">adactl.options()     </shell>
   <external 
       show-command="true" 
       output=""
@@ -125,85 +133,122 @@
       progress-current="1"
       progress-final="2"
       progress-hide="false">
-  adactl -v %4 -f %3 %2 -- %1
+  %2 $1 $2 %1
   </external>
   <on-failure> 
     <shell lang="python">adactl.parse ("""%1 """) </shell> 
-    <shell lang="python">adactl.clean_up() </shell>
+    <shell lang="python">adactl.post_clean() </shell>
   </on-failure>
   <shell lang="python">adactl.parse ("""%1 """) </shell> 
-  <shell lang="python">adactl.clean_up() </shell>
+  <shell lang="python">adactl.post_clean() </shell>
  </action>
 
- <action name="Check_Units" show-command="false" output="none">
-  <filter_and> 
-    <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
-    <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
-  </filter_and>
-  <shell>MDI.save_all False</shell>  
-  <shell>Locations.remove_category AdaControl</shell>
-  <shell>MDI.get "Messages"</shell>
-  <shell>MDIWindow.raise_window %1</shell>
+<action name="AdaControl_File" show-command="false" output="none">
+  <shell lang="Python">adactl.get_rules_file()</shell>
+  <shell>execute_action AdaControl $1 "-f %1"</shell>
+</action>
+
+<action name="AdaControl_Ask" show-command="false" output="none">
   <shell>Project %P</shell>
-  <shell>Project.get_tool_switches_as_string %1 AdaControl</shell>
-  <shell>Project.get_attribute_as_string %2 rules_file Ide</shell>
-  <shell>Project.get_attribute_as_string %3 units_file Ide</shell>
-  <shell lang="python">adactl.Ioptions()</shell>
-  <external 
-      show-command="true" 
-      output=""
-      progress-regexp="^\((\d+)/(\d+)\)"
-      progress-current="1"
-      progress-final="2"
-      progress-hide="false">
-  adactl -v %4 -f %3 @%2 -- %1
-  </external>
-  <on-failure> 
-    <shell lang="python">adactl.parse ("""%1 """) </shell> 
-    <shell lang="python">adactl.clean_up() </shell>
-  </on-failure>
-  <shell lang="python">adactl.parse ("""%1 """) </shell> 
-  <shell lang="python">adactl.clean_up() </shell>
- </action>
+  <shell>MDI.input_dialog "Single rule check" "Rule"</shell>
+  <shell lang="Python">adactl.check_empty("%1")</shell>
+  <shell>execute_action AdaControl $1 "-l \"%2\""</shell>
+</action>
 
- <action name="Check_File" show-command="false" output="none">
+ <action name="Check_File_File" show-command="false" output="none">
   <filter_and> 
     <filter language="ada" />
     <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
   </filter_and>
+
+  <shell>execute_action AdaControl_File %F</shell>
+ </action>
+
+ <action name="Check_File_File_Button" show-command="false" output="none">
+   <shell lang="Python">adactl.filter_check_file()</shell>
+   <shell>execute_action AdaControl_File %F</shell>
+ </action>
+
+<action name="Check_Project_File" show-command="false" output="none">
+  <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+  <shell lang="Python">adactl.Project_units()</shell>
+  <shell>execute_action AdaControl_File %1</shell>
+  <shell>execute_action Check_File_File</shell>
+</action>
+
+ <action name="Check_Units_File" show-command="false" output="none">
+  <filter_and> 
+    <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
+    <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+  </filter_and>
+  <shell lang="Python">adactl.get_units_file()</shell>
+  <shell>execute_action AdaControl_File @%1</shell>
+ </action>
+
+ <action name="Check_File_Ask" show-command="false" output="none">
+  <filter language="ada" />
+  <shell>execute_action AdaControl_Ask %F</shell>
+ </action>
+
+<action name="Check_Project_Ask" show-command="false" output="none">
+  <shell lang="Python">adactl.Project_units()</shell>
+  <shell>execute_action AdaControl_Ask %1</shell>
+</action>
+
+ <action name="Check_Units_Ask" show-command="false" output="none">
+  <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
+  <shell lang="Python">adactl.get_units_file()</shell>
+  <shell>execute_action AdaControl_Ask @%1</shell>
+ </action>
+
+ <action name="Check_AdaCtl" show-command="false" output="none">
+  <filter language="AdaControl" />
   <shell>MDI.save_all False</shell>  
-  <shell lang="python">adactl.filter_check_file()</shell>
   <shell>Locations.remove_category AdaControl</shell>
   <shell>MDI.get "Messages"</shell>
   <shell>MDIWindow.raise_window %1</shell>
   <shell>Project %P</shell>
-  <shell>Project.get_tool_switches_as_string %1 AdaControl</shell>
-  <shell>Project.get_attribute_as_string %2 rules_file Ide</shell>
-  <shell lang="python">adactl.Ioptions()</shell>
   <external 
       show-command="true" 
       output="">
-  adactl -v %3 -f %2 %F -- %1 
+  adactl -C -v -f %F 
   </external>
   <on-failure> 
     <shell lang="python">adactl.parse ("""%1 """) </shell> 
-    <shell lang="python">adactl.clean_up() </shell>
   </on-failure>
   <shell lang="python">adactl.parse ("""%1 """) </shell> 
-  <shell lang="python">adactl.clean_up() </shell>
+ </action>
+
+ <action name="Get_Units" show-command="false" output="none">
+  <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
+  <shell lang="python">adactl.get_units_file()</shell>
+  <shell> File %1</shell>
+  <shell> EditorBuffer.get %1</shell>
+  <shell> EditorBuffer.views %1</shell>
+  <shell> MDI.get_by_child %1</shell>
+  <shell> MDIWindow.raise_window %1</shell>
+ </action>
+
+ <action name="Get_Rules" show-command="false" output="none">
+  <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+  <shell lang="python">adactl.get_rules_file()</shell>
+  <shell> File %1</shell>
+  <shell> EditorBuffer.get %1</shell>
+  <shell> EditorBuffer.views %1</shell>
+  <shell> MDI.get_by_child %1</shell>
+  <shell> MDIWindow.raise_window %1</shell>
  </action>
 
  <action name="Del_Tree" show-command="false" output="none">
   <shell lang="python">adactl.del_tree(confirm=True)</shell>
  </action>
 
- <action name="Create_adp" show-command="false" output="none">
+ <action name="Create_adp" show-command="false" output="">
   <shell lang="python">adactl.create_adp()</shell>
  </action>
 
  <action name="Help_Rule" show-command="false" output="none">
-   <shell>MDI.input_dialog "AdaControl Help" "Give one or several rule names (leave empty for a list of rules)"</shell>
-   <external>adactl -h %1</external>
+   <external>adactl -h $1</external>
    <on-failure> 
      <shell>MDI.dialog """%1 """</shell>
    </on-failure>
@@ -216,29 +261,59 @@
   <title>/Help/AdaControl</title>
 </submenu>
 
-<menu action="Check_File">
-   <title>Tools/AdaControl/Control Current File</title>
-</menu>
- 
-<menu action="Check_Project">
-   <title>Tools/AdaControl/Control Root Project</title>
-</menu>
- 
-<menu action="Check_Units">
-   <title>Tools/AdaControl/Control Units from List</title>
-</menu>
- 
-<menu action="Del_Tree">
-   <title>Tools/AdaControl/Delete Tree Files</title>
-</menu>
- 
-<menu action="Create_adp">
-   <title>Tools/AdaControl/Create .adp project</title>
-</menu> 
+<submenu before="Help">
+  <title>/AdaControl</title>
 
-<menu action="Help_Rule">
-   <title>Help/AdaControl/Help on rule</title>
-</menu> 
+  <menu action="Check_File_File">
+     <title>Control Current File (rules file)</title>
+  </menu>
+ 
+  <menu action="Check_Project_File">
+     <title>Control Root Project (rules file)</title>
+  </menu>
+ 
+  <menu action="Check_Units_File">
+     <title>Control Units from List (rules file)</title>
+  </menu>
+
+  <menu />
+
+  <menu action="Check_File_Ask">
+     <title>Control Current File (single rule)</title>
+  </menu>
+ 
+  <menu action="Check_Project_Ask">
+     <title>Control Root Project (single rule)</title>
+  </menu>
+ 
+  <menu action="Check_Units_Ask">
+     <title>Control Units from List (single rule)</title>
+  </menu>
+
+  <menu />
+
+  <menu action="Check_AdaCtl">
+     <title>Check Rules File Syntax</title>
+  </menu>
+ 
+  <menu action="Get_Rules">
+     <title>Open rules file</title>
+  </menu>
+ 
+  <menu action="Get_Units">
+     <title>Open units file</title>
+  </menu>
+ 
+  <menu />
+
+  <menu action="Del_Tree">
+     <title>Delete Tree Files</title>
+  </menu>
+ 
+  <menu action="Create_adp">
+     <title>Create .adp project</title>
+  </menu> 
+</submenu>
 
 <!--  Documentation  -->
 

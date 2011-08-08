@@ -1,0 +1,16 @@
+t_max_parameters.adb:1:29: Error: MAX_PARAMETERS: more than 2 parameters in procedure ( 5)
+t_max_parameters.adb:3:18: Error: MAX_PARAMETERS: more than 2 parameters in procedure ( 3)
+t_max_parameters.adb:9:18: Found: MAX_PARAMETERS: more than 1 parameters in procedure ( 2)
+t_max_parameters.adb:14:17: Found: MAX_PARAMETERS: more than 1 parameters in function ( 2)
+t_max_parameters.adb:26:17: Error: MAX_PARAMETERS: more than 4 parameters in protected_entry ( 6)
+t_max_parameters.adb:27:17: Found: MAX_PARAMETERS: more than 1 parameters in protected_entry ( 3)
+t_max_parameters.adb:28:22: Error: MAX_PARAMETERS: more than 4 parameters in protected_procedure ( 6)
+t_max_parameters.adb:29:22: Found: MAX_PARAMETERS: more than 2 parameters in protected_procedure ( 3)
+t_max_parameters.adb:30:21: Error: MAX_PARAMETERS: more than 4 parameters in protected_function ( 6)
+t_max_parameters.adb:31:21: Found: MAX_PARAMETERS: more than 2 parameters in protected_function ( 3)
+t_max_parameters.adb:61:17: Error: MAX_PARAMETERS: more than 4 parameters in task_entry ( 6)
+t_max_parameters.adb:71:19: Error: MAX_PARAMETERS: more than 2 parameters in procedure ( 3)
+t_max_parameters.adb:77:4: Error: MAX_PARAMETERS: more than 2 parameters in procedure ( 3)
+
+Counts summary:
+MAX_PARAMETERS: 5

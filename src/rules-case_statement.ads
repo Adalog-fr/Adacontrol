@@ -35,13 +35,12 @@ with
 
 package Rules.Case_Statement is
 
-   -- This rule can be used to check/search that ""when others"" in case statements
-   -- cover at least the provided number of values
-   -- Parameter: <minimum number of values allowed for others>");
-
    Rule_Id : Constant Wide_String := "CASE_STATEMENT";
 
-   -- Statement_Kind = A_Case_Statement
    procedure Process_Case_Statement (Statement : Asis.Statement);
+   -- Statement_Kind (Statement)= A_Case_Statement
+
+   procedure Process_Path (Path : Asis.Path);
+   -- Path_Kind (Path) = A_Case_Path
 
 end Rules.Case_Statement;

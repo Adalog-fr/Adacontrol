@@ -1,17 +1,17 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.5r24
+@settitle AdaControl Programmer Manual V1.6r4
 @c %**end of header
 
 @titlepage
 @title AdaControl Programmer Manual
-     
+
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
 @end titlepage
-     
+
 @ifnottex
 @node Top, General, (dir), (dir)
 @top AdaControl Programmer Manual
@@ -23,13 +23,13 @@ This is the AdaControl Programmer Manual. It is intended for those who
 want to add new rules to AdaControl. Reading this manual is not
 necessary to use AdaControl. On the other hand, it is assumed that the
 reader knows how to use AdaControl before thinking of adding new rules.
-     
+
 @menu
-* General::                     
-* The framework and utilities packages::  
-* Writing a new rule::          
-* Plugging-in a new rule into the framework::  
-* Testing and debugging a rule::  
+* General::
+* The framework and utilities packages::
+* Writing a new rule::
+* Plugging-in a new rule into the framework::
+* Testing and debugging a rule::
 @end menu
 
 Commercial support is available for AdaControl. If you plan to use
@@ -49,7 +49,7 @@ should have received a copy of the GNU General Public License
 distributed with this program; see file COPYING.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
-                                                                  
+
 As a special exception, if other files instantiate generics from this
 program, or if you link units from this program with other files to
 produce an executable, this does not by itself cause the resulting
@@ -76,7 +76,7 @@ that the reader has some familiarity with ASIS programming.
 The AdaControl tool includes several main components. Those that are
 relevant for writing new rules are:
 @itemize @bullet
-@item 
+@item
 A general @i{framework} that provides services that are necessary to
 write rules. This includes a special module, @code{Framework.Plugs},
 where rules are plugged-in;
@@ -85,7 +85,7 @@ A set of @i{utilities} providing useful functionalities, but not
 specific to the writing of rules. Actually, the utilities packages are
 shared with other programs from Adalog's ``Semtools'' family of tools.
 @item
-The @i{rules} themselves. 
+The @i{rules} themselves.
 @end itemize
 
 This clear distinction makes it easy to add new rules. Actually, the
@@ -119,17 +119,17 @@ package. Existing rules are also typical examples of how to use these
 functionnalities.
 
 @menu
-* The package Framework::       
-* The package Framework.Rules_Manager::  
-* The package Framework.Reports::  
-* The package Framework.Language::  
-* The package Framework.Scope_Manager::  
-* The package Framework.Plugs::  
-* The package Rules::           
-* The package Utilities::       
-* The package Thick_Queries::   
-* The packages Linear_Queue and Binary_Map::  
-* The package A4G_Bugs::        
+* The package Framework::
+* The package Framework.Rules_Manager::
+* The package Framework.Reports::
+* The package Framework.Language::
+* The package Framework.Scope_Manager::
+* The package Framework.Plugs::
+* The package Rules::
+* The package Utilities::
+* The package Thick_Queries::
+* The packages Linear_Queue and Binary_Map::
+* The package A4G_Bugs::
 @end menu
 
 @node The package Framework, The package Framework.Rules_Manager, The framework and utilities packages, The framework and utilities packages
@@ -161,7 +161,7 @@ check with label @code{Strictly_Forbidden}.
 @node The package Framework.Rules_Manager, The package Framework.Reports, The package Framework, The framework and utilities packages
 @section The package Framework.Rules_Manager
 The package @code{Framework.Rules_Manager} is used to register and
-manage rules. 
+manage rules.
 
 The procedure  @code{Register} declares the name of the rule and the
 associated @code{Help}, @code{Add_Use}, @code{Command},
@@ -181,20 +181,54 @@ messages when a rule matches. It deals automatically with things like
 rules being temporarily disabled, therefore the rule does not have to
 care.
 
-The only procedure of interest for writing rules is @code{Report}. The
-specification of the Report procedure is:
+The main service provided by this package is the @code{Report} procedure,
+which come in two flavors. This is the only allowed way for a rule to
+report its findings, never use @code{Wide_Text_IO} or any other
+mean. The specifications of the Report procedures are:
 
 @example
-@b{procedure} Report (Rule_Id   : @b{in} Wide_String;            
-                  Rule_Type : @b{in} Rules.Rule_Types;                 
-                  Loc       : @b{in} Rules.Location;                 
-                  Msg       : @b{in} Wide_String);
+@b{procedure} Report (Rule_Id    : @b{in} Wide_String;
+                  Rule_Label : @b{in} Wide_String;
+                  Rule_Type  : @b{in} Rules.Rule_Types;
+                  Loc        : @b{in} Rules.Location;
+                  Msg        : @b{in} Wide_String);
+
+@b{procedure} Report (Rule_Id    : @b{in} Wide_String;
+                     Context    : @b{in} Root_Context'class;
+                     Loc        : @b{in} Location;
+                     Msg        : @b{in} Wide_String;
+                     Count_Only : @b{in} Boolean := False);
 @end example
+
+The first procedure expects the label and type to be given
+explicitely, while the second one gets them from a @code{Context}
+object (see comments in the package).  If @code{Count_Only} is
+@code{True}, the message is not issued, but simply counted for the
+statistics. This is useful to avoid redundant messages in some cases,
+while keeping the number of detections accurate. See an example of
+this in @code{Rules.Pragmas}.
+
 Note that there is only one string for the message. Please do not try
 to ``improve'' the presentation by introducing line breaks in the
 report message: the output of AdaControl should remain parseable by
 rather naive tools, therefore it is necessary to ensure that one
 output line = one message.
+
+In addition, there is an @code{Uncheckable} procedure, with the following profile:
+@example
+   @b{procedure} Uncheckable (Rule_Id : @b{in} Wide_String;
+                          Risk    : @b{in} Uncheckable_Consequence;
+                          Loc     : @b{in} Location;
+                          Msg     : @b{in} Wide_String);
+@end example
+This procedure is called each time a rule encounters some dynamic
+construct that prevents normal checking. The parameter @code{Risk} is
+@code{False_Positive} if the consequence of not being able to analyze
+the construct would result in wrong error messages, and
+@code{False_Negative} if it would result in not detecting something
+that could be an error. It is important to call this procedure for any
+non-checkable construct, since it is what allows the rule
+``Uncheckable'' to work.
 
 @node The package Framework.Language, The package Framework.Scope_Manager, The package Framework.Reports, The framework and utilities packages
 @section The package Framework.Language
@@ -211,7 +245,7 @@ functions. The two former functions return the parameter as an
 returns an entity specification, i.e. a descriptor for something which
 is expected to be a general specification for an Ada entity (including
 overloading information, for example). Such an entity can be used as a
-key for a context. 
+key for a context.
 
 There is a @code{Get_Modifier} to process modifiers (things like
 ``not'' or ``case_sensitive'' in front of a parameter).
@@ -270,7 +304,7 @@ This package provides various general facilities that are not specific
 to AdaControl. The main elements provided are:
 
 @itemize
-@item 
+@item
 @code{User_Message} and @code{User_Log}. Both procedure output a
 message, the difference being that @code{User_Log} outputs its message
 only in verbose mode. @code{User_Message} is used to print help
@@ -421,7 +455,7 @@ Note that from a language point of view, this declaration could be in
 the body of the package; however, for identification purposes, it is
 more convenient to put it in the specification.
 
-@subsection Process 
+@subsection Process
 One (or more) procedure(s) may be necessary to process the rule
 (collectively named the @code{Process} procedures in this
 document). These procedures are called from @code{Framework.Plugs} at
@@ -446,7 +480,7 @@ line, and the corresponding location.
 --    A_Pragma
 
 -- Textual rule:
-@b{procedure} Process_Line (Line : @b{in} Asis.Program_Text; 
+@b{procedure} Process_Line (Line : @b{in} Asis.Program_Text;
                        Loc  : @b{in} Framework.Location);
 @end example
 
@@ -474,12 +508,14 @@ for the rule. It must display a useful message by calling
 for all rules, the message must be structured as follows:
 
 @itemize @bullet
-@item 
-The word ``Rule:'' followed by the rule ID
-@item 
-The word ``Parameters:'' followed by a description of parameters
-@item 
-A helpful message describing the purpose of the rule
+@item
+The word ``Rule:'' followed by the rule ID.
+@item
+The word ``Parameters:'' followed by a description of parameters. Note that if
+you have a parameter of an enumerated type, the package @code{Flag_Utilities}
+features a @code{Help_On_Flag} procedure that formats automatically the values.
+@item
+A helpful message describing the purpose of the rule.
 @end itemize
 
 Ex:
@@ -671,6 +707,9 @@ The only output of a rule should be by calling
 @code{Report}. Especially, no rule should use @code{Wide_Text_IO}
 directly.
 @item
+If your rule encounters a dynamic construct that prevents normal checking,
+call @code{Framework.Reports.Uncheckable} to warn the user.
+@item
 The framework should be sufficient for all your needs. If you have a
 special need that you think cannot be satisfied by the current
 framework, get in touch with us and we'll discuss it.
@@ -684,6 +723,12 @@ the returned expression to see if its @code{Expression_Kind} is
 
 When designing a rule, consider the implications of renamings and
 generics.
+
+If you want to output the Element_Image of some element, beware that
+it will be preceded by spaces. Do not use
+@code{Ada.Strings.Wide_Fixed.Trim} to get eliminate them, since it
+wont remove tab characters. Use @code{Utilities.trim_all}, which will
+do the right thing.
 
 @subsection Using ASIS efficiently.
 Remember that ASIS queries can be costly. Declare local variables (or
@@ -717,9 +762,9 @@ and do your own analysis, depending on whether the returned
 @chapter Plugging-in a new rule into the framework
 
 @menu
-* Normal case::                 
-* Specific rules::              
-* User documentation::          
+* Normal case::
+* Specific rules::
+* User documentation::
 @end menu
 
 @node Normal case, Specific rules, Plugging-in a new rule into the framework, Plugging-in a new rule into the framework
@@ -786,8 +831,8 @@ Ex:
    @b{use} Asis;
    @b{use} Asis.Elements;
 @b{begin}
-   @b{case} Element_Kind (Element) @b{is}     
-      @b{when} A_Pragma =>        
+   @b{case} Element_Kind (Element) @b{is}
+      @b{when} A_Pragma =>
          Rules.Pragmas.Process_Pragma (Element);
        ...
 @b{end} Pre_Procedure;
@@ -852,9 +897,9 @@ you need will be quite straightforward to understand.
 @chapter Testing and debugging a rule
 
 @menu
-* Testing::                     
-* Debugging aids::              
-* Integrating the test in the test suite::  
+* Testing::
+* Debugging aids::
+* Integrating the test in the test suite::
 @end menu
 
 @node Testing, Debugging aids, Testing and debugging a rule, Testing and debugging a rule
@@ -871,6 +916,9 @@ care of selected names (we got trapped by this one several times)?
 Therefore, it is extremely important that you check your rule against
 as much code as you can, the minimum being the code of AdaControl itself.
 
+Note that if your rule encountered some uncheckable cases, your test file
+should include those cases, and the corresponding rules file should include
+a ``check uncheckable;''.
 @node Debugging aids, Integrating the test in the test suite, Testing, Testing and debugging a rule
 @section Debugging aids
 As mentionned above, it is often the case when writing a new rule, as
@@ -954,13 +1002,13 @@ diff test/ref/tfw_help.txt test/res/tfw_help.txt
 @end example
 and check that the only difference is the addition of the help message
 from your rule.
- 
+
 Do the following command:
 @example
 diff test/ref/tfw_check.txt test/res/tfw_check.txt
 @end example
 and check that the only difference is the addition of one ``No error
-found'' message.  
+found'' message.
 
 Then copy @code{test/res/tfw_help.txt} to the directory
 @code{test/ref/}.  Run @code{test.sh} again: it should print PASSED

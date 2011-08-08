@@ -114,10 +114,7 @@ package body Rules.Exception_Propagation is
       end if;
 
       if Is_Integer_Parameter then
-         Int_Value := Get_Integer_Parameter;
-         if Int_Value not in 0 .. 3 then
-            Parameter_Error ("Level must be 0 to 3");
-         end if;
+         Int_Value := Get_Integer_Parameter (Min => 0, Max => 3);
          Check_Level := Risk_Level'Val (Risk_Level'Pos (Always) - Int_Value);
       end if;
 
@@ -281,7 +278,7 @@ package body Rules.Exception_Propagation is
                   State   := Call_In_Declaration;
                when An_Identifier =>
                   Good_Name := Ultimate_Name (Element);
-                  if Is_Nil (Good_Name)  -- Dynamic renaming
+                  if Is_Nil (Good_Name)  -- Dynamic renaming (not Uncheckable since we know it is a variable)
                     or else Declaration_Kind (Corresponding_Name_Declaration (Element))
                     = A_Variable_Declaration
                   then
@@ -410,7 +407,8 @@ package body Rules.Exception_Propagation is
    ------------------
 
    procedure Process_Call (Call : Asis.Element) is
-      use Asis, Asis.Statements, Asis.Elements, Asis.Expressions, Thick_Queries;
+      use Asis, Asis.Statements, Asis.Elements, Asis.Expressions;
+      use Framework.Reports, Thick_Queries;
 
       -- Procedure to check if a 'Access or 'Address is encountered
       procedure Pre_Procedure (Element : in     Asis.Element;
@@ -419,7 +417,6 @@ package body Rules.Exception_Propagation is
       is
          pragma Unreferenced (Control);
          use Asis.Declarations;
-         use Framework.Reports;
          SP_Declaration : Asis.Declaration;
          Risk           : Risk_Level;
          Good_Prefix    : Asis.Expression;
@@ -435,10 +432,24 @@ package body Rules.Exception_Propagation is
             if Expression_Kind (Good_Prefix) = An_Explicit_Dereference
               or else Expression_Type_Kind (Good_Prefix) = An_Access_Type_Definition
             then
-               -- Explicit or implicit dereference: called subprogram is dynamic, nothing we can do
+               -- Explicit or implicit dereference: prefix subprogram is dynamic, nothing we can do
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Element),
+                            "Prefix of attribute is not statically determinable");
                return;
             end if;
-            SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name (Good_Prefix));
+            Good_Prefix := Ultimate_Name (Good_Prefix);
+            if Is_Nil (Good_Prefix) then
+               -- Dynamic renaming
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Element),
+                            "Prefix of attribute is not statically determinable");
+               return;
+            end if;
+
+            SP_Declaration := Corresponding_Name_Declaration (Good_Prefix);
 
             case Declaration_Kind (SP_Declaration) is
                when A_Procedure_Body_Declaration | A_Function_Body_Declaration =>
@@ -497,6 +508,7 @@ package body Rules.Exception_Propagation is
 
       if Is_Dispatching_Call (Call) then
          -- Improvement needed here, but it's quite difficult
+         Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
          return;
       end if;
 

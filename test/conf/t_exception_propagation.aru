@@ -15,4 +15,5 @@ task : check exception_propagation (task);
 
 declaration: check exception_propagation (3, declaration);
 
+check uncheckable;
 

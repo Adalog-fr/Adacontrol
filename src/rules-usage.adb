@@ -843,7 +843,7 @@ package body Rules.Usage is
 
    procedure Process_Identifier (Name : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Thick_Queries, Utilities;
+      use Framework.Reports, Thick_Queries, Utilities;
 
       Good_Name : Asis.Expression;
       Item      : Asis.Element;
@@ -887,6 +887,19 @@ package body Rules.Usage is
 
       if Is_Nil (Good_Name) then
          -- Target of a renaming not statically known
+         if Is_Part_Of_Instance (Name) then
+            -- Name may be an artificial name without a location
+            -- Put the message at the location of the instantiation
+            Uncheckable (Rule_Id,
+                         False_Negative,
+                         Get_Location (Ultimate_Enclosing_Instantiation (Name)),
+                         "Name """ & Name_Image(Name) & """is dynamic renaming");
+         else
+            Uncheckable (Rule_Id,
+                         False_Negative,
+                         Get_Location (Name),
+                         "Name is dynamic renaming");
+         end if;
          return;
       elsif Expression_Kind (Good_Name) = An_Attribute_Reference then
          -- Renaming of an attribute: certainly not defined in a package

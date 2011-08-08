@@ -102,18 +102,15 @@ package body Rules.Positional_Parameters is
 
       Key : Keys;
    begin
-      -----------------------
       if not Parameter_Exists then
          Parameter_Error ("Missing keyword ""insufficient"" or ""maximum"" for rule " & Rule_Id);
       end if;
       Key := Get_Flag_Parameter (Allow_Any => False);
-      -----------------------
 
       if Rule_Used (Key) (Rule_Type) then
          Parameter_Error ("Rule " & Rule_Id &
                           " can be specified only once for each combination of check-keyword");
       end if;
-      ------------------------
 
 
       case Key is
@@ -121,10 +118,7 @@ package body Rules.Positional_Parameters is
             if not Parameter_Exists then
                Parameter_Error ("Number of ""maximum"" parameters required for rule " & Rule_Id);
             end if;
-            Rule_Counts (Key, Rule_Type) := Get_Integer_Parameter;
-            if Rule_Counts (Key, Rule_Type) < 0 then
-               Parameter_Error ("Number of ""maximum"" parameters must be at least 0");
-            end if;
+            Rule_Counts (Key, Rule_Type) := Get_Integer_Parameter (Min => 1);
 
             if Parameter_Exists then
                Parameter_Error ("Too many parameters for rule " & Rule_Id);
@@ -134,10 +128,7 @@ package body Rules.Positional_Parameters is
             if not Parameter_Exists then
                Parameter_Error ("Number of ""insufficient"" parameters required for rule " & Rule_Id);
             end if;
-            Rule_Counts (Key, Rule_Type) := Get_Integer_Parameter;
-            if Rule_Counts (Key, Rule_Type) < 0 then
-               Parameter_Error ("Number of ""insufficient"" parameters must be at least 0");
-            end if;
+            Rule_Counts (Key, Rule_Type) := Get_Integer_Parameter (Min => 0);
 
             while Parameter_Exists loop
                declare

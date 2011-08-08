@@ -47,14 +47,14 @@ else
     mkdir $OUTPUT_DIR
 fi
 
-put_line_line 
-put_title_line 
+put_line_line
+put_title_line
 put_title_line "`${ADACTL} -h 2>&1 | grep ADACTL`"
-put_title_line 
+put_title_line
 put_title_line VALIDATION
-put_title_line 
+put_title_line
 put_title_line "$(date)"
-put_title_line 
+put_title_line
 put_line_line
 
 #
@@ -74,17 +74,17 @@ ${ADACTL} -h all > ${OUTPUT_DIR}/${test_case}.txt 2>&1
 test_case=tfw_rule_off
 nb_fw=$((nb_fw+1))
 ${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb 
+    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb
 
 test_case=tfw_rule_off_ignored
 nb_fw=$((nb_fw+1))
 ${ADACTL} -vwi -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb 
+    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb
 
 test_case=tfw_inhibit
 nb_fw=$((nb_fw+1))
 ${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb 
+    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb
 
 echo "--- Syntax check test"
 test_case=tfw_check
@@ -109,7 +109,7 @@ test_case=tfw_stress
 nb_fw=$((nb_fw+1))
 list=`find ./ -name "t_*.adb" ! -name "x_*.ads" ! -name "x_*.adb" ! -name "*-*" -printf "%P "`
 find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -vwd -f - $list \
-   1> ${OUTPUT_DIR}/${test_case}.txt 2>&1 
+   1> ${OUTPUT_DIR}/${test_case}.txt 2>&1
 result=$?
 if [ $result -le 1 ]; then
    echo "PASSED"
@@ -119,7 +119,7 @@ else
 fi
 
 #
-# Rules test. All tests are of the form t_<rule name>.ad[bs], 
+# Rules test. All tests are of the form t_<rule name>.ad[bs],
 # but do not take separate and child units
 #
 
@@ -142,7 +142,7 @@ popd 1>/dev/null
 nb_passed=0
 nb_failed=0
 put_line_line
-put_title_line "Test result for $nb_rules rules, $nb_fw framework tests" 
+put_title_line "Test result for $nb_rules rules, $nb_fw framework tests"
 put_line_line
 for test_case in $list; do
     diff=`diff --strip-trailing-cr $OUTPUT_DIR/${test_case} $REF_DIR/${test_case} 2>&1 `

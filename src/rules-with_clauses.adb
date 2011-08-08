@@ -13,6 +13,7 @@
 --  General Public License distributed  with this program; see file --
 --  COPYING.   If not, write  to the  Free Software  Foundation, 59 --
 --  Temple Place - Suite 330, Boston, MA 02111-1307, USA.           --
+--                                                                  --
 --  As  a special  exception, if  other files  instantiate generics --
 --  from the units  of this program, or if you  link this unit with --
 --  other files  to produce  an executable, this  unit does  not by --

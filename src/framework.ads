@@ -78,8 +78,12 @@ package Framework is
    -------------------------------------------------------------------
 
    type Rule_Index is range 0 ..  Max_Identical_Rules;
+   type Rule_Index_Set is array (Rule_Index range 1 .. 32) of Boolean; -- Purposedly limited
+   pragma Pack (Rule_Index_Set);
+
    type Rule_Types is (Check, Search, Count);
    type Rule_Types_Set is array (Rule_Types) of Boolean;
+   pragma Pack (Rule_Types_Set);
 
 
    -------------------------------------------------------------------
@@ -129,6 +133,8 @@ package Framework is
    -- the specification of an Ada entity in the command language
 
    type Entity_Specification is private;
+   Null_Entity : constant Entity_Specification;
+
    function Image   (Entity : in Entity_Specification) return Wide_String;
    function Value   (Name   : in Wide_String)          return Entity_Specification;
    function Is_Box  (Entity : in Entity_Specification) return Boolean;
@@ -196,6 +202,7 @@ package Framework is
                                 Context : in     Root_Context'Class);
    -- If a default context is defined, it will be returned by Matching_Context if
    -- the name is not matched, instead of No_Matching_Context.
+   -- Already_In_Store is raised if a default is already associated
 
    function Matching_Context (Into : in Context_Store;
                               Name : in Asis.Element) return Root_Context'Class;
@@ -239,6 +246,7 @@ package Framework is
                           Specification : in Entity_Specification) return Root_Context'Class;
    -- Returns the first Context associated to the specification
    -- (currently used only for non-additive associations; this may change in the future)
+   --  Returns the default (or No_Matching_Context) when not found
 
    procedure Dissociate (From          : in out Context_Store;
                          Specification : in     Entity_Specification);
@@ -282,6 +290,10 @@ private
                Specification : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          end case;
       end record;
+   Null_Entity : constant Entity_Specification :=
+                   (Is_Box => False,
+                    Is_All        => False,
+                    Specification => Ada.Strings.Wide_Unbounded.Null_Unbounded_Wide_String);
 
    --
    -- Context

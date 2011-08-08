@@ -1,0 +1,9 @@
+check max_parameters (2, procedure);
+check max_parameters (4, task_entry, protected_entry, protected_procedure, protected_function);
+check max_parameters (2, function);
+
+search max_parameters (1, procedure, protected_entry);
+search max_parameters (1, function);
+search max_parameters (2, protected_procedure, protected_function);
+
+count max_parameters (3);

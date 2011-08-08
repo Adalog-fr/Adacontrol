@@ -32,6 +32,9 @@
 --  Ada
 with
   Ada.Strings.Wide_Unbounded;
+-- Adalog
+with
+  Thick_Queries;
 private package Framework.Language.Scanner is
    -- Scans from current input
 
@@ -70,7 +73,7 @@ private package Framework.Language.Scanner is
                Text   : Wide_String (1..Max_ID_Length);
                Key    : Key_Kind;
             when Integer_Value =>
-               Value : Integer;
+               Value : Thick_Queries.Biggest_Int;
             when Float_Value =>
                Fvalue : Float;
             when others =>
@@ -95,12 +98,13 @@ private package Framework.Language.Scanner is
    -- If Force_String, take all characters until the next space or semi-colon as a string token
    -- If No_Delay, do it immediately
 
+   function Reference_Dir return Wide_String;
+   -- Returns the reference directory (i.e. the directory part of the current rules file,
+   -- or "" if there is no rules files (or if it has no directory part)
+
    type Scanner_State is private;
    procedure Save_State    (State : out Scanner_State);
    procedure Restore_State (State : in  Scanner_State);
-
-   procedure Syntax_Error (Message : Wide_String; Position : Location);
-   pragma No_Return (Syntax_Error);
 
 private
    type Scanner_State is

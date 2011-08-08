@@ -1,0 +1,3 @@
+check	non_static (index_constraint);
+check	non_static (discriminant_constraint);
+search non_static (instantiation);

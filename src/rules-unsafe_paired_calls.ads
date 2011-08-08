@@ -34,12 +34,6 @@ with
 
 package Rules.Unsafe_Paired_Calls is
 
-   -- This rule can be used to check/search for calls like P/V
-   -- that must be safely paired.
-   -- Parameter(1): First subprogram
-   -- Parameter(2): Second subprogram
-   -- Parameter(3): (optional) type of lock parameter
-
    Rule_Id : constant Wide_String := "UNSAFE_PAIRED_CALLS";
 
    procedure Process_Call (Call : in Asis.Element);

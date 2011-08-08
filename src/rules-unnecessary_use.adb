@@ -231,7 +231,8 @@ package body Rules.Unnecessary_Use is
    -- Q.E.D.
 
    procedure Process_Identifier (Name : in Asis.Name) is
-      use Thick_Queries, Asis.Expressions;
+      use Asis.Expressions;
+      use Framework.Reports, Thick_Queries;
 
       function Enclosing_Package_Name (N : in Asis.Name) return Wide_String is
          -- If N is declared immediately within a package specification, returns
@@ -265,7 +266,8 @@ package body Rules.Unnecessary_Use is
                -- There is no way of determining the location of the "root" declaration
                -- of a dispatching call
                -- *** THIS MAY CREATE FALSE DETECTION OF UNUSED PACKAGES ***
-               return "";
+               Uncheckable (Rule_Id, False_Positive, Get_Location (E), "Dispatching call");
+              return "";
 
             elsif Expression_Kind (E) = A_Function_Call then
                declare
@@ -372,7 +374,6 @@ package body Rules.Unnecessary_Use is
          Used_Packages.Reset (All_Scopes);
          while Used_Packages.Data_Available loop
             declare
-               use Framework.Reports;
                Info : Package_Info := Used_Packages.Current_Data;
             begin
                if Enclosing_Name = Info.Name then

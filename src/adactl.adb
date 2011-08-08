@@ -63,7 +63,7 @@ procedure Adactl is
    use Asis.Exceptions, Asis.Implementation;
    use Utilities, Adactl_Options;
 
-   Version : constant Wide_String := "1.5r24";
+   Version : constant Wide_String := "1.6r4";
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -97,7 +97,7 @@ begin
       when Help =>
          Help_Options;
          User_Message ("Rules:");
-         Framework.Rules_Manager.Help_Names;
+         Framework.Rules_Manager.Help_Names (Pretty => True);
          User_Message ("");
          User_Message ("ADACTL v. "
                          & Version

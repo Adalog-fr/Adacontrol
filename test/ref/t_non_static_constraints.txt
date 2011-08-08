@@ -1,4 +1,0 @@
-t_non_static_constraints.adb:8:17: Error: NON_STATIC_CONSTRAINTS: array definition non-statically constrained
-t_non_static_constraints.adb:10:9: Error: NON_STATIC_CONSTRAINTS: discriminant non-statically constrained
-t_non_static_constraints.adb:15:14: Error: NON_STATIC_CONSTRAINTS: array definition non-statically constrained
-t_non_static_constraints.adb:16:9: Error: NON_STATIC_CONSTRAINTS: array definition non-statically constrained

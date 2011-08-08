@@ -55,7 +55,7 @@ package body Rules.Case_Statement is
 
    use Asis, Framework, Thick_Queries;
 
-   type Case_Statement_Names is (Min_Others_Range, Max_Values, Min_Paths);
+   type Case_Statement_Names is (Min_Others_Span, Min_Paths, Max_Range_Span, Max_Values);
    package Case_Statement_Flag_Utilities  is new Framework.Language.Flag_Utilities (Case_Statement_Names);
 
    type Usage is array (Case_Statement_Names) of Rule_Types_Set;
@@ -63,7 +63,7 @@ package body Rules.Case_Statement is
    Save_Used : Usage;
 
    Labels : array (Case_Statement_Names, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Values : array (Case_Statement_Names, Rule_Types) of Biggest_Natural;
+   Values : array (Case_Statement_Names, Rule_Types) of Biggest_Natural := (others => (others => 0));
 
    ----------
    -- Help --
@@ -74,9 +74,10 @@ package body Rules.Case_Statement is
    begin
       User_Message ("Rule: "& Rule_Id);
       Case_Statement_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
-      User_Message ("Parameter(2): for min_others_range: minimum number of values allowed for others");
-      User_Message ("              for max_values      : maximum number of values allowed in the selector's subtype");
-      User_Message ("              for min_paths       : minimum number of 'when' allowed in the case statement");
+      User_Message ("Parameter(2): for min_others_span: minimum number of values allowed for others");
+      User_Message ("              for min_paths      : minimum number of 'when' allowed in the case statement");
+      User_Message ("              for max_range_span : maximum number of values allowed in a choice given as a range");
+      User_Message ("              for max_values     : maximum number of values allowed in the selector's subtype");
       User_Message ("Controls various sizes related to the case statement");
    end Help;
 
@@ -87,10 +88,9 @@ package body Rules.Case_Statement is
    procedure Add_Use (Label : in Wide_String; Rule_Type : in Rule_Types) is
       use Framework.Language, Case_Statement_Flag_Utilities, Ada.Strings.Wide_Unbounded;
       Stmt : Case_Statement_Names;
-      Val  : Integer;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Two parameters required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id & ": Two parameters required");
       end if;
 
       Stmt := Get_Flag_Parameter (Allow_Any => False);
@@ -99,15 +99,15 @@ package body Rules.Case_Statement is
       end if;
 
       if not Parameter_Exists then
-         Parameter_Error ("Two parameters required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id & ": Two parameters required");
       end if;
 
-      Val := Get_Integer_Parameter;
-      if Val >= 1 then
-         Values (Stmt, Rule_Type) := Biggest_Int (Val);
-      else
-         Parameter_Error (Rule_Id & ": value must be >= 1");
-      end if;
+      case Stmt is
+         when Min_Others_Span | Min_Paths | Max_Values =>
+            Values (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 1);
+         when Max_Range_Span =>
+            Values (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 0);
+      end case;
 
       Labels    (Stmt, Rule_Type):= To_Unbounded_Wide_String (Label);
       Rule_Used (Stmt)(Rule_Type):= True;
@@ -156,8 +156,12 @@ package body Rules.Case_Statement is
                for PE in Path_Elements'Range loop
                   if Definition_Kind (Path_Elements (PE)) = A_Discrete_Range then
                      Temp := Discrete_Constraining_Lengths (Path_Elements (PE))(1);
-                     if Temp = Non_Static then
+                     if Temp = Not_Static then
                         -- it IS static, but the evaluator cannot evaluate it...
+                        Uncheckable (Rule_Id,
+                                     False_Negative,
+                                     Get_Location (Path_Elements (PE)),
+                                     "Could not evaluate bounds of expression");
                         raise Non_Evaluable;
                      end if;
                      Count := Count + Temp;
@@ -189,29 +193,33 @@ package body Rules.Case_Statement is
 
          Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
                                                         (Case_Expression (Statement)))(1);
-         if Subtype_Span = Non_Static then
+         if Subtype_Span = Not_Static then
             Subtype_Span := Discrete_Constraining_Lengths (Corresponding_First_Subtype
                                                            (A4G_Bugs.Corresponding_Expression_Type
                                                             (Case_Expression (Statement))))(1);
-            if Subtype_Span = Non_Static then
+            if Subtype_Span = Not_Static then
                -- Hmmm... this one IS static, so there is something we can't evaluate
                -- give up
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Case_Expression (Statement)),
+                            "Could not evaluate bounds of expression");
                return;
             end if;
          end if;
 
          Others_Span  := Subtype_Span - Count_Non_Others_Choices (Case_Paths);
-         if Rule_Used (Min_Others_Range)(Check) and then Others_Span < Values (Min_Others_Range, Check) then
+         if Rule_Used (Min_Others_Span)(Check) and then Others_Span < Values (Min_Others_Span, Check) then
                Report (Rule_Id,
-                       To_Wide_String (Labels (Min_Others_Range, Check)),
+                       To_Wide_String (Labels (Min_Others_Span, Check)),
                        Check,
                        Get_Location (Case_Paths (Case_Paths'Last)),
                        "too few values covered by ""others"" in case statement ("
                        & Biggest_Int'Wide_Image (Others_Span)
                        & ')');
-         elsif Rule_Used (Min_Others_Range)(Search) and then Others_Span < Values (Min_Others_Range, Search) then
+         elsif Rule_Used (Min_Others_Span)(Search) and then Others_Span < Values (Min_Others_Span, Search) then
                Report (Rule_Id,
-                       To_Wide_String (Labels (Min_Others_Range, Search)),
+                       To_Wide_String (Labels (Min_Others_Span, Search)),
                        Search,
                        Get_Location (Case_Paths (Case_Paths'Last)),
                        "too few values covered by ""others"" in case statement ("
@@ -219,9 +227,9 @@ package body Rules.Case_Statement is
                        & ')');
          end if;
 
-         if Rule_Used (Min_Others_Range)(Count) and then Others_Span < Values (Min_Others_Range, Count) then
+         if Rule_Used (Min_Others_Span)(Count) and then Others_Span < Values (Min_Others_Span, Count) then
                Report (Rule_Id,
-                       To_Wide_String (Labels (Min_Others_Range, Count)),
+                       To_Wide_String (Labels (Min_Others_Span, Count)),
                        Count,
                        Get_Location (Case_Paths (Case_Paths'Last)),
                        "");
@@ -321,10 +329,77 @@ package body Rules.Case_Statement is
          Process_Min_Paths;
        end if;
 
-      if Rule_Used (Min_Others_Range) /= (Rule_Types => False) then
+      if Rule_Used (Min_Others_Span) /= (Rule_Types => False) then
          Process_Min_Others_Range;
       end if;
    end Process_Case_Statement;
+
+   ------------------
+   -- Process_Path --
+   ------------------
+
+   procedure Process_Path (Path : Asis.Path) is
+      use Asis.Elements, Asis.Statements;
+      use Framework.Reports, Utilities;
+      use Ada.Strings.Wide_Unbounded;
+
+      Choices : constant Asis.Element_List := Case_Statement_Alternative_Choices (Path);
+      Nb_Val  : Extended_Biggest_Natural;
+   begin
+      if Rule_Used (Max_Range_Span) = (Rule_Types => False) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      for C in Choices'Range loop
+         case Definition_Kind (Choices (C)) is
+            when Not_A_Definition -- An_Expression
+               | An_Others_Choice
+                 =>
+               null;
+            when A_Discrete_Range =>
+               Nb_Val := Discrete_Constraining_Lengths (Choices (C))(1);
+               if Nb_Val = Not_Static then
+                  -- This was supposed to be static, but for some reason we can't evaluate it
+                  -- Give up
+                  Uncheckable (Rule_Id,
+                               False_Negative,
+                               Get_Location (Choices(C)),
+                               "Could not evaluate discrete range");
+                  return;
+               end if;
+
+               if Rule_Used (Max_Range_Span) (Check) and then Nb_Val > Values (Max_Range_Span, Check) then
+                  Report (Rule_Id,
+                          To_Wide_String (Labels (Max_Range_Span, Check)),
+                          Check,
+                          Get_Location (Choices (C)),
+                          "too many values in choice range ("
+                            & Biggest_Int'Wide_Image (Nb_Val)
+                            & ')');
+               elsif Rule_Used (Max_Range_Span) (Search) and then Nb_Val > Values (Max_Range_Span, Search) then
+                  Report (Rule_Id,
+                    To_Wide_String (Labels (Max_Range_Span, Search)),
+                    Search,
+                    Get_Location (Choices (C)),
+                          "too many values in choice range ("
+                       & Biggest_Int'Wide_Image (Nb_Val)
+                       & ')');
+               end if;
+
+               if Rule_Used (Max_Range_Span) (Count) and then Nb_Val > Values (Max_Range_Span, Count) then
+                  Report (Rule_Id,
+                          To_Wide_String (Labels (Max_Range_Span, Count)),
+                          Count,
+                          Get_Location (Choices (C)),
+                          "");
+               end if;
+
+            when others =>
+               Failure ("Wrong definition in case path");
+         end case;
+      end loop;
+   end Process_Path;
 
 begin
    Rules_Manager.Register_Semantic (Rule_Id,

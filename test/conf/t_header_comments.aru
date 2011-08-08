@@ -1,2 +1,3 @@
-check header_comments (4);
-count header_comments (2);
+check  header_comments (Minimum, 4);
+search header_comments (Model, "t_header_comments.pat");
+count  header_comments (Minimum, 2);

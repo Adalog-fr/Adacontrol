@@ -6,10 +6,10 @@ check style (negative_condition);
 check max_nesting (7);
 check parameter_aliasing (certain);
 check simplifiable_expressions;
-check if_for_case;
 check statements (untyped_for);
 
 -- Acceptable, but should be looked at:
+search if_for_case;
 search parameter_aliasing (possible);
 search max_nesting (5);
 search local_hiding;
@@ -26,18 +26,20 @@ Use_A4G_Bugs: check entities (
    Asis.Compilation_Units.Unit_Class,
    Asis.Declarations.Corresponding_Base_Entity,
    Asis.Declarations.Corresponding_Last_Subtype,
+   Asis.Declarations.Renamed_Entity,
    Asis.Elements.Attribute_Kind,
    Asis.Expressions.Attribute_Designator_Identifier,
+   Asis.Statements.Corresponding_Called_Entity,
    Asis.Expressions.Corresponding_Called_Function,
-   Asis.Expressions.Corresponding_Expression_Type,
-   Asis.Statements.Corresponding_Called_Entity
+   Asis.Expressions.Corresponding_Expression_Type
 );
 
 -- Check prefered operation from Thick_Queries
 Use_Subtype_Simple_Name: check entities (Asis.Definitions.Subtype_Mark);
-check header_comments (29);
+check header_comments (minimum, 29);
 check max_line_length (120);
 check naming_convention (Type,     not "^t_");
 check naming_convention (Constant, not "^c_");
 -- Title case convention, but we allow several upper case letters at the beginning:
 check naming_convention (All, case_sensitive "^[A-Z0-9]*[a-z0-9]*(_[A-Z0-9]*[a-z0-9]*)*$");
+Use_Trim_All: check entities (Ada.Strings.Wide_String.Trim);

@@ -1,7 +1,13 @@
--- line 1
-     -- line 2
 --
--- line 4
+-- Author: Rosen
+-- Changed: 1
+-- Changed: 2
+
+
+
+----
+
+
 with X_Header_Comments;
 procedure T_Header_Comments is
    procedure Sep is separate;

@@ -221,7 +221,11 @@ package body Framework is
    procedure Associate_Default (Into    : in out Context_Store;
                                 Context : in     Root_Context'Class) is
    begin
-      Into.Default := new Context_Node'(new Root_Context'Class'(Context), null);
+      if Into.Default = null then
+         Into.Default := new Context_Node'(new Root_Context'Class'(Context), null);
+      else
+         raise Already_In_Store;
+      end if;
    end Associate_Default;
 
    -------------
@@ -519,9 +523,13 @@ package body Framework is
       Result : Context_Node_Access;
    begin
       if Specification.Is_All then
-         Result := Fetch (Into.Simple_Names, Specification.Specification, Default_Value => Default_Context);
+         Result := Fetch (Into.Simple_Names, Specification.Specification, Default_Value => Into.Default);
       else
-         Result := Fetch (Into.Qualified_Names, Specification.Specification, Default_Value => Default_Context);
+         Result := Fetch (Into.Qualified_Names, Specification.Specification, Default_Value => Into.Default);
+      end if;
+
+      if Result = null then
+         Result := Default_Context;
       end if;
 
       Into.This.Self.Last_Returned := Result;
@@ -588,9 +596,13 @@ package body Framework is
 
       S : constant Span := Element_Span (E);
    begin
-      return (To_Unbounded_Wide_String (Text_Name (Enclosing_Compilation_Unit (E))),
-              S.First_Line,
-              S.First_Column);
+      if S = Nil_Span then
+         return Null_Location;
+      else
+         return (To_Unbounded_Wide_String (Text_Name (Enclosing_Compilation_Unit (E))),
+                 S.First_Line,
+                 S.First_Column);
+      end if;
    end Get_Location;
 
    --------------------------------
@@ -669,9 +681,7 @@ package body Framework is
    -----------
 
    function Image (L : in Location; Short_Name : in Boolean := Default_Short_Name) return Wide_String is
-      use Ada.Strings;
-      use Ada.Strings.Wide_Fixed;
-      use Asis.Text;
+      use Utilities;
 
       function Strip (Name : in Wide_String) return Wide_String is
       begin
@@ -690,14 +700,16 @@ package body Framework is
       end Strip;
 
    begin
-      if L.File_Name = Null_Unbounded_Wide_String then
-         return Trim (Character_Position_Positive'Wide_Image (L.First_Column), Left);
+      if L = Null_Location then
+         Failure ("Image of null location");
+      elsif L.File_Name = Null_Unbounded_Wide_String then
+         return Integer_Img (L.First_Column);
       else
          return Strip (To_Wide_String (L.File_Name))
            & ":"
-           & Trim (Line_Number_Positive'Wide_Image (L.First_Line), Left)
+           & Integer_Img (L.First_Line)
            & ":"
-           & Trim (Character_Position_Positive'Wide_Image (L.First_Column), Left);
+           & Integer_Img (L.First_Column);
       end if;
    end Image;
 

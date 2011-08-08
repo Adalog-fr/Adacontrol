@@ -134,12 +134,31 @@ package body Rules.If_For_Case is
 
    procedure Check (Expr : Asis.Expression; Pivot : in out Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Thick_Queries;
+
+      procedure Update_Pivot (Var : Asis.Expression) is
+         Good_Var : Asis.Expression := Var;
+      begin
+         while Expression_Kind (Good_Var) = A_Parenthesized_Expression loop
+            Good_Var := Expression_Parenthesized (Good_Var);
+         end loop;
+
+         if Is_Nil (Pivot) then
+            if Expression_Type_Kind (Good_Var) in An_Enumeration_Type_Definition .. A_Modular_Type_Definition then
+               Pivot := Good_Var;
+            else
+               -- Not a discrete type
+               raise Not_Appropriate_For_Case;
+            end if;
+         elsif Variables_Proximity (Pivot, Good_Var) /= Same_Variable then
+            raise Not_Appropriate_For_Case;
+         end if;
+      end Update_Pivot;
    begin
       case Expression_Kind (Expr) is
          when Not_An_Expression =>
             Failure ("Not an expression in traverse", Expr);
 
-          when A_Function_Call =>
+         when A_Function_Call =>
             declare
                Func_Name : Asis.Expression := Prefix (Expr);
                Decl      : Asis.Declaration;
@@ -193,46 +212,16 @@ package body Rules.If_For_Case is
                               Param      : Asis.Expression;
                            begin
                               Param := Actual_Parameter (Param_List (1));
-                              while Expression_Kind (Param) = A_Parenthesized_Expression loop
-                                Param := Expression_Parenthesized (Param);
-                              end loop;
                               if Static_Expression_Value_Image (Param) = "" then
                                  -- Left operand not static, assume it is a variable
-                                 if Is_Nil (Pivot) then
-                                    if Expression_Type_Kind (Param)
-                                      in An_Enumeration_Type_Definition .. A_Modular_Type_Definition
-                                    then
-                                       Pivot := Param;
-                                    else
-                                       -- Not a discrete type
-                                       raise Not_Appropriate_For_Case;
-                                    end if;
-                                 elsif Variables_Proximity (Pivot, Param) /= Same_Variable then
-                                    raise Not_Appropriate_For_Case;
-                                 end if;
+                                 Update_Pivot (Param);
                                  if Static_Expression_Value_Image (Actual_Parameter (Param_List (2))) = "" then
                                     -- Left operand is the good variable, but right is not static
                                     raise Not_Appropriate_For_Case;
                                  end if;
-
                               else
                                  -- Left operand is static value, right must be variable
-                                 Param := Actual_Parameter (Param_List (2));
-                                 while Expression_Kind (Param) = A_Parenthesized_Expression loop
-                                    Param := Expression_Parenthesized (Param);
-                                 end loop;
-                                 if Is_Nil (Pivot) then
-                                    if Expression_Type_Kind (Param)
-                                      in An_Enumeration_Type_Definition .. A_Modular_Type_Definition
-                                    then
-                                       Pivot := Param;
-                                    else
-                                       -- Not a discrete type
-                                       raise Not_Appropriate_For_Case;
-                                    end if;
-                                 elsif Variables_Proximity (Pivot, Param) /= Same_Variable then
-                                    raise Not_Appropriate_For_Case;
-                                 end if;
+                                 Update_Pivot (Actual_Parameter (Param_List (2)));
                               end if;
                            end;
 
@@ -267,16 +256,18 @@ package body Rules.If_For_Case is
          when An_In_Range_Membership_Test
            | A_Not_In_Range_Membership_Test
            =>
-            if Discrete_Constraining_Lengths (Membership_Test_Range (Expr)) = (1 => Non_Static) then
+            if Discrete_Constraining_Lengths (Membership_Test_Range (Expr)) = (1 => Not_Static) then
                raise Not_Appropriate_For_Case;
             end if;
+            Update_Pivot (Membership_Test_Expression (Expr));
 
          when An_In_Type_Membership_Test
            | A_Not_In_Type_Membership_Test
            =>
-            if Discrete_Constraining_Lengths (Membership_Test_Subtype_Mark (Expr)) = (1 => Non_Static) then
+            if Discrete_Constraining_Lengths (Membership_Test_Subtype_Mark (Expr)) = (1 => Not_Static) then
                raise Not_Appropriate_For_Case;
             end if;
+            Update_Pivot (Membership_Test_Expression (Expr));
 
          when A_Type_Conversion
            | A_Qualified_Expression

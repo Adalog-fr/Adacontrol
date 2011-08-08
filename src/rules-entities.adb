@@ -69,7 +69,7 @@ package body Rules.Entities is
 
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id & ": at least one parameter required");
       end if;
 
       while Parameter_Exists loop
@@ -79,8 +79,7 @@ package body Rules.Entities is
             Associate (Searched_Entities, Entity, Basic.New_Context (Rule_Type,Label));
          exception
             when Already_In_Store =>
-               Parameter_Error ("Entity already given for rule " & Rule_Id
-                                  & ": " & Image (Entity));
+               Parameter_Error (Rule_Id & ": entity already given: " & Image (Entity));
          end;
       end loop;
 

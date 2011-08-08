@@ -62,9 +62,9 @@ procedure T_Max_Statement_Nesting is
          null;
    end case;
 
-   if True then                                           -- if 1,   all 1
-      if True then                                        -- if 2,   all 2
-         declare
+   if True then                                           -- if 1,    all 1
+      if True then                                        -- if 2,    all 2
+         declare                                          -- block 1, all 3
             procedure X is
                task Y is
                   entry E;
@@ -115,10 +115,12 @@ procedure T_Max_Statement_Nesting is
                end if;
             end X;
          begin
-            if True then                                  -- if 3,   all 3
-               if True then                               -- if 4,   all 4
-                  null;
-               end if;
+            if True then                                  -- if 3,    all 4
+               begin                                      -- block 2, all 5
+                  if True then                            -- if 4,    all 6
+                     null;
+                  end if;
+               end;
             end if;
          end;
       end if;

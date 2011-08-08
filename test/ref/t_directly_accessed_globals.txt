@@ -1,24 +1,25 @@
-t_directly_accessed_globals.adb:109:34: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" not from subprogram
-t_directly_accessed_globals.adb:116:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G2" is not read from any subprogram
-t_directly_accessed_globals.adb:116:14: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G3" is not written from any subprogram
-t_directly_accessed_globals.adb:116:18: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G4" is not read from any subprogram
-t_directly_accessed_globals.adb:116:18: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G4" is not written from any subprogram
-t_directly_accessed_globals.adb:151:13: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from nested subprogram
-t_directly_accessed_globals.adb:151:13: Error: DIRECTLY_ACCESSED_GLOBALS: variable "I1" is already written from Write at t_directly_accessed_globals.adb:141:7
-t_directly_accessed_globals.adb:154:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "I1" is already written from Write at t_directly_accessed_globals.adb:141:7
-t_directly_accessed_globals.adb:155:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "S2" is already written from Write at t_directly_accessed_globals.adb:141:7
-t_directly_accessed_globals.adb:156:13: Error: DIRECTLY_ACCESSED_GLOBALS: variable "S1" is already read from Read1 at t_directly_accessed_globals.adb:129:7
-t_directly_accessed_globals.adb:169:17: Error: DIRECTLY_ACCESSED_GLOBALS: variable "Count" is already read from Get_Next at t_directly_accessed_globals.adb:161:7
-t_directly_accessed_globals.adb:177:10: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from generic subprogram
-t_directly_accessed_globals.adb:177:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "I1" is already written from Write at t_directly_accessed_globals.adb:141:7
-t_directly_accessed_globals.adb:180:7: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "S2" not from subprogram
-t_directly_accessed_globals.adb:198:20: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from subprogram of a protected type
-t_directly_accessed_globals.adb:203:13: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from subprogram of a protected type
-t_directly_accessed_globals.adb:238:23: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested protected object
-t_directly_accessed_globals.adb:243:16: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested protected object
-t_directly_accessed_globals.adb:187:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P3.I2" is read and written from different protected objects or tasks
-t_directly_accessed_globals.adb:267:22: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from accept of a task type
-t_directly_accessed_globals.adb:271:13: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from accept of a task type
-t_directly_accessed_globals.adb:308:25: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested task object
-t_directly_accessed_globals.adb:312:16: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested task object
-t_directly_accessed_globals.adb:255:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P4.I2" is read and written from different protected objects or tasks
+t_directly_accessed_globals.adb:110:34: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" not from subprogram
+t_directly_accessed_globals.adb:121:19: Error: DIRECTLY_ACCESSED_GLOBALS: Possible false negative: Name is dynamic renaming
+t_directly_accessed_globals.adb:117:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G2" is not read from any subprogram
+t_directly_accessed_globals.adb:117:14: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G3" is not written from any subprogram
+t_directly_accessed_globals.adb:117:18: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G4" is not read from any subprogram
+t_directly_accessed_globals.adb:117:18: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P2.Pack.G4" is not written from any subprogram
+t_directly_accessed_globals.adb:152:13: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from nested subprogram
+t_directly_accessed_globals.adb:152:13: Error: DIRECTLY_ACCESSED_GLOBALS: variable "I1" is already written from Write at t_directly_accessed_globals.adb:142:7
+t_directly_accessed_globals.adb:155:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "I1" is already written from Write at t_directly_accessed_globals.adb:142:7
+t_directly_accessed_globals.adb:156:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "S2" is already written from Write at t_directly_accessed_globals.adb:142:7
+t_directly_accessed_globals.adb:157:13: Error: DIRECTLY_ACCESSED_GLOBALS: variable "S1" is already read from Read1 at t_directly_accessed_globals.adb:130:7
+t_directly_accessed_globals.adb:170:17: Error: DIRECTLY_ACCESSED_GLOBALS: variable "Count" is already read from Get_Next at t_directly_accessed_globals.adb:162:7
+t_directly_accessed_globals.adb:178:10: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from generic subprogram
+t_directly_accessed_globals.adb:178:10: Error: DIRECTLY_ACCESSED_GLOBALS: variable "I1" is already written from Write at t_directly_accessed_globals.adb:142:7
+t_directly_accessed_globals.adb:181:7: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "S2" not from subprogram
+t_directly_accessed_globals.adb:199:20: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from subprogram of a protected type
+t_directly_accessed_globals.adb:204:13: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from subprogram of a protected type
+t_directly_accessed_globals.adb:239:23: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested protected object
+t_directly_accessed_globals.adb:244:16: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested protected object
+t_directly_accessed_globals.adb:188:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P3.I2" is read and written from different protected objects or tasks
+t_directly_accessed_globals.adb:268:22: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from accept of a task type
+t_directly_accessed_globals.adb:272:13: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I1" from accept of a task type
+t_directly_accessed_globals.adb:309:25: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested task object
+t_directly_accessed_globals.adb:313:16: Error: DIRECTLY_ACCESSED_GLOBALS: use of variable "I3" from nested task object
+t_directly_accessed_globals.adb:256:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Directly_Accessed_Globals.P4.I2" is read and written from different protected objects or tasks

@@ -26,7 +26,6 @@
 --  useful,  but WITHOUT  ANY  WARRANTY; without  even the  implied --
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
-
 ----------------------------------------------------------------------
 
 -- Ada
@@ -364,7 +363,7 @@ package body Rules.Global_References is
                            end;
 
                         when An_Object_Renaming_Declaration =>
-                           Traverse (Renamed_Entity (Corresponding_Name_Declaration (Element)),
+                           Traverse (A4G_Bugs.Renamed_Entity (Corresponding_Name_Declaration (Element)),
                                      Control,
                                      State);
 

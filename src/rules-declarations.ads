@@ -35,19 +35,6 @@ with
 
 package Rules.Declarations is
 
-   -- This rule can be used to check/search for the occurrence of some Ada declarations
-   -- Parameter(1): Declaration name
-   -- Parameter(2): Declaration name
-   -- ...
-   -- Parameter(N): Declaration name
-   --
-   -- Declaration names: access, access_protected, access_subprogram, access_task, aliased,
-   --                    exception, generic, package_statements, protected, protected_entry,
-   --                    protected_type, renames, separate, single_array, single_protected,
-   --                    single_task, tagged, task, task_entry, task_type, entry, task_entry,
-   --                    protected_entry, discriminant, defaulted_discriminant, operator,
-   --                    child_unit
-
    Rule_Id : constant Wide_String := "DECLARATIONS";
 
    procedure Process_Declaration (Element : in Asis.Declaration);

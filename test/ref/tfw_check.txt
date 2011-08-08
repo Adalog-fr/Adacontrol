@@ -1,7 +1,12 @@
-Error in rule: x_errors.aru:1:0: Command or label expected
-Error in rule: x_errors.aru:2:32: Unknown keyword "^T_", use option -h <rule name> for a list of allowable keywords
-Error in rule: x_errors.aru:4:8: Not a rule name: NOT_A_RULE
+x_errors.aru:1:0: Syntax: Command or label expected
+x_errors.aru:2:32: Syntax: Unknown keyword "^T_", use option -h <rule name> for a list of allowable keywords
+x_errors.aru:4:8: Syntax: Not a rule name: NOT_A_RULE
 Syntax errors found
+No syntax error
+No syntax error
+No syntax error
+No syntax error
+No syntax error
 No syntax error
 No syntax error
 No syntax error

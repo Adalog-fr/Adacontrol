@@ -1,0 +1,21 @@
+t_max_call_depth.adb:46:7: Error: MAX_CALL_DEPTH: Call to recursive entity
+t_max_call_depth.adb:50:7: Error: MAX_CALL_DEPTH: Call to recursive entity
+t_max_call_depth.adb:66:7: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:77:10: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:87:10: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:105:19: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:106:28: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:107:38: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:111:4: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:112:4: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:114:4: Error: MAX_CALL_DEPTH: Call to recursive entity
+t_max_call_depth.adb:118:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:119:12: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:124:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:125:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:130:4: Error: MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_max_call_depth.adb:131:4: Error: MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_max_call_depth.adb:132:4: Error: MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+
+Counts summary:
+Recursive calls: 3
