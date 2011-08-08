@@ -440,6 +440,23 @@ package body Rules.Record_Declarations is
                end if;
             end loop;
          end;
+         -- Kludge for ASIS bug [J226-011], fixed in GPL2010 and Pro-6.4.1
+         -- Strings declared in STANDARD have no pragma Pack
+         if not Is_Packed then
+            declare
+               Type_Name : constant Wide_String := To_Upper
+                                                   (Full_Name_Image
+                                                    (Names (Ultimate_Type_Declaration (Compo_Type,
+                                                                                       Follow_Predefined => True))
+                                                           (1)));
+            begin
+               Is_Packed :=         Type_Name = "STANDARD.STRING"
+                            or else Type_Name = "STANDARD.WIDE_STRING";
+               --2005 add Wide_Wide_String (if bug not fixed)
+               Trace (Type_Name);
+               Trace ("Is_Packed", Is_Packed);
+            end;
+         end if;
 
          Is_Initialized := not Is_Nil (Initialization_Expression (Compo));
 

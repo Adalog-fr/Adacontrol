@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.12r3
+@settitle AdaControl User Guide V1.12r4
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -211,7 +211,7 @@ files. See @ref{Non upward-compatible changes} for details.
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with Gnat version GPL 2008, as distributed
+AdaControl will work only with Gnat version GPL 2010, as distributed
 by ACT. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated
 below.
@@ -231,7 +231,7 @@ speed. @xref{Customizing AdaControl}.
 @node Building AdaControl from source, Installing AdaControl, Installation, Installation
 @section Building AdaControl from source
 This section is only for the source distribution of AdaControl. If you
-downloaded an executable distribution (and are using Gnat GPL 2008),
+downloaded an executable distribution (and are using Gnat GPL 2010),
 you may skip to the next section.
 
 @subsection Prerequisites
@@ -239,8 +239,9 @@ The following software must be installed in order to compile
 AdaControl from source:
 @itemize
 @item
-A GNAT compiler, any version. Note that the compiler is also required
-to use AdaControl (all ASIS application need the compiler).
+A GNAT compiler, any version. Note that the compiler must also be available
+on the machine in order to run AdaControl (all ASIS application need
+the compiler).
 @item
 ASIS for GNAT
 @end itemize
@@ -248,27 +249,6 @@ ASIS for GNAT
 Make sure to have the same version of GNAT and ASIS. The version used
 for running AdaControl must be the same as the one used to compile
 AdaControl itself.
-
-It should be possible to compile AdaControl with other compilers than
-GNAT, although we didn't have an opportunity to try it. If you have
-another compiler that supports ASIS, note that it may require some
-easy changes in the package @code{Implementation_Options} to give
-proper parameters to the @code{Associate} procedure of ASIS.  Rules
-that need string pattern matchings need the package
-@code{Gnat.Regpat}. If you compile AdaControl with another compiler,
-you can either port @code{Gnat.Regpat} to your system, or use a
-(limited) portable implementation of a simple pattern matching
-(package @code{String_Matching_Portable}). Edit the file
-@code{string_matching.ads} and change it as indicated in the comments.
-No other change should be necessary.
-
-Alternatively, if you are using another compiler, you can try and
-compile your program with GNAT just to be able to run
-AdaControl. However, compilers often differ in their support of
-representation clauses, which can cause your program to be rejected by
-GNAT. In that case, we provide a sed script to comment-out all
-representation clauses; this can be sufficient to allow you to use
-AdaControl. @xref{unrepr.sed}.
 
 @subsection Build with installer (Windows)
 Run the installer (@code{adactl_src-setup.exe}). This will
@@ -331,6 +311,28 @@ $ make help
 NOTE: Building AdaControl needs the ``make'' command provide with GNAT; it
 works both with WIN32 shell and UNIX shell.
 
+@subsection Build with a compiler other than Gnat
+It should be possible to compile AdaControl with other compilers than
+GNAT, although we didn't have an opportunity to try it. If you have
+another compiler that supports ASIS, note that it may require some
+easy changes in the package @code{Implementation_Options} to give
+proper parameters to the @code{Associate} procedure of ASIS.  Rules
+that need string pattern matchings need the package
+@code{Gnat.Regpat}. If you compile AdaControl with another compiler,
+you can either port @code{Gnat.Regpat} to your system, or use a
+(limited) portable implementation of a simple pattern matching
+(package @code{String_Matching_Portable}). Edit the file
+@code{string_matching.ads} and change it as indicated in the comments.
+No other change should be necessary.
+
+Alternatively, if you are using another compiler, you can try and
+compile your program with GNAT just to be able to run
+AdaControl. However, compilers often differ in their support of
+representation clauses, which can cause your program to be rejected by
+GNAT. In that case, we provide a sed script to comment-out all
+representation clauses; this can be sufficient to allow you to use
+AdaControl. @xref{unrepr.sed}.
+
 @subsection Testing AdaControl
 Testing AdaControl needs a UNIX shell, so it works only with UNIX
 systems.  However, it is possible to run the tests on a WIN32 system
@@ -345,12 +347,12 @@ All tests must report PASSED. If they don't, it may be due to one of
 the following issues:
 @itemize
 @item
-You are using an old version of Gnat (and especially 3.15p).
-AdaControl runs without any known problem (and it has been checked
-against the whole ACATS) only with the latest GnatPro version; earlier
-versions are known to have bugs and unimplemented features that will
-not allow AdaControl to run correctly in some cases. We strongly
-recommend to always use the most recent version of Gnat.
+You are using an old version of Gnat.  AdaControl runs without any
+known problem (and it has been checked against the whole ACATS) only
+with the latest GnatPro and GnatGPL versions; earlier versions are
+known to have bugs and unimplemented features that will not allow
+AdaControl to run correctly in some cases. We strongly recommend to
+always use the most recent version of Gnat.
 @item
 You run a recent version of GnatPro (6.1.2 and above) and you forgot
 to specify the ``-XGNAT_FIX=1'' option. @xref{Build with project file}.
@@ -5729,9 +5731,6 @@ record.
 ``not in_variant'': The component appears inside the fixed part of the
 record.
 @item
-``not aligned'': A component clause applies to the component, and the
-corresponding first bit is not a multiple of @code{Storage_Unit}.
-@item
 ``aligned'': Either no component clause applies to the component, or
 the corresponding first bit is a multiple of @code{Storage_Unit}.
 @item
@@ -5773,26 +5772,15 @@ check record_declarations (component, array, packed, not aligned);
 
 @subsection Tips
 It may seem strange to have a rule with only one subrule, but we
-expect to add more in the near future.Stay tuned...
+expect to add more in the near future. Stay tuned...
 
 @subsection Limitations
-As a consequence of an ASIS-for-Gnat implementation bug (Gnat versions
-6.3.1 and older), @code{String} and siblings are not reported as being
-packed. Therefore, if you want to check all packed array types used as
-record component, you should add predefined array types explicitely:
-@example
-check record_declarations (component, array, packed),
-      record_declarations (component, standard.string),
-      record_declarations (component, standard.wide_string),
-      record_declarations (component, standard.wide_wide_string);
-@end example
-
 If ``[not] aligned'' is specified, there are some rare cases where
 AdaControl cannot evaluate whether a component is aligned or not; in
 this case, it will ``assume the worse'' (i.e. report as if the
 component had the specified alignment), thus creating possible false
-positives. Such cases are detected by the rule
-``uncheckable''. @xref{Uncheckable}.
+positives. Such cases are detected by the rule ``uncheckable''.
+@xref{Uncheckable}.
 
 @node Reduceable_Scope, Representation_Clauses, Record_Declarations, Rules reference
 @section Reduceable_Scope

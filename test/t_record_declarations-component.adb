@@ -35,8 +35,8 @@ procedure Component is
       record
          F1, F2 : Character;              -- Standard.Character, () x2
          F3     : UC;                     -- Standard.Character, ()
-         F4     : String (1..10);         -- unpacked unsized array
-         F5     : Der := (others => ' '); -- unpacked unsized array, initialized array
+         F4     : String (1..10);         -- packed unsized array
+         F5     : Der := (others => ' '); -- packed unsized array, initialized array
          F6     : TT;                     -- Task
          F7     : Prot;                   -- Protected
       end record;
