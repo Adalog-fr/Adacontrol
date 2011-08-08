@@ -356,9 +356,12 @@ package body Rules.Max_Call_Depth is
                     =>
                   -- Traverse the definition, but not the discriminant part
                   Temp := Type_Declaration_View (Element);
-                  if not Is_Nil (Temp) then
+                  if not Is_Nil (Temp)
+                     and then Access_Type_Kind (Temp) not in Access_To_Subprogram_Definition
+                  then
                      -- Temp is nil for an empty task type declaration (task T;)
-                     Traverse (Temp, Control, Descr);
+                     -- We're not supposed to traverse formal parameters that are part of access to SP
+                        Traverse (Temp, Control, Descr);
                   end if;
                   Control := Abandon_Children;
                when An_Incomplete_Type_Declaration

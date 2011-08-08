@@ -1,4 +1,10 @@
 =============
+== V1.12b5 ==
+=============
+Bug fixes:
+   Crash in Max_Call_Depth for the declaration of access to SP types
+
+=============
 == V1.12r4 ==
 =============
 
