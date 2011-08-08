@@ -143,22 +143,27 @@ begin
          Ada.Command_Line.Set_Exit_Status (OK);
       end if;
 
-      declare
-         Exec_Time_String : constant Wide_String
-           := Integer_Img (Integer ((Clock - Start_Time)*10));
-      begin
-         if Framework.Language.Had_Errors then
-            User_Log ("Syntax errors found");
-         elsif Action = Check then
-            User_Log ("No syntax error");
-         else
+      if Framework.Language.Had_Errors then
+         User_Log ("Syntax errors found");
+      elsif Action = Check then
+         User_Log ("No syntax error");
+      else
+         declare
+            -- Execution time in tenth of seconds:
+            Exec_Time : constant Integer := Integer ((Clock - Start_Time) * 10);
+            Hours     : constant Integer := Exec_Time / (3600 * 10);
+            Mins      : constant Integer := Exec_Time rem (3600 * 10) / (60 * 10);
+            Secs      : constant Integer := Exec_Time rem (60 * 10) / 10;
+            Tens      : constant Integer := Exec_Time rem 10;
+         begin
+            -- We don't output tens if > 1 min
             User_Log ("Total execution time: "
-                      & Choose (Exec_Time_String (1 .. Exec_Time_String'Last - 1), "0")
-                      & '.'
-                      & Exec_Time_String (Exec_Time_String'Last)
-                      & "s.");
-         end if;
-      end;
+                        & Choose (Hours /= 0, Integer_Img (Hours) & "h ", "")
+                        & Choose (Mins  /= 0, Integer_Img (Mins)  & "mn ", "")
+                        & Integer_Img (Secs)
+                        & Choose (Mins = 0, '.' & Integer_Img (Tens), "") & "s.");
+         end;
+      end if;
    end if;
 
 exception

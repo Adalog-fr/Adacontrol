@@ -1276,7 +1276,7 @@ package body Rules.Usage is
                when Read =>
                   Update (Good_Name, K_Constant, Value => (K_Read => True, others => False));
                when Write | Read_Write =>
-                  Failure ("Usage: write of constant");
+                  Failure ("Usage: write of constant", Name);
             end case;
 
          when K_Procedure | K_Function =>

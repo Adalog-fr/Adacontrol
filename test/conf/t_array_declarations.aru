@@ -4,6 +4,10 @@ Not_2: count  array_declarations (first, 2);
 
 check  array_declarations (last, max 1e3);
 
+check  array_declarations (dimensions, min 1, max 3);
+search array_declarations (dimensions, 1);
+"1 or 4 dims": count  array_declarations (dimensions, min 2, max 3);
+
 check  array_declarations (length, min 1, max 5);
 search array_declarations (length, min 2, max 4);
 Too_Long: count  array_declarations (length, max 5);

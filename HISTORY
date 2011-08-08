@@ -1,4 +1,80 @@
 =============
+== V1.12r3 ==
+=============
+
+General:
+--------
+Bug fixes:
+   Crash with record components of an anonymous access type (Ada2005)
+   Expression (Mixed_Operators) did not handle properly "abs" and "not"
+   Local_Hiding claimed that formals of a separate body hid their counterpart
+     from the spec.
+
+Compatibility:
+   Made the code compatible to the new conditional expression feature
+   (GNAT extension).
+
+Misc:
+   Execution time is now reported as h mn s.
+
+GPS integration
+---------------
+   Better integration with GPR projects. Note that this requires
+   copying the file GPS/adacontrol.xml into <GNAT-dir>/share/gprconfig
+   when installing AdaControl manually.
+
+Framework:
+----------
+Based numbers in rule parameters are now supported
+
+".aru" extension taken by default for rules files.
+
+New rules:
+----------
+Record_Declarations
+
+Changes to existing rules:
+--------------------------
+Array_Declarations
+   Added subrule dimensions
+
+Barrier_Expressions
+   No more fooled by renamings
+
+Declarations:
+   Added subrules renaming_as_body, renaming_as_declaration
+   
+Entity_Inside_Exception:
+   Added entry_calls as parameter
+
+Expressions:
+   Real_Equality: do not issue message for user defined "=".
+   and, or, xor: now follow renamings
+   Added subrules explicit_dereference, implicit_dereference, 
+      fixed_multiplying_op, inherited_function_call, 
+
+Entity_Inside_Exception 
+   No more fooled by renamings
+
+Instantiations:
+   No more fooled by renamings. Controls generics in generics. 
+
+Object_Declarations:
+   Added subrule address_not_volatile    
+
+Representation_Clauses:
+   Added modifier "object" to attribute specification
+
+Return_Type:
+   Added subrule constrained_array
+
+Special_Comments:
+   changed rule name to Comments. Added subrule position
+
+Statements:
+   Added subrules entry_call, inherited_procedure_call
+
+=============
 == V1.11r4 ==
 =============
 

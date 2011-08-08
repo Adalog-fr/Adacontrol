@@ -320,6 +320,7 @@ package body Framework.Scope_Manager is
    begin
       -- Delay exit from the unit-level scope until the unit is exited
       -- to allow Exit_Unit from rules to still have scoping information
+
       if Scope_Stack (Scope_Top).Is_Unit and not Force then
          return;
       end if;

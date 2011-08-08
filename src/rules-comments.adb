@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Special_Comments - Package body                           --
+--  Rules.Comments - Package body                                   --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -35,7 +35,8 @@ with
   Ada.Characters.Latin_1,
   Ada.Unchecked_Deallocation,
   Ada.Strings.Wide_Maps,
-  Ada.Strings.Wide_Fixed;
+  Ada.Strings.Wide_Fixed,
+  Ada.Strings.Wide_Unbounded;
 
 -- ASIS
 with
@@ -51,27 +52,22 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
-package body Rules.Special_Comments is
-   use Framework, Framework.Control_Manager;
+package body Rules.Comments is
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   type Subrules is (Pattern, Terminating, Unnamed_Begin);
+   type Subrules is (Pattern, Position, Terminating, Unnamed_Begin);
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules);
    type Subrules_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrules_Set := (others => False);
 
-   type Units is (U_All, U_Procedure, U_Function, U_Entry, U_Package, U_Task);
-   subtype True_Units is Units range Units'Succ (U_All) .. Units'Last;
-   package Units_Flags_Utilities is new Framework.Language.Flag_Utilities (Units, Prefix => "U_");
-
-   type Decl_Conditions is (Always, Declaration, Program_Unit);
-   package Decl_Conditions_Utilities is new Framework.Language.Modifier_Utilities (Decl_Conditions);
-
    Rule_Used : Subrules_Set := No_Rule;
    Save_Used : Subrules_Set;
 
+   -- Declarations for Pattern
    type Pattern_Access is access String_Matching.Compiled_Pattern;
 
    type Pattern_Context;
@@ -82,11 +78,6 @@ package body Rules.Special_Comments is
          Next    : Pattern_Context_Access;
       end record;
 
-   type Unnamed_Context is new Basic_Rule_Context with
-      record
-         Condition : Decl_Conditions;
-      end record;
-
    type Pattern_Node;
    type Pattern_Node_Access is access Pattern_Node;
    type Pattern_Node is
@@ -95,6 +86,13 @@ package body Rules.Special_Comments is
          Next    : Pattern_Node_Access;
       end record;
 
+   Pattern_Contexts : Pattern_Context_Access;
+
+   -- Declarations for Position
+   Pos_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Pos_Bounds : array (Control_Kinds) of Bounds_Values := (others => Unlimited_Bounds);
+
+   -- Declarations for Terminating
    type Terminating_Context is new Basic_Rule_Context with
       record
          Begin_Allowed : Boolean;
@@ -102,8 +100,20 @@ package body Rules.Special_Comments is
          Pattern_List  : Pattern_Node_Access;
       end record;
 
-   Pattern_Contexts     : Pattern_Context_Access;
    Terminating_Contexts : Terminating_Context;
+
+   -- Declarations for Unnamed_Begin
+   type Units is (U_All, U_Procedure, U_Function, U_Entry, U_Package, U_Task);
+   subtype True_Units is Units range Units'Succ (U_All) .. Units'Last;
+   package Units_Flags_Utilities is new Framework.Language.Flag_Utilities (Units, Prefix => "U_");
+
+   type Decl_Conditions is (Always, Declaration, Program_Unit);
+   package Decl_Conditions_Utilities is new Framework.Language.Modifier_Utilities (Decl_Conditions);
+
+   type Unnamed_Context is new Basic_Rule_Context with
+      record
+         Condition : Decl_Conditions;
+      end record;
 
    Units_Used       : array (True_Units) of Boolean := (others => False);
    Unnamed_Contexts : array (True_Units) of Unnamed_Context;
@@ -130,6 +140,7 @@ package body Rules.Special_Comments is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Ada.Strings.Wide_Unbounded;
       use String_Matching, Framework.Language;
       use Decl_Conditions_Utilities, Subrules_Flags_Utilities, Units_Flags_Utilities, Utilities;
       Sr : Subrules;
@@ -156,6 +167,19 @@ package body Rules.Special_Comments is
                      Parameter_Error (Rule_Id, "Incorrect pattern: " & Pat);
                end;
             end loop;
+
+         when Position =>
+            if not Parameter_Exists then
+               Parameter_Error (Rule_Id, "position parameter required");
+            end if;
+
+            if Pos_Bounds (Ctl_Kind) /= Unlimited_Bounds then
+               Parameter_Error (Rule_Id, "rule already specified");
+            end if;
+
+            Pos_Bounds (Ctl_Kind) := Get_Bounds_Parameters (Rule_Id, Bound_Min => 1, Allow_Single => True);
+            Pos_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Rule_Used (Position ) := True;
 
          when Terminating =>
             if Rule_Used (Terminating) then
@@ -233,15 +257,16 @@ package body Rules.Special_Comments is
       Subrules_Flags_Utilities.Help_On_Flags ("Parameter (1)");
       User_Message ("for pattern:");
       User_Message ("   Parameter(2..): ""<comment pattern>""");
+      User_Message ("for position:");
+      User_Message ("   Parameter(2..3): [<bound>] <value>");
+      User_Message ("                 (at least one parameter required)");
       User_Message ("for terminating:");
       User_Message ("   Parameter(2..): ""<allowed pattern>"" | begin | end");
       User_Message ("for unnamed_begin:");
       User_Message ("   Parameter(2..): [<condition>] <unit>");
       Decl_Conditions_Utilities.Help_On_Modifiers (Header => "      <condition>:");
       Units_Flags_Utilities.Help_On_Flags         (Header => "           <unit>:");
-      User_Message ("Control comments that match the specified pattern");
-      User_Message ("or are on the same line as something else");
-      User_Message ("or ""begin"" without a comment identifying the program unit");
+      User_Message ("Control the content or placement of comments");
    end Help;
 
    -------------
@@ -272,8 +297,8 @@ package body Rules.Special_Comments is
      := Ada.Strings.Wide_Maps.To_Set (Ada.Characters.Handling.To_Wide_String (' ' & Ada.Characters.Latin_1.HT));
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, String_Matching, Utilities;
-      use Ada.Strings.Wide_Maps;
+      use Framework.Reports, String_Matching, Thick_Queries, Utilities;
+      use Ada.Strings.Wide_Maps, Ada.Strings.Wide_Unbounded;
 
       type Found_State is (Nothing_Found, Begin_Found, End_Found, Others_Found);
       State     : Found_State := Nothing_Found;
@@ -285,7 +310,7 @@ package body Rules.Special_Comments is
       Start     : Natural := 0;
       Matched   : Boolean;
    begin
-      if not (Rule_Used (Pattern) or Rule_Used (Terminating)) then
+      if not (Rule_Used (Pattern) or Rule_Used (Terminating) or Rule_Used (Position)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -343,6 +368,30 @@ package body Rules.Special_Comments is
 
       if Start = 0 then
          return;
+      end if;
+
+      if Rule_Used (Position) then
+         if Biggest_Int (Start) not in Pos_Bounds (Check).Min .. Pos_Bounds (Check).Max then
+            Report (Rule_Id,
+                    To_Wide_String (Pos_Labels (Check)),
+                    Check,
+                    Loc,
+                    "comment start position is " & Bound_Image (Pos_Bounds (Check)));
+         elsif Biggest_Int (Start) not in Pos_Bounds (Search).Min .. Pos_Bounds (Search).Max then
+            Report (Rule_Id,
+                    To_Wide_String (Pos_Labels (Search)),
+                    Search,
+                    Loc,
+                    "comment start position is " & Bound_Image (Pos_Bounds (Search)));
+         end if;
+
+         if Biggest_Int (Start) not in Pos_Bounds (Count).Min .. Pos_Bounds (Count).Max then
+            Report (Rule_Id,
+                    To_Wide_String (Pos_Labels (Count)),
+                    Count,
+                    Loc,
+                    "");
+         end if;
       end if;
 
       -- Skip spaces following "--"
@@ -527,10 +576,10 @@ package body Rules.Special_Comments is
       end;
    end Process_Program_Unit;
 
-begin  -- Rules.Special_Comments
+begin  -- Rules.Comments
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic_Textual,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
-end Rules.Special_Comments;
+end Rules.Comments;

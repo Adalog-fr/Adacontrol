@@ -74,6 +74,7 @@ with
   Rules.Parameter_Declarations,
   Rules.Potentially_Blocking_Operations,
   Rules.Pragmas,
+  Rules.Record_Declarations,
   Rules.Reduceable_Scope,
   Rules.Representation_Clauses,
   Rules.Return_Type,
@@ -81,7 +82,7 @@ with
   Rules.Silent_Exceptions,
   Rules.Simplifiable_Expressions,
   Rules.Simplifiable_Statements,
-  Rules.Special_Comments,
+  Rules.Comments,
   Rules.Statements,
   Rules.Style,
   Rules.Terminating_Tasks,
@@ -284,7 +285,7 @@ package body Framework.Plugs is
                   Rules.Parameter_Declarations.   Process_Declaration          (Element);
                   Rules.Improper_Initialization.  Process_Structure            (Element);
                   Rules.Return_Type.              Process_Function_Declaration (Element);
-                  Rules.Special_Comments.         Process_Program_Unit         (Element);
+                  Rules.Comments.         Process_Program_Unit         (Element);
                   Rules.Statements.               Process_Function_Body        (Element);
                   Rules.Style.                    Process_Construct            (Element);
                   Rules.Style.                    Process_Declaration          (Element);
@@ -296,7 +297,7 @@ package body Framework.Plugs is
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Parameter_Declarations.  Process_Declaration         (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Special_Comments.        Process_Program_Unit        (Element);
+                  Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
                   Rules.Style.                   Process_Declaration         (Element);
                   Rules.Usage.                   Process_Declaration         (Element);
@@ -306,7 +307,7 @@ package body Framework.Plugs is
                   Rules.Global_References.       Process_Body                (Element);
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Special_Comments.        Process_Program_Unit        (Element);
+                  Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
                   Rules.Style.                   Process_Declaration         (Element);
 
@@ -320,7 +321,7 @@ package body Framework.Plugs is
                when A_Package_Body_Declaration =>
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Special_Comments.        Process_Program_Unit        (Element);
+                  Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
 
                when A_Generic_Package_Declaration =>
@@ -344,7 +345,7 @@ package body Framework.Plugs is
                   Rules.Global_References.       Process_Body                (Element);
                   Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Special_Comments.        Process_Program_Unit        (Element);
+                  Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
                   Rules.Terminating_Tasks.       Process_Task_Body           (Element);
 
@@ -479,6 +480,9 @@ package body Framework.Plugs is
                   Rules.Expressions.             Process_Range      (Element);
                   Rules.Simplifiable_Expressions.Process_Range      (Element);
 
+               when A_Record_Definition =>
+                  Rules.Record_Declarations.Process_Record_Definition (Element);
+
                when A_Variant_Part =>
                   Rules.Declarations.Process_Definition (Element);
 
@@ -582,8 +586,8 @@ package body Framework.Plugs is
 
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
-                  Rules.Entities. Process_Identifier (Element);
-                  Rules.Style.    Process_Attribute  (Element);
+                  Rules.Entities. Process_Attribute (Element);
+                  Rules.Style.    Process_Attribute (Element);
 
                when An_Operator_Symbol =>
                   Rules.No_Operator_Usage. Process_Operator (Element);
@@ -700,7 +704,7 @@ package body Framework.Plugs is
       Rules.Header_Comments.  Process_Line (Line, Loc);
       Rules.Max_Blank_Lines.  Process_Line (Line, Loc);
       Rules.Max_Line_Length.  Process_Line (Line, Loc);
-      Rules.Special_Comments. Process_Line (Line, Loc);
+      Rules.Comments. Process_Line (Line, Loc);
       Rules.Style.            Process_Line (Line, Loc);
    end Text_Analysis;
 

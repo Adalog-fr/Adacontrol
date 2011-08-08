@@ -13,8 +13,8 @@ procedure Fractional_Size is
    V1 : T1;
    V2 : T2;
 
-   for V1'Size use 16;              -- 'Size
-   for V2'Size use T3'Size * 2;     -- 'Size
+   for V1'Size use 16;              -- object 'Size, 'Size
+   for V2'Size use T3'Size * 2;     -- object 'Size, 'Size
 begin
    null;
 end Fractional_Size;

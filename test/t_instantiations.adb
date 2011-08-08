@@ -2,6 +2,7 @@ with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Conversion;
 with X_Instantiations;
 procedure T_instantiations is
+   generic procedure AUD renames Ada.Unchecked_Deallocation;
 
    type String_Access is access String;
    type String_Access_2 is access String;
@@ -29,6 +30,9 @@ procedure T_instantiations is
 
    procedure Free_6 is             -- T1, T8, local_instantiation
       new Ada.Unchecked_Deallocation (Class_T, Tagged_Access);
+
+   procedure Free_7 is             -- T1, T2, T3, local_instantiation
+     new AUD (Standard.Natural, Natural_Access);
 
    function To_Integer_Access is   -- T6, local_instantiation
       new Ada.Unchecked_Conversion (String_Access, Integer_Access);
@@ -62,6 +66,21 @@ procedure T_instantiations is
    procedure P23 is new G2 (T2 => Float, T1 => Integer);  -- Repeat4
    procedure P24 is new G2 (Integer, Proc1, Float);       -- Repeat4
    procedure P25 is new G2 (Integer, Proc1, Float);       -- Repeat4, Repeat5
+
+   generic
+   package GP is
+      generic
+      package GPGP is
+      end GPGP;
+   end GP;
+
+   package body GP is
+      package body GPGP is
+      end GPGP;
+   end GP;
+
+   package IP is new GP;
+   package IPIP is new IP.GPGP; -- GenGen
 begin
    declare
       procedure L1 is new G1 (Duration, Duration);

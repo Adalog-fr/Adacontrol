@@ -1,4 +1,4 @@
-separate (T_Special_Comments)
+separate (T_Comments)
 procedure Test_Unnamed_Begin is
 
    procedure P1 is begin null; end P1; --P1

@@ -431,11 +431,13 @@ package body Framework.Reports is
                -- if file is not found ???,
                -- consider that rule is active
                null;
-            when others =>
+            when Occur : others =>
                if Is_Open (Source_File) then
                   Close (Source_File);
                end if;
-               raise;
+               Failure ("Report: "
+                        & To_Wide_String (Exception_Name (Occur)) & " raised while searching "
+                        & Get_File_Name (Loc) & ", line " & Integer_Img (Get_First_Line (Loc)));
          end;
       end if;
 

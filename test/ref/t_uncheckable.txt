@@ -5,8 +5,9 @@ t_uncheckable-declarations.adb:4:21: Error: Uncheckable: in rule DECLARATIONS: P
 t_uncheckable-directly_accessed_globals.adb:15:15: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false negative: Name is dynamic renaming
 t_uncheckable-directly_accessed_globals.adb:12:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Uncheckable.Directly_Accessed_Globals.Pack.J" is not read from any subprogram
 t_uncheckable-duplicate_initialization_calls.adb:12:14: Error: Uncheckable: in rule DUPLICATE_INITIALIZATION_CALLS: Possible false negative: non statically determinable out parameter
+t_uncheckable-exception_propagation.adb:12:16: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Prefix of attribute is not statically determinable
 t_uncheckable-exception_propagation.adb:13:16: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Prefix of attribute is not statically determinable
-t_uncheckable-exception_propagation.adb:14:16: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Prefix of attribute is not statically determinable
+x_uncheckable_proc.ads:1:1: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Body not available, assuming no risk
 t_uncheckable-exception_propagation.adb:15:4: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Dispatching call
 t_uncheckable-global_references.adb:4:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
 t_uncheckable-global_references.adb:5:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
@@ -22,6 +23,10 @@ t_uncheckable-parameter_aliasing.adb:22:4: Error: Uncheckable: in rule PARAMETER
 t_uncheckable-potentially_blocking_operations.adb:9:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:10:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:11:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
+t_uncheckable-record_declarations.adb:9:10: Error: Uncheckable: in rule RECORD_DECLARATIONS: Possible false positive: unable to evaluate component position, assuming not aligned
+t_uncheckable-record_declarations.adb:5:10: Error: RECORD_DECLARATIONS: Component S is unaligned "array"
+t_uncheckable-record_declarations.adb:17:10: Error: Uncheckable: in rule RECORD_DECLARATIONS: Possible false positive: unable to evaluate component position, assuming aligned
+t_uncheckable-record_declarations.adb:13:10: Error: RECORD_DECLARATIONS: Component I is aligned "range"
 t_uncheckable-representation_clauses.adb:5:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size subrule
 t_uncheckable-representation_clauses.adb:17:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
 t_uncheckable-representation_clauses.adb:18:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules

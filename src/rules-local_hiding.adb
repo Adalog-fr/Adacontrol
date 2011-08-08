@@ -330,14 +330,14 @@ package body Rules.Local_Hiding is
 
             if Overload_Count /= 0 then
                -- Short form of reports of overloading, issued after the loop
-                              Report (Rule_Id,
-                                      Rule_Context (Overloading),
-                                      Get_Location (Name),
-                                      '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
-                                      & """ overloads "
-                                      & Integer_Img (Overload_Count)
-                                      & " declaration(s), last at "
-                                      & Image (Get_Location (Overload_Last)));
+               Report (Rule_Id,
+                       Rule_Context (Overloading),
+                       Get_Location (Name),
+                       '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                       & """ overloads "
+                       & Integer_Img (Overload_Count)
+                       & " declaration(s), last at "
+                       & Image (Get_Location (Overload_Last)));
             end if;
          end if;
 
@@ -348,14 +348,14 @@ package body Rules.Local_Hiding is
                Visible_Identifiers.Push_Enclosing ((Full_Name'Length,
                                                     Full_Name,
                                                     Short_Name'Length,
-                                                    Name,
+                                                    First_Name,
                                                     Is_Callable    => Callable_Name,
                                                     Is_Enumeration => Is_Enumeration));
             else
                Visible_Identifiers.Push ((Full_Name'Length,
                                           Full_Name,
                                           Short_Name'Length,
-                                          Name,
+                                          First_Name,
                                           Is_Callable    => Callable_Name,
                                           Is_Enumeration => Is_Enumeration));
             end if;

@@ -53,8 +53,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Array_Declarations is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (First, Last, Length, Component);
-   subtype Dim_Subrules is Subrules range First .. Length;
+   type Subrules is (First, Last, Length, Dimensions, Component);
+   subtype Dim_Subrules is Subrules range First .. Dimensions;
    package Subrules_Flag_Utilities  is new Framework.Language.Flag_Utilities (Subrules);
 
    type Usage is array (Subrules) of Control_Kinds_Set;
@@ -74,7 +74,7 @@ package body Rules.Array_Declarations is
          Compo_Sizing : Repr_Condition;
       end record;
    Compo_Contexts : Context_Store;
-   package Compo_Iterator is new Generic_Context_Iterator (Compo_Contexts);
+   package Compo_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Compo_Contexts);
 
 
    ----------
@@ -86,10 +86,10 @@ package body Rules.Array_Declarations is
    begin
       User_Message ("Rule: "& Rule_Id);
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
-      User_Message ("For First, Last, Length:");
+      User_Message ("For First, Last, Length, Dimensions:");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
-      User_Message ("For first and last, alternatively:");
+      User_Message ("For first, last, and dimensions, alternatively:");
       User_Message ("Parameter(2): <value>");
       Min_Max_Utilities.Help_On_Modifiers (Header => "     <bound>:");
       User_Message ("For component:");
@@ -123,13 +123,14 @@ package body Rules.Array_Declarations is
       end if;
 
       case Subrule is
-         when First | Last =>
+         when First | Last | Dimensions =>
             Values (Subrule, Ctl_Kind) := Get_Bounds_Parameters (Rule_Id,
                                                                  Bound_Min    => Biggest_Int'First,
                                                                  Bound_Max    => Biggest_Int'Last,
                                                                  Allow_Single => True);
             Labels    (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
             Rule_Used (Subrule) (Ctl_Kind) := True;
+
          when Length =>
             Values (Subrule, Ctl_Kind) := Get_Bounds_Parameters (Rule_Id);
             if Values (Subrule, Ctl_Kind).Min >= Values (Subrule, Ctl_Kind).Max then
@@ -243,7 +244,7 @@ package body Rules.Array_Declarations is
             when An_Unconstrained_Array_Definition =>
                return Get_Location (Index_Subtype_Definitions (Definition)(Dim));
             when others =>
-               Failure ("not an array definition");
+               Failure ("Get_Bound_Location: not an array definition");
             end case;
          end if;
       end Get_Bound_Location;
@@ -259,18 +260,7 @@ package body Rules.Array_Declarations is
          Bound_Msg : constant array (Subrules range First .. Last) of Wide_String (1 .. 5)
            := ("lower", "upper");
 
-         function Bound_Image (Low, High : Biggest_Int) return Wide_String is
-         begin
-            if Low = High then
-               return "not " & Biggest_Int_Img (Low);
-            elsif Low = Biggest_Int'First then
-               return "more than " & Biggest_Int_Img (High);
-            elsif High = Biggest_Int'Last then
-               return "less than " & Biggest_Int_Img (Low);
-            else
-               return "not in " & Biggest_Int_Img (Low) & " .. " & Biggest_Int_Img (High);
-            end if;
-         end Bound_Image;
+         use Framework.Language.Shared_Keys;
       begin  -- Process_First_Last
          for B in Bounds'Range loop
             if Sr_Used (Sr) then
@@ -286,9 +276,9 @@ package body Rules.Array_Declarations is
                                 Check,
                                 Get_Bound_Location ((B + 1) / 2),
                                 Bound_Msg (Sr) & " bound of array is "
-                                & Bound_Image (Values (Sr, Check).Min, Values (Sr, Check).Max)
+                                & Bound_Image (Values (Sr, Check))
                                 & " and "
-                                & Bound_Image (Values (Sr, Search).Min, Values (Sr, Search).Max)
+                                & Bound_Image (Values (Sr, Search))
                                 & " (" & Biggest_Int_Img (Val) & ')');
                      elsif Val not in Values (Sr, Search).Min .. Values (Sr, Search).Max then
                         Report (Rule_Id,
@@ -296,7 +286,7 @@ package body Rules.Array_Declarations is
                                 Search,
                                 Get_Bound_Location ((B + 1) / 2),
                                 Bound_Msg (Sr) & " bound of array is "
-                                & Bound_Image (Values (Sr, Search).Min, Values (Sr, Search).Max)
+                                & Bound_Image (Values (Sr, Search))
                                 & " (" & Biggest_Int_Img (Val) & ')');
                      end if;
 
@@ -308,7 +298,7 @@ package body Rules.Array_Declarations is
                              Check,
                              Get_Bound_Location ((B + 1) / 2),
                              Bound_Msg (Sr) & " bound of array is "
-                             & Bound_Image (Values (Sr, Check).Min, Values (Sr, Check).Max)
+                             & Bound_Image (Values (Sr, Check))
                              & " (" & Biggest_Int_Img (Val) & ')');
 
                   elsif Rule_Used (Sr) (Search)
@@ -319,7 +309,7 @@ package body Rules.Array_Declarations is
                              Search,
                              Get_Bound_Location ((B + 1) / 2),
                              Bound_Msg (Sr) & " bound of array is "
-                             & Bound_Image (Values (Sr, Search).Min, Values (Sr, Search).Max)
+                             & Bound_Image (Values (Sr, Search))
                              & " (" & Biggest_Int_Img (Val) & ')');
                   end if;
 
@@ -549,6 +539,75 @@ package body Rules.Array_Declarations is
          Reset (Iterator, Framework.Value (Image (Type_Category (First_St, Follow_Derived => True))));
          Compo_Report (Iterator, Lower_Case);
       end Process_Component;
+
+      procedure Process_Dimensions is
+         use Ada.Strings.Wide_Unbounded;
+         use Asis, Asis.Definitions, Asis.Elements;
+         use Framework.Reports, Thick_Queries, Utilities;
+
+         Nb_Dim : Biggest_Int;
+      begin
+         case Type_Kind (Definition) is
+            when A_Constrained_Array_Definition =>
+               Nb_Dim := Discrete_Subtype_Definitions (Definition)'Length;
+            when An_Unconstrained_Array_Definition =>
+               Nb_Dim := Index_Subtype_Definitions (Definition)'Length;
+            when others =>
+               Failure ("Process_Dimension: not an array definition");
+         end case;
+
+         -- Max
+         if Rule_Used (Dimensions) (Check) and then Nb_Dim > Values (Dimensions, Check).Max then
+                  Report (Rule_Id,
+                          To_Wide_String (Labels (Dimensions, Check)),
+                          Check,
+                          Get_Location (Definition),
+                          "array has more than " & Biggest_Int_Img (Values (Dimensions, Check).Max)
+                          & " dimensions (" & Biggest_Int_Img (Nb_Dim) & ')');
+
+         elsif Rule_Used (Dimensions) (Search) and then Nb_Dim > Values (Dimensions, Search).Max then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Dimensions, Search)),
+                    Search,
+                    Get_Location (Definition),
+                    "array has more than " & Biggest_Int_Img (Values (Dimensions, Search).Max)
+                    & " dimensions (" & Biggest_Int_Img (Nb_Dim) & ')');
+         end if;
+
+         if Rule_Used (Dimensions) (Count) and then Nb_Dim > Values (Dimensions, Count).Max then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Dimensions, Count)),
+                    Count,
+                    Get_Location (Definition),
+                    "");
+         end if;
+
+         -- Min
+         if Rule_Used (Dimensions) (Check) and then Nb_Dim < Values (Dimensions, Check).Min then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Dimensions, Check)),
+                    Check,
+                    Get_Location (Definition),
+                    "array has less than " & Biggest_Int_Img (Values (Dimensions, Check).Min)
+                          & " dimensions (" & Biggest_Int_Img (Nb_Dim) & ')');
+
+         elsif Rule_Used (Dimensions) (Search) and then Nb_Dim < Values (Dimensions, Search).Min then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Dimensions, Search)),
+                    Search,
+                    Get_Location (Definition),
+                    "array has less than " & Biggest_Int_Img (Values (Dimensions, Search).Min)
+                    & " dimensions (" & Biggest_Int_Img (Nb_Dim) & ')');
+         end if;
+
+         if Rule_Used (Dimensions) (Count) and then Nb_Dim < Values (Dimensions, Count).Min then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Dimensions, Count)),
+                    Count,
+                    Get_Location (Definition),
+                    "");
+         end if;
+      end Process_Dimensions;
    begin  -- Process_Array_Definition
       Process_Index_Constraint (Definition);
 
@@ -556,6 +615,10 @@ package body Rules.Array_Declarations is
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      if Rule_Used (Dimensions) /= Empty_Control_Kinds_Set then
+         Process_Dimensions;
+      end if;
 
       if not Is_Empty (Compo_Contexts) then
          Process_Component;

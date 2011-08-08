@@ -68,11 +68,22 @@ package Framework.Language.Shared_Keys is
          Min : Thick_Queries.Biggest_Int;
          Max : Thick_Queries.Biggest_Int;
       end record;
+   Unlimited_Bounds : constant Bounds_Values := (Min => Thick_Queries.Biggest_Int'First,
+                                                 Max => Thick_Queries.Biggest_Int'Last);
    function Get_Bounds_Parameters (Rule_Id      : Wide_String;
                                    Bound_Min    : Thick_Queries.Biggest_Int := 0;
                                    Bound_Max    : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Natural'Last;
                                    Allow_Single : Boolean                   := False)
                                    return Bounds_Values;
+   -- Gets Min and Max parameters in the form min <val>, max <val> (in any order)
+   -- or the Bound_Min (resp Bound_Max) value for unspecified bounds
+   -- If Allow_Single, a single value (without specifying Min or Max) is allowed and
+   -- returned in both Min and Max
+
+   function Bound_Image (Bounds : Language.Shared_Keys.Bounds_Values) return Wide_String;
+   -- Basically, prints an message like "not in Min .. Max", but adjusts the message
+   -- if only one bound has been specified.
+
    -----------------------------------------------------------------------------------
    -- Categories
    -----------------------------------------------------------------------------------

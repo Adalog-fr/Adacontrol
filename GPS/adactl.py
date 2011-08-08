@@ -303,7 +303,7 @@ def options (rules, files):
          raise ValueError
    elif rules == "file":
       if not get_file("-f") :
-         GPS.MDI.dialog ("no rules file defined")
+         GPS.MDI.dialog ("no rules file defined in AdaControl properties")
          raise ValueError
       result = result + " -f " + get_file("-f")
    else:   #  "check"

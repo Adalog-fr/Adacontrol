@@ -49,6 +49,11 @@ Exceptions_As_Control_Flow:
    check statements (raise_locally_handled);
    -- Difference: AdaControl handles correctly package bodies, tasks, and accepts
 
+Exits_From_Conditional_Loops:
+   check statements (exit_for_loop, exit_while_loop);
+   -- Difference: AdaControl checks only exits that refer to the given kind of loop
+   -- check statements (exit_outer_loop) can be used to check for exit of several levels of loops
+
 EXIT_Statements_With_No_Loop_Name: 
    check statements (unnamed_exit); 
    -- Difference: applies only to named loops
@@ -233,9 +238,12 @@ Unassigned_OUT_Parameters:
    -- Difference: this rule may require a stricter pattern than gnatcheck
 
 Uncommented_BEGIN_In_Package_Bodies:
-   check special_comments (unnamed_begin, declaration package);
+   check comments (unnamed_begin, declaration package);
    -- difference: we do not require the begin to be alone on its line
    -- (better checked by other rules)
+
+Unconditional_Exits:
+   check statements (unconditional_exit);
 
 Unconstrained_Array_Returns:
    check return_type (unconstrained_array);

@@ -1,5 +1,5 @@
 with Ada.Text_IO; use Ada.Text_IO;
-separate (T_Special_Comments)
+separate (T_Comments)
 procedure Test_Terminating is
   S : constant String := """--JUNK"; --
    -- Not a terminating comment

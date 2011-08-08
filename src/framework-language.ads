@@ -96,15 +96,15 @@ package Framework.Language is
    -- If the parameter is not an absolute file name, it is made relative to the
    -- directory of the rules file, or to the current directory if there is none
 
-   -- Following function returns True if the current token is True_KW
-   -- and False if the current token is False_KW (the token is consumed)
+   function Get_Modifier (True_KW  : Wide_String;
+                          False_KW : Wide_String := "";
+                          Default  : Boolean     := False) return Boolean;
+   -- Returns True if the current token is True_KW and False if the current token is False_KW
+   -- (the token is consumed)
    -- Otherwise, returns Default and does not change the current token
    -- True_KW and False_KW must be given in upper-case.
    -- An empty string is allowed for either of them, meaning there is no
    -- corresponding keyword
-   function Get_Modifier (True_KW  : Wide_String;
-                          False_KW : Wide_String := "";
-                          Default  : Boolean     := False) return Boolean;
 
    --  The following two packages can be instantiated to parse modifiers and "flag"
    --  parameters (keywords). The flags are the 'Image of the values
@@ -128,6 +128,8 @@ package Framework.Language is
       Full_Set  : constant Modifier_Set := (others => True);
 
       function Get_Modifier (Required : Boolean; Expected : Modifier_Set := Full_Set) return Modifiers;
+      -- Gets a modifier from those allowed by Expected
+      -- If Required and no modifier given, Syntax_Error
       -- If not Required and no modifier given, returns Modifiers'First
 
       function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;

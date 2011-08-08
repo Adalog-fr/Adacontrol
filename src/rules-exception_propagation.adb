@@ -554,55 +554,92 @@ package body Rules.Exception_Propagation is
    -- Exception_Propagation_Risk --
    --------------------------------
 
-   function Exception_Propagation_Risk (SP_Body : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
+   function Exception_Propagation_Risk (Decl : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
       use Asis, Asis.Elements, Asis.Declarations, Asis.Statements;
+      use Framework.Reports, Thick_Queries, Utilities;
+      SP_Body     : Asis.Declaration;
       H_State     : Handler_State;
       Level       : Risk_Level;
       The_Control : Traverse_Control := Continue;
-
-      Handlers    : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
    begin -- Exception_Propagation_Risk
+      case Declaration_Kind (Decl) is
+         when A_Procedure_Declaration
+            | A_Function_Declaration
+            =>
+            SP_Body := Corresponding_Body (Decl);
+         when A_Procedure_Instantiation
+            | A_Function_Instantiation
+            =>
+            SP_Body := Corresponding_Body (A4G_Bugs.Corresponding_Name_Declaration
+                                           (Simple_Name
+                                            (Generic_Unit_Name (Decl))));
+         when A_Procedure_Body_Declaration
+            | A_Function_Body_Declaration
+            | A_Task_Body_Declaration
+            =>
+            SP_Body := Decl;
+         when A_Procedure_Body_Stub
+            | A_Function_Body_Stub
+            =>
+            SP_Body := Corresponding_Subunit (Decl);
+         when others =>
+            Failure ("Unexpected element in Exception_Propagation_Risk", Decl);
+      end case;
+
+      if Is_Nil (SP_Body) then
+         -- This happens only if some required unit is not available
+         Uncheckable (Rule_Id,
+                      False_Negative,
+                      Get_Location (Decl),
+                      "Body not available, assuming no risk");
+         return No_Risk;
+      end if;
+
+      declare
+         Handlers    : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
+      begin
       -- Is there a handler ?
-      if Handlers = Nil_Element_List then
-         return Always;
-      end if;
+         if Handlers = Nil_Element_List then
+            return Always;
+         end if;
 
-      -- Is there an others choice (it must be last and the only choice)?
-      if Definition_Kind (Exception_Choices (Handlers (Handlers'Last)) (1)) /= An_Others_Choice then
-         return Always;
-      end if;
+         -- Is there an others choice (it must be last and the only choice)?
+         if Definition_Kind (Exception_Choices (Handlers (Handlers'Last)) (1)) /= An_Others_Choice then
+            return Always;
+         end if;
 
-      -- Is there any raise statement in handler?
-      H_State := (No_Risk, Exc => Nil_Element, Reraise => True);
-      for I in Handlers'Range loop
-         declare
-            Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
-         begin
-            for J in Stats'Range loop
-               Traverse_Handler (Stats (J), The_Control, H_State);
-               if H_State.Risk = Always then
-                  return Always;
-               end if;
-            end loop;
-         end;
-      end loop;
-      Level := No_Risk;
+         -- Is there any raise statement in handler?
+         H_State := (No_Risk, Exc => Nil_Element, Reraise => True);
+         for I in Handlers'Range loop
+            declare
+               Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
+            begin
+               for J in Stats'Range loop
+                  Traverse_Handler (Stats (J), The_Control, H_State);
+                  if H_State.Risk = Always then
+                     return Always;
+                  end if;
+               end loop;
+            end;
+         end loop;
+         Level := No_Risk;
 
-      -- No need to check declarations if not requested by the user
-      if Max_Level < Always then
-         declare
-            Decls : constant Asis.Declaration_List := Body_Declarative_Items (SP_Body);
-         begin
-            The_Control := Continue;
-            for I in Decls'Range loop
-               Traverse_Declaration (Decls (I), The_Control, Level);
-               exit when Level >= Max_Level;
-               -- Highest risk detected, no need to go further
-            end loop;
-         end;
-      end if;
+         -- No need to check declarations if not requested by the user
+         if Max_Level < Always then
+            declare
+               Decls : constant Asis.Declaration_List := Body_Declarative_Items (SP_Body);
+            begin
+               The_Control := Continue;
+               for I in Decls'Range loop
+                  Traverse_Declaration (Decls (I), The_Control, Level);
+                  exit when Level >= Max_Level;
+                  -- Highest risk detected, no need to go further
+               end loop;
+            end;
+         end if;
 
-      return Level;
+         return Level;
+      end;
    end Exception_Propagation_Risk;
 
    ------------------
@@ -662,14 +699,16 @@ package body Rules.Exception_Propagation is
             end if;
 
             SP_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix);
-
             case Declaration_Kind (SP_Declaration) is
                when A_Procedure_Declaration
                   | A_Procedure_Body_Declaration
+                  | A_Procedure_Body_Stub
+
                   | A_Function_Declaration
                   | A_Function_Body_Declaration
+                  | A_Function_Body_Stub
                     =>
-                  Risk := Exception_Propagation_Risk (Corresponding_Body (SP_Declaration), State.Check_Level);
+                  Risk := Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
                   if Risk >= State.Check_Level then
                      Report (Rule_Id,
                              State,
@@ -680,12 +719,7 @@ package body Rules.Exception_Propagation is
                              & ", used as call-back at " & Image (Get_Location (Call)));
                   end if;
                when A_Procedure_Instantiation | A_Function_Instantiation =>
-                  Risk := Exception_Propagation_Risk (Corresponding_Body
-                                                      (A4G_Bugs.Corresponding_Name_Declaration
-                                                       (Simple_Name
-                                                        (Generic_Unit_Name
-                                                         (SP_Declaration)))),
-                                                     State.Check_Level);
+                  Risk := Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
                   if Risk >= State.Check_Level then
                      Report (Rule_Id,
                              State,
@@ -733,7 +767,7 @@ package body Rules.Exception_Propagation is
       end if;
 
       if Expression_Kind (Call) = A_Function_Call
-        and then Is_Nil (A4G_Bugs.Corresponding_Called_Function (Call))
+        and then Is_Nil (Corresponding_Called_Function (Call))
       then
          -- This is a call to a predefined operation without a proper declaration
          -- Certainly not something that could register a call-back!
@@ -799,15 +833,19 @@ package body Rules.Exception_Propagation is
                   -- Actual must be an identifier (or else it is not for us, dereference for example)
                   if Expression_Kind (Actual_Parameter (Actuals (I))) = An_Identifier then
                      SP_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Ultimate_Name
-                                                                       (Actual_Parameter
-                                                                        (Actuals (I))));
+                                                                                (Actual_Parameter
+                                                                                 (Actuals (I))));
 
                      case Declaration_Kind (SP_Declaration) is
                         when A_Procedure_Declaration
                            | A_Procedure_Body_Declaration
+                           | A_Procedure_Body_Stub
+
                            | A_Function_Declaration
-                           | A_Function_Body_Declaration =>
-                           Risk := Exception_Propagation_Risk (Corresponding_Body (SP_Declaration),
+                           | A_Function_Body_Declaration
+                           | A_Function_Body_Stub
+                           =>
+                           Risk := Exception_Propagation_Risk (SP_Declaration,
                                                                EP_Rule_Context (Current_Context).Check_Level);
                            if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,
@@ -821,10 +859,7 @@ package body Rules.Exception_Propagation is
                            end if;
 
                         when A_Procedure_Instantiation | A_Function_Instantiation =>
-                           Risk := Exception_Propagation_Risk (Corresponding_Body
-                                                               (A4G_Bugs.Corresponding_Name_Declaration
-                                                                (Generic_Unit_Name
-                                                                 (SP_Declaration))),
+                           Risk := Exception_Propagation_Risk (SP_Declaration,
                                                                EP_Rule_Context (Current_Context).Check_Level);
                            if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,

@@ -37,6 +37,7 @@ package Rules.Entities is
 
    Rule_Id : constant Wide_String := "ENTITIES";
 
-   procedure Process_Identifier (Element : in Asis.Expression);
+   procedure Process_Identifier (Identifier : in Asis.Expression);
+   procedure Process_Attribute  (Attr       : in Asis.Expression);
 
 end Rules.Entities;

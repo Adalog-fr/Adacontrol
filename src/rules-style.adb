@@ -1856,6 +1856,7 @@ package body Rules.Style is
    -----------------------
 
    procedure Process_Attribute (Attribute : in Asis.Expression) is
+      use Asis.Expressions;
       Identifier : Asis.Expression;
   begin
       if not Rule_Used (St_Casing_Attribute) then
@@ -1863,7 +1864,7 @@ package body Rules.Style is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Identifier := A4G_Bugs.Attribute_Designator_Identifier (Attribute);
+      Identifier := Attribute_Designator_Identifier (Attribute);
       Check_Casing (A4G_Bugs.Name_Image (Identifier), St_Casing_Attribute, Identifier);
    end Process_Attribute;
 

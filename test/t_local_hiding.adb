@@ -67,7 +67,7 @@ procedure T_local_hiding is
       procedure P                           -- Overloading, Hiding
         (Param : Integer)                   -- OK
         is begin null; end;
-      procedure Proc (X : Float) is begin null; end; -- No explicit spec
+      procedure Proc (X : Float) is begin null; end; -- Overloading (x2), Hiding (No explicit spec)
       procedure Proc is begin null; end;    -- Overloading, Hiding
       package body Internal is              -- OK
          Z : Integer;                       -- Hiding
@@ -94,6 +94,8 @@ procedure T_local_hiding is
    end Sep;
 
    package body Sep is separate;
+
+   procedure Sep_Proc (A, B : Integer) is separate;
 
 begin
    declare

@@ -21,13 +21,30 @@ t_array_declarations-indexes.adb:29:16: Error: ARRAY_DECLARATIONS: lower bound o
 t_array_declarations-indexes.adb:30:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:30:9: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:31:16: Error: ARRAY_DECLARATIONS: array dimension is smaller than 1 (0)
 t_array_declarations-indexes.adb:31:24: Found: ARRAY_DECLARATIONS: array dimension is smaller than 2 (1)
 t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:31:9: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-indexes.adb:33:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1000)
 t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (1001)
 t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1001)
+t_array_declarations-dimensions.adb:4:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
+t_array_declarations-dimensions.adb:5:39: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (-1)
+t_array_declarations-dimensions.adb:5:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-dimensions.adb:6:39: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (-1)
+t_array_declarations-dimensions.adb:6:15: Error: ARRAY_DECLARATIONS: array has more than 3 dimensions (4)
+t_array_declarations-dimensions.adb:8:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:9:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:9:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
+t_array_declarations-dimensions.adb:10:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:10:59: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:10:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-dimensions.adb:11:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:11:59: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:11:78: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:11:15: Error: ARRAY_DECLARATIONS: array has more than 3 dimensions (4)
 t_array_declarations-component.adb:3:33: Error: compo_ident: array component is "Standard.Character"
 t_array_declarations-component.adb:3:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
 t_array_declarations-component.adb:4:24: Error: compo_ident: array component is "Standard.Character"
@@ -53,5 +70,6 @@ t_array_declarations-component.adb:64:34: Error: compo_enum_up_us: unpacked unsi
 t_array_declarations-component.adb:70:37: Error: compo_float: array component is "digits"
 
 Counts summary:
-Not_2: 36
+1 or 4 dims: 39
+Not_2: 50
 Too_Long: 8

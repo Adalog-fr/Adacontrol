@@ -9,6 +9,7 @@ Der_record : search representation_clauses (new layout);
 Ext_record : search representation_clauses (extension layout);
 Tag_record : search representation_clauses (tagged layout);
 size       : check  representation_clauses ('SIZE);
+obj_size   : check  representation_clauses (object 'size);
 fractional : check  representation_clauses (fractional_size);
 non_contig : check  representation_clauses (non_contiguous_layout);
 unaligned  : check  representation_clauses (non_aligned_component);

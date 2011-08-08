@@ -186,13 +186,14 @@ package body Framework.Language.Scanner is
          (Kind => Equal,             Position => Null_Location));
 
    procedure Actual_Next_Token (Force_String : Boolean := False) is
-      use Ada.Strings.Wide_Fixed, Ada.Characters.Handling;
+      use Ada.Strings.Wide_Fixed;
       use Thick_Queries, Utilities;
 
       First_Line   : Asis.Text.Line_Number;
       First_Column : Asis.Text.Character_Position;
 
       procedure Get_Name (Extended : Boolean) is
+         use Ada.Characters.Handling;
       begin
          The_Token := (Kind        => Name,
                        Position    => (Current_File, First_Line, First_Column),
@@ -251,10 +252,57 @@ package body Framework.Language.Scanner is
       end Get_String;
 
       function Get_Integer return Biggest_Int is
-         -- Precondition: Cur_Char in '0..9' or '-'
+         -- Precondition: Cur_Char in '0'..'9' or '-'
          Result   : Biggest_Int;
-         Negative : Boolean := False;
-      begin
+         Negative : Boolean     := False;
+         Num_Base : Biggest_Int := 10;
+
+         function Get_Numeral (Base : in Biggest_Int; Stop_On_E : Boolean) return Biggest_Int is
+            -- Precondition: Cur_Char in '0'..'9', 'a'..'f', 'A'..'F'
+            Num        : Biggest_Int := 0;
+            Digit      : Biggest_Int;
+            Prev_Is_US : Boolean := False;
+         begin
+            while not At_Eol loop
+               if Stop_On_E and then (Cur_Char = 'e' or Cur_Char = 'E') then
+                  exit;
+               end if;
+               case Cur_Char is
+                  when '0' .. '9' =>
+                     Digit      := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
+                     Prev_Is_US := False;
+                  when 'a' .. 'f' =>
+                     Digit      := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('a') + 10;
+                     Prev_Is_US := False;
+                  when 'A' .. 'F' =>
+                     Digit      := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('A') + 10;
+                     Prev_Is_US := False;
+                  when '_' =>
+                     if Prev_Is_US then
+                        Syntax_Error ("Consecutive underscores not allowed in numbers",
+                                      (Current_File, Current_Line, Current_Column));
+                     end if;
+                     Prev_Is_US := True;
+                  when others =>
+                     exit;
+               end case;
+               Next_Char;
+
+               if Digit >= Base then
+                  Syntax_Error ("Invalid character in number",
+                                (Current_File, Current_Line, Current_Column));
+               end if;
+               if not Prev_Is_US then
+                  Num := Num * Base + Digit;
+               end if;
+            end loop;
+            if Prev_Is_US then
+               Syntax_Error ("Trailing underscores not allowed in numbers",
+                             (Current_File, Current_Line, Current_Column));
+            end if;
+            return Num;
+         end Get_Numeral;
+      begin   -- Get_Integer
          if Cur_Char = '-' then
             Negative := True;
             Next_Char;
@@ -263,41 +311,32 @@ package body Framework.Language.Scanner is
                              (Current_File, Current_Line, Current_Column));
             end if;
          end if;
-         Result := Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
-         loop
+
+         Result := Get_Numeral (Base => 10, Stop_On_E => True);
+
+         if Cur_Char = '#' then
             Next_Char;
-            exit when At_Eol;
-            if Cur_Char = '_' then
-               Next_Char;
-               case Cur_Char is
-                  when '_' =>
-                     Syntax_Error ("Consecutive underscores not allowed in numbers",
-                                   (Current_File, Current_Line, Current_Column));
-                  when '0'..'9' =>
-                     null;
-                  when others =>
-                     Syntax_Error ("Trailing underscores not allowed in numbers",
-                                   (Current_File, Current_Line, Current_Column));
-               end case;
-            end if;
-            if Cur_Char in '0' .. '9' then
-               Result := Result * 10 + Wide_Character'Pos (Cur_Char) - Wide_Character'Pos ('0');
-            elsif Cur_Char = 'e' or Cur_Char = 'E' then
-               Next_Char;
-               if Cur_Char not in '0' .. '9' then
-                  Syntax_Error ("Exponent must be followed by (unsigned) number",
-                                (Current_File, Current_Line, Current_Column));
-               end if;
-               Result := Result * 10 ** Natural (Get_Integer);
-               exit;
-            elsif Is_Letter (To_Character (Cur_Char)) then
-               Syntax_Error ("Letter not allowed in numbers",
+            Num_Base := Result;
+            if Num_Base not in 2..16 then
+               Syntax_Error ("Invalid value for base",
                              (Current_File, Current_Line, Current_Column));
-            else
-               -- Must be a separator here
-               exit;
             end if;
-         end loop;
+            Result   := Get_Numeral (Num_Base, Stop_On_E => False);
+            if Cur_Char /= '#' then
+               Syntax_Error ("Missing closing '#' in based number",
+                             (Current_File, Current_Line, Current_Column));
+            end if;
+            Next_Char;
+         end if;
+
+         if Cur_Char = 'e' or Cur_Char = 'E' then
+            Next_Char;
+            if Cur_Char not in '0' .. '9' then
+               Syntax_Error ("Exponent must be followed by (unsigned) number",
+                             (Current_File, Current_Line, Current_Column));
+            end if;
+            Result := Result * Num_Base ** Integer (Get_Numeral(Base => 10, Stop_On_E => True));
+         end if;
 
          if Negative then
             Result := -Result;

@@ -62,7 +62,7 @@ with   -- What we test
 procedure Pfni is
    use Asis, Asis.Expressions;
    use Compilation_Units, Elements;
-   use Thick_Queries, Utilities;
+   use Utilities;
    use Ada.Wide_Text_IO;
 
 
@@ -109,7 +109,7 @@ procedure Pfni is
          end if;
       end Make_Unit_Name;
 
-   begin
+   begin   -- Parse_Parameter
       Unit_First := Index (S, Set => To_Set ("/\"), Going => Backward);
       if Unit_First = 0 then
          -- There is no directory separator
@@ -238,8 +238,11 @@ procedure Pfni is
    package Line_Number_IO is new Ada.Wide_Text_IO.Integer_IO (Asis.Text.Line_Number);
 
    Previous_Line : Asis.Text.Line_Number := 0;
+
    procedure Print_Name (The_Name : Asis.Element) is
       use Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
+      use Thick_Queries;
+
       The_Span : constant Span := Element_Span (The_Name);
    begin
       if The_Span.First_Line not in First_Line .. Last_Line
@@ -249,7 +252,9 @@ procedure Pfni is
          return;
       end if;
 
-      if The_Span.First_Line /= Previous_Line then
+      if The_Span.First_Line = Previous_Line then
+         Put (", ");
+      else
          New_Line;
          if not Quiet_Option then
             declare
@@ -267,8 +272,6 @@ procedure Pfni is
          end if;
          Previous_Line := The_Span.Last_Line;
          Put ("==>> ");
-      else
-         Put (", ");
       end if;
 
       declare
@@ -332,27 +335,35 @@ procedure Pfni is
    is
       pragma Unreferenced (State);
       use Asis.Text;
+      Good_Name : Asis.Expression;
    begin
       case Element_Kind (Element) is
          when An_Expression =>
-            case Expression_Kind (Element) is
-               when An_Attribute_Reference =>
-                  if Full_Option then
-                     Print_Name (Prefix (Element));
-                  end if;
-                  Control := Abandon_Children;
-               when An_Identifier | An_Enumeration_Literal | An_Operator_Symbol =>
-                  if Full_Option then
-                     Print_Name (Element);
-                  end if;
-               when A_Selected_Component =>
-                  if Full_Option then
-                     Print_Name (Selector (Element));
-                  end if;
-                  Control := Abandon_Children;
-               when others =>
-                  null;
-            end case;
+            Good_Name := Element;
+            loop
+               case Expression_Kind (Good_Name) is
+                  when An_Attribute_Reference =>
+                     if not Full_Option then
+                        Control := Abandon_Children;
+                        exit;
+                     end if;
+                     Good_Name := Prefix (Good_Name);
+                  when An_Identifier | An_Enumeration_Literal | An_Operator_Symbol =>
+                     if Full_Option then
+                        Print_Name (Good_Name);
+                     end if;
+                     Control := Abandon_Children;
+                     exit;
+                  when A_Selected_Component =>
+                     if not Full_Option then
+                        Control := Abandon_Children;
+                        exit;
+                     end if;
+                     Good_Name := Selector (Good_Name);
+                  when others =>
+                     exit;
+               end case;
+            end loop;
          when A_Defining_Name =>
             Print_Name (Element);
          when others =>

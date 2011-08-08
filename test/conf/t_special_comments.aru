@@ -1,7 +1,0 @@
-Rule_Off: check special_comments (pattern, "##.* off ");
-check special_comments (pattern, "tbsl");
-
-check special_comments (terminating, "junk", begin, "^ok", end);
-
-search special_comments (unnamed_begin, program_unit package);
-search special_comments (unnamed_begin, procedure, declaration function);

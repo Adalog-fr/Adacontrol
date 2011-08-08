@@ -26,6 +26,7 @@ conf/t_array_declarations.aru: No syntax error
 conf/t_barrier_expressions.aru: No syntax error
 conf/t_case_statement.aru: No syntax error
 conf/t_characters.aru: No syntax error
+conf/t_comments.aru: No syntax error
 conf/t_declarations.aru: No syntax error
 conf/t_default_parameter.aru: No syntax error
 conf/t_dependencies.aru: No syntax error
@@ -59,6 +60,7 @@ conf/t_parameter_aliasing.aru: No syntax error
 conf/t_parameter_declarations.aru: No syntax error
 conf/t_potentially_blocking_operations.aru: No syntax error
 conf/t_pragmas.aru: No syntax error
+conf/t_record_declarations.aru: No syntax error
 conf/t_reduceable_scope.aru: No syntax error
 conf/t_representation_clauses.aru: No syntax error
 conf/t_return_type.aru: No syntax error
@@ -66,7 +68,6 @@ conf/t_side_effect_parameters.aru: No syntax error
 conf/t_silent_exceptions.aru: No syntax error
 conf/t_simplifiable_expressions.aru: No syntax error
 conf/t_simplifiable_statements.aru: No syntax error
-conf/t_special_comments.aru: No syntax error
 conf/t_statements.aru: No syntax error
 conf/t_style.aru: No syntax error
 conf/t_terminating_tasks.aru: No syntax error

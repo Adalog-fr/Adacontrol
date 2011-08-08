@@ -6,9 +6,9 @@ t_usage.adb:18:7: Error: Written_Visible: (generic) T_Usage.Gen.Y2, visible, var
 t_usage.adb:19:7: Found: Constantable: (generic) T_Usage.Gen.Y3, visible, variable, initialized, not written, read (can be declared constant)
 t_usage.adb:25:7: Error: Written_Private: (generic) T_Usage.Gen.Y4, private, variable, not initialized, written, not read
 t_usage.adb:20:7: Found: Removable: (generic) T_Usage.Gen.Z, visible, constant, not read (can be removed)
-t_usage.adb:86:12: Found: USAGE: (normal) T_Usage.Gen_Gen, generic, instantiated
-t_usage.adb:84:7: Error: Written_Visible: (instance) T_Usage.Gen_Gen.P1.Y1, visible, variable, initialized, written, not read
-t_usage.adb:85:7: Found: Constantable: (instance) T_Usage.Gen_Gen.P2.Y3, visible, variable, initialized, not written, read
+t_usage.adb:87:12: Found: USAGE: (normal) T_Usage.Gen_Gen, generic, instantiated
+t_usage.adb:85:7: Error: Written_Visible: (instance) T_Usage.Gen_Gen.P1.Y1, visible, variable, initialized, written, not read
+t_usage.adb:86:7: Found: Constantable: (instance) T_Usage.Gen_Gen.P2.Y3, visible, variable, initialized, not written, read
 t_usage.adb:34:4: Error: Written_Visible: (instance) T_Usage.Inst1.Y1, visible, variable, initialized, written, not read
 t_usage.adb:34:4: Error: Written_Visible: (instance) T_Usage.Inst1.Y2, visible, variable, not initialized, written, not read
 t_usage.adb:34:4: Found: Removable: (instance) T_Usage.Inst1.Y3, visible, variable, initialized, not written, not read
@@ -20,62 +20,62 @@ t_usage.adb:35:4: Found: Constantable: (instance) T_Usage.Inst2.Y3, visible, var
 t_usage.adb:35:4: Error: Written_Private: (instance) T_Usage.Inst2.Y4, private, variable, not initialized, written, not read
 t_usage.adb:35:4: Found: Removable: (instance) T_Usage.Inst2.Z, visible, constant, not read
 t_usage.adb:12:4: Found: Removable: (normal) T_Usage.Local, variable, not initialized, not written, not read (can be removed)
-t_usage.adb:77:14: Found: USAGE: (normal) T_Usage.P, procedure, called, not accessed
+t_usage.adb:78:14: Found: USAGE: (normal) T_Usage.P, procedure, called, not accessed
 t_usage.adb:38:7: Error: Written_Visible: (normal) T_Usage.Pack.A1, visible, variable, not initialized, written, read
 t_usage.adb:38:11: Error: Written_Visible: (normal) T_Usage.Pack.A2, visible, variable, not initialized, written, not read
 t_usage.adb:39:7: Found: Constantable: (normal) T_Usage.Pack.A3, visible, variable, initialized, not written, read (can be declared constant)
 t_usage.adb:40:7: Found: Removable: (normal) T_Usage.Pack.A4, visible, variable, not initialized, not written, not read (can be removed)
 t_usage.adb:50:7: Found: Constantable: (normal) T_Usage.Pack.Ac, visible, variable, initialized, not written, read (can be declared constant)
-t_usage.adb:63:12: Error: type_not_used: (normal) T_Usage.Pack.Acc_Int, visible, (sub)type, not used
+t_usage.adb:64:12: Error: type_not_used: (normal) T_Usage.Pack.Acc_Int, visible, (sub)type, not used
 t_usage.adb:52:12: Error: type_used: (normal) T_Usage.Pack.Arr_Acc, visible, (sub)type, used
 t_usage.adb:53:12: Error: type_used: (normal) T_Usage.Pack.Arr_Arr_Acc, visible, (sub)type, used
 t_usage.adb:41:7: Found: Removable: (normal) T_Usage.Pack.B, visible, constant, not read (can be removed)
 t_usage.adb:43:7: Found: Constantable: (normal) T_Usage.Pack.D, visible, variable, not initialized, not written, read (never given a value)
-t_usage.adb:64:12: Error: type_used: (normal) T_Usage.Pack.Derived, visible, (sub)type, used
+t_usage.adb:65:12: Error: type_used: (normal) T_Usage.Pack.Derived, visible, (sub)type, used
 t_usage.adb:43:9: Error: Written_Visible: (normal) T_Usage.Pack.E, visible, variable, not initialized, written, not read
 t_usage.adb:43:11: Error: Written_Visible: (normal) T_Usage.Pack.F, visible, variable, not initialized, written, read
 t_usage.adb:45:7: Found: Removable: (normal) T_Usage.Pack.I1, visible, constant, not read (can be removed)
 t_usage.adb:47:7: Found: Removable: (normal) T_Usage.Pack.R, visible, constant, not read (can be removed)
 t_usage.adb:54:7: Found: Removable: (normal) T_Usage.Pack.V1, visible, variable, initialized, not written, not read (can be removed)
-t_usage.adb:56:7: Found: Removable: (normal) T_Usage.Pack.V2, visible, variable, initialized, not written, not read (can be removed)
-t_usage.adb:57:7: Found: Removable: (normal) T_Usage.Pack.V3, visible, variable, initialized, not written, not read (can be removed)
-t_usage.adb:62:7: Found: Removable: (normal) T_Usage.Pack.V4, visible, variable, not initialized, not written, not read (can be removed)
-t_usage.adb:65:7: Found: Removable: (normal) T_Usage.Pack.V5, visible, variable, initialized, not written, not read (can be removed)
+t_usage.adb:57:7: Found: Removable: (normal) T_Usage.Pack.V2, visible, variable, initialized, not written, not read (can be removed)
+t_usage.adb:58:7: Found: Removable: (normal) T_Usage.Pack.V3, visible, variable, initialized, not written, not read (can be removed)
+t_usage.adb:63:7: Found: Removable: (normal) T_Usage.Pack.V4, visible, variable, not initialized, not written, not read (can be removed)
+t_usage.adb:66:7: Found: Removable: (normal) T_Usage.Pack.V5, visible, variable, initialized, not written, not read (can be removed)
 t_usage.adb:49:7: Error: Written_Visible: (normal) T_Usage.Pack.VR1, visible, variable, not initialized, written, not read
 t_usage.adb:49:12: Error: Written_Visible: (normal) T_Usage.Pack.VR2, visible, variable, not initialized, written, not read
-t_usage.adb:68:7: Found: Removable: (normal) T_Usage.Pack.XX, private, variable, not initialized, not written, not read (can be removed)
-t_usage.adb:58:7: Found: Removable: (normal) T_Usage.Pack.Y, visible, variable, initialized, not written, not read (can be removed)
-t_usage.adb:69:7: Error: Written_Private: (normal) T_Usage.Pack.YY, private, variable, not initialized, written, not read
-t_usage.adb:59:7: Found: Removable: (normal) T_Usage.Pack.Z, visible, variable, initialized, not written, not read (can be removed)
-t_usage.adb:155:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Empty, variable, read (pseudo constant)
-t_usage.adb:157:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.I, variable, read (pseudo constant)
-t_usage.adb:158:7: Found: Removable: (normal) T_Usage.Pseudo_Const.I2, variable, not read (can be removed)
-t_usage.adb:159:7: Found: Removable: (normal) T_Usage.Pseudo_Const.J, constant, not read (can be removed)
-t_usage.adb:161:15: Error: type_used: (normal) T_Usage.Pseudo_Const.None, (sub)type, used
-t_usage.adb:162:12: Error: type_used: (normal) T_Usage.Pseudo_Const.None_Der, (sub)type, used
-t_usage.adb:163:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Nothing, variable, read (pseudo constant)
-t_usage.adb:156:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.S, variable, not initialized, not written, read (never given a value)
-t_usage.adb:164:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Something, variable, not initialized, not written, read (never given a value)
-t_usage.adb:160:12: Error: type_used: (normal) T_Usage.Pseudo_Const.Tab, (sub)type, used
+t_usage.adb:69:7: Found: Removable: (normal) T_Usage.Pack.XX, private, variable, not initialized, not written, not read (can be removed)
+t_usage.adb:59:7: Found: Removable: (normal) T_Usage.Pack.Y, visible, variable, initialized, not written, not read (can be removed)
+t_usage.adb:70:7: Error: Written_Private: (normal) T_Usage.Pack.YY, private, variable, not initialized, written, not read
+t_usage.adb:60:7: Found: Removable: (normal) T_Usage.Pack.Z, visible, variable, initialized, not written, not read (can be removed)
+t_usage.adb:157:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Empty, variable, read (pseudo constant)
+t_usage.adb:159:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.I, variable, read (pseudo constant)
+t_usage.adb:160:7: Found: Removable: (normal) T_Usage.Pseudo_Const.I2, variable, not read (can be removed)
+t_usage.adb:161:7: Found: Removable: (normal) T_Usage.Pseudo_Const.J, constant, not read (can be removed)
+t_usage.adb:163:15: Error: type_used: (normal) T_Usage.Pseudo_Const.None, (sub)type, used
+t_usage.adb:164:12: Error: type_used: (normal) T_Usage.Pseudo_Const.None_Der, (sub)type, used
+t_usage.adb:165:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Nothing, variable, read (pseudo constant)
+t_usage.adb:158:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.S, variable, not initialized, not written, read (never given a value)
+t_usage.adb:166:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Something, variable, not initialized, not written, read (never given a value)
+t_usage.adb:162:12: Error: type_used: (normal) T_Usage.Pseudo_Const.Tab, (sub)type, used
 t_usage.adb:6:9: Error: type_used: (normal) T_Usage.Rec, (sub)type, used
-t_usage.adb:199:12: Error: type_used: (normal) T_Usage._anonymous_.Acc_Proc, (sub)type, used
-t_usage.adb:195:16: Found: USAGE: (normal) T_Usage._anonymous_.F1, function, called, not accessed
-t_usage.adb:197:16: Found: USAGE: (normal) T_Usage._anonymous_.F2, function, not called, accessed
-t_usage.adb:215:15: Found: USAGE: (normal) T_Usage._anonymous_.Gen1, generic, instantiated
-t_usage.adb:216:20: Found: USAGE: (generic) T_Usage._anonymous_.Gen1.P, visible, procedure, called, not accessed
-t_usage.adb:217:20: Found: USAGE: (generic) T_Usage._anonymous_.Gen1.Q, visible, procedure, not called, not accessed
-t_usage.adb:225:15: Found: USAGE: (normal) T_Usage._anonymous_.Gen2, generic, not instantiated
-t_usage.adb:226:20: Found: USAGE: (generic) T_Usage._anonymous_.Gen2.P, visible, procedure, not called, not accessed
-t_usage.adb:232:7: Found: USAGE: (instance) T_Usage._anonymous_.Inst.P, visible, procedure, called, not accessed
-t_usage.adb:232:7: Found: USAGE: (instance) T_Usage._anonymous_.Inst.Q, visible, procedure, not called, not accessed
-t_usage.adb:192:17: Found: USAGE: (normal) T_Usage._anonymous_.P1, procedure, called, not accessed
-t_usage.adb:193:17: Found: USAGE: (normal) T_Usage._anonymous_.P2, procedure, not called, accessed
-t_usage.adb:183:15: Error: type_used: (normal) T_Usage._anonymous_.S2, (sub)type, used
-t_usage.adb:184:15: Error: type_not_used: (normal) T_Usage._anonymous_.S3, (sub)type, not used
-t_usage.adb:179:12: Error: type_not_used: (normal) T_Usage._anonymous_.T1, (sub)type, not used
-t_usage.adb:180:12: Error: type_used: (normal) T_Usage._anonymous_.T2, (sub)type, used
-t_usage.adb:181:7: Found: Removable: (normal) T_Usage._anonymous_.V1, variable, not initialized, not written, not read (can be removed)
-t_usage.adb:185:7: Found: Removable: (normal) T_Usage._anonymous_.V2, variable, not initialized, not written, not read (can be removed)
+t_usage.adb:201:12: Error: type_used: (normal) T_Usage._anonymous_.Acc_Proc, (sub)type, used
+t_usage.adb:197:16: Found: USAGE: (normal) T_Usage._anonymous_.F1, function, called, not accessed
+t_usage.adb:199:16: Found: USAGE: (normal) T_Usage._anonymous_.F2, function, not called, accessed
+t_usage.adb:217:15: Found: USAGE: (normal) T_Usage._anonymous_.Gen1, generic, instantiated
+t_usage.adb:218:20: Found: USAGE: (generic) T_Usage._anonymous_.Gen1.P, visible, procedure, called, not accessed
+t_usage.adb:219:20: Found: USAGE: (generic) T_Usage._anonymous_.Gen1.Q, visible, procedure, not called, not accessed
+t_usage.adb:227:15: Found: USAGE: (normal) T_Usage._anonymous_.Gen2, generic, not instantiated
+t_usage.adb:228:20: Found: USAGE: (generic) T_Usage._anonymous_.Gen2.P, visible, procedure, not called, not accessed
+t_usage.adb:234:7: Found: USAGE: (instance) T_Usage._anonymous_.Inst.P, visible, procedure, called, not accessed
+t_usage.adb:234:7: Found: USAGE: (instance) T_Usage._anonymous_.Inst.Q, visible, procedure, not called, not accessed
+t_usage.adb:194:17: Found: USAGE: (normal) T_Usage._anonymous_.P1, procedure, called, not accessed
+t_usage.adb:195:17: Found: USAGE: (normal) T_Usage._anonymous_.P2, procedure, not called, accessed
+t_usage.adb:185:15: Error: type_used: (normal) T_Usage._anonymous_.S2, (sub)type, used
+t_usage.adb:186:15: Error: type_not_used: (normal) T_Usage._anonymous_.S3, (sub)type, not used
+t_usage.adb:181:12: Error: type_not_used: (normal) T_Usage._anonymous_.T1, (sub)type, not used
+t_usage.adb:182:12: Error: type_used: (normal) T_Usage._anonymous_.T2, (sub)type, used
+t_usage.adb:183:7: Found: Removable: (normal) T_Usage._anonymous_.V1, variable, not initialized, not written, not read (can be removed)
+t_usage.adb:187:7: Found: Removable: (normal) T_Usage._anonymous_.V2, variable, not initialized, not written, not read (can be removed)
 x_usage.ads:4:4: Error: USAGE: (normal) X_Usage.E1, visible, exception, raised, handled
 x_usage.ads:4:8: Error: USAGE: (normal) X_Usage.E2, visible, exception, raised, not handled
 x_usage.ads:4:12: Error: USAGE: (normal) X_Usage.E3, visible, exception, not raised, handled

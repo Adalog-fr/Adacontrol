@@ -52,7 +52,8 @@ procedure T_Usage is
       type Arr_Acc is array (1..10) of Acc;
       type Arr_Arr_Acc is array (1..10) of Arr_Acc;
       V1 : Acc;
-      Const : constant Acc := new Rec;
+      Const  : constant Acc := new Rec;
+      Ren_C  : Integer renames Const.V;
       V2 : Arr_Acc;
       V3 : Arr_Arr_Acc;
       Y : array (1..10) of Arr_Acc;
@@ -102,6 +103,7 @@ begin
    A2 := C;              -- Write of Pack.A2, Read of Pack.A1
    A2 := I2;
    Const.V := 1;         -- A constant on the LHS
+   Ren_C   := 1;         -- A nastier constant on the LHS
    P (D, E, F);
    Inst1.Y1 := Inst2.Y3;
 

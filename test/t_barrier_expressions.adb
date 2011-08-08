@@ -4,7 +4,8 @@ procedure T_Barrier_Expressions is
 
    -- Some type definitions necessary for tests
    subtype Index is Integer range 1 .. 26;
-   GlobI : Index;
+   GlobI     : Index;
+   Ren_GlobI : Index renames GlobI;
 
    type Pointer is access Integer;
    type Enumeration is (Enum1, Enum2, Enum3);
@@ -29,9 +30,21 @@ procedure T_Barrier_Expressions is
    Pfunc : Function_Access;
 
    function Global return Boolean is
+      B : Boolean;
+      protected P is
+         entry E;
+      end P;
+      protected body P is
+         entry E when Global.B is            -- variable (not function call)
+         begin
+            null;
+         end E;
+      end P;
    begin
       return True;
    end Global;
+
+   function Ren_Global return Boolean renames Global;
 
    protected Other_Prot is
       function F return Boolean;
@@ -93,15 +106,15 @@ procedure T_Barrier_Expressions is
           or                                          -- logical_operator
             S (S'First) = '1'                         -- indexing, any_component, comparison_operator, value_attribute
           or                                          -- logical_operator
-            S (S'First .. 3) = "abc"                  -- indexing, any_component, comparison_operator, value_attribute
+            S (S'First .. 3) = "abc"                  -- indexing, any_component, value_attribute, comparison_operator
           or                                          -- logical_operator
             Local (I)                                 -- local_function, any_component
           or                                          -- logical_operator
             Check.Local (I)                           -- local_function, any_component
           or                                          -- logical_operator
-            External.Local (I)                        -- variable, non_local_function_call, any_component
+            External.Local (I)                        -- non_local_function_call, variable, any_component
           or                                          -- logical_operator
-            Other_Prot.F                              -- variable, non_local_function_call
+            Other_Prot.F                              -- non_local_function_call, variable
           or                                          -- logical_operator
             P.all /= 1                                -- dereference, any_component, comparison_operator
           or                                          -- logical_operator
@@ -109,7 +122,9 @@ procedure T_Barrier_Expressions is
           or                                          -- logical_operator
             Pfunc (J)                                 -- dereference, variable, any_component
           or                                          -- logical_operator
-            Global                                    -- t_barrier_expressions.global
+            Global                                    -- non_local_function_call
+          or                                          -- logical_operator
+            Ren_Global                                -- non_local_function_call
           or                                          -- logical_operator
             T'Terminated                              -- value_attribute
           or                                          -- logical_operator
@@ -124,6 +139,8 @@ procedure T_Barrier_Expressions is
             S = String'(1 => 'a', 2 => 'b', 3 => 'c') -- any_component, comparison_operator, converson, array_aggregate
           or                                          -- logical_operator
             S = String'(1 .. Globi => ' ')            -- any_component, operator_comparison, conversion, array_aggregate, variable
+          or                                          -- logical_operator
+            S = String'(1 .. Ren_Globi => ' ')        -- any_component, operator_comparison, conversion, array_aggregate, variable
       is
       begin
          null;

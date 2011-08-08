@@ -44,8 +44,6 @@ with
 package body Rules.Entity_Inside_Exception is
    use Framework, Framework.Control_Manager;
 
-   Key_Calls : constant Entity_Specification := Value ("CALLS");
-
    type Entity_Context is new Basic_Rule_Context with
       record
          Is_Not : Boolean;
@@ -64,7 +62,7 @@ package body Rules.Entity_Inside_Exception is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): [not] calls | <Entity name>");
+      User_Message ("Parameter(s): [not] calls | entry_calls | <Entity name>");
       User_Message ("Control occurrences of an entity inside an exception handler.");
    end Help;
 
@@ -123,39 +121,6 @@ package body Rules.Entity_Inside_Exception is
       Balance (Entities);
    end Prepare;
 
-   ------------------------
-   -- Process_Identifier --
-   ------------------------
-
-   procedure Process_Identifier (Identifier : in Asis.Identifier) is
-      use Framework.Reports;
-      use Thick_Queries, Utilities;
-
-      Use_Context : constant Root_Context'Class := Matching_Context (Entities, Identifier);
-   begin
-      if Use_Context /= No_Matching_Context then
-         if not Entity_Context (Use_Context).Is_Not then
-            Report (Rule_Id,
-                    Use_Context,
-                    Get_Location (Identifier),
-                    "use of """ & To_Title (Last_Matching_Name (Entities)) & '"');
-         end if;
-      elsif Is_Callable_Construct (Identifier) then
-         declare
-            Calls_Context : constant Root_Context'Class := Association (Entities, Key_Calls);
-         begin
-            if Calls_Context /= No_Matching_Context then
-               if not Entity_Context (Calls_Context).Is_Not then
-                  Report (Rule_Id,
-                          Calls_Context,
-                          Get_Location (Identifier),
-                          "call to " & Full_Name_Image (Identifier));
-               end if;
-            end if;
-         end;
-      end if;
-   end Process_Identifier;
-
    --------------
    -- Traverse --
    --------------
@@ -173,9 +138,67 @@ package body Rules.Entity_Inside_Exception is
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
                             State   : in out Null_State) is
-      use Asis;
-      use Asis.Elements, Asis.Expressions;
-   begin
+
+      procedure Check (Identifiers : in Asis.Expression_List) is
+         use Framework.Reports;
+         use Thick_Queries, Utilities;
+         Found  : Boolean := False;
+         C_Kind : Callable_Kinds;
+      begin
+         for I in Identifiers'Range loop
+            declare
+               Use_Context : constant Root_Context'Class := Matching_Context (Entities, Identifiers (I));
+            begin
+               if Use_Context /= No_Matching_Context then
+                  Found := True;
+                  if not Entity_Context (Use_Context).Is_Not then
+                     Report (Rule_Id,
+                             Use_Context,
+                             Get_Location (Element),
+                             "use of """ & To_Title (Last_Matching_Name (Entities)) & '"');
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         if not Found then
+            C_Kind := Callable_Kind (Element);
+            if C_Kind in An_Entry_Callable then
+               declare
+                  Calls_Context : constant Root_Context'Class := Association (Entities, "ENTRY_CALLS");
+               begin
+                  if Calls_Context /= No_Matching_Context then
+                     Found := True;
+                     if not Entity_Context (Calls_Context).Is_Not then
+                        Report (Rule_Id,
+                                Calls_Context,
+                                Get_Location (Element),
+                                "entry call to " & Full_Name_Image (Element));
+                     end if;
+                  end if;
+               end;
+            end if;
+
+            if not Found and C_Kind /= Not_A_Callable then
+               declare
+                  Calls_Context : constant Root_Context'Class := Association (Entities, "CALLS");
+               begin
+                  if Calls_Context /= No_Matching_Context then
+                     if not Entity_Context (Calls_Context).Is_Not then
+                        Report (Rule_Id,
+                                Calls_Context,
+                                Get_Location (Element),
+                                "call to " & Full_Name_Image (Element));
+                     end if;
+                  end if;
+               end;
+            end if;
+         end if;
+      end Check;
+
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
+   begin   -- Pre_Procedure
       case Element_Kind (Element) is
          when A_Pragma =>
             -- Do not traverse pragmas
@@ -183,11 +206,14 @@ package body Rules.Entity_Inside_Exception is
 
          when An_Expression =>
             case Expression_Kind (Element) is
-               when An_Identifier =>
-                  Process_Identifier (Element);
+               when An_Identifier
+                  | An_Operator_Symbol
+                  | An_Enumeration_Literal
+                    =>
+                  Check (Used_Identifiers (Element));
 
                when An_Attribute_Reference =>
-                  Process_Identifier (Element);  -- Check the attribute itself
+                  Check ((1 => Element));  -- Check the attribute itself
 
                   -- Traverse manually the left branch only, in order to avoid processing
                   -- the attribute identifier

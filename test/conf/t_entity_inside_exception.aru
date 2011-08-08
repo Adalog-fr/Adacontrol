@@ -4,5 +4,7 @@ all_overloaded        : check entity_inside_exception (all Put_line{string});
 all_not_overloaded    : check entity_inside_exception (all Put_line);
 Attributes            : check entity_inside_exception (all 'Image, all 'Value,
                                                        not Standard.Float'Image, not standard.float'Value);
+No_Arithmetic         : check entity_inside_exception (all "+", all "-");
 Calls                 : check entity_inside_exception (calls, not t_entity_inside_exception.P2);
-
+Variable              : check entity_inside_exception (t_entity_inside_exception.X);
+Entry_Calls           : check entity_inside_exception (entry_calls);

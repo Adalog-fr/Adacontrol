@@ -174,26 +174,26 @@ package body Rules.Reduceable_Scope is
          Subrule      := Check_All;
       end if;
 
-      if Subrule = Check_All then
-         if Rule_Used /= No_Check then
-            Parameter_Error (Rule_Id, "Rule already specified");
-         end if;
-         Rule_Used        := (others => True);
-         Ctl_Contexts     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Ctl_Restrictions := (others => Restrictions);
-      else
-         loop
+      loop
+         if Subrule = Check_All then
+            if Rule_Used /= No_Check then
+               Parameter_Error (Rule_Id, "Rule already specified");
+            end if;
+            Rule_Used        := (others => True);
+            Ctl_Contexts     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+            Ctl_Restrictions := (others => Restrictions);
+         else
             if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "Rule already specified for this parameter");
             end if;
             Rule_Used        (Subrule) := True;
             Ctl_Contexts     (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Ctl_Restrictions (Subrule) := Restrictions;
-            exit when not Parameter_Exists;
-            Restrictions := Get_Modifier_Set;
-            Subrule      := Get_Flag_Parameter (Allow_Any => False);
-         end loop;
-      end if;
+         end if;
+         exit when not Parameter_Exists;
+         Restrictions := Get_Modifier_Set;
+         Subrule      := Get_Flag_Parameter (Allow_Any => False);
+      end loop;
    end Add_Control;
 
 

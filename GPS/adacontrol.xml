@@ -1,0 +1,92 @@
+<?xml version="1.0" ?>
+<gprconfig>
+
+   <!-- This file is required to avoid messages of the kind -->
+   <!-- “ warning: no compiler specified for language "Adacontrol", -->
+   <!-- ignoring all of its sources ”. -->
+
+   <!-- Tell about the AdaCtl application -->
+   <compiler_description>
+      <name>AdaCtl</name>               <!-- The name of the application -->
+                                        <!-- associated with the AdaControl -->
+                                        <!-- language -->
+      <version>DummyVersion</version>
+      <executable>adactl</executable>   <!-- Trick here. See below -->
+      <languages>AdaControl</languages> <!-- The language name which AdaCtl -->
+                                        <!-- handles -->
+      <target>i386-pc-mingw32</target>  <!-- You may have to add some -->
+                                        <!-- target-triplets here -->
+      <target>i686-pc-mingw32</target>
+      <target>pentium-mingw32msv</target>
+      <target>i386-pc-linux</target>
+      <target>i686-pc-linux</target>
+      <target>pentium-linux</target>
+   </compiler_description>
+
+   <!-- This is needed to associate AdaControl files to a none-existing -->
+   <!-- compiler. -->
+   <configuration>
+      <compilers>
+         <compiler name="AdaCtl" language="AdaControl" />
+      </compilers>
+      <config>
+         package Naming is
+            for Body_Suffix ("AdaControl") use ".aru";
+         end Naming;
+         package Compiler is
+            for Driver ("AdaControl") use ""; -- Use an empty string
+         end Compiler;        -- here, instead of in the Executable tag
+      </config>             <!-- See below to learn more -->
+   </configuration>
+
+   <!-- To understand this configuration file, have a look at -->
+   <!-- http://www.adacore.com/wp-content/files/auto_update/gprbuild-docs/html/gprbuild_ug.html#The-GPRconfig-knowledge-base -->
+
+<!--
+ A trick is used to avoid GPRBuild warnings of the kind
+ “ warning: no compiler specified for language "Adacontrol", ignoring all
+ its sources ” when AdaControl is selected as one of the language in a
+ project (which is a good choice if you want to have AdaControl files
+ appearing in project view). Such a message can be confusing for a first
+ time user, who may believe something is going wrong with either AdaCtl or
+ GPS/GPRBuild. For a better user experience, this is nice to avoid such
+ erroneous warning messages.
+
+ In the compiler definition file in the gprconfig directory, use “adactl”
+ instead of the blank string which is supposed to means “not a compiler” but
+ which is not well handled by GPRBuild. The use of AdaCtl here, is just to be
+ an application GPRConfig will be able to find. Then, in the “package Compiler”
+ in the “configuration” section, use an empty string (at this place, not in the
+ compiler definition).
+
+ You may have to add some host-triplets where indicated if you want it
+ to work. Keep in mind GPRConfig believes this is a compiler.
+
+ More explanations : if you use an empty string in the compiler definition,
+ GPRConfig is supposed to handle this as an indication that the corresponding
+ language is on purpose not associated to any compiler. But it seems to
+ forget about it, and warns you it did not find a suitable compiler for
+ AdaControl files. So we must provide simething there, the name of an
+ application GPRConfig will be able to find. This is AdaCtl dummy's role here.
+
+ But for GPRConfig, a compiler definition is nothing without an associated
+ project chunck. This takes place in the <configuration> node. There, we
+ will have to provide an application a second time. This should be adactl
+ as well, but it will then fail, as AdaCtl will be hungry with the parameters
+ it will recieve then. Fortunately, there is a tip : we may use there, an
+ application which is not the same as the one specified in the compiler
+ definition (but both are still needed). And it appears it works fine to
+ give an empty string here. GPRBuild, unlike GPRConfig which is invoked
+ prior to GPRBuild, does not complains it did not find a compiler, and as
+ there is no compiler, it simply does not attempt to apply a compiler on
+ AdaControl files. This only works if given, may it be an empty string.
+ Giving an empty string is not the same as giving nothing.
+
+ In few words : when a language is not to be associated to a compiler,
+ do not use an empty string in the compiler definition, but use a dummy
+ application there, and use an empty string, instead, in the “package
+ Compiler” chunck in the configuration node.
+ 
+ Questions and comments : yannick_duchene@yahoo.fr
+-->
+</gprconfig>

@@ -1,0 +1,11 @@
+Rule_Off: check comments (pattern, "##.* off ");
+Pattern:  check comments (pattern, "tbsl");
+
+Terminating: check comments (terminating, "junk", begin, "^ok", end);
+
+Begin: search comments (unnamed_begin, program_unit package),
+       search comments (unnamed_begin, procedure, declaration function);
+
+Position:  search comments (position, max 40),
+           check  comments (position, min 1, Max 42);
+Not_Col_4: count  comments (position, 4);

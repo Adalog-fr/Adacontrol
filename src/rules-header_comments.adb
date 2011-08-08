@@ -229,6 +229,7 @@ package body Rules.Header_Comments is
                                    & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
                                    & ": " & Buff (1 .. Last));
       end Model_Error;
+
    begin   -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of check required");

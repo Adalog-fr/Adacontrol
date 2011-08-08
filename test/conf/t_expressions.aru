@@ -15,4 +15,9 @@ View_Conv         : search expressions (parameter_view_conversion);
 Ranges            : check  expressions (universal_range);
 Prefixed          : check  expressions (prefixed_operator);
 Prefixed_Float    : check  expressions (digits prefixed_operator);
+Record_Inherited  : check  expressions (record inherited_function_call);
+All_Inherited     : check  expressions (inherited_function_call);
+Fixed_Op          : check  expressions (fixed_multiplying_op);
+Impl_Deref        : search expressions (Implicit_Dereference);
+Expl_Deref        : search expressions (Explicit_Dereference);
 

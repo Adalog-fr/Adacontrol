@@ -116,6 +116,8 @@ check  declarations (access_type,
                      operator_renaming,
                      protected,
                      record_type,
+                     renaming_as_declaration,
+                     renaming_as_body,
                      task);
 locations : check declarations (block     procedure,
                                 library   procedure,

@@ -74,7 +74,8 @@ package body Rules.Representation_Clauses is
    -- Subrule => Context
    type Repr_Context is new Framework.Control_Manager.Basic_Rule_Context with
       record
-         Cats  : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
+         Cats     : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
+         Obj_Only : Boolean;
       end record;
    Usage : Framework.Control_Manager.Context_Store;
    package Repr_Context_Init is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
@@ -111,7 +112,7 @@ package body Rules.Representation_Clauses is
       User_Message  ("Rule: " & Rule_Id);
       Help_On_Flags (Header      => "Parameter(s): [<categories>]",
                      Footer      => "(optional)",
-                     Extra_Value => "<specifiable attribute>");
+                     Extra_Value => "[object] <specifiable attribute>");
       Help_On_Modifiers (Header => "Categories:");
       User_Message  ("Control occurrences of representation clauses");
    end Help;
@@ -127,6 +128,7 @@ package body Rules.Representation_Clauses is
       Subrule : Subrules;
       Param   : Entity_Specification;
       Cats    : Modifier_Set;
+      Obj_Only: Boolean := False;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
@@ -134,7 +136,8 @@ package body Rules.Representation_Clauses is
 
             Subrule := Get_Flag_Parameter (Allow_Any => True);
             if Subrule = Sr_Attribute then
-               Param := Value (Get_Name_Parameter);
+               Obj_Only := Get_Modifier ("OBJECT");
+               Param    := Value (Get_Name_Parameter);
                if Image (Param) (1) /= ''' then
                   Parameter_Error (Rule_Id, "parameter must be a representation keyword or an attribute");
                end if;
@@ -143,7 +146,7 @@ package body Rules.Representation_Clauses is
             end if;
 
             begin
-               Associate (Usage, Param, Repr_Context' (Basic.New_Context (Ctl_Kind, Ctl_Label) with Cats),
+               Associate (Usage, Param, Repr_Context' (Basic.New_Context (Ctl_Kind, Ctl_Label) with Cats, Obj_Only),
                           Additive => True);
             exception
                when Already_In_Store =>
@@ -153,7 +156,8 @@ package body Rules.Representation_Clauses is
          end loop;
 
       else
-         Associate (Usage, Key_All, Repr_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Full_Set));
+         Associate (Usage, Key_All, Repr_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label)
+                                    with Full_Set, Obj_Only => False));
          Rule_Used := (others => True);
       end if;
 
@@ -204,6 +208,8 @@ package body Rules.Representation_Clauses is
       use Framework.Reports, Thick_Queries;
 
       Attribute : Unbounded_Wide_String;
+      Pfx       : Asis.Expression;
+      Is_Object : Boolean;
 
       procedure Do_Report (Subrule  : Subrules;
                            Target   : Asis.Clause;
@@ -232,15 +238,30 @@ package body Rules.Representation_Clauses is
             Key_Map := Key (Subrule);
          end if;
 
+         if Subrule = Sr_Attribute then
+            Pfx := Prefix (Representation_Clause_Name (Rep_Clause));
+            if Expression_Kind (Pfx) = An_Attribute_Reference then
+               -- T'Class'Read, certainly not an object
+               Is_Object := False;
+            else
+               Is_Object := Declaration_Kind (Corresponding_Name_Declaration (Pfx)) in An_Object_Declaration;
+            end if;
+         else
+            Is_Object := False;
+         end if;
+
          Reset (Iter, Key_Map);
          while not Is_Exhausted (Iter) loop
             Cont := Repr_Context (Value (Iter));
-            if Cont.Cats = Empty_Set then
-               Report (Rule_Id, Cont, Loc, Message);
-            else
-               Cat := Matching_Category (Clause_Name_Declaration, Cont.Cats, Separate_Extension => True);
-               if Cat /= Cat_Any then
-                  Report (Rule_Id, Cont, Loc, Message & " for " & Image (Cat));
+            if Is_Object or else not Cont.Obj_Only then
+               if Cont.Cats = Empty_Set then
+                  Report (Rule_Id, Cont, Loc, Choose (Is_Object and Cont.Obj_Only, "object ", "") & Message);
+               else
+                  Cat := Matching_Category (Clause_Name_Declaration, Cont.Cats, Separate_Extension => True);
+                  if Cat /= Cat_Any then
+                     Report (Rule_Id, Cont, Loc, Choose (Is_Object and Cont.Obj_Only, "object ", "")
+                                                 & Message & " for " & Image (Cat));
+                  end if;
                end if;
             end if;
             Next (Iter);
@@ -286,7 +307,7 @@ package body Rules.Representation_Clauses is
          Control : Asis.Traverse_Control := Continue;
          State   : Null_State;
          Decl    : constant Asis.Declaration
-           := A4G_Bugs.Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
+                   := A4G_Bugs.Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
       begin  -- Check_Incomplete
          for C in Components'Range loop
             Add (Compo_Set, To_Upper (A4G_Bugs.Name_Image (Representation_Clause_Name (Components (C)))));
@@ -387,15 +408,15 @@ package body Rules.Representation_Clauses is
          for I in List_Index range Fields'First+1 .. Fields'Last loop
             if Fields (I - 1).High + 1 < Fields (I).Low then
                Starting_Unit := (Fields (I - 1).High + 1) / Storage_Unit;
-              Do_Report (Sr_Non_Contiguous_Layout,
-                         Rep_Clause,
-                         "gap before component, at "
+               Do_Report (Sr_Non_Contiguous_Layout,
+                          Rep_Clause,
+                          "gap before component, at "
                           & Biggest_Int_Img (Starting_Unit)
                           & " range "
                           & Biggest_Int_Img (Fields (I - 1).High + 1 - Starting_Unit * Storage_Unit)
                           & ".."
                           & Biggest_Int_Img (Fields (I).Low - 1 - Starting_Unit * Storage_Unit),
-                         Get_Location (Components (Fields (I).Compo_Inx)));
+                          Get_Location (Components (Fields (I).Compo_Inx)));
             end if;
             if Fields (I).Low rem Storage_Unit /= 0 then
               Do_Report (Sr_Non_Aligned_Component,
@@ -404,7 +425,6 @@ package body Rules.Representation_Clauses is
                           & Biggest_Int_Img (Fields (I).Low rem Storage_Unit),
                          Get_Location (Components (Fields (I).Compo_Inx)));
             end if;
-
          end loop;
 
          -- Check gap at the end if size clause given

@@ -171,7 +171,7 @@ package body Framework.Language is
       end Process_Error;
 
       procedure Process_Controls (Label : in Wide_String) is
-         -- Only controls (or '(') can follow a label
+      -- Only controls (or '(') can follow a label
       begin
          if Label /= "" then
             Next_Token;
@@ -693,7 +693,11 @@ package body Framework.Language is
                   + Col_Widthes (2) + 3 > Display_Width
          then
             Nb_Col := 1;
-            Col_Widthes (1) := True_Width;
+            if Extra_Value = "NONE" then
+               Col_Widthes (1) := True_Width;
+            else
+               Col_Widthes (1) := Natural'Max (True_Width, Extra_Value'Length);
+            end if;
          end if;
 
          Buffer := (others => ' ');
@@ -1612,8 +1616,8 @@ package body Framework.Language is
 
       return
         Original (Original'First .. Pos - 1) &
-      " access " &
-      Adjust_Image (Original (Pos + 1 .. Original'Last));
+        " access " &
+        Adjust_Image (Original (Pos + 1 .. Original'Last));
 
    end Adjust_Image;
 

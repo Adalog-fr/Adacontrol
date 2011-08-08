@@ -70,8 +70,8 @@ package body Rules.Return_Type is
    --   protected and task types.
    --
 
-   type Subrules is (K_Class_Wide,          K_Protected,                  K_Task,
-                     K_Unconstrained_Array, K_Unconstrained_Discriminated);
+   type Subrules is (K_Class_Wide,        K_Protected,           K_Task,
+                     K_Constrained_Array, K_Unconstrained_Array, K_Unconstrained_Discriminated);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -232,7 +232,7 @@ package body Rules.Return_Type is
    procedure Process_Function_Declaration (Decl : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries, Utilities;
-      Result_Expression : Asis.Expression;
+      Result_Expression       : Asis.Expression;
       Result_Type_Declaration : Asis.Declaration;
 
       procedure Do_Report (Usage_Kind : in Subrules; Error_Message : in Wide_String) is
@@ -341,12 +341,19 @@ package body Rules.Return_Type is
                declare
                   -- Retrieve the type definition for the expression
                   Result_Type_Definition : constant Asis.Definition := Type_Declaration_View (Result_Type_Declaration);
+                  Constraint             : constant Asis.Constraint := Subtype_Constraint (Result_Type_Definition);
                begin
-                  if not Is_Nil (Subtype_Constraint (Result_Type_Definition)) then
+                  if not Is_Nil (Constraint) then
                      -- OK, return type is constrained
-                     -- But it can still be a task or protected type (with discriminants)...
+                     -- Can be an array subtype
+                     if Constraint_Kind (Constraint) = An_Index_Constraint then
+                        Do_Report (K_Constrained_Array, "function returns constrained array type");
+                     end if;
+
+                     -- But it can also be a task or protected type (with discriminants)...
                      Check_Tasks_Protected;
-                     -- No more discriminants to check...
+
+                     -- No discriminants to check...
                      return;
                   end if;
 
@@ -423,6 +430,13 @@ package body Rules.Return_Type is
                                  Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Parent_Name);
                               end;
 
+                           when A_Constrained_Array_Definition =>
+                              Do_Report (K_Constrained_Array, "function returns constrained array type");
+                              Check_Tasks_Protected;
+
+                              -- Cannot have discriminants
+                              return;
+
                            when An_Unconstrained_Array_Definition =>
                               Do_Report (K_Unconstrained_Array, "function returns unconstrained array type");
                               Check_Tasks_Protected;
@@ -438,11 +452,6 @@ package body Rules.Return_Type is
                              | A_Decimal_Fixed_Point_Definition
                              | An_Access_Type_Definition
                              =>
-                              -- Cannot have discriminants
-                              return;
-
-                           when A_Constrained_Array_Definition =>
-                              Check_Tasks_Protected;
                               -- Cannot have discriminants
                               return;
 

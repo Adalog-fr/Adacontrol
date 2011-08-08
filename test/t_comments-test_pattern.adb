@@ -1,4 +1,4 @@
-separate (T_Special_Comments)
+separate (T_Comments)
 procedure Test_Pattern is
 begin  -- Test_Pattern
    --

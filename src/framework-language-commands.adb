@@ -114,6 +114,7 @@ package body Framework.Language.Commands is
                                   Unit_Name : Wide_String := "")
       is
          use Ada.Exceptions, Asis.Exceptions, Ada.Characters.Handling;
+         use Asis.Implementation;
       begin
          Failure_Occurred := True;
 
@@ -122,6 +123,8 @@ package body Framework.Language.Commands is
          Framework.Scope_Manager.Reset (Deactivate => False);
 
          User_Message ("============= Phase: " & Phase & " =============");
+         User_Message ("AdaCtl version: " & Adactl_Version
+                       & " with " & ASIS_Implementor_Version);
          Reraise_Occurrence (Occur);
       exception
          when Local_Occur : ASIS_Failed
@@ -417,7 +420,13 @@ package body Framework.Language.Commands is
             -- By convention: treat Standard_Input as file (not interactive)
             Set_Input (Standard_Input);
          else
-            Open (File, In_File, To_String (File_Name), Form => Implementation_Options.Form_Parameters);
+            begin
+               Open (File, In_File, To_String (File_Name), Form => Implementation_Options.Form_Parameters);
+            exception
+               when Name_Error =>
+                  -- retry with .aru extension
+                  Open (File, In_File, To_String (File_Name) & ".aru", Form => Implementation_Options.Form_Parameters);
+            end;
             Set_Input (File);
          end if;
          Set_Prompt ("");

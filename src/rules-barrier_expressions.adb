@@ -177,7 +177,8 @@ package body Rules.Barrier_Expressions is
                   S := Rule_Used;
                else
                   declare
-                     Alternate_Context : constant Root_Context'Class := Matching_Context (Contexts, Identifier);
+                     Alternate_Context : constant Root_Context'Class
+                       := Matching_Context (Contexts, Identifier, Extend_To => All_Extensions);
                   begin
                      if Alternate_Context = No_Matching_Context then
                         S := Rule_Used;
@@ -208,79 +209,65 @@ package body Rules.Barrier_Expressions is
 
             when An_Identifier =>
                declare
-                  Name_Decl : constant Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration (Exp);
+                  Used_Names : constant Asis.Expression_List := Used_Identifiers (Exp);
+                  Name_Decl  : Asis.Declaration;
                begin
-                  case Declaration_Kind (Name_Decl) is
-                     when A_Package_Declaration
-                        | A_Package_Body_Declaration
-                        | A_Protected_Type_Declaration
-                          =>
-                          -- Can appear only as prefix => Harmless
-                          null;
-                     when A_Function_Declaration
-                        | A_Function_Body_Declaration
-                          =>
-                        -- Since we are in a barrier expression, a function name can appear only as
-                        -- a call, not as a prefix of an internal element
-                        declare
-                           Temp_Elem : Asis.Element := Enclosing_Element (Name_Decl);
-                           Is_Local  : Boolean;
-                        begin
-                           if Definition_Kind (Temp_Elem) = A_Protected_Definition then
-                              -- It is a call to a protected function, but does it belong to the same PO?
-                              Temp_Elem := Enclosing_Element (Exp);
-                              while Expression_Kind (Temp_Elem) /= A_Function_Call loop
-                                 Temp_Elem := Enclosing_Element (Temp_Elem);
-                              end loop;
-                              Is_Local := Is_Nil (External_Call_Target (Temp_Elem));
-                           else
-                              Is_Local := False;
-                           end if;
-                           if Is_Local then
-                              Do_Report ("local function call",
-                                         Control_Manager.Association (Contexts, Image (K_Local_Function)),
-                                         Exp);
-                           else
-                              Do_Report ("non-local function call", Matching_Context (Contexts, Exp));
-                           end if;
-                        end;
-                     when A_Variable_Declaration
-                        | A_Single_Protected_Declaration
-                        | A_Loop_Parameter_Specification  -- Consider this (and next) as variables,
-                        | An_Entry_Index_Specification    -- although they are strictly speaking constants
-                          =>
-                        Do_Report ("variable",
-                                   Control_Manager.Association (Contexts, Image (K_Any_Variable)),
-                                   Exp);
-                     when A_Component_Declaration =>
-                        -- This can be:
-                        --   A component of a protected element: boolean fields always allowed, others checked
-                        --   A component of a record type: nothing to check, the check is performed on the data
-                        --      that encloses the component.
-                        if Definition_Kind (Enclosing_Element (Name_Decl)) = A_Protected_Definition then
-                           -- A field of the protected element, boolean fields always allowed
-                           if To_Upper (Full_Name_Image
-                                        (Subtype_Simple_Name
-                                         (Component_Subtype_Indication
-                                          (Object_Declaration_View (Name_Decl)))))
-                             /= "STANDARD.BOOLEAN"
-                           then
-                              Do_Report ("non-boolean protected component",
-                                         Control_Manager.Association (Contexts, Image (K_Any_Component)),
-                                         Exp);
-                           end if;
+                  for N in Used_Names'Range loop
+                     Name_Decl  := A4G_Bugs.Corresponding_Name_Declaration (Used_Names(N));
+                     case Declaration_Kind (Name_Decl) is
+                        when A_Package_Declaration
+                           | A_Package_Body_Declaration
+                           | A_Package_Renaming_Declaration
+                           | A_Protected_Type_Declaration
+                             =>
+                           -- Can appear only as prefix => Harmless
+                           null;
+                        when A_Function_Declaration
+                           | A_Function_Body_Declaration
+                           | A_Function_Renaming_Declaration
+                             =>
+                           -- Can be a call or a prefix, but the case of the call was handled as
+                           -- A_Function_Call
+                           null;
+                        when A_Variable_Declaration
+                           | An_Object_Renaming_Declaration
+                           | A_Single_Protected_Declaration
+                           | A_Loop_Parameter_Specification  -- Consider this (and next) as variables,
+                           | An_Entry_Index_Specification    -- although they are strictly speaking constants
+                             =>
+                           Do_Report ("variable",
+                                      Control_Manager.Association (Contexts, Image (K_Any_Variable)),
+                                      Used_Names(N));
+                        when A_Component_Declaration =>
+                           -- This can be:
+                           --   A component of a protected element: boolean fields always allowed, others checked
+                           --   A component of a record type: nothing to check, the check is performed on the data
+                           --      that encloses the component.
+                           if Definition_Kind (Enclosing_Element (Name_Decl)) = A_Protected_Definition then
+                              -- A field of the protected element, boolean fields always allowed
+                              if To_Upper (Full_Name_Image
+                                           (Subtype_Simple_Name
+                                            (Component_Subtype_Indication
+                                             (Object_Declaration_View (Name_Decl)))))
+                                  /= "STANDARD.BOOLEAN"
+                              then
+                                 Do_Report ("non-boolean protected component",
+                                            Control_Manager.Association (Contexts, Image (K_Any_Component)),
+                                            Used_Names(N));
+                              end if;
                         end if;
-                     when A_Constant_Declaration
-                        | A_Number_Declaration
-                          =>
-                        -- always allowed
-                        null;
-                     when others =>
-                        Failure (Rule_Id
-                                 & ": unexpected declaration kind "
-                                 & Declaration_Kinds'Wide_Image (Declaration_Kind (Name_Decl)),
-                                 Exp);
-                  end case;
+                        when A_Constant_Declaration
+                           | A_Number_Declaration
+                             =>
+                           -- always allowed
+                           null;
+                        when others =>
+                           Failure (Rule_Id
+                                    & ": unexpected declaration kind "
+                                    & Declaration_Kinds'Wide_Image (Declaration_Kind (Name_Decl)),
+                                    Used_Names(N));
+                     end case;
+                  end loop;
                end;
             when An_Integer_Literal
               | A_String_Literal
@@ -293,56 +280,10 @@ package body Rules.Barrier_Expressions is
                null;
 
             when An_Operator_Symbol =>
-               case Operator_Kind (Exp) is
-                  when Not_An_Operator =>
-                     Failure (Rule_Id & ": Not_An_Operator");
-                  when An_And_Operator
-                    | An_Or_Operator
-                    | An_Xor_Operator
-                    | A_Not_Operator
-                    =>
-                     -- Check that the operator is a language predefined operator
-                     if Is_Nil (A4G_Bugs.Corresponding_Called_Function (Enclosing_Element (Exp))) then
-                        -- Predefined operator
-                        Do_Report ("predefined logical operator",
-                                   Control_Manager.Association (Contexts, Image (K_Logical_Operator)));
-                     else
-                        -- User defined operator
-                        Do_Report ("redefined logical operator",
-                                   Matching_Context (Contexts, Exp));
-                     end if;
-                  when An_Equal_Operator
-                    | A_Not_Equal_Operator
-                    | A_Less_Than_Operator
-                    | A_Less_Than_Or_Equal_Operator
-                    | A_Greater_Than_Operator
-                    | A_Greater_Than_Or_Equal_Operator
-                    =>
-                     if Is_Nil (A4G_Bugs.Corresponding_Called_Function (Enclosing_Element (Exp))) then
-                        -- Predefined operator
-                        Do_Report ("predefined comparison operator",
-                          Control_Manager.Association (Contexts,
-                                                       Image (K_Comparison_Operator)));
-                     else
-                        -- User defined operator
-                        Do_Report ("redefined comparison operator",
-                                   Matching_Context (Contexts, Exp));
-                     end if;
-                  when others =>
-                     if Is_Nil (A4G_Bugs.Corresponding_Called_Function (Enclosing_Element (Exp))) then
-                        -- Predefined operator
-                        Do_Report ("predefined arithmetic operator",
-                          Control_Manager.Association (Contexts,
-                                                       Image (K_Arithmetic_Operator)));
-                     else
-                        -- User defined operator
-                        Do_Report ("redefined arithmetic operator",
-                                   Matching_Context (Contexts, Exp));
-                     end if;
-               end case;
+               -- Already handled as A_Function_Call
+               null;
 
             when An_Attribute_Reference =>
-               -- Attributes that are not callable entities are always allowed
                if Is_Callable_Construct (Exp) then
                   Do_Report ("callable attribute",
                              Control_Manager.Association (Contexts, Image (K_Function_Attribute)),
@@ -529,19 +470,79 @@ package body Rules.Barrier_Expressions is
             when A_Selected_Component =>
                -- Check for implicit dereference
                if Is_Access_Expression (Prefix (Exp)) then
-                Do_Report ("dereference",
-                           Control_Manager.Association (Contexts, Image (K_Dereference)));
+                  Do_Report ("dereference",
+                             Control_Manager.Association (Contexts, Image (K_Dereference)));
                end if;
                -- Check both prefix and selector
                Check_Expression (Prefix (Exp));
                Check_Expression (Selector (Exp));
 
             when A_Function_Call =>
-               -- Check for implicit dereference
-               if Is_Access_Expression (Prefix (Exp)) then
-                Do_Report ("dereference",
-                           Control_Manager.Association (Contexts, Image (K_Dereference)));
-               end if;
+               -- Checks about the call itself
+               declare
+                  Called : constant Call_Descriptor := Corresponding_Call_Description (Exp);
+               begin
+                  case Called.Kind is
+                     when A_Regular_Call =>
+                        if Definition_Kind (Enclosing_Element (Called.Declaration)) = A_Protected_Definition
+                          and then Is_Nil (External_Call_Target (Exp))
+                        then
+                           -- It is a call to a protected function of the same PO
+                           Do_Report ("local function call",
+                                      Control_Manager.Association (Contexts, Image (K_Local_Function)),
+                                      Called_Simple_Name (Exp));
+                        else
+                           Do_Report ("non-local function call", Matching_Context (Contexts,
+                                                                                   Called_Simple_Name (Exp),
+                                                                                   Extend_To => All_Extensions));
+                        end if;
+                     when A_Predefined_Entity_Call =>
+                        case Operator_Kind (Called_Simple_Name (Exp)) is
+                           when Not_An_Operator =>
+                              Failure (Rule_Id & ": Not_An_Operator");
+                           when An_And_Operator
+                              | An_Or_Operator
+                              | An_Xor_Operator
+                              | A_Not_Operator
+                                =>
+                              Do_Report ("predefined logical operator",
+                                         Control_Manager.Association (Contexts, Image (K_Logical_Operator)),
+                                         Loc => Get_Location (Prefix (Exp)));
+                           when An_Equal_Operator
+                              | A_Not_Equal_Operator
+                              | A_Less_Than_Operator
+                              | A_Less_Than_Or_Equal_Operator
+                              | A_Greater_Than_Operator
+                              | A_Greater_Than_Or_Equal_Operator
+                                =>
+                              Do_Report ("predefined comparison operator",
+                                         Control_Manager.Association (Contexts, Image (K_Comparison_Operator)),
+                                         Loc => Get_Location (Prefix (Exp)));
+                           when others =>
+                              Do_Report ("predefined arithmetic operator",
+                                         Control_Manager.Association (Contexts, Image (K_Arithmetic_Operator)),
+                                         Loc => Get_Location (Prefix (Exp)));
+                        end case;
+
+                     when An_Attribute_Call =>
+                        -- Will handle it when traversing the prefix (because we need to handle value
+                        -- attributes anyway)
+                        null;
+
+                     when A_Dereference_Call =>
+                        Do_Report ("dereference",
+                                   Control_Manager.Association (Contexts, Image (K_Dereference)));
+
+                     when A_Dispatching_Call =>
+                        -- Same as regular call
+                        Do_Report ("non-local function call", Matching_Context (Contexts, Called_Simple_Name (Exp)));
+
+                     when An_Enumeration_Literal =>
+                        -- Allways allowed
+                        null;
+                  end case;
+
+               end;
                -- Check prefix
                Check_Expression (Prefix (Exp));
                -- Check each parameter
@@ -573,6 +574,12 @@ package body Rules.Barrier_Expressions is
                Do_Report ("allocation",
                           Control_Manager.Association (Contexts, Image (K_Allocation)));
                Check_Expression (Allocator_Qualified_Expression (Exp));
+
+            pragma Warnings(Off); -- others covers nothing for versions of gnat that do not support the extension
+            when others =>
+               -- Corresponds to GNAT extension: A_Conditional_Expression
+               Reports.Uncheckable (Rule_Id, False_Negative, Get_Location (Exp), "Use of compiler specific extension");
+            pragma Warnings (On);
          end case;
       end Check_Expression;
 

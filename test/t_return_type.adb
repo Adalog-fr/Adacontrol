@@ -21,7 +21,7 @@ procedure T_Return_Type is
 
    -- A_Function_Declaration
    -- returning an unconstrained subtype
-   function To_String (I : Integer) return Another_String;                      -- should trigger
+   function To_String (I : Integer) return Another_String;                      -- unconstrained_array
    -- A_Function_Body_Declaration (with defined specification)
    function To_String (I : Integer) return Another_String is                    -- OK (explicit specification)
    begin
@@ -30,14 +30,14 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a statically constrained subtype
-   function To_Spaces_Fill_String return A_Constrained_String2 is               -- OK
+   function To_Spaces_Fill_String return A_Constrained_String2 is               -- constrained_array
    begin
       return (others => ' ');
    end To_Spaces_Fill_String;
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning an unconstrained type
-   function Hello_World return Yet_Another_String is                            -- should trigger
+   function Hello_World return Yet_Another_String is                            -- unconstrained_array
    begin
       return "Hello world!";
    end Hello_World;
@@ -46,7 +46,7 @@ procedure T_Return_Type is
    type Constrained_Array is array (Integer range 1..N) of Integer;
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a non-statically constrained type
-   function Constrained_Function (Length : Integer) return Constrained_Array is -- OK
+   function Constrained_Function (Length : Integer) return Constrained_Array is -- constrained_array
       Tab : Constrained_Array;
    begin
       for I in 1..N loop
@@ -62,7 +62,7 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Stub (specification with separate body)
    -- returning a non-statically constrained type
-   function Empty_String return String is separate;                             -- should trigger
+   function Empty_String return String is separate;                             -- unconstrained_array
 
 
    --------------------------------
@@ -83,7 +83,7 @@ procedure T_Return_Type is
    -- A_Generic_Function_Declaration
    generic
       type Generic_Type_2 is array (Positive range <>) of Character;
-   function Generic_Function_2 (V : Generic_Type_2) return Generic_Type_2;      -- should trigger
+   function Generic_Function_2 (V : Generic_Type_2) return Generic_Type_2;      -- unconstrained_array
    -- A_Generic_Function_Body_Declaration
    function Generic_Function_2 (V : Generic_Type_2) return Generic_Type_2 is    -- OK (explicit specification)
    begin
@@ -100,7 +100,7 @@ procedure T_Return_Type is
    function Digit_Function is new Generic_Function_1 (Digit);                   -- OK
    -- A_Function_Instantiation
    -- returning a unconstrained array type
-   function String_Function is new Generic_Function_2 (String);                 -- should trigger
+   function String_Function is new Generic_Function_2 (String);                 -- unconstrained_array
 
 
    -- A_Generic_Package
@@ -110,7 +110,7 @@ procedure T_Return_Type is
       type Integer_Array is array (Generic_Type_3) of Integer;
       -- A_Function_Declaration (within A_Generic_Package)
       -- returning a non-statically constrained type
-      function Dup_Function (V : Integer_Array) return Integer_Array;           -- OK
+      function Dup_Function (V : Integer_Array) return Integer_Array;           -- unconstrained_array
    end Generic_Package;
 
    -- A_Generic_Package_Body
@@ -129,7 +129,7 @@ procedure T_Return_Type is
 
    -- A_Function_Renaming_Declaration
    -- returning a non-statically constrained type
-   function To_String_Renaming (I : Integer) return String renames To_String;   -- should trigger
+   function To_String_Renaming (I : Integer) return String renames To_String;   -- unconstrained_array
 
 
    ---------------------------------------------------------
@@ -150,7 +150,7 @@ procedure T_Return_Type is
       end record;
    -- A_Function_Body_Declaration (without defined specification)
    -- returning An_Attribute_Reference . A_Class_Attribute
-   function Class_Attribute_Reference_Function return Tagged_Type'Class is      -- should trigger
+   function Class_Attribute_Reference_Function return Tagged_Type'Class is      -- class_wide
    begin
       return Tagged_Type'(I => 2);
    end Class_Attribute_Reference_Function;
@@ -170,7 +170,7 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a task type
-   function Returning_Task_Type return Dummy_Task_Type is                       -- should trigger
+   function Returning_Task_Type return Dummy_Task_Type is                       -- task
    begin
       return My_Dummy_Task_Object;
    end Returning_Task_Type;
@@ -194,7 +194,7 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a protected type
-   function Returning_Protected_Type return Dummy_Protected_Type is             -- should trigger
+   function Returning_Protected_Type return Dummy_Protected_Type is             -- protected
    begin
       return My_Dummy_Protected_Object;
    end Returning_Protected_Type;
@@ -217,7 +217,7 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a discriminated type whose discriminant is known
-   function Returning_Discriminated_Type return Discriminated_Record is         -- should trigger
+   function Returning_Discriminated_Type return Discriminated_Record is         -- unconstrained_discriminated
       Rec : Discriminated_Record (D => True);
    begin
       Rec.Common := 5.0;
@@ -259,7 +259,7 @@ procedure T_Return_Type is
 
    -- A_Function_Instantiation
    -- returning a discriminated type with known discriminant
-   function Returning_Generic_Discriminated_Record is                           -- should trigger
+   function Returning_Generic_Discriminated_Record is                           -- unconstrained_discriminated
       new Returning_Generic_Discriminated_Type (Discriminated_Record);
 
 
@@ -278,7 +278,7 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a discriminated task type (task + discriminant)
-   function Return_Discriminated_Task_Type return Discriminated_Task_Type is    -- should trigger (x2)
+   function Return_Discriminated_Task_Type return Discriminated_Task_Type is    -- task, unconstrained_discriminated
    begin
       return My_Discriminated_Task;
    end Return_Discriminated_Task_Type;
@@ -290,8 +290,8 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a constrained discriminated task subtype
-   function Returning_Constrained_Discriminated_Task_Subtype                    -- should trigger
-     return Constrained_Discriminated_Task_Subtype
+   function Returning_Constrained_Discriminated_Task_Subtype
+     return Constrained_Discriminated_Task_Subtype                              -- task
    is
    begin
       return My_Constrained_Discriminated_Task;
@@ -318,8 +318,8 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a discriminated protected type (protected + discriminant)
-   function Return_Discriminated_Protected_Type                                 -- should trigger (x2)
-     return Discriminated_Protected_Type
+   function Return_Discriminated_Protected_Type
+     return Discriminated_Protected_Type                                        -- protected, unconstrained_discriminated
    is
    begin
       return My_Discriminated_Protected;
@@ -333,8 +333,8 @@ procedure T_Return_Type is
 
    -- A_Function_Body_Declaration (without defined specification)
    -- returning a constrained discriminated protected type
-   function Returning_Constrained_Discriminated_Protected_Subtype               -- should trigger
-     return Constrained_Discriminated_Protected_Subtype
+   function Returning_Constrained_Discriminated_Protected_Subtype
+     return Constrained_Discriminated_Protected_Subtype                         -- protected
    is
    begin
       return My_Constrained_Discriminated_Protected;
@@ -351,22 +351,22 @@ procedure T_Return_Type is
    -- returning a limited type
    generic
       type Item (<>) is limited private;
-   function Generic_Returning_Limited (X : access Item) return Item;            -- should not trigger
+   function Generic_Returning_Limited (X : access Item) return Item;            -- OK
 
    -- A_Generic_Function_Body (with defined specification)
    -- returning a limited type
-   function Generic_Returning_Limited (X : access Item) return Item is          -- should not trigger
+   function Generic_Returning_Limited (X : access Item) return Item is          -- OK
    begin
       return X.all;
    end Generic_Returning_Limited;
 
    -- A_Function_Instantiation
    -- returning a task type
-   function Generic_Instantiation_Returning_Task is                             -- should trigger
+   function Generic_Instantiation_Returning_Task is                             -- task
       new Generic_Returning_Limited (Item => Dummy_Task_Type);
    -- A_Function_Instantiation
    -- returning a protected type
-   function Generic_Instantiation_Returning_Protected is                        -- should trigger
+   function Generic_Instantiation_Returning_Protected is                        -- protected
       new Generic_Returning_Limited (Item => Dummy_Protected_Type);
 
    type Crazy (X : Integer) is tagged limited
@@ -375,9 +375,8 @@ procedure T_Return_Type is
          P : Dummy_Protected_Type;
       end record;
 
-   function Generic_Instantiantion_Maxi is
-      new Generic_Returning_Limited (Item => Crazy);                            -- should trigger (x3)
---ASIS bug:      new Generic_Returning_Limited (Item => Crazy'Class);           -- should trigger (x4)
+   function Generic_Instantiantion_Maxi is                                      -- class-wide, task, protected, unconstrained_discriminated
+      new Generic_Returning_Limited (Item => Crazy'Class);
 
 
    -------------------------------------------------------
@@ -391,10 +390,10 @@ procedure T_Return_Type is
    -- returning a derived type from record type
    generic
       type Derived_Record is new Simple_Record;
-   function Generic_Returning_Derived_Record return Derived_Record;             -- should not trigger
+   function Generic_Returning_Derived_Record return Derived_Record;             -- OK
    -- A_Generic_Function_Body
    -- returning a derived type from record type
-   function Generic_Returning_Derived_Record return Derived_Record is           -- should not trigger
+   function Generic_Returning_Derived_Record return Derived_Record is           -- OK
    begin
       return Derived_Record'(I => 0);
    end Generic_Returning_Derived_Record;
@@ -403,10 +402,10 @@ procedure T_Return_Type is
    -- returning a derived type from An_Attribute_Reference ('Base only)
    generic
       type Integer_Base is new Integer'Base;
-   function Generic_Returning_Integer_Base return Integer_Base;                 -- should not trigger
+   function Generic_Returning_Integer_Base return Integer_Base;                 -- OK
    -- A_Generic_Function_Body
    -- returning a derived type from An_Attribute_Reference ('Base only)
-   function Generic_Returning_Integer_Base return Integer_Base is               -- should not trigger
+   function Generic_Returning_Integer_Base return Integer_Base is               -- OK
    begin
       return 5;
    end Generic_Returning_Integer_Base;

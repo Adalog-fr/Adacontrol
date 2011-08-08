@@ -1,6 +1,7 @@
 Return_Unknown_Size: check return_type (class_wide,
                                         unconstrained_discriminated,
                                         unconstrained_array);
+Return_Constrained_Array : search return_type (constrained_array);
 Return_Protected: check return_type (protected);
 Return_Task     : check return_type (task);
 

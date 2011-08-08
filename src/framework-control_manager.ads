@@ -103,8 +103,9 @@ package Framework.Control_Manager is
                               Extend_To : in Extension_Set := No_Extension) return Root_Context'Class;
    -- Retrieves the context associated to the element if there is a match
    -- Returns No_Matching_Context otherwise (including if Name is a Nil_Element).
-   -- If Extended, extends the search to the original name for renamings
-   -- and corresponding generics if Name is an instantiation or part of an instantiation
+   -- If Extend_To (Instances), extends the search to corresponding generic element if Name is an instantiation
+   --    or part of an instantiation
+   -- If Extend_To (Renaming), extends the search to the original name for renamings
    --
    -- Appropriate Element_Kinds for Name:
    --   A_Pragma (condition searched on pragma name)

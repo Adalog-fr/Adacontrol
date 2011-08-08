@@ -309,6 +309,7 @@ package body Framework.Ruler is
                   declare
                      Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Declaration_List (I));
                      Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Declaration_List (I)) (1));
+                     Stub_Unit   :  Asis.Compilation_Unit;
                   begin
                      if Is_Nil (Proper_Body) then
                         User_Log (3 * Stub_Nesting * ' '
@@ -317,11 +318,16 @@ package body Framework.Ruler is
                                   & " ... not found");
                         Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
                      else
+                        Stub_Unit := Enclosing_Compilation_Unit (Proper_Body);
+                        Process_Inhibition (Stub_Unit, Suspend);
                         User_Log (3 * Stub_Nesting * ' '
                                   & "Controlling separate "
                                   & Stub_Name);
+
                         Textual_Traverse  (Enclosing_Compilation_Unit (Proper_Body));
+
                         User_Log (3 * Stub_Nesting * ' ' & "returning");
+                        Process_Inhibition (Stub_Unit, Resume);
                      end if;
                   end;
                   Stub_Nesting := Stub_Nesting - 1;
@@ -340,37 +346,44 @@ package body Framework.Ruler is
                             State   : in out Info)
    is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-      use Ada.Strings.Wide_Fixed, Rules_Manager, Utilities;
+      use Utilities;
    begin
       case Element_Kind (Element) is
          when A_Declaration =>
             case Declaration_Kind (Element) is
                when A_Function_Declaration
-                 | A_Procedure_Declaration
-                 | An_Entry_Declaration
-                 | A_Generic_Procedure_Declaration
-                 | A_Generic_Function_Declaration
-                 | A_Formal_Procedure_Declaration
-                 | A_Formal_Function_Declaration
-                 | A_Package_Body_Declaration
-                 | A_Task_Type_Declaration
-                 | A_Single_Task_Declaration
-                 | A_Protected_Type_Declaration
-                 | A_Single_Protected_Declaration
-                 | A_Task_Body_Declaration
-                 | A_Protected_Body_Declaration
-                 | An_Entry_Body_Declaration
-                 | A_Procedure_Body_Declaration
-                 | A_Function_Body_Declaration
-                 | A_Package_Renaming_Declaration
-                 | A_Procedure_Renaming_Declaration
-                 | A_Function_Renaming_Declaration
-                 | A_Generic_Package_Renaming_Declaration
-                 | A_Generic_Procedure_Renaming_Declaration
-                 | A_Generic_Function_Renaming_Declaration
-                 | A_Package_Instantiation
-                 | A_Procedure_Instantiation
-                 | A_Function_Instantiation
+                  | A_Procedure_Declaration
+                  | An_Entry_Declaration
+                  | A_Task_Type_Declaration
+                  | A_Single_Task_Declaration
+                  | A_Protected_Type_Declaration
+                  | A_Single_Protected_Declaration
+
+                  | A_Procedure_Body_Declaration
+                  | A_Function_Body_Declaration
+                  | A_Package_Body_Declaration
+                  | A_Task_Body_Declaration
+                  | A_Protected_Body_Declaration
+                  | An_Entry_Body_Declaration
+
+                  | A_Body_Stub
+
+                  | A_Generic_Procedure_Declaration
+                  | A_Generic_Function_Declaration
+
+                  | A_Formal_Procedure_Declaration
+                  | A_Formal_Function_Declaration
+
+                  | A_Procedure_Renaming_Declaration
+                  | A_Function_Renaming_Declaration
+                  | A_Package_Renaming_Declaration
+                  | A_Generic_Procedure_Renaming_Declaration
+                  | A_Generic_Function_Renaming_Declaration
+                  | A_Generic_Package_Renaming_Declaration
+
+                  | A_Package_Instantiation
+                  | A_Procedure_Instantiation
+                  | A_Function_Instantiation
                  =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
@@ -408,42 +421,6 @@ package body Framework.Ruler is
                   -- with Control = Abandon_Children:
                   Post_Procedure (Element, Control, State);
                   Control := Abandon_Children;
-
-               when A_Body_Stub =>
-                  Framework.Plugs.         Pre_Procedure (Element);
-                  Framework.Specific_Plugs.Pre_Procedure (Element);
-
-                  -- Process proper bodies at the place of the stub
-                  Stub_Nesting := Stub_Nesting + 1;
-                  declare
-                     Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Element);
-                     Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Element) (1));
-                  begin
-                     if Is_Nil (Proper_Body) then
-                        User_Log (3 * Stub_Nesting * ' '
-                                  & "Controlling separate "
-                                  & Stub_Name
-                                  & " ... not found");
-                        Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
-                     else
-                        User_Log (3 * Stub_Nesting * ' '
-                                  & "Controlling separate "
-                                  & Stub_Name);
-                        declare
-                           Stub_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Proper_Body);
-                        begin
-                           Process_Inhibition (Stub_Unit, Suspend);
-                           Semantic_Traverse (Stub_Unit);
-                           -- If we have both semantic and textual rules, check textual rules here
-                           if Has_Active_Rules (Textual) then
-                              Textual_Traverse (Stub_Unit);
-                           end if;
-                           Process_Inhibition (Stub_Unit, Resume);
-                        end;
-                        User_Log (3 * Stub_Nesting * ' ' & "returning");
-                     end if;
-                  end;
-                  Stub_Nesting := Stub_Nesting - 1;
 
                when others =>
                   Framework.Plugs.         Pre_Procedure (Element);
@@ -499,7 +476,7 @@ package body Framework.Ruler is
                   -- the attribute designator, not for the prefix
                   Semantic_Traverse_Elements (Prefix (Element), Control, State);
                   State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
-                  Semantic_Traverse_Elements (A4G_Bugs.Attribute_Designator_Identifier (Element), Control, State);
+                  Semantic_Traverse_Elements (Attribute_Designator_Identifier (Element), Control, State);
                   State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
                   Control := Abandon_Children;
 
@@ -549,7 +526,8 @@ package body Framework.Ruler is
                              Control : in out Asis.Traverse_Control;
                              State   : in out Info) is
       pragma Unreferenced (Control);
-      use Asis, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Ada.Strings.Wide_Fixed, Rules_Manager, Utilities;
    begin
       case Element_Kind (Element) is
          when A_Declaration =>
@@ -591,6 +569,43 @@ package body Framework.Ruler is
                   Exit_Scope (Element);
                   Framework.Plugs.         Post_Procedure (Element);
                   Framework.Specific_Plugs.Post_Procedure (Element);
+
+               when A_Body_Stub =>
+                  Exit_Scope (Element);
+                  Framework.Plugs.         Post_Procedure (Element);
+                  Framework.Specific_Plugs.Post_Procedure (Element);
+
+                  -- After processing of the stub itself, process the proper body at the place of the stub
+                  Stub_Nesting := Stub_Nesting + 1;
+                  declare
+                     Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Element);
+                     Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Element) (1));
+                  begin
+                     if Is_Nil (Proper_Body) then
+                        User_Log (3 * Stub_Nesting * ' '
+                                  & "Controlling separate "
+                                  & Stub_Name
+                                  & " ... not found");
+                        Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
+                     else
+                        User_Log (3 * Stub_Nesting * ' '
+                                  & "Controlling separate "
+                                  & Stub_Name);
+                        declare
+                           Stub_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Proper_Body);
+                        begin
+                           Process_Inhibition (Stub_Unit, Suspend);
+                           Semantic_Traverse (Stub_Unit);
+                           -- If we have both semantic and textual rules, check textual rules here
+                           if Has_Active_Rules (Textual) then
+                              Textual_Traverse (Stub_Unit);
+                           end if;
+                           Process_Inhibition (Stub_Unit, Resume);
+                        end;
+                        User_Log (3 * Stub_Nesting * ' ' & "returning");
+                     end if;
+                  end;
+                  Stub_Nesting := Stub_Nesting - 1;
 
                when others =>
                   Framework.Plugs.         Post_Procedure (Element);
@@ -705,6 +720,7 @@ package body Framework.Ruler is
 
       Unit_Spec : Asis.Compilation_Unit;
       Unit_Body : Asis.Compilation_Unit;
+
    begin -- Process
       if not Spec_Only then
          -- Get the body before accessing the spec to avoid tree swapping

@@ -17,9 +17,9 @@
 
 -- Comments
 -- Trace special comments (error for "fixme", warnings for others)
-"6/7": check special_comments (pattern, "fixme:");
-"6/7": search special_comments (pattern, "workaround:");
-"6/7": search special_comments (pattern, "improveme:");
+"6/7": check comments (pattern, "fixme:");
+"6/7": search comments (pattern, "workaround:");
+"6/7": search comments (pattern, "improveme:");
 
 -- Identifier naming conventions
 "7/1": check naming_convention (all, not "^?$");          -- More than one character...

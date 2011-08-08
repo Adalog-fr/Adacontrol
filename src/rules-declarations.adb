@@ -108,7 +108,8 @@ package body Rules.Declarations is
       D_Procedure_Instantiation,         D_Protected,                         D_Protected_Entry,
       D_Protected_Type,                  D_Protected_Variable,
 
-      D_Record_Type,                     D_Renaming,
+      D_Record_Type,                     D_Renaming,                          D_Renaming_As_Body,
+      D_Renaming_As_Declaration,
 
       D_Self_Calling_Function,           D_Self_Calling_Procedure,            D_Separate,
       D_Signed_Type,                     D_Single_Array,                      D_Single_Protected,
@@ -1246,7 +1247,17 @@ package body Rules.Declarations is
          when A_Function_Renaming_Declaration
            | A_Generic_Function_Renaming_Declaration
               =>
-            Do_Report (D_Renaming, Get_Location (Element));
+            if Declaration_Kind (Element) = A_Function_Renaming_Declaration
+              and then (Rule_Used (D_Renaming_As_Declaration) or Rule_Used (D_Renaming_As_Body))
+            then
+               if Is_Equal (Element, Corresponding_Declaration (Element)) then
+                  Do_Report ((D_Renaming, D_Renaming_As_Declaration), Get_Location (Element));
+               else
+                  Do_Report ((D_Renaming, D_Renaming_As_Body), Get_Location (Element));
+               end if;
+            else
+               Do_Report (D_Renaming, Get_Location (Element));
+            end if;
 
             if   Rule_Used (D_Not_Operator_Renaming)
               or Rule_Used (D_Non_Identical_Renaming)
@@ -1296,7 +1307,17 @@ package body Rules.Declarations is
            | A_Generic_Package_Renaming_Declaration
            | A_Generic_Procedure_Renaming_Declaration
            =>
-            Do_Report (D_Renaming, Get_Location (Element));
+            if Declaration_Kind (Element) = A_Procedure_Renaming_Declaration
+              and then (Rule_Used (D_Renaming_As_Declaration) or Rule_Used (D_Renaming_As_Body))
+            then
+               if Is_Equal (Element, Corresponding_Declaration (Element)) then
+                  Do_Report ((D_Renaming, D_Renaming_As_Declaration), Get_Location (Element));
+               else
+                  Do_Report ((D_Renaming, D_Renaming_As_Body), Get_Location (Element));
+               end if;
+            else
+               Do_Report (D_Renaming, Get_Location (Element));
+            end if;
 
             if Rule_Used (D_Not_Operator_Renaming) then
                Do_Report (D_Not_Operator_Renaming, Get_Location (Element));

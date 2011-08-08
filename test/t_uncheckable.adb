@@ -16,6 +16,7 @@ procedure T_Uncheckable is
    procedure Object_Declarations             is separate;
    procedure Parameter_Aliasing              is separate;
    procedure Potentially_Blocking_Operations is separate;
+   procedure Record_Declarations             is separate;
    procedure Representation_Clauses          is separate;
    procedure Style                           is separate;
    procedure Unsafe_Unchecked_Conversion     is separate;

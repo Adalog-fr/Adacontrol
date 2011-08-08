@@ -64,7 +64,8 @@ package body Rules.Object_Declarations is
    -- browse the current level. Of course, it works because representation items must be
    -- declared in the same scope as the variable.
 
-   type Subrules is (Min_Integer_Span, Volatile_No_Address);
+   type Subrules is (Min_Integer_Span, Volatile_No_Address, Address_Not_Volatile);
+   subtype Vol_Addr_Rules is Subrules range Volatile_No_Address .. Address_Not_Volatile;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Subrule_Set is array (Subrules) of Boolean;
@@ -80,9 +81,9 @@ package body Rules.Object_Declarations is
          Min_Values : Thick_Queries.Biggest_Natural := 0;
       end record;
    Ctl_Contexts : array (Subrules, Object_Kinds, Control_Kinds) of Object_Context;
-   Vno_Context  : Basic_Rule_Context;
+   Vno_Context  : array (Vol_Addr_Rules) of Basic_Rule_Context;
 
-   -- Data for subrule Volatile_No_Address:
+   -- Data for subrule Volatile_No_Address and Address_Not_Volatile:
    type Repr_Rec is
       record
          Variable : Asis.Defining_Name;
@@ -153,16 +154,18 @@ package body Rules.Object_Declarations is
                end if;
                exit when not Parameter_Exists;
             end loop;
-         when Volatile_No_Address =>
+         when Volatile_No_Address
+            | Address_Not_Volatile
+            =>
             if Parameter_Exists then
                Parameter_Error (Rule_Id, "subrule has no parameters");
             end if;
 
-            if Rule_Used (Volatile_No_Address) then
+            if Rule_Used (Subrule) then
                Parameter_Error (Rule_Id, "subrule already given");
             end if;
 
-            Vno_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Vno_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end case;
       Rule_Used (Subrule) := True;
    end Add_Control;
@@ -199,7 +202,7 @@ package body Rules.Object_Declarations is
 
    procedure Prepare is
    begin
-      if not Rule_Used (Volatile_No_Address) then
+      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -304,7 +307,7 @@ package body Rules.Object_Declarations is
          end if;
       end Process_Min_Integer_Span;
 
-      procedure Process_Volatile_No_Address is
+      procedure Process_Volatile_Address is
          Decl_Names : constant Asis.Defining_Name_List := Names (Decl);
          Type_Decl  : constant Asis.Declaration := Decl_Type_Declaration;
          Volatile_T : Boolean := False;
@@ -325,7 +328,7 @@ package body Rules.Object_Declarations is
          for N in Decl_Names'Range loop
             Repr_Store.Push ((Decl_Names (N), Volatile => Volatile_T, Address => False));
          end loop;
-      end Process_Volatile_No_Address;
+      end Process_Volatile_Address;
 
    begin  -- Process_Declaration
       if Rule_Used = No_Rule then
@@ -337,10 +340,10 @@ package body Rules.Object_Declarations is
          Process_Min_Integer_Span;
       end if;
 
-      if Rule_Used (Volatile_No_Address)
+      if (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile))
         and then Declaration_Kind (Decl) = A_Variable_Declaration
       then
-         Process_Volatile_No_Address;
+         Process_Volatile_Address;
       end if;
    end Process_Declaration;
 
@@ -355,7 +358,7 @@ package body Rules.Object_Declarations is
       Name      : Asis.Expression;
       Repr_Data : Repr_Rec;
    begin
-      if not Rule_Used (Volatile_No_Address) then
+      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -400,7 +403,7 @@ package body Rules.Object_Declarations is
       Name      : Asis.Expression;
       Repr_Data : Repr_Rec;
    begin
-      if not Rule_Used (Volatile_No_Address) then
+      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -441,7 +444,7 @@ package body Rules.Object_Declarations is
 
       Repr_Data : Repr_Rec;
    begin
-      if not Rule_Used (Volatile_No_Address) then
+      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -449,11 +452,17 @@ package body Rules.Object_Declarations is
       Repr_Store.Reset (Current_Scope_Only);
       while Repr_Store.Data_Available loop
          Repr_Data := Repr_Store.Current_Data;
-         if Repr_Data.Volatile and not Repr_Data.Address then
+         if Rule_Used (Volatile_No_Address) and Repr_Data.Volatile and not Repr_Data.Address then
             Report (Rule_Id,
-                    Vno_Context,
+                    Vno_Context (Volatile_No_Address),
                     Get_Location (Repr_Data.Variable),
                     "variable is volatile and has no address clause");
+         end if;
+         if Rule_Used (Address_Not_Volatile) and Repr_Data.Address and not Repr_Data.Volatile then
+            Report (Rule_Id,
+                    Vno_Context (Address_Not_Volatile),
+                    Get_Location (Repr_Data.Variable),
+                    "variable has address clause and is not volatile");
          end if;
          Repr_Store.Next;
       end loop;

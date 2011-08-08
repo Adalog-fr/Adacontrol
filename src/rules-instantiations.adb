@@ -412,7 +412,7 @@ package body Rules.Instantiations is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Reset (Iter, Generic_Unit_Name (Instantiation));
+      Reset (Iter, Generic_Unit_Name (Instantiation), All_Extensions);
       while not Is_Exhausted (Iter) loop
          Process_Context;
          Next (Iter);

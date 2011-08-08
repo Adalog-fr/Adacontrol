@@ -8,11 +8,11 @@ Control occurrences of allocators, either all of them,
 or just those for tasks, protected types, or specific type(s)
 ----
 Rule: ARRAY_DECLARATIONS
-Parameter(1): first | last | length | component
-For First, Last, Length:
+Parameter(1): first | last | length | dimensions | component
+For First, Last, Length, Dimensions:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
-For first and last, alternatively:
+For first, last, and dimensions, alternatively:
 Parameter(2): <value>
      <bound>: min | max
 For component:
@@ -42,6 +42,22 @@ Parameter (s): control | not_iso_646 | trailing_space |
                wide
                (optional, default = all)
 Controls source lines that contain specified kind of characters
+----
+Rule: COMMENTS
+Parameter (1) pattern | position | terminating | unnamed_begin
+for pattern:
+   Parameter(2..): "<comment pattern>"
+for position:
+   Parameter(2..3): [<bound>] <value>
+                 (at least one parameter required)
+for terminating:
+   Parameter(2..): "<allowed pattern>" | begin | end
+for unnamed_begin:
+   Parameter(2..): [<condition>] <unit>
+      <condition>: always | declaration | program_unit
+           <unit>: all  | procedure | function | entry | package |
+                   task
+Control the content or placement of comments
 ----
 Rule: DECLARATIONS
 Parameter(s): {<location>} <decl>
@@ -98,7 +114,8 @@ Parameter(s): {<location>} <decl>
         procedure_instantiation         | protected                         |
         protected_entry                 | protected_type                    |
         protected_variable              | record_type                       |
-        renaming                        | self_calling_function             |
+        renaming                        | renaming_as_body                  |
+        renaming_as_declaration         | self_calling_function             |
         self_calling_procedure          | separate                          |
         signed_type                     | single_array                      |
         single_protected                | single_task                       |
@@ -145,7 +162,7 @@ Parameter(s): <Entity name>
 Control occurrences of any Ada entity
 ----
 Rule: ENTITY_INSIDE_EXCEPTION
-Parameter(s): [not] calls | <Entity name>
+Parameter(s): [not] calls | entry_calls | <Entity name>
 Control occurrences of an entity inside an exception handler.
 ----
 Rule: EXCEPTION_PROPAGATION
@@ -162,20 +179,22 @@ Control that certain kinds of subprograms, tasks, or declarations cannot propaga
 and that local exceptions cannot propagate out of scope
 ----
 Rule: EXPRESSIONS
-Parameter (s): and                              | and_then              |
-               array_aggregate                  | array_partial_others  |
-               array_others                     | complex_parameter     |
-               inconsistent_attribute_dimension | mixed_operators       |
-               or                               | or_else               |
-               parameter_view_conversion        | prefixed_operator     |
-               real_equality                    | record_aggregate      |
-               record_partial_others            | record_others         |
-               slice                            | type_conversion       |
-               universal_range                  | unqualified_aggregate |
+Parameter (s): and                       | and_then                         |
+               array_aggregate           | array_partial_others             |
+               array_others              | complex_parameter                |
+               explicit_dereference      | fixed_multiplying_op             |
+               implicit_dereference      | inconsistent_attribute_dimension |
+               inherited_function_call   | mixed_operators                  |
+               or                        | or_else                          |
+               parameter_view_conversion | prefixed_operator                |
+               real_equality             | record_aggregate                 |
+               record_partial_others     | record_others                    |
+               slice                     | type_conversion                  |
+               universal_range           | unqualified_aggregate            |
                xor
 For subrules type_conversion and parameter_view_conversion:
     [[<source_category>] <target_category>] <subrule>
-For subrule prefixed_operator:
+For subrules inherited_function_call and prefixed_operator:
     [<result_category>] <subrule>
 Categories: <>     | ()      | range  | mod       | delta  |
             digits | array   | record | tagged    | access |
@@ -257,7 +276,7 @@ Parameter 2: nesting depth
 Control max nesting of compound statements
 ----
 Rule: MOVABLE_ACCEPT_STATEMENTS
-Parameter(1): both | certain | possible
+Parameter(1): certain | possible
 Parameter(2..N): <name>
 Control (re)movable statements from `accept' bodies.
 Movable statements might be moved to an outer scope.
@@ -342,7 +361,8 @@ Parameter: none | logical
 Control integer types where no operators, except as indicated, are used
 ----
 Rule: OBJECT_DECLARATIONS
-Parameter(1): min_integer_span | volatile_no_address
+Parameter(1): min_integer_span     | volatile_no_address |
+              address_not_volatile
 Parameter(2..)
    for Min_Integer_Span: [all|constant|variable] <value>
 Control allowed forms of object declarations
@@ -379,6 +399,15 @@ Rule: PRAGMAS
 Parameter(s): all | nonstandard | <pragma names>
 Control usage of specific pragmas
 ----
+Rule: RECORD_DECLARATIONS
+Parameter(1): component
+For component:
+Parameter(2)  : <entity>|<category>
+  <category>  : ()      | access    | array | delta  | digits | mod |
+                private | protected | range | record | tagged | task
+Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)
+Controls various parameters related to record types declarations
+----
 Rule: REDUCEABLE_SCOPE
 Parameter(s): {<restriction>} all        | variable | constant |
                               subprogram | type     | package  |
@@ -389,11 +418,16 @@ Control declarations that could be moved to an inner scope,
 I.e. where all references are from a single nested scope
 ----
 Rule: REPRESENTATION_CLAUSES
-Parameter(s): [<categories>] <specifiable attribute> | at                    |
-                             at_mod                  | enumeration           |
-                             fractional_size         | incomplete_layout     |
-                             layout                  | non_aligned_component |
-                             non_contiguous_layout   | overlay
+Parameter(s): [<categories>] [object] <specifiable attribute> |
+                             at                               |
+                             at_mod                           |
+                             enumeration                      |
+                             fractional_size                  |
+                             incomplete_layout                |
+                             layout                           |
+                             non_aligned_component            |
+                             non_contiguous_layout            |
+                             overlay
                              (optional)
 Categories: <>     | ()    | range   | mod    | delta     |
             digits | array | record  | tagged | extension |
@@ -401,9 +435,9 @@ Categories: <>     | ()    | range   | mod    | delta     |
 Control occurrences of representation clauses
 ----
 Rule: RETURN_TYPE
-Parameter(s):  class_wide                  | protected           |
-               task                        | unconstrained_array |
-               unconstrained_discriminated
+Parameter(s):  class_wide          | protected                   |
+               task                | constrained_array           |
+               unconstrained_array | unconstrained_discriminated
 Control various forms of the type returned by functions
 ----
 Rule: SIDE_EFFECT_PARAMETERS
@@ -437,49 +471,35 @@ Parameter(s): block | dead           | handler     |
               null
 Control Ada statements that can be made simpler
 ----
-Rule: SPECIAL_COMMENTS
-Parameter (1) pattern | terminating | unnamed_begin
-for pattern:
-   Parameter(2..): "<comment pattern>"
-for terminating:
-   Parameter(2..): "<allowed pattern>" | begin | end
-for unnamed_begin:
-   Parameter(2..): [<condition>] <unit>
-      <condition>: always | declaration | program_unit
-           <unit>: all  | procedure | function | entry | package |
-                   task
-Control comments that match the specified pattern
-or are on the same line as something else
-or "begin" without a comment identifying the program unit
-----
 Rule: STATEMENTS
-Parameter(s): any_statement          | abort                   |
-              accept_return          | assignment              |
-              asynchronous_select    | block                   |
-              case                   | case_others             |
-              case_others_null       | code                    |
-              conditional_entry_call | declare_block           |
-              delay                  | delay_until             |
-              dispatching_call       | effective_declare_block |
-              entry_return           | exception_others        |
-              exception_others_null  | exit                    |
-              exit_expanded_name     | exit_for_loop           |
-              exit_outer_loop        | exit_while_loop         |
-              for_loop               | function_return         |
-              goto                   | if                      |
-              if_elsif               | labelled                |
-              loop_return            | multiple_exits          |
-              no_else                | null                    |
-              procedure_return       | raise                   |
-              raise_locally_handled  | raise_nonpublic         |
-              raise_standard         | reraise                 |
-              requeue                | selective_accept        |
-              simple_loop            | terminate               |
-              timed_entry_call       | unconditional_exit      |
-              unnamed_block          | unnamed_exit            |
-              unnamed_loop_exited    | unnamed_for_loop        |
-              unnamed_multiple_loop  | unnamed_simple_loop     |
-              unnamed_while_loop     | untyped_for             |
+Parameter(s): any_statement            | abort                   |
+              accept_return            | assignment              |
+              asynchronous_select      | block                   |
+              case                     | case_others             |
+              case_others_null         | code                    |
+              conditional_entry_call   | declare_block           |
+              delay                    | delay_until             |
+              dispatching_call         | effective_declare_block |
+              entry_call               | entry_return            |
+              exception_others         | exception_others_null   |
+              exit                     | exit_expanded_name      |
+              exit_for_loop            | exit_outer_loop         |
+              exit_while_loop          | for_loop                |
+              function_return          | goto                    |
+              if                       | if_elsif                |
+              inherited_procedure_call | labelled                |
+              loop_return              | multiple_exits          |
+              no_else                  | null                    |
+              procedure_return         | raise                   |
+              raise_locally_handled    | raise_nonpublic         |
+              raise_standard           | reraise                 |
+              requeue                  | selective_accept        |
+              simple_loop              | terminate               |
+              timed_entry_call         | unconditional_exit      |
+              unnamed_block            | unnamed_exit            |
+              unnamed_loop_exited      | unnamed_for_loop        |
+              unnamed_multiple_loop    | unnamed_simple_loop     |
+              unnamed_while_loop       | untyped_for             |
               while_loop
 Control occurrences of Ada statements
 ----

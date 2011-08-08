@@ -1,0 +1,18 @@
+compo_ident:       check record_declarations (component, standard.character);
+compo_enum:        check record_declarations (component, ());
+compo_array:       check record_declarations (component, Array, initialized);
+compo_tagged:      check record_declarations (component, tagged);
+compo_access:      check record_declarations (component, ACCESS);
+compo_task:        check record_declarations (component, task);
+compo_protected:   check record_declarations (component, protected);
+compo_private:     check record_declarations (component, private);
+compo_record:      check record_declarations (component, record);
+compo_delta:       check record_declarations (component, delta);
+compo_float:       check record_declarations (component, digits, not initialized);
+compo_rec_ua:      check record_declarations (component, record, not aligned);
+compo_enum_p_s:    check record_declarations (component, array,     packed,     sized);
+compo_enum_p_us:   check record_declarations (component, array,     packed, not sized);
+compo_enum_up_s:   check record_declarations (component, array, not packed,     sized);
+compo_enum_up_us:  check record_declarations (component, array, not packed, not sized);
+compo_not_variant: check record_declarations (component, range, not in_variant);
+compo_variant:     check record_declarations (component, mod,       in_variant);

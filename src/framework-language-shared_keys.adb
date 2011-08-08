@@ -95,14 +95,14 @@ package body Framework.Language.Shared_Keys is
                                    Allow_Single : Boolean                   := False)
                                    return Bounds_Values
    is
-      use Min_Max_Utilities;
+      use Thick_Queries, Min_Max_Utilities;
 
       Min_Given : Boolean := False;
       Max_Given : Boolean := False;
       Result    : Bounds_Values := (Bound_Min, Bound_Max);
    begin
       if Allow_Single and then Is_Integer_Parameter then
-         Result.Min := Get_Integer_Parameter;
+         Result.Min := Get_Integer_Parameter (Min => Bound_Min, Max => Bound_Max);
          Result.Max := Result.Min;                --## rule line off Multiple_Assignments
          return Result;
       end if;
@@ -123,8 +123,33 @@ package body Framework.Language.Shared_Keys is
                Max_Given  := True;
          end case;
       end loop;
+
+      if Result.Min > Result.Max then
+         Parameter_Error (Rule_Id, "Min value must be less than Max");
+      end if;
+
       return Result;
    end Get_Bounds_Parameters;
+
+
+   -----------------
+   -- Bound_Image --
+   -----------------
+
+   function Bound_Image (Bounds : Language.Shared_Keys.Bounds_Values) return Wide_String is
+      use Thick_Queries;
+   begin
+      if Bounds.Min = Bounds.Max then
+         return "not " & Biggest_Int_Img (Bounds.Min);
+      elsif Bounds.Min = Biggest_Int'First then
+         return "more than " & Biggest_Int_Img (Bounds.Max);
+      elsif Bounds.Max = Biggest_Int'Last then
+         return "less than " & Biggest_Int_Img (Bounds.Min);
+      else
+         return "not in " & Biggest_Int_Img (Bounds.Min) & " .. " & Biggest_Int_Img (Bounds.Max);
+      end if;
+   end Bound_Image;
+
 
    -----------
    -- Image --

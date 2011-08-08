@@ -257,6 +257,12 @@ package body Rules.Insufficient_Parameters is
            =>
             return Is_Insufficient (Converted_Or_Qualified_Expression (Expr));
 
+         pragma Warnings (Off);  -- Warning on compilers that do not support this extension
+         when others =>
+            -- Corresponds to GNAT extensions: A_Conditional_Expression
+            Reports.Uncheckable (Rule_Id, False_Negative, Get_Location (Expr), "Use of compiler specific extension");
+            return (others => False);
+         pragma Warnings (On);  -- Warning on compilers that do not support this extension
       end case;
    end Is_Insufficient;
 

@@ -469,6 +469,11 @@ package body Scoped_Store is
                Cur_Link := Cur_Link.Next;
             end loop;
          end if;
+      exception
+         when Not_Present =>
+            Utilities.Trace ("Parent not found in Restore_Parent_Context: "  --## rule line off No_Trace
+                             & Parent_Name);
+            raise;
       end Restore_Parent_Context;
 
       use Asis.Compilation_Units, Asis.Elements;
@@ -627,6 +632,12 @@ package body Scoped_Store is
                Cur_Link := Cur_Link.Next;
             end loop;
          end if;
+
+      exception
+         when Not_Present =>
+            Utilities.Trace ("Parent not found in Restore_Parent_Private_Context: " --## rule line off No_Trace
+                              & Parent_Name);
+            raise;
       end Restore_Parent_Private_Context;
 
       use Asis.Compilation_Units, Asis.Elements;

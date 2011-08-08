@@ -8,6 +8,7 @@ procedure T_representation_clauses is
    X,Y : T;
    for X'Address use To_Address (0); -- 'Address
    for Y use at To_Address (4);      -- 83 address clause
+   for Y'Size use 16;                -- object 'Size, 'Size
 
    I, J, K: Integer;
    for I'Address use J'Address;      -- 'Address, rng_over, overlay
@@ -77,7 +78,7 @@ procedure T_representation_clauses is
       end record;
 
    type Tab is array (1 .. 10) of Integer;
-   for Tab'Size use Integer'Size * 10;   -- arr_size
+   for Tab'Size use Integer'Size * 10;   -- arr_size, 'Size
    V1 : Tab;
    V2 : Tab;
    for V2'Address use V1'Address;        -- Arr_Addr, 'Address, tab_over, overlay

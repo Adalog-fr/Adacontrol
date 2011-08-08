@@ -148,7 +148,7 @@ package body Rules.Movable_Accept_Statements  is
    --
 
 
-   type Rule_Detail is (K_Both, K_Certain, K_Possible);
+   type Rule_Detail is (K_Certain, K_Possible);
    package Detail_Flags_Utilities is new Framework.Language.Flag_Utilities (Rule_Detail, "K_");
 
    type Usage_Flags is array (Rule_Detail) of Boolean;
@@ -158,16 +158,7 @@ package body Rules.Movable_Accept_Statements  is
    Save_Used : Usage_Flags;
    Usage     : array (Rule_Detail) of Basic_Rule_Context;
 
-
-   type Detail_Context is new Root_Context with
-      record
-         Detail : Rule_Detail;
-      end record;
-
-   -- The context associated with the user-defined dependent objects
-   Default_Detail_Context : constant Detail_Context := Detail_Context'(Detail => K_Both);
-
-   -- The context store (storing the association contexts)
+   -- The context store (storing non-movable entities)
    Entities  : Context_Store;
 
 
@@ -248,7 +239,7 @@ package body Rules.Movable_Accept_Statements  is
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Entities, Entity, Default_Detail_Context, Additive => True);
+            Associate (Entities, Entity, Null_Context, Additive => True);
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, "Entity already given: " & Image (Entity));

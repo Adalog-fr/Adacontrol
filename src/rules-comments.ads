@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Special_Comments - Package specification                  --
+--  Rules.Comments - Package specification                          --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -36,11 +36,11 @@ with
 -- Adactl
 with
   Framework;
-package Rules.Special_Comments is
+package Rules.Comments is
 
-   Rule_Id : constant Wide_String := "SPECIAL_COMMENTS";
+   Rule_Id : constant Wide_String := "COMMENTS";
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
    procedure Process_Program_Unit (Unit : Asis.Declaration);
 
-end Rules.Special_Comments;
+end Rules.Comments;

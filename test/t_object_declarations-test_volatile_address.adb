@@ -1,5 +1,5 @@
 separate (T_Object_Declarations)
-procedure Test_Volatile_No_Address is
+procedure Test_Volatile_Address is
    type T is range 1 .. 10;
    pragma Volatile (T);
    type D is new T;
@@ -17,6 +17,10 @@ procedure Test_Volatile_No_Address is
    for Z1'Address use Y1'Address;
    for Z2 use at Y2'Address;
 
+   Z3, Z4 : Integer;         -- Address_no_volatile (x2)
+   for Z3'Address use Y1'Address;
+   for Z4 use at Y2'Address;
+
 begin
    null;
-end Test_Volatile_No_Address;
+end Test_Volatile_Address;

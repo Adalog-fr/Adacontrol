@@ -249,13 +249,16 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
                end loop;
             end E;
          end loop;
+
+         T1.E1;                                    -- Entry_Call
+         Prot.E;                                   -- Entry_Call
          select                                    -- Conditional_Entry_Call
-            T1.E1;
+            T1.E1;                                 -- Entry_Call
          else
             null;                                  -- Null
          end select;
          select                                    -- Timed_Entry_Call
-            T1.E1;
+            T1.E1;                                 -- Entry_Call
          or delay 1.0;                             -- Delay
          end select;
       end T2;
@@ -334,4 +337,44 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
 
    Dispatching.Proc (Disp);                       -- Dispatching call
    I := Dispatching.Func (Disp);                  -- Dispatching call
+
+IPC:                                              -- Block, Declare Block, Effective Declare Block
+   declare
+      package Pack is
+         type Orig is
+            record
+               I : Integer;
+            end record;
+         procedure Inh   (X : out Orig);
+         procedure Redef (X : out Orig);
+
+         type Der is new Orig;
+         procedure Redef (X : out Der);
+      end Pack;
+      package body Pack is
+         procedure Inh   (X : out Orig) is
+         begin
+            X.I := 1;
+         end Inh;
+
+         procedure Redef (X : out Orig) is
+         begin
+            X.I := 1;
+         end Redef;
+
+         procedure Redef (X : out Der) is
+         begin
+            X.I := 1;
+         end Redef;
+      end Pack;
+      use Pack;
+
+      O : Orig;
+      D : Der;
+   begin
+      Inh (O);
+      Redef (O);
+      Inh (D);       -- Inherited_Procedure_Call
+      Redef (D);
+   end IPC;
 end T_statements;

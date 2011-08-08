@@ -1,9 +1,18 @@
-t_entity_inside_exception.adb:34:19: Error: not_all_overloaded: use of "Ada.Text_Io.Put_Line{Standard.String}"
-t_entity_inside_exception.adb:35:7: Error: not_all_not_overloaded: use of "Ada.Text_Io.Put_Line"
-t_entity_inside_exception.adb:36:7: Error: all_overloaded: use of "Put_Line{Standard.String}"
-t_entity_inside_exception.adb:37:7: Error: all_not_overloaded: use of "Put_Line"
-t_entity_inside_exception.adb:38:12: Error: Attributes: use of "'Value"
-t_entity_inside_exception.adb:38:27: Error: Attributes: use of "'Image"
-t_entity_inside_exception.adb:40:7: Error: Calls: call to T_entity_inside_exception.P1
-t_entity_inside_exception.adb:42:12: Error: Calls: call to T_entity_inside_exception.Func
-t_entity_inside_exception.adb:43:12: Error: Calls: call to Standard.Integer'Succ
+t_entity_inside_exception.adb:44:19: Error: not_all_overloaded: use of "Ada.Text_Io.Put_Line{Standard.String}"
+t_entity_inside_exception.adb:45:7: Error: not_all_overloaded: use of "Ada.Text_Io.Put_Line{Standard.String}"
+t_entity_inside_exception.adb:46:7: Error: not_all_not_overloaded: use of "Ada.Text_Io.Put_Line"
+t_entity_inside_exception.adb:47:7: Error: all_overloaded: use of "Put_Line{Standard.String}"
+t_entity_inside_exception.adb:48:7: Error: all_not_overloaded: use of "Put_Line"
+t_entity_inside_exception.adb:49:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:49:12: Error: Attributes: use of "'Value"
+t_entity_inside_exception.adb:49:27: Error: Attributes: use of "'Image"
+t_entity_inside_exception.adb:49:42: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:51:7: Error: Calls: call to T_entity_inside_exception.P1
+t_entity_inside_exception.adb:53:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:53:12: Error: Calls: call to T_entity_inside_exception.Func
+t_entity_inside_exception.adb:54:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:54:29: Error: No_Arithmetic: use of ""+""
+t_entity_inside_exception.adb:54:12: Error: Calls: call to Standard.Integer'Succ
+t_entity_inside_exception.adb:54:26: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:55:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:56:9: Error: Entry_Calls: entry call to T_entity_inside_exception.T.E

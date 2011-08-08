@@ -61,13 +61,14 @@ package body Rules.Statements is
                      Stmt_Case_Others,            Stmt_Case_Others_Null,       Stmt_Code,
                      Stmt_Conditional_Entry_Call, Stmt_Declare_Block,          Stmt_Delay,
                      Stmt_Delay_Until,            Stmt_Dispatching_Call,       Stmt_Effective_Declare_Block,
-                     Stmt_Entry_Return,           Stmt_Exception_Others,       Stmt_Exception_Others_Null,
-                     Stmt_Exit,                   Stmt_Exit_Expanded_Name,     Stmt_Exit_For_Loop,
-                     Stmt_Exit_Outer_Loop,        Stmt_Exit_While_Loop,        Stmt_For_Loop,
-                     Stmt_Function_Return,        Stmt_Goto,                   Stmt_If,
-                     Stmt_If_Elsif,               Stmt_Labelled,               Stmt_Loop_Return,
-                     Stmt_Multiple_Exits,         Stmt_No_Else,                Stmt_Null,
-                     Stmt_Procedure_Return,       Stmt_Raise,
+                     Stmt_Entry_Call,             Stmt_Entry_Return,           Stmt_Exception_Others,
+                     Stmt_Exception_Others_Null,  Stmt_Exit,                   Stmt_Exit_Expanded_Name,
+                     Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,        Stmt_Exit_While_Loop,
+                     Stmt_For_Loop,               Stmt_Function_Return,        Stmt_Goto,
+                     Stmt_If,                     Stmt_If_Elsif,               Stmt_Inherited_Procedure_Call,
+                     Stmt_Labelled,               Stmt_Loop_Return,            Stmt_Multiple_Exits,
+                     Stmt_No_Else,                Stmt_Null,                   Stmt_Procedure_Return,
+                     Stmt_Raise,
 
                      -- all "filtered_raise"
                      Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,        Stmt_Raise_Standard,
@@ -294,7 +295,7 @@ package body Rules.Statements is
             Do_Report (Stmt_Delay_Until);
 
          when An_Entry_Call_Statement =>
-            null;
+            Do_Report (Stmt_Entry_Call);
 
          when An_Exit_Statement =>
             declare
@@ -385,6 +386,19 @@ package body Rules.Statements is
          when A_Procedure_Call_Statement =>
             if Is_Dispatching_Call (Element) then
                Do_Report (Stmt_Dispatching_Call);
+            end if;
+
+            if Rule_Used (Stmt_Inherited_Procedure_Call) then
+               declare
+                  Called : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Element));
+               begin
+                  if not Is_Nil (Called)          -- Dynamic call (explicit or implicit dereference)
+                    and then Expression_Kind (Called) /= An_Attribute_Reference
+                    and then Is_Part_Of_Inherited (Corresponding_Name_Definition (Called))
+                  then
+                     Do_Report (Stmt_Inherited_Procedure_Call);
+                  end if;
+               end;
             end if;
 
             if (Rule_Used and Usage_Flags'(Filtered_Raise_Subrules => True, others => False)) /= No_Rule then

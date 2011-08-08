@@ -222,6 +222,9 @@ procedure Ptree is
             Put (')');
          when An_Exception_Handler =>
             null;
+         when others =>
+            -- Corresponds to GNAT extensions: An_Expression_Path
+            Put (" (non-standard)");
       end case;
    end Put_Kind;
 

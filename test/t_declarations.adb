@@ -168,6 +168,8 @@ procedure T_declarations is       -- library_procedure
       procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract; -- Abstract_Function
       Deferred : constant Priv1;                    -- Constant, Deferred_Constant
+      procedure P_As_Body;                          -- Public Procedure, Nested Procedure, Local Procedure
+      function  F_As_Body return Integer;
    private
       type Priv1 is new Integer;                    -- Derived_Type
       type Priv2 is new Integer;                    -- Derived_Type
@@ -197,17 +199,23 @@ procedure T_declarations is       -- library_procedure
             null;
          end;
       end Proc2;
-   begin                                                 -- package_statements
+      procedure P_As_Body renames Test_Self_SP;          -- renaming_as_body, renaming, not_operator_renaming, non_identical_renaming
+      function F_Hidden return Integer is
+      begin
+         return 0;
+      end F_Hidden;
+      function  F_As_Body return Integer renames F_Hidden; -- renaming_as_body, renaming, not_operator_renaming, non_identical_renaming
+   begin                                                   -- package_statements
       null;
-   exception                                             -- handlers
-      when Numeric_Error =>                              -- non_joint_CE_NE_handler
+   exception                                               -- handlers
+      when Numeric_Error =>                                -- non_joint_CE_NE_handler
          null;
       when others =>
          null;
    end Pack2;
 
-   package Pack3 renames Pack2;                          -- not_operator_renaming, non_identical_renaming, renaming
-   generic package Generic_Elementary_Functions          -- Not_Operator_Renaming, library_unit_renaming, renaming
+   package Pack3 renames Pack2;                          -- renaming, not_operator_renaming, non_identical_renaming
+   generic package Generic_Elementary_Functions          -- renaming, Not_Operator_Renaming, library_unit_renaming
       renames Ada.Numerics.Generic_Elementary_Functions;
 
    function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names
@@ -224,9 +232,9 @@ procedure T_declarations is       -- library_procedure
       return 1;
    end "-";
 
-   function F1  (X, Y : Integer) return Integer renames "+";            -- renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
-   function F2  (X, Y : Integer) return Integer renames Standard."+";   -- renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
-   function "*" (X, Y : Integer) return Integer renames Standard."*";   -- renaming, operator_renaming, multiple_names
+   function F1  (X, Y : Integer) return Integer renames "+";            -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
+   function F2  (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
+   function "*" (X, Y : Integer) return Integer renames Standard."*";   -- renaming_as_declaration, renaming, operator_renaming, multiple_names
 
    generic                                                                    -- Nested_Generic_Package, generic
       Global : in out Integer;                                                -- in_out_generic_parameter
@@ -244,8 +252,8 @@ procedure T_declarations is       -- library_procedure
    subtype Int2 is Integer;                                             -- subtype, unconstrained_subtype
 
    Arr : Integer renames X_Declarations.Arr (1);                        -- not_operator_renaming, non_identical_renaming, renaming
-   function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming, not_operator_renaming, non_identical_renaming
-   function "/" (X, Y : Integer) return Integer renames Standard."+";   -- renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
+   function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming
+   function "/" (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
 
    procedure Predefined_Operator is separate;                           -- separate
 

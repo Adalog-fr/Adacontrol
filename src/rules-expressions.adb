@@ -33,7 +33,8 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Statements;
 
 -- Adalog
 with
@@ -51,21 +52,23 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   type Subrules is (E_And,                   E_And_Then,                         E_Array_Aggregate,
-                     E_Array_Partial_Others,  E_Array_Others,
-                     E_Complex_Parameter,     E_Inconsistent_Attribute_Dimension, E_Mixed_Operators,
-                     E_Or,                    E_Or_Else,                          E_Parameter_View_Conversion,
-                     E_Prefixed_Operator,     E_Real_Equality,                    E_Record_Aggregate,
-                     E_Record_Partial_Others, E_Record_Others,                    E_Slice,
-                     E_Type_Conversion,       E_Universal_Range,                  E_Unqualified_Aggregate,
+   type Subrules is (E_And,                              E_And_Then,                E_Array_Aggregate,
+                     E_Array_Partial_Others,             E_Array_Others,            E_Complex_Parameter,
+                     E_Explicit_Dereference,             E_Fixed_Multiplying_Op,    E_Implicit_Dereference,
+                     E_Inconsistent_Attribute_Dimension, E_Inherited_Function_Call, E_Mixed_Operators,
+                     E_Or,                               E_Or_Else,                 E_Parameter_View_Conversion,
+                     E_Prefixed_Operator,                E_Real_Equality,           E_Record_Aggregate,
+                     E_Record_Partial_Others,            E_Record_Others,           E_Slice,
+                     E_Type_Conversion,                  E_Universal_Range,         E_Unqualified_Aggregate,
                      E_Xor);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");
    use Subrules_Flags_Utilities;
 
-   Key_Type_Conversion           : constant Entity_Specification := Value (Image (E_Type_Conversion));
+   Key_Inherited_Function_Call   : constant Entity_Specification := Value (Image (E_Inherited_Function_Call));
    Key_Parameter_View_Conversion : constant Entity_Specification := Value (Image (E_Parameter_View_Conversion));
    Key_Prefixed_Operator         : constant Entity_Specification := Value (Image (E_Prefixed_Operator));
+   Key_Type_Conversion           : constant Entity_Specification := Value (Image (E_Type_Conversion));
 
    type Usage_Flags is array (Subrules) of Boolean;
    Rule_Used : Usage_Flags := (others => False);
@@ -93,7 +96,7 @@ package body Rules.Expressions is
       Help_On_Flags (Header => "Parameter (s):");
       User_Message ("For subrules type_conversion and parameter_view_conversion:");
       User_Message ("    [[<source_category>] <target_category>] <subrule>");
-      User_Message ("For subrule prefixed_operator:");
+      User_Message ("For subrules inherited_function_call and prefixed_operator:");
       User_Message ("    [<result_category>] <subrule>");
       Help_On_Modifiers (Header => "Categories:", Expected => Expected_Categories);
       User_Message ("Control occurrences of Ada expressions");
@@ -124,7 +127,7 @@ package body Rules.Expressions is
             Subrule := Get_Flag_Parameter (Allow_Any => False);
 
             case Subrule is
-               when E_Prefixed_Operator =>
+               when E_Prefixed_Operator | E_Inherited_Function_Call =>
                   if Cat_List'Length > 1 then
                      Parameter_Error (Rule_Id, "At most one category allowed");
                   end if;
@@ -200,9 +203,7 @@ package body Rules.Expressions is
    ---------------
 
    -- This one for simple rules with only one context
-   procedure Do_Report (Expr : Subrules;
-                        Loc  : Location)
-   is
+   procedure Do_Report (Expr : Subrules; Loc : Location) is
       use Framework.Reports, Utilities;
    begin
       if not Rule_Used (Expr) then
@@ -256,54 +257,91 @@ package body Rules.Expressions is
    ---------------------------
 
    procedure Process_Function_Call (Call : in Asis.Expression) is
+   -- Handles subrules: Prefixed_Operator, Mixed_Operators, Real_Equality, Fixed_Multiplying_Op,
+   --                   And, Or, Xor
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
-      Called : constant Asis.Expression := Simple_Name (Prefix (Call));
+      Called : Asis.Expression := Called_Simple_Name (Call);
       Iter   : Context_Iterator := Categories_Iterator.Create;
    begin
-      if Expression_Kind (Called) /= An_Operator_Symbol then
-         return;
+      if Is_Nil (Called) then
+         -- Implicit or explicit dereference
+         -- It could be argued that this is an uncheckable, but in this case no rule
+         -- is really concerned, and it would create a lot of unnecessary uncheckable messages
+            return;
       end if;
 
-      if Rule_Used (E_Prefixed_Operator) and then Is_Prefix_Call (Call) then
-         Reset (Iter, Key_Prefixed_Operator);
+      -- Rules that don't follow renamings
+      if Expression_Kind (Called) = An_Operator_Symbol then
+         -- Prefixed_Operator
+         if Rule_Used (E_Prefixed_Operator) and then Is_Prefix_Call (Call) then
+            Reset (Iter, Key_Prefixed_Operator);
+            while not Is_Exhausted (Iter) loop
+               Do_Category_Report ((1 => Call),
+                                   Categories_Context (Value (Iter)),
+                                   E_Prefixed_Operator,
+                                   Get_Location (Call));
+               Next (Iter);
+            end loop;
+         end if;
+
+         -- Mixed_Operators
+         if Rule_Used (E_Mixed_Operators)
+           and then not Is_Prefix_Call (Call)
+           and then
+             (        Operator_Kind (Called) in A_Plus_Operator     .. A_Concatenate_Operator  -- Binary adding ops
+              or else Operator_Kind (Called) in A_Multiply_Operator .. A_Rem_Operator          -- Binary mutiplying ops
+              or else Operator_Kind (Called) =  An_Exponentiate_Operator)                      -- Binary highest ops
+         then
+            declare
+               Params : constant Asis.Association_List := Function_Call_Parameters (Call);
+               Expr   : Asis.Expression;
+               Called_Kind : constant Asis.Operator_Kinds := Operator_Kind (Called);
+            begin
+               for P in Params'Range loop
+                  Expr := Actual_Parameter (Params (P));
+                  if Expression_Kind (Expr) = A_Function_Call
+                    and then not Is_Prefix_Call (Expr)
+                    and then Operator_Kind (Prefix (Expr)) /= Called_Kind
+                  then
+                     Report (Rule_Id,
+                             Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
+                             Get_Location (Prefix (Expr)),
+                             "Unparenthesized mixed operators in expression");
+                  end if;
+               end loop;
+            end;
+         end if;
+      end if;
+
+      -- Rules that follow renamings
+      -- Real_Equality, and, or, xor, Inherited_Function_Call
+      Called := Ultimate_Name (Called);
+
+      if Rule_Used (E_Inherited_Function_Call)
+        and then Expression_Kind (Called) /= An_Attribute_reference
+        and then Is_Part_Of_Inherited (Corresponding_Name_Definition (Called))
+      then
+         Reset (Iter, Key_Inherited_Function_Call);
          while not Is_Exhausted (Iter) loop
             Do_Category_Report ((1 => Call),
                                 Categories_Context (Value (Iter)),
-                                E_Prefixed_Operator,
+                                E_Inherited_Function_Call,
                                 Get_Location (Call));
             Next (Iter);
          end loop;
       end if;
 
-      if Rule_Used (E_Mixed_Operators)
-        and then not Is_Prefix_Call (Call)
-        and then Operator_Kind (Called) not in A_Unary_Plus_Operator .. A_Unary_Minus_Operator
-      then
-         declare
-            Params : constant Asis.Association_List := Function_Call_Parameters (Call);
-            Expr   : Asis.Expression;
-         begin
-            for P in Params'Range loop
-               Expr := Actual_Parameter (Params (P));
-               if Expression_Kind (Expr) = A_Function_Call
-                 and then not Is_Prefix_Call (Expr)
-                 and then Operator_Kind (Prefix (Expr)) /= Operator_Kind (Called)
-               then
-                  Report (Rule_Id,
-                          Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
-                          Get_Location (Prefix (Expr)),
-                          "Unparenthesized mixed operators in expression");
-               end if;
-            end loop;
-         end;
-      end if;
-
       case Operator_Kind (Called) is
          when An_Equal_Operator
-           | A_Not_Equal_Operator
+            | A_Not_Equal_Operator
               =>
             if not Rule_Used (E_Real_Equality) then
+               return;
+            end if;
+
+            if Corresponding_Call_Description (Call).Kind /= A_Predefined_Entity_Call then
+               -- Not the predefined equality
                return;
             end if;
 
@@ -320,9 +358,9 @@ package body Rules.Expressions is
 
             declare
                Parsed_First_Parameter : Boolean := False;
-               F : constant Asis.Association_List := Function_Call_Parameters (Call);
+               F                      : constant Asis.Association_List := Function_Call_Parameters (Call);
             begin
-            Parameter_Loop:
+               Parameter_Loop :
                for I in F'Range loop
                   declare
                      P : constant Asis.Expression := Actual_Parameter (F (I));
@@ -333,17 +371,17 @@ package body Rules.Expressions is
                            case Root_Type_Kind (T) is
                               when A_Root_Real_Definition => -- 3.4.1(8)
                                  Report
-                                 (Rule_Id,
-                                  Control_Manager.Association (Usage, Image (E_Real_Equality)),
-                                  Get_Location (Prefix (Call)),
-                                  "equality or inequality with Root Real !!!");
+                                   (Rule_Id,
+                                    Control_Manager.Association (Usage, Image (E_Real_Equality)),
+                                    Get_Location (Prefix (Call)),
+                                    "equality or inequality with Root Real !!!");
                               when A_Universal_Real_Definition => -- 3.4.1(6)
                                  if Parsed_First_Parameter then
                                     Report
-                                    (Rule_Id,
-                                     Control_Manager.Association (Usage, Image (E_Real_Equality)),
-                                     Get_Location (Prefix (Call)),
-                                     "equality or inequality with two Universal Real constants !!!");
+                                      (Rule_Id,
+                                       Control_Manager.Association (Usage, Image (E_Real_Equality)),
+                                       Get_Location (Prefix (Call)),
+                                       "equality or inequality with two Universal Real constants !!!");
                                  else
                                     Parsed_First_Parameter := True;
                                  end if;
@@ -352,30 +390,79 @@ package body Rules.Expressions is
                            end case;
                         when A_Floating_Point_Definition => -- 3.5.7(2)
                            Report
-                           (Rule_Id,
-                            Control_Manager.Association (Usage, Image (E_Real_Equality)),
-                            Get_Location (Prefix (Call)),
-                            "equality or inequality with Floating Point");
-                            exit Parameter_Loop;
+                             (Rule_Id,
+                              Control_Manager.Association (Usage, Image (E_Real_Equality)),
+                              Get_Location (Prefix (Call)),
+                              "equality or inequality with Floating Point");
+                           exit Parameter_Loop;
                         when An_Ordinary_Fixed_Point_Definition => -- 3.5.9(3)
                            Report
-                           (Rule_Id,
-                            Control_Manager.Association (Usage, Image (E_Real_Equality)),
-                            Get_Location (Prefix (Call)),
-                            "equality or inequality with Ordinary Fixed Point");
-                            exit Parameter_Loop;
-                         when A_Decimal_Fixed_Point_Definition => -- 3.5.9(4)
+                             (Rule_Id,
+                              Control_Manager.Association (Usage, Image (E_Real_Equality)),
+                              Get_Location (Prefix (Call)),
+                              "equality or inequality with Ordinary Fixed Point");
+                           exit Parameter_Loop;
+                        when A_Decimal_Fixed_Point_Definition => -- 3.5.9(4)
                            Report
-                           (Rule_Id,
-                            Control_Manager.Association (Usage, Image (E_Real_Equality)),
-                            Get_Location (Prefix (Call)),
-                            "equality or inequality with Decimal Fixed Point");
-                            exit Parameter_Loop;
-                       when others =>
+                             (Rule_Id,
+                              Control_Manager.Association (Usage, Image (E_Real_Equality)),
+                              Get_Location (Prefix (Call)),
+                              "equality or inequality with Decimal Fixed Point");
+                           exit Parameter_Loop;
+                        when others =>
                            null;
                      end case;
                   end;
                end loop Parameter_Loop;
+            end;
+
+         when A_Multiply_Operator
+            | A_Divide_Operator
+              =>
+            if not Rule_Used (E_Fixed_Multiplying_Op) then
+               return;
+            end if;
+
+            if Corresponding_Call_Description (Call).Kind /= A_Predefined_Entity_Call then
+               -- Not the predefined operator
+               return;
+            end if;
+
+            -- Since we deal only with predefined operators, the only possibilities are
+            -- Fx * Fx, Fx / Fx, Fx * Integer, Integer * Fx, Fx / Integer (plus universals)
+            -- => we control when at least one operand is of an explicit fixed point type
+            declare
+               F : constant Asis.Association_List := Function_Call_Parameters (Call);
+               Fixed_Parameters_Count : Natural := 0; -- Yes we are lazy to use Integer here...
+            begin
+               for I in F'Range loop
+                  declare
+                     P : constant Asis.Expression := Actual_Parameter (F (I));
+                     T : constant Asis.Definition := Ultimate_Expression_Type (P);
+                  begin
+                     case Type_Kind (T) is
+                        when A_Root_Type_Definition =>
+                           null;
+                        when An_Ordinary_Fixed_Point_Definition
+                           | A_Decimal_Fixed_Point_Definition
+                             =>
+                           Fixed_Parameters_Count := Fixed_Parameters_Count + 1;
+                        when A_Signed_Integer_Type_Definition
+                           | A_Modular_Type_Definition
+                             =>
+                           null;
+                        when others =>
+                           exit;  -- No need to check further
+                     end case;
+                  end;
+               end loop;
+               if Fixed_Parameters_Count > 0 then
+                  Report
+                    (Rule_Id,
+                     Control_Manager.Association (Usage, Image (E_Fixed_Multiplying_Op)),
+                              Get_Location (Prefix (Call)),
+                              "fixed point multiplying operator");
+               end if;
             end;
 
          when An_And_Operator =>
@@ -418,17 +505,8 @@ package body Rules.Expressions is
             when others =>
                null;
          end case;
-         Def := A4G_Bugs.Corresponding_Name_Declaration (Name);
-         if Is_Nil (Def) then
-            -- ASIS bug [G419-004]: Corresponding_Name_Declaration returns Nil_Element if Name is
-            -- part of a pragma Priority. Not a problem in practice, since this would make a false
-            -- negative only in the case of:
-            --   pragma Priority (Array_Type'First(1));
-            -- which would be really strange programming !
-            A4G_Bugs.Trace_Bug ("Rules.Expressions: Nil name declaration");
-            return;
-         end if;
-         Def := Type_Declaration_View (Ultimate_Type_Declaration (Def));
+         Def := Type_Declaration_View (Ultimate_Type_Declaration
+                                       (A4G_Bugs.Corresponding_Name_Declaration (Name)));
       end if;
 
       case Definition_Kind (Def) is
@@ -467,6 +545,7 @@ package body Rules.Expressions is
 
    procedure Process_Expression (Expression : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
    begin
       if Rule_Used = (Subrules => False) then
          return;
@@ -484,15 +563,48 @@ package body Rules.Expressions is
                   if Rule_Used (E_Inconsistent_Attribute_Dimension) then
                      Process_Attribute_Dimension (Expression);
                   end if;
+
+                  if Rule_Used (E_Implicit_Dereference) and then Is_Access_Expression (Prefix (Expression)) then
+                     Do_Report (E_Implicit_Dereference, Get_Location (Prefix (Expression)));
+                  end if;
+
+               when A_Callable_Attribute
+                  | A_Component_Size_Attribute
+                  | A_Constrained_Attribute
+                  | An_Identity_Attribute
+                  | A_Storage_Size_Attribute
+                  | A_Tag_Attribute
+                  | A_Terminated_Attribute
+                  | A_Valid_Attribute
+                    =>
+                  if Rule_Used (E_Implicit_Dereference) and then Is_Access_Expression (Prefix (Expression)) then
+                     Do_Report (E_Implicit_Dereference, Get_Location (Prefix (Expression)));
+                  end if;
+
                when others =>
                   null;
             end case;
 
+         when An_Explicit_Dereference =>
+            -- Location below computed to point a the "all"
+            Do_Report (E_Explicit_Dereference, Get_Next_Word_Location (Prefix (Expression)));
+
          when A_Function_Call =>
             Process_Function_Call (Expression);
 
+         when An_Indexed_Component
+            | A_Selected_Component
+              =>
+            if Rule_Used (E_Implicit_Dereference) and then Is_Access_Expression (Prefix (Expression)) then
+               Do_Report (E_Implicit_Dereference, Get_Location (Prefix (Expression)));
+            end if;
+
          when A_Slice =>
             Do_Report (E_Slice, Get_Location (Slice_Range (Expression)));
+
+            if Rule_Used (E_Implicit_Dereference) and then Is_Access_Expression (Prefix (Expression)) then
+               Do_Report (E_Implicit_Dereference, Get_Location (Prefix (Expression)));
+            end if;
 
          when An_And_Then_Short_Circuit =>
             Do_Report (E_And_Then, Get_Next_Word_Location (Short_Circuit_Operation_Left_Expression(Expression)));
@@ -583,19 +695,44 @@ package body Rules.Expressions is
    ------------------
 
    procedure Process_Call (Call : in Asis.Element) is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries;
       type Callable_Kind is (Regular, Operator, Attribute);
       Called      : Asis.Element;
       Called_Kind : Callable_Kind;
       Iter        : Context_Iterator := Categories_Iterator.Create;
    begin
-      if not Rule_Used (E_Complex_Parameter) and not Rule_Used (E_Parameter_View_Conversion) then
+      if not (   Rule_Used (E_Complex_Parameter)
+              or Rule_Used (E_Parameter_View_Conversion)
+              or Rule_Used (E_Implicit_Dereference))
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       Called := Called_Simple_Name (Call);
+
+      if Rule_Used (E_Implicit_Dereference)
+        and then Is_Nil (Called) -- Access to subprogram, cf. Called_Simple_Name
+      then
+         -- Make sure it is an /implicit/ dereference
+         if Expression_Kind (Call) = A_Function_Call then
+             if Expression_Kind (Prefix (Call)) /= An_Explicit_Dereference then
+               Do_Report (E_Implicit_Dereference, Get_Location (Simple_Name (Prefix (Call))));
+            end if;
+         else
+            -- Must be a procedure or entry call
+            if Expression_Kind (Called_Name (Call)) /= An_Explicit_Dereference then
+               Do_Report (E_Implicit_Dereference, Get_Location (Simple_Name (Called_Name (Call))));
+            end if;
+         end if;
+         if not (   Rule_Used (E_Complex_Parameter)
+                 or Rule_Used (E_Parameter_View_Conversion))
+         then
+            return;
+         end if;
+      end if;
+
       case Expression_Kind (Called) is
          when An_Operator_Symbol =>
             -- The complex_parameter subrule does not apply to operators, otherwise no expression

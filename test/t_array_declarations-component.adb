@@ -67,7 +67,7 @@ procedure Component is
    generic
       type Real is digits <>;
    package Gen1 is
-      type T17 is array (1 .. 4) of Real;
+      type T17 is array (1 .. 4) of Real;    -- digits
    end Gen1;
 begin
    null;
