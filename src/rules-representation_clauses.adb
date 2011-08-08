@@ -111,11 +111,11 @@ package body Rules.Representation_Clauses is
    begin
       if Parameter_Exists then
          if Is_Present (Usage (Rule_Type), Key_All) then
-            Parameter_Error ("Rule already specified for all representation clauses");
+            Parameter_Error (Rule_Id, "rule already specified for all representation clauses");
          end if;
       else
          if not Is_Empty (Usage (Rule_Type)) then
-            Parameter_Error ("Some representation clauses already specified");
+            Parameter_Error (Rule_Id, "some representation clauses already specified");
          end if;
          Add (Usage (Rule_Type), Key_All, To_Unbounded_Wide_String (Label));
       end if;
@@ -125,15 +125,14 @@ package body Rules.Representation_Clauses is
          if Clause = Cl_Attribute then
             Param := To_Unbounded_Wide_String (To_Upper (Get_String_Parameter));
             if Element (Param, 1) /= ''' then
-               Parameter_Error ("Parameter must be at, at_mod, enumeration, record, or an attribute");
+               Parameter_Error (Rule_Id, "parameter must be at, at_mod, enumeration, record, or an attribute");
             end if;
          else
             Param := To_Unbounded_Wide_String (Clause_Names'Wide_Image (Clause));
          end if;
 
          if Is_Present (Usage (Rule_Type), Param) then
-            Parameter_Error ("Clause already given for rule " & Rule_Id
-                             & ": " & Proper_Key (Param));
+            Parameter_Error (Rule_Id, "clause already given: " & Proper_Key (Param));
          end if;
 
          Add (Usage (Rule_Type), Param, To_Unbounded_Wide_String (Label));

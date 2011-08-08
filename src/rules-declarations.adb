@@ -53,33 +53,32 @@ pragma Elaborate (Framework.Language);
 package body Rules.Declarations is
    use Framework;
 
-   type Declaration_Names is (D_Access_Protected_Type,        D_Access_Subprogram_Type,  D_Access_Task_Type,
-                              D_Access_Type,                  D_Aliased,                 D_Array,
-                              D_Array_Type,                   D_Child_Unit,              D_Constant,
-                              D_Constrained_Array_Type,       D_Decimal_Fixed_Type,      D_Defaulted_Discriminant,
-                              D_Defaulted_Generic_Parameter,  D_Defaulted_Parameter,     D_Derived_Type,
-                              D_Discriminant,                 D_Enumeration_Type,        D_Entry,
-                              D_Exception,                    D_Extension,               D_Fixed_Type,
-                              D_Float_Type,                   D_Formal_Function,         D_Formal_Package,
-                              D_Formal_Procedure,             D_Generic,                 D_Handlers,
-                              D_In_Out_Generic_Parameter,     D_In_Out_Parameter,        D_Initialized_Record_Field,
-                              D_Initialized_Protected_Field,  D_Integer_Type,            D_Limited_Private_Type,
-                              D_Modular_Type,                 D_Multiple_Names,          D_Named_Number,
-                              D_Nested_Package,               D_Nested_Generic_Function, D_Nested_Generic_Package,
+   type Declaration_Names is (D_Access_Protected_Type,        D_Access_Subprogram_Type,    D_Access_Task_Type,
+                              D_Access_Type,                  D_Aliased,                   D_Array,
+                              D_Array_Type,                   D_Child_Unit,                D_Constant,
+                              D_Constrained_Array_Type,       D_Decimal_Fixed_Type,        D_Defaulted_Discriminant,
+                              D_Defaulted_Generic_Parameter,  D_Defaulted_Parameter,       D_Derived_Type,
+                              D_Discriminant,                 D_Enumeration_Type,          D_Entry,
+                              D_Exception,                    D_Extension,                 D_Fixed_Type,
+                              D_Float_Type,                   D_Formal_Function,           D_Formal_Package,
+                              D_Formal_Procedure,             D_Generic,                   D_Handlers,
+                              D_In_Out_Generic_Parameter,     D_In_Out_Parameter,          D_Initialized_Record_Field,
+                              D_Initialized_Protected_Field,  D_Integer_Type,              D_Limited_Private_Type,
+                              D_Modular_Type,                 D_Multiple_Names,            D_Named_Number,
+                              D_Nested_Package,               D_Nested_Generic_Function,   D_Nested_Generic_Package,
                               D_Nested_Generic_Procedure,     D_Nested_Function_Instantiation,
                               D_Nested_Package_Instantiation, D_Nested_Procedure_Instantiation,
-                              D_Non_Identical_Renaming,
-                              D_Non_Limited_Private_Type,     D_Not_Operator_Renaming,   D_Null_Extension,
-                              D_Null_Ordinary_Record_Type,    D_Null_Tagged_Type,        D_Operator,
-                              D_Ordinary_Fixed_Type,          D_Ordinary_Record_Type,    D_Out_Parameter,
-                              D_Package_Statements,           D_Private_Extension,       D_Protected,
-                              D_Protected_Entry,              D_Protected_Type,          D_Record_Type,
-                              D_Renaming,                     D_Separate,                D_Signed_Type,
-                              D_Single_Array,                 D_Single_Protected ,       D_Single_Task,
-                              D_Subtype,                      D_Tagged_Type,             D_Task,
-                              D_Task_Entry,                   D_Task_Type,               D_Type,
-                              D_Unconstrained_Array_Type,     D_Uninitialized_Record_Field,
-                              D_Uninitialized_Protected_Field);
+                              D_Non_Identical_Renaming,       D_Non_Limited_Private_Type,  D_Not_Operator_Renaming,
+                              D_Null_Extension,               D_Null_Ordinary_Record_Type, D_Null_Tagged_Type,
+                              D_Operator,                     D_Operator_Renaming,         D_Ordinary_Fixed_Type,
+                              D_Ordinary_Record_Type,         D_Out_Parameter,             D_Package_Statements,
+                              D_Private_Extension,            D_Protected,                 D_Protected_Entry,
+                              D_Protected_Type,               D_Record_Type,               D_Renaming,
+                              D_Separate,                     D_Signed_Type,               D_Single_Array,
+                              D_Single_Protected ,            D_Single_Task,               D_Subtype,
+                              D_Tagged_Type,                  D_Task,                      D_Task_Entry,
+                              D_Task_Type,                    D_Type,                      D_Unconstrained_Array_Type,
+                              D_Uninitialized_Record_Field,   D_Uninitialized_Protected_Field);
    type Declaration_Names_List is array (Positive range <>) of Declaration_Names;
 
    package Usage_Flags_Utilities is new Framework.Language.Flag_Utilities (Declaration_Names, "D_");
@@ -113,14 +112,13 @@ package body Rules.Declarations is
 
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       while Parameter_Exists loop
          Decl := Get_Flag_Parameter (Allow_Any => False);
          if Rule_Used (Decl) then
-            Parameter_Error ("Declaration already given for rule " & Rule_Id
-                             & ": " & Image (Decl));
+            Parameter_Error (Rule_Id, "declaration already given" & ": " & Image (Decl));
          end if;
 
          Rule_Used (Decl) := True;
@@ -201,6 +199,7 @@ package body Rules.Declarations is
 
       Accessed_Type  : Asis.Element;
       Renamed_Entity : Asis.Name;
+      Enclosing      : Asis.Element;
 
       procedure Check_Discriminant (Discr : Asis.Definition) is
       begin
@@ -405,18 +404,25 @@ package body Rules.Declarations is
             end if;
 
          when A_Parameter_Specification =>
-            if not Is_Nil (Initialization_Expression (Element)) then
-               Do_Report (D_Defaulted_Parameter, Get_Location (Element));
-            end if;
+            -- Do not print message if the parameter is for a procedure or function body
+            -- with an explicit specification
+            Enclosing := Enclosing_Element (Element);
+            if Declaration_Kind (Enclosing) not in A_Procedure_Body_Declaration .. A_Function_Body_Declaration
+              or else Is_Nil (Corresponding_Declaration (Enclosing))
+            then
+               if not Is_Nil (Initialization_Expression (Element)) then
+                  Do_Report (D_Defaulted_Parameter, Get_Location (Element));
+               end if;
 
-            case Mode_Kind (Element) is
-               when An_Out_Mode =>
-                  Do_Report (D_Out_Parameter, Get_Location (Element));
-               when An_In_Out_Mode =>
-                  Do_Report (D_In_Out_Parameter, Get_Location (Element));
-               when others =>
-                  null;
-            end case;
+               case Mode_Kind (Element) is
+                  when An_Out_Mode =>
+                     Do_Report (D_Out_Parameter, Get_Location (Element));
+                  when An_In_Out_Mode =>
+                     Do_Report (D_In_Out_Parameter, Get_Location (Element));
+                  when others =>
+                     null;
+               end case;
+            end if;
 
          when A_Formal_Object_Declaration =>
             if not Is_Nil (Initialization_Expression (Element)) then
@@ -457,7 +463,7 @@ package body Rules.Declarations is
             if Defining_Name_Kind (Names (Element)(1)) = A_Defining_Operator_Symbol
               and then Is_Nil (Corresponding_Declaration (Element))
             then
-               -- If there is an explicit spec, we give the message on the spec
+               -- If there is an explicit spec, we give the message on the spec (only)
                Do_Report (D_Operator, Get_Location (Element));
             end if;
 
@@ -529,47 +535,46 @@ package body Rules.Declarations is
 
          when A_Function_Renaming_Declaration
            | A_Generic_Function_Renaming_Declaration
-           =>
-            if Rule_Used (D_Not_Operator_Renaming) or Rule_Used (D_Non_Identical_Renaming) then
+              =>
+            Do_Report (D_Renaming, Get_Location (Element));
+
+            if   Rule_Used (D_Not_Operator_Renaming)
+              or Rule_Used (D_Non_Identical_Renaming)
+              or Rule_Used (D_Operator_Renaming)
+            then
                Renamed_Entity := A4G_Bugs.Renamed_Entity (Element);
                if  Expression_Kind (Renamed_Entity) = A_Selected_Component then
                   Renamed_Entity := Selector (Renamed_Entity);
                end if;
-               if Rule_Used (D_Not_Operator_Renaming)
-                 and then Expression_Kind (Renamed_Entity) /= An_Operator_Symbol
-               then
-                  Do_Report (D_Not_Operator_Renaming, Get_Location (Element));
-               end if;
-               if Rule_Used (D_Non_Identical_Renaming) then
-                  Renamed_Entity := A4G_Bugs.Renamed_Entity (Element);
-                  loop
-                     case Expression_Kind (Renamed_Entity) is
-                        when An_Explicit_Dereference
-                          | An_Attribute_Reference
-                          | A_Character_Literal
-                          =>
-                           -- Always triggered
-                           Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
-                           exit;
-                        when A_Selected_Component =>
-                           Renamed_Entity := Selector (Renamed_Entity);
-                        when An_Identifier
-                          | An_Operator_Symbol
-                          | An_Enumeration_Literal
-                          =>
-                           if   To_Upper (Defining_Name_Image (Names (Element)(1)))
-                             /= To_Upper (Name_Image (Renamed_Entity))
-                           then
-                              Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
-                           end if;
-                           exit;
-                        when others =>
-                           Failure ("Not a function name in function renaming");
-                     end case;
-                  end loop;
-               end if;
+
+               case Expression_Kind (Renamed_Entity) is
+                  when An_Explicit_Dereference
+                     | An_Attribute_Reference
+                     | A_Character_Literal
+                       =>
+                     Do_Report (D_Not_Operator_Renaming, Get_Location (Element));
+                     -- Cannot be identical name
+                     Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
+                  when An_Operator_Symbol =>
+                     Do_Report (D_Operator_Renaming, Get_Location (Element));
+                     if   To_Upper (Defining_Name_Image (Names (Element) (1)))
+                       /= To_Upper (Name_Image (Renamed_Entity))
+                     then
+                        Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
+                     end if;
+                  when An_Identifier
+                     | An_Enumeration_Literal
+                       =>
+                     Do_Report (D_Not_Operator_Renaming, Get_Location (Element));
+                     if   To_Upper (Defining_Name_Image (Names (Element) (1)))
+                       /= To_Upper (Name_Image (Renamed_Entity))
+                     then
+                        Do_Report (D_Non_Identical_Renaming, Get_Location (Element));
+                     end if;
+                  when others =>
+                     Failure ("Not a function name in function renaming");
+               end case;
             end if;
-            Do_Report (D_Renaming, Get_Location (Element));
 
          when An_Object_Renaming_Declaration
            | An_Exception_Renaming_Declaration

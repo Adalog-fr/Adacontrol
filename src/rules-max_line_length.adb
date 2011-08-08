@@ -73,24 +73,26 @@ package body Rules.Max_Line_Length is
       use Framework.Language;
 
    begin
-      if not Parameter_Exists then
-         Parameter_Error ("Maximum value required for rule " & Rule_Id);
+      if Maximum (Rule_Type) /= Natural'Last then
+         Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
-      if Maximum (Rule_Type) = Natural'Last then
-         begin
-            Maximum (Rule_Type) := Get_Integer_Parameter (Min => 10, Max => Natural'Last-1);
-         exception
-            when Constraint_Error =>
-               Parameter_Error (Rule_Id & ": Maximum value negative or too big");
-         end;
-         if Maximum (Rule_Type) <= 10 then -- Must be at least as long as the longest KW...
-            Parameter_Error ("Maximum value must be at least 10");
-         end if;
-         Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
-      else
-         Parameter_Error ("Rule already specified");
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "Maximum value required");
       end if;
+
+      begin
+         Maximum (Rule_Type) := Get_Integer_Parameter (Min => 10, Max => Natural'Last - 1);
+      exception
+         when Constraint_Error =>
+            Parameter_Error (Rule_Id, "maximum value negative or too big");
+      end;
+
+      if Maximum (Rule_Type) <= 10 then -- Must be at least as long as the longest KW...
+         Parameter_Error (Rule_Id, "maximum value must be at least 10");
+      end if;
+
+      Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
       Rule_Used := True;
    end Add_Use;
 

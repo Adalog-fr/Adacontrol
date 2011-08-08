@@ -1,17 +1,28 @@
-t_expressions.adb:6:10: Error: EXPRESSIONS: use of expression "slice"
-t_expressions.adb:55:10: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:57:13: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:59:13: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:61:13: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:63:13: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:65:13: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:67:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
-t_expressions.adb:69:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
-t_expressions.adb:71:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
-t_expressions.adb:73:13: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
-t_expressions.adb:75:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
-t_expressions.adb:77:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
-t_expressions.adb:79:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
-t_expressions.adb:81:13: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
-t_expressions.adb:83:13: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions.adb:85:13: Found: EXPRESSIONS: equality or inequality with two Universal Real constants !!!
+t_expressions-test_slice.adb:5:10: Error: EXPRESSIONS: use of expression "slice"
+t_expressions-test_real_equality.adb:42:11: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:44:14: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:46:14: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:48:14: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:50:15: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:52:15: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:54:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions-test_real_equality.adb:56:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions-test_real_equality.adb:58:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions-test_real_equality.adb:60:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions-test_real_equality.adb:62:14: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions-test_real_equality.adb:64:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions-test_real_equality.adb:66:14: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions-test_real_equality.adb:68:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
+t_expressions-test_real_equality.adb:70:12: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:72:14: Found: EXPRESSIONS: equality or inequality with two Universal Real constants !!!
+t_expressions-test_logical_operators.adb:5:13: Error: Logical: use of expression "and"
+t_expressions-test_logical_operators.adb:6:13: Error: Logical: use of expression "or"
+t_expressions-test_logical_operators.adb:7:13: Error: Logical: use of expression "xor"
+t_expressions-test_logical_operators.adb:8:13: Error: Logical: use of expression "and_then"
+t_expressions-test_logical_operators.adb:9:13: Error: Logical: use of expression "or_else"
+t_expressions-test_others.adb:17:15: Error: Others: use of expression "array_others"
+t_expressions-test_others.adb:18:19: Error: Others: use of expression "array_others"
+t_expressions-test_others.adb:21:16: Error: Others: use of expression "record_others"
+t_expressions-test_others.adb:22:18: Error: Others: use of expression "record_others"
+t_expressions-test_others.adb:25:20: Error: Others: use of expression "record_others"
+t_expressions-test_others.adb:26:25: Error: Others: use of expression "record_others"

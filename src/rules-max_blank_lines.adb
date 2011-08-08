@@ -84,16 +84,16 @@ package body Rules.Max_Blank_Lines is
       use Framework.Language;
 
    begin
-      if not Parameter_Exists then
-         Parameter_Error ("Maximum value required for rule " & Rule_Id);
+      if Maximum (Rule_Type) /= Natural'Last then
+         Parameter_Error (Rule_Id, "Rule already specified");
       end if;
 
-      if Maximum (Rule_Type) = Natural'Last then
-         Maximum    (Rule_Type) := Get_Integer_Parameter (Min => 0);
-         Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
-      else
-         Parameter_Error ("Rule already specified");
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "Maximum value required");
       end if;
+
+      Maximum    (Rule_Type) := Get_Integer_Parameter (Min => 0);
+      Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
       Rule_Used := True;
    end Add_Use;
 
@@ -157,15 +157,15 @@ package body Rules.Max_Blank_Lines is
 
       -- Compare to Maximum (xx) + 1 to issue only one message if there is much more
       -- than the allowed number of consecutive blank lines
-      if Blank_Lines_Count = Maximum (Check)+1 then
+      if Maximum (Check) /= Natural'Last and then Blank_Lines_Count = Maximum (Check)+1 then
          Fail_Loc  := Loc;
          Fail_Type := Check;
-      elsif Blank_Lines_Count = Maximum (Search)+1 then
+      elsif Maximum (Search) /= Natural'Last and then Blank_Lines_Count = Maximum (Search)+1 then
          Fail_Loc  := Loc;
          Fail_Type := Search;
       end if;
 
-      if Blank_Lines_Count = Maximum (Count)+1 then
+      if Maximum (Count) /= Natural'Last and then Blank_Lines_Count = Maximum (Count)+1 then
          Report (Rule_Id, To_Wide_String (Rule_Label (Count)), Count, Loc, "");
       end if;
   end Process_Line;

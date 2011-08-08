@@ -64,6 +64,7 @@ check  declarations (access_type,
                      generic,
                      integer_type,
                      not_operator_renaming,
+                     operator_renaming,
                      protected,
                      record_type,
                      task);

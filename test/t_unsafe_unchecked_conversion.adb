@@ -22,10 +22,6 @@ procedure T_Unsafe_Unchecked_Conversion is
    type T6 is range 1 .. 10;
    for T6'Size use 8;
    function Inst5 is new Unchecked_Conversion (T6, T4);      -- Different sizes
-
-   type T7 is range 1 .. 10;
-   for T7'Size use Integer'Size;                             -- Uncheckable
-   function Inst6 is new Unchecked_Conversion (T7, T4);      -- False positive
 begin
    null;
 end T_Unsafe_Unchecked_Conversion;

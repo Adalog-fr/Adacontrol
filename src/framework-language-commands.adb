@@ -73,8 +73,12 @@ package body Framework.Language.Commands is
    ------------------
 
    procedure Help_Command is
-      use Framework.Reports;
+      use Adactl_Options, Framework.Reports;
    begin
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
       User_Message ("   Clear all|<rule name> ;");
       User_Message ("   Go;");
       User_Message ("   Help [ all|<rule name>{,<rule name>} ];");
@@ -204,7 +208,7 @@ package body Framework.Language.Commands is
       use Framework, Framework.Language;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Missing unit names in ""Inhibit"" command");
+         Parameter_Error ("Inhibit", "Missing unit names");
       end if;
 
       while Parameter_Exists loop
@@ -241,10 +245,24 @@ package body Framework.Language.Commands is
             end if;
          exception
             when Already_In_Store =>
-               Parameter_Error ("Rule " & Rule_Name & " already inhibited for " & Image (Entity));
+               Parameter_Error ("Inhibit", "Rule " & Rule_Name & " already inhibited for " & Image (Entity));
          end;
       end loop;
    end Inhibit_Command;
+
+   ---------------------
+   -- Message_Command --
+   ---------------------
+
+   procedure Message_Command (Message : in Wide_String) is
+      use Adactl_Options;
+   begin
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
+      User_Message (Message);
+   end Message_Command;
 
    ------------------------
    -- Set_Format_Command --
@@ -266,11 +284,12 @@ package body Framework.Language.Commands is
       Format_Option := Output_Format'Wide_Value (Format (Format'First .. Sep_Pos - 1));
    exception
       when Constraint_Error =>
-         Parameter_Error ("""Gnat"", ""Gnat_Short"", "
-                            & """CSV"", ""CSV_Short"", "
-                            & """CSVX"", ""CSVX_Short"", "
-                            & """Source"", ""Source_Short"" "
-                            & "expected for format");
+         Parameter_Error ("Set format",
+                          """Gnat"", ""Gnat_Short"", "
+                          & """CSV"", ""CSV_Short"", "
+                          & """CSVX"", ""CSVX_Short"", "
+                          & """Source"", ""Source_Short"" "
+                          & "expected for format");
    end Set_Format_Command;
 
    ------------------------
@@ -279,7 +298,12 @@ package body Framework.Language.Commands is
 
   procedure Set_Output_Command (Output_File : Wide_String) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO, Seen_Files_Map;
+      use Adactl_Options;
    begin
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
       -- Note that the following sequence ensures that Current_Output is
       -- never a closed file.
       Set_Output (Standard_Output);
@@ -305,8 +329,13 @@ package body Framework.Language.Commands is
    -- Set_Trace_Command --
    -----------------------
 
-  procedure Set_Trace_Command (Trace_File : Wide_String) is
+   procedure Set_Trace_Command (Trace_File : Wide_String) is
+      use Adactl_Options;
   begin
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
      Utilities.Set_Trace (Trace_File);
   end Set_Trace_Command;
 

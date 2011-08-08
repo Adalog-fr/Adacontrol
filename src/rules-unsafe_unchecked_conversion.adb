@@ -74,12 +74,12 @@ package body Rules.Unsafe_Unchecked_Conversion is
       use Framework.Language;
 
    begin
-      if Parameter_Exists then
-         Parameter_Error (Rule_Id & ": no parameter for rule");
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": rule already specified");
+      if Parameter_Exists then
+         Parameter_Error (Rule_Id, "no parameter for rule");
       end if;
 
       Context   := Basic.New_Context (Rule_Type, Label);
@@ -118,37 +118,54 @@ package body Rules.Unsafe_Unchecked_Conversion is
       Assocs : Asis.Association_List (1..2);
 
       Not_Specified : constant Integer := -1;
+      Class_Wide    : constant Integer := -2;
 
       function Size_Value (Type_Name : Asis.Expression) return Integer is
          use Asis.Clauses;
-
-         Reprs: constant Asis.Representation_Clause_List
-           := Corresponding_Representation_Clauses (Corresponding_Name_Declaration (Type_Name));
+         Good_Name : Asis.Expression := Type_Name;
       begin
-         for R in Reprs'Range loop
-            if Representation_Clause_Kind (Reprs (R)) = An_Attribute_Definition_Clause
-              and then A4G_Bugs.Attribute_Kind (Representation_Clause_Name (Reprs (R))) = A_Size_Attribute
-            then
-               declare
-                  Val_Img : constant Wide_String := Static_Expression_Value_Image
-                                                       (Representation_Clause_Expression (Reprs (R)));
-               begin
-                  if Val_Img = "" then
-                     Uncheckable (Rule_Id,
-                                  False_Positive,
-                                  Get_Location (Representation_Clause_Expression (Reprs (R))),
-                                  "unable to evaluate size clause value");
-                     return Not_Specified;
-                  else
-                     return Integer'Wide_Value (Val_Img);
-                  end if;
-               end;
-            end if;
-         end loop;
+         if Expression_Kind (Good_Name) = An_Attribute_Reference then
+            case A4G_Bugs.Attribute_Kind (Good_Name) is
+               when A_Base_Attribute =>
+                  Good_Name := Prefix (Good_Name);
+               when A_Class_Attribute =>
+                  return Class_Wide;
+               when others =>
+                  Failure ("unexpected attribute", Good_Name);
+            end case;
+         end if;
 
-         -- No size clause found
-         return Not_Specified;
+         declare
+            Reprs : constant Asis.Representation_Clause_List
+              := Corresponding_Representation_Clauses (Corresponding_Name_Declaration (Good_Name));
+         begin
+            for R in Reprs'Range loop
+               if Representation_Clause_Kind (Reprs (R)) = An_Attribute_Definition_Clause
+                 and then A4G_Bugs.Attribute_Kind (Representation_Clause_Name (Reprs (R))) = A_Size_Attribute
+               then
+                  declare
+                     Val_Img : constant Wide_String := Static_Expression_Value_Image
+                       (Representation_Clause_Expression (Reprs (R)));
+                  begin
+                     if Val_Img = "" then
+                        Uncheckable (Rule_Id,
+                                     False_Positive,
+                                     Get_Location (Representation_Clause_Expression (Reprs (R))),
+                                     "unable to evaluate size clause value");
+                        return Not_Specified;
+                     else
+                        return Integer'Wide_Value (Val_Img);
+                     end if;
+                  end;
+               end if;
+            end loop;
+
+            -- No size clause found
+            return Not_Specified;
+         end;
       end Size_Value;
+
+      Reported : Boolean := False;
    begin
       if not Rule_Used then
          return;
@@ -184,15 +201,37 @@ package body Rules.Unsafe_Unchecked_Conversion is
                  Context,
                  Get_Location (Source),
                  "no size clause given for Source");
+         Reported := True;
       end if;
       if T_Size = Not_Specified then
          Report (Rule_Id,
                  Context,
                  Get_Location (Target),
                  "no size clause given for Target");
+         Reported := True;
       end if;
 
-      if S_Size /= Not_Specified and T_Size /= Not_Specified and S_Size /= T_Size then
+      if S_Size = Class_Wide then
+         Report (Rule_Id,
+                 Context,
+                 Get_Location (Source),
+                 "class-wide type given for Source");
+         Reported := True;
+      end if;
+      if T_Size = Class_Wide then
+         Report (Rule_Id,
+                 Context,
+                 Get_Location (Target),
+                 "class-wide type given for Target");
+         Reported := True;
+      end if;
+
+      if Reported then
+         return;
+      end if;
+
+      -- Here, S_Size and T_Size are known
+      if S_Size /= T_Size then
          Report (Rule_Id,
                  Context,
                  Get_Location (Source),

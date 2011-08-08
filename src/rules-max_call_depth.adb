@@ -117,11 +117,11 @@ package body Rules.Max_Call_Depth is
 
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       if Depths (Rule_Type) /= Unused then
-         Parameter_Error (Rule_Id & ": rule already specified");
+         Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
       if Is_Integer_Parameter then
@@ -132,14 +132,14 @@ package body Rules.Max_Call_Depth is
             Param : constant Wide_String := To_Upper (Get_String_Parameter);
          begin
             if Param /= "FINITE" then
-               Parameter_Error (Rule_Id & ": depth or ""finite"" expected for parameter");
+               Parameter_Error (Rule_Id, "depth or ""finite"" expected for parameter");
             end if;
             Depths (Rule_Type) := Infinite;
          end;
       end if;
 
       if Parameter_Exists then
-         Parameter_Error (Rule_Id & ": only one parameter expected");
+         Parameter_Error (Rule_Id, "only one parameter allowed");
       end if;
 
       Labels (Rule_Type) := To_Unbounded_Wide_String (Label);

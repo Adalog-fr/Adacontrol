@@ -154,15 +154,17 @@ package body Rules.Naming_Convention is
    type Key_Set_Index is range 1 .. Keys'Pos (Keys'Last) + 1;
    type Key_Set is array (Key_Set_Index range <>) of Keys;
 
-   type Visibility is (Scope_Any, Scope_Global, Scope_Local);
-   function Get_Visibility_Modifier is new Framework.Language.Get_Enumerated_Modifier (Index => Visibility);
+   type Visibility is (Scope_Global, Scope_Local, Scope_Unit);
+   package Visibility_Utilities is new Framework.Language.Modifier_Utilities (Modifiers  => Visibility,
+                                                                              Prefix     => "SCOPE_");
+   subtype Scope_Set is Visibility_Utilities.Modifier_Set;
 
    type Usage_Rec;
    type Usage_Rec_Access is access Usage_Rec;
    type Pattern_Access is access String_Matching.Compiled_Pattern;
    type Usage_Rec is new Basic_Rule_Context with
       record
-         Scope   : Visibility;
+         Scopes  : Scope_Set;
          Is_Not  : Boolean;
          Pattern : Pattern_Access;
          Next    : Usage_Rec_Access;
@@ -212,23 +214,28 @@ package body Rules.Naming_Convention is
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
       use Ada.Characters.Handling, Ada.Exceptions, Framework.Language, String_Matching;
+      use Visibility_Utilities;
 
       Key     : Keys;
+      Scopes  : Scope_Set;
       Is_Root : Boolean;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Kind of filter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "kind of filter required");
       end if;
       Is_Root := Get_Modifier ("ROOT");
-      Key     := Get_Flag_Parameter (Allow_Any => False);
+      Scopes  := Get_Modifier_Set;
+      if Scopes = Empty_Set then
+         Scopes := Full_Set;
+      end if;
+      Key := Get_Flag_Parameter (Allow_Any => False);
 
       if not Parameter_Exists then
-         Parameter_Error ("At least one pattern required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one pattern required");
       end if;
 
       while Parameter_Exists loop
          declare
-            Scope       : constant Visibility  := Get_Visibility_Modifier (Default => Scope_Any, Prefix => "SCOPE_");
             Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
                                                                 False_KW => "CASE_SENSITIVE",
                                                                 Default  => True);
@@ -237,15 +244,16 @@ package body Rules.Naming_Convention is
          begin
             Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
                             First   => new Usage_Rec'(Basic.New_Context (Rule_Type, Label) with
-                                                      Scope   => Scope,
+                                                      Scopes  => Scopes,
                                                       Is_Not  => Is_Not,
                                                       Pattern =>
                                                         new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
                                                       Next    => Usage (Key).First));
          exception
             when Occur: Pattern_Error =>
-               Parameter_Error ("Incorrect pattern: " & Pattern
-                                  & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
+               Parameter_Error (Rule_Id,
+                                "Incorrect pattern: " & Pattern
+                                & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
          end;
       end loop;
 
@@ -284,70 +292,97 @@ package body Rules.Naming_Convention is
       use String_Matching, Thick_Queries, Utilities;
       use Framework.Reports;
 
-      procedure Check_One (Name_Str : in Wide_String; Key : in Keys) is
+      Decl : Asis.Declaration;
+      -- The (true) enclosing declaration of Name
+
+      -- Applicable rules must be given in order of decreasing generality
+      procedure Check (Name_Str : in Wide_String; Set : in Key_Set) is
          use Framework.Scope_Manager;
 
-         Current              : Usage_Rec_Access := Usage (Key).First;
-         Matches              : Boolean;
-         All_Not_Patterns     : Boolean := True;
-         Positive_Match_Found : Boolean := False;
+         Is_Program_Unit     : constant Boolean := Is_Equal (Decl, Current_Scope);
+         Is_Compilation_Unit : constant Boolean := Is_Program_Unit and Current_Depth = 1;
+         Is_Global           : Boolean;
 
-         Last_Checked         : Usage_Rec_Access := null;
-         Is_Global            : constant Boolean := Is_Current_Scope_Global;
-      begin
-         if Current = null then
-            -- No rule
-            return;
-         end if;
+         procedure Check_One (Key : in Keys) is
+            use Visibility_Utilities;
 
-         loop
-            if Current.Scope = Scope_Any
-              or else (Current.Scope = Scope_Local  and then not Is_Global)
-              or else (Current.Scope = Scope_Global and then     Is_Global)
-            then
-               Last_Checked := Current;
+            Current              : Usage_Rec_Access := Usage (Key).First;
+            Matches              : Boolean;
+            All_Not_Patterns     : Boolean := True;
+            Positive_Match_Found : Boolean := False;
+            Last_Checked         : Usage_Rec_Access := null;
 
-               Matches := Match (Name_Str, Current.Pattern.all);
-               if Matches then
-                  if Current.Is_Not then
-                     Report (Rule_Id,
-                             Current.all,
-                             Get_Location (Name),
-                             "Name does not follow naming rule for """
-                             & Image (Key)
-                             & """: """
-                             & Defining_Name_Image (Name) & '"');
-                     return;
-                  else
-                     -- We must continue in case there is a "not" match farther
-                     Positive_Match_Found := True;
-                  end if;
-               elsif not Current.Is_Not then
-                  All_Not_Patterns := False;
-               end if;
-
+         begin
+            if Current = null then
+               -- No rule
+               return;
             end if;
 
-            exit when Current.Next = null;
-            Current  := Current.Next;
-         end loop;
+            loop
+               if (Current.Scopes and (Scope_Local  => not Is_Global and not Is_Compilation_Unit,
+                                       Scope_Global => Is_Global,
+                                       Scope_Unit   => Is_Compilation_Unit))
+                 /= Empty_Set
+               then
+                  Last_Checked := Current;
 
-         if Positive_Match_Found then
-            return;
+                  Matches := Match (Name_Str, Current.Pattern.all);
+                  if Matches then
+                     if Current.Is_Not then
+                        Report (Rule_Id,
+                                Current.all,
+                                Get_Location (Name),
+                                "Name does not follow naming rule for """
+                                  & Image (Current.Scopes, Default => Full_Set) & Image (Key)
+                                  & """: """
+                                  & Defining_Name_Image (Name) & '"');
+                        return;
+                     else
+                        -- We must continue in case there is a "not" match farther
+                        Positive_Match_Found := True;
+                     end if;
+                  elsif not Current.Is_Not then
+                     All_Not_Patterns := False;
+                  end if;
 
-         -- No match found here. It is an error, unless all patterns were "not" patterns.
-         -- Last_Checked points to the last applicable rule, which is the first one specified
-         -- since we chain on head.
-         elsif not All_Not_Patterns then
-            Report (Rule_Id,
-                    Last_Checked.all,
-                    Get_Location (Name),
-                    "Name does not follow naming rule for """
-                      & Image (Key)
-                      & """: """
-                      & Defining_Name_Image (Name) & '"');
+               end if;
+
+               exit when Current.Next = null;
+               Current  := Current.Next;
+            end loop;
+
+            if Positive_Match_Found then
+               return;
+
+               -- No match found here. It is an error, unless all patterns were "not" patterns.
+               -- Last_Checked points to the last applicable rule, which is the first one specified
+               -- since we chain on head.
+            elsif not All_Not_Patterns then
+               Report (Rule_Id,
+                       Last_Checked.all,
+                       Get_Location (Name),
+                       "Name does not follow naming rule for """
+                         & Image (Current.Scopes, Default => Full_Set) & Image (Key)
+                         & """: """
+                         & Defining_Name_Image (Name) & '"');
+            end if;
+         end Check_One;
+
+      begin  -- Check
+         if Is_Compilation_Unit then
+            Is_Global := False;
+         elsif Is_Program_Unit then
+            Is_Global := Is_Enclosing_Scope_Global;
+         else
+            Is_Global := Is_Current_Scope_Global;
          end if;
-      end Check_One;
+
+         for I in reverse Set'Range loop
+            Check_One (Set (I));
+            exit when Usage (Set (I)).Is_Root;
+         end loop;
+      end Check;
+
 
    begin    -- Process_Defining_Name
       if not Rule_Used then
@@ -356,7 +391,6 @@ package body Rules.Naming_Convention is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Decl      : Asis.Declaration     := Enclosing_Element (Name);
          Name_Str  : constant Wide_String := Defining_Name_Image (Name);
          Renamed   : Asis.Element;
          Renamed_T : Asis.Element;
@@ -364,16 +398,8 @@ package body Rules.Naming_Convention is
          Def       : Asis.Definition;
          Accessed  : Asis.Element;
 
-         -- Applicable rules must be given in order of decreasing generality
-         procedure Check (Set : in Key_Set) is
-         begin
-            for I in reverse Set'Range loop
-               Check_One (Name_Str, Set (I));
-               exit when Usage (Set (I)).Is_Root;
-            end loop;
-         end Check;
-
       begin
+         Decl := Enclosing_Element (Name);
          while Defining_Name_Kind (Decl) = A_Defining_Expanded_Name loop
             -- Name was the name of a child compilation unit
             Decl := Enclosing_Element (Decl);
@@ -392,7 +418,7 @@ package body Rules.Naming_Convention is
                begin
                   for I in Labels'Range loop
                      if Is_Equal (Name, Labels (I)) then
-                        Check ((K_All, K_Label));
+                        Check (Name_Str, (K_All, K_Label));
                         return;
                      end if;
                   end loop;
@@ -404,10 +430,10 @@ package body Rules.Naming_Convention is
                     | A_While_Loop_Statement
                     | A_For_Loop_Statement
                     =>
-                     Check ((K_All, K_Stmt_Name, K_Loop_Name));
+                     Check (Name_Str, (K_All, K_Stmt_Name, K_Loop_Name));
                   when A_Block_Statement
                     =>
-                     Check ((K_All, K_Stmt_Name, K_Block_Name));
+                     Check (Name_Str, (K_All, K_Stmt_Name, K_Block_Name));
                   when others =>
                      Failure ("Unknown identifier from statement", Decl);
                end case;
@@ -433,7 +459,6 @@ package body Rules.Naming_Convention is
                      -- Apparently, this does not happen for full declarations of private types,
                      -- therefore we can ignore the problem
                      A4G_Bugs.Trace_Bug ("Rules.Naming_Convention.Process_Defining_Name");
-                     null;
                end;
 
                case Decl_Kind is
@@ -574,27 +599,29 @@ package body Rules.Naming_Convention is
                      Def := Type_Declaration_View (Decl);
                      case Type_Kind (Def) is
                         when An_Enumeration_Type_Definition =>
-                           Check ((K_All, K_Type, K_Discrete_Type, K_Enumeration_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Discrete_Type, K_Enumeration_Type));
                         when A_Signed_Integer_Type_Definition =>
-                           Check ((K_All, K_Type, K_Discrete_Type, K_Integer_Type, K_Signed_Integer_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Discrete_Type, K_Integer_Type, K_Signed_Integer_Type));
                         when A_Modular_Type_Definition =>
-                           Check ((K_All, K_Type, K_Discrete_Type, K_Integer_Type, K_Modular_Integer_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Discrete_Type, K_Integer_Type, K_Modular_Integer_Type));
                         when A_Floating_Point_Definition =>
-                           Check ((K_All, K_Type, K_Discrete_Type, K_Floating_Point_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Discrete_Type, K_Floating_Point_Type));
                         when An_Ordinary_Fixed_Point_Definition =>
-                           Check ((K_All, K_Type, K_Discrete_Type, K_Fixed_Point_Type, K_Binary_Fixed_Point_Type));
+                           Check (Name_Str,
+                                  (K_All, K_Type, K_Discrete_Type, K_Fixed_Point_Type, K_Binary_Fixed_Point_Type));
                         when A_Decimal_Fixed_Point_Definition =>
-                           Check ((K_All, K_Type, K_Discrete_Type, K_Fixed_Point_Type, K_Decimal_Fixed_Point_Type));
+                           Check (Name_Str,
+                                  (K_All, K_Type, K_Discrete_Type, K_Fixed_Point_Type, K_Decimal_Fixed_Point_Type));
                         when An_Unconstrained_Array_Definition
                           | A_Constrained_Array_Definition =>
-                           Check ((K_All, K_Type, K_Array_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Array_Type));
                         when A_Record_Type_Definition =>
-                           Check ((K_All, K_Type, K_Record_Type, K_Regular_Record_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Record_Type, K_Regular_Record_Type));
                         when A_Tagged_Record_Type_Definition =>
-                           Check ((K_All, K_Type, K_Record_Type, K_Tagged_Type));
+                           Check (Name_Str, (K_All, K_Type, K_Record_Type, K_Tagged_Type));
                         when An_Access_Type_Definition =>
                            if Access_Type_Kind (Def) in Access_To_Subprogram_Definition then
-                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_SP_Type));
+                              Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_SP_Type));
                               return;
                            end if;
 
@@ -602,7 +629,7 @@ package body Rules.Naming_Convention is
                            Accessed := Subtype_Simple_Name (Definitions.Access_To_Object_Definition (Def));
                            if A4G_Bugs.Attribute_Kind (Accessed) = A_Class_Attribute then
                               -- Directly: type T is access T'Class
-                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
+                              Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
                               return;
                            end if;
 
@@ -626,7 +653,7 @@ package body Rules.Naming_Convention is
                                  -- We cannot know the real nature of the accessed type.
                                  -- Limit the check to Access_Type, and hope the user will rerun AdaControl
                                  -- on the full program.
-                                 Check ((K_All, K_Type, K_Access_Type));
+                                 Check (Name_Str, (K_All, K_Type, K_Access_Type));
                                  return;
                               end if;
                            end if;
@@ -636,7 +663,7 @@ package body Rules.Naming_Convention is
                            then
                               -- Annoying special case: the access type designates a subtype that names
                               -- a class-wide type. (i.e. subtype ST is T'Class; type Acc is access ST;)
-                              Check ((K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
+                              Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
                               return;
                            end if;
 
@@ -664,18 +691,18 @@ package body Rules.Naming_Convention is
                                     when A_Tagged_Record_Type_Definition
                                       | A_Derived_Record_Extension_Definition
                                       =>
-                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                                       Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
                                     when others =>
-                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                                       Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
                                  end case;
                               when A_Task_Type_Declaration =>
-                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Task_Type));
+                                 Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Task_Type));
                               when A_Protected_Type_Declaration =>
-                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Protected_Type));
+                                 Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Protected_Type));
                               when A_Private_Type_Declaration =>
-                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                                 Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
                               when A_Private_Extension_Declaration =>
-                                 Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                                 Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
                               when A_Formal_Type_Declaration  =>
                                  case Formal_Type_Kind (Type_Declaration_View (Accessed)) is
                                     when Not_A_Formal_Type_Definition =>
@@ -693,9 +720,9 @@ package body Rules.Naming_Convention is
                                       | A_Formal_Unconstrained_Array_Definition
                                       | A_Formal_Constrained_Array_Definition
                                       =>
-                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                                       Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
                                     when A_Formal_Tagged_Private_Type_Definition =>
-                                       Check ((K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                                       Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
                                     when others => -- Compatibility Ada 2005
                                        null;
                                  end case;
@@ -712,56 +739,56 @@ package body Rules.Naming_Convention is
                      -- the subtype designates a class-wide type (see above).
                      -- However, we recheck just to be sure...
                      Assert (Is_Class_Wide_Subtype (Decl), "Unexpected subtype declaration");
-                     Check ((K_All, K_Type, K_Class_Type));
+                     Check (Name_Str, (K_All, K_Type, K_Class_Type));
 
                   when An_Incomplete_Type_Declaration =>
                      Failure ("Unexpected incomplete declaration", Decl);
 
                   when A_Private_Type_Declaration =>
-                     Check ((K_All, K_Type, K_Private_Type));
+                     Check (Name_Str, (K_All, K_Type, K_Private_Type));
 
                   when A_Private_Extension_Declaration =>
-                     Check ((K_All, K_Type, K_Private_Type, K_Private_Extension));
+                     Check (Name_Str, (K_All, K_Type, K_Private_Type, K_Private_Extension));
 
                   when A_Formal_Type_Declaration =>
-                     Check ((K_All, K_Type, K_Generic_Formal_Type));
+                     Check (Name_Str, (K_All, K_Type, K_Generic_Formal_Type));
 
                   when An_Enumeration_Literal_Specification =>
-                     Check ((K_All, K_Constant, K_Enumeration));
+                     Check (Name_Str, (K_All, K_Constant, K_Enumeration));
 
                   when A_Variable_Declaration =>  ------------------------ Constants, Variables, Parameters
-                     Check ((K_All, K_Variable, K_Regular_Variable));
+                     Check (Name_Str, (K_All, K_Variable, K_Regular_Variable));
 
                   when A_Constant_Declaration
                     | A_Deferred_Constant_Declaration
                     =>
-                     Check ((K_All, K_Constant, K_Regular_Constant));
+                     Check (Name_Str, (K_All, K_Constant, K_Regular_Constant));
 
                   when A_Choice_Parameter_Specification =>
-                     Check ((K_All, K_Constant, K_Occurrence_Name));
+                     Check (Name_Str, (K_All, K_Constant, K_Occurrence_Name));
 
                   when An_Entry_Index_Specification =>
-                     Check ((K_All, K_Constant, K_Entry_Index));
+                     Check (Name_Str, (K_All, K_Constant, K_Entry_Index));
 
                   when A_Loop_Parameter_Specification =>
-                     Check ((K_All, K_Constant, K_Loop_Control));
+                     Check (Name_Str, (K_All, K_Constant, K_Loop_Control));
 
                   when An_Integer_Number_Declaration =>
-                     Check ((K_All, K_Constant, K_Named_Number, K_Integer_Number));
+                     Check (Name_Str, (K_All, K_Constant, K_Named_Number, K_Integer_Number));
 
                   when A_Real_Number_Declaration =>
-                     Check ((K_All, K_Constant, K_Named_Number, K_Real_Number));
+                     Check (Name_Str, (K_All, K_Constant, K_Named_Number, K_Real_Number));
 
                   when A_Parameter_Specification =>
                      case Mode_Kind (Decl) is
                         when A_Default_In_Mode
                           | An_In_Mode
                           =>
-                           Check ((K_All, K_Constant, K_Sp_Formal_In));
+                           Check (Name_Str, (K_All, K_Constant, K_Sp_Formal_In));
                         when An_Out_Mode =>
-                           Check ((K_All, K_Variable, K_Procedure_Formal_Out));
+                           Check (Name_Str, (K_All, K_Variable, K_Procedure_Formal_Out));
                         when An_In_Out_Mode =>
-                           Check ((K_All, K_Variable, K_Procedure_Formal_In_Out));
+                           Check (Name_Str, (K_All, K_Variable, K_Procedure_Formal_In_Out));
                         when Not_A_Mode =>
                            Failure ("Unexpected mode: " & Mode_Kinds'Wide_Image (Mode_Kind (Decl)));
                      end case;
@@ -771,9 +798,9 @@ package body Rules.Naming_Convention is
                         when A_Default_In_Mode
                           | An_In_Mode
                           =>
-                           Check ((K_All, K_Constant, K_Generic_Formal_In));
+                           Check (Name_Str, (K_All, K_Constant, K_Generic_Formal_In));
                         when An_In_Out_Mode =>
-                           Check ((K_All, K_Variable, K_Generic_Formal_In_Out));
+                           Check (Name_Str, (K_All, K_Variable, K_Generic_Formal_In_Out));
                         when An_Out_Mode
                           | Not_A_Mode
                           =>
@@ -781,7 +808,7 @@ package body Rules.Naming_Convention is
                      end case;
 
                   when A_Discriminant_Specification =>
-                     Check ((K_All, K_Variable, K_Field, K_Discriminant));
+                     Check (Name_Str, (K_All, K_Variable, K_Field, K_Discriminant));
 
                   when A_Component_Declaration =>
                      -- We must determine whether it is declared within a record or protected type
@@ -808,14 +835,14 @@ package body Rules.Naming_Convention is
 
                      case Definition_Kind (Def) is
                         when A_Protected_Definition =>
-                           Check ((K_All, K_Variable, K_Field, K_Protected_Field));
+                           Check (Name_Str, (K_All, K_Variable, K_Field, K_Protected_Field));
                         when A_Record_Definition =>
                            case Type_Kind (Enclosing_Element (Def)) is
                               when A_Record_Type_Definition
                                 | A_Tagged_Record_Type_Definition
                                 | A_Derived_Record_Extension_Definition
                                 =>
-                                 Check ((K_All, K_Variable, K_Field, K_Record_Field));
+                                 Check (Name_Str, (K_All, K_Variable, K_Field, K_Record_Field));
                               when others =>
                                  Failure ("Field not in record: "
                                           & Type_Kinds'Wide_Image (Type_Kind (Enclosing_Element (Def))), Def);
@@ -833,20 +860,20 @@ package body Rules.Naming_Convention is
                      -- To be honest, a procedure instantiation cannot be in a
                      -- protected specification
                      if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
-                        Check ((K_All, K_Subprogram, K_Procedure, K_Protected_Procedure));
+                        Check (Name_Str, (K_All, K_Subprogram, K_Procedure, K_Protected_Procedure));
                      else
-                        Check ((K_All, K_Subprogram, K_Procedure, K_Regular_Procedure));
+                        Check (Name_Str, (K_All, K_Subprogram, K_Procedure, K_Regular_Procedure));
                      end if;
 
                   when A_Formal_Procedure_Declaration =>
-                     Check ((K_All, K_Subprogram, K_Procedure, K_Generic_Formal_Procedure));
+                     Check (Name_Str, (K_All, K_Subprogram, K_Procedure, K_Generic_Formal_Procedure));
 
                   when An_Entry_Declaration =>
                      case Definition_Kind (Enclosing_Element (Decl)) is
                         when A_Protected_Definition =>
-                           Check ((K_All, K_Subprogram, K_Entry, K_Protected_Entry));
+                           Check (Name_Str, (K_All, K_Subprogram, K_Entry, K_Protected_Entry));
                         when A_Task_Definition =>
-                           Check ((K_All, K_Subprogram, K_Entry, K_Task_Entry));
+                           Check (Name_Str, (K_All, K_Subprogram, K_Entry, K_Task_Entry));
                         when others =>
                            Failure ("Entry not in task or protected", Enclosing_Element (Decl));
                      end case;
@@ -856,7 +883,7 @@ package body Rules.Naming_Convention is
                     =>
                      -- Check body only if there is no explicit spec
                      if Is_Nil (Corresponding_Declaration (Decl)) then
-                        Check ((K_All, K_Subprogram, K_Procedure));
+                        Check (Name_Str, (K_All, K_Subprogram, K_Procedure));
                      end if;
 
                   when A_Function_Declaration
@@ -865,55 +892,55 @@ package body Rules.Naming_Convention is
                      -- To be honest, a function instantiation cannot be in a
                      -- protected specification
                      if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
-                        Check ((K_All, K_Subprogram, K_Function, K_Protected_Function));
+                        Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Protected_Function));
                      else
-                        Check ((K_All, K_Subprogram, K_Function, K_Regular_Function));
+                        Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Regular_Function));
                      end if;
 
                   when A_Formal_Function_Declaration =>
-                     Check ((K_All, K_Subprogram, K_Function, K_Generic_Formal_Function));
+                     Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Generic_Formal_Function));
 
                   when A_Function_Body_Declaration
                     | A_Function_Body_Stub
                     =>
                      -- Check body only if there is no explicit spec
                      if Is_Nil (Corresponding_Declaration (Decl)) then
-                        Check ((K_All, K_Subprogram, K_Function));
+                        Check (Name_Str, (K_All, K_Subprogram, K_Function));
                      end if;
 
                   when A_Package_Declaration  ------------------------ Packages
                     | A_Package_Instantiation
                     =>
-                     Check ((K_All, K_Package, K_Regular_Package));
+                     Check (Name_Str, (K_All, K_Package, K_Regular_Package));
 
                   when A_Formal_Package_Declaration
                     | A_Formal_Package_Declaration_With_Box
                     =>
-                     Check ((K_All, K_Package, K_Generic_Formal_Package));
+                     Check (Name_Str, (K_All, K_Package, K_Generic_Formal_Package));
 
                   when A_Task_Type_Declaration =>  ------------------------ Tasks
-                     Check ((K_All, K_Task, K_Task_Type));
+                     Check (Name_Str, (K_All, K_Task, K_Task_Type));
 
                   when A_Single_Task_Declaration =>
-                     Check ((K_All, K_Task, K_Task_Object));
+                     Check (Name_Str, (K_All, K_Task, K_Task_Object));
 
                   when A_Protected_Type_Declaration =>  ------------------------ Protected
-                     Check ((K_All, K_Protected, K_Protected_Type));
+                     Check (Name_Str, (K_All, K_Protected, K_Protected_Type));
 
                   when A_Single_Protected_Declaration =>
-                     Check ((K_All, K_Protected, K_Protected_Object));
+                     Check (Name_Str, (K_All, K_Protected, K_Protected_Object));
 
                   when An_Exception_Declaration =>  ------------------------ Exceptions
-                     Check ((K_All, K_Exception));
+                     Check (Name_Str, (K_All, K_Exception));
 
                   when A_Generic_Procedure_Declaration =>  ------------------------ Generics
-                     Check ((K_All, K_Generic, K_Generic_Sp, K_Generic_Procedure));
+                     Check (Name_Str, (K_All, K_Generic, K_Generic_Sp, K_Generic_Procedure));
 
                   when A_Generic_Function_Declaration =>
-                     Check ((K_All, K_Generic, K_Generic_Sp, K_Generic_Function));
+                     Check (Name_Str, (K_All, K_Generic, K_Generic_Sp, K_Generic_Function));
 
                   when A_Generic_Package_Declaration =>
-                     Check ((K_All, K_Generic, K_Generic_Package));
+                     Check (Name_Str, (K_All, K_Generic, K_Generic_Package));
 
                   when A_Package_Body_Declaration  ------------------------ Not processed
                     | A_Package_Body_Stub

@@ -37,15 +37,18 @@ package Rules.Style is
 
    Rule_Id : constant Wide_String := "STYLE";
 
-   procedure Process_Construct    (Construct   : in Asis.Declaration);
-   procedure Process_Identifier   (Identifier  : in Asis.Expression);
-   procedure Process_Association  (Association : in Asis.Element);
-   procedure Process_Declaration  (Declaration : in Asis.Declaration);
-   procedure Process_If_Statement (Statement   : in Asis.Statement);
-   procedure Process_Literal      (Expression  : in Asis.Expression);
-   procedure Process_Renaming     (Ren         : in Asis.Declaration);
+   procedure Process_Association        (Association : in Asis.Element);
+   procedure Process_Attribute          (Attribute   : in Asis.Expression);
+   procedure Process_Compound_Statement (Statement   : in Asis.Statement);
+   procedure Process_Construct          (Construct   : in Asis.Declaration);
+   procedure Process_Declaration        (Declaration : in Asis.Declaration);
+   procedure Process_Element            (Element     : in Asis.Element);
+   procedure Process_Identifier         (Identifier  : in Asis.Expression);
+   procedure Process_If_Statement       (Statement   : in Asis.Statement);
+   procedure Process_Literal            (Expression  : in Asis.Expression);
+   procedure Process_Pragma             (Pr          : in Asis.Pragma_Element);
+   procedure Process_Renaming           (Ren         : in Asis.Declaration);
    -- Process_Renaming is plugged as Post_Procedure, since the occurrence of an identifier
    -- is still allowed within the renaming itself.
-   procedure Process_Element      (Element     : in Asis.Element);
 
 end Rules.Style;

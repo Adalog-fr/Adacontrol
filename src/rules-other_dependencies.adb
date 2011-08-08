@@ -72,12 +72,12 @@ package body Rules.Other_Dependencies is
       use Framework.Language;
 
    begin
-      if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": at least one parameter required");
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": rule already specified");
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       while Parameter_Exists loop
@@ -87,7 +87,7 @@ package body Rules.Other_Dependencies is
             Associate (Allowed_Entities, Entity, Empty_Context);
          exception
             when Already_In_Store =>
-               Parameter_Error (Rule_Id & ": entity already given: " & Image (Entity));
+               Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
          end;
       end loop;
 

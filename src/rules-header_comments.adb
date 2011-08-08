@@ -77,8 +77,8 @@ package body Rules.Header_Comments is
    pragma Warnings (Off);
    -- Gnat warns that Pattern and Last may be referenced before they have a value,
    -- but this cannot happen because Repeat is initialized to False (in Enter_Unit)
-   Pattern : Pattern_String;
-   Last    : Natural;
+   Pattern  : Pattern_String;
+   Pat_Last : Natural;
    pragma Warnings (Off);
    Repeat : Boolean;
 
@@ -95,25 +95,25 @@ package body Rules.Header_Comments is
       Kind : Header_Kind;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": kind of check required");
+         Parameter_Error (Rule_Id, "kind of check required");
       end if;
       Kind := Get_Flag_Parameter (Allow_Any => False);
 
       case Kind is
          when Minimum =>
             if Comments (Rule_Type) /= Uninitialized then
-               Parameter_Error (Rule_Id & ": Rule already specified");
+               Parameter_Error (Rule_Id, "rule already specified");
             elsif not Parameter_Exists then
-               Parameter_Error (Rule_Id & ": Number of comment lines required");
+               Parameter_Error (Rule_Id, "number of comment lines required");
             end if;
             Comments   (Rule_Type) := Get_Integer_Parameter (Min => 1);
             Rule_Label (Rule_Type) := To_Unbounded_Wide_String (Label);
 
          when Model =>
             if Is_Open (Model_File) then
-               Parameter_Error (Rule_Id & ": Model file already specified");
+               Parameter_Error (Rule_Id, "model file already specified");
             elsif not Parameter_Exists then
-               Parameter_Error (Rule_Id & ": Name of model file required");
+               Parameter_Error (Rule_Id, "name of model file required");
             end if;
 
             begin
@@ -123,7 +123,7 @@ package body Rules.Header_Comments is
                      Form => Implementation_Options.Form_Parameters);
             exception
                when Name_Error =>
-                  Parameter_Error (Rule_Id & ": model file not found");
+                  Parameter_Error (Rule_Id, "model file not found");
             end;
             -- check all patterns now to avoid problems while checking.
             loop
@@ -133,18 +133,18 @@ package body Rules.Header_Comments is
                      begin
                         Get_Line (Model_File, Buff, Last);
                         if Buff (1 .. Last) = "*" then
-                           Parameter_Error (Rule_Id & ": several ""*"" lines in a row at "
+                           Parameter_Error (Rule_Id, "several ""*"" lines in a row at "
                                               & To_Wide_String (Name (Model_File)) & ':'
                                               & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
                         end if;
                      exception
                         when End_Error =>
-                           Parameter_Error (Rule_Id & ": pattern file terminated by ""*"" line");
+                           Parameter_Error (Rule_Id, "pattern file terminated by ""*"" line");
                      end;
                   end if;
 
-                  if Last = Buff'Last then
-                     Parameter_Error (Rule_Id & ": pattern too long at "
+                  if Last = Buff'Last then     --## rule line off If_For_Case ## Case wouldn't be pretty here...
+                     Parameter_Error (Rule_Id, "pattern too long at "
                                         & To_Wide_String (Name (Model_File)) & ':'
                                         & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
                   elsif Last /= 0 then
@@ -157,7 +157,7 @@ package body Rules.Header_Comments is
                   end if;
                exception
                   when Occur : Pattern_Error =>
-                     Parameter_Error (Rule_Id & ": Incorrect pattern at "
+                     Parameter_Error (Rule_Id, "incorrect pattern at "
                                         & To_Wide_String (Name (Model_File)) & ':'
                                         & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File))
                                         & ": " & Buff (1 .. Last)
@@ -277,15 +277,15 @@ package body Rules.Header_Comments is
          end if;
 
          if not Repeat then
-            Get_Line (Model_File, Pattern, Last);
-            if Pattern (1 .. Last) = "*" then
+            Get_Line (Model_File, Pattern, Pat_Last);
+            if Pattern (1 .. Pat_Last) = "*" then
                Repeat := True;
-               Get_Line (Model_File, Pattern, Last);
+               Get_Line (Model_File, Pattern, Pat_Last);
             end if;
          end if;
 
-         if (Last = 0 and Line'Length /= 0)
-           or else not Match (Line, Pattern (1..Last))
+         if (Pat_Last = 0 and Line'Length /= 0)
+           or else not Match (Line, Pattern (1..Pat_Last))
          then
             if Repeat then
                -- maybe the end of the repeated pattern

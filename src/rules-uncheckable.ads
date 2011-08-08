@@ -30,11 +30,10 @@
 ----------------------------------------------------------------------
 
 package Rules.Uncheckable is
-   -- This rule is special, since it is *not* plugged into the
-   -- framework. But we need a body however:
-   pragma Elaborate_Body;
+   -- This rule is special, since it is *not* plugged into framework.plugs
+   -- It is called from Framework.Rules however
 
    Rule_Id : constant Wide_String := "UNCHECKABLE";
 
-
+   procedure Process_Missing_Unit (Message : Wide_String);
 end Rules.Uncheckable;

@@ -89,8 +89,7 @@ package body Rules.Use_Clauses is
 
    begin
       if Rule_Used (Use_Rule_Type) then
-         Parameter_Error (Rule_Id &
-                            ": this rule can be specified only once for each of check, search and count");
+         Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
       end if;
       Labels    (Use_Rule_Type) := To_Unbounded_Wide_String (Label);
       Rule_Used (Use_Rule_Type) := True;

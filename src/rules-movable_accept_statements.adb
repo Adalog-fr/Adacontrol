@@ -217,7 +217,6 @@ package body Rules.Movable_Accept_Statements  is
    package Object_Queue is new Linear_Queue (Object_Information);
 
 
-
    ----------
    -- Help --
    ----------
@@ -246,13 +245,13 @@ package body Rules.Movable_Accept_Statements  is
       Detail : Rule_Detail;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Rule " & Rule_Id & " takes at least ""Certain"" or ""Possible""");
+         Parameter_Error (Rule_Id, "at least ""Certain"" or ""Possible"" expected");
       end if;
 
       Detail := Get_Flag_Parameter (Allow_Any => False);
 
       if Rule_Used (Detail) then
-         Parameter_Error ("Rule " & Rule_Id & " can be called only once for ""Certain"", ""Possible""");
+         Parameter_Error (Rule_Id, "rule can be called only once for ""Certain"", ""Possible""");
       end if;
 
       -- Retrieve all user-defined dependencies and associate them with the appropriate detail context
@@ -264,8 +263,7 @@ package body Rules.Movable_Accept_Statements  is
             Associate (Entities, Entity, Default_Detail_Context, Additive => True);
          exception
             when Already_In_Store =>
-               Parameter_Error ("Entity already given for rule " & Rule_Id
-                                  & ": " & Image (Entity));
+               Parameter_Error (Rule_Id, "Entity already given: " & Image (Entity));
          end;
       end loop;
 
@@ -307,8 +305,6 @@ package body Rules.Movable_Accept_Statements  is
    end Prepare;
 
 
-
-
    ----------------------------------
    -- Add_Fictive_Object_Reference --
    ----------------------------------
@@ -329,7 +325,6 @@ package body Rules.Movable_Accept_Statements  is
       -- Replace with the necessary modifications
       Replace (Fictive_Object_Cursor, Fictive_Object);
    end Add_Fictive_Object_Reference;
-
 
 
    --------------
@@ -578,6 +573,7 @@ package body Rules.Movable_Accept_Statements  is
       use Framework.Reports;
       use Object_Queue;
 
+      Stable_State : Boolean := False;
    begin
       if Rule_Used = (Rule_Detail => False) then
          return;
@@ -685,69 +681,65 @@ package body Rules.Movable_Accept_Statements  is
          -- We also know the index and the kind of the last statement.
 
          -- 4th step: try to obtain a stable state for dependent identifiers and movable statements
-         declare
-            Stable_State : Boolean := False;
-         begin
-            -- No need to check all statements since "Possible" has not been called
-            if not Rule_Used (K_Possible) then
-               Stable_State := True;
-            end if;
+         -- No need to check all statements since "Possible" has not been called
+         if not Rule_Used (K_Possible) then
+            Stable_State := True;
+         end if;
 
-            -- Loop until obtaining a stable state
-            while not Stable_State loop
-               Stable_State := True;
-               declare
-                  Current_Cursor : Cursor;
-                  Current_Object : Object_Information (The_State.Number_Of_Statements);
-               begin
-                  -- find the first parameter or dependent object that has not been checked yet
-                  Current_Cursor := First (The_State.References_Queue);
-                  while Has_Element (Current_Cursor) loop
-                     Current_Object := Fetch (Current_Cursor);
-                     -- Check if the object is dependent and not yet checked
-                     if Current_Object.Kind /= Independent
-                       and not Current_Object.Checked
-                     then
-                        -- Current_Object is a dependent object that has not been checked yet
-                        Stable_State := False;
-                        -- Set each object referenced within the same statements as
-                        -- the parameter dependent object we just found to dependent
-                        declare
-                           Dependent_Object    : Object_Information renames Current_Object;
-                           References_Iterator : Cursor;
-                           Referenced_Object   : Object_Information (The_State.Number_Of_Statements);
-                        begin
-                           References_Iterator := First (The_State.References_Queue);
-                           while Has_Element (References_Iterator) loop
-                              Referenced_Object := Fetch (References_Iterator);
-                              -- Set all referencing statements as unmovable.
-                              for S in Integer range Body_Statements'First .. The_State.Last_Statement.Index loop
-                                 if Dependent_Object.References (S) then
-                                    -- Current statement is referencing the parameter dependent object.
-                                    -- Set it as unmovable / parameter dependent.
-                                    The_State.Movable_Statements (S) := False;
-                                    -- Set all referenced identifiers within the current statement as dependent.
-                                    if Referenced_Object.Kind = Independent     -- avoid a replace if unnecessary
-                                      and Referenced_Object.References (S)
-                                    then
-                                       Referenced_Object.Kind := Dependent;
-                                       Replace (References_Iterator, Referenced_Object);
-                                    end if;
+         -- Loop until obtaining a stable state
+         while not Stable_State loop
+            Stable_State := True;
+            declare
+               Current_Cursor : Cursor;
+               Current_Object : Object_Information (The_State.Number_Of_Statements);
+            begin
+               -- find the first parameter or dependent object that has not been checked yet
+               Current_Cursor := First (The_State.References_Queue);
+               while Has_Element (Current_Cursor) loop
+                  Current_Object := Fetch (Current_Cursor);
+                  -- Check if the object is dependent and not yet checked
+                  if Current_Object.Kind /= Independent
+                    and not Current_Object.Checked
+                  then
+                     -- Current_Object is a dependent object that has not been checked yet
+                     Stable_State := False;
+                     -- Set each object referenced within the same statements as
+                     -- the parameter dependent object we just found to dependent
+                     declare
+                        Dependent_Object    : Object_Information renames Current_Object;
+                        References_Iterator : Cursor;
+                        Referenced_Object   : Object_Information (The_State.Number_Of_Statements);
+                     begin
+                        References_Iterator := First (The_State.References_Queue);
+                        while Has_Element (References_Iterator) loop
+                           Referenced_Object := Fetch (References_Iterator);
+                           -- Set all referencing statements as unmovable.
+                           for S in Integer range Body_Statements'First .. The_State.Last_Statement.Index loop
+                              if Dependent_Object.References (S) then
+                                 -- Current statement is referencing the parameter dependent object.
+                                 -- Set it as unmovable / parameter dependent.
+                                 The_State.Movable_Statements (S) := False;
+                                 -- Set all referenced identifiers within the current statement as dependent.
+                                 if Referenced_Object.Kind = Independent     -- avoid a replace if unnecessary
+                                   and Referenced_Object.References (S)
+                                 then
+                                    Referenced_Object.Kind := Dependent;
+                                    Replace (References_Iterator, Referenced_Object);
                                  end if;
-                              end loop;
-                              References_Iterator := Next (References_Iterator);
+                              end if;
                            end loop;
-                           -- Set the dependent object as checked
-                           Dependent_Object.Checked := True;
-                           Replace (Current_Cursor, Dependent_Object);
-                        end;
-                     end if;
-                     Current_Cursor := Next (Current_Cursor);
-                  end loop;
-                  --
-               end;
-            end loop;
-         end;
+                           References_Iterator := Next (References_Iterator);
+                        end loop;
+                        -- Set the dependent object as checked
+                        Dependent_Object.Checked := True;
+                        Replace (Current_Cursor, Dependent_Object);
+                     end;
+                  end if;
+                  Current_Cursor := Next (Current_Cursor);
+               end loop;
+               --
+            end;
+         end loop;
 
 
          -- From here on, every reference of an identifier or parameter within a statement is know.

@@ -63,7 +63,7 @@ procedure Adactl is
    use Asis.Exceptions, Asis.Implementation;
    use Utilities, Adactl_Options;
 
-   Version : constant Wide_String := "1.6r4";
+   Version : constant Wide_String := "1.6r8";
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -75,7 +75,7 @@ procedure Adactl is
 
    use Framework.Language;
 begin
-   Thick_Queries.Set_Error_Procedure (Utilities.Failure'access);
+   Thick_Queries.Set_Error_Procedure (Utilities.Failure'Access);
 
    Analyse_Options;
 

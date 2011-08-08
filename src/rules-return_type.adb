@@ -96,10 +96,7 @@ package body Rules.Return_Type is
    begin
       User_Message ("Rule: " & Rule_Id);
       Return_Kind_Utilities.Help_On_Flags ("Parameter(s): ");
-      User_Message ("Control return types for functions.");
-      User_Message ("Functions may return unconstrained types, class-wide types," &
-                    "protected types or task types, which can be inconvenient "   &
-                    "for certain systems.");
+      User_Message ("Control various forms of the type returned by functions");
    end Help;
 
 
@@ -115,8 +112,7 @@ package body Rules.Return_Type is
       procedure Add_One (Key : in Return_Kind) is
       begin
          if Rule_Used (Key) then
-            Parameter_Error ("Rule " & Rule_Id &
-                             " can be specified only once for each parameter.");
+            Parameter_Error (Rule_Id, "rule can be specified only once for each parameter.");
          end if;
 
          Rule_Used (Key) := True;

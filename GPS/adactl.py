@@ -17,6 +17,7 @@ def post_clean ():
 # Get the command name for AdaControl
 def command_name ():
    result = GPS.Project.root().get_attribute_as_string("compiler_command", "Ide", "AdaControl")
+   print result
    if result == "":
       return "adactl"
    else:
@@ -103,13 +104,13 @@ def sloc_cmp (l,r):
    else:
       Offset=0
 
-   if len(ls) < 3+Offset and len(rs) < 3+Offset:
+   if len(ls) < 5+Offset and len(rs) < 3+Offset:
       # No reference =>Keep order
       return -1
-   if len(ls) < 3+Offset:
+   if len(ls) < 5+Offset:
       # Reference only in r: put references ahead
       return 1
-   if len(rs) < 3+Offset:
+   if len(rs) < 5+Offset:
       # Reference only in l: put references ahead
       return -1
 
@@ -129,18 +130,31 @@ def parse (output):
    adactl_cats = sets.Set()
    for Mess in list:
      pos+=1
-     if re.match ("^(.+):(\\d+):(\\d+):((( Found:)|( Error:| Parameter:| Syntax:)).*)$", Mess):
+     if re.match ("^(.+):(\\d+):(\\d+): (Found:|Error:|Parameter:|Syntax:).*$", Mess):
+       # Regular AdaCtl message
        if GPS.Preference ("separate-rules").get():
           category = re.sub (r"^.+:\d+:\d+: \w+: (.*?):.*$", r"\1", Mess)
        adactl_cats.add (category)
        GPS.Locations.parse (Mess,
          category,
-         "^(.+):(\\d+):(\\d+):((( Found:)|( Error:| Parameter:| Syntax:)).*)$",
+         "^(.+):(\\d+):(\\d+): (((Found:)|(Error:|Parameter:|Syntax:)).*)$",
          1, 2, 3, 4, 7, 6,
          "",
          "Adactl_check",
          "Adactl_found")
+     elif re.match ("^(\\d+: )?(Found:|Error:|Parameter:|Syntax:).*$", Mess):
+       # AdaCtl message without location, or just a column location (syntax error in interactive command)
+       if GPS.Preference ("separate-rules").get():
+          category = re.sub (r"^(\\d+: )?\w+: (.*?):.*$", r"\2", Mess)
+       adactl_cats.add (category)
+       message  = re.sub (r"^(\\d+: )?(\w+: ).*?:(.*)$", r"\2", Mess) + re.sub (r"^(\\d+: )?\w+: .*?:(.*)$", r"\2", Mess)
+       try:
+          GPS.Locations.add (category, GPS.File("none"), 1, 1, message)
+       except:
+          # Always an exception, since file "none" does not exist (presumably)
+          pass
      else:
+       # Assume it is a compilation message
        redundant=False
        for Other in list[max (0,pos-5):pos-1]:
          if Mess == Other:
@@ -213,10 +227,13 @@ def rules_file_defined ():
    else:
       return "true"
 
-# raise an exception if parameter is the empty string
-def check_empty (value):
-   if value == "":
-      raise ValueError
+# Ask commands interactively and executes
+def run_interactive (files):
+   global previous_command
+   value=GPS.MDI.input_dialog ("Interactive run", "Command(s)=" + previous_command)
+   if value != [] and value [0] != "":
+      previous_command= re.sub('"', '~', value[0])
+      GPS.execute_action ("AdaControl", files, "-l \"" + previous_command + "\"")
 
 # A filter for the button version of running AdaControl
 # Filters have no effect on a button, therefore we must do the corresponding checks
@@ -235,12 +252,15 @@ def filter_check_file ():
       GPS.MDI.dialog ("no rules file defined")
       raise ValueError
 
-# Displays help for a given rule
+# Displays help for a given rule, and launcher
+def display_help (proc, status, mess):
+   GPS.MDI.dialog (mess)
+
 def Help_On_Rule (self):
    if GPS.Preference ("help-format").get() == "Pop-up":
-     GPS.execute_action("Help_Rule", self.name)
+     GPS.Process ("adactl -h " + self.name, on_exit = display_help)
    else:
-     GPS.HTML.browse ("adacontrol_ug.html", self.name, False)
+     GPS.HTML.browse ("adacontrol_ug.html", self.name, navigation = False)
 
 # Add a new entry to the "help on rule" menu
 def Add_Rule_Menu (self, matched, unmatched):
@@ -259,6 +279,7 @@ def on_pref_changed (H):
 
 # Global variables
 adactl_cats= sets.Set()
+previous_command= ""
 
 # Colors used in highliting the results
 GPS.Editor.register_highlighting ("Adactl_check", "red", "True")

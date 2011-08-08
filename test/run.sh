@@ -1,8 +1,3 @@
-#!/bin/bash
-
-OUTPUT_DIR=res
-REF_DIR=ref
-CONF_DIR=conf
 ADACTL="../src/adactl -F gnat_short"
 
 function put () {
@@ -41,10 +36,10 @@ put_line "---------------------------------------"
 #
 # Initialization
 #
-if [ -d $OUTPUT_DIR ]; then
-    rm -f $OUTPUT_DIR/*
+if [ -d res ]; then
+    rm -f res/*
 else
-    mkdir $OUTPUT_DIR
+    mkdir res
 fi
 
 put_line_line
@@ -64,37 +59,41 @@ nb_fw=0
 
 test_case=tfw_naming
 nb_fw=$((nb_fw+1))
-${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb xfw_naming
+${ADACTL} -vw -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
+	| tr -d \\r >res/${test_case}.txt
 
 test_case=tfw_help
 nb_fw=$((nb_fw+1))
-${ADACTL} -h all > ${OUTPUT_DIR}/${test_case}.txt 2>&1
+${ADACTL} -h all 2>&1 \
+	| tr -d \\r >res/${test_case}.txt
 
 test_case=tfw_rule_off
 nb_fw=$((nb_fw+1))
-${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb
+${ADACTL} -vw -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r >res/${test_case}.txt
 
 test_case=tfw_rule_off_ignored
 nb_fw=$((nb_fw+1))
-${ADACTL} -vwi -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb
+${ADACTL} -vwi -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r >res/${test_case}.txt
 
 test_case=tfw_inhibit
 nb_fw=$((nb_fw+1))
-${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb
+${ADACTL} -vw -f conf/${test_case}.aru ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb \
+	| tr -d \\r >res/${test_case}.txt
 
 echo "--- Syntax check test"
 test_case=tfw_check
 nb_fw=$((nb_fw+1))
-${ADACTL} -C -vf conf/x_errors.aru 2>>${OUTPUT_DIR}/${test_case}.txt
+${ADACTL} -C -vf conf/x_errors.aru 2>&1 \
+	| tr -d \\r >>res/${test_case}.txt
 for I in ../rules/*.aru; do
-   ${ADACTL} -C -vf $I 2>>${OUTPUT_DIR}/${test_case}.txt
+   ${ADACTL} -C -vf $I 2>&1 \
+	| tr -d \\r >>res/${test_case}.txt
 done
 for I in conf/t_*.aru; do
-   ${ADACTL} -C -vf $I 2>>${OUTPUT_DIR}/${test_case}.txt
+   ${ADACTL} -C -vf $I 2>&1 \
+	| tr -d \\r >>res/${test_case}.txt
 done
 
 #
@@ -109,13 +108,13 @@ test_case=tfw_stress
 nb_fw=$((nb_fw+1))
 list=`find ./ -name "t_*.adb" ! -name "x_*.ads" ! -name "x_*.adb" ! -name "*-*" -printf "%P "`
 find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -vwd -f - $list \
-   1> ${OUTPUT_DIR}/${test_case}.txt 2>&1
+   1> res/${test_case}.txt 2>&1
 result=$?
 if [ $result -le 1 ]; then
    echo "PASSED"
-   echo "PASSED" > ${OUTPUT_DIR}/${test_case}.txt
+   echo "PASSED" | tr -d \\r >res/${test_case}.txt
 else
-   echo "FAILED"
+   echo "FAILED ($result)"
 fi
 
 #
@@ -128,14 +127,11 @@ nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
     test_case=`echo $i | cut -f 1 -d "."`
-    ${ADACTL} -rvw -f ${CONF_DIR}/${test_case}.aru \
-	-o ${OUTPUT_DIR}/${test_case}.txt -u $test_case
-    if [ $? == 0 ] ; then
-       echo "  => NO ERROR FOUND !!!"
-    fi
+    ${ADACTL} -ruvw -f conf/${test_case}.aru $test_case \
+	| tr -d \\r >res/${test_case}.txt
 done
 
-pushd $REF_DIR 1>/dev/null
+pushd ref 1>/dev/null
 list=`ls *.txt`
 popd 1>/dev/null
 
@@ -145,7 +141,7 @@ put_line_line
 put_title_line "Test result for $nb_rules rules, $nb_fw framework tests"
 put_line_line
 for test_case in $list; do
-    diff=`diff --strip-trailing-cr $OUTPUT_DIR/${test_case} $REF_DIR/${test_case} 2>&1 `
+    diff=`diff res/${test_case} ref/${test_case} 2>&1 `
     if [ "$diff" = "" ]; then
 	res="       PASSED"
 	nb_passed=$((nb_passed+1))

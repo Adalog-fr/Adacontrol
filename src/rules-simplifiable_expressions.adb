@@ -101,8 +101,7 @@ package body Rules.Simplifiable_expressions is
       procedure Add_Check (Check : To_Check) is
       begin
          if Context (Rule_Use_Type)(Check).Used then
-            Parameter_Error ("Check already given for rule " & Rule_Id
-                             & ": " & Image (Check));
+            Parameter_Error (Rule_Id, "check already given: " & Image (Check));
          else
             Context (Rule_Use_Type)(Check) := (Used => True, Label => To_Unbounded_Wide_String (Add_Use.Label));
          end if;
@@ -341,10 +340,10 @@ package body Rules.Simplifiable_expressions is
                   ---Tab'First (10#1#) .. Tab'Last (1).
                   -- Note that attribute designator expressions can only ever have a length of 0 or 1,
                   --      and are satic integers.
-                  if ALB'LENGTH /= AUB'LENGTH
-                    or else (ALB'LENGTH = 1  -- Implies AUB'LENGTH = 1
-                             and then ASIS_Integer'Wide_Value (Value_Image (ALB (1))) /=
-                             ASIS_Integer'Wide_Value (Value_Image (AUB (1))))
+                  if ALB'Length /= AUB'Length
+                    or else (ALB'Length = 1  -- Implies AUB'LENGTH = 1
+                             and then ASIS_Integer'Wide_Value (Static_Expression_Value_Image (ALB (1))) /=
+                             ASIS_Integer'Wide_Value (Static_Expression_Value_Image (AUB (1))))
                   then
                      return;
                   end if;
@@ -385,6 +384,7 @@ package body Rules.Simplifiable_expressions is
                                     return;
                                  end if;
                               when A_Variable_Declaration
+                                | A_Constant_Declaration
                                 | An_Object_Renaming_Declaration
                                 | A_Subtype_Declaration
                                 | An_Ordinary_Type_Declaration
@@ -496,7 +496,7 @@ package body Rules.Simplifiable_expressions is
                            Do_Reports ("(T)'First .. (T)'Last replaceable with (T)'Range");
                         when others =>
                            Failure ("Unexpected Element_Kind 1: " &
-                                    Declaration_Kinds'WIDE_IMAGE (Declaration_Kind
+                                    Declaration_Kinds'Wide_Image (Declaration_Kind
                                                                   (Corresponding_Name_Declaration
                                                                    (LP))));
                      end case;

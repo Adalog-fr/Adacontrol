@@ -85,6 +85,8 @@ package Framework is
    type Rule_Types_Set is array (Rule_Types) of Boolean;
    pragma Pack (Rule_Types_Set);
 
+   type Uncheckable_Kinds is (False_Positive, False_Negative, Missing_Unit);
+   subtype Uncheckable_Consequence is Uncheckable_Kinds range False_Positive .. False_Negative;
 
    -------------------------------------------------------------------
    --  Location                                                     --
@@ -104,6 +106,10 @@ package Framework is
    function Get_Previous_Word_Location (E : in Asis.Element) return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
    -- precedes E.
+
+   function Get_Next_Word_Location (E : in Asis.Element) return Location;
+   -- Returns the location of the first "word" (identifier of keyword) that immediately
+   -- follows E.
 
    function Get_File_Name (L : in Location) return Wide_String;
    -- Returns location file name
@@ -333,7 +339,7 @@ private
 
    type Context_Store is
       record
-         This             : Auto_Pointer (Context_Store'access);
+         This             : Auto_Pointer (Context_Store'Access);
          Simple_Names     : Context_Tree.Map;
          Qualified_Names  : Context_Tree.Map;
          Default          : Context_Node_Access;

@@ -95,10 +95,10 @@ package body Rules.With_Clauses is
    ----------
 
    procedure Help is
-      use Utilities;
+      use Utilities, With_Usage_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): reduceable | inherited");
+      Help_On_Flags ("Parameter(s):");
       User_Message ("Control ""with"" clauses that use multiple names, can be moved to a more reduced scope,");
       User_Message ("or are implicitely inherited from a parent unit");
    end Help;
@@ -110,22 +110,22 @@ package body Rules.With_Clauses is
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
       use Framework.Language, With_Usage_Utilities;
-      Usage : With_Usage;
+      Kw : With_Usage;
    begin
       if Parameter_Exists then
-         Usage := Get_Flag_Parameter (Allow_Any => False);
+         Kw := Get_Flag_Parameter (Allow_Any => False);
 
-         if Rule_Used (Usage) then
-            Parameter_Error (Rule_Id & "already specified for " & Image (Usage));
+         if Rule_Used (Kw) then
+            Parameter_Error (Rule_Id, "rule already specified for " & Image (Kw));
          end if;
 
-         Rule_Context (Usage) := Basic.New_Context (Rule_Type, Label);
-         Rule_Used    (Usage) := True;
+         Rule_Context (Kw) := Basic.New_Context (Rule_Type, Label);
+         Rule_Used    (Kw) := True;
 
       else
          -- All usages
          if Rule_Used /= (With_Usage => False) then
-            Parameter_Error (Rule_Id & "already specified");
+            Parameter_Error (Rule_Id, "already specified");
          end if;
 
          Rule_Context := (others => Basic.New_Context (Rule_Type, Label));

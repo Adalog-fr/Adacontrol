@@ -110,17 +110,15 @@ procedure T_Directly_Accessed_Globals is
       S2 : Character renames S1 (I1);         -- Not from subprogram I1, OK S1
 
       package Pack is
-         G1 : aliased Integer;                        -- OK, not package body
+         G1 : aliased Integer;                -- OK, not package body
       end Pack;
 
       package body Pack is
          G2, G3, G4 : Integer;                -- G2 not read, G3 not written, G4 not read/written
-         U1 : Integer renames P1.Get_Next;    -- Uncheckable
          procedure P1 is
          begin
-            G2 := U1;
+            G2 := 1;
          end P1;
-
          procedure P2 is
          begin
             G1 := G3;

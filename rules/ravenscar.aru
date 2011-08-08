@@ -42,7 +42,7 @@ No_Specific_Termination_Handlers : Check Entities (Ada.Task_Termination.Set_Spec
 No_Task_Allocators : check declarations (access_task_type);
 --No_Task_Hierarchy
 No_Task_Termination : check Terminating_Tasks;
---Simple_Barriers
+Simple_Barriers : check Barrier_Expressions;
 --Max_Entry_Queue_Length
 --Max_Protected_Entries
 Max_Task_Entries : check Declarations (Task_Entry);

@@ -1,96 +1,80 @@
 t_style.adb:1:10: Found: Casing: Wrong casing of "Text_io", should be "Text_IO"
-t_style.adb:4:4: Error: No_Closing_Name: name not repeated at the end
-t_style.adb:5:24: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:17:40: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:16:10: Found: No_Default_In: default IN mode used for formal object declaration
-t_style.adb:28:10: Found: No_Default_In: default IN mode used for formal object declaration
-t_style.adb:29:28: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:32:27: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:35:24: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:39:27: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:53:21: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:55:17: Found: Casing: Wrong casing of "i", should be "I"
-t_style.adb:58:7: Found: Casing: Wrong casing of "Int", should be "int"
-t_style.adb:59:7: Found: Casing: Wrong casing of "ada", should be "Ada"
-t_style.adb:59:19: Found: Casing: Wrong casing of "put_line", should be "Put_Line"
-t_style.adb:59:28: Error: Positional_Association: named association not used in call
-t_style.adb:59:28: Error: Exposed: string literal "Var :" not in allowed construct
-t_style.adb:59:51: Found: Casing: Wrong casing of "INT", should be "int"
-t_style.adb:60:7: Found: Casing: Wrong casing of "iNT", should be "int"
-t_style.adb:60:14: Found: Casing: Wrong casing of "fOo", should be "foo"
-t_style.adb:60:18: Error: Positional_Association: named association not used in call
-t_style.adb:60:18: Found: Casing: Wrong casing of "INt", should be "int"
-t_style.adb:61:7: Found: Casing: Wrong casing of "ada", should be "Ada"
-t_style.adb:61:11: Found: Casing: Wrong casing of "text_io", should be "Text_IO"
-t_style.adb:61:19: Found: Casing: Wrong casing of "put_line", should be "Put_Line"
-t_style.adb:61:28: Error: Positional_Association: named association not used in call
-t_style.adb:61:28: Error: Exposed: string literal "Var :" not in allowed construct
-t_style.adb:61:51: Found: Casing: Wrong casing of "inT", should be "int"
-t_style.adb:83:25: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:87:24: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:87:37: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:99:10: Found: No_Default_In: default IN mode used for formal object declaration
-t_style.adb:108:10: Found: No_Default_In: default IN mode used for formal object declaration
-t_style.adb:117:10: Found: No_Default_In: default IN mode used for formal object declaration
-t_style.adb:127:30: Found: Casing: Wrong casing of "pgen", should be "Pgen"
-t_style.adb:128:29: Found: Casing: Wrong casing of "fgen", should be "Fgen"
-t_style.adb:129:31: Found: Casing: Wrong casing of "pgen", should be "Pgen"
-t_style.adb:129:36: Error: Positional_Association: named association not used in instantiation
-t_style.adb:130:30: Found: Casing: Wrong casing of "fgen", should be "Fgen"
-t_style.adb:130:35: Error: Positional_Association: named association not used in instantiation
-t_style.adb:132:40: Error: Positional_Association: named association not used in instantiation
-t_style.adb:135:27: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:146:27: Error: Positional_Association: named association not used in call
-t_style.adb:148:13: Error: Positional_Association: named association not used in call
-t_style.adb:148:16: Error: Positional_Association: named association not used in call
-t_style.adb:150:19: Error: Positional_Association: named association not used in record_aggregate
-t_style.adb:150:21: Error: Positional_Association: named association not used in record_aggregate
-t_style.adb:150:23: Error: Positional_Association: named association not used in record_aggregate
-t_style.adb:153:35: Error: Positional_Association: named association not used in record_aggregate
-t_style.adb:154:15: Error: Positional_Association: named association not used in array_aggregate
-t_style.adb:154:17: Error: Positional_Association: named association not used in array_aggregate
-t_style.adb:154:19: Error: Positional_Association: named association not used in array_aggregate
-t_style.adb:154:21: Error: Positional_Association: named association not used in array_aggregate
-t_style.adb:154:23: Error: Positional_Association: named association not used in array_aggregate
-t_style.adb:155:21: Error: Exposed: integer literal 2 not in allowed construct
-t_style.adb:155:27: Error: Exposed: integer literal 3 not in allowed construct
-t_style.adb:155:33: Error: Exposed: integer literal 4 not in allowed construct
-t_style.adb:155:39: Error: Exposed: integer literal 5 not in allowed construct
-t_style.adb:156:23: Error: Positional_Association: named association not used in call
-t_style.adb:162:7: Error: No_Closing_Name: name not repeated at the end
-t_style.adb:162:20: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:169:7: Found: No_Closing_Name: name not repeated at the end
-t_style.adb:173:7: Found: No_Closing_Name: name not repeated at the end
-t_style.adb:178:7: Found: No_Closing_Name: name not repeated at the end
-t_style.adb:205:64: Error: STYLE: Possible false negative: renaming of attribute
-t_style.adb:206:75: Error: STYLE: Possible false negative: renaming of predefined operation
-t_style.adb:209:10: Error: Renamed_Entity: I has been renamed at t_style.adb:204:10
-t_style.adb:210:10: Error: Renamed_Entity: Pack has been renamed at t_style.adb:203:10
-t_style.adb:210:20: Error: Renamed_Entity: F has been renamed at t_style.adb:202:10
-t_style.adb:226:31: Error: Literals: number representation does not follow convention
-t_style.adb:228:31: Error: Literals: number representation does not follow convention
-t_style.adb:232:31: Error: Literals: number representation does not follow convention
-t_style.adb:238:31: Error: Literals: number representation does not follow convention
-t_style.adb:242:31: Error: Literals: number representation does not follow convention
-t_style.adb:250:32: Error: Not_Base_7: based representation not allowed
-t_style.adb:251:31: Error: Not_Base_13: based representation not allowed
-t_style.adb:258:31: Error: Base_16_Literals: number representation does not follow convention
-t_style.adb:260:32: Error: Not_Base_7: based representation not allowed
-t_style.adb:263:31: Error: Base_16_Literals: number representation does not follow convention
-t_style.adb:290:12: Error: Exposed: integer literal 2 not in allowed construct
-t_style.adb:292:12: Error: Exposed: real literal 2.0 not in allowed construct
-t_style.adb:295:15: Error: Exposed: string literal "12345" not in allowed construct
-t_style.adb:296:17: Error: Exposed: string literal "12345" not in allowed construct
-t_style.adb:297:15: Error: Exposed: character literal 'A' not in allowed construct
-t_style.adb:301:26: Error: Spans: declaration does not start line
-t_style.adb:303:12: Error: Spans: declaration does not start line
-t_style.adb:305:21: Error: Spans: clause does not start line
-t_style.adb:321:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:327:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:333:20: Error: Spans: statement does not start line
-t_style.adb:334:26: Error: Spans: statement does not start line
-t_style.adb:336:22: Error: Spans: statement does not start line
-t_style.adb:337:22: Error: Spans: statement does not start line
+t_style-no_default_in.adb:3:22: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:15:38: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:14:7: Found: No_Default_In: default IN mode used for formal object declaration
+t_style-no_default_in.adb:26:7: Found: No_Default_In: default IN mode used for formal object declaration
+t_style-no_default_in.adb:27:25: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:30:25: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:33:22: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:37:25: Found: No_Default_In: default IN mode used for parameter specification
+t_style-casing.adb:4:4: Found: Casing: Wrong casing of "Page", should be "PAGE"
+t_style-casing.adb:8:14: Found: Casing: Wrong casing of "i", should be "I"
+t_style-casing.adb:12:34: Found: Casing: Wrong casing of "image", should be "Image"
+t_style-casing.adb:12:41: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:13:4: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:13:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+t_style-casing.adb:13:16: Found: Casing: Wrong casing of "INt", should be "Int"
+t_style-casing.adb:14:8: Found: Casing: Wrong casing of "Text_Io", should be "Text_IO"
+t_style-casing.adb:14:41: Found: Casing: Wrong casing of "InT", should be "Int"
+t_style-positional_association.adb:69:34: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:69:37: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:74:33: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:74:36: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:79:38: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:79:41: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
+t_style-positional_association.adb:87:7: Error: Compound: Statement has less than 3 lines
+t_style-positional_association.adb:96:11: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:96:14: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:98:16: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
+t_style-positional_association.adb:98:19: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
+t_style-positional_association.adb:98:22: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
+t_style-positional_association.adb:102:12: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:102:15: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:102:18: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:102:21: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:102:24: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
+t_style-positional_association.adb:103:20: Error: Exposed: integer literal 2 not in allowed construct
+t_style-positional_association.adb:103:28: Error: Exposed: integer literal 3 not in allowed construct
+t_style-positional_association.adb:103:36: Error: Exposed: integer literal 4 not in allowed construct
+t_style-positional_association.adb:103:44: Error: Exposed: integer literal 5 not in allowed construct
+t_style-positional_association.adb:106:21: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:106:24: Error: Positional_Association: positional association used in call with more than 1 element(s)
+t_style-positional_association.adb:106:24: Error: Exposed: integer literal 2 not in allowed construct
+t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:10:4: Found: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:14:4: Found: No_Closing_Name: name not repeated at the end
+t_style-no_closing_name.adb:19:4: Found: No_Closing_Name: name not repeated at the end
+t_style-renamed_entity.adb:23:7: Error: Renamed_Entity: I has been renamed at t_style-renamed_entity.adb:20:7
+t_style-renamed_entity.adb:24:7: Error: Renamed_Entity: Pack has been renamed at t_style-renamed_entity.adb:19:7
+t_style-renamed_entity.adb:24:17: Error: Renamed_Entity: F has been renamed at t_style-renamed_entity.adb:18:7
+t_style-literals.adb:6:31: Error: Literals: number representation does not follow convention
+t_style-literals.adb:8:31: Error: Literals: number representation does not follow convention
+t_style-literals.adb:12:31: Error: Literals: number representation does not follow convention
+t_style-literals.adb:18:31: Error: Literals: number representation does not follow convention
+t_style-literals.adb:22:31: Error: Literals: number representation does not follow convention
+t_style-literals.adb:30:32: Error: Not_Base_7: based representation not allowed
+t_style-literals.adb:31:31: Error: Not_Base_13: based representation not allowed
+t_style-literals.adb:38:31: Error: Base_16_Literals: number representation does not follow convention
+t_style-literals.adb:40:32: Error: Not_Base_7: based representation not allowed
+t_style-literals.adb:43:31: Error: Base_16_Literals: number representation does not follow convention
+t_style-exposed_literal.adb:27:9: Error: Exposed: integer literal 2 not in allowed construct
+t_style-exposed_literal.adb:29:9: Error: Exposed: real literal 2.0 not in allowed construct
+t_style-exposed_literal.adb:32:12: Error: Exposed: string literal "12345" not in allowed construct
+t_style-exposed_literal.adb:33:14: Error: Exposed: string literal "12345" not in allowed construct
+t_style-exposed_literal.adb:34:12: Error: Exposed: character literal 'A' not in allowed construct
+t_style-multiple_elements.adb:4:26: Error: Spans: declaration does not start line
+t_style-multiple_elements.adb:6:12: Error: Spans: declaration does not start line
+t_style-multiple_elements.adb:8:21: Error: Spans: clause does not start line
+t_style-multiple_elements.adb:14:20: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:15:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:15:26: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:17:22: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:18:22: Error: Spans: statement does not start line
+t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
+t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
+x_style2.ads:1:15: Error: Spans: declaration does not start line
 
 Counts summary:
-STYLE: 7
+STYLE: 4

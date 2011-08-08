@@ -1,2 +1,1 @@
 check unsafe_unchecked_conversion;
-check uncheckable;

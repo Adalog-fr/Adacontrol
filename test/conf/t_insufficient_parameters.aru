@@ -1,0 +1,3 @@
+check insufficient_parameters (2, standard.boolean, t_insufficient_parameters.enum1);
+search insufficient_parameters (1, standard.boolean);
+count insufficient_parameters (1);

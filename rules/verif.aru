@@ -1,14 +1,19 @@
+-- This is an example of rules that are most generally used
+
 -- Required:
 check unnecessary_use_clause;
 check style (no_closing_name);
-check style (casing, original);
+check style (casing_identifier, original);
 check style (negative_condition);
+check style (multiple_elements);
+check style (compound_statement);
 check max_nesting (6);
 check parameter_aliasing (certain);
 check simplifiable_expressions (range, logical);
+check statements (unnecessary_null);
 check if_for_case;
 
 -- Acceptable, but should be looked at:
+search parameter_aliasing (possible);
 search max_nesting (4);
 search local_hiding;
-search parameter_aliasing (possible);

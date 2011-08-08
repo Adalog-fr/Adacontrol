@@ -2,5 +2,3 @@ t_unsafe_unchecked_conversion.adb:5:48: Error: UNSAFE_UNCHECKED_CONVERSION: no s
 t_unsafe_unchecked_conversion.adb:5:52: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Target
 t_unsafe_unchecked_conversion.adb:9:52: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Target
 t_unsafe_unchecked_conversion.adb:24:48: Error: UNSAFE_UNCHECKED_CONVERSION: Source size (8) /= Target size (32)
-t_unsafe_unchecked_conversion.adb:27:20: Error: UNSAFE_UNCHECKED_CONVERSION: Possible false positive: unable to evaluate size clause value
-t_unsafe_unchecked_conversion.adb:28:48: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Source

@@ -1,6 +1,4 @@
-with X_Uncheckable;
 procedure T_Max_Call_Depth is
-   use X_Uncheckable;
 
    -- Simple cases
    procedure P1 is
@@ -126,8 +124,4 @@ begin
    I := F6(1);            -- OK (attribute)
    E := Enum1;            -- OK
    E := Z;                -- OK (enumeration literal)
-
-   Dyn_Ren_Proc;              -- Uncheckable
-   Dyn_Proc.all;              -- Uncheckable
-   Dispatch (Dyn_Tagged);     -- Uncheckable
 end T_Max_Call_Depth;

@@ -119,7 +119,7 @@ package body Rules.Reduceable_Scope is
       Restriction : Restriction_Flags;
    begin
       if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
+         Parameter_Error (Rule_Id, "this rule can be specified only once");
       end if;
 
       if  Parameter_Exists then

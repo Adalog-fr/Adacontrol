@@ -94,16 +94,16 @@ package body Rules.Local_Hiding is
       use Framework.Language;
 
    begin
-      if  Parameter_Exists then
-         Parameter_Error ("No parameter for rule " & Rule_Id);
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "this rule can be specified only once");
       end if;
 
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
-      else
-         Rule_Context := Basic.New_Context (Rule_Use_Type, Label);
-         Rule_Used    := True;
+      if  Parameter_Exists then
+         Parameter_Error (Rule_Id, "No parameter allowed");
       end if;
+
+      Rule_Context := Basic.New_Context (Rule_Use_Type, Label);
+      Rule_Used    := True;
    end Add_Use;
 
    -------------

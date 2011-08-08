@@ -230,12 +230,12 @@ package body Rules.Potentially_Blocking_Operations is
       use Framework.Language;
 
    begin
-      if Parameter_Exists then
-         Parameter_Error ("No parameter for rule " & Rule_Id);
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "this rule can be specified only once");
       end if;
 
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
+      if Parameter_Exists then
+         Parameter_Error (Rule_Id, "no parameter allowed");
       end if;
 
       Rule_Used  := True;
@@ -538,21 +538,21 @@ package body Rules.Potentially_Blocking_Operations is
       end if;
 
       declare
-         Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-                                                                              (Full_Name_Image
-                                                                                 (Names (Decl)(1),
-                                                                                  With_Profile => True)));
+         Decl_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
+                                                                                 (Full_Name_Image
+                                                                                  (Names (Decl)(1),
+                                                                                   With_Profile => True)));
          Control   : Asis.Traverse_Control;
          Body_Info : Info;
          Decl_Body : Asis.Declaration;
       begin
-         if Is_Present (SP_Property, Name) then
+         if Is_Present (SP_Property, Decl_Name) then
             -- If it is present, but PTO_Def is not nil, it is a protected SP that we already
             -- traversed because it was called by some previously analyzed protected operation.
             -- We must traverse it again to get the messages.
             if Is_Nil (PTO_Def) then
-               Is_Blocking    := Fetch (SP_Property, Name).Is_Blocking;
-               Referenced_PTO := Fetch (SP_Property, Name).Referenced_PTO;
+               Is_Blocking    := Fetch (SP_Property, Decl_Name).Is_Blocking;
+               Referenced_PTO := Fetch (SP_Property, Decl_Name).Referenced_PTO;
                return;
             end if;
          elsif Unit_Origin (Enclosing_Compilation_Unit (Decl)) /= An_Application_Unit then
@@ -565,7 +565,7 @@ package body Rules.Potentially_Blocking_Operations is
          -- Add the entry now, to block recursion of analysis if the subprogram is recursive
          -- It is OK to mark as non potentially blocking for the moment, it will be changed
          -- later if we find something potentially blocking
-         Add (SP_Property, Name, (Is_Blocking => False, Referenced_PTO => Empty_Queue));
+         Add (SP_Property, Decl_Name, (Is_Blocking => False, Referenced_PTO => Empty_Queue));
 
          if Is_Part_Of_Instance (Names (Decl)(1)) then
             -- Analyze the corresponding generic instead
@@ -579,7 +579,7 @@ package body Rules.Potentially_Blocking_Operations is
                    Referenced_PTO   => Referenced_PTO);
 
             -- Note the instance too
-            Add (SP_Property, Name, (Is_Blocking => Is_Blocking, Referenced_PTO => Referenced_PTO));
+            Add (SP_Property, Decl_Name, (Is_Blocking => Is_Blocking, Referenced_PTO => Referenced_PTO));
 
             return;
          end if;
@@ -599,7 +599,9 @@ package body Rules.Potentially_Blocking_Operations is
                        Is_Blocking      => False); -- Assume not blocking until proven wrong
          Traverse (Decl_Body, Control, Body_Info);
 
-         Add (SP_Property, Name, (Is_Blocking => Body_Info.Is_Blocking, Referenced_PTO => Body_Info.Referenced_PTO));
+         Add (SP_Property,
+              Decl_Name,
+              (Is_Blocking => Body_Info.Is_Blocking, Referenced_PTO => Body_Info.Referenced_PTO));
          Is_Blocking    := Body_Info.Is_Blocking;
          Referenced_PTO := Body_Info.Referenced_PTO;
       end;

@@ -89,16 +89,16 @@ package body Rules.Max_Statement_Nesting is
       Stmt : Statement_Names;
     begin
       if not Parameter_Exists then
-         Parameter_Error ("Two parameters required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
       Stmt := Get_Flag_Parameter (Allow_Any => False);
       if Rule_Used (Stmt) (Rule_Type) then
-         Parameter_Error (Rule_Id & ": rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+         Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
       end if;
 
       if not Parameter_Exists then
-         Parameter_Error ("Two parameters required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "Two parameters required");
       end if;
 
       Values    (Stmt, Rule_Type) := Get_Integer_Parameter (Min => 1);
@@ -153,13 +153,13 @@ package body Rules.Max_Statement_Nesting is
                     To_Wide_String (Labels (Stmt, Check)),
                     Check,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt, Check)));
+                    Image (Stmt) & " statements nesting deeper than" & Integer'Wide_Image(Values (Stmt, Check)));
          elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Values (Stmt, Search) then
             Report (Rule_Id,
                     To_Wide_String (Labels (Stmt, Search)),
                     Search,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt, Search)));
+                    Image (Stmt) & " statements nesting deeper than" & Integer'Wide_Image(Values (Stmt, Search)));
          end if;
 
          if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Values (Stmt, Count) then
@@ -167,7 +167,7 @@ package body Rules.Max_Statement_Nesting is
                     To_Wide_String (Labels (Stmt, Count)),
                     Count,
                     Get_Location (Statement),
-                    Image (Stmt) & " statements nesting deeper than" & Integer'WIDE_IMAGE(Values (Stmt, Count)));
+                    Image (Stmt) & " statements nesting deeper than" & Integer'Wide_Image(Values (Stmt, Count)));
          end if;
 
       end Do_Report;

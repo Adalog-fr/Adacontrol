@@ -1,0 +1,16 @@
+t_uncheckable-case_statement.adb:15:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:19:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:24:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
+t_uncheckable-directly_accessed_globals.adb:15:15: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false negative: Name is dynamic renaming
+t_uncheckable-directly_accessed_globals.adb:12:7: Error: DIRECTLY_ACCESSED_GLOBALS: variable "T_Uncheckable.Directly_Accessed_Globals.Pack.J" is not read from any subprogram
+t_uncheckable-exception_propagation.adb:13:16: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Prefix of attribute is not statically determinable
+t_uncheckable-exception_propagation.adb:14:16: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Prefix of attribute is not statically determinable
+t_uncheckable-exception_propagation.adb:15:4: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Dispatching call
+t_uncheckable-max_call_depth.adb:4:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_uncheckable-max_call_depth.adb:5:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_uncheckable-max_call_depth.adb:6:4: Error: Uncheckable: in rule MAX_CALL_DEPTH: Possible false negative: Dispatching call, call to predefined or dynamic entity; assuming depth of 1
+t_uncheckable-style.adb:3:58: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of attribute
+t_uncheckable-style.adb:4:69: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of predefined operation
+t_uncheckable-unsafe_unchecked_conversion.adb:10:20: Error: Uncheckable: in rule UNSAFE_UNCHECKED_CONVERSION: Possible false positive: unable to evaluate size clause value
+t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Target
+Error: UNCHECKABLE: missing body for X_UNCHECKABLE_PROC

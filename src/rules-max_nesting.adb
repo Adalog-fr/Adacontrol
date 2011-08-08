@@ -84,45 +84,41 @@ package body Rules.Max_Nesting is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
-      Max_Nesting : Integer;
+      Max : Integer;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id &
-                          ": max nesting value expected");
+         Parameter_Error (Rule_Id, "max nesting value expected");
       end if;
 
-      Max_Nesting := Get_Integer_Parameter (Min => 0);
+      Max := Get_Integer_Parameter (Min => 0);
 
       case Rule_Use_Type is
          when Check =>
             if Check_Depth /= Scope_Range'Last then
-               Parameter_Error (Rule_Id &
-                                  ": this rule can be specified only once for each of check, search and count");
+               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
             end if;
-            Check_Depth      := Scope_Range (Max_Nesting) + 1;
+            Check_Depth      := Scope_Range (Max) + 1;
             Rule_Check_Label := To_Unbounded_Wide_String (Label);
          when Search =>
             if Search_Depth /= Scope_Range'Last then
-               Parameter_Error (Rule_Id &
-                                ": this rule can be specified only once for each of check, search and count");
+               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
             end if;
-            Search_Depth      := Scope_Range (Max_Nesting) + 1;
+            Search_Depth      := Scope_Range (Max) + 1;
             Rule_Search_Label := To_Unbounded_Wide_String (Label);
          when Count =>
             if Count_Depth /= Scope_Range'Last then
-               Parameter_Error (Rule_Id &
-                                ": this rule can be specified only once for each of check, search and count");
+               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
             end if;
-            Count_Depth       := Scope_Range (Max_Nesting) + 1;
+            Count_Depth       := Scope_Range (Max) + 1;
             Rule_Count_Label := To_Unbounded_Wide_String (Label);
      end case;
 
      Rule_Used  := True;
    exception
       when Constraint_Error =>
-         Parameter_Error (Rule_Id &
-                            ": specified nesting greater than allowed maximum of" &
-                            Scope_Range'Wide_Image (Scope_Range'Last-1));
+         Parameter_Error (Rule_Id,
+                          "specified nesting greater than allowed maximum of"
+                          & Scope_Range'Wide_Image (Scope_Range'Last - 1));
    end Add_Use;
 
    -------------

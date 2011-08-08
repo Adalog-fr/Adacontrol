@@ -37,6 +37,7 @@ with
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities;
 
 -- Adactl
@@ -52,6 +53,13 @@ pragma Elaborate_All (Asis.Iterator);
 package body Rules.Entity_Inside_Exception is
    use Framework;
 
+   Key_Calls : constant Entity_Specification := Framework.Value ("CALLS");
+
+   type Entity_Context is new Framework.Basic_Rule_Context with
+      record
+         Is_Not : Boolean;
+      end record;
+
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
@@ -65,7 +73,7 @@ package body Rules.Entity_Inside_Exception is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <Entity name>");
+      User_Message ("Parameter(s): [not] calls | <Entity name>");
       User_Message ("Control occurrences of an entity inside an exception handler.");
    end Help;
 
@@ -76,20 +84,21 @@ package body Rules.Entity_Inside_Exception is
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
       use Framework.Language;
-
+      Is_Not : Boolean;
    begin
       if  not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       while Parameter_Exists loop
+         Is_Not := Get_Modifier ("NOT");
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Entities, Entity, Basic.New_Context (Rule_Type, Label));
+            Associate (Entities, Entity, Entity_Context'(Basic.New_Context (Rule_Type, Label) with Is_Not));
          exception
             when Already_In_Store =>
-               Parameter_Error (Image (Entity) & " is already used in rule " & Rule_Id);
+               Parameter_Error (Rule_Id, Image (Entity) & " already used");
          end;
       end loop;
 
@@ -129,15 +138,31 @@ package body Rules.Entity_Inside_Exception is
    ------------------------
 
    procedure Process_Identifier (Identifier : in Asis.Identifier) is
-      use Framework.Reports, Utilities;
+      use Framework.Reports;
+      use Thick_Queries, Utilities;
 
       Use_Context : constant Root_Context'Class := Matching_Context (Entities, Identifier);
    begin
       if Use_Context /= No_Matching_Context then
-         Report (Rule_Id,
-                 Use_Context,
-                 Get_Location (Identifier),
-                 "use of """ & To_Title (Last_Matching_Name (Entities)) & '"');
+         if not Entity_Context (Use_Context).Is_Not then
+            Report (Rule_Id,
+                    Use_Context,
+                    Get_Location (Identifier),
+                    "use of """ & To_Title (Last_Matching_Name (Entities)) & '"');
+         end if;
+      elsif Is_Callable_Construct (Identifier) then
+         declare
+            Calls_Context : constant Root_Context'Class := Association (Entities, Key_Calls);
+         begin
+            if Calls_Context /= No_Matching_Context then
+               if not Entity_Context (Calls_Context).Is_Not then
+                  Report (Rule_Id,
+                          Calls_Context,
+                          Get_Location (Identifier),
+                          "call to " & Full_Name_Image (Identifier));
+               end if;
+            end if;
+         end;
       end if;
    end Process_Identifier;
 

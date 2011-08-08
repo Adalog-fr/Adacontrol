@@ -1,2 +1,4 @@
 check  expressions (slice);
 search expressions (real_equality);
+Logical: check expressions (and, or, xor, and_then, or_else);
+Others : check expressions (array_others, record_others);

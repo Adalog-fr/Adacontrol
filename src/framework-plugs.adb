@@ -38,6 +38,7 @@ with
   Rules.Abnormal_Function_Return,
   Rules.Allocators,
   Rules.Array_Declarations,
+  Rules.Barrier_Expressions,
   Rules.Max_Call_Depth,
   Rules.Case_Statement,
   Rules.Control_Characters,
@@ -53,6 +54,7 @@ with
   Rules.If_For_Case,
   Rules.No_Safe_Initialization,
   Rules.Instantiations,
+  Rules.Insufficient_Parameters,
   Rules.Local_Hiding,
   Rules.Local_Instantiation,
   Rules.Max_Blank_Lines,
@@ -66,7 +68,6 @@ with
   Rules.Not_Elaboration_Calls,
   Rules.Other_Dependencies,
   Rules.Parameter_Aliasing,
-  Rules.Positional_Parameters,
   Rules.Potentially_Blocking_Operations,
   Rules.Pragmas,
   Rules.Reduceable_Scope,
@@ -79,14 +80,12 @@ with
   Rules.Statements,
   Rules.Style,
   Rules.Terminating_Tasks,
-  Rules.Uncheckable,
   Rules.Unnecessary_Use,
   Rules.Unsafe_Paired_Calls,
   Rules.Unsafe_Unchecked_Conversion,
   Rules.Usage,
   Rules.Use_Clauses,
   Rules.With_Clauses;
-pragma Unreferenced (Rules.Uncheckable);
 package body Framework.Plugs is
 
    ----------------
@@ -160,8 +159,8 @@ package body Framework.Plugs is
       Rules.Directly_Accessed_Globals. Process_Identifier (Element);
       Rules.Entities.                  Process_Identifier (Element);
       Rules.Reduceable_Scope.          Process_Identifier (Element);
-      Rules.Style.                     Process_Identifier (Element);
       Rules.Unnecessary_Use.           Process_Identifier (Element);
+      Rules.Style.                     Process_Identifier (Element);
       Rules.Usage.                     Process_Identifier (Element);
       Rules.With_Clauses.              Process_Identifier (Element);
    end True_Identifier;
@@ -243,10 +242,11 @@ package body Framework.Plugs is
                   Rules.Style.                  Process_Declaration    (Element);
 
                when An_Entry_Body_Declaration =>
-                  Rules.Global_References.      Process_Body        (Element);
-                  Rules.No_Safe_Initialization. Process_Structure   (Element);
-                  Rules.Style.                  Process_Construct   (Element);
-                  Rules.Style.                  Process_Declaration (Element);
+                  Rules.Barrier_Expressions.    Process_Entry_Declaration (Element);
+                  Rules.Global_References.      Process_Body              (Element);
+                  Rules.No_Safe_Initialization. Process_Structure         (Element);
+                  Rules.Style.                  Process_Construct         (Element);
+                  Rules.Style.                  Process_Declaration       (Element);
 
                when A_Package_Declaration
                  | A_Task_Type_Declaration
@@ -405,36 +405,49 @@ package body Framework.Plugs is
                when A_Procedure_Call_Statement
                  | An_Entry_Call_Statement
                     =>
-                  Rules.Max_Call_Depth.         Process_Call                  (Element);
-                  Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
-                  Rules.Exception_Propagation.  Process_Call                  (Element);
-                  Rules.Positional_Parameters.  Process_Call                  (Element);
-                  Rules.Not_Elaboration_Calls.  Process_Call                  (Element);
-                  Rules.Parameter_Aliasing.     Process_Call                  (Element);
-                  Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
-                  Rules.Unsafe_Paired_Calls.    Process_Call                  (Element);
+                  Rules.Max_Call_Depth.          Process_Call                  (Element);
+                  Rules.Default_Parameter.       Process_Call_Or_Instantiation (Element);
+                  Rules.Exception_Propagation.   Process_Call                  (Element);
+                  Rules.Insufficient_Parameters. Process_Call                  (Element);
+                  Rules.Not_Elaboration_Calls.   Process_Call                  (Element);
+                  Rules.Parameter_Aliasing.      Process_Call                  (Element);
+                  Rules.Side_Effect_Parameters.  Process_Call_Or_Instantiation (Element);
+                  Rules.Unsafe_Paired_Calls.     Process_Call                  (Element);
 
                when An_If_Statement =>
-                  Rules.If_For_Case. Process_If_Statement (Element);
-                  Rules.Style.       Process_If_Statement (Element);
+                  Rules.If_For_Case. Process_If_Statement       (Element);
+                  Rules.Style.       Process_If_Statement       (Element);
+                  Rules.Style.       Process_Compound_Statement (Element);
 
                when A_Case_Statement =>
-                  Rules.Case_Statement. Process_Case_Statement (Element);
+                  Rules.Case_Statement. Process_Case_Statement     (Element);
+                  Rules.Style.          Process_Compound_Statement (Element);
 
                when An_Accept_Statement =>
-                  Rules.Declarations.             Process_Statement        (Element);
-                  Rules.Movable_Accept_Statements.Process_Accept_Statement (Element);
-                  Rules.No_Safe_Initialization.   Process_Structure        (Element);
+                  Rules.Declarations.             Process_Statement          (Element);
+                  Rules.Movable_Accept_Statements.Process_Accept_Statement   (Element);
+                  Rules.No_Safe_Initialization.   Process_Structure          (Element);
+                  Rules.Style.                    Process_Compound_Statement (Element);
 
                when A_Block_Statement =>
-                  Rules.Declarations.           Process_Statement (Element);
-                  Rules.No_Safe_Initialization. Process_Structure (Element);
+                  Rules.Declarations.           Process_Statement          (Element);
+                  Rules.No_Safe_Initialization. Process_Structure          (Element);
+                  Rules.Style.                  Process_Compound_Statement (Element);
 
                when A_Loop_Statement
                  | A_While_Loop_Statement
                  | A_For_Loop_Statement
                  =>
-                  Rules.Statements. Pre_Process_Loop (Element);
+                  Rules.Statements. Pre_Process_Loop           (Element);
+                  Rules.Style.      Process_Compound_Statement (Element);
+
+               when A_Selective_Accept_Statement
+                 | A_Timed_Entry_Call_Statement
+                 | A_Conditional_Entry_Call_Statement
+                 | An_Asynchronous_Select_Statement
+                 =>
+                  Rules.Style. Process_Compound_Statement (Element);
+
                when others =>
                   null;
             end case;
@@ -453,7 +466,8 @@ package body Framework.Plugs is
 
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
-                  Rules.Entities.Process_Identifier (Element);
+                  Rules.Entities. Process_Identifier (Element);
+                  Rules.Style.    Process_Attribute  (Element);
 
                when An_Allocation_From_Subtype
                  | An_Allocation_From_Qualified_Expression
@@ -463,9 +477,9 @@ package body Framework.Plugs is
                 when A_Function_Call =>
                   Rules.Default_Parameter.        Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.    Process_Call                  (Element);
+                  Rules.Insufficient_Parameters.  Process_Call                  (Element);
                   Rules.Max_Call_Depth.           Process_Call                  (Element);
                   Rules.Not_Elaboration_Calls.    Process_Call                  (Element);
-                  Rules.Positional_Parameters.    Process_Call                  (Element);
                   Rules.Side_Effect_Parameters.   Process_Call_Or_Instantiation (Element);
                   Rules.Simplifiable_Expressions. Process_Call                  (Element);
                   Rules.Statements.               Process_Function_Call         (Element);
@@ -489,6 +503,7 @@ package body Framework.Plugs is
 
          when A_Pragma =>
             Rules.Pragmas.Process_Pragma (Element);
+            Rules.Style.  Process_Pragma (Element);
 
          when others =>
             null;

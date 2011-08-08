@@ -90,8 +90,7 @@ package body Rules.Allocators is
       Rule_Used  := True;
    exception
       when Already_In_Store =>
-         Parameter_Error ("Type or keyword already given for rule " & Rule_Id
-                          & ": " & Image (Entity));
+         Parameter_Error (Rule_Id, "type or keyword already given: " & Image (Entity));
    end Add_Use;
 
    -------------

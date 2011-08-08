@@ -57,14 +57,15 @@ package body Rules.Statements is
                             Stmt_Conditional_Entry_Call, Stmt_Delay,                 Stmt_Delay_Until,
                             Stmt_Dispatching_Call,       Stmt_Entry_Return,          Stmt_Exception_Others,
                             Stmt_Exception_Others_Null,  Stmt_Exit,                  Stmt_Exit_For_Loop,
-                            Stmt_Exit_While_Loop,        Stmt_Function_Return,       Stmt_Goto,
-                            Stmt_Loop_Return,            Stmt_Multiple_Exits,        Stmt_No_Else,
+                            Stmt_Exit_While_Loop,        Stmt_For_Loop,              Stmt_Function_Return,
+                            Stmt_Goto,                   Stmt_Labelled,              Stmt_Loop_Return,
+                            Stmt_Multiple_Exits,         Stmt_No_Else,               Stmt_Null,
                             Stmt_Procedure_Return,       Stmt_Raise,                 Stmt_Raise_Standard,
                             Stmt_Requeue,                Stmt_Reraise,               Stmt_Selective_Accept,
-                            Stmt_Terminate,              Stmt_Timed_Entry_Call,      Stmt_Unconditional_Exit,
-                            Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,          Stmt_Unnamed_Loop_Exited,
-                            Stmt_Unnamed_Multiple_Loop,  Stmt_Untyped_For,           Stmt_While_Loop,
-                            Stmt_While_True);
+                            Stmt_Simple_Loop,            Stmt_Terminate,             Stmt_Timed_Entry_Call,
+                            Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,         Stmt_Unnamed_Exit,
+                            Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_Multiple_Loop, Stmt_Unnecessary_Null,
+                            Stmt_Untyped_For,            Stmt_While_Loop,            Stmt_While_True);
 
    package Statement_Flags_Utilities is new Framework.Language.Flag_Utilities (Statement_Names, "STMT_");
    use Statement_Flags_Utilities;
@@ -103,14 +104,13 @@ package body Rules.Statements is
 
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       while Parameter_Exists loop
          Stmt := Get_Flag_Parameter (Allow_Any => False);
          if Rule_Used (Stmt) then
-            Parameter_Error ("Statement already given for rule " & Rule_Id
-                             & ": " & Image (Stmt));
+            Parameter_Error (Rule_Id, "statement already given: " & Image (Stmt));
          end if;
 
          Rule_Used (Stmt) := True;
@@ -137,7 +137,27 @@ package body Rules.Statements is
    end Command;
 
 
-  -----------------------
+   -------------------------
+   -- Are_Null_Statements --
+   -------------------------
+
+   function Are_Null_Statements (Stats : Asis.Statement_List; Except_Labelled : Boolean := False) return Boolean is
+      use Asis, Asis.Elements, Asis.Statements;
+   begin
+      for I in Stats'Range loop
+         if Statement_Kind (Stats (I)) = A_Null_Statement then
+            if Except_Labelled and then not Is_Nil (Label_Names (Stats (I)))then
+               return False;
+            end if;
+         else
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Are_Null_Statements;
+
+
+   -----------------------
    -- Process_Statement --
    -----------------------
 
@@ -168,6 +188,10 @@ package body Rules.Statements is
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      if not Is_Nil (Label_Names (Element)) then
+         Do_Report (Stmt_Labelled);
+      end if;
 
       case Statement_Kind (Element) is
          when An_Abort_Statement =>
@@ -208,6 +232,7 @@ package body Rules.Statements is
                Do_Report (Stmt_Exit);
             end if;
          when A_For_Loop_Statement =>
+            Do_Report (Stmt_For_Loop);
             if Discrete_Range_Kind (Specification_Subtype_Definition
                                     (For_Loop_Parameter_Specification
                                      (Element))) = A_Discrete_Simple_Expression_Range
@@ -224,6 +249,31 @@ package body Rules.Statements is
                   Do_Report (Stmt_No_Else);
                end if;
             end;
+         when A_Loop_Statement =>
+            Do_Report (Stmt_Simple_Loop);
+         when A_Null_Statement =>
+            if Rule_Used (Stmt_Unnecessary_Null) then
+               -- If the enclosing statements contain only null statements without labels,
+               -- the last one is Stmt_Null, others are Stmt_Unnecessary_Null
+               -- A null statement with label(s) is never deemed unnecessary
+               if Is_Nil (Label_Names (Element)) then
+                  declare
+                     Stats : constant Asis.Statement_List := Thick_Queries.Statements (Enclosing_Element (Element));
+                  begin
+                     if Is_Equal (Element, Stats (Stats'Last))
+                       and then Are_Null_Statements (Stats, Except_Labelled => True)
+                     then
+                        Do_Report (Stmt_Null);
+                     else
+                        Do_Report (Stmt_Unnecessary_Null);
+                     end if;
+                  end;
+               else
+                  Do_Report (Stmt_Null);
+               end if;
+            else
+               Do_Report (Stmt_Null);
+            end if;
          when A_Procedure_Call_Statement =>
             if Is_Dispatching_Call (Element) then
                Do_Report (Stmt_Dispatching_Call);
@@ -302,16 +352,6 @@ package body Rules.Statements is
       use Framework.Reports;
       Encl : Asis.Element;
 
-      function Are_Null_Statements (Statements :  Statement_List) return Boolean is
-      begin
-         for I in Statements'Range loop
-            if Statement_Kind (Statements (I)) /= A_Null_Statement then
-               return False;
-            end if;
-         end loop;
-         return True;
-      end Are_Null_Statements;
-
    begin
       if not Rule_Used (Stmt_Case_Others)
         and not Rule_Used (Stmt_Case_Others_Null)
@@ -329,12 +369,12 @@ package body Rules.Statements is
             Report (Rule_Id,
                     Usage (Stmt_Exception_Others_Null),
                     Get_Location (Definition),
-                    "null ""when others"" in exception handler");
+                    "null ""when others"" exception handler");
          elsif Rule_Used (Stmt_Exception_Others) then
             Report (Rule_Id,
                     Usage (Stmt_Exception_Others),
                     Get_Location (Definition),
-                    "use of ""when others"" in exception handler");
+                    "use of ""when others"" exception handler");
          end if;
 
       elsif Path_Kind (Enclosing_Element (Definition)) = A_Case_Path then
@@ -496,15 +536,29 @@ package body Rules.Statements is
                   end if;
                end if;
             when A_Block_Statement =>
-               -- Traverse only the statements part
+               -- Traverse only the statements and exceptions parts
                declare
                   Block_Stmts : constant Asis.Statement_List := Block_Statements (Element);
                begin
                   for I in Block_Stmts'Range loop
                      Check (Block_Stmts (I), Control, State);
                   end loop;
-                  Control := Abandon_Children;
                end;
+
+               declare
+                  Block_Handlers : constant Asis.Exception_Handler_List := Block_Exception_Handlers (Element);
+               begin
+                  for H in Block_Handlers'Range loop
+                     declare
+                        Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Block_Handlers (H));
+                     begin
+                        for I in Handler_Stmts'Range loop
+                           Check (Handler_Stmts (I), Control, State);
+                        end loop;
+                     end;
+                  end loop;
+               end;
+               Control := Abandon_Children;
             when others =>
                -- including Not_A_Statement
                null;

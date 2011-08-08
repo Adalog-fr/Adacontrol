@@ -83,13 +83,14 @@ package body Rules.Control_Characters is
       use Framework.Language;
 
    begin
-      if Parameter_Exists then
-         Parameter_Error ("No parameter for rule " & Rule_Id);
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
-      if Rule_Used then
-         Parameter_Error ("Rule already specified");
+      if Parameter_Exists then
+         Parameter_Error (Rule_Id, "no parameter allowed");
       end if;
+
       Active_Label := To_Unbounded_Wide_String (Label);
       Active_Type  := Rule_Type;
       Rule_Used    := True;

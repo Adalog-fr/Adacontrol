@@ -103,7 +103,7 @@ package body Rules.Special_Comments is
 
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       while Parameter_Exists loop
@@ -115,7 +115,7 @@ package body Rules.Special_Comments is
                                     Next    => Usage);
          exception
             when Pattern_Error =>
-               Parameter_Error ("Incorrect pattern: " & Pattern);
+               Parameter_Error (Rule_Id, "Incorrect pattern: " & Pattern);
          end;
       end loop;
 

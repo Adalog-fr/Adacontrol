@@ -60,8 +60,9 @@ package Framework.Scope_Manager is
    function Active_Scopes   return Scope_List;
    function In_Private_Part (Scope : Scope_Range := Current_Depth) return Boolean;
    function In_Context_Clauses return Boolean;
-   function Is_Current_Scope_Global return Boolean;
-   -- Current scope is global if itself and all enclosing scopes are all
+   function Is_Current_Scope_Global   return Boolean;
+   function Is_Enclosing_Scope_Global return Boolean;
+   -- A scope is global if itself and all enclosing scopes are all
    -- packages or generic packages
 
    type Scoping_Procedure is access procedure (Scope : Asis.Element);

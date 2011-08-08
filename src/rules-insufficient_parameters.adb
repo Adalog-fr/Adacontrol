@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Positional_Parameters - Package body                      --
+--  Rules.Insufficient_Parameters - Package body                    --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -52,22 +52,14 @@ with
   Framework.Reports;
 pragma Elaborate (Framework.Language);
 
-package body Rules.Positional_Parameters is
+package body Rules.Insufficient_Parameters is
    use Framework;
 
-   -----------------------
-   type Keys is (K_Insufficient, K_Maximum);
-   package Keys_Flag_Utilities is new Framework.Language.Flag_Utilities (Keys, "K_");
+   Rule_Used : Rule_Types_Set := (others => False);
+   Save_Used : Rule_Types_Set;
 
-   type Usage_Set is array (Keys) of Rule_Types_Set;
-   -----------------------
-
-   Rule_Used : Usage_Set := (others => (others => False));
-   Save_Used : Usage_Set;
-
-   Rule_Counts : array (Keys, Rule_Types) of Natural;
-   Rule_Labels : array (Keys, Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   -----------------------
+   Rule_Counts : array (Rule_Types) of Natural;
+   Rule_Labels : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Insufficients_Context is new Root_Context with
       record
@@ -84,9 +76,8 @@ package body Rules.Positional_Parameters is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(1): insufficient | maximum");
-      User_Message ("Parameter(2): Allowed number of ""insufficient"" or ""maximum"" parameters");
-      User_Message ("Parameter(3..N): Enumeration type names whose values are insufficient");
+      User_Message ("Parameter(1): Allowed number of ""insufficient"" parameters");
+      User_Message ("Parameter(2..N): Enumeration type names whose values are insufficient");
       User_Message ("Control calls where absence of named notation can lead to confusion");
    end Help;
 
@@ -98,62 +89,35 @@ package body Rules.Positional_Parameters is
                       Rule_Type : in Rule_Types) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
-      use Keys_Flag_Utilities;
-
-      Key : Keys;
    begin
+      if Rule_Used (Rule_Type) then
+         Parameter_Error (Rule_Id, "rule can be specified only once for each of check, search and count");
+      end if;
+
       if not Parameter_Exists then
-         Parameter_Error ("Missing keyword ""insufficient"" or ""maximum"" for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "number of ""insufficient"" parameters required");
       end if;
-      Key := Get_Flag_Parameter (Allow_Any => False);
+      Rule_Counts (Rule_Type) := Get_Integer_Parameter (Min => 0);
 
-      if Rule_Used (Key) (Rule_Type) then
-         Parameter_Error ("Rule " & Rule_Id &
-                          " can be specified only once for each combination of check-keyword");
-      end if;
+      while Parameter_Exists loop
+         declare
+            Entity : constant Entity_Specification := Get_Entity_Parameter;
+            Value  : Rule_Types_Set := (others => False);
+         begin
+            Value (Rule_Type) := True;
+            Associate (Insufficient_Types,
+                       Entity,
+                       Insufficients_Context'(Insufficients => Value));
+         exception
+            when Already_In_Store =>
+               Value := Insufficients_Context (Association (Insufficient_Types, Entity)).Insufficients;
+               Value (Rule_Type) := True;
+               Update (Insufficient_Types, Insufficients_Context'(Insufficients => Value));
+         end;
+      end loop;
 
-
-      case Key is
-         when K_Maximum =>
-            if not Parameter_Exists then
-               Parameter_Error ("Number of ""maximum"" parameters required for rule " & Rule_Id);
-            end if;
-            Rule_Counts (Key, Rule_Type) := Get_Integer_Parameter (Min => 1);
-
-            if Parameter_Exists then
-               Parameter_Error ("Too many parameters for rule " & Rule_Id);
-            end if;
-
-         when K_Insufficient =>
-            if not Parameter_Exists then
-               Parameter_Error ("Number of ""insufficient"" parameters required for rule " & Rule_Id);
-            end if;
-            Rule_Counts (Key, Rule_Type) := Get_Integer_Parameter (Min => 0);
-
-            while Parameter_Exists loop
-               declare
-                  Entity : constant Entity_Specification := Get_Entity_Parameter;
-                  Value  : Rule_Types_Set := (others => False);
-               begin
-                  Value (Rule_Type) := True;
-                  Associate (Insufficient_Types,
-                             Entity,
-                             Insufficients_Context'(Insufficients => Value));
-               exception
-                  when Already_In_Store =>
-                     Value := Insufficients_Context (Association (Insufficient_Types, Entity)).Insufficients;
-                     Value (Rule_Type) := True;
-                     Update (Insufficient_Types, Insufficients_Context'(Insufficients => Value));
-               end;
-            end loop;
-      end case;
-
-
-
-      ------------------------
-      Rule_Labels (Key, Rule_Type)  := To_Unbounded_Wide_String (Label);
-      Rule_Used   (Key) (Rule_Type) := True;
-      ------------------------
+      Rule_Labels (Rule_Type) := To_Unbounded_Wide_String (Label);
+      Rule_Used   (Rule_Type) := True;
    end Add_Use;
 
    -------------
@@ -165,11 +129,11 @@ package body Rules.Positional_Parameters is
    begin
       case Action is
          when Clear =>
-            Rule_Used := (others => (others => False));
+            Rule_Used := (others => False);
             Clear (Insufficient_Types);
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := (others => (others => False));
+            Rule_Used := (others => False);
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -299,9 +263,9 @@ package body Rules.Positional_Parameters is
    procedure Process_Call (Element : in Asis.Element) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Reports, Thick_Queries, Utilities;
    begin
-      if Rule_Used = (Keys => (Rule_Types => False)) then
+      if Rule_Used = (Rule_Types => False) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -316,85 +280,49 @@ package body Rules.Positional_Parameters is
          Nb_Insufficients : array (Rule_Types) of Natural := (others => 0);
          Insufficiencies  : Rule_Types_Set;
       begin
+         for I in Parameters'Range loop
+            if Is_Nil (Formal_Parameter (Parameters (I))) then
+               -- Positional notation
+               Insufficiencies := Is_Insufficient (Actual_Parameter (Parameters (I)));
+               for T in Rule_Types loop
+                  if Insufficiencies (T) then
+                     Nb_Insufficients (T) := Nb_Insufficients (T) + 1;
+                  end if;
+               end loop;
+            else
+               -- Named notation, no more positional behind
+               exit;
+            end if;
+         end loop;
 
-         if Rule_Used (K_Maximum) (Check) then
-            if Parameters'Length > Rule_Counts (K_Maximum, Check)
-              and then Is_Nil (Formal_Parameter (Parameters (Rule_Counts (K_Maximum, Check) + 1)))
-            then
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Labels (K_Maximum, Check)),
-                       Check,
-                       Get_Location (Element),
-                       "too many parameters in positional notation");
-            end if;
-         elsif Rule_Used (K_Maximum) (Search) then
-            if Parameters'Length > Rule_Counts (K_Maximum, Search)
-              and then Is_Nil (Formal_Parameter (Parameters (Rule_Counts (K_Maximum, Search) + 1)))
-            then
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Labels (K_Maximum, Search)),
-                       Search,
-                       Get_Location (Element),
-                       "too many parameters in positional notation");
-            end if;
+         if Rule_Used (Check) and then Nb_Insufficients (Check) > Rule_Counts (Check) then
+            Report (Rule_Id,
+                    To_Wide_String (Rule_Labels (Check)),
+                    Check,
+                    Get_Location (Element),
+                    "call has "
+                    & Integer_Img (Nb_Insufficients (Check))
+                    & " ""insufficient"" parameters (maximum "
+                    & Integer_Img (Rule_Counts (Check))
+                    & ')');
+         elsif Rule_Used (Search) and then Nb_Insufficients (Search) > Rule_Counts (Search) then
+            Report (Rule_Id,
+                    To_Wide_String (Rule_Labels (Search)),
+                    Search,
+                    Get_Location (Element),
+                    "call has "
+                    & Integer_Img (Nb_Insufficients (Search))
+                    & " ""insufficient"" parameters (maximum "
+                    & Integer_Img (Rule_Counts (Search))
+                    & ')');
          end if;
 
-         if Rule_Used (K_Maximum) (Count) then
-            if Parameters'Length > Rule_Counts (K_Maximum, Count)
-              and then Is_Nil (Formal_Parameter (Parameters (Rule_Counts (K_Maximum, Count) + 1)))
-            then
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Labels (K_Maximum, Count)),
-                       Count,
-                       Get_Location (Element),
-                       "");
-            end if;
-         end if;
-
-         if Rule_Used (K_Insufficient) /= (Rule_Types => False) then
-            for I in Parameters'Range loop
-               if Is_Nil (Formal_Parameter (Parameters (I))) then
-                  -- Positional notation
-                  Insufficiencies := Is_Insufficient (Actual_Parameter (Parameters (I)));
-                  for T in Rule_Types loop
-                     if Insufficiencies (T) then
-                        Nb_Insufficients (T) := Nb_Insufficients (T) + 1;
-                     end if;
-                  end loop;
-               else
-                  -- Named notation, no more positional behind
-                  exit;
-               end if;
-            end loop;
-
-            if Rule_Used (K_Insufficient) (Check) and then
-              Nb_Insufficients (Check) > Rule_Counts (K_Insufficient, Check)
-            then
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Labels (K_Insufficient, Check)),
-                       Check,
-                       Get_Location (Element),
-                       "too many ""insufficient"" parameters in positional notation");
-            elsif Rule_Used (K_Insufficient) (Search) and then
-              Nb_Insufficients (Search) > Rule_Counts (K_Insufficient, Search)
-            then
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Labels (K_Insufficient, Search)),
-                       Search,
-                       Get_Location (Element),
-                       "too many ""insufficient"" parameters in positional notation");
-            end if;
-
-            if Rule_Used (K_Insufficient) (Count) and then
-              Nb_Insufficients (Count) > Rule_Counts (K_Insufficient, Count)
-            then
-               Report (Rule_Id,
-                       To_Wide_String (Rule_Labels (K_Insufficient, Count)),
-                       Count,
-                       Get_Location (Element),
-                       "");
-            end if;
-
+         if Rule_Used (Count) and then Nb_Insufficients (Count) > Rule_Counts (Count) then
+            Report (Rule_Id,
+                    To_Wide_String (Rule_Labels (Count)),
+                    Count,
+                    Get_Location (Element),
+                    "");
          end if;
       end;
 
@@ -406,4 +334,4 @@ begin
                                               Add_Use => Add_Use'Access,
                                               Command => Command'Access,
                                               Prepare => Prepare'Access);
-end Rules.Positional_Parameters;
+end Rules.Insufficient_Parameters;

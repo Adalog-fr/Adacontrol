@@ -39,7 +39,7 @@ package Framework.Reports is
    -- Reports rule match to current output
 
    procedure Report (Rule_Id    : in Wide_String;
-                     Context    : in Root_Context'class;
+                     Context    : in Root_Context'Class;
                      Loc        : in Location;
                      Msg        : in Wide_String;
                      Count_Only : in Boolean := False);
@@ -47,7 +47,6 @@ package Framework.Reports is
    -- Context must be either No_Matching_Context (and Report does nothing)
    --   or a descendant of Simple_Context.
 
-   type Uncheckable_Consequence is (False_Positive, False_Negative);
    procedure Uncheckable (Rule_Id : in Wide_String;
                           Risk    : in Uncheckable_Consequence;
                           Loc     : in Location;

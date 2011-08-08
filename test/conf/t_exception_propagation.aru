@@ -1,19 +1,17 @@
-Param10 : check exception_propagation (0, parameter, t_exception_propagation.test_parameter.make_cb_l0.cb);
-Param11 : check exception_propagation (1, parameter, t_exception_propagation.test_parameter.make_cb_l1.cb);
-Param12 : check exception_propagation (2, parameter, t_exception_propagation.test_parameter.make_cb_l2.cb);
-Param13 : check exception_propagation (3, parameter, t_exception_propagation.test_parameter.make_cb_l3.cb);
+Param10 : check exception_propagation (0, parameter, t_exception_propagation.x_declaration_parameter.make_cb_l0.cb);
+Param11 : check exception_propagation (1, parameter, t_exception_propagation.x_declaration_parameter.make_cb_l1.cb);
+Param12 : check exception_propagation (2, parameter, t_exception_propagation.x_declaration_parameter.make_cb_l2.cb);
+Param13 : check exception_propagation (3, parameter, t_exception_propagation.x_declaration_parameter.make_cb_l3.cb);
 
-Param2  : check exception_propagation (parameter, t_exception_propagation.test_parameter.inst2.cb);
-Param3  : check exception_propagation (parameter, t_exception_propagation.test_parameter.inst3.make_cb2.cb);
-Param4  : check exception_propagation (parameter, t_exception_propagation.test_parameter.Acc_Registration_Proc.cb);
+Param2  : check exception_propagation (parameter, t_exception_propagation.x_declaration_parameter.inst2.cb);
+Param3  : check exception_propagation (parameter, t_exception_propagation.x_declaration_parameter.inst3.make_cb2.cb);
+Param4  : check exception_propagation (parameter, t_exception_propagation.x_declaration_parameter.Acc_Registration_Proc.cb);
 
-Gen_Param : check exception_propagation (parameter, t_exception_propagation.test_parameter.gen4.gen_param);
+Gen_Param : check exception_propagation (parameter, t_exception_propagation.x_declaration_parameter.gen4.gen_param);
 
 interf : check exception_propagation (interface, C);
 
 task : check exception_propagation (task);
 
 declaration: check exception_propagation (3, declaration);
-
-check uncheckable;
 

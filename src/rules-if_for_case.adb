@@ -92,12 +92,12 @@ package body Rules.If_For_Case is
       use Framework.Language;
 
    begin
-      if  Parameter_Exists then
-         Parameter_Error ("No parameter for rule " & Rule_Id);
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "this rule can be specified only once");
       end if;
 
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
+      if  Parameter_Exists then
+         Parameter_Error (Rule_Id, "no parameter allowed");
       end if;
 
       Rule_Type  := Rule_Use_Type;

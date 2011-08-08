@@ -100,20 +100,20 @@ package body Rules.Directly_Accessed_Globals is
       use Framework.Language;
       F : Filters;
    begin
+      if Rule_Used then
+         Parameter_Error (Rule_Id, "this rule can be specified only once");
+      end if;
+
       if Parameter_Exists then
          while Parameter_Exists loop
             F := Get_Flag_Parameter (Allow_Any => False);
             if Flags (F) then
-               Parameter_Error (Image (F) & "already given for rule " & Rule_Id);
+               Parameter_Error (Rule_Id, Image (F) & " already given");
             end if;
             Flags (F) := True;
          end loop;
       else
          Flags := (others => True);
-      end if;
-
-      if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
       end if;
 
       Rule_Context := Basic.New_Context (Rule_Type, Label);

@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.6r4
+@settitle AdaControl Programmer Manual V1.6r8
 @c %**end of header
 
 @titlepage
@@ -431,11 +431,6 @@ the type @code{String}, but rather use @code{Wide_String} instead.
 @section Specification
 The specification of a rule package must contain the following
 elements:
-
-@subsection Header comment
-It is recommended to start the specification with a comment describing
-what the rule does. This can be roughly the same as the content of
-the help message.
 
 @subsection Rule_ID
 Rule_ID is a constant of type @code{Wide_String}. It is the unique
@@ -916,9 +911,11 @@ care of selected names (we got trapped by this one several times)?
 Therefore, it is extremely important that you check your rule against
 as much code as you can, the minimum being the code of AdaControl itself.
 
-Note that if your rule encountered some uncheckable cases, your test file
-should include those cases, and the corresponding rules file should include
-a ``check uncheckable;''.
+Note that if your rule encountered some uncheckable cases, you should
+add a child for your rule to the test @code{t_uncheckable}, and also
+modify the @code{t_uncheckable.aru} file accordingly. Look at how it
+is done currently, and do the same.
+
 @node Debugging aids, Integrating the test in the test suite, Testing, Testing and debugging a rule
 @section Debugging aids
 As mentionned above, it is often the case when writing a new rule, as

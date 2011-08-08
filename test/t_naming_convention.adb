@@ -224,18 +224,18 @@ package body T_naming_convention is
    procedure Sep is separate;
 
    -- Local/Global
-   procedure L_Proc is
+   procedure G_Proc is
    begin
       null;
-   end L_Proc;
+   end G_Proc;
 
    package body Inner is
-      procedure L_Proc is
+      procedure G_Proc is
          L_X3 : Standard.Integer;
          G_X3 : Standard.Integer;
       begin
          null;
-      end L_Proc;
+      end G_Proc;
    end Inner;
 
 begin
@@ -249,7 +249,7 @@ Block :
   L : for I in 1..10 loop
      null;
      end loop L;
-  L_Label : for C_I in 1..10 loop -- OK
+  G_Label : for C_I in 1..10 loop -- OK
      null;
-     end loop L_Label;
+     end loop G_Label;
 end T_naming_convention;

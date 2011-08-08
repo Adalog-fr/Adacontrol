@@ -22,12 +22,9 @@ t_case_statement.adb:51:7: Found: Max_Values: too many values for subtype of sel
 t_case_statement.adb:51:7: Error: Min_Paths: too few paths in case statement ( 2)
 t_case_statement.adb:53:10: Found: Min_Others_Span: too few values covered by "others" in case statement ( 6)
 t_case_statement.adb:71:10: Error: Min_Paths: too few paths in case statement ( 1)
-t_case_statement.adb:71:15: Error: CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_case_statement.adb:75:10: Error: Min_Paths: too few paths in case statement ( 2)
-t_case_statement.adb:75:15: Error: CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_case_statement.adb:76:18: Error: Range_Span: too many values in choice range ( 6)
 t_case_statement.adb:80:10: Error: Min_Paths: too few paths in case statement ( 2)
-t_case_statement.adb:80:15: Error: CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_case_statement.adb:81:18: Error: Range_Span: too many values in choice range ( 56)
 t_case_statement.adb:82:15: Error: Range_Span: too many values in choice range ( 199)
 t_case_statement.adb:100:7: Error: Min_Paths: too few paths in case statement ( 2)

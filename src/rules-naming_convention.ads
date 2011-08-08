@@ -35,10 +35,6 @@ with
 
 package Rules.Naming_Convention is
 
-   -- This rule can be used to check/search the form of allowed (or forbidden) names in declarations
-   -- Parameter(1): <keyword> (see details in type Keys in the body)
-   -- Parameter(2..N): [not] <name pattern>
-
    Rule_Id : constant Wide_String := "NAMING_CONVENTION";
 
    procedure Process_Defining_Name (Name : in Asis.Defining_Name);

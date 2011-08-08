@@ -310,7 +310,7 @@ package body Framework.Language is
                      Next_Token;
                      Close_Command;
 
-                     User_Message (Mess);
+                     Message_Command (Mess);
                   end;
 
                when Key_Quit =>
@@ -938,30 +938,92 @@ package body Framework.Language is
       return Default;
    end Get_Modifier;
 
-   -----------------------------
-   -- Get_Enumerated_Modifier --
-   -----------------------------
+   ------------------------
+   -- Modifier_Utilities --
+   ------------------------
 
-   function Get_Enumerated_Modifier
-     (Default : in Index       := Index'First;
-      Prefix  : in Wide_String := "")
-     return Index
-   is
-   begin
-      if Current_Token.Kind = Name then
-         for Idx in Index loop
-            if
-              To_Upper (Prefix & Current_Token.Text (1..Current_Token.Length)) =
-              To_Upper (Index'Wide_Image (Idx))
-            then
-               Next_Token;
-               return Idx;
-            end if;
+   package body Modifier_Utilities is
+      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean) is
+      begin
+         if Current_Token.Kind = Name then
+            declare
+               To_Compare : constant Wide_String := To_Upper (Prefix &
+                                                              Current_Token.Text (1 .. Current_Token.Length));
+            begin
+               for Idx in Modifiers loop
+                  if To_Compare = Modifiers'Wide_Image (Idx) then
+                     Next_Token;
+                     Modifier := Idx;
+                     Found    := True;
+                     return;
+                  end if;
+               end loop;
+            end;
+         end if;
+         Found := False;
+      end Get_Modifier;
+
+      function Get_Modifier (Default : in Modifiers := Modifiers'First) return Modifiers is
+         Present : Boolean;
+         Result  : Modifiers;
+      begin
+         if not In_Parameters then
+            Failure ("Get_Modifier called when not in parameters");
+         end if;
+
+         Get_Modifier (Result, Present);
+         if Present then
+            return Result;
+         else
+            return Default;
+         end if;
+      end Get_Modifier;
+
+      function Get_Modifier_Set return Modifier_Set is
+         Result   : Modifier_Set := Empty_Set;
+         Modifier : Modifiers;
+         Present  : Boolean;
+      begin
+         if not In_Parameters then
+            Failure ("Get_Modifier_Set called when not in parameters");
+         end if;
+
+         loop
+            Get_Modifier (Modifier, Present);
+            exit when not Present;
+            Result (Modifier) := True;
          end loop;
-      end if;
-      return Default;
-   end Get_Enumerated_Modifier;
 
+         return Result;
+      end Get_Modifier_Set;
+
+      function Image (Item : Modifiers) return Wide_String is
+         Img : constant Wide_String := To_Lower (Modifiers'Wide_Image (Item));
+      begin
+            -- Remove prefix
+            return Img (Prefix'Length+1 .. Img'Last);
+      end Image;
+
+      function Image (Set     : Unconstrained_Modifier_Set;
+                      Default : Unconstrained_Modifier_Set := Empty_Set) return Wide_String
+      is
+      begin
+         if Set = (Set'Range => False) or else Set = Default then
+            return "";
+         elsif Set'First = Set'Last then
+            -- only one element
+            return Image (Set'First) & ' ';
+         else
+            for M in Modifiers range Set'First .. Modifiers'Pred (Set'Last) loop
+               if Set (M) then
+                  return Image (M) & ' ' & Image (Set (Modifiers'Succ (M) .. Set'Last));
+               end if;
+            end loop;
+            -- If we are here, Set (Set'Last) is the only True element
+            return Image (Set'Last) & ' ';
+         end if;
+      end Image;
+   end Modifier_Utilities;
 
    --------------------
    -- Flag_Utilities --
@@ -1188,16 +1250,17 @@ package body Framework.Language is
    -- Parameter_Error --
    ---------------------
 
-   procedure Parameter_Error (Message : Wide_String) is
+   procedure Parameter_Error (Rule : Wide_String; Message : Wide_String) is
    begin
-      Parameter_Error (Message, Current_Token.Position);
+      Parameter_Error (Rule, Message, Current_Token.Position);
    end Parameter_Error;
 
-   procedure Parameter_Error (Message : Wide_String; Position : Location) is
+   procedure Parameter_Error (Rule : Wide_String; Message : Wide_String; Position : Location) is
    begin
       Error (Image (Position) & ": "
-               & "Parameter: "
-               & Message);
+             & "Parameter: "
+             & Rule & ": "
+             & Message);
    end Parameter_Error;
 
    ------------------

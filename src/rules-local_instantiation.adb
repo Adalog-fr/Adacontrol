@@ -80,7 +80,7 @@ package body Rules.Local_Instantiation  is
             Associate_Default (Rule_Uses, Basic.New_Context (Rule_Type, Label));
          exception
             when Already_In_Store =>
-               Parameter_Error (Rule_Id & ": general check already specified");
+               Parameter_Error (Rule_Id, "general check already specified");
          end;
          return;
       end if;
@@ -92,7 +92,7 @@ package body Rules.Local_Instantiation  is
             Associate (Rule_Uses, Entity, Basic.New_Context (Rule_Type, Label));
          exception
             when Already_In_Store =>
-               Parameter_Error (Rule_Id & ": " & Image (Entity) & " already specified");
+               Parameter_Error (Rule_Id, Image (Entity) & " already specified");
          end;
       end loop;
 

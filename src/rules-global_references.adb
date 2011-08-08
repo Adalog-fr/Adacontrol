@@ -203,12 +203,12 @@ package body Rules.Global_References is
       Check     : Checked_Kind;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Parameters required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "Parameters required");
       end if;
       Reference := Get_Flag_Parameter (Allow_Any => False);
 
       if not Parameter_Exists then
-         Parameter_Error ("Missing specification of checked bodies");
+         Parameter_Error (Rule_Id, "Missing specification of checked bodies");
       end if;
 
       Rules_Used := Rules_Used + 1;

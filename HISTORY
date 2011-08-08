@@ -1,6 +1,58 @@
 ============
-== V1.6r4 ==
+== V1.6r8 ==
 ============
+
+General
+-------
+Counters and statistics are in CSV format if CSV format requested
+
+Use a project file to build AdaControl
+
+Accept "~" as a string delimiter
+
+GPS
+---
+It is now possible to pass quoted parameters interactively
+
+New rules:
+----------
+barrier_expressions
+
+Changes to existing rules
+-------------------------
+Declarations: 
+   added operator_renaming
+
+Entity_Inside_Exceptions: 
+   added calls, [not]
+
+Expressions:
+   added array_others, record_others
+
+Naming_Convention: 
+   moved the location parameter. 
+   Added "unit" to locations.
+
+Positional_Parameter: 
+   changed name of rule to insufficient_parameters, removed first parameter
+   ("maximum" now handled by style (positional_association)).
+
+Statements: 
+   added for_loop, simple_loop. 
+   in multiple_exits: now consider exits from nested exception handlers
+
+Style: 
+   changed casing to casing_identifier
+   added compound_statement, casing_attribute, casing_pragma
+   added allowable value to positional_association
+
+Uncheckable:
+   added missing_unit
+
+============
+== V1.6r5 ==
+============
+(Specific release, not released publicly)
 
 General
 -------
@@ -52,22 +104,30 @@ declarations:
      renames => renaming
      not_operator_renames => not_operator_renaming
 
-default_parameter: possibility to replace the <entity name> and <formal name> by "all"
+default_parameter: 
+   possibility to replace the <entity name> and <formal name> by "all"
    Fixed problem that prevented analysis of subprogram calls
 
-header_comments: added a parameter, possibility to provide a pattern file
+header_comments: 
+   added a parameter, possibility to provide a pattern file
 
-no_safe_initialization: now considers case and if statements
+no_safe_initialization: 
+   now considers case and if statements
 
-non_static_constraints: changed name of rule to non_static, added parameter instantiation
+non_static_constraints: 
+   changed name of rule to non_static 
+   added parameter instantiation
 
-real_operators: no more a rule of its own, now expressions(real_equality)
+real_operators: 
+   no more a rule of its own, now expressions(real_equality)
 
 max_statement_nesting:
   added parameter: block (also in "all")
 
 statements:
-   added parameter: block, dispatching_callreraise, unnamed_block, unnamed_loop_exited, while_loop
+   added parameters: 
+      block, dispatching_call, labelled, null, reraise, unnamed_block, 
+      unnamed_loop_exited, unnecessary_null, while_loop
 
 style:
    added support for character and string literals.
@@ -76,7 +136,8 @@ style:
    split parameter "aggregate" for "positional_association" subrule in "array_aggregate" + "record_aggregate"
    added renamed_entity parameter
 
-unsafe_paired_calls: added possibility of having multiple opening/closing procedure for the same closing/opening one.
+unsafe_paired_calls: 
+   added possibility of having multiple opening/closing procedure for the same closing/opening one.
 
 =============
 == V1.5r24 ==
@@ -112,6 +173,7 @@ New rules:
 ----------
 Abnormal_Function_Return
 Case_Statement
+Control_Characters
 Directly_Accessed_Globals
 Header_Comments
 If_For_Case
@@ -121,7 +183,6 @@ Max_Line_Length
 Max_Statement_Nesting
 Movable_Accept_Statements
 No_Safe_Initialization
-No_Tabs
 Non_Static_Constraints
 Positional_Parameters
 Potentially_Blocking_Operations
@@ -266,10 +327,14 @@ When_Others_Null
 
 Changes to existing rules:
 --------------------------
-Non_Raising_Non_Reporting_Exception_Handler changed to Silent_Exceptions
-Attributes removed (Attributes are now processed by Entities)
+Non_Raising_Non_Reporting_Exception_Handler:
+   changed name to Silent_Exceptions
 
-Support for litteral expressions in Parameter_Aliasing
+Attributes:
+   removed (Attributes are now processed by Entities)
+
+Parameter_Aliasing:
+   Support for litteral expressions
 
 Framework:
 ----------

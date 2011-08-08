@@ -2,5 +2,7 @@ not_all_overloaded    : check entity_inside_exception (Ada.Text_IO.Put_line{stri
 not_all_not_overloaded: check entity_inside_exception (Ada.Text_IO.Put_line);
 all_overloaded        : check entity_inside_exception (all Put_line{string});
 all_not_overloaded    : check entity_inside_exception (all Put_line);
-Attributes            : check entity_inside_exception (Standard.Integer'Image, standard.integer'Value);
+Attributes            : check entity_inside_exception (all 'Image, all 'Value,
+                                                       not Standard.Float'Image, not standard.float'Value);
+Calls                 : check entity_inside_exception (calls, not t_entity_inside_exception.P2);
 

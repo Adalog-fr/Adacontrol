@@ -109,16 +109,14 @@ package body Rules.No_Safe_Initialization is
          Key := Get_Flag_Parameter (Allow_Any => False);
 
          if Rule_Used (Key) then
-            Parameter_Error ("Rule " & Rule_Id &
-                             " can be specified only once for each parameter.");
+            Parameter_Error (Rule_Id, "rule can be specified only once for each parameter");
          end if;
 
          Rule_Used (Key) := True;
          Usage (Key)     := Basic.New_Context (Rule_Use_Type, Label);
       else
          if Rule_Used /= Usage_Flags'(others => False) then
-            Parameter_Error ("Rule " & Rule_Id &
-                             " can be specified only once for each parameter.");
+            Parameter_Error (Rule_Id, "rule can be specified only once for each parameter");
          end if;
 
          Rule_Used := Usage_Flags'(others => True);
@@ -260,7 +258,7 @@ package body Rules.No_Safe_Initialization is
       procedure Update_Local is new Iterate (Update_One);
 
    begin   -- Process_Statements
-      for Stmt_Index in Statement_List'range loop
+      for Stmt_Index in Statement_List'Range loop
          case Statement_Kind (Statement_List (Stmt_Index)) is
             when An_Assignment_Statement =>
                Update (Assignment_Variable_Name (Statement_List (Stmt_Index)));

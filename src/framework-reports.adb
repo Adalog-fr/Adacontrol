@@ -220,7 +220,7 @@ package body Framework.Reports is
 
          function Quote (Item : Wide_String) return Wide_String is
             use Ada.Strings.Wide_Fixed;
-            Result : Wide_String (Item'First .. Item'Last + Count (Item, """") + 2);
+            Result : Wide_String (Item'First .. Item'Last + Ada.Strings.Wide_Fixed.Count (Item, """") + 2);
             Index  : Positive;
          begin
             Index := Result'First;
@@ -243,8 +243,10 @@ package body Framework.Reports is
       begin
          case Format_Option is
             when Gnat =>
-               Put (Image (Loc));
-               Put (": ");
+               if Loc /= Null_Location then
+                  Put (Image (Loc));
+                  Put (": ");
+               end if;
                Put (Title);
                Put (": ");
                Put (Label);
@@ -252,7 +254,11 @@ package body Framework.Reports is
                Put (Msg);
                New_Line;
             when CSV | CSVX =>
-               Put (Image (Loc));
+               if Loc = Null_Location then
+                  Put ("""""");
+               else
+                  Put (Image (Loc));
+               end if;
                Put (CSV_Separator (Format_Option));
                Put (Title);
                Put (CSV_Separator (Format_Option));
@@ -263,8 +269,10 @@ package body Framework.Reports is
                Put (Quote (Msg));
                New_Line;
             when Source =>
-               Put (Image (Loc));
-               Put (": ");
+               if Loc /= Null_Location then
+                  Put (Image (Loc));
+                  Put (": ");
+               end if;
                Current_Col := Col (Current_Output);
                Put (Line (1 .. Line_Last));
                New_Line;
@@ -360,7 +368,7 @@ package body Framework.Reports is
    ------------
 
    procedure Report (Rule_Id    : in Wide_String;
-                     Context    : in Root_Context'class;
+                     Context    : in Root_Context'Class;
                      Loc        : in Location;
                      Msg        : in Wide_String;
                      Count_Only : in Boolean := False)
@@ -471,13 +479,18 @@ package body Framework.Reports is
    -------------------
 
    procedure Report_Counts is
-      use Counters, Ada.Wide_Text_IO;
+      use Counters, Utilities, Ada.Wide_Text_IO;
 
       procedure Report_One_Count (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
       begin
          Put (To_Wide_String (Key));
-         Put (":");
-         Put (Natural'Wide_Image (Counter_Value));
+         case Format_Option is
+            when Gnat | Source=>
+               Put (": ");
+            when CSV | CSVX =>
+               Put (CSV_Separator (Format_Option));
+         end case;
+         Put (Integer_Img (Counter_Value));
          New_Line;
       end Report_One_Count;
 
@@ -572,28 +585,52 @@ package body Framework.Reports is
 
       procedure Report_One_Stat (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
          use Utilities;
-         Triggered_Count : Natural := Counter_Value;
+         Triggered_Count : Natural     := Counter_Value;
+         Wide_Key        : Wide_String := To_Wide_String (Key);
+         Dot_Found       : Boolean     := False;
       begin
          for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
             Triggered_Count := Triggered_Count + Fetch (Stats_Counters (R), Key);
          end loop;
 
          if Triggered_Count = 0 or else Stats_Level = Full then
-            Put (To_Wide_String (Key));
-            Put (": ");
-            if Triggered_Count = 0 then
-               Put ("not triggered");
-            else
-               Put (To_Title (Rule_Types'Wide_Image (Rule_Types'First)));
-               Put (Natural'Wide_Image (Counter_Value));
+            case Format_Option is
+               when Gnat | Source=>
+                  Put (Wide_Key);
+                  if Triggered_Count = 0 then
+                     Put ("not triggered");
+                  else
+                     Put (To_Title (Rule_Types'Wide_Image (Rule_Types'First)));
+                     Put (": ");
+                     Put (Integer_Img (Counter_Value));
 
-               for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
-                  Put (", ");
-                  Put (To_Title (Rule_Types'Wide_Image (R)));
-                  Put(" =");
-                  Put (Natural'Wide_Image (Fetch (Stats_Counters (R), Key)));
-               end loop;
-            end if;
+                     for R in Rule_Types range Rule_Types'Succ (Rule_Types'First) .. Rule_Types'Last loop
+                        Put (", ");
+                        Put (To_Title (Rule_Types'Wide_Image (R)));
+                        Put(": ");
+                        Put (Integer_Img (Fetch (Stats_Counters (R), Key)));
+                     end loop;
+                  end if;
+               when CSV | CSVX =>
+                  -- Add CSV separator in place of first '.' in wide key
+                  -- (Separates rule name from label)
+                  for I in Wide_Key'Range loop
+                     if Wide_Key (I) = '.' then
+                        Wide_Key (I) := CSV_Separator (Format_Option);
+                        Dot_Found    := True;
+                        exit;
+                     end if;
+                  end loop;
+                  Put (Wide_Key);
+                  if not Dot_Found then
+                     Put (CSV_Separator (Format_Option));
+                  end if;
+
+                  for R in Rule_Types loop
+                     Put (CSV_Separator (Format_Option));
+                     Put (Integer_Img (Fetch (Stats_Counters (R), Key)));
+                  end loop;
+            end case;
             New_Line;
          end if;
       end Report_One_Stat;
@@ -607,6 +644,16 @@ package body Framework.Reports is
       if Stats_Level >= Nulls_Only then
          New_Line;
          Put_Line ("Rules usage statistics:");
+         case Format_Option is
+            when Gnat | Source=>
+               null;
+            when CSV | CSVX =>
+               Put_Line ("Rule"
+                           & CSV_Separator (Format_Option) & "Label"
+                           & CSV_Separator (Format_Option) & "Check"
+                           & CSV_Separator (Format_Option) & "Search"
+                           & CSV_Separator (Format_Option) & "Count");
+         end case;
          Report_All_Stats (Stats_Counters (Rule_Types'First));
       end if;
 

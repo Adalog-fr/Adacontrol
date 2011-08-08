@@ -90,16 +90,16 @@ package body Rules.Case_Statement is
       Stmt : Case_Statement_Names;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": Two parameters required");
+         Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
       Stmt := Get_Flag_Parameter (Allow_Any => False);
       if Rule_Used (Stmt) (Rule_Type) then
-         Parameter_Error (Rule_Id & ": rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+         Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
       end if;
 
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": Two parameters required");
+         Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
       case Stmt is
@@ -158,6 +158,7 @@ package body Rules.Case_Statement is
                      Temp := Discrete_Constraining_Lengths (Path_Elements (PE))(1);
                      if Temp = Not_Static then
                         -- it IS static, but the evaluator cannot evaluate it...
+                        -- unless it is of a generic formal type
                         Uncheckable (Rule_Id,
                                      False_Negative,
                                      Get_Location (Path_Elements (PE)),
@@ -199,6 +200,7 @@ package body Rules.Case_Statement is
                                                             (Case_Expression (Statement))))(1);
             if Subtype_Span = Not_Static then
                -- Hmmm... this one IS static, so there is something we can't evaluate
+               -- or it is from a generic formal type
                -- give up
                Uncheckable (Rule_Id,
                             False_Negative,
@@ -361,6 +363,7 @@ package body Rules.Case_Statement is
                Nb_Val := Discrete_Constraining_Lengths (Choices (C))(1);
                if Nb_Val = Not_Static then
                   -- This was supposed to be static, but for some reason we can't evaluate it
+                  -- Maybe it is a generic formal type
                   -- Give up
                   Uncheckable (Rule_Id,
                                False_Negative,

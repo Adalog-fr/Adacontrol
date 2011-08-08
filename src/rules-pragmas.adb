@@ -73,7 +73,7 @@ package body Rules.Pragmas is
 
    begin
       if  not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "At least one parameter required");
       end if;
 
       while Parameter_Exists loop
@@ -86,7 +86,7 @@ package body Rules.Pragmas is
                        Context       => Basic.New_Context (Rule_Type,Label));
          exception
             when Already_In_Store =>
-               Parameter_Error (Pragma_Name & " is already used in rule " & Rule_Id);
+               Parameter_Error (Rule_Id, Pragma_Name & " already given");
          end;
       end loop;
 

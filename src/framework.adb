@@ -649,6 +649,46 @@ package body Framework is
       return Result;
    end Get_Previous_Word_Location;
 
+   ----------------------------
+   -- Get_Next_Word_Location --
+   ----------------------------
+
+   function Get_Next_Word_Location (E : in Asis.Element) return Location is
+      use Asis.Text;
+      E_Span : constant Span := Element_Span (E);
+      L      : Line_Number;
+      Start  : Character_Position;
+      Result : Location;
+
+      function Find_Word_Start (Line : in Wide_String) return Character_Position is
+         use Ada.Strings.Wide_Maps;
+      begin
+         for I in Line'Range loop
+            if Is_In (Line (I), Identifier_Chars) then
+               return I;
+            end if;
+         end loop;
+
+         return 0;
+      end Find_Word_Start;
+   begin
+      L := E_Span.Last_Line;
+      declare
+         The_Line : constant Asis.Program_Text := Non_Comment_Image (Lines (E, L, L) (L));
+      begin
+         Start := Find_Word_Start (The_Line (E_Span.Last_Column + 1 .. The_Line'Last));
+      end;
+      while Start = 0 loop
+         L     := L + 1;
+         Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L)(L)));
+      end loop;
+
+      Result := Get_Location (E);
+      Result.First_Line   := L;
+      Result.First_Column := Start;
+      return Result;
+   end Get_Next_Word_Location;
+
    -------------------
    -- Get_File_Name --
    -------------------

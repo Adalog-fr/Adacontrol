@@ -128,19 +128,20 @@ package body Rules.Unsafe_Paired_Calls is
       end Associate_With_Set;
    begin
       if Rules_Used = Rule_Index_Set'Last then
-         Parameter_Error (Rule_Id & ": this rule can be given at most"
+         Parameter_Error (Rule_Id,
+                          "this rule can be given at most"
                           & Rule_Index'Wide_Image (Rule_Index_Set'Last)
                           & " times");
       end if;
       Rules_Used := Rules_Used + 1;
 
       if not Parameter_Exists then
-         Parameter_Error ("First subprogram missing for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "first subprogram missing");
       end if;
       First_SP := Get_Entity_Parameter;
 
       if not Parameter_Exists then
-         Parameter_Error ("Second subprogram missing for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "Second subprogram missing");
       end if;
       Second_SP := Get_Entity_Parameter;
 
@@ -148,10 +149,10 @@ package body Rules.Unsafe_Paired_Calls is
          Lock_Pos  := Source_Location;
          Lock_Type := Get_Entity_Parameter;
          if Parameter_Exists then
-            Parameter_Error ("Spurious parameter after type name");
+            Parameter_Error (Rule_Id, "spurious parameter after type name");
          end if;
          if Index (To_Upper (Image (Lock_Type)), "'CLASS") /= 0 then
-            Parameter_Error ("Class wide type not allowed for lock parameter");
+            Parameter_Error (Rule_Id, "class wide type not allowed for lock parameter");
          end if;
 
          Associate_With_Set (First_SP,  Opening, (Entity_Spec, Lock_Pos, Lock_Type));
@@ -265,7 +266,9 @@ package body Rules.Unsafe_Paired_Calls is
                end if;
                if Matches (Mark, Lock_Context.Lock.Entity) then
                   if Lock_Context.Lock.Kind /= Entity_Spec or Names (Profile (I))'Length /= 1 then
-                     Parameter_Error ("More than one parameter of the provided type", Lock_Context.Lock.Position);
+                     Parameter_Error (Rule_Id,
+                                      "more than one parameter of the provided type",
+                                      Lock_Context.Lock.Position);
                   else
                      case Mode_Kind (Profile (I)) is
                         when An_In_Mode | A_Default_In_Mode =>
@@ -278,7 +281,8 @@ package body Rules.Unsafe_Paired_Calls is
                                 =>
                                  null;
                               when others =>
-                                 Parameter_Error ("Only discrete and access types allowed for lock parameter",
+                                 Parameter_Error (Rule_Id,
+                                                  "only discrete and access types allowed for lock parameter",
                                                   Lock_Context.Lock.Position);
                            end case;
 
@@ -288,7 +292,8 @@ package body Rules.Unsafe_Paired_Calls is
                            Lock_Context.Lock := (In_Out_Def,
                                                  Formal => Names (Profile (I))(1));
                         when An_Out_Mode =>
-                           Parameter_Error ("Parameter of the provided type is of mode ""out"" in "
+                           Parameter_Error (Rule_Id,
+                                            "parameter of the provided type is of mode ""out"" in "
                                             & Full_Name_Image (Called_Name (Lock_Call)),
                                             Lock_Context.Lock.Position);
                         when Not_A_Mode =>
@@ -298,7 +303,8 @@ package body Rules.Unsafe_Paired_Calls is
                end if;
             end loop;
             if Lock_Context.Lock.Kind = Entity_Spec then
-               Parameter_Error ("No parameter of the provided type in " & Full_Name_Image (Called_Name (Lock_Call)),
+               Parameter_Error (Rule_Id,
+                                "No parameter of the provided type in " & Full_Name_Image (Called_Name (Lock_Call)),
                                 Lock_Context.Lock.Position);
             end if;
          end;

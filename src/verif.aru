@@ -1,12 +1,16 @@
 -- Required style checks:
 check unnecessary_use_clause;
 check style (no_closing_name);
-check style (casing);
+check style (casing_identifier, original);
+check style (casing_attribute, titlecase);
 check style (negative_condition);
+check style (compound_statement);
+check style (multiple_elements);
 check max_nesting (7);
 check parameter_aliasing (certain);
 check simplifiable_expressions;
-check statements (untyped_for);
+check statements (untyped_for, unnecessary_null);
+check max_blank_lines (2);
 
 -- Acceptable, but should be looked at:
 search if_for_case;
@@ -43,3 +47,4 @@ check naming_convention (Constant, not "^c_");
 -- Title case convention, but we allow several upper case letters at the beginning:
 check naming_convention (All, case_sensitive "^[A-Z0-9]*[a-z0-9]*(_[A-Z0-9]*[a-z0-9]*)*$");
 Use_Trim_All: check entities (Ada.Strings.Wide_String.Trim);
+Uncheckable: search Uncheckable (false_negative);

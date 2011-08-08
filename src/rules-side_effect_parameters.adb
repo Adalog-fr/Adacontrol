@@ -106,13 +106,12 @@ package body Rules.Side_Effect_Parameters is
       Entity : Entity_Specification;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Missing function name for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "missing function name");
       end if;
 
       if Rules_Used = Rule_Index'Last then
-         Parameter_Error ("Rule cannot be specified more than"
-                          & Rule_Index'Wide_Image (Rule_Index'Last)
-                          & " times " & Rule_Id);
+         Parameter_Error (Rule_Id,
+                          "Rule cannot be specified more than" & Rule_Index'Wide_Image (Rule_Index'Last) & " times");
       end if;
 
       Rules_Used := Rules_Used + 1;

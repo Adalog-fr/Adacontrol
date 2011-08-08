@@ -100,13 +100,14 @@ package body Rules.Parameter_Aliasing is
       end if;
 
       if Rule_Used (Detail) then
-         Parameter_Error ("Rule " & Rule_Id & " can be called only once for ""Certain"","
-                            & " once for ""Possible"","
-                            & " and once for ""Unlikely""");
+         Parameter_Error (Rule_Id,
+                          "rule can be called only once for ""Certain"","
+                          & " once for ""Possible"","
+                          & " and once for ""Unlikely""");
       end if;
 
       if Parameter_Exists then
-         Parameter_Error ("Only one parameter for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "only one parameter allowed");
       end if;
 
       Rule_Type  (Detail) := Rule_Use_Type;
@@ -177,12 +178,6 @@ package body Rules.Parameter_Aliasing is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Is_Dispatching_Call (Call) then
-         -- Improvement needed here, but it's quite difficult
-         Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
-         return;
-      end if;
-
       if Expression_Kind (Called_Simple_Name (Call)) = An_Attribute_Reference then
          -- These ('Read and 'Write) are known to not have parameters that allow aliasing
          -- Moreover, the rest of the algorithm wouldn't work since parameters of
@@ -223,6 +218,16 @@ package body Rules.Parameter_Aliasing is
 
          Param_Proximity : Proximity;
       begin
+         if Actuals'Length = 1 then
+            -- Only 1 parameter => no possible aliasing
+            return;
+         end if;
+
+         if Is_Dispatching_Call (Call) then
+            Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
+            return;
+         end if;
+
          for I in Actuals'Range loop
             Mode := Mode_Kind (Enclosing_Element (Formal_Name (Call, I)));
 

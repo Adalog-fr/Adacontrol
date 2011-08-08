@@ -1,0 +1,46 @@
+-- We make a clear all before and after the test to avoid interferences when run
+-- from the stress test
+clear all;
+Uncheckable: check uncheckable;
+
+check case_statement (min_others_span, 5);
+check directly_accessed_globals;
+check exception_propagation (0, parameter, t_uncheckable.exception_propagation.make_cb_l0.cb);
+check max_call_depth (finite);
+check style (renamed_entity);
+check unsafe_unchecked_conversion;
+
+-- Inhibit for all but the desired test to avoid confusing multiple messages
+inhibit case_statement              (t_uncheckable.directly_accessed_globals,
+                                     t_uncheckable.exception_propagation,
+                                     t_uncheckable.max_call_depth,
+                                     t_uncheckable.style,
+                                     t_uncheckable.unsafe_unchecked_conversion);
+inhibit directly_accessed_globals   (t_uncheckable.case_statement,
+                                     t_uncheckable.exception_propagation,
+                                     t_uncheckable.max_call_depth,
+                                     t_uncheckable.style,
+                                     t_uncheckable.unsafe_unchecked_conversion);
+inhibit exception_propagation       (t_uncheckable.case_statement,
+                                     t_uncheckable.directly_accessed_globals,
+                                     t_uncheckable.max_call_depth,
+                                     t_uncheckable.style,
+                                     t_uncheckable.unsafe_unchecked_conversion);
+inhibit max_call_depth              (t_uncheckable.case_statement,
+                                     t_uncheckable.directly_accessed_globals,
+                                     t_uncheckable.exception_propagation,
+                                     t_uncheckable.style,
+                                     t_uncheckable.unsafe_unchecked_conversion);
+inhibit style                       (t_uncheckable.case_statement,
+                                     t_uncheckable.directly_accessed_globals,
+                                     t_uncheckable.exception_propagation,
+                                     t_uncheckable.max_call_depth,
+                                     t_uncheckable.unsafe_unchecked_conversion);
+inhibit unsafe_unchecked_conversion (t_uncheckable.case_statement,
+                                     t_uncheckable.directly_accessed_globals,
+                                     t_uncheckable.exception_propagation,
+                                     t_uncheckable.max_call_depth,
+                                     t_uncheckable.style);
+
+go;
+clear all;

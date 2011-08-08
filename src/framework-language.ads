@@ -86,38 +86,45 @@ package Framework.Language is
                           False_KW : Wide_String := "";
                           Default  : Boolean     := False) return Boolean;
 
-   -- A new version of Get_Modifier that allow multiple choice for the modifier.
-   -- This version is generic since it is possible to use any enumerated type to
-   -- control the behavior of the program.
-   -- Default is the default value returned when no modifier has been matched.
-   -- Prefix is the prefix used for the enumeration since it may be necessary to
-   -- use reserved Ada keywords for the modifier.
-   generic
-      type Index is (<>);
-   function Get_Enumerated_Modifier
-     (Default : in Index       := Index'First;
-      Prefix  : in Wide_String := "")
-     return Index;
-
-   --  The following package can be instantiated to parse "flag"
+   --  The following two packages can be instantiated to parse modifiers and "flag"
    --  parameters (keywords). The flags are the 'Image of the values
-   --  of type Flags, with the initial Prefix removed (if not "").
-   --  This allows having flags that are the same as Ada keywords
-   --  If Allow_Any is False, it is an error if the current token is
-   --    not a flag. Otherwise, if the current token is not a flag,
-   --    Flags'First is returned and the current token is not consumed
-   --    in order to retrieve it with other Get_XXX_Parameter functions,
-   --    unless it is itself Flags'First (which makes an error)
+   --  of the generic formal type, with the initial Prefix removed (if not "").
+   --  This allows having modifiers or flags that are the same as Ada keywords
    --
    -- WARNING !!
-   -- If you instantiate this package immediately inside a library package,
+   -- If you instantiate ones of these packages immediately inside a library package,
    -- you must put a "pragma Elaborate (Framework.Language);", or circularity
    -- will result.
+
+   generic
+      type Modifiers is (<>);
+      Prefix : in Wide_String := "";
+   package Modifier_Utilities is
+      function Get_Modifier (Default : in Modifiers := Modifiers'First) return Modifiers;
+      function Image (Item : Modifiers) return Wide_String;
+
+      type Unconstrained_Modifier_Set is array (Modifiers range <>) of Boolean;
+      subtype Modifier_Set is Unconstrained_Modifier_Set (Modifiers);
+      Empty_Set : constant Modifier_Set := (others => False);
+      Full_Set  : constant Modifier_Set := (others => True);
+
+      function Get_Modifier_Set return Modifier_Set;
+      function Image (Set     : Unconstrained_Modifier_Set;
+                      Default : Unconstrained_Modifier_Set := Empty_Set) return Wide_String;
+      -- Image of all modifiers in Set, separated and terminated by a single space
+      -- "" for empty set and Default
+   end Modifier_Utilities;
+
    generic
       type Flags is (<>);
       Prefix : Wide_String := "";
    package Flag_Utilities is
       function Get_Flag_Parameter (Allow_Any : Boolean) return Flags;
+      --  If Allow_Any is False, it is an error if the current token is
+      --    not a flag. Otherwise, if the current token is not a flag,
+      --    Flags'First is returned and the current token is not consumed
+      --    in order to retrieve it with other Get_XXX_Parameter functions,
+      --    unless it is itself Flags'First (which makes an error)
 
       function Image (Item : Flags) return Wide_String;
       procedure Help_On_Flags (Header      : Wide_String := "";
@@ -127,8 +134,8 @@ package Framework.Language is
 
    -- Procedure to be called by rules if there is something wrong with the
    -- parameters
-   procedure Parameter_Error (Message : Wide_String);
-   procedure Parameter_Error (Message : Wide_String; Position : Location);
+   procedure Parameter_Error (Rule : Wide_String; Message : Wide_String);
+   procedure Parameter_Error (Rule : Wide_String; Message : Wide_String; Position : Location);
    pragma No_Return (Parameter_Error);
 
    function Adjust_Image (Original : Wide_String) return Wide_String;

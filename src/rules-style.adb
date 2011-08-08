@@ -38,6 +38,7 @@ with
 with
   Asis.Elements,
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Expressions,
   Asis.Statements,
   Asis.Text;
@@ -63,10 +64,12 @@ package body Rules.Style is
    use Framework, Utilities;
 
    -- Subrules for the rule
-   type Style_Names is (St_Casing,             St_Default_In,      St_Exposed_Literal, St_Multiple_Elements,
-                        St_Negative_Condition, St_No_Closing_Name, St_Numeric_Literal, St_Positional_Association,
-                        St_Renamed_Entity);
-
+   -- "casing" subrules must stay together
+   type Style_Names is (St_Casing_Attribute,   St_Casing_Identifier,      St_Casing_Pragma,
+                        St_Compound_Statement, St_Default_In,             St_Exposed_Literal,
+                        St_Multiple_Elements,  St_Negative_Condition,     St_No_Closing_Name,
+                        St_Numeric_Literal,    St_Positional_Association, St_Renamed_Entity);
+   subtype Casing_Styles is Style_Names range St_Casing_Attribute .. St_Casing_Pragma;
    type Usage_Flags is array (Style_Names) of Boolean;
 
    package Style_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Style_Names,
@@ -78,12 +81,29 @@ package body Rules.Style is
    type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
    package Casing_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Casing_Names,
                                                                            Prefix => "Ca_" );
-   Casing_Policy : Casing_Names;
+   Casing_Policy : array (Casing_Styles) of Casing_Names;
    -- We use a simple variable here rather than going through the context,
    -- because the rule can be given only once, and efficiency is a concern
    -- (the rule is called on every identifier).
-   -- TBSL: case of count being different from search/check
 
+
+   --
+   -- Parameters for the compound_statement subrule
+   --
+
+   Min_Stat_Length : constant array (Asis.Statement_Kinds) of Asis.Text.Line_Number
+     := (Asis.An_If_Statement                    => 3,
+         Asis.A_Case_Statement                   => 4,
+         Asis.A_Loop_Statement                   => 3,
+         Asis.A_While_Loop_Statement             => 3,
+         Asis.A_For_Loop_Statement               => 3,
+         Asis.A_Block_Statement                  => 3,
+         Asis.An_Accept_Statement                => 3, -- Only if the accept has a body
+         Asis.A_Selective_Accept_Statement       => 4,
+         Asis.A_Timed_Entry_Call_Statement       => 4,
+         Asis.A_Conditional_Entry_Call_Statement => 5,
+         Asis.An_Asynchronous_Select_Statement   => 5,
+         others                                  => 1);
 
    --
    -- Parameters for the exposed_literal subrule
@@ -126,20 +146,8 @@ package body Rules.Style is
    --
 
    type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement);
-
    package Multiple_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Multiple_Names,
-                                                                                   Prefix => "Mu_" );
-
-   --
-   -- Parameters for the named_association subrule
-   --
-
-   type Association_Names is (Na_Pragma,        Na_Discriminant,    Na_Call,
-                              Na_Instantiation, Na_Array_Aggregate, Na_Record_Aggregate);
-
-   type Association_Usage is array (Association_Names) of Boolean;
-   package Named_Parameter_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Association_Names,
-                                                                                    Prefix => "Na_" );
+                                                                             Prefix => "Mu_" );
 
    --
    -- Parameters for the no_closing_name subrule
@@ -148,6 +156,23 @@ package body Rules.Style is
    type Closing_Name_Context is new Basic_Rule_Context with
       record
          Length : Asis.ASIS_Integer;
+      end record;
+
+   --
+   -- Parameters for the positional_association subrule
+   --
+
+   type Association_Names is (Na_Pragma,        Na_Discriminant,    Na_Call,
+                              Na_Instantiation, Na_Array_Aggregate, Na_Record_Aggregate);
+
+   type Association_Usage is array (Association_Names) of Boolean;
+   package Named_Parameter_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Association_Names,
+                                                                                    Prefix => "Na_" );
+   Association_Used : Association_Usage := (others => False);
+
+   type Association_Context is new Basic_Rule_Context with
+      record
+         Allowed_Number : Natural;
       end record;
 
    --
@@ -168,9 +193,8 @@ package body Rules.Style is
    -- General parameters
    --
 
-   Rule_Used        : Usage_Flags  := (others => False);
-   Save_Used        : Usage_Flags;
-   Association_Used : Association_Usage := (others => False);
+   Rule_Used : Usage_Flags := (others => False);
+   Save_Used : Usage_Flags;
 
    Contexts : Context_Store;
 
@@ -203,8 +227,9 @@ package body Rules.Style is
       User_Message ("   Parameter (3): <block_size>");
 
       User_Message ("For positional_association:");
-      Named_Parameter_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2..):",
-                                                    Footer => "(default = all)");
+      Named_Parameter_Flag_Utilities.Help_On_Flags
+        (Header => "   Parameter (2..):",
+         Footer => "(default = all, each value may be followed by allowed number of occurrences)");
 
       User_Message ("Control various Ada style issues");
    end Help;
@@ -218,42 +243,46 @@ package body Rules.Style is
       use Casing_Flag_Utilities, Literal_Flag_Utilities, Multiple_Flag_Utilities, Named_Parameter_Flag_Utilities;
       use Place_Flag_Utilities, Style_Flag_Utilities;
 
-      Subrule    : Style_Names;
-      Max_Length : Integer;
-      Assoc      : Association_Names;
-      Multiple   : Multiple_Names;
-      Lit_Kind   : Literal_Names;
-      Places     : Place_Set := (others => False);
-      P          : Place_Names;
+      Subrule  : Style_Names;
+      Max      : Integer;
+      Assoc    : Association_Names;
+      Multiple : Multiple_Names;
+      Lit_Kind : Literal_Names;
+      Places   : Place_Set := (others => False);
+      P        : Place_Names;
    begin
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => False);
          case Subrule is
-            when St_Default_In
-               | St_Negative_Condition
-               | St_Renamed_Entity
+            when St_Compound_Statement
+              | St_Default_In
+              | St_Negative_Condition
+              | St_Renamed_Entity
               =>
                -- Those without parameters
                if Parameter_Exists then
-                  Parameter_Error (Rule_Id & ": subrule """ & Image (Subrule) & """ has no parameter");
+                  Parameter_Error (Rule_Id, "subrule """ & Image (Subrule) & """ has no parameter");
                end if;
                Associate (Contexts, Value (Image (Subrule)), Basic.New_Context (Rule_Type, Label));
                Rule_Used (Subrule) := True;
 
-            when St_Casing =>
-               Associate (Contexts, Value (Image (St_Casing)), Basic.New_Context (Rule_Type, Label));
+            when Casing_Styles =>
+               Associate (Contexts, Value (Image (Subrule)), Basic.New_Context (Rule_Type, Label));
                if Parameter_Exists then
-                  Casing_Policy := Get_Flag_Parameter (Allow_Any => False);
+                  Casing_Policy (Subrule) := Get_Flag_Parameter (Allow_Any => False);
+                  if Casing_Policy (Subrule) = Ca_Original and Subrule /= St_Casing_Identifier then
+                     Parameter_Error (Rule_Id, """Original"" allowed only for identifiers");
+                  end if;
                else
-                  Casing_Policy := Ca_Original;
+                  Parameter_Error (Rule_Id, "missing indication of casing policy");
                end if;
-               Rule_Used (St_Casing) := True;
+               Rule_Used (Subrule) := True;
 
             when St_Exposed_Literal =>
                if Parameter_Exists then
                   Lit_Kind := Get_Flag_Parameter (Allow_Any => False);
                else
-                  Parameter_Error ("Missing kind of literal for " & Rule_Id & " (Exposed_Literal)");
+                  Parameter_Error (Rule_Id, "missing kind of literal for Exposed_Literal");
                end if;
 
                while Parameter_Exists loop
@@ -264,27 +293,27 @@ package body Rules.Style is
                      case Lit_Kind is
                         when Lit_Integer =>
                            if Integer_Count = Permitted_Consts_Count'Last then
-                              Parameter_Error (Rule_Id & ": too many integer values");
+                              Parameter_Error (Rule_Id, "too many integer values");
                            end if;
 
                            Integer_Count := Integer_Count + 1;
                            Integer_Permitted_Values (Integer_Count) := Get_Integer_Parameter;
                         when Lit_Real =>
                            if Real_Count = Permitted_Consts_Count'Last then
-                              Parameter_Error (Rule_Id & ": too many real values");
+                              Parameter_Error (Rule_Id, "too many real values");
                            end if;
 
                            Real_Count := Real_Count + 1;
                            Real_Permitted_Values (Real_Count) := Get_Float_Parameter;
                         when Lit_String =>
                            if String_Count = Permitted_Consts_Count'Last then
-                              Parameter_Error (Rule_Id & ": too many string values");
+                              Parameter_Error (Rule_Id, "too many string values");
                            end if;
 
                            String_Count := String_Count + 1;
                            String_Permitted_Values (String_Count) := To_Unbounded_Wide_String (Get_String_Parameter);
                         when Lit_Character =>
-                           Parameter_Error ("No exceptions allowed for character literals");
+                           Parameter_Error (Rule_Id, "no exceptions allowed for character literals");
                      end case;
                   else
                      -- it is a Place keyword
@@ -322,19 +351,19 @@ package body Rules.Style is
 
             when St_No_Closing_Name =>
                if Parameter_Exists then
-                  Max_Length := Get_Integer_Parameter (Min => 0);
+                  Max := Get_Integer_Parameter (Min => 0);
                else
-                  Max_Length := -1;
+                  Max := -1;
                end if;
 
                Associate (Contexts,
                           Value (Image (St_No_Closing_Name) & Rule_Types'Wide_Image (Rule_Type)),
-                          Closing_Name_Context'(Basic.New_Context (Rule_Type, Label) with Max_Length));
+                          Closing_Name_Context'(Basic.New_Context (Rule_Type, Label) with Max));
                Rule_Used (St_No_Closing_Name) := True;
 
             when St_Numeric_Literal =>
                if not Parameter_Exists then
-                  Parameter_Error (Rule_Id & ": invalid call to rule");
+                  Parameter_Error (Rule_Id, "parameter required for Numeric_Literal");
                end if;
 
                declare
@@ -350,12 +379,12 @@ package body Rules.Style is
                   -- Check for next parameters
                   if Is_Not then
                      if Parameter_Exists then
-                        Parameter_Error (Rule_Id & ": cannot specify block size for unauthorized base");
+                        Parameter_Error (Rule_Id, "cannot specify block size for unauthorized base");
                      end if;
                      Block_Size := 0;
                   else
                      if not Parameter_Exists then
-                        Parameter_Error (Rule_Id & ": block size needed for base");
+                        Parameter_Error (Rule_Id, "block size needed for base");
                      end if;
                      Block_Size := Get_Integer_Parameter (Min => 0);
                   end if;
@@ -367,20 +396,32 @@ package body Rules.Style is
               end;
 
             when St_Positional_Association =>
-               if Parameter_Exists then
+               if Parameter_Exists and then not Is_Integer_Parameter then
                   while Parameter_Exists loop
                      Assoc                    := Get_Flag_Parameter (Allow_Any => False);
                      Association_Used (Assoc) := True;
+
+                     if Parameter_Exists and then Is_Integer_Parameter then
+                        Max := Get_Integer_Parameter (Min => 0);
+                     else
+                        Max := 0;
+                     end if;
                      Associate (Contexts,
                                 Value (Image (St_Positional_Association) & Image (Assoc)),
-                                Basic.New_Context (Rule_Type, Label));
+                                Association_Context'(Basic.New_Context (Rule_Type, Label) with Max));
                   end loop;
                else
+                  if Parameter_Exists then
+                     -- Must be integer parameter
+                     Max := Get_Integer_Parameter (Min => 0);
+                  else
+                     Max := 0;
+                  end if;
                   Association_Used := (others => True);
                   for A in Association_Names loop
                      Associate (Contexts,
                                 Value (Image (St_Positional_Association) & Image (A)),
-                                Basic.New_Context (Rule_Type, Label));
+                                Association_Context'(Basic.New_Context (Rule_Type, Label) with Max));
                   end loop;
                end if;
                Rule_Used (St_Positional_Association) := True;
@@ -390,12 +431,23 @@ package body Rules.Style is
          -- No parameter => all style checks
          Rule_Used := (others => True);
 
-         -- Casing
-         Associate (Contexts, Value (Image (St_Casing)), Basic.New_Context (Rule_Type, Label));
-         Casing_Policy := Ca_Original;
+         -- Casing_Attribute
+         Associate (Contexts, Value (Image (St_Casing_Attribute)), Basic.New_Context (Rule_Type, Label));
+         Casing_Policy (St_Casing_Attribute) := Ca_Titlecase;
+
+         -- Casing_Identifier
+         Associate (Contexts, Value (Image (St_Casing_Identifier)), Basic.New_Context (Rule_Type, Label));
+         Casing_Policy (St_Casing_Identifier) := Ca_Original;
+
+         -- Casing_Pragma
+         Associate (Contexts, Value (Image (St_Casing_Pragma)), Basic.New_Context (Rule_Type, Label));
+         Casing_Policy (St_Casing_Identifier) := Ca_Titlecase;
+
+         -- Compound_Statement
+         Associate (Contexts, Value (Image (St_Compound_Statement)), Basic.New_Context (Rule_Type, Label));
 
          -- Default_In
-         Associate (Contexts, Value (Image (St_Default_In)),         Basic.New_Context (Rule_Type, Label));
+         Associate (Contexts, Value (Image (St_Default_In)), Basic.New_Context (Rule_Type, Label));
 
          -- Exposed_Literal
          Associate (Contexts,
@@ -437,13 +489,13 @@ package body Rules.Style is
          for A in Association_Names loop
             Associate (Contexts,
                        Value (Image (St_Positional_Association) & Image (A)),
-                       Basic.New_Context (Rule_Type, Label));
+                       Association_Context'(Basic.New_Context (Rule_Type, Label) with 0));
          end loop;
 
        end if;
    exception
       when Already_In_Store =>
-         Parameter_Error ("Subrule already provided for rule " & Rule_Id & " (" & Image (Subrule) & ')');
+         Parameter_Error (Rule_Id, "Subrule already provided: " & Image (Subrule));
    end Add_Use;
 
    -------------
@@ -453,7 +505,6 @@ package body Rules.Style is
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
       use Framework.Rules_Manager;
    begin
-
       case Action is
          when Clear =>
             Clear (Contexts);
@@ -468,7 +519,6 @@ package body Rules.Style is
          when Resume =>
             Rule_Used := Save_Used;
       end case;
-
    end Command;
 
    -----------------
@@ -499,6 +549,63 @@ package body Rules.Style is
          end if;
       end loop;
    end Prepare;
+
+   ------------------
+   -- Check_Casing --
+   ------------------
+
+   procedure Check_Casing (Source_Name : in Wide_String;
+                           Casing      : in Casing_Styles;
+                           Element     : in Asis.Expression)
+   is
+      -- Element is the identifier for St_Casing_Identifier and St_Casing_Attribute
+      -- and the pragma for St_Casing_Pragma
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Framework.Reports, Style_Flag_Utilities;
+
+      Reference_Name : Wide_String (Source_Name'Range);
+      -- Note that the source name and the refence name always have the same length!
+      Def_Name : Asis.Defining_Name;
+   begin
+      case Casing_Policy (Casing) is
+         when Ca_Uppercase =>
+            Reference_Name := To_Upper (Source_Name);
+         when Ca_Lowercase =>
+            Reference_Name := To_Lower (Source_Name);
+         when Ca_Titlecase =>
+            Reference_Name := To_Title (Source_Name);
+         when Ca_Original =>
+            if Element_Kind (Element) = A_Defining_Name then
+               -- Since it *is* the original...
+               return;
+            end if;
+
+            Def_Name := Corresponding_Name_Definition (Element);
+            if Is_Nil (Def_Name) then
+               -- some predefined stuff, give up
+               return;
+            end if;
+
+            if Defining_Name_Kind (Def_Name) = A_Defining_Expanded_Name then
+               Def_Name := Defining_Selector (Def_Name);
+            end if;
+
+            if Defining_Name_Kind (Def_Name) = A_Defining_Operator_Symbol then
+               -- This should follow the rules for keywords (not checked currently),
+               -- not the original
+               return;
+            end if;
+
+            Reference_Name := Defining_Name_Image (Def_Name);
+      end case;
+
+      if Source_Name /= Reference_Name then
+         Report (Rule_Id,
+                 Framework.Association (Contexts, Value (Image (Casing))),
+                 Get_Location (Element),
+                 "Wrong casing of """ & Source_Name & """, should be """ & Reference_Name & '"');
+      end if;
+   end Check_Casing;
 
    -----------------------
    -- Process_Construct --
@@ -556,63 +663,8 @@ package body Rules.Style is
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Framework.Reports, Style_Flag_Utilities;
-      Def_Name : Asis.Defining_Name;
 
-      procedure Check_Casing is
-         function Good_Name return Wide_String is
-         begin
-            if Element_Kind (Identifier) = A_Defining_Name then
-               return Defining_Name_Image (Identifier);
-            else
-               return Name_Image (Identifier);
-            end if;
-         end Good_Name;
-
-         Source_Name    : constant Wide_String := Good_Name;
-         Reference_Name : Wide_String (Source_Name'Range);
-         -- Note that the source name and the refence name always have the same length!
-      begin
-         case Casing_Policy is
-            when Ca_Uppercase =>
-               Reference_Name := To_Upper (Source_Name);
-            when Ca_Lowercase =>
-               Reference_Name := To_Lower (Source_Name);
-            when Ca_Titlecase =>
-               Reference_Name := To_Title (Source_Name);
-            when Ca_Original =>
-               if Element_Kind (Identifier) = A_Defining_Name then
-                  -- Since it *is* the original...
-                  return;
-               end if;
-
-               Def_Name := Corresponding_Name_Definition (Identifier);
-               if Is_Nil (Def_Name) then
-                  -- some predefined stuff, give up
-                  return;
-               end if;
-
-               if Defining_Name_Kind (Def_Name) = A_Defining_Expanded_Name then
-                  Def_Name := Defining_Selector (Def_Name);
-               end if;
-
-               if Defining_Name_Kind (Def_Name) = A_Defining_Operator_Symbol then
-                  -- This should follow the rules for keywords (not checked currently),
-                  -- not the original
-                  return;
-               end if;
-
-               Reference_Name := Defining_Name_Image (Def_Name);
-         end case;
-
-         if Source_Name /= Reference_Name then
-            Report (Rule_Id,
-                    Framework.Association (Contexts, Value (Image (St_Casing))),
-                    Get_Location (Identifier),
-                    "Wrong casing of """ & Source_Name & """, should be """ & Reference_Name & '"');
-         end if;
-      end Check_Casing;
-
-      procedure Check_Renamed is
+    procedure Check_Renamed is
          use Framework.Scope_Manager;
 
          Def : constant Asis.Definition := Corresponding_Name_Definition (Identifier);
@@ -636,13 +688,17 @@ package body Rules.Style is
       end Check_Renamed;
 
    begin  -- Process_Identifier
-      if not (Rule_Used (St_Casing) or Rule_Used (St_Renamed_Entity)) then
+      if not (Rule_Used (St_Casing_Identifier) or Rule_Used (St_Renamed_Entity)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Rule_Used (St_Casing) then
-         Check_Casing;
+      if Rule_Used (St_Casing_Identifier) then
+         if Element_Kind (Identifier) = A_Defining_Name then
+            Check_Casing (Defining_Name_Image (Identifier), St_Casing_Identifier, Identifier);
+         else
+            Check_Casing (Name_Image (Identifier), St_Casing_Identifier, Identifier);
+         end if;
       end if;
 
       -- This procedure is also called on defining names for St_Casing, not interesting
@@ -657,60 +713,120 @@ package body Rules.Style is
    --------------------------
 
    procedure Process_Association (Association : in Asis.Association) is
-      use Asis, Asis.Expressions, Asis.Elements, Asis.Statements;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Expressions, Asis.Elements, Asis.Statements;
       use Framework.Reports, Style_Flag_Utilities;
 
-      procedure Check_Association (Na : Association_Names; Is_Positional : Boolean) is
+      procedure Check_Association (Na                  : Association_Names;
+                                   Is_Positional       : Boolean;
+                                   Associations_Length : Positive)
+      is
          use Named_Parameter_Flag_Utilities;
       begin
          if Association_Used (Na) and then Is_Positional then
-            Report(Rule_Id,
-                   Framework.Association (Contexts, Value (Image (St_Positional_Association) & Image (Na))),
-                   Get_Location(Association),
-                   "named association not used in " & Image (Na));
+            declare
+               Ctx : constant Association_Context
+                 := Association_Context (Framework.Association
+                                         (Contexts,
+                                          Value (Image (St_Positional_Association) & Image (Na))));
+            begin
+               if Associations_Length > Ctx.Allowed_Number then
+                  Report (Rule_Id,
+                          Ctx,
+                          Get_Location (Association),
+                          "positional association used in " & Image (Na)
+                    & Choose (Ctx.Allowed_Number = 0,
+                              "",
+                              " with more than " & Integer_Img (Ctx.Allowed_Number) & " element(s)"));
+               end if;
+            end;
          end if;
       end Check_Association;
 
+      Encl : Asis.Element;
    begin -- Process_Association
-
       if not Rule_Used (St_Positional_Association) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      Encl := Enclosing_Element (Association);
       case Association_Kind (Association) is
          when Not_An_Association =>
             Failure ("Not an association", Association);
          when A_Pragma_Argument_Association =>
-            Check_Association (Na_Pragma, Is_Nil (Formal_Parameter (Association)));
+            Check_Association (Na_Pragma,
+                               Is_Nil (Formal_Parameter (Association)),
+                               Pragma_Argument_Associations (Encl)'Length);
          when A_Discriminant_Association =>
-            Check_Association (Na_Discriminant, Is_Nil (Discriminant_Selector_Names (Association)));
+            Check_Association (Na_Discriminant,
+                               Is_Nil (Discriminant_Selector_Names (Association)),
+                               Discriminant_Associations (Encl)'Length);
          when A_Record_Component_Association =>
-            Check_Association (Na_Record_Aggregate, Is_Nil (Record_Component_Choices (Association)));
+            Check_Association (Na_Record_Aggregate,
+                               Is_Nil (Record_Component_Choices (Association)),
+                               Record_Component_Associations (Encl)'Length);
          when An_Array_Component_Association =>
-            Check_Association (Na_Array_Aggregate, Is_Nil (Array_Component_Choices (Association)));
+            Check_Association (Na_Array_Aggregate,
+                               Is_Nil (Array_Component_Choices (Association)),
+                               Array_Component_Associations (Encl)'Length);
          when A_Parameter_Association =>
-            declare
-               Encl : constant Asis.Element := Enclosing_Element (Association);
-            begin
-               -- Do not check infix (operators) function calls or attribute functions and procedures
-               if Expression_Kind (Encl) = A_Function_Call then
-                 if Is_Prefix_Call (Encl) and then Expression_Kind (Prefix (Encl)) /= An_Attribute_Reference then
-                  Check_Association (Na_Call, Is_Nil (Formal_Parameter (Association)));
-                 end if;
-               elsif Statement_Kind (Encl) = A_Procedure_Call_Statement then
-                  -- Entries cannot be attributes...
-                  if Expression_Kind (Called_Name (Encl)) /= An_Attribute_Reference then
-                     Check_Association (Na_Call, Is_Nil (Formal_Parameter (Association)));
-                  end if;
-               else
-                  Check_Association (Na_Call, Is_Nil (Formal_Parameter (Association)));
+            Encl := Enclosing_Element (Association);
+            -- Do not check infix (operators) function calls or attribute functions and procedures
+            if Expression_Kind (Encl) = A_Function_Call then
+               if Is_Prefix_Call (Encl) and then Expression_Kind (Prefix (Encl)) /= An_Attribute_Reference then
+                  Check_Association (Na_Call,
+                                     Is_Nil (Formal_Parameter (Association)),
+                                     Function_Call_Parameters (Encl)'Length);
                end if;
-            end;
+            elsif Statement_Kind (Encl) = A_Procedure_Call_Statement then
+               -- Entries cannot be attributes...
+               if Expression_Kind (Called_Name (Encl)) /= An_Attribute_Reference then
+                  Check_Association (Na_Call,
+                                     Is_Nil (Formal_Parameter (Association)),
+                                     Call_Statement_Parameters (Encl)'Length);
+               end if;
+            else
+               Check_Association (Na_Call,
+                                  Is_Nil (Formal_Parameter (Association)),
+                                  Call_Statement_Parameters (Encl)'Length);
+            end if;
          when A_Generic_Association =>
-            Check_Association (Na_Instantiation, Is_Nil (Formal_Parameter (Association)));
+            Check_Association (Na_Instantiation,
+                               Is_Nil (Formal_Parameter (Association)),
+                               Generic_Actual_Part (Encl)'Length);
       end case;
    end Process_Association;
+
+   --------------------------------
+   -- Process_Compound_Statement --
+   --------------------------------
+
+   procedure Process_Compound_Statement (Statement : in Asis.Statement) is
+      use Asis, Asis.Elements, Asis.Statements, Asis.Text;
+      use Framework.Reports, Style_Flag_Utilities;
+      Elem_Span : Span;
+      Kind      : Asis.Statement_Kinds;
+   begin
+      if not Rule_Used (St_Compound_Statement) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Kind := Statement_Kind (Statement);
+
+      -- Special case for accept statement: check only if there is a body
+      if Kind = An_Accept_Statement and then Is_Nil (Accept_Body_Statements (Statement)) then
+         return;
+      end if;
+
+      Elem_Span := Element_Span (Statement);
+      if Elem_Span.Last_Line - Elem_Span.First_Line + 1 < Min_Stat_Length (Kind) then
+         Report (Rule_Id,
+                 Framework.Association (Contexts, Value (Image (St_Compound_Statement))),
+                 Get_Location (Statement),
+                 "Statement has less than" & Line_Number'Wide_Image (Min_Stat_Length (Kind)) & " lines");
+      end if;
+   end Process_Compound_Statement;
 
    -------------------------
    -- Process_Declaration --
@@ -1223,23 +1339,33 @@ package body Rules.Style is
 
    procedure Process_Element (Element : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Text;
-      use Framework.Reports;
+      use Framework.Reports, Thick_Queries;
       use Style_Flag_Utilities, Multiple_Flag_Utilities;
+      Loc : Location;
    begin
       if not Rule_Used (St_Multiple_Elements) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Element_First_Line_Number : constant Line_Number      := First_Line_Number (Element);
-         Element_Lines             : constant Line_List (1..1) :=
-           Lines (Element, Element_First_Line_Number, Element_First_Line_Number);
-         Element_First_Line_Image  : constant Wide_String      := Line_Image (Element_Lines (Element_Lines'First));
+      -- Special case:
+      -- if Element is the declaration of a private compilation unit, consider it starts
+      -- at the preceding "private"
+      if Is_Compilation_Unit (Element)
+        and then A4G_Bugs.Unit_Class (Enclosing_Compilation_Unit (Element)) = A_Private_Declaration
+      then
+         Loc := Get_Previous_Word_Location (Element);
+      else
+         Loc := Get_Location (Element);
+      end if;
 
-         The_Span : constant Span := Element_Span (Element);
+      declare
+         First_Line               : constant Line_Number        := Get_First_Line (Loc);
+         First_Column             : constant Character_Position := Get_First_Column (Loc);
+         Element_Lines            : constant Line_List (1..1)   := Lines (Element, First_Line, First_Line);
+         Element_First_Line_Image : constant Wide_String        := Line_Image (Element_Lines (Element_Lines'First));
       begin
-         for I in Character_Position_Positive range 1 .. The_Span.First_Column - 1 loop
+         for I in Character_Position_Positive range 1 .. First_Column - 1 loop
             if Element_First_Line_Image (I) > ' ' then
                case Element_Kind (Element) is
                   when Not_An_Element =>
@@ -1248,7 +1374,7 @@ package body Rules.Style is
                   when A_Clause =>
                      Report (Rule_Id,
                              Framework.Association (Contexts, Value (Image (St_Multiple_Elements) & Image (Mu_Clause))),
-                             Get_Location (Element),
+                             Loc,
                              "clause does not start line");
 
                   when A_Declaration =>
@@ -1265,18 +1391,19 @@ package body Rules.Style is
                            -- These are allowed to appear on the same line as something else
                            null;
                         when others =>
-                           Report (Rule_Id,
-                             Framework.Association (Contexts,
-                                                    Value (Image (St_Multiple_Elements) & Image (Mu_Declaration))),
-                                   Get_Location (Element),
-                                   "declaration does not start line");
+                           Report
+                             (Rule_Id,
+                              Framework.Association (Contexts,
+                                                     Value (Image (St_Multiple_Elements) & Image (Mu_Declaration))),
+                              Loc,
+                              "declaration does not start line");
                      end case;
 
                   when A_Statement =>
                      Report (Rule_Id,
                        Framework.Association (Contexts,
                                               Value (Image (St_Multiple_Elements) & Image (Mu_Statement))),
-                             Get_Location (Element),
+                             Loc,
                              "statement does not start line");
 
                   when others =>
@@ -1287,6 +1414,38 @@ package body Rules.Style is
          end loop;
       end;
    end Process_Element;
+
+   -----------------------
+   -- Process_Attribute --
+   -----------------------
+
+   procedure Process_Attribute (Attribute : in Asis.Expression) is
+      use Asis.Expressions;
+      Identifier : Asis.Expression;
+   begin
+      if not Rule_Used (St_Casing_Attribute) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Identifier := A4G_Bugs.Attribute_Designator_Identifier (Attribute);
+      Check_Casing (Name_Image (Identifier), St_Casing_Attribute, Identifier);
+   end Process_Attribute;
+
+   --------------------
+   -- Process_Pragma --
+   --------------------
+
+   procedure Process_Pragma (Pr : in Asis.Pragma_Element) is
+      use Asis.Elements;
+   begin
+      if not Rule_Used (St_Casing_Pragma) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Check_Casing (Pragma_Name_Image (Pr), St_Casing_Pragma, Pr);
+   end Process_Pragma;
 
 begin
    Framework.Rules_Manager.Register_Semantic (Rule_Id,

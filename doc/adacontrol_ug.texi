@@ -1,7 +1,7 @@
-\input texinfo   @c -*-texinfo-*-
+\input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.6r4
+@settitle AdaControl User Guide V1.6r8
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -33,6 +33,7 @@ Last edited: @today{}
 * Rules Usage::                 
 * Examples of using AdaControl for common programming rules::  
 * Non upward-compatible changes::  
+* Syntax of regular expressions::  
 @end menu
 
 AdaControl is Copyright @copyright{} 2005 Eurocontrol/Adalog, except
@@ -163,6 +164,17 @@ AdaControl. @xref{unrepr.sed}.
 
 @node Building AdaControl, Customizing AdaControl, Prerequisites, Installation
 @section Building AdaControl
+@subsection Build with project file
+Simply go to the @code{src} directory and type:
+@example
+gnatmake -Pbuild.gpr
+@end example
+You're done!
+@subsection Build with Makefile
+The previous method may fail if Asis is not installed in an usual
+place. As an alternative method, it is possible to build AdaControl
+with a regular Makefile.
+
 The file @code{Makefile} (in directory @code{src}) should be modified
 to match the  commands and paths of the target system. The following
 variables are to be set:
@@ -198,6 +210,7 @@ $ make help
 NOTE: Building AdaControl needs the ``make'' command provide with GNAT; it
 works both with WIN32 shell and UNIX shell.
 
+@subsection Installing support form GPS
 To add AdaControl support to GPS, simply copy all the files from the
 @code{GPS} directory into the @code{<GPS_dir>/share/gps/plug-ins}
 directory. Copy also the files @code{doc/adacontrol_ug.html} and
@@ -214,20 +227,13 @@ $ cd test
 $ ./run.sh
 @end example
 
-All tests must report PASSED. If they don't, here are some hints:
-@itemize @bullet
-@item
-Some UNIX shell emulators add CR's to the end of each line of a text
-file. Since the reference for the tests is in UNIX (LF only) text
-format, this may explain the difference. Try running @code{dos2unix}
-on the content of the @code{res/} directory, then do a @code{diff} on
-the content of the @code{res/} and @code{ref/} directories.
-@item
-If you compiled with an old version of Gnat (and especially 3.15p),
-there are known bugs and unimplemented features that will not allow
+All tests must report PASSED. If they don't, it may be because you are
+using an old version of Gnat (and especially 3.15p). AdaControl runs
+without any known problem (and it has been checked against the whole
+ACATS) only with the latest GnatPro version; earlier versions are
+known to have bugs and unimplemented features that will not allow
 AdaControl to run correctly in some cases. We strongly recommend to
 always use the most recent version of Gnat.
-@end itemize
 
 @node Customizing AdaControl,  , Building AdaControl, Installation
 @section Customizing AdaControl
@@ -383,16 +389,16 @@ indirect file is defined. The name of the rules file and of the
 indirect file can be set from the ``Library'' tab from the
 ``Project/Edit Project Properties'' menu.
 @item
-``Control Current File (single rule)'' runs AdaControl on the
+``Control Current File (interactive)'' runs AdaControl on the
 currently edited file, with a rule asked interactively from a pop-up;
 this menu is greyed-out if no file window is currently active, or if
 the associated language is not ``Ada''.
 @item
-``Control Root Project (single rule)'' runs AdaControl on all units
+``Control Root Project (interactive)'' runs AdaControl on all units
 that are part of the root project, with a rule asked interactively
 from a pop-up.
 @item
-``Control Units from List (single rule)'' runs AdaControls on units
+``Control Units from List (interactive)'' runs AdaControls on units
 given in a indirect file, with a rule asked interactively from a
 pop-up. This menu is greyed-out if no indirect file is defined. The
 name of the indirect file can be set from the ``Library'' tab from the
@@ -426,9 +432,20 @@ There is also a button representing Lady Ada in a magnifier glass in
 the toolbar; clicking this button is the same as selecting
 ``Control Current File (rules file)''.
 
-Note that if you want to run AdaControl with a rules file that is not
-the one defined by the switches, you can use one of the ``single
-rule'' commands, and give ``source <file name>'' as the rule to check.
+Here are some tips about using the ``interactive'' menus:
+@itemize @bullet
+@item
+When you use the ``interactive'' menus several times, the
+previously entered command(s) is used as a default.
+@item
+You can enter any command from AdaControl's language in the dialog;
+you can even enter several commands separated by ``;''.
+@item
+Especially, if you want to run AdaControl with a rules file that is
+not the one defined by the switches, you can use one of the
+``interactive'' commands, and give ``source <file name>'' as the
+command.
+@end itemize
 
 @subsection AdaControl switches
 The tab ``switches'' from the ``Project/Edit Project Properties'' menu
@@ -559,8 +576,7 @@ Hex ESC encoding (see the GNAT User-Guide/Reference-Manual). This is
 the prefered method, since few people require wide characters in
 programs anyway, and that keeping the default bracket encoding would
 not conveniently allow brackets for regular expressions, like those
-required for the rule ``Naming_Convention''
-(@pxref{Naming_Convention}).
+used by some rules. @xref{Syntax of regular expressions}.
 
 @menu
 * Rule types and report messages::  
@@ -668,22 +684,30 @@ triggered'' if the rule was not triggered.
 
 @node Parameters, Specifying an Ada entity name, Rule types and report messages, Rules syntax
 @subsection Parameters
-Some rules work with parameters. Parameters can be:
+Most rules accept parameters. Parameters can be:
 @itemize
-@item
-an Ada entity name
-@item
-an Ada keyword
 @item
 a keyword for the rule
 @item
 a numerical value
+@item
+a character string (often a regular expression)
+@item
+an Ada entity name
 @end itemize
 
-A numerical value is given with the syntax of an Ada integer literal
-(underscores are allowed as in Ada). Based literals are not currently
-supported; if somebody can justify a need for them, we'll be happy to
-add this feature later...
+A numerical value is given with the syntax of an Ada integer or real
+literal (underscores are allowed as in Ada). Based literals are not
+currently supported; if somebody can justify a need for them, we'll be
+happy to add this feature later...
+
+A character string (actually, any parameter whose value does not
+follow the rules of Ada identifiers or numeric literals) is given
+within double quotes ``"''. The tilde character (``~'') can also be
+used as a replacement, but the same character must be used at both
+ends of the string. The latter has been chosen as a character not used
+by the various shells, and can be useful to pass quoted strings from
+parameters on the command line.
 
 An Ada entity name can be followed by overloading information (see
 below), in order to uniquely identify the Ada entity. If an Ada
@@ -1597,6 +1621,7 @@ with AdaControl.
 @menu
 * pfni::                        
 * Adactl -D::                   
+* makepat.sed::                 
 * unrepr.sed::                  
 @end menu
 
@@ -1642,7 +1667,7 @@ has several overloadings and you are not sure which one is called, use
 @code{pfni} with the ``-o'' option on that line: the program will tell
 you the full name and profile of the called subprogram.
 
-@node Adactl -D, unrepr.sed, pfni, Helpful utilities
+@node Adactl -D, makepat.sed, pfni, Helpful utilities
 @subsection Adactl -D
 When run with the ``-D'' option, AdaControl simply outputs the list of
 units that would be processed.
@@ -1655,7 +1680,13 @@ option, it is more efficient to create the list of units once and then
 use the indirect file than to specify all applicable units each
 time AdaControl is run.
 
-@node unrepr.sed,  , Adactl -D, Helpful utilities
+@node makepat.sed, unrepr.sed, Adactl -D, Helpful utilities
+@subsection makepat.sed
+This file (provided in the ``src'' directory) is a sed script that
+transforms a text file into a set of correponding regular expressions.
+It is useful to generate model header files. @xref{Header_Comments}.
+
+@node unrepr.sed,  , makepat.sed, Helpful utilities
 @subsection unrepr.sed
 This file (provided in the ``src'' directory) is a sed script that
 comments out all representation clauses. It is typically useful if you
@@ -1892,6 +1923,7 @@ is a dispatching call.
 * Abnormal_Function_Return::    
 * Allocators::                  
 * Array_Declarations::          
+* Barrier_Expressions::         
 * Case_Statement::              
 * Control_Characters::          
 * Declarations::                
@@ -1905,6 +1937,7 @@ is a dispatching call.
 * Header_Comments::             
 * If_For_Case::                 
 * Instantiations::              
+* Insufficient_Parameters::     
 * Local_Hiding::                
 * Local_Instantiation::         
 * Max_Blank_Lines::             
@@ -1920,7 +1953,6 @@ is a dispatching call.
 * Not_Elaboration_Calls::       
 * Parameter_Aliasing::          
 * Other_Dependencies::          
-* Positional_Parameters::       
 * Potentially_Blocking_Operations::  
 * Pragmas::                     
 * Reduceable_Scope::            
@@ -2018,7 +2050,7 @@ begin
 
 This allocator will be found for type @code{T}, not for type @code{T'Class}.
 
-@node Array_Declarations, Case_Statement, Allocators, Rules Usage
+@node Array_Declarations, Barrier_Expressions, Allocators, Rules Usage
 @section Array_Declarations
 @subsection Syntax
 @example
@@ -2061,7 +2093,98 @@ check array_declarations (first, 1);
 check array_declarations (max_length, 100);
 @end example
 
-@node  Case_Statement, Control_Characters, Array_Declarations, Rules Usage
+@node Barrier_Expressions, Case_Statement, Array_Declarations, Rules Usage
+@section Barrier_Expressions
+@subsection Syntax
+@example
+<check|search|count> Barrier_Expressions ([<allowable> @{, <allowable>@}]); 
+<allowable>    ::= <entity> | <keyword>
+<keyword> ::= allocation          | any_component   | any_variable        | 
+              arithmetic_operator | array_aggregate | comparison_operator | 
+              conversion          | dereference     | indexing            | 
+              function_attribute  | local_function  | logical_operator    | 
+              record_aggregate    | value_attribute
+@end example
+@subsection Action
+This rule controls expressions used in barriers of protected
+entries. Without parameters, the only elements allowed in barriers are
+references to boolean components of the protected element and
+litterals (this corresponds to what is allowed for the Ravenscar
+profile). Parameters specify other constructs that are allowed:
+@itemize @bullet
+@item
+Any entity (like a global variable, a function...) can be specified
+and is thus allowed.
+@item
+``allocation'' allows use of allocators.
+@item
+``any_component'' allows use of protected components that are not of
+type @code{Standard.Boolean}.
+@item
+``any_variable'' allows use of any variable (i.e. variables external to
+the protected element).
+@item
+``arithmetic_operator'' allows use of predefined arithmetic operators
+(@code{"+"}, @code{"**"}, etc.).
+@item
+``array_aggregate'' allows use of array aggregates.
+@item
+``comparison_operator'' allows use of predefined comparison and
+membship operators (@code{"="}, @code{">"}, @code{@b{in}}, etc.).
+@item
+``conversion'' allows use of type conversions and type qualifications.
+@item
+``dereference'' allows use of dereferencing of access types (both implicit
+and explicit dereferences).
+@item
+``indexing'' allows use of array indexing and slices.
+@item 
+``function_attribute'' allows use of attributes that are functions
+(like @code{'Pred}, @code{'Image}, etc.).
+@item
+``local_function'' allows use of (protected) functions declared in the
+same protected object.
+@item
+``logical_operator'' allows use of predefined logical operators and
+short-circuit forms (@code{@b{and}}, @code{@b{or else}}, etc.).
+@item
+``record_aggregate'' allows use of record aggregates and extension
+aggregates.
+@item
+``value_attribute'' allows use of attributes that are simple values
+(like @code{'First}, @code{'Terminated}, etc.).
+@end itemize
+
+This rule can be given only once for each of ``check'', ``search'' and ``count''.
+
+Ex:
+@example
+search barrier_expressions;
+check  barrier_expressions (logical_operator, comparison_operator, 
+                            any_component,
+                            Pack.Global_State);
+@end example
+
+@subsection Tips
+The goal of the ``Simple_Barrier'' restriction from the Ravenscar
+profile is to ensure that evaluation of barriers never raise
+exceptions. Even simple things like a qualified expression can raise
+exceptions, but in practice more than the restriction of the Ravenscar
+profile can be ``reasonably'' allowed.
+
+Note that the various ``operator'' keywords allow only the use of
+predefined operators. If a user defined operator should be allowed,
+provide it explicitely as an <entity>. There is no way to allow any
+function call, since this would boil down to allowing pretty much
+anything, but you can of course specify explicitely functions that can
+be called.
+
+You can provide this rule both for ``check'' and ``search'', but of
+course it makes sense only if the set of allowed features for
+``search'' is a subset of those allowed for ``check''.  This way, the
+use of certain features can be interpreted only as a warning.
+
+@node  Case_Statement, Control_Characters, Barrier_Expressions, Rules Usage
 @section Case_Statement
 @subsection Syntax
 @example
@@ -2167,18 +2290,19 @@ declaration_kw ::=
    non_identical_renaming         | not_operator_renaming         |
    null_extension                 | null_ordinary_record_type     |
    null_tagged_type               | operator                      |
-   ordinary_fixed_type            | ordinary_record_type          |
-   out_parameter                  | package_statements            |
-   private_extension              | protected                     |
-   protected_entry                | protected_type                |
-   record_type                    | renaming                      |
-   separate                       | signed_type                   |
-   single_array                   | single_protected              |
-   single_task                    | subtype                       |
-   tagged_type                    | task                          |
-   task_entry                     | task_type                     |
-   type                           | unconstrained_array_type      |
-   uninitialized_protected_field  | uninitialized_record_field
+   operator_renaming              | ordinary_fixed_type           | 
+   ordinary_record_type           | out_parameter                 | 
+   package_statements             | private_extension             | 
+   protected                      | protected_entry               | 
+   protected_type                 | record_type                   | 
+   renaming                       | separate                      | 
+   signed_type                    | single_array                  | 
+   single_protected               | single_task                   | 
+   subtype                        | tagged_type                   | 
+   task                           | task_entry                    | 
+   task_type                      | type                          | 
+   unconstrained_array_type       | uninitialized_protected_field | 
+   uninitialized_record_field
 @end example
 
 @subsection action
@@ -2295,9 +2419,11 @@ not), while @code{ordinary_record_type} controls only non-tagged
 record types, and @code{tagged_type} controls only tagged record types.
 @item
 @code{renaming} controls all renaming declarations, while
-@code{not_operator_renaming} allows only those that are renamings of an
-operator, and @code{non_identical_renaming} allows only those where the
-new name and the old name are the same.
+@code{operator_renaming} controls only those that are renamings of an
+operator, @code{not_operator_renaming} controls only those that are
+not renamings of an operator, and @code{non_identical_renaming}
+controls only those where the new name and the old name are not the
+same.
 @item
 @code{subtype} control all explicit subtype declarations (i.e. not all
 anonymous subtypes that appear at various places in the  language).
@@ -2382,7 +2508,7 @@ error.
 @end itemize
 
 Alternatively, the <entity> and/or the <formal name> can be replaced by
-the keywork @code{all}, in which case any entity (respectively formal) will
+the keyword @code{all}, in which case any entity (respectively formal) will
 match.
 
 Ex:
@@ -2527,16 +2653,30 @@ corresponding generics are not used.
 @section Entity_Inside_Exception
 @subsection Syntax
 @example
-<check|search|count> entity_inside_exception (<name> @{, <name>@});
+<check|search|count> entity_inside_exception (<spec> @{, <spec>@});
+<spec> ::= [not] <entity> | calls
 @end example
 
 @subsection Action
 This rule controls exception handlers that contain references to one
-or several Ada entities specified as parameters.
+or several Ada entities specified as parameters. If the keyword
+``calls'' is given, it stands for all subprogram and entry calls. If
+an <entity> (or ``calls'') is preceded by the keyword ``not'', it is
+not included in the list of controlled entities (i.e.  the entity is
+allowed in the exception handler). This allows to make exceptions to a
+more general specification of an entity, or to allow calls to
+well-defined procedures if the keyword ``calls'' is given.
 
 Ex:
 @example
 check entity_inside_exception (ada.text_io.put_line);
+
+-- Control all calls, except to the Report_Exception procedure:
+check entity_inside_exception (calls, not Reports.Report_Exception);
+
+-- Control all Put, except the one on Strings:
+check entity_inside_exception (all Put, 
+                               not Ada.Text_IO.Put@{Standard.String@});
 @end example
 
 @node Exception_Propagation, Expressions, Entity_Inside_Exception, Rules Usage
@@ -2695,7 +2835,10 @@ These last two cases are detected by the rule
 @example
 <check|search|count> expressions (<expression_kw> @{, <expression_kw>@});
 
-expression_kw ::= real_equality | slice
+expression_kw ::=  and     | and_then      | array_others  | or    |
+                   or_else | real_equality | record_others | slice |
+                   xor
+                   
 @end example
 @subsection Action
 This rule controls usage of certain forms of expressions. The rule can
@@ -2706,6 +2849,14 @@ be specified at most once for each expression keyword.
 (``='' or ``/='') between real (floating point or fixed point) values.
 @item
 @code{slice} controls usage of array slices.
+@item
+@code{and}, @code{or}, @code{xor}, @code{and_then}, and @code{or_else}
+control usage of the corresponding logical operator (or short circuit
+form).
+@item
+@code{array_others} and @code{record_others} control the occurrence of
+a @code{@b{when others} =>} association in array and record
+aggregates, respectively.
 @end itemize
 
 Ex:
@@ -2814,16 +2965,18 @@ of headers are possible, checking that the headers follow the
 project's standard requires manual inspection, but this rule is useful
 to control that unit headers have not been inadvertantly forgotten.
 
-If the keyword ``model'' is given as first parameter, the second parameter is interpreted as a file name (and must be
-given within quotes, since usually file names contain special
-characters like ``.'' and ``/''). If the file name is not an absolute
-path, it is interpreted as relative to the directory of the file that
-contains the rule, or the to the current directory if the rule is
-given on the command line.  Each line of the indicated file is a
-regular expression, and the rule controls that the corresponding line
-of the source file matches the expression. However, if a line contains
-only a  single ``*'' character, it means that the next line is a
-pattern that can be matched any number of times (including 0).
+If the keyword ``model'' is given as first parameter, the second
+parameter is interpreted as a file name (and must be given within
+quotes, since usually file names contain special characters like ``.''
+and ``/''). If the file name is not an absolute path, it is
+interpreted as relative to the directory of the file that contains the
+rule, or the to the current directory if the rule is given on the
+command line.  Each line of the indicated file is a regular
+expression, and the rule controls that the corresponding line of the
+source file matches the expression. @xref{Syntax of regular
+expressions}. However, if a line contains only a single ``*''
+character, it means that the next line is a pattern that can be
+matched any number of times (including 0).
 
 This rule can be given at most once with ``minimum'' for each of
 ``check'', ``search'', and ``count''. The rule can be given only once
@@ -2858,9 +3011,6 @@ on a file that contains a standard header, it will produce a pattern
 file where each line starts with ``^'', ends with ``$'', and every
 special character is quoted with ``\''.
 
-If you compiled with the @code{Portable_String_Matching} package, only
-basic (``*'' and ``?'') wildcards are available.
-
 @node If_For_Case, Instantiations, Header_Comments, Rules Usage
 @section If_For_Case
 @subsection Syntax
@@ -2893,7 +3043,7 @@ Ex:
 check if_for_case;
 @end example
 
-@node Instantiations, Local_Hiding, If_For_Case, Rules Usage
+@node Instantiations, Insufficient_Parameters, If_For_Case, Rules Usage
 @section Instantiations
 @subsection Syntax
 @example
@@ -2948,7 +3098,51 @@ Another solution is to disable the check for the rule at the place
 where it is allowed, and then do a check; if there are other
 instantiations, they will come out as errors.
 
-@node Local_Hiding, Local_Instantiation, Instantiations, Rules Usage
+@node  Insufficient_Parameters, Local_Hiding, Instantiations, Rules Usage
+@section Insufficient_Parameters
+@subsection Syntax
+@example
+<check|search|count> insufficient_parameters 
+                       (<Max_Allowed> @{, <Type_Name>@});
+@end example
+@subsection Action
+This rule controls calls to subprograms and entries where the values
+of parameters does not provide sufficient information to the reader to
+correctly identify the parameter's purpose. <Max_Allowed> is the
+maximum number of  allowed ``insufficient'' parameters (can be 0).
+<Type_Name> designates enumeration types whose values should be
+included in the check.
+
+An actual parameter is deemed "insufficient"  if it is given in
+positional (as opposed to named) notation, it is an expression whose
+primaries are all numeric literals, or enumeration literals belonging
+to one of the types passed as parameters to the rule
+(@code{Standard.Boolean} for example).
+
+This rule can be given once for each of check, search, and count. This
+way, it is possible to have a level considered a warning (search), and
+one considered an error (check).
+
+Ex:
+@example
+search Insufficient_Parameters (1, Standard.Boolean);
+check  Insufficient_Parameters (2, Standard.Boolean);
+@end example
+
+@subsection Tips
+This rule does not apply to operators that use infix notation, nor to
+calls to subprograms that are attributes, since named notation is not
+allowed for these.
+
+This rule controls the use of positional parameters according to their
+values; it is also possible to control the use of positional
+parameters according to the number of parameters with the rule
+@code{style (positional_association)}. @xref{Style}.
+
+Note also that this rules applies only to calls, while @code{style
+(positional_association)} applies to all forms of associations.
+
+@node Local_Hiding, Local_Instantiation, Insufficient_Parameters, Rules Usage
 @section Local_Hiding
 @subsection Syntax
 @example
@@ -3022,7 +3216,7 @@ This rule controls the maximum depth of subprograms (or entry) calls;
 roughly, the call depth is the number of frames that are stacked by a
 call: if you call a subprogram that calls another subprogram that
 calls nothing, then the call depth is 2. Note that a call to a task
-(not protected) entry has allways a depth of 1, since the accept body
+(not protected) entry has always a depth of 1, since the accept body
 that corresponds to the entry is executed on a different stack.
 
 The value of the parameter is the maximum @i{allowed} depth, i.e. the
@@ -3213,9 +3407,10 @@ intended to prevent concurrent access to these variables.
 @subsection Syntax
 @example
 <check|search|count> naming_convention
-   ([root] <Filter_Kind>,
-    [any|local|global] [case_sensitive|case_insensitive] [not] "<Pattern>"
+   ([root] @{<Location>@} <Filter_Kind>,
+    [case_sensitive|case_insensitive] [not] "<Pattern>"
     @{, ...@});
+<Location> ::= global | local | unit
 <Filter_Kind> ::= All |
                     Type |
                        Discrete_Type |
@@ -3299,17 +3494,24 @@ intended to prevent concurrent access to these variables.
 This rule controls the declaration of identifiers that do not follow
 the project's naming conventions. The first parameter defines the kind
 of declaration to which the rule is applicable, and other parameters
-define patterns, using the full Regexp syntax. Please refer to the
-@code{regexp} reference manual, or to the comments in file
-@code{gnat-regpat.ads} for details. Note that the pattern needs not
-include any wildcard, but if it does, it must be enclosed in quotes.
+are regular expressions that define the patterns that must be
+matched. @xref{Syntax of regular expressions}. Note that the pattern
+needs not include any wildcard, but if it does, it must be enclosed in
+quotes.
 
-If ``global'' or ``local'' is specified, the pattern applies only to
-global (resp. local) declarations.  Otherwise (``any'' or not
-specified), the pattern applies to all identifiers, irrespectively of
-where they are declared. An identifier is considered global if it is
-declared in a package or a  generic package, possibly nested in other
-packages or generic packages.
+If one or more <Location> keyword is specified, the pattern applies
+only to identifiers.  Otherwise, the pattern applies to all
+identifiers, irrespectively of where they are declared. The definition
+of locations is as follows:
+@itemize @bullet
+@item
+``unit'': The identifier is the defining name of a program unit.
+@item
+``global'': The identifier is  declared in a package or a  generic
+package, possibly nested in other packages or generic packages.
+@item
+``local'': All other cases.
+@end itemize
 
 If ``case_sensitive'' is specified, pattern matching considers
 casing. Otherwise (default or ``case_insensitive''), casing is
@@ -3373,7 +3575,7 @@ check naming_convention
    (all, case_sensitive "^[A-Z][a-z0-9]*(_[A-Z0-9][a-z0-9]*)*$");
 
 -- All global variables must start with "G_"
-check naming_convention (variable, global "G_");
+check naming_convention (global variable, "G_");
 @end example
 
 @subsection Tips
@@ -3407,9 +3609,6 @@ comment, unless you simply disable ``naming_convention''.
 @subsection Limitations
 This rule does not support wide characters outside the basic Latin-1 set.
 
-If you compiled with the @code{Portable_String_Matching} package, only
-basic (``*'' and ``?'') wildcards are available.
-
 @node No_Safe_Initialization, Non_Static, Naming_Convention, Rules Usage
 @section No_Safe_Initialization
 @subsection Syntax
@@ -3423,11 +3622,12 @@ not ``safely'' initialized.  A variable (or @code{@b{out}} parameter)
 is considered safely initialized if there is an initialization
 expression in its declaration, or if it is given a value in the first
 statements of the corresponding body, until anything other than
-assignments, if or case statements, or procedure calls is encountered.
-Variables assigned in if or case statements must receive a value in
-all paths. The value can be given either through assignment or by
-having the variable as an @code{@b{out}} parameter of a procedure
-call. This rule can be given only once for each value of
+assignments, @code{@b{if}} or @code{@b{case}} statements, or procedure
+calls is encountered.  Variables assigned in @code{@b{if}} or
+@code{@b{case}} statements must receive a value in all paths. The
+value can be given either through assignment or by having the variable
+as an @code{@b{out}} (but not @code{@b{in out}}) parameter of a
+procedure call. This rule can be given only once for each value of
 <check_kind>. Without parameters, it is equivalent to giving both.
 
 Note that the variable must be assigned to globally, i.e. assigning to
@@ -3588,11 +3788,11 @@ Due to a weakness of the ASIS standard, dispatching calls  are not
 considered. This limitation will be removed as soon as we find a way
 to work around this problem, but the issue is quite difficult!
 
-@node Other_Dependencies, Positional_Parameters, Parameter_Aliasing, Rules Usage
+@node Other_Dependencies, Potentially_Blocking_Operations, Parameter_Aliasing, Rules Usage
 @section Other_Dependencies
 @subsection Syntax
 @example
-<check|search|count> other_depencies (<unit> @{,<unit>@});
+<check|search|count> other_dependencies (<unit> @{,<unit>@});
 @end example
 @subsection Action
 This rule controls semantic dependencies (i.e. @code{@b{with}} clauses)
@@ -3604,64 +3804,7 @@ Ex:
 check other_dependencies (Ada.Text_IO);
 @end example
 
-@node Positional_Parameters, Potentially_Blocking_Operations, Other_Dependencies, Rules Usage
-@section Positional_Parameters
-@subsection Syntax
-@example
-<check|search|count> positional_parameters (maximum, <Max_Allowed>);
-<check|search|count> positional_parameters (insufficient, <Max_Allowed>
-                                           @{, <Type_Name>@});
-@end example
-@subsection Action
-This rule controls calls to subprograms and entries that use
-positional (not named) notation.  In the first form, <Max_Allowed> is
-the maximum number of parameters allowed to use positional notation.
-In the second form, <Max_Allowed> is the maximum number of parameters
-allowed to use positional notation that do not provide sufficient
-information to correctly identify the parameter's purpose. <Type_Name>
-designate enumeration types whose values should be included in the
-check.  An actual parameter is deemed "insufficient" if it is an
-expression whose primaries are all numeric literals, or enumeration
-literals belonging to one of the types passed as parameters to the
-rule (Boolean for example).
-
-This rule can be given once for each of check, search, and count, for
-each form. This way, it is possible to have a level considered a
-warning (search), and one considered an error (check). It is allowed
-to specify both forms, but of course it makes sense only if the
-<Max_Allowed> for ``maximum'' is greater than the <Max_Allowed> for
-``insufficient''.
-
-Ex:
-@example
-search Positional_Parameters (Insufficient, 1, Boolean);
-check  Positional_Parameters (Insufficient, 2, Boolean);
-search Positional_Parameters (Maximum, 3);
-@end example
-
-@subsection Tips
-This rule does not apply to operators that use infix notation, nor to
-calls to subprograms that are attributes, since named notation is not
-allowed for these.
-
-There is a slight overlap between this rule and the ``style
-(positional_association, call)'' rule (@pxref{Style}), namely:
-@example
-check style (positional_association, call)
-@end example
-is the same as:
-@example
-check positional_parameters (maximum, 0);
-@end example
-
-The idea is that the former is intended to implement a programming
-rule like ``all positional association is forbidden'', while the later
-corresponds to programming patterns that allow positional associations
-in well defined cases (either when a fixed number of positional
-parameters are allowed, or when non ``insufficient'' parameters are
-allowed).
-
-@node  Potentially_Blocking_Operations, Pragmas, Positional_Parameters, Rules Usage
+@node  Potentially_Blocking_Operations, Pragmas, Other_Dependencies, Rules Usage
 @section Potentially_Blocking_Operations
 @subsection Syntax
 @example
@@ -3894,14 +4037,15 @@ to calling a side-effect function through the default value.
 @section Silent_Exceptions
 @subsection Syntax
 @example
-<check|search|count> Silent_Exceptions
-   (<subprogram name>|raise @{, <subprogram name>@});
+<check|search|count> Silent_Exceptions (<element> @{, <element>@});
+element ::= <subprogram name> | raise | return | requeue
 @end example
 
 @subsection Action
 This rule controls exception handlers that can cause exceptions to
 silently disappear, i.e. handlers that do @i{not} call one of the
-given subprograms (for example a reporting procedure) nor re-raise an
+given subprograms (for example a reporting procedure) nor perform
+other required operations, like returning, requeuing, or re-raising an
 exception.
 
 The parameters are the Ada callable constructs considered
@@ -4035,9 +4179,8 @@ operators of identical priority levels.
 This rule controls comments that match one of the given patterns. Only
 the ``useful'' part of the comment is matched against the patterns,
 i.e. the part after the ``@code{--}'' and spaces following
-it. Patterns are given using the full Regexp syntax. Please refer to
-the @code{regexp} reference manual, or to the comments in file
-@code{gnat-regpat.ads} for details. Note that the pattern needs not
+it. Patterns are given using the full Regexp syntax. @pxref{Syntax of
+regular expressions} for details. Note that the pattern needs not
 include any wildcard, but if it does, it must be enclosed in
 quotes. Pattern matching is always case insensitive.
 
@@ -4061,9 +4204,6 @@ the comment, or both.
 @subsection Limitations
 This rule does not support wide characters outside the basic Latin-1 set.
 
-If you compiled with the @code{Portable_String_Matching} package, only
-basic (``*'' and ``?'') wildcards are available.
-
 @node Statements, Style, Special_Comments, Rules Usage
 @section Statements
 @subsection Syntax
@@ -4071,19 +4211,20 @@ basic (``*'' and ``?'') wildcards are available.
 <check|search|count> statements (<statement_kw> @{, <statement_kw>@};
 
 statement_kw ::=
-   abort                  | accept_return    | asynchronous_select |
-   block                  | case_others      | case_others_null    |
-   conditional_entry_call | delay            | delay_until         |
-   dispatching_call       | entry_return     | exception_others    |
-   exception_others_null  | exit             | exit_for_loop       |
-   exit_while_loop        | function_return  | goto                |
-   loop_return            | multiple_exits   | no_else             |
-   procedure_return       | raise            | raise_standard      |
-   requeue                | reraise          | selective_accept    |
-   terminate              | timed_entry_call | unconditional_exit  |
-   unnamed_block          | unnamed_exit     | unnamed_loop_exited |
-   unnamed_multiple_loop  | untyped_for      | while_loop          |
-   while_true
+   abort                  | accept_return         | asynchronous_select |
+   block                  | case_others           | case_others_null    |
+   conditional_entry_call | delay                 | delay_until         |
+   dispatching_call       | entry_return          | exception_others    |
+   exception_others_null  | exit                  | exit_for_loop       |
+   exit_while_loop        | for_loop              | function_return     | 
+   goto                   | labelled              | loop_return         | 
+   multiple_exits         | no_else               | null                | 
+   procedure_return       | raise                 | raise_standard      | 
+   requeue                | reraise               | selective_accept    | 
+   simple_loop            | terminate             | timed_entry_call    | 
+   unconditional_exit     | unnamed_block         | unnamed_exit        | 
+   unnamed_loop_exited    | unnamed_multiple_loop | unnecessary_null    | 
+   untyped_for            | while_loop            | while_true
 @end example
 
 @subsection Action
@@ -4136,14 +4277,24 @@ handler, while @code{exception_others_null} controls only
 @code{@b{when others}} exception handlers that contain only
 @code{@b{null}} statements.
 @item
+@code{for_loop} controls all @code{for} loops.
+@item
 @code{function_return} controls return statements from
 functions. Obviously, return statements cannot be forbidden in
 functions; this keyword controls that there is only one return
 statement in the body of functions, and at most one return statement
 in each exception handler of the exception part of functions.
 @item
+@code{labelled} controls statements with a label (true statement
+labels, not block and loop names).
+@item
 @code{no_else} controls @code{if} statements that have no @code{else}
 path.
+@item
+@code{null} controls all @code{@b{null}} statements, while
+@code{unnecessary_null} controls only @code{@b{null}} statements that
+serve no purpose and can be removed.  Note that if a @code{@b{null}}
+statement carries a label, it is not considered  unnecessary.
 @item
 @code{raise} controls all @code{@b{raise}} statements, while
 @code{raise_standard} controls @code{raise} statements that raise one
@@ -4153,6 +4304,9 @@ handlers that reraise the same exception. Note that @code{raise_standard}
 and @code{reraise} take precedence over @code{raise} if they are mentionned
 together, but that @code{raise} will control all form of @code{@b{raise}}
 statements if no more specific subrule is given.
+@item
+@code{simple_loop} controls simple loops, i.e. those that are neither
+@code{@b{while}} nor @code{@b{for}} loops.
 @item
 @code{unnamed_exit} controls @code{@b{exit}} statements without a
 loop name that exits from a named loop.
@@ -4188,14 +4342,19 @@ proper Ada training. Such code is certainly worth a peer review...
 @subsection Syntax
 @example
 <check|search|count> style;
-<check|search|count> style (casing [, <casing_kw>]);
+<check|search|count> style (casing_identifier, <casing_kw>);
+<check|search|count> style (casing_attribute,  <casing_kw>);
+<check|search|count> style (casing_pragma,     <casing_kw>);
+<check|search|count> style (compound_statement);
 <check|search|count> style (default_in);
 <check|search|count> style (exposed_literal, <type_kw>, @{, <value_place>@});
 <check|search|count> style (multiple_elements @{,<element_kw>@});
 <check|search|count> style (negative_condition);
 <check|search|count> style (no_closing_name [, <max_lines>]);
 <check|search|count> style (numeric_literal, [not] <base> [, <block_size>]);
-<check|search|count> style (positional_association @{,<context_kw>@});
+<check|search|count> style (positional_association 
+                             @{,<context_kw> [,<max_allowed>]@} 
+                             | [, <max_allowed>]);
 <check|search|count> style (renamed_entity);
 
 casing_kw   ::= uppercase | lowercase | titlecase | original
@@ -4214,26 +4373,38 @@ parameter specifies which style aspect is to be checked:
 
 @itemize @bullet
 @item
-``casing'' controls that identifiers use the appropriate
-casing. ``original'' (which is the default) means that identifiers
-must use the same casing as in their declaration.
+``casing_identifier'', ``casing_attribute'', and ``casing_pragma''
+control that  identifiers (respectively attributes or pragmas) use the
+appropriate casing. ``original'' (which is allowed only for
+identifiers) means that identifiers must use the same casing as in
+their declaration.
+@item
+``compound_statement'' controls that compound statements span at least
+a minimum number of lines: 3 for @code{@b{if}} statements,
+@code{@b{loop}} statements, block statements, and @code{@b{accept}}
+statements with a body; 4 for @code{@b{case}} statements, selective
+@code{@b{accept}} statements, and timed entry call statements; and 5
+for conditional entry call statements and asynchronous select
+statements.
 @item
 ``default_in'' controls subprograms, entries and generics declarations
 that omit an explicit @code{in} mode for a parameter.
 @item
-``exposed_literal'' controls the usage of literals (aka
-``magic values''), that appear outside of constants or named numbers
+``exposed_literal'' controls the usage of literals (aka ``magic
+values''), that appear outside of constants or named numbers
 declarations. The second parameter tells to which kind of literals the
-rule applies. The (optional) indicated values that follow are allowed at
-any place; for strings, they are regular expressions. Commonly allowed values
-are 0 and 1 for integer literals, 1.0 and 0.0 for real literals and "^$"
-(the empty string) for string literals. At most 20 values of each kind may
-be specified. In addition, on or several <place> keyword can be used to
-specify constructs where any literal is allowed: ``number'' stands for named
-number declarations, ``constant'' for constant declarations, ``var_init'' for
-the initialization expression of variable declarations, and ``repr_clause'' for
-representation clauses. If no <place> is given, it is taken as @code{number, constant},
-i.e. any literal is allowed in named numbers and constant declarations.
+rule applies. The (optional) indicated values that follow are allowed
+at any place; for strings, they are regular expressions. @xref{Syntax
+of regular expressions}. Commonly allowed values are 0 and 1 for
+integer literals, 1.0 and 0.0 for real literals and "^$" (the empty
+string) for string literals. At most 20 values of each kind may be
+specified. In addition, one or several <place> keyword can be used to
+specify constructs where any literal is allowed: ``number'' stands for
+named number declarations, ``constant'' for constant declarations,
+``var_init'' for the initialization expression of variable
+declarations, and ``repr_clause'' for representation clauses. If no
+<place> is given, it is taken as @code{number, constant}, i.e. any
+literal is allowed in named numbers and constant declarations.
 @item
 ``multiple_elements'' controls clauses, declarations, and statements
 that do not start on a line of their own (i.e. when there are more
@@ -4272,11 +4443,18 @@ base 10, 4 for base 2, etc.
 ``positional_association'' controls pragmas, discriminants, calls,
 aggregates, or instantiations that use positional associations.  Extra
 parameters specify which kind of construct to check; if not specified,
-all constructs are controlled. Note that for calls, positional
-association is @i{not} reported for operators that use infix notation
-nor for calls to subprograms that are attributes, since named notation
-is not allowed in these cases. For calls, another rule provides more
-fine-grained control: @xref{Positional_Parameters}.
+all constructs are controlled. Each of the construct keywords is
+optionally followed by an integer value; if it is specified, it gives
+the maximum number of associations that are allowed to be positional,
+i.e. the rule will trigger only if there are more than the indicated
+number of associations. See examples below.
+
+Note that for calls, positional association is @i{not} reported for
+operators that use infix notation nor for calls to subprograms that
+are attributes, since named notation is not allowed in these
+cases. For calls, another rule controls positional associations
+according to the value of parameters rather than their number:
+@xref{Insufficient_Parameters}.
 @item
 ``renamed_entity'' controls occurrences of identifiers within the scope
 of a renaming declaration for them; i.e. it enforces that when an entity
@@ -4287,13 +4465,24 @@ Ex:
 @example
 search style (no_closing_name);
 search style (no_closing_name, 5);
-check style (casing);
-search style (positional_association);
-check style (positional_association, aggregate, call);
+check style (casing_identifier, original);
 check style (default_in);
 check style (literal, 10, 3);
 check style (exposed_literal, integer, 0, 1);
 check style (exposed_literal, real, 0.0, 1.0);
+
+ -- All positional associations:
+check style (positional_association); 
+
+-- All positional associations in calls and aggregates:
+check style (positional_association, aggregate, call);
+
+ -- All positional associations with more than 3 elements:
+search style (positional_association, 3);
+
+-- Positional associations in calls with more than 3 elements,
+-- and positional associations in aggregates with more than 4 elements:
+search style (positional_association, call, 3, aggregate, 4);
 @end example
 
 Without parameter, the rule will control all style aspects with
@@ -4301,7 +4490,9 @@ parameter values that correspond to the most commonly used cases,
 i.e. it is equivalent to the following:
 @example
 style (no_closing_name);
-style (casing, original);
+style (casing_identifier, original);
+style (casing_attribute, titlecase);
+style (casing_pragma, titlecase);
 style (positional_association);
 style (default_in);
 style (negative_condition)
@@ -4318,6 +4509,30 @@ named notation would not allow infix notation any more), and calls to
 subprograms that are attributes (since named notation is not allowed
 for these).
 
+In many cases, badly laid-out compound statements will trigger both the
+``multiple_elements, statement'' and the ``compound_statement''
+subrules. For example:
+@example
+@b{if} C @b{then} I := 1; @b{end} @b{if};
+@end example
+will complain that the assignment is on the same line as the
+@code{@b{if}}, and that the @code{@b{if}} statement spans less than 3
+lines. However, the subrules are not equivalent. For example,
+@example
+@b{if} C @b{then} I := 1; 
+@b{end} 
+@b{if};
+@end example
+will only find that the assignment is on the same line as the
+@code{@b{if}}, while
+@example
+@b{if} C @b{then} 
+   I := 1; @b{end} @b{if};
+@end example
+will only find that the @code{@b{if}} statement spans less than 3
+lines. In most cases, you'll want to specify both subrules to ensure
+proper lay-out.
+
 @subsection Limitations
 If a predefined operator or an attribute is renamed, the
 ``renamed_entity'' subrule cannot check that the original entity is not
@@ -4331,7 +4546,7 @@ detected by the rule ``uncheckable''. @xref{Uncheckable}.
 <check|search|count> terminating_tasks
 @end example
 @subsection Action
-This rule controls task that can terminate. A task is considered a
+This rule controls tasks that can terminate. A task is considered a
 terminating task if its last statement is not an unconditional loop,
 or this if this loop is exited. It is also considered terminating if
 it contains a selective accept with a @code{@b{terminate}} alternative.
@@ -4357,17 +4572,21 @@ If aborts are also to be reported, use the rule ``statements
 @subsection Syntax
 @example
 <check|search|count> Uncheckable [(<risk_kw> [,<risk_kw>])];
-<risk_kw> ::= false_positive | false_negative
+<risk_kw> ::= false_positive | false_negative | missing_unit
 @end example
 @subsection Action
-This rule controls constructs that are not static, and prevent other
-rules from being fully reliable. This rule is special, since it really
-affects the way other rules behave when they encounter a statically
-uncheckable construct. Therefore, if a label is given, the message
-will include the label as usual, with an indication of the rule that
-triggered the message; if no label is given, the message will include
-the name of the rule that detected the uncheckable construct, not
-``uncheckable'' itself.
+If the keyword ``missing_unit'' is given, this rule controls missing
+units,  i.e. units not found (and therefore not controlled) will
+result in an usual error message.
+
+Otherwise, this rule controls constructs that are not static
+and prevent other rules from being fully reliable. This rule is
+special, since it really affects the way other rules behave when they
+encounter a statically uncheckable construct. Therefore, if a label is
+given, the message will include the label as usual, with an indication
+of the rule that triggered the message; if no label is given, the
+message will include the name of the rule that detected the
+uncheckable construct, not ``uncheckable'' itself.
 
 If the keyword ``false_negative'' is given, the rule will control
 constructs that could result in false negatives, i.e. possible
@@ -4377,13 +4596,13 @@ result in false positives, i.e. error messages when the rule is not
 really violated. If no keyword is given, both occurrences are
 controlled.
 
-This rule can be given only once for each of ``check'', ``search'' and
-``count''.
+This rule can be given only once for each of value of the parameters.
 
 Ex:
 @example
 check uncheckable (false_negative);
 search uncheckable (false_positive);
+check uncheckable (missing_unit);
 @end example
 
 @subsection Tips
@@ -4393,6 +4612,15 @@ verification. Such constructs should be either disallowed, or require
 manual inspection. On the other hand, in casual software, it may lead
 to many messages, since for example dispatching calls are uncheckable
 with many rules.
+
+@subsection Limitation
+With ``missing_unit'', the message does not include a reference to a
+source location, since there is no place in the source which can be
+considered as the origin of the error.  If you run AdaControl from
+GPS, there will always be a separate category (``Uncheckable'') in the
+locations window, under which the message will appear, with a file
+name of ``none''. Don't try to click on the error message, since GPS
+will find no file named ``none''!
 
 @node Unnecessary_Use_Clause, Unsafe_Paired_Calls, Uncheckable, Rules Usage
 @section Unnecessary_Use_Clause
@@ -4580,9 +4808,9 @@ have a @code{Mask_Interrupt} procedure that should be matched by
 either @code{Unmask_Interrupt} or @code{General_Reset} (all declared
 in package @code{IT_Driver}), you can specify:
 @example
-check unsafe_paired_calls (IT_Driver.Mask_Interrupt, 
+check unsafe_paired_calls (IT_Driver.Mask_Interrupt,
                            IT_Driver.Unmask_Interrupt);
-check unsafe_paired_calls (IT_Driver.Mask_Interrupt, 
+check unsafe_paired_calls (IT_Driver.Mask_Interrupt,
                            IT_Driver.General_Reset);
 @end example
 
@@ -4595,11 +4823,11 @@ message is issued and execution stops immediately.
 @subsection Limitation
 Due to a weakness of the ASIS standard, dispatching calls  are not
 considered. Especially, this means that the <Lock type> cannot be
-class-wide.  This limitation will be removed as soon as we find a way
-to work around this problem, but the issue is quite difficult!
+class-wide.  Such calls are detected by the rule ``uncheckable''.
+@xref{Uncheckable}.
 
-Due to limitations of internal structures, this rule can be specified
-at most 32 times.
+Due to limitations of internal date structures, this rule can be
+specified at most 32 times.
 
 @node Unsafe_Unchecked_Conversion, Usage, Unsafe_Paired_Calls, Rules Usage
 @section Unsafe_Unchecked_Conversion
@@ -4608,7 +4836,7 @@ at most 32 times.
 <check|search|count> unsafe_unchecked_conversion
 @end example
 @subsection Action
-This rule controls instance of @code{Unchecked_Conversion} between
+This rule controls instances of @code{Unchecked_Conversion} between
 types where the following conditions are not met:
 @itemize @bullet
 @item
@@ -4616,6 +4844,9 @@ A size clause has been specified for both types
 @item
 Both sizes are equal
 @end itemize
+
+Moreover, a special message is given if any of the types is a class-wide
+type (certainly a very questionable construct!).
 
 Ex:
 @example
@@ -4630,7 +4861,7 @@ size clause refers to a size attribute of a predefined type, like:
 @b{for} T'Size @b{use} Integer'size;
 @end example
 
-This can lead to false positives (i.e. detection of instatiations of
+This can lead to false positives (i.e. detection of instantiations of
 @code{Unchecked_Conversion} that are actually OK. Such cases are
 detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
@@ -4878,6 +5109,10 @@ Use file @code{no_standard_entity.aru}.
 
 Use file @code{no_system_entity.aru}.
 
+@rule{Predefined IO packages shall not be used}
+
+Use File @code{no_io.aru}.
+
 @rule{Standard package XXX shall not be used}
 
 File @code{no_standard_unit.aru} controls usage of @i{all} standard
@@ -4913,6 +5148,11 @@ Below are examples of rules that can be directly checked by AdaControl.
 @rule{Goto statement shall not be used}
 @example
 check statements (goto);
+@end example
+
+@rule{Short circuit forms should be preferred over corresponding logical operators}
+@example
+Use_Short_Circuit: search expressions (and, or);
 @end example
 
 @rule{All loops that contain exit statements must be named, and the name must be given in the exit statement}
@@ -5013,6 +5253,17 @@ check entity_inside_exception (all get,      all put,
 This will check that no entity with the corresponding names appear in
 exception handlers.
 
+@rule{Exceptions shall not be used}
+@example
+No_Exception: check declarations (exception, handlers);
+No_Exception: check statements (raise);
+No_Exception: check entities (Ada.Exceptions);
+@end example
+
+This will check that no exception is declared, no exception handler is
+provided, and no exception is raised, not even through the services of
+the package @code{Ada.Exceptions}.
+
 @rule{No procedure exported to C shall propagate exceptions}
 @example
 check exception_propagation (interface, C);
@@ -5073,7 +5324,7 @@ search Allocators;
 This rule identifies all allocations, and thus can be used to check
 that all allocated elements are properly deallocated.
 
-@node  Non upward-compatible changes,  , Examples of using AdaControl for common programming rules, Top
+@node  Non upward-compatible changes, Syntax of regular expressions, Examples of using AdaControl for common programming rules, Top
 @chapter Non upward-compatible changes
 This chapter is intended to users of a previous version of AdaControl,
 who want to migrate rule files to the latest version. Although we
@@ -5091,6 +5342,20 @@ The subrule ``Formal_In_Out'' has been renamed as
 The subrules ``renames'' and ``not_operator_renames'' have been renamed
 to ``renaming'' and ``not_operator_renaming''.
 
+@subsection Naming_Convention
+The <Location> keyword is placed before the <Filter_Kind> keyword instead of
+before the <Pattern>, which looks more natural. The ``Any'' keyword has been removed,
+since omitting the <Location> keyword has the same effect. Change:
+@example
+check naming_convention (variable, global "^G_");
+check naming_convention (package, any "^Pack_");
+@end example
+to:
+@example
+check naming_convention (global variable, "^G_");
+check naming_convention (package, "^Pack_");
+@end example
+
 @subsection Non_Static_Constraint
 This rule is now called Non_Static, since it is no more restricted to
 constraints. The parameters ``index'' and ``discriminant'' have been
@@ -5102,6 +5367,20 @@ check non_static_constraint (index, discriminant);
 to:
 @example
 check non_static (index_constraint, discriminant_constraint);
+@end example
+
+@subsection Positional_Parameters
+This rule has been renamed to @code{Insufficient_Parameters}, since it does no more
+handle the ``maximum'' subrule. Controlling positional parameters according to their number
+is now done by the rule @code{style (positional_association)}. Change:
+@example
+check positional_parameters (maximum, 3);
+check positional_parameters (insufficient, 2, Boolean);
+@end example
+to:
+@example
+check style (positional_association, call, 3);
+check insufficient_parameters (2, Boolean);
 @end example
 
 @subsection Real_Operator
@@ -5116,6 +5395,10 @@ check expressions (Real_Equality);
 @end example
 
 @subsection Style
+The name of the subrule ``casing'' has been changed to
+``casing_identifier'' since the casing of attributes and pragmas can
+now also be checked. The casing style is no more optional.
+
 The name of the subrule ``literal'' has been changed to
 ``numeric_literal'' (since characters and strings are also literals,
 but are not handled by this subrule).
@@ -5207,4 +5490,120 @@ to:
 check|search|count Statements (case_others_null);
 check|search|count Statements (exception_others_null);
 @end example
+
+@node Syntax of regular expressions,  , Non upward-compatible changes, Top
+@chapter Syntax of regular expressions
+The following syntax gives the complete definition of regular
+expressions, as used by several rules.  It is taken from the
+specification of the package @code{gnat.regpat}, where additional
+information is available.
+
+@example
+regexp ::= expr
+       ::= ^ expr               -- anchor at the beginning of string
+       ::= expr $               -- anchor at the end of string
+
+expr   ::= term
+       ::= term | term          -- alternation (term or term ...)
+
+term   ::= item
+       ::= item item ...        -- concatenation (item then item)
+
+item   ::= elmt                 -- match elmt
+       ::= elmt *               -- zero or more elmt's
+       ::= elmt +               -- one or more elmt's
+       ::= elmt ?               -- matches elmt or nothing
+       ::= elmt *?              -- zero or more times, minimum number
+       ::= elmt +?              -- one or more times, minimum number
+       ::= elmt ??              -- zero or one time, minimum number
+       ::= elmt @{ num @}         -- matches elmt exactly num times
+       ::= elmt @{ num , @}       -- matches elmt at least num times
+       ::= elmt @{ num , num2 @}  -- matches between num and num2 times
+       ::= elmt @{ num @}?        -- matches elmt exactly num times
+       ::= elmt @{ num , @}?      -- matches elmt at least num times
+                                   non-greedy version
+       ::= elmt @{ num , num2 @}? -- matches between num and num2 times
+                                   non-greedy version
+
+elmt   ::= nchr                 -- matches given character
+       ::= [range range ...]    -- matches any character listed
+       ::= [^ range range ...]  -- matches any character not listed
+       ::= .                    -- matches any single character
+                                -- except newlines
+       ::= ( expr )             -- parens used for grouping
+       ::= \ num                -- reference to num-th parenthesis
+
+range  ::= char - char          -- matches chars in given range
+       ::= nchr
+       ::= [: posix :]          -- any character in the POSIX range
+       ::= [:^ posix :]         -- not in the POSIX range
+
+posix  ::= alnum                -- alphanumeric characters
+       ::= alpha                -- alphabetic characters
+       ::= ascii                -- ascii characters (0 .. 127)
+       ::= cntrl                -- control chars (0..31, 127..159)
+       ::= digit                -- digits ('0' .. '9')
+       ::= graph                -- graphic chars (32..126, 160..255)
+       ::= lower                -- lower case characters
+       ::= print                -- printable characters (32..127)
+       ::= punct                -- printable, except alphanumeric
+       ::= space                -- space characters
+       ::= upper                -- upper case characters
+       ::= word                 -- alphanumeric characters
+       ::= xdigit               -- hexadecimal chars (0..9, a..f)
+
+char   ::= any character, including special characters
+           ASCII.NUL is not supported.
+
+nchr   ::= any character except \()[].*+?^ or \char to match char
+           \n means a newline (ASCII.LF)
+           \t means a tab (ASCII.HT)
+           \r means a return (ASCII.CR)
+           \b matches the empty string at the beginning or end of a
+              word. A word is defined as a set of alphanumerical
+              characters (see \w below).
+           \B matches the empty string only when *not* at the
+              beginning or end of a word.
+           \d matches any digit character ([0-9])
+           \D matches any non digit character ([^0-9])
+           \s matches any white space character. This is equivalent
+              to [ \t\n\r\f\v]  (tab, form-feed, vertical-tab,...
+           \S matches any non-white space character.
+           \w matches any alphanumeric character or underscore.
+              This include accented letters, as defined in the
+              package Ada.Characters.Handling.
+           \W matches any non-alphanumeric character.
+           \A match the empty string only at the beginning of the
+              string, whatever flags are used for Compile (the
+              behavior of ^ can change, see Regexp_Flags below).
+           \G match the empty string only at the end of the
+              string, whatever flags are used for Compile (the
+              behavior of $ can change, see Regexp_Flags below).
+...    ::= is used to indication repetition (one or more terms)
+@end example
+
+Embedded newlines are not matched by the ^ operator.  It is possible
+to retrieve the substring matched a parenthesis expression. Although
+the depth of parenthesis is not limited in the regexp, only the first
+9 substrings can be retrieved.
+
+The operators '*', '+', '?' and '@{@}' always match the longest possible
+substring. They all have a non-greedy version (with an extra ? after
+the operator), which matches the shortest possible substring.
+
+For instance:
+@example
+ regexp="<.*>"   string="<h1>title</h1>"   matches="<h1>title</h1>"
+ regexp="<.*?>"  string="<h1>title</h1>"   matches="<h1>"
+@end example
+
+'@{' and '@}' are only considered as special characters if they appear
+in a substring that looks exactly like '@{n@}', '@{n,m@}' or '@{n,@}', where
+n and m are digits. No space is allowed. In other contexts, the curly
+braces will simply be treated as normal characters.
+
+Note that if you compiled AdaControl with the
+@code{String_Matching_Portable} package, only basic wildcards are
+available, i.e. only ``*'' and ``?'' are supported, where ``*''
+matches any string of character and ``?'' matches a single character.
 @bye

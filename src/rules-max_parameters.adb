@@ -89,11 +89,11 @@ package body Rules.Max_Parameters is
       Max       : Biggest_Int;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": At least two parameters required");
+         Parameter_Error (Rule_Id, "at least two parameters required");
       end if;
 
       if not Is_Integer_Parameter then
-         Parameter_Error (Rule_Id & ": missing max allowed value");
+         Parameter_Error (Rule_Id, "missing max allowed value");
       end if;
       Max := Get_Integer_Parameter (Min => 0);
 
@@ -101,7 +101,7 @@ package body Rules.Max_Parameters is
          while Parameter_Exists loop
             Stmt := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Stmt)(Rule_Type) then
-               Parameter_Error (Rule_Id & ": rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+               Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
             end if;
             Stmt_Cnt := Stmt_Cnt + 1;
             Stmt_List (Stmt_Cnt) := Stmt;
@@ -235,7 +235,7 @@ package body Rules.Max_Parameters is
          Param_Count : Biggest_Natural := 0;
       begin
          for P in Profile'Range loop
-            Param_Count := Param_Count + Names (Profile (P))'length;
+            Param_Count := Param_Count + Names (Profile (P))'Length;
          end loop;
 
          -- Note that allowed values are at least 0, therefore the checks cannot fail

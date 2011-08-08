@@ -48,7 +48,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework;
 
-   type Expression_Names is (E_Real_Equality, E_Slice);
+   type Expression_Names is (E_And,           E_And_Then,      E_Array_Others, E_Or, E_Or_Else,
+                             E_Real_Equality, E_Record_Others, E_Slice,        E_Xor);
 
    package Usage_Flags_Utilities is new Framework.Language.Flag_Utilities (Expression_Names, "E_");
    use Usage_Flags_Utilities;
@@ -81,14 +82,13 @@ package body Rules.Expressions is
 
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "At least one parameter required");
       end if;
 
       while Parameter_Exists loop
          Expr := Get_Flag_Parameter (Allow_Any => False);
          if Rule_Used (Expr) then
-            Parameter_Error ("Expression already given for rule " & Rule_Id
-                             & ": " & Image (Expr));
+            Parameter_Error (Rule_Id, "Expression already given: " & Image (Expr));
          end if;
 
          Rule_Used (Expr) := True;
@@ -140,16 +140,14 @@ package body Rules.Expressions is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
    begin
-      if not Rule_Used (E_Real_Equality) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      -- This rule is plugged for all operators.  Check type of operator.
       case Operator_Kind (Prefix (Call)) is
          when An_Equal_Operator
            | A_Not_Equal_Operator
-           =>
+              =>
+            if not Rule_Used (E_Real_Equality) then
+               return;
+            end if;
+
             -- Now check the context in which the operator is used and report
             -- errors according to the following rules
 
@@ -178,14 +176,14 @@ package body Rules.Expressions is
                                  Report
                                  (Rule_Id,
                                   Usage (E_Real_Equality),
-                                  Get_Location (Call),
+                                  Get_Location (Prefix (Call)),
                                   "equality or inequality with Root Real !!!");
                               when A_Universal_Real_Definition => -- 3.4.1(6)
                                  if Parsed_First_Parameter then
                                     Report
                                     (Rule_Id,
                                      Usage (E_Real_Equality),
-                                     Get_Location (Call),
+                                     Get_Location (Prefix (Call)),
                                      "equality or inequality with two Universal Real constants !!!");
                                  else
                                     Parsed_First_Parameter := True;
@@ -197,21 +195,21 @@ package body Rules.Expressions is
                            Report
                            (Rule_Id,
                             Usage (E_Real_Equality),
-                            Get_Location (Call),
+                            Get_Location (Prefix (Call)),
                             "equality or inequality with Floating Point");
                             exit Parameter_Loop;
                         when An_Ordinary_Fixed_Point_Definition => -- 3.5.9(3)
                            Report
                            (Rule_Id,
                             Usage (E_Real_Equality),
-                            Get_Location (Call),
+                            Get_Location (Prefix (Call)),
                             "equality or inequality with Ordinary Fixed Point");
                             exit Parameter_Loop;
                          when A_Decimal_Fixed_Point_Definition => -- 3.5.9(4)
                            Report
                            (Rule_Id,
                             Usage (E_Real_Equality),
-                            Get_Location (Call),
+                            Get_Location (Prefix (Call)),
                             "equality or inequality with Decimal Fixed Point");
                             exit Parameter_Loop;
                        when others =>
@@ -220,6 +218,15 @@ package body Rules.Expressions is
                   end;
                end loop Parameter_Loop;
             end;
+
+         when An_And_Operator =>
+            Do_Report (E_And, Get_Location (Prefix (Call)));
+
+         when An_Or_Operator =>
+            Do_Report (E_Or, Get_Location (Prefix (Call)));
+
+         when An_Xor_Operator =>
+            Do_Report (E_Xor, Get_Location (Prefix (Call)));
 
          when others =>
             -- Including Not_An_Operator
@@ -232,7 +239,7 @@ package body Rules.Expressions is
    ------------------------
 
    procedure Process_Expression (Expression : in Asis.Expression) is
-      use Asis, Asis.Elements;
+      use Asis, Asis.Elements, Asis.Expressions;
    begin
       if Rule_Used = (Expression_Names => False) then
          return;
@@ -244,7 +251,51 @@ package body Rules.Expressions is
             Process_Function_Call (Expression);
 
          when A_Slice =>
-            Do_Report (E_Slice, Get_Location (Expression));
+            Do_Report (E_Slice, Get_Location (Slice_Range (Expression)));
+
+         when An_And_Then_Short_Circuit =>
+            Do_Report (E_And_Then, Get_Next_Word_Location (Short_Circuit_Operation_Left_Expression(Expression)));
+
+         when An_Or_Else_Short_Circuit =>
+            Do_Report (E_Or_Else, Get_Next_Word_Location (Short_Circuit_Operation_Left_Expression(Expression)));
+
+         when A_Named_Array_Aggregate
+            | A_Positional_Array_Aggregate
+              =>
+            declare
+               Assocs  : constant Asis.Association_List := Array_Component_Associations (Expression);
+               Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (Assocs'Last));
+            begin
+               if Is_Nil (Choices) then
+                  return;
+               end if;
+               if Definition_Kind (Choices (Choices'First)) = An_Others_Choice then
+                  Do_Report (E_Array_Others, Get_Location (Choices (Choices'First)));
+               end if;
+            end;
+
+         when A_Record_Aggregate
+            | An_Extension_Aggregate
+              =>
+            declare
+               Assocs  : constant Asis.Association_List := Record_Component_Associations (Expression);
+            begin
+               if Is_Nil (Assocs) then
+                  -- (null record)
+                  return;
+               end if;
+
+               declare
+                  Choices : constant Asis.Expression_List  := Record_Component_Choices (Assocs (Assocs'Last));
+               begin
+                  if Is_Nil (Choices) then
+                     return;
+                  end if;
+                  if Definition_Kind (Choices (Choices'First)) = An_Others_Choice then
+                     Do_Report (E_Record_Others, Get_Location (Choices (Choices'First)));
+                  end if;
+               end;
+            end;
 
          when others =>
             null;

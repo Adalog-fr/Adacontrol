@@ -1,6 +1,9 @@
-t_entity_inside_exception.adb:18:19: Error: not_all_overloaded: use of "Ada.Text_Io.Put_Line{Standard.String}"
-t_entity_inside_exception.adb:19:7: Error: not_all_not_overloaded: use of "Ada.Text_Io.Put_Line"
-t_entity_inside_exception.adb:20:7: Error: all_overloaded: use of "Put_Line{Standard.String}"
-t_entity_inside_exception.adb:21:7: Error: all_not_overloaded: use of "Put_Line"
-t_entity_inside_exception.adb:22:12: Error: Attributes: use of "Standard.Integer'Value"
-t_entity_inside_exception.adb:22:27: Error: Attributes: use of "Standard.Integer'Image"
+t_entity_inside_exception.adb:34:19: Error: not_all_overloaded: use of "Ada.Text_Io.Put_Line{Standard.String}"
+t_entity_inside_exception.adb:35:7: Error: not_all_not_overloaded: use of "Ada.Text_Io.Put_Line"
+t_entity_inside_exception.adb:36:7: Error: all_overloaded: use of "Put_Line{Standard.String}"
+t_entity_inside_exception.adb:37:7: Error: all_not_overloaded: use of "Put_Line"
+t_entity_inside_exception.adb:38:12: Error: Attributes: use of "'Value"
+t_entity_inside_exception.adb:38:27: Error: Attributes: use of "'Image"
+t_entity_inside_exception.adb:40:7: Error: Calls: call to T_entity_inside_exception.P1
+t_entity_inside_exception.adb:42:12: Error: Calls: call to T_entity_inside_exception.Func
+t_entity_inside_exception.adb:43:12: Error: Calls: call to Standard.Integer'Succ

@@ -55,7 +55,8 @@ with
   Framework.Plugs,
   Framework.Specific_Plugs,
   Framework.Rules_Manager,
-  Framework.Scope_Manager;
+  Framework.Scope_Manager,
+  Rules.Uncheckable;
 
 -- Pragmas
 pragma Elaborate_All (Asis.Iterator);
@@ -705,6 +706,7 @@ package body Framework.Ruler is
             Unit_Spec := Library_Unit_Declaration (Unit_Name, Framework.Adactl_Context);
             if Is_Nil (Unit_Spec) then
                User_Message (Progress_Indicator & "Controlling " & Unit_Name & " specification ... not found!");
+               Rules.Uncheckable.Process_Missing_Unit ("missing specification for " & Unit_Name);
             else
                User_Log (Progress_Indicator & "Controlling " & Unit_Name & " specification");
                Do_Process (Unit_Spec);
@@ -714,12 +716,13 @@ package body Framework.Ruler is
       -- Control body
       if not Spec_Only then
          if Is_Nil (Unit_Spec) or else Is_Body_Required (Unit_Spec) then
-           if Is_Nil (Unit_Body) then
-              User_Message (Progress_Indicator & "Controlling " & Unit_Name & " body ... not found!");
-           else
-              User_Log (Progress_Indicator & "Controlling " & Unit_Name & " body");
-              Do_Process (Unit_Body);
-           end if;
+            if Is_Nil (Unit_Body) then
+               User_Message (Progress_Indicator & "Controlling " & Unit_Name & " body ... not found!");
+               Rules.Uncheckable.Process_Missing_Unit ("missing body for " & Unit_Name);
+            else
+               User_Log (Progress_Indicator & "Controlling " & Unit_Name & " body");
+               Do_Process (Unit_Body);
+            end if;
          end if;
       end if;
    end Process;

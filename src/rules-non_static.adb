@@ -91,7 +91,7 @@ package body Rules.Non_Static is
       procedure Add_One (Key : Available_Keyword) is
       begin
          if Rule_Used (Key) then
-            Parameter_Error (Rule_Id & ": parameter already specified: " & Image (Key));
+            Parameter_Error (Rule_Id, "parameter already specified: " & Image (Key));
          end if;
 
          Rule_Used (Key) := True;
@@ -227,33 +227,6 @@ package body Rules.Non_Static is
                  & " in instantiation is not static"
                  & Choose (Is_Defaulted_Association (Assoc), " (default value)", ""));
       end Do_Report;
-
-      function Is_Static_Object (Obj : Asis.Expression) return Boolean is
-      begin
-         case Expression_Kind (Obj) is
-            when A_Selected_Component =>
-               return Is_Static_Object (Selector (Obj)) and then Is_Static_Object (Prefix (Obj));
-            when An_Indexed_Component =>
-               if Is_Static_Object (Prefix (Obj)) then
-                  declare
-                     Indexes : constant Asis.Expression_List := Index_Expressions (Obj);
-                  begin
-                     for I in Indexes'Range loop
-                        if Static_Expression_Value_Image (Indexes (I)) = "" then
-                           return False;
-                        end if;
-                     end loop;
-                     return True;
-                  end;
-               else
-                  return False;
-               end if;
-            when An_Explicit_Dereference =>
-               return False;
-            when others =>
-               return not Is_Nil (Ultimate_Name (Obj));
-         end case;
-      end Is_Static_Object;
 
    begin
       if not Rule_Used (K_Instantiation) then

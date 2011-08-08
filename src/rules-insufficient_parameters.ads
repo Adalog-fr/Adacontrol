@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Positional_Parameters - Package specification             --
+--  Rules.Insufficient_Parameters - Package specification           --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -33,15 +33,10 @@
 with
   Asis;
 
-package Rules.Positional_Parameters is
+package Rules.Insufficient_Parameters is
 
-   -- This rule can be used to check/search/cout for calls where
-   -- absence of named notation can lead to confusion
-   -- Parameter(1): Maximum allowed number of "insufficient" parameters
-   -- Parameter(2..N): Enumeration type names whose values are insufficient
-
-   Rule_Id : constant Wide_String := "POSITIONAL_PARAMETERS";
+   Rule_Id : constant Wide_String := "INSUFFICIENT_PARAMETERS";
 
    procedure Process_Call (Element : in Asis.Element);
 
-end Rules.Positional_Parameters;
+end Rules.Insufficient_Parameters;

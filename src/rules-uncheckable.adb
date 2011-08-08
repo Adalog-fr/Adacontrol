@@ -42,12 +42,13 @@ pragma Elaborate (Framework.Language);
 package body Rules.Uncheckable is
    use Framework, Framework.Reports;
 
-   package Uncheckable_Flag_Utilities is new Framework.Language.Flag_Utilities (Uncheckable_Consequence);
+   package Uncheckable_Flag_Utilities is new Framework.Language.Flag_Utilities (Uncheckable_Kinds);
 
-   type Flags_Array is array (Uncheckable_Consequence) of Boolean;
+   type Flags_Array is array (Uncheckable_Kinds) of Boolean;
    Rule_Used : Flags_Array := (others => False);
    Save_Used : Flags_Array;
 
+   Missing_Unit_Context : Basic_Rule_Context;
    ----------
    -- Help --
    ----------
@@ -68,22 +69,32 @@ package body Rules.Uncheckable is
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types) is
       use Framework.Language, Uncheckable_Flag_Utilities;
-      Flag : Uncheckable_Consequence;
+      Flag : Uncheckable_Kinds;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
             Flag := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Flag) then
-               Parameter_Error (Rule_Id & ": value already given");
+               Parameter_Error (Rule_Id, "value already given");
             end if;
             Rule_Used (Flag) := True;
-            Set_Uncheckable (Flag, Rule_Type, Label);
+            if Flag in Uncheckable_Consequence then
+               Set_Uncheckable (Flag, Rule_Type, Label);
+            else
+               Missing_Unit_Context := Basic.New_Context (Rule_Type, Label);
+            end if;
          end loop;
       else
-         Rule_Used := (others => True);
+         if Rule_Used (Missing_Unit) then
+            Parameter_Error (Rule_Id, "value already given");
+         end if;
          for F in Uncheckable_Consequence loop
+            if Rule_Used (F) then
+               Parameter_Error (Rule_Id, "value already given");
+            end if;
             Set_Uncheckable (F, Rule_Type, Label);
          end loop;
+         Rule_Used := (others => True);
       end if;
 
    end Add_Use;
@@ -107,6 +118,19 @@ package body Rules.Uncheckable is
       end case;
    end Command;
 
+   --------------------------
+   -- Process_Missing_Unit --
+   --------------------------
+
+   procedure Process_Missing_Unit (Message : Wide_String) is
+   begin
+      if not Rule_Used (Missing_Unit) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Report (Rule_Id, Missing_Unit_Context, Null_Location, Message);
+   end Process_Missing_Unit;
 begin
    Framework.Rules_Manager.Register_Semantic (Rule_Id,
                                               Help    => Help'Access,

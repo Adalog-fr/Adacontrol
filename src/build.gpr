@@ -1,0 +1,27 @@
+with "asis";
+project Build is
+
+   for Languages use ("Ada");
+   for Source_Dirs use (".");
+   for Object_Dir use ".";
+   for Exec_Dir use ".";
+   for Main use ("adactl", "ptree", "pfni");
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-O2", "-gnatwa", "-gnatWh", "-gnat95", "-gnato", "-gnatf", "-g");
+   end Compiler;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-m", "-k", "-g");
+   end Builder;
+
+end Build;
+

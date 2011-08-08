@@ -577,7 +577,7 @@ package body Framework.Scope_Manager is
          procedure Delete_Data (Stop_At : Link) is
             -- Stop_At = pointer to first node to keep
             --           null to delete the whole chain
-            Current : Link := Head;
+            Cur_Link        : Link := Head;
             Local_Scope_Top : Scope_Range := Scope_Top;
          begin
             -- Data linked to (pseudo) scope 0 must be deleted together with
@@ -586,17 +586,17 @@ package body Framework.Scope_Manager is
                Local_Scope_Top := 0;
             end if;
 
-            while Current /= Stop_At and then Current.Scope >= Local_Scope_Top loop
-               Head := Current.Next;
-               Free (Current.Content);
-               Free (Current);
-               Current := Head;
+            while Cur_Link /= Stop_At and then Cur_Link.Scope >= Local_Scope_Top loop
+               Head := Cur_Link.Next;
+               Free (Cur_Link.Content);
+               Free (Cur_Link);
+               Cur_Link := Head;
             end loop;
          end Delete_Data;
 
-         Current : Link := Head;
+         Cur_Link : Link := Head;
       begin
-         if Current = null or else Current.Scope /= Scope_Top then
+         if Cur_Link = null or else Cur_Link.Scope /= Scope_Top then
             -- No data => nothing to do
             return;
          end if;
@@ -613,17 +613,17 @@ package body Framework.Scope_Manager is
               =>
                -- Save data for the corresponding body
                loop
-                  if Current.Origin = Same_Unit then
-                     Current.Origin := Specification;
+                  if Cur_Link.Origin = Same_Unit then
+                     Cur_Link.Origin := Specification;
                   end if;
-                  exit when Current.Next = null or else Current.Next.Scope /= Scope_Top;
-                  Current := Current.Next;
+                  exit when Cur_Link.Next = null or else Cur_Link.Next.Scope /= Scope_Top;
+                  Cur_Link := Cur_Link.Next;
                end loop;
                Add (To    => Spec_Store,
                     Key   => To_Unbounded_Wide_String (Full_Name_Image (Names (Scope)(1))),
-                    Value => (Head => Head, Visible_Head => Unit_Visible_Head, Tail => Current));
-               Head         := Current.Next;
-               Current.Next := null;
+                    Value => (Head => Head, Visible_Head => Unit_Visible_Head, Tail => Cur_Link));
+               Head         := Cur_Link.Next;
+               Cur_Link.Next := null;
 
             when A_Package_Body_Declaration =>
                -- If a compilation unit, free only the data from the body
@@ -772,7 +772,6 @@ package body Framework.Scope_Manager is
    begin
       -- Now is the time to exit the top-most scope (see above)
       Exit_Scope (Unit_Declaration (Unit), Force => True);
-      null;
    end Exit_Unit;
 
    --------------------------
@@ -810,6 +809,15 @@ package body Framework.Scope_Manager is
    begin
       return Non_Package_Depth = 0;
    end Is_Current_Scope_Global;
+
+   -------------------------------
+   -- Is_Enclosing_Scope_Global --
+   -------------------------------
+
+   function Is_Enclosing_Scope_Global return Boolean is
+   begin
+      return Non_Package_Depth = Scope_Top;
+   end Is_Enclosing_Scope_Global;
 
    -----------
    -- Reset --

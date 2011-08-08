@@ -1,0 +1,7 @@
+-- Control that no (predefined) IO is used
+--
+check entities (Ada.Text_IO, Ada.Wide_Text_IO);
+check entities (Ada.Sequential_IO);
+check entities (Ada.Direct_IO);
+check entities (Ada.Streams.Stream_IO);
+check entities (Ada.Storage_IO);

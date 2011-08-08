@@ -83,7 +83,6 @@ package body Rules.Usage is
    -- Appropriate renamings are provided for these equivalences
 
 
-
    -- In the following type, K_Declared is not visible to users of the rule, since
    -- an enitity is always declared! However, it does not necessarily mean that the
    -- declaration is processed (if the corresponding unit is not processed).
@@ -190,8 +189,7 @@ package body Rules.Usage is
                                  if Rule_Table (Kind,
                                                 S = Found, I = Found, R = Found, W = Found).Used_Types (Rule_Type)
                                  then
-                                    Parameter_Error ("This combination of values already specified for rule "
-                                                       & Rule_Id);
+                                    Parameter_Error (Rule_Id, "This combination of values already specified");
                                  else
                                     Rule_Table (Kind, S = Found, I = Found, R = Found, W = Found).Used_Types (Rule_Type)
                                       := True;
@@ -208,11 +206,11 @@ package body Rules.Usage is
          end loop;
       end Update_Rule_Table;
 
-      Bad_KW        : constant Wide_String := "Unexpected keyword: ";
-      Already_Given : constant Wide_String := "Parameter value already given";
+      Bad_KW        : constant Wide_String := "unexpected keyword: ";
+      Already_Given : constant Wide_String := "parameter value already given";
    begin -- Add_Use
       if not Parameter_Exists then
-         Parameter_Error ("Parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "Parameter required");
       end if;
 
       Entity := Get_Flag_Parameter (Allow_Any => False);
@@ -230,7 +228,7 @@ package body Rules.Usage is
                case Entity is
                   when K_All =>
                      -- Only From_Spec allowed
-                     Parameter_Error (Bad_KW & To_Compare);
+                     Parameter_Error (Rule_Id, Bad_KW & To_Compare);
 
                   when K_Variable | K_Object =>
                      if To_Compare = "READ" then
@@ -240,14 +238,14 @@ package body Rules.Usage is
                      elsif To_Compare = "INITIALIZED" then
                         Usage_Param := K_Initialized;
                      else
-                        Parameter_Error (Bad_KW & To_Compare);
+                        Parameter_Error (Rule_Id, Bad_KW & To_Compare);
                      end if;
 
                   when K_Constant =>
                      if To_Compare = "READ" then
                         Usage_Param := K_Read;
                      else
-                        Parameter_Error (Bad_KW & To_Compare);
+                        Parameter_Error (Rule_Id, Bad_KW & To_Compare);
                      end if;
 
                   when K_Exception =>
@@ -256,7 +254,7 @@ package body Rules.Usage is
                      elsif To_Compare = "HANDLED" then
                         Usage_Param := K_Handled;
                      else
-                        Parameter_Error (Bad_KW & To_Compare);
+                        Parameter_Error (Rule_Id, Bad_KW & To_Compare);
                      end if;
 
                   when K_Task =>
@@ -265,14 +263,14 @@ package body Rules.Usage is
                      elsif To_Compare = "ABORTED" then
                         Usage_Param := K_Aborted;
                      else
-                        Parameter_Error (Bad_KW & To_Compare);
+                        Parameter_Error (Rule_Id, Bad_KW & To_Compare);
                      end if;
 
                   when K_Protected =>
                      if To_Compare = "CALLED" then
                         Usage_Param := K_Called;
                      else
-                        Parameter_Error (Bad_KW & To_Compare);
+                        Parameter_Error (Rule_Id, Bad_KW & To_Compare);
                      end if;
 
                end case;
@@ -290,16 +288,16 @@ package body Rules.Usage is
                if Has_Not then
                   Value_Mask (Usage_Param) := Both;
                else
-                  Parameter_Error (Already_Given);
+                  Parameter_Error (Rule_Id, Already_Given);
                end if;
             when Not_Found =>
                if Has_Not then
-                  Parameter_Error (Already_Given);
+                  Parameter_Error (Rule_Id, Already_Given);
                else
                   Value_Mask (Usage_Param) := Both;
                end if;
             when Both =>
-               Parameter_Error (Already_Given);
+               Parameter_Error (Rule_Id, Already_Given);
          end case;
       end loop;
 

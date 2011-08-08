@@ -110,7 +110,7 @@ package body Rules.Exception_Propagation is
       Check_Level : Risk_Level := Always;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("Parameters required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "parameters required");
       end if;
 
       if Is_Integer_Parameter then
@@ -122,7 +122,7 @@ package body Rules.Exception_Propagation is
       case Target is
          when Kw_Interface =>
             if not Parameter_Exists then
-               Parameter_Error ("At least two parameters required for rule " & Rule_Id);
+               Parameter_Error (Rule_Id, "at least two parameters required");
             end if;
 
             while Parameter_Exists loop
@@ -134,15 +134,14 @@ package body Rules.Exception_Propagation is
                        EP_Rule_Context'(Basic.New_Context (Rule_Type, Label) with Check_Level));
                exception
                   when Already_In_Store =>
-                     Parameter_Error ("Convention already given for rule " & Rule_Id
-                                      & ": " & Convention);
+                     Parameter_Error (Rule_Id, "convention already given: " & Convention);
                end;
             end loop;
             Rule_Used (Kw_Interface) := True;
 
          when Kw_Parameter =>
             if not Parameter_Exists then
-               Parameter_Error ("At least two parameters required for rule " & Rule_Id);
+               Parameter_Error (Rule_Id, "at least two parameters required");
             end if;
 
             while Parameter_Exists loop
@@ -154,19 +153,18 @@ package body Rules.Exception_Propagation is
                              EP_Rule_Context'(Basic.New_Context (Rule_Type, Label) with Check_Level));
                exception
                   when Already_In_Store =>
-                     Parameter_Error ("Parameter already given for rule " & Rule_Id
-                                      & ": " & Image (Entity));
+                     Parameter_Error (Rule_Id, "parameter already given: " & Image (Entity));
                end;
             end loop;
             Rule_Used (Kw_Parameter) := True;
 
          when Kw_Task =>
             if Parameter_Exists then
-               Parameter_Error ("No parameter for ""task""");
+               Parameter_Error (Rule_Id, "No parameter for ""task""");
             end if;
 
             if Rule_Used (Kw_Task) then
-               Parameter_Error ("""task"" already given for rule " & Rule_Id);
+               Parameter_Error (Rule_Id, """task"" already given");
             end if;
 
             Task_Context        := (Basic.New_Context (Rule_Type, Label) with Check_Level);
@@ -174,15 +172,15 @@ package body Rules.Exception_Propagation is
 
          when Kw_Declaration =>
             if Parameter_Exists then
-               Parameter_Error ("No parameter for ""declaration""");
+               Parameter_Error (Rule_Id, "No parameter for ""declaration""");
             end if;
 
             if Rule_Used (Kw_Declaration) then
-               Parameter_Error ("""declaration"" already given for rule " & Rule_Id);
+               Parameter_Error (Rule_Id, """declaration"" already given");
             end if;
 
             if Check_Level = Always then
-               Parameter_Error ("non 0 level required for ""declaration""");
+               Parameter_Error (Rule_Id, "non 0 level required for ""declaration""");
             end if;
 
             Declaration_Context        := (Basic.New_Context (Rule_Type, Label) with Check_Level);
@@ -352,7 +350,7 @@ package body Rules.Exception_Propagation is
       end if;
 
       -- Is there an others choice (it must be last and the only choice)?
-      if Definition_Kind (Exception_Choices (Handlers (Handlers'last)) (1)) /= An_Others_Choice then
+      if Definition_Kind (Exception_Choices (Handlers (Handlers'Last)) (1)) /= An_Others_Choice then
          return Always;
       end if;
 
@@ -360,10 +358,10 @@ package body Rules.Exception_Propagation is
       Level := No_Risk;
       for I in Handlers'Range loop
          declare
-            Statements : constant Asis.Statement_List := Handler_Statements (Handlers (I));
+            Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
          begin
-            for J in Statements'Range loop
-               Traverse_Handler (Statements (J), The_Control, Level);
+            for J in Stats'Range loop
+               Traverse_Handler (Stats (J), The_Control, Level);
                if Level = Always then
                   return Always;
                end if;
@@ -375,11 +373,11 @@ package body Rules.Exception_Propagation is
       -- No need to check declarations if not requested by the user
       if Max_Level < Always then
          declare
-            Declarations : constant Asis.Declaration_List := Body_Declarative_Items (SP_Body);
+            Decls : constant Asis.Declaration_List := Body_Declarative_Items (SP_Body);
          begin
             The_Control := Continue;
-            for I in Declarations'Range loop
-               Traverse_Declaration (Declarations (I), The_Control, Level);
+            for I in Decls'Range loop
+               Traverse_Declaration (Decls (I), The_Control, Level);
                exit when Level >= Max_Level;
                -- Highest risk detected, no need to go further
             end loop;

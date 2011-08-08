@@ -93,7 +93,7 @@ package body Rules.Terminating_Tasks is
       use Framework.Language;
    begin
       if Rule_Used then
-         Parameter_Error ("Rule " & Rule_Id & " can be specified only once.");
+         Parameter_Error (Rule_Id, "rule can be specified only once");
       end if;
 
       Rule_Used := True;

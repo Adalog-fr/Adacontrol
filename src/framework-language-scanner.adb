@@ -193,9 +193,11 @@ package body Framework.Language.Scanner is
       First_Column : Asis.Text.Character_Position;
 
       procedure Get_Name (Extended : Boolean) is
-         Quoted : constant Boolean := Cur_Char = '"';
+         Quoted     : constant Boolean := Cur_Char = '"' or Cur_Char = '~';
+         Quote_Char : Wide_Character;
       begin
          if Quoted then
+            Quote_Char := Cur_Char;
             The_Token := (Kind     => Name,
                           Position => (Current_File, First_Line, First_Column),
                           Length   => 0,
@@ -215,9 +217,9 @@ package body Framework.Language.Scanner is
                if At_Eol then
                   Syntax_Error ("Unterminated quoted string", The_Token.Position);
                end if;
-               if Cur_Char = '"' then
+               if Cur_Char = Quote_Char then
                   Next_Char;
-                  exit when At_Eol or Cur_Char /= '"';
+                  exit when At_Eol or Cur_Char /= Quote_Char;
                end if;
             else
                exit when At_Eol;
@@ -368,7 +370,7 @@ package body Framework.Language.Scanner is
                   end if;
                end;
 
-            when '"' | 'a'..'z' | 'A'..'Z' | '_' => -- We allow '_' because of "_anonymous_"
+            when '~' | '"' | 'a'..'z' | 'A'..'Z' | '_' => -- We allow '_' because of "_anonymous_"
                Get_Name (Extended => False);
 
                -- Check for keywords

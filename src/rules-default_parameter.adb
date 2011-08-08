@@ -138,7 +138,7 @@ package body Rules.Default_Parameter is
       Formals_Map : Parameter_Tree.Map;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": missing subprogram or generic name");
+         Parameter_Error (Rule_Id, "missing subprogram or generic name");
       end if;
 
       E_Kind := Get_Flag_Parameter (Allow_Any => True);
@@ -149,7 +149,7 @@ package body Rules.Default_Parameter is
             Entity := Entity_All;
       end case;
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": missing formal name");
+         Parameter_Error (Rule_Id, "missing formal name");
       end if;
 
       declare
@@ -164,7 +164,7 @@ package body Rules.Default_Parameter is
                Usage := Not_Used;
             end if;
          else
-            Parameter_Error ("""used"" or ""not used"" expected");
+            Parameter_Error (Rule_Id, """used"" or ""not used"" expected");
          end if;
 
          begin
@@ -182,7 +182,7 @@ package body Rules.Default_Parameter is
                                                      Default_Value => Empty_Usage);
          begin
             if Val (Usage).Active then
-               Parameter_Error ("This combination of parameters already specified");
+               Parameter_Error (Rule_Id, "this combination of parameters already specified");
             end if;
             Val (Usage) := (Basic.New_Context (Rule_Type, Label) with True);
             Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Formal), Val);
@@ -267,12 +267,12 @@ package body Rules.Default_Parameter is
          end if;
       end Get_Formals_List;
 
-      procedure Check (Name : Asis.Expression; Name_Context, All_Context : Root_Context'Class) is
+      procedure Check (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class) is
          use Framework.Reports;
          Formal_Key : constant Unbounded_Wide_String
-           := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Name)));
-         Usage   : Usage_Tab := Empty_Usage;
-         Is_Defaulted : constant Boolean := Is_Nil (Actual_Expression (Element, Name, Return_Default => False));
+           := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
+         Usage        : Usage_Tab        := Empty_Usage;
+         Is_Defaulted : constant Boolean := Is_Nil (Actual_Expression (Element, Formal, Return_Default => False));
       begin
          -- Build usage in order of preferences:
          --    Sp_Name, Formal_Name
@@ -301,7 +301,7 @@ package body Rules.Default_Parameter is
                Report (Rule_Id,
                        Usage (Used),
                        Get_Location (Element),
-                       "default use of formal """ & Defining_Name_Image (Name) & '"');
+                       "default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
          end if;
 
@@ -310,7 +310,7 @@ package body Rules.Default_Parameter is
                Report (Rule_Id,
                        Usage (Not_Used),
                        Get_Location (Element),
-                       "non default use of formal """ & Defining_Name_Image (Name) & '"');
+                       "non default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
          end if;
       end Check;
@@ -327,6 +327,7 @@ package body Rules.Default_Parameter is
          when An_Expression =>
             -- Must be A_Function_Call
             Name := Called_Simple_Name (Element);
+
 -- The following sequence was necessary due to a bug in Called_Simple_Name for functions
 -- Kept as comments until proven not useful on any supported platform.
 --              if Expression_Kind (Name) /= An_Attribute_Reference then
@@ -341,6 +342,7 @@ package body Rules.Default_Parameter is
 --                    end if;
 --                 end;
 --              end if;
+
          when others =>
             -- Must be a procedure or entry call
             Name := Called_Simple_Name (Element);

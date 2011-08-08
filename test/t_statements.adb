@@ -26,13 +26,15 @@ procedure T_statements is
 
    procedure P is
    begin
+      null;             -- Unnecessary_Null
       return;           -- Procedure_Return
    end P;
 
    function F return Integer is
    begin
       if I = 3 then
-         return 1;
+         null;          -- Unnecessary_Null
+         return 1;      -- OK (first return)
       else
          return 2;      -- Function_Return
       end if;
@@ -45,14 +47,16 @@ procedure T_statements is
             end if;
          end Ff;
       begin
+         null;          -- Unnecessary_Null
          I := 0;
       end B1;
-   exception            -- Exception_Handler
+   exception
       when Constraint_Error =>
+         null;          -- Unnecessary_Null
          return 1;
       when others =>    -- Exception_Others
          if I = 3 then
-            return 1;   -- Function_Return
+            return 1;   -- OK (first return)
          else
             return 2;   -- Function_Return
          end if;
@@ -78,7 +82,7 @@ procedure T_statements is
    package body Dispatching is
       procedure Proc (X : Object) is
       begin
-         null;
+         null;            -- Null
       end Proc;
       function  Func (X : Object) return Integer is
       begin
@@ -91,13 +95,13 @@ begin
    delay 1.0;           -- Delay
    delay until Clock;   -- Delay_Until
    goto Next;           -- Goto
-   <<Next>> null;
+   <<Next>> null;       -- Null, Labelled
    abort T1;             -- Abort
 
-   loop
+   loop                 -- Simple_Loop
       exit;             -- Unconditional_Exit, Exit, Unnamed_Loop_Exited
    end loop;
-B:
+B:                      -- Simple_Loop
    loop
       exit;             -- Unnamed_exit, unconditional_exit, exit
       exit B;           -- Multiple_exit, unconditional_exit, exit
@@ -106,30 +110,31 @@ B:
    select               -- Asynchronous select
       T1.E1;
    then abort
-      null;
+      <<Label>> null;   -- Null, Labelled
+      null;             -- Unnecessary_Null
    end select;
 
    case I is
       when 1 =>
-         null;
+         null;          -- Null;
       when others =>    -- Case_Others_Null
-         null;
-         null;
+         null;          -- Unnecessary_Null
+         null;          -- Null;
    end case;
 
    case I is
       when 1 =>
-         null;
+         null;          -- Null
       when others =>    -- Case_Others
          I := 1;
    end case;
 
    case Venum is        -- OK
       when VA =>
-         null;
+         null;          -- Null
       when VB =>
-         null;
-      when VC => null;
+         null;          -- Null
+      when VC => null;  -- Null
    end case;
 
    raise Constraint_Error; -- Raise_Standard
@@ -137,150 +142,151 @@ B:
    raise E;                -- Raise
 
    if I = 0 then           -- No_Else
-      null;
+      null;                -- Null
    end if;
 
    if I = 0 then           -- No_Else
-      null;
+      null;                -- Null
    elsif I = 1 then
-     null;
+     null;                -- Null
    end if;
 
    if I = 0 then           -- OK
-      null;
+      null;                -- Null
    else
-      null;
+      null;                -- Null
    end if;
 
    if I = 0 then           -- OK
-      null;
+      null;                -- Null
    elsif I = 1 then
-     null;
+     null;                 -- Null
    else
-      null;
+      null;                -- Null
    end if;
 
 B2:begin                   -- Block
-      null;
-   exception               -- Exception_Handler
+      null;                -- Null
+   exception
       when others =>       -- Exception_Others_Null
-         null;
+         null;             -- Unnecessary_Null
+         null;             -- Null
    end B2;
 
    begin                   -- Block, Unnamed_Block
-      null;
-   exception               -- Exception_Handler
+      null;                -- Null
+   exception
       when others =>       -- Exception_Others
          I := 1;
          raise;            -- Reraise
    end;
 
-   while Bool  loop null; end loop;  -- While_Loop
-   while True  loop null; end loop;  -- While_True, While_Loop
-   while False loop null; end loop;  -- While_Loop
+   while Bool  loop null; end loop;  -- While_Loop, Null
+   while True  loop null; end loop;  -- While_True, While_Loop, Null
+   while False loop null; end loop;  -- While_Loop, Null
 
-   for I in 1..10 loop null; end loop;               -- Untyped_For
-   for I in Integer range 1..10 loop null; end loop; -- OK
+   for I in 1..10 loop null; end loop;               -- For_Loop, Untyped_For, Null
+   for I in Integer range 1..10 loop null; end loop; -- For_Loop, Null
 
    --
    -- Check Unnamed_Multiple_Loop
    --
 
-   for I in Integer range 1 .. 10 loop             -- OK
+   for I in Integer range 1 .. 10 loop   -- For_Loop
       P;
    end loop;
 
-   for I in Integer range 1 .. 10 loop             -- Unnamed
+   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed
       P;
-      while I /= 0 loop  -- While_Loop                          -- Unnamed
-         null;
+      while I /= 0 loop                  -- While_Loop, Unnamed
+         null;                           -- Null
       end loop;
    end loop;
 
 
-L1: for I in Integer range 1 .. 10 loop            -- OK
+   L1 : for I in Integer range 1 .. 10 loop  -- For_Loop
       Venum := VA;
-      while Venum /= VA loop  -- While_Loop                    -- Unnamed
-         null;
+      while Venum /= VA loop             -- While_Loop, Unnamed
+         null;                           -- Null
       end loop;
    end loop L1;
 
-   for I in Integer range 1 .. 10 loop             -- Unnamed
+   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed
       Venum := VA;
-      L2: while Venum /= VA loop   -- While_Loop
-         null;
+      L2: while Venum /= VA loop         -- While_Loop
+         null;                           -- Null
       end loop L2;
    end loop;
 
-L3: for I in Integer range 1 .. 10 loop            -- OK
+L3: for I in Integer range 1 .. 10 loop  -- For_Loop
       Venum := VA;
-      L4: while Venum /= VA loop   -- While_Loop
-         null;
+      L4: while Venum /= VA loop         -- While_Loop
+         null;                           -- Null
       end loop L4;
    end loop L3;
 
-   for I in Integer range 1 .. 10 loop             -- Unnamed
+   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed
       Venum := VA;
-      L5: while Venum /= VA loop    -- While_Loop                 -- OK
-         null;
+      L5: while Venum /= VA loop         -- While_Loop
+         null;                           -- Null
       end loop L5;
-      while Venum /= VA loop     -- While_Loop                    -- Unnamed
-         null;
+      while Venum /= VA loop             -- While_Loop, Unnamed
+         null;                           -- Null
       end loop;
    end loop;
 
    -- Check nesting of bodies
 
-   for I in Integer range 1 .. 10 loop             -- Unnamed
-      begin                                        -- Block, Unnamed_Block
-         for J in Integer range 1 .. 10 loop       -- Unnamed
-            null;
+   for I in Integer range 1 .. 10 loop        -- For_Loop, Unnamed
+      begin                                   -- Block, Unnamed_Block
+         for J in Integer range 1 .. 10 loop  -- For_Loop, Unnamed
+            null;                             -- Null
          end loop;
       end;
    end loop;
 
-   for I in Integer range 1 .. 10 loop             -- Unnamed
-      begin                                        -- Block, Unnamed_Block
-         null;
-      exception                                    -- Exception_Handler
+   for I in Integer range 1 .. 10 loop        -- For_Loop, Unnamed
+      begin                                   -- Block, Unnamed_Block
+         null;                                -- Null
+      exception
          when Constraint_Error =>
-            for J in Integer range 1 .. 10 loop    -- Unnamed
-               null;
+            for J in Integer range 1 .. 10 loop -- For_Loop, Unnamed
+               null;                            -- Null
             end loop;
       end;
    end loop;
 
-   for I in Integer range 1 .. 10 loop             -- OK
-      declare                                      -- Block, Unnamed_Block
+   for I in Integer range 1 .. 10 loop          -- For_Loop
+      declare                                   -- Block, Unnamed_Block
          procedure Proc is
          begin
-            for J in Integer range 1 .. 10 loop    -- OK
-               null;
+            for J in Integer range 1 .. 10 loop -- For_Loop
+               null;                            -- Null
             end loop;
          end Proc;
       begin
-         null;
+         null;                                  -- Null
       end;
    end loop;
 
-   declare                                        -- Block, Unnamed_Block
+   declare                                      -- Block, Unnamed_Block
       task T2 is
          entry E;
       end T2;
 
       task body T2 is
       begin
-         for I in Integer range 1 .. 10 loop       -- OK
+         for I in Integer range 1 .. 10 loop       -- For_Loop
             accept E do
-               for J in Integer range 1 .. 10 loop -- OK
-                  null;
+               for J in Integer range 1 .. 10 loop -- For_Loop
+                  null;                            -- Null
                end loop;
             end E;
          end loop;
          select                                    -- Conditional_Entry_Call
             T1.E1;
          else
-            null;
+            null;                                  -- Null
          end select;
          select                                    -- Timed_Entry_Call
             T1.E1;
@@ -288,16 +294,16 @@ L3: for I in Integer range 1 .. 10 loop            -- OK
          end select;
       end T2;
    begin
-      null;
+      null;                                        -- Null
    end;
 
-   LL1:loop
+   LL1:loop                                        -- Simple_Loop
       exit LL1 when True;                          -- Exit
       declare                                      -- Block, Unnamed_Block
          procedure Test is
             X : Integer := 0;
          begin
-            Outer: loop
+            Outer: loop                            -- simple_loop
                declare                             -- Block, Unnamed_Block
                   procedure P is
                      task T is
@@ -306,11 +312,11 @@ L3: for I in Integer range 1 .. 10 loop            -- OK
 
                      task body T is
                      begin
-                        TL:loop
+                        TL:loop                    -- simple_loop
                            accept E do
-                              for J in Integer range 1 .. 10 loop
-                                 if J = 5 then     -- No_Else
-                                    return;        -- Loop_Return, accept_return
+                              for J in Integer range 1 .. 10 loop -- For_Loop
+                                 if J = 5 then                    -- No_Else
+                                    return;                       -- Loop_Return, accept_return
                                  end if;
                               end loop;
                            end E;
@@ -321,25 +327,28 @@ L3: for I in Integer range 1 .. 10 loop            -- OK
                      return;                       -- procedure return
                   end P;
                begin
-                  null;
+                  null;                           -- Null
                end;
-               exit when True;                     -- unnamed exit, exit
-               XL1: for I in 1..10 loop            -- untyped for
-                  exit Outer;                      -- multiple_exits, unconditional_exit, exit
-                  while X /= 0 loop                -- While_Loop, Unnamed
-                     exit when X = 2;              -- Exit_while_loop, Unnamed_Loop_Exited
-                     exit Outer when False;        -- multiple_exit, exit
-                     exit XL1;                     -- Exit_for_loop, unconditional_exit
+               exit when True;                    -- unnamed exit, exit
+               XL1: for I in 1..10 loop           -- For_Loop, untyped for
+                  exit Outer;                     -- multiple_exits, unconditional_exit, exit
+                  while X /= 0 loop               -- While_Loop, Unnamed
+                     exit when X = 2;             -- Exit_while_loop, Unnamed_Loop_Exited
+                     exit Outer when False;       -- multiple_exit, exit
+                     exit XL1;                    -- Exit_for_loop, unconditional_exit
                   end loop;
-                  exit;                            -- multiple_exits, exit_for_loop, unconditional_exit, unnamed_exit
+                  exit;                           -- multiple_exits, exit_for_loop, unconditional_exit, unnamed_exit
                end loop XL1;
             end loop Outer;
          end Test;
       begin
-         exit LL1;                                 -- multiple_exits, unconditional_exit, exit
+         exit LL1;                                -- multiple_exits, unconditional_exit, exit
+      exception
+         when Constraint_Error =>
+            exit;                                 -- multiple_exits, unconditional_exit, unnamed_exit, exit
       end;
    end loop LL1;
 
-   Dispatching.Proc (Disp);                        -- Dispatching call
-   I := Dispatching.Func (Disp);                   -- Dispatching call
+   Dispatching.Proc (Disp);                       -- Dispatching call
+   I := Dispatching.Func (Disp);                  -- Dispatching call
 end T_statements;

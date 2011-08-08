@@ -85,16 +85,16 @@ package body Rules.Array_Declarations is
       Stmt : Array_Declaration_Names;
    begin
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": Two parameters required");
+         Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
       Stmt := Get_Flag_Parameter (Allow_Any => False);
       if Rule_Used (Stmt) (Rule_Type) then
-         Parameter_Error (Rule_Id & ": rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
+         Parameter_Error (Rule_Id, "rule already specified for " & Rule_Types'Wide_Image (Rule_Type));
       end if;
 
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id & ": Two parameters required");
+         Parameter_Error (Rule_Id, "two parameters required");
       end if;
 
       case Stmt is

@@ -141,7 +141,7 @@ package body Rules.Instantiations is
       use Framework.Language;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "At least one parameter required");
       end if;
 
       declare
@@ -159,8 +159,7 @@ package body Rules.Instantiations is
          Rule_Used := True;
       exception
          when Already_In_Store =>
-            Parameter_Error ("This combination of parameters already specified for " & Image (Generic_Name)
-                             & " in rule " & Rule_Id);
+            Parameter_Error (Rule_Id, "this combination of parameters already specified for " & Image (Generic_Name));
       end;
    end Add_Use;
 

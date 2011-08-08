@@ -152,7 +152,7 @@ package body Rules.Silent_Exceptions is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <report procedure name> | raise");
+      User_Message ("Parameter(s): <report procedure name> | raise | return | requeue");
       User_Message ("Control exception handlers that do not re-raise an exception ");
       User_Message ("nor call a report procedure");
    end Help;
@@ -168,9 +168,9 @@ package body Rules.Silent_Exceptions is
 
    begin
       if Rule_Used (Use_Rule_Type) then
-         Parameter_Error (Rule_Id &
-                            ": this rule can be specified only once for each" &
-                            " of  check, search, and count");
+         Parameter_Error (Rule_Id,
+                          "this rule can be specified only once for each" &
+                          " of  check, search, and count");
       end if;
       Labels    (Use_Rule_Type) := To_Unbounded_Wide_String (Label);
       Rule_Used (Use_Rule_Type) := True;
@@ -286,7 +286,7 @@ package body Rules.Silent_Exceptions is
    -- Declarative_Items_List_Usage --
    ----------------------------------
 
-   function Statement_List_Usage (Statements : Asis.Statement_List) return Search_Result;
+   function Statement_List_Usage (Stmts : Asis.Statement_List) return Search_Result;
 
    function Declarative_Item_List_Usage (Decls : Asis.Declarative_Item_List) return Search_Result is
       use Asis, Asis.Declarations, Asis.Elements, Utilities;
@@ -352,19 +352,19 @@ package body Rules.Silent_Exceptions is
    -- Statement_List_Usage --
    --------------------------
 
-   function Statement_List_Usage (Statements : Asis.Statement_List) return Search_Result is
+   function Statement_List_Usage (Stmts : Asis.Statement_List) return Search_Result is
       use Asis, Asis.Declarations, Asis.Elements,Asis.Statements, Thick_Queries, Utilities;
       Result : Search_Result := (others => No_Path);
    begin
    Statements_Loop:
-      for I in Statements'Range loop
-         if Label_Names (Statements (I)) /= Nil_Element_List then
+      for I in Stmts'Range loop
+         if Label_Names (Stmts (I)) /= Nil_Element_List then
             -- We have a <<label>>
             -- all bets are off
             Result := (others => Some_Paths);
          end if;
 
-         case Statement_Kind (Statements (I)) is
+         case Statement_Kind (Stmts (I)) is
             when A_Null_Statement
               | A_Goto_Statement
               | A_Code_Statement
@@ -377,18 +377,18 @@ package body Rules.Silent_Exceptions is
               | A_Terminate_Alternative_Statement
               | An_Abort_Statement
               =>
-               Result := Result and Expression_Usage (Statements (I));
+               Result := Result and Expression_Usage (Stmts (I));
 
             when An_Exit_Statement =>
                declare
-                  Condition : constant Asis.Expression := Exit_Condition (Statements (I));
-                  Target    : constant Asis.Statement  := Corresponding_Loop_Exited (Statements (I));
+                  Condition : constant Asis.Expression := Exit_Condition (Stmts (I));
+                  Target    : constant Asis.Statement  := Corresponding_Loop_Exited (Stmts (I));
                begin
                   Result := Result and Expression_Usage (Condition);
 
-                  for I in reverse Loops_Level range 1 .. Loops_Depth loop
-                     if Is_Equal (Target, Active_Loops (I).The_Loop) then
-                        Active_Loops (I).Exit_Result := Active_Loops (I).Exit_Result or Result;
+                  for L in reverse Loops_Level range 1 .. Loops_Depth loop
+                     if Is_Equal (Target, Active_Loops (L).The_Loop) then
+                        Active_Loops (L).Exit_Result := Active_Loops (L).Exit_Result or Result;
                         exit;
                      end if;
                   end loop;
@@ -396,7 +396,7 @@ package body Rules.Silent_Exceptions is
 
             when A_Return_Statement =>
                -- Possible expressions that are part of the return statement must be considered
-               Result := Result and Expression_Usage (Statements (I));
+               Result := Result and Expression_Usage (Stmts (I));
                declare
                   Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("RETURN"));
                begin
@@ -409,7 +409,7 @@ package body Rules.Silent_Exceptions is
               | A_Requeue_Statement_With_Abort
               =>
                -- Possible expressions that are part of the statements must be considered
-               Result := Result and Expression_Usage (Statements (I));
+               Result := Result and Expression_Usage (Stmts (I));
                declare
                   Context : constant Root_Context'Class := Framework.Association (Rule_Uses, Value ("REQUEUE"));
                begin
@@ -423,13 +423,13 @@ package body Rules.Silent_Exceptions is
               =>
                declare
                   Context : constant Root_Context'Class
-                    := Extended_Matching_Context (Rule_Uses, Called_Simple_Name (Statements (I)));
+                    := Extended_Matching_Context (Rule_Uses, Called_Simple_Name (Stmts (I)));
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
                   end if;
                end;
-               Result := Result and Expression_Usage (Statements (I));
+               Result := Result and Expression_Usage (Stmts (I));
 
             when A_Raise_Statement =>
                declare
@@ -441,9 +441,9 @@ package body Rules.Silent_Exceptions is
                end;
 
             when An_If_Statement =>
-               Result := Result and Expression_Usage (Statements (I));
+               Result := Result and Expression_Usage (Stmts (I));
                declare
-                  Paths      : constant Asis.Path_List := Statement_Paths (Statements (I));
+                  Paths      : constant Asis.Path_List := Statement_Paths (Stmts (I));
                   If_Usage   : Search_Result := Statement_List_Usage (Sequence_Of_Statements (Paths (1)));
                   Else_Found : Boolean := False;
                begin
@@ -479,13 +479,13 @@ package body Rules.Silent_Exceptions is
               | A_Conditional_Entry_Call_Statement
               | An_Asynchronous_Select_Statement
               =>
-               Result := Result and Expression_Usage (Case_Expression (Statements (I)));
+               Result := Result and Expression_Usage (Case_Expression (Stmts (I)));
                declare
-                  Paths : constant Asis.Path_List := Statement_Paths (Statements (I));
+                  Paths : constant Asis.Path_List := Statement_Paths (Stmts (I));
                   Temp  : Search_Result := Statement_List_Usage (Sequence_Of_Statements (Paths (1)));
                begin
-                  for I in Positive range 2 .. Paths'Last loop
-                     Temp := Temp or Statement_List_Usage (Sequence_Of_Statements (Paths (I)));
+                  for P in Positive range 2 .. Paths'Last loop
+                     Temp := Temp or Statement_List_Usage (Sequence_Of_Statements (Paths (P)));
                   end loop;
                   Result := Result and Temp;
                end;
@@ -496,9 +496,9 @@ package body Rules.Silent_Exceptions is
                            & Loops_Level'Wide_Image (Max_Loop_Nesting));
                end if;
                Loops_Depth := Loops_Depth + 1;
-               Active_Loops (Loops_Depth) := (Statements (I), (others => Neutral));
+               Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
 
-               Result := Result and Statement_List_Usage (Loop_Statements (Statements (I)));
+               Result := Result and Statement_List_Usage (Loop_Statements (Stmts (I)));
                Result := Result or Active_Loops (Loops_Depth).Exit_Result;
 
                Loops_Depth := Loops_Depth - 1;
@@ -509,13 +509,13 @@ package body Rules.Silent_Exceptions is
                            & Loops_Level'Wide_Image (Max_Loop_Nesting));
                end if;
                Loops_Depth := Loops_Depth + 1;
-               Active_Loops (Loops_Depth) := (Statements (I), (others => Neutral));
+               Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
 
-               Result := Result and Expression_Usage (While_Condition (Statements (I)));
+               Result := Result and Expression_Usage (While_Condition (Stmts (I)));
                -- Consider we have a parallel branch which is (others => No_Path) for the case
                -- where the loop is not executed
                Result := Result and
-                         (Statement_List_Usage (Loop_Statements (Statements (I))) or (others => No_Path));
+                         (Statement_List_Usage (Loop_Statements (Stmts (I))) or (others => No_Path));
                Result := Result or Active_Loops (Loops_Depth).Exit_Result;
 
                Loops_Depth := Loops_Depth - 1;
@@ -526,15 +526,15 @@ package body Rules.Silent_Exceptions is
                            & Loops_Level'Wide_Image (Max_Loop_Nesting));
                end if;
                Loops_Depth := Loops_Depth + 1;
-               Active_Loops (Loops_Depth) := (Statements (I), (others => Neutral));
+               Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
 
-               Result := Result and Expression_Usage (For_Loop_Parameter_Specification (Statements (I)));
+               Result := Result and Expression_Usage (For_Loop_Parameter_Specification (Stmts (I)));
                case Discrete_Constraining_Lengths (Specification_Subtype_Definition
-                                                   (For_Loop_Parameter_Specification (Statements (I))))(1)
+                                                   (For_Loop_Parameter_Specification (Stmts (I))))(1)
                is
                   when 1 .. Biggest_Int'Last =>
                      -- Always executed
-                     Result := Result and Statement_List_Usage (Loop_Statements (Statements (I)));
+                     Result := Result and Statement_List_Usage (Loop_Statements (Stmts (I)));
                   when 0 =>
                      -- Never executed
                      null;
@@ -542,25 +542,25 @@ package body Rules.Silent_Exceptions is
                      -- Consider we have a parallel branch which is (others => No_Path) for the case
                      -- where the loop is not executed
                      Result := Result
-                               and (Statement_List_Usage (Loop_Statements (Statements (I))) or (others => No_Path));
+                               and (Statement_List_Usage (Loop_Statements (Stmts (I))) or (others => No_Path));
                end case;
                Result := Result or Active_Loops (Loops_Depth).Exit_Result;
 
                Loops_Depth := Loops_Depth - 1;
 
             when A_Block_Statement =>
-               Result := Result and Declarative_Item_List_Usage (Block_Declarative_Items (Statements (I)));
-               Result := Result and Statement_List_Usage (Block_Statements (Statements (I)));
+               Result := Result and Declarative_Item_List_Usage (Block_Declarative_Items (Stmts (I)));
+               Result := Result and Statement_List_Usage (Block_Statements (Stmts (I)));
 
             when An_Accept_Statement =>
-               Result := Result and Expression_Usage (Accept_Entry_Index (Statements (I))); -- OK if Nil_Element
-               Result := Result and Statement_List_Usage (Accept_Body_Statements (Statements (I)));
+               Result := Result and Expression_Usage (Accept_Entry_Index (Stmts (I))); -- OK if Nil_Element
+               Result := Result and Statement_List_Usage (Accept_Body_Statements (Stmts (I)));
 
             when Not_A_Statement =>
                Failure ("Not a statement in statements list");
 
             when others =>  -- Compatibility Ada 2005
-               -- TBSL. Better be careful...
+               -- Better be careful...
                Result := (others => Some_Paths);
          end case;
 
@@ -582,7 +582,7 @@ package body Rules.Silent_Exceptions is
       use Framework.Reports, Utilities;
       use Ada.Strings.Wide_Unbounded;
 
-      Usage : Search_Result;
+      Paths_Usage : Search_Result;
    begin
       if Rule_Used = (Rule_Used'Range => False) Then
          return;
@@ -590,13 +590,13 @@ package body Rules.Silent_Exceptions is
       Rules_Manager.Enter (Rule_Id);
 
       Loops_Depth := 0;
-      Usage       := Statement_List_Usage (Handler_Statements (Handler));
+      Paths_Usage       := Statement_List_Usage (Handler_Statements (Handler));
 
       -- Note: since Check < Search, if both messages apply, only Check
       --       will be output
       for I in Rule_Types range Check .. Search loop
          if Rule_Used (I) then
-            case Usage (I) is
+            case Paths_Usage (I) is
                when Neutral =>
                   Failure ("Wrong path evaluation");
 
@@ -622,7 +622,7 @@ package body Rules.Silent_Exceptions is
 
       -- Always report count
       if Rule_Used (Count) then
-            case Usage (Count) is
+            case Paths_Usage (Count) is
                when Neutral =>
                   Failure ("Wrong path evaluation");
 

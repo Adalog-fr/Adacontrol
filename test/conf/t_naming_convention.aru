@@ -11,7 +11,7 @@ Const1    : check naming_convention (root constant, "^C_");
 Const2    : Check naming_convention (constant, "^Const_");
 Enums     : check naming_convention (root Enumeration, "^Enum_");
 Label     : check naming_convention (label, not "_");
-Loop      : check naming_convention (loop_name, "^L_");
+Loop      : check naming_convention (loop_name, "^G_");
 Stmt      : check naming_convention (stmt_name, not "ock$");
 Protect   : check naming_convention (protected_procedure, "^protec_");
 Protec_F  : check naming_convention (protected_field, "^pf_");
@@ -29,8 +29,8 @@ Access_C  : check naming_convention (Access_to_class_type, "_class$");
 Access_SP : check naming_convention (Access_to_sp_type, "_sp$");
 access_Ta : check naming_convention (access_to_task_type, "_task$");
 
-Global_Only : check naming_convention (all, global not "^l_");
-Local_Only  : check naming_convention (all, local  not "^g_");
+Global_Only : check naming_convention (global all, not "^l_");
+Local_Only  : check naming_convention (local  all, not "^g_");
 
 -- Rules given in String_Matching_Portable syntax:
 -- Too_short: check naming_convention (all, "????*");
@@ -43,7 +43,7 @@ Local_Only  : check naming_convention (all, local  not "^g_");
 -- Const2    : Check naming_convention (constant, "Const_*");
 -- Enums     : check naming_convention (root Enumeration, "Enum_*");
 -- Label     : check naming_convention (label, not "*_*");
--- Loop      : check naming_convention (loop_name, "L_*");
+-- Loop      : check naming_convention (loop_name, "G_*");
 -- Stmt      : check naming_convention (stmt_name, not "*ock");
 -- Protect   : check naming_convention (protected_procedure, "protec_*");
 -- Protec_F  : check naming_convention (protected_field, "pf_*");

@@ -120,11 +120,11 @@ package body Rules.Unnecessary_Use is
 
    begin
       if  Parameter_Exists then
-         Parameter_Error ("No parameter for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "no parameter allowed");
       end if;
 
       if Rule_Used then
-         Parameter_Error (Rule_Id & ": this rule can be specified only once");
+         Parameter_Error (Rule_Id, "rule can be specified only once");
       end if;
 
       Context   := Basic.New_Context (Rule_Type, Label);
@@ -356,7 +356,7 @@ package body Rules.Unnecessary_Use is
          end if;
       end Enclosing_Package_Name;
 
-   begin
+   begin  -- Process_Identifier
       if not Rule_Used then
          return;
       end if;
@@ -407,7 +407,7 @@ package body Rules.Unnecessary_Use is
       -- follow the visibility rules at the point of instantiation, and must therefore be processed
       -- here.
       use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
-
+      use Framework.Reports;
    begin
       if not Rule_Used then
          return;
@@ -424,7 +424,15 @@ package body Rules.Unnecessary_Use is
                                      (Formal_Parameter
                                       (Associations (I)))) = A_Box_Default
             then
-               Process_Identifier (Actual_Parameter (Associations (I)));
+               if Is_Nil (Actual_Parameter (Associations (I))) then
+                  A4G_Bugs.Trace_Bug ("Nil box-defaulted parameter");
+                  Uncheckable (Rule_Id,
+                               False_Positive,
+                               Get_Location (Instantiation),
+                               "Default for parameter not considered");
+               else
+                  Process_Identifier (Actual_Parameter (Associations (I)));
+               end if;
             end if;
          end loop;
       end;

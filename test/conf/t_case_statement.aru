@@ -13,6 +13,3 @@ Number_small_case: count  case_statement (min_paths, 4);
 Range_Span:      check  case_statement (max_range_span, 5);
 Range_Span:      search case_statement (max_range_span, 4);
 Number_Big_Span: count  case_statement (max_range_span, 50);
-
--- This rule calls uncheckable, but we have no example on how to trigger them
-check uncheckable;

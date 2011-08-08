@@ -74,7 +74,7 @@ package body Rules.Not_Elaboration_Calls is
       use Framework.Language;
    begin
       if not Parameter_Exists then
-         Parameter_Error ("At least one parameter required for rule " & Rule_Id);
+         Parameter_Error (Rule_Id, "at least one parameter required");
       end if;
 
       while Parameter_Exists loop
@@ -84,8 +84,7 @@ package body Rules.Not_Elaboration_Calls is
             Associate (Subprograms, Entity, Basic.New_Context (Rule_Use_Type,Label));
          exception
             when Already_In_Store =>
-               Parameter_Error ("Subprogram already given for rule " & Rule_Id
-                                  & ": " & Image (Entity));
+               Parameter_Error (Rule_Id, "subprogram already given: " & Image (Entity));
          end;
       end loop;
 
