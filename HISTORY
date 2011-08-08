@@ -1,4 +1,16 @@
 ============
+== V1.8r8 ==
+============
+
+Bug fix release:
+----------------
+Added back GPS interface from 1.7r9 in directory GPS-old,
+because GPS 4.2 is needed for the new interface, and not
+yet publicly available.
+
+Added missing files for "info" version of manuals
+
+============
 == V1.8r7 ==
 ============
 

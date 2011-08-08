@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.8r7
+@settitle AdaControl User Guide V1.8r8
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -38,7 +38,7 @@ Last edited: @today{}
 * Non upward-compatible changes::  
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2007 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2008 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -398,12 +398,20 @@ your Gnat installation.
 
 @node Installing support for GPS, Installing support for AdaGide, Installing AdaControl, Installation
 @section Installing support for GPS
-Integration of AdaControl into GPS requires GPS version 4.0 or above.
+Integration of AdaControl into GPS with all functionalities requires
+GPS version 4.2 or above. If you have an older version of GPS (and
+especially the one delivered with GNAT/GPL2007), you can still enjoy
+GPS integration  with the exception of a few features by using the
+directory @code{GPS-old} in place of @code{GPS} in the instructions
+below.
+
 To add AdaControl support to GPS, copy all the files from the
-@code{GPS} directory into the @code{<GPS_dir>/share/gps/plug-ins}
-directory. Copy also the files @code{doc/adacontrol_ug.html} and
-@code{doc/adacontrol_pm.html} into the @code{<GPS_dir>/share/doc/gps/html}
-to access AdaControl's guides from the "Help" menu of GPS.
+@code{GPS} (alternatively @code{GPS-old}) directory into the
+@code{<GPS_dir>/share/gps/plug-ins} directory. Copy also the files
+@code{doc/adacontrol_ug.html} and @code{doc/adacontrol_pm.html} into
+the @code{<GPS_dir>/share/doc/gps/html} to access AdaControl's guides
+from the "Help" menu of GPS.
+
 
 @node Installing support for AdaGide,  , Installing support for GPS, Installation
 @section Installing support for AdaGide

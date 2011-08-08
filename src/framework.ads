@@ -46,7 +46,7 @@ pragma Elaborate_All (Binary_Map);
 
 package Framework is
 
-   Version : constant Wide_String := "1.8r7";
+   Version : constant Wide_String := "1.8r8";
 
    -------------------------------------------------------------------
    -- General dimensioning constants                                --

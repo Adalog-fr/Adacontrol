@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<!--  This file adds support for pfni -->
+<Pfni>
+
+ <!--  Actions  -->
+<action name="Display_Fni" show-command="false" output="none">
+  <filter language="ada" />
+  <shell lang="python">pfni.options()     </shell>
+  <external output="">pfni -q %F:%l:%c %1
+  </external>
+  <shell>MDI.get "Messages"</shell>
+  <shell>MDIWindow.raise_window %1</shell>
+</action>
+
+<action name="Display_Fni_Ol" show-command="false" output="none">
+  <filter language="ada" />
+  <shell lang="python">pfni.options()     </shell>
+  <external output="">pfni -qo %F:%l:%c %1
+  </external>
+  <shell>MDI.get "Messages"</shell>
+  <shell>MDIWindow.raise_window %1</shell>
+</action>
+
+ <!--  Contextual  -->
+<contextual action="Display_Fni" >
+    <Title>Print full name</Title>
+</contextual>
+<contextual action="Display_Fni_Ol" >
+    <Title>Print full name (with overloading)</Title>
+</contextual>
+</Pfni>
+
