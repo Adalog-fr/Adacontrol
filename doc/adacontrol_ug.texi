@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.11r3
+@settitle AdaControl User Guide V1.11r4
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -2076,7 +2076,8 @@ set Output|New_Output <output file>;
 set Statistics <level>;
 set Tag1|Tag2 "<value>";
 set Trace <trace file>;
-set Debug|Ignore|Timing|Verbose|Warning  On|Off;
+set Debug|Exit_On_Error|Ignore|Timing|Verbose|Warning|Warning_As_Error 
+      On|Off;
 @end example
 The ``set format'' command selects the output format for the messages,
 like the ``-F'' option; see @ref{Control kinds and report messages} for
@@ -2131,13 +2132,16 @@ The ``set trace'' command redirects the trace messages of the
 redirected to the console.  As with the ``-t'' option, if the file
 exists, output is appended to it.
 
-The ``set Debug|Ignore|Timing|Verbose|Warning'' command activates
-(``on'') or deactivates (``off'') options. ``Debug'' corresponds to
-the ``-d'' option, ``Ignore'' to the ``-i'' option, ``Timing'' to the
-``-T'' option, ``Verbose'' to the ``-v'' option, and ``Warning'' to
-the ``-E'' option. See @ref{Verbose and debug mode}, @ref{Treatment of
-warnings}, @ref{Output format}, and @ref{Local disabling control}
-for details.
+The ``set
+Debug|Exit_On_Error|Ignore|Timing|Verbose|Warning|Warning_As_Error''
+command activates (``on'') or deactivates (``off'') options. ``Debug''
+corresponds to the ``-d'' option, ``Exit_On_Error'' to the ``-x''
+option, ``Ignore'' to the ``-i'' option, ``Timing'' to the ``-T''
+option, ``Verbose'' to the ``-v'' option, ``Warning'' to the ``-E''
+option, and ``Warning_As_Error'' to the ``-e'' option. See
+@ref{Verbose and debug mode}, @ref{Exit on error}, @ref{Treatment of
+warnings}, @ref{Output format}, and @ref{Local disabling control} for
+details.
 
 @node Source command, Inhibit command, Set command, Other commands
 @subsection Source command
@@ -3799,8 +3803,8 @@ race conditions, or otherwise shared.
 @subsection Syntax
 @example
 <control_kind> global_references (<Ref_Kind> @{, <Root>@});
-Ref_Kind ::= all | multiple | multiple_non_atomic
-Root     ::=  <entity> | function | procedure | task | protected
+<Ref_Kind> ::= all | multiple | multiple_non_atomic
+<Root>     ::=  <entity> | function | procedure | task | protected
 @end example
 
 @subsection Action
@@ -4920,6 +4924,11 @@ check naming_convention (global variable, "G_");
 @end example
 
 @subsection Tips
+The rule only checks the casing of identifiers at the place where they
+are declared. A useful companion rule is ``style (casing_identifier,
+original)'', which ensures that every use of the identifier will use the
+same casing as in the declaration. @xref{Style}.
+
 Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
 the name, or both.
@@ -5276,8 +5285,9 @@ another parameter), and will not be fooled by renamings.
 
 @subsection Limitation
 Due to a weakness of the ASIS standard, dispatching calls  are not
-considered. This limitation will be removed as soon as we find a way
-to work around this problem, but the issue is quite difficult!
+analyzed. Some calls cannot obviously have aliasing (if there is only
+one parameter, or if there are no variables in the parameters f.e.);
+other calls are detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
 @node  Parameter_Declarations, Potentially_Blocking_Operations, Parameter_Aliasing, Rules reference
 @section Parameter_Declarations
@@ -5290,7 +5300,7 @@ for all callable entities (i.e. functions, procedures and entries).
 <subrule>  ::= max_parameters | max_defaulted_parameters |
                min_parameters | single_out_parameter
 <callable> ::= function           | procedure           | protected_entry |
-               protected_function | protected_procedure |task_entry
+               protected_function | protected_procedure | task_entry
 @end example
 
 @subsection Action

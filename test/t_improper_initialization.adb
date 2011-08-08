@@ -1,3 +1,4 @@
+with System;
 procedure T_Improper_Initialization is
 
    procedure Init (I : out Integer) is
@@ -200,8 +201,28 @@ procedure T_Improper_Initialization is
    end My_Pack;
 
    -- case of separate body
-   procedure Sep (Var1, Var2 : out Integer);                                           -- not safely initialized (x1)
+   procedure Sep (Var1, Var2 : out Integer);               -- not safely initialized (x1)
    procedure Sep (Var1, Var2 : out Integer) is separate;
+
+   -- Case of attributes
+   type Str_Ptr is access String;
+   procedure Attr (S : out String;                         -- not safely initialized (x1)
+                   I : out Integer; AS : out Str_Ptr) is   -- used before initialization (x2)
+      S2 : String (S'Range);                               -- not safely initialized (x1)
+      CI : Integer;
+      A  : System.Address;
+      function F return String is
+      begin
+         return "abc";
+      end F;
+   begin
+      CI := S (I)'Alignment;                           -- use of uninitialized I
+      CI := S (S2(I)'Alignment)'Alignment;             -- use of uninitialized I
+      A  := Attr'Address;
+      CI := F'First;
+      A  := AS'Address;
+      CI := AS'First;                                  -- use of uninitialized AS
+   end Attr;
 
 begin
 
@@ -225,14 +246,14 @@ begin
    ------------------------
 B1:
    declare
-      I, J, K, L : Positive;                                          -- used before initialization (x4)
+      I, J, K, L : Positive;                                -- used before initialization (x4)
       type Rec is
          record
             F : String (1 .. 10);
          end record;
       type Acc_Rec is access all Rec;
       R1 : Rec;
-      A1, A2 : Acc_Rec;                                               -- used before initialization (x2)
+      A1, A2 : Acc_Rec;                                     -- used before initialization (x2)
 
       function F (Param : Integer) return Rec is
       begin

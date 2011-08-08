@@ -235,6 +235,46 @@ package body Rules.Improper_Initialization is
                                State   : in out Null_State);
       procedure Traverse is new Traverse_Element (Null_State, Pre_Procedure, Null_State_Procedure);
 
+      procedure Traverse_Attribute_Prefix  (Element : in     Asis.Name;
+                                            Control : in out Traverse_Control;
+                                            State   : in out Null_State)
+      is
+         use Asis.Elements, Asis.Expressions;
+         use Utilities;
+      begin
+         case Expression_Kind (Element) is
+            when An_Identifier =>
+               null;
+            when An_Attribute_Reference =>
+               Traverse_Attribute_Prefix (Prefix (Element), Control, State);
+            when A_Selected_Component =>
+               Traverse_Attribute_Prefix (Prefix   (Element), Control, State);
+               Traverse_Attribute_Prefix (Selector (Element), Control, State);
+            when An_Indexed_Component =>
+               declare
+                  Indices : constant Asis.Expression_List := Index_Expressions (Element);
+               begin
+                  for I in Indices'Range loop
+                     Traverse (Indices (I), Control, State);
+                  end loop;
+               end;
+            when A_Function_Call =>
+               declare
+                  Params : constant Asis.Association_List := Function_Call_Parameters (Element);
+               begin
+                  for P in Params'Range loop
+                     Traverse (Params (P), Control, State);
+                  end loop;
+               end;
+            when An_Explicit_Dereference =>
+               Traverse (Prefix (Element), Control, State);
+            when A_Type_Conversion =>
+               Traverse_Attribute_Prefix (Converted_Or_Qualified_Expression (Element), Control, State);
+            when others =>
+               Failure ("Unexpected element in attribute prefix", Element);
+         end case;
+      end Traverse_Attribute_Prefix;
+
       procedure Pre_Procedure (Element : in     Asis.Element;
                                Control : in out Traverse_Control;
                                State   : in out Null_State)
@@ -288,7 +328,35 @@ package body Rules.Improper_Initialization is
 
                   when An_Attribute_Reference =>
                      -- Do not traverse the attribute name
-                     Traverse (Prefix (Element), Control, State);
+
+                     -- If the prefix is an explicit dereference, it is a Read
+                     -- If the prefix is of an access type, and the attribute is one wich accepts implicit
+                     -- dereferences, it is an implicit dereference, and thus a Read
+                     -- Otherwise, we must special case the prefix, since its use is not a Read, but there
+                     -- can be Reads of the components of the prefix, as in S(I,J)(K).Tab(L)'Access
+                     if Is_Access_Expression (Prefix (Element)) then
+                        case A4G_Bugs.Attribute_Kind (Element) is
+                           when A_Callable_Attribute
+                              | A_Component_Size_Attribute
+                              | A_Constrained_Attribute
+                              | A_First_Attribute
+                              | An_Identity_Attribute
+                              | A_Last_Attribute
+                              | A_Length_Attribute
+                              | A_Range_Attribute
+                              | A_Storage_Size_Attribute
+                              | A_Tag_Attribute
+                              | A_Terminated_Attribute
+                              | A_Valid_Attribute
+                                =>
+                              -- Implicit dereference, treat as normal read
+                              Traverse (Prefix (Element), Control, State);
+                           when others =>
+                              Traverse_Attribute_Prefix (Prefix (Element), Control, State);
+                        end case;
+                     else
+                        Traverse_Attribute_Prefix (Prefix (Element), Control, State);
+                     end if;
                      Control := Abandon_Children;
 
                   when others =>

@@ -52,9 +52,12 @@ package Framework.Language is
    --                      "trace"                      <file_name>       |
    --                      "debug"|"ignore"|"timing"|"verbose"|"warning"  "on"|"off"
    --              | "source" <file_name>
-   -- <control_list> ::= <control> {"," <control>}
-   -- <control> ::= "check"|"search"|"count" <Name>
-   --                  [ "(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")" ]
+   -- <control_list>    ::= <control_command> {"," <control_command>}
+   -- <control_command> ::=  <control_kind> <control>
+   -- <control_kind>    ::= "check"|"search"|"count"
+   -- <control>         ::= <Rule_Name> [ "(" <parameter> {"," <parameter>}")" ]
+   -- <parameter>       ::= {<modifier>} <value>
+   --
    --  Ada-like comments (--) and Shell-like comments (#) are allowed.
 
    function Source_Location return Location;

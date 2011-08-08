@@ -323,6 +323,12 @@ package body Adactl_Options is
          end if;
       end if;
 
+      -- Special case for Debug_Option: we must initialize the flag directly here, because it
+      -- is needed by the ASIS initialization string. Note that this means that the presence or
+      -- absence of the bug box (-nbb option) depends only on the command line, and not on subsequent
+      -- "set debug on/off"
+      Utilities.Debug_Option := Is_Present ('d');
+
       -- Command line parameters come first, since they define the default behaviour
       -- for commands given in the file (-f) and -l options
       Flag_To_Command  ('d', "debug");

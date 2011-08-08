@@ -399,6 +399,8 @@ package body Framework.Reports is
          end;
       end if;
 
+      -- Retrieve source line, but only if necessary since it can be quite
+      -- a long operation
       if Format_Option = Source
         or (Format_Option /= None and not Ignore_Option)
       then

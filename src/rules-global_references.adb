@@ -60,33 +60,39 @@ package body Rules.Global_References is
 
    -- Algorithm:
    --
-   -- The algorithm for identifying globals is quite straightforward. The procedure Check_Body is in charge
-   -- of identifying global variables usage for a given body, and it is called when an appropriate body
-   -- is encountered. It traverses the body, and stores information about encountered variables in the
-   -- (global) map "Usage". This variable serves also to note local declarations (not reported) and bodies
-   -- that have already been traversed.
+   -- The algorithm for identifying globals is quite straightforward. The procedure Check_Body
+   -- is in charge of identifying global variables usage for a given body, and it is called
+   -- when an appropriate body is encountered. It traverses the body, and stores information
+   -- about encountered variables in the (global) map "Usage". This variable serves also to
+   -- note local declarations (not reported) and bodies that have already been traversed.
    --
-   -- The difficulty comes from the "multiple" (or "multiple_non_atomic") option. Since we want to report
-   -- global variables accessed from several entities, the reporting can be done only at the end of the analysis.
-   -- Moreover, we wanted the messages to be sorted according to variables referenced (and not according to
-   -- referencing bodies f.e.). Moreover, which bodies are part of "multiple" is done per-rule, i.e.:
+   -- The difficulty comes from the "multiple" (or "multiple_non_atomic") option. Since we want
+   -- to report global variables accessed from several entities, the reporting can be done only
+   -- at the end of the analysis.
+   -- Moreover, we wanted the messages to be sorted according to variables referenced (and not
+   -- according to referencing bodies f.e.). Moreover, which bodies are part of "multiple" is
+   -- done per - rule, i.e. :
    --   check Global_References (multiple, P1, P2);
    --   check Global_References (multiple, P1, P3);
-   -- must report of global variables accessed by P1 and P2 on one side, and by P1 and P3 on the other side.
+   -- must report of global variables accessed by P1 and P2 on one side, and by P1 and P3 on the
+   -- other side.
    -- Therefore, the following structures are used to maintain information about all variables:
-   --   - Rules_Map is a map to keep information about each specified rule. The key is the rule index, and the
-   --     value contains the rule label, type, and whether the rule is "all" , "multiple" or "multiple_non_atomic".
-   --   - Globals_Info keeps information about all global variables encountered. The key is the variable's
-   --     Full_Name_Image, and the value holds a reference to the variable's declaration, and a map
-   --     (Referencing_Rule_Map) of rules that mention at least one body that references the variable.
-   --   - The Referencing_Rule_Map has the rule index as the key, and a linear list of the bodies that
-   --     reference the variable as the value (plus a flag to deal with task and protected types).
+   --   - Rules_Map is a map to keep information about each specified rule. The key is the rule
+   --     index, and the value contains the rule label, type, and whether the rule is "all" ,
+   --     "multiple" or "multiple_non_atomic".
+   --   - Globals_Info keeps information about all global variables encountered. The key is the
+   --     variable's Full_Name_Image, and the value holds a reference to the variable's
+   --     declaration, and a map (Referencing_Rule_Map) of rules that mention at least one body
+   --     that references the variable.
+   --   - The Referencing_Rule_Map has the rule index as the key, and a linear list of the bodies
+   --     that reference the variable as the value (plus a flag to deal with task and protected
+   --     types).
    --
-   -- At the end of the check of an appropriate construct, info gathered into "Usage" serves to update
-   -- Rules_Map. At the end of the run, the report is printed by traversing Rules_Map.
+   -- At the end of the check of an appropriate construct, info gathered into "Usage" serves to
+   -- update Rules_Map. At the end of the run, the report is printed by traversing Rules_Map.
    --
-   -- Checked_Bodies is a multi-valued context store that identifies bodies that are to be traversed, and
-   -- rules that mention this body.
+   -- Checked_Bodies is a multi-valued context store that identifies bodies that are to be
+   -- traversed, and controls that mention this body.
    --
    -- There is a special tricky case for renamings, since usage of the renamed entity comes
    -- from usage of the renaming entity.
@@ -333,7 +339,7 @@ package body Rules.Global_References is
                then
                   Check_Body (Corresponding_Body (Called.Declaration));
                end if;
-            when A_Predefined_Entity_Call | An_Attribute_Call =>
+            when An_Enumeration_Literal | A_Predefined_Entity_Call | An_Attribute_Call =>
                null;
             when A_Dereference_Call | A_Dispatching_Call =>
                -- Assume no global references, short of knowing what it does

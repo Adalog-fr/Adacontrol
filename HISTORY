@@ -1,4 +1,32 @@
 =============
+== V1.11r4 ==
+=============
+
+General:
+--------
+Recompiled executable versions for GNAT/GPL 2009; some adjustments needed.
+
+Bug fixes:
+   Simplifiable_Expressions (conversion) could report on conversions that
+   were actually necessary due to the rules for fixed point multiply/divide
+
+   Improper_Initialization considered use of variables in prefix of attributes
+   as a read of the variable.
+ 
+   Inhibit command ignored the "all" in the "all <unit>" syntax.
+
+Changes to commands:
+--------------------
+set: added exit_on_error
+
+Changes to existing rules:
+--------------------------
+Parameter_Aliasing 
+   Avoid issuing an Uncheckable message for dispatching calls when
+   there is no more than one variable in the call (and with_in is not
+   used).
+
+=============
 == V1.11r3 ==
 =============
 

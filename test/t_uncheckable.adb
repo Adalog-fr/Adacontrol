@@ -14,6 +14,7 @@ procedure T_Uncheckable is
    procedure Global_References               is separate;
    procedure Max_Call_Depth                  is separate;
    procedure Object_Declarations             is separate;
+   procedure Parameter_Aliasing              is separate;
    procedure Potentially_Blocking_Operations is separate;
    procedure Representation_Clauses          is separate;
    procedure Style                           is separate;

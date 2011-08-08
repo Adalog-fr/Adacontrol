@@ -405,7 +405,7 @@ package body Rules.Potentially_Blocking_Operations is
                Set_State (Is_Blocking,
                           "call of potentially blocking " & Kind & ' '
                           & Full_Name_Image (Names (Called.Declaration) (1)));
-            when A_Predefined_Entity_Call | An_Attribute_Call =>
+            when An_Enumeration_Literal | A_Predefined_Entity_Call | An_Attribute_Call =>
                -- Assumed never potentially blocking
                null;
             when A_Dereference_Call | A_Dispatching_Call =>

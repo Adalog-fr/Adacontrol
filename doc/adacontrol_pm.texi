@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.11r3
+@settitle AdaControl Programmer Manual V1.11r4
 @c %**end of header
 
 @titlepage
@@ -20,9 +20,10 @@
 Last edited: @today{}
 
 This is the AdaControl Programmer Manual. It is intended for those who
-want to add new rules to AdaControl. Reading this manual is not
-necessary to use AdaControl. On the other hand, it is assumed that the
-reader knows how to use AdaControl before thinking of adding new rules.
+want to add new rules to AdaControl, or more generally modify (and
+presumably improve!) AdaControl. Reading this manual is not necessary
+to use AdaControl. On the other hand, it is assumed that the reader
+is familiar with how to use AdaControl.
 
 @menu
 * General::                     
@@ -75,6 +76,32 @@ This programmer manual describes how to add new rules to
 AdaControl. Since AdaControl is based on ASIS, this manual assumes
 that the reader has some familiarity with ASIS programming.
 
+@section vocabulary
+Some terms have a precise definition in AdaControl, and will be used
+with that signification in the rest of this manual.
+
+A @i{rule} is an AdaControl package whose purpose is to recognize
+occurrences of certain constructs in Ada programs. All rules are
+children of  the ``Rules'' package. By extension, the term rule is
+also used to designate the check that is performed by the package. A
+rule has a name, and may have parameters.
+
+A @i{control} defines a check to be performed on some Ada text. A
+control is defined by a rule, and the value of the parameters given to
+the rule.
+
+A @i{command} is a statement in the command language interpreted by
+AdaControl.
+
+A @i{control command} is a kind of command that describes a check to
+be performed. A control commmand includes a @i{kind} (``check'', ``search''
+or ``count'', see user's guide), and a control (rule name and parameters).
+
+A @i{context} is a set of values used by a rule to keep the
+characteristics associated with a control. Those values can, but need
+not necessarily, be the parameters of the control.
+
+@section General organization
 The AdaControl tool includes several main components. Those that are
 relevant for writing new rules are:
 @itemize @bullet
@@ -146,6 +173,11 @@ These limits are set as constants in the package
 @code{Adactl_Constants}. These values are large enough to accomodate
 any reasonable program, but should you hit one of these limits, you
 can safely change them here. No other change is required.
+
+If a rule needs to set a fixed dimension to some tables for example,
+it should use the constants defined in this package. If no existing
+constant is appropriate, add a new one to the package, don't define
+dimensioning constants in the rule itself.
 
 @node The package Framework, The package Framework.Rules_Manager, The package Adactl_Constants, The framework and utilities packages
 @section The package Framework

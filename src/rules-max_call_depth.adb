@@ -37,6 +37,9 @@ with
 with
   Asis.Declarations,
   Asis.Elements,
+  Asis.Errors,
+  Asis.Exceptions,
+  Asis.Implementation,
   Asis.Iterator;
 
 -- Adalog
@@ -242,14 +245,13 @@ package body Rules.Max_Call_Depth is
                -- Return directly, since there is no name to add to Call_Depths in this case
                return (Dynamic, 1);
 
+            when An_Enumeration_Literal =>
+               -- Do not even count these as calls
+               Called_Depth := (Inline, 0);
+
             when A_Regular_Call =>
-               if Declaration_Kind (Called_Descr.Declaration) = An_Enumeration_Literal_Specification then
-                  -- Do not even count these as calls
-                  Called_Depth := (Inline, 0);
-               else
-                  -- Normal case
-                  Called_Depth := Entity_Call_Depth (Called_Descr.Declaration);
-               end if;
+               -- Normal case
+               Called_Depth := Entity_Call_Depth (Called_Descr.Declaration);
          end case;
 
          -- This may seem redundant with the call to Add in Entity_Call_Depth, but it isn't if
@@ -418,6 +420,22 @@ package body Rules.Max_Call_Depth is
          when others =>
             null;
       end case;
+
+   exception
+      when Asis.Exceptions.ASIS_Failed =>
+         declare
+            use Asis.Errors, Asis.Implementation;
+         begin
+            if Status /= Not_Implemented_Error then
+               raise;
+            end if;
+
+            -- Not_Implemented_Error
+            -- Presumably a use of a "non official" construct (conditional expression...)
+            -- This is known to happen in recent versions of the GNAT run-time
+            -- Short of any other solution, consider it does not include any call
+            -- (i.e. do nothing)
+         end;
    end Pre_Procedure;
 
    procedure Post_Procedure (Element : in     Asis.Element;
@@ -499,7 +517,6 @@ package body Rules.Max_Call_Depth is
       Called_Body := Decl;
 
       loop
-
          if Is_Banned (Called_Body, Rule_Id) then
             Result := (Banned, 0);
             exit;
@@ -540,8 +557,12 @@ package body Rules.Max_Call_Depth is
                exit;
             when A_Procedure_Body_Stub
               | A_Function_Body_Stub
-              =>
+                 =>
                Called_Body := Corresponding_Subunit (Called_Body);
+               if Is_Nil (Called_Body) then
+                  Result := (Unavailable, 0);
+                  exit;
+               end if;
             when A_Procedure_Renaming_Declaration
               | A_Function_Renaming_Declaration
                  =>

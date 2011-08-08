@@ -94,7 +94,7 @@ package body Framework.Language.Commands is
                       & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ">;");
       User_Message ("   Set trace <trace file>;");
-      User_Message ("   Set verbose|debug|ignore|warning|warning_as_error on|off ;");
+      User_Message ("   Set debug|exit_on_error|ignore|verbose|warning|warning_as_error on|off ;");
       User_Message ("   Source <input file> ;");
       User_Message ("   [<label>:] <control> {, <control>} ;");
       User_Message ("Control:");
@@ -273,9 +273,10 @@ package body Framework.Language.Commands is
 
       while Parameter_Exists loop
          declare
+            Is_All : constant Boolean := Get_Modifier ("ALL", Default => False);
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Inhibit (Rule_Name, Entity, Is_All => Get_Modifier ("ALL", Default => False));
+            Inhibit (Rule_Name, Entity, Is_All);
          exception
             when Already_In_Store =>
                Parameter_Error ("Inhibit", "Rule " & Rule_Name & " already inhibited for " & Image (Entity));

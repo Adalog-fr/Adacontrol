@@ -176,6 +176,10 @@ package body Rules.Parameter_Aliasing is
 
    type Parameters_Table is array (Asis.List_Index range <>) of Parameters_Descr;
 
+   ------------------
+   -- Process_Call --
+   ------------------
+
    procedure Process_Call (Call : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Framework.Reports, Ada.Strings.Wide_Unbounded;
@@ -224,14 +228,52 @@ package body Rules.Parameter_Aliasing is
          end if;
 
          if Is_Dispatching_Call (Call) then
-            Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
+            -- We can avoid the Uncheckable if there is at most one parameter which is a variable.
+            -- (provided with_in was not used)
+            if With_In /= (Rule_Detail => False) then
+               Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
+               return;
+            end if;
+
+            declare
+               E  : Asis.Expression;
+               Nb : Natural := 0;
+            begin
+               for I in Actuals'Range loop
+                  E := Actual_Parameter (Actuals (I));
+                  if Expression_Kind (E) = A_Type_Conversion then
+                     E := Converted_Or_Qualified_Expression (E);
+                  end if;
+
+                  -- Using Ultimate_Expression below will eliminate selected_components, and replace
+                  -- constants by their value, so we won't consider them as variables
+                  case Expression_Kind (Ultimate_Expression (E)) is
+                     when An_Identifier
+                        | An_Explicit_Dereference
+                        | An_Indexed_Component
+                        | A_Slice
+                          =>
+                        Nb := Nb + 1;
+                     when Not_An_Expression | A_Selected_Component =>
+                        Failure ("Bad value returned by Ultimate_Expression", E);
+                     when others =>
+                        -- Not acceptable as an [in] out parameter
+                        null;
+                  end case;
+               end loop;
+
+               if Nb > 1 then
+                  Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
+               end if;
+            end;
+
             return;
          end if;
 
          for I in Actuals'Range loop
             To_Check_Parameters (I) := (Mode_Kind (Enclosing_Element (Formal_Name (Call, I))),
                                         Actual_Parameter (Actuals (I)));
-            for J in List_Index range To_Check_Parameters'First .. I-1 loop
+            for J in List_Index range To_Check_Parameters'First .. I - 1 loop
                Param_Proximity := Variables_Proximity (To_Check_Parameters (J).Expr,
                                                        To_Check_Parameters (I).Expr);
                if Rule_Used (Param_Proximity.Confidence)

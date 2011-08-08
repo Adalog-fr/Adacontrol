@@ -786,7 +786,7 @@ package body Rules.Simplifiable_expressions is
 
    procedure Process_Conversion (Expr : in Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Utilities;
+      use Thick_Queries, Utilities;
 
       Source : Asis.Declaration;
       Target : Asis.Element;
@@ -834,19 +834,6 @@ package body Rules.Simplifiable_expressions is
          Source := Corresponding_Type_Declaration (Source);
       end if;
 
-      if Type_Kind (Type_Declaration_View (Source)) = A_Root_Type_Definition
-        or else Is_Nil (Enclosing_Element (Source))
-      then
-         -- Explicit conversion is never required:
-         -- the argument of the conversion is a literal or a named number, or a static expression of those.
-         -- In the latter case, the type returned by A4G is not Root_Integer, but a declaration
-         -- for Universal_Integer that appears "out of the blue" (it is not included in anything else,
-         -- and that's how we recognize it).
-         -- Not sure this kludge would be portable to other implementations...
-         Do_Report;
-         return;
-      end if;
-
       Target := Converted_Or_Qualified_Subtype_Mark (Expr);
       case Expression_Kind (Target) is
          when A_Selected_Component =>
@@ -869,11 +856,62 @@ package body Rules.Simplifiable_expressions is
             null;
       end case;
       Target := A4G_Bugs.Corresponding_Name_Declaration (Target);
+
       if Is_Equal (Source, Target)
         or else Is_Equal (Corresponding_First_Subtype (Source), Target)
       then
          Do_Report;
+         return;
       end if;
+
+      -- Explicit conversion is never required for universal expressions (a literal or a named number,
+      -- or a static expression of those) of the same category, except for a Universal_Fixed that results
+      -- from a multiply or divide of fixed point numbers
+      if Type_Kind (Type_Declaration_View (Source)) = A_Root_Type_Definition then
+         -- This is how it should happen
+         case Root_Type_Kind (Type_Declaration_View (Source)) is
+            when A_Root_Integer_Definition | A_Universal_Integer_Definition =>
+               if Type_Category (Target) in A_Signed_Integer_Type .. A_Modular_Type then
+                  Do_Report;
+               end if;
+               return;
+            when A_Root_Real_Definition | A_Universal_Real_Definition =>
+               if Type_Category (Target) in A_Fixed_Point_Type .. A_Floating_Point_Type then
+                  Do_Report;
+               end if;
+               return;
+            when A_Universal_Fixed_Definition =>
+               -- This happens only for the result of fixed-point multiply/divide, conversion always allowed
+               return;
+            when Not_A_Root_Type_Definition =>
+               Failure ("Not_A_Root_Type_Definition", Source);
+         end case;
+      elsif Is_Nil (Enclosing_Element (Source)) then
+         -- In the case of GNAT (sometimes?), the type returned by A4G is not a correct root type,
+         -- but a declaration for Universal_Integer (or similar) that appears "out of the blue":
+         -- it is not included in anything else, and that's how we recognize it.
+         declare
+            Universal_Name : constant Wide_String := To_Upper (Defining_Name_Image (Names (Source) (1)));
+         begin
+            if Universal_Name = "UNIVERSAL_INTEGER" then
+               if Type_Category (Target) in A_Signed_Integer_Type .. A_Modular_Type then
+                  Do_Report;
+               end if;
+               return;
+            elsif Universal_Name = "UNIVERSAL_REAL" then
+               if Type_Category (Target) in A_Fixed_Point_Type .. A_Floating_Point_Type then
+                  Do_Report;
+               end if;
+               return;
+            elsif Universal_Name = "UNIVERSAL_FIXED" then
+               -- This happens only for the result of fixed-point multiply/divide, conversion always allowed
+               return;
+            else
+               Failure ("Unexpected universal name: " & Universal_Name);
+            end if;
+         end;
+      end if;
+
    end Process_Conversion;
 
 begin  -- Rules.Simplifiable_expressions

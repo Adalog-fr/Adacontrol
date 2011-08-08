@@ -514,6 +514,8 @@ package body Framework.Language is
                               Next_Token;
                               if Option = "DEBUG" then
                                  Debug_Option := State;
+                              elsif Option = "EXIT_ON_ERROR" then
+                                 Exit_Option := State;
                               elsif Option = "IGNORE" then
                                  Ignore_Option := State;
                               elsif Option = "TIMING" then

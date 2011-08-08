@@ -60,13 +60,14 @@ t_simplifiable_expressions-test_parentheses.adb:62:24: Error: SIMPLIFIABLE_EXPRE
 t_simplifiable_expressions-test_parentheses.adb:64:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:65:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:66:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_conversion.adb:7:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-t_simplifiable_expressions-test_conversion.adb:8:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+t_simplifiable_expressions-test_conversion.adb:9:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:10:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-t_simplifiable_expressions-test_conversion.adb:14:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-t_simplifiable_expressions-test_conversion.adb:15:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+t_simplifiable_expressions-test_conversion.adb:12:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:16:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:17:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+t_simplifiable_expressions-test_conversion.adb:18:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+t_simplifiable_expressions-test_conversion.adb:19:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+t_simplifiable_expressions-test_conversion.adb:25:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 69
+SIMPLIFIABLE_EXPRESSIONS: 70

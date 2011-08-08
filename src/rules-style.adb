@@ -83,7 +83,7 @@ package body Rules.Style is
 
 
    --
-   -- Parameters for the compound_statement subrule
+   -- Declarations for the compound_statement subrule
    --
 
    Min_Stat_Length : constant array (Asis.Statement_Kinds) of Asis.Text.Line_Number
@@ -102,7 +102,7 @@ package body Rules.Style is
 
 
    --
-   -- Parameters for the exposed_literal subrule
+   -- Declarations for the exposed_literal subrule
    --
 
    type Literal_Names is (Lit_Integer, Lit_Real, Lit_Character, Lit_String);
@@ -131,7 +131,7 @@ package body Rules.Style is
 
 
    --
-   -- Parameters for the literal subrule
+   -- Declarations for the literal subrule
    --
 
    subtype Allowed_Bases is Positive range 2 .. 16;
@@ -143,17 +143,18 @@ package body Rules.Style is
 
 
    --
-   -- Parameters for the multiple_elements subrule
+   -- Declarations for the multiple_elements subrule
    --
 
    type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement);
    package Multiple_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Multiple_Names,
                                                                              Prefix => "Mu_" );
    Flexible_Clause : Boolean;
+   -- True if at least one Flexible
 
 
    --
-   -- Parameters for the no_closing_name subrule
+   -- Declarations for the no_closing_name subrule
    --
 
    type Closing_Name_Context is new Basic_Rule_Context with
@@ -163,7 +164,7 @@ package body Rules.Style is
 
 
    --
-   -- Parameters for the [formal_]parameter_order subrule
+   -- Declarations for the [formal_]parameter_order subrule
    --
 
    type Extended_Modes is (Mode_In,   Mode_Defaulted_In, Mode_Access,   Mode_In_Out, Mode_Out,
@@ -180,7 +181,7 @@ package body Rules.Style is
 
 
    --
-   -- Parameters for the positional_association subrule
+   -- Declarations for the positional_association subrule
    --
 
    type Extended_Association_Names is (Na_No_Association,
@@ -207,7 +208,7 @@ package body Rules.Style is
    -- A Context_Store of Null_Context to flag entities that need not obey the rule
 
    --
-   -- Parameters for the renamed_entity subrule
+   -- Declarations for the renamed_entity subrule
    --
 
    type Renaming_Data is
@@ -299,9 +300,9 @@ package body Rules.Style is
          Subrule := Get_Flag_Parameter (Allow_Any => False);
          case Subrule is
             when St_Compound_Statement
-               | St_Default_In
-               | St_Negative_Condition
-               | St_Renamed_Entity
+              | St_Default_In
+              | St_Negative_Condition
+              | St_Renamed_Entity
               =>
                -- Those without parameters
                if Parameter_Exists then
@@ -1100,8 +1101,11 @@ package body Rules.Style is
       begin  -- Check_Formals
          if Rule_Used (St_Default_In) then
             for I in Formals'Range loop
+               -- Note: Mode_Kind returns Not_A_Mode for generic formals that are not objects (types, subprograms...),
+               --  so we don't need to special case these
                if Mode_Kind (Formals (I)) = A_Default_In_Mode
-                 and then Trait_Kind (Formals (I)) /= An_Access_Definition_Trait
+                 and then Trait_Kind (Formals (I)) /= An_Access_Definition_Trait  -- ASIS 95
+                 and then Definition_Kind (Object_Declaration_View (Formals (I))) /= An_Access_Definition -- ASIS 2005
                then
                   Report (Rule_Id,
                           Corresponding_Context (St_Default_In),
