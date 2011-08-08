@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -50,12 +50,11 @@ package Framework is
    --  General types for rules
    --
 
-   type Rule_Types is (Check, Search);
-   -- Allows to specify type of a rule use
+   type Rule_Types is (Check, Search, Count);
 
-   --
-   --  Location
-   --
+   --------------------------------------
+   --  Location                        --
+   --------------------------------------
 
    -- A location is the position of an element in a file
 
@@ -82,26 +81,32 @@ package Framework is
    -- Returns location value of a string
    -- raises Constraint_Error for an incorrect input string
 
-   --
-   --  Rule_Context
-   --
+
+   --------------------------------------
+   --  Entity_Specification            --
+   --------------------------------------
+
+   -- An Entity_Specification is the structure that corresponds to
+   -- the specification of an Ada entity in the command language
+
+   type Entity_Specification is private;
+   function Image (Entity : Entity_Specification) return Wide_String;
+   function Value (Name : Wide_String) return Entity_Specification;
+   function Is_Box (Entity : Entity_Specification) return Boolean;
+
+   --------------------------------------
+   --  Rule_Context                    --
+   --------------------------------------
 
    -- A context is a rule-specific information associated
    -- to an entity specification
 
-   type Entity_Specification (Is_Box : Boolean := False) Is
-      record
-         case Is_Box is
-            when True =>
-               null;
-            when False =>
-               Is_All        : Boolean;
-               Is_Overloaded : Boolean;
-               Specification : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-         end case;
-      end record;
-
    type Rule_Context is tagged null record;
+   procedure Clear (Context : in out Rule_Context);
+   -- The default (inherited) Clear does nothing.
+   -- Redefine clear if you extend Rule_Context with fields (like maps
+   -- or access value) that need finalization when the context store is cleared.
+
    Empty_Context       : constant Rule_Context := (null record);
    No_Matching_Context : constant Rule_Context'Class;
 
@@ -112,15 +117,18 @@ package Framework is
          Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
       end record;
 
-   -- A context_store associates a context to a specific condition
-   -- The condition can be a matching name specification,
-   -- or a location in a file
+   --------------------------------------
+   --  Context_Store                   --
+   --------------------------------------
+
+   -- A context_store associates a context to a specific entity specification
 
    type Context_Store is limited private;
    Already_In_Store : exception;
-   Not_In_Store     : exception; -- Raised by Dissociate only
+   Not_In_Store     : exception; -- Raised by Dissociate and Association only
 
    procedure Balance (Store : in out Context_Store);
+   procedure Clear   (Store : in out Context_Store);
 
    procedure Associate (Into          : in out Context_Store;
                         Specification : in     Entity_Specification;
@@ -133,33 +141,39 @@ package Framework is
    procedure Associate_Default (Into    : in out Context_Store;
                                 Context : in     Rule_Context'Class);
    -- If a default context is defined, it will be returned by Matching_Context if
-   -- the name is not matched when calling Matching_Context
+   -- the name is not matched, instead of No_Matching_Context.
 
    function Matching_Context (Into : Context_Store;
                               Name : Asis.Element) return Rule_Context'Class;
    -- Retrieves the context associated to the element if there is a match
-   -- Returns No_Matching_Context otherwise.
+   -- Returns No_Matching_Context otherwise (including if Name is a Nil_Element).
    --
-   -- Expected element kinds for Name:
-   --   A_Pragma
-   --   An_Attribute_Reference
+   -- Appropriate Element_Kinds for Name:
+   --   A_Pragma (condition searched on pragma name)
    --   A_Defining_Name
-   --   An_Expression, allowed expression kinds:
+   --   An_Expression
+   --
+   -- Appropriate Expression_Kinds:
    --      A_Selected_Component (condition searched on the selector)
    --      An_Identifier
+   --      An_Attribute_Reference (condition searched on Name'Attribute)
    --
-   -- Matches are, in decreasing order of priority
-   --   The location of Name matches exactly
-   --   The line number of the location of Name matches an "any column" association
-   --   The file name of the location of Name matche an "any line" association
+   -- Matches are, in decreasing order of priority:
    --   The name matches with overloading
    --   The name matches without overloading
    --   The name matches an "all" association with overloading
    --   The name matches an "all" association without overloading
    --   There is a default association (matches everything)
 
+   function Extended_Matching_Context (Into : Context_Store;
+                                       Name : Asis.Element) return Rule_Context'Class;
+   -- Same as Matching_Context, but extends the search to corresponding generics if Name is
+   -- an instantiation or part of an instantiation
+   -- Restricted to identifiers.
+
    function Next_Matching_Context (Into : Context_Store) return Rule_Context'Class;
    --  Use to retrieve other contexts of an additive association
+   --  Returns the default (or No_Matching_Context) when exhausted
 
    function Last_Matching_Name (Into : Context_Store) return Wide_String;
    -- Name that found the context in the last query to Matching_Context
@@ -176,14 +190,13 @@ package Framework is
    procedure Dissociate (From          : in out Context_Store;
                          Specification : in     Entity_Specification);
    -- Removes context associated to specification
+
 private
    use Ada.Strings.Wide_Unbounded;
 
-   --  This way of defining No_Matching_Context ensures that it cannot
-   --  be used for anything else than comparisons.
-   type Not_Found_Context is new Rule_Context with null record;
-   No_Matching_Context : constant Rule_Context'Class
-     := Not_Found_Context'(null record);
+   --
+   -- Location
+   --
 
    type Location is record
       File_Name    : Unbounded_Wide_String;
@@ -191,6 +204,36 @@ private
       First_Column : Asis.Text.Character_Position := 0;
    end record;
    Null_Location : constant Location := (Null_Unbounded_Wide_string, 0, 0);
+
+
+   --
+   -- Entity_Specification
+   --
+
+   type Entity_Specification (Is_Box : Boolean := False) is
+      record
+         case Is_Box is
+            when True =>
+               null;
+            when False =>
+               Is_All        : Boolean;
+               Specification : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+         end case;
+      end record;
+
+   --
+   -- Context
+   --
+
+   --  This way of defining No_Matching_Context ensures that it cannot
+   --  be used for anything else than comparisons.
+   type Not_Found_Context is new Rule_Context with null record;
+   No_Matching_Context : constant Rule_Context'Class
+     := Not_Found_Context'(null record);
+
+   --
+   -- Context_Store
+   --
 
    type Context_Access is access Rule_Context'Class;
    type Context_Node;
@@ -205,6 +248,8 @@ private
       Value_Type => Context_Node_Access);
 
    type Auto_Pointer (Self : access Context_Store) is limited null record;
+   -- Rosen trick strikes again...
+
    type Context_Store is
       record
          This             : Auto_Pointer (Context_Store'access);

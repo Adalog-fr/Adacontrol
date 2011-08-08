@@ -1,0 +1,6 @@
+t_pragmas.adb:5:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+t_pragmas.adb:11:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+t_pragmas.adb:13:1: Error: nonstandard: use of non-standard pragma "Inconnu"
+t_pragmas.adb:13:1: Found: PRAGMAS: use of pragma "Inconnu"
+t_pragmas.adb:14:1: Error: nonstandard: use of non-standard pragma "TODO"
+t_pragmas.adb:18:4: Error: nonstandard: use of non-standard pragma "Annotate"

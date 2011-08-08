@@ -1,0 +1,2 @@
+t_silent_exceptions.adb:25:4: Error: SILENT_EXCEPTIONS: some paths have no re-raise or report procedure call in exception handler, check manually
+t_silent_exceptions.adb:43:4: Error: SILENT_EXCEPTIONS: no re-raise or report procedure call in exception handler

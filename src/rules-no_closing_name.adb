@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -52,10 +52,13 @@ package body Rules.No_Closing_Name is
    use Framework, Utilities, Asis;
 
    Rule_Used         : Boolean := False;
+   Save_Used         : Boolean;
+   Count_Length      : ASIS_Integer := ASIS_Integer'Last;
    Search_Length     : ASIS_Integer := ASIS_Integer'Last;
    Check_Length      : ASIS_Integer := ASIS_Integer'Last;
    Rule_Check_Label  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Rule_Search_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Rule_Count_Label  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    ----------
    -- Help --
@@ -65,8 +68,8 @@ package body Rules.No_Closing_Name is
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Parameter(s): none");
-      User_Message ("This rule can be used to check/search for constructs where repeating");
-      User_Message ("the construct name at the end is optional and not provided.");
+      User_Message ("Control constructs where repeating the construct name");
+      User_Message ("at the end is optional and not provided.");
    end Help;
 
    -------------
@@ -93,22 +96,51 @@ package body Rules.No_Closing_Name is
          when Check =>
             if Check_Length /= ASIS_Integer'Last then
                Parameter_Error (Rule_Id &
-                                  ": this rule can be specified only once for check " &
-                                  "and once for search");
+                                  ": this rule can be specified only once for each of check, search, and count");
             end if;
             Check_Length     := ASIS_Integer (Max_Length);
             Rule_Check_Label := To_Unbounded_Wide_String (Label);
          when Search =>
             if Search_Length /= ASIS_Integer'Last then
                Parameter_Error (Rule_Id &
-                                  ": this rule can be specified only once for check " &
-                                  "and once for search");
+                                ": this rule can be specified only once for each of check, search, and count");
             end if;
             Search_Length     := ASIS_Integer (Max_Length);
             Rule_Search_Label := To_Unbounded_Wide_String (Label);
+         when Count =>
+            if Count_Length /= ASIS_Integer'Last then
+               Parameter_Error (Rule_Id &
+                                ": this rule can be specified only once for each of check, search, and count");
+            end if;
+            Count_Length     := ASIS_Integer (Max_Length);
+            Rule_Count_Label := To_Unbounded_Wide_String (Label);
       end case;
       Rule_Used := True;
    end Add_Use;
+
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used         := False;
+            Count_Length      := ASIS_Integer'Last;
+            Search_Length     := ASIS_Integer'Last;
+            Check_Length      := ASIS_Integer'Last;
+            Rule_Check_Label  := Null_Unbounded_Wide_String;
+            Rule_Search_Label := Null_Unbounded_Wide_String;
+            Rule_Count_Label  := Null_Unbounded_Wide_String;
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
 
    -----------------------
    -- Process_Construct --
@@ -138,12 +170,19 @@ package body Rules.No_Closing_Name is
                     Get_Location (Construct),
                     "name not repeated at the end");
          end if;
+         if Length > Count_Length then
+            Report (Rule_Id,
+                    To_Wide_String (Rule_Count_Label),
+                    Count,
+                    Get_Location (Construct),
+                    "name not repeated at the end");
+         end if;
      end if;
    end Process_Construct;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
-                           Help    => Help'Access,
-                           Prepare => null,
-                           Add_Use => Add_Use'Access);
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access);
 end Rules.No_Closing_Name;

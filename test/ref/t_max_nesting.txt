@@ -1,0 +1,4 @@
+t_max_nesting.adb:3:7: Found: MAX_NESTING: nesting deeper than 2
+t_max_nesting.adb:4:10: Error: MAX_NESTING: nesting deeper than 3
+t_max_nesting.adb:9:10: Error: MAX_NESTING: nesting deeper than 3
+t_max_nesting-sep.adb:3:4: Found: MAX_NESTING: nesting deeper than 2

@@ -1,0 +1,4 @@
+t_entities.adb:5:19: Error: attributes: use of element "'Image"
+t_entities.adb:6:19: Error: attributes: use of element "'Image"
+t_entities.adb:8:4: Error: simple_names: use of element "Ada.Text_Io.Put{Standard.String}"
+t_entities.adb:9:4: Error: simple_names: use of element "Ada.Text_Io.Put"

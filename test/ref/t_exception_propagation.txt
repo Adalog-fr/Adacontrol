@@ -1,0 +1,16 @@
+t_exception_propagation.adb:14:7: Error: Gen_Param: subprogram "Proc1" can propagate exceptions, used as call-back in instantiation at t_exception_propagation.adb:75:7
+t_exception_propagation.adb:43:7: Error: Gen_Param: generic "Gen1" can propagate exceptions, instance "Inst1" at t_exception_propagation.adb:47:7 used as call-back in instantiation at t_exception_propagation.adb:76:7
+t_exception_propagation.adb:14:7: Error: Param1: subprogram "Proc1" can propagate exceptions, used as call-back at t_exception_propagation.adb:81:7
+t_exception_propagation.adb:16:7: Error: Param1: subprogram "Proc2" can propagate exceptions, used as call-back at t_exception_propagation.adb:82:7
+t_exception_propagation.adb:24:7: Error: Param1: subprogram "Proc3" can propagate exceptions, used as call-back at t_exception_propagation.adb:83:7
+t_exception_propagation.adb:43:7: Error: Param1: generic "Gen1" can propagate exceptions, instance "Inst1" at t_exception_propagation.adb:47:7 used as call-back at t_exception_propagation.adb:84:7
+t_exception_propagation.adb:14:7: Error: Param4: subprogram "Proc1" can propagate exceptions, used as call-back at t_exception_propagation.adb:87:7
+t_exception_propagation.adb:14:7: Error: Param4: subprogram "Proc1" can propagate exceptions, used as call-back at t_exception_propagation.adb:88:7
+t_exception_propagation.adb:14:7: Error: Param2: subprogram "Proc1" can propagate exceptions, used as call-back at t_exception_propagation.adb:90:7
+t_exception_propagation.adb:14:7: Error: Param3: subprogram "Proc1" can propagate exceptions, used as call-back at t_exception_propagation.adb:92:7
+t_exception_propagation.adb:101:7: Error: interf: subprogram "Proc_C1" can propagate exceptions, interfaced to C
+t_exception_propagation.adb:105:7: Error: interf: subprogram "Proc_C2" can propagate exceptions, interfaced to C
+t_exception_propagation.adb:115:7: Error: interf: subprogram "Proc_C3" can propagate exceptions, interfaced to C
+t_exception_propagation.adb:127:7: Error: interf: subprogram "F" can propagate exceptions, interfaced to C
+t_exception_propagation.adb:148:7: Error: task: task "T1" can propagate exceptions
+t_exception_propagation.adb:163:7: Error: task: task "T3" can propagate exceptions

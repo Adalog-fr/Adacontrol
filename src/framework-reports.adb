@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -47,13 +47,19 @@ with
   Adactl_Options;
 
 package body Framework.Reports is
+   use Ada.Strings.Wide_Unbounded;
 
-   Not_Found  : constant             := 0;
-   Adactl_Tag : constant Wide_String := "--##";
+   Not_Found   : constant             := 0;
+   Adactl_Mark : constant Wide_String := "##";
+   Adactl_Tag  : constant Wide_String := "--" & Adactl_Mark;
 
    Error_Found : Boolean := False;
 
-   subtype Word is Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
+   package Counters is new Binary_Map (Unbounded_Wide_String, Natural);
+   Rule_Counter : Counters.Map;
+
+   subtype Word is Unbounded_Wide_String;
    type Words_List is array (Natural range <>) of Word;
    -- Provides a multipurpose list of words
 
@@ -63,7 +69,6 @@ package body Framework.Reports is
 
    function To_Upper_Wide_String (W : in Word) return Wide_String is
       -- Returns a converted upper case wide string from a word
-      use Ada.Strings.Wide_Unbounded;
       use Utilities;
    begin
       return To_Upper (To_Wide_String (W));
@@ -87,14 +92,20 @@ package body Framework.Reports is
       Dummy_Length : constant Natural             := Count (S, Separator_Set) + 1;
 
       S_First : Natural := S'First;
+      S_Last  : Natural;
       First   : Natural := 0;
       Last    : Natural := 0;
       Count   : Natural := 0;
       Dummy   : Words_List (1..Dummy_Length)
         := (others => Null_Unbounded_Wide_String);
    begin
+      S_Last := Index (S, Adactl_Mark);
+      if S_Last = Not_Found then
+         S_Last := S'Last;
+      end if;
+
       loop
-         Find_Token (S (S_First..S'Last), Separator_Set, Outside, First, Last);
+         Find_Token (S (S_First..S_Last), Separator_Set, Outside, First, Last);
 
          if First = S_First and Last = 0 then
             exit;
@@ -262,25 +273,39 @@ package body Framework.Reports is
                      Loc        : in Location;
                      Msg        : in Wide_String) is
       use Utilities, Adactl_Options;
-      use Ada.Wide_Text_IO;
-   begin
-      if Ignore_Option or else Is_Active (Rule_Id, Rule_Label, Loc) then
+
+      Label : constant Wide_String := Choose (Rule_Label, Otherwise => Rule_Id);
+
+      procedure Issue_Message (Title : Wide_String) is
+         use Ada.Wide_Text_IO;
+      begin
          Put (Image (Loc));
          Put (": ");
+         Put (Title);
+         Put (": ");
+         Put (Label);
+         Put (": ");
+         Put (Msg);
+         New_Line;
+      end Issue_Message;
+
+      use Counters;
+   begin
+      if Ignore_Option or else Is_Active (Rule_Id, Rule_Label, Loc) then
          case Rule_Type is
             when Check =>
                Error_Found := True;
-               Put ("Error: ");
+               Issue_Message ("Error");
             when Search =>
                if Warning_As_Error_Option then
                   Error_Found := True;
                end if;
-               Put ("Found: ");
+               Issue_Message ("Found");
+            when Count =>
+               Add (Rule_Counter,
+                    To_Unbounded_Wide_String (Label),
+                    Fetch (Rule_Counter, To_Unbounded_Wide_String (Label), Default_Value => 0) + 1);
          end case;
-         Put (Choose (Rule_Label, Otherwise => Rule_Id));
-         Put (": ");
-         Put (Msg);
-         New_Line;
       end if;
    end Report;
 
@@ -292,5 +317,41 @@ package body Framework.Reports is
    begin
       return Error_Found;
    end Error_Reported;
+
+   -------------------
+   -- Report_Counts --
+   -------------------
+
+   procedure Report_Counts is
+      use Counters, Ada.Wide_Text_IO;
+
+      procedure Report_One_Count (Key : in Unbounded_Wide_String; Value : in out Natural) is
+      begin
+         Put (To_Wide_String (Key));
+         Put (":");
+         Put (Natural'Wide_Image (Value));
+         New_Line;
+      end Report_One_Count;
+
+      procedure Report_All_Counts is new Iterate (Report_One_Count);
+   begin
+      if Is_Empty (Rule_Counter) then
+         return;
+      end if;
+
+      New_Line;
+      Put_Line ("Counts summary:");
+      Report_All_Counts (Rule_Counter);
+   end Report_Counts;
+
+   ------------------
+   -- Clear_Counts --
+   ------------------
+
+   procedure Clear_Counts is
+      use Counters;
+   begin
+      Clear (Rule_Counter);
+   end Clear_Counts;
 
 end Framework.Reports;

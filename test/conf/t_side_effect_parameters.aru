@@ -1,0 +1,15 @@
+Conflict_1: check side_effect_parameters (t_side_effect_parameters.F1, t_side_effect_parameters.F2);
+Conflict_2: check side_effect_parameters (t_side_effect_parameters.F2, t_side_effect_parameters.F3);
+Conflict_3: check side_effect_parameters (t_side_effect_parameters.Gen.G1, t_side_effect_parameters.F2);
+Conflict_4: check side_effect_parameters (t_side_effect_parameters.FG, t_side_effect_parameters.F2);
+Conflict_5: check side_effect_parameters (standard.integer'value);
+
+-- Not tested, resistance test:
+Buffer_Function_Side_Effect:  Check Side_Effect_Parameters (Buffer.Read_Small,
+                                                            Buffer.Read,
+                                                            Buffer.Reserve_Length,
+                                                            Buffer.Enumeration_G.Read,
+                                                            Buffer.Integer_G.Read,
+                                                            Buffer.Modular_G.Read,
+                                                            Buffer.Float_G.Read,
+                                                            Buffer.Fixed_G.Read);

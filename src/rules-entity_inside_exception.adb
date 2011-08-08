@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -58,6 +58,7 @@ package body Rules.Entity_Inside_Exception is
    use Framework;
 
    Rule_Used : Boolean := False;
+   Save_Used : Boolean;
 
    Entities : Context_Store;
 
@@ -69,9 +70,8 @@ package body Rules.Entity_Inside_Exception is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): Entity names");
-      User_Message ("This rule can be used to check/search for the usage");
-      User_Message ("of an entity inside an exception handler.");
+      User_Message ("Parameter(s): <Entity name>");
+      User_Message ("Control occurrences of an entity inside an exception handler.");
    end Help;
 
    -------------
@@ -95,13 +95,31 @@ package body Rules.Entity_Inside_Exception is
             Associate (Entities, Entity, Simple_Context'(Rule_Type, To_Unbounded_Wide_String (Label)));
          exception
             when Already_In_Store =>
-               Parameter_Error (To_Wide_String (Entity.Specification)
-                                  & " is already used in rule " & Rule_Id);
+               Parameter_Error (Image (Entity) & " is already used in rule " & Rule_Id);
          end;
       end loop;
 
       Rule_Used := True;
    end Add_Use;
+
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := False;
+            Clear (Entities);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
 
    -------------
    -- Prepare --
@@ -172,6 +190,8 @@ package body Rules.Entity_Inside_Exception is
                   Process_Identifier (Element);
 
                when An_Attribute_Reference =>
+                  Process_Identifier (Element);  -- Check the attribute itself
+
                   -- Traverse manually the left branch only, in order to avoid processing
                   -- the attribute identifier
                   Traverse (Prefix (Element), Control, State);
@@ -195,6 +215,7 @@ package body Rules.Entity_Inside_Exception is
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
                              State   : in out State_Information) is
+      pragma Unreferenced (Element, Control, State);
    begin
       null;
    end Post_Procedure;
@@ -219,7 +240,8 @@ package body Rules.Entity_Inside_Exception is
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
-                           Help    => Help'Access,
-                           Prepare => Prepare'Access,
-                           Add_Use => Add_Use'Access);
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Entity_Inside_Exception;

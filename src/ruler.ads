@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -34,12 +34,18 @@ with Asis;
 
 package Ruler is
 
-   procedure Process (Unit_Name  : in     Wide_String;
-                      Spec_Only  : in     Boolean;
-                      My_Context : in out Asis.Context);
-   -- Applies rules on an Ada compilation unit in a parameterized context.
-   -- Process spec of unit if Process_Spec is true.
-   -- Process body of unit if Process_Body is true.
+   My_Context : Asis.Context;
 
-   function Had_Failure return Boolean;
+   procedure Process (Unit_Name  : in Wide_String;
+                      Spec_Only  : in Boolean);
+   -- Applies rules on an Ada compilation unit in a parameterized context.
+   -- Process only spec of unit if Spec_Only is true.
+   -- otherwise, process spec and body.
+
+   procedure Inhibit (Rule_Name : in Wide_String);
+   -- Inhibit given rule for all units passed as parameters
+   -- Unit names to be parsed using normal parameter parsing procedures
+
+   procedure Reset;
+   -- Reset Ruler in case of failure
 end Ruler;

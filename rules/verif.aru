@@ -1,0 +1,9 @@
+check unnecessary_use_clause;
+check no_closing_name;
+check entities (debug);
+check max_nesting (6);
+search max_nesting (4);
+search local_hiding;
+check  parameter_aliasing (certain);
+search parameter_aliasing (possible);
+check simplifiable_expressions (range, logical);

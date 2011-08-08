@@ -1,8 +1,0 @@
-#                                                                             #
-#                                TEST_CASE_106                                #
-#                                                                             #
-#
-#
-#
-search  attributes (address, unchecked_access);
-check   attributes (unrestricted_access);

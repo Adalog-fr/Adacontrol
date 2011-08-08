@@ -3,6 +3,7 @@
 OUTPUT_DIR=res
 REF_DIR=ref
 CONF_DIR=conf
+ADACTL=../src/adactl
 
 function put () {
     local msg="$1"
@@ -46,52 +47,72 @@ fi
 
 put_line_line 
 put_title_line 
+put_title_line "`${ADACTL} -h 2>&1 | grep ADACTL`"
 put_title_line 
 put_title_line VALIDATION
 put_title_line 
 put_title_line "$(date)"
 put_title_line 
-put_title_line 
 put_line_line
-put_title_line 
 
-test_case=test_case_001
+#
+# Framework tests, must be on case-by-case
+#
 
-../src/adactl -vw -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb pack_1.ads
+test_case=tfw_naming
+${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
+    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb xfw_naming.ads xfw_pack
 
-test_case=test_case_002
+test_case=tfw_help
+${ADACTL} -h all > ${OUTPUT_DIR}/${test_case}.txt 2>&1
 
-../src/adactl -vw -f ${CONF_DIR}/${test_case}.aru \
+test_case=tfw_rule_off
+${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
     -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb 
 
-test_case=test_case_003
-
-../src/adactl -h all > ${OUTPUT_DIR}/${test_case}.txt 2>&1
-
-test_case=test_case_004
-
-../src/adactl -vw -f ${CONF_DIR}/${test_case}.aru \
+test_case=tfw_rule_off_ignored
+${ADACTL} -vwi -f ${CONF_DIR}/${test_case}.aru \
     -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb 
 
-test_case=test_case_005
+test_case=tfw_inhibit
+${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
+    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb 
 
-../src/adactl -vwi -f ${CONF_DIR}/${test_case}.aru \
-    -o ${OUTPUT_DIR}/${test_case}.txt ${test_case}.adb 
+#
+# Stress test
+# Run all rules over all rules test files.
+# We are not interested in the actual output (would be too difficult to analyse),
+# just to see if it crashes.
+# Result file will contains the context if there is a crash, or just "PASSED" if OK.
+#
+echo "--- Stress test..."
+test_case=tfw_stress
+list=`find ./ -name "t_*.adb" ! -name "*-*" -printf "%P "`
+find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -vwd -f - $list \
+   2>&1 1>/dev/null | tee ${OUTPUT_DIR}/${test_case}.txt
+if [ $? -le 1 ]; then
+   echo "PASSED" > ${OUTPUT_DIR}/${test_case}.txt
+fi
+echo "--- End stress test..."
 
-list=`ls test_case_1??.ad[sb]`
+#
+# Rules test. All tests are of the form t_<rule name>.ad[bs], 
+# but do not take separate and child units
+#
 
+list=`find ./ -name "t_*.adb" ! -name "*-*" -printf "%P "`
 for i in $list; do
     test_case=`echo $i | cut -f 1 -d "."`
-    ../src/adactl -vw -f ${CONF_DIR}/${test_case}.aru \
+    ${ADACTL} -vw -f ${CONF_DIR}/${test_case}.aru \
 	-o ${OUTPUT_DIR}/${test_case}.txt -u $test_case
 done
 
-list=`ls test_case_[01]??.adb`
+cd ref
+list=`ls *.txt`
+cd ..
 
-for i in $list; do
-    test_case=`echo $i | cut -f 1 -d "."`
-    diff=`diff $OUTPUT_DIR/${test_case=}.txt $REF_DIR/${test_case=}.txt \
+for test_case in $list; do
+    diff=`diff $OUTPUT_DIR/${test_case} $REF_DIR/${test_case} \
           2>&1`
 
     if [ "$diff" = "" ]; then

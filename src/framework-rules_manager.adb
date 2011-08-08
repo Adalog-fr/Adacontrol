@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -46,11 +46,16 @@ package body Framework.Rules_Manager is
 
    Last_Rule_Name   : Wide_String (1..50);  -- 50 arbitrary, but largely sufficient
    Last_Rule_Length : Natural := 0;
+   Max_Name_Length  : Natural := 0;
+
+   Nb_Rules : Natural := 0;
 
    type Element is record
-      Help    : Help_Procedure;
-      Add_Use : Add_Use_Procedure;
-      Prepare : Prepare_Procedure;
+      Help     : Help_Procedure;
+      Add_Use  : Add_Use_Procedure;
+      Command  : Command_Procedure;
+      Prepare  : Prepare_Procedure;
+      Finalize : Finalize_Procedure;
    end record;
 
    package Rule_List is new Binary_Map (Ada.Strings.Wide_Unbounded.Unbounded_Wide_String,
@@ -61,19 +66,25 @@ package body Framework.Rules_Manager is
    -- Register --
    --------------
 
-   procedure Register (Rule    : Wide_String;
-                       Help    : Help_Procedure;
-                       Prepare : Prepare_Procedure;
-                       Add_Use : Add_Use_Procedure) is
+   procedure Register (Rule     : Wide_String;
+                       Help     : Help_Procedure;
+                       Add_Use  : Add_Use_Procedure;
+                       Command  : Command_Procedure;
+                       Prepare  : Prepare_Procedure  := null;
+                       Finalize : Finalize_Procedure := null) is
       use Utilities, Ada.Strings.Wide_Unbounded;
    begin
-      if Help = null or Add_Use = null then
-         Failure ("Missing Help or Prepare procedure");
+      if Help = null or Add_Use = null or Command = null then
+         Failure ("Missing Help, Add_Use or Clear procedure");
       end if;
 
       Rule_List.Add (Rule_Map,
                      To_Unbounded_Wide_String (To_Upper (Rule)),
-                     (Help, Add_Use, Prepare));
+                     (Help, Add_Use, Command, Prepare, Finalize));
+      Nb_Rules := Nb_Rules + 1;
+      if Rule'Length > Max_Name_Length then
+         Max_Name_Length := Rule'Length;
+      end if;
    end Register;
 
    -----------
@@ -149,12 +160,13 @@ package body Framework.Rules_Manager is
 
       procedure One_Name (Key : in Unbounded_Wide_String; Value : in out Element) is
          pragma Unreferenced (Value);
+         Name : constant Wide_String := To_Wide_String (Key);
       begin
-         if Length (Line) + Length (Key) + 1 >= 80 then
+         if Length (Line) + Max_Name_Length + 1 >= 80 then
             User_Message (To_Wide_String (Line));
             Line := Spaces;
          end if;
-         Append (Line, To_Title (To_Wide_String (Key)) & ' ');
+         Append (Line, To_Title (Name) & (Max_Name_Length - Name'Length +1) * ' ');
       end One_Name;
 
       procedure Help_Iterate is new Rule_List.Iterate (One_Name);
@@ -195,5 +207,63 @@ package body Framework.Rules_Manager is
       Rule_List.Balance (Rule_Map);
       Iterate_On_Prepare (Rule_Map);
    end Prepare_All;
+
+   ------------------
+   -- Finalize_All --
+   ------------------
+
+   procedure Finalize_All is
+      procedure Finalize_One (Key : in Unbounded_Wide_String; Value : in out Element) is
+         pragma Unreferenced (Key);
+      begin
+         if Value.Finalize /= null then
+            Value.Finalize.all;
+         end if;
+      end Finalize_One;
+
+      procedure Iterate_On_Finalize is new Rule_List.Iterate (Finalize_One);
+   begin
+      Iterate_On_Finalize (Rule_Map);
+   end Finalize_All;
+
+   -----------------
+   -- Command_All --
+   -----------------
+
+   procedure Command_All (Action : Rule_Action) is
+      procedure One_Command (Key : in Unbounded_Wide_String; Value : in out Element) is
+         pragma Unreferenced (Key);
+      begin
+         Value.Command (Action);
+      end One_Command;
+
+      procedure Command_Iterate is new Rule_List.Iterate (One_Command);
+   begin
+      Command_Iterate (Rule_Map);
+  end Command_All;
+
+  -------------
+  -- Command --
+  -------------
+
+  procedure Command (Rule_Id : in Wide_String; Action : Rule_Action) is
+      use Ada.Strings.Wide_Unbounded, Utilities, Rule_List;
+
+      Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Rule_Id));
+   begin
+      Fetch (Rule_Map, Rule_Name).Command (Action);
+   exception
+      when Not_Present =>
+         Error ("Unknown rule: " & To_Wide_String (Rule_Name));
+  end Command;
+
+  ---------------------
+  -- Number_Of_Rules --
+  ---------------------
+
+  function Number_Of_Rules return Natural is
+  begin
+     return Nb_Rules;
+  end Number_Of_Rules;
 
 end Framework.Rules_Manager;

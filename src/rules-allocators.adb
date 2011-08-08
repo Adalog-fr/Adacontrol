@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -42,6 +42,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Utilities;
 
 -- Adactl
@@ -54,6 +55,7 @@ package body Rules.Allocators is
    use Framework;
 
    Rule_Used : Boolean := False;
+   Save_Used : Boolean;
 
    Entities  : Context_Store;
 
@@ -65,9 +67,9 @@ package body Rules.Allocators is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): allocated types");
-      User_Message ("This rule can be used to check/search for the occurrence of allocators,");
-      User_Message ("either all of them, or just those for specific type(s)");
+      User_Message ("Parameter(s): <allocated type> (optional)");
+      User_Message ("Control occurrences of allocators, either all of them,");
+      User_Message ("or just those for specific type(s)");
    end Help;
 
    -------------
@@ -90,7 +92,7 @@ package body Rules.Allocators is
             exception
                when Already_In_Store =>
                   Parameter_Error ("Type already given for rule " & Rule_Id
-                                     & ": " & To_Wide_String (Entity.Specification));
+                                     & ": " & Image (Entity));
             end;
          end loop;
 
@@ -103,6 +105,25 @@ package body Rules.Allocators is
    end Add_Use;
 
    -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := False;
+            Clear (Entities);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
+
+   -------------
    -- Prepare --
    -------------
 
@@ -111,9 +132,9 @@ package body Rules.Allocators is
       Balance (Entities);
    end Prepare;
 
-   ------------------------
-   -- Process_Identifier --
-   ------------------------
+   -----------------------
+   -- Process_Allocator --
+   -----------------------
 
    procedure Process_Allocator (Element : in Asis.Element) is
       use Ada.Strings.Wide_Unbounded, Utilities;
@@ -142,14 +163,14 @@ package body Rules.Allocators is
       -- E can be an attribute, T'Base or T'Class
       -- T'Base has the same first named subtype as T
       if Expression_Kind (E) = An_Attribute_Reference then
-         case Attribute_Kind (E) is
+         case A4G_Bugs.Attribute_Kind (E) is
             when A_Base_Attribute =>
                E := Prefix (E);
             when A_Class_Attribute =>
                --TBSL Handle this properly
                E := Prefix (E);
             when others =>
-                 Failure ("Unexpected attribute", E);
+               Failure ("Unexpected attribute", E);
          end case;
       end if;
 
@@ -181,7 +202,7 @@ package body Rules.Allocators is
                     To_Wide_String (Simple_Context (Current_Context).Rule_Label),
                     Simple_Context (Current_Context).Rule_Type,
                     Get_Location (Element),
-                    "allocator for " & Last_Matching_Name (Entities));
+                    "allocator for " & To_Title (Last_Matching_Name (Entities)));
          end if;
       end;
 
@@ -189,7 +210,8 @@ package body Rules.Allocators is
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
-                           Help    => Help'Access,
-                           Prepare => Prepare'Access,
-                           Add_Use => Add_Use'Access);
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Allocators;

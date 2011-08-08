@@ -1,4 +1,0 @@
-test_case_101.adb:17:19: Error: not_all_overloaded: use of "Ada.Text_Io.Put_Line{Standard.String}"
-test_case_101.adb:18:7: Error: not_all_not_overloaded: use of "Ada.Text_Io.Put_Line"
-test_case_101.adb:19:7: Error: all_overloaded: use of "Put_Line{Standard.String}"
-test_case_101.adb:20:7: Error: all_not_overloaded: use of "Put_Line"

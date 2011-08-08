@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -43,7 +43,7 @@ package Rules.Not_Elaboration_Calls  is
 
    Rule_Id : constant Wide_String := "NOT_ELABORATION_CALLS";
 
-   procedure Process_Subprogram_Call (Call : in Asis.Element);
-   -- Called whenever a subprogram is called
+   procedure Process_Call (Call : in Asis.Element);
+   -- Called whenever a subprogram or entry is called
 
 end Rules.Not_Elaboration_Calls;

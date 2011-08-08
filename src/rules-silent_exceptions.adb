@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -51,11 +51,21 @@ with
 package body Rules.Silent_Exceptions is
    use Framework;
 
-   Rule_Used : array (Rule_Types) of Boolean := (others => False);
+   type Usage is array (Rule_Types) of Boolean;
+   Rule_Used : Usage := (others => False);
+   Save_Used : Usage;
    Labels    : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Search_Result_Kind is (No_Path, Some_Paths, All_Paths);
    type Search_Result is array (Rule_Types) of Search_Result_Kind;
+
+   type Proc_Context is new Rule_Context with
+      record
+         Usage : Search_Result;
+      end record;
+
+   Rule_Uses : Context_Store;
+
 
    ----------
    -- "or" --
@@ -84,6 +94,11 @@ package body Rules.Silent_Exceptions is
 
    -- Combine two serial paths
    -- Result is the strongest of both paths
+   -- Truth table:
+   --             No_Path     Some_Paths   All_Paths
+   -- No_Path     No_Path     Some_Paths   All_Paths
+   -- Some_Paths  Some_Paths  Some_Paths   All_Paths
+   -- All_Paths   All_Paths   All_Paths    All_Paths
    function "and" (L, R : Search_Result) return Search_Result is
       Result : Search_Result;
    begin
@@ -93,14 +108,6 @@ package body Rules.Silent_Exceptions is
       return Result;
    end "and";
 
-   type Proc_Context is new Rule_Context with
-      record
-         Usage : Search_Result;
-      end record;
-
-   Rule_Uses : Context_Store;
-
-
    ----------
    -- Help --
    ----------
@@ -109,10 +116,9 @@ package body Rules.Silent_Exceptions is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <report procedure name list>");
-      User_Message ("This rule can be used to check/search for exception handlers "
-                      & "that do not re-raise exception and do not call a report "
-                      & "procedure");
+      User_Message ("Parameter(s): <report procedure name>");
+      User_Message ("Control exception handlers that do not re-raise an exception ");
+      User_Message ("nor call a report procedure");
    end Help;
 
    -------------
@@ -150,18 +156,42 @@ package body Rules.Silent_Exceptions is
    end Add_Use;
 
    -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := (others => False);
+            Labels    := (others => Null_Unbounded_WIde_String);
+            Clear (Rule_Uses);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := (others => False);
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
+
+   -------------
    -- Prepare --
    -------------
 
    procedure Prepare is
-      use Ada.Strings.Wide_Unbounded;
    begin
       begin
          Associate (Rule_Uses,
-                    (Is_Box        => False,
-                     Is_All        => False,
-                     Is_Overloaded => False,
-                     Specification => To_Unbounded_Wide_String ("ADA.EXCEPTIONS.RAISE_EXCEPTION")),
+                    Value ("ADA.EXCEPTIONS.RAISE_EXCEPTION"),
+                    Proc_Context'(Usage => (others => All_Paths)));
+      exception
+         when Already_In_Store =>
+            null;
+      end;
+      begin
+         Associate (Rule_Uses,
+                    Value ("ADA.EXCEPTIONS.RERAISE_OCCURRENCE"),
                     Proc_Context'(Usage => (others => All_Paths)));
       exception
          when Already_In_Store =>
@@ -336,7 +366,8 @@ package body Rules.Silent_Exceptions is
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
-                           Help    => Help'Access,
-                           Prepare => Prepare'Access,
-                           Add_Use => Add_Use'Access);
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Silent_Exceptions;

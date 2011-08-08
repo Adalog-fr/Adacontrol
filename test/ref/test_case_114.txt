@@ -1,3 +1,0 @@
-test_case_114.adb:4:4: Found: USE_CLAUSES: use clause for "Ada.Strings"
-test_case_114.adb:5:4: Found: USE_CLAUSES: use clause for "Ada.Strings"
-test_case_114.adb:5:4: Error: USE_CLAUSES: use clause for "System"

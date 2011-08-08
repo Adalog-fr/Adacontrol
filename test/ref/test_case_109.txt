@@ -1,2 +1,0 @@
-test_case_109.adb:7:4: Error: ENTITIES: use of element "Ada.Text_Io.Put{Standard.String}"
-test_case_109.adb:8:4: Error: ENTITIES: use of element "Ada.Text_Io.Put"

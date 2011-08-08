@@ -1,0 +1,5 @@
+count simplifiable_expressions;
+Range_Or_True: check simplifiable_expressions (Range, Logical_True);
+False: search simplifiable_expressions (Logical_False);
+check simplifiable_expressions (parentheses);
+

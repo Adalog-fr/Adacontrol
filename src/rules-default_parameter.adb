@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -43,6 +43,7 @@ with
 -- Adalog
 with
   Binary_Map,
+  Thick_Queries,
   Utilities;
 
 -- Adactl
@@ -55,8 +56,10 @@ package body Rules.Default_Parameter is
    use Framework, Utilities;
 
    Rule_Used : Boolean := False;
+   Save_Used : Boolean;
 
    type Usage_Kind is (Used, Not_Used);
+
    type Usage_Rec is
       record
          Active     : Boolean;
@@ -76,7 +79,9 @@ package body Rules.Default_Parameter is
       record
          Formals_Map : Parameter_Tree.Map;
       end record;
-   Entities  : Context_Store;
+   procedure Clear (Context : in out Entity_Context);
+
+   Entities : Context_Store;
 
    ----------
    -- Help --
@@ -85,11 +90,11 @@ package body Rules.Default_Parameter is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter 1: Subprogram or generic name");
-      User_Message ("Parameter 2: Formal parameter name");
-      User_Message ("Parameter 3: ""Used"" or ""Not_Used""");
-      User_Message ("This rule can be used to check/search for subprogram calls or generic");
-      User_Message ("instantiations that use (or not) the default value for a given parameter");
+      User_Message ("Parameter 1: <Subprogram or generic name>");
+      User_Message ("Parameter 2: <Formal parameter name>");
+      User_Message ("Parameter 3: [not] used");
+      User_Message ("Control subprogram calls or generic instantiations that use (or not)");
+      User_Message ("the default value for a given parameter");
    end Help;
 
    -------------
@@ -100,6 +105,9 @@ package body Rules.Default_Parameter is
                       Rule_Type : in Rule_Types) is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
+      subtype Key_Used is Usage_Kind range Used .. Used;
+      function Get_Used_Parameter is new Framework.Language.Get_Flag_Parameter (Flags     => Key_Used,
+                                                                                Allow_Any => False);
 
       Entity : Entity_Specification;
       Formals_Map : Parameter_Tree.Map;
@@ -114,17 +122,16 @@ package body Rules.Default_Parameter is
       end if;
 
       declare
-         Formal : constant Wide_String := To_Upper (Get_String_Parameter);
-         Usage  : Usage_Kind;
+         Formal      : constant Wide_String := To_Upper (Get_String_Parameter);
+         Usage       : Usage_Kind;
+         Affirmative : Boolean;
       begin
          if Parameter_Exists then
-            begin
-               Usage := Usage_Kind'Wide_Value (Get_String_Parameter);
-            exception
-               when Constraint_Error =>
-                  Parameter_Error ("Parameter should be ""Used"" or ""Not_Used"" for rule "
-                                     & Rule_Id);
-            end;
+            Affirmative := not Get_Modifier ("NOT");
+            Usage       := Get_Used_Parameter;
+            if not Affirmative then
+               Usage := Not_Used;
+            end if;
          else
             Usage := Used;
          end if;
@@ -156,6 +163,35 @@ package body Rules.Default_Parameter is
       Rule_Used  := True;
    end Add_Use;
 
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear (Context : in out Entity_Context) is
+      use Parameter_Tree;
+   begin
+      Clear (Context.Formals_Map);
+   end Clear;
+
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := False;
+            Clear (Entities);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
+
    -------------
    -- Prepare --
    -------------
@@ -174,7 +210,7 @@ package body Rules.Default_Parameter is
    procedure Process_Call_Or_Instantiation (Element : in Asis.Element) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Asis.Statements;
-      use Parameter_Tree;
+      use Parameter_Tree, Thick_Queries;
 
       function Get_Association_List (E : in Asis.Element) return Asis.Association_List is
       begin
@@ -184,7 +220,9 @@ package body Rules.Default_Parameter is
            Statement_Kind (Element) = An_Entry_Call_Statement
          then
             return Call_Statement_Parameters (E, Normalized => True);
-         elsif Declaration_Kind (Element) in A_Generic_Instantiation then
+         elsif Declaration_Kind (Element) in A_Generic_Instantiation
+           or Declaration_Kind (Element) = A_Formal_Package_Declaration
+         then
             return Generic_Actual_Part (E, Normalized => True);
          else
             Failure ("Unexpected element in Process for Default_Parameter", Element);
@@ -198,16 +236,12 @@ package body Rules.Default_Parameter is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Expression_Kind (Element) = A_Function_Call then
-         Name := Prefix (Element);
-      elsif Statement_Kind (Element) = A_Procedure_Call_Statement
-        or  Statement_Kind (Element) = An_Entry_Call_Statement
+      if Declaration_Kind (Element) in A_Generic_Instantiation
+        or Declaration_Kind (Element) = A_Formal_Package_Declaration
       then
-         Name := Called_Name (Element);
-      elsif Declaration_Kind (Element) in A_Generic_Instantiation then
          Name := Generic_Unit_Name (Element);
       else
-         Failure ("Unexpected element in Process for Default_Parameter", Element);
+         Name := Called_Simple_Name (Element);
       end if;
 
       declare
@@ -230,8 +264,8 @@ package body Rules.Default_Parameter is
                               To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal))))
                then
                   Usage := Fetch (Formals_Context.Formals_Map,
-                            To_Unbounded_Wide_String (To_Upper
-                                                        (Defining_Name_Image (Formal))));
+                                  To_Unbounded_Wide_String (To_Upper
+                                                            (Defining_Name_Image (Formal))));
                   if Usage (Used).Active then
                      if Is_Defaulted_Association (Associations (I)) then
                         Report (Rule_Id,
@@ -260,6 +294,7 @@ package body Rules.Default_Parameter is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Help    => Help'Access,
-                                     Prepare => Prepare'Access,
-                                     Add_Use => Add_Use'Access);
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Default_Parameter;

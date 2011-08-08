@@ -1,0 +1,22 @@
+-- Rule file to check that no entity from System is redefined
+Redefinition_From_System : check naming_convention (all,
+  --not case_insensitive "Name",  -- You generally don't want to forbid this one
+  not case_insensitive "System_Name",
+  not case_insensitive "Min_Int",
+  not case_insensitive "Max_Int",
+  not case_insensitive "Max_Binary_Modulus",
+  not case_insensitive "Max_Nonbinary_Modulus",
+  not case_insensitive "Max_Base_Digits",
+  not case_insensitive "Max_Digits",
+  not case_insensitive "Max_Mantissa",
+  not case_insensitive "Fine_Delta",
+  not case_insensitive "Tick",
+  not case_insensitive "Address",
+  not case_insensitive "Null_Address",
+  not case_insensitive "Storage_Unit",
+  not case_insensitive "Word_Size",
+  not case_insensitive "Memory_Size",
+  not case_insensitive "Bit_Order",
+  not case_insensitive "High_Order_First", 
+  not case_insensitive "Interrupt_Priority",
+  not case_insensitive "Default_Priority");

@@ -1,0 +1,11 @@
+t_statements.adb:9:10: Error: Tasking_Stmts: use of statement "requeue"
+t_statements.adb:16:4: Error: Tasking_Stmts: use of statement "delay"
+t_statements.adb:17:4: Error: Tasking_Stmts: use of statement "delay_until"
+t_statements.adb:18:4: Found: Sequential_Stmts: use of statement "goto"
+t_statements.adb:20:4: Error: Tasking_Stmts: use of statement "abort"
+t_statements.adb:23:7: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:27:7: Found: Sequential_Stmts: use of statement "unnamed_exit"
+t_statements.adb:28:7: Found: Sequential_Stmts: use of statement "exit"
+t_statements.adb:31:4: Error: Tasking_Stmts: use of statement "asynchronous_select"
+t_statements.adb:40:12: Found: Sequential_Stmts: use of "others" in "case" statement
+t_statements.adb:44:4: Found: Sequential_Stmts: use of statement "raise"

@@ -1,0 +1,2 @@
+tfw_rule_off.adb:5:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_rule_off.adb:11:1: Error: PRAGMAS: use of pragma "Elaborate_All"

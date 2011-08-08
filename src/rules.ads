@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -31,4 +31,16 @@
 
 package Rules is
    pragma Pure (Rules);
+
+   -- These constants define limits about what "reasonable" programs
+   -- may contain.
+   -- They can be used by rules to limit some capabilities.
+   -- The user may change the limits at will, no other change is needed.
+
+   Max_Identical_Rules : constant := 100;
+   -- For rules that need an upper bound to the number of times they can
+   -- be specified
+
+   Max_Parameters : constant := 30;
+   -- Maximum number of parameters declared by a subprogram or an entry
 end Rules;

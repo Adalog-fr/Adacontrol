@@ -1,0 +1,9 @@
+check  pragmas (elaborate_all);
+search pragmas (pure);
+search pragmas (inconnu);
+nonstandard : check pragmas (nonstandard);
+
+-- More, just to check resistance:
+Elaborate        : Check Pragmas (Elaborate); 
+Checks_Suppressed: Check Pragmas (Suppress);
+Obsolete_Pragmas : Check Pragmas (Interface_Name, Import_Procedure, Import_Function);

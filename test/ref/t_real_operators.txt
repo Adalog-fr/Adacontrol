@@ -1,0 +1,16 @@
+t_real_operators.adb:41:7: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:43:10: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:45:10: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:47:10: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:49:10: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:51:10: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:53:10: Error: REAL_OPERATORS: equality or inequality with Binary Fixed Point
+t_real_operators.adb:55:10: Error: REAL_OPERATORS: equality or inequality with Binary Fixed Point
+t_real_operators.adb:57:10: Error: REAL_OPERATORS: equality or inequality with Binary Fixed Point
+t_real_operators.adb:59:10: Error: REAL_OPERATORS: equality or inequality with Binary Fixed Point
+t_real_operators.adb:61:10: Error: REAL_OPERATORS: equality or inequality with Decimal Fixed Point
+t_real_operators.adb:63:10: Error: REAL_OPERATORS: equality or inequality with Decimal Fixed Point
+t_real_operators.adb:65:10: Error: REAL_OPERATORS: equality or inequality with Decimal Fixed Point
+t_real_operators.adb:67:10: Error: REAL_OPERATORS: equality or inequality with Decimal Fixed Point
+t_real_operators.adb:69:10: Error: REAL_OPERATORS: equality or inequality with Floating Point
+t_real_operators.adb:71:10: Error: REAL_OPERATORS: equality or inequality with two Universal Real constants !!!

@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -40,11 +40,11 @@ with
   Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Statements;
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -54,6 +54,52 @@ package body Framework is
 
    procedure Free is new Ada.Unchecked_Deallocation (Rule_Context'Class, Context_Access);
    procedure Free is new Ada.Unchecked_Deallocation (Context_Node, Context_Node_Access);
+
+   procedure Release (Value : in out Context_Node_Access) is
+      Next : Context_Node_Access;
+   begin
+      while Value /= null loop
+         Next := Value.Next;
+         Clear (Value.Value.all);
+         Free (Value.Value);
+         Free (Value);
+         Value := Next;
+      end loop;
+   end Release;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Entity : Entity_Specification) return Wide_String is
+      use Utilities;
+   begin
+      if Entity.Is_Box then
+         return "<>";
+      else
+         return To_Title (To_Wide_String (Entity.Specification));
+      end if;
+   end Image;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (Name : Wide_String) return Entity_Specification is
+   begin
+      return (Is_Box        => False,
+              Is_All        => False,
+              Specification => To_Unbounded_Wide_String (Name));
+   end Value;
+
+   ------------
+   -- Is_Box --
+   ------------
+
+   function Is_Box (Entity : Entity_Specification) return Boolean is
+   begin
+      return Entity.Is_Box;
+   end Is_Box;
 
    ---------------
    -- Associate --
@@ -66,11 +112,23 @@ package body Framework is
    is
       use Context_Tree;
       Node : Context_Node_Access := null;
+
+      procedure Check_Context_Not_Given is
+         Current : Context_Node_Access := Node;
+      begin
+         while Current /= null loop
+            if Current.Value.all = Context then
+               raise Already_In_Store;
+            end if;
+            Current := Current.Next;
+         end loop;
+      end Check_Context_Not_Given;
    begin
       if Specification.Is_All then
          if Is_Present (Into.Simple_Names, Specification.Specification) then
             if Additive then
                Node := Fetch (Into.Simple_Names, Specification.Specification);
+               Check_Context_Not_Given;
             else
                raise Already_In_Store;
             end if;
@@ -83,6 +141,7 @@ package body Framework is
          if Is_Present (Into.Qualified_Names, Specification.Specification) then
             if Additive then
                Node := Fetch (Into.Qualified_Names, Specification.Specification);
+               Check_Context_Not_Given;
             else
                raise Already_In_Store;
             end if;
@@ -115,6 +174,21 @@ package body Framework is
       Balance (Store.Qualified_Names);
    end Balance;
 
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear is new Context_Tree.Generic_Clear_And_Release (Release);
+
+   procedure Clear   (Store : in out Context_Store) is
+   begin
+      Clear (Store.Simple_Names);
+      Clear (Store.Qualified_Names);
+      Release (Store.Default);
+      Store.Last_Returned := null;
+      Store.Last_Name     := Null_Unbounded_Wide_String;
+   end Clear;
+
    ----------------------
    -- Matching_Context --
    ----------------------
@@ -123,45 +197,62 @@ package body Framework is
                               Name : Asis.Element) return Rule_Context'Class
    is
       use Context_Tree, Utilities, Thick_Queries;
-      use Asis, Asis.Elements, Asis.Declarations, Asis.Expressions;
+      use Asis, Asis.Elements, Asis.Declarations, Asis.Expressions, Asis.Statements;
 
+      Good_Name       : Asis.Element;
+      Name_Enclosing  : Asis.Element;
       Name_Definition : Defining_Name;
       Name_Image      : Unbounded_Wide_String;
+      Name_Extra      : Unbounded_Wide_String; -- Initialized to Null_Unbounded_Wide_String
       Result          : Context_Node_Access;
    begin
+      if Is_Nil (Name) then
+         return No_Matching_Context;
+      end if;
+      Name_Enclosing := Enclosing_Element (Name);
+
+      if Expression_Kind (Name) = A_Selected_Component then
+         Good_Name := Selector (Name);
+      else
+         Good_Name := Name;
+      end if;
 
       -- Special case for pragmas: they have no "name" in the Asis sense.
       if Element_Kind (Name) = A_Pragma then
          -- No overloading, no "all"
-         Name_Image := To_Unbounded_Wide_String (To_Upper (Pragma_Name_Image (Name)));
+         Name_Image := To_Unbounded_Wide_String (To_Upper (Pragma_Name_Image (Good_Name)));
+         Result     := Fetch (Into.Qualified_Names,
+                              Name_Image,
+                              Default_Value => Default_Context);
 
-         Result := Fetch (Into.Qualified_Names,
-                          Name_Image,
-                          Default_Value => Default_Context);
-
-         -- Similarly for attribute references.
-      elsif Expression_Kind (Name) = An_Attribute_Reference then
-         -- No overloading, no "all"
-         Name_Image := To_Unbounded_Wide_String (To_Upper
-                                                   (Expressions.Name_Image
-                                                      (A4G_Bugs.Attribute_Designator_Identifier
-                                                         (Name))));
-
-         Result := Fetch (Into.Qualified_Names,
-                          Name_Image,
-                          Default_Value => Default_Context);
+      -- Only "all" is acceptable for dispatching calls
+      elsif Is_Dispatching_Call (Name_Enclosing)
+        and then Is_Equal (Good_Name, Called_Simple_Name (Name_Enclosing))
+      then
+         Name_Image := To_Unbounded_Wide_String (To_Upper (Asis.Expressions.Name_Image (Good_Name)));
+         Result     := Fetch (Into.Simple_Names,
+                              Name_Image,
+                              Default_Value => Default_Context);
 
       else
-         -- Not a pragma or attribute => must be a name
+         -- Not a pragma or attribute designator => must be a true name (or an attribute reference)
          if Element_Kind (Name) = A_Defining_Name then
             Name_Definition := Name;
          else
-            case Expression_Kind (Name) is
-               when A_Selected_Component =>
-                  Name_Definition := Corresponding_Name_Definition (Selector (Name));
+            if Expression_Kind (Good_Name) = An_Attribute_Reference then
+               while Expression_Kind (Good_Name) = An_Attribute_Reference loop
+                  Name_Extra := ''' & To_Upper (Attribute_Name_Image (Good_Name)) & Name_Extra;
+                  Good_Name  := Prefix (Good_Name);
+               end loop;
 
+               if Expression_Kind (Good_Name) = A_Selected_Component then
+                  Good_Name := Selector (Good_Name);
+               end if;
+            end if;
+
+            case Expression_Kind (Good_Name) is
                when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
-                  Name_Definition := Corresponding_Name_Definition (Name);
+                  Name_Definition := Corresponding_Name_Definition (Good_Name);
 
                   if Is_Nil (Name_Definition) then
                      --  Must be an implicitely declared operator symbol, for which
@@ -172,12 +263,10 @@ package body Framework is
                      return No_Matching_Context;
                   end if;
 
-               when An_Explicit_Dereference =>
-                  -- This is always dynamic, and therefore can't match anything
-                  return No_Matching_Context;
-
                when others =>
-                  Failure ("Matching_Context: not a name", Name);
+                  -- This can happen if we were given something that is not appropriate,
+                  -- or for something dynamic used as the prefix of an attribute.
+                  return No_Matching_Context;
             end case;
          end if;
 
@@ -186,15 +275,18 @@ package body Framework is
          -- Search without "all", with overloading
          Name_Image := To_Unbounded_Wide_String (To_Upper
                                                    (Full_Name_Image
-                                                      (Name_Definition, With_Profile => True)));
+                                                    (Name_Definition, With_Profile => True)))
+                       & Name_Extra;
          Result := Fetch (Into.Qualified_Names,
                           Name_Image,
                           Default_Value => Default_Context);
 
          -- Search without "all", without overloading
          if Result.Value.all = No_Matching_Context then
-            Name_Image := To_Unbounded_Wide_String
-              (To_Upper (Full_Name_Image (Name_Definition, With_Profile => False)));
+            Name_Image := To_Unbounded_Wide_String (To_Upper
+                                                    (Full_Name_Image
+                                                     (Name_Definition, With_Profile => False)))
+                          & Name_Extra;
             Result := Fetch (Into.Qualified_Names,
                              Name_Image,
                              Default_Value => Default_Context);
@@ -202,10 +294,10 @@ package body Framework is
 
          -- Search with "all", with overloading
          if Result.Value.all = No_Matching_Context then
-            Name_Image := To_Unbounded_Wide_String
-              (To_Upper (Defining_Name_Image (Name_Definition)
-                           & Profile_Image (Name_Definition,
-                                            With_Profile => True)));
+            Name_Image := To_Unbounded_Wide_String (To_Upper
+                                                    (Defining_Name_Image (Name_Definition)
+                                                   & Profile_Image (Name_Definition, With_Profile => True)))
+                          & Name_Extra;
             Result := Fetch (Into.Simple_Names,
                              Name_Image,
                              Default_Value => Default_Context);
@@ -213,12 +305,22 @@ package body Framework is
 
          -- Search with "all", without overloading
          if Result.Value.all = No_Matching_Context then
-            Name_Image := To_Unbounded_Wide_String
-              (To_Upper (Defining_Name_Image (Name_Definition)));
+            Name_Image := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Name_Definition)))
+                          & Name_Extra;
             Result := Fetch (Into.Simple_Names,
                              Name_Image,
                              Default_Value => Default_Context);
          end if;
+
+         -- For attribute references, search attribute name
+         if Result.Value.all = No_Matching_Context
+           and then Expression_Kind (Name) = An_Attribute_Reference
+         then
+            Name_Image := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
+            Result := Fetch (Into.Simple_Names,
+                             Name_Image,
+                             Default_Value => Default_Context);
+        end if;
 
       end if;
 
@@ -235,6 +337,76 @@ package body Framework is
       Into.This.Self.Last_Name     := Name_Image;
       return Result.Value.all;
    end Matching_Context;
+
+   -------------------------------
+   -- Extended_Matching_Context --
+   -------------------------------
+
+   function Extended_Matching_Context (Into : Context_Store;
+                                       Name : Asis.Element) return Rule_Context'Class is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Thick_Queries;
+      Name_Declaration : Asis.Declaration;
+   begin
+      -- 1) Check provided name
+      declare
+         Result : constant Rule_Context'Class := Matching_Context (Into, Name);
+      begin
+         if Result /= No_Matching_Context then
+            return Result;
+         end if;
+      end;
+
+      -- No extended context for attribute references
+      -- (at least for the moment)
+      if Expression_Kind (Name) = An_Attribute_Reference then
+         return No_Matching_Context;
+      end if;
+
+      if Element_Kind (Name) = A_Defining_Name then
+         Name_Declaration := Enclosing_Element (Name);
+      else
+         Name_Declaration := Corresponding_Name_Declaration (Name);
+      end if;
+
+      -- 2) if name is a renaming, try the ultimate name
+      -- TBSL
+      if Declaration_Kind (Name_declaration) in A_Renaming_Declaration then
+         declare
+            Result : constant Rule_Context'Class := Matching_Context (Into, Ultimate_Name (Name));
+         begin
+            if Result /= No_Matching_Context then
+               return Result;
+            end if;
+         end;
+      end if;
+
+      -- 3) if name is an instantiation, try the corresponding generic
+      if Declaration_Kind (Name_Declaration) in A_Generic_Instantiation then
+         declare
+            Result : constant Rule_Context'Class := Matching_Context (Into,
+                                                                      Generic_Unit_Name (Name_Declaration));
+         begin
+            if Result /= No_Matching_Context then
+               return Result;
+            end if;
+         end;
+      end if;
+
+      -- 4) if name is from an instantiation, try the corresponding generic element
+      if Is_Part_Of_instance (Name_Declaration) then
+         declare
+            Result : constant Rule_Context'Class := Matching_Context (Into,
+                                                                      Corresponding_Generic_element (Name));
+         begin
+            if Result /= No_Matching_Context then
+               return Result;
+            end if;
+         end;
+       end if;
+
+       -- Nothing found
+       return No_Matching_Context;
+   end Extended_Matching_Context;
 
    ---------------------------
    -- Next_Matching_Context --
@@ -298,6 +470,16 @@ package body Framework is
       return Result.Value.all;
    end Association;
 
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear (Context : in out Rule_Context) is
+      pragma Unreferenced (Context);
+   begin
+      null;
+   end Clear;
+
    ----------------
    -- Dissociate --
    ----------------
@@ -310,8 +492,7 @@ package body Framework is
       if Specification.Is_All then
          if Is_Present (From.Simple_Names, Specification.Specification) then
             Temp := Fetch (From.Simple_Names, Specification.Specification);
-            Free (Temp.Value);
-            Free (Temp);
+            Release (Temp);
             Delete (From.Simple_Names, Specification.Specification);
          else
             raise Not_In_Store;
@@ -320,8 +501,7 @@ package body Framework is
       else
          if Is_Present (From.Qualified_Names, Specification.Specification) then
             Temp := Fetch (From.Qualified_Names, Specification.Specification);
-            Free (Temp.Value);
-            Free (Temp);
+            Release (Temp);
             Delete (From.Qualified_Names, Specification.Specification);
          else
             raise Not_In_Store;

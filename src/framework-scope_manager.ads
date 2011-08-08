@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -55,11 +55,10 @@ package Framework.Scope_Manager is
 
    function Current_Depth return Scope_Range;
    function Current_Scope return Asis.Element;
+   function Enclosing_Scope return Asis.Element;
    function Active_Scopes return Asis.Element_List;
 
-   -- The ASIS element at depth Current_Depth
-
-   -- The following declaration is for use in the private part of Scoped_Data,
+   -- The following declaration is for use in the private part of Scoped_Store,
    -- no use for the users of this package. (No harm either).
    type Scoping_Procedure is access procedure (Scope : Asis.Element);
 
@@ -76,6 +75,10 @@ package Framework.Scope_Manager is
 
       procedure Push (Info : in Data);
       -- Adds Info on top of stack, associated to current scope
+      procedure Push_Enclosing (Info : in Data);
+      -- Adds Info associated to the enclosing scope of the current scope
+      -- If Current_Scope is a library unit, the info is associated to the scope level 0,
+      -- and the corresponding Current_Data_Scope returns Nil_Element
 
       -- Iterator
       -- Data are returned by Get_Current_Data from top to bottom but not removed
@@ -93,14 +96,17 @@ package Framework.Scope_Manager is
       -- Is_Current_Transmitted_From_Spec is true iff the current scope is a body
       -- and the data originated from the corresponding specification.
       --
-      -- It is possible to add new data while iterating; since they are added
+      -- It is possible to add new data with Push while iterating; since they are added
       -- on top (i.e. above the current position of the iterator), it does not
       -- change the behaviour of the iterator.
+      -- The same does not hold when adding data with Push_Enclosing, which should therefore
+      -- not be used while iterating.
 
       procedure Reset (Mode : Iterator_Mode);
       procedure Next;
       function  Data_Available                   return Boolean;
-      function  Get_Current_Data                 return Data;
+      function  Current_Data                     return Data;
+      function  Current_Data_Scope               return Asis.Element;
       function  Is_Current_Transmitted_From_Spec return Boolean;
       procedure Update_Current (Info : in Data);
       procedure Delete_Current;
@@ -109,9 +115,9 @@ package Framework.Scope_Manager is
       -- The following declarations are here because they are not allowed
       -- in a generic body.
 
-      procedure Enter_Scope  (Scope : Asis.Element);
-      procedure Exit_Scope   (Scope : Asis.Element);
-      procedure Clear_All    (Scope : Asis.Element);
+      procedure Enter_Scope (Scope : Asis.Element);
+      procedure Exit_Scope  (Scope : Asis.Element);
+      procedure Clear_All   (Scope : Asis.Element);
       -- The parameter of Clear_All is not used, it is there just to
       -- match the profile.
 

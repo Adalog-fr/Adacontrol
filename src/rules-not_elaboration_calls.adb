@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -35,15 +35,12 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
+  Thick_Queries,
   Utilities;
 
 -- Asis
 with
-  Asis.Declarations,
-  Asis.Elements,
-  Asis.Expressions,
-  Asis.Statements;
+  Asis.Elements;
 
 -- Adactl
 with
@@ -55,7 +52,8 @@ with
 package body Rules.Not_Elaboration_Calls is
    use Framework, Utilities;
 
-   Rule_Used   : Boolean := False;
+   Rule_Used : Boolean := False;
+   Save_Used : Boolean;
 
    Subprograms : Context_Store;
 
@@ -66,9 +64,9 @@ package body Rules.Not_Elaboration_Calls is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): subprogram names");
-      User_Message ("This rule can be used to check/search for subprogram calls that happen");
-      User_Message ("elsewhere than as part of the elaboration of a library package.");
+      User_Message ("Parameter(s): <subprogram name>");
+      User_Message ("Control subprogram calls that happen elsewhere than as part");
+      User_Message ("of the elaboration of a library package.");
    end Help;
 
    -------------
@@ -92,13 +90,32 @@ package body Rules.Not_Elaboration_Calls is
          exception
             when Already_In_Store =>
                Parameter_Error ("Subprogram already given for rule " & Rule_Id
-                                  & ": " & To_Wide_String (Entity.Specification));
+                                  & ": " & Image (Entity));
          end;
       end loop;
 
       Rule_Used  := True;
 
    end Add_Use;
+
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := False;
+            Clear (Subprograms);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
 
    -------------
    -- Prepare --
@@ -109,14 +126,13 @@ package body Rules.Not_Elaboration_Calls is
       Balance (Subprograms);
    end Prepare;
 
-   -----------------------------
-   -- Process_Subprogram_Call --
-   -----------------------------
+   ------------------
+   -- Process_Call --
+   ------------------
 
-   procedure Process_Subprogram_Call (Call : in Asis.Element) is
-      use Ada.Strings.Wide_Unbounded;
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
-      Called_Declaration : Asis.Declaration;
+   procedure Process_Call (Call : in Asis.Element) is
+      use Ada.Strings.Wide_Unbounded, Thick_Queries;
+      use Asis, Asis.Elements;
       Called_Subprogram  : Asis.Expression;
    begin
       if not Rule_Used then
@@ -124,43 +140,7 @@ package body Rules.Not_Elaboration_Calls is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      case Element_Kind (Call) is
-         when A_Statement =>
-           case Statement_Kind (Call) is
-              when A_Procedure_Call_Statement
-                | An_Entry_Call_Statement
-                =>
-                 Called_Subprogram := Called_Name (Call);
-                 if Expression_Kind (Called_Subprogram) = An_Indexed_Component then
-                    -- A call to an entry family
-                    Called_Subprogram := Prefix (Called_Subprogram);
-                 end if;
-              when others =>
-                 Failure ("Not a  procedure call statement", Call);
-           end case;
-
-         when An_Expression =>
-            case Expression_Kind (Call) is
-               when A_Function_Call =>
-                  Called_Declaration := A4G_Bugs.Corresponding_Called_Function (Call);
-                  if Is_Nil (Called_Declaration) then
-                     -- ASIS says:
-                     --   - function_prefix denotes a predefined operator for which the
-                     --     implementation does not provide an artificial function declaration,
-                     --   - prefix of the call denotes an access to a function implicit or explicit
-                     --     dereference,
-                     --   - argument is a dispatching call.
-                     -- => ignore
-                     return;
-                  end if;
-                  Called_Subprogram  := Names (Called_Declaration) (1);
-               when others =>
-                  Failure ("Not a function call", Call);
-            end case;
-         when others =>
-            Failure ("Not a call", Call);
-      end case;
-
+      Called_Subprogram := Called_Simple_Name (Call);
       declare
          use Framework.Reports, Framework.Scope_Manager;
          Current_Context : Rule_Context'Class := Matching_Context (Subprograms,
@@ -194,11 +174,12 @@ package body Rules.Not_Elaboration_Calls is
             end case;
          end loop;
       end;
-   end Process_Subprogram_Call;
+   end Process_Call;
 
 begin
    Framework.Rules_Manager.Register (Rule_Id,
-                           Help    => Help'Access,
-                           Prepare => Prepare'Access,
-                           Add_Use => Add_Use'Access);
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Not_Elaboration_Calls;

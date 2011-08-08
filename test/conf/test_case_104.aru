@@ -1,5 +1,0 @@
-#                                                                             #
-#                                TEST_CASE_104                                #
-#                                                                             #
-
-check local_instantiation (ada.unchecked_deallocation);

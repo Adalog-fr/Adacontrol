@@ -1,8 +1,0 @@
-test_case_002.adb:4:1: Found: PRAGMAS: use of pragma "Elaborate_All"
-test_case_002.adb:11:4: Error: INSTANTIATIONS: instantiation of "Ada.Unchecked_Deallocation" ( 1) with (Standard.String)
-test_case_002.adb:11:4: Found: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
-test_case_002.adb:12:4: Found: LOCAL_INSTANTIATION: local instantiation of "Ada.Unchecked_Deallocation"
-test_case_002.adb:38:4: Error: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: no re-raise or report procedure call in exception handler
-test_case_002.adb:41:4: Error: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: no re-raise or report procedure call in exception handler
-test_case_002.adb:46:4: Error: NON_RAISING_NON_REPORTING_EXCEPTION_HANDLER: no re-raise or report procedure call in exception handler
-test_case_002.adb:47:14: Error: ENTITY_INSIDE_EXCEPTION: use of "Pack_1.Proc_1{}"

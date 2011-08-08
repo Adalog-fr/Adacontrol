@@ -1,0 +1,5 @@
+inhibit pragmas (tfw_inhibit_3);
+inhibit entities(tfw_inhibit_2, tfw_inhibit_3);
+
+check pragmas (elaborate_all);
+check entities (ada.text_IO);

@@ -1,0 +1,163 @@
+Rule: ALLOCATORS
+Parameter(s): <allocated type> (optional)
+Control occurrences of allocators, either all of them,
+or just those for specific type(s)
+
+Rule: DECLARATIONS
+Parameter(s): access | access_subprogram | aliased | exception | tagged | task
+Control occurrences of Ada declarations
+
+Rule: DEFAULT_PARAMETER
+Parameter 1: <Subprogram or generic name>
+Parameter 2: <Formal parameter name>
+Parameter 3: [not] used
+Control subprogram calls or generic instantiations that use (or not)
+the default value for a given parameter
+
+Rule: ENTITIES
+Parameter(s): <Entity name>
+Control occurrences of any Ada entity
+
+Rule: ENTITY_INSIDE_EXCEPTION
+Parameter(s): <Entity name>
+Control occurrences of an entity inside an exception handler.
+
+Rule: EXCEPTION_PROPAGATION
+Parameter 1     : interface | parameter | task
+Parameter 2 .. N: for interface: <convention name>
+                  for parameter: <full name of parameters known to expect call-backs>
+                  for task: nothing
+Control that certain kinds of subprograms (or tasks) cannot propagate exceptions
+
+Rule: INSTANTIATIONS
+Parameter 1     : <Generic name>
+Parameter 2 .. N: <Entity name> (optional)
+Control generic instantiations, either all of them
+or those made with the given entities
+
+Rule: LOCAL_HIDING
+Parameter(s): none
+Control occurrences of local identifiers that hide an outer identical name
+
+Rule: LOCAL_INSTANTIATION
+Parameter(s): <generic name>
+Control instantiations that are done in a local scope.
+
+Rule: MAX_NESTING
+Parameter 1: <maximum allowed nesting level>
+Control scopes nested deeper than a given limit.
+
+Rule: NAMING_CONVENTION
+Parameter 1: all                      | type                    
+           | discrete_type            | enumeration_type        
+           | integer_type             | signed_integer_type     
+           | modular_integer_type     | floating_point_type     
+           | fixed_point_type         | binary_fixed_point_type 
+           | decimal_fixed_point_type | array_type              
+           | record_type              | regular_record_type     
+           | tagged_type              | class_type              
+           | access_type              | access_to_regular_type  
+           | access_to_tagged_type    | access_to_class_type    
+           | access_to_sp_type        | access_to_task_type     
+           | access_to_protected_type | private_type            
+           | private_extension        | generic_formal_type     
+           | variable                 | regular_variable        
+           | field                    | discriminant            
+           | record_field             | protected_field         
+           | procedure_formal_out     | procedure_formal_in_out 
+           | generic_formal_in_out    | constant                
+           | regular_constant         | named_number            
+           | integer_number           | real_number             
+           | enumeration              | sp_formal_in            
+           | generic_formal_in        | loop_control            
+           | occurrence_name          | entry_index             
+           | label                    | stmt_name               
+           | loop_name                | block_name              
+           | subprogram               | procedure               
+           | regular_procedure        | protected_procedure     
+           | generic_formal_procedure | function                
+           | regular_function         | protected_function      
+           | generic_formal_function  | entry                   
+           | task_entry               | protected_entry         
+           | package                  | regular_package         
+           | generic_formal_package   | task                    
+           | task_type                | task_object             
+           | protected                | protected_type          
+           | protected_object         | exception               
+           | generic                  | generic_package         
+           | generic_sp               | generic_procedure       
+           | generic_function         
+Parameter 2..N: [not] [case_sensitive|case_insensitive] "<name pattern>"
+Control the form of allowed (or forbidden) names in declarations
+
+Rule: NOT_ELABORATION_CALLS
+Parameter(s): <subprogram name>
+Control subprogram calls that happen elsewhere than as part
+of the elaboration of a library package.
+
+Rule: NO_CLOSING_NAME
+Parameter(s): none
+Control constructs where repeating the construct name
+at the end is optional and not provided.
+
+Rule: PARAMETER_ALIASING
+Parameter 1: certain | possible | unlikely (optional, default=certain)
+Control subprogram or entry calls where the same variable is given
+for more than one [in] out parameter.
+This rule can detect non-straightforward aliasing cases, see doc for details
+
+Rule: PRAGMAS
+Parameter(s): <pragma names>
+Control usage of specific pragmas
+
+Rule: REAL_OPERATORS
+Parameter(s): None
+Control occurrences of = or /= operators with real types
+
+Rule: REPRESENTATION_CLAUSES
+Parameter(s): at | at_mod | enumeration | record | <specifiable attribute> (optional)
+Control occurrences of representation clauses
+
+Rule: SIDE_EFFECT_PARAMETERS
+Parameter(s): <side effect function names>
+Control subprogram calls or generic instantiations that call
+functions with side effect and where the order of evaluation matters
+
+Rule: SILENT_EXCEPTIONS
+Parameter(s): <report procedure name>
+Control exception handlers that do not re-raise an exception 
+nor call a report procedure
+
+Rule: SIMPLIFIABLE_EXPRESSIONS
+Parameter(s): ranges | logical | logical_true | logical_false
+              | parentheses (optional, default=all)
+Control occurrence of various forms of expressions that could be made simpler:
+  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.
+  <expression> = (/=) True/False
+  if (<expression>) or case (<expression>)
+
+Rule: SPECIFICATION_OBJECTS
+Parameter(s): [not] constant | initialized | read | written (optional, default=all)
+Control usage of objects declared in package specifications
+(possibly restricted to those that match the specified properties)
+
+Rule: STATEMENTS
+Parameter(s): abort | asynchronous_select | case_others | delay | delay_until
+              | exit | goto | raise | requeue | unnamed_exit
+Control occurrences of Ada statements
+
+Rule: UNNECESSARY_USE_CLAUSE
+Parameter(s): none
+Control use clauses for packages, where no element of the package
+is referenced in the scope of the use clause.
+
+Rule: USE_CLAUSES
+Parameter(s): Allowed package names
+Control occurrences of use clauses that mention
+any package but the ones passed as parameters (if any)
+
+Rule: WHEN_OTHERS_NULL
+Parameter(s) : case | exception (optional, default=all)
+Control occurrence of "when others => null;"
+in case statements and exception handlers.
+

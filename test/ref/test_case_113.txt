@@ -1,5 +1,0 @@
-test_case_113.adb:9:10: Found: NOT_ELABORATION_CALLS: call of "Ada.Text_Io.Put_Line"
-test_case_113.adb:11:20: Found: NOT_ELABORATION_CALLS: call of "Ada.Text_Io.Line"
-test_case_113.adb:13:7: Found: NOT_ELABORATION_CALLS: call of "Ada.Text_Io.Put_Line"
-test_case_113.adb:21:23: Found: NOT_ELABORATION_CALLS: call of "Ada.Text_Io.Line"
-test_case_113.adb:23:10: Found: NOT_ELABORATION_CALLS: call of "Ada.Text_Io.Put_Line"

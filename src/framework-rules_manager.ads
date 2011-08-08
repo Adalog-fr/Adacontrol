@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -32,14 +32,20 @@
 package Framework.Rules_Manager is
    pragma Elaborate_Body;
 
-   type Help_Procedure    is access procedure;
-   type Prepare_Procedure is access procedure;
-   type Add_Use_Procedure is access procedure (Label     : in Wide_String;
-                                               Rule_Type : in Rule_Types);
-   procedure Register (Rule    : Wide_String;
-                       Help    : Help_Procedure;
-                       Prepare : Prepare_Procedure;
-                       Add_Use : Add_Use_Procedure);
+   type Help_Procedure     is access procedure;
+   type Add_Use_Procedure  is access procedure (Label     : in Wide_String;
+                                                Rule_Type : in Rule_Types);
+   type Rule_Action is (Clear, Suspend, Resume);
+   type Command_Procedure  is access procedure (Action : Rule_Action);
+   type Prepare_Procedure  is access procedure;
+   type Finalize_Procedure is access procedure;
+
+   procedure Register (Rule     : Wide_String;
+                       Help     : Help_Procedure;
+                       Add_Use  : Add_Use_Procedure;
+                       Command  : Command_Procedure;
+                       Prepare  : Prepare_Procedure  := null;
+                       Finalize : Finalize_Procedure := null);
 
    procedure Enter (Rule : Wide_String);
 
@@ -47,27 +53,33 @@ package Framework.Rules_Manager is
    --  Declarations below this line are for the use of the framework
    --
 
+   function Number_Of_Rules return Natural;
+
    function Is_Rule_Name (Rule : Wide_String) return Boolean;
+
+   function Last_Rule return Wide_String;
+   -- Name of last rule entered
 
    procedure Help_All;
    -- Displays all rules help
-
    procedure Help (Rule_Id : in Wide_String);
    -- Displays specific rule help
-
    procedure Help_Names;
    -- Displays all rule names
+
+   procedure Prepare_All;
+   -- Calls the Prepare procedure for each rule, which is intended to do some actions
+   -- at the beginning of each "Go" command
+
+   procedure Finalize_All;
+   -- Calls the Finalize procedure for each rule, which is intended to do some actions
+   -- at the end of each "Go" command
 
    procedure Add_Use (Label     : in Wide_String;
                       Rule_Type : in Rule_Types;
                       Rule_Name : in Wide_String);
    -- Adds a new use of a rule.
 
-   procedure Prepare_All;
-   -- Calls a procedure, for each rule, which can do some actions after
-   -- rule adding and before rule processing
-
-   function Last_Rule return Wide_String;
-   -- Name of last rule entered
-
+   procedure Command_All (Action : Rule_Action);
+   procedure Command (Rule_Id : in Wide_String; Action : Rule_Action);
 end Framework.Rules_Manager;

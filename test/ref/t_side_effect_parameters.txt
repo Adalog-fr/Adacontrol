@@ -1,0 +1,12 @@
+t_side_effect_parameters.adb:29:47: Error: Conflict_1: Call of "F2" for parameter 3 may cause conflict with call of "F1" for parameter 2
+t_side_effect_parameters.adb:32:42: Error: Conflict_1: Call of "F2" for parameter 3 may cause conflict with call of "F1" for parameter 2
+t_side_effect_parameters.adb:36:11: Error: Conflict_1: Call of "F2" for parameter 2 may cause conflict with call of "F1" for parameter 1
+t_side_effect_parameters.adb:36:15: Error: Conflict_2: Call of "F3" for parameter 3 may cause conflict with call of "F2" for parameter 2
+t_side_effect_parameters.adb:37:11: Error: Conflict_1: Call of "F1" for parameter 2 may cause conflict with call of "F1" for parameter 1
+t_side_effect_parameters.adb:38:21: Error: Conflict_2: Call of "F3" for parameter Y may cause conflict with call of "F2" for parameter X
+t_side_effect_parameters.adb:38:30: Error: Conflict_2: Call of "F3" for parameter Z may cause conflict with call of "F2" for parameter X
+t_side_effect_parameters.adb:39:11: Error: Conflict_2: Call of "F4" for parameter 2 may cause conflict with call of "F2" for parameter 1
+t_side_effect_parameters.adb:41:11: Error: Conflict_3: Call of "G1" for parameter 2 may cause conflict with call of "F2" for parameter 1
+t_side_effect_parameters.adb:42:11: Error: Conflict_4: Call of "F2" for parameter 2 may cause conflict with call of "F5" for parameter 1
+t_side_effect_parameters.adb:43:27: Error: Conflict_5: Call of "Integer'Value" for parameter 2 may cause conflict with call of "Integer'Value" for parameter 1
+t_side_effect_parameters.adb:44:27: Error: Conflict_5: Call of "Ren_Value" for parameter 2 may cause conflict with call of "Integer'Value" for parameter 1

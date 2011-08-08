@@ -1,0 +1,64 @@
+=============
+== V1.4r20 ==
+=============
+
+Bug fix and speed improvement in rule Local_Hiding.
+
+=============
+== V1.4r18 ==
+=============
+
+General:
+--------
+Interactive mode.
+
+option "-f -" to read Standard_Input in non-interactive mode
+
+New commands: go, clear, quit, set, output, help, inhibit
+New rule type: count
+
+Support for attributes, and syntax "all '<attr>"
+
+Rule files no_standard_entity.aru, no_system_entity.aru and no_standard_unit.aru
+
+Small improvements, bug fixes...
+
+New rules:
+----------
+Declarations
+Exception_Propagation
+Naming_Convention
+Real_Operators
+Representation_Clauses
+Side_Effect_Parameters
+Simplifiable_Expressions
+Specification_Objects
+Statements
+When_Others_Null
+
+Changes to existing rules:
+--------------------------
+Non_Raising_Non_Reporting_Exception_Handler changed to Silent_Exceptions
+Attributes removed (Attributes are now processed by Entities)
+
+Support for litteral expressions in Parameter_Aliasing
+
+Framework:
+----------
+Added procedure Command + Finalize to all rules.
+Packages Framework.Plugs, Framework.Specific_Plugs
+New naming scheme for tests
+Improvements to the parameter parsing procedures
+Changed the processing of strings ("...") in the scanner.
+
+============
+== V1.3r2 ==
+============
+
+Changed the name from AdaRC to AdaControl to avoid conflicts with RainCode's tool.
+
+============
+== V1.3r1 ==
+============
+
+First public release (as AdaRC)

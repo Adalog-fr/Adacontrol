@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -56,9 +56,41 @@ with
 package body Rules.Parameter_Aliasing is
    use Framework, Utilities;
 
-   type Rule_Detail is (Certain, Possible, Unlikely);
+   --  Algorithm:
+   --  The heart of the algorithm is the Split procedure. It takes the expression corresponding to
+   --  an [in] out parameter, and splits it into the true variable on one side, a string that represents
+   --  the various selectors and/or indexings applied to the variable on the other side.
+   --  Split is applied between any pair of [in] out parameters (conveniently called Left and Right)
+   --  When applied to the Left parameter, any indexing in the string of selectors/indexing is replaced by
+   --  '1'.
+   --  When applied to the Right parameter, any indexing in the string of selectors/indexing is replaced by
+   --  '2' if we are searching for "certain" aliasing, and by '1' if we are searching for "possible" or
+   --  "unlikely" aliasing.
+   --  There is aliasing if the variables are the same and the strings are the same, or one is identical to
+   --  the beginning of the other one.
+   --
+   --  The technique for replacing the indexing is actually "assume the best" for "certain" (we assume that
+   --  indexings are different) and "assume the worst" for "possible" and "unlikely" (we assume that indexings
+   --  are the same).
+   --
+   --  We attempt however to diagnose simple cases of static indexing. If *all* indexings for both Left and
+   --  Right are integer litterals or enumeration litterals (we know that as a result of Split), we split
+   --  the variables again, but this time we replace all indexings by the value of the index. This way,
+   --  the strings will differ if the indexings are statically different.
+   --
+   --  The situation is somewhat complicated by access types. We keep track of the rightmost dereference.
+   --  For "certain" and "possible", we assume the best, i.e. that dereferences designate different objects,
+   --  and therefore compare only the part before the dereference.
+   --  For "unlikely", we assume the worst (that the dereferences allways designate the same object).
+   --  Currently, we don't take into account the type of the dereferenced object. There is still room for
+   --  improvements...
 
-   Rule_Used  : array (Rule_Detail) of Boolean := (others => False);
+
+   -- Order of declaration is important:
+   type Rule_Detail is (Certain, Possible, Unlikely);
+   type Usage is array (Rule_Detail) of Boolean;
+   Rule_Used  : Usage := (others => False);
+   Save_Used  : Usage;
    Rule_Type  : array (Rule_Detail) of Rule_Types;
    Rule_Label : array (Rule_Detail) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
@@ -69,9 +101,9 @@ package body Rules.Parameter_Aliasing is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter (optional): certain (default) | possible | unlikely");
-      User_Message ("This rule can be used to check/search for subprogram or entry calls where");
-      User_Message ("the same variable is given for more than one [in] out parameter.");
+      User_Message ("Parameter 1: certain | possible | unlikely (optional, default=certain)");
+      User_Message ("Control subprogram or entry calls where the same variable is given");
+      User_Message ("for more than one [in] out parameter.");
       User_Message ("This rule can detect non-straightforward aliasing cases, see doc for details");
    end Help;
 
@@ -84,16 +116,12 @@ package body Rules.Parameter_Aliasing is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
-      Detail : Rule_Detail := Certain;
+      function Get_Detail_Parameter is new Get_Flag_Parameter (Flags     => Rule_Detail,
+                                                               Allow_Any => False);
+      Detail  : Rule_Detail := Certain;
    begin
       if Parameter_Exists then
-         begin
-            Detail := Rule_Detail'Wide_Value (Get_String_Parameter);
-         exception
-            when Constraint_Error =>
-               Parameter_Error ("Only ""Certain"",  ""Possible"" or ""Unlikely"" allowed"
-                                  & " as parameter for rule " & Rule_Id);
-         end;
+         Detail := Get_Detail_Parameter;
       end if;
 
       if Rule_Used (Detail) then
@@ -113,11 +141,30 @@ package body Rules.Parameter_Aliasing is
 
 
    -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used  := (others => False);
+            Rule_Label := (others => Null_Unbounded_Wide_String);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := (others => False);
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
+
+   -------------
    -- Prepare --
    -------------
 
    procedure Prepare is
-      -- If weaker checks have not been specified, force them for stronger ones
+      -- If weaker checks have been specified, force them for stronger ones
    begin
       if Rule_Used (Unlikely) and not Rule_Used (Possible) then
          Rule_Used  (Possible) := True;
@@ -169,20 +216,26 @@ package body Rules.Parameter_Aliasing is
          --      - Possible otherwise
          --    - Otherwise, aliasing is Unlikely.
 
+         type Inx_State is (None, Static, Dynamic);
+
          L_Variable  : Asis.Definition;
          L_Selectors : Unbounded_Wide_String;
          L_Deref     : Natural;
+         L_Inx_Found : Inx_State;
          R_Variable  : Asis.Definition;
          R_Selectors : Unbounded_Wide_String;
          R_Deref     : Natural;
+         R_Inx_Found : Inx_State;
 
          procedure Split (Name       : in     Asis.Expression;
-                          Variable   : in out Asis.Definition;
+                          Variable   :    out Asis.Definition;
                           Selectors  :    out Unbounded_Wide_String;
                           Last_Deref :    out Natural;
-                          Indicator  : in     Wide_Character)
+                          Inx_Found  :    out Inx_State;
+                          Indicator  : in     Wide_Character;
+                          Static_Inx : in     Boolean)
          is
-            -- Given the original Name (possibly cleaned-up from a type conversion):
+            -- Given the original Name (possibly cleaned-up from a view conversion):
             -- Returns in Variable the true variable declaration (after following
             --   possible renamings)
             --
@@ -194,10 +247,57 @@ package body Rules.Parameter_Aliasing is
             --   V.X.Y    => "X.Y."
             --   V.X(3).Y => "X(1)"
             --   V        => ""
+            --   If Static is True, the Name is assumed to contain only litterals for the indexing
+            --   of arrays, and the actual value is used in place of the indicator.
             --
             -- Returns in Last_Deref the position of the last character of the ".all"
             -- corresponding to the right-most dereference if any, or 0.
+            -- Returns True in Static_Inx if some indexing were found, but they are all integer or
+            -- enumeration litterals; returns False otherwise.
             use Thick_Queries;
+
+            function Build_Indicator (Expr : Asis.Expression) return Wide_String is
+               -- Returns the indicator for indexed expressions and slices
+               -- If the expression is an enumeration or integer litteral, we can use a
+               -- (normalized) representation as indicator; this will enable us to not report
+               -- aliasing between X(1) and X(2).
+               -- For anything else, return the provided Indicator, prepended with a '_' to
+               -- distinguish from an allowed value.
+               -- This function can be made more clever in the future if we can recognize more
+               -- cases of static expressions.
+               Good_Expr: Asis.Expression;
+            begin
+               if Expression_Kind (Expr) = A_Selected_Component then
+                  Good_Expr := Selector (Expr);
+               else
+                  Good_Expr := Expr;
+               end if;
+
+               if Static_Inx then
+                  case Expression_Kind (Good_Expr) is
+                     when An_Integer_Literal =>
+                        -- We make a round-trip through Value/Image below for the case of the naughty
+                        -- user who wrote something like P(Tab (10#1#), Tab (1)).
+                        -- The indicators must be the same!
+                        return Asis_Integer'Wide_Image (Asis_Integer'Wide_Value (Value_Image (Good_Expr)));
+                     when An_Enumeration_Literal =>
+                        return To_Upper (Name_Image (Good_Expr));
+                     when others =>
+                        Failure ("Non static index in static Build_Indicator");
+                  end case;
+               else
+                  case Expression_Kind (Good_Expr) is
+                     when An_Integer_Literal
+                       | An_Enumeration_Literal =>
+                        if Inx_Found /= Dynamic then
+                           Inx_Found := Static;
+                        end if;
+                     when others =>
+                        Inx_Found := Dynamic;
+                  end case;
+                  return (1 => Indicator);
+               end if;
+            end Build_Indicator;
 
             procedure Add_Selector (Sel : Wide_String) is
             begin
@@ -210,8 +310,11 @@ package body Rules.Parameter_Aliasing is
             E          : Asis.Element := Name;
             Temp_Sel   : Unbounded_Wide_String;
             Temp_Deref : Natural;
-         begin
+            Temp_Found : Inx_State;
+            Variable_Enclosing : Asis.Element;
+         begin   -- Split
             Last_Deref := 0;
+            Inx_Found  := None;
 
             Selectors := Null_Unbounded_Wide_String;
             loop
@@ -224,18 +327,32 @@ package body Rules.Parameter_Aliasing is
                         when A_Component_Declaration | A_Discriminant_Specification =>
                            -- It's a record field, a protected type field...
                            Add_Selector (To_Upper (Name_Image (Selector (E))) & '.');
-                           E         := Prefix (E);
+                           E := Prefix (E);
                         when A_Variable_Declaration | An_Object_Renaming_Declaration =>
                            -- Its a Pack.Var selector
                            E := Selector (E);
                            exit;
                         when others =>
-                           Trace ("Decl", Corresponding_Name_Declaration (Selector (E)));
                            Failure ("Wrong selected component", E);
                      end case;
 
-                  when An_Indexed_Component | A_Slice =>
-                     Add_Selector ('(' & Indicator & ')');
+                  when An_Indexed_Component =>
+                     Add_Selector (")");
+                     declare
+                        Indexers : constant Asis.Expression_List := Index_Expressions (E);
+                     begin
+                        Add_Selector (Build_Indicator (Indexers (Indexers'Last)));
+                        for I in reverse Indexers'First .. Indexers'Last - 1 loop
+                           Add_Selector (Build_Indicator (Indexers (I)) & ',');
+                        end loop;
+                     end;
+                     Add_Selector ("(");
+                     E := Prefix (E);
+
+                  when A_Slice =>
+                     -- Well, it could be the whole object as well...
+                     -- Simply ignore the slice
+                     -- (Too complicated to check for static matching)
                      E := Prefix (E);
 
                   when A_Function_Call =>
@@ -243,11 +360,15 @@ package body Rules.Parameter_Aliasing is
                      --  element, and if it returns an access value,
                      --  or a composite object used for one of its
                      --  access subcomponents.
-                     Add_Selector("_CALL_." & Indicator);
-                     E         := Prefix (E);
+                     Add_Selector("_CALL_" & Indicator & '.');
+                     E := Prefix (E);
+                     if Expression_Kind (E) = A_Selected_Component then
+                        E := Selector (E);
+                     end if;
+                     exit;
 
                   when An_Explicit_Dereference =>
-                     -- ".all" will be added below, since the prefix is necessarily
+                     -- "all." will be added below, since the prefix is necessarily
                      -- of an access type
                      E := Prefix (E);
 
@@ -258,7 +379,7 @@ package body Rules.Parameter_Aliasing is
                      Failure ("Wrong variable name", E);
                end case;
 
-               -- Add a ".all" if the *type* is an access type
+               -- Add a "all." if the *type* is an access type
                -- This allows explicit and implicit dereferences to match
                if Expression_Type_Kind (E) = An_Access_Type_Definition then
                   Add_Selector ("all.");
@@ -272,33 +393,55 @@ package body Rules.Parameter_Aliasing is
             -- But the renaming can be a complicated expression like:
             -- A : T renames Rec.X.Y(3);
             Variable := Corresponding_Name_Definition (E);
-            while Declaration_Kind (Enclosing_Element (Variable)) in A_Renaming_Declaration loop
-               Split (Name       => Renamed_Entity (Enclosing_Element(Variable)),
+            loop
+               Variable_Enclosing := Enclosing_Element (Variable);
+               exit when Declaration_Kind (Variable_Enclosing) not in A_Renaming_Declaration;
+               Split (Name       => Renamed_Entity (Variable_Enclosing),
                       Variable   => Variable,
                       Selectors  => Temp_Sel,
                       Last_Deref => Temp_Deref,
-                      Indicator  => Indicator);
+                      Inx_Found  => Temp_Found,
+                      Indicator  => Indicator,
+                      Static_Inx => Static_Inx);
                Add_Selector (To_Wide_String (Temp_Sel));
                if Last_Deref = 0 then
                   Last_Deref := Temp_Deref;
                end if;
+               Inx_Found := Inx_State'Max (Inx_Found, Temp_Found);
             end loop;
          end Split;
 
+         R_Indicator : Wide_Character;
       begin   -- Are_Aliased
-         Split (Left, L_Variable, L_Selectors, L_Deref, '1');
+         Split (Left, L_Variable, L_Selectors, L_Deref, L_Inx_Found,
+                Indicator  => '1',
+                Static_Inx => False);
 
          case Detail is
             when Certain =>
-               Split (Right, R_Variable, R_Selectors, R_Deref, '2');
+               R_Indicator := '2';
             when Possible | Unlikely =>
                -- Use the same indicator as for Left
                -- => all indexings and function calls will match
-               Split (Right, R_Variable, R_Selectors, R_Deref, '1');
+               R_Indicator := '1';
          end case;
+         Split (Right, R_Variable, R_Selectors, R_Deref, R_Inx_Found,
+                Indicator  => R_Indicator,
+                Static_Inx => False);
+
+         if L_Inx_Found = Static and R_Inx_Found = Static then
+            -- Both are indexed, and only with static indices
+            -- => Resplit with the actual values of indices
+            Split (Left,  L_Variable, L_Selectors, L_Deref, L_Inx_Found,
+                   Indicator  => '1',
+                   Static_Inx => True);
+            Split (Right, R_Variable, R_Selectors, R_Deref, R_Inx_Found,
+                   Indicator  => R_Indicator,
+                   Static_Inx => True);
+         end if;
 
          declare
-            -- X_Head is the part up to and including the last ".all"
+            -- X_Head is the part of the selectors up to and including the last ".all"
             -- X_Tail is the remaining of the string
             L_Head : constant Wide_String := Slice (L_Selectors, 1, L_Deref);
             L_Tail : constant Wide_String := Slice (L_Selectors, L_Deref+1, Length (L_Selectors));
@@ -328,57 +471,26 @@ package body Rules.Parameter_Aliasing is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      if Is_Dispatching_Call (Call) then
+         -- Improvement needed here, but it's quite difficult
+         return;
+      end if;
+
       declare
          use Thick_Queries;
-         Actuals : constant Asis.Association_List             := Call_Statement_Parameters (Call);
-         Formals : constant Asis.Parameter_Specification_List := Called_Profile (Call);
+         Actuals : constant Asis.Association_List := Call_Statement_Parameters (Call);
          To_Check_Parameters : Parameters_Table (Actuals'Range);
-
-         function Formal_Name (Actual : List_Index) return Asis.Expression is
-            -- Retrieves the name of the formal corresponding to the Actual given
-            I_A     : Asis_Natural;
-            I_F     : Asis_Natural;
-            FP      : constant Asis.Element := Formal_Parameter (Actuals (Actual));
-         begin
-            Trace ("-------------------------------");
-            if Is_Nil (FP) then
-               -- Parameter given in positional notation
-               I_F := Formals'First;
-               I_A := 0;
-               loop
-                  declare
-                     These_Names : constant Asis.Element_List :=  Names (Formals (I_F));
-                  begin
-                     Trace ("These_Names'Length" & Asis_Natural'Wide_Image (These_Names'Length));
-                     I_A := I_A + These_Names'Length;
-                     if I_A >= Actual then
-                        return These_Names (These_Names'Length - (I_A - Actual));
-                     end if;
-                  end;
-                  I_F := I_F + 1;
-               end loop;
-            else
-               return Formal_Parameter (Actuals (Actual));
-            end if;
-         exception
-            when Constraint_Error =>
-               Trace ("I_F=" & Asis_Natural'Wide_Image (I_F));
-               Trace ("I_A=" & Asis_Natural'Wide_Image (I_A));
-               Trace ("Actual=" & Asis_Natural'Wide_Image (Actual));
-               raise;
-         end Formal_Name;
 
          function Association_Image (Position : List_Index) return Wide_String is
             -- Image of a parameter association
             -- Calls the correct function depending on whether Name is a Defining_Name or a
             -- plain identifier.
-            -- This kludge is needed because currently the function Formal_Name below is
+            -- This kludge is needed because currently the function Formal_Name is
             -- inconsistent, depending on whether the actual association is positionnal or named
             use Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
 
-            Name : constant Asis.Name := Formal_Name (Position);
+            Name : constant Asis.Name := Formal_Name (Call, Position);
          begin
-            Trace ("actual", Actual_Parameter (Actuals (Position)));
             if Element_Kind (Name) = A_Defining_Name then
                return '"' & Defining_Name_Image (Name) & " => "
                       & Trim (Element_Image (Actual_Parameter (Actuals (Position))), Both) & '"';
@@ -390,24 +502,20 @@ package body Rules.Parameter_Aliasing is
 
          Mode    : Mode_Kinds;
          TCP_Top : Asis_Natural := To_Check_Parameters'First - 1;
+
+         pragma Warnings (Off, To_Check_Parameters);
+         -- GNAT warns that To_Check_Parameters may be used before it has a value,
+         -- but the algorithm ensures that this does not happen
       begin
          for I in Actuals'Range loop
-            if Is_Nil (Formal_Parameter (Actuals (I))) then
-               -- Parameter given in positional notation
-               -- Formal_Name returns the name from the formal declaration
-               Mode := Mode_Kind (Enclosing_Element (Formal_Name (I)));
-            else
-               -- Parameter given in named notation
-               Mode := Mode_Kind (Corresponding_Name_Declaration
-                                    (Formal_Parameter (Actuals (I))));
-            end if;
+            Mode := Mode_Kind (Enclosing_Element (Formal_Name (Call, I)));
 
             if Mode in An_Out_Mode .. An_In_Out_Mode then
                for J in To_Check_Parameters'First .. TCP_Top loop
                   for Detail in Rule_Detail loop
                      if Rule_Used (Detail) and then
-                       Are_Aliased (Actual_Parameter (Actuals (I)),
-                                    Actual_Parameter (Actuals (To_Check_Parameters (J))),
+                       Are_Aliased (Actual_Parameter (Actuals (To_Check_Parameters (J))),
+                                    Actual_Parameter (Actuals (I)),
                                     Detail)
                      then
                         Report (Rule_Id,
@@ -425,7 +533,7 @@ package body Rules.Parameter_Aliasing is
                                   & Association_Image (I)
                                );
 
-                        -- If we found a weaker aliasing, don't check stronger ones
+                        -- If we found a stronger aliasing, don't check weaker ones
                         exit;
                      end if;
                   end loop;
@@ -438,10 +546,10 @@ package body Rules.Parameter_Aliasing is
       end;
    end Process_Call;
 
-
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Help    => Help'Access,
-                                     Prepare => Prepare'Access,
-                                     Add_Use => Add_Use'Access);
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Parameter_Aliasing;

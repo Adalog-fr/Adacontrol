@@ -1,0 +1,4 @@
+t_allocators.adb:8:10: Found: ALLOCATORS: allocator
+t_allocators.adb:9:10: Found: ALLOCATORS: allocator
+t_allocators.adb:10:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:11:10: Error: ALLOCATORS: allocator for Standard.String

@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -51,7 +51,10 @@ with
 package body Rules.Use_Clauses is
    use Framework;
 
-   Rule_Used : array (Rule_Types) of Boolean := (others => False);
+   type Usage is array (Rule_Types) of Boolean;
+
+   Rule_Used : Usage := (others => False);
+   Save_Used : Usage;
    Labels    : array (Rule_Types) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Usage_Type is array (Rule_Types) of Boolean;
@@ -71,7 +74,7 @@ package body Rules.Use_Clauses is
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Parameter(s): Allowed package names");
-      User_Message ("This rule can be used to check/search for use clauses that mention");
+      User_Message ("Control occurrences of use clauses that mention");
       User_Message ("any package but the ones passed as parameters (if any)");
    end Help;
 
@@ -108,6 +111,26 @@ package body Rules.Use_Clauses is
          end;
       end loop;
    end Add_Use;
+
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := (others => False);
+            Labels    := (others => Null_Unbounded_Wide_String);
+            Clear (Allowed_Packages);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := (others => False);
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
 
    -------------
    -- Prepare --
@@ -160,6 +183,7 @@ package body Rules.Use_Clauses is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Help    => Help'Access,
-                                     Prepare => Prepare'Access,
-                                     Add_Use => Add_Use'Access);
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Use_Clauses;

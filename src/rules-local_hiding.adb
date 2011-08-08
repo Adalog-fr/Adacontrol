@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -31,13 +31,14 @@
 
 -- Ada
 with
-  Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Unbounded;
 
 -- Asis
 with
+  Asis.Clauses,
   Asis.Declarations,
-  Asis.Elements;
+  Asis.Elements,
+  Asis.Expressions;
 
 -- Adalog
 with
@@ -54,14 +55,26 @@ with
 package body Rules.Local_Hiding is
    use Framework, Utilities;
 
+   -- Algorithm:
+   -- This rule is quite easy, since most of the work is done by Scoped_Store
+   -- Each time a defining identifier is encountered, all scopes are searched for the same identifier
+   -- The name used is an overloaded name for overloaded entities, therefore overloaded entities with
+   -- different profiles are *not* considered hiding.
+   -- The defining identifier is then added to the current scope.
+   -- The only difficulty is that when we find the defining name of -say- a procedure, the current scope
+   -- is already the procedure itself, but the name must be attached to where the procedure is declared,
+   -- i.e. the enclosing scope.
+
    Rule_Used  : Boolean := False;
+   Save_Used  : Boolean;
    Rule_Type  : Rule_Types;
    Rule_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Identifier_Data (Length : Positive) is
       record
-         Name : Wide_String (1..Length);
-         Elem : Asis.Element;
+         Name       : Wide_String (1..Length);
+         Short_Last : Positive;
+         Elem       : Asis.Element;
       end record;
    package Visible_Identifiers is new Framework.Scope_Manager.Scoped_Store (Identifier_Data);
 
@@ -73,8 +86,7 @@ package body Rules.Local_Hiding is
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Parameter(s): none");
-      User_Message ("This rule can be used to check/search for local identifiers"
-                      & " that hide an outer identical name");
+      User_Message ("Control occurrences of local identifiers that hide an outer identical name");
    end Help;
 
    -------------
@@ -100,102 +112,209 @@ package body Rules.Local_Hiding is
       end if;
    end Add_Use;
 
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Ada.Strings.Wide_Unbounded, Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used  := False;
+            Rule_Label := Null_Unbounded_Wide_String;
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
+
    ---------------------------
    -- Process_Defining_Name --
    ---------------------------
 
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
       use Thick_Queries, Asis, Asis.Elements, Asis.Declarations;
+
       Scope : Asis.Element;
+
+      -- This function detects names that are not to be processed by this rule, since
+      -- they do not hide anything nor can they be hidden:
+      --   - Names of record components (but not protected components)
+      --   - Names of formal parameters in a SP renaming declaration
+      --   - Names of formal parameters in the declaration of an access to SP type
+      function Not_An_Appropriate_Name return Boolean is
+         Decl           : constant Asis.Declaration := Enclosing_Element (Name);
+         Decl_Enclosing : constant Asis.Element     := Enclosing_Element (Decl);
+      begin
+         case Declaration_Kind (Decl) is
+            when A_Component_Declaration =>
+               return Definition_Kind (Decl_Enclosing) /= A_Protected_Definition;
+            when A_Parameter_Specification =>
+               case Element_Kind (Decl_Enclosing) is
+                  when A_Definition =>
+                     return True;
+                  when A_Declaration =>
+                     return Declaration_Kind (Enclosing_Element (Decl)) in A_Renaming_Declaration;
+                  when others =>
+                     Failure ("Unexpected enclosing of name declaration", Decl_Enclosing);
+               end case;
+            when others =>
+               return False;
+         end case;
+      end Not_An_Appropriate_Name;
+
+      -- This function returns True if Left and Right are the same scopes,
+      -- or if Left is a body and Right is the corresponding specification
+      function Are_Equivalent_Scopes (Left, Right : Asis.Element) return Boolean is
+      begin
+         if Is_Equal (Left, Right) then
+            return True;
+         end if;
+
+         case Element_Kind (Left) is
+            when A_Statement
+              | An_Exception_Handler
+              =>
+               return False;
+            when others =>
+               if Is_Nil (Corresponding_Declaration (Left)) then
+                  -- No corresponding specification
+                  return False;
+               else
+                  return Is_Equal (Corresponding_Declaration (Left), Right);
+               end if;
+         end case;
+      end Are_Equivalent_Scopes;
+
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      -- A Defining_Name is always inside a Declaration.
-      -- The scope of this declaration is (at least) its enclosing element.
-      -- NB: Scope is Nil_Element for a library unit, this is checked later
-      Scope := Enclosing_Element (Name);
-      if Defining_Name_Kind (Scope) = A_Defining_Expanded_Name then
-         -- Special case: the defining name is that of a child unit
-         -- We must go up one more time to account for the composite name
-         Scope := Enclosing_Element (Scope);
-      end if;
-      Scope := Enclosing_Element (Scope);
-
-      if Element_Kind (Scope) = A_Definition -- 1)
-        or else Declaration_Kind (Scope) in A_Renaming_Declaration -- 2)
-      then
-         -- This identifier is either :
-         -- 1) a part of a type definition (i.e. components of record of protected types,
-         --    formal parameters of an access-to-subprogram or of a protected operation).
-         -- 2) A formal parameter of the profile of a renaming declaration
-         -- => Ignore.
+      if Not_An_Appropriate_Name then
          return;
       end if;
 
       declare
          use Framework.Reports, Framework.Scope_Manager, Asis.Elements;
-         use Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded;
+         use Ada.Strings.Wide_Unbounded;
          Short_Name    : constant Wide_String := To_Upper (Defining_Name_Image (Name));
-         Full_Name     : constant Wide_String := Short_Name & Profile_Image (Name);
+         Full_Name     : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
          Callable_Name : constant Boolean     := Is_Callable_Construct (Name);
+         Is_Scope_Name : constant Boolean     := Is_Equal (Enclosing_Element (Name), Current_Scope);
+         -- Is_Scope_Name is True if Name is the defining name for the current scope
+         -- => it belongs to the enclosing scope
 
          function Is_Same (Check : Identifier_Data) return Boolean is
             -- If both are callable entities, compare with profiles
             -- otherwise, compare without profile
          begin
-            if Is_Callable_Construct (Check.Elem) then
-               if Callable_Name then
+            if Callable_Name then
+               if Is_Callable_Construct (Check.Elem) then
                   return Check.Name = Full_Name;
                else
-                  return Check.Name (Check.Name'First .. Index (Check.Name, "{")-1) = Short_Name;
+                  return Check.Name (1 .. Check.Short_Last) = Short_Name;
                end if;
             else
-               return Check.Name = Short_Name;
+               return Check.Name (1 .. Check.Short_Last) = Short_Name;
             end if;
          end Is_Same;
-      begin
-         if Is_Nil (Scope) then
-            -- This is the name of a compilation unit
-            -- => cannot hide anything (but can be hidden)
-            Visible_Identifiers.Push ((Full_Name'Length, Full_Name, Name));
-            return;
-         end if;
 
+
+      begin
          Visible_Identifiers.Reset (All_Scopes);
          while Visible_Identifiers.Data_Available loop
-            if Is_Same (Visible_Identifiers.Get_Current_Data) then
+            if Is_Same (Visible_Identifiers.Current_Data) then
 
-               -- Discard the case where we find a name within the same scope as Name:
+               -- Discard the case where we find a name declared within a scope equivalent
+               -- to the scope of Name:
                -- this corresponds for example to a spec and corresponding body, incomplete
                -- type and corresponding full declarations...
                -- These must correspond to the same entity, otherwise it would not be allowed
                -- by the compiler.
-               if not Is_Equal (Enclosing_Element
-                                  (Enclosing_Element (Visible_Identifiers.Get_Current_Data.Elem)),
-                                Scope)
-               then
+               if Is_Scope_Name then
+                  Scope := Enclosing_Scope;
+               else
+                  Scope := Current_Scope;
+               end if;
+               if not Are_Equivalent_Scopes (Scope, Visible_Identifiers.Current_Data_Scope) then
                   Report (Rule_Id,
                           To_Wide_String (Rule_Label),
                           Rule_Type,
                           Get_Location (Name),
-                          '"' & To_Title (Full_Name)
+                          '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
                             & """ hides declaration at "
-                            & Image (Get_Location (Visible_Identifiers.Get_Current_Data.Elem)));
+                            & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
                   exit;
                end if;
             end if;
             Visible_Identifiers.Next;
          end loop;
-         Visible_Identifiers.Push ((Full_Name'Length, Full_Name, Name));
+
+         if Is_Scope_Name then
+            -- This is the defining name of the program unit that defines the current scope
+            -- it must be associated to the enclosing scope
+            Visible_Identifiers.Push_Enclosing ((Full_Name'Length,
+                                                 Full_Name,
+                                                 Short_Name'Length,
+                                                 Name));
+         else
+            Visible_Identifiers.Push ((Full_Name'Length,
+                                       Full_Name,
+                                       Short_Name'Length,
+                                       Name));
+         end if;
       end;
    end Process_Defining_Name;
 
+   -------------------------
+   -- Process_With_Clause --
+   -------------------------
+
+   procedure Process_With_Clause (With_Clause : Asis.Clause) is
+      -- Names in with clauses cannot hide anything, but can be hidden
+      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions, Thick_Queries;
+
+      All_Names : constant Asis.Element_List := Clause_Names (With_Clause);
+      Name      : Asis.Expression;
+      Current   : Asis.Expression;
+   begin
+      if not Rule_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      for I in All_Names'Range loop
+         Current := All_Names (I);
+         loop
+            case Expression_Kind (Current) is
+               when An_Identifier =>
+                  Name := Current;
+               when A_Selected_Component =>
+                  Name := Selector (Current);
+               when others =>
+                  Failure ("Unexpected name in with clause", All_Names (I));
+            end case;
+            declare
+               Short_Name : constant Wide_String := To_Upper (Name_Image (Name));
+               Full_Name  : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
+            begin
+               -- Bind names to scope 0
+               Visible_Identifiers.Push_Enclosing ((Full_Name'Length, Full_Name, Short_Name'Length, Name));
+            end;
+            exit when Expression_Kind (Current) = An_Identifier;
+            Current := Prefix (Current);
+         end loop;
+      end loop;
+   end Process_With_Clause;
+
 begin
    Framework.Rules_Manager.Register (Rule_Id,
-                           Help    => Help'Access,
-                           Prepare => null,
-                           Add_Use => Add_Use'Access);
+                                     Help    => Help'Access,
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access);
 end Rules.Local_Hiding;

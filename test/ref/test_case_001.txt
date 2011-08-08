@@ -1,6 +1,0 @@
-test_case_001.adb:9:4: Error: INSTANTIATIONS: instantiation of "Ada.Unchecked_Deallocation" ( 1) with (Standard.String)
-test_case_001.adb:40:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Test_Case_001.Q"
-test_case_001.adb:41:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Test_Case_001.Q"
-test_case_001.adb:42:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Test_Case_001{}.P{Standard.Integer}"
-test_case_001.adb:45:14: Error: ENTITY_INSIDE_EXCEPTION: use of "Pack_1.Proc_1{}"
-pack_1.ads:2:4: Found: PRAGMAS: use of pragma "Pure"

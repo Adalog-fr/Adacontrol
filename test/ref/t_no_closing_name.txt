@@ -1,0 +1,3 @@
+t_no_closing_name.adb:2:4: Error: NO_CLOSING_NAME: name not repeated at the end
+t_no_closing_name.adb:13:4: Found: NO_CLOSING_NAME: name not repeated at the end
+t_no_closing_name.adb:18:4: Found: NO_CLOSING_NAME: name not repeated at the end

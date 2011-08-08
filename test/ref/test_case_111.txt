@@ -1,3 +1,0 @@
-test_case_111.adb:2:4: Error: NO_CLOSING_NAME: name not repeated at the end
-test_case_111.adb:13:4: Found: NO_CLOSING_NAME: name not repeated at the end
-test_case_111.adb:18:4: Found: NO_CLOSING_NAME: name not repeated at the end

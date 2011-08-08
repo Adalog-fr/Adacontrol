@@ -1,0 +1,10 @@
+Check  Entity_Inside_Exception  (xfw_pack.Proc_1{});
+Search Entity_Inside_Exception (tfw_naming.Q,
+                                Tfw_naming{}.P{STANDARD.INTEGER});
+Search Pragmas (Pure);
+Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String);
+check  Entities (Standard.Integer'Base, Standard.Integer'Base'First);
+Search Pragmas (elaborate_all);
+Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String);
+Check  Silent_Exceptions (Ada.Text_Io.Put_Line);
+Search Local_Instantiation (Ada.Unchecked_Deallocation);

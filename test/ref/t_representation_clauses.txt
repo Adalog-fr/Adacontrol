@@ -1,0 +1,14 @@
+t_representation_clauses.adb:5:4: Error: size: use of representation clause for 'SIZE
+t_representation_clauses.adb:8:4: Error: address: use of representation clause for 'ADDRESS
+t_representation_clauses.adb:9:4: Error: address: use of Ada 83 address clause
+t_representation_clauses.adb:12:4: Found: enumeration: use of enumeration representation clause
+t_representation_clauses.adb:13:4: Error: alignment: use of representation clause for 'ALIGNMENT
+t_representation_clauses.adb:20:4: Found: record: use of record representation clause
+t_representation_clauses.adb:20:4: Error: alignment: use of Ada 83 alignment clause
+t_representation_clauses.adb:32:4: Error: streams: use of representation clause for 'INPUT
+t_representation_clauses.adb:33:4: Error: streams: use of representation clause for 'OUTPUT
+t_representation_clauses.adb:34:4: Error: streams: use of representation clause for 'CLASS'READ
+t_representation_clauses.adb:35:4: Error: streams: use of representation clause for 'CLASS'WRITE
+
+Counts summary:
+Total: 11

@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -55,6 +55,7 @@ package body Rules.Instantiations is
    use Framework;
 
    Rule_Used : Boolean := False;
+   Save_Used : Boolean;
 
    type Generic_Parameters is array (Positive range <>)
      of Entity_Specification;
@@ -66,6 +67,7 @@ package body Rules.Instantiations is
          Count  : Natural;
          Values : Generic_Parameter_List;
       end record;
+   procedure Clear (Context : in out Instantiation_Context);
 
    Rule_Uses : Context_Store;
 
@@ -82,22 +84,16 @@ package body Rules.Instantiations is
 
    function Image (Values : in Generic_Parameter_List) return Wide_String is
       -- Precondition: Values /= null
-      use Ada.Strings.Wide_Unbounded, Utilities;
+      use Ada.Strings.Wide_Unbounded;
 
-      Dummy     : Unbounded_Wide_String := Null_Unbounded_Wide_String;
+      Dummy : Unbounded_Wide_String := Null_Unbounded_Wide_String;
    begin
       Append (Dummy, "(");
+      Append (Dummy, Image (Values (Values'First)));
 
-      for I in Values'Range loop
-         if I /= Values'First then
-            Append (Dummy, ", ");
-         end if;
-
-         if Values (I).Is_Box then
-            Append (Dummy, "<>");
-         else
-            Append (Dummy, To_Title (To_Wide_String (Values (I).Specification)));
-         end if;
+      for I in Values'First + 1 .. Values'Last loop
+         Append (Dummy, ", ");
+         Append (Dummy, Image (Values (I)));
       end loop;
 
       Append (Dummy, ")");
@@ -130,10 +126,10 @@ package body Rules.Instantiations is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter 1     : Generic name");
-      User_Message ("Parameter 2 .. N: Entity name (Optional)");
-      User_Message ("This rule can be used to check/search for generic instantiations,");
-      User_Message ("either all of them or those made with the given entities");
+      User_Message ("Parameter 1     : <Generic name>");
+      User_Message ("Parameter 2 .. N: <Entity name> (optional)");
+      User_Message ("Control generic instantiations, either all of them");
+      User_Message ("or those made with the given entities");
    end Help;
 
    -------------
@@ -165,8 +161,40 @@ package body Rules.Instantiations is
                                            Generic_Params),
                     Additive => True);
          Rule_Used := True;
+      exception
+         when Already_In_Store =>
+            Parameter_Error ("This combination of parameters already specified for " & Image (Generic_Name)
+                             & " in rule " & Rule_ID);
       end;
    end Add_Use;
+
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear (Context : in out Instantiation_Context) is
+   begin
+      Free (Context.Values);
+   end Clear;
+
+   -------------
+   -- Command --
+   -------------
+
+   procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
+      use Framework.Rules_Manager;
+   begin
+      case Action is
+         when Clear =>
+            Rule_Used := False;
+            Clear (Rule_Uses);
+         when Suspend =>
+            Save_Used := Rule_Used;
+            Rule_Used := False;
+         when Resume =>
+            Rule_Used := Save_Used;
+      end case;
+   end Command;
 
    -------------
    -- Prepare --
@@ -183,7 +211,6 @@ package body Rules.Instantiations is
 
    function Is_Corresponding (Value      : in Entity_Specification;
                               Definition : in Asis.Definition) return Boolean is
-      use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Elements, Asis.Declarations;
       use Utilities, Thick_Queries;
 
@@ -206,8 +233,7 @@ package body Rules.Instantiations is
             Dummy_Definition := Definition;
       end case;
 
-      return To_Wide_String (Value.Specification)
-        = To_Upper (Full_Name_Image (Dummy_Definition));
+      return To_Upper (Image (Value)) = To_Upper (Full_Name_Image (Dummy_Definition));
    end Is_Corresponding;
 
    -----------
@@ -225,7 +251,7 @@ package body Rules.Instantiations is
       for I in Actual_Part'Range loop
          Parameter := Actual_Parameter (Actual_Part (I));
 
-         if not Values (Values_Index).Is_Box then
+         if not Is_Box (Values (Values_Index)) then
             case Expression_Kind (Parameter) is
                when An_Identifier =>
                   Definition := Corresponding_Name_Definition (Parameter);
@@ -318,6 +344,7 @@ package body Rules.Instantiations is
 begin
    Framework.Rules_Manager.Register (Rule_Id,
                                      Help    => Help'Access,
-                                     Prepare => Prepare'Access,
-                                     Add_Use => Add_Use'Access);
+                                     Add_Use => Add_Use'Access,
+                                     Command => Command'Access,
+                                     Prepare => Prepare'Access);
 end Rules.Instantiations;

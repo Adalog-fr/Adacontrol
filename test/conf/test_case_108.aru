@@ -1,5 +1,0 @@
-#                                                                             #
-#                                TEST_CASE_108                                #
-#                                                                             #
-check unnecessary_use_clause;
-

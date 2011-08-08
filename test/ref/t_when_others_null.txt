@@ -1,0 +1,6 @@
+t_when_others_null.adb:25:7: Error: WHEN_OTHERS_NULL: null "when others" exception handler
+t_when_others_null.adb:42:19: Error: WHEN_OTHERS_NULL: null "when others" exception handler
+t_when_others_null.adb:98:12: Error: WHEN_OTHERS_NULL: null "when others" in case statement
+t_when_others_null.adb:74:24: Error: WHEN_OTHERS_NULL: null "when others" in case statement
+t_when_others_null.adb:91:24: Error: WHEN_OTHERS_NULL: null "when others" in case statement
+t_when_others_null.adb:113:13: Error: WHEN_OTHERS_NULL: null "when others" exception handler

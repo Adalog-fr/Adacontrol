@@ -1,0 +1,2 @@
+Sequential_Stmts: search statements (goto, raise, exit, unnamed_exit, case_others);
+Tasking_Stmts:     check statements (delay, delay_until, abort, requeue, asynchronous_select);

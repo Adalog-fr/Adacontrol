@@ -1,0 +1,8 @@
+t_declarations.adb:2:4: Found: DECLARATIONS: use of declaration "task"
+t_declarations.adb:8:4: Found: DECLARATIONS: use of declaration "task"
+t_declarations.adb:14:4: Found: DECLARATIONS: use of declaration "exception"
+t_declarations.adb:16:4: Found: DECLARATIONS: use of declaration "access"
+t_declarations.adb:17:4: Found: DECLARATIONS: use of declaration "access_subprogram"
+t_declarations.adb:19:4: Found: DECLARATIONS: use of declaration "aliased"
+t_declarations.adb:20:4: Found: DECLARATIONS: use of declaration "aliased"
+t_declarations.adb:22:4: Found: DECLARATIONS: use of declaration "tagged"

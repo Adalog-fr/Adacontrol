@@ -1,0 +1,18 @@
+Adalog provides commercial support for AdaControl. Support includes
+the following services:
+
+* Help with installation procedures.
+
+* Explanations regarding the use of the tool, and help for translating
+  coding standards into AdaControl rules.
+
+* Correction of problems encountered in the use of AdaControl.
+  Pre-releases versions of AdaControl are provided for each corrected
+  problem.
+
+Adalog cannot correct problems whose origin is due to compiler bugs or
+defects in the implementation of ASIS (contact your compiler provider
+for support on these problems). However, Adalog will do its best
+effort to find workarounds for such problems.
+
+For pricing information about this service, please contact info@adalog.fr

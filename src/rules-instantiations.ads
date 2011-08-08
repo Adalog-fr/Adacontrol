@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -44,8 +44,6 @@ package Rules.Instantiations is
    Rule_Id : constant Wide_String := "INSTANTIATIONS";
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration);
-   -- Applies the rule
-   --
    -- Expected Element_Kinds:
    --    A_Declaration
    --

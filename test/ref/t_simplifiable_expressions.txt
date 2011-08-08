@@ -1,0 +1,46 @@
+t_simplifiable_expressions.adb:35:60: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:36:60: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:40:35: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:41:35: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:57:23: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:59:19: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:73:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:77:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:80:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:101:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:104:16: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:110:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:114:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+t_simplifiable_expressions.adb:118:17: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+t_simplifiable_expressions.adb:123:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+t_simplifiable_expressions.adb:125:14: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+t_simplifiable_expressions.adb:128:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:130:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:133:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:134:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:138:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+t_simplifiable_expressions.adb:141:12: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+t_simplifiable_expressions.adb:143:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+t_simplifiable_expressions.adb:164:22: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:165:31: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:167:38: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:174:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:174:29: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
+t_simplifiable_expressions.adb:176:13: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:177:15: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:178:13: Found: False: Simplify expression '<expr> /= False' to just '<expr>'
+t_simplifiable_expressions.adb:180:13: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
+t_simplifiable_expressions.adb:182:13: Error: Range_Or_True: Simplify expression '<expr> /= True' to 'not <expr>'
+t_simplifiable_expressions.adb:184:13: Found: False: Simplify expression 'False = <expr>' to 'not <expr>'
+t_simplifiable_expressions.adb:185:15: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:186:13: Found: False: Simplify expression 'False /= <expr>' to just '<expr>'
+t_simplifiable_expressions.adb:188:13: Error: Range_Or_True: Simplify expression 'True = <expr>' to just '<expr>'
+t_simplifiable_expressions.adb:190:13: Error: Range_Or_True: Simplify expression 'True /= <expr>' to 'not <expr>'
+t_simplifiable_expressions.adb:194:13: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:194:27: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+t_simplifiable_expressions.adb:202:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression of "if" or "case"
+t_simplifiable_expressions.adb:204:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression of "if" or "case"
+t_simplifiable_expressions.adb:208:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression of "if" or "case"
+
+Counts summary:
+SIMPLIFIABLE_EXPRESSIONS: 43

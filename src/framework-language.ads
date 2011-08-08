@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -32,7 +32,14 @@
 package Framework.Language is
    --  Process the language used by rules files
    --  Syntax:
-   --  [<label> ":"] "check"|"search" <Name> ["(" <parameter> {"," <parameter>}")"] ";"
+   --  <Program> ::= {<commmand> ";"}
+   --  <command> ::= [<label> ":"] "check"|"search"|"count <Name>
+   --                       ["(" {<modifier>} <parameter> {"," {<modifier>} <parameter>}")"]
+   --              | "quit"
+   --              | "go"
+   --              | "help"  ["all" | <name>{,<name>}]
+   --              | "clear" [<name> {,<name>}]
+   --              | "source" <file>
    --  Ada-like comments (--) and Shell-like comments (#) are allowed.
 
    function Parameter_Exists return Boolean;
@@ -43,6 +50,34 @@ package Framework.Language is
    function Get_Integer_Parameter return Integer;
    function Get_String_Parameter  return Wide_String;
    function Get_Entity_Parameter  return Entity_Specification;
+
+   -- Following function returns True if the current token is True_KW
+   -- and False if the current token is False_KW (the token is consumed)
+   -- Otherwise, returns False and does not change the current token
+   -- True_KW and False_KW must be given in upper-case.
+   -- An empty string is allowed for either of them, meaning there is no
+   -- corresponding keyword
+   function Get_Modifier (True_KW  : Wide_String;
+                          False_KW : Wide_String := "";
+                          Default  : Boolean     := False) return Boolean;
+
+   --  The following procedure can be instantiated to parse "flag"
+   --  parameters (keywords). The flags are the 'Image of the values
+   --  of type Flags, with the initial Prefix removed (if not "").
+   --  This allows having flags that are the same as Ada keywords
+   --  If Allow_Not is True, the form "not <param>" is allowed, and
+   --    the Value parameter is set to True for "<param>" and False for
+   --    "not <param>".  Value is always True if Allow_Not is False.
+   --  If Allow_Any is False, it is an error if the current token is
+   --    not a flag. Otherwise, if the current token is not a flag,
+   --    Flags'First is returned and the current token is not consumed
+   --    in order to retrieve it with other Get_XXX_Parameter functions,
+   --    unless it is itself Flags'First (which makes an error)
+   generic
+      type Flags is (<>);
+      Allow_Any : Boolean;
+      Prefix    : Wide_String := "";
+   function Get_Flag_Parameter return Flags;
 
    -- Procedure to be called by rules if there is something wrong with the
    -- parameters
@@ -60,10 +95,17 @@ package Framework.Language is
    --  Declarations below this line are for the use of the framework
    --
 
-   --  Compile a set of rules
-   procedure Compile_File   (Name   : String);
-   procedure Compile_String (Source : String);
+   --  Compile and execute a set of commands
+   procedure Execute (Commands : Wide_String);
 
-   function Rule_Exists return Boolean;
+   function Go_Command_Found return Boolean;
+   --  Returns true if the last compiled command was "Go;"
 
+   function Had_Failure return Boolean;
+   --  Returns true if an exception was raised by a "Go" command
+
+private
+   -- Declaration for child:
+   Failure_Occured : Boolean := False;
+   procedure Compile;
 end Framework.Language;

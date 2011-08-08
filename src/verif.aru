@@ -1,0 +1,29 @@
+inhibit entities (framework.language); -- due to ASIS bug
+
+-- Required style checks:
+check unnecessary_use_clause;
+check no_closing_name;
+check max_nesting (6);
+check parameter_aliasing (certain);
+check simplifiable_expressions;
+
+-- Acceptable, but should be looked at:
+search parameter_aliasing (possible);
+search max_nesting (4);
+search local_hiding;
+
+-- Check that there is no more debugging code
+No_Trace : check entities (utilities.trace, timing);
+No_Debug : check entities (debug);
+
+-- Check that functions for which there is a replacement in A4G_Bugs
+-- are not used directly.
+Use_A4G_Bugs: check entities (
+   Asis.Compilation_Units.Subunits,
+   Asis.Elements.Attribute_Kind,
+   Asis.Declarations.Corresponding_Base_Entity,
+   Asis.Expressions.Corresponding_Expression_Type,
+   Asis.Expressions.Attribute_Designator_Identifier,
+   Asis.Expressions.Corresponding_Called_Function,
+   Asis.Statements.Corresponding_Called_Entity
+);

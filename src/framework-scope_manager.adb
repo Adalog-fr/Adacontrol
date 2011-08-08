@@ -3,7 +3,7 @@
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Code Cheker  is free software;  you can redistribute  it and/or --
+--  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -58,7 +58,7 @@ package body Framework.Scope_Manager is
    Scope_Top   : Scope_Range := 0;
 
    --
-   -- Linked list of Exit_Procs:
+   -- Linked list of Enter_Procs, Exit_Procs and Clear_Procs:
    --
    type Scoping_Node;
    type Scoping_Link is access Scoping_Node;
@@ -91,6 +91,20 @@ package body Framework.Scope_Manager is
       return Scope_Stack (Scope_Top);
    end Current_Scope;
 
+   ---------------------
+   -- Enclosing_Scope --
+   ---------------------
+
+   function Enclosing_Scope return Asis.Element is
+      use Asis;
+   begin
+      if Scope_Top = 1 then
+         return Nil_Element;
+      else
+         return Scope_Stack (Scope_Top-1);
+      end if;
+   end Enclosing_Scope;
+
    -------------------
    -- Active_Scopes --
    -------------------
@@ -119,7 +133,7 @@ package body Framework.Scope_Manager is
       type Node is
          record
             Next        : Link;
-            Scope       : Scope_Index;
+            Scope       : Scope_Range;
             Transmitted : Boolean;
             Content     : Data_Access;
          end record;
@@ -158,6 +172,39 @@ package body Framework.Scope_Manager is
          end if;
       end Push;
 
+      --------------------
+      -- Push_Enclosing --
+      --------------------
+
+      procedure Push_Enclosing (Info : in Data) is
+         Insert_Ptr    : Link := Head;
+         Before_Insert : Link := null;
+      begin
+         while Insert_Ptr /= null and then Insert_Ptr.Scope = Scope_Top loop
+            Before_Insert := Insert_Ptr;
+            Insert_Ptr    := Insert_Ptr.Next;
+         end loop;
+         if Insert_Ptr = Head then
+            Head := new Node'(Next        => Head,
+                              Scope       => Scope_Top-1,
+                              Transmitted => False,
+                              Content     => new Data'(Info));
+            if Current = Head.Next then
+               -- Iterator was on first element (but is no more), update previous
+               Previous := Head;
+            end if;
+         else
+            Before_Insert.Next := new Node'(Next        => Insert_Ptr,
+                                            Scope       => Scope_Top-1,
+                                            Transmitted => False,
+                                            Content     => new Data'(Info));
+            if Current = Insert_Ptr then
+               -- Iterator was on insertion point, update previous
+               Previous := Before_Insert.Next;
+            end if;
+         end if;
+      end Push_Enclosing;
+
       -----------
       -- Reset --
       -----------
@@ -170,14 +217,27 @@ package body Framework.Scope_Manager is
          Current_Mode := Mode;
       end Reset;
 
-      ----------------------
-      -- Get_Current_Data --
-      ----------------------
+      ------------------
+      -- Current_Data --
+      ------------------
 
-      function Get_Current_Data return Data is
+      function Current_Data return Data is
       begin
          return Current.Content.all;
-      end Get_Current_Data;
+      end Current_Data;
+
+      ------------------------
+      -- Current_Data_Scope --
+      ------------------------
+
+      function Current_Data_Scope return Asis.Element is
+      begin
+         if Current.Scope = 0 then
+            return Asis.Nil_Element;
+         else
+            return Scope_Stack (Current.Scope);
+         end if;
+      end Current_Data_Scope;
 
       --------------------------------------
       -- Is_Current_Transmitted_From_Spec --
@@ -415,6 +475,10 @@ package body Framework.Scope_Manager is
       end loop;
 
       Scope_Top := Scope_Top - 1;
+      if Scope_Top = 0 then
+         -- Clean-up any remaining stuff linked to scope 0
+         Reset;
+      end if;
    end Exit_Scope;
 
    -----------

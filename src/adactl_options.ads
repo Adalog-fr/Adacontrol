@@ -1,6 +1,6 @@
 package Adactl_Options is
 
-   type Action_Kinds is (Help, Process, Dependents);
+   type Action_Kinds is (Help, Process, Interactive_Process, Dependents);
 
    Action : Action_Kinds;
 
@@ -9,6 +9,7 @@ package Adactl_Options is
    Ignore_Option    : Boolean;
    Unit_Option      : Boolean;
    Exit_Option      : Boolean;
+   Overwrite_Option : Boolean;
 
    procedure Analyse_Options;
    -- Analyses and sets program options
@@ -16,20 +17,14 @@ package Adactl_Options is
    function Asis_Options return Wide_String;
    -- Returns ASIS options passed by command line
 
-   function Command_Line_Rules return String;
-   -- Return rules stated on the command line (option -l)
-
-   function Rules_File return String;
-   -- Return name of the rules file (option -f)
+   function Command_Line_Commands return Wide_String;
+   -- Return the commands stated as options on the command line
 
    function Ada_Units_List return Wide_String;
    -- Returns list of Ada units to process
 
    function Initialize_String return Wide_String;
    -- Returns a initialize string
-
-   procedure Finalize_Adactl_Output;
-   -- Closes Adactl output if necessary
 
    Options_Error : exception;
 

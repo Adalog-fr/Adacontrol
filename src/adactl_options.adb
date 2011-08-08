@@ -20,23 +20,18 @@ with
 
 package body Adactl_Options is
 
-   Version : constant Wide_String := "1.3r2";
-
-   type String_Access is access String;
+   Version : constant Wide_String := "1.4r20";
 
    package Analyzer is
-      new Options_Analyzer (Binary_Options => "Ddehirsuvwx",
+      new Options_Analyzer (Binary_Options => "DdehiIrsuvwx",
                             Valued_Options => "flop",
                             Tail_Separator => "--");
-
-   Adactl_Output : Ada.Wide_Text_Io.File_Type;
 
    Unit_List    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Extra_Pathes : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Body_Found   : Boolean := False;
 
-   Command_Line_Rules_String : String_Access;
-   Rules_File_String         : String_Access;
+   Options_Commands : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    ------------------
    -- Option_Error --
@@ -63,8 +58,10 @@ package body Adactl_Options is
    procedure Help is
       use Utilities, Framework.Rules_Manager;
    begin
-      User_Message ("Usage: adactl -h [<rule id>... | all]");
-      User_Message ("       adactl [-deirsuvw] [-f <rules file>] [-l <rules list>] [-o <output file>]");
+      User_Message ("Usage: adactl [-deirsuvw] [-f <rules file>] [-l <rules list>] [-o <output file>]");
+      User_Message ("          [-p <project file>] <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
+      User_Message ("       adactl -h [<rule id>... | all]");
+      User_Message ("       adactl -I [-deirsuvw] [-o <output file>]");
       User_Message ("          [-p <project file>] <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
       User_Message ("       adactl -D [-rsw] [-o <output file>]");
       User_Message ("          [-p <project file>] <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
@@ -90,22 +87,10 @@ package body Adactl_Options is
       User_Message ("Rules:");
       Help_Names;
       User_Message ("");
-      User_Message ("ADACTL v. " & Version & ", Copyright (C) 2004 Eurocontrol/Adalog is");
-      User_Message ("covered by the GNU Modified General Public License.");
+      User_Message ("ADACTL v. " & Version);
+      User_Message ("Copyright (C) 2004-2005 Eurocontrol/Adalog.");
+      User_Message ("This software is covered by the GNU Modified General Public License.");
    end Help;
-
-   ----------------------------
-   -- Finalise_Adactl_Output --
-   ----------------------------
-
-   procedure Finalize_Adactl_Output is
-      use Ada.Wide_Text_Io;
-   begin
-      if Is_Open (Adactl_Output) then
-         Set_Output (Standard_Output);
-         Close (Adactl_Output);
-      end if;
-   end Finalize_Adactl_Output;
 
    --------------------
    -- Gnat_Unit_Name --
@@ -178,7 +163,8 @@ package body Adactl_Options is
    ---------------------
 
    procedure Analyse_Options is
-      use Ada.Wide_Text_Io, Ada.Characters.Handling;
+      use Ada.Wide_Text_Io, Ada.Characters.Handling, Ada.Strings.Wide_Fixed,
+        Ada.Strings, Ada.Strings.Wide_Unbounded;
       use Utilities, Analyzer, Framework.Rules_Manager;
    begin
       --
@@ -204,8 +190,13 @@ package body Adactl_Options is
          end if;
 
          return;
+
       elsif Is_Present (Option => 'D') then
          Action := Dependents;
+
+      elsif Is_Present (Option => 'I') then
+         Action := Interactive_Process;
+
       else
          Action := Process;
       end if;
@@ -216,18 +207,14 @@ package body Adactl_Options is
       --
 
       -- Output options
-      Utilities.Debug_Option     := Is_Present (Option => 'd');
-      Utilities.Overwrite_Option := Is_Present (Option => 'w');
-      Utilities.Verbose_Option   := Is_Present (Option => 'v');
-      Utilities.Error_Is_Out     := not Is_Present (Option => 'o');
+      Utilities.Debug_Option   := Is_Present (Option => 'd');
+      Utilities.Verbose_Option := Is_Present (Option => 'v');
+      Overwrite_Option         := Is_Present (Option => 'w');
 
       if Is_Present (Option => 'o') then
          -- modify current output
-         Safe_Open (Adactl_Output,
-                    Value (Option            => 'o',
-                           Explicit_Required => True),
-                    Create);
-         Set_Output (Adactl_Output);
+         Options_Commands := Options_Commands
+           & "set output " & To_Wide_String (Value (Option => 'o', Explicit_Required => True)) & ';';
       end if;
 
       Framework.Reports.Warning_As_Error_Option := Is_Present (Option => 'e');
@@ -243,18 +230,34 @@ package body Adactl_Options is
          Option_Error ("At least one unit/file required");
       end if;
 
-      if not Is_Present (Option => 'l') and not Is_Present (Option => 'f') then
+      if Is_Present (Option => 'D') then
+         if Is_Present (Option => 'l') or Is_Present (Option => 'f') then
+            Option_Error ("No rule can be specified with -D option");
+         elsif Is_Present (Option => 'I') then
+            Option_Error ("-D and -I options cannot be specified together");
+         end if;
+      elsif    not Is_Present (Option => 'l')
+        and not Is_Present (Option => 'f')
+        and not Is_Present (Option => 'I')
+      then
          Option_Error("No rules specified");
       end if;
 
       if Is_Present (Option => 'l') then
          -- add rules uses from command line
-         Command_Line_Rules_String := new String'(Value (Option => 'l', Explicit_Required => True));
+         Options_Commands := Options_Commands
+           & Trim (To_Wide_String (Value (Option => 'l', Explicit_Required => True)), Both);
+
+         if Element (Options_Commands, Length (Options_Commands)) /= ';' then
+            -- As a courtesy, provide the missing final ';'
+            Options_Commands := Options_Commands & ';';
+         end if;
       end if;
 
       if Is_Present (Option => 'f') then
          -- add rules uses from file
-         Rules_File_String := new String'(Value (Option => 'f', Explicit_Required => True));
+         Options_Commands := Options_Commands
+           & "source " & To_Wide_String (Value (Option => 'f', Explicit_Required => True)) & ';';
       end if;
 
       for I in 1 .. Parameter_Count loop
@@ -311,30 +314,14 @@ package body Adactl_Options is
       return Implementation_Options.Initialize_String;
    end Initialize_String;
 
-   ----------------
-   -- Rules_File --
-   ----------------
+   ---------------------------
+   -- Command_Line_Commands --
+   ---------------------------
 
-   function Rules_File return String is
+   function Command_Line_Commands return Wide_String is
+      use Ada.Strings.Wide_Unbounded;
    begin
-      if Rules_File_String = null then
-         return "";
-      else
-         return Rules_File_String.all;
-      end if;
-   end Rules_File;
-
-   ------------------------
-   -- Command_Line_Rules --
-   ------------------------
-
-   function Command_Line_Rules return String is
-   begin
-      if Command_Line_Rules_String = null then
-         return "";
-      else
-         return Command_Line_Rules_String.all;
-      end if;
-   end Command_Line_Rules;
+      return To_Wide_String (Options_Commands);
+   end Command_Line_Commands;
 
 end Adactl_Options;

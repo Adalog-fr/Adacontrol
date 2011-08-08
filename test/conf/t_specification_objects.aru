@@ -1,0 +1,3 @@
+check Specification_Objects (written);
+Constantable: search Specification_Objects (not constant, read, not written);
+Removable: search specification_Objects (not read, not written);
