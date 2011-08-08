@@ -1,4 +1,14 @@
 =============
+== V1.12r4 ==
+=============
+
+General:
+--------
+Bug fixes:
+   In rule Improper_Initialization: bad handling of slices, extra
+   message for out parameter of a separate body without explicit spec.
+
+=============
 == V1.12r3 ==
 =============
 

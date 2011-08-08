@@ -60,15 +60,15 @@ package body Rules.Improper_Initialization is
    --
    -- Bodies of things that can have a body are analyzed by Process_Structure
    -- The map Global_Map is indexed by the names of local objects and out parameters
-   -- It is initialized by Add_Out_Parameters and Add_Variables, all objects marked with a reference of
-   -- None.
+   -- It is initialized by Add_Out_Parameters and Add_Variables, all objects marked
+   -- with a reference of None.
    --
-   -- The statements are then traversed by Process_Statements. When a variable is written to, its status
-   -- is changed to Assigned in Object_Map.
+   -- The statements are then traversed by Process_Statements. When a variable is written to,
+   -- its status is changed to Assigned in Object_Map.
    -- When an "if" or "case" statement is encountered, a local map is initialized
    -- with the objects from Object_Map that are not yet known to be initialized.
-   -- For each path, objects *not* written are removed from the local map; therefore, after traversing all
-   -- paths, only objects written from all paths remain: they are marked as Assigned in the Object_Map
+   -- For each path, objects *not* written are removed from the local map; therefore, after
+   -- traversing all paths, only objects written from all paths remain: they are marked as Assigned in the Object_Map
    --
    -- As a side effect, if an object is read while its Reference is None, it means it is read
    -- before being assigned; its Reference is then set to Read_Before_Assign
@@ -619,7 +619,6 @@ package body Rules.Improper_Initialization is
                   Failure (Rule_Id & ": invalid expression kind", Good_Name);
             end case;
          end loop;
-
          case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name)) is
             when A_Variable_Declaration | A_Parameter_Specification =>
                declare

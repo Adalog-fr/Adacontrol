@@ -200,9 +200,10 @@ procedure T_Improper_Initialization is
       end if;
    end My_Pack;
 
-   -- case of separate body
-   procedure Sep (Var1, Var2 : out Integer);               -- not safely initialized (x1)
-   procedure Sep (Var1, Var2 : out Integer) is separate;
+   -- case of separate body (with and Without Explicit Spec)
+   procedure Sep1 (Var1, Var2 : out Integer);
+   procedure Sep1 (Var1, Var2 : out Integer) is separate;
+   procedure Sep2 (Var1, Var2 : out Integer) is separate;
 
    -- Case of attributes
    type Str_Ptr is access String;
