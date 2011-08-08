@@ -471,8 +471,8 @@ package body Scoped_Store is
          end if;
       exception
          when Not_Present =>
-            Utilities.Trace ("Parent not found in Restore_Parent_Context: "  --## rule line off No_Trace
-                             & Parent_Name);
+            Utilities.Trace ("Parent not found in Restore_Parent_Context for unit "  --## rule line off No_Trace
+                             & Unit_Name);
             raise;
       end Restore_Parent_Context;
 
