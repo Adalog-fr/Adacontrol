@@ -171,19 +171,18 @@ package body Rules.Return_Type is
          case Element_Kind (Element) is
             when A_Declaration =>
                case Declaration_Kind (Element) is
-                  --
                   when A_Function_Body_Declaration =>
-                     Rules.Return_Type. Process_Function_Declaration (Element);
-                  --
+                     Rules.Return_Type.Process_Function_Declaration (Element);
+
                   when A_Function_Declaration
                     | A_Function_Renaming_Declaration
                     | A_Function_Body_Stub
                     | A_Formal_Function_Declaration
                     | A_Generic_Function_Declaration
                     =>
-                     Rules.Return_Type. Process_Function_Declaration (Element);
-                     Control := Abandon_Children;
-                  --
+                     Rules.Return_Type.Process_Function_Declaration (Element);
+                     Control := Abandon_Children;  --2005: Must traverse parameters due to access function return T;
+
                   when A_Generic_Instantiation =>
                      declare
                         Instantiated_Body : constant Asis.Declaration := Corresponding_Body (Element);
@@ -194,7 +193,7 @@ package body Rules.Return_Type is
                            Traverse (Instantiated_Body, Control, State);
                         end if;
                      end;
-                  --
+
                   when others =>
                      null;
                end case;
@@ -319,7 +318,7 @@ package body Rules.Return_Type is
          when An_Attribute_Reference =>
             case A4G_Bugs.Attribute_Kind (Result_Expression) is
                when A_Base_Attribute =>
-                  -- when matching A_Base_Attribute, we need to retrieve the Selector
+                  -- when matching A_Base_Attribute, we need to retrieve the Prefix
                   Result_Expression := Simple_Name (Prefix (Result_Expression));
                when A_Class_Attribute =>
                   Check_Class (Result_Expression);
@@ -333,7 +332,6 @@ package body Rules.Return_Type is
 
       -- Here we have a good ol' identifier
       Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Result_Expression);
-
       loop
          -- Here we have a type declaration
          case Declaration_Kind (Result_Type_Declaration) is
@@ -543,6 +541,14 @@ package body Rules.Return_Type is
                end;
 
             when others =>
+               if Is_Nil (Result_Type_Declaration) then
+                  -- ASIS Bug  [J708-005]:
+                  -- If the type comes from a deeply nested instantiation, the declaration is lost
+                  -- According to Sergey, this happens only for predefined signed integer types
+                  --   => handle as A_Signed_Integer_Type_Definition (i.e. nothing to be done)
+                  A4G_Bugs.Trace_Bug("Predefined integer type has no declaration");
+                  return;
+               end if;
                Failure ("Not a type for function result", Result_Type_Declaration);
          end case;
       end loop;
