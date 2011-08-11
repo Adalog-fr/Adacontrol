@@ -173,9 +173,11 @@ package body Rules.Potentially_Blocking_Operations is
          end if;
       end;
 
+      -- Individual subprograms defined as blocking
       Add_SP ("ADA.TASK_IDENTIFICATION.ABORT_TASK{ADA.TASK_IDENTIFICATION.TASK_ID}");
       Add_SP ("ADA.SYNCHRONOUS_TASK_CONTROL.SUSPEND_UNTIL_TRUE{ADA.SYNCHRONOUS_TASK_CONTROL.SUSPENSION_OBJECT}");
 
+      -- Text_IO
       Add_Unit ("ADA.TEXT_IO");
       Add_Unit ("ADA.TEXT_IO.TEXT_STREAMS");
       -- GNAT implements the generic packages inside Text_IO (and cousins) as child units.
@@ -191,6 +193,7 @@ package body Rules.Potentially_Blocking_Operations is
       Add_Unit ("ADA.TEXT_IO.DECIMAL_IO");
       Add_Unit ("ADA.TEXT_IO.ENUMERATION_IO");
 
+      -- Wide_Text_IO
       Add_Unit ("ADA.WIDE_TEXT_IO");
       Add_Unit ("ADA.WIDE_TEXT_IO.TEXT_STREAMS");
       -- Same thing here
@@ -201,12 +204,25 @@ package body Rules.Potentially_Blocking_Operations is
       Add_Unit ("ADA.WIDE_TEXT_IO.DECIMAL_IO");
       Add_Unit ("ADA.WIDE_TEXT_IO.ENUMERATION_IO");
 
+      -- Wide_Wide_Text_IO
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO");
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.TEXT_STREAMS");
+      -- Same thing here
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.INTEGER_IO");
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.MODULAR_IO");
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.FLOAT_IO");
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.FIXED_IO");
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.DECIMAL_IO");
+      Add_Unit ("ADA.WIDE_WIDE_TEXT_IO.ENUMERATION_IO");
+
+      -- Other IO packages
       Add_Unit ("ADA.SEQUENTIAL_IO");
       Add_Unit ("ADA.DIRECT_IO");
       Add_Unit ("ADA.STREAMS.STREAM_IO");
 
       -- Note that operations from Storage_IO do not operate on files, and are thus not potentially blocking
 
+      -- Other non IO packages
       Add_Unit ("SYSTEM.RPC");
    end Initialize_SP_Property;
 
@@ -574,6 +590,7 @@ package body Rules.Potentially_Blocking_Operations is
             --  1) It avoids analyzing several times instantiations of the same generic
             --  2) It allows recognizing instantiations from the generic IO packages that
             --     are already in SP_Property
+            -- TBSL But what if a SP calls a formal SP which is potentially blocking?
             Check (Enclosing_Element (Corresponding_Generic_Element (Names (Decl)(1))),
                    PTO_Def          => Nil_Element,
                    Is_Blocking      => Is_Blocking,
@@ -590,6 +607,7 @@ package body Rules.Potentially_Blocking_Operations is
 
          Decl_Body := Corresponding_Body (Decl);
          if Is_Nil (Decl_Body) then
+            -- TBSL Imported operations
             -- Predefined operations, f.e. ...
             Is_Blocking := False;
             return;
