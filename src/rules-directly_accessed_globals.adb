@@ -364,7 +364,17 @@ package body Rules.Directly_Accessed_Globals is
                             & " at " & Image (Get_Location (Enclosing_Element (Var_Info.Write_Proc))));
                end if;
 
-            when Read_Write =>
+            when Read_Write
+               | Unknown     -- Consider Unknown as Read-Write, therefore creating false positives
+               =>            -- That's better than false negatives!
+               if Usage = Unknown then
+                  Uncheckable (Rule_Id,
+                               False_Positive,
+                               Get_Location (Name),
+                               "variable """ & A4G_Bugs.Name_Image (Good_Name)
+                               & """ used as parameter of dispatching call, treated as in-out");
+               end if;
+
                if Is_Nil (Var_Info.Read_Proc) then
                   Var_Info.Read_Proc := Unit_Name;
                   Add (Global_Variables, Var_Name, Var_Info);

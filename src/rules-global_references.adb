@@ -35,7 +35,6 @@ with
 
 -- ASIS
 with
-  Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
   Asis.Exceptions,
@@ -325,11 +324,11 @@ package body Rules.Global_References is
                             State   : in out Usage_Value) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
+      use Framework.Reports;
 
       New_State : Usage_Value;
 
       procedure Process_Call is
-         use Framework.Reports;
          Called : constant Call_Descriptor := Corresponding_Call_Description (Element);
       begin
          case Called.Kind is
@@ -399,9 +398,16 @@ package body Rules.Global_References is
                                           when Untouched =>
                                              -- Usage comes from the renaming identifier
                                              U.Usage := State;
+                                          when Unknown =>
+                                             -- Assume no write, short of knowing what it does
+                                             Uncheckable (Rule_Id,
+                                                          False_Negative,
+                                                          Get_Location (Element),
+                                                          "Dispatching call or call to dynamic entity; "
+                                                          & "assuming not an [in] out parameter");
                                        end case;
                                     when Checked =>
-                                       Failure ("Variable marked as checked", Element);
+                                       Failure ("Variable marked as checked or unknown", Element);
                                  end case;
                               else
                                  case Expression_Usage_Kind (Element) is
@@ -412,6 +418,14 @@ package body Rules.Global_References is
                                     when Untouched =>
                                        -- Usage comes from the renaming identifier
                                        U := (Corresponding_Name_Definition (Element), State);
+                                    when Unknown =>
+                                       -- Assume simple read, short of knowing what it does
+                                       Uncheckable (Rule_Id,
+                                                    False_Negative,
+                                                    Get_Location (Element),
+                                                    "Dispatching call or call to dynamic entity; "
+                                                    & "assuming not an [in] out parameter");
+                                       U := (Corresponding_Name_Definition (Element), Read);
                                  end case;
                               end if;
                               Add (Usage, Key, U);
@@ -428,6 +442,14 @@ package body Rules.Global_References is
                                  New_State := Read;
                               when Write | Read_Write =>
                                  New_State := Written;
+                              when Unknown =>
+                                 -- Assume simple read, short of knowing what it does
+                                 Uncheckable (Rule_Id,
+                                              False_Negative,
+                                              Get_Location (Element),
+                                              "Dispatching call or call to dynamic entity; "
+                                              & "assuming not an [in] out parameter");
+                                 New_State := Read;
                            end case;
                            Traverse (A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Element)),
                                      Control,
@@ -491,7 +513,7 @@ package body Rules.Global_References is
 
    procedure Check_Body (Body_Decl : Asis.Declaration) is
       use Ada.Strings.Wide_Unbounded;
-      use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Elements;
       use Framework.Rules_Manager, Thick_Queries, Utilities, Usage_Map;
    begin
       if Is_Nil (Body_Decl) -- Predefined operations, dispatching call, f.e. ...
@@ -501,7 +523,7 @@ package body Rules.Global_References is
          return;
       end if;
 
-      if Unit_Origin (Enclosing_Compilation_Unit (Body_Decl)) /= An_Application_Unit then
+      if Ultimate_Origin (Body_Decl) /= An_Application_Unit then
          -- Do not check the standard library (nor the RTL!)
          return;
       end if;
@@ -586,6 +608,7 @@ package body Rules.Global_References is
    ------------------
 
    procedure Process_Body (The_Body : in Asis.Declaration) is
+
       Iter : Context_Iterator := Checked_Bodies_Iterator.Create;
 
       procedure General_Iter_Reset is

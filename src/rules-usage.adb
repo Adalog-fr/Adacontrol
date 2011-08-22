@@ -1267,13 +1267,23 @@ package body Rules.Usage is
                   Update (Good_Name, K_Variable, Value => (K_Written => True, others => False));
                when Read_Write =>
                   Update (Good_Name, K_Variable, Value => (K_Read | K_Written => True, others => False));
+               when Unknown =>      -- Consider Unknown as Read-Write, therefore creating false positives
+                                    -- That's better than false negatives!
+                  Uncheckable (Rule_Id,
+                               False_Positive,
+                               Get_Location (Name),
+                               "variable """ & A4G_Bugs.Name_Image (Good_Name)
+                               & """ used as parameter of dispatching call, treated as in-out");
+                  Update (Good_Name, K_Variable, Value => (K_Read | K_Written => True, others => False));
             end case;
 
          when K_Constant =>
             case Expression_Usage_Kind (Name) is
                when Untouched =>
                   Check_Access;
-               when Read =>
+               when Read
+                  | Unknown   -- For a constant, it is safe to assume that the only possible usage is "read"
+                  =>
                   Update (Good_Name, K_Constant, Value => (K_Read => True, others => False));
                when Write | Read_Write =>
                   Failure ("Usage: write of constant", Name);
