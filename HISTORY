@@ -14,6 +14,13 @@ Bug fixes:
    Constraint_Error in Style(Expression_Litteral) when a litteral has the
    value of System.Max_Int
 
+   Crash in Multiple_Assignments when records include an explicit null
+   component
+
+General:
+--------
+Ignore remaining of line after blank in an indirect file
+
 =============
 == V1.12r4 ==
 =============

@@ -292,7 +292,9 @@ package body Rules.Multiple_Assignments is
                         return Not_Static;
                      end if;
                      for I in Components'Range loop
-                        Result := Result + Names (Components (I))'Length;
+                        if Definition_Kind (Components (I)) /= A_Null_Component then
+                           Result := Result + Names (Components (I))'Length;
+                        end if;
                      end loop;
                      if not Is_Nil (Discriminant_Part (Decl)) then
                         declare
