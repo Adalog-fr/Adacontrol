@@ -575,12 +575,14 @@ the ``-r'' (recursive) option otherwise.
 Alternatively, it is possible to provide units indirectly with a
 parameter consisting of an ``@@'' followed by the name of a file. This
 file must contain a list of unit names (not files), one on each
-line. All units whose names are given in the file will be
-processed. If a name in the file starts with ``@@'', it will also be
-treated as an indirect file (i.e. the same process will be invoked
-recursively). If a line in the file starts with ``#'' or ``-@w{}-'',
-it is ignored. This can be useful to temporarily disable the
-processing of some files or to add comments.
+line. Only the first ``word'' of the line is considered,
+i.e. everything after the first blank is ignored. This can be useful
+to annotate unit names.  All units whose names are given in the file
+will be processed. If a name in the file starts with ``@@'', it will
+also be treated as an indirect file (i.e. the same process will be
+invoked recursively). If a line in the file starts with ``#'' or
+``-@w{}-'', it is ignored. This can be useful to temporarily disable
+the processing of some files or to add comments.
 
 Ex:
 @example
