@@ -152,5 +152,19 @@ Dispatching:
       Proc_T (Y, Y);                          -- Aliasing
       Proc_T (A => Y, B => Y);                -- Aliasing
    end Dispatching;
+   
+Mantis_0000006:
+    declare
+       procedure P (O : in out Integer; X, Y : in out Integer) is begin null; end;
+       type Tab1 is array (1 .. 10) of Integer;
+       type Tab2 is array (1 .. 10, 1 .. 10) of Integer;
+       type PTab1 is access Tab1;
+       type PTab2 is access Tab2;
+       A : Ptab1;
+       B : Ptab2;
+       O : Integer;
+    begin
+       P (O, A(1), B(1,1));                   -- Unlikely aliasing
+    end Mantis_0000006;
 end T_parameter_aliasing;
 
