@@ -10,3 +10,4 @@ Search Pragmas (elaborate_all);
 inst: Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String),
       Search Instantiations (local Ada.Unchecked_Deallocation);
 
+check unnecessary_use_clause; -- Mantis 0000007

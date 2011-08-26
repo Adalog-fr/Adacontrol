@@ -31,6 +31,13 @@ procedure Tfw_Naming is
    end Q;
 
    X : Integer'Base;
+
+   type T is tagged null record;  -- Mantis 0000007
+   procedure P (X : access T'Class'Class'Class) is
+   begin
+      null;
+   end;
+
 begin
    X := Integer'Base'First;
 
