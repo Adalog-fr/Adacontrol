@@ -256,6 +256,30 @@ package body T_naming_convention is
       end G_Proc;
    end Inner;
 
+   -- Mantis 0000008
+   type T1 is tagged null record;
+
+   package Pack08 is
+      type T2 is new T1 with private;
+   private
+      type T2 is new T1 with null record;
+   end;
+
+   type D1 is abstract new Pack08.T2 with
+      record
+	 F : Duration;
+      end record;
+
+   type D2 is new D1 with
+      record
+	 null;
+      end record;
+
+   X : D2;
+   Y : Duration renames X.F;
+   -- End Mantis 0000008
+
+
 begin
 <<B1>>
 Block :

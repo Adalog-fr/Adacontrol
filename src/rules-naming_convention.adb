@@ -894,17 +894,10 @@ package body Rules.Naming_Convention is
                      case Definition_Kind (Def) is
                         when A_Protected_Definition =>
                            Check (Name_Str, (K_All, K_Variable, K_Field, K_Protected_Field));
-                        when A_Record_Definition =>
-                           case Type_Kind (Enclosing_Element (Def)) is
-                              when A_Record_Type_Definition
-                                | A_Tagged_Record_Type_Definition
-                                | A_Derived_Record_Extension_Definition
-                                =>
-                                 Check (Name_Str, (K_All, K_Variable, K_Field, K_Record_Field));
-                              when others =>
-                                 Failure ("Field not in record: "
-                                          & Type_Kinds'Wide_Image (Type_Kind (Enclosing_Element (Def))), Def);
-                           end case;
+                        when A_Record_Definition
+                           | A_Private_Extension_Definition
+                           =>
+                           Check (Name_Str, (K_All, K_Variable, K_Field, K_Record_Field));
                         when others =>
                            Failure ("Not a record or protected field: "
                                     & Definition_Kinds'Wide_Image (Definition_Kind (Def)),
