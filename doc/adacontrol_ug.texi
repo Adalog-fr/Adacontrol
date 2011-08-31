@@ -8130,11 +8130,12 @@ Ada syntax: if you define the integer type @code{T} in package
 
 @node Attributes, Anonymous constructs, Operators, Specifying an Ada entity name
 @section Attributes
-It is also possible to designate attributes, using the normal notation
-(i.e. @code{Standard.Integer'First}). If the name of an attribute which
-is a function appears in a name that uses the overloaded syntax, it is
-not necessary (and actually not allowed) to provide its profile, since
-there is no possible ambiguity in that case. For example, given:
+It is also possible to designate attributes of entities, using the
+normal notation (i.e. @code{Standard.Integer'First}). If the name of
+an attribute which is a function appears in a name that uses the
+overloaded syntax, it is not necessary (and actually not allowed) to
+provide its profile, since there is no possible ambiguity in that
+case. For example, given:
 
 @example
 @b{procedure} P (I : Integer) @b{is}
@@ -8147,6 +8148,13 @@ there is no possible ambiguity in that case. For example, given:
 You can designate the @code{'Image} attribute for type @code{T} as
 @code{P@{Standard.Integer@}.T'Image} (the profile of the @code{'Image}
 function is not given, as would be necessary for a normal function).
+
+To designate all occurrences of an attribute, use @code{@b{all}} in
+front of the attribute:
+
+@example
+check entities (all 'Image);  -- Find all occurrences of 'Image
+@end example
 
 @node Anonymous constructs, Record and protected types components, Attributes, Specifying an Ada entity name
 @section Anonymous constructs
