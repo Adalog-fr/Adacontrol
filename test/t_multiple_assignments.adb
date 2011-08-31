@@ -137,4 +137,28 @@ Bl: declare
       V2.I1 := 1;
       V2.I2 := 2;  -- Groupable1, Groupable2, Count
    end;
+
+   -- Protected types         Mantis 0000009
+   declare
+      protected Prot is
+         procedure P;
+      private
+         F1 : Integer;
+         F2 : Integer;
+         F3 : Rec;
+      end Prot;
+
+      protected body Prot is
+         procedure P is
+         begin
+            Prot.F1 := 1;
+            Prot.F1 := 2;         -- Repeated
+            Prot.F2 := 1;
+            Prot.F3.A := 1;
+            Prot.F3.B := 1;       -- Groupable1
+         end P;
+      end Prot;
+   begin
+      null;
+   end;
 end T_Multiple_Assignments;

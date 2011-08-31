@@ -309,6 +309,32 @@ package body Rules.Multiple_Assignments is
                      return Result;
                   end;
 
+               when A_Protected_Definition =>
+                  declare
+                     Decl       : constant Asis.Declaration := Enclosing_Element (Def);
+                     Components : constant Asis.Declarative_Item_List := Private_Part_Items (Def);
+                     Result     : Biggest_Natural := 0;
+                  begin
+                     for I in Components'Range loop
+                        if Declaration_Kind (Components (I)) = A_Component_Declaration then
+                           Result := Result + Names (Components (I))'Length;
+                        end if;
+                     end loop;
+                     if Declaration_Kind (Decl) = A_Protected_Type_Declaration  -- no discriminants for single PO
+                       and then not Is_Nil (Discriminant_Part (Decl))
+                     then
+                        declare
+                           Discrs : constant Asis.Discriminant_Specification_List
+                             := Discriminants (Discriminant_Part (Decl));
+                        begin
+                           for I in Discrs'Range loop
+                              Result := Result + Names (Discrs (I))'Length;
+                           end loop;
+                        end;
+                     end if;
+                     return Result;
+                  end;
+
                when A_Subtype_Indication =>
                   Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
                                                 (Subtype_Simple_Name (Def)));
