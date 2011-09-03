@@ -237,7 +237,7 @@ package body Framework.Queries is
    --------------------
 
    function Standard_Value (Name : Wide_String) return Asis.Declaration is
-      use Asis, Asis.Compilation_Units, Asis.Elements;
+      use Asis, Asis.Elements;
       use Element_Map, Utilities;
    begin
       if Is_Empty (Standard_Symbol_Map) then
