@@ -47,13 +47,14 @@ with
 with
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
-  Framework.Language.Shared_Keys;
+  Framework.Language.Shared_Keys,
+  Framework.Queries;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Array_Declarations is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (First, Last, Length, Dimensions, Component);
+   type Subrules is (First, Last, Length, Dimensions, Index, Component);
    subtype Dim_Subrules is Subrules range First .. Dimensions;
    package Subrules_Flag_Utilities  is new Framework.Language.Flag_Utilities (Subrules);
 
@@ -66,6 +67,13 @@ package body Rules.Array_Declarations is
    Values : array (Dim_Subrules, Control_Kinds) of Language.Shared_Keys.Bounds_Values
      := (others => (others => (Min => 0, Max => Thick_Queries.Biggest_Natural'Last)));
 
+   type Index_Context (Nb_Dims : Positive) is new Basic_Rule_Context with
+      record
+         Index_Types : Entity_Specification_List (1 .. Nb_Dims);
+      end record;
+   Index_Contexts : Context_Store;
+   package Index_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Index_Contexts);
+
    type Repr_Condition is (None, Present, Absent);
    type Compo_Context is new Basic_Rule_Context with
       record
@@ -76,6 +84,19 @@ package body Rules.Array_Declarations is
    Compo_Contexts : Context_Store;
    package Compo_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Compo_Contexts);
 
+
+   ----------------
+   -- List_Image --
+   ----------------
+
+   function List_Image (L : Entity_Specification_List) return Wide_String is
+   begin
+      if L'Length = 1 then
+         return Image (L (L'First));
+      else
+         return Image (L (L'First)) & ", " & List_Image (L (L'First + 1 .. L'Last));
+      end if;
+   end List_Image;
 
    ----------
    -- Help --
@@ -92,11 +113,13 @@ package body Rules.Array_Declarations is
       User_Message ("For first, last, and dimensions, alternatively:");
       User_Message ("Parameter(2): <value>");
       Min_Max_Utilities.Help_On_Modifiers (Header => "     <bound>:");
+      User_Message ("For index:");
+      User_Message ("Parameter(2..)  : <entity>|<category>");
       User_Message ("For component:");
       User_Message ("Parameter(2)  : <entity>|<category>");
+      User_Message ("Parameter(3..): [not] packed | sized | component_sized (optional)");
       User_Message ("  <category>  : ()      | access    | array | delta  | digits | mod |");
       User_Message ("                private | protected | range | record | tagged | task");
-      User_Message ("Parameter(3..): [not] packed | sized | component_sized (optional)");
       User_Message ("Controls various parameters related to array types or objects declarations");
    end Help;
 
@@ -105,10 +128,21 @@ package body Rules.Array_Declarations is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Framework.Language.Shared_Keys, Subrules_Flag_Utilities, Thick_Queries;
+      use Framework.Language, Framework.Language.Shared_Keys, Subrules_Flag_Utilities, Thick_Queries, Utilities;
       use Ada.Strings.Wide_Unbounded;
       Subrule : Subrules;
-   begin
+
+      function Build_Index_List return Entity_Specification_List is
+         Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+      begin
+         if Parameter_Exists then
+            return Entity & Build_Index_List;
+         else
+            return (1 => Entity);
+         end if;
+      end Build_Index_List;
+
+   begin   -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "parameters required");
       end if;
@@ -138,6 +172,22 @@ package body Rules.Array_Declarations is
             end if;
             Labels    (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
             Rule_Used (Subrule) (Ctl_Kind) := True;
+
+         when Index =>
+            declare
+               Index_List : constant Entity_Specification_List := Build_Index_List;
+            begin
+               Associate (Index_Contexts,
+                          Value (Integer_Img (Index_List'Length)),
+                          Index_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                              Nb_Dims     => Index_List'Length,
+                              Index_Types => Index_List),
+                          Additive => True);
+            exception
+               when Already_In_Store =>
+                  Parameter_Error (Rule_Id, "Index combination already given: " & List_Image (Index_List));
+            end;
+            Rule_Used (Subrule) := (others => True);
 
          when Component =>
             declare
@@ -415,6 +465,65 @@ package body Rules.Array_Declarations is
 
    procedure Process_Array_Definition (Definition : Asis.Definition) is
 
+      procedure Process_Index is
+         use Asis.Declarations, Asis.Elements;
+         use Framework.Language.Shared_Keys, Framework.Queries, Framework.Reports;
+         use Thick_Queries, Utilities;
+
+         Index_Subtypes : Asis.Element_List := Index_Subtypes_Names (Definition);
+         Iterator       : Context_Iterator := Index_Iterator.Create;
+         All_Dims_Match : Boolean;
+
+      begin  -- Process_Index
+         Reset (Iterator, Value (Integer_Img (Index_Subtypes'Length)));
+         while not Is_Exhausted (Iterator) loop
+            declare
+               Entities_List : constant Entity_Specification_List := Index_Context (Value (Iterator)).Index_Types;
+               Cat           : Categories;
+            begin
+               All_Dims_Match := True;
+               for E in Entities_List'Range loop
+                  if Is_Nil (Index_Subtypes (E)) then
+                     -- Case of X : array (1..10) of ...
+                     -- This defaults to Integer
+                     Index_Subtypes (E) := Names (Standard_Value ("INTEGER")) (1);
+                  end if;
+                  if not Matches (Entities_List (E), Index_Subtypes (E), All_Extensions) then
+                     -- No subtype match
+                     if not Matches (Entities_List (E), First_Subtype_Name (Index_Subtypes (E)), All_Extensions) then
+                        -- No type match
+                        Cat := Value (Entities_List (E));
+                        if Cat = Cat_Any
+                          or else not Matches (Enclosing_Element (Index_Subtypes (E)),
+                                               Cat,
+                                               Follow_Derived => True)
+                        then
+                           -- No category match
+                           All_Dims_Match := False;
+                           exit;
+                        end if;
+                     end if;
+                  end if;
+               end loop;
+               if All_Dims_Match then
+                  if Entities_List'Length = 1 then
+                     Report (Rule_Id,
+                             Value (Iterator),
+                             Get_Location (Definition),
+                             "array index is " & Image (Entities_List (1)));
+                  else
+                     Report (Rule_Id,
+                             Value (Iterator),
+                             Get_Location (Definition),
+                             "array indices are " & List_Image (Entities_List));
+                  end if;
+               end if;
+            end;
+
+            Next (Iterator);
+         end loop;
+      end Process_Index;
+
       procedure Process_Component is
          use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
@@ -618,6 +727,10 @@ package body Rules.Array_Declarations is
 
       if Rule_Used (Dimensions) /= Empty_Control_Kinds_Set then
          Process_Dimensions;
+      end if;
+
+      if not Is_Empty (Index_Contexts) then
+         Process_Index;
       end if;
 
       if not Is_Empty (Compo_Contexts) then

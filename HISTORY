@@ -21,6 +21,11 @@ General:
 --------
 Ignore remaining of line after blank in an indirect file
 
+Changes to existing rules:
+--------------------------
+Array_Declarations
+   Added subrule index
+
 =============
 == V1.12r4 ==
 =============

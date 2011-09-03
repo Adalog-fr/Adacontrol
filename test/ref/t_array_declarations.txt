@@ -1,75 +1,185 @@
 t_array_declarations-indexes.adb:8:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:8:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:8:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:9:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:9:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:10:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:10:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:12:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:12:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:12:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:13:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:13:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:14:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:14:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:16:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:16:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:17:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:17:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:19:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
+t_array_declarations-indexes.adb:19:15: Error: Index_T6: array index is Range
+t_array_declarations-indexes.adb:20:15: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:21:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:21:15: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:23:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:23:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
 t_array_declarations-indexes.adb:24:22: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
 t_array_declarations-indexes.adb:25:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:27:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:27:16: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:27:9: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:28:16: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:28:9: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:29:16: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-indexes.adb:29:9: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:30:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
 t_array_declarations-indexes.adb:30:9: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-indexes.adb:30:9: Error: Index_TTT4: array indices are <>, <>, <>
+t_array_declarations-indexes.adb:30:9: Error: Index_TTT2: array indices are Range, Range, <>
 t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:31:16: Error: ARRAY_DECLARATIONS: array dimension is smaller than 1 (0)
 t_array_declarations-indexes.adb:31:24: Found: ARRAY_DECLARATIONS: array dimension is smaller than 2 (1)
 t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
 t_array_declarations-indexes.adb:31:9: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-indexes.adb:31:9: Error: Index_TTT4: array indices are <>, <>, <>
+t_array_declarations-indexes.adb:31:9: Error: Index_TTT2: array indices are Range, Range, <>
 t_array_declarations-indexes.adb:33:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1000)
+t_array_declarations-indexes.adb:33:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (1001)
 t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1001)
+t_array_declarations-indexes.adb:34:16: Error: Index_T6: array index is Range
+t_array_declarations-dimensions.adb:3:15: Error: Index_T6: array index is Range
 t_array_declarations-dimensions.adb:4:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
 t_array_declarations-dimensions.adb:5:39: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (-1)
 t_array_declarations-dimensions.adb:5:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-dimensions.adb:5:15: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-dimensions.adb:6:39: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (-1)
 t_array_declarations-dimensions.adb:6:15: Error: ARRAY_DECLARATIONS: array has more than 3 dimensions (4)
 t_array_declarations-dimensions.adb:8:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
+t_array_declarations-dimensions.adb:8:15: Error: Index_T6: array index is Range
 t_array_declarations-dimensions.adb:9:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:9:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
 t_array_declarations-dimensions.adb:10:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:10:59: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:10:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-dimensions.adb:10:15: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-dimensions.adb:11:22: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:11:59: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:11:78: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:11:15: Error: ARRAY_DECLARATIONS: array has more than 3 dimensions (4)
+t_array_declarations-component.adb:3:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:3:33: Error: compo_ident: array component is "Standard.Character"
 t_array_declarations-component.adb:3:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:4:8: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:4:24: Error: compo_ident: array component is "Standard.Character"
 t_array_declarations-component.adb:4:24: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:6:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:6:33: Error: compo_ident: array component is "Standard.Character"
 t_array_declarations-component.adb:6:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:8:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:8:33: Error: compo_array: array component is "array"
+t_array_declarations-component.adb:11:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:11:31: Error: compo_array: array component is "array"
+t_array_declarations-component.adb:18:9: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:18:27: Error: compo_task: array component is "task"
+t_array_declarations-component.adb:29:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:29:31: Error: compo_protected: array component is "protected"
+t_array_declarations-component.adb:44:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:44:33: Error: compo_private: array component is "private"
+t_array_declarations-component.adb:45:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:45:33: Error: compo_record: array component is "record"
+t_array_declarations-component.adb:46:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:46:33: Error: compo_access: array component is "access"
+t_array_declarations-component.adb:50:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:50:33: Error: compo_tagged: array component is "tagged"
+t_array_declarations-component.adb:51:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:51:34: Error: compo_tagged: array component is "tagged"
+t_array_declarations-component.adb:53:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:53:34: Error: compo_delta: array component is "delta"
+t_array_declarations-component.adb:56:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:56:34: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:57:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:57:34: Error: compo_enum_p_us: packed unsized array component is "()"
+t_array_declarations-component.adb:59:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:59:34: Error: compo_enum_up_s: unpacked sized array component is "()"
+t_array_declarations-component.adb:61:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:61:34: Error: compo_enum_p_s: packed sized array component is "()"
+t_array_declarations-component.adb:64:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:64:34: Error: compo_enum_cs: component_sized array component is "()"
 t_array_declarations-component.adb:64:34: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:70:19: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:70:37: Error: compo_float: array component is "digits"
+t_array_declarations-index_types.adb:10:15: Error: Index_T5: array index is ()
+t_array_declarations-index_types.adb:10:15: Error: Index_T1: array index is T_Array_Declarations.Index_Types.Enum
+t_array_declarations-index_types.adb:11:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (5)
+t_array_declarations-index_types.adb:11:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-index_types.adb:11:15: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:11:15: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
+t_array_declarations-index_types.adb:12:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:12:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:12:15: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:12:15: Error: Index_T4: array index is T_Array_Declarations.Index_Types.Sub_Int
+t_array_declarations-index_types.adb:12:15: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
+t_array_declarations-index_types.adb:13:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (257)
+t_array_declarations-index_types.adb:13:15: Error: Index_T7: array index is Mod
+t_array_declarations-index_types.adb:13:15: Error: Index_T3: array index is T_Array_Declarations.Index_Types.Uns
+t_array_declarations-index_types.adb:14:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:14:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:14:15: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:15:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:15:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:15:15: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:15:15: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
+t_array_declarations-index_types.adb:17:15: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:17:8: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:17:8: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
+t_array_declarations-index_types.adb:18:8: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:18:8: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
+t_array_declarations-index_types.adb:19:15: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:19:8: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:19:8: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
+t_array_declarations-index_types.adb:20:15: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:20:8: Error: Index_T6: array index is Range
+t_array_declarations-index_types.adb:22:29: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:22:29: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:22:16: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
+t_array_declarations-index_types.adb:22:16: Error: Index_TT1: array indices are Enum, Range
+t_array_declarations-index_types.adb:24:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:24:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:24:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (257)
+t_array_declarations-index_types.adb:24:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-index_types.adb:24:17: Error: Index_TTT4: array indices are <>, <>, <>
+t_array_declarations-index_types.adb:24:17: Error: Index_TTT1: array indices are <>, Range, T_Array_Declarations.Index_Types.Uns
+t_array_declarations-index_types.adb:25:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:25:24: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:25:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:25:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (257)
+t_array_declarations-index_types.adb:25:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-index_types.adb:25:17: Error: Index_TTT4: array indices are <>, <>, <>
+t_array_declarations-index_types.adb:25:17: Error: Index_TTT3: array indices are T_Array_Declarations.Index_Types.Int, Range, <>
+t_array_declarations-index_types.adb:25:17: Error: Index_TTT2: array indices are Range, Range, <>
+t_array_declarations-index_types.adb:25:17: Error: Index_TTT1: array indices are <>, Range, T_Array_Declarations.Index_Types.Uns
+t_array_declarations-index_types.adb:26:24: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:26:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:26:24: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:26:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:26:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (257)
+t_array_declarations-index_types.adb:26:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-index_types.adb:26:17: Error: Index_TTT4: array indices are <>, <>, <>
+t_array_declarations-index_types.adb:26:17: Error: Index_TTT2: array indices are Range, Range, <>
+t_array_declarations-index_types.adb:26:17: Error: Index_TTT1: array indices are <>, Range, T_Array_Declarations.Index_Types.Uns
+t_array_declarations-index_types.adb:27:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
+t_array_declarations-index_types.adb:27:24: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:27:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:27:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:27:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
+t_array_declarations-index_types.adb:27:17: Error: Index_TTT4: array indices are <>, <>, <>
+t_array_declarations-index_types.adb:27:17: Error: Index_TTT3: array indices are T_Array_Declarations.Index_Types.Int, Range, <>
+t_array_declarations-index_types.adb:27:17: Error: Index_TTT2: array indices are Range, Range, <>
 
 Counts summary:
-1 or 4 dims: 39
-Not_2: 50
-Too_Long: 8
+1 or 4 dims: 49
+Not_2: 57
+Too_Long: 28
