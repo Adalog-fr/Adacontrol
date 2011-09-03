@@ -104,6 +104,10 @@ package body Framework is
       Junk_Store : Context_Store;
       Result     : Boolean;
    begin
+      if Entity.Kind = Box then
+         return True;
+      end if;
+
       Associate (Junk_Store, Entity, Root_Context'(null record));
       Result := Matching_Context (Junk_Store, Name, Extend_To) /= No_Matching_Context;
       Clear (Junk_Store);

@@ -92,6 +92,7 @@ package Framework.Language is
    -- The parameter must be a quoted string. The delimiter quotes are not returned, and any
    -- enclosed doubled quotes are reduced to a single one.
    function Get_Entity_Parameter (Allow_Extended : Boolean := False) return Entity_Specification;
+   -- If Allow_Extended is True, allow entities of the form <> and ()
    function Get_File_Parameter    return Wide_String;
    -- If the parameter is not an absolute file name, it is made relative to the
    -- directory of the rules file, or to the current directory if there is none

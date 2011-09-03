@@ -161,6 +161,7 @@ package Framework is
 
    type Entity_Specification is private;
    type Entity_Specification_Kinds is (Box, Equal, Regular_Id, All_Id);
+   type Entity_Specification_List is array (Natural range <>) of Entity_Specification;
 
    function Entity_Specification_Kind (Entity : in Entity_Specification) return Entity_Specification_Kinds;
 
