@@ -192,6 +192,30 @@ package body Framework.Language.Shared_Keys is
       end case;
    end Image;
 
+   -----------
+   -- Value --
+   -----------
+
+   function Value (Spec : Entity_Specification) return Categories is
+   begin
+      if Spec.Kind /= Regular_Id then
+         return Cat_Any;
+      end if;
+
+      declare
+         Val : constant Wide_String := To_Wide_String (Spec.Specification);
+      begin
+         if Val = "()" then
+            return Cat_Enum;
+         else
+            return Categories'Wide_Value ("CAT_" & Val);
+         end if;
+      exception
+         when Constraint_Error =>
+            return Cat_Any;
+      end;
+   end Value;
+
    -------------
    -- Matches --
    -------------

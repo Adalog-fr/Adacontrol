@@ -97,6 +97,11 @@ package Framework.Language.Shared_Keys is
                                                            Box_Pos  => 0,
                                                            Pars_Pos => 1);
 
+   function Value (Spec : Entity_Specification) return Categories;
+   -- If Spec kind is a Regular_Id that matches the image of a category (or "()"),
+   -- return that category.
+   -- Return Cat_Any otherwise.
+
    function Matches (Elem               : in Asis.Element;
                      Cat                : in Categories;
                      Follow_Derived     : in Boolean := False;
@@ -106,6 +111,7 @@ package Framework.Language.Shared_Keys is
    -- Appropriate Element_Kinds for Elem:
    --       A_Declaration
    --       A_Definition
+   --       An_Expression
    -- Appropriate Declaration_Kinds:
    --       An_Ordinary_Type_Declaration
    --       A_Task_Type_Declaration
