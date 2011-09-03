@@ -45,6 +45,22 @@ package Framework.Queries is
    --
    -- Cannot be made application independant, because it calls Uncheckable in some cases.
 
+   procedure Init_Standard (A_Unit : Asis.Compilation_Unit);
+   -- For some mysterious reason (A4G bug?) Standard cannot be retrieved normally using
+   -- Library_Unit_Declaration. Since we need it for Standard_Value below, we retrieve it
+   -- as the parent unit of some compilation unit.
+   -- Therefore, this procedure must be called with any compilation unit before calling
+   -- Standard_Value
+
+   function Standard_Value (Name : Wide_String) return Asis.Declaration;
+   -- Returns the declaration of the element of package Standard whose name is passed as parameter.
+   -- Character literals defined in Standard are not accessible however (there are too many of them)
+   -- Provided name must be all upper-case.
+   -- It is a Failure if the name is not found.
+   -- If this function is called from elaboration code, put a pragma Elaborate_All (Framework.Queries)
+   --
+   -- Cannot be made application independant, because it needs the Asis context from Framework.
+
    function System_Value (Name : Wide_String) return Asis.Declaration;
    -- Returns the declaration of the element of package System whose name is passed as parameter.
    -- Provided name must be all upper-case.

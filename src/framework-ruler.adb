@@ -53,6 +53,7 @@ with
 -- Adactl
 with
   Framework.Plugs,
+  Framework.Queries,
   Framework.Reports,
   Framework.Rules_Manager,
   Framework.Scope_Manager,
@@ -178,6 +179,8 @@ package body Framework.Ruler is
 
    procedure Semantic_Traverse (Unit : Asis.Compilation_Unit) is
       use Asis, Asis.Elements;
+      use Framework.Queries;
+
       The_Control : Traverse_Control := Continue;
       The_Info    : Info := (Pragma_Or_Attribute_Level => 0);
       Duplicate   : Boolean;
@@ -187,6 +190,7 @@ package body Framework.Ruler is
                                                                                 Include_Pragmas  => True) ;
       My_Declaration : constant Declaration := Unit_Declaration (Unit);
    begin
+      Init_Standard (Unit);
       Enter_Unit (Unit);
 
       -- Process_Compilation_Pragmas :

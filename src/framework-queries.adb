@@ -53,7 +53,9 @@ package body Framework.Queries is
 
    package Element_Map is new Binary_Map (Unbounded_Wide_String, Asis.Element);
 
-   Symbol_Map : Element_Map.Map;
+   Standard_Unit       : Asis.Compilation_Unit := Asis.Nil_Compilation_Unit;
+   Standard_Symbol_Map : Element_Map.Map;
+   System_Symbol_Map   : Element_Map.Map;
 
    ----------------------------
    -- Enclosing_Package_Name --
@@ -188,34 +190,73 @@ package body Framework.Queries is
    -- Initialize_Table --
    ----------------------
 
-   type Null_State is null record;
-
-   procedure Pre_Procedure  (Element : in     Asis.Element;
-                             Control : in out Asis.Traverse_Control;
-                             State   : in out Null_State)
+   procedure Pre_Procedure  (Element    : in     Asis.Element;
+                             Control    : in out Asis.Traverse_Control;
+                             Symbol_Map : in out Element_Map.Map)
    is
-      pragma Unreferenced (Control, State);
+      pragma Unreferenced (Control);
       use Asis, Asis.Declarations, Asis.Elements;
       use Element_Map, Utilities;
    begin
       if Element_Kind (Element) = A_Defining_Name then
+         if Defining_Name_Kind (Element) = A_Defining_Character_Literal then
+            -- Skip names of characters from Standard
+            Control := Abandon_Siblings;
+            return;
+         end if;
          Add (Symbol_Map,
               To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Element))),
               Enclosing_Element (Element));
       end if;
    end Pre_Procedure;
 
-   procedure Post_Procedure  (Element : in     Asis.Element;
-                             Control : in out Asis.Traverse_Control;
-                             State   : in out Null_State) is
-      pragma Unreferenced (Element, Control, State);
+   procedure Post_Procedure  (Element    : in     Asis.Element;
+                              Control    : in out Asis.Traverse_Control;
+                              Symbol_Map : in out Element_Map.Map)
+   is
+      pragma Unreferenced (Element, Control, Symbol_Map);
    begin
       null;
    end Post_Procedure;
 
-   procedure Initialize_Table is new Asis.Iterator.Traverse_Element (Null_State,
+   procedure Initialize_Table is new Asis.Iterator.Traverse_Element (Element_Map.Map,
                                                                      Pre_Procedure,
                                                                      Post_Procedure);
+   procedure Init_Standard (A_Unit : Asis.Compilation_Unit) is
+      use Asis, Asis.Compilation_Units;
+   begin
+      if Unit_Kind (Standard_Unit) /= Not_A_Unit then
+         -- already initialized
+         return;
+      end if;
+      Standard_Unit := Corresponding_Parent_Declaration (A_Unit);
+   end Init_Standard;
+
+   --------------------
+   -- Standard_Value --
+   --------------------
+
+   function Standard_Value (Name : Wide_String) return Asis.Declaration is
+      use Asis, Asis.Compilation_Units, Asis.Elements;
+      use Element_Map, Utilities;
+   begin
+      if Is_Empty (Standard_Symbol_Map) then
+         -- not initialized
+         declare
+            Contr : Asis.Traverse_Control := Continue;
+         begin
+            Initialize_Table (Unit_Declaration (Standard_Unit),
+                              Contr,
+                              Standard_Symbol_Map);
+            Balance (Standard_Symbol_Map);
+         end;
+      end if;
+
+      return Fetch (Standard_Symbol_Map, To_Unbounded_Wide_String (Name));
+   exception
+      when Not_Present =>
+         Failure ("Not found in Standard: " & Name);
+   end Standard_Value;
 
    ------------------
    -- System_Value --
@@ -225,20 +266,19 @@ package body Framework.Queries is
       use Asis, Asis.Compilation_Units, Asis.Elements;
       use Element_Map, Utilities;
    begin
-      if Is_Empty (Symbol_Map) then
+      if Is_Empty (System_Symbol_Map) then
          -- not initialized
          declare
-            S     : Null_State;
             Contr : Asis.Traverse_Control := Continue;
          begin
             Initialize_Table (Unit_Declaration (Library_Unit_Declaration ("SYSTEM", Framework.Adactl_Context)),
                               Contr,
-                              S);
-            Balance (Symbol_Map);
+                              System_Symbol_Map);
+            Balance (System_Symbol_Map);
          end;
       end if;
 
-      return Fetch (Symbol_Map, To_Unbounded_Wide_String (Name));
+      return Fetch (System_Symbol_Map, To_Unbounded_Wide_String (Name));
    exception
       when Not_Present =>
          Failure ("Not found in System: " & Name);
