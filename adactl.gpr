@@ -1,0 +1,64 @@
+with "semtools";
+with "adalog";
+
+project Adactl is
+
+   type Fixes is
+      ("1", "none");
+   Gnat_Fix : Fixes := external ("GNAT_FIX", "none");
+   for Languages use ("Ada", "Adacontrol", "Project File", "Python", "Texinfo");
+   for Object_Dir use "adalib";
+   for Main use ("adactl.adb", "pfni.adb", "ptree.adb");
+
+   case Gnat_Fix is
+
+      when "1" =>
+         for Exec_Dir use "src";
+         for Source_Dirs use ("src", "doc", "gps", "rules", "test", "test\conf");
+
+      when "none" =>
+         for Exec_Dir use "wks/src";
+         for Source_Dirs use ("wks/src", "wks/doc", "wks/gps", "wks/rules", "wks/test", "wks/test/conf");
+   end case;
+
+   package Ide is
+      for Vcs_Kind use "Git";
+      for Vcs_Repository_Root use "wks";
+
+      for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-Fgnat_short", "-S", "1", "@units.txt", "-f", 
+                                               "src\verif.aru", "-@", "src\units.txt");
+   end Ide;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-k", "-g", "-s", "-m");
+   end Builder;
+
+   package Compiler is
+
+      case Gnat_Fix is
+
+         when "1" =>
+            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-fno-tree-vrp", "-gnat05");
+            for Driver ("adacontrol") use "";
+
+         when "none" =>
+            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat95");
+            for Driver ("xml") use "";
+            for Driver ("adacontrol") use "";
+      end case;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
+   end Linker;
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-A1", "-A2", "-A3", "-A4", "-M120");
+   end Pretty_Printer;
+
+end Adactl;
+

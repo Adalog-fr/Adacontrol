@@ -11,7 +11,7 @@ b~*
 *.zip
 .directory
 
-test/res/
+adalib/
 
 doc/adacontrol_pm.info*
 doc/adacontrol_pm.html
@@ -19,3 +19,6 @@ doc/adacontrol_pm.pdf
 doc/adacontrol_ug.info*
 doc/adacontrol_ug.html
 doc/adacontrol_ug.pdf
+
+test/res/
+
