@@ -106,21 +106,26 @@ package body Rules.Array_Declarations is
       use Framework.Language.Shared_Keys, Utilities;
    begin
       User_Message ("Rule: "& Rule_Id);
+      User_Message ("Controls various parameters related to array types or objects declarations");
+      User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
+      User_Message;
       User_Message ("For First, Last, Length, Dimensions:");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
       User_Message ("For first, last, and dimensions, alternatively:");
       User_Message ("Parameter(2): <value>");
-      Min_Max_Utilities.Help_On_Modifiers (Header => "     <bound>:");
+      User_Message;
       User_Message ("For index:");
       User_Message ("Parameter(2..)  : <entity>|<category>");
+      User_Message;
       User_Message ("For component:");
       User_Message ("Parameter(2)  : <entity>|<category>");
       User_Message ("Parameter(3..): [not] packed | sized | component_sized (optional)");
-      User_Message ("  <category>  : ()      | access    | array | delta  | digits | mod |");
-      User_Message ("                private | protected | range | record | tagged | task");
-      User_Message ("Controls various parameters related to array types or objects declarations");
+      User_Message;
+      Min_Max_Utilities.Help_On_Modifiers (Header => "   <bound>:");
+      User_Message ("<category>: ()      | access    | array | delta  | digits | mod |");
+      User_Message ("            private | protected | range | record | tagged | task");
    end Help;
 
    -----------------
@@ -135,6 +140,15 @@ package body Rules.Array_Declarations is
       function Build_Index_List return Entity_Specification_List is
          Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
       begin
+         case Categories'(Value (Entity)) is
+            when Cat_Any =>
+               null;
+            when Discrete_Categories =>
+               null;
+            when others =>
+               Parameter_Error (Rule_Id, "Not a possible category for index (" & Image (Entity) &')');
+         end case;
+
          if Parameter_Exists then
             return Entity & Build_Index_List;
          else
@@ -180,8 +194,8 @@ package body Rules.Array_Declarations is
                Associate (Index_Contexts,
                           Value (Integer_Img (Index_List'Length)),
                           Index_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                              Nb_Dims     => Index_List'Length,
-                              Index_Types => Index_List),
+                                         Nb_Dims     => Index_List'Length,
+                                         Index_Types => Index_List),
                           Additive => True);
             exception
                when Already_In_Store =>
