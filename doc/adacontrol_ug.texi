@@ -2421,12 +2421,13 @@ component type of the array.
 <control_kind> array_declarations (last,       <value> | <bounds>);
 <control_kind> array_declarations (dimensions, <value> | <bounds>);
 <control_kind> array_declarations (length,     <bounds>);
-<control_kind> array_declarations (component,  <compo_kind> @{,<repr_cond>@});
-<bounds>     ::= min|max <value> [, min|max <value> ]
-<compo_kind> ::= <entity>|<category>
-<category>   ::= () | access    | array | delta  | digits | mod | private |
-                      protected | range | record | tagged | task
-<repr_cond>  ::= [not] packed | sized | component_sized
+<control_kind> array_declarations (component,  <entity_kind> @{,<repr_cond>@});
+<control_kind> array_declarations (index,      <entity_kind> | <> @{,<entity_kind> | <>@});
+<bounds>      ::= min|max <value> [, min|max <value> ]
+<entity_kind> ::= <entity>|<category>
+<category >   ::= () | access    | array | delta  | digits | mod | private |
+                       protected | range | record | tagged | task
+<repr_cond>   ::= [not] packed | sized | component_sized
 @end example
 @subsection Action
 The first parameter is a subrule keyword:
@@ -2529,13 +2530,27 @@ the array.
 ``not component_sized'': No component_size representation clause
 applies to the array.
 @end itemize
+
+@item
+``index'' controls arrays whose index types are the indicated
+<entity>, or whose index types belong to the indicated <category>. If
+the <entity> is a subtype, only arrays whose indexes are of that
+subtype are controlled. If the indicated <entity> is a type, all
+arrays whose indexes are of that type (including subtypes) are
+controlled. The meaning of <category> is the same as for
+``component'', but obviously only ``()'', ``range'', and ``mod'' are
+allowed.
+
+The number of <entity> given determines the dimensionality of the
+controlled arrays.  If a ``<>'' is given in place of an entity, it
+means that any type matches at that position.
 @end itemize
 
-This rule can be specified several times for the ``component''
-subrule.  For other subrules, it can be specified at most once for
-each subrule and for each of ``check'', ``search'' and ``count''. It
-is thus possible for each subrule to have a value considered a
-warning, and a value considered an error.
+This rule can be specified several times for the ``component'' and
+``index'' subrules.  For other subrules, it can be specified at most
+once for each subrule and for each of ``check'', ``search'' and
+``count''. It is thus possible for each subrule to have a value
+considered a warning, and a value considered an error.
 
 Ex:
 @example
@@ -2556,6 +2571,12 @@ check array_declarations (component, Standard.Character, packed);
 
 -- Packed arrays of record without size clause
 check array_declarations (component, record, packed, not sized);
+
+-- One-dimensional arrays indexed by Integer
+check array_declarations (index, standard.integer);
+
+-- Three dimensional arrays whose second index is an enumeration
+check array_declarations (index, <>, (), <>);
 @end example
 
 @subsection Tips
