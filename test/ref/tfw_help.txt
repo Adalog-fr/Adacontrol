@@ -8,19 +8,27 @@ Control occurrences of allocators, either all of them,
 or just those for tasks, protected types, or specific type(s)
 ----
 Rule: ARRAY_DECLARATIONS
-Parameter(1): first | last | length | dimensions | component
+Controls various parameters related to array types or objects declarations
+
+Parameter(1): first     | last | length | dimensions | index |
+              component
+
 For First, Last, Length, Dimensions:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
 For first, last, and dimensions, alternatively:
 Parameter(2): <value>
-     <bound>: min | max
+
+For index:
+Parameter(2..)  : <entity>|<category>
+
 For component:
 Parameter(2)  : <entity>|<category>
-  <category>  : ()      | access    | array | delta  | digits | mod |
-                private | protected | range | record | tagged | task
 Parameter(3..): [not] packed | sized | component_sized (optional)
-Controls various parameters related to array types or objects declarations
+
+   <bound>: min | max
+<category>: ()      | access    | array | delta  | digits | mod |
+            private | protected | range | record | tagged | task
 ----
 Rule: BARRIER_EXPRESSIONS
 Parameter(s): <entity>            | allocation          | any_component   |
