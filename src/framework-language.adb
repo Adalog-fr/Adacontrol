@@ -1030,7 +1030,9 @@ package body Framework.Language is
    -- Get_Entity_Parameter --
    --------------------------
 
-   function Get_Entity_Parameter (Allow_Extended : Boolean := False) return Entity_Specification is
+   function Get_Entity_Parameter (Allow_Extended : Boolean := False;
+                                  Ghost          : Wide_String := "") return Entity_Specification
+   is
 
       -- Information set by the parsing functions:
       Qualified  : Boolean;
@@ -1289,8 +1291,16 @@ package body Framework.Language is
                end;
             end if;
 
+         when Comma | Right_Parenthesis =>
+            -- "ghost" parameter
+            if Ghost /= "" then
+               Next_Parameter;
+               return Value (Ghost);
+            end if;
+
+            Syntax_Error ("Entity specification expected", Current_Token.Position);
          when others =>
-               Syntax_Error ("Entity specification expected", Current_Token.Position);
+            Syntax_Error ("Entity specification expected", Current_Token.Position);
       end case;
    end Get_Entity_Parameter;
 
@@ -1331,7 +1341,7 @@ package body Framework.Language is
             return True;
          elsif To_Upper (Current_Token.Name_Text (1..Current_Token.Name_Length)) = False_KW then
             Next_Token;
-           return False;
+            return False;
          end if;
       end if;
       return Default;
