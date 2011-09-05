@@ -31,6 +31,7 @@
 
 -- Asis
 with
+  Asis.Definitions,
   Asis.Elements,
   Asis.Expressions;
 
@@ -48,6 +49,11 @@ package body Rules.Allocators is
 
    Entities  : Context_Store;
 
+   type Rule_Context is new Basic_Rule_Context with
+      record
+         Inconsistent_Only : Boolean;
+      end record;
+
    ----------
    -- Help --
    ----------
@@ -56,9 +62,10 @@ package body Rules.Allocators is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): task | protected | <allocated type> (optional)");
       User_Message ("Control occurrences of allocators, either all of them,");
       User_Message ("or just those for tasks, protected types, or specific type(s)");
+      User_Message;
+      User_Message ("Parameter(s): [inconsisent] task | protected | <allocated type> (optional)");
    end Help;
 
    -----------------
@@ -68,16 +75,22 @@ package body Rules.Allocators is
    procedure Add_Control (Ctl_Label : in Wide_String;
                           Ctl_Kind  : in Control_Kinds) is
       use Framework.Language;
-      Entity : Entity_Specification;
+      Entity       : Entity_Specification;
+      Inconsistent : Boolean;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            Entity := Get_Entity_Parameter;
-            Associate (Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
+            Inconsistent := Get_Modifier ("INCONSISTENT");
+            Entity := Get_Entity_Parameter (Ghost => "ALL");
+            Associate (Entities,
+                       Entity,
+                       Rule_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Inconsistent_Only => Inconsistent));
          end loop;
       else
          Entity := Value ("ALL");
-         Associate (Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Associate (Entities,
+                    Entity,
+                    Rule_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Inconsistent_Only => False));
       end if;
 
       Rule_Used  := True;
@@ -123,20 +136,65 @@ package body Rules.Allocators is
       use Asis, Asis.Expressions, Asis.Elements;
 
       Found : Boolean;
+      Allocator_Subtype : Asis.Expression;
 
       procedure Check (Current_Context : Root_Context'Class) is
          use Framework.Reports;
-      begin
+         use Asis.Definitions;
+
+         Designated_Subtype : Asis.Element;
+
+         function Subtype_Match (Left, Right : Asis.Expression) return Boolean is
+            LL : Asis.Expression := Left;
+            RR : Asis.Expression := Right;
+         begin
+            while Expression_Kind (LL) = An_Attribute_Reference loop
+               if A4G_Bugs.Attribute_Kind (LL) /= A4G_Bugs.Attribute_Kind (RR) then
+                  return False;
+               end if;
+               LL := Prefix (LL);
+               RR := Prefix (RR);
+            end loop;
+            if Expression_Kind (RR) = An_Attribute_Reference then
+               -- more attributes right than left...
+               return False;
+            end if;
+
+            return Is_Equal (Corresponding_Name_Definition (LL),
+                             Corresponding_Name_Definition (RR));
+         end Subtype_Match;
+
+      begin   -- Check
          if Current_Context = No_Matching_Context then
             Found := False;
             return;
          end if;
 
-         if Last_Matching_Name (Entities) = "" then
-            Report (Rule_Id,
-                    Current_Context,
-                    Get_Location (Element),
-                    "allocator");
+         if Rule_Context (Current_Context).Inconsistent_Only then
+            Designated_Subtype := Asis.Definitions.Access_To_Object_Definition
+                                   (Thick_Queries.Corresponding_Expression_Type_Definition(Element));
+            if not Is_Nil (Subtype_Constraint (Designated_Subtype)) then
+               Report (Rule_Id,
+                       Current_Context,
+                       Get_Location (Element),
+                       "allocator for "
+                       & To_Title (Last_Matching_Name (Entities))
+                       & " not consistent with designated subtype "
+                       & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
+                       & " with constraint"
+                      );
+            elsif not Subtype_Match (Subtype_Simple_Name (Designated_Subtype),
+                                     Simple_Name         (Allocator_Subtype))
+            then
+               Report (Rule_Id,
+                       Current_Context,
+                       Get_Location (Element),
+                       "allocator for "
+                       & To_Title (Last_Matching_Name (Entities))
+                       & " not consistent with designated subtype "
+                       & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
+                      );
+            end if;
          else
             Report (Rule_Id,
                     Current_Context,
@@ -156,28 +214,29 @@ package body Rules.Allocators is
       -- Retrieve in E the good subtype mark
       case Expression_Kind (Element) is
          when An_Allocation_From_Subtype =>
-            E := Subtype_Simple_Name (Allocator_Subtype_Indication (Element));
+            Allocator_Subtype := Subtype_Simple_Name (Allocator_Subtype_Indication (Element));
          when An_Allocation_From_Qualified_Expression =>
-            E := Simple_Name (Converted_Or_Qualified_Subtype_Mark (Allocator_Qualified_Expression (Element)));
+            Allocator_Subtype := Simple_Name (Converted_Or_Qualified_Subtype_Mark
+                                              (Allocator_Qualified_Expression (Element)));
          when others =>
             Failure (Rule_Id & ": Unexpected element", Element);
       end case;
 
-      -- E can be an attribute, T'Base or T'Class
+      -- Allocator_Subtype can be an attribute, T'Base or T'Class
       -- T'Base has the same first named subtype as T
       -- T'Base is only allowed for scalar types, therefore we cannot have T'Base'Class
       -- nor T'Class'Base
-      if Expression_Kind (E) = An_Attribute_Reference then
-         case A4G_Bugs.Attribute_Kind (E) is
+      if Expression_Kind (Allocator_Subtype) = An_Attribute_Reference then
+         case A4G_Bugs.Attribute_Kind (Allocator_Subtype) is
             when A_Base_Attribute =>
-               E := Simple_Name (First_Subtype_Name (Simple_Name (Prefix (E))));
+               E := Simple_Name (First_Subtype_Name (Simple_Name (Prefix (Allocator_Subtype))));
             when A_Class_Attribute =>
-               null;
+               E := Allocator_Subtype;
             when others =>
-               Failure ("Unexpected attribute", E);
+               Failure ("Unexpected attribute", Allocator_Subtype);
          end case;
       else
-         E := First_Subtype_Name (E);
+         E := First_Subtype_Name (Allocator_Subtype);
       end if;
 
       Check (Matching_Context (Entities, E, Extend_To => All_Extensions));

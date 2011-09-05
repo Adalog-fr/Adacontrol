@@ -2370,7 +2370,7 @@ This rule controls the use of allocators (i.e. dynamic memory allocation).
 @subsection Syntax
 @example
 <control_kind> allocators
-   [(task|protected|<entity> @{, task|protected|<entity>@})];
+   [([inconsistent] [task|protected|<entity>] @{, [inconsistent] task|protected|<entity>@})];
 @end example
 
 @subsection Action
@@ -2383,10 +2383,26 @@ allocators are controlled. This rule is especially useful for finding
 memory leaks, since it tells all the places where dynamic allocation
 occurs.
 
+If a parameter is preceded by the word ``inconsistent'', only
+allocators whose allocator subtype (the name after ``@code{@b{new}}'')
+is not the same as the designated subtype (from the access type
+declaration) are controlled. Note that if the access type includes a
+constraint like in the following example:
+@example
+   @b{type} Acc @b{is} @b{access} integer @b{range} 1..10;
+@end example
+all allocators will always be inconsistent, since there is no way to
+repeat the constraint at the place of the allocator.
+
+``Inconsistent'' can be given alone, in which case all inconsistent 
+allocatores are controlled.
+
 Ex:
 @example
 search allocators (standard.string);
 check allocators (T'Class);
+check allocators (Inconsitent standard.Integer);
+check allocators (Inconsistent);
 @end example
 
 @subsection Tips
@@ -2408,6 +2424,18 @@ begin
 @end example
 
 This allocator will be found for type @code{T}, not for type @code{T'Class}.
+
+Inconsistent allocators may cost a double check. Given:
+@example
+   @b{type} Acc @b{is} @b{access} Positive;
+   V : Acc;
+@b{begin}
+   V := @b{new} Natural'(...);
+@end example
+The compiler will first check the constraint for Natural, then the
+constraint for Positive.  To avoid confusion, it is better to always
+use the same subtype for the allocator as used in the access type
+declaration.
 
 @node Array_Declarations, Barrier_Expressions, Allocators, Rules reference
 @section Array_Declarations

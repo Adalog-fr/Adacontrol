@@ -1,15 +1,17 @@
-t_allocators.adb:63:10: Found: ALLOCATORS: allocator for All
-t_allocators.adb:64:10: Found: ALLOCATORS: allocator for All
-t_allocators.adb:65:10: Found: ALLOCATORS: allocator for All
-t_allocators.adb:66:10: Error: ALLOCATORS: allocator for Standard.String
-t_allocators.adb:67:10: Error: ALLOCATORS: allocator for Standard.String
-t_allocators.adb:68:10: Error: specific_task: allocator for T_Allocators.T1
-t_allocators.adb:69:10: Error: all_tasks: allocator for Task
-t_allocators.adb:70:10: Error: specific_prot: allocator for T_Allocators.P1
-t_allocators.adb:71:10: Error: all_prot: allocator for Protected
-t_allocators.adb:72:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:73:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:74:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:75:10: Error: class1: allocator for T_Allocators.Tag1'Class
-t_allocators.adb:76:10: Error: class1: allocator for T_Allocators.Tag1'Class
-t_allocators.adb:77:10: Error: from_gen: allocator for T_Allocators.Gen.Gen_T
+t_allocators.adb:73:10: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Integer
+t_allocators.adb:74:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:75:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:76:10: Error: specific_task: allocator for T_Allocators.T1
+t_allocators.adb:77:10: Error: all_tasks: allocator for Task
+t_allocators.adb:78:10: Error: specific_prot: allocator for T_Allocators.P1
+t_allocators.adb:79:10: Error: all_prot: allocator for Protected
+t_allocators.adb:80:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:81:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:82:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:83:10: Error: class1: allocator for T_Allocators.Tag1'Class
+t_allocators.adb:84:10: Error: class1: allocator for T_Allocators.Tag1'Class
+t_allocators.adb:85:10: Error: from_gen: allocator for T_Allocators.Gen.Gen_T
+t_allocators.adb:88:11: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Integer
+t_allocators.adb:89:11: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Positive
+t_allocators.adb:93:11: Error: Inconsistent: allocator for T_Allocators.Int not consistent with designated subtype Int
+t_allocators.adb:94:11: Error: Inconsistent: allocator for T_Allocators.Int not consistent with designated subtype Int'Base

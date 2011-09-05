@@ -11,8 +11,8 @@ Bug fixes:
    Declarations: abstract limited private were not recognized as
    limited private
 
-   Constraint_Error in Style(Expression_Litteral) when a litteral has the
-   value of System.Max_Int
+   Constraint_Error in Style(Expression_Litteral) when a litteral has
+   the value of System.Max_Int
 
    Crash in Multiple_Assignments when records include an explicit null
    component
@@ -23,6 +23,11 @@ Ignore remaining of line after blank in an indirect file
 
 Changes to existing rules:
 --------------------------
+
+Allocators
+   New modifier: inconsistent (allocator subtype and designated
+   subtype don't match)
+
 Array_Declarations
    Added subrule index
 

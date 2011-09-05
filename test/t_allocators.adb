@@ -1,6 +1,11 @@
 procedure T_allocators is
-   type Acc1 is access Integer;
-   type Acc2 is access String;
+   type Acc1  is access Integer;
+   type Acc1c is access Positive;
+   type Acc2  is access String;
+   
+   type Int   is range 1..10;
+   type Acc3  is access Int;
+   type Acc3c is access Int'Base;
 
    task type T1;
    task body T1 is
@@ -50,15 +55,18 @@ procedure T_allocators is
    package Inst is new Gen;
    type Acc_Gen_T is access Inst.Gen_T;
 
-   V1 : Acc1;
-   V2 : Acc2;
-   V3 : Acc_T1;
-   V4 : Acc_T2;
-   V5 : Acc_P1;
-   V6 : Acc_P2;
-   V7 : Acc_Tag1;
-   V8 : Acc_Tag_Class;
-   V9 : Acc_Gen_T;
+   V1  : Acc1;
+   V2  : Acc2;
+   V3  : Acc_T1;
+   V4  : Acc_T2;
+   V5  : Acc_P1;
+   V6  : Acc_P2;
+   V7  : Acc_Tag1;
+   V8  : Acc_Tag_Class;
+   V9  : Acc_Gen_T;
+   V10 : Acc1c;
+   V11 : Acc3;
+   V12 : Acc3c;     
 begin
    V1 := new Integer;
    V1 := new Integer'(1);
@@ -75,4 +83,15 @@ begin
    V8 := new Tag1'Class'(Tag1'Class(V7.all));
    V8 := new Tag_Class'(Tag_Class (V7.all));
    V9 := new Inst.Gen_T;
+   
+   V1  := new Integer'(3);
+   V1  := new Positive'(3);
+   V10 := new Integer'(3);
+   V10 := new Positive'(3);
+   
+   V11 := new Int'(1);
+   V11 := new Int'Base'(1);
+   V12 := new Int'(1);
+   V12 := new Int'Base'(1);
+   
 end T_allocators;
