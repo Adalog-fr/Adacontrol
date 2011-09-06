@@ -2395,7 +2395,7 @@ all allocators will always be inconsistent, since there is no way to
 repeat the constraint at the place of the allocator.
 
 ``Inconsistent'' can be given alone, in which case all inconsistent 
-allocatores are controlled.
+allocators are controlled.
 
 Ex:
 @example
