@@ -34,6 +34,9 @@ Array_Declarations
 Declarations 
    Added subrule abstract_operator
 
+Return_Type
+   Added subrule limited_class_wide
+
 =============
 == V1.12r4 ==
 =============

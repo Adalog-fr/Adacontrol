@@ -70,7 +70,7 @@ package body Rules.Return_Type is
    --   protected and task types.
    --
 
-   type Subrules is (K_Class_Wide,        K_Protected,           K_Task,
+   type Subrules is (K_Class_Wide,        K_Limited_Class_Wide,  K_Protected,           K_Task,
                      K_Constrained_Array, K_Unconstrained_Array, K_Unconstrained_Discriminated);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
@@ -91,8 +91,9 @@ package body Rules.Return_Type is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s): ");
       User_Message ("Control various forms of the type returned by functions");
+      User_Message;
+      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s): ");
    end Help;
 
 
@@ -287,6 +288,10 @@ package body Rules.Return_Type is
          Good_Res := Simple_Name (Prefix (Good_Expr));
 
          Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Res);
+         if Is_Limited (Result_Type_Declaration) then
+            Do_Report (K_Limited_Class_Wide, "function returns limited class-wide type");
+         end if;
+
          Check_Tasks_Protected;
          Check_Discriminants;
       end Check_Class;

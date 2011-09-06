@@ -155,6 +155,19 @@ procedure T_Return_Type is
       return Tagged_Type'(I => 2);
    end Class_Attribute_Reference_Function;
 
+   type Limited_Tagged_Type is tagged limited
+      record
+         I : Integer;
+      end record;
+   -- A_Function_Body_Declaration (without defined specification)
+   -- returning An_Attribute_Reference . A_Class_Attribute (limited)
+
+   Limited_Tagged_Object : Limited_Tagged_Type;
+   function Class_Attribute_Reference_Function return Limited_Tagged_Type'Class is      -- class_wide, limited_class_wide
+   begin
+      return Limited_Tagged_Object;
+   end Class_Attribute_Reference_Function;
+
 
    ----------------------------------------------
    -- Checking functions returning a task type --

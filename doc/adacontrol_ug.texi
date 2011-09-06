@@ -6067,9 +6067,10 @@ function results.
 @subsection Syntax
 @example
 <control_kind> return_type [(<subrule> @{, <subrule>@})];
-<subrule> ::= class_wide          | constrained_array          |
-              protected           | task                       |
-              unconstrained_array | unconstrained_discriminated
+<subrule> ::= class_wide                 | limited_class_wide  |
+              constrained_array          | protected           | 
+              task                       | unconstrained_array | 
+              unconstrained_discriminated
 @end example
 
 @subsection Action
@@ -6077,7 +6078,8 @@ This rule controls functions whose return type belongs to one of the
 indicated type kinds:
 @itemize @bullet
 @item
-@code{class_wide} controls class-wide types
+@code{class_wide} controls all class-wide types, while
+@code{limited_class_wide} controls only limited class-wide types.
 @item
 @code{constrained_array} controls constrained array types
 @item

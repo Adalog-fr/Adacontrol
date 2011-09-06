@@ -4,4 +4,5 @@ Return_Unknown_Size: check return_type (class_wide,
 Return_Constrained_Array : search return_type (constrained_array);
 Return_Protected: check return_type (protected);
 Return_Task     : check return_type (task);
+Return_Limited_CW : check return_type (limited_class_wide);
 
