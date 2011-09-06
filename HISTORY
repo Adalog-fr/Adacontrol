@@ -31,6 +31,9 @@ Allocators
 Array_Declarations
    Added subrule index
 
+Declarations 
+   Added subrule abstract_operator
+
 =============
 == V1.12r4 ==
 =============

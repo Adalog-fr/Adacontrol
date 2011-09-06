@@ -2954,71 +2954,71 @@ those occurring at specified locations.
 <location_kw> ::= all | block   | library | local     | nested |
                   own | private | public  | task_body
 <declaration_kw> ::=
-   any_declaration                   |
-   abstract_function                 | abstract_procedure              |
-   abstract_type                     | access_all_type                 |
-   access_constant_type              | access_protected_type           |
-   access_subprogram_type            | access_task_type                |
-   access_type                       | aliased_array_component         |
-   aliased_constant                  | aliased_protected_component     |
-   aliased_record_component          | aliased_variable                |
-   anonymous_subtype_allocator       | anonymous_subtype_case          |
-   anonymous_subtype_declaration     | anonymous_subtype_for           |
-   anonymous_subtype_indexing        | array                           |
-   array_type                        | binary_modular_type             |
-   character_literal                 | child_unit                      |
-   class_wide_constant               | class_wide_variable             |
-   constant                          | constrained_array_constant      |
-   constrained_array_type            | constrained_array_variable      |
-   controlled_type                   | decimal_fixed_type              |
-   defaulted_discriminant            | defaulted_generic_parameter     |
-   defaulted_parameter               | deferred_constant               |
-   derived_type                      | discriminant                    |
-   empty_private_part                | empty_visible_part              |
-   enumeration_type                  | entry                           |
-   exception                         | extension                       |
-   fixed_type                        | float_type                      |
-   formal_function                   | formal_package                  |
-   formal_procedure                  | formal_type                     |
-   function                          | function_call_renaming          |
-   function_instantiation            | generic                         |
-   generic_function                  | generic_package                 |
-   generic_procedure                 | handlers                        |
-   incomplete_type                   | in_out_generic_parameter        |
-   in_out_parameter                  | initialized_protected_component |
-   initialized_record_component      | initialized_variable            |
-   instantiation                     | integer_type                    |
-   library_unit_renaming             | limited_private_type            |
-   modular_type                      | multiple_names                  |
-   multiple_protected_entries        | named_number                    |
-   non_binary_modular_type           | non_identical_operator_renaming |
-   non_identical_renaming            | non_joint_CE_NE_handler         |
-   non_limited_private_type          | not_operator_renaming           |
-   null_extension                    | null_ordinary_record_type       |
-   null_procedure                    | null_tagged_type                |
-   operator                          | operator_renaming               |
-   ordinary_fixed_type               | ordinary_fixed_type_no_small    |
-   ordinary_fixed_type_with_small    | ordinary_record_type            |
-   out_parameter                     | package                         |
-   package_instantiation             | package_statements              |
-   predefined_operator               | private_extension               |
-   procedure                         | procedure_instantiation         |
-   protected                         | protected_entry                 |
-   protected_type                    | protected_variable              |
-   record_type                       | renaming                        |
-   renaming_as_body                  | renaming_as_declaration         |
-   self_calling_function             | self_calling_procedure          |
-   separate                          | signed_type                     |
-   single_array                      | single_protected                |
-   single_task                       | subtype                         |
-   tagged_type                       | task                            |
-   task_entry                        | task_type                       |
-   task_variable                     | type                            |
-   unconstrained_array_constant      | unconstrained_array_type        |
-   unconstrained_array_variable      | unconstrained_subtype           |
-   uninitialized_protected_component | uninitialized_record_component  |
-   uninitialized_variable            | variable                        |
-   variant_part
+   any_declaration                 |
+   abstract_function               | abstract_operator                 |
+   abstract_procedure              | abstract_type                     | 
+   access_all_type                 | access_constant_type              | 
+   access_protected_type           | access_subprogram_type            | 
+   access_task_type                | access_type                       | 
+   aliased_array_component         | aliased_constant                  | 
+   aliased_protected_component     | aliased_record_component          |
+   aliased_variable                | anonymous_subtype_allocator       |
+   anonymous_subtype_case          | anonymous_subtype_declaration     |
+   anonymous_subtype_for           | anonymous_subtype_indexing        |
+   array                           | array_type                        |
+   binary_modular_type             | character_literal                 |
+   child_unit                      | class_wide_constant               |
+   class_wide_variable             | constant                          |
+   constrained_array_constant      | constrained_array_type            |
+   constrained_array_variable      | controlled_type                   |
+   decimal_fixed_type              | defaulted_discriminant            |
+   defaulted_generic_parameter     | defaulted_parameter               |
+   deferred_constant               | derived_type                      |
+   discriminant                    | empty_private_part                |
+   empty_visible_part              | enumeration_type                  |
+   entry                           | exception                         |
+   extension                       | fixed_type                        |
+   float_type                      | formal_function                   |
+   formal_package                  | formal_procedure                  |
+   formal_type                     | function                          |
+   function_call_renaming          | function_instantiation            |
+   generic                         | generic_function                  |
+   generic_package                 | generic_procedure                 |
+   handlers                        | incomplete_type                   |
+   in_out_generic_parameter        | in_out_parameter                  |
+   initialized_protected_component | initialized_record_component      |
+   initialized_variable            | instantiation                     |
+   integer_type                    | library_unit_renaming             |
+   limited_private_type            | modular_type                      |
+   multiple_names                  | multiple_protected_entries        |
+   named_number                    | non_binary_modular_type           |
+   non_identical_operator_renaming | non_identical_renaming            |
+   non_joint_CE_NE_handler         | non_limited_private_type          |
+   not_operator_renaming           | null_extension                    |
+   null_ordinary_record_type       | null_procedure                    |
+   null_tagged_type                | operator                          |
+   operator_renaming               | ordinary_fixed_type               |
+   ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
+   ordinary_record_type            | out_parameter                     |
+   package                         | package_instantiation             |
+   package_statements              | predefined_operator               |
+   private_extension               | procedure                         |
+   procedure_instantiation         | protected                         |
+   protected_entry                 | protected_type                    |
+   protected_variable              | record_type                       |
+   renaming                        | renaming_as_body                  |
+   renaming_as_declaration         | self_calling_function             |
+   self_calling_procedure          | separate                          |
+   signed_type                     | single_array                      |
+   single_protected                | single_task                       |
+   subtype                         | tagged_type                       |
+   task                            | task_entry                        |
+   task_type                       | task_variable                     |
+   type                            | unconstrained_array_constant      |
+   unconstrained_array_type        | unconstrained_array_variable      |
+   unconstrained_subtype           | uninitialized_protected_component |
+   uninitialized_record_component  | uninitialized_variable            |
+   variable                        | variant_part
 @end example
 
 @subsection Action
@@ -3068,9 +3068,9 @@ declarations.
 intended to forbid all declarations in a program (!), but
 @emph{counting} all declarations can be quite useful.
 @item
-@code{abstract_function} and @code{abstract_procedure} control the
-declarations of abstract functions and abstract procedures,
-respectively.
+@code{abstract_function}, @code{abstract_operator}, and
+@code{abstract_procedure} control the declarations of abstract
+functions, abstract operators, and abstract procedures, respectively.
 @item
 @code{abstract_type} controls the declaration of non-formal abstract
 types.

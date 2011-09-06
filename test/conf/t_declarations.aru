@@ -1,4 +1,5 @@
 search declarations (abstract_function,
+                     abstract_operator,
                      abstract_procedure,
                      abstract_type,
                      access_all_type,

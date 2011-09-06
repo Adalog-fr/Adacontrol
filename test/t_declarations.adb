@@ -166,7 +166,8 @@ procedure T_declarations is       -- library_procedure
       type Abs1 is abstract tagged private;         -- Non_Limited_Private_Type, Abstract_Type
       type Abs2 is abstract tagged limited private; -- Limited_Private_Type, Abstract_Type
       procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
-      function  F (Y : Abs2) return Integer is abstract; -- Abstract_Function
+      function  F (Y : Abs2) return Integer is abstract;   -- Abstract_Function
+      function  "+" (L : Abs1) return Integer is abstract; -- Operator, Abstract_Operator, Abstract_Function
       Deferred : constant Priv1;                    -- Constant, Deferred_Constant
       procedure P_As_Body;                          -- Public Procedure, Nested Procedure, Local Procedure
       function  F_As_Body return Integer;

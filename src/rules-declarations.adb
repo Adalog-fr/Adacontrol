@@ -56,13 +56,14 @@ package body Rules.Declarations is
 
    type Subrules is
      (D_Any_Declaration,
-      D_Abstract_Function,               D_Abstract_Procedure,                D_Abstract_Type,
-      D_Access_All_Type,                 D_Access_Constant_Type,              D_Access_Protected_Type,
-      D_Access_Subprogram_Type,          D_Access_Task_Type,                  D_Access_Type,
-      D_Aliased_Array_Component,         D_Aliased_Constant,                  D_Aliased_Protected_Component,
-      D_Aliased_Record_Component,        D_Aliased_Variable,                  D_Anonymous_Subtype_Allocator,
-      D_Anonymous_Subtype_Case,          D_Anonymous_Subtype_Declaration,     D_Anonymous_Subtype_For,
-      D_Anonymous_Subtype_Indexing,      D_Array,                             D_Array_Type,
+      D_Abstract_Function,               D_Abstract_Operator,                 D_Abstract_Procedure,
+      D_Abstract_Type,                   D_Access_All_Type,                   D_Access_Constant_Type,
+      D_Access_Protected_Type,           D_Access_Subprogram_Type,            D_Access_Task_Type,
+      D_Access_Type,                     D_Aliased_Array_Component,           D_Aliased_Constant,
+      D_Aliased_Protected_Component,     D_Aliased_Record_Component,          D_Aliased_Variable,
+      D_Anonymous_Subtype_Allocator,     D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,
+      D_Anonymous_Subtype_For,           D_Anonymous_Subtype_Indexing,        D_Array,
+      D_Array_Type,
 
       D_Binary_Modular_Type,
 
@@ -148,10 +149,12 @@ package body Rules.Declarations is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control occurrences of Ada declarations");
+      User_Message;
       User_Message ("Parameter(s): {<location>} <decl>");
       Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:");
       Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl>:");
-      User_Message ("Control occurrences of Ada declarations");
+
    end Help;
 
    -----------------
@@ -311,6 +314,9 @@ package body Rules.Declarations is
          case Declaration_Kind (Element) is
             when A_Function_Declaration =>
                if Trait_Kind (Element) in An_Abstract_Trait .. An_Abstract_Limited_Private_Trait then
+                  if Defining_Name_Kind (Names (Element) (1)) = A_Defining_Operator_Symbol then
+                     Do_Report (D_Abstract_Operator, Get_Location (Element));
+                  end if;
                   Do_Report (D_Abstract_Function, Get_Location (Element));
                end if;
             when A_Procedure_Declaration =>
