@@ -159,9 +159,10 @@ Control units that depend on units others than those indicated,
 or whose number of dependencies is not in the specified range
 ----
 Rule: DIRECTLY_ACCESSED_GLOBALS
+Control global package variables accessed by other than dedicated subprograms
+
 Parameter(s): plain | accept | protected
               (optional)
-Control global package variables accessed by other than dedicated subprograms
 ----
 Rule: DUPLICATE_INITIALIZATION_CALLS
 Parameter(s): <Procedure name>
@@ -177,6 +178,9 @@ Parameter(s): [not] calls | entry_calls | <Entity name>
 Control occurrences of an entity inside an exception handler.
 ----
 Rule: EXCEPTION_PROPAGATION
+Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions
+and that local exceptions cannot propagate out of scope
+
 Parameter 1     : [<level>,] interface       | parameter   |
                              task            | declaration |
                              local_exception
@@ -186,8 +190,6 @@ Parameter 2 .. N: for interface: <convention name>
                   for task: nothing
                   for declaration: nothing
                   for local_exception: nothing, no <level> allowed
-Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions
-and that local exceptions cannot propagate out of scope
 ----
 Rule: EXPRESSIONS
 Parameter (s): and                       | and_then                         |
@@ -250,6 +252,13 @@ Rule: INSUFFICIENT_PARAMETERS
 Parameter(1): Allowed number of "insufficient" parameters
 Parameter(2..N): Enumeration type names whose values are insufficient
 Control calls where absence of named notation can lead to confusion
+----
+Rule: LOCAL_ACCESS
+Control usage of non-local 'Access attribute (and similar ones)
+
+Parameter(s):  constant            | function           |
+               procedure           | protected_function |
+               protected_procedure | variable
 ----
 Rule: LOCAL_HIDING
 Parameter(s): <exceptions>  strict            | overloading |
@@ -446,10 +455,12 @@ Categories: <>     | ()    | range   | mod    | delta     |
 Control occurrences of representation clauses
 ----
 Rule: RETURN_TYPE
-Parameter(s):  class_wide          | protected                   |
-               task                | constrained_array           |
-               unconstrained_array | unconstrained_discriminated
 Control various forms of the type returned by functions
+
+Parameter(s):  class_wide                  | limited_class_wide  |
+               protected                   | task                |
+               constrained_array           | unconstrained_array |
+               unconstrained_discriminated
 ----
 Rule: SIDE_EFFECT_PARAMETERS
 Parameter(s): <side effect function names>

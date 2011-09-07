@@ -21,6 +21,10 @@ General:
 --------
 Ignore remaining of line after blank in an indirect file
 
+New rules:
+----------
+Local_Access
+
 Changes to existing rules:
 --------------------------
 

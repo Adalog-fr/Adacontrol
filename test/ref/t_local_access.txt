@@ -1,0 +1,7 @@
+t_local_access.adb:57:13: Error: LOCAL_ACCESS: 'Unchecked_Access of non local variable
+t_local_access.adb:58:13: Error: LOCAL_ACCESS: 'Unchecked_Access of non local constant
+t_local_access.adb:59:13: Error: LOCAL_ACCESS: 'Unrestricted_Access of non local procedure
+t_local_access.adb:60:13: Error: LOCAL_ACCESS: 'Unrestricted_Access of non local function
+t_local_access.adb:32:50: Error: LOCAL_ACCESS: 'Unrestricted_Access of non local function
+t_local_access.adb:62:18: Error: LOCAL_ACCESS: 'Unrestricted_Access of non local protected_procedure
+t_local_access.adb:63:18: Error: LOCAL_ACCESS: 'Unrestricted_Access of non local protected_function

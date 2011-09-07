@@ -50,6 +50,7 @@ with
   Rules.Entity_Inside_Exception,
   Rules.Exception_Propagation,
   Rules.Expressions,
+  Rules.Local_Access,
   Rules.Global_References,
   Rules.Multiple_Assignments,
   Rules.Header_Comments,
@@ -586,8 +587,9 @@ package body Framework.Plugs is
 
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
-                  Rules.Entities. Process_Attribute (Element);
-                  Rules.Style.    Process_Attribute (Element);
+                  Rules.Entities.     Process_Attribute (Element);
+                  Rules.Local_Access. Process_Attribute (Element);
+                  Rules.Style.        Process_Attribute (Element);
 
                when An_Operator_Symbol =>
                   Rules.No_Operator_Usage. Process_Operator (Element);

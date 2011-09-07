@@ -41,6 +41,7 @@ conf/t_header_comments.aru: No syntax error
 conf/t_improper_initialization.aru: No syntax error
 conf/t_instantiations.aru: No syntax error
 conf/t_insufficient_parameters.aru: No syntax error
+conf/t_local_access.aru: No syntax error
 conf/t_local_hiding.aru: No syntax error
 conf/t_max_blank_lines.aru: No syntax error
 conf/t_max_call_depth.aru: No syntax error

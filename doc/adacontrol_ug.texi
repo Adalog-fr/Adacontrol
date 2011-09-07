@@ -2272,6 +2272,7 @@ is a dispatching call.
 * Improper_Initialization::     
 * Instantiations::              
 * Insufficient_Parameters::     
+* Local_Access::                
 * Local_Hiding::                
 * Max_Blank_Lines::             
 * Max_Call_Depth::              
@@ -4561,7 +4562,7 @@ renamings of @code{Ada.Unchecked_Conversion} and
 to specify explicitely both forms if you want to make sure that the
 corresponding generics are not instantiated.
 
-@node  Insufficient_Parameters, Local_Hiding, Instantiations, Rules reference
+@node  Insufficient_Parameters, Local_Access, Instantiations, Rules reference
 @section Insufficient_Parameters
 This rule controls calls to subprograms and entries where the values
 of parameters does not provide sufficient information to the reader to
@@ -4607,7 +4608,50 @@ parameters according to the number of parameters with the rule
 Note also that this rules applies only to calls, while @code{style
 (positional_association)} applies to all forms of associations.
 
-@node Local_Hiding, Max_Blank_Lines, Insufficient_Parameters, Rules reference
+@node Local_Access, Local_Hiding, Insufficient_Parameters, Rules reference
+@section Local_Access
+This rule controls the taking of access values (through the  @code{'Access},
+ @code{'Unchecked_Access}, or the  Gnat specific  @code{'Unrestricted_Access}
+attributes) of local (i.e. non global) entities.
+
+@subsection Syntax
+@example
+<control_kind> local_access [(<subrule> @{,<subrule>@})];
+<subrule>   ::= constant | variable | procedure | function |
+                protected_procedure | protected_function
+@end example
+
+@subsection Action
+Without parameters, the rule controls all entities given as prefixes
+of  @code{'Access}, @code{'Unchecked_Access}, or
+@code{'Unrestricted_Access} attributes and reports on those that are
+not global, i.e. not defined in (possibly nested) library packages.
+
+If parameters are specified, only entities belonging to the
+corresponding categories are controlled.
+
+Ex:
+@example
+Dangerous_Objects: check local_access (Constant, Variable);
+@end example
+
+@subsection Tips
+In Ada 95, accessibility rules make sure that taking the
+@code{'Access} of an entity cannot create dangling pointers, but this
+check can be circumvented by using @code{'Unchecked_Access} (but not
+on subprograms), or in Gnat, by using
+@code{'Unrestricted_Access}. Moreover, Ada 2005 generalized anonymous
+access types, creating more cases where accessibility levels are
+dynamically checked.
+
+Taking an access value on a global entity is never a risk, but every
+use of access values designating local entities has a potential of a
+failing dynamic accessibility check or even of a dangling
+pointer. This rule is helpful in finding the places that need careful
+inspection - of for disallowing taking accesses on anything but global
+entities.
+
+@node Local_Hiding, Max_Blank_Lines, Local_Access, Rules reference
 @section Local_Hiding
 This rule controls declarations that hide an outer declaration with
 the same name.
