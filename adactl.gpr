@@ -10,23 +10,15 @@ project Adactl is
    for Object_Dir use "adalib";
    for Main use ("adactl.adb", "pfni.adb", "ptree.adb");
 
-   case Gnat_Fix is
-
-      when "1" =>
-         for Exec_Dir use "src";
-         for Source_Dirs use ("src", "doc", "gps", "rules", "test", "test\conf");
-
-      when "none" =>
-         for Exec_Dir use "wks/src";
-         for Source_Dirs use ("wks/src", "wks/doc", "wks/gps", "wks/rules", "wks/test", "wks/test/conf");
-   end case;
+   for Exec_Dir use "src";
+   for Source_Dirs use ("src", "doc", "GPS", "rules", "test", "test/conf");
 
    package Ide is
       for Vcs_Kind use "Git";
       for Vcs_Repository_Root use "wks";
 
       for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-Fgnat_short", "-S", "1", "@units.txt", "-f", 
-                                               "src\verif.aru", "-@", "src\units.txt");
+                                               "src/verif.aru", "-@", "src/units.txt");
    end Ide;
 
    package Builder is
