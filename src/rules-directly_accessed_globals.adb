@@ -85,8 +85,9 @@ package body Rules.Directly_Accessed_Globals is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional)");
       User_Message ("Control global package variables accessed by other than dedicated subprograms");
+      User_Message;
+      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional)");
    end Help;
 
    -----------------
@@ -407,9 +408,9 @@ package body Rules.Directly_Accessed_Globals is
          return;
    end Process_Identifier;
 
-   -----------------------
-   -- Process_Unit_Exit --
-   -----------------------
+   -------------------------------
+   -- Post_Process_Package_Body --
+   -------------------------------
 
    procedure Post_Process_Package_Body (Element : in Asis.Element) is
       use Variables_Map, Ada.Strings.Wide_Unbounded;
