@@ -20,5 +20,8 @@ doc/adacontrol_ug.info*
 doc/adacontrol_ug.html
 doc/adacontrol_ug.pdf
 
-test/res/
+src/adactl
+src/pfni
+src/ptree
 
+test/res/
