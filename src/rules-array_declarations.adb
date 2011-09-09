@@ -298,7 +298,7 @@ package body Rules.Array_Declarations is
                when A_Discrete_Simple_Expression_Range =>
                   return Get_Location (Lower_Bound (Discrete_Ranges (Definition)(Dim)));
                when Not_A_Discrete_Range =>
-                  Failure ("not a discrete range");
+                  Failure ("Get_Bound_Location: not a discrete range");
             end case;
          else
             -- Array

@@ -31,6 +31,7 @@
 
 -- Asis
 with
+  Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
   Asis.Expressions;
@@ -140,7 +141,7 @@ package body Rules.Allocators is
 
       procedure Check (Current_Context : Root_Context'Class) is
          use Framework.Reports;
-         use Asis.Definitions;
+         use Asis.Declarations, Asis.Definitions;
 
          Designated_Subtype : Asis.Element;
 
@@ -171,8 +172,27 @@ package body Rules.Allocators is
          end if;
 
          if Rule_Context (Current_Context).Inconsistent_Only then
-            Designated_Subtype := Asis.Definitions.Access_To_Object_Definition
-                                   (Thick_Queries.Corresponding_Expression_Type_Definition(Element));
+            Designated_Subtype := Thick_Queries.Corresponding_Expression_Type_Definition (Element);
+
+            if Is_Nil (Designated_Subtype) then
+               -- This can happen if the allocator is of an anonymous access type, like in:
+               --   procedure P (X : access Integer := new Integer'(1))
+               -- More cases (presumably) in Ada 2005
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Element),
+                            "Unable to determine the designated type of the allocator");
+               Found := True; -- Well, the context was found...
+               return;
+            end if;
+
+            if Type_Kind (Designated_Subtype) = A_Derived_Type_Definition then
+               -- This one cannot be anonymous, get to the real definition
+               Designated_Subtype := Type_Declaration_View (Ultimate_Type_Declaration
+                                                            (Enclosing_Element (Designated_Subtype)));
+            end if;
+            Designated_Subtype := Asis.Definitions.Access_To_Object_Definition (Designated_Subtype);
+
             if not Is_Nil (Subtype_Constraint (Designated_Subtype)) then
                Report (Rule_Id,
                        Current_Context,

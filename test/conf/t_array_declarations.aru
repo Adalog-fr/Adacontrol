@@ -37,7 +37,7 @@ Index_T5: check array_declarations (index, ());
 Index_T6: check array_declarations (index, range);
 Index_T7: check array_declarations (index, mod);
 
-Index_TT1: check array_declarations (index, enum, range);
+Index_TT1: check array_declarations (index, T_Array_Declarations.Index_Types.enum, range);
 
 Index_TTT1: check array_declarations (index, <>, range, T_Array_Declarations.Index_Types.uns);
 Index_TTT2: check array_declarations (index, range, range, <>);
