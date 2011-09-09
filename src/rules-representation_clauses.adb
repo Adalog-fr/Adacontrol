@@ -53,7 +53,6 @@ with
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
   Framework.Language.Shared_Keys,
-  Framework.Queries,
   Framework.String_Set;
 pragma Elaborate (Framework.Language);
 
@@ -187,14 +186,14 @@ package body Rules.Representation_Clauses is
    -------------
 
    procedure Prepare is
-      use Asis.Declarations;
-      use Framework.Queries, Thick_Queries;
    begin
       if Rule_Used = Not_Used then
          return;
       end if;
 
-      Storage_Unit := Discrete_Static_Expression_Value (Initialization_Expression (System_Value ("STORAGE_UNIT")));
+      --KLUDGE
+      --Storage_Unit := Discrete_Static_Expression_Value (Initialization_Expression (System_Value ("STORAGE_UNIT")));
+      Storage_Unit := 8;
    end Prepare;
 
 

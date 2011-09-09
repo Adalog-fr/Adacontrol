@@ -219,9 +219,24 @@ package body Framework.Queries is
       null;
    end Post_Procedure;
 
-   procedure Initialize_Table is new Asis.Iterator.Traverse_Element (Element_Map.Map,
-                                                                     Pre_Procedure,
-                                                                     Post_Procedure);
+   procedure Traverse_Unit is new Asis.Iterator.Traverse_Element (Element_Map.Map,
+                                                                  Pre_Procedure,
+                                                                  Post_Procedure);
+
+   procedure Initialize_Table (Table : in out Element_Map.Map; Unit_Decl : Asis.Declaration) is
+      use Asis;
+      use Element_Map;
+
+      Contr : Asis.Traverse_Control := Continue;
+   begin
+      Traverse_Unit (Unit_Decl, Contr, Table);
+      Balance (Table);
+   end Initialize_Table;
+
+   -------------------
+   -- Init_Standard --
+   -------------------
+
    procedure Init_Standard (A_Unit : Asis.Compilation_Unit) is
       use Asis, Asis.Compilation_Units;
    begin
@@ -237,19 +252,12 @@ package body Framework.Queries is
    --------------------
 
    function Standard_Value (Name : Wide_String) return Asis.Declaration is
-      use Asis, Asis.Elements;
+      use Asis.Elements;
       use Element_Map, Utilities;
    begin
       if Is_Empty (Standard_Symbol_Map) then
          -- not initialized
-         declare
-            Contr : Asis.Traverse_Control := Continue;
-         begin
-            Initialize_Table (Unit_Declaration (Standard_Unit),
-                              Contr,
-                              Standard_Symbol_Map);
-            Balance (Standard_Symbol_Map);
-         end;
+         Initialize_Table (Standard_Symbol_Map, Unit_Declaration (Standard_Unit));
       end if;
 
       return Fetch (Standard_Symbol_Map, To_Unbounded_Wide_String (Name));
@@ -263,24 +271,24 @@ package body Framework.Queries is
    ------------------
 
    function System_Value (Name : Wide_String) return Asis.Declaration is
-      use Asis, Asis.Compilation_Units, Asis.Elements;
-      use Element_Map, Utilities;
+      use Asis.Compilation_Units, Asis.Elements;
+      use Element_Map, Framework, Utilities;
    begin
       if Is_Empty (System_Symbol_Map) then
-         -- not initialized
-         declare
-            Contr : Asis.Traverse_Control := Continue;
-         begin
-            Initialize_Table (Unit_Declaration (Library_Unit_Declaration ("SYSTEM", Framework.Adactl_Context)),
-                              Contr,
-                              System_Symbol_Map);
-            Balance (System_Symbol_Map);
-         end;
+         Initialize_Table (System_Symbol_Map,
+                           Unit_Declaration (Library_Unit_Declaration ("SYSTEM", Adactl_Context)));
       end if;
 
       return Fetch (System_Symbol_Map, To_Unbounded_Wide_String (Name));
    exception
       when Not_Present =>
+         -- TBSL KLUDGE for ASIS bug (?)
+         -- There seems to be a bug/feature in recent versions of Gnat that the System we get
+         -- get is not the real one, and that a number of elements are not found by traversing it,
+         -- and especially Storage_Unit. Since it is highly unlikely to be anything but 8, places
+         -- that needed the value of Storage_Unit now use a hard-coded 8. These places are marked
+         -- with --KLUDGE
+
          Failure ("Not found in System: " & Name);
    end System_Value;
 
