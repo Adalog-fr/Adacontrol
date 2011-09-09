@@ -4,6 +4,7 @@ go;
 clear all;
 Uncheckable: check uncheckable;
 
+check allocators (inconsistent);
 check case_statement (others_span, min 5);
 check declarations (binary_modular_type);
 check directly_accessed_globals;
@@ -22,7 +23,23 @@ check unsafe_unchecked_conversion;
 check usage (object);
 
 -- Inhibit for all but the desired test to avoid confusing multiple messages
-inhibit case_statement                  (t_uncheckable.declarations,
+inhibit allocators                      (t_uncheckable.case_statement,
+                                         t_uncheckable.declarations,
+                                         t_uncheckable.directly_accessed_globals,
+                                         t_uncheckable.duplicate_initialization_calls,
+                                         t_uncheckable.exception_propagation,
+                                         t_uncheckable.global_references,
+                                         t_uncheckable.max_call_depth,
+                                         t_uncheckable.object_declarations,
+                                         t_uncheckable.parameter_aliasing,
+                                         t_uncheckable.potentially_blocking_operations,
+                                         t_uncheckable.record_declarations,
+                                         t_uncheckable.representation_clauses,
+                                         t_uncheckable.style,
+                                         t_uncheckable.unsafe_unchecked_conversion,
+                                         t_uncheckable.usage);
+inhibit case_statement                  (t_uncheckable.allocators,
+                                         t_uncheckable.declarations,
                                          t_uncheckable.directly_accessed_globals,
                                          t_uncheckable.duplicate_initialization_calls,
                                          t_uncheckable.exception_propagation,
