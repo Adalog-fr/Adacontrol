@@ -9,25 +9,25 @@ procedure Directly_Accessed_Globals is
       type TT is tagged null record;
       procedure Dispatch (X : in TT);
    end Pack;
-   
+
    package body Pack is
-      I : Integer renames F;  -- Uncheckable: dynamic renaming
+      I : Integer renames F;
       J : Integer;
       K : TT;
       procedure P is
       begin
-         J := I;
+         J := I;                   -- Uncheckable: I is dynamic renaming
          K := K;
       end P;
-      
+
       procedure Q is
       begin
          Dispatch (TT'Class (K));
       end Q;
-      
-      procedure Dispatch (X : in TT) is 
+
+      procedure Dispatch (X : in TT) is
       begin
-         null;
+         J := J;
       end Dispatch;
    end Pack;
 begin

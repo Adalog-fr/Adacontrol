@@ -2438,6 +2438,18 @@ constraint for Positive.  To avoid confusion, it is better to always
 use the same subtype for the allocator as used in the access type
 declaration.
 
+@subsection Limitations
+In some (rare) cases involving anonymous access types, ASIS provides
+no way to determine the target type of the (anonymous) acccess
+type. Inconsistent allocators will thus not be controlled. Such cases
+are detected by the rule ``uncheckable''. @xref{Uncheckable}.
+
+Note that allocators of an anonymous access type are in general a bad
+idea. A typical example where this limitation happens is:
+@example
+@b{procedure} P (Ptr : @b{access} Integer := @b{new} integer'(1));
+@end example
+
 @node Array_Declarations, Barrier_Expressions, Allocators, Rules reference
 @section Array_Declarations
 This rule controls properties of arrays, by enforcing a consistent

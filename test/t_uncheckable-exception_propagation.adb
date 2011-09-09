@@ -11,6 +11,6 @@ procedure Exception_Propagation is
 begin
    Make_Cb_L0 (Ptr1.all'Access);             -- Uncheckable
    Make_Cb_L0 (Dyn_Ren_Proc'Access);         -- Uncheckable x2
-   Make_CB_L0 (X_Uncheckable_Proc'Access);   -- Uncheckable
+   Make_CB_L0 (X_Uncheckable_Proc'Access);
    Dispatch (Dyn_Tagged);                    -- Uncheckable
 end Exception_Propagation;

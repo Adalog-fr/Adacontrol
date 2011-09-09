@@ -18,21 +18,21 @@ procedure Usage is
    end Gen;
 
    procedure Inst is new Gen (Elem);    -- Uncheckable
-   
+
    package Pack is
       type TT is tagged null record;
       procedure Dispatch (X : in TT);
    end Pack;
-   
+
    package body Pack is
-      K : TT;
-      
+      K : TT;                           -- Usage
+
       procedure Q is
       begin
          Dispatch (TT'Class (K));       -- Uncheckable
       end Q;
-      
-      procedure Dispatch (X : in TT) is 
+
+      procedure Dispatch (X : in TT) is
       begin
          null;
       end Dispatch;
