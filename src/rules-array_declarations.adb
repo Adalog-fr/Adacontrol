@@ -266,6 +266,7 @@ package body Rules.Array_Declarations is
          when Clear =>
             Rule_Used := Not_Used;
             Clear (Compo_Contexts);
+            Clear (Index_Contexts);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
