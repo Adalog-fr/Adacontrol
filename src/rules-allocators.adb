@@ -192,6 +192,12 @@ package body Rules.Allocators is
                                                             (Enclosing_Element (Designated_Subtype)));
             end if;
             Designated_Subtype := Asis.Definitions.Access_To_Object_Definition (Designated_Subtype);
+            if Is_Class_Wide_Subtype (Designated_Subtype) then
+               -- Call wide target => the allocator is generally of a specific type
+               -- Don't consider this inconsistent
+               Found := False;
+               return;
+            end if;
 
             if not Is_Nil (Subtype_Constraint (Designated_Subtype)) then
                Report (Rule_Id,

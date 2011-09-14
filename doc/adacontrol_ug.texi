@@ -2387,7 +2387,12 @@ occurs.
 If a parameter is preceded by the word ``inconsistent'', only
 allocators whose allocator subtype (the name after ``@code{@b{new}}'')
 is not the same as the designated subtype (from the access type
-declaration) are controlled. Note that if the access type includes a
+declaration) are controlled. However an allocator is not considered
+inconsistent when the designated subtype is class-wide, since the
+allocator subtype will generally be of some descendant specific type
+(and hence different from the designated subtype).
+
+Note that if the access type includes a
 constraint like in the following example:
 @example
    @b{type} Acc @b{is} @b{access} integer @b{range} 1..10;
