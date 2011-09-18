@@ -5,7 +5,10 @@ procedure T_allocators is
 
    type Int   is range 1..10;
    type Acc3  is access Int;
-   type Acc3c is access Int'Base;
+   type Acc3c is access T_Allocators.Int'Base;
+
+   type Acc4 is access Wide_String;
+   subtype Str10 is Wide_String (1 .. 10);
 
    task type T1;
    task body T1 is
@@ -67,6 +70,7 @@ procedure T_allocators is
    V10 : Acc1c;
    V11 : Acc3;
    V12 : Acc3c;
+   V13 : Acc4;
 begin
    V1 := new Integer;
    V1 := new Integer'(1);
@@ -95,4 +99,5 @@ begin
    V12 := new Int'(1);
    V12 := new Int'Base'(1);
 
+   V13 := new Str10;
 end T_allocators;

@@ -144,6 +144,7 @@ package body Rules.Allocators is
          use Asis.Declarations, Asis.Definitions;
 
          Designated_Subtype : Asis.Element;
+         Def                : Asis.Definition;
 
          function Subtype_Match (Left, Right : Asis.Expression) return Boolean is
             LL : Asis.Expression := Left;
@@ -161,8 +162,8 @@ package body Rules.Allocators is
                return False;
             end if;
 
-            return Is_Equal (Corresponding_Name_Definition (LL),
-                             Corresponding_Name_Definition (RR));
+            return Is_Equal (Corresponding_Name_Definition (Simple_Name (LL)),
+                             Corresponding_Name_Definition (Simple_Name (RR)));
          end Subtype_Match;
 
       begin   -- Check
@@ -186,11 +187,22 @@ package body Rules.Allocators is
                return;
             end if;
 
-            if Type_Kind (Designated_Subtype) = A_Derived_Type_Definition then
-               -- This one cannot be anonymous, get to the real definition
-               Designated_Subtype := Type_Declaration_View (Ultimate_Type_Declaration
-                                                            (Enclosing_Element (Designated_Subtype)));
-            end if;
+            loop
+               if Type_Kind (Designated_Subtype) = A_Derived_Type_Definition then
+                  -- This one cannot be anonymous, get to the real definition
+                  Designated_Subtype := Type_Declaration_View (Ultimate_Type_Declaration
+                                                               (Enclosing_Element (Designated_Subtype)));
+               elsif Formal_Type_Kind (Designated_Subtype) = A_Formal_Derived_Type_Definition then
+                  -- There can be no constraint at that level, go to the parent type
+                  Designated_Subtype := Type_Declaration_View (Corresponding_Name_Declaration
+                                                               (Simple_Name
+                                                                (Strip_Attributes
+                                                                 (Subtype_Simple_Name (Designated_Subtype)))));
+               else
+                  exit;
+               end if;
+            end loop;
+
             Designated_Subtype := Asis.Definitions.Access_To_Object_Definition (Designated_Subtype);
             if Is_Class_Wide_Subtype (Designated_Subtype) then
                -- Call wide target => the allocator is generally of a specific type
@@ -209,17 +221,34 @@ package body Rules.Allocators is
                        & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
                        & " with constraint"
                       );
-            elsif not Subtype_Match (Subtype_Simple_Name (Designated_Subtype),
-                                     Simple_Name         (Allocator_Subtype))
-            then
-               Report (Rule_Id,
-                       Current_Context,
-                       Get_Location (Element),
-                       "allocator for "
-                       & To_Title (Last_Matching_Name (Entities))
-                       & " not consistent with designated subtype "
-                       & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
-                      );
+            else
+               Def := Subtype_Simple_Name (Designated_Subtype);
+               if Attribute_Kind (Def) = A_Base_Attribute then
+                  Found := False;
+                  return;
+               end if;
+               Def := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Def)));
+               case Declaration_Kind (Def) is
+                  when A_Private_Type_Declaration | An_Incomplete_Type_Declaration =>
+                     Def := Corresponding_Type_Declaration (Def);
+                  when others =>
+                     null;
+               end case;
+               Def := Type_Declaration_View (Def);
+               if         Type_Kind (Def)        /= An_Unconstrained_Array_Definition
+                 and then Formal_Type_Kind (Def) /= A_Formal_Unconstrained_Array_Definition
+                 and then not Subtype_Match (Subtype_Simple_Name (Designated_Subtype),
+                                             Simple_Name         (Allocator_Subtype))
+               then
+                  Report (Rule_Id,
+                          Current_Context,
+                          Get_Location (Element),
+                          "allocator for "
+                          & To_Title (Last_Matching_Name (Entities))
+                          & " not consistent with designated subtype "
+                          & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
+                         );
+               end if;
             end if;
          else
             Report (Rule_Id,

@@ -12,4 +12,5 @@ class2        : check allocators (T_allocators.Tag1_Class);
 from_gen      : check allocators (T_Allocators.Gen.Gen_T);
 
 Inconsistent  : check allocators (inconsistent standard.integer,
-                                  inconsistent t_allocators.Int);
+                                  inconsistent t_allocators.Int,
+                                  inconsistent standard.wide_string);
