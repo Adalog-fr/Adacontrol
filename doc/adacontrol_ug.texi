@@ -2388,17 +2388,25 @@ If a parameter is preceded by the word ``inconsistent'', only
 allocators whose allocator subtype (the name after ``@code{@b{new}}'')
 is not the same as the designated subtype (from the access type
 declaration) are controlled. However an allocator is not considered
-inconsistent when the designated subtype is class-wide, since the
-allocator subtype will generally be of some descendant specific type
-(and hence different from the designated subtype).
+inconsistent when the designated subtype imposes no special constraint:
+@itemize @bullet
+@item
+when it is a class-wide type, since the allocator subtype will
+generally be of some descendant specific type;
+@item
+when it is an unconstrained array type, since the allocated subtype is
+necessarily constrained;
+@item
+when it is a base type (of the form @code{T'Base}).
+@end itemize 
 
-Note that if the access type includes a
-constraint like in the following example:
+Note that if the access type includes a constraint like in the
+following example:
 @example
    @b{type} Acc @b{is} @b{access} integer @b{range} 1..10;
 @end example
-all allocators will always be inconsistent, since there is no way to
-repeat the constraint at the place of the allocator.
+all allocators will necessarilly be inconsistent, since there is no
+way to repeat the constraint at the place of the allocator.
 
 ``Inconsistent'' can be given alone, in which case all inconsistent 
 allocators are controlled.
@@ -2407,7 +2415,7 @@ Ex:
 @example
 search allocators (standard.string);
 check allocators (T'Class);
-check allocators (Inconsitent standard.Integer);
+check allocators (Inconsistent standard.Integer);
 check allocators (Inconsistent);
 @end example
 
