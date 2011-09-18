@@ -45,7 +45,8 @@ with
 with
   Framework.Language,
   Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Reports,
+  Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Local_Access is
@@ -124,7 +125,7 @@ package body Rules.Local_Access is
 
    procedure Process_Attribute (Attr : Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Utilities, Thick_Queries;
+      use Framework.Scope_Manager, Utilities, Thick_Queries;
 
       Good_Prefix : Asis.Expression;
       Decl        : Asis.Declaration;
@@ -181,9 +182,15 @@ package body Rules.Local_Access is
                when A_Parenthesized_Expression =>
                   Good_Prefix := Expression_Parenthesized (Good_Prefix);
                when A_Type_Conversion | A_Qualified_Expression =>
-                    Good_Prefix := Converted_Or_Qualified_Expression (Good_Prefix);
+                  Good_Prefix := Converted_Or_Qualified_Expression (Good_Prefix);
+               when A_Function_Call =>
+                  -- 'Access of (part of) the anonymous object returned by a function
+                  -- report it as a constant, but considering that it is declared in the local scope
+                  if not Is_Current_Scope_Global then
+                     Do_Report (K_Constant);
+                  end if;
                when others =>
-                  Failure ("Unexpected element kind in Local_Access", Good_Prefix);
+                  Failure ("Local_Access: Unexpected element kind", Good_Prefix);
             end case;
          end loop;
 
