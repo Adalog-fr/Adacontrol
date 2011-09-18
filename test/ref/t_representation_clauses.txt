@@ -1,47 +1,47 @@
-t_representation_clauses.adb:6:4: Error: size: representation clause for 'SIZE
-t_representation_clauses.adb:9:4: Error: address: representation clause for 'ADDRESS
-t_representation_clauses.adb:10:4: Error: address: Ada 83 address clause
-t_representation_clauses.adb:11:4: Error: obj_size: object representation clause for 'SIZE
-t_representation_clauses.adb:11:4: Error: size: representation clause for 'SIZE
-t_representation_clauses.adb:14:4: Error: address: representation clause for 'ADDRESS
-t_representation_clauses.adb:14:4: Error: rng_over: address clause causes overlay for RANGE
-t_representation_clauses.adb:14:4: Error: overlay: address clause causes overlay
-t_representation_clauses.adb:18:4: Error: address: Ada 83 address clause
-t_representation_clauses.adb:18:4: Error: rng_over: address clause causes overlay for RANGE
-t_representation_clauses.adb:18:4: Error: overlay: address clause causes overlay
-t_representation_clauses.adb:21:4: Found: enumeration: enumeration representation clause
-t_representation_clauses.adb:22:4: Error: alignment: representation clause for 'ALIGNMENT
-t_representation_clauses.adb:25:4: Found: der_enum: enumeration representation clause for NEW
-t_representation_clauses.adb:25:4: Found: enumeration: enumeration representation clause
-t_representation_clauses.adb:26:4: Error: der_align: representation clause for 'ALIGNMENT for NEW
-t_representation_clauses.adb:26:4: Error: alignment: representation clause for 'ALIGNMENT
-t_representation_clauses.adb:33:4: Found: record: layout representation clause
-t_representation_clauses.adb:33:4: Error: alignment: Ada 83 alignment clause
-t_representation_clauses.adb:40:4: Found: Der_record: layout representation clause for NEW
-t_representation_clauses.adb:40:4: Found: record: layout representation clause
-t_representation_clauses.adb:50:4: Found: Tag_record: layout representation clause for TAGGED
-t_representation_clauses.adb:50:4: Found: record: layout representation clause
-t_representation_clauses.adb:52:10: Error: non_contig: gap at 0 range 0..47
-t_representation_clauses.adb:60:4: Error: streams: representation clause for 'INPUT
-t_representation_clauses.adb:61:4: Error: streams: representation clause for 'OUTPUT
-t_representation_clauses.adb:62:4: Error: streams: representation clause for 'CLASS'READ
-t_representation_clauses.adb:63:4: Error: streams: representation clause for 'CLASS'WRITE
-t_representation_clauses.adb:75:4: Found: Ext_record: layout representation clause for EXTENSION
-t_representation_clauses.adb:75:4: Found: record: layout representation clause
-t_representation_clauses.adb:77:10: Error: non_contig: gap at 0 range 0..47
-t_representation_clauses.adb:81:4: Error: Arr_Size: representation clause for 'SIZE for ARRAY
-t_representation_clauses.adb:81:4: Error: size: representation clause for 'SIZE
-t_representation_clauses.adb:84:4: Error: Arr_Addr: representation clause for 'ADDRESS for ARRAY
-t_representation_clauses.adb:84:4: Error: address: representation clause for 'ADDRESS
-t_representation_clauses.adb:84:4: Error: tab_over: address clause causes overlay for ARRAY
-t_representation_clauses.adb:84:4: Error: overlay: address clause causes overlay
-t_representation_clauses.adb:89:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
-t_representation_clauses.adb:89:4: Error: size: representation clause for 'SIZE
-t_representation_clauses.adb:90:4: Found: record: layout representation clause
-t_representation_clauses.adb:92:10: Error: non_contig: gap at 0 range 0..0
-t_representation_clauses.adb:92:10: Error: Arr_comp: unaligned component starts at bit 1 for ARRAY
-t_representation_clauses.adb:92:10: Error: unaligned: unaligned component starts at bit 1
-t_representation_clauses.adb:92:10: Error: non_contig: gap at end of record, at 10 range 1..7, size clause line 89
+t_representation_clauses.adb:7:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:10:4: Error: address: representation clause for 'ADDRESS
+t_representation_clauses.adb:11:4: Error: address: Ada 83 address clause
+t_representation_clauses.adb:12:4: Error: obj_size: object representation clause for 'SIZE
+t_representation_clauses.adb:12:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:15:4: Error: address: representation clause for 'ADDRESS
+t_representation_clauses.adb:15:4: Error: rng_over: address clause causes overlay for RANGE
+t_representation_clauses.adb:15:4: Error: overlay: address clause causes overlay
+t_representation_clauses.adb:19:4: Error: address: Ada 83 address clause
+t_representation_clauses.adb:19:4: Error: rng_over: address clause causes overlay for RANGE
+t_representation_clauses.adb:19:4: Error: overlay: address clause causes overlay
+t_representation_clauses.adb:22:4: Found: enumeration: enumeration representation clause
+t_representation_clauses.adb:23:4: Error: alignment: representation clause for 'ALIGNMENT
+t_representation_clauses.adb:26:4: Found: der_enum: enumeration representation clause for NEW
+t_representation_clauses.adb:26:4: Found: enumeration: enumeration representation clause
+t_representation_clauses.adb:27:4: Error: der_align: representation clause for 'ALIGNMENT for NEW
+t_representation_clauses.adb:27:4: Error: alignment: representation clause for 'ALIGNMENT
+t_representation_clauses.adb:34:4: Found: record: layout representation clause
+t_representation_clauses.adb:34:4: Error: alignment: Ada 83 alignment clause
+t_representation_clauses.adb:41:4: Found: Der_record: layout representation clause for NEW
+t_representation_clauses.adb:41:4: Found: record: layout representation clause
+t_representation_clauses.adb:51:4: Found: Tag_record: layout representation clause for TAGGED
+t_representation_clauses.adb:51:4: Found: record: layout representation clause
+t_representation_clauses.adb:53:10: Error: non_contig: gap at 0 range 0..47
+t_representation_clauses.adb:61:4: Error: streams: representation clause for 'INPUT
+t_representation_clauses.adb:62:4: Error: streams: representation clause for 'OUTPUT
+t_representation_clauses.adb:63:4: Error: streams: representation clause for 'CLASS'READ
+t_representation_clauses.adb:64:4: Error: streams: representation clause for 'CLASS'WRITE
+t_representation_clauses.adb:76:4: Found: Ext_record: layout representation clause for EXTENSION
+t_representation_clauses.adb:76:4: Found: record: layout representation clause
+t_representation_clauses.adb:78:10: Error: non_contig: gap at 0 range 0..47
+t_representation_clauses.adb:82:4: Error: Arr_Size: representation clause for 'SIZE for ARRAY
+t_representation_clauses.adb:82:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:85:4: Error: Arr_Addr: representation clause for 'ADDRESS for ARRAY
+t_representation_clauses.adb:85:4: Error: address: representation clause for 'ADDRESS
+t_representation_clauses.adb:85:4: Error: tab_over: address clause causes overlay for ARRAY
+t_representation_clauses.adb:85:4: Error: overlay: address clause causes overlay
+t_representation_clauses.adb:90:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
+t_representation_clauses.adb:90:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:91:4: Found: record: layout representation clause
+t_representation_clauses.adb:93:10: Error: non_contig: gap at 0 range 0..0
+t_representation_clauses.adb:93:10: Error: Arr_comp: unaligned component starts at bit 1 for ARRAY
+t_representation_clauses.adb:93:10: Error: unaligned: unaligned component starts at bit 1
+t_representation_clauses.adb:93:10: Error: non_contig: gap at end of record, at 10 range 1..7, size clause line 90
 t_representation_clauses-fractional_size.adb:8:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: fractional: size clause not multiple of Storage_Unit
@@ -74,6 +74,14 @@ t_representation_clauses-incomplete_record.adb:14:4: Found: record: layout repre
 t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for D at t_representation_clauses-incomplete_record.adb:3:13
 t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for I2 at t_representation_clauses-incomplete_record.adb:6:10
 t_representation_clauses-incomplete_record.adb:14:4: Error: incomplete: no component clause for I4 at t_representation_clauses-incomplete_record.adb:11:16
+x_representation_clauses.ads:6:4: Error: glob_addr: global representation clause for 'ADDRESS
+x_representation_clauses.ads:6:4: Error: address: representation clause for 'ADDRESS
+x_representation_clauses.ads:6:4: Error: rng_over: address clause causes overlay for RANGE
+x_representation_clauses.ads:6:4: Error: overlay: address clause causes overlay
+x_representation_clauses.ads:10:7: Error: glob_addr: global representation clause for 'ADDRESS
+x_representation_clauses.ads:10:7: Error: address: representation clause for 'ADDRESS
+x_representation_clauses.ads:10:7: Error: rng_over: address clause causes overlay for RANGE
+x_representation_clauses.ads:10:7: Error: overlay: address clause causes overlay
 
 Counts summary:
-Total: 59
+Total: 63

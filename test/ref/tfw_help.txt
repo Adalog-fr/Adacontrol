@@ -438,21 +438,22 @@ Control declarations that could be moved to an inner scope,
 I.e. where all references are from a single nested scope
 ----
 Rule: REPRESENTATION_CLAUSES
-Parameter(s): [<categories>] [object] <specifiable attribute> |
-                             at                               |
-                             at_mod                           |
-                             enumeration                      |
-                             fractional_size                  |
-                             incomplete_layout                |
-                             layout                           |
-                             non_aligned_component            |
-                             non_contiguous_layout            |
+Control occurrences of representation clauses
+
+Parameter(s): [<categories>] [global] [object] <specifiable attribute> |
+                             at                                        |
+                             at_mod                                    |
+                             enumeration                               |
+                             fractional_size                           |
+                             incomplete_layout                         |
+                             layout                                    |
+                             non_aligned_component                     |
+                             non_contiguous_layout                     |
                              overlay
                              (optional)
 Categories: <>     | ()    | range   | mod    | delta     |
             digits | array | record  | tagged | extension |
             access | new   | private | task   | protected
-Control occurrences of representation clauses
 ----
 Rule: RETURN_TYPE
 Control various forms of the type returned by functions

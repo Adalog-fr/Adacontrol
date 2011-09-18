@@ -1,5 +1,6 @@
 Total      : count representation_clauses;
 address    : check  representation_clauses (at, 'address);
+glob_addr  : check  representation_clauses (global 'address);
 alignment  : check  representation_clauses (at_mod, 'alignment);
 der_align  : check  representation_clauses (new at_mod, new 'alignment);
 enumeration: search representation_clauses (enumeration);

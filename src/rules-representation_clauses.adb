@@ -73,8 +73,9 @@ package body Rules.Representation_Clauses is
    -- Subrule => Context
    type Repr_Context is new Framework.Control_Manager.Basic_Rule_Context with
       record
-         Cats     : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
-         Obj_Only : Boolean;
+         Cats        : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
+         Global_Only : Boolean;
+         Obj_Only    : Boolean;
       end record;
    Usage : Framework.Control_Manager.Context_Store;
    package Repr_Context_Init is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
@@ -109,11 +110,12 @@ package body Rules.Representation_Clauses is
    procedure Help is
    begin
       User_Message  ("Rule: " & Rule_Id);
+      User_Message  ("Control occurrences of representation clauses");
+      User_Message;
       Help_On_Flags (Header      => "Parameter(s): [<categories>]",
                      Footer      => "(optional)",
-                     Extra_Value => "[object] <specifiable attribute>");
+                     Extra_Value => "[global] [object] <specifiable attribute>");
       Help_On_Modifiers (Header => "Categories:");
-      User_Message  ("Control occurrences of representation clauses");
    end Help;
 
    -----------------
@@ -124,10 +126,11 @@ package body Rules.Representation_Clauses is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Control_Manager, Framework.Language;
-      Subrule : Subrules;
-      Param   : Entity_Specification;
-      Cats    : Modifier_Set;
-      Obj_Only: Boolean := False;
+      Subrule   : Subrules;
+      Param     : Entity_Specification;
+      Cats      : Modifier_Set;
+      Glob_Only : Boolean := False;
+      Obj_Only  : Boolean := False;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
@@ -135,8 +138,9 @@ package body Rules.Representation_Clauses is
 
             Subrule := Get_Flag_Parameter (Allow_Any => True);
             if Subrule = Sr_Attribute then
-               Obj_Only := Get_Modifier ("OBJECT");
-               Param    := Value (Get_Name_Parameter);
+               Glob_Only := Get_Modifier ("GLOBAL");
+               Obj_Only  := Get_Modifier ("OBJECT");
+               Param     := Value (Get_Name_Parameter);
                if Image (Param) (1) /= ''' then
                   Parameter_Error (Rule_Id, "parameter must be a representation keyword or an attribute");
                end if;
@@ -145,7 +149,9 @@ package body Rules.Representation_Clauses is
             end if;
 
             begin
-               Associate (Usage, Param, Repr_Context' (Basic.New_Context (Ctl_Kind, Ctl_Label) with Cats, Obj_Only),
+               Associate (Usage,
+                          Param,
+                          Repr_Context' (Basic.New_Context (Ctl_Kind, Ctl_Label) with Cats, Glob_Only, Obj_Only),
                           Additive => True);
             exception
                when Already_In_Store =>
@@ -156,7 +162,7 @@ package body Rules.Representation_Clauses is
 
       else
          Associate (Usage, Key_All, Repr_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label)
-                                    with Full_Set, Obj_Only => False));
+                                    with Full_Set, Global_Only => False, Obj_Only => False));
          Rule_Used := (others => True);
       end if;
 
@@ -208,7 +214,6 @@ package body Rules.Representation_Clauses is
 
       Attribute : Unbounded_Wide_String;
       Pfx       : Asis.Expression;
-      Is_Object : Boolean;
 
       procedure Do_Report (Subrule  : Subrules;
                            Target   : Asis.Clause;
@@ -216,10 +221,14 @@ package body Rules.Representation_Clauses is
                            Loc      : Location := Get_Location (Rep_Clause))
       is
          use Framework.Control_Manager, Framework.Language.Shared_Keys;
-         Key_Map : Entity_Specification;
-         Iter    : Context_Iterator := Repr_Context_Init.Create;
-         Cont    : Repr_Context;
-         Cat     : Categories;
+         Key_Map   : Entity_Specification;
+         Iter      : Context_Iterator := Repr_Context_Init.Create;
+         Cont      : Repr_Context;
+         Cat       : Categories;
+         Pfx_Decl  : Asis.Declaration;
+         Is_Object : Boolean;
+         Is_Global : Boolean;
+
          function Clause_Name_Declaration return Asis.Declaration is
             Name : constant Asis.Expression := Representation_Clause_Name (Target);
          begin
@@ -242,23 +251,37 @@ package body Rules.Representation_Clauses is
             if Expression_Kind (Pfx) = An_Attribute_Reference then
                -- T'Class'Read, certainly not an object
                Is_Object := False;
+
+               -- Scope is the same as the ultimate prefix
+               while Expression_Kind (Pfx) = An_Attribute_Reference loop
+                  Pfx := Prefix (Pfx);
+               end loop;
+               Is_Global := Static_Level (Corresponding_Name_Declaration (Simple_Name (Pfx))) = Global_Level;
             else
-               Is_Object := Declaration_Kind (Corresponding_Name_Declaration (Pfx)) in An_Object_Declaration;
+               Pfx_Decl  := Corresponding_Name_Declaration (Pfx);
+               Is_Object := Declaration_Kind (Pfx_Decl) in An_Object_Declaration;
+               Is_Global := Static_Level (Pfx_Decl) = Global_Level;
             end if;
          else
             Is_Object := False;
+            Is_Global := False;
          end if;
 
          Reset (Iter, Key_Map);
          while not Is_Exhausted (Iter) loop
             Cont := Repr_Context (Value (Iter));
-            if Is_Object or else not Cont.Obj_Only then
+            if    (Is_Object or not Cont.Obj_Only)
+              and (Is_Global or not Cont.Global_Only)
+            then
                if Cont.Cats = Empty_Set then
-                  Report (Rule_Id, Cont, Loc, Choose (Is_Object and Cont.Obj_Only, "object ", "") & Message);
+                  Report (Rule_Id, Cont, Loc,   Choose (Is_Global and Cont.Global_Only, "global ", "")
+                                              & Choose (Is_Object and Cont.Obj_Only,    "object ", "")
+                                              & Message);
                else
                   Cat := Matching_Category (Clause_Name_Declaration, Cont.Cats, Separate_Extension => True);
                   if Cat /= Cat_Any then
-                     Report (Rule_Id, Cont, Loc, Choose (Is_Object and Cont.Obj_Only, "object ", "")
+                     Report (Rule_Id, Cont, Loc,   Choose (Is_Global and Cont.Global_Only, "global ", "")
+                                                 & Choose (Is_Object and Cont.Obj_Only,    "object ", "")
                                                  & Message & " for " & Image (Cat));
                   end if;
                end if;

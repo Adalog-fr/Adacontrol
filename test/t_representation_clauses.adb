@@ -1,5 +1,6 @@
 with System.Storage_Elements; use System.Storage_Elements;
 with Ada.Streams;
+with X_Representation_Clauses;
 procedure T_representation_clauses is
 
    type T is range 1 .. 10;
