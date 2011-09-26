@@ -211,19 +211,9 @@ package body Rules.Allocators is
                return;
             end if;
 
-            if not Is_Nil (Subtype_Constraint (Designated_Subtype)) then
-               Report (Rule_Id,
-                       Current_Context,
-                       Get_Location (Element),
-                       "allocator for "
-                       & To_Title (Last_Matching_Name (Entities))
-                       & " not consistent with designated subtype "
-                       & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
-                       & " with constraint"
-                      );
-            else
+            if Is_Nil (Subtype_Constraint (Designated_Subtype)) then
                Def := Subtype_Simple_Name (Designated_Subtype);
-               if Attribute_Kind (Def) = A_Base_Attribute then
+               if A4G_Bugs.Attribute_Kind (Def) = A_Base_Attribute then
                   Found := False;
                   return;
                end if;
@@ -249,6 +239,18 @@ package body Rules.Allocators is
                           & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
                          );
                end if;
+            else
+               -- There is a constraint in the designated subtype indication
+               Report (Rule_Id,
+                       Current_Context,
+                       Get_Location (Element),
+                       "allocator for "
+                       & To_Title (Last_Matching_Name (Entities))
+                       & " not consistent with designated subtype "
+                       & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
+                       & " with constraint"
+                      );
+
             end if;
          else
             Report (Rule_Id,
