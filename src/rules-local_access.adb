@@ -145,6 +145,7 @@ package body Rules.Local_Access is
       if Rule_Used = (Subrules => False) then
          return;
       end if;
+      Rules_Manager.Enter (Rule_Id);
 
       if A4G_Bugs.Attribute_Kind (Attr) /= An_Access_Attribute
         and A4G_Bugs.Attribute_Kind (Attr) /= An_Unchecked_Access_Attribute
@@ -153,8 +154,6 @@ package body Rules.Local_Access is
       then
          return;
       end if;
-
-      Rules_Manager.Enter (Rule_Id);
 
       Good_Prefix := Prefix (Attr);
       -- Get rid of indexing and components to get to the real element
@@ -189,6 +188,7 @@ package body Rules.Local_Access is
                   if not Is_Current_Scope_Global then
                      Do_Report (K_Constant);
                   end if;
+                  return;
                when others =>
                   Failure ("Local_Access: Unexpected element kind", Good_Prefix);
             end case;
