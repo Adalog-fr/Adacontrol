@@ -179,7 +179,7 @@ exception
             Ada.Command_Line.Set_Exit_Status (Bad_Command);
          when others =>
             User_Message (Diagnosis);
-            Traceback (Occur);
+            Stack_Traceback (Occur);
             Ada.Command_Line.Set_Exit_Status (Failure);
             if Exit_Option then
                -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
@@ -200,7 +200,7 @@ exception
                     & ") : "
                     & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       User_Message (Diagnosis);
-      Traceback (Occur);
+      Stack_Traceback (Occur);
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option then
          -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
@@ -211,7 +211,7 @@ exception
    when Occur : others =>
       User_Message ("Unexpected exception at main level: "
                     & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
-      Traceback (Occur);
+      Stack_Traceback (Occur);
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option then
          -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
