@@ -407,6 +407,9 @@ package body Scoped_Store is
          if Unit_Info.Visible_Head = Deleted_Node then
             Unit_Info.Visible_Head := Current;
          end if;
+         if Unit_Info.Private_Head = Deleted_Node then
+            Unit_Info.Private_Head := Current;
+         end if;
          -- Other pointers of Unit_Info are not yet initialized at that point
 
          Free (Deleted_Node);
@@ -737,7 +740,9 @@ package body Scoped_Store is
                if Unit_Info.Visible_Head /= null then
                   -- data were pushed from the visible part
                   Unit_Info.Visible_Tail := Unit_Info.Visible_Head;
-                  while Unit_Info.Visible_Tail.Next /= Parents_Head loop
+                  while Unit_Info.Visible_Tail.Next /= null
+                    and then Unit_Info.Visible_Tail.Next.Origin /= Parent
+                  loop
                      Unit_Info.Visible_Tail := Unit_Info.Visible_Tail.Next;
                   end loop;
                end if;
