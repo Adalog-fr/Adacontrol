@@ -17,7 +17,7 @@ project Adactl is
       for Vcs_Kind use "Git";
       for Vcs_Repository_Root use "wks";
 
-      for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-Fgnat_short", "-S", "1", "@units.txt", "-f", 
+      for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-Fgnat_short", "-S", "1", "@units.txt", "-f",
                                                "src/verif.aru", "-@", "src/units.txt");
    end Ide;
 
@@ -30,12 +30,11 @@ project Adactl is
       case Gnat_Fix is
 
          when "1" =>
-            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-fno-tree-vrp", "-gnat05");
+            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat05", "-fno-tree-vrp");
             for Driver ("adacontrol") use "";
 
          when "none" =>
-            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat95");
-            for Driver ("xml") use "";
+            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat05");
             for Driver ("adacontrol") use "";
       end case;
    end Compiler;
