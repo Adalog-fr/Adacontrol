@@ -70,8 +70,9 @@ package body Rules.Simplifiable_Statements is
       use Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s):");
       User_Message  ("Control Ada statements that can be made simpler");
+      User_Message;
+      Help_On_Flags ("Parameter(s):");
    end Help;
 
    -----------------

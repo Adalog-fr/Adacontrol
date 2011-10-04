@@ -235,8 +235,9 @@ package body Rules.Potentially_Blocking_Operations is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): None");
       User_Message ("Control calls to potentially blocking operations from protected operations");
+      User_Message;
+      User_Message ("Parameter(s): None");
    end Help;
 
    -----------------

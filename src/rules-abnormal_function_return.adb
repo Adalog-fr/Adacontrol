@@ -53,8 +53,9 @@ package body Rules.Abnormal_Function_Return is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): none");
       User_Message ("Control functions that can propagate Program_Error due to not executing a return statement");
+      User_Message;
+      User_Message ("Parameter(s): none");
    end Help;
 
    -----------------

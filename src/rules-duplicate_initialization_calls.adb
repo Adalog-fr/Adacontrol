@@ -71,9 +71,10 @@ package body Rules.Duplicate_Initialization_Calls is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <Procedure name>");
       User_Message ("Control that indicated procedures are not called twice with identical in parameters,");
       User_Message ("or twice on the same out actual parameter");
+      User_Message;
+      User_Message ("Parameter(s): <Procedure name>");
    end Help;
 
    -----------------

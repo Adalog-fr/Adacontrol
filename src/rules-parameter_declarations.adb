@@ -74,6 +74,8 @@ package body Rules.Parameter_Declarations is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Controls form and metrics of parameters of callable entities");
+      User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter (1):");
       User_Message ("For Min_Parameters:");
       User_Message ("  Parameter (2) : minimum required number of parameters");
@@ -84,8 +86,7 @@ package body Rules.Parameter_Declarations is
       User_Message ("For Single_Out_Parameter:");
       User_Message ("  No value allowed");
       Callable_Kinds_Flag_Utilities.Help_On_Flags (Header => "Other parameters:",
-                                           Footer => "(optional, default = all)");
-      User_Message ("Controls form and metrics of parameters of callable entities");
+                                                   Footer => "(optional, default = all)");
    end Help;
 
    -----------------

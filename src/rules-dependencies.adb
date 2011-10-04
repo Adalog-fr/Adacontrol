@@ -86,6 +86,9 @@ package body Rules.Dependencies is
       use Framework.Language.Shared_Keys, Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control units that depend on units others than those indicated,");
+      User_Message ("or whose number of dependencies is not in the specified range");
+      User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
       User_Message ("For subrule ""others"":");
       User_Message ("Parameter(2..3): allowed units");
@@ -93,8 +96,6 @@ package body Rules.Dependencies is
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
       Min_Max_Utilities.Help_On_Modifiers   (Header => "<bound>: ");
-      User_Message ("Control units that depend on units others than those indicated,");
-      User_Message ("or whose number of dependencies is not in the specified range");
    end Help;
 
    -----------------

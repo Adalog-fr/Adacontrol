@@ -115,10 +115,11 @@ package body Rules.Improper_Initialization is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Subrules_Flag_Utilities.Help_On_Flags               ("Parameter(s): {<extras>}");
-      Extension_Kind_Modifier_Utilities.Help_On_Modifiers ("    <extras>:");
       User_Message ("Control out parameters and local variables that are improperly initialized");
       User_Message ("(not initialized for all paths, or given an unnecessary initial value)");
+      User_Message;
+      Subrules_Flag_Utilities.Help_On_Flags               ("Parameter(s): {<extras>}");
+      Extension_Kind_Modifier_Utilities.Help_On_Modifiers ("    <extras>:");
    end Help;
 
 

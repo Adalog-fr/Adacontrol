@@ -62,8 +62,9 @@ package body Rules.Entity_Inside_Exception is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): [not] calls | entry_calls | <Entity name>");
       User_Message ("Control occurrences of an entity inside an exception handler.");
+      User_Message;
+      User_Message ("Parameter(s): [not] calls | entry_calls | <Entity name>");
    end Help;
 
    -----------------

@@ -57,9 +57,10 @@ package body Rules.Not_Elaboration_Calls is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <subprogram name>|new");
       User_Message ("Control subprogram calls or allocators that happen elsewhere than");
       User_Message ("as part of the elaboration of a library package.");
+      User_Message;
+      User_Message ("Parameter(s): <subprogram name>|new");
    end Help;
 
    -----------------

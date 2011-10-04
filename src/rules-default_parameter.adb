@@ -93,12 +93,13 @@ package body Rules.Default_Parameter is
    procedure Help is
    begin
       User_Message  ("Rule: " & Rule_Id);
+      User_Message  ("Control subprogram calls or generic instantiations that use the default for a");
+      User_Message  ("given defaulted parameter, or provide it, positionally or using any notation");
+      User_Message;
       Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter 1:",
                                            Extra_Value => "<Subprogram or generic name>");
       User_Message  ("Parameter 2: <Formal parameter name> | all");
       Usage_Kind_Utilities.Help_On_Flags ("Parameter 3:");
-      User_Message  ("Control subprogram calls or generic instantiations that use the default for a");
-      User_Message  ("given defaulted parameter, or provide it, positionally or using any notation");
    end Help;
 
    -----------------

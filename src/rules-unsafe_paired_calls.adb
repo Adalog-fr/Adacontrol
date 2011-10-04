@@ -93,10 +93,11 @@ package body Rules.Unsafe_Paired_Calls is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Controls calls like P/V operations that are not safely paired");
+      User_Message;
       User_Message ("Parameter(1): First subprogram");
       User_Message ("Parameter(2): Second subprogram");
       User_Message ("Parameter(3): (optional) type of lock parameter");
-      User_Message ("Controls calls like P/V operations that are not safely paired");
    end Help;
 
    -----------------

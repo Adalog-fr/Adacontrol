@@ -76,10 +76,11 @@ package body Rules.Use_Clauses is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(1): ", Extra_Value => "<Allowed package name>", Footer => "(optional)");
-      User_Message ("Parameter(2..): <Allowed package name>");
       User_Message ("Control occurrences of use clauses that mention");
       User_Message ("any package but the ones passed as parameters (if any)");
+      User_Message;
+      Help_On_Flags ("Parameter(1): ", Extra_Value => "<Allowed package name>", Footer => "(optional)");
+      User_Message ("Parameter(2..): <Allowed package name>");
    end Help;
 
    -----------------

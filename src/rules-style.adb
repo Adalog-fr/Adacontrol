@@ -241,6 +241,8 @@ package body Rules.Style is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control various Ada style issues");
+      User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
 
       User_Message ("For casing_*:");
@@ -273,7 +275,6 @@ package body Rules.Style is
          Footer      => "(default = all)");
       User_Message ("   each value may be followed by allowed number of occurrences");
       User_Message ("   and entities not required to follow the rule");
-      User_Message ("Control various Ada style issues");
    end Help;
 
    -----------------

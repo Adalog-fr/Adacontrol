@@ -119,8 +119,9 @@ package body Rules.Max_Call_Depth is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter: <Allowed depth> | finite");
       User_Message ("Control maximum call depth");
+      User_Message;
+      User_Message ("Parameter: <Allowed depth> | finite");
    end Help;
 
    -----------------

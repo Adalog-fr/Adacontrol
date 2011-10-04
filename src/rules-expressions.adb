@@ -93,13 +93,14 @@ package body Rules.Expressions is
       use Utilities, Framework.Language.Shared_Keys.Categories_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control occurrences of Ada expressions");
+      User_Message;
       Help_On_Flags (Header => "Parameter (s):");
       User_Message ("For subrules type_conversion and parameter_view_conversion:");
       User_Message ("    [[<source_category>] <target_category>] <subrule>");
       User_Message ("For subrules inherited_function_call and prefixed_operator:");
       User_Message ("    [<result_category>] <subrule>");
       Help_On_Modifiers (Header => "Categories:", Expected => Expected_Categories);
-      User_Message ("Control occurrences of Ada expressions");
    end Help;
 
    -----------------

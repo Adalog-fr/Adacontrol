@@ -110,10 +110,11 @@ package body Rules.Object_Declarations is
       use Subrules_Flag_Utilities, Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control allowed forms of object declarations");
+      User_Message;
       Help_On_Flags ("Parameter(1):");
       User_Message ("Parameter(2..)");
       User_Message ("   for Min_Integer_Span: [all|constant|variable] <value>");
-      User_Message ("Control allowed forms of object declarations");
    end Help;
 
    -----------------

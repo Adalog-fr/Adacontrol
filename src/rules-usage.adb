@@ -161,6 +161,9 @@ package body Rules.Usage is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control usage of various entities");
+      User_Message ("(possibly restricted to those that match the specified location and properties)");
+      User_Message;
       User_Message ("Parameter(s): variable | object    {, [not] <location> | initialized | read | written}");
       User_Message ("  or        : constant             {, [not] <location> | read}");
       User_Message ("  or        : type                 {, [not] <location> | used}");
@@ -171,8 +174,6 @@ package body Rules.Usage is
       User_Message ("  or        : generic              {, [not] <location> | instantiated}");
       User_Message ("  or        : all                  [, [not] <location>]");
       User_Message ("location ::= from_visible | from_private | from_spec");
-      User_Message ("Control usage of various entities");
-      User_Message ("(possibly restricted to those that match the specified location and properties)");
    end Help;
 
    -----------------

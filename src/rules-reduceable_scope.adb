@@ -151,10 +151,11 @@ package body Rules.Reduceable_Scope is
       use Subrules_Flag_Utilities, Restriction_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter(s): {<restriction>}", Footer => "(optional)");
-      Help_On_Modifiers (Header => "<restriction>:");
       User_Message  ("Control declarations that could be moved to an inner scope,");
       User_Message  ("I.e. where all references are from a single nested scope");
+      User_Message;
+      Help_On_Flags (Header => "Parameter(s): {<restriction>}", Footer => "(optional)");
+      Help_On_Modifiers (Header => "<restriction>:");
    end Help;
 
    -----------------

@@ -78,11 +78,12 @@ package body Rules.Parameter_Aliasing is
    procedure Help is
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter 1: [with_in] ",
-                     Footer => "(optional, default=certain)");
       User_Message  ("Control subprogram or entry calls where the same variable is given");
       User_Message  ("for more than one [in] out parameter.");
       User_Message  ("If ""with_in"" is given, consider also in parameters");
+      User_Message;
+      Help_On_Flags (Header => "Parameter 1: [with_in] ",
+                     Footer => "(optional, default=certain)");
    end Help;
 
    -----------------

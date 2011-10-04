@@ -53,8 +53,9 @@ package body Rules.Pragmas is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): all | nonstandard | <pragma names>");
       User_Message ("Control usage of specific pragmas");
+      User_Message;
+      User_Message ("Parameter(s): all | nonstandard | <pragma names>");
    end Help;
 
    -----------------

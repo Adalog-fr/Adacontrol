@@ -71,8 +71,9 @@ package body Rules.Non_Static is
       use Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control that indicated contexts use only static expressions");
+      User_Message;
       Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default = all)");
-      User_Message ("Control that index and discriminant constraints use only static expressions");
    end Help;
 
 

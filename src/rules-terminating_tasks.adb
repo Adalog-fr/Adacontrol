@@ -73,6 +73,8 @@ package body Rules.Terminating_Tasks is
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control task termination.");
+      User_Message;
+      User_Message ("Parameter(s): none");
    end Help;
 
 
@@ -83,8 +85,12 @@ package body Rules.Terminating_Tasks is
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
    begin
+      if Parameter_Exists then
+         Parameter_Error (Rule_Id, "No parameter allowed");
+      end if;
+
       if Rule_Used then
-         Parameter_Error (Rule_Id, "rule can be specified only once");
+         Parameter_Error (Rule_Id, "Rule can be specified only once");
       end if;
 
       Rule_Used := True;

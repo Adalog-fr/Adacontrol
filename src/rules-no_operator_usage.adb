@@ -78,8 +78,9 @@ package body Rules.No_Operator_Usage is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter:");
       User_Message ("Control integer types where no operators, except as indicated, are used");
+      User_Message;
+      Help_On_Flags ("Parameter:");
    end Help;
 
    -----------------

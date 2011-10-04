@@ -104,8 +104,9 @@ package body Rules.Unnecessary_Use is
       use Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s):");
       User_Message ("Control use clauses that can be removed, moved, or changed to use type.");
+      User_Message;
+      Help_On_Flags ("Parameter(s):");
    end Help;
 
    -----------------

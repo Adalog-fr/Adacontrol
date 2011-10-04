@@ -71,8 +71,9 @@ package body Rules.Max_Blank_Lines is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter: <Max allowed consecutive blank lines>");
       User_Message ("Control that there is no more than the indicated number of consecutive blank lines");
+      User_Message;
+      User_Message ("Parameter: <Max allowed consecutive blank lines>");
    end Help;
 
    -----------------

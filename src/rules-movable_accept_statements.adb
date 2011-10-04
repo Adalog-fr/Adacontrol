@@ -206,10 +206,11 @@ package body Rules.Movable_Accept_Statements  is
       use Detail_Flags_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(1):");
-      User_Message  ("Parameter(2..N): <name>");
       User_Message  ("Control (re)movable statements from `accept' bodies.");
       User_Message  ("Movable statements might be moved to an outer scope.");
+      User_Message;
+      Help_On_Flags ("Parameter(1):");
+      User_Message  ("Parameter(2..N): <name>");
    end Help;
 
 

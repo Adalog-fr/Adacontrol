@@ -74,11 +74,12 @@ package body Rules.Case_Statement is
       use Utilities, Framework.Language.Shared_Keys;
    begin
       User_Message ("Rule: "& Rule_Id);
+      User_Message ("Controls various sizes related to the case statement");
+      User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
       Min_Max_Utilities.Help_On_Modifiers   (Header => "<bound>: ");
-      User_Message ("Controls various sizes related to the case statement");
    end Help;
 
    -----------------

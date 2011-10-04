@@ -104,8 +104,9 @@ package body Rules.Statements is
       use Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s):");
       User_Message  ("Control occurrences of Ada statements");
+      User_Message;
+      Help_On_Flags ("Parameter(s):");
    end Help;
 
    -----------------

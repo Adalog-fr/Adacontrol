@@ -81,13 +81,14 @@ package body Rules.Simplifiable_expressions is
       use Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default=all)");
       User_Message  ("Control occurrence of various forms of expressions that could be made simpler:");
       User_Message  ("  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
       User_Message  ("  <expression> = (/=) True/False");
       User_Message  ("  not <comparison>");
       User_Message  ("  Unnecessary parentheses");
       User_Message  ("  Conversions of universal values, or to the expression's subtype");
+      User_Message;
+      Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default=all)");
    end Help;
 
    -----------------

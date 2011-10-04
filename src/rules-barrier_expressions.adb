@@ -80,8 +80,9 @@ package body Rules.Barrier_Expressions is
       use Utilities, Keyword_Flag_Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s):", Extra_Value => "<entity>");
       User_Message  ("Control constucts used in protected entry barriers");
+      User_Message;
+      Help_On_Flags ("Parameter(s):", Extra_Value => "<entity>");
    end Help;
 
 

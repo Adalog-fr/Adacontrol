@@ -55,8 +55,9 @@ package body Rules.Unsafe_Unchecked_Conversion is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): none");
       User_Message ("Control unsafe usage of Unchecked_Conversion");
+      User_Message;
+      User_Message ("Parameter(s): none");
    end Help;
 
    -----------------

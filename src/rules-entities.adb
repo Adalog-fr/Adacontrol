@@ -66,8 +66,9 @@ package body Rules.Entities is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <Entity name>");
       User_Message ("Control occurrences of any Ada entity");
+      User_Message;
+      User_Message ("Parameter(s): <Entity name>");
    end Help;
 
    -----------------

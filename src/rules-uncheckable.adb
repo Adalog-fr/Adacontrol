@@ -59,9 +59,9 @@ package body Rules.Uncheckable is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-
-      Help_On_Flags ("Parameter(s):", Footer => "(optional, default = all)");
       User_Message ("Control occurrences of uncheckable constructs in other rules");
+      User_Message;
+      Help_On_Flags ("Parameter(s):", Footer => "(optional, default = all)");
    end Help;
 
    -----------------

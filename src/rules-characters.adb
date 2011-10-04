@@ -71,9 +71,10 @@ package body Rules.Characters is
       use Utilities, Subrule_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Controls source lines that contain specified kind of characters");
+      User_Message;
       Help_On_Flags ("Parameter (s):",
                      Footer => "(optional, default = all)");
-      User_Message ("Controls source lines that contain specified kind of characters");
    end Help;
 
    -----------------

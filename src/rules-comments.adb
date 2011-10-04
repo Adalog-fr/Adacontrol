@@ -254,6 +254,8 @@ package body Rules.Comments is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control the content or placement of comments");
+      User_Message;
       Subrules_Flags_Utilities.Help_On_Flags ("Parameter (1)");
       User_Message ("for pattern:");
       User_Message ("   Parameter(2..): ""<comment pattern>""");
@@ -266,7 +268,6 @@ package body Rules.Comments is
       User_Message ("   Parameter(2..): [<condition>] <unit>");
       Decl_Conditions_Utilities.Help_On_Modifiers (Header => "      <condition>:");
       Units_Flags_Utilities.Help_On_Flags         (Header => "           <unit>:");
-      User_Message ("Control the content or placement of comments");
    end Help;
 
    -------------

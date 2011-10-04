@@ -85,8 +85,9 @@ package body Rules.Units is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s):");
       User_Message ("Control units not analyzed, or not referenced from the rest of the project");
+      User_Message;
+      Help_On_Flags ("Parameter(s):");
    end Help;
 
    -----------------

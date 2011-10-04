@@ -186,12 +186,13 @@ package body Rules.Silent_Exceptions is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control exception handlers that do not re-raise an exception ");
+      User_Message ("nor call a report procedure");
+      User_Message;
       User_Message ("Parameter(s)   : <control-item> | <report-item>");
       User_Message ("<control-item> : not | with   <exception> | <library unit> | others");
       User_Message (" <report-item> : raise | explicit_raise | reraise |");
       User_Message ("                 return | requeue | <report procedure name>");
-      User_Message ("Control exception handlers that do not re-raise an exception ");
-      User_Message ("nor call a report procedure");
    end Help;
 
    -----------------

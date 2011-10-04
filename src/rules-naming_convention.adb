@@ -215,10 +215,11 @@ package body Rules.Naming_Convention is
       use Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
+      User_Message  ("Control the form of allowed (or forbidden) names in declarations");
+      User_Message;
       User_Message  ("Parameter 1: [root] [others] [global|local|unit]");
       Help_On_Flags ("                ");
       User_Message  ("Parameter 2..N: [case_sensitive|case_insensitive] [not] ""<name pattern>""");
-      User_Message  ("Control the form of allowed (or forbidden) names in declarations");
    end Help;
 
    -----------------

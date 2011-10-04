@@ -76,9 +76,10 @@ package body Rules.Max_Size is
       use Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
+      User_Message  ("Control the maximum length of Ada statements");
+      User_Message;
       Help_On_Flags ("Parameter(1):");
       User_Message  ("Parameter(2): maximum acceptable number of lines");
-      User_Message  ("Control the maximum length of Ada statements");
    end Help;
 
    -----------------

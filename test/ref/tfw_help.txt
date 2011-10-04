@@ -1,6 +1,7 @@
 Rule: ABNORMAL_FUNCTION_RETURN
-Parameter(s): none
 Control functions that can propagate Program_Error due to not executing a return statement
+
+Parameter(s): none
 ----
 Rule: ALLOCATORS
 Control occurrences of allocators, either all of them,
@@ -32,27 +33,32 @@ Parameter(3..): [not] packed | sized | component_sized (optional)
             private | protected | range | record | tagged | task
 ----
 Rule: BARRIER_EXPRESSIONS
+Control constucts used in protected entry barriers
+
 Parameter(s): <entity>            | allocation          | any_component   |
               any_variable        | arithmetic_operator | array_aggregate |
               comparison_operator | conversion          | dereference     |
               indexing            | function_attribute  | local_function  |
               logical_operator    | record_aggregate    | value_attribute
-Control constucts used in protected entry barriers
 ----
 Rule: CASE_STATEMENT
+Controls various sizes related to the case statement
+
 Parameter(1)   : others_span | paths | range_span | values
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
 <bound>:  min | max
-Controls various sizes related to the case statement
 ----
 Rule: CHARACTERS
+Controls source lines that contain specified kind of characters
+
 Parameter (s): control | not_iso_646 | trailing_space |
                wide
                (optional, default = all)
-Controls source lines that contain specified kind of characters
 ----
 Rule: COMMENTS
+Control the content or placement of comments
+
 Parameter (1) pattern | position | terminating | unnamed_begin
 for pattern:
    Parameter(2..): "<comment pattern>"
@@ -66,7 +72,6 @@ for unnamed_begin:
       <condition>: always | declaration | program_unit
            <unit>: all  | procedure | function | entry | package |
                    task
-Control the content or placement of comments
 ----
 Rule: DECLARATIONS
 Control occurrences of Ada declarations
@@ -141,13 +146,17 @@ Parameter(s): {<location>} <decl>
         variant_part
 ----
 Rule: DEFAULT_PARAMETER
+Control subprogram calls or generic instantiations that use the default for a
+given defaulted parameter, or provide it, positionally or using any notation
+
 Parameter 1: <Subprogram or generic name> | calls | instantiations
 Parameter 2: <Formal parameter name> | all
 Parameter 3: used | positional | not_used
-Control subprogram calls or generic instantiations that use the default for a
-given defaulted parameter, or provide it, positionally or using any notation
 ----
 Rule: DEPENDENCIES
+Control units that depend on units others than those indicated,
+or whose number of dependencies is not in the specified range
+
 Parameter(1)   : others | raw | direct | parent
 For subrule "others":
 Parameter(2..3): allowed units
@@ -155,8 +164,6 @@ For other subrules:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
 <bound>:  min | max
-Control units that depend on units others than those indicated,
-or whose number of dependencies is not in the specified range
 ----
 Rule: DIRECTLY_ACCESSED_GLOBALS
 Control global package variables accessed by other than dedicated subprograms
@@ -165,17 +172,20 @@ Parameter(s): plain | accept | protected
               (optional)
 ----
 Rule: DUPLICATE_INITIALIZATION_CALLS
-Parameter(s): <Procedure name>
 Control that indicated procedures are not called twice with identical in parameters,
 or twice on the same out actual parameter
+
+Parameter(s): <Procedure name>
 ----
 Rule: ENTITIES
-Parameter(s): <Entity name>
 Control occurrences of any Ada entity
+
+Parameter(s): <Entity name>
 ----
 Rule: ENTITY_INSIDE_EXCEPTION
-Parameter(s): [not] calls | entry_calls | <Entity name>
 Control occurrences of an entity inside an exception handler.
+
+Parameter(s): [not] calls | entry_calls | <Entity name>
 ----
 Rule: EXCEPTION_PROPAGATION
 Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions
@@ -192,6 +202,8 @@ Parameter 2 .. N: for interface: <convention name>
                   for local_exception: nothing, no <level> allowed
 ----
 Rule: EXPRESSIONS
+Control occurrences of Ada expressions
+
 Parameter (s): and                       | and_then                         |
                array_aggregate           | array_partial_others             |
                array_others              | complex_parameter                |
@@ -212,46 +224,50 @@ For subrules inherited_function_call and prefixed_operator:
 Categories: <>     | ()      | range  | mod       | delta  |
             digits | array   | record | tagged    | access |
             new    | private | task   | protected
-Control occurrences of Ada expressions
 ----
 Rule: GLOBAL_REFERENCES
+Control global (in a relative sense) variables referenced 
+directly or indirectly from some specific constructs
+
 Parameter(1):  all                 | multiple |
                multiple_non_atomic
 Parameter(2..N):  <name> | task | protected | function | procedure
-Control global (in a relative sense) variables referenced 
-directly or indirectly from some specific constructs
 ----
 Rule: HEADER_COMMENTS
+Control that  each unit starts with at least indicated number of comment lines
+or matches the specified model
+
 Parameter (1): minimum | model
 For minimum:
    Parameter (2) : <Required number of comment lines>
 For model:
    Parameter (2) : <model file>
-Control that  each unit starts with at least indicated number of comment lines
-or matches the specified model
 ----
 Rule: IMPROPER_INITIALIZATION
+Control out parameters and local variables that are improperly initialized
+(not initialized for all paths, or given an unnecessary initial value)
+
 Parameter(s): {<extras>} out_parameter        | variable |
                          initialized_variable
     <extras>: access | limited | package
-Control out parameters and local variables that are improperly initialized
-(not initialized for all paths, or given an unnecessary initial value)
 ----
 Rule: INSTANTIATIONS
+Control generic instantiations of specified units, either all of them
+or those made with the indicated actual parameters.
+Optionally, control is restricted to instantiations appearing at indicated locations
+
 Parameter 1     : {<location>} <Generic name>
 Parameter 2 .. N: <Entity name> | <category> | <> | = (optional)
 <location>      : all | block   | library | local     | nested |
                   own | private | public  | task_body
 <category>      : ()      | access   | array | delta  | digits | mod |
                   private |protected | range | record | tagged | task
-Control generic instantiations of specified units, either all of them
-or those made with the indicated actual parameters.
-Optionally, control is restricted to instantiations appearing at indicated locations
 ----
 Rule: INSUFFICIENT_PARAMETERS
+Control calls where absence of named notation can lead to confusion
+
 Parameter(1): Allowed number of "insufficient" parameters
 Parameter(2..N): Enumeration type names whose values are insufficient
-Control calls where absence of named notation can lead to confusion
 ----
 Rule: LOCAL_ACCESS
 Control usage of non-local 'Access attribute (and similar ones)
@@ -261,55 +277,66 @@ Parameter(s):  constant            | function           |
                protected_procedure | variable
 ----
 Rule: LOCAL_HIDING
+Control occurrences of local identifiers that hide or overload an identical name
+
 Parameter(s): <exceptions>  strict            | overloading |
                             overloading_short
                             (default = strict)
 <exceptions>: not_operator | not_enumeration
-Control occurrences of local identifiers that hide or overload an identical name
 ----
 Rule: MAX_BLANK_LINES
-Parameter: <Max allowed consecutive blank lines>
 Control that there is no more than the indicated number of consecutive blank lines
+
+Parameter: <Max allowed consecutive blank lines>
 ----
 Rule: MAX_CALL_DEPTH
-Parameter: <Allowed depth> | finite
 Control maximum call depth
+
+Parameter: <Allowed depth> | finite
 ----
 Rule: MAX_LINE_LENGTH
-Parameter: <Max allowed length>
 Control that no source line is longer than the indicated maximum
+
+Parameter: <Max allowed length>
 ----
 Rule: MAX_NESTING
-Parameter 1: <maximum allowed nesting level>
 Control scopes nested deeper than a given limit.
+
+Parameter: <maximum allowed nesting level>
 ----
 Rule: MAX_SIZE
+Control the maximum length of Ada statements
+
 Parameter(1): accept        | block        | case | case_branch  |
               if            | if_branch    | loop | simple_block |
               unnamed_block | unnamed_loop
 Parameter(2): maximum acceptable number of lines
-Control the maximum length of Ada statements
 ----
 Rule: MAX_STATEMENT_NESTING
+Control max nesting of compound statements
+
 Parameter 1: block | case | if | loop | all
 Parameter 2: nesting depth
-Control max nesting of compound statements
 ----
 Rule: MOVABLE_ACCEPT_STATEMENTS
-Parameter(1): certain | possible
-Parameter(2..N): <name>
 Control (re)movable statements from `accept' bodies.
 Movable statements might be moved to an outer scope.
+
+Parameter(1): certain | possible
+Parameter(2..N): <name>
 ----
 Rule: MULTIPLE_ASSIGNMENTS
+Control repeated assignments in a sequence to a same variable, or sequences of assignments
+to components of a structured variable that could be replaced by an aggregate
+
 Parameter (1) : repeated | groupable
 For groupable:
 Parameter(2..n): <criterion> <value>
 <criterion> : given | missing | ratio
-Control repeated assignments in a sequence to a same variable, or sequences of assignments
-to components of a structured variable that could be replaced by an aggregate
 ----
 Rule: NAMING_CONVENTION
+Control the form of allowed (or forbidden) names in declarations
+
 Parameter 1: [root] [others] [global|local|unit]
                  all                       | type                       |
                  discrete_type             | enumeration_type           |
@@ -357,44 +384,51 @@ Parameter 1: [root] [others] [global|local|unit]
                  generic_sp_renaming       | generic_procedure_renaming |
                  generic_function_renaming
 Parameter 2..N: [case_sensitive|case_insensitive] [not] "<name pattern>"
-Control the form of allowed (or forbidden) names in declarations
 ----
 Rule: NON_STATIC
+Control that indicated contexts use only static expressions
+
 Parameter(s): variable_initialization | constant_initialization |
               index_constraint        | discriminant_constraint |
               instantiation           | index_check
               (optional, default = all)
-Control that index and discriminant constraints use only static expressions
 ----
 Rule: NOT_ELABORATION_CALLS
-Parameter(s): <subprogram name>|new
 Control subprogram calls or allocators that happen elsewhere than
 as part of the elaboration of a library package.
+
+Parameter(s): <subprogram name>|new
 ----
 Rule: NOT_SELECTED_NAME
+Control usages of an Ada entities that do not use selected notation
+
 Parameter(1) : none | unit | compilation | family
 Parameter(2..): <Entity name>
-Control usages of an Ada entities that do not use selected notation
 ----
 Rule: NO_OPERATOR_USAGE
-Parameter: none | logical
 Control integer types where no operators, except as indicated, are used
+
+Parameter: none | logical
 ----
 Rule: OBJECT_DECLARATIONS
+Control allowed forms of object declarations
+
 Parameter(1): min_integer_span     | volatile_no_address |
               address_not_volatile
 Parameter(2..)
    for Min_Integer_Span: [all|constant|variable] <value>
-Control allowed forms of object declarations
 ----
 Rule: PARAMETER_ALIASING
-Parameter 1: [with_in]  unlikely | possible | certain
-                        (optional, default=certain)
 Control subprogram or entry calls where the same variable is given
 for more than one [in] out parameter.
 If "with_in" is given, consider also in parameters
+
+Parameter 1: [with_in]  unlikely | possible | certain
+                        (optional, default=certain)
 ----
 Rule: PARAMETER_DECLARATIONS
+Controls form and metrics of parameters of callable entities
+
 Parameter (1): max_parameters           | min_parameters       |
                max_defaulted_parameters | single_out_parameter
 For Min_Parameters:
@@ -409,33 +443,36 @@ Other parameters: function            | procedure          |
                   protected_entry     | protected_function |
                   protected_procedure | task_entry
                   (optional, default = all)
-Controls form and metrics of parameters of callable entities
 ----
 Rule: POTENTIALLY_BLOCKING_OPERATIONS
-Parameter(s): None
 Control calls to potentially blocking operations from protected operations
+
+Parameter(s): None
 ----
 Rule: PRAGMAS
-Parameter(s): all | nonstandard | <pragma names>
 Control usage of specific pragmas
+
+Parameter(s): all | nonstandard | <pragma names>
 ----
 Rule: RECORD_DECLARATIONS
+Controls various parameters related to record types declarations
+
 Parameter(1): component
 For component:
 Parameter(2)  : <entity>|<category>
   <category>  : ()      | access    | array | delta  | digits | mod |
                 private | protected | range | record | tagged | task
 Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)
-Controls various parameters related to record types declarations
 ----
 Rule: REDUCEABLE_SCOPE
+Control declarations that could be moved to an inner scope,
+I.e. where all references are from a single nested scope
+
 Parameter(s): {<restriction>} all        | variable | constant |
                               subprogram | type     | package  |
                               exception  | generic  | use
                               (optional)
 <restriction>: no_blocks | to_body
-Control declarations that could be moved to an inner scope,
-I.e. where all references are from a single nested scope
 ----
 Rule: REPRESENTATION_CLAUSES
 Control occurrences of representation clauses
@@ -464,37 +501,43 @@ Parameter(s):  class_wide                  | limited_class_wide  |
                unconstrained_discriminated
 ----
 Rule: SIDE_EFFECT_PARAMETERS
-Parameter(s): <side effect function names>
 Control subprogram calls or generic instantiations that call
 functions with side effect and where the order of evaluation matters
+
+Parameter(s): <side effect function names>
 ----
 Rule: SILENT_EXCEPTIONS
+Control exception handlers that do not re-raise an exception 
+nor call a report procedure
+
 Parameter(s)   : <control-item> | <report-item>
 <control-item> : not | with   <exception> | <library unit> | others
  <report-item> : raise | explicit_raise | reraise |
                  return | requeue | <report procedure name>
-Control exception handlers that do not re-raise an exception 
-nor call a report procedure
 ----
 Rule: SIMPLIFIABLE_EXPRESSIONS
-Parameter(s): conversion  | parentheses  | range   | logical_false |
-              logical_not | logical_true | logical
-              (optional, default=all)
 Control occurrence of various forms of expressions that could be made simpler:
   T'FIRST .. T'LAST that can be replaced by T'RANGE or T.
   <expression> = (/=) True/False
   not <comparison>
   Unnecessary parentheses
   Conversions of universal values, or to the expression's subtype
+
+Parameter(s): conversion  | parentheses  | range   | logical_false |
+              logical_not | logical_true | logical
+              (optional, default=all)
 ----
 Rule: SIMPLIFIABLE_STATEMENTS
+Control Ada statements that can be made simpler
+
 Parameter(s): block | dead           | handler     |
               if    | if_for_case    | if_not      |
               loop  | loop_for_while | nested_path |
               null
-Control Ada statements that can be made simpler
 ----
 Rule: STATEMENTS
+Control occurrences of Ada statements
+
 Parameter(s): any_statement            | abort                   |
               accept_return            | assignment              |
               asynchronous_select      | block                   |
@@ -524,9 +567,10 @@ Parameter(s): any_statement            | abort                   |
               unnamed_multiple_loop    | unnamed_simple_loop     |
               unnamed_while_loop       | untyped_for             |
               while_loop
-Control occurrences of Ada statements
 ----
 Rule: STYLE
+Control various Ada style issues
+
 Parameter(1): casing_attribute       | casing_identifier      |
               casing_keyword         | casing_pragma          |
               compound_statement     | default_in             |
@@ -563,39 +607,49 @@ For positional_association:
                                    (default = all)
    each value may be followed by allowed number of occurrences
    and entities not required to follow the rule
-Control various Ada style issues
 ----
 Rule: TERMINATING_TASKS
 Control task termination.
+
+Parameter(s): none
 ----
 Rule: TYPE_INITIAL_VALUES
-Parameter(1): <pattern>
 Control types without proper initialization constants
+
+Parameter(1): <pattern>
 ----
 Rule: UNCHECKABLE
+Control occurrences of uncheckable constructs in other rules
+
 Parameter(s): false_positive | false_negative | missing_unit
               (optional, default = all)
-Control occurrences of uncheckable constructs in other rules
 ----
 Rule: UNITS
-Parameter(s): unreferenced | unchecked
 Control units not analyzed, or not referenced from the rest of the project
+
+Parameter(s): unreferenced | unchecked
 ----
 Rule: UNNECESSARY_USE_CLAUSE
-Parameter(s): unused | qualified | operator | nested | movable
 Control use clauses that can be removed, moved, or changed to use type.
+
+Parameter(s): unused | qualified | operator | nested | movable
 ----
 Rule: UNSAFE_PAIRED_CALLS
+Controls calls like P/V operations that are not safely paired
+
 Parameter(1): First subprogram
 Parameter(2): Second subprogram
 Parameter(3): (optional) type of lock parameter
-Controls calls like P/V operations that are not safely paired
 ----
 Rule: UNSAFE_UNCHECKED_CONVERSION
-Parameter(s): none
 Control unsafe usage of Unchecked_Conversion
+
+Parameter(s): none
 ----
 Rule: USAGE
+Control usage of various entities
+(possibly restricted to those that match the specified location and properties)
+
 Parameter(s): variable | object    {, [not] <location> | initialized | read | written}
   or        : constant             {, [not] <location> | read}
   or        : type                 {, [not] <location> | used}
@@ -606,18 +660,18 @@ Parameter(s): variable | object    {, [not] <location> | initialized | read | wr
   or        : generic              {, [not] <location> | instantiated}
   or        : all                  [, [not] <location>]
 location ::= from_visible | from_private | from_spec
-Control usage of various entities
-(possibly restricted to those that match the specified location and properties)
 ----
 Rule: USE_CLAUSES
+Control occurrences of use clauses that mention
+any package but the ones passed as parameters (if any)
+
 Parameter(1):  <Allowed package name> | local | global
                (optional)
 Parameter(2..): <Allowed package name>
-Control occurrences of use clauses that mention
-any package but the ones passed as parameters (if any)
 ----
 Rule: WITH_CLAUSES
-Parameter(s): multiple_names | reduceable | inherited
 Control "with" clauses that use multiple names, can be moved to a more reduced scope,
 or are implicitely inherited from a parent unit
+
+Parameter(s): multiple_names | reduceable | inherited
 ----

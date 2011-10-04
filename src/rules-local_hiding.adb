@@ -102,9 +102,10 @@ package body Rules.Local_Hiding is
       use Subrules_Flag_Utilities, Modifiers_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control occurrences of local identifiers that hide or overload an identical name");
+      User_Message;
       Help_On_Flags     ("Parameter(s): <exceptions> ", Footer => "(default = strict)");
       Help_On_Modifiers ("<exceptions>:");
-      User_Message ("Control occurrences of local identifiers that hide or overload an identical name");
    end Help;
 
    -----------------

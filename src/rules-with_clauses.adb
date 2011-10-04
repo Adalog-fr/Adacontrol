@@ -87,9 +87,10 @@ package body Rules.With_Clauses is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Help_On_Flags ("Parameter(s):");
       User_Message ("Control ""with"" clauses that use multiple names, can be moved to a more reduced scope,");
       User_Message ("or are implicitely inherited from a parent unit");
+      User_Message;
+      Help_On_Flags ("Parameter(s):");
    end Help;
 
    -----------------

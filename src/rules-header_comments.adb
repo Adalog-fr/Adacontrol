@@ -323,13 +323,14 @@ package body Rules.Header_Comments is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control that  each unit starts with at least indicated number of comment lines");
+      User_Message ("or matches the specified model");
+      User_Message;
       Help_On_Flags ("Parameter (1):");
       User_Message ("For minimum:");
       User_Message ("   Parameter (2) : <Required number of comment lines>");
       User_Message ("For model:");
       User_Message ("   Parameter (2) : <model file>");
-      User_Message ("Control that  each unit starts with at least indicated number of comment lines");
-      User_Message ("or matches the specified model");
    end Help;
 
    -------------

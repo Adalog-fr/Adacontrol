@@ -91,9 +91,10 @@ package body Rules.Side_Effect_Parameters is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(s): <side effect function names>");
       User_Message ("Control subprogram calls or generic instantiations that call");
       User_Message ("functions with side effect and where the order of evaluation matters");
+      User_Message;
+      User_Message ("Parameter(s): <side effect function names>");
    end Help;
 
    -----------------

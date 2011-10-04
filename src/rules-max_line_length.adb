@@ -60,8 +60,9 @@ package body Rules.Max_Line_Length is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter: <Max allowed length>");
       User_Message ("Control that no source line is longer than the indicated maximum");
+      User_Message;
+      User_Message ("Parameter: <Max allowed length>");
    end Help;
 
    -----------------

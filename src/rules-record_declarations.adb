@@ -86,14 +86,15 @@ package body Rules.Record_Declarations is
    procedure Help is
       use Utilities;
    begin
-      User_Message ("Rule: "& Rule_Id);
+      User_Message ("Rule: " & Rule_Id);
+      User_Message ("Controls various parameters related to record types declarations");
+      User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
       User_Message ("For component:");
       User_Message ("Parameter(2)  : <entity>|<category>");
       User_Message ("  <category>  : ()      | access    | array | delta  | digits | mod |");
       User_Message ("                private | protected | range | record | tagged | task");
       User_Message ("Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)");
-      User_Message ("Controls various parameters related to record types declarations");
    end Help;
 
    -----------------

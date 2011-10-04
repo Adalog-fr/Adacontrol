@@ -70,8 +70,9 @@ package body Rules.Type_Initial_Values is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Parameter(1): <pattern>");
       User_Message ("Control types without proper initialization constants");
+      User_Message;
+      User_Message ("Parameter(1): <pattern>");
    end Help;
 
    -----------------

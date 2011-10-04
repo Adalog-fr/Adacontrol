@@ -197,10 +197,11 @@ package body Rules.Global_References is
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      Reference_Kind_Utilities.Help_On_Flags ("Parameter(1): ");
-      Checked_Kind_Utilities.Help_On_Flags ("Parameter(2..N): ", Extra_Value => "<name>");
       User_Message ("Control global (in a relative sense) variables referenced ");
       User_Message ("directly or indirectly from some specific constructs");
+      User_Message;
+      Reference_Kind_Utilities.Help_On_Flags ("Parameter(1): ");
+      Checked_Kind_Utilities.Help_On_Flags ("Parameter(2..N): ", Extra_Value => "<name>");
    end Help;
 
    -----------------
