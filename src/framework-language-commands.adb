@@ -119,8 +119,18 @@ package body Framework.Language.Commands is
          Failure_Occurred := True;
 
          -- Clean-up:
-         Ruler.Reset;
-         Framework.Scope_Manager.Reset (Deactivate => False);
+         begin
+            Ruler.Reset;
+            Framework.Scope_Manager.Reset (Deactivate => False);
+         exception
+            when Other_Occur : others =>
+               -- Sounds really bad here... warn, but preserve the original exception
+               -- which is likely to be more interesting
+               -- => Handle and forget this one.
+               User_Message ("============= Recovery: "
+                             & To_Wide_String (Exception_Name (Other_Occur))
+                             & " raised during Reset =============");
+         end;
 
          User_Message ("============= Phase: " & Phase & " =============");
          User_Message ("AdaCtl version: " & Adactl_Version
