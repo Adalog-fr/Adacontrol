@@ -401,14 +401,32 @@ package body Scoped_Store is
          if Unit_Spec_Head = Deleted_Node then
             Unit_Spec_Head := Current;
          end if;
+
          if Parents_Head = Deleted_Node then
             Parents_Head := Current;
          end if;
+
          if Unit_Info.Visible_Head = Deleted_Node then
-            Unit_Info.Visible_Head := Current;
+            if Current = null
+              or else Current.Origin = Parent
+            then
+               -- Was last node from spec
+               Unit_Info.Visible_Head := null;
+            else
+               Unit_Info.Visible_Head := Current;
+            end if;
          end if;
+
          if Unit_Info.Private_Head = Deleted_Node then
-            Unit_Info.Private_Head := Current;
+            if  Current = null
+              or else Current = Unit_Info.Visible_Head
+              or else Current.Origin = Parent
+            then
+               -- Was last node from private part
+               Unit_Info.Private_Head := null;
+            else
+               Unit_Info.Private_Head := Current;
+            end if;
          end if;
          -- Other pointers of Unit_Info are not yet initialized at that point
 
@@ -696,7 +714,6 @@ package body Scoped_Store is
       Cur_Link   : Link;
       Scope_Kind : constant Asis.Declaration_Kinds := Declaration_Kind (Scope);
    begin  -- Exit_Scope
-
       case Scope_Kind is
          when A_Procedure_Declaration
             | A_Function_Declaration
@@ -815,6 +832,10 @@ package body Scoped_Store is
       end loop;
       Spec_Maps.Clear (Spec_Store);
    end Clear_All;
+
+   --------------
+   -- Activate --
+   --------------
 
    procedure Activate is
    begin
