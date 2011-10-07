@@ -152,19 +152,69 @@ Dispatching:
       Proc_T (Y, Y);                          -- Aliasing
       Proc_T (A => Y, B => Y);                -- Aliasing
    end Dispatching;
-   
-Mantis_0000006:
-    declare
-       procedure P (O : in out Integer; X, Y : in out Integer) is begin null; end;
-       type Tab1 is array (1 .. 10) of Integer;
-       type Tab2 is array (1 .. 10, 1 .. 10) of Integer;
-       type PTab1 is access Tab1;
-       type PTab2 is access Tab2;
-       A : Ptab1;
-       B : Ptab2;
-       O : Integer;
-    begin
-       P (O, A(1), B(1,1));                   -- Unlikely aliasing
-    end Mantis_0000006;
+
+   Mantis_0000006 :
+   declare
+      procedure P (O : in out Integer; X, Y : in out Integer) is begin null; end;
+      type Tab1 is array (1 .. 10) of Integer;
+      type Tab2 is array (1 .. 10, 1 .. 10) of Integer;
+      type PTab1 is access Tab1;
+      type PTab2 is access Tab2;
+      A : Ptab1;
+      B : Ptab2;
+      O : Integer;
+   begin
+      P (O, A (1), B (1, 1));                 -- Unlikely aliasing
+   end Mantis_0000006;
+
+   Mantis_0000013 :
+   declare
+      type T is tagged
+         record
+            I : Integer;
+         end record;
+      type T_Acc is access T;
+      type TC_Acc is access T'Class;
+      type D is new T with null record;
+
+      VT : T;
+      VTA : T_Acc;
+      VTAC : TC_Acc;
+
+      procedure P1 (X, Y : in out Integer) is
+      begin
+         null;
+      end P1;
+
+      procedure P2 (L : access T'Class; R : Integer) is
+      begin
+         null;
+      end P2;
+
+      procedure P3 (L : Integer; R : access T'Class) is
+      begin
+         null;
+      end P3;
+
+      procedure Q (X, Y : access T) is
+      begin
+         P1 (X.I, Y.I);                       -- Unlikely aliasing
+      end Q;
+
+      procedure R (X, Y : access T'Class) is
+      begin
+         P1 (X.I, Y.I);                       -- Unlikely aliasing
+         P2 (X,   X.I);
+         P3 (X.I, X);
+      end R;
+
+   begin
+      P1 (VT.I, VT.I);                        -- Aliasing
+      P1 (VTA.I, VTA.I);                      -- Aliasing
+      P1 (VTAC.I, VTAC.I);                    -- Aliasing
+
+      P1 (VT.I, VTA.I);                       -- Unlikely aliasing
+      P1 (VTA.I, VTAC.I);                     -- Unlikely aliasing
+   end Mantis_0000013;
 end T_parameter_aliasing;
 
