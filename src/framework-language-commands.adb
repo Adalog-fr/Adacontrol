@@ -146,9 +146,9 @@ package body Framework.Language.Commands is
            | ASIS_Inappropriate_Line_Number
            =>
             User_Message ("ASIS error: " & To_Wide_String (Exception_Name (Local_Occur)));
-            User_Message ("In rule: " & Framework.Rules_Manager.Last_Rule);
+            User_Message ("In rule  : " & Framework.Rules_Manager.Last_Rule);
             if Unit_Name /= "" then
-               User_Message ("For unit: " & Unit_Name);
+               User_Message ("For unit : " & Unit_Name);
             end if;
             Asis_Exception_Messages;
 

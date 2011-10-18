@@ -235,7 +235,7 @@ package body Rules.Multiple_Assignments is
             when A_Definition =>
                Def := Struct;
             when others =>
-               Failure ("unexpected element in Total_Fields", Struct);
+               Failure ("Total_Fields: unexpected element", Struct);
          end case;
 
          -- Among other things, this loop unwinds subtypes and visible derivations
@@ -279,7 +279,7 @@ package body Rules.Multiple_Assignments is
                            return Parent_Fields + Extension_Fields;
                         end;
                      when others =>
-                        Failure ("unexpected type kind in Total_Fields", Def);
+                        Failure ("Total_Fields: unexpected type kind", Def);
                   end case;
 
                when A_Record_Definition =>
@@ -351,7 +351,7 @@ package body Rules.Multiple_Assignments is
                   return Not_Static;
 
                when others =>
-                  Failure ("unexpected definition in Total_Fields", Def);
+                  Failure ("Total_Fields: unexpected definition", Def);
             end case;
          end loop;
       end Total_Fields;

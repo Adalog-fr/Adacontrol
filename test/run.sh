@@ -234,7 +234,7 @@ put_line_line
 put_title_line "Test result for $nb_rules rules, $nb_fw framework tests"
 put_line_line
 for test_case in $list; do
-    diff=`diff res/${test_case} ref/${test_case} 2>&1 `
+    diff=`diff --strip-trailing-cr res/${test_case} ref/${test_case} 2>&1 `
     if [ "$diff" == "" ]; then
 	nb_passed=$((nb_passed+1))
 	if [ $SILENT -eq 0 ]; then
