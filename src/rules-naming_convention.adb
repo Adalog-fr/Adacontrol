@@ -798,6 +798,9 @@ package body Rules.Naming_Convention is
                                  Failure ("Unexpected accessed type 2", Accessed);
                            end case;
 
+                        when An_Interface_Type_Definition =>
+                           null; -- 2005 TBSL
+
                         when others =>
                            Failure ("Unexpected type kind: " & Type_Kinds'Wide_Image (Type_Kind (Def)));
                      end case;

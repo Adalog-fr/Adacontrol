@@ -278,8 +278,11 @@ package body Rules.Multiple_Assignments is
                            end if;
                            return Parent_Fields + Extension_Fields;
                         end;
+                     when An_Interface_Type_Definition => --2005
+                        -- Interfaces have no data...
+                        return 0;
                      when others =>
-                        Failure ("Total_Fields: unexpected type kind", Def);
+                        Failure ("Total_Fields: unexpected type kind " & Type_Kinds'Wide_Image (Type_Kind (Def)), Def);
                   end case;
 
                when A_Record_Definition =>

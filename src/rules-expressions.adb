@@ -375,14 +375,14 @@ package body Rules.Expressions is
                                    (Rule_Id,
                                     Control_Manager.Association (Usage, Image (E_Real_Equality)),
                                     Get_Location (Prefix (Call)),
-                                    "equality or inequality with Root Real !!!");
+                                    "equality or inequality with Root Real");
                               when A_Universal_Real_Definition => -- 3.4.1(6)
                                  if Parsed_First_Parameter then
                                     Report
                                       (Rule_Id,
                                        Control_Manager.Association (Usage, Image (E_Real_Equality)),
                                        Get_Location (Prefix (Call)),
-                                       "equality or inequality with two Universal Real constants !!!");
+                                       "equality or inequality with two Universal Real constants");
                                  else
                                     Parsed_First_Parameter := True;
                                  end if;
