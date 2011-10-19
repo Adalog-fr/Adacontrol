@@ -542,10 +542,8 @@ package body Rules.Array_Declarations is
       procedure Process_Component is
          use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
-         Array_Comp : constant Asis.Expression := Subtype_Simple_Name (Component_Subtype_Indication
-                                                                       (Array_Component_Definition
-                                                                        (Definition)));
-         Comp_Decl  : constant Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration (Array_Comp);
+         Array_Comp : constant Asis.Expression := Component_Subtype_Indication
+                                                   (Array_Component_Definition (Definition));
          Arr_Decl   : constant Asis.Declaration := Enclosing_Element (Definition);
          First_St   : Asis.Declaration;
          Iterator   : Context_Iterator := Compo_Iterator.Create;
@@ -644,24 +642,36 @@ package body Rules.Array_Declarations is
             end;
          end if;
 
-         Is_Sized := not Is_Nil (Attribute_Clause_Expression (A_Size_Attribute, Arr_Decl));
-
+         Is_Sized       := not Is_Nil (Attribute_Clause_Expression (A_Size_Attribute, Arr_Decl));
          Is_Compo_Sized := not Is_Nil (Attribute_Clause_Expression (A_Component_Size_Attribute, Arr_Decl));
 
-         -- Exact subtype
-         Reset (Iterator, Array_Comp, Extend_To => All_Extensions);
-         Compo_Report (Iterator, Title_Case);
+         -- 2005 Array_Comp is nil if the component is of an anonymous access type
+         -- Give up on matching (sub)types, only match access category
+         if Is_Nil (Array_Comp) then
+            -- Category
+            Reset (Iterator, Framework.Value (Image (An_Access_Type)));
+            Compo_Report (Iterator, Lower_Case);
+         else
+            declare
+               Comp_Decl  : Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration
+                                                          (Subtype_Simple_Name (Array_Comp));
+            begin
+               -- Exact subtype
+               Reset (Iterator, Subtype_Simple_Name (Array_Comp), Extend_To => All_Extensions);
+               Compo_Report (Iterator, Title_Case);
 
-         -- First subtype (aka type), if different
-         First_St := Corresponding_First_Subtype (Comp_Decl);
-         if not Is_Equal (First_St, Comp_Decl) then
-            Reset (Iterator, Names (First_St) (1), Extend_To => All_Extensions);
-            Compo_Report (Iterator, Title_Case);
+               -- First subtype (aka type), if different
+               First_St := Corresponding_First_Subtype (Comp_Decl);
+               if not Is_Equal (First_St, Comp_Decl) then
+                  Reset (Iterator, Names (First_St) (1), Extend_To => All_Extensions);
+                  Compo_Report (Iterator, Title_Case);
+               end if;
+
+               -- Category
+               Reset (Iterator, Framework.Value (Image (Type_Category (First_St, Follow_Derived => True))));
+               Compo_Report (Iterator, Lower_Case);
+            end;
          end if;
-
-         -- Category
-         Reset (Iterator, Framework.Value (Image (Type_Category (First_St, Follow_Derived => True))));
-         Compo_Report (Iterator, Lower_Case);
       end Process_Component;
 
       procedure Process_Dimensions is

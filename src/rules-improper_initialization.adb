@@ -946,8 +946,22 @@ package body Rules.Improper_Initialization is
             if Type_Kind (Subtype_Decl) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition then
                -- Damn anonymous array
                -- Work on the components, but only one level (case of components of a limited private type)
-               Subtype_Decl := Subtype_Simple_Name (Component_Subtype_Indication
-                                                    (Array_Component_Definition (Subtype_Decl)));
+               Subtype_Decl := Component_Subtype_Indication (Array_Component_Definition (Subtype_Decl));
+               if Is_Nil (Subtype_Decl) then
+                  -- 2005 Anonymous array of anonymous access! Those people should not be allowed to program...
+                  -- Handle as above
+                  if not Extensions (Var_Kind) (M_Access) then
+                     return;
+                  end if;
+
+                  for Var_Index in Var_Names'Range loop
+                     Add (Global_Map,
+                          To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Var_Names (Var_Index)))),
+                          (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
+                  end loop;
+                  return;
+               end if;
+               Subtype_Decl := Subtype_Simple_Name (Subtype_Decl);
             else
                -- A_Subtype_Indication
                Subtype_Decl := Subtype_Simple_Name (Subtype_Decl);

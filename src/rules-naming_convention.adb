@@ -561,8 +561,8 @@ package body Rules.Naming_Convention is
                                           end case;
                                           exit Going_Up_Renamings;
 
-                                          when others =>
-                                          Failure ("Unexpected expression kind in renaming: "
+                                       when others =>
+                                          Failure ("Process_Defining_Name: Unexpected expression kind in renaming: "
                                                    & Expression_Kinds'Wide_Image (Expression_Kind (Renamed)),
                                                    Renamed);
                                     end case;

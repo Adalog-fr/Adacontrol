@@ -999,11 +999,13 @@ package body Rules.Usage is
          Current_Definition : Asis.Definition := Def;
       begin
          loop
+            Current_Definition := Component_Subtype_Indication (Array_Component_Definition (Current_Definition));
+            if Is_Nil (Current_Definition) then
+               -- 2005 anonymous access component => access type => initialized
+               return True;
+            end if;
             Current_Definition := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
-                                                         (Subtype_Simple_Name
-                                                          (Component_Subtype_Indication
-                                                           (Array_Component_Definition
-                                                            (Current_Definition)))));
+                                                         (Subtype_Simple_Name (Current_Definition)));
             exit when Type_Kind (Current_Definition)
                       not in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition
               and then Formal_Type_Kind (Current_Definition)
