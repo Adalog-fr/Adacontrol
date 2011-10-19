@@ -1076,6 +1076,9 @@ package body Rules.Usage is
                            when others =>
                               Is_Initialized := False;
                         end case;
+                     when An_Access_Definition =>
+                        -- 2005 anonymous access
+                        Is_Initialized := True;
                      when A_Formal_Type_Definition =>
                         case Formal_Type_Kind (Root_Definition) is
                            when A_Formal_Access_Type_Definition =>

@@ -317,6 +317,12 @@ package body Rules.Return_Type is
 
       -- Retrieve the returned type from the function declaration
       Result_Expression := Simple_Name (Result_Profile (Decl));
+      if Definition_Kind (Result_Expression) = An_Access_Definition then
+         -- 2005 function returns anonymous access => none of the (current) expected types
+         -- TBSL: add here 2005 checks
+         return;
+      end if;
+
       case Expression_Kind (Result_Expression) is
          when An_Identifier =>
             null;

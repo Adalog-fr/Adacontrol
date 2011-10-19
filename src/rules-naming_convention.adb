@@ -537,28 +537,37 @@ package body Rules.Naming_Convention is
                                             =>
                                           exit;
                                        when An_Explicit_Dereference =>
-                                          Renamed_T := A4G_Bugs.Corresponding_Expression_Type (Prefix (Renamed));
-                                          if Is_Nil (Renamed_T) then
-                                             -- The prefix is an access type without a real declaration
-                                             -- => must be an anonymous access type, and the prefix a formal parameter
-                                             Decl := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name
-                                                                                              (Prefix (Renamed)));
-                                             Assert (Declaration_Kind (Decl) = A_Parameter_Specification,
-                                                     "wrong declaration kind with dereference of Nil accessed type");
-                                             Decl_Kind := A_Parameter_Specification;
-                                             exit Going_Up_Renamings;
+                                          Renamed_T := Thick_Queries.Corresponding_Expression_Type_Definition (Prefix (Renamed));
+                                          if Definition_Kind (Renamed_T) = An_Access_Definition then
+                                             -- anonymous access type
+                                             -- 2005 can occur in many declarations...
+                                             Decl := Enclosing_Element (Renamed);
+                                             case Access_Definition_Kind (Renamed_T) is
+                                                when Not_An_Access_Definition =>
+                                                   Failure ("Process_Defining_Name: Not an access definition",
+                                                            Renamed);
+                                                when An_Anonymous_Access_To_Variable =>
+                                                   Decl_Kind := A_Variable_Declaration;
+                                                when An_Anonymous_Access_To_Constant =>
+                                                   Decl_Kind := A_Constant_Declaration;
+                                                when others =>
+                                                   Failure ("Process_Defining_Name: Unexpected anonymous dereference",
+                                                            Renamed);
+                                             end case;
+                                          else
+                                             -- regular access type
+                                             case Access_Type_Kind (Renamed_T) is
+                                                when A_Pool_Specific_Access_To_Variable
+                                                   | An_Access_To_Variable
+                                                   =>
+                                                   Decl_Kind := A_Variable_Declaration;
+                                                when An_Access_To_Constant =>
+                                                   Decl_Kind := A_Constant_Declaration;
+                                                when others =>
+                                                   Failure ("Process_Defining_Name: Unexpected named dereference",
+                                                            Renamed);
+                                             end case;
                                           end if;
-
-                                          case Access_Type_Kind (Type_Declaration_View (Renamed_T)) is
-                                             when A_Pool_Specific_Access_To_Variable
-                                                | An_Access_To_Variable
-                                                  =>
-                                                Decl_Kind := A_Variable_Declaration;
-                                             when An_Access_To_Constant =>
-                                                Decl_Kind := A_Constant_Declaration;
-                                             when others =>
-                                                Failure ("Unexpected type for dereference", Renamed);
-                                          end case;
                                           exit Going_Up_Renamings;
 
                                        when others =>

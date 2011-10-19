@@ -943,7 +943,22 @@ package body Rules.Improper_Initialization is
             end if;
 
             Subtype_Decl := Object_Declaration_View (Decl);
-            if Type_Kind (Subtype_Decl) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition then
+            if Definition_Kind (Subtype_Decl) = An_Access_Definition then
+               -- 2005: anonymous access type
+               -- It is an access type
+               -- It is not a limited type
+               -- Needs special processing since we have no type declaration
+               if not Extensions (Var_Kind) (M_Access) then
+                  return;
+               end if;
+
+               for Var_Index in Var_Names'Range loop
+                  Add (Global_Map,
+                       To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Var_Names (Var_Index)))),
+                       (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
+               end loop;
+               return;
+            elsif Type_Kind (Subtype_Decl) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition then
                -- Damn anonymous array
                -- Work on the components, but only one level (case of components of a limited private type)
                Subtype_Decl := Component_Subtype_Indication (Array_Component_Definition (Subtype_Decl));
