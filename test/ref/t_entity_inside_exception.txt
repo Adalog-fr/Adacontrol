@@ -11,8 +11,8 @@ t_entity_inside_exception.adb:51:7: Error: Calls: call to T_entity_inside_except
 t_entity_inside_exception.adb:53:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
 t_entity_inside_exception.adb:53:12: Error: Calls: call to T_entity_inside_exception.Func
 t_entity_inside_exception.adb:54:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
+t_entity_inside_exception.adb:54:29: Error: No_Arithmetic: use of ""+""
 t_entity_inside_exception.adb:54:12: Error: Calls: call to Standard.Integer'Succ
 t_entity_inside_exception.adb:54:26: Error: Variable: use of "T_Entity_Inside_Exception.X"
-t_entity_inside_exception.adb:54:29: Error: No_Arithmetic: use of ""+""
 t_entity_inside_exception.adb:55:7: Error: Variable: use of "T_Entity_Inside_Exception.X"
 t_entity_inside_exception.adb:56:9: Error: Entry_Calls: entry call to T_entity_inside_exception.T.E

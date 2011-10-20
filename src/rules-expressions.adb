@@ -532,7 +532,9 @@ package body Rules.Expressions is
                   return;
             end case;
          when others =>
-            Failure ("wrong array definition kind");
+            Failure ("Process_Attribute_Dimension: wrong array definition kind "
+                     & Definition_Kinds'Wide_Image (Definition_Kind (Def)),
+                    Def);
       end case;
 
       if Has_Dimension xor Multidimensional_Array then

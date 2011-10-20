@@ -537,7 +537,8 @@ package body Rules.Naming_Convention is
                                             =>
                                           exit;
                                        when An_Explicit_Dereference =>
-                                          Renamed_T := Thick_Queries.Corresponding_Expression_Type_Definition (Prefix (Renamed));
+                                          Renamed_T := Thick_Queries.Corresponding_Expression_Type_Definition
+                                                        (Prefix (Renamed));
                                           if Definition_Kind (Renamed_T) = An_Access_Definition then
                                              -- anonymous access type
                                              -- 2005 can occur in many declarations...

@@ -198,7 +198,7 @@ t_expressions-test_real_equality.adb:81:14: Found: EXPRESSIONS: equality or ineq
 t_expressions-test_real_equality.adb:83:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:83:18: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:85:17: Found: EXPRESSIONS: equality or inequality with Floating Point
-t_expressions-test_real_equality.adb:87:14: Found: EXPRESSIONS: equality or inequality with two Universal Real constants !!!
+t_expressions-test_real_equality.adb:87:14: Found: EXPRESSIONS: equality or inequality with two Universal Real constants
 t_expressions-test_real_equality.adb:91:7: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:105:7: Error: All_Inherited: use of expression "inherited_function_call"
 t_expressions-test_real_equality.adb:107:10: Error: All_Inherited: use of expression "inherited_function_call"
