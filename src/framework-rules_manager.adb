@@ -415,7 +415,7 @@ package body Framework.Rules_Manager is
          if Format_Option in CSV .. CSVX then
             Raw_Trace ("Rule" and "Time");
          else
-            Raw_Trace ("Rules timing statistics");
+            Raw_Trace ("Rules timing statistics (in s.)");
          end if;
          Report_All_Timings (Rule_Map);
       end if;
