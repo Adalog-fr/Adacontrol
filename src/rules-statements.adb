@@ -56,29 +56,54 @@ package body Rules.Statements is
 
    -- all "filtered_raise" subrules (i.e. raise subrules except the plain one) must stay together
    type Subrules is (Stmt_Any_Statement,
-                     Stmt_Abort,                  Stmt_Accept_Return,          Stmt_Assignment,
-                     Stmt_Asynchronous_Select,    Stmt_Block,                  Stmt_Case,
-                     Stmt_Case_Others,            Stmt_Case_Others_Null,       Stmt_Code,
-                     Stmt_Conditional_Entry_Call, Stmt_Declare_Block,          Stmt_Delay,
-                     Stmt_Delay_Until,            Stmt_Dispatching_Call,       Stmt_Effective_Declare_Block,
-                     Stmt_Entry_Call,             Stmt_Entry_Return,           Stmt_Exception_Others,
-                     Stmt_Exception_Others_Null,  Stmt_Exit,                   Stmt_Exit_Expanded_Name,
-                     Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,        Stmt_Exit_While_Loop,
-                     Stmt_For_Loop,               Stmt_Function_Return,        Stmt_Goto,
-                     Stmt_If,                     Stmt_If_Elsif,               Stmt_Inherited_Procedure_Call,
-                     Stmt_Labelled,               Stmt_Loop_Return,            Stmt_Multiple_Exits,
-                     Stmt_No_Else,                Stmt_Null,                   Stmt_Procedure_Return,
+
+                     Stmt_Abort,                   Stmt_Accept_Return,          Stmt_Assignment,
+                     Stmt_Asynchronous_Select,
+
+                     Stmt_Block,
+
+                     Stmt_Case,                    Stmt_Case_Others,            Stmt_Case_Others_Null,
+                     Stmt_Code,                    Stmt_Conditional_Entry_Call,
+
+                     Stmt_Declare_Block,           Stmt_Delay,                  Stmt_Delay_Until,
+                     Stmt_Dispatching_Call,
+
+                     Stmt_Effective_Declare_Block, Stmt_Entry_Call,             Stmt_Entry_Return,
+                     Stmt_Exception_Others,        Stmt_Exception_Others_Null,  Stmt_Exit,
+                     Stmt_Exit_Expanded_Name,      Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,
+                     Stmt_Exit_While_Loop,         Stmt_Extended_Return,
+
+                     Stmt_For_Loop,                Stmt_Function_Return,
+
+                     Stmt_Goto,
+
+                     Stmt_If,                      Stmt_If_Elsif,               Stmt_Inherited_Procedure_Call,
+
+                     Stmt_Labelled,                Stmt_Loop_Return,
+
+                     Stmt_Multiple_Exits,
+
+                     Stmt_No_Else,                 Stmt_Null,
+
+                     Stmt_Procedure_Return,
+
                      Stmt_Raise,
 
                      -- all "filtered_raise"
-                     Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,        Stmt_Raise_Standard,
+                     Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,         Stmt_Raise_Standard,
                      Stmt_Reraise,
 
-                     Stmt_Requeue,                Stmt_Selective_Accept,       Stmt_Simple_Loop,
-                     Stmt_Terminate,              Stmt_Timed_Entry_Call,       Stmt_Unconditional_Exit,
-                     Stmt_Unnamed_Block,          Stmt_Unnamed_Exit,           Stmt_Unnamed_Loop_Exited,
-                     Stmt_Unnamed_For_Loop,       Stmt_Unnamed_Multiple_Loop,  Stmt_Unnamed_Simple_Loop,
-                     Stmt_Unnamed_While_Loop,     Stmt_Untyped_For,            Stmt_While_Loop);
+                     Stmt_Requeue,
+
+                     Stmt_Selective_Accept,       Stmt_Simple_Loop,
+
+                     Stmt_Terminate,              Stmt_Timed_Entry_Call,
+
+                     Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,           Stmt_Unnamed_Exit,
+                     Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_For_Loop,        Stmt_Unnamed_Multiple_Loop,
+                     Stmt_Unnamed_Simple_Loop,    Stmt_Unnamed_While_Loop,      Stmt_Untyped_For,
+
+                     Stmt_While_Loop);
 
    subtype Filtered_Raise_Subrules is Subrules range Stmt_Raise .. Stmt_Reraise;
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
@@ -344,6 +369,14 @@ package body Rules.Statements is
                end if;
             end;
 
+         when An_Extended_Return_Statement =>
+            if Loops_Depth (Body_Depth) > 0 then
+               Do_Report (Stmt_Loop_Return);
+            end if;
+            Do_Report (Stmt_Extended_Return);
+            -- Nothing else:
+            -- Extended returns apply only to functions, and Function_Return is checked from Process_Function_Body
+
          when A_For_Loop_Statement =>
             Do_Report (Stmt_For_Loop);
 
@@ -482,10 +515,6 @@ package body Rules.Statements is
             if Is_Nil (Statement_Identifier (Element)) then
                Do_Report (Stmt_Unnamed_While_Loop);
             end if;
-
-         when others =>
-            -- Ada 2005 : An_Extended_Return_Statement
-            null;
       end case;
    end Process_Statement;
 
@@ -563,7 +592,7 @@ package body Rules.Statements is
          use Framework.Reports;
       begin
          case Statement_Kind (Element) is
-            when A_Return_Statement =>
+            when A_Return_Statement | An_Extended_Return_Statement =>
                if Is_Nil (First_Return) then
                   First_Return := Element;
                else
@@ -572,6 +601,7 @@ package body Rules.Statements is
                           Get_Location (Element),
                           "return statement already given at " & Image (Get_Location (First_Return)));
                end if;
+
             when A_Block_Statement =>
                -- Traverse only the statements part
                declare

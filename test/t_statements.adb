@@ -1,3 +1,4 @@
+pragma Ada_2005;
 with Ada.Calendar; use Ada.Calendar;
 procedure T_statements is
    procedure Test_Raise is separate;
@@ -34,7 +35,7 @@ procedure T_statements is
    function F return Integer is
    begin
       if I = 3 then
-         return 1;      -- OK (first return)
+         return 1;      -- Function_Return OK (first return)
       else
          return 2;      -- Function_Return
       end if;
@@ -43,8 +44,11 @@ procedure T_statements is
          function Ff return Integer is
          begin
             if I = 1 then   -- No_Else
-               return 1;
+               return 1;    -- Function_Return OK (first return)
             end if;
+            return X : Integer do  -- Function_Return
+               X := 1;
+            end return;
          end Ff;
       begin
          I := 0;
@@ -54,12 +58,33 @@ procedure T_statements is
          return 1;
       when others =>    -- Exception_Others
          if I = 3 then
-            return 1;   -- OK (first return)
+            return 1;   -- Function_Return OK (first return)
          else
             return 2;   -- Function_Return
          end if;
    end F;
 
+   function G1 return Integer is
+   begin
+      if I = 2 then
+         return X : Integer do  -- Extended_Return
+            null;               -- Function_Return OK (first return)
+         end return;
+      else
+         return 2;              -- Function_Return
+      end if;
+   end G1;
+
+   function G2 return Integer is
+   begin
+      if I = 2 then
+         return 2;              -- Null, Function_Return OK (first return)
+      else
+         return X : Integer do  -- Extended_Return, Function_Return
+            null;               -- Null
+         end return;
+      end if;
+   end G2;
    protected Prot is
       entry E;
    end Prot;

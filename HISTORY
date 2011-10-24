@@ -1,5 +1,5 @@
 =============
-== V1.13b5 ==
+== V1.13b6 ==
 =============
 Bug fixes:
    Crash in Max_Call_Depth for the declaration of access to SP types
@@ -21,6 +21,8 @@ General:
 --------
 Ignore remaining of line after blank in an indirect file
 
+Accepts Ada 2005 new constructs
+
 New rules:
 ----------
 Local_Access
@@ -40,6 +42,10 @@ Declarations
 
 Return_Type
    Added subrule limited_class_wide
+
+Statements
+   Added subrule extended_return
+   Subrule Function_Return considers extended_return statements
 
 =============
 == V1.12r4 ==
