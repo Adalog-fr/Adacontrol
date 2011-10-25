@@ -6716,10 +6716,10 @@ handler, while @code{exception_others_null} controls only
 @code{@b{when others}} exception handlers that contain only
 @code{@b{null}} statements.
 @item
-@code{if_elsif} controls @code{@b{if}} statements that have at least
-one @code{@b{elsif}}.
+@code{extended_return} controls extended return statements (i.e. the
+Ada 2005 construct ``@code{@b{return} V : T @b{do} ... @b{end} @b{return}}'')
 @item
-@code{for_loop} controls all @code{for} loops.
+@code{for_loop} controls all @code{@b{for}} loops.
 @item
 @code{function_return} controls return statements (including extended
 return statements) from functions. Obviously, return statements cannot
@@ -6728,7 +6728,10 @@ one return statement in the body of functions, and at most one return
 statement in each exception handler of the exception part of
 functions.
 @item
-@code{if} controls all @code{if} statements.
+@code{if} controls all @code{@b{if}} statements.
+@item
+@code{if_elsif} controls @code{@b{if}} statements that have at least
+one @code{@b{elsif}}.
 @item
 @code{inherited_procedure_call} controls calls to procedures that have
 been inherited by a derived type and not redefined.
@@ -6736,7 +6739,7 @@ been inherited by a derived type and not redefined.
 @code{labelled} controls statements with a label (true statement
 labels, not block and loop names).
 @item
-@code{no_else} controls @code{if} statements that have no @code{else}
+@code{no_else} controls @code{@b{if}} statements that have no @code{@b{else}}
 path.
 @item
 @code{null} controls all @code{@b{null}} statements.
@@ -6747,7 +6750,7 @@ path.
 handlers that reraise the same exception, and calls to the
 @code{Ada.Exceptions.Reraise_Occurrence} procedure.
 @item
-@code{raise_standard} controls @code{raise} statements that raise one
+@code{raise_standard} controls @code{@b{raise}} statements that raise one
 of the predefined exceptions (those declared in package
 @code{Standard}). @code{raise_nonpublic} controls statements that
 raise exceptions that are neither predefined nor defined in the
