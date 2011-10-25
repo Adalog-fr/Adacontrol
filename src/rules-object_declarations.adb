@@ -276,7 +276,15 @@ package body Rules.Object_Declarations is
 
          -- Check values
 
-         Val := Discrete_Constraining_Lengths (Decl) (1);
+         declare
+            Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Decl);
+         begin
+            if Lengths'Length = 0 then
+               -- The type is a 'base f.e. => treat like dynamic
+               return;
+            end if;
+            Val := Lengths (1);
+         end;
 
          if Val = Not_Static then
             return;
