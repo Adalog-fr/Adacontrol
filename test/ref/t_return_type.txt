@@ -1,30 +1,30 @@
-t_return_type.adb:24:44: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:33:42: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:40:32: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:49:60: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:65:33: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:25:44: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:34:42: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:41:32: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:50:60: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:66:33: Error: Return_Unknown_Size: function returns unconstrained array type
 t_return_type-empty_string.adb:4:30: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:86:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
-t_return_type.adb:103:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
-t_return_type.adb:113:56: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:132:53: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:153:55: Error: Return_Unknown_Size: function returns class-wide type
-t_return_type.adb:166:55: Error: Return_Unknown_Size: function returns class-wide type
-t_return_type.adb:166:55: Error: Return_Limited_CW: function returns limited class-wide type
-t_return_type.adb:186:40: Error: Return_Task: function returns task type
-t_return_type.adb:210:45: Error: Return_Protected: function returns protected type
-t_return_type.adb:233:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:275:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
-t_return_type.adb:294:51: Error: Return_Task: function returns task type
-t_return_type.adb:294:51: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:307:13: Error: Return_Task: function returns task type
-t_return_type.adb:335:13: Error: Return_Protected: function returns protected type
-t_return_type.adb:335:13: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:350:13: Error: Return_Protected: function returns protected type
-t_return_type.adb:378:4: Error: Return_Task: function returns task type from instantiation
-t_return_type.adb:382:4: Error: Return_Protected: function returns protected type from instantiation
-t_return_type.adb:391:4: Error: Return_Unknown_Size: function returns class-wide type from instantiation
-t_return_type.adb:391:4: Error: Return_Limited_CW: function returns limited class-wide type from instantiation
-t_return_type.adb:391:4: Error: Return_Task: function returns task type from instantiation
-t_return_type.adb:391:4: Error: Return_Protected: function returns protected type from instantiation
-t_return_type.adb:391:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
+t_return_type.adb:87:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
+t_return_type.adb:104:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
+t_return_type.adb:114:56: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:133:53: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:154:55: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type.adb:167:55: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type.adb:167:55: Error: Return_Limited_CW: function returns limited class-wide type
+t_return_type.adb:187:40: Error: Return_Task: function returns task type
+t_return_type.adb:211:45: Error: Return_Protected: function returns protected type
+t_return_type.adb:234:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:276:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
+t_return_type.adb:295:51: Error: Return_Task: function returns task type
+t_return_type.adb:295:51: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:308:13: Error: Return_Task: function returns task type
+t_return_type.adb:336:13: Error: Return_Protected: function returns protected type
+t_return_type.adb:336:13: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:351:13: Error: Return_Protected: function returns protected type
+t_return_type.adb:379:4: Error: Return_Task: function returns task type from instantiation
+t_return_type.adb:383:4: Error: Return_Protected: function returns protected type from instantiation
+t_return_type.adb:392:4: Error: Return_Unknown_Size: function returns class-wide type from instantiation
+t_return_type.adb:392:4: Error: Return_Limited_CW: function returns limited class-wide type from instantiation
+t_return_type.adb:392:4: Error: Return_Task: function returns task type from instantiation
+t_return_type.adb:392:4: Error: Return_Protected: function returns protected type from instantiation
+t_return_type.adb:392:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation

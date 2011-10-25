@@ -171,7 +171,7 @@ done
 put "--- Stress test... "
 test_case=tfw_stress
 nb_fw=$((nb_fw+1))
-list=`find ./ -name "t_*.adb" ! -name "ts_*.adb" ! -name "tfw_*.adb" ! -name "x_*.ads" ! -name "x_*.adb" ! -name "*-*" -printf "%P "`
+list=`find ./ '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
 find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -T -i -F csvx_short -wd -f - $list \
    1> res/${test_case}.txt 2>&1
 result=$?

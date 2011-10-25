@@ -1,3 +1,4 @@
+pragma Ada_95; -- To allow Ada95 return of limited types
 procedure T_Return_Type is
 
    ------------------------------------------------------------
