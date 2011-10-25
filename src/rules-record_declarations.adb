@@ -390,6 +390,7 @@ package body Rules.Record_Declarations is
             end loop;
          end Compo_Report;
 
+         Temp : Asis.Element;
       begin  -- Process_Component
 
          -- Get rid of special cases (null components, variants)
@@ -426,9 +427,24 @@ package body Rules.Record_Declarations is
          end case;
 
          -- Here we are in the case of a good ol' regular component
-         Compo_Type := Corresponding_Name_Declaration (Subtype_Simple_Name
-                                                       (Component_Subtype_Indication
-                                                        (Object_Declaration_View (Compo))));
+         Temp := Component_Definition_View (Object_Declaration_View (Compo));
+         if Definition_Kind (Temp) = An_Access_Definition then
+            -- Component is of an anonymous access type
+            -- Cannot be packed
+            -- Might be initialized
+            -- Cannot correspond to a named type component
+            -- Can only match category An_Access_Type
+            Is_Packed := False;
+            Is_Initialized := not Is_Nil (Initialization_Expression (Compo));
+
+            Reset (Iterator, Framework.Value ("ACCESS"));
+            Compo_Report (Iterator, Lower_Case);
+            return;
+         end if;
+
+         -- Relief! The component has an explicit type
+         Compo_Type := Corresponding_Name_Declaration (Subtype_Simple_Name (Temp));
+
          Is_Packed := False;
          declare
             Pragma_List : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Compo_Type);
