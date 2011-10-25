@@ -211,7 +211,7 @@ files. See @ref{Non upward-compatible changes} for details.
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with Gnat version GPL 2011, as distributed
+AdaControl will work only with GNAT version GPL 2011, as distributed
 by ACT. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated
 below.
@@ -232,7 +232,7 @@ speed. @xref{Customizing AdaControl}.
 @section Building AdaControl from source
 This section is only for the source distribution of AdaControl. If you
 downloaded an executable distribution (and are using the latest
-version of Gnat GPL), you may skip to the next section.
+version of GNAT GPL), you may skip to the next section.
 
 @subsection Prerequisites
 The following software must be installed in order to compile
@@ -263,7 +263,7 @@ gnatmake -Pbuild.gpr
 @end example
 You're done!
 
-Caveat: Due to a bug in recent versions, if you are using GnatPro
+Caveat: Due to a bug in recent versions, if you are using GNATPro
 6.1.2 and above, you must set the variable GNAT_FIX to 1; i.e. invoke
 the command as:
 @example
@@ -294,7 +294,7 @@ EXT
 @end itemize
 How to set these variables properly is documented in @code{Makefile}.
 See also the compilation options in this file; a change is needed if
-you are using GnatPro 6.1.2 and above.
+you are using GNATPro 6.1.2 and above.
 
 Then, run the make command:
 @example
@@ -311,7 +311,7 @@ $ make help
 NOTE: Building AdaControl needs the ``make'' command provide with GNAT; it
 works both with WIN32 shell and UNIX shell.
 
-@subsection Build with a compiler other than Gnat
+@subsection Build with a compiler other than GNAT
 It should be possible to compile AdaControl with other compilers than
 GNAT, although we didn't have an opportunity to try it. If you have
 another compiler that supports ASIS, note that it may require some
@@ -347,14 +347,14 @@ All tests must report PASSED. If they don't, it may be due to one of
 the following issues:
 @itemize
 @item
-You are using an old version of Gnat.  AdaControl runs without any
+You are using an old version of GNAT.  AdaControl runs without any
 known problem (and it has been checked against the whole ACATS) only
-with the latest GnatPro and GnatGPL versions; earlier versions are
+with the latest GNATPro and GNATGPL versions; earlier versions are
 known to have bugs and unimplemented features that will not allow
 AdaControl to run correctly in some cases. We strongly recommend to
-always use the most recent version of Gnat.
+always use the most recent version of GNAT.
 @item
-You run a recent version of GnatPro (6.1.2 and above) and you forgot
+You run a recent version of GNATPro (6.1.2 and above) and you forgot
 to specify the ``-XGNAT_FIX=1'' option. @xref{Build with project file}.
 @item
 It may happen that the test @code{tfw_check} reports ``FAILED''
@@ -426,7 +426,7 @@ executables are in the @code{src} directory of the distribution. If
 you downloaded an executable distribution, they are in the root
 directory of the distribution. Copy the executables to any convenient
 directory on your path; a good place, for example, is in the
-@code{bin} directory of your Gnat installation.
+@code{bin} directory of your GNAT installation.
 
 @node Installing support for GPS, Installing support for AdaGide, Installing AdaControl, Installation
 @section Installing support for GPS
@@ -467,16 +467,34 @@ adactl [-deEirsTuvwx]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
 
-AdaControl can process only Ada-95, not Ada-2005, since there no ASIS
-for Ada-2005 yet.  If you are using a version of GNAT where Ada-2005
-is the default (especially GNAT-GPL), and in the rare cases where your
-program would not compile in Ada-2005 mode (notably if you have a
-function that returns a task type), you must force Ada-95 mode by
-having a ``gnat.adc'' file that contains a @code{@b{pragma} Ada_95},
-since the corresponding option cannot be passed to the compiler in
-``compile on the fly'' mode. Alternatively, you can generate the
-tree files manually (@pxref{Generating tree files manually}) with the
-``-gnat95'' option.
+AdaControl can process Ada-2005 as well as Ada-95 programs, even if
+there are currently few Ada-2005 related controls - but we hope to
+improve that situation in the near future. 
+
+If you are using Ada-2005 features, make sure that GNAT is set up for
+Ada-2005 (this is the default for GNAT-GPL). Due to technical reasons,
+the -gnat05 option cannot be passed to the compiler in ``compile on
+the fly'' mode, but you can do any of the following:
+@itemize
+@item
+have a ``gnat.adc'' file in the current directory that contains a
+@code{@b{pragma} Ada_05;}
+@item 
+put a @code{@b{pragma} Ada_05} on top of every compilation unit that
+uses Ada-2005 features;
+@item
+generate the tree
+files manually (@pxref{Generating tree files manually}) with the
+``-gnat05'' option. Note that this allows you to pass any other GNAT option
+as well.
+@end itemize
+
+Note that if your program is pure Ada-95 and you are using a version
+of GNAT where Ada-2005 is the default (especially GNAT-GPL), and in
+the rare cases where your program would not compile in Ada-2005 mode
+(notably if you have a function that returns a task type), you can
+force Ada-95 the same way by using @code{@b{pragma} Ada_95} instead.
+
 @menu
 * Command line parameters and options::  
 * Return codes::                
@@ -687,7 +705,7 @@ adactl -f my_rules.aru -p proj.adp proc.adb
 @end example
 
 Note that AdaControl does not accept ``.gpr'' project files, because
-ASIS does not currently accept the ``-P'' option like other Gnat
+ASIS does not currently accept the ``-P'' option like other GNAT
 commands do. However, when run from GPS, the interface will
 automatically use the source directories from the current (root)
 project (unless you have explicitely set a ``.adp'' file in the
@@ -725,7 +743,7 @@ includes an indication of the run number if there are more than one
 The ``-d'' option enables debug mode. This mode provides more
 information in case of an internal program error, and is of little
 interest for the casual user. In this mode, AdaControl may also, in
-rare occasions (and only with some versions of Gnat), display ASIS
+rare occasions (and only with some versions of GNAT), display ASIS
 ``bug boxes''; this does not mean that something went wrong with the
 program, but simply that an ASIS failure was properly recovered by
 AdaControl.
@@ -1585,7 +1603,7 @@ source files located in several directories, the ADA_INCLUDE_PATH
 environment variable may not be considered by ASIS, resulting in error
 messages that tell you that the bodies of some units have not been
 found (and hence have not been processed). This problem has been fixed
-in Gnat dated later than Sept. 1st, 2006. If this happens, either
+in GNAT dated later than Sept. 1st, 2006. If this happens, either
 provide your source directories as ``-I'' options (@pxref{ASIS
 options}), or generate the tree files manually (@pxref{Generating tree
 files manually}). Note that this problem does not happen if you are
@@ -1792,11 +1810,11 @@ statistics are output in CSVX format, since asking for statistics with
 a ``none'' format is mainly useful for analysing the statistics with a
 spreadsheet program.
 
-With recent versions of Gnat, the file name includes the full path of
+With recent versions of GNAT, the file name includes the full path of
 the source file. If the ``_Short'' form of the format option is used,
 the file name is stripped from any path. This can make it easier to
 compare the results of controlling units from various directories.
-Note that with older versions of Gnat, the file name never includes
+Note that with older versions of GNAT, the file name never includes
 the full path, and the ``_Short'' form of the format option has no
 effect.
 
@@ -3658,7 +3676,7 @@ copy the content) if you want to disallow these units. @xref{Rules
 files provided with AdaControl}.
 
 @subsection Limitation
-Gnat defines @code{Unchecked_Conversion} and
+GNAT defines @code{Unchecked_Conversion} and
 @code{Unchecked_Deallocation} as separate entities, rather than
 renamings of @code{Ada.Unchecked_Conversion} and
 @code{Ada.Unchecked_Deallocation}. As a consequence, it is necessary
@@ -4580,7 +4598,7 @@ will find instantiations that use either @code{Integer},
 @code{Positive}, or @code{Natural}.
 
 @subsection Limitation
-Gnat defines @code{Unchecked_Conversion} and
+GNAT defines @code{Unchecked_Conversion} and
 @code{Unchecked_Deallocation} as separate entities, rather than
 renamings of @code{Ada.Unchecked_Conversion} and
 @code{Ada.Unchecked_Deallocation}. As a consequence, it is necessary
@@ -4636,7 +4654,7 @@ Note also that this rules applies only to calls, while @code{style
 @node Local_Access, Local_Hiding, Insufficient_Parameters, Rules reference
 @section Local_Access
 This rule controls the taking of access values (through the  @code{'Access},
- @code{'Unchecked_Access}, or the  Gnat specific  @code{'Unrestricted_Access}
+ @code{'Unchecked_Access}, or the  GNAT specific  @code{'Unrestricted_Access}
 attributes) of local (i.e. non global) entities.
 
 @subsection Syntax
@@ -4664,7 +4682,7 @@ Dangerous_Objects: check local_access (Constant, Variable);
 In Ada 95, accessibility rules make sure that taking the
 @code{'Access} of an entity cannot create dangling pointers, but this
 check can be circumvented by using @code{'Unchecked_Access} (but not
-on subprograms), or in Gnat, by using
+on subprograms), or in GNAT, by using
 @code{'Unrestricted_Access}. Moreover, Ada 2005 generalized anonymous
 access types, creating more cases where accessibility levels are
 dynamically checked.
@@ -5791,7 +5809,7 @@ C2 : count pragmas (nonstandard);
 C3 : count pragmas (all);
 @end example
 Counter C1 will report the number of occurrences of @code{@b{pragma}
-Annotate} (a non-standard Gnat pragma), counter C2 will report the
+Annotate} (a non-standard GNAT pragma), counter C2 will report the
 number of non-standard pragmas (including occurrences of
 @code{Annotate}), and counter C3 will report the total number of
 pragmas (including occurrences of @code{Annotate}).
@@ -8335,7 +8353,7 @@ The Ada entity name of the formal is @code{P.T.X}.
 
 @node Limitation,  , Formals of access to subprogram types, Specifying an Ada entity name
 @section Limitation
-Due to a limitation of ASIS for Gnat, it is not possible to specify
+Due to a limitation of ASIS for GNAT, it is not possible to specify
 a profile with predefined operators; predefined operators without
 a profile work normally.
 @example
