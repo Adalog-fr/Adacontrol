@@ -38,7 +38,7 @@ Last edited: @today{}
 * Non upward-compatible changes::  
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2010 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2011 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -60,7 +60,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2010
+This document is Copyright @copyright{} 2005-2011
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -211,7 +211,7 @@ files. See @ref{Non upward-compatible changes} for details.
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with Gnat version GPL 2010, as distributed
+AdaControl will work only with Gnat version GPL 2011, as distributed
 by ACT. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated
 below.
@@ -231,8 +231,8 @@ speed. @xref{Customizing AdaControl}.
 @node Building AdaControl from source, Installing AdaControl, Installation, Installation
 @section Building AdaControl from source
 This section is only for the source distribution of AdaControl. If you
-downloaded an executable distribution (and are using Gnat GPL 2010),
-you may skip to the next section.
+downloaded an executable distribution (and are using the latest
+version of Gnat GPL), you may skip to the next section.
 
 @subsection Prerequisites
 The following software must be installed in order to compile
