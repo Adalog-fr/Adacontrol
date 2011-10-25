@@ -1,0 +1,103 @@
+How to get AdaControl from SourceForge / Git
+============================================
+
+Prerequesites
+-------------
+- Any version of Gnat (but we recommend using the latest one), GPL or
+  PRO,with ASIS installed. We strongly recommend to install ASIS in
+  the GNAT repository.
+- Git. At Adalog, we use the one that's distributed with Cygwin.
+- Cygwin or Mingwin (not required, but recommended). Several useful
+  scripts are bash scripts.
+
+Installing AdaControl
+---------------------
+At Adalog, we believe in software components. True software
+components,  i.e. pieces of code that are shared between several
+programs - not copies with as many versions as using programs ;-).
+
+For this reason, there are three repositories that contain the various
+sources that are part of AdaControl:
+   - AdaControl itself;
+   - Adalog_Comps, general software components that are of interest
+     for any program;
+   - Adalog_Asiscomps, software components that are of in interest for
+     any ASIS application.
+
+To install AdaControl, you'll need to create three directories
+(anywhere you please), that we'll call <Adactl_Dir>, <Comps_Dir>, and
+<Asiscomps_Dir>, respectively.
+
+1) Change to <Adactl_Dir> and issue the following commands:
+git clone git://adacontrol.git.sourceforge.net/gitroot/adacontrol/adacontrol ./
+mkdir adalib
+
+2) Change to <Comps_Dir>, and issue the following commands:
+git clone git://adacontrol.git.sourceforge.net/gitroot/adacontrol/adalog_comps ./
+mkdir adalib
+
+3) Change to <Asiscomps_Dir>, and issue the following commands:
+git clone git://adacontrol.git.sourceforge.net/gitroot/adacontrol/adalog_asiscomps ./
+mkdir adalib
+
+4) Make sure that <Comps_Dir> and <Asiscomps_Dir>  are on your
+   GPR_PROJECT_PATH environment variable.
+
+To compile AdaControl, change to <Adactl_Dir> and type:
+gnatmake -P adactl
+
+You can check that everything is OK by changing to <AdaCtl_Dir>/test and
+issuing the following command:
+run.sh
+
+Once AdaControl is installed, you can update it to the latest version by performing
+the following steps:
+
+1) Change to <Adactl_Dir> and issue the following command:
+git pull git://adacontrol.git.sourceforge.net/gitroot/adacontrol/adacontrol
+
+2) Change to <Comps_Dir>, and issue the following command:
+git pull git://adacontrol.git.sourceforge.net/gitroot/adacontrol/adalog_comps
+
+3) Change to <Asiscomps_Dir>, and issue the following command:
+git pull git://adacontrol.git.sourceforge.net/gitroot/adacontrol/adalog_asiscomps
+
+
+SourceForge vs. Source distribution of AdaControl
+-------------------------------------------------
+There are 2 ways of getting the sources of AdaControl: from Adalog's
+regular source  distribution at http://www.adalog.fr/adacontrol2.htm,
+or from SourceForge.
+
+Only the latest, released, version of AdaControl is available from the
+source distribution. It contains all sources - components as well as
+AdaControl - in a single directory. It is primarily intended to allow
+people who use a version of Gnat different from the latest GPL release
+to build AdaControl with their version of Gnat.
+
+The SourceForge version includes all previous versions, under version
+control, as well as the latest improvements that are not yet
+released. It is organized following Adalog's internal structure -
+components are kept separate from the program. It is mainly intended
+for those who  want to participate in the development of AdaControl,
+or who want the latest bleeding-edge version.
+
+
+Versions of AdaControl vs. versions of the components
+-----------------------------------------------------
+Adalog_Comps is very stable, but Adalog_Asiscomps is improved quite
+often. We are very careful about keeping upward compatibility of the
+components, therefore you should be able to compile any version of
+AdaControl with the latest version of the components. An exception to
+this can happen when a new value has been added to an enumeration type
+of the components, therefore making some case statements incomplete in
+older versions of AdaControl.
+
+If you want to recreate the exact version that corresponds to a public
+release,  you'll need to checkout the version of the components that
+was used at the time the release was issued. To facilitate this, these
+versions are tagged with a name of the form
+"AdaControl_<version>". For example, to get the version of the
+components that was used for AdaControl 1.12r4, checkout
+"AdaControl_1.12r4".
+
