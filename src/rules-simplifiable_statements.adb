@@ -443,7 +443,7 @@ package body Rules.Simplifiable_Statements is
             then
                -- if .. then .. end if; or if .. then .. else .. end if;
                -- => Not worth a case statement
-               return;
+               raise Not_Appropriate_For_Case;
             end if;
             if Path_Kind (Paths (Paths'Last)) = An_Else_Path then
                Last_Elsif := Paths'Last - 1;
@@ -456,7 +456,7 @@ package body Rules.Simplifiable_Statements is
             for I in Positive range 2 .. Last_Elsif loop
                Check_Condition (Condition_Expression (Paths (I)), Pivot => Special_Var);
                if Variables_Proximity (Pivot_Var, Special_Var) /= Same_Variable then
-                  return;
+                  raise Not_Appropriate_For_Case;
                end if;
             end loop;
 
