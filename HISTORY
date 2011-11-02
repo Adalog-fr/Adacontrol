@@ -1,7 +1,14 @@
 =============
 == V1.13b6 ==
 =============
+(not released publicly)
+
+General:
+--------
 Bug fixes:
+   Mantis: 000001, 000003, 000004, 000006, 000007, 000008, 000009,
+   000011, 000013, 000014
+
    Crash in Max_Call_Depth for the declaration of access to SP types
 
    Incorrect handling of names of formal parameters of generic formal
@@ -17,8 +24,10 @@ Bug fixes:
    Crash in Multiple_Assignments when records include an explicit null
    component
 
-General:
---------
+   Added Wide_Text_IO to potentially blocking operations
+
+Improved help (explain what the rule does before syntax)
+
 Ignore remaining of line after blank in an indirect file
 
 Accepts Ada 2005 new constructs
@@ -31,14 +40,17 @@ Changes to existing rules:
 --------------------------
 
 Allocators
-   New modifier: inconsistent (allocator subtype and designated
+   New modifier: Inconsistent (allocator subtype and designated
    subtype don't match)
 
 Array_Declarations
-   Added subrule index
+   Added subrule Index
 
 Declarations 
-   Added subrule abstract_operator
+   Added subrule Abstract_Operator
+
+Representation_Clauses
+   Added modifier Global
 
 Return_Type
    Added subrule limited_class_wide

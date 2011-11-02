@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.13b5
+@settitle AdaControl User Guide V1.13b6
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -6008,7 +6008,7 @@ This rule controls usage of representation clause.
 @subsection Syntax
 @example
 <control_kind> representation_clauses [(<subrule> @{, <subrule>@})];
-<subrule> ::= @{<category>@} <repr_kw> | [object] <attribute>
+<subrule> ::= @{<category>@} <repr_kw> | [global] [object] <attribute>
 <repr_kw> ::=
    at                    | at_mod            | enumeration           |
    fractional_size       | incomplete_layout | non_aligned_component |
@@ -6097,13 +6097,15 @@ given is the @code{'Address} of some other element.
 @end itemize
 
 In addition to these keyword, any specifiable attribute can be given
-(including the initial ``@code{'}''); the rule will control specifications of
-this attribute. If the modifier ``object'' is given before the
-attribute, only attribute specifications for objects are controlled
-(as opposed to types for example). Note that double attributes (like
-``@code{'CLASS'INPUT}'') can be given, and are considered different from the
-simple attribute (``@code{'INPUT}''). It is of course possible to specify
-both.
+(including the initial ``@code{'}''); the rule will control
+specifications of this attribute. If the modifier ``global'' is given
+before the attribute, only attribute specifications for global
+entities are controlled. If the modifier ``object'' is given before
+the attribute, only attribute specifications for objects are
+controlled (as opposed to types for example). Note that double
+attributes (like ``@code{'CLASS'INPUT}'') can be given, and are
+considered different from the simple attribute (``@code{'INPUT}''). It
+is of course possible to specify both.
 
 Ex:
 @example

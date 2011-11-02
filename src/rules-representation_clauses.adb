@@ -142,7 +142,7 @@ package body Rules.Representation_Clauses is
                Obj_Only  := Get_Modifier ("OBJECT");
                Param     := Value (Get_Name_Parameter);
                if Image (Param) (1) /= ''' then
-                  Parameter_Error (Rule_Id, "parameter must be a representation keyword or an attribute");
+                  Parameter_Error (Rule_Id, "parameter must be an attribute");
                end if;
             else
                Param := Value (Subrules'Wide_Image (Subrule));
