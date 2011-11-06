@@ -89,7 +89,7 @@ package body Rules.Declarations is
 
       D_Incomplete_Type,                 D_In_Out_Generic_Parameter,          D_In_Out_Parameter,
       D_Initialized_Protected_Component, D_Initialized_Record_Component,      D_Initialized_Variable,
-      D_Instantiation,                   D_Integer_Type,
+      D_Instantiation,                   D_Integer_Type,                      D_Interface_Type,
 
       D_Library_Unit_Renaming,           D_Limited_Private_Type,
 
@@ -804,9 +804,8 @@ package body Rules.Declarations is
                   end if;
                   Check_Abstract;
 
-               when others =>
-                  -- An_Interface_Type_Definition for Ada2005
-                  null;
+               when An_Interface_Type_Definition =>
+                  Do_Report ((D_Type, D_Interface_Type), Get_Location (Element));
             end case;
 
             Check_Discriminant (Discriminant_Part (Element));

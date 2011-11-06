@@ -1,3 +1,4 @@
+pragma Ada_2005;
 with Ada.Numerics.Generic_Elementary_Functions;
 with X_Declarations.Child;
 with X_Declarations_Locations;
@@ -165,6 +166,7 @@ procedure T_declarations is       -- library_procedure
       type Ext1 is new Rec1 with private;           -- Private_Extension
       type Abs1 is abstract tagged private;         -- Non_Limited_Private_Type, Abstract_Type
       type Abs2 is abstract tagged limited private; -- Limited_Private_Type, Abstract_Type
+      type Int1 is interface;
       procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract;   -- Abstract_Function
       function  "+" (L : Abs1) return Integer is abstract; -- Operator, Abstract_Operator, Abstract_Function

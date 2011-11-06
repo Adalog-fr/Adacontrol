@@ -46,7 +46,7 @@ Array_Declarations
    Added subrule Index
 
 Declarations 
-   Added subrule Abstract_Operator
+   Added subrule Abstract_Operator, Interface_Type
 
 Representation_Clauses
    Added modifier Global
