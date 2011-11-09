@@ -124,26 +124,31 @@ package Framework.Scope_Manager is
       -- If Current_Scope is a library unit, the info is associated to the scope level 0,
       -- and the corresponding Current_Data_Scope returns Nil_Element
 
+
+      --
+      -- Iterator
+      --
+
+      -- Iterates through stored data.
+      -- Data are returned by Current_Data from top to bottom but not removed
+
       -- It is possible to add new data with Push while iterating; since they are added
       -- on top (i.e. above the current position of the iterator), it does not
       -- change the behaviour of the iterator.
       -- The same does not hold when adding data with Push_Enclosing, which should therefore
       -- not be used while iterating.
 
-      --
-      -- Iterator
-      --
       function  Data_Available     return Boolean;
+      -- False when iterator is exhausted (or empty)
       function  Current_Data       return Data;
       function  Current_Data_Level return Scope_Range;
       function  Current_Data_Scope return Asis.Element;
       function  Current_Origin     return Declaration_Origin;
       procedure Update_Current (Info : in Data);
-      -- Data are returned by Current_Data from top to bottom but not removed
       -- from the stack.
 
       procedure Reset (Mode : Iterator_Mode);
-      -- In the first form of Reset, the iterator is set to the top of the statck.
+      -- Sets the iterator to the top of the stack.
       -- If the mode of Reset is Current_Scope_Only, only data associated to the current scope
       -- are returned by the iterator.
       -- If the mode of Reset is Unit_Scopes, only data associated to the scope of the current
@@ -151,8 +156,8 @@ package Framework.Scope_Manager is
       -- If the mode is All_Scopes, all data are returned.
 
       procedure Reset (Info : Data; Mode : Iterator_Mode);
-      -- In the second form of Reset, the iterator is initialized on the data with
-      -- Equivalent_Keys to the provided Info (Data_Available returns False if not found).
+      -- Initializes the iterator on data with Equivalent_Keys to the provided Info
+      -- (Data_Available returns False if not found).
       -- If the mode of Reset is Current_Scope_Only, only data associated to the scope
       -- of Info are returned by the iterator.
       -- If the mode of Reset is Unit_Scopes, only data associated to the scope
@@ -163,10 +168,11 @@ package Framework.Scope_Manager is
       -- Continue is like the second form of Reset, starting from the current position.
 
       procedure Next;
-      -- Next moves to the next element. If the iterator is exhausted (i.e.
-      -- Data_Available is False), it raises Constraint_Error.
+      -- Moves to the next element. If the iterator is exhausted (i.e.
+      -- Data_Available is False), raises Constraint_Error.
 
       procedure Delete_Current;
+      -- Removes current data from the store
       -- After a call to Delete_Current, the iterator moves to the next position.
 
    private
