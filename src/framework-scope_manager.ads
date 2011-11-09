@@ -62,6 +62,8 @@ package Framework.Scope_Manager is
    type Declaration_Origin is (Same_Unit, Specification, Parent);
    -- Declaration_Origin is Specification if the current scope is a body and the info
    -- comes from the corresponding specification.
+   -- Declaration_Origin is Parent if the current scope is a child unit and the info
+   -- comes from some parent.
 
    function Is_Scope (Element : Asis.Element) return Boolean;
    -- True if Element is something considered a scope from the point of view of
@@ -131,6 +133,7 @@ package Framework.Scope_Manager is
 
       -- Iterates through stored data.
       -- Data are returned by Current_Data from top to bottom but not removed
+      -- from the stack.
 
       -- It is possible to add new data with Push while iterating; since they are added
       -- on top (i.e. above the current position of the iterator), it does not
@@ -145,7 +148,6 @@ package Framework.Scope_Manager is
       function  Current_Data_Scope return Asis.Element;
       function  Current_Origin     return Declaration_Origin;
       procedure Update_Current (Info : in Data);
-      -- from the stack.
 
       procedure Reset (Mode : Iterator_Mode);
       -- Sets the iterator to the top of the stack.
