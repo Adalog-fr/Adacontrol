@@ -118,11 +118,15 @@ package body Rules.Usage is
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "K_");
 
    type Usage_Value is array (Rule_Usage_Kind) of Boolean;
+
+   type Origin_Kind is (Normal, From_Instance, From_Generic);
    type Usage_Record is
       record
-         Declaration : Asis.Expression;
-         Entity      : True_Entity_Kind;
-         Usage       : Usage_Value;
+         Declaration      : Asis.Expression;
+         Origin           : Origin_Kind;
+         Decl_Location    : Location;
+         Entity           : True_Entity_Kind;
+         Usage            : Usage_Value;
       end record;
 
    package Usage_Map is new Binary_Map (Unbounded_Wide_String, Usage_Record);
@@ -539,15 +543,26 @@ package body Rules.Usage is
       Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image (Default_Decl));
       Entry_Value   := Fetch (From          => Own_Usage,
                               Key           => Unbounded_Key,
-                              Default_Value => (Declaration => Default_Decl,
-                                                Entity      => Entity,
-                                                Usage       => (others => False)));
+                              Default_Value => (Declaration      => Default_Decl,
+                                                Origin           => Normal,
+                                                Decl_Location    => Get_Location (Default_Decl),
+                                                Entity           => Entity,
+                                                Usage            => (others => False)));
       Entry_Value.Usage := Entry_Value.Usage or Value;
+      -- Take a note of the origin now to avoid horrible tree swapping during the call to Finalize
+      -- Mantis TBSL
+      if Is_Part_Of_Instance (Default_Decl) then
+         Entry_Value.Origin := From_Instance;
+         -- Let the location refer to the instantiation
+         Entry_Value.Decl_Location := Get_Location (Ultimate_Enclosing_Instantiation (Default_Decl));
+      elsif Is_Part_Of_Generic (Default_Decl) then
+         Entry_Value.Origin := From_Generic;
+      end if;
       Add (To => Own_Usage, Key => Unbounded_Key, Value => Entry_Value);
 
       -- For Objects that are part of a package specification of an instance, accumulate usage
       -- from the outside for the corresponding generic element.
-      if Is_Part_Of_Instance (Default_Decl) and then Package_Origin (Default_Decl) = From_Visible then
+      if Entry_Value.Origin = From_Instance and then Package_Origin (Default_Decl) = From_Visible then
          Generic_Decl := Corresponding_Generic_Element (Default_Decl);
          -- Generic_Decl can be Nil for implicit elements inherited from a derivation in the generic,
          -- which have no corresponding generic elements.
@@ -555,9 +570,11 @@ package body Rules.Usage is
             Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image (Generic_Decl));
             Entry_Value   := Fetch (From          => Cumulated_Usage,
                                     Key           => Unbounded_Key,
-                                    Default_Value => (Declaration => Default_Decl,
-                                                      Entity      => Entity,
-                                                      Usage       => (others => False)));
+                                    Default_Value => (Declaration      => Default_Decl,
+                                                      Origin           => From_Instance,
+                                                      Decl_Location    => Entry_Value.Decl_Location,
+                                                      Entity           => Entity,
+                                                      Usage            => (others => False)));
             Entry_Value.Usage := Entry_Value.Usage or Value;
             Add (To => Cumulated_Usage, Key => Unbounded_Key, Value => Entry_Value);
          end if;
@@ -728,12 +745,8 @@ package body Rules.Usage is
          use Asis.Declarations, Asis.Elements;
          use Reports, Thick_Queries;
 
-         type Origin_Kind is (Normal, From_Instance, From_Generic);
-
          Message      : Unbounded_Wide_String;
          True_Usage   : Usage_Value;
-         Elem_Loc     : Location;
-         Origin       : Origin_Kind;
          Generic_Elem : Asis.Expression;
 
          procedure Usage_Message (Used : Boolean; Usage_Mess : Wide_String)  is
@@ -767,44 +780,40 @@ package body Rules.Usage is
          end Is_Pseudo_Const;
 
       begin  -- Report_One
-         Elem_Loc :=  Get_Location (Value.Declaration);
-
          -- Determine usage
+         case Value.Origin is
+            when From_Instance =>
+               -- Add usages from the generic itself
+               Generic_Elem := Corresponding_Generic_Element (Value.Declaration);
+               -- Generic_Elem can be Nil for implicit elements inherited from a derivation in the generic,
+               -- which have no corresponding generic elements. But then, there are certainly no usage inside
+               -- the generic
+               if Is_Nil (Generic_Elem) then
+                  True_Usage := Value.Usage;
+               else
+                  True_Usage := Value.Usage
+                                or Fetch (From          => Own_Usage,
+                                          Key           => To_Unbounded_Wide_String (Full_Name_Image (Generic_Elem)),
+                                          Default_Value => (Declaration   => Value.Declaration,
+                                                            Origin        => From_Instance,
+                                                            Decl_Location => Null_Location, -- Since it's a dummy
+                                                            Entity        => Value.Entity,
+                                                            Usage         => (others => False))).Usage;
+               end if;
+            when From_Generic =>
+               -- Add usages from all instances
+               True_Usage := Value.Usage
+                             or Fetch (From          => Cumulated_Usage,
+                                       Key           => Key,
+                                       Default_Value => (Declaration   => Value.Declaration,
+                                                         Origin        => From_Generic,
+                                                         Decl_Location => Null_Location,  -- Since it's a dummy
+                                                         Entity        => Value.Entity,
+                                                         Usage         => (others => False))).Usage;
 
-         if Is_Part_Of_Instance (Value.Declaration) then
-            Origin := From_Instance;
-
-            -- Let the location refer to the instantiation
-            Elem_Loc := Get_Location (Ultimate_Enclosing_Instantiation (Value.Declaration));
-
-            -- Add usages from the generic itself
-            Generic_Elem := Corresponding_Generic_Element (Value.Declaration);
-            -- Generic_Elem can be Nil for implicit elements inherited from a derivation in the generic,
-            -- which have no corresponding generic elements. But then, there are certainly no usage inside
-            -- the generic
-            if Is_Nil (Generic_Elem) then
+            when Normal =>
                True_Usage := Value.Usage;
-            else
-               True_Usage := Value.Usage or Fetch (From => Own_Usage,
-                                                   Key  => To_Unbounded_Wide_String (Full_Name_Image (Generic_Elem)),
-                                                   Default_Value => (Declaration => Value.Declaration,
-                                                                     Entity      => Value.Entity,
-                                                                     Usage       => (others => False))).Usage;
-            end if;
-         elsif Is_Part_Of_Generic (Value.Declaration) then
-            Origin     := From_Generic;
-
-            -- Add usages from all instances
-            True_Usage := Value.Usage or Fetch (From => Cumulated_Usage,
-                                                Key  => Key,
-                                                Default_Value => (Declaration => Value.Declaration,
-                                                                  Entity      => Value.Entity,
-                                                                  Usage       => (others => False))).Usage;
-
-         else
-            Origin     := Normal;
-            True_Usage := Value.Usage;
-         end if;
+         end case;
 
          if Rule_Table (Value.Entity,
                         True_Usage (K_From_Visible),
@@ -824,7 +833,7 @@ package body Rules.Usage is
 
          -- Prepare message
 
-         case Origin is
+         case Value.Origin is
             when Normal =>
                Message := To_Unbounded_Wide_String ("(normal) ");
             when From_Instance =>
@@ -846,7 +855,7 @@ package body Rules.Usage is
                -- no need to tell that a constant is initialized and not written
                Usage_Message (True_Usage (K_Read), "read");
                if not True_Usage (K_Read)
-                 and Origin /= From_Instance
+                 and Value.Origin /= From_Instance
                then
                   Append (Message," (can be removed)");
                end if;
@@ -864,7 +873,7 @@ package body Rules.Usage is
 
                   if not True_Usage (K_Read)
                     and not True_Usage (K_Written)
-                    and Origin /= From_Instance
+                    and Value.Origin /= From_Instance
                   then
                      Append (Message, " (can be removed)");
                   elsif Pseudo_Const then
@@ -875,7 +884,7 @@ package body Rules.Usage is
                      Append (Message, " (never given a value)");
                   elsif not True_Usage (K_Written)
                     and True_Usage (K_Initialized)
-                    and Origin /= From_Instance
+                    and Value.Origin /= From_Instance
                   then
                      Append (Message, " (can be declared constant)");
                   end if;
@@ -931,7 +940,7 @@ package body Rules.Usage is
                                                 True_Usage(K_Read),
                                                 True_Usage(K_Written)).Labels (Check)),
                     Check,
-                    Elem_Loc,
+                    Value.Decl_Location,
                     To_Wide_String (Message));
 
          elsif Rule_Table (Value.Entity,
@@ -949,7 +958,7 @@ package body Rules.Usage is
                                                 True_Usage(K_Read),
                                                 True_Usage(K_Written)).Labels (Search)),
                     Search,
-                    Elem_Loc,
+                    Value.Decl_Location,
                     To_Wide_String (Message));
          end if;
 
@@ -968,9 +977,9 @@ package body Rules.Usage is
                                                 True_Usage(K_Read),
                                                 True_Usage(K_Written)).Labels (Count)),
                     Count,
-                    Elem_Loc,
+                    Value.Decl_Location,
                     "");
-         end if;
+          end if;
       end Report_One;
 
       procedure Report_All is new Iterate (Report_One);
