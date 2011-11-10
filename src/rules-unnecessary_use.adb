@@ -378,23 +378,36 @@ package body Rules.Unnecessary_Use is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      -- For a unit spec with a body, delay messages until the end of the body
+      -- For a unit spec with a (non-imported) body, delay messages until the end of the body
       case Declaration_Kind (Scope) is
          when A_Package_Declaration
             | A_Generic_Package_Declaration
-              =>
-            if not Is_Nil (Corresponding_Body (Scope)) then
-               return;
-            end if;
+            =>
+            declare
+               The_Body : constant Asis.Declaration := Corresponding_Body (Scope);
+            begin
+               if not Is_Nil (The_Body) and then Element_Kind (The_Body) /= A_Pragma then
+                  return;
+               end if;
+            end;
             Is_Package_Spec := True;
          when A_Procedure_Declaration
-            | A_Generic_Procedure_Declaration
             | A_Function_Declaration
+            =>
+            -- Nothing to report from these, since these kind of scopes cannot include
+            -- use clauses
+            return;
+         when A_Generic_Procedure_Declaration
             | A_Generic_Function_Declaration
-              =>
-            if not Is_Nil (Corresponding_Body (Scope)) then
-               return;
-            end if;
+            =>
+            -- But there can be use clauses in the generic formal part...
+            declare
+               The_Body : constant Asis.Declaration := Corresponding_Body (Scope);
+            begin
+               if not Is_Nil (The_Body) and then Element_Kind (The_Body) /= A_Pragma then
+                  return;
+               end if;
+            end;
          when A_Package_Body_Declaration =>
             Is_Package_Body := True;
          when others =>

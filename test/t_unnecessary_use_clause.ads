@@ -1,6 +1,6 @@
 with Ada.Command_Line, Ada.Numerics;
 package T_unnecessary_use_clause is
-   use Ada.Command_Line, Ada.Numerics;
+   use Ada.Command_Line, Ada.Numerics;  -- Command_Line unused, possible use in child
 
    My_Pi : constant := Pi;
 

@@ -48,6 +48,14 @@ package body T_unnecessary_use_clause is
       X : Integer;
    end Pack4;
    use Pack4;    -- Only qualified usage
+
+   package Pack5 is
+      type Int is range 1 .. 10;
+   end Pack5;
+   generic             -- Check use clause in generic formal part
+      use Pack5;       -- Unnecessary
+   procedure P (X : Integer);
+   pragma Import (C, P); -- Even when completed by import!
 begin
    declare
       use Ada.Strings; -- Unused

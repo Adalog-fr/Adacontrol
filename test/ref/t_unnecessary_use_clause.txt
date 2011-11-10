@@ -1,7 +1,8 @@
 t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io in scope of use clause for same package at t_unnecessary_use_clause.adb:8:4
 t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Strings.Fixed in scope of use clause for same package at t_unnecessary_use_clause.adb:14:4
 t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
-t_unnecessary_use_clause.adb:53:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings
+t_unnecessary_use_clause.adb:56:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Pack5
+t_unnecessary_use_clause.adb:61:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings
 t_unnecessary_use_clause.adb:50:4: Error: UNNECESSARY_USE_CLAUSE: all uses of Pack4 are qualified
 t_unnecessary_use_clause.adb:44:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Pack3 only used for operators
 t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings.Fixed
