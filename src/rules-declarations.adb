@@ -102,7 +102,7 @@ package body Rules.Declarations is
 
       D_Operator,                        D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
       D_Ordinary_Fixed_Type_No_Small,    D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
-      D_Out_Parameter,
+      D_Ordinary_Record_Variable,        D_Out_Parameter,
 
       D_Package,                         D_Package_Instantiation,             D_Package_Statements,
       D_Predefined_Operator,             D_Private_Extension,                 D_Procedure,
@@ -112,16 +112,17 @@ package body Rules.Declarations is
       D_Record_Type,                     D_Renaming,                          D_Renaming_As_Body,
       D_Renaming_As_Declaration,
 
-      D_Self_Calling_Function,           D_Self_Calling_Procedure,            D_Separate,
-      D_Signed_Type,                     D_Single_Array,                      D_Single_Protected,
-      D_Single_Task,                     D_Subtype,
+      D_Scalar_Variable,                 D_Self_Calling_Function,             D_Self_Calling_Procedure,
+      D_Separate,                        D_Signed_Type,                       D_Single_Array,
+      D_Single_Protected,                D_Single_Task,                       D_Subtype,
 
-      D_Tagged_Type,                     D_Task,                              D_Task_Entry,
-      D_Task_Type,                       D_Task_Variable,                     D_Type,
+      D_Tagged_Private_Type,             D_Tagged_Type,                       D_Tagged_Variable,
+      D_Task,                            D_Task_Entry,                        D_Task_Type,
+      D_Task_Variable,                   D_Type,
 
       D_Unconstrained_Array_Constant,    D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
-      D_Unconstrained_Subtype,           D_Uninitialized_Protected_Component,
-      D_Uninitialized_Record_Component,  D_Uninitialized_Variable,
+      D_Unconstrained_Subtype,           D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,
+      D_Uninitialized_Variable,
 
       D_Variable,                        D_Variant_Part);
    type Subrules_List is array (Positive range <>) of Subrules;
@@ -834,6 +835,9 @@ package body Rules.Declarations is
             Check_Discriminant (Discriminant_Part (Element));
 
          when A_Private_Type_Declaration =>
+            if Definition_Kind (Type_Declaration_View (Element)) = A_Tagged_Private_Type_Definition then
+               Do_Report ((D_Type, D_Tagged_Private_Type), Element);
+            end if;
             case Trait_Kind (Element) is
                when Not_A_Trait
                   | An_Ordinary_Trait
@@ -911,17 +915,25 @@ package body Rules.Declarations is
 
                elsif Is_Class_Wide_Subtype (Def) then
                   Is_Class_Wide := True;
-                  Do_Report (D_Class_Wide_Variable, Element);
+                  Do_Report ((D_Tagged_Variable, D_Class_Wide_Variable), Element);
                end if;
 
-               -- Find if the type refers to a constrained array, an unconstrained array, a task or protected type,
-               -- or anything else
+               -- Find if the type of the variable is one which is controlled
                loop
                   case Definition_Kind (Def) is
                      when Not_A_Definition =>
                         Failure ("Not_A_Definition in variable type analysis", Def);
                      when  A_Type_Definition =>
                         case Type_Kind (Def) is
+                           when An_Enumeration_Type_Definition
+                              | A_Signed_Integer_Type_Definition
+                              | A_Modular_Type_Definition
+                              | A_Floating_Point_Definition
+                              | An_Ordinary_Fixed_Point_Definition
+                              | A_Decimal_Fixed_Point_Definition
+                              =>
+                              Do_Report (D_Scalar_Variable, Element);
+                              exit;
                            when An_Unconstrained_Array_Definition =>
                               Do_Report ((D_Array, D_Unconstrained_Array_Variable), Element);
                               exit;
@@ -930,8 +942,16 @@ package body Rules.Declarations is
                               exit;
                            when A_Derived_Type_Definition =>
                               Def := Parent_Subtype_Indication (Def);
+                              -- don't exit!
+                           when A_Record_Type_Definition =>
+                              Do_Report (D_Ordinary_Record_Variable, Element);
+                              exit;
+                           when A_Tagged_Record_Type_Definition
+                              | A_Derived_Record_Extension_Definition =>
+                              Do_Report (D_Tagged_Variable, Element);
+                              exit;
                            when others =>
-                              -- not an array
+                              -- not (yet) controlled
                               exit;
                         end case;
                      when A_Protected_Definition =>
@@ -970,7 +990,7 @@ package body Rules.Declarations is
                               | A_Digits_Constraint
                               | A_Delta_Constraint
                                 =>
-                              -- not an array, task, protected
+                              Do_Report (D_Scalar_Variable, Element);
                               exit;
                         end case;
                      when others =>

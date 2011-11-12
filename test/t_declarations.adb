@@ -9,12 +9,15 @@ procedure T_declarations is       -- library_procedure
    type I1 is range 1 .. 10;      -- signed_type, integer_type
    type I2 is mod 128;            -- binary_modular_type, modular_type, integer_type
    type I3 is mod 127;            -- non_binary_modular_type, modular_type, integer_type
+   VI1_1 : I1;                    -- variable, scalar_variable, uninitialized_variable
+   VI1_2 : I1 range 1..2;         -- variable, scalar_variable, uninitialized_variable, anonymous_subtype_declaration
 
    type Fl is digits 5;                    -- float_type
-   type Fx1 is delta 0.1 range 0.0 .. 1.0; -- ordirnary_fixed_type_no_small, ordinary_fixed_type, fixed_type
+   type Fx1 is delta 0.1 range 0.0 .. 1.0; -- ordinary_fixed_type_no_small, ordinary_fixed_type, fixed_type
    type Fx2 is delta 0.1 digits 5;         -- decimal_fixed_type, fixed_type
 
    type Enum is (A, B, 'c', D, 'e');       -- enumeration_type, character_literal x2
+   V_Enum : Enum := A;                     -- variable, scalar_variable, initialized_variable
 
    task T1 is                     -- single_task, task_variable, task
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
@@ -101,7 +104,7 @@ procedure T_declarations is       -- library_procedure
    type Acc6 is access all Integer;      -- access_type, access_all_type
    type Acc7 is access constant Integer; -- access_type, access_constant_type
 
-   I,J,K : aliased Integer;               -- variable, aliased_variable, uninitialized_variable, multiple_names
+   I,J,K : aliased Integer;               -- variable x3, aliased_variable x3, scalar_variable x3, uninitialized_variable x3, multiple_names
    C : aliased constant Character := ' '; -- constant, aliased_constant
 
    type Rec1 is tagged null record;                       -- null_tagged_type, tagged_type, record_type
@@ -125,8 +128,11 @@ procedure T_declarations is       -- library_procedure
          I : Integer;      -- uninitialized_record_component
          J : Integer := 0; -- initialized_record_component
       end record;
-   Vclass : Rec1'Class          := Rec1'(null record);        -- variable, class_wide_variable
+   Vclass : Rec1'Class          := Rec1'(null record);        -- variable, tagged_variable, class_wide_variable
    Cclass : constant Rec1'Class := Rec1'(null record);        -- constant, class_wide_constant
+   VRec1  : Rec1;                                             -- variable, tagged_variable, uninitialized_variable
+   VRec3  : Rec3;                                             -- variable, ordinary_record_variable, uninitialized_variable
+   VRec4  : Rec4;                                             -- variable, ordinary_record_variable, uninitialized_variable
 
    type Arr1 is array (1 .. 10) of Character;                 -- constrained_array_type, array, anonymous_subtype_declaration
    type Arr2 is array (Positive range <>) of Integer;         -- unconstrained_array_type, array
@@ -145,6 +151,8 @@ procedure T_declarations is       -- library_procedure
    type Der2 (Y : Integer) is new Rec1 with null record;     -- null_extension, extension, tagged_type, record_type, discriminant
    type Der3 (Y : Integer) is new Rec2 (Y) with null record; -- null_extension, extension, tagged_type, record_type, discriminant, anonymous_subtype_declaration
    type Der4 is new Rec3;                                    -- derived_type
+   VDer1 : Der1;                                             -- variable, tagged_variable, uninitialized_variable
+   VDer4 : Der4;                                             -- variable, ordinary_record_variable, uninitialized_variable
 
    type T_Float is digits 5;                                 -- float_type
    type T_Fixed1 is delta 0.01 range 0.0 .. 1.0;             -- ordinary_fixed_type_with_small, ordinary_fixed_type, fixed_type
@@ -164,8 +172,8 @@ procedure T_declarations is       -- library_procedure
       type Priv1 is private;                        -- Non_Limited_Private_Type
       type Priv2 is limited private;                -- Limited_Private_Type
       type Ext1 is new Rec1 with private;           -- Private_Extension
-      type Abs1 is abstract tagged private;         -- Non_Limited_Private_Type, Abstract_Type
-      type Abs2 is abstract tagged limited private; -- Limited_Private_Type, Abstract_Type
+      type Abs1 is abstract tagged private;         -- Tagged_Private_Type, Non_Limited_Private_Type, Abstract_Type
+      type Abs2 is abstract tagged limited private; -- Tagged_Private_Type, Limited_Private_Type, Abstract_Type
       type Int1 is interface;
       procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract;   -- Abstract_Function
@@ -255,6 +263,8 @@ procedure T_declarations is       -- library_procedure
 
    subtype Int1 is Integer range 1..10;                                 -- subtype
    subtype Int2 is Integer;                                             -- subtype, unconstrained_subtype
+   V_Int1 : Int1;                                                       -- variable, scalar_variable, uninitialized_variable
+   V_Int2 : Int2 range 1..10;                                           -- variable, scalar_variable, uninitialized_variable, anonymous_subtype_declaration
 
    Arr : Integer renames X_Declarations.Arr (1);                        -- not_operator_renaming, non_identical_renaming, renaming
    function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming

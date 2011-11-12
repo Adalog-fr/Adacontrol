@@ -124,19 +124,21 @@ Parameter(s): {<location>} <decl>
         null_tagged_type                | operator                          |
         operator_renaming               | ordinary_fixed_type               |
         ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
-        ordinary_record_type            | out_parameter                     |
-        package                         | package_instantiation             |
-        package_statements              | predefined_operator               |
-        private_extension               | procedure                         |
-        procedure_instantiation         | protected                         |
-        protected_entry                 | protected_type                    |
-        protected_variable              | record_type                       |
-        renaming                        | renaming_as_body                  |
-        renaming_as_declaration         | self_calling_function             |
+        ordinary_record_type            | ordinary_record_variable          |
+        out_parameter                   | package                           |
+        package_instantiation           | package_statements                |
+        predefined_operator             | private_extension                 |
+        procedure                       | procedure_instantiation           |
+        protected                       | protected_entry                   |
+        protected_type                  | protected_variable                |
+        record_type                     | renaming                          |
+        renaming_as_body                | renaming_as_declaration           |
+        scalar_variable                 | self_calling_function             |
         self_calling_procedure          | separate                          |
         signed_type                     | single_array                      |
         single_protected                | single_task                       |
-        subtype                         | tagged_type                       |
+        subtype                         | tagged_private_type               |
+        tagged_type                     | tagged_variable                   |
         task                            | task_entry                        |
         task_type                       | task_variable                     |
         type                            | unconstrained_array_constant      |

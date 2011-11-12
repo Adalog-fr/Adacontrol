@@ -46,7 +46,8 @@ Array_Declarations
    Added subrule Index
 
 Declarations 
-   Added subrule Abstract_Operator, Interface_Type
+   Added subrule Abstract_Operator, Interface_Type, Scalar_Variable,
+   Ordinary_Record_Variable, Tagged_Private_Type, Tagged_Variable
 
 Representation_Clauses
    Added modifier Global

@@ -20,7 +20,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
    type Acc_Rec is access Rec;                 -- access_type
    Acc : Acc_Rec;                              -- variable, uninitialized_variable
 
-   J : Integer;                                -- variable, uninitialized_variable
+   J : Integer;                                -- variable, scalar_variable, uninitialized_variable
 begin
    for I in Natural range 1 .. 10 loop         -- anonymous_subtype_for
       null;
