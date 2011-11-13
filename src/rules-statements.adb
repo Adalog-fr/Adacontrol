@@ -71,7 +71,7 @@ package body Rules.Statements is
                      Stmt_Effective_Declare_Block, Stmt_Entry_Call,             Stmt_Entry_Return,
                      Stmt_Exception_Others,        Stmt_Exception_Others_Null,  Stmt_Exit,
                      Stmt_Exit_Expanded_Name,      Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,
-                     Stmt_Exit_While_Loop,         Stmt_Extended_Return,
+                     Stmt_Exit_While_Loop,         Stmt_Exited_Extended_Return, Stmt_Extended_Return,
 
                      Stmt_For_Loop,                Stmt_Function_Return,
 
@@ -374,8 +374,17 @@ package body Rules.Statements is
                Do_Report (Stmt_Loop_Return);
             end if;
             Do_Report (Stmt_Extended_Return);
-            -- Nothing else:
+            -- Nothing else to do (compared to regular Return statement):
             -- Extended returns apply only to functions, and Function_Return is checked from Process_Function_Body
+
+            declare
+               Dirty : constant Asis.Statement := First_Exiting_Statement (Extended_Return_Statements (Element),
+                                                                           Include_Returns => False);
+            begin
+               if not Is_Nil (Dirty) then
+                  Do_Report (Stmt_Exited_Extended_Return, "exiting at " & Image (Get_Location (Dirty)));
+               end if;
+            end;
 
          when A_For_Loop_Statement =>
             Do_Report (Stmt_For_Loop);

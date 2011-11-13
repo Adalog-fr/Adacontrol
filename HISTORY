@@ -56,7 +56,7 @@ Return_Type
    Added subrule limited_class_wide
 
 Statements
-   Added subrule extended_return
+   Added subrule extended_return, exited_extended_return
    Subrule Function_Return considers extended_return statements
 
 =============

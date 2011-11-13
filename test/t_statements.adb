@@ -112,6 +112,25 @@ procedure T_statements is
    end Dispatching;
 
    Disp : Dispatching.Object'Class := Dispatching.Object'(null record);
+
+   function F_Ext_Return return Integer is
+   begin
+      For_Exit:                          -- For_Loop
+      for I in Integer range 1..10 loop
+         return X : Integer do           -- Function_Return OK (first return), Loop_Return, Extended_Return, Exited_Extended_Return
+            if I = 3 then                -- No_Else
+               return;                   -- Exited_Extended_Return OK (not exiting), Function_Return, Loop_Return
+            end if;
+            exit For_Exit;                -- Unconditional_Exit, Exit_For_Loop
+	 end return;
+      end loop For_Exit;
+      return X : Integer do              -- Function_Return, Extended_Return, Exited_Extended_Return
+	goto Hell;                       -- Goto
+      end return;
+  <<Hell>>                               -- Function_Return, Labelled
+      return 1;
+   end F_Ext_Return;
+
 begin
    delay 1.0;           -- Delay
    delay until Clock;   -- Delay_Until
