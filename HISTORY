@@ -31,6 +31,9 @@ Ignore remaining of line after blank in an indirect file
 
 Accepts Ada 2005 new constructs
 
+Modified following rules to account for extended return statements:
+   abnormal_function_return, silent_exceptions
+
 New rules:
 ----------
 Local_Access

@@ -1,26 +1,29 @@
-t_silent_exceptions.adb:24:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:60:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:66:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:71:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:86:6: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-t_silent_exceptions.adb:92:6: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:98:7: Found: Only_Procedure: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:105:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:120:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:123:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:130:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-t_silent_exceptions.adb:133:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-t_silent_exceptions.adb:136:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:139:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-t_silent_exceptions.adb:155:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-t_silent_exceptions.adb:161:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:167:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:194:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:200:7: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:209:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:216:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
-t_silent_exceptions.adb:252:13: Found: Only_Procedure: all paths are silent in exception handler
-t_silent_exceptions.adb:264:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:25:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:61:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:67:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:72:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:87:6: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+t_silent_exceptions.adb:93:6: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:99:7: Found: Only_Procedure: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:106:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:121:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:124:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:131:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+t_silent_exceptions.adb:134:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+t_silent_exceptions.adb:137:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:140:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+t_silent_exceptions.adb:156:7: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+t_silent_exceptions.adb:162:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:168:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:195:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:201:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:210:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:217:7: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
+t_silent_exceptions.adb:253:13: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:265:7: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:274:10: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:278:10: Found: Only_Procedure: all paths are silent in exception handler
+t_silent_exceptions.adb:288:10: Error: SILENT_EXCEPTIONS: some paths are silent in exception handler, check manually
 
 Counts summary:
-No_SP_Call: 16
+No_SP_Call: 19

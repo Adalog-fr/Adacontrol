@@ -123,6 +123,11 @@ package body Rules.Simplifiable_Statements is
    ---------------------------
 
    function Is_Breaking_Statement (S : Asis.Statement) return Boolean is
+   -- Note: An extended return is always breaking, even when exitable since if it is exited,
+   --       the statement after it will not be executed.
+   --       TBH: except if the statement is exited by a goto whose target is the statement
+   --       after the extended return. But this is really a pathology, and in any case
+   --       will result in a false positive, so no need to worry about.
       use Asis, Asis.Elements, Asis.Statements;
       use Thick_Queries, Utilities;
       SP : Asis.Expression;
@@ -132,6 +137,7 @@ package body Rules.Simplifiable_Statements is
             | A_Requeue_Statement
             | A_Requeue_Statement_With_Abort
             | A_Return_Statement
+            | An_Extended_Return_Statement
             | A_Goto_Statement
               =>
             return True;

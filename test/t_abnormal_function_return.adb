@@ -1,3 +1,4 @@
+pragma Ada_2005;
 with Ada.Exceptions; use Ada.Exceptions;
 with Text_IO; use Text_IO;
 function T_Abnormal_Function_Return return Integer is
@@ -51,6 +52,16 @@ function T_Abnormal_Function_Return return Integer is
                end;
             when 4 =>
                null;                                 -- Sequence of statements
+            when 5 =>
+               return I : Integer do
+                  I := 0;
+               end return;
+            when 6 =>
+               <<Hell>>                              -- exitable extended return
+               return I : Integer do
+                  I := 0;
+                  goto Hell;
+               end return;
             when others =>
                raise Program_Error;
          end case;

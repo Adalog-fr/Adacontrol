@@ -115,6 +115,14 @@ package body Rules.Abnormal_Function_Return is
               =>
                null;
 
+            when An_Extended_Return_Statement =>
+               if not Is_Nil (First_Exiting_Statement (Extended_Return_Statements (Stmt))) then
+                  Report (Rule_Id,
+                          Rule_Context,
+                          Get_Location (Stmt),
+                          "Sequence of statements terminated by exitable extended ""return""");
+               end if;
+
             when A_Procedure_Call_Statement =>
                declare
                   SP_Name : constant Wide_String := To_Upper (Full_Name_Image (Called_Simple_Name (Stmt)));

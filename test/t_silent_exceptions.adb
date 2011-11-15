@@ -1,3 +1,4 @@
+pragma Ada_2005;
 with Ada.Text_Io; use Ada.Text_Io;
 with Ada.Exceptions;
 procedure T_silent_exceptions is
@@ -263,5 +264,39 @@ begin
    exception
       when others => -- Found, Counted
          return;
+   end;
+
+   declare  -- Check extended return
+      function F return String is
+      begin
+         return "abcd";
+      exception
+         when Data_Error =>
+            return S : String := "AAAA" do -- Found, Counted
+               null;
+            end return;
+         when Constraint_Error =>          -- Found, Counted
+            return S : String := F do
+               null;
+            end return;
+         when Tasking_Error =>
+            return S : String (1 .. 3) do
+               S := "ABC";
+               P;
+               return;
+            end return;
+         when others =>                   -- Error, Counted
+            return S : String (1 .. 3) do
+               S := "ABC";
+               if S(2) = 'A' then
+                  goto Next;
+               else
+                  P;
+               end if;
+            end return;
+            <<Next>> null;
+      end F;
+   begin
+      null;
    end;
 end T_silent_exceptions;

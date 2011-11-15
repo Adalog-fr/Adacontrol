@@ -466,7 +466,8 @@ package body Rules.Movable_Accept_Statements  is
             -- STATEMENTS
          when A_Statement =>
             case Statement_Kind (Element) is
-               -- Inner exclusive statements
+               -- Never movable statements
+               -- Note: extended return statements not allowed for accepts!
                when A_Return_Statement
                   | A_Requeue_Statement
                   | A_Requeue_Statement_With_Abort

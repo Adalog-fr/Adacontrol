@@ -3332,8 +3332,8 @@ name and the old name are not the same, and
 renamings of operators.
 @item
 @code{self_calling_function} controls functions whose body contains
-only a single @code{@b{return}} statement, and the return expression
-is a (recursive) call to the same function. Similarly,
+only a single (simple) @code{@b{return}} statement, and the return
+expression is a (recursive) call to the same function. Similarly,
 @code{self_calling_procedure} controls procedures whose body contains
 only a single statement which is a (recursive) call to the same
 procedure. Note that this corresponds to bodies automatically
@@ -4358,7 +4358,7 @@ design pattern where all variables are initialized before entering the
 ``active'' part of the algorithm. This makes it easier to ensure that
 variables are properly initialized.
 
-``Trivial statements'' are:
+``Trivial'' statements are:
 @itemize @bullet
 @item
 @code{null} statements;
@@ -6316,9 +6316,10 @@ is given, any instantiation (in an inner block of the handler) is
 considered reporting.  In addition, the special names
 ``explicit_raise'', ``reraise'', ``return'' and ``requeue'' mark raise
 statements with an explicit exception name, raise statements without
-an exception name, return statements, and requeue statements
-(respectively) as reporting. ``raise'' is a shorthand for both
-``explicit_raise'' and ``reraise''.
+an exception name, return statements (including extended return
+statements), and requeue statements (respectively) as
+reporting. ``raise'' is a shorthand for both ``explicit_raise'' and
+``reraise''.
 
 If ``explicit_raise'' is given as a parameter, the procedure
 @code{Ada.Exceptions.Raise_Exception} is automatically added to the

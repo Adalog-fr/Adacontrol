@@ -480,6 +480,19 @@ package body Rules.Silent_Exceptions is
                   end if;
                end;
 
+            when An_Extended_Return_Statement =>
+               -- There might be an expression as the initialization of the return object
+               Result := Result and Expression_Usage (Initialization_Expression
+                                                      (Return_Object_Declaration (Stmts (I))));
+               Result := Result and Statement_List_Usage (Extended_Return_Statements (Stmts (I)));
+               declare
+                  Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "RETURN");
+               begin
+                  if Context /= No_Matching_Context then
+                     Result := Result and Proc_Context(Context).Usage;
+                  end if;
+               end;
+
             when A_Requeue_Statement
               | A_Requeue_Statement_With_Abort
               =>
