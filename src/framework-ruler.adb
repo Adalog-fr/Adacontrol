@@ -459,9 +459,10 @@ package body Framework.Ruler is
          when A_Statement =>
             case Statement_Kind (Element) is
                when A_For_Loop_Statement
-                 | A_Block_Statement
-                 | An_Accept_Statement
-                 =>
+                  | A_Block_Statement
+                  | An_Extended_Return_Statement
+                  | An_Accept_Statement
+                  =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
                   Enter_Scope (Element);
@@ -624,9 +625,10 @@ package body Framework.Ruler is
          when A_Statement =>
             case Statement_Kind (Element) is
                when A_For_Loop_Statement
-                 | A_Block_Statement
-                 | An_Accept_Statement
-                 =>
+                  | A_Block_Statement
+                  | An_Extended_Return_Statement
+                  | An_Accept_Statement
+                  =>
                   Exit_Scope (Element);
                   Framework.Plugs.         Post_Procedure (Element);
                   Framework.Specific_Plugs.Post_Procedure (Element);
