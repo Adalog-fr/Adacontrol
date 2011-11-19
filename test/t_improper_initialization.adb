@@ -22,12 +22,12 @@ procedure T_Improper_Initialization is
    end My_Pack;
 
    package body My_Pack is
---------------------------------
--- Checking procedures bodies --
---------------------------------
+   --------------------------------
+   -- Checking procedures bodies --
+   --------------------------------
 
--- A_Procedure_Body_Declaration
--- (IP, IV2) not initialized from the beginning of the body
+      -- A_Procedure_Body_Declaration
+      -- (IP, IV2) not initialized from the beginning of the body
       procedure Proc_Renaming (IP : out Integer) is                 -- not safely initialized
          type T is
             record
@@ -46,8 +46,8 @@ procedure T_Improper_Initialization is
          end if;
       end Proc_Renaming;
 
--- A_Procedure_Body_Declaration
--- IP not initialized from the beginning of the body
+      -- A_Procedure_Body_Declaration
+      -- IP not initialized from the beginning of the body
       procedure Proc_No_Full_Init (IP : out Integer) is             -- not safely initialized
          IV1, IV2 : Integer;
          IV3      : Integer := 3;
@@ -68,8 +68,8 @@ procedure T_Improper_Initialization is
          IV5 := 1;
       end Proc_No_Full_Init;
 
--- A_Procedure_Body_Declaration
--- (IP1, IP2, BP) not initialized from the beginning of the body
+      -- A_Procedure_Body_Declaration
+      -- (IP1, IP2, BP) not initialized from the beginning of the body
       procedure Proc_No_Full_Init_2 (DP       : in     Digit;
                                      IP1, IP2 :    out Integer;     -- not safely initialized (x2)
                                      BP       :    out Boolean)     -- not safely initialized
@@ -98,9 +98,9 @@ procedure T_Improper_Initialization is
          BP := (CV1 = CV2);
       end Proc_No_Full_Init_2;
 
----------------------------
--- Checking tasks bodies --
----------------------------
+      ---------------------------
+      -- Checking tasks bodies --
+      ---------------------------
       task type TT is
          entry Entry_1 (IP : out Integer);
          entry Entry_2 (IP : out Integer);
@@ -138,9 +138,9 @@ procedure T_Improper_Initialization is
       end TT;
 
 
----------------------------
--- Checking entry bodies --
----------------------------
+      ---------------------------
+      -- Checking entry bodies --
+      ---------------------------
       protected type PT is
          entry Set_Value (DP : in     Digit);
          entry Get_Value (DP :    out Digit);
@@ -226,6 +226,11 @@ procedure T_Improper_Initialization is
       A  := AS'Address;
       CI := AS'First;                                  -- use of uninitialized AS
    end Attr;
+
+   -----------------------------------------
+   -- Checking extended return statements --
+   -----------------------------------------
+   function Extended_Return return Integer is separate;
 
 begin
 

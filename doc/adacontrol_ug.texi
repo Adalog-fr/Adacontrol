@@ -4339,7 +4339,7 @@ This rule enforces a coding pattern that ensures that variables and
 @example
 <control_kind> improper_initialization [(<subrule> @{,<subrule>@})]
 <subrule> ::= @{<extra>@} <target>
-<extra>   ::= access | limited | package
+<extra>   ::= access | limited | package | return
 <target>  ::= out_parameter | variable | initialized_variable
 @end example
 @subsection Action
@@ -4347,7 +4347,8 @@ This rule controls variables and/or @code{@b{out}} parameters that are
 not ``properly'' initialized, i.e. those that are not ``safely''
 initialized, those that have a useless initialization in their
 declaration, and those where the value is known to be used before
-having been assigned.
+having been assigned. The notion of variable includes the return
+object of an extended return statement (Ada 2005).
 
 A variable (or @code{@b{out}} parameter) is considered safely
 initialized if there is an initialization expression in its
@@ -4369,6 +4370,9 @@ procedure calls;
 @item
 return statements;
 @item
+extended return statements, unless they contain a nested non-trivial
+statement.
+@item
 @code{@b{if}} and @code{@b{case}} statements, unless they contain a
 nested non-trivial statement.
 @end itemize
@@ -4379,13 +4383,16 @@ The <target> parameters determines what is to be checked:
 safely initialized before the first non-trivial statement, and before
 every (trivial) @code{return} statement.
 @item
-@code{variable} controls that local variables are
-safely initialized before the first non-trivial statement.
+@code{variable} controls that local variables are safely initialized
+before the first non-trivial statement. If the modifier @code{return}
+is specified, only return objects of extended return statements  are
+controlled.
 @item
 @code{initialized_variable} controls variables that are safely
 initialized before the first non-trivial statement, but also have an
 explicit (and therefore useless) explicit initialization in their
-declaration.
+declaration. If the modifier @code{return} is specified, only return
+objects of extended return statements  are controlled.
 @end itemize
 In all cases, variables used in trivial statements before being
 initialized are reported.
@@ -4421,6 +4428,16 @@ check improper_initialization (out_parameter);
 check improper_initialization (access limited variable);
 search improper_initialization (initialized_variable);
 @end example
+
+@subsection Tips
+@code{variable} and @code{initialized_variable} control also return
+objects from extended return statements, since it would be strange to
+guarantee  safe initialization of local variables and not return
+objects. On the other hand, the design pattern enforced by this rule
+may seem to limitative for regular variables, but it might be
+desirable to enforce it for return objects; hence the possibility to
+limit the rule to return objects by specifying the @code{return}
+modifier.
 
 @subsection Limitations
 Due to a weakness of the ASIS standard, dispatching calls and calls to

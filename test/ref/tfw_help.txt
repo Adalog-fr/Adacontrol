@@ -251,7 +251,7 @@ Control out parameters and local variables that are improperly initialized
 
 Parameter(s): {<extras>} out_parameter        | variable |
                          initialized_variable
-    <extras>: access | limited | package
+    <extras>: access | limited | package | return
 ----
 Rule: INSTANTIATIONS
 Control generic instantiations of specified units, either all of them

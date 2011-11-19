@@ -73,12 +73,20 @@ package body Rules.Improper_Initialization is
    -- As a side effect, if an object is read while its Reference is None, it means it is read
    -- before being assigned; its Reference is then set to Read_Before_Assign
 
+   -- Extended return statements are treated specially, since we want them to be trivial statements (it would be
+   -- strange to allow normal return statements, and not extended return statements). But it is the only case of a
+   -- trivial statement with declarations (the return object). Therefore, they are traversed normally (ignoring the
+   -- return object) when encountered as part of a sequence of statements, and treated like a normal return statement
+   -- unless they contain any non-trivial statement. In addition, they are traversed by Process_Structure to analyze
+   -- use of the return object. Since they are quite rare, and normally not very long, we assume that the cost of
+   -- processing them twice is acceptable.
+
    --TBSL: tasks. What do we do with them? Object_Use must traverse discriminants!
 
    type Subrules is (K_Out_Parameter, K_Variable, K_Initialized_Variable);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
-   type Extension_Kind is (M_Access, M_Limited, M_Package);
+   type Extension_Kind is (M_Access, M_Limited, M_Package, M_Return);
    package Extension_Kind_Modifier_Utilities is new Framework.Language.Modifier_Utilities (Extension_Kind, "M_");
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -146,6 +154,10 @@ package body Rules.Improper_Initialization is
             Rule_Used (Subrule)  := True;
             Usage (Subrule)      := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Extensions (Subrule) := Ext;
+
+            if Subrule = K_Out_Parameter and Extensions (Subrule) (M_Return) then
+               Parameter_Error (Rule_Id, """return"" cannot be specified for ""out_parameter""");
+            end if;
          end loop;
       else
          if Rule_Used /= Usage_Flags'(others => False) then
@@ -373,7 +385,7 @@ package body Rules.Improper_Initialization is
                      -- Traverse the RHS and only the appropriate parts of the LHS
                      Check_Object_Use (Assignment_Expression (Element), Global_Map);
 
-                     -- We can have use of objects in the LHS, but only as part of indexing (or slices)
+                     -- We can have use of objects in the LHS, but only as part of indexing (or slices), or dereferences
                      declare
                         Lhs : Asis.Expression := Assignment_Variable_Name (Element);
                      begin
@@ -621,7 +633,7 @@ package body Rules.Improper_Initialization is
             end case;
          end loop;
          case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name)) is
-            when A_Variable_Declaration | A_Parameter_Specification =>
+            when A_Variable_Declaration | A_Parameter_Specification | A_Return_Object_Declaration =>
                declare
                   Name_Image : constant Unbounded_Wide_String
                     := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
@@ -808,12 +820,52 @@ package body Rules.Improper_Initialization is
                      Check_Object_Use (Expr, Object_Map);
                   end if;
                end;
+               Final_Location := Get_Location (Statement_List (Stmt_Index));
 
                -- Out parameters must be OK at this point
-               Do_Report (Get_Location (Statement_List (Stmt_Index)), Out_Params_Only => True);
+               Do_Report (Final_Location, Out_Params_Only => True);
 
-               Final_Location := Get_Location (Statement_List (Stmt_Index));
-               Exit_Cause     := Return_Statement;
+               Exit_Cause := Return_Statement;
+               return;
+
+            when An_Extended_Return_Statement =>
+               -- Note: only out parameters (in 2012!) and variables are concerned here
+               -- the case of the return object is checked by having Process_Structure invoked on
+               -- the extended return statement
+
+               declare
+                  use Asis.Declarations;
+                  Init_Expr : constant Asis.Expression := Initialization_Expression
+                                                           (Return_Object_Declaration
+                                                            (Statement_List (Stmt_Index)));
+                  -- Local_Map is not really used, since there is only one path, but we need to call Process_Statements
+                  -- to detect non trivial statements and uses before intialisation
+                  Local_Map : Map := Clean_Map (Object_Map);
+               begin
+                  if not Is_Nil (Init_Expr) then
+                     Check_Object_Use (Init_Expr, Object_Map);
+                  end if;
+                  Process_Statements (Local_Map,
+                                      Extended_Return_Statements (Statement_List (Stmt_Index)),
+                                      Final_Location => Final_Location,
+                                      Exit_Cause     => Exit_Cause);
+               end;
+               case Exit_Cause is
+                  when Non_Trivial_Statement =>
+                     return;
+                  when Return_Statement =>
+                     null;
+                  when End_Of_Statements =>
+                     -- Note: end of statements is an implicit return, but Final_Location must point at "end"
+                     Final_Location := Get_Previous_Word_Location (Statement_List (Stmt_Index),
+                                                                   Matching => "END",
+                                                                   Starting => From_Tail);
+               end case;
+
+               -- Out parameters must be OK at this point (2012!)
+               Do_Report (Final_Location, Out_Params_Only => True);
+
+               Exit_Cause := Return_Statement;
                return;
 
             when others =>
@@ -833,7 +885,6 @@ package body Rules.Improper_Initialization is
    -----------------------
 
    procedure Process_Structure (Elem : in Asis.Element) is
-      use Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Object_Info_Map;
 
       Final_Loc  : Location;
@@ -861,6 +912,7 @@ package body Rules.Improper_Initialization is
          if Declaration_Kind (Element)        = A_Package_Body_Declaration
            or else Declaration_Kind (Element) = A_Task_Body_Declaration
            or else Statement_Kind (Element)   = A_Block_Statement
+           or else Statement_Kind (Element)   = An_Extended_Return_Statement
          then
             -- These have no parameters
             return;
@@ -876,15 +928,11 @@ package body Rules.Improper_Initialization is
                   when Not_A_Mode =>
                      Failure (Rule_Id & ": Not_A_Mode");
                   when An_Out_Mode =>
-                     Subtype_Decl := Declaration_Subtype_Mark (Params_Profile (Profile_Index));
-                     if Expression_Kind (Subtype_Decl) = An_Attribute_Reference then
-                        Subtype_Decl := Prefix (Subtype_Decl);
-                     end if;
-                     if Expression_Kind (Subtype_Decl) = A_Selected_Component then
-                        Subtype_Decl := Selector (Subtype_Decl);
-                     end if;
-                     -- Here, Subtype_Decl is the name of an appropriate subtype
-                     Subtype_Decl   := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Decl);
+                     Subtype_Decl := A4G_Bugs.Corresponding_Name_Declaration
+                                              (Simple_Name
+                                               (Strip_Attributes
+                                                (Declaration_Subtype_Mark
+                                                 (Params_Profile (Profile_Index)))));
                      Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
 
                      if (Extensions (K_Out_Parameter) (M_Access)  or else not Is_Access_Subtype (Component_Decl))
@@ -911,7 +959,7 @@ package body Rules.Improper_Initialization is
       end Add_Out_Parameters;
 
       procedure Process_Declarations (Element : in Asis.Element) is
-         use Asis, Asis.Declarations, Asis.Elements;
+         use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
          use Thick_Queries, Utilities;
 
          procedure Add_Variable (Decl : Asis.Declaration) is
@@ -928,6 +976,9 @@ package body Rules.Improper_Initialization is
                Var_Kind := K_Initialized_Variable;
             end if;
             if not Rule_Used (Var_Kind) then
+               return;
+            end if;
+            if Declaration_Kind (Decl) /= A_Return_Object_Declaration and then Extensions (Var_Kind) (M_Return) then
                return;
             end if;
             if not Extensions (Var_Kind) (M_Package) then
@@ -1003,6 +1054,18 @@ package body Rules.Improper_Initialization is
             end loop;
          end Add_Variable;
 
+         function Generalized_Declarative_Items (E : Asis.Element) return Asis.Declaration_List is
+         -- Return the declarative items of E, unless E is an extended return, in which case a list
+         -- with the return object declaration as the only element is returned
+         use Asis.Statements;
+         begin
+            if Statement_Kind (E) = An_Extended_Return_Statement then
+               return (1 => Return_Object_Declaration (E));
+            else
+                return Declarative_Items (E);
+            end if;
+         end Generalized_Declarative_Items;
+
          Expr : Asis.Expression;
       begin  -- Process_Declarations
          if Statement_Kind (Element) = An_Accept_Statement then
@@ -1020,7 +1083,7 @@ package body Rules.Improper_Initialization is
          end if;
 
          declare
-            Decls : constant Asis.Declaration_List := Declarative_Items (Element);
+            Decls : constant Asis.Declaration_List := Generalized_Declarative_Items (Element);
          begin
             for Decl_Index in Decls'Range loop
                case Element_Kind (Decls (Decl_Index)) is
@@ -1139,7 +1202,7 @@ package body Rules.Improper_Initialization is
                               end case;
                            end loop;
 
-                        when A_Variable_Declaration =>
+                        when A_Variable_Declaration | A_Return_Object_Declaration =>
                            Add_Variable (Decls (Decl_Index));
                            Check_Object_Use (Decls (Decl_Index), Global_Map);
 

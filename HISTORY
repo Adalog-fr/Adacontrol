@@ -32,7 +32,7 @@ Ignore remaining of line after blank in an indirect file
 Accepts Ada 2005 new constructs
 
 Modified following rules to account for extended return statements:
-   abnormal_function_return, silent_exceptions
+   abnormal_function_return, silent_exceptions, improper_initialization
 
 New rules:
 ----------
@@ -40,7 +40,6 @@ Local_Access
 
 Changes to existing rules:
 --------------------------
-
 Allocators
    New modifier: Inconsistent (allocator subtype and designated
    subtype don't match)
@@ -52,6 +51,9 @@ Declarations
    Added subrule Abstract_Operator, Interface_Type, Scalar_Variable,
    Ordinary_Record_Variable, Tagged_Private_Type, Tagged_Variable
 
+Improper_Initializations
+   Added modifier "return", handle extended returns
+
 Representation_Clauses
    Added modifier Global
 
@@ -60,7 +62,7 @@ Return_Type
 
 Statements
    Added subrule extended_return, exited_extended_return
-   Subrule Function_Return considers extended_return statements
+   Subrule Function_Return considers extended return statements
 
 =============
 == V1.12r4 ==
