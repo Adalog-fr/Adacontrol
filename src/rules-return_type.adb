@@ -71,7 +71,8 @@ package body Rules.Return_Type is
    --
 
    type Subrules is (K_Class_Wide,        K_Limited_Class_Wide,  K_Protected,           K_Task,
-                     K_Constrained_Array, K_Unconstrained_Array, K_Unconstrained_Discriminated);
+                     K_Constrained_Array, K_Unconstrained_Array, K_Unconstrained_Discriminated,
+                     K_Anonymous_Access);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -318,8 +319,7 @@ package body Rules.Return_Type is
       -- Retrieve the returned type from the function declaration
       Result_Expression := Simple_Name (Result_Profile (Decl));
       if Definition_Kind (Result_Expression) = An_Access_Definition then
-         -- 2005 function returns anonymous access => none of the (current) expected types
-         -- TBSL: add here 2005 checks
+         Do_Report (K_Anonymous_Access, "function returns anonymous access type");
          return;
       end if;
 
@@ -471,14 +471,16 @@ package body Rules.Return_Type is
                               Check_Discriminants;
                               return;
 
+                           when An_Interface_Type_Definition =>
+                              -- There are no components that could contain tasks or PO
+                              Check_Discriminants;
+                              return;
+
                            when Not_A_Type_Definition
                              | A_Root_Type_Definition
                              =>
                               Failure ("unexpected type definition");
 
-                           when others =>
-                              -- Unused, for Ada 2005 compatibility
-                              return;
                         end case;
 
                      when others =>

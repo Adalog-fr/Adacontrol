@@ -1,5 +1,6 @@
 pragma Ada_95; -- To allow Ada95 return of limited types
-procedure T_Return_Type is
+with T_Return_Type.Anonymous_Access; -- To force inclusion into analyzed units
+package body T_Return_Type is
 
    ------------------------------------------------------------
    -- Checking functions specification and body declarations --

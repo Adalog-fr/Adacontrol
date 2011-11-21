@@ -2348,7 +2348,7 @@ The rule controls that the sequence of statements of each function
 body, as well as each of its exception handlers, ends with:
 @itemize @bullet
 @item
-a @code{@b{return}} statement
+a @code{@b{return}} statement (including extended return statements)
 @item
 a @code{@b{raise}} statement (or equivalently, a call to
 @code{Ada.Exceptions.Raise_Exception} or
@@ -2375,13 +2375,18 @@ Ex:
 check abnormal_function_return;
 @end example
 
-@subsection Tip
+@subsection Tips
 This rule checks that a function always returns correctly, but does not
 prevent multiple @code{@b{return}} statements in functions. If you want
 to ensure that there is exactly one @code{@b{return}} statement in functions,
 and that this statement is always the last one, use this rule together with
 the rule @code{statements(function_return)}.
 @xref{Statements}.
+
+It is possible to exit from an extended return statement with an
+@code{@b{exit}} or @code{@b{goto}} statement. If this happens, the
+return statement is not considered a proper return statement, and an
+appropriate message is issued.
 
 @node Allocators, Array_Declarations, Abnormal_Function_Return, Rules reference
 @section Allocators
@@ -6186,10 +6191,10 @@ function results.
 @subsection Syntax
 @example
 <control_kind> return_type [(<subrule> @{, <subrule>@})];
-<subrule> ::= class_wide                 | limited_class_wide  |
-              constrained_array          | protected           |
-              task                       | unconstrained_array |
-              unconstrained_discriminated
+<subrule> ::= class_wide                  | limited_class_wide  |
+              constrained_array           | protected           |
+              task                        | unconstrained_array |
+              unconstrained_discriminated | anonymous_access
 @end example
 
 @subsection Action
@@ -6212,6 +6217,8 @@ as subcomponents.
 @item
 @code{protected} controls protected types, or composite types that include protected
 objects as subcomponents.
+@item
+@code{anonymous_access} controls anonymous access types.
 @end itemize
 
 If no subrule is specified, all type kinds are controlled. Note that
