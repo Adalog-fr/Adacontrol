@@ -34,6 +34,9 @@ Accepts Ada 2005 new constructs
 Modified following rules to account for extended return statements:
    abnormal_function_return, silent_exceptions, improper_initialization
 
+Extended full name image of entities to deal with the return object of
+extended return statements.
+
 New rules:
 ----------
 Local_Access
@@ -58,7 +61,7 @@ Representation_Clauses
    Added modifier Global
 
 Return_Type
-   Added subrule limited_class_wide
+   Added subrules limited_class_wide, anonymous_access
 
 Statements
    Added subrule extended_return, exited_extended_return

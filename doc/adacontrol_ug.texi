@@ -8173,7 +8173,7 @@ that all allocated elements are properly deallocated.
 * Enumeration literals::
 * Operators::
 * Attributes::
-* Anonymous constructs::
+* Anonymous constructs and extended return statements::
 * Record and protected types components::
 * Formals of access to subprogram types::
 * Limitation::
@@ -8310,7 +8310,7 @@ Ada syntax: if you define the integer type @code{T} in package
 @code{Pack}, an overloaded name for the addition would be
 @code{Pack."+"@{Pack.T; Pack.T return Pack.T@}}.
 
-@node Attributes, Anonymous constructs, Operators, Specifying an Ada entity name
+@node Attributes, Anonymous constructs and extended return statements, Operators, Specifying an Ada entity name
 @section Attributes
 It is also possible to designate attributes of entities, using the
 normal notation (i.e. @code{Standard.Integer'First}). If the name of
@@ -8338,12 +8338,12 @@ front of the attribute:
 check entities (all 'Image);  -- Find all occurrences of 'Image
 @end example
 
-@node Anonymous constructs, Record and protected types components, Attributes, Specifying an Ada entity name
-@section Anonymous constructs
+@node Anonymous constructs and extended return statements, Record and protected types components, Attributes, Specifying an Ada entity name
+@section Anonymous constructs and extended return statements
 There is a special case for elements that are defined (directly or
 indirectly) within unnamed loops or block statements. Everything
-happens as if the unnamed construct was named @code{_anonymous_}. So
-if you have the following program:
+happens as if the unnamed construct was named
+@code{_anonymous_}. Therefore if you have the following program:
 @example
 @b{procedure} P @b{is}
 @b{begin}
@@ -8359,7 +8359,21 @@ if you have the following program:
 You can refer to @code{I} as @code{P._anonymous_.I}, and to @code{J}
 as @code{P._anonymous_._anonymous_.J}.
 
-@node Record and protected types components, Formals of access to subprogram types, Anonymous constructs, Specifying an Ada entity name
+Similarly, an extended return statement is considered ``named'' @code{return}.
+ Therefore if you have the following program:
+@example
+@b{function} F @b{return} Integer @b{is}
+   I : Integer;
+@b{begin}
+   @b{return} I : Integer @b{do}
+      ...
+   @b{end} @b{return};
+@b{end} F;
+@end example
+You can refer to the @code{I} declared in @code{F} as @code{F.I}, and
+to the return object @code{I} as @code{F.return.I}.
+
+@node Record and protected types components, Formals of access to subprogram types, Anonymous constructs and extended return statements, Specifying an Ada entity name
 @section Record and protected types components
 You can designate the name of a record or protected type component (a
 ``field'' name), but to identify it uniquely, you must precede its name
