@@ -161,8 +161,10 @@ package body Rules.Type_Initial_Values is
       Rules_Manager.Enter (Rule_Id);
 
       Def := Object_Declaration_View (Decl);
-      if Type_Kind (Def) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition then
-         -- constant of an anonymous array type
+      if Definition_Kind (Def) = An_Access_Definition
+        or else Type_Kind (Def) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition
+      then
+         -- constant of an anonymous access or array type
          return;
       end if;
 
