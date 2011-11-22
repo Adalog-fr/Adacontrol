@@ -4,34 +4,41 @@ procedure Tfw_2005 is
    -- Does not test anything by itself (hence considered tfw),
    -- but contains a little digest of the most error-prone functionalities
    -- of Ada 2005, to make sure new rules are not trapped by them.
-   
-   X : access Integer;
-   Tab : array (1..10) of access Integer; 
+
+   X : access Integer;                       -- Variable of anonymous access type
+   Tab : array (1..10) of access Integer;    -- Anonymous array of anonymous access type
    type Rec is
       record
-	 F : access Integer'Base'Base;
-	 -- Several 'Base were already allowed before 2005 (sigh)
+	 F : access Integer'Base'Base;       -- Component of anonymous access type, several 'Base
+                                             -- Several 'Base were already allowed before 2005 (sigh)
       end record;
 
-   procedure P (F : access function return Integer) is
+   procedure P (F : access function return Integer) is -- Parameter of anonymous access to SP type
    begin
       null;
    end P;
-   
-   function F return access Integer is
+
+   function F return access Integer is       -- Return type of anonymous access type
    begin
-      return X : access Integer do
+      return X : access Integer do           -- Extended return statement with body
          X := new Integer;
          return;
       end return;
+      return X : access Integer;             -- Extended return statement without body
    end F;
-   
+
    --  For the moment, this little gem crashes Gnat...
-   --  function G return access function return access procedure 
-   --  is 
+   --  function G return access function return access procedure -- Return type of anonymous access to function type
+   --  is
    --  begin
    --     return null;
    --  end G;
+
+   generic
+      X : in access Integer;       -- Generic anonymous access in
+      Y : in out access Integer;   -- Generic anonymous access in out
+   procedure P;
+   procedure P is begin null; end P;
 begin
    X := F;
    Tab(1) := X;
