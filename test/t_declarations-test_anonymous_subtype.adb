@@ -1,3 +1,4 @@
+pragma Ada_2005;
 separate (T_Declarations)
 procedure Test_Anonymous_Subtype is            -- nested_procedure, local_procedure
    subtype Int is Integer range 1 .. 10;       -- subtype
@@ -21,6 +22,32 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
    Acc : Acc_Rec;                              -- variable, uninitialized_variable
 
    J : Integer;                                -- variable, scalar_variable, uninitialized_variable
+
+   --
+   -- Anonymous access
+   --
+   AA_A   : access Integer;                                       -- Variable, Uninitialized_Variable, Anonymous_access_variable
+   AA_B : constant access Integer := new Integer'(1);             -- Constant, Anonymous_access_constant
+   AA_C : array (1..10) of access procedure;                      -- Variable, Single_Array, Constrained_Array_Variable, Array, Uninitiaized_Variable, Anonymous_Subtype_Declaration, Anonymous_access_component
+
+   type AA_T is array (1..10) of access function return Integer;  -- Constrained_Array_Type, Array, Anonymous_Subtype_Declaration, Anonymous_access_component
+   type AA_U is                                                   -- Ordinary_Record_Type, Record_Type
+      record
+	 F : access Integer;                                      -- Uninitialized_Record_Component, Anonymous_access_component
+      end record;
+
+   procedure AA_P (X : access Integer) is                         -- Nested_Procedure, Local_Procedure, Anonymous_access_parameter
+   begin
+      null;                                                       -- Null_Procedure
+   end AA_P;
+
+   generic                                     -- nested_generic_procedure, generic
+      C : access Integer;                      -- anonymous_access_constant
+      V : in out access Integer;               -- in_out_generic_parameter, anonymous_access_variable
+      F : access function return Integer;
+   procedure P;
+   procedure P is begin null; end;             -- null_procedure
+
 begin
    for I in Natural range 1 .. 10 loop         -- anonymous_subtype_for
       null;

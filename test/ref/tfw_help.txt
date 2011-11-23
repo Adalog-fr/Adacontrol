@@ -87,6 +87,8 @@ Parameter(s): {<location>} <decl>
         access_type                     | aliased_array_component           |
         aliased_constant                | aliased_protected_component       |
         aliased_record_component        | aliased_variable                  |
+        anonymous_access_component      | anonymous_access_constant         |
+        anonymous_access_parameter      | anonymous_access_variable         |
         anonymous_subtype_allocator     | anonymous_subtype_case            |
         anonymous_subtype_declaration   | anonymous_subtype_for             |
         anonymous_subtype_indexing      | array                             |

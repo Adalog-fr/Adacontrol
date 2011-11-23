@@ -61,6 +61,8 @@ package body Rules.Declarations is
       D_Access_Protected_Type,           D_Access_Subprogram_Type,            D_Access_Task_Type,
       D_Access_Type,                     D_Aliased_Array_Component,           D_Aliased_Constant,
       D_Aliased_Protected_Component,     D_Aliased_Record_Component,          D_Aliased_Variable,
+      D_Anonymous_Access_Component,      D_Anonymous_Access_Constant,         D_Anonymous_Access_Parameter,
+      D_Anonymous_Access_Variable,
       D_Anonymous_Subtype_Allocator,     D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,
       D_Anonymous_Subtype_For,           D_Anonymous_Subtype_Indexing,        D_Array,
       D_Array_Type,
@@ -125,6 +127,7 @@ package body Rules.Declarations is
       D_Uninitialized_Variable,
 
       D_Variable,                        D_Variant_Part);
+   subtype All_Anonymous_Access is Subrules range D_Anonymous_Access_Component .. D_Anonymous_Access_Variable;
    type Subrules_List is array (Positive range <>) of Subrules;
 
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "D_");
@@ -893,7 +896,6 @@ package body Rules.Declarations is
                Type_Name     : Asis.Expression;
                Is_Class_Wide : Boolean := False;
             begin
-               -- TBSL 2005 anonymous access variables
                if Definition_Kind (Def) = A_Type_Definition then
                   -- This happens only for anonymous arrays
                   case Type_Kind (Def) is
@@ -1506,7 +1508,7 @@ package body Rules.Declarations is
           and Usage_Flags'(D_Variant_Part
                            | D_Anonymous_Subtype_Case | D_Anonymous_Subtype_Declaration
                            | D_Anonymous_Subtype_For  | D_Anonymous_Subtype_Indexing => True,
-                           others                                                 => False))
+                           others                                                    => False))
           = No_Rule_Used
       then
          return;
@@ -1539,6 +1541,69 @@ package body Rules.Declarations is
             Failure ("Bad definition", Element);
       end case;
    end Process_Definition;
+
+
+   -------------------------------
+   -- Process_Access_Definition --
+   -------------------------------
+
+   procedure Process_Access_Definition (Element : in Asis.Definition) is
+      use Asis, Asis.Elements;
+      use Utilities;
+      Encl : Asis.Declaration;
+   begin
+      if (Rule_Used
+          and Usage_Flags'(All_Anonymous_Access => True,
+                           others               => False))
+          = No_Rule_Used
+      then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Encl := Enclosing_Element (Element);
+      case Element_Kind (Encl) is
+         when A_Declaration =>
+            case Declaration_Kind (Encl) is
+               when A_Variable_Declaration | A_Return_Object_Declaration =>
+                  Do_Report (D_Anonymous_Access_Variable, Encl);
+               when A_Constant_Declaration =>
+                  Do_Report (D_Anonymous_Access_Constant, Encl);
+               when A_Parameter_Specification =>
+                  Do_Report (D_Anonymous_Access_Parameter, Encl);
+               when A_Function_Declaration
+                  | A_Function_Body_Declaration
+                  | A_Function_Body_Stub
+                  =>
+                  -- This happend for functions whose result type is an anonymous access type
+                  -- Theses are handle by rule Return_Type, so ignore here
+                  null;
+                  -- TBSL renaming, renaming of anonymous access to functions, generics
+               when A_Formal_Object_Declaration =>
+                  case Mode_Kind (Encl) is
+                     when A_Default_In_Mode | An_In_Mode =>
+                        Do_Report (D_Anonymous_Access_Constant, Encl);
+                     when An_In_Out_Mode =>
+                        Do_Report (D_Anonymous_Access_Variable, Encl);
+                     when Not_A_Mode | An_Out_Mode =>
+                        Failure ("Process_Access_Definition: bad mode");
+                  end case;
+
+               when others =>
+                  Failure ("Process_Access_Definition: unexpected declaration for an access definition", Encl);
+            end case;
+
+         when A_Definition =>
+            case Definition_Kind (Encl) is
+               when A_Component_Definition =>
+                  Do_Report (D_Anonymous_Access_Component, Encl);
+               when others =>
+                  Failure ("Declarations: unexpected definition for an access definition", Encl);
+            end case;
+         when others =>
+            Failure ("Declarations: unexpected element for an access definition", Encl);
+      end case;
+   end Process_Access_Definition;
 
 
    -----------------------

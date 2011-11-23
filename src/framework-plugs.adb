@@ -487,6 +487,9 @@ package body Framework.Plugs is
                when A_Variant_Part =>
                   Rules.Declarations.Process_Definition (Element);
 
+               when An_Access_Definition =>
+                  Rules.Declarations.Process_Access_Definition (Element);
+
                when others =>
                   null;
             end case;

@@ -51,7 +51,9 @@ Array_Declarations
    Added subrule Index
 
 Declarations 
-   Added subrule Abstract_Operator, Interface_Type, Scalar_Variable,
+   Added subrule Abstract_Operator, Anonymous_Access_Component,
+   Anonymous_Access_Constant, Anonymous_Access_Parameter,
+   Anonymous_Access_Variable, Interface_Type, Scalar_Variable,
    Ordinary_Record_Variable, Tagged_Private_Type, Tagged_Variable
 
 Improper_Initializations
