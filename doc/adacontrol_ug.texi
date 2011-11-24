@@ -3156,7 +3156,10 @@ control constants and  variables that are of an anonymous access type
 (including generic formal @code{@b{in}} and @code{@b{in} @b{out}}
 parameters, respectively). @code{anonymous_access_parameter} controls
 subprogram parameters that are of an anonymous access type, the only
-ones that existed in Ada 95.
+ones that existed in Ada 95. Note that to avoid unnecessary messages,
+if a subprogram has an explicit specification, the message for
+@code{anonymous_access_parameter} is given on the specification and
+not repeated on the body.
 @item
 @code{anonymous_subtype_declaration} controls the declarations of
 anonymous subtypes and ranges that are part of some other
@@ -3249,7 +3252,9 @@ handled sequence of statements.
 and entry parameters of modes @code{@b{in}} @code{@b{out}} and
 @code{@b{out}} (respectively), while @code{in_out_generic_parameter}
 and @code{out_generic_parameter} do the same for @i{generic} formal
-parameters
+parameters. Note that to avoid unnecessary messages, if a subprogram
+has an explicit specification, the message is given on the
+specification and not repeated on the body.
 @item
 @code{incomplete_type} controls incomplete type declaration.
 @item

@@ -1570,15 +1570,41 @@ package body Rules.Declarations is
                when A_Constant_Declaration =>
                   Do_Report (D_Anonymous_Access_Constant, Encl);
                when A_Parameter_Specification =>
-                  Do_Report (D_Anonymous_Access_Parameter, Encl);
+                  declare
+                     use Asis.Declarations;
+                     use Thick_Queries;
+                     Decl : Asis.Declaration := Enclosing_Element
+                                                 (Enclosing_Program_Unit (Encl, Including_Accept => True));
+                  begin
+                     case Declaration_Kind (Decl) is
+                        when A_Procedure_Declaration
+                           | A_Function_Declaration
+                           | An_Entry_Declaration
+                           | A_Generic_Procedure_Declaration
+                           | A_Generic_Function_Declaration
+                           =>
+                           Do_Report (D_Anonymous_Access_Parameter, Encl);
+                        when A_Procedure_Body_Declaration
+                           | A_Function_Body_Declaration
+                           =>
+                           if Is_Nil (Corresponding_Declaration (Decl)) then
+                              Do_Report (D_Anonymous_Access_Parameter, Encl);
+                           end if;
+                        when others =>
+                           Assert (Statement_Kind (Decl) = An_Accept_Statement,
+                                   "Process_Access_Definition: unexpected parameter context",
+                                   Decl);
+                     end case;
+                  end;
                when A_Function_Declaration
                   | A_Function_Body_Declaration
                   | A_Function_Body_Stub
+                  | A_Function_Renaming_Declaration
+                  | A_Generic_Function_Declaration
                   =>
-                  -- This happend for functions whose result type is an anonymous access type
+                  -- This happens for functions whose result type is an anonymous access type
                   -- Theses are handle by rule Return_Type, so ignore here
                   null;
-                  -- TBSL renaming, renaming of anonymous access to functions, generics
                when A_Formal_Object_Declaration =>
                   case Mode_Kind (Encl) is
                      when A_Default_In_Mode | An_In_Mode =>

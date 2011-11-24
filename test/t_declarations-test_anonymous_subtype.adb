@@ -26,7 +26,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
    --
    -- Anonymous access
    --
-   AA_A   : access Integer;                                       -- Variable, Uninitialized_Variable, Anonymous_access_variable
+   AA_A : access Integer;                                         -- Variable, Uninitialized_Variable, Anonymous_access_variable
    AA_B : constant access Integer := new Integer'(1);             -- Constant, Anonymous_access_constant
    AA_C : array (1..10) of access procedure;                      -- Variable, Single_Array, Constrained_Array_Variable, Array, Uninitiaized_Variable, Anonymous_Subtype_Declaration, Anonymous_access_component
 
@@ -41,12 +41,28 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
       null;                                                       -- Null_Procedure
    end AA_P;
 
-   generic                                     -- nested_generic_procedure, generic
-      C : access Integer;                      -- anonymous_access_constant
-      V : in out access Integer;               -- in_out_generic_parameter, anonymous_access_variable
-      F : access function return Integer;
+   generic                                        -- nested_generic_procedure, generic
+      C : access Integer;                         -- anonymous_access_constant
+      V : in out access Integer;                  -- in_out_generic_parameter, anonymous_access_variable
+      F : access function return Integer;         -- anonymous_access_constant
+      G : access procedure (X : access Integer);  -- anonymous_access_constant, anonymous_access_parameter
    procedure P;
    procedure P is begin null; end;             -- null_procedure
+
+   function F (X : access Integer) return access Integer;    -- anonymous_access_parameter
+   function F (X : access Integer) return access Integer is  -- OK (message on spec)
+   begin
+      return X;
+   end F;
+
+   function G(X : access Integer) return access Integer renames F;  -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming, anonymous_access_parameter
+
+   generic                                                   -- nested_generic_function, generic
+   function H (X : access Integer) return access Integer;    -- anonymous access_parameter
+   function H (X : access Integer) return access Integer is  -- OK (message on spec)
+   begin
+      return new Integer'(1);
+   end H;
 
 begin
    for I in Natural range 1 .. 10 loop         -- anonymous_subtype_for
