@@ -74,6 +74,8 @@ t_declarations-test_anonymous_subtype.adb:33:24: Found: DECLARATIONS: use of dec
 t_declarations-test_anonymous_subtype.adb:33:34: Found: DECLARATIONS: use of declaration "anonymous_access_component"
 t_declarations-test_anonymous_subtype.adb:34:4: Found: DECLARATIONS: use of declaration "ordinary_record_type"
 t_declarations-test_anonymous_subtype.adb:34:4: Error: DECLARATIONS: use of declaration "record_type"
+t_declarations-test_anonymous_subtype.adb:34:14: Found: DECLARATIONS: use of declaration "discriminant"
+t_declarations-test_anonymous_subtype.adb:34:15: Found: DECLARATIONS: use of declaration "anonymous_access_discriminant"
 t_declarations-test_anonymous_subtype.adb:36:3: Found: DECLARATIONS: use of declaration "uninitialized_record_component"
 t_declarations-test_anonymous_subtype.adb:36:7: Found: DECLARATIONS: use of declaration "anonymous_access_component"
 t_declarations-test_anonymous_subtype.adb:39:4: Error: locations: use of declaration "nested procedure"
@@ -575,6 +577,6 @@ x_declarations_locations.adb:20:10: Error: locations: use of declaration "block 
 x_declarations_locations.adb:23:13: Found: DECLARATIONS: use of declaration "null_procedure"
 
 Counts summary:
-All_Decls: 315
+All_Decls: 316
 Nb_array_types: 7
 Nb_entries: 6

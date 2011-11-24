@@ -31,7 +31,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
    AA_C : array (1..10) of access procedure;                      -- Variable, Single_Array, Constrained_Array_Variable, Array, Uninitiaized_Variable, Anonymous_Subtype_Declaration, Anonymous_access_component
 
    type AA_T is array (1..10) of access function return Integer;  -- Constrained_Array_Type, Array, Anonymous_Subtype_Declaration, Anonymous_access_component
-   type AA_U is                                                   -- Ordinary_Record_Type, Record_Type
+   type AA_U (D : access Integer) is                              -- Ordinary_Record_Type, Record_Type, Discriminant, Anonymous_Access_Discriminant
       record
 	 F : access Integer;                                      -- Uninitialized_Record_Component, Anonymous_access_component
       end record;

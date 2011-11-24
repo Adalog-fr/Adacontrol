@@ -3012,6 +3012,7 @@ those occurring at specified locations.
    aliased_array_component           | aliased_constant                |
    aliased_protected_component       | aliased_record_component        |
    anonymous_access_component        | anonymous_access_constant       |
+   anonymous_access_discriminant     |
    anonymous_access_parameter        | anonymous_access_variable       |
    aliased_variable                  | anonymous_subtype_allocator     |
    anonymous_subtype_case            | anonymous_subtype_declaration   |
@@ -3150,7 +3151,8 @@ control the declarations of aliased record (respectively protected)
 components.
 @item
 @code{anonymous_access_component} controls array and record components
-that are of an anonymous access type. Similarly,
+that are of an anonymous access type (but not discriminants, which are
+controlled by @code{anonymous_access_discriminant}). Similarly,
 @code{anonymous_access_constant} and  @code{anonymous_access_variable}
 control constants and  variables that are of an anonymous access type
 (including generic formal @code{@b{in}} and @code{@b{in} @b{out}}
@@ -3424,6 +3426,12 @@ example,  a ``private out_parameter'' is impossible (a parameter
 occurs in a subprogram declaration, not @i{directly} in a private
 part). This is not a problem as far as the rule is concerned, but
 don't expect to find any...
+
+Generally, discriminants are considered components of record
+types. However, discriminants of an anonymous access type (so-called
+access discriminants) play such a special role in the language that
+they deserved their own control
+(@code{anonymous_access_discriminant}).
 
 @subsection Limitation
 In some rare cases, AdaControl may not be able to evaluate the modulus

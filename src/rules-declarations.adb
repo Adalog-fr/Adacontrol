@@ -61,8 +61,8 @@ package body Rules.Declarations is
       D_Access_Protected_Type,           D_Access_Subprogram_Type,            D_Access_Task_Type,
       D_Access_Type,                     D_Aliased_Array_Component,           D_Aliased_Constant,
       D_Aliased_Protected_Component,     D_Aliased_Record_Component,          D_Aliased_Variable,
-      D_Anonymous_Access_Component,      D_Anonymous_Access_Constant,         D_Anonymous_Access_Parameter,
-      D_Anonymous_Access_Variable,
+      D_Anonymous_Access_Component,      D_Anonymous_Access_Constant,         D_Anonymous_Access_Discriminant,
+      D_Anonymous_Access_Parameter,      D_Anonymous_Access_Variable,
       D_Anonymous_Subtype_Allocator,     D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,
       D_Anonymous_Subtype_For,           D_Anonymous_Subtype_Indexing,        D_Array,
       D_Array_Type,
@@ -1569,12 +1569,14 @@ package body Rules.Declarations is
                   Do_Report (D_Anonymous_Access_Variable, Encl);
                when A_Constant_Declaration =>
                   Do_Report (D_Anonymous_Access_Constant, Encl);
+               when A_Discriminant_Specification =>
+                  Do_Report (D_Anonymous_Access_Discriminant, Encl);
                when A_Parameter_Specification =>
                   declare
                      use Asis.Declarations;
                      use Thick_Queries;
-                     Decl : Asis.Declaration := Enclosing_Element
-                                                 (Enclosing_Program_Unit (Encl, Including_Accept => True));
+                     Decl : constant Asis.Declaration := Enclosing_Element
+                                                          (Enclosing_Program_Unit (Encl, Including_Accept => True));
                   begin
                      case Declaration_Kind (Decl) is
                         when A_Procedure_Declaration
