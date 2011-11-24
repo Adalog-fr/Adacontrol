@@ -6,18 +6,16 @@
  <!--  Actions  -->
 <action name="Display_Fni" show-command="false" output="none">
   <filter language="ada" />
-  <shell lang="python">pfni.options()     </shell>
-  <external output="">pfni -q %F:%l:%c %1
-  </external>
+  <shell lang="python">pfni.options() </shell>
+  <external output="">pfni %1                   </external>
   <shell>MDI.get "Messages"</shell>
   <shell>MDIWindow.raise_window %1</shell>
 </action>
 
 <action name="Display_Fni_Ol" show-command="false" output="none">
   <filter language="ada" />
-  <shell lang="python">pfni.options()     </shell>
-  <external output="">pfni -qo %F:%l:%c %1
-  </external>
+  <shell lang="python">pfni.options() </shell>
+  <external output="">pfni -qo %1     </external>
   <shell>MDI.get "Messages"</shell>
   <shell>MDIWindow.raise_window %1</shell>
 </action>

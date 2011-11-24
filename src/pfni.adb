@@ -304,6 +304,7 @@ procedure Pfni is
                      | A_Component_Declaration
                      | A_Parameter_Specification
                      | A_Formal_Object_Declaration
+                     | A_Return_Object_Declaration
                        =>
                      Init := Initialization_Expression (Decl);
                      if not Is_Nil (Init) then
@@ -401,6 +402,26 @@ procedure Pfni is
    The_Control    : Traverse_Control := Continue;
    The_Info       : Info;
 
+   function Fix (S : String) return String is
+   -- Removes a trailing '"' (and space) that seems added by GPS (in some cases?)
+   Last : Natural := S'Last;
+   begin
+      if S = "" then
+         return "";
+      end if;
+
+      while S (Last) = ' ' loop
+         Last := Last - 1;
+         if Last < S'First then
+            return "";
+         end if;
+      end loop;
+      if S (Last) = '"' then
+         Last := Last - 1;
+      end if;
+      return S (S'First .. Last);
+   end Fix;
+
    use Ada.Characters.Handling, Asis.Exceptions;
    use Implementation_Options;
    use Ada.Strings.Wide_Unbounded;
@@ -433,7 +454,7 @@ begin  -- PFNI
    Ada_Environments.Associate (My_Context,
                                "MARF",
                                Parameters_String (Value (Option => 'p', Explicit_Required => True),
-                                                  To_Wide_String (Tail_Value) & To_Wide_String (I_Options)));
+                                                  To_Wide_String (Fix (Tail_Value)) & To_Wide_String (I_Options)));
    Ada_Environments.Open (My_Context);
 
    if Is_Present (Option => 's') or Force_Spec then
@@ -461,19 +482,27 @@ exception
    when Occur : Options_Error =>
       Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       Print_Help;
-   when ASIS_Failed =>
+   when Occur : ASIS_Failed =>
       case Asis.Implementation.Status is
          when Asis.Errors.Use_Error =>
-            User_Message ("Inconsistent tree, please remove *.adt files");
+            if Debug_Option then
+               -- tell the truth if we are debugging
+               Stack_Traceback (Occur);
+               raise;
+            else
+               -- Presumably, due to inconsistent tree...
+               User_Message ("Inconsistent tree, please remove *.adt files");
+            end if;
          when others =>
             Asis_Exception_Messages;
             if Debug_Option then
+               Stack_Traceback (Occur);
                raise;
             end if;
       end case;
    when ASIS_Inappropriate_Compilation_Unit =>
       User_Message ("Unit " & To_Wide_String (Unit_Name) & " not found in context");
-   when
+   when Occur :
      ASIS_Inappropriate_Context
      | ASIS_Inappropriate_Container
      | ASIS_Inappropriate_Element
@@ -482,6 +511,7 @@ exception
      =>
       Asis_Exception_Messages;
       if Debug_Option then
+         Stack_Traceback (Occur);
          raise;
       end if;
 
