@@ -1,3 +1,4 @@
+pragma Ada_2005;
 package body T_naming_convention is
    My_Const  : constant Integer := 1;
    My_Number : constant := 1.0;
@@ -58,6 +59,9 @@ package body T_naming_convention is
          Field    : Boolean;
          Rf_Field : Boolean; -- OK
       end record;
+
+   type T_Good_Interface is interface; --OK
+   type T_Bad_Interf is interface;
 
    -- Procedure body without a spec:
    procedure Bad_Gen is

@@ -5150,6 +5150,7 @@ refering to.
                        Record_Type |
                           Regular_Record_Type |
                           Tagged_Type |
+                          Interface_Type |
                           Class_Type |
                        Access_Type |
                           Access_To_Regular_Type |

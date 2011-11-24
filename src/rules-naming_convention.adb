@@ -82,6 +82,7 @@ package body Rules.Naming_Convention is
                        K_Record_Type,
                           K_Regular_Record_Type,
                           K_Tagged_Type,
+                          K_Interface_Type,
                           K_Class_Type,
                        K_Access_Type,
                            K_Access_To_Regular_Type,
@@ -688,6 +689,8 @@ package body Rules.Naming_Convention is
                            Check (Name_Str, (K_All, K_Type, K_Record_Type, K_Regular_Record_Type));
                         when A_Tagged_Record_Type_Definition =>
                            Check (Name_Str, (K_All, K_Type, K_Record_Type, K_Tagged_Type));
+                        when An_Interface_Type_Definition =>
+                           Check (Name_Str, (K_All, K_Type, K_Record_Type, K_Interface_Type));
                         when An_Access_Type_Definition =>
                            if Access_Type_Kind (Def) in Access_To_Subprogram_Definition then
                               Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_SP_Type));
@@ -798,9 +801,6 @@ package body Rules.Naming_Convention is
                               when others =>
                                  Failure ("Unexpected accessed type 2", Accessed);
                            end case;
-
-                        when An_Interface_Type_Definition =>
-                           null; -- 2005 TBSL
 
                         when others =>
                            Failure ("Unexpected type kind: " & Type_Kinds'Wide_Image (Type_Kind (Def)));

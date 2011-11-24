@@ -59,6 +59,9 @@ Declarations
 Improper_Initializations
    Added modifier "return", handle extended returns
 
+Naming_Convention
+   Added filter Interface_Type
+
 Representation_Clauses
    Added modifier Global
 
