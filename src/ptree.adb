@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- Program PTREE                                                             --
--- (C) Copyright 2001 ADALOG                                                 --
+-- (C) Copyright 2001-2011 ADALOG                                            --
 -- Author: J-P. Rosen                                                        --
 --                                                                           --
 -- Prints a graphic representation of an ASIS tree                           --
@@ -224,6 +224,7 @@ procedure Ptree is
             null;
          when others =>
             -- Corresponds to GNAT extensions: An_Expression_Path
+            -- Does not exist any more in recent versions
             Put (" (non-standard)");
       end case;
    end Put_Kind;
@@ -357,7 +358,7 @@ begin
          return;
    end;
 
-   Implementation.Initialize;
+   Implementation.Initialize (Initialize_String);
    Ada_Environments.Associate (My_Context, "Ptree",
                                Parameters_String (Value (Option            => 'p',
                                                          Explicit_Required => True),
