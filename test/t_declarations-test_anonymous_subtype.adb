@@ -26,6 +26,9 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
    --
    -- Anonymous access
    --
+
+   type T_Proc is access procedure (B : access Integer);          -- access_subprogram_type, access_type, anonymous_access_parameter
+
    AA_A : access Integer;                                         -- Variable, Uninitialized_Variable, Anonymous_access_variable
    AA_B : constant access Integer := new Integer'(1);             -- Constant, Anonymous_access_constant
    AA_C : array (1..10) of access procedure;                      -- Variable, Single_Array, Constrained_Array_Variable, Array, Uninitiaized_Variable, Anonymous_Subtype_Declaration, Anonymous_access_component

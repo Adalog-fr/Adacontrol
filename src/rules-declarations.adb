@@ -1574,28 +1574,37 @@ package body Rules.Declarations is
                when A_Parameter_Specification =>
                   declare
                      use Asis.Declarations;
-                     use Thick_Queries;
-                     Decl : constant Asis.Declaration := Enclosing_Element
-                                                          (Enclosing_Program_Unit (Encl, Including_Accept => True));
+                     Decl : constant Asis.Declaration := Enclosing_Element (Encl);  -- Normally, the SP declaration
                   begin
                      case Declaration_Kind (Decl) is
                         when A_Procedure_Declaration
                            | A_Function_Declaration
                            | An_Entry_Declaration
+                           | A_Procedure_Renaming_Declaration
+                           | A_Function_Renaming_Declaration
                            | A_Generic_Procedure_Declaration
                            | A_Generic_Function_Declaration
                            =>
                            Do_Report (D_Anonymous_Access_Parameter, Encl);
+
                         when A_Procedure_Body_Declaration
                            | A_Function_Body_Declaration
                            =>
                            if Is_Nil (Corresponding_Declaration (Decl)) then
                               Do_Report (D_Anonymous_Access_Parameter, Encl);
                            end if;
-                        when others =>
-                           Assert (Statement_Kind (Decl) = An_Accept_Statement,
-                                   "Process_Access_Definition: unexpected parameter context",
+
+                        when Not_A_Declaration =>
+                           Assert (Element_Kind (Decl) = A_Definition,
+                                   "Process_Access_Definition: unexpected parameter context (4)",
                                    Decl);
+                           -- Must be part of a named or anonymous access to subprogram
+                           -- We could put a more sophisticated Assert just to make sure, but there are many possible
+                           -- contexts, so it is quite complicated, and the only risk is a redundant error message.
+                           Do_Report (D_Anonymous_Access_Parameter, Encl);
+
+                        when others =>
+                           Failure ("Process_Access_Definition: unexpected parameter context (4)", Decl);
                      end case;
                   end;
                when A_Function_Declaration
