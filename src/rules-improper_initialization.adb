@@ -81,8 +81,6 @@ package body Rules.Improper_Initialization is
    -- use of the return object. Since they are quite rare, and normally not very long, we assume that the cost of
    -- processing them twice is acceptable.
 
-   --TBSL: tasks. What do we do with them? Object_Use must traverse discriminants!
-
    type Subrules is (K_Out_Parameter, K_Variable, K_Initialized_Variable);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 

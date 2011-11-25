@@ -607,9 +607,9 @@ package body Rules.Potentially_Blocking_Operations is
          -- Here we must check the body
 
          Decl_Body := Corresponding_Body (Decl);
-         if Is_Nil (Decl_Body) then
-            -- TBSL Imported operations
-            -- Predefined operations, f.e. ...
+         if Is_Nil (Decl_Body)                         -- Predefined operations, f.e. ...
+           or else Element_Kind (Decl_Body) = A_Pragma -- Imported operations are not defined as potentially blocking
+         then
             Is_Blocking := False;
             return;
          end if;

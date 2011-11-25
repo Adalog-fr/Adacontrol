@@ -550,7 +550,7 @@ package body Rules.Usage is
                                                 Usage            => (others => False)));
       Entry_Value.Usage := Entry_Value.Usage or Value;
       -- Take a note of the origin now to avoid horrible tree swapping during the call to Finalize
-      -- Mantis TBSL
+      -- Mantis 0000010
       if Is_Part_Of_Instance (Default_Decl) then
          Entry_Value.Origin := From_Instance;
          -- Let the location refer to the instantiation
