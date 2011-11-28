@@ -32,9 +32,6 @@
 package Framework.Rules_Manager is
    pragma Elaborate_Body;
 
-   Max_Rules : constant := 100; -- Max number of rules in AdaControl
-   type Rules_Count is range 0 .. Max_Rules;
-
    procedure Initialize;
 
    type Help_Procedure        is access procedure;

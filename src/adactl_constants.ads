@@ -41,6 +41,9 @@ package Adactl_Constants is
    Max_Rule_Name_Length : constant := 50;
    -- Maximum number of characters in a rule's name
 
+   Max_Rules : constant := 100; -- Max number of rules in AdaControl
+   type Rules_Count is range 0 .. Max_Rules;
+
 
    -- These constants define limits about what "reasonable" programs may contain.
    -- They can be used by rules to limit some capabilities.

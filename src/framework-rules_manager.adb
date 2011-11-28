@@ -181,7 +181,7 @@ package body Framework.Rules_Manager is
 
    procedure Help_On_Rules (Pattern : Wide_String) is
       use Rule_List, String_Matching, Utilities;
-      Match_Count : Natural := 0;
+      Match_Count : Rules_Count := 0;
       Unb_Pattern  : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Pattern);
 
       procedure One_Help (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
