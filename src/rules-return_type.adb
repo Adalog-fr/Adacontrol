@@ -282,7 +282,7 @@ package body Rules.Return_Type is
          end if;
       end Check_Tasks_Protected;
 
-      procedure Check_Class (Good_Expr : Asis.Expression) is
+      procedure Report_Class (Good_Expr : Asis.Expression) is
          Good_Res : Asis.Expression;
       begin
          Do_Report (K_Class_Wide, "function returns class-wide type");
@@ -295,7 +295,7 @@ package body Rules.Return_Type is
 
          Check_Tasks_Protected;
          Check_Discriminants;
-      end Check_Class;
+      end Report_Class;
 
    begin   -- Process_Function_Declaration
       if Rule_Used = Usage_Flags'(others => False) then
@@ -332,7 +332,7 @@ package body Rules.Return_Type is
                   -- when matching A_Base_Attribute, we need to retrieve the Prefix
                   Result_Expression := Simple_Name (Prefix (Result_Expression));
                when A_Class_Attribute =>
-                  Check_Class (Result_Expression);
+                  Report_Class (Result_Expression);
                   return;
                when others =>
                   Failure ("unexpected return type: attribute", Result_Expression);
@@ -374,10 +374,12 @@ package body Rules.Return_Type is
                         case A4G_Bugs.Attribute_Kind (Result_Type_Expression) is
                            when A_Base_Attribute =>
                               -- when matching A_Base_Attribute, we need to retrieve the Selector
-                              Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Prefix
-                                                                                         (Result_Type_Expression));
+                              Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration
+                                                           (Simple_Name
+                                                            (Prefix
+                                                             (Result_Type_Expression)));
                            when A_Class_Attribute =>
-                              Check_Class (Result_Type_Expression);
+                              Report_Class (Result_Type_Expression);
                               return;
                            when others =>
                               Failure ("unexpected subtype : attribute");
