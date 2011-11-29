@@ -25,7 +25,9 @@ Bug fixes:
 
    Added Wide_Text_IO to potentially blocking operations
 
-Improved help (explain what the rule does before syntax)
+Improved help (explain what the rule does before syntax). Rule names
+in -h option (or help command) are interpreted as regexp if they don't
+match exactly a rule name.
 
 Ignore remaining of line after blank in an indirect file
 

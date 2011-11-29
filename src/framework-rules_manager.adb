@@ -40,6 +40,7 @@ with
 
 -- Adalog
 with
+  String_Matching,
   Utilities,
   Binary_Map;
 pragma Elaborate_All (Utilities);
@@ -174,39 +175,42 @@ package body Framework.Rules_Manager is
       return Is_Present (Rule_Map, To_Unbounded_Wide_String (Rule));
    end Is_Rule_Name;
 
-   ------------------
-   -- Help_On_Rule --
-   ------------------
+   -------------------
+   -- Help_On_Rules --
+   -------------------
 
-   procedure Help_On_Rule (Rule_Id : in Wide_String) is
-      use Utilities, Rule_List;
+   procedure Help_On_Rules (Pattern : Wide_String) is
+      use Rule_List, String_Matching, Utilities;
+      Match_Count : Natural := 0;
+      Unb_Pattern  : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Pattern);
 
-      Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Rule_Id));
-   begin
-      Fetch (Rule_Map, Rule_Name).Help.all;
-   exception
-      when Not_Present =>
-         Error ("Unknown rule: " & To_Wide_String (Rule_Name));
-   end Help_On_Rule;
-
-   -----------------------
-   -- Help_On_All_Rules --
-   -----------------------
-
-   procedure Help_On_All_Rules is
       procedure One_Help (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
-         pragma Unreferenced (Key);
-         use Utilities;
       begin
+         if not Match (To_Wide_String (Key), Pattern) then
+            return;
+         end if;
+
+         if Match_Count /= 0 then
+            User_Message ("----");
+         end if;
          Info.Help.all;
-         User_Message ("----");
+         Match_Count := Match_Count + 1;
       end One_Help;
 
       procedure Help_Iterate is new Rule_List.Iterate (One_Help);
 
-   begin  -- Help_On_All_Rules
-      Help_Iterate (Rule_Map);
-   end Help_On_All_Rules;
+   begin  -- Help_On_Rules
+      if Is_Present (Rule_Map, To_Unbounded_Wide_String (Pattern)) then
+         -- exact match
+         Fetch (Rule_Map, Unb_Pattern).Help.all;
+      else
+         -- interpret as pattern
+         Help_Iterate (Rule_Map);
+         if Match_Count = 0 then
+            Error ("No rule matches " & Pattern);
+         end if;
+      end if;
+   end Help_On_Rules;
 
    -------------------
    -- Help_On_Names --

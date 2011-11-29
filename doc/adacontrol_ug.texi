@@ -892,7 +892,11 @@ Otherwise, the ``-h'' must be followed by one or several keywords or
 rule names (case irrelevant); its effect is:
 @itemize @bullet
 @item
-<rule name>: display the help message for the indicated rule.
+<rule name>: if <rule name> is exactly the name of rule, display the
+help message for the indicated rule. Otherwise, <rule name> is
+interpreted as a pattern, and help messages for all rules that match
+the pattern is displayed. Patterns are given using the full
+Regexp syntax. @pxref{Syntax of regular expressions} for details.
 @item
 ``all'':  display the help message for all rules.
 @item
@@ -916,7 +920,13 @@ Ex:
 adactl -h pragmas Unnecessary_Use_Clause
 adactl -h all
 adactl -h version license
+adactl -h stat
 @end example
+Note in the last example that ``stat'' is not the name of a rule; it
+is therefore interpreted as a pattern, and help will be displayed for
+all rules that include the string ``stat'' in their name. This can be
+very convenient to retrieve the name of a rule if you don't remember
+exactly how it is spelled.
 
 @node Checking commands syntax, Generating a units list, Getting help, Other execution modes
 @subsection Checking commands syntax

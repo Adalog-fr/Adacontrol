@@ -216,7 +216,6 @@ package body Framework.Language.Scanner is
 
             if The_Token.Name_Length = The_Token.Name_Text'Last then
                Syntax_Error ("Identifier too long", The_Token.Position);
-               return;
             end if;
             The_Token.Name_Length := The_Token.Name_Length + 1;
             The_Token.Name_Text (The_Token.Name_Length) := Cur_Char;
@@ -243,7 +242,6 @@ package body Framework.Language.Scanner is
 
             if The_Token.String_Length = The_Token.String_Text'Last then
                Syntax_Error ("String too long", The_Token.Position);
-               return;
             end if;
             The_Token.String_Length := The_Token.String_Length + 1;
             The_Token.String_Text (The_Token.String_Length) := Cur_Char;

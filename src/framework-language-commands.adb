@@ -245,7 +245,7 @@ package body Framework.Language.Commands is
       Upper_On : constant Wide_String := To_Upper (On);
    begin
       if Upper_On = "ALL" then
-         Help_On_All_Rules;
+         Help_On_Rules (".*");
 
       elsif Upper_On = "COMMANDS" then
          Help_On_Commands;
@@ -269,7 +269,7 @@ package body Framework.Language.Commands is
                          & " with " & ASIS_Implementor_Version);
 
       else   -- Assume it is a rule name
-         Help_On_Rule (Upper_On);
+         Help_On_Rules (Upper_On);
       end if;
    end Help_Command;
 

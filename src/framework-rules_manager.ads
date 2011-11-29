@@ -73,10 +73,9 @@ package Framework.Rules_Manager is
    function Last_Rule return Wide_String;
    -- Name of last rule entered
 
-   procedure Help_On_All_Rules;
-   -- Displays all rules help
-   procedure Help_On_Rule (Rule_Id : in Wide_String);
-   -- Displays specific rule help
+   procedure Help_On_Rules (Pattern : Wide_String);
+   -- Displays help for rules matching Pattern
+
    procedure Help_On_Names (Pretty : Boolean);
    -- Displays all rule names
 

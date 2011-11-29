@@ -285,7 +285,7 @@ package body Framework.Language is
                         Go_Command;
 
                      when Key_Help =>
-                        Next_Token;
+                        Next_Token (Force_String => True);
                         if Current_Token.Kind = Semi_Colon then
                            Close_Command;
 
