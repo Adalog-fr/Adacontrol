@@ -1,7 +1,7 @@
-input texinfo   @c -*-texinfo-*-
+\input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.13b8
+@settitle AdaControl User Guide V1.13r8
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -27,15 +27,15 @@ how to add new kinds of rules to AdaControl.
 Last edited: @today{}
 
 @menu
-* Introduction::
-* Installation::
-* Program Usage::
-* Command language reference::
-* Rules reference::
-* Examples of using AdaControl for common programming rules::
-* Specifying an Ada entity name::
-* Syntax of regular expressions::
-* Non upward-compatible changes::
+* Introduction::                
+* Installation::                
+* Program Usage::               
+* Command language reference::  
+* Rules reference::             
+* Examples of using AdaControl for common programming rules::  
+* Specifying an Ada entity name::  
+* Syntax of regular expressions::  
+* Non upward-compatible changes::  
 @end menu
 
 AdaControl is Copyright @copyright{} 2005-2011 Eurocontrol/Adalog,
@@ -89,8 +89,9 @@ own needs, please contact Adalog at
 @uref{mailto::info@@adalog.fr,,info@@adalog.fr}.
 
 @menu
-* Features::
-* History::
+* Features::                    
+* History::                     
+* References::                  
 @end menu
 
 @node Features, History, Introduction, Introduction
@@ -176,7 +177,7 @@ AdaControl from AdaGide}), or emacs (@pxref{Control kinds and report
 messages}). In those environments, you can run AdaControl from menus
 or by just clicking on a button!
 
-@node History,  , Features, Introduction
+@node History, References, Features, Introduction
 @section History
 The development of AdaControl was initially funded by Eurocontrol
 (@uref{http://www.eurocontrol.int}), which needed a tool to help in
@@ -206,6 +207,26 @@ more consistent and easier to use. However, the incompatibilities are
 straightforward to fix and should affect only a very limited number of
 files. See @ref{Non upward-compatible changes} for details.
 
+@node  References,  , History, Introduction
+@section References
+@enumerate
+@item
+``On the benefits for industrials of sponsoring free software
+development'', @i{Ada User Journal}, Volume 26, n° 4, december 2005
+
+@uref{http://www.adalog.fr/publicat/Free-software.pdf}
+@item
+``A Comparison of Industrial Coding Rules'', @i{Ada User Journal},
+Volume 29, n° 4, december 2008
+
+@uref{http://www.adalog.fr/publicat/coding-rules.pdf}
+@item
+``A Methodology for Avoiding Known Compiler Problems
+Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International Conference (SIGAda 2010)}
+
+@uref{http://www.adalog.fr/publicat/compiler-probs.pdf}
+@end enumerate
+
 @node Installation, Program Usage, Introduction, Top
 @chapter Installation
 Like any ASIS application, AdaControl can be run only if the compiler
@@ -222,10 +243,10 @@ to remove some rules from AdaControl to increase its
 speed. @xref{Customizing AdaControl}.
 
 @menu
-* Building AdaControl from source::
-* Installing AdaControl::
-* Installing support for GPS::
-* Installing support for AdaGide::
+* Building AdaControl from source::  
+* Installing AdaControl::       
+* Installing support for GPS::  
+* Installing support for AdaGide::  
 @end menu
 
 @node Building AdaControl from source, Installing AdaControl, Installation, Installation
@@ -496,32 +517,32 @@ the rare cases where your program would not compile in Ada-2005 mode
 force Ada-95 the same way by using @code{@b{pragma} Ada_95} instead.
 
 @menu
-* Command line parameters and options::
-* Return codes::
-* Environment variable and default settings::
-* Interactive mode::
-* Other execution modes::
-* Running AdaControl from GPS::
-* Running AdaControl from AdaGide::
-* Helpful utilities::
-* Optimizing Adacontrol::
-* In case of trouble::
+* Command line parameters and options::  
+* Return codes::                
+* Environment variable and default settings::  
+* Interactive mode::            
+* Other execution modes::       
+* Running AdaControl from GPS::  
+* Running AdaControl from AdaGide::  
+* Helpful utilities::           
+* Optimizing Adacontrol::       
+* In case of trouble::          
 @end menu
 
 @node Command line parameters and options, Return codes, Program Usage, Program Usage
 @section Command line parameters and options
 @menu
-* Input units::
-* Commands::
-* Output file::
-* Output format::
-* Output limits::
-* Project files::
-* Local disabling control::
-* Verbose and debug mode::
-* Treatment of warnings::
-* Exit on error::
-* ASIS options::
+* Input units::                 
+* Commands::                    
+* Output file::                 
+* Output format::               
+* Output limits::               
+* Project files::               
+* Local disabling control::     
+* Verbose and debug mode::      
+* Treatment of warnings::       
+* Exit on error::               
+* ASIS options::                
 @end menu
 
 @node Input units, Commands, Command line parameters and options, Command line parameters and options
@@ -868,9 +889,9 @@ In addition to normal usage, AdaControl features special options to
 ease its use; no Ada unit is analyzed when using these options.
 
 @menu
-* Getting help::
-* Checking commands syntax::
-* Generating a units list::
+* Getting help::                
+* Checking commands syntax::    
+* Generating a units list::     
 @end menu
 
 @node Getting help, Checking commands syntax, Other execution modes, Other execution modes
@@ -997,13 +1018,13 @@ appear under the ``Counts summary'' category, and statistics under the
 ``Statistics'' category.
 
 @menu
-* The AdaControl menu and buttons::
-* Contextual menu::
-* AdaControl switches::
-* AdaControl preferences::
-* AdaControl language::
-* AdaControl help::
-* Caveat::
+* The AdaControl menu and buttons::  
+* Contextual menu::             
+* AdaControl switches::         
+* AdaControl preferences::      
+* AdaControl language::         
+* AdaControl help::             
+* Caveat::                      
 @end menu
 
 @node The AdaControl menu and buttons, Contextual menu, Running AdaControl from GPS, Running AdaControl from GPS
@@ -1347,9 +1368,9 @@ This section describe utilities that are handy to use in conjunction
 with AdaControl.
 
 @menu
-* pfni::
-* makepat.sed::
-* unrepr.sed::
+* pfni::                        
+* makepat.sed::                 
+* unrepr.sed::                  
 @end menu
 
 @node pfni, makepat.sed, Helpful utilities, Helpful utilities
@@ -1463,9 +1484,9 @@ Note: all options described in this section are ASIS options,
 i.e. they must appear last on the command line, after a ``-@w{}-''.
 
 @menu
-* Tree files and the ASIS context::
-* Generating tree files manually::
-* Choosing an appropriate combination of options::
+* Tree files and the ASIS context::  
+* Generating tree files manually::  
+* Choosing an appropriate combination of options::  
 @end menu
 
 @node Tree files and the ASIS context, Generating tree files manually, Optimizing Adacontrol, Optimizing Adacontrol
@@ -1646,10 +1667,12 @@ report, you may chose to disable the rule for the unit that has a
 problem. @xref{Inhibit command}.
 
 If you encounter a problem while using AdaControl, you are very
-welcome to report it to
-@uref{mailto::rosen@@adalog.fr,,rosen@@adalog.fr}. Please include the
-exact control and the unit that caused the problem, as well as the
-captured output of the program (with ``-d'' option).
+welcome to report it through our
+@uref{https://sourceforge.net/apps/mantisbt/adacontrol/my_view_page.php,Mantis bug
+tracking system} (under Windows, you can click on ``Report problem''
+in the AdaControl Start menu). Please include the exact control and
+the unit that caused the problem, as well as the captured output of
+the program (with ``-dx'' option).
 
 @node Command language reference, Rules reference, Program Usage, Top
 @chapter Command language reference
@@ -1669,10 +1692,10 @@ file. Commands can also be given interactively; @xref{Interactive
 mode}.
 
 @menu
-* General::
-* Controls::
-* Other commands::
-* Example of commands::
+* General::                     
+* Controls::                    
+* Other commands::              
+* Example of commands::         
 @end menu
 
 @node General, Controls, Command language reference, Command language reference
@@ -1740,10 +1763,10 @@ part of the same programming rule. For example:
 @end example
 
 @menu
-* Control kinds and report messages::
-* Parameters::
-* Multiple controls::
-* Disabling controls::
+* Control kinds and report messages::  
+* Parameters::                  
+* Multiple controls::           
+* Disabling controls::          
 @end menu
 
 @node Control kinds and report messages, Parameters, Controls, Controls
@@ -2001,14 +2024,14 @@ the interactive mode (@pxref{Interactive mode}), they can be used in
 command files as well.
 
 @menu
-* Go command::
-* Quit command::
-* Message command::
-* Help command::
-* Clear command::
-* Set command::
-* Source command::
-* Inhibit command::
+* Go command::                  
+* Quit command::                
+* Message command::             
+* Help command::                
+* Clear command::               
+* Set command::                 
+* Source command::              
+* Inhibit command::             
 @end menu
 
 @node Go command, Quit command, Other commands, Other commands
@@ -2279,67 +2302,67 @@ an access value, or rules applying to subprogram calls when the call
 is a dispatching call.
 
 @menu
-* Abnormal_Function_Return::
-* Allocators::
-* Array_Declarations::
-* Barrier_Expressions::
-* Case_Statement::
-* Characters::
-* Comments::
-* Declarations::
-* Default_Parameter::
-* Dependencies::
-* Directly_Accessed_Globals::
-* Duplicate_Initialization_Calls::
-* Entities::
-* Entity_Inside_Exception::
-* Exception_Propagation::
-* Expressions::
-* Global_References::
-* Header_Comments::
-* Improper_Initialization::
-* Instantiations::
-* Insufficient_Parameters::
-* Local_Access::
-* Local_Hiding::
-* Max_Blank_Lines::
-* Max_Call_Depth::
-* Max_Line_Length::
-* Max_Nesting::
-* Max_Size::
-* Max_Statement_Nesting::
-* Movable_Accept_Statements::
-* Multiple_Assignments::
-* Naming_Convention::
-* No_Operator_Usage::
-* Non_Static::
-* Not_Elaboration_Calls::
-* Not_Selected_Name::
-* Object_Declarations::
-* Parameter_Aliasing::
-* Parameter_Declarations::
-* Potentially_Blocking_Operations::
-* Pragmas::
-* Record_Declarations::
-* Reduceable_Scope::
-* Representation_Clauses::
-* Return_Type::
-* Side_Effect_Parameters::
-* Silent_Exceptions::
-* Simplifiable_Expressions::
-* Simplifiable_Statements::
-* Statements::
-* Style::
-* Terminating_Tasks::
-* Type_Initial_Values::
-* Uncheckable::
-* Units::
-* Unnecessary_Use_Clause::
-* Unsafe_Paired_Calls::
-* Unsafe_Unchecked_Conversion::
-* Usage::
-* Use_Clauses::
-* With_Clauses::
+* Abnormal_Function_Return::    
+* Allocators::                  
+* Array_Declarations::          
+* Barrier_Expressions::         
+* Case_Statement::              
+* Characters::                  
+* Comments::                    
+* Declarations::                
+* Default_Parameter::           
+* Dependencies::                
+* Directly_Accessed_Globals::   
+* Duplicate_Initialization_Calls::  
+* Entities::                    
+* Entity_Inside_Exception::     
+* Exception_Propagation::       
+* Expressions::                 
+* Global_References::           
+* Header_Comments::             
+* Improper_Initialization::     
+* Instantiations::              
+* Insufficient_Parameters::     
+* Local_Access::                
+* Local_Hiding::                
+* Max_Blank_Lines::             
+* Max_Call_Depth::              
+* Max_Line_Length::             
+* Max_Nesting::                 
+* Max_Size::                    
+* Max_Statement_Nesting::       
+* Movable_Accept_Statements::   
+* Multiple_Assignments::        
+* Naming_Convention::           
+* No_Operator_Usage::           
+* Non_Static::                  
+* Not_Elaboration_Calls::       
+* Not_Selected_Name::           
+* Object_Declarations::         
+* Parameter_Aliasing::          
+* Parameter_Declarations::      
+* Potentially_Blocking_Operations::  
+* Pragmas::                     
+* Record_Declarations::         
+* Reduceable_Scope::            
+* Representation_Clauses::      
+* Return_Type::                 
+* Side_Effect_Parameters::      
+* Silent_Exceptions::           
+* Simplifiable_Expressions::    
+* Simplifiable_Statements::     
+* Statements::                  
+* Style::                       
+* Terminating_Tasks::           
+* Type_Initial_Values::         
+* Uncheckable::                 
+* Units::                       
+* Unnecessary_Use_Clause::      
+* Unsafe_Paired_Calls::         
+* Unsafe_Unchecked_Conversion::  
+* Usage::                       
+* Use_Clauses::                 
+* With_Clauses::                
 @end menu
 
 @node Abnormal_Function_Return, Allocators, Rules reference, Rules reference
@@ -2403,8 +2426,8 @@ appropriate message is issued.
 This rule controls the use of allocators (i.e. dynamic memory allocation).
 @subsection Syntax
 @example
-<control_kind> allocators
-   [([inconsistent] [task|protected|<entity>] @{, [inconsistent] task|protected|<entity>@})];
+<control_kind> allocators [(<target> @{, <target>@})];
+<target> ::= [inconsistent] [task|protected|<entity>]
 @end example
 
 @subsection Action
@@ -2508,13 +2531,13 @@ component type of the array.
 <control_kind> array_declarations (last,       <value> | <bounds>);
 <control_kind> array_declarations (dimensions, <value> | <bounds>);
 <control_kind> array_declarations (length,     <bounds>);
-<control_kind> array_declarations (component,  <entity_kind> @{,<repr_cond>@});
-<control_kind> array_declarations (index,      <entity_kind> | <> @{,<entity_kind> | <>@});
-<bounds>      ::= min|max <value> [, min|max <value> ]
-<entity_kind> ::= <entity>|<category>
-<category >   ::= () | access    | array | delta  | digits | mod | private |
-                       protected | range | record | tagged | task
-<repr_cond>   ::= [not] packed | sized | component_sized
+<control_kind> array_declarations (component,  <type> @{,<repr_cond>@});
+<control_kind> array_declarations (index,      <type> | <> @{,<type> | <>@});
+<bounds>    ::= min|max <value> [, min|max <value> ]
+<type>      ::= <entity>|<category>
+<category > ::= () | access    | array | delta  | digits | mod | private
+                   | protected | range | record | tagged | task
+<repr_cond> ::= [not] packed | sized | component_sized
 @end example
 @subsection Action
 The first parameter is a subrule keyword:
@@ -3014,80 +3037,77 @@ those occurring at specified locations.
                   own | private | public  | task_body
 <declaration_kw> ::=
    any_declaration                   |
-   abstract_function                 | abstract_operator               |
-   abstract_procedure                | abstract_type                   |
-   access_all_type                   | access_constant_type            |
-   access_protected_type             | access_subprogram_type          |
-   access_task_type                  | access_type                     |
-   aliased_array_component           | aliased_constant                |
-   aliased_protected_component       | aliased_record_component        |
-   anonymous_access_component        | anonymous_access_constant       |
-   anonymous_access_discriminant     |
-   anonymous_access_parameter        | anonymous_access_variable       |
-   aliased_variable                  | anonymous_subtype_allocator     |
-   anonymous_subtype_case            | anonymous_subtype_declaration   |
-   anonymous_subtype_for             | anonymous_subtype_indexing      |
-   array                             | array_type                      |
-   binary_modular_type               | character_literal               |
-   child_unit                        | class_wide_constant             |
-   class_wide_variable               | constant                        |
-   constrained_array_constant        | constrained_array_type          |
-   constrained_array_variable        | controlled_type                 |
-   decimal_fixed_type                | defaulted_discriminant          |
-   defaulted_generic_parameter       | defaulted_parameter             |
-   deferred_constant                 | derived_type                    |
-   discriminant                      | empty_private_part              |
-   empty_visible_part                | enumeration_type                |
-   entry                             | exception                       |
-   extension                         | fixed_type                      |
-   float_type                        | formal_function                 |
-   formal_package                    | formal_procedure                |
-   formal_type                       | function                        |
-   function_call_renaming            | function_instantiation          |
-   generic                           | generic_function                |
-   generic_package                   | generic_procedure               |
-   handlers                          | incomplete_type                 |
-   in_out_generic_parameter          | in_out_parameter                |
-   initialized_protected_component   | initialized_record_component    |
-   initialized_variable              | instantiation                   |
-   integer_type                      | interface_type                  |
-   library_unit_renaming             | limited_private_type            |
-   modular_type                      | multiple_names                  |
-   multiple_protected_entries        | named_number                    |
-   non_binary_modular_type           | non_identical_operator_renaming |
-   non_identical_renaming            | non_joint_CE_NE_handler         |
-   non_limited_private_type          | not_operator_renaming           |
-   null_extension                    | null_ordinary_record_type       |
-   null_procedure                    | null_tagged_type                |
-   operator                          | operator_renaming               |
-   ordinary_fixed_type               | ordinary_fixed_type_no_small    |
-   ordinary_fixed_type_with_small    | ordinary_record_type            |
-   ordinary_record_variable          |
-   out_parameter                     | package                         |
-   package_instantiation             | package_statements              |
-   predefined_operator               | private_extension               |
-   procedure                         | procedure_instantiation         |
-   protected                         | protected_entry                 |
-   protected_type                    | protected_variable              |
-   record_type                       | renaming                        |
-   renaming_as_body                  | renaming_as_declaration         |
-   scalar_variable                   |
-   self_calling_function             | self_calling_procedure          |
-   separate                          | signed_type                     |
-   single_array                      | single_protected                |
-   single_task                       | subtype                         |
-   tagged_private_type               |
-   tagged_type                       | tagged_variable                 |
-   task                              |
-   task_entry                        | task_type                       |
-   task_variable                     | type                            |
-   unconstrained_array_constant      | unconstrained_array_type        |
-   unconstrained_array_variable      | unconstrained_subtype           |
-   uninitialized_protected_component | uninitialized_record_component  |
-   uninitialized_variable            | variable                        |
-   variant_part
-   @end example
-
+   abstract_function                 | abstract_operator                 |
+   abstract_procedure                | abstract_type                     |
+   access_all_type                   | access_constant_type              |
+   access_protected_type             | access_subprogram_type            |
+   access_task_type                  | access_type                       |
+   aliased_array_component           | aliased_constant                  |
+   aliased_protected_component       | aliased_record_component          |
+   anonymous_access_component        | anonymous_access_constant         |
+   anonymous_access_discriminant     | anonymous_access_parameter        | 
+   anonymous_access_variable         | aliased_variable                  | 
+   anonymous_subtype_allocator       | anonymous_subtype_case            | 
+   anonymous_subtype_declaration     | anonymous_subtype_for             | 
+   anonymous_subtype_indexing        | array                             | 
+   array_type                        | binary_modular_type               | 
+   character_literal                 | child_unit                        |
+   class_wide_constant               | class_wide_variable               | 
+   constant                          | constrained_array_constant        | 
+   constrained_array_type            | constrained_array_variable        | 
+   controlled_type                   | decimal_fixed_type                |
+   defaulted_discriminant            | defaulted_generic_parameter       |
+   defaulted_parameter               | deferred_constant                 |
+   derived_type                      | discriminant                      |
+   empty_private_part                | empty_visible_part                |
+   enumeration_type                  | entry                             |
+   exception                         | extension                         |
+   fixed_type                        | float_type                        |
+   formal_function                   | formal_package                    |
+   formal_procedure                  | formal_type                       |
+   function                          | function_call_renaming            |
+   function_instantiation            | generic                           |
+   generic_function                  | generic_package                   |
+   generic_procedure                 | handlers                          |
+   incomplete_type                   | in_out_generic_parameter          |
+   in_out_parameter                  | initialized_protected_component   |
+   initialized_record_component      | initialized_variable              |
+   instantiation                     | integer_type                      |
+   interface_type                    | library_unit_renaming             |
+   limited_private_type              | modular_type                      |
+   multiple_names                    | multiple_protected_entries        |
+   named_number                      | non_binary_modular_type           |
+   non_identical_operator_renaming   | non_identical_renaming            |
+   non_joint_CE_NE_handler           | non_limited_private_type          |
+   not_operator_renaming             | null_extension                    |
+   null_ordinary_record_type         | null_procedure                    |
+   null_tagged_type                  | operator                          |
+   operator_renaming                 | ordinary_fixed_type               |
+   ordinary_fixed_type_no_small      | ordinary_fixed_type_with_small    |
+   ordinary_record_type              | ordinary_record_variable          |
+   out_parameter                     | package                           |
+   package_instantiation             | package_statements                |
+   predefined_operator               | private_extension                 |
+   procedure                         | procedure_instantiation           |
+   protected                         | protected_entry                   |
+   protected_type                    | protected_variable                |
+   record_type                       | renaming                          |
+   renaming_as_body                  | renaming_as_declaration           |
+   scalar_variable                   | self_calling_function             |
+   self_calling_procedure            | separate                          |
+   signed_type                       | single_array                      |
+   single_protected                  | single_task                       |
+   subtype                           | tagged_private_type               |
+   tagged_type                       | tagged_variable                   |
+   task                              | task_entry                        |
+   task_type                         | task_variable                     |
+   type                              | unconstrained_array_constant      |
+   unconstrained_array_type          | unconstrained_array_variable      |
+   unconstrained_subtype             | uninitialized_protected_component |
+   uninitialized_record_component    | uninitialized_variable            |
+   variable                          | variant_part
+@end example
+   
 @subsection Action
 The <location_kw> restricts the places where the occurrence of the
 declaration is controlled.  Several <location_kw> can be given, in
@@ -3455,7 +3475,8 @@ This rule checks usage (or non-usage) of defaulted parameters.
 @subsection Syntax
 @example
 <control_kind> default_parameter (<place>, <formal>, <usage>);
-<place>  ::= <entity> | calls | instantiations
+<place>  ::= <entity> |
+   calls | instantiations
 <formal> ::=  <formal name> | all
 <usage>  ::= used | positional | not_used
 @end example
@@ -7934,17 +7955,17 @@ give examples of commonly found programming rules, and how the
 corresponding controls can be written.
 
 @menu
-* Migrating from Gnatcheck::
-* Rules files provided with AdaControl::
-* Automatically checkable rules::
-* Rules that need manual inspection::
+* Migrating from Gnatcheck::    
+* Rules files provided with AdaControl::  
+* Automatically checkable rules::  
+* Rules that need manual inspection::  
 @end menu
 
 @node  Migrating from Gnatcheck, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules, Examples of using AdaControl for common programming rules
 @section Migrating from Gnatcheck
 The file @code{gnatcheck.aru} in directory @code{rules} gives the
 AdaControl equivalents of rules checked by Gnatcheck. This version of
-AdaControl covers all Gnatcheck rules.  For rules where Gnatcheck
+AdaControl covers most of Gnatcheck rules.  For rules where Gnatcheck
 requires a parameter, the AdaControl rule is given for the default
 value, or with an example value.  Small differences in semantics are
 indicated by a comment that starts with "Difference:".
@@ -8214,15 +8235,15 @@ that all allocated elements are properly deallocated.
 @appendix Specifying an Ada entity name
 
 @menu
-* General syntax::
-* Overloaded names::
-* Enumeration literals::
-* Operators::
-* Attributes::
-* Anonymous constructs and extended return statements::
-* Record and protected types components::
-* Formals of access to subprogram types::
-* Limitation::
+* General syntax::              
+* Overloaded names::            
+* Enumeration literals::        
+* Operators::                   
+* Attributes::                  
+* Anonymous constructs and extended return statements::  
+* Record and protected types components::  
+* Formals of access to subprogram types::  
+* Limitation::                  
 @end menu
 
 @node General syntax, Overloaded names, Specifying an Ada entity name, Specifying an Ada entity name

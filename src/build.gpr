@@ -17,7 +17,7 @@ project Build is
       for Default_Switches ("ada") use ("-E");
    end Binder;
 
-   Std_Options := ("-O2", "-gnatwa", "-gnatWh", "-gnat95", "-gnato", "-gnatf", "-g");
+   Std_Options := ("-O2", "-gnatws", "-gnat05", "-gnato", "-gnatf", "-g");
    package Compiler is
       case Gnat_Fix is
       when "1" =>

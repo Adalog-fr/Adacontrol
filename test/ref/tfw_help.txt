@@ -680,4 +680,3 @@ Control "with" clauses that use multiple names, can be moved to a more reduced s
 or are implicitely inherited from a parent unit
 
 Parameter(s): multiple_names | reduceable | inherited
-----

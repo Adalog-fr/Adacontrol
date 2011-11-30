@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.13b8
+@settitle AdaControl Programmer Manual V1.13r8
 @c %**end of header
 
 @titlepage
@@ -38,7 +38,7 @@ AdaControl for industrial projects, or if you want it to be customized
 or extended to match your own needs, please contact Adalog at
 @uref{mailto::info@@adalog.fr,,info@@adalog.fr}.
 
-AdaControl is Copyright @copyright{} 2005-2010 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2011 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -60,7 +60,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2010
+This document is Copyright @copyright{} 2005-2011
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -75,6 +75,13 @@ copyright notice is included unmodified in any copy.
 This programmer manual describes how to add new rules to
 AdaControl. Since AdaControl is based on ASIS, this manual assumes
 that the reader has some familiarity with ASIS programming.
+
+Modifying AdaControl needs of course a source distribution. It is OK
+to work with the regular source distribution, but if you intend to
+submit your patches, it is appropriate to get the latest ``bleeding
+edge'' version from our GIT repository on SourceForge. Instructions on
+how to get AdaControl from GIT are
+@uref{http://sourceforge.net/projects/adacontrol/files/download-from-git.txt/download,here}
 
 @section vocabulary
 Some terms have a precise definition in AdaControl, and will be used
@@ -311,7 +318,7 @@ Note that if you instantiate @code{Flag_Utilities} or
 @code{Modifier_Utilities} in a library package (as will be the case
 most of the time), you @i{must} put a @code{pragma Elaborate
 (Framework.Language);} on top of the package. Failing to do so will
-result in circular elaboration problems (@code{pragma Elaborate_All},
+result in circular elaboration problems; (@code{pragma Elaborate_All},
 as implicitely provided by GNAT, does @i{not} work).
 
 @node The package Framework.Scope_Manager, The package Framework.Plugs, The package Framework.Language, The framework and utilities packages

@@ -6,6 +6,9 @@ the following services:
 * Explanations regarding the use of the tool, and help for translating
   coding standards into AdaControl rules.
 
+* Dedicated account into our MantisBT system for priority handling of
+  problem reports.
+
 * Correction of problems encountered in the use of AdaControl.
   Pre-releases versions of AdaControl are provided for each corrected
   problem.

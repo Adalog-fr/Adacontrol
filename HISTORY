@@ -1,5 +1,5 @@
 =============
-== V1.13b8 ==
+== V1.13r8 ==
 =============
 
 General:
@@ -14,7 +14,7 @@ Bug fixes:
    subprograms (lead to incorrect messages in rule
    Improper_Initialization)
 
-   Declarations: abstract limited private were not recognized as
+   Declarations: abstract limited private was not recognized as
    limited private
 
    Constraint_Error in Style(Expression_Litteral) when a litteral has
@@ -39,6 +39,8 @@ Modified following rules to account for extended return statements:
 Extended full name image of entities to deal with the return object of
 extended return statements.
 
+Ptree now works in ada2005 mode
+
 New rules:
 ----------
 Local_Access
@@ -53,7 +55,7 @@ Array_Declarations
    Added subrule Index
 
 Declarations 
-   Added subrule Abstract_Operator, Anonymous_Access_Component,
+   Added subrules Abstract_Operator, Anonymous_Access_Component,
    Anonymous_Access_Constant, Anonymous_Access_Discriminant,
    Anonymous_Access_Parameter, Anonymous_Access_Variable,
    Interface_Type, Scalar_Variable, Ordinary_Record_Variable,
