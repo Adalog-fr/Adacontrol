@@ -1,3 +1,4 @@
+#!/bin/bash
 # Usage:
 # ./run.sh [-q] [<adactl options>]
 # If -q is given as the first parameter:
