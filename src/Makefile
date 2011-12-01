@@ -46,7 +46,7 @@ EXT = ${UNIX_EXT}
 # GNAT options, adjust to your taste
 
 GARGS = -gnatf -gnatwa -aI${ASIS_INCLUDE} -aO${ASIS_OBJ} -g
-CARGS = -cargs -O2 -gnatWh -gnat95 -gnato
+CARGS = -cargs -O2 -gnatWh -gnat05 -gnato
 BARGS = -bargs -E
 LARGS = -largs -L${ASIS_LIB} -lasis
 
