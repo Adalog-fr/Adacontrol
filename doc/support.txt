@@ -18,6 +18,8 @@ the following services:
 * Keeping in sync customer's own custom rules with the latest version
   of AdaControl.
 
+* Reduced rate for on-demand development of custom rules
+
 Adalog cannot correct problems whose origin is due to compiler bugs or
 defects in the implementation of ASIS (contact your compiler provider
 for support on these problems). However, Adalog will do its best
