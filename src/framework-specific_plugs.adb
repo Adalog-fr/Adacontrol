@@ -85,6 +85,16 @@ package body Framework.Specific_Plugs is
       null;
    end Exit_Scope;
 
+   --------------------------
+   -- Enter_Statement_List --
+   --------------------------
+
+   procedure Enter_Statement_List (Element : in Asis.Element) is
+      pragma Unreferenced (Element);
+   begin
+      null;
+   end Enter_Statement_List;
+
    ---------------------
    -- True_Identifier --
    ---------------------

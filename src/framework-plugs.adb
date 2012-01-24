@@ -173,6 +173,18 @@ package body Framework.Plugs is
       Rules.Unnecessary_Use.     Process_Scope_Exit (Element);
    end Exit_Scope;
 
+   --------------------------
+   -- Enter_Statement_List --
+   --------------------------
+
+   -- Plug calls here to rules that need to process a Sequence_of_statements
+   -- Element is one of the elements to which Thick_Queries.Statements applies
+   -- (i.e. a statement container)
+   procedure Enter_Statement_List (Element : in Asis.Element) is
+   begin
+      Rules.Multiple_Assignments. Process_Statement_Container (Element);
+   end Enter_Statement_List;
+
    ---------------------
    -- True_Identifier --
    ---------------------
@@ -282,11 +294,10 @@ package body Framework.Plugs is
                   Rules.Abnormal_Function_Return. Process_Function_Body        (Element);
                   Rules.Exception_Propagation.    Process_SP_Declaration       (Element);
                   Rules.Global_References.        Process_Body                 (Element);
-                  Rules.Multiple_Assignments.     Process_Statement_Container  (Element);
                   Rules.Parameter_Declarations.   Process_Declaration          (Element);
                   Rules.Improper_Initialization.  Process_Structure            (Element);
                   Rules.Return_Type.              Process_Function_Declaration (Element);
-                  Rules.Comments.         Process_Program_Unit         (Element);
+                  Rules.Comments.                 Process_Program_Unit         (Element);
                   Rules.Statements.               Process_Function_Body        (Element);
                   Rules.Style.                    Process_Construct            (Element);
                   Rules.Style.                    Process_Declaration          (Element);
@@ -295,7 +306,6 @@ package body Framework.Plugs is
                when A_Procedure_Body_Declaration =>
                   Rules.Exception_Propagation.   Process_SP_Declaration      (Element);
                   Rules.Global_References.       Process_Body                (Element);
-                  Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Parameter_Declarations.  Process_Declaration         (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
                   Rules.Comments.        Process_Program_Unit        (Element);
@@ -306,7 +316,6 @@ package body Framework.Plugs is
                when An_Entry_Body_Declaration =>
                   Rules.Barrier_Expressions.     Process_Entry_Declaration   (Element);
                   Rules.Global_References.       Process_Body                (Element);
-                  Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
                   Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
@@ -320,7 +329,6 @@ package body Framework.Plugs is
                   Rules.Usage. Process_Declaration (Element);
 
                when A_Package_Body_Declaration =>
-                  Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
                   Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
@@ -344,7 +352,7 @@ package body Framework.Plugs is
                  =>
                   Rules.Exception_Propagation.   Process_Task_Body           (Element);
                   Rules.Global_References.       Process_Body                (Element);
-                  Rules.Multiple_Assignments.    Process_Statement_Container (Element);
+
                   Rules.Improper_Initialization. Process_Structure           (Element);
                   Rules.Comments.        Process_Program_Unit        (Element);
                   Rules.Style.                   Process_Construct           (Element);
@@ -496,7 +504,6 @@ package body Framework.Plugs is
 
          when An_Exception_Handler =>
             Rules.Entity_Inside_Exception. Process_Exception_Handler   (Element);
-            Rules.Multiple_Assignments.    Process_Statement_Container (Element);
             Rules.Silent_Exceptions.       Process_Exception_Handler   (Element);
             Rules.Simplifiable_Statements. Process_Exception_Handler   (Element);
 
@@ -541,26 +548,22 @@ package body Framework.Plugs is
 
                when An_Accept_Statement =>
                   Rules.Declarations.              Process_Statement           (Element);
-                  Rules.Multiple_Assignments.      Process_Statement_Container (Element);
                   Rules.Improper_Initialization.   Process_Structure           (Element);
                   Rules.Movable_Accept_Statements. Process_Accept_Statement    (Element);
                   Rules.Style.                     Process_Compound_Statement  (Element);
 
                when A_Block_Statement =>
                   Rules.Declarations.            Process_Statement           (Element);
-                  Rules.Multiple_Assignments.    Process_Statement_Container (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
                   Rules.Style.                   Process_Compound_Statement  (Element);
 
                when A_Loop_Statement
                  | A_For_Loop_Statement
                  =>
-                  Rules.Multiple_Assignments.  Process_Statement_Container (Element);
                   Rules.Statements.            Pre_Process_Loop            (Element);
                   Rules.Style.                 Process_Compound_Statement  (Element);
 
                when A_While_Loop_Statement =>
-                  Rules.Multiple_Assignments. Process_Statement_Container (Element);
                   Rules.Statements.           Pre_Process_Loop            (Element);
                   Rules.Style.                Process_Compound_Statement  (Element);
 
@@ -579,7 +582,6 @@ package body Framework.Plugs is
             end case;
 
          when A_Path =>
-            Rules.Multiple_Assignments. Process_Statement_Container (Element);
             case Path_Kind (Element) is
                when A_Case_Path =>
                   Rules.Case_Statement. Process_Path (Element);

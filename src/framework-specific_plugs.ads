@@ -36,11 +36,12 @@ package Framework.Specific_Plugs is
    -- to identify your specific version
    Specific_Version : constant Wide_String := "";
 
-   procedure Enter_Unit           (Unit : in Asis.Compilation_Unit);
-   procedure Exit_Context_Clauses (Unit : in Asis.Compilation_Unit);
-   procedure Exit_Unit            (Unit : in Asis.Compilation_Unit);
-   procedure Enter_Scope (Element : in Asis.Element);
-   procedure Exit_Scope  (Element : in Asis.Element);
+   procedure Enter_Unit           (Unit    : in Asis.Compilation_Unit);
+   procedure Exit_Context_Clauses (Unit    : in Asis.Compilation_Unit);
+   procedure Exit_Unit            (Unit    : in Asis.Compilation_Unit);
+   procedure Enter_Scope          (Element : in Asis.Element);
+   procedure Exit_Scope           (Element : in Asis.Element);
+   procedure Enter_Statement_List (Element : in Asis.Element);
 
    procedure True_Identifier (Element : in Asis.Expression);
 

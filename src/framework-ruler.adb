@@ -160,8 +160,8 @@ package body Framework.Ruler is
       if State.Pragma_Or_Attribute_Level /= 0 then
          return;
       end if;
-      Framework.Specific_Plugs.True_Identifier (Element);
       Framework.Plugs.         True_Identifier (Element);
+      Framework.Specific_Plugs.True_Identifier (Element);
    end True_Identifier;
 
    -----------------------
@@ -364,13 +364,7 @@ package body Framework.Ruler is
                   | A_Protected_Type_Declaration
                   | A_Single_Protected_Declaration
 
-                  | A_Procedure_Body_Declaration
-                  | A_Function_Body_Declaration
-                  | A_Package_Body_Declaration
-                  | A_Task_Body_Declaration
                   | A_Protected_Body_Declaration
-                  | An_Entry_Body_Declaration
-
                   | A_Body_Stub
 
                   | A_Generic_Procedure_Declaration
@@ -393,6 +387,19 @@ package body Framework.Ruler is
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
                   Enter_Scope (Element);
+
+               when A_Procedure_Body_Declaration
+                  | A_Function_Body_Declaration
+                  | A_Package_Body_Declaration
+                  | A_Task_Body_Declaration
+                  | An_Entry_Body_Declaration
+                  =>
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
+                  Enter_Scope (Element);
+
+                  Framework.Plugs.         Enter_Statement_List (Element);
+                  Framework.Specific_Plugs.Enter_Statement_List (Element);
 
                when A_Package_Declaration => -- Thing that can have a private part
                   Framework.Plugs.         Pre_Procedure (Element);
@@ -457,9 +464,12 @@ package body Framework.Ruler is
             Framework.Specific_Plugs.Pre_Procedure (Element);
             Enter_Scope (Element);
 
+            Framework.Plugs.         Enter_Statement_List (Element);
+            Framework.Specific_Plugs.Enter_Statement_List (Element);
+
          when A_Statement =>
             case Statement_Kind (Element) is
-               when A_For_Loop_Statement
+               when A_For_Loop_Statement     -- Statements with declarations and statement list
                   | A_Block_Statement
                   | An_Extended_Return_Statement
                   | An_Accept_Statement
@@ -467,10 +477,30 @@ package body Framework.Ruler is
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
                   Enter_Scope (Element);
-               when others =>
+
+                  Framework.Plugs.         Enter_Statement_List (Element);
+                  Framework.Specific_Plugs.Enter_Statement_List (Element);
+
+               when A_Loop_Statement       -- Statements with statement list only
+                  | A_While_Loop_Statement
+                    =>
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
+
+                  Framework.Plugs.         Enter_Statement_List (Element);
+                  Framework.Specific_Plugs.Enter_Statement_List (Element);
+
+               when others =>     -- Statements with paths and non compound statements
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
             end case;
+
+         when A_Path =>
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
+
+                  Framework.Plugs.         Enter_Statement_List (Element);
+                  Framework.Specific_Plugs.Enter_Statement_List (Element);
 
          when An_Expression =>
             case Expression_Kind (Element) is
