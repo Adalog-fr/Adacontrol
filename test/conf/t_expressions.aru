@@ -4,6 +4,7 @@ Logical           : check  expressions (and, or, xor, and_then, or_else);
 Others            : check  expressions (array_others, array_partial_others, record_others, record_partial_others);
 Unqualified       : check  expressions (unqualified_aggregate);
 Aggregate         : search expressions (array_aggregate, record_aggregate);
+Aggregate_Range   : check  expressions (array_range);
 attributes        : check  expressions (inconsistent_attribute_dimension);
 Calls             : check  expressions (complex_parameter);
 Mixed             : check  expressions (mixed_operators);

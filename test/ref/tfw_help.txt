@@ -209,19 +209,19 @@ Parameter 2 .. N: for interface: <convention name>
 Rule: EXPRESSIONS
 Control occurrences of Ada expressions
 
-Parameter (s): and                       | and_then                         |
-               array_aggregate           | array_partial_others             |
-               array_others              | complex_parameter                |
-               explicit_dereference      | fixed_multiplying_op             |
-               implicit_dereference      | inconsistent_attribute_dimension |
-               inherited_function_call   | mixed_operators                  |
-               or                        | or_else                          |
-               parameter_view_conversion | prefixed_operator                |
-               real_equality             | record_aggregate                 |
-               record_partial_others     | record_others                    |
-               slice                     | type_conversion                  |
-               universal_range           | unqualified_aggregate            |
-               xor
+Parameter (s): and                              | and_then                  |
+               array_aggregate                  | array_partial_others      |
+               array_others                     | array_range               |
+               complex_parameter                | explicit_dereference      |
+               fixed_multiplying_op             | implicit_dereference      |
+               inconsistent_attribute_dimension | inherited_function_call   |
+               mixed_operators                  | or                        |
+               or_else                          | parameter_view_conversion |
+               prefixed_operator                | real_equality             |
+               record_aggregate                 | record_partial_others     |
+               record_others                    | slice                     |
+               type_conversion                  | universal_range           |
+               unqualified_aggregate            | xor
 For subrules type_conversion and parameter_view_conversion:
     [[<source_category>] <target_category>] <subrule>
 For subrules inherited_function_call and prefixed_operator:

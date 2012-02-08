@@ -52,8 +52,10 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
+   -- TBSL presentation
    type Subrules is (E_And,                              E_And_Then,                E_Array_Aggregate,
-                     E_Array_Partial_Others,             E_Array_Others,            E_Complex_Parameter,
+                     E_Array_Partial_Others,             E_Array_Others,            E_Array_Range,
+                     E_Complex_Parameter,
                      E_Explicit_Dereference,             E_Fixed_Multiplying_Op,    E_Implicit_Dereference,
                      E_Inconsistent_Attribute_Dimension, E_Inherited_Function_Call, E_Mixed_Operators,
                      E_Or,                               E_Or_Else,                 E_Parameter_View_Conversion,
@@ -622,18 +624,34 @@ package body Rules.Expressions is
 
             declare
                Assocs  : constant Asis.Association_List := Array_Component_Associations (Expression);
-               Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (Assocs'Last));
             begin
-               if not Is_Nil (Choices)
-                 and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
-               then
-                  Do_Report (E_Array_Others, Get_Location (Choices (Choices'First)));
-                  if Assocs'Length > 1 then
-                     -- Note that others must appear alone as a choice, therefore we cannot
-                     -- be fooled by multiple choices
-                     Do_Report (E_Array_Partial_Others, Get_Location (Choices (Choices'First)));
+               for A in Assocs'Range loop
+                  declare
+                     Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (A));
+                  begin
+                     for C in Choices'Range loop
+                        if Definition_Kind (Choices (C)) = A_Discrete_Range then
+                           Do_Report (E_Array_Range, Get_Location (Choices (C)));
+                        end if;
+                     end loop;
+                  end;
+               end loop;
+
+               Check_Others :
+               declare
+                  Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (Assocs'Last));
+               begin
+                  if not Is_Nil (Choices)
+                    and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
+                  then
+                     Do_Report (E_Array_Others, Get_Location (Choices (Choices'First)));
+                     if Assocs'Length > 1 then
+                        -- Note that others must appear alone as a choice, therefore we cannot
+                        -- be fooled by multiple choices
+                        Do_Report (E_Array_Partial_Others, Get_Location (Choices (Choices'First)));
+                     end if;
                   end if;
-               end if;
+               end Check_Others;
             end;
 
             if Expression_Kind (Enclosing_Element (Expression)) /= A_Qualified_Expression then
