@@ -3994,8 +3994,9 @@ This rule controls usage of various kinds of expressions.
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
    and                       | and_then                         |
-   array_aggregate           | array_partial_others             |
-   array_others              | complex_parameter                |
+   array_aggregate           | array_others                     |
+   array_partial_others      | array_range                      |
+   complex_parameter         |
    explicit_dereference      | fixed_multiplying_op             |
    implicit_dereference      | inconsistent_attribute_dimension |
    inherited_function_call   | mixed_operators                  |
@@ -4063,12 +4064,15 @@ controls aggregates (both arrays and records) that do not appear
 directly within a qualified expression
 @item
 @code{array_others} and @code{record_others} control the occurrence of
-a @code{@b{when others} =>} association in array and record
+a @code{@b{others} =>} association in array and record
 aggregates, respectively.
 @item
 @code{array_partial_others} and @code{record_partial_others} do the
 same, but only if there are other associations in addition to the
-@code{@b{when others} =>} in the aggregate.
+@code{@b{others} =>} in the aggregate.
+@item
+@code{array_range} controls array aggregates that include a range (i.e. an association
+like @code{A .. B =>}). 
 @item
 @code{complex_parameter} controls complex expressions used as actual
 parameters in subprogram (or entry) calls. A complex expression is any
