@@ -2427,24 +2427,55 @@ This rule controls the use of allocators (i.e. dynamic memory allocation).
 @subsection Syntax
 @example
 <control_kind> allocators [(<target> @{, <target>@})];
-<target> ::= [inconsistent] [task|protected|<entity>]
+<target>   ::= [inconsistent] [<category>|<entity>]
+<category> ::= ()  | access    | array | delta  | digits |
+               mod | protected | range | record | tagged | task
 @end example
 
 @subsection Action
-If one or several <entity> are given, only allocators whose allocated
-type matches the <entity> are controlled; as usual, the whole syntax
-for entities is allowed for <entity>. @xref{Specifying an Ada entity
-name}.  If ``task'' or ``protected'' is given, allocators for task
-types or protected types (respectively) are controlled; otherwise all
-allocators are controlled. This rule is especially useful for finding
-memory leaks, since it tells all the places where dynamic allocation
-occurs.
+If one or several <entity> or <category> are given, only allocators
+whose allocated type matches the <entity>, or whose type belongs to
+the indicated <category>, are controlled; otherwise all allocators are
+controlled. As usual, the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}. The meaning of
+<category> is:
+@itemize @bullet
+@item
+``()'': The allocated value is of an enumerated type.
+@item
+``access'':  The allocated value is of an acces type.
+@item
+``array'': The allocated value is of an array type.
+@item
+``delta'': The allocated value is of a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The allocated value is of a floating point type.
+@item
+``mod'': The allocated value is of a modular type.
+@item
+``protected'': The allocated value is of a protected type.
+@item
+``range'': The allocated value is of a signed integer type.
+@item
+``record'': The allocated value is of an (untagged) record type.
+@item
+``tagged'': The allocated value is of a tagged type (including type
+extensions).
+@item
+``task'': The allocated value is of a task type.
+@end itemize
+
+This rule is especially useful for finding memory leaks, since it
+tells all the places where dynamic allocation occurs.
 
 If a parameter is preceded by the word ``inconsistent'', only
 allocators whose allocator subtype (the name after ``@code{@b{new}}'')
 is not the same as the designated subtype (from the access type
 declaration) are controlled. However an allocator is not considered
-inconsistent when the designated subtype imposes no special constraint:
+inconsistent when the designated subtype imposes no special
+constraint:
 @itemize @bullet
 @item
 when it is a class-wide type, since the allocator subtype will
@@ -2471,15 +2502,16 @@ Ex:
 @example
 search allocators (standard.string);
 check allocators (T'Class);
+check allocators (array);
 check allocators (Inconsistent standard.Integer);
 check allocators (Inconsistent);
 @end example
 
 @subsection Tips
-The type given in the rule must be a first named subtype, and the rule
-will also find allocators that use a subtype of this type. If the type
-is declared within a generic package, the rule will control all
-corresponding types from instantiations.
+The type given as an <entity> in the rule must be a first named
+subtype, and the rule will also find allocators that use a subtype of
+this type. If the type is declared within a generic package, the rule
+will control all corresponding types from instantiations.
 
 The type mentionned in the rule is the one following the
 @code{@b{new}} keyword, which is not necessarily the same as the
@@ -2494,6 +2526,10 @@ begin
 @end example
 
 This allocator will be found for type @code{T}, not for type @code{T'Class}.
+
+For <categories>, note that the rule ``sees through'' derived and
+private types (i.e. it will trigger if the ultimate type belongs to
+the indicated category).
 
 Inconsistent allocators may cost a double check. Given:
 @example

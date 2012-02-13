@@ -42,6 +42,9 @@ with
   Thick_Queries,
   Utilities;
 
+-- AdaControl
+with
+   Framework.Language.Shared_Keys;
 package body Rules.Allocators is
    use Framework, Framework.Control_Manager;
 
@@ -64,9 +67,13 @@ package body Rules.Allocators is
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of allocators, either all of them,");
-      User_Message ("or just those for tasks, protected types, or specific type(s)");
+      User_Message ("or just those for specific type(s) or types belonging");
+      User_Message ("to the indicated categories, or just those whose indicated");
+      User_Message ("subtype is inconsistent with the access type declaration");
       User_Message;
-      User_Message ("Parameter(s): [inconsisent] task | protected | <allocated type> (optional)");
+      User_Message ("Parameter(s): [inconsisent] [<category>|<entity>]");
+      User_Message ("<category>  : ()  | access    | array | delta  | digits |");
+      User_Message ("              mod | protected | range | record | tagged | task");
    end Help;
 
    -----------------
@@ -133,7 +140,7 @@ package body Rules.Allocators is
    -----------------------
 
    procedure Process_Allocator (Element : in Asis.Element) is
-      use Utilities, Thick_Queries;
+      use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
       use Asis, Asis.Expressions, Asis.Elements;
 
       Found : Boolean;
@@ -262,6 +269,7 @@ package body Rules.Allocators is
       end Check;
 
       E : Asis.Element;
+      use Categories_Utilities;
    begin  -- Process_Allocator
       if not Rule_Used then
          return;
@@ -298,12 +306,10 @@ package body Rules.Allocators is
 
       Check (Matching_Context (Entities, E, Extend_To => All_Extensions));
       if not Found and Expression_Kind (E) /= An_Attribute_Reference then
-         E := A4G_Bugs.Corresponding_Name_Declaration (E);
-         if Is_Type_Declaration_Kind (E, A_Task_Type_Declaration) then
-            Check (Control_Manager.Association (Entities, "TASK"));
-         elsif Is_Type_Declaration_Kind (E, A_Protected_Type_Declaration) then
-            Check (Control_Manager.Association (Entities, "PROTECTED"));
-         end if;
+         Check (Control_Manager.Association (Entities, Image (Matching_Category (E,
+                                                                                 From_Cats      => Full_Set,
+                                                                                 Follow_Derived => True,
+                                                                                 Follow_Private => True))));
       end if;
 
       if not Found then

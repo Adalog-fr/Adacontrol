@@ -3,7 +3,11 @@
 =============
 Changes to existing rules:
 --------------------------
-Expressions: added subrule array_range
+Allocators:
+   Generalized to all type categories
+
+Expressions: 
+   added subrule array_range
 
 =============
 == V1.13r8 ==

@@ -10,6 +10,22 @@ procedure T_allocators is
    type Acc4 is access Wide_String;
    subtype Str10 is Wide_String (1 .. 10);
 
+   type Arr is array (1 .. 10) of Integer;
+   type Acc_Arr is access Arr;
+   type Der is new Arr;
+   type Acc_Der is access Der;
+
+   package Pack is
+      type Priv is private;
+      type Acc_Priv is access Priv;
+   private
+      type Priv is new Arr;
+   end Pack;
+   use Pack;
+
+   type Rec is null record;
+   type Acc_Rec is access Rec;
+
    task type T1;
    task body T1 is
    begin
@@ -71,6 +87,10 @@ procedure T_allocators is
    V11 : Acc3;
    V12 : Acc3c;
    V13 : Acc4;
+   V14 : Acc_Arr;
+   V15 : Acc_Der;
+   V16 : Acc_Priv;
+   V17 : Acc_Rec;
 begin
    V1 := new Integer;
    V1 := new Integer'(1);
@@ -100,4 +120,9 @@ begin
    V12 := new Int'Base'(1);
 
    V13 := new Str10;
+
+   V14 := new Arr;
+   V15 := new Der;
+   V16 := new Priv;
+   V17 := new Rec;
 end T_allocators;

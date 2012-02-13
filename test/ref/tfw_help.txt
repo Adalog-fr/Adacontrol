@@ -5,9 +5,13 @@ Parameter(s): none
 ----
 Rule: ALLOCATORS
 Control occurrences of allocators, either all of them,
-or just those for tasks, protected types, or specific type(s)
+or just those for specific type(s) or types belonging
+to the indicated categories, or just those whose indicated
+subtype is inconsistent with the access type declaration
 
-Parameter(s): [inconsisent] task | protected | <allocated type> (optional)
+Parameter(s): [inconsisent] [<category>|<entity>]
+<category>  : ()  | access    | array | delta  | digits |
+              mod | protected | range | record | tagged | task
 ----
 Rule: ARRAY_DECLARATIONS
 Controls various parameters related to array types or objects declarations
