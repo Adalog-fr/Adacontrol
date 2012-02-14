@@ -169,8 +169,7 @@ package body Rules.Allocators is
                return False;
             end if;
 
-            return Is_Equal (Corresponding_Name_Definition (Simple_Name (LL)),
-                             Corresponding_Name_Definition (Simple_Name (RR)));
+            return Is_Equal (First_Defining_Name (LL), First_Defining_Name (RR));
          end Subtype_Match;
 
       begin   -- Check
