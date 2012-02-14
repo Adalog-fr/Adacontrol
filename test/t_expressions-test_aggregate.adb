@@ -18,7 +18,7 @@ begin
    A := Arr'(1 => 1, 2 .. 3 => 3, 4 => 4);    -- Array_Aggregate, Array_Range, Universal_Range
    A :=     (1 => 1, 2 => 2, 3 => 3, 4 => 4); -- Array_Aggregate, Unqualified
    A := Arr'(1, 2, 3, 4);                     -- Array_Aggregate
-   A := Arr'(One..4 => 0);                    -- Array_Aggregate, Array_Range
+   A := Arr'(One..4 => 0);                    -- Array_Aggregate, Array_Range, Array_Non_Static_Range
    A := Arr'(1 | 3..4 | 2 => 0);              -- Array_Aggregate, Array_Range, Universal_Range
    A :=     (1, 2, 3, 4);                     -- Array_Aggregate, Unqualified
    A := Arr'(others => 0);                    -- Array_Aggregate, Array_Others

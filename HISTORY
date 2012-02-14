@@ -7,7 +7,7 @@ Allocators:
    Generalized to all type categories
 
 Expressions: 
-   added subrule array_range
+   added subrules array_range, array_non_static_range
 
 =============
 == V1.13r8 ==

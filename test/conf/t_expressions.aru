@@ -5,6 +5,7 @@ Others            : check  expressions (array_others, array_partial_others, reco
 Unqualified       : check  expressions (unqualified_aggregate);
 Aggregate         : search expressions (array_aggregate, record_aggregate);
 Aggregate_Range   : check  expressions (array_range);
+Non_Static_Range  : check  expressions (array_non_static_range);
 attributes        : check  expressions (inconsistent_attribute_dimension);
 Calls             : check  expressions (complex_parameter);
 Mixed             : check  expressions (mixed_operators);

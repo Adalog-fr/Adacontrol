@@ -6,6 +6,7 @@ t_expressions-test_aggregate.adb:19:13: Error: Unqualified: use of expression "u
 t_expressions-test_aggregate.adb:20:13: Found: Aggregate: use of expression "array_aggregate"
 t_expressions-test_aggregate.adb:21:13: Found: Aggregate: use of expression "array_aggregate"
 t_expressions-test_aggregate.adb:21:14: Error: Aggregate_Range: use of expression "array_range"
+t_expressions-test_aggregate.adb:21:14: Error: Non_Static_Range: use of expression "array_non_static_range"
 t_expressions-test_aggregate.adb:22:13: Found: Aggregate: use of expression "array_aggregate"
 t_expressions-test_aggregate.adb:22:18: Error: Aggregate_Range: use of expression "array_range"
 t_expressions-test_aggregate.adb:22:18: Error: Ranges: use of expression "universal_range"

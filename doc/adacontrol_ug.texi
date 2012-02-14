@@ -4031,8 +4031,8 @@ This rule controls usage of various kinds of expressions.
 <expression_kw> ::=
    and                       | and_then                         |
    array_aggregate           | array_others                     |
-   array_partial_others      | array_range                      |
-   complex_parameter         |
+   array_non_static_range    | array_partial_others             | 
+   array_range               | complex_parameter                |
    explicit_dereference      | fixed_multiplying_op             |
    implicit_dereference      | inconsistent_attribute_dimension |
    inherited_function_call   | mixed_operators                  |
@@ -4107,8 +4107,10 @@ aggregates, respectively.
 same, but only if there are other associations in addition to the
 @code{@b{others} =>} in the aggregate.
 @item
-@code{array_range} controls array aggregates that include a range (i.e. an association
-like @code{A .. B =>}). 
+@code{array_range} controls array aggregates that include a range
+(i.e. an association like @code{A .. B
+=>}). @code{array_non_static_range} does the same, but only if (at
+least) one of the bounds is not static.
 @item
 @code{complex_parameter} controls complex expressions used as actual
 parameters in subprogram (or entry) calls. A complex expression is any

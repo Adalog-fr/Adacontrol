@@ -54,8 +54,8 @@ package body Rules.Expressions is
 
    -- TBSL presentation
    type Subrules is (E_And,                              E_And_Then,                E_Array_Aggregate,
-                     E_Array_Partial_Others,             E_Array_Others,            E_Array_Range,
-                     E_Complex_Parameter,
+                     E_Array_Partial_Others,             E_Array_Non_Static_Range,  E_Array_Others,
+                     E_Array_Range,                      E_Complex_Parameter,
                      E_Explicit_Dereference,             E_Fixed_Multiplying_Op,    E_Implicit_Dereference,
                      E_Inconsistent_Attribute_Dimension, E_Inherited_Function_Call, E_Mixed_Operators,
                      E_Or,                               E_Or_Else,                 E_Parameter_View_Conversion,
@@ -632,6 +632,15 @@ package body Rules.Expressions is
                      for C in Choices'Range loop
                         if Definition_Kind (Choices (C)) = A_Discrete_Range then
                            Do_Report (E_Array_Range, Get_Location (Choices (C)));
+                           if Rule_Used (E_Array_Non_Static_Range) then
+                              declare
+                                 Bounds : Extended_Biggest_Int_List := Discrete_Constraining_Values (Choices (C));
+                              begin
+                                 if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
+                                    Do_Report (E_Array_Non_Static_Range, Get_Location (Choices (C)));
+                                 end if;
+                              end;
+                           end if;
                         end if;
                      end loop;
                   end;
