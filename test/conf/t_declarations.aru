@@ -130,14 +130,15 @@ check  declarations (access_type,
                      renaming_as_declaration,
                      renaming_as_body,
                      task);
-locations : check declarations (block     procedure,
-                                library   procedure,
-                                local     procedure,
-                                nested    procedure,
-                                private   procedure,
-                                public    procedure,
-                                own       procedure,
-                                task_body procedure);
+locations : check declarations (block      procedure,
+                                library    procedure,
+                                local      procedure,
+                                nested     procedure,
+                                private    procedure,
+                                public     procedure,
+                                own        procedure,
+                                in_generic procedure,
+                                task_body  procedure);
 Nb_entries: count declarations (entry);
 Nb_array_types : count declarations (array_type);
 All_Decls : count declarations (any_declaration);

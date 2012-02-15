@@ -45,21 +45,23 @@ package body Framework.Language.Shared_Keys is
    -------------------
 
    function Is_Applicable (Expected_Places : Places_Set) return Boolean is
-      use Framework.Scope_Manager, Scope_Places_Utilities;
+      use Framework.Scope_Manager, Scope_Places_Utilities, Thick_Queries;
       use Asis, Asis.Elements;
       Scope_Kind : constant Declaration_Kinds := Declaration_Kind (Current_Scope);
 
-      Locations  : constant Places_Set := (S_All       => False,
-                                           S_Block     => Statement_Kind (Current_Scope) = A_Block_Statement,
-                                           S_Library   => Current_Depth = 0,
-                                           S_Local     => not Is_Current_Scope_Global,
-                                           S_Nested    => Current_Depth /= 0,
-                                           S_Own       => Scope_Kind = A_Package_Body_Declaration,
-                                           S_Private   => In_Private_Part,
-                                           S_Public    => (Scope_Kind = A_Package_Declaration
-                                                           or Scope_Kind = A_Generic_Package_Declaration)
-                                                          and not In_Private_Part,
-                                           S_Task_Body => Scope_Kind = A_Task_Body_Declaration);
+      Locations  : constant Places_Set := (S_All        => False,
+                                           S_Block      => Statement_Kind (Current_Scope) = A_Block_Statement,
+                                           S_Library    => Current_Depth = 0,
+                                           S_Local      => not Is_Current_Scope_Global,
+                                           S_Nested     => Current_Depth /= 0,
+                                           S_Own        => Scope_Kind = A_Package_Body_Declaration,
+                                           S_Private    => In_Private_Part,
+                                           S_Public     => (Scope_Kind = A_Package_Declaration
+                                                            or Scope_Kind = A_Generic_Package_Declaration)
+                                                           and not In_Private_Part,
+                                           S_In_Generic => Is_Generic_Unit (Current_Scope)
+                                                           or else Is_Part_Of_Generic (Current_Scope),
+                                           S_Task_Body  => Scope_Kind = A_Task_Body_Declaration);
    begin
       if Expected_Places (S_All) then
          return True;

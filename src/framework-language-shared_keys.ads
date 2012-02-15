@@ -45,8 +45,8 @@ package Framework.Language.Shared_Keys is
    -- Scope_Places
    -----------------------------------------------------------------------------------
 
-   type Scope_Places is (S_All, S_Block,   S_Library, S_Local,    S_Nested,
-                         S_Own, S_Private, S_Public,  S_Task_Body);
+   type Scope_Places is (S_All, S_Block,   S_Library, S_Local,      S_Nested,
+                         S_Own, S_Private, S_Public,  S_In_Generic, S_Task_Body);
    package Scope_Places_Utilities is new Modifier_Utilities (Scope_Places, "S_");
 
    subtype Places_Set is Scope_Places_Utilities.Modifier_Set;

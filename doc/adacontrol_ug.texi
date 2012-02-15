@@ -3069,8 +3069,8 @@ those occurring at specified locations.
 @example
 <control_kind> declarations (<subrule> @{, <subrule>@});
 <subrule>     ::= @{<location_kw>@} <declaration_kw>
-<location_kw> ::= all | block   | library | local     | nested |
-                  own | private | public  | task_body
+<location_kw> ::= all | block   | library | local      | nested |
+                  own | private | public  | in_generic | task_body
 <declaration_kw> ::=
    any_declaration                   |
    abstract_function                 | abstract_operator                 |
@@ -3174,6 +3174,9 @@ are controlled.
 @item
 @code{private}: only declarations appearing directly in a private
 part are controlled.
+@item
+@code{in_generic}: only declarations appearing directly or indirectly in a generic
+specification or body are controlled.
 @item
 @code{task_body}: only declarations appearing directly in a task body
 are controlled. Note that it would not make sense to have a
@@ -4579,8 +4582,8 @@ places.
 <control_kind> instantiations (<generic_spec>);
 <generic_spec> ::= @{<location_kw>@} <entity> @{, <formal_spec>@}
 <formal_spec>  ::= <entity> | <category> | <> | =
-<location_kw>  ::= all | block   | library | local     | nested |
-                   own | private | public  | task_body
+<location_kw>  ::= all | block   | library | local      | nested |
+                   own | private | public  | in_generic | task_body
 <category>     ::= ()      | access    | array | delta  | digits | mod  |
                    private | protected | range | record | tagged | task
 @end example
@@ -4621,6 +4624,9 @@ body are controlled.
 @item
 @code{private}: only instantiations appearing directly in a private
 part are controlled.
+@item
+@code{in_generic}: only instantiations appearing directly or indirectly in a generic
+specification or body are controlled.
 @item
 @code{task_body}: only instantiations appearing directly in a task
 body are controlled. Note that it would not make sense to have a

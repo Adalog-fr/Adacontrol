@@ -10,6 +10,10 @@ Bug fixes:
 Naming of entities:
    Added the syntax "all type'<attribute>"
 
+Locations
+   Added "in_generic" to the locations used in rules declarations and
+   instantiations
+
 Changes to existing rules:
 --------------------------
 Allocators:

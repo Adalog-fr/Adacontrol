@@ -257,6 +257,7 @@ procedure T_declarations is       -- library_procedure
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
+      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, nested procedure, local procedure, null_procedure
    begin
       null;                                                                   -- package statements
    end Test_Formals;
