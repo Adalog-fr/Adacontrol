@@ -41,6 +41,18 @@ procedure Tfw_Naming is
 begin
    X := Integer'Base'First;
 
+   declare
+      type Arr is array (1 .. 10) of Integer;
+      type Der is new Arr;
+      subtype Sub is Arr;
+      I : Integer;
+      V : Arr;
+   begin
+      I := Arr'Length;
+      I := Der'Length;
+      I := Sub'Length;
+      I := V'Length;
+   end;
 exception
    when Constraint_Error =>
       null;

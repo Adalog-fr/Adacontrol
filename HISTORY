@@ -1,6 +1,15 @@
 =============
 == V1.14b2 ==
 =============
+
+General:
+--------
+Bug fixes:
+   Mantis: 0000021
+
+Naming of entities:
+   Added the syntax "all type'<attribute>"
+
 Changes to existing rules:
 --------------------------
 Allocators:

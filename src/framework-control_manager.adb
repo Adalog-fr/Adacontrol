@@ -221,7 +221,7 @@ package body Framework.Control_Manager is
             -- Search without "all", with overloading
             if not Is_Predefined_Op and Result = null then
                Name_Image := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => True)))
-                 & Name_Extra;
+                             & Name_Extra;
                Result := Fetch (Into.Qualified_Names,
                                 Name_Image,
                                 Default_Value => null);
@@ -229,10 +229,8 @@ package body Framework.Control_Manager is
 
             -- Search without "all", without overloading
             if Result = null then
-               Name_Image := To_Unbounded_Wide_String (To_Upper
-                 (Full_Name_Image
-                    (Good_Name, With_Profile => False)))
-                 & Name_Extra;
+               Name_Image := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => False)))
+                             & Name_Extra;
                Result := Fetch (Into.Qualified_Names,
                                 Name_Image,
                                 Default_Value => null);
@@ -241,9 +239,9 @@ package body Framework.Control_Manager is
             -- Search with "all", with overloading
             if not Is_Predefined_Op and Result = null then
                Name_Image := To_Unbounded_Wide_String (To_Upper
-                 (Any_Name_Image (Good_Name)
-                    & Profile_Image (Good_Name, With_Profile => True)))
-                 & Name_Extra;
+                                                        (Any_Name_Image (Good_Name)
+                                                         & Profile_Image (Good_Name, With_Profile => True)))
+                             & Name_Extra;
                Result := Fetch (Into.Simple_Names,
                                 Name_Image,
                                 Default_Value => null);
@@ -252,7 +250,7 @@ package body Framework.Control_Manager is
             -- Search with "all", without overloading
             if Result = null then
                Name_Image := To_Unbounded_Wide_String (To_Upper (Any_Name_Image (Good_Name)))
-                 & Name_Extra;
+                             & Name_Extra;
                Result := Fetch (Into.Simple_Names,
                                 Name_Image,
                                 Default_Value => null);
@@ -262,10 +260,23 @@ package body Framework.Control_Manager is
             if Result = null
               and then Expression_Kind (Name) = An_Attribute_Reference
             then
-               Name_Image := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
-               Result := Fetch (Into.Simple_Names,
-                                Name_Image,
-                                Default_Value => null);
+               -- Type'Attr
+               if Declaration_Kind (Corresponding_Name_Declaration (Good_Name))
+                  in An_Ordinary_Type_Declaration .. A_Subtype_Declaration   -- = All type and subtype declarations
+               then
+                  Name_Image := To_Unbounded_Wide_String ("TYPE'" & To_Upper (Attribute_Name_Image (Name)));
+                  Result := Fetch (Into.Simple_Names,
+                                   Name_Image,
+                                   Default_Value => null);
+               end if;
+
+               -- 'Attr
+               if Result = null then
+                  Name_Image := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
+                  Result := Fetch (Into.Simple_Names,
+                                   Name_Image,
+                                   Default_Value => null);
+               end if;
             end if;
 
          end if;
