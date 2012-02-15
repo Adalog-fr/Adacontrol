@@ -34,7 +34,7 @@ procedure T_declarations is       -- library_procedure
          null;
    end T1;
 
-   task type T2 (X : Integer) is  -- task_type, task, discriminant
+   task type T2 (X : Integer) is  -- task_type, task, task_discriminant, discriminant
      entry E;                     -- task_entry
    end T2;
    task body T2 is
@@ -68,7 +68,7 @@ procedure T_declarations is       -- library_procedure
       end E2;
    end P1;
 
-   protected type P2 (X : Integer := 0) is  -- protected_type, protected, defaulted_discriminant, discriminant
+   protected type P2 (X : Integer := 0) is  -- protected_type, protected, protected_discriminant, defaulted_discriminant, discriminant
       entry E1;                             -- protected_entry
       entry E2;                             -- protected_entry, multiple_protected_entries
    private

@@ -19,6 +19,9 @@ Changes to existing rules:
 Allocators:
    Generalized to all type categories
 
+Declarations:
+   added subrules protected_discriminant, task_discriminant
+
 Expressions: 
    added subrules array_range, array_non_static_range
 

@@ -3125,17 +3125,18 @@ those occurring at specified locations.
    package_instantiation             | package_statements                |
    predefined_operator               | private_extension                 |
    procedure                         | procedure_instantiation           |
-   protected                         | protected_entry                   |
-   protected_type                    | protected_variable                |
-   record_type                       | renaming                          |
-   renaming_as_body                  | renaming_as_declaration           |
-   scalar_variable                   | self_calling_function             |
-   self_calling_procedure            | separate                          |
-   signed_type                       | single_array                      |
-   single_protected                  | single_task                       |
-   subtype                           | tagged_private_type               |
-   tagged_type                       | tagged_variable                   |
-   task                              | task_entry                        |
+   protected                         | protected_discriminant            |
+   protected_entry                   | protected_type                    | 
+   protected_variable                | record_type                       | 
+   renaming                          | renaming_as_body                  | 
+   renaming_as_declaration           | scalar_variable                   | 
+   self_calling_function             | self_calling_procedure            | 
+   separate                          | signed_type                       | 
+   single_array                      | single_protected                  | 
+   single_task                       | subtype                           | 
+   tagged_private_type               | tagged_type                       | 
+   tagged_variable                   | task                              | 
+   task_discriminant                 | task_entry                        |
    task_type                         | task_variable                     |
    type                              | unconstrained_array_constant      |
    unconstrained_array_type          | unconstrained_array_variable      |
@@ -3282,8 +3283,10 @@ extensions (derivations of tagged types). These are controlled by
 @code{extension} and @code{private_extension}.
 @item
 @code{discriminant} controls all declarations of types with
-discriminants, while @code{defaulted_discriminants} controls only
-those where defaults are provided for the discriminants.
+discriminants, while @code{protected_discriminant} and
+@code{task_discriminant} control only discriminants of protected types
+and task types, respectively.  @code{defaulted_discriminants} controls
+only discriminants where default values are provided.
 @item
 @code{empty_private_part} controls package specification with an empty
 private part, i.e. where the word @code{@b{private}} appears, but the

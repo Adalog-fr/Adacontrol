@@ -108,8 +108,8 @@ package body Rules.Declarations is
 
       D_Package,                         D_Package_Instantiation,             D_Package_Statements,
       D_Predefined_Operator,             D_Private_Extension,                 D_Procedure,
-      D_Procedure_Instantiation,         D_Protected,                         D_Protected_Entry,
-      D_Protected_Type,                  D_Protected_Variable,
+      D_Procedure_Instantiation,         D_Protected,                         D_Protected_Discriminant,
+      D_Protected_Entry,                 D_Protected_Type,                    D_Protected_Variable,
 
       D_Record_Type,                     D_Renaming,                          D_Renaming_As_Body,
       D_Renaming_As_Declaration,
@@ -119,8 +119,8 @@ package body Rules.Declarations is
       D_Single_Protected,                D_Single_Task,                       D_Subtype,
 
       D_Tagged_Private_Type,             D_Tagged_Type,                       D_Tagged_Variable,
-      D_Task,                            D_Task_Entry,                        D_Task_Type,
-      D_Task_Variable,                   D_Type,
+      D_Task,                            D_Task_Discriminant,                 D_Task_Entry,
+      D_Task_Type,                       D_Task_Variable,                     D_Type,
 
       D_Unconstrained_Array_Constant,    D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
       D_Unconstrained_Subtype,           D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,
@@ -364,16 +364,24 @@ package body Rules.Declarations is
          end case;
       end Check_Abstract;
 
-      procedure Check_Discriminant (Discr : Asis.Definition) is
+      procedure Check_Discriminant (Discr : Asis.Definition; Extra_Check : Subrules := D_Any_Declaration) is
       begin
          if Is_Nil (Discr) then
             return;
          end if;
 
-         if Is_Nil (Initialization_Expression (Discriminants (Discr)(1))) then
-            Do_Report (D_Discriminant, Discr);
+         if Is_Nil (Initialization_Expression (Discriminants (Discr) (1))) then
+            if Extra_Check = D_Any_Declaration then
+               Do_Report (D_Discriminant, Discr);
+            else
+               Do_Report ((D_Discriminant, Extra_Check), Discr);
+            end if;
          else
-            Do_Report ((D_Discriminant, D_Defaulted_Discriminant), Discr);
+            if Extra_Check = D_Any_Declaration then
+               Do_Report ((D_Discriminant, D_Defaulted_Discriminant), Discr);
+            else
+               Do_Report ((D_Discriminant, D_Defaulted_Discriminant, Extra_Check), Discr);
+            end if;
          end if;
       end Check_Discriminant;
 
@@ -1250,14 +1258,14 @@ package body Rules.Declarations is
 
          when A_Task_Type_Declaration =>
             Do_Report ((D_Type, D_Task, D_Task_Type), Element);
-            Check_Discriminant (Discriminant_Part (Element));
+            Check_Discriminant (Discriminant_Part (Element), Extra_Check => D_Task_Discriminant);
 
          when A_Single_Task_Declaration =>
             Do_Report ((D_Task, D_Task_Variable, D_Single_Task), Element);
 
          when A_Protected_Type_Declaration =>
             Do_Report ((D_Type, D_Protected, D_Protected_Type), Element);
-            Check_Discriminant (Discriminant_Part (Element));
+            Check_Discriminant (Discriminant_Part (Element), Extra_Check => D_Protected_Discriminant);
             if Rule_Used (D_Multiple_Protected_Entries) then
                Check_Multiple_Entries (Type_Declaration_View (Element));
             end if;
