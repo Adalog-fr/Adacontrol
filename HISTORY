@@ -17,7 +17,7 @@ Locations
 Changes to existing rules:
 --------------------------
 Allocators:
-   Generalized to all type categories
+   Generalized to all type categories, added "not" modifier.
 
 Declarations:
    added subrules protected_discriminant, task_discriminant

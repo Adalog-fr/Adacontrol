@@ -2427,7 +2427,7 @@ This rule controls the use of allocators (i.e. dynamic memory allocation).
 @subsection Syntax
 @example
 <control_kind> allocators [(<target> @{, <target>@})];
-<target>   ::= [inconsistent] [<category>|<entity>]
+<target>   ::= [inconsistent | not] [<category>|<entity>]
 <category> ::= ()  | access    | array | delta  | digits |
                mod | protected | range | record | tagged | task
 @end example
@@ -2470,6 +2470,11 @@ extensions).
 This rule is especially useful for finding memory leaks, since it
 tells all the places where dynamic allocation occurs.
 
+If a parameter is preceded by the word ``not'', allocators for the
+corresponding type or category are not controlled (i.e. they are
+always allowed). If a control includes only ``not'' parameters, an
+implicit check for all allocators is assumed.
+
 If a parameter is preceded by the word ``inconsistent'', only
 allocators whose allocator subtype (the name after ``@code{@b{new}}'')
 is not the same as the designated subtype (from the access type
@@ -2505,6 +2510,9 @@ check allocators (T'Class);
 check allocators (array);
 check allocators (Inconsistent standard.Integer);
 check allocators (Inconsistent);
+
+ -- all task allocators, except when the type is called "special":
+check allocators (task, not all Special);
 @end example
 
 @subsection Tips
@@ -2531,7 +2539,8 @@ For <categories>, note that the rule ``sees through'' derived and
 private types (i.e. it will trigger if the ultimate type belongs to
 the indicated category).
 
-Inconsistent allocators may cost a double check. Given:
+The reason for the ``inconsistent'' modifier is that inconsistent
+allocators may cost a double check. Given:
 @example
    @b{type} Acc @b{is} @b{access} Positive;
    V : Acc;

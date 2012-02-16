@@ -9,7 +9,7 @@ or just those for specific type(s) or types belonging
 to the indicated categories, or just those whose indicated
 subtype is inconsistent with the access type declaration
 
-Parameter(s): [inconsisent] [<category>|<entity>]
+Parameter(s): [inconsisent | not] [<category>|<entity>]
 <category>  : ()  | access    | array | delta  | digits |
               mod | protected | range | record | tagged | task
 ----
@@ -81,8 +81,8 @@ Rule: DECLARATIONS
 Control occurrences of Ada declarations
 
 Parameter(s): {<location>} <decl>
-<location>: all | block   | library | local     | nested |
-            own | private | public  | task_body
+<location>: all | block   | library | local      | nested    |
+            own | private | public  | in_generic | task_body
 <decl>: any_declaration                   | abstract_function               |
         abstract_operator                 | abstract_procedure              |
         abstract_type                     | access_all_type                 |
@@ -136,16 +136,17 @@ Parameter(s): {<location>} <decl>
         package_statements                | predefined_operator             |
         private_extension                 | procedure                       |
         procedure_instantiation           | protected                       |
-        protected_entry                   | protected_type                  |
-        protected_variable                | record_type                     |
-        renaming                          | renaming_as_body                |
-        renaming_as_declaration           | scalar_variable                 |
-        self_calling_function             | self_calling_procedure          |
-        separate                          | signed_type                     |
-        single_array                      | single_protected                |
-        single_task                       | subtype                         |
-        tagged_private_type               | tagged_type                     |
-        tagged_variable                   | task                            |
+        protected_discriminant            | protected_entry                 |
+        protected_type                    | protected_variable              |
+        record_type                       | renaming                        |
+        renaming_as_body                  | renaming_as_declaration         |
+        scalar_variable                   | self_calling_function           |
+        self_calling_procedure            | separate                        |
+        signed_type                       | single_array                    |
+        single_protected                  | single_task                     |
+        subtype                           | tagged_private_type             |
+        tagged_type                       | tagged_variable                 |
+        task                              | task_discriminant               |
         task_entry                        | task_type                       |
         task_variable                     | type                            |
         unconstrained_array_constant      | unconstrained_array_type        |
@@ -268,8 +269,9 @@ Optionally, control is restricted to instantiations appearing at indicated locat
 
 Parameter 1     : {<location>} <Generic name>
 Parameter 2 .. N: <Entity name> | <category> | <> | = (optional)
-<location>      : all | block   | library | local     | nested |
-                  own | private | public  | task_body
+<location>      : all        | block     | library | local  |
+                  nested     | own       | private | public |
+                  in_generic | task_body
 <category>      : ()      | access   | array | delta  | digits | mod |
                   private |protected | range | record | tagged | task
 ----

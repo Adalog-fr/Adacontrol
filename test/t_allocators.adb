@@ -1,3 +1,4 @@
+pragma Ada_2005;
 procedure T_allocators is
    type Acc1  is access Integer;
    type Acc1c is access Positive;
@@ -91,6 +92,7 @@ procedure T_allocators is
    V15 : Acc_Der;
    V16 : Acc_Priv;
    V17 : Acc_Rec;
+   V18 : access Wide_Wide_String;
 begin
    V1 := new Integer;
    V1 := new Integer'(1);
@@ -125,4 +127,6 @@ begin
    V15 := new Der;
    V16 := new Priv;
    V17 := new Rec;
+
+   V18 := new Wide_Wide_String'("ABCD");
 end T_allocators;

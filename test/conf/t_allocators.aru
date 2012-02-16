@@ -5,7 +5,7 @@ specific_task : check allocators (T_Allocators.T1);
 all_tasks     : check allocators (task);
 specific_prot : check allocators (T_Allocators.P1);
 all_prot      : check allocators (protected);
-all_arrays    : check allocators (array);
+all_arrays    : check allocators (array, not standard.wide_wide_string);
 all_records   : check allocators (record);
 
 tagged        : check allocators (T_Allocators.Tag1);
@@ -16,3 +16,4 @@ from_gen      : check allocators (T_Allocators.Gen.Gen_T);
 Inconsistent  : check allocators (inconsistent standard.integer,
                                   inconsistent t_allocators.Int,
                                   inconsistent standard.wide_string);
+
