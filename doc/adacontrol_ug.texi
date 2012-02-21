@@ -3760,16 +3760,46 @@ This rule is used to control usage of Ada entities, i.e. any declared
 element (type, variables, packages, etc).
 @subsection Syntax
 @example
-<control_kind> entities (<entity> @{, <entity>@});
+<control_kind> entities (@{<location_kw>@} <entity> @{, @{<location_kw>@} <entity>@});
+<location_kw> ::= block   | library | local      | nested    | own | 
+                  private | public  | in_generic | task_body
+
 @end example
 
 @subsection Action
-This rule controls all uses of the indicated entities. As usual, the
-whole syntax for entities is allowed for <entity>. @xref{Specifying an
-Ada entity name}.  This rule is not intended to replace
-cross-references, but can be quite handy to check, for example, that a
-program does not contain any more calls to debugging procedures before
-fielding it.
+This rule controls all uses of the indicated entities,or only those
+that appear within the specified locations. As usual, the whole syntax
+for entities is allowed for <entity>. @xref{Specifying an Ada entity
+name}.  
+
+When present, the <location_kw> restricts the places where the entity
+is controlled.  Several <location_kw> can be given, in which case the
+entity is controlled at places where all the keywords apply.
+@itemize @bullet
+@item
+@code{block}: the entity appears in a block statement.
+@item
+@code{library}: the entity appears at library level.
+@item
+@code{local}: the entity appears in a local scope (i.e. not in
+(generic) packages, possibly nested)
+@item
+@code{nested}: the entity appears in a nested context (i.e. not at
+library level).
+@item
+@code{own}: the entity appers in a (generic) package body.
+@item
+@code{public}: the entity appears in the visible part of a
+(generic) package.
+@item
+@code{private}: the entity appears directly in a private
+part.
+@item
+@code{in_generic}: the entity appears directly or indirectly in a generic
+specification or body.
+@item
+@code{task_body}: the entity appears directly in a task body.
+@end itemize
 
 Note that this rules reports on the use of the @i{entity}, not the
 @i{name}: if an entity has been renamed, it will be found under its
@@ -3786,6 +3816,10 @@ The second line will report on any use of a @code{Put} from any
 instantiation of @code{Float_IO}.
 
 @subsection Tips
+This rule is not intended to replace cross-references, but can
+be quite handy to check, for example, that a program does not contain
+any more calls to debugging procedures before fielding it.
+
 This rule can also be used to check for all occurrences of certain
 attributes with the ``@code{all <Attribute>}'' syntax. For example,
 the following will report on any usage of @code{'Unchecked_Access}:

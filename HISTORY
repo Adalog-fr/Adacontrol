@@ -22,6 +22,9 @@ Allocators:
 Declarations:
    added subrules protected_discriminant, task_discriminant
 
+Entities:
+   added location modifier
+
 Expressions: 
    added subrules array_range, array_non_static_range
 

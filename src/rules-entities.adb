@@ -37,6 +37,7 @@ with
 -- Adactl
 with
   Framework.Language,
+  Framework.Language.Shared_Keys,
   Framework.Rules_Manager,
   Framework.Reports;
 
@@ -56,6 +57,10 @@ package body Rules.Entities is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
+   type Entity_Context is new Basic_Rule_Context with
+      record
+         Places : Language.Shared_Keys.Places_Set;
+      end record;
    Searched_Entities  : Context_Store;
 
    ----------
@@ -63,12 +68,13 @@ package body Rules.Entities is
    ----------
 
    procedure Help is
-      use Utilities;
+      use Framework.Language.Shared_Keys, Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of any Ada entity");
       User_Message;
-      User_Message ("Parameter(s): <Entity name>");
+      User_Message ("Parameter(s): {<location>} <Entity name>");
+      Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:", Expected => (S_All => False, others => True));
    end Help;
 
    -----------------
@@ -76,8 +82,7 @@ package body Rules.Entities is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language;
-
+      use Framework.Language, Framework.Language.Shared_Keys;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "at least one parameter required");
@@ -85,9 +90,10 @@ package body Rules.Entities is
 
       while Parameter_Exists loop
          declare
+            Places : constant Places_Set           := Get_Places_Set_Modifiers (Allow_All => False);
             Entity : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Searched_Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
+            Associate (Searched_Entities, Entity, Entity_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Places));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
@@ -125,31 +131,59 @@ package body Rules.Entities is
       Balance (Searched_Entities);
    end Prepare;
 
+
+   ---------------
+   -- Do_Report --
+   ---------------
+
+   procedure Do_Report (Entity : Asis.Expression; Loc : Location) is
+      use Framework.Language, Framework.Reports, Framework.Language.Shared_Keys;
+      use Scope_Places_Utilities, Utilities;
+
+      Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
+                                                                         Entity,
+                                                                         Extend_To => (Instance => True,
+                                                                                       Renaming => False));
+   begin
+      if Current_Context /= No_Matching_Context then
+         declare
+            Good_Context : Entity_Context renames Entity_Context (Current_Context);
+         begin
+            if Is_Applicable (Good_Context.Places) then
+               if Good_Context.Places = Everywhere then
+                  Report (Rule_Id,
+                          Current_Context,
+                          Loc,
+                          "use of element """
+                          & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities)))
+                          & '"');
+               else
+                  Report (Rule_Id,
+                          Current_Context,
+                          Loc,
+                          Image (Good_Context.Places)
+                          & " use of element """
+                          & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities)))
+                          & '"');
+               end if;
+            end if;
+         end;
+      end if;
+   end Do_Report;
+
+
    -----------------------
    -- Process_Attribute --
    -----------------------
 
    procedure Process_Attribute (Attr : in Asis.Expression) is
-      use Framework.Language, Framework.Reports, Utilities;
    begin
       if not Rule_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
-                                                                            Attr,
-                                                                            Extend_To => (Instance => True,
-                                                                                          Renaming => False));
-      begin
-         if Current_Context /= No_Matching_Context then
-            Report (Rule_Id,
-                    Current_Context,
-                    Get_Location (Attr),
-                    "use of element """ & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities))) & '"');
-         end if;
-      end;
+      Do_Report (Attr, Get_Location (Attr));
    end Process_Attribute;
 
    ------------------------
@@ -157,8 +191,7 @@ package body Rules.Entities is
    ------------------------
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
-
-         use Framework.Language, Framework.Reports, Thick_Queries, Utilities;
+      use Thick_Queries;
 
    begin   -- Process_Identifier
       if not Rule_Used then
@@ -170,19 +203,7 @@ package body Rules.Entities is
          Used_Idents : constant Asis.Element_List := Used_Identifiers (Identifier);
       begin
          for Id in Used_Idents'Range loop
-            declare
-               Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
-                                                                                  Used_Idents (Id),
-                                                                                  Extend_To => (Instance => True,
-                                                                                                Renaming => False));
-            begin
-               if Current_Context /= No_Matching_Context then
-                  Report (Rule_Id,
-                          Current_Context,
-                          Get_Location (Identifier),
-                          "use of element """ & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities))) & '"');
-               end if;
-            end;
+            Do_Report (Used_Idents (Id), Get_Location (Identifier));
          end loop;
       end;
    end Process_Identifier;

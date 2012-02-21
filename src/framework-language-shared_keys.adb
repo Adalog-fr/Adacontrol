@@ -74,10 +74,16 @@ package body Framework.Language.Shared_Keys is
    -- Get_Places_Set_Parameter --
    ------------------------------
 
-   function Get_Places_Set_Modifiers return Places_Set is
+   function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return  Places_Set is
       use Scope_Places_Utilities, Framework.Language.Scanner;
-      Loc : constant Places_Set := Get_Modifier_Set;
+      Loc : Places_Set;
    begin
+      if Allow_All then
+         Loc := Get_Modifier_Set (Expected => Full_Set);
+      else
+         Loc := Get_Modifier_Set (Expected => (S_All => False, others => True));
+      end if;
+
       if Loc = Empty_Set then
          return Everywhere;
       elsif Loc (S_All) and Loc /= Everywhere then

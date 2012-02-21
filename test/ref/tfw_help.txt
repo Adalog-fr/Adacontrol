@@ -190,7 +190,9 @@ Parameter(s): <Procedure name>
 Rule: ENTITIES
 Control occurrences of any Ada entity
 
-Parameter(s): <Entity name>
+Parameter(s): {<location>} <Entity name>
+<location>: block   | library | local      | nested    | own |
+            private | public  | in_generic | task_body
 ----
 Rule: ENTITY_INSIDE_EXCEPTION
 Control occurrences of an entity inside an exception handler.

@@ -51,7 +51,7 @@ package Framework.Language.Shared_Keys is
 
    subtype Places_Set is Scope_Places_Utilities.Modifier_Set;
    Everywhere : constant Places_Set := (S_All => True, others => False);
-   function Get_Places_Set_Modifiers return Places_Set;
+   function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return Places_Set;
    function Is_Applicable (Expected_Places : Places_Set) return Boolean;
    -- Checks if Current_Scope matches all Scope_Places in Expected_Places
 

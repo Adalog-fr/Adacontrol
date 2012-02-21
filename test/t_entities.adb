@@ -43,4 +43,10 @@ begin
    VR.I := 0;                                     -- T_Entities.VR, T_Entities.Rec.I
    VR.I := Ren;                                   -- T_Entities.VR (x2), T_Entities.Rec.I (x2)
    Ren  := 0;                                     -- T_Entities.VR, T_Entities.Rec.I
+
+   declare
+      I : Integer;                                -- block standard.integer
+   begin
+      I := Integer'First;                         -- Standard.Integer'first, block standard.Integer
+   end;
 end T_entities;
