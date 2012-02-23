@@ -143,6 +143,26 @@ package body Framework is
               S.First_Column);
    end Get_Location;
 
+
+   ----------------------
+   -- Get_End_Location --
+   ----------------------
+
+   function Get_End_Location (E : in Asis.Element) return Location is
+      use Asis.Compilation_Units, Asis.Elements, Asis.Text;
+
+      S : constant Span := Element_Span (E);
+   begin
+      if S = Nil_Span then
+         return Null_Location;
+      end if;
+
+      return (To_Unbounded_Wide_String (Text_Name (Enclosing_Compilation_Unit (E))),
+              S.Last_Line,
+              S.Last_Column);
+   end Get_End_Location;
+
+
    --------------------------------
    -- Get_Previous_Word_Location --
    --------------------------------

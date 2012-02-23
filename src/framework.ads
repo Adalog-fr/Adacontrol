@@ -89,6 +89,9 @@ package Framework is
    function Get_Location (E : in Asis.Element) return Location;
    -- Returns location of an element
 
+   function Get_End_Location (E : in Asis.Element) return Location;
+   -- Returns location of end of an element
+
    function Get_Previous_Word_Location (E        : in Asis.Element;
                                         Matching : Wide_String := "";
                                         Starting : Search_Start := From_Head)
