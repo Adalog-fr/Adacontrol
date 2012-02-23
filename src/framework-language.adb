@@ -296,13 +296,15 @@ package body Framework.Language is
                            -- but this gives unpleasant behaviour in interactive mode when there is a
                            -- syntax error. Therefore, we first accumulate names, then give all helps.
                            declare
+                              use Ada.Strings, Ada.Strings.Wide_Fixed;
+                              Line  : constant Wide_String := Current_Token.Name_Text
+                                                                    (1 .. Current_Token.Name_Length);
+                              Start : Natural := Line'First;
+                              Stop  : Natural;
+                              Inx   : Rules_Count := 0;
                               Rule_Names : array (Rules_Count range 1 .. Number_Of_Rules) of Unbounded_Wide_String;
-                              Inx        : Rules_Count := 0;
                            begin
                               loop
-                                 if Current_Token.Kind /= Name then
-                                    Syntax_Error ("Rule name expected", Current_Token.Position);
-                                 end if;
                                  if Inx = Rule_Names'Last then
                                     -- This can happen only if the user specified the same rule
                                     -- several times, and listed more names than there are rules (or used
@@ -311,12 +313,15 @@ package body Framework.Language is
                                     Syntax_Error ("Too many rule names in ""Help"" command", Current_Token.Position);
                                  end if;
                                  Inx := Inx + 1;
-                                 Rule_Names (Inx) := To_Unbounded_Wide_String (Current_Token.Name_Text
-                                                                               (1 .. Current_Token.Name_Length));
-                                 Next_Token;
-                                 exit when Current_Token.Kind /= Comma;
-                                 Next_Token;
+                                 Stop := Index (Line, ",", From => Start);
+                                 if Stop = 0 then
+                                    Stop := Line'Last+1;
+                                 end if;
+                                 Rule_Names (Inx) := To_Unbounded_Wide_String (Trim (Line (Start .. Stop-1), Both));
+                                 Start := Stop + 1;
+                                 exit when Start > Line'Last;
                               end loop;
+                              Next_Token;
 
                               Help_Command (To_Wide_String (Rule_Names (1)));
                               for I in Rules_Count range 2 .. Inx loop
