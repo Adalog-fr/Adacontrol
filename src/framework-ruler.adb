@@ -47,6 +47,7 @@ with
 -- Adalog
 with
   A4G_Bugs,
+  Thick_Queries,
   Units_List,
   Utilities;
 
@@ -278,6 +279,187 @@ package body Framework.Ruler is
       end loop;
    end Traverse_With_Private;
 
+
+   -------------------
+   -- Traverse_Body --
+   -------------------
+
+   -- This is used to traverse manually the children of an unit body, in order to be able to call
+   -- Enter_Statement_List between the declarative parts and the statements.
+   -- This replaces the normal (recursive) traversal, any code that calls this procedure must set
+   -- Control to Abandon_Children
+   procedure Traverse_Body (Decl         : Asis.Declaration;
+                            Control      : in out Asis.Traverse_Control;
+                            State        : in out Info )
+   is
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Thick_Queries, Utilities;
+
+      Body_Kind : constant Declaration_Kinds := Declaration_Kind (Decl);
+      -- can only be:
+      -- A_Procedure_Body_Declaration, A_Function_Body_Declaration, A_Package_Body_Declaration,
+      -- A_Task_Body_Declaration,      An_Entry_Body_Declaration
+      -- All with subtly different parts to traverse...
+      Elem : Asis.Element;
+   begin
+
+      -- Names: for everybody
+      -- No need to be over-rigorous, we know damn well that bodies have only one name
+      Semantic_Traverse_Elements (Names (Decl)(1), Control, State);
+      case Control is
+         when Continue =>
+            null;
+         when Terminate_Immediately =>
+            return;
+         when Abandon_Children =>
+            Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+         when Abandon_Siblings =>
+            Control := Continue;
+            return;
+      end case;
+
+      -- Entry_Index_Specification: only for entries
+      -- Beware: optional, do not traverse Nil_Element!
+      if Body_Kind = An_Entry_Body_Declaration then
+         Elem := Entry_Index_Specification (Decl);
+         if not Is_Nil (Elem) then
+            Semantic_Traverse_Elements (Elem, Control, State);
+            case Control is
+               when Continue =>
+                  null;
+               when Terminate_Immediately =>
+                  return;
+               when Abandon_Children =>
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+               when Abandon_Siblings =>
+                  Control := Continue;
+                  return;
+            end case;
+         end if;
+      end if;
+
+      -- Parameter profile: only for procedures, functions and entries
+      case Body_Kind is
+         when A_Procedure_Body_Declaration | A_Function_Body_Declaration | An_Entry_Body_Declaration =>
+            declare
+               Parms : constant Asis.Parameter_Specification_List := Parameter_Profile (Decl);
+            begin
+               for P in Parms'Range loop
+                  Semantic_Traverse_Elements (Parms (P), Control, State);
+                  case Control is
+                     when Continue =>
+                        null;
+                     when Terminate_Immediately =>
+                        return;
+                     when Abandon_Children =>
+                        Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+                     when Abandon_Siblings =>
+                        Control := Continue;
+                        return;
+                  end case;
+               end loop;
+            end;
+         when others =>
+            null;
+      end case;
+
+      -- Entry_Barrier: only for entries
+      if Body_Kind = An_Entry_Body_Declaration then
+         Semantic_Traverse_Elements (Entry_Barrier (Decl), Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+            when Abandon_Siblings =>
+               Control := Continue;
+               return;
+         end case;
+      end if;
+
+      -- Result profile: only for functions
+      if Body_Kind = A_Function_Body_Declaration then
+         Semantic_Traverse_Elements (Result_Profile (Decl), Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+            when Abandon_Siblings =>
+               Control := Continue;
+               return;
+         end case;
+      end if;
+
+      -- Declarative part : for everybody
+      declare
+         Decls : constant Asis.Declaration_List := Declarative_Items (Decl, Include_Pragmas => True);
+      begin
+         for D in Decls'Range loop
+            Semantic_Traverse_Elements (Decls (D), Control, State);
+            case Control is
+               when Continue =>
+                  null;
+               when Terminate_Immediately =>
+                  return;
+               when Abandon_Children =>
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+               when Abandon_Siblings =>
+                  Control := Continue;
+                  return;
+            end case;
+         end loop;
+      end;
+
+      Framework.Plugs.         Enter_Statement_List (Decl);
+      Framework.Specific_Plugs.Enter_Statement_List (Decl);
+
+      -- Statements : for everybody
+      declare
+         Stmts : constant Asis.Statement_List := Statements (Decl);
+      begin
+         for S in Stmts'Range loop
+            Semantic_Traverse_Elements (Stmts (S), Control, State);
+            case Control is
+               when Continue =>
+                  null;
+               when Terminate_Immediately =>
+                  return;
+               when Abandon_Children =>
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+               when Abandon_Siblings =>
+                  Control := Continue;
+                  return;
+            end case;
+         end loop;
+      end;
+
+      -- Exception_Handlers : for everybody
+      declare
+         Handlers : constant Asis.Exception_Handler_List := Exception_Handlers (Decl);
+      begin
+         for H in Handlers'Range loop
+            Semantic_Traverse_Elements (Handlers (H), Control, State);
+            case Control is
+               when Continue =>
+                  null;
+               when Terminate_Immediately =>
+                  return;
+               when Abandon_Children =>
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+               when Abandon_Siblings =>
+                  Control := Continue;
+                  return;
+            end case;
+         end loop;
+      end;
+   end Traverse_Body;
+
+
    ----------------------
    -- Textual_Traverse --
    ----------------------
@@ -396,10 +578,14 @@ package body Framework.Ruler is
                   =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
-                  Enter_Scope (Element);
 
-                  Framework.Plugs.         Enter_Statement_List (Element);
-                  Framework.Specific_Plugs.Enter_Statement_List (Element);
+                  Enter_Scope (Element);
+                  Traverse_Body (Element, Control, State);
+
+                  -- Post-procedure is not automatically called when exiting
+                  -- with Control = Abandon_Children:
+                  Post_Procedure (Element, Control, State);
+                  Control := Abandon_Children;
 
                when A_Package_Declaration => -- Thing that can have a private part
                   Framework.Plugs.         Pre_Procedure (Element);
