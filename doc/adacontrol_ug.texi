@@ -3760,9 +3760,9 @@ This rule is used to control usage of Ada entities, i.e. any declared
 element (type, variables, packages, etc).
 @subsection Syntax
 @example
-<control_kind> entities (@{<location_kw>@} <entity> @{, @{<location_kw>@} <entity>@});
-<location_kw> ::= block   | library | local      | nested    | own | 
-                  private | public  | in_generic | task_body
+<control_kind> entities (@{<location>@} <entity> @{, @{<location>@} <entity>@});
+<location> ::= block   | library | local      | nested    | own | 
+               private | public  | in_generic | task_body
 
 @end example
 
@@ -8500,7 +8500,8 @@ quote.
 
 @example
 check entities (all 'Image);      -- Find all occurrences of 'Image
-check entities (all type'Length); -- Find all occurrences of 'Length applied to a type
+check entities (all type'Length); -- Find all occurrences of 'Length
+                                  -- applied to a type
 @end example
 
 @node Anonymous constructs and extended return statements, Record and protected types components, Attributes, Specifying an Ada entity name

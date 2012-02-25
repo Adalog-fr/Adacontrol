@@ -653,8 +653,8 @@ package body Rules.Array_Declarations is
             Compo_Report (Iterator, Lower_Case);
          else
             declare
-               Comp_Decl  : Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration
-                                                          (Subtype_Simple_Name (Array_Comp));
+               Comp_Decl  : constant Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration
+                                                           (Subtype_Simple_Name (Array_Comp));
             begin
                -- Exact subtype
                Reset (Iterator, Subtype_Simple_Name (Array_Comp), Extend_To => All_Extensions);

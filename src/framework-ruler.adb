@@ -312,7 +312,7 @@ package body Framework.Ruler is
          when Terminate_Immediately =>
             return;
          when Abandon_Children =>
-            Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+            Failure ("Ruler: Semantic_Traverse returned Abandon_Children-3");
          when Abandon_Siblings =>
             Control := Continue;
             return;
@@ -330,7 +330,7 @@ package body Framework.Ruler is
                when Terminate_Immediately =>
                   return;
                when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-4");
                when Abandon_Siblings =>
                   Control := Continue;
                   return;
@@ -352,7 +352,7 @@ package body Framework.Ruler is
                      when Terminate_Immediately =>
                         return;
                      when Abandon_Children =>
-                        Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+                        Failure ("Ruler: Semantic_Traverse returned Abandon_Children-5");
                      when Abandon_Siblings =>
                         Control := Continue;
                         return;
@@ -372,7 +372,7 @@ package body Framework.Ruler is
             when Terminate_Immediately =>
                return;
             when Abandon_Children =>
-               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-6");
             when Abandon_Siblings =>
                Control := Continue;
                return;
@@ -388,7 +388,7 @@ package body Framework.Ruler is
             when Terminate_Immediately =>
                return;
             when Abandon_Children =>
-               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-7");
             when Abandon_Siblings =>
                Control := Continue;
                return;
@@ -407,7 +407,7 @@ package body Framework.Ruler is
                when Terminate_Immediately =>
                   return;
                when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-8");
                when Abandon_Siblings =>
                   Control := Continue;
                   return;
@@ -430,7 +430,7 @@ package body Framework.Ruler is
                when Terminate_Immediately =>
                   return;
                when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-9");
                when Abandon_Siblings =>
                   Control := Continue;
                   return;
@@ -450,7 +450,7 @@ package body Framework.Ruler is
                when Terminate_Immediately =>
                   return;
                when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-1");
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-10");
                when Abandon_Siblings =>
                   Control := Continue;
                   return;
