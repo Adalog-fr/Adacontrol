@@ -16,9 +16,9 @@ adalib/
 doc/adacontrol_pm.info*
 doc/adacontrol_pm.html
 doc/adacontrol_pm.pdf
-doc/adacontrol_ug.info*
-doc/adacontrol_ug.html
-doc/adacontrol_ug.pdf
+doc/*_ug.info*
+doc/*_ug.html
+doc/*_ug.pdf
 
 src/adactl
 src/pfni
