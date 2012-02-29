@@ -373,25 +373,26 @@ package body Rules.Silent_Exceptions is
             when A_Declaration =>
                case Declaration_Kind (Decls (I)) is
                   when A_Task_Type_Declaration
-                    | A_Protected_Type_Declaration
-                    | A_Single_Task_Declaration
-                    | A_Single_Protected_Declaration
-                    | A_Procedure_Declaration
-                    | A_Function_Declaration
-                    | A_Procedure_Body_Declaration
-                    | A_Function_Body_Declaration
-                    | A_Task_Body_Declaration
-                    | A_Protected_Body_Declaration
-                    | A_Generic_Procedure_Declaration
-                    | A_Generic_Function_Declaration
-                    | A_Generic_Package_Declaration
-                    | A_Formal_Object_Declaration
-                    | A_Formal_Type_Declaration
-                    | A_Formal_Procedure_Declaration
-                    | A_Formal_Function_Declaration
-                    | A_Formal_Package_Declaration
-                    | A_Formal_Package_Declaration_With_Box
-                    =>
+                     | A_Protected_Type_Declaration
+                     | A_Single_Task_Declaration
+                     | A_Single_Protected_Declaration
+                     | A_Procedure_Declaration
+                     | A_Null_Procedure_Declaration
+                     | A_Function_Declaration
+                     | A_Procedure_Body_Declaration
+                     | A_Function_Body_Declaration
+                     | A_Task_Body_Declaration
+                     | A_Protected_Body_Declaration
+                     | A_Generic_Procedure_Declaration
+                     | A_Generic_Function_Declaration
+                     | A_Generic_Package_Declaration
+                     | A_Formal_Object_Declaration
+                     | A_Formal_Type_Declaration
+                     | A_Formal_Procedure_Declaration
+                     | A_Formal_Function_Declaration
+                     | A_Formal_Package_Declaration
+                     | A_Formal_Package_Declaration_With_Box
+                     =>
                      -- All expressions appearing here are formal
                      -- => ignore
                      null;
@@ -648,10 +649,6 @@ package body Rules.Silent_Exceptions is
 
             when Not_A_Statement =>
                Failure ("Not a statement in statements list");
-
-            when others =>  -- Compatibility Ada 2005
-               -- Better be careful...
-               Result := (others => Some_Paths);
          end case;
 
          if Result = (Result'Range => All_Paths) then

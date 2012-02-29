@@ -372,6 +372,7 @@ package body Rules.Max_Call_Depth is
                   | An_Enumeration_Literal_Specification
                   | A_Discriminant_Specification
                   | A_Procedure_Declaration
+                  | A_Null_Procedure_Declaration
                   | A_Function_Declaration
                   | A_Procedure_Body_Declaration
                   | A_Function_Body_Declaration
@@ -539,6 +540,8 @@ package body Rules.Max_Call_Depth is
                   Result := (Unavailable, 0);
                   exit;
                end if;
+            when A_Null_Procedure_Declaration =>
+               Result := (Regular, 0);
             when An_Entry_Declaration  =>
                if Is_Task_Entry (Called_Body) then
                   -- A task entry => not followed

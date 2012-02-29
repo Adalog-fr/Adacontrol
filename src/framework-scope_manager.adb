@@ -110,6 +110,7 @@ package body Framework.Scope_Manager is
             case Declaration_Kind (Element) is
                when A_Function_Declaration
                   | A_Procedure_Declaration
+                  | A_Null_Procedure_Declaration
                   | An_Entry_Declaration
                   | A_Package_Declaration
                   | A_Generic_Procedure_Declaration

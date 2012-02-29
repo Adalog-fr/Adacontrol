@@ -716,6 +716,7 @@ package body Scoped_Store is
    begin  -- Exit_Scope
       case Scope_Kind is
          when A_Procedure_Declaration
+            | A_Null_Procedure_Declaration
             | A_Function_Declaration
             | A_Package_Declaration
 

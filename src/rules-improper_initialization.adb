@@ -1088,6 +1088,7 @@ package body Rules.Improper_Initialization is
                   when A_Declaration =>
                      case Declaration_Kind (Decls (Decl_Index)) is
                         when A_Procedure_Declaration
+                           | A_Null_Procedure_Declaration
                            | A_Function_Declaration
                            | A_Task_Type_Declaration
                            | A_Single_Task_Declaration

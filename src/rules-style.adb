@@ -1180,18 +1180,19 @@ package body Rules.Style is
 
       case Declaration_Kind (Declaration) is
          when A_Procedure_Declaration
-           | A_Function_Declaration
-           | A_Procedure_Body_Declaration
-           | A_Function_Body_Declaration
-           | A_Procedure_Renaming_Declaration
-           | A_Function_Renaming_Declaration
-           | An_Entry_Declaration
-           | An_Entry_Body_Declaration
-           | A_Procedure_Body_Stub
-           | A_Function_Body_Stub
-           | A_Formal_Function_Declaration
-           | A_Formal_Procedure_Declaration
-           =>
+            | A_Null_Procedure_Declaration
+            | A_Function_Declaration
+            | A_Procedure_Body_Declaration
+            | A_Function_Body_Declaration
+            | A_Procedure_Renaming_Declaration
+            | A_Function_Renaming_Declaration
+            | An_Entry_Declaration
+            | An_Entry_Body_Declaration
+            | A_Procedure_Body_Stub
+            | A_Function_Body_Stub
+            | A_Formal_Function_Declaration
+            | A_Formal_Procedure_Declaration
+            =>
             Check_Formals (St_Parameter_Order, Parameter_Profile (Declaration), "parameter specification");
 
          when A_Generic_Procedure_Declaration

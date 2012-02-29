@@ -920,10 +920,11 @@ package body Rules.Naming_Convention is
 
 
                   when A_Procedure_Declaration  ------------------------ Subprograms
-                    | A_Procedure_Instantiation
-                    =>
+                     | A_Null_Procedure_Declaration
+                     | A_Procedure_Instantiation
+                     =>
                      -- To be honest, a procedure instantiation cannot be in a
-                     -- protected specification
+                     -- protected specification - neither a null procedure. Oh, well..
                      if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
                         Check (Name_Str, (K_All, K_Subprogram, K_Procedure, K_Protected_Procedure));
                      else

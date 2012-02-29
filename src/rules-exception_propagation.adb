@@ -359,6 +359,7 @@ package body Rules.Exception_Propagation is
                   Control := Abandon_Children;
 
                when A_Procedure_Declaration
+                  | A_Null_Procedure_Declaration
                   | A_Generic_Procedure_Declaration
                   | A_Procedure_Body_Declaration
 
@@ -564,6 +565,8 @@ package body Rules.Exception_Propagation is
       The_Control : Traverse_Control := Continue;
    begin -- Exception_Propagation_Risk
       case Declaration_Kind (Decl) is
+         when A_Null_Procedure_Declaration =>
+            return No_Risk;  -- Can't raise exception
          when A_Procedure_Declaration
             | A_Function_Declaration
             =>

@@ -392,6 +392,7 @@ package body Rules.Unnecessary_Use is
             end;
             Is_Package_Spec := True;
          when A_Procedure_Declaration
+            | A_Null_Procedure_Declaration
             | A_Function_Declaration
             =>
             -- Nothing to report from these, since these kind of scopes cannot include

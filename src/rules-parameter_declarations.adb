@@ -258,10 +258,11 @@ package body Rules.Parameter_Declarations is
             else
                C := C_Procedure;
             end if;
-         when A_Generic_Procedure_Declaration
+         when A_Null_Procedure_Declaration
+            | A_Generic_Procedure_Declaration
             | A_Procedure_Body_Declaration
             | A_Procedure_Body_Stub
-              =>
+            =>
             C := C_Procedure;
          when A_Procedure_Instantiation =>
             C         := C_Procedure;

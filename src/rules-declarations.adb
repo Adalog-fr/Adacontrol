@@ -1177,6 +1177,10 @@ package body Rules.Declarations is
             Do_Report (D_Procedure, Element);
             Check_Abstract;
 
+         when A_Null_Procedure_Declaration =>
+            Do_Report ((D_Procedure, D_Null_Procedure), Element);
+            -- This one can't be abstact
+
          when A_Procedure_Body_Declaration =>
             if Is_Nil (Corresponding_Declaration (Element)) then
                -- If there is no explicit spec, process as a spec.
@@ -1586,6 +1590,7 @@ package body Rules.Declarations is
                   begin
                      case Declaration_Kind (Decl) is
                         when A_Procedure_Declaration
+                           | A_Null_Procedure_Declaration
                            | A_Function_Declaration
                            | An_Entry_Declaration
                            | A_Procedure_Renaming_Declaration

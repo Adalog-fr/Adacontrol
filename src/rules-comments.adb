@@ -489,6 +489,7 @@ package body Rules.Comments is
                for D in Decls'Range loop
                   case Declaration_Kind (Decls (D)) is
                      when A_Procedure_Declaration
+                        | A_Null_Procedure_Declaration
                         | A_Generic_Procedure_Declaration
                         | A_Procedure_Body_Declaration
 

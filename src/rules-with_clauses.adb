@@ -397,9 +397,10 @@ package body Rules.With_Clauses is
       use Asis, Asis.Elements, Asis.Declarations;
 
       Decl : constant Asis.Declaration := Unit_Declaration (Unit);
-      Is_Spec : constant Boolean := Declaration_Kind (Decl) = A_Package_Declaration   or
-                                    Declaration_Kind (Decl) = A_Procedure_Declaration or
-                                    Declaration_Kind (Decl) = A_Function_Declaration  or
+      Is_Spec : constant Boolean := Declaration_Kind (Decl) = A_Package_Declaration        or
+                                    Declaration_Kind (Decl) = A_Procedure_Declaration      or
+                                    Declaration_Kind (Decl) = A_Null_Procedure_Declaration or
+                                    Declaration_Kind (Decl) = A_Function_Declaration       or
                                     Declaration_Kind (Decl) in A_Generic_Declaration;
    begin
       if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then

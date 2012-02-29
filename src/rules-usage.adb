@@ -696,6 +696,9 @@ package body Rules.Usage is
                return K_Procedure;
             end if;
 
+         when A_Null_Procedure_Declaration =>
+            return K_Procedure;
+
          when A_Function_Declaration =>
             if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
                -- A protected function
@@ -1510,6 +1513,7 @@ package body Rules.Usage is
                      end;
                   when An_Ordinary_Type_Declaration
                      | A_Procedure_Declaration
+                     | A_Null_Procedure_Declaration
                      | A_Procedure_Body_Declaration
                      | A_Procedure_Body_Stub
                      | A_Function_Declaration
