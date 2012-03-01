@@ -192,8 +192,9 @@ package body Rules.Improper_Initialization is
    -------------------------------------
 
    function Non_Array_Component_Declaration (Declaration : Asis.Declaration) return Asis.Declaration is
-      -- If Declaration is not an array : return Declaration
-      -- If Declaration is an array: return the declaration of the first component which is not itself an array
+   -- If Declaration is not an array : return Declaration
+   -- If Declaration is an array: return the declaration of the first component which is not itself an array
+   -- Returns Nil_Element if the component is of an anonymous access type
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
 
@@ -206,8 +207,12 @@ package body Rules.Improper_Initialization is
                when An_Unconstrained_Array_Definition
                   | A_Constrained_Array_Definition
                     =>
-                  Temp := Subtype_Simple_Name (Component_Subtype_Indication
-                                               (Array_Component_Definition (Definition)));
+                  Temp := Component_Subtype_Indication (Array_Component_Definition (Definition));
+                  if Is_Nil (Temp) then
+                     -- anonymous access component
+                     return Nil_Element;
+                  end if;
+                  Temp := Subtype_Simple_Name (Temp);
                   if Expression_Kind (Temp) = An_Attribute_Reference then
                      Temp := Simple_Name (Prefix (Temp));
                   end if;
@@ -932,8 +937,9 @@ package body Rules.Improper_Initialization is
                                                 (Declaration_Subtype_Mark
                                                  (Params_Profile (Profile_Index)))));
                      Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
-
-                     if (Extensions (K_Out_Parameter) (M_Access)  or else not Is_Access_Subtype (Component_Decl))
+                     -- If Component_Decl is Nil_Element, the component is of an (anonymous) access type
+                     if (Extensions (K_Out_Parameter) (M_Access)
+                            or else not (Is_Nil (Component_Decl) or else Is_Access_Subtype (Component_Decl)))
                        and then
                         (Extensions (K_Out_Parameter) (M_Limited) or else not Is_Limited (Subtype_Decl))
                      then
@@ -1038,7 +1044,9 @@ package body Rules.Improper_Initialization is
             -- Now, it is the real subtype declaration
 
             Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
-            if (not Extensions (Var_Kind) (M_Access)  and then Is_Access_Subtype (Component_Decl))
+            -- If Component_Decl is Nil_Element, the component is of an (anonymous) access type
+            if (not Extensions (Var_Kind) (M_Access)
+                and then (Is_Nil (Component_Decl) or else Is_Access_Subtype (Component_Decl)))
               or else
                (not Extensions (Var_Kind) (M_Limited) and then Is_Limited (Subtype_Decl))
             then
