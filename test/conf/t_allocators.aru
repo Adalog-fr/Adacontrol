@@ -17,3 +17,4 @@ Inconsistent  : check allocators (inconsistent standard.integer,
                                   inconsistent t_allocators.Int,
                                   inconsistent standard.wide_string);
 
+Anonymous     : check allocators (anonymous standard.integer);

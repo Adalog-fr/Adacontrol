@@ -1,4 +1,6 @@
-t_uncheckable-allocators.adb:3:39: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
+t_uncheckable-allocators.adb:9:14: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
+t_uncheckable-allocators.adb:12:17: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
+t_uncheckable-allocators.adb:13:21: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
 t_uncheckable-case_statement.adb:15:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_uncheckable-case_statement.adb:19:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
 t_uncheckable-case_statement.adb:24:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
@@ -48,6 +50,8 @@ t_uncheckable-usage.adb:44:11: Error: Uncheckable: in rule USAGE: Possible false
 t_uncheckable-usage.adb:45:11: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
 t_uncheckable-usage.adb:46:7: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
 Error: Uncheckable: missing body for X_UNCHECKABLE_PROC
+t_uncheckable-allocators.adb:9:4: Error: USAGE: (normal) T_Uncheckable.Allocators.VR, variable, not initialized, written, read
+t_uncheckable-allocators.adb:10:4: Error: USAGE: (normal) T_Uncheckable.Allocators.VT, variable, initialized, written, not read
 t_uncheckable-usage.adb:6:4: Error: USAGE: (normal) T_Uncheckable.Usage.C, constant, not read (can be removed)
 t_uncheckable-usage.adb:28:7: Error: USAGE: (normal) T_Uncheckable.Usage.Pack.K, variable, not initialized, written, read
 t_uncheckable-usage.adb:9:4: Error: USAGE: (normal) T_Uncheckable.Usage.Ptr, variable, initialized, written, read

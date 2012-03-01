@@ -17,7 +17,8 @@ Locations
 Changes to existing rules:
 --------------------------
 Allocators:
-   Generalized to all type categories, added "not" modifier.
+   Generalized to all type categories, added "not" and "anonymous" modifier.
+   Allowed multiple specification of same entity with different modifiers
 
 Declarations:
    added subrules protected_discriminant, task_discriminant

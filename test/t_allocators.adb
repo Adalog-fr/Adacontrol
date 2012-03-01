@@ -1,5 +1,7 @@
 pragma Ada_2005;
 procedure T_allocators is
+   procedure Anonymous is separate;
+
    type Acc1  is access Integer;
    type Acc1c is access Positive;
    type Acc2  is access String;

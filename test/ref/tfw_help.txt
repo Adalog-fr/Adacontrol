@@ -9,7 +9,7 @@ or just those for specific type(s) or types belonging
 to the indicated categories, or just those whose indicated
 subtype is inconsistent with the access type declaration
 
-Parameter(s): [inconsisent | not] [<category>|<entity>]
+Parameter(s): [anonymous | inconsisent | not] [<category>|<entity>]
 <category>  : ()  | access    | array | delta  | digits |
               mod | protected | range | record | tagged | task
 ----
