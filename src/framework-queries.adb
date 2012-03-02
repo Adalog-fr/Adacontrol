@@ -2,7 +2,7 @@
 --  Framework.Queries - Package body                                --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2007. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2012. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -42,7 +42,6 @@ with
 with
   A4G_Bugs,
   Binary_Map,
-  Thick_Queries,
   Utilities;
 
 -- Adacontrol
@@ -282,13 +281,33 @@ package body Framework.Queries is
       return Fetch (System_Symbol_Map, To_Unbounded_Wide_String (Name));
    exception
       when Not_Present =>
-         -- TBSL KLUDGE for ASIS bug (?)
+         Failure ("Not found in System: " & Name);
+   end System_Value;
+
+   ------------------
+   -- System_Value --
+   ------------------
+
+   function System_Value (Name : Wide_String) return Thick_Queries.Extended_Biggest_Int is
+      use Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
+      use Element_Map, Framework, Thick_Queries, Utilities;
+   begin
+      if Is_Empty (System_Symbol_Map) then
+         Initialize_Table (System_Symbol_Map,
+                           Unit_Declaration (Library_Unit_Declaration ("SYSTEM", Adactl_Context)));
+      end if;
+
+      return Discrete_Static_Expression_Value
+               (Initialization_Expression (Fetch (System_Symbol_Map, To_Unbounded_Wide_String (Name))));
+   exception
+      when Not_Present =>
          -- There seems to be a bug/feature in recent versions of Gnat that the System we get
          -- get is not the real one, and that a number of elements are not found by traversing it,
-         -- and especially Storage_Unit. Since it is highly unlikely to be anything but 8, places
-         -- that needed the value of Storage_Unit now use a hard-coded 8. These places are marked
-         -- with --KLUDGE
-
+         -- and especially Storage_Unit. Since it is highly unlikely to be anything but 8, we force it
+         -- to 8 if not found
+         if Name = "STORAGE_UNIT" then
+            return 8;
+         end if;
          Failure ("Not found in System: " & Name);
    end System_Value;
 

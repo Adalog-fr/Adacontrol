@@ -2,7 +2,7 @@
 --  Framework.Queries - Package specification                       --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2007. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2012. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -32,6 +32,10 @@
 -- Asis
 with
   Asis;
+
+-- Adalog
+with
+Thick_Queries;
 
 package Framework.Queries is
    -- This package contain high level ASIS queries, but unlike
@@ -68,5 +72,8 @@ package Framework.Queries is
    -- If this function is called from elaboration code, put a pragma Elaborate_All (Framework.Queries)
    --
    -- Cannot be made application independant, because it needs the Asis context from Framework.
+
+   function System_Value (Name : Wide_String) return Thick_Queries.Extended_Biggest_Int;
+   -- Same as previous one, but returns the value when we know it is integer.
 
 end Framework.Queries;

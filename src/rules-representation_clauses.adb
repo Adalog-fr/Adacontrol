@@ -2,7 +2,7 @@
 --  Rules.Representation_Clauses - Package body                     --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2012. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -53,6 +53,7 @@ with
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
   Framework.Language.Shared_Keys,
+  Framework.Queries,
   Framework.String_Set;
 pragma Elaborate (Framework.Language);
 
@@ -192,14 +193,13 @@ package body Rules.Representation_Clauses is
    -------------
 
    procedure Prepare is
+      use Framework.Queries;
    begin
       if Rule_Used = Not_Used then
          return;
       end if;
 
-      --KLUDGE
-      --Storage_Unit := Discrete_Static_Expression_Value (Initialization_Expression (System_Value ("STORAGE_UNIT")));
-      Storage_Unit := 8;
+      Storage_Unit := System_Value ("STORAGE_UNIT");
    end Prepare;
 
 
