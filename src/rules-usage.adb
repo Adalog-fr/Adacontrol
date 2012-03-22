@@ -497,6 +497,9 @@ package body Rules.Usage is
          -- We are analyzing something from an expanded generic => no source is available,
          -- and Is_Part_Of does not work (as specified). We must therefore use the corresponding
          -- generic element.
+         if Defining_Name_Kind (Name) = A_Defining_Expanded_Name then
+            Name := Defining_Selector (Name);
+         end if;
          Name := Corresponding_Generic_Element (Name);
       end if;
       Enclosing_PU_Name := Enclosing_Program_Unit (Name);
