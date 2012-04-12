@@ -312,6 +312,37 @@ procedure Pfni is
                         Put (Choose (Static_Expression_Value_Image (Init), "not static"));
                         Put (')');
                      end if;
+                  when An_Ordinary_Type_Declaration
+                     | A_Subtype_Declaration
+                     =>
+                     declare
+                        Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Decl);
+                        Inx    : Positive := Bounds'First;
+                     begin
+                        if Bounds /= Nil_Extended_Biggest_Int_List
+                          and Bounds /= (Bounds'Range => Not_Static)
+                        then
+                           Put (" (Range => ");
+                           loop
+                              if Bounds (Inx) = Not_Static then
+                                 Put ('?');
+                              else
+                                 Put (Biggest_Int_Img (Bounds (Inx)));
+                              end if;
+                              Inx := Inx + 1;
+                              Put (" .. ");
+                              if Bounds (Inx) = Not_Static then
+                                 Put ('?');
+                              else
+                                 Put (Biggest_Int_Img (Bounds (Inx)));
+                              end if;
+                              exit when Inx = Bounds'Last;
+                              Inx := Inx + 1;
+                              Put (", ");
+                           end loop;
+                           Put (')');
+                        end if;
+                     end;
                   when others =>
                      null;
                end case;
