@@ -349,7 +349,7 @@ package body Rules.Unnecessary_Use is
                                       (Associations (I)))) = A_Box_Default
             then
                if Is_Nil (Actual_Parameter (Associations (I))) then
-                  -- TBSL Vérifier si encore nécessaire
+                  -- TBSL check if this is still necessary
                   A4G_Bugs.Trace_Bug ("Unnecessary_Use.Process_Instantiation: Nil box-defaulted parameter");
                   Uncheckable (Rule_Id,
                                False_Positive,

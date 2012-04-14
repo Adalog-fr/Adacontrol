@@ -70,7 +70,7 @@ package body Rules.Comments is
    -- Declarations for Pattern
    type Pattern_Access is access String_Matching.Compiled_Pattern;
 
-   type Pattern_Context;
+   type Pattern_Context;   -- for subrule Pattern
    type Pattern_Context_Access is access Pattern_Context;
    type Pattern_Context is new Basic_Rule_Context with
       record
@@ -78,7 +78,7 @@ package body Rules.Comments is
          Next    : Pattern_Context_Access;
       end record;
 
-   type Pattern_Node;
+   type Pattern_Node;     -- for subrule Terminating
    type Pattern_Node_Access is access Pattern_Node;
    type Pattern_Node is
       record
