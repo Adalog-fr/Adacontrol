@@ -117,9 +117,9 @@ package body Framework.Symbol_Table is
          use Asis, Asis.Elements, Asis.Expressions;
          use Thick_Queries, Utilities;
 
-         Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-           (Full_Name_Image
-              (Element, With_Profile => True)));
+         Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String
+                                                 (To_Upper
+                                                  (Full_Name_Image (Element, With_Profile => True)));
          Symbol : Symbol_Entry;
       begin
          if Is_Present (Global_Map, Key) then
