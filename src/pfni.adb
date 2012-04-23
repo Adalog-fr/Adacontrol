@@ -481,7 +481,7 @@ begin  -- PFNI
    Full_Option        := Is_Present (Option => 'f') or Force_Full;
    Quiet_Option       := Is_Present (Option => 'q');
 
-   Implementation.Initialize;
+   Implementation.Initialize (Initialize_String);
    Ada_Environments.Associate (My_Context,
                                "MARF",
                                Parameters_String (Value (Option => 'p', Explicit_Required => True),
@@ -518,6 +518,7 @@ exception
          when Asis.Errors.Use_Error =>
             if Debug_Option then
                -- tell the truth if we are debugging
+               Asis_Exception_Messages;
                Stack_Traceback (Occur);
                raise;
             else
