@@ -37,6 +37,6 @@ package Rules.Allocators is
 
    Rule_Id : constant Wide_String := "ALLOCATORS";
 
-   procedure Process_Allocator (Element : in Asis.Element);
+   procedure Process_Allocator (Allocator : in Asis.Expression);
 
 end Rules.Allocators;

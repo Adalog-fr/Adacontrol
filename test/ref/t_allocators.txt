@@ -5,26 +5,40 @@ t_allocators-anonymous.adb:26:24: Error: Anonymous: allocator of an anonymous ac
 t_allocators-anonymous.adb:27:14: Error: Anonymous: allocator of an anonymous access type
 t_allocators-anonymous.adb:28:7: Error: Anonymous: allocator of an anonymous access type
 t_allocators-anonymous.adb:29:15: Error: Anonymous: allocator of an anonymous access type
-t_allocators.adb:101:10: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Integer
-t_allocators.adb:102:10: Error: ALLOCATORS: allocator for Standard.String
-t_allocators.adb:103:10: Error: ALLOCATORS: allocator for Standard.String
-t_allocators.adb:104:10: Error: specific_task: allocator for T_Allocators.T1
-t_allocators.adb:105:10: Error: all_tasks: allocator for Task
-t_allocators.adb:106:10: Error: specific_prot: allocator for T_Allocators.P1
-t_allocators.adb:107:10: Error: all_prot: allocator for Protected
-t_allocators.adb:108:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:109:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:110:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:111:10: Error: tagged: allocator for T_Allocators.Tag1
-t_allocators.adb:112:10: Error: class1: allocator for T_Allocators.Tag1'Class
-t_allocators.adb:113:10: Error: class1: allocator for T_Allocators.Tag1'Class
-t_allocators.adb:114:10: Error: from_gen: allocator for T_Allocators.Gen.Gen_T
-t_allocators.adb:117:11: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Integer
-t_allocators.adb:118:11: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Positive
-t_allocators.adb:122:11: Error: Inconsistent: allocator for T_Allocators.Int not consistent with designated subtype Int
-t_allocators.adb:123:11: Found: ALLOCATORS: allocator for All
-t_allocators.adb:124:11: Found: ALLOCATORS: allocator for All
-t_allocators.adb:128:11: Error: all_arrays: allocator for Array
-t_allocators.adb:129:11: Error: all_arrays: allocator for Array
-t_allocators.adb:130:11: Error: all_arrays: allocator for Array
-t_allocators.adb:131:11: Error: all_records: allocator for Record
+t_allocators.adb:103:10: Found: ALLOCATORS: allocator for All
+t_allocators.adb:104:10: Found: ALLOCATORS: allocator for All
+t_allocators.adb:105:10: Error: Inconsistent: allocator for Standard.Integer'Base not consistent with designated subtype Standard.Integer
+t_allocators.adb:106:12: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Standard.Integer with constraint
+t_allocators.adb:107:12: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Standard.Integer with constraint
+t_allocators.adb:108:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:109:10: Error: ALLOCATORS: allocator for Standard.String
+t_allocators.adb:110:10: Error: specific_task: allocator for T_Allocators.T1
+t_allocators.adb:111:10: Error: all_tasks: allocator for Task
+t_allocators.adb:112:10: Error: specific_prot: allocator for T_Allocators.P1
+t_allocators.adb:113:10: Error: all_prot: allocator for Protected
+t_allocators.adb:114:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:115:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:116:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:117:10: Error: tagged: allocator for T_Allocators.Tag1
+t_allocators.adb:118:10: Error: class1: allocator for T_Allocators.Tag1'Class
+t_allocators.adb:119:10: Error: class1: allocator for T_Allocators.Tag1'Class
+t_allocators.adb:120:10: Error: from_gen: allocator for T_Allocators.Gen.Gen_T
+t_allocators.adb:122:11: Found: ALLOCATORS: allocator for All
+t_allocators.adb:123:11: Error: Inconsistent: allocator for Standard.Positive not consistent with designated subtype Standard.Integer
+t_allocators.adb:124:11: Error: Inconsistent: allocator for Standard.Integer not consistent with designated subtype Standard.Positive
+t_allocators.adb:125:11: Found: ALLOCATORS: allocator for All
+t_allocators.adb:127:11: Found: ALLOCATORS: allocator for All
+t_allocators.adb:128:11: Error: Inconsistent: allocator for T_allocators.Int'Base not consistent with designated subtype T_allocators.Int
+t_allocators.adb:129:11: Found: ALLOCATORS: allocator for All
+t_allocators.adb:130:11: Found: ALLOCATORS: allocator for All
+t_allocators.adb:132:11: Error: all_arrays: allocator for Array
+t_allocators.adb:133:11: Error: all_arrays: allocator for Array
+t_allocators.adb:134:11: Error: all_arrays: allocator for Array
+t_allocators.adb:136:11: Error: all_arrays: allocator for Array
+t_allocators.adb:137:11: Error: Inconsistent: allocator for Standard.Wide_String not consistent with designated subtype T_allocators.Str10
+t_allocators.adb:138:11: Error: Inconsistent: allocator for Standard.Wide_String not consistent with designated subtype T_allocators.Str10
+t_allocators.adb:140:11: Error: all_arrays: allocator for Array
+t_allocators.adb:141:11: Error: all_arrays: allocator for Array
+t_allocators.adb:142:11: Error: all_arrays: allocator for Array
+t_allocators.adb:143:11: Error: all_records: allocator for Record
+t_allocators.adb:145:11: Error: all_arrays: allocator for Array

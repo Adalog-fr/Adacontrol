@@ -184,21 +184,17 @@ package body Rules.Allocators is
    -- Process_Allocator --
    -----------------------
 
-   procedure Process_Allocator (Element : in Asis.Element) is
+   procedure Process_Allocator (Allocator : in Asis.Expression) is
       use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
       use Asis, Asis.Expressions, Asis.Elements;
 
-      Found : Boolean;
+      Found             : Boolean := False;
       Allocated_Subtype : Asis.Expression;
 
       procedure Check (Current_Context : Root_Context'Class) is
          use Framework.Reports;
-         use Asis.Declarations, Asis.Definitions;
 
          Allocator_Subtype  : Asis.Element;
-         Designated_Subtype : Asis.Element;
-         Def                : Asis.Definition;
-         Name               : Asis.Expression;
 
          function Subtype_Match (Left, Right : Asis.Expression) return Boolean is
             LL : Asis.Expression := Left;
@@ -219,9 +215,102 @@ package body Rules.Allocators is
             return Is_Equal (First_Defining_Name (LL), First_Defining_Name (RR));
          end Subtype_Match;
 
+         procedure Check_Inconsistent is
+            use Asis.Declarations, Asis.Definitions;
+            Designated_Subtype : Asis.Element;
+            Designated_Name    : Asis.Expression;
+            Def                : Asis.Definition;
+         begin
+            -- Designated_Subtype is (temporarily) the allocators's type
+            Allocator_Subtype := Thick_Queries.Corresponding_Expression_Type_Definition (Allocator);
+
+            if Is_Nil (Allocator_Subtype) then
+               -- This can happen if the allocator is of an anonymous access type,
+               -- appearing as a component of an aggregate. See Corresponding_Expression_Type_Definition
+               Uncheckable (Rule_Id,
+                            False_Negative,
+                            Get_Location (Allocator),
+                            "Unable to determine the designated type of the allocator");
+               Found := True; -- Well, the context was found...
+               return;
+            end if;
+
+            -- Find designated subtype
+            loop
+               if Type_Kind (Allocator_Subtype) = A_Derived_Type_Definition then
+                  -- This one cannot be anonymous, get to the real definition
+                  Allocator_Subtype := Type_Declaration_View (Ultimate_Type_Declaration
+                                                              (Enclosing_Element (Allocator_Subtype)));
+               elsif Formal_Type_Kind (Allocator_Subtype) = A_Formal_Derived_Type_Definition then
+                  -- There can be no constraint at that level, go to the parent type
+                  Allocator_Subtype := Type_Declaration_View (Corresponding_Name_Declaration
+                    (Simple_Name
+                       (Strip_Attributes
+                          (Subtype_Simple_Name (Allocator_Subtype)))));
+               elsif Definition_Kind (Allocator_Subtype) = An_Access_Definition then
+                  Designated_Subtype := Simple_Name (Anonymous_Access_To_Object_Subtype_Mark
+                                                     (Allocator_Subtype));
+                  Designated_Name    := Designated_Subtype;
+                  exit;
+               else
+                  Designated_Subtype := Asis.Definitions.Access_To_Object_Definition (Allocator_Subtype);
+                  Designated_Name    := Subtype_Simple_Name (Designated_Subtype);
+                  exit;
+               end if;
+            end loop;
+            -- Now, Designated_Subtype is really the designated subtype
+
+            if Is_Class_Wide_Subtype (Designated_Name) then
+               -- Class wide target => the allocator is generally of a specific type
+               -- Don't consider this inconsistent
+               return;
+            end if;
+
+            if Element_Kind (Designated_Subtype) = An_Expression      -- a subtype mark, no constraint
+              or else Is_Nil (Subtype_Constraint (Designated_Subtype))
+            then
+               if A4G_Bugs.Attribute_Kind (Designated_Name) = A_Base_Attribute then
+                  return;
+               end if;
+               Def := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Designated_Name)));
+               case Declaration_Kind (Def) is
+                  when A_Private_Type_Declaration | An_Incomplete_Type_Declaration =>
+                     Def := Corresponding_Type_Declaration (Def);
+                  when others =>
+                     null;
+               end case;
+               Def := Type_Declaration_View (Def);
+               if         Type_Kind (Def)        /= An_Unconstrained_Array_Definition
+                 and then Formal_Type_Kind (Def) /= A_Formal_Unconstrained_Array_Definition
+                 and then not Subtype_Match (Designated_Name, Allocated_Subtype)
+               then
+                  Found := True;
+                  Report (Rule_Id,
+                          Rule_Context (Current_Context).Contexts (Inconsistent),
+                          Get_Location (Allocator),
+                          "allocator for "
+                          & Full_Name_Image (Allocated_Subtype)
+                          & " not consistent with designated subtype "
+                          & Full_Name_Image (Designated_Name)
+                         );
+               end if;
+            else
+               -- There is a constraint in the designated subtype indication
+               Found := True;
+               Report (Rule_Id,
+                       Rule_Context (Current_Context).Contexts (Inconsistent),
+                       Get_Location (Allocator),
+                       "allocator for "
+                       & Full_Name_Image (Allocated_Subtype)
+                       & " not consistent with designated subtype "
+                          & Full_Name_Image (Designated_Name)
+                       & " with constraint"
+                      );
+
+            end if;
+         end Check_Inconsistent;
       begin   -- Check
          if Current_Context = No_Matching_Context then
-            Found := False;
             return;
          end if;
 
@@ -229,117 +318,33 @@ package body Rules.Allocators is
             if  Rule_Context (Current_Context).Active_Filter (F) then
                case F is
                   when Always =>
+                     Found := True;
                      Report (Rule_Id,
                              Rule_Context (Current_Context).Contexts (Always),
-                             Get_Location (Element),
+                             Get_Location (Allocator),
                              "allocator for " & To_Title (Last_Matching_Name (Entities)));
 
                   when Anonymous =>
-                     Allocator_Subtype := Thick_Queries.Corresponding_Expression_Type_Definition (Element);
+                     Allocator_Subtype := Thick_Queries.Corresponding_Expression_Type_Definition (Allocator);
 
                      if Is_Nil (Allocator_Subtype)  -- Since it happens only for anonymous access types...
                        or else Definition_Kind (Allocator_Subtype) = An_Access_Definition
                      then
+                        Found := True;
                         Report (Rule_Id,
                                 Rule_Context (Current_Context).Contexts (Anonymous),
-                                Get_Location (Element),
+                                Get_Location (Allocator),
                                 "allocator of an anonymous access type");
                      end if;
 
                   when Inconsistent =>
-                     -- Designated_Subtype is (temporarily) the allocators's type
-                     Allocator_Subtype := Thick_Queries.Corresponding_Expression_Type_Definition (Element);
-
-                     if Is_Nil (Allocator_Subtype) then
-                        -- This can happen if the allocator is of an anonymous access type,
-                        -- appearing as a component of an aggregate. See Corresponding_Expression_Type_Definition
-                        Uncheckable (Rule_Id,
-                                     False_Negative,
-                                     Get_Location (Element),
-                                     "Unable to determine the designated type of the allocator");
-                        Found := True; -- Well, the context was found...
-                        return;
-                     end if;
-
-                     loop
-                        if Type_Kind (Allocator_Subtype) = A_Derived_Type_Definition then
-                           -- This one cannot be anonymous, get to the real definition
-                           Allocator_Subtype := Type_Declaration_View (Ultimate_Type_Declaration
-                                                                        (Enclosing_Element (Allocator_Subtype)));
-                        elsif Formal_Type_Kind (Allocator_Subtype) = A_Formal_Derived_Type_Definition then
-                           -- There can be no constraint at that level, go to the parent type
-                           Allocator_Subtype := Type_Declaration_View (Corresponding_Name_Declaration
-                                                                       (Simple_Name
-                                                                        (Strip_Attributes
-                                                                         (Subtype_Simple_Name (Allocator_Subtype)))));
-                        elsif Definition_Kind (Allocator_Subtype) = An_Access_Definition then
-                           Designated_Subtype := Simple_Name (Anonymous_Access_To_Object_Subtype_Mark
-                                                              (Allocator_Subtype));
-                           Name               := Designated_Subtype;
-                           exit;
-                        else
-                           Designated_Subtype := Asis.Definitions.Access_To_Object_Definition (Allocator_Subtype);
-                           Name               := Subtype_Simple_Name (Designated_Subtype);
-                           exit;
-                        end if;
-                     end loop;
-                     -- Now, Designated_Subtype is really the designated subtype
-
-                     if Is_Class_Wide_Subtype (Name) then
-                        -- Call wide target => the allocator is generally of a specific type
-                        -- Don't consider this inconsistent
-                        Found := False;
-                        return;
-                     end if;
-
-                     if Element_Kind (Designated_Subtype) = An_Expression      -- a subtype mark, no constraint
-                       or else Is_Nil (Subtype_Constraint (Designated_Subtype))
-                     then
-                        if A4G_Bugs.Attribute_Kind (Name) = A_Base_Attribute then
-                           Found := False;
-                           return;
-                        end if;
-                        Def := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Name)));
-                        case Declaration_Kind (Def) is
-                           when A_Private_Type_Declaration | An_Incomplete_Type_Declaration =>
-                              Def := Corresponding_Type_Declaration (Def);
-                           when others =>
-                              null;
-                        end case;
-                        Def := Type_Declaration_View (Def);
-                        if         Type_Kind (Def)        /= An_Unconstrained_Array_Definition
-                          and then Formal_Type_Kind (Def) /= A_Formal_Unconstrained_Array_Definition
-                          and then not Subtype_Match (Name, Simple_Name (Allocated_Subtype))
-                        then
-                           Report (Rule_Id,
-                                   Rule_Context (Current_Context).Contexts (Inconsistent),
-                                   Get_Location (Element),
-                                   "allocator for "
-                                   & To_Title (Last_Matching_Name (Entities))
-                                   & " not consistent with designated subtype "
-                                   & Extended_Name_Image (Subtype_Simple_Name (Designated_Subtype))
-                                  );
-                        end if;
-                     else
-                        -- There is a constraint in the designated subtype indication
-                        Report (Rule_Id,
-                                Rule_Context (Current_Context).Contexts (Inconsistent),
-                                Get_Location (Element),
-                                "allocator for "
-                                & To_Title (Last_Matching_Name (Entities))
-                                & " not consistent with designated subtype "
-                                & Extended_Name_Image (Def)
-                                & " with constraint"
-                               );
-
-                     end if;
+                     Check_Inconsistent;
 
                   when Never =>
                      null;
                end case;
             end if;
          end loop;
-         Found := True;
       end Check;
 
       E : Asis.Element;
@@ -351,17 +356,17 @@ package body Rules.Allocators is
       Rules_Manager.Enter (Rule_Id);
 
       -- Retrieve in E the good subtype mark
-      case Expression_Kind (Element) is
+      case Expression_Kind (Allocator) is
          when An_Allocation_From_Subtype =>
-            Allocated_Subtype := Subtype_Simple_Name (Allocator_Subtype_Indication (Element));
+            Allocated_Subtype := Subtype_Simple_Name (Allocator_Subtype_Indication (Allocator));
          when An_Allocation_From_Qualified_Expression =>
             Allocated_Subtype := Simple_Name (Converted_Or_Qualified_Subtype_Mark
-                                              (Allocator_Qualified_Expression (Element)));
+                                              (Allocator_Qualified_Expression (Allocator)));
          when others =>
-            Failure (Rule_Id & ": Unexpected element", Element);
+            Failure (Rule_Id & ": Unexpected element", Allocator);
       end case;
 
-      -- Allocator_Subtype can be an attribute, T'Base or T'Class
+      -- Allocated_Subtype can be an attribute, T'Base or T'Class
       -- T'Base has the same first named subtype as T
       -- T'Base is only allowed for scalar types, therefore we cannot have T'Base'Class
       -- nor T'Class'Base
@@ -378,7 +383,10 @@ package body Rules.Allocators is
          E := First_Subtype_Name (Allocated_Subtype);
       end if;
 
+      -- Check entity
       Check (Matching_Context (Entities, E, Extend_To => All_Extensions));
+
+      -- Entity not found, check category
       if not Found and Expression_Kind (E) /= An_Attribute_Reference then
          Check (Control_Manager.Association (Entities, Image (Matching_Category (E,
                                                                                  From_Cats      => Full_Set,
@@ -386,6 +394,7 @@ package body Rules.Allocators is
                                                                                  Follow_Private => True))));
       end if;
 
+      -- Category not found, check all
       if not Found then
          Check (Control_Manager.Association (Entities, "ALL"));
       end if;
