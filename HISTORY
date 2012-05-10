@@ -14,6 +14,10 @@ Locations
    Added "in_generic" to the locations used in rules declarations and
    instantiations
 
+Debug:
+   with -d option, AdaCtl is aborted by Ctrl-C with a message telling
+   where it is
+
 Changes to existing rules:
 --------------------------
 Allocators:

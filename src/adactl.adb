@@ -53,6 +53,7 @@ with
 -- Adactl
 with
   Adactl_Options,
+  Framework.Interrupt,
   Framework.Language,
   Framework.Reports,
   Framework.Rules_Manager;
@@ -76,6 +77,9 @@ begin
    Framework.Rules_Manager.Initialize;
 
    Analyse_Options;
+   if Debug_Option then
+      Framework.Interrupt.Activate;
+   end if;
 
    if Action not in No_Asis_Actions then
       --

@@ -763,11 +763,15 @@ includes an indication of the run number if there are more than one
 
 The ``-d'' option enables debug mode. This mode provides more
 information in case of an internal program error, and is of little
-interest for the casual user. In this mode, AdaControl may also, in
-rare occasions (and only with some versions of GNAT), display ASIS
-``bug boxes''; this does not mean that something went wrong with the
-program, but simply that an ASIS failure was properly recovered by
-AdaControl.
+interest for the casual user. Note that if you hit Ctrl-C in debug
+mode, AdaControl aborts with a message telling the currently active
+rule and module. This can be useful if you suspect AdaControl to be
+stuck in an infinite loop.
+
+In debug mode, AdaControl may also, in rare occasions (and only with
+some versions of GNAT), display ASIS ``bug boxes''; this does not mean
+that something went wrong with the program, but simply that an ASIS
+failure was properly recovered by AdaControl.
 
 Output of the messages printed by the ``-d'' option can be directed to
 a ``trace'' file (instead of being printed to the standard error
