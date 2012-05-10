@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.14b2
+@settitle AdaControl User Guide V1.14b5
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -1137,8 +1137,9 @@ entity. @xref{pfni}.  The entry ``Print full name'' displays the full
 name of the entity in simple form, while the entry ``Print full name
 (with overloading)'' ) prints it with overloading information. If the
 name refers to an entity which is initialized (or to a parameter with
-a default value), and the initial value is static, the name is followed
-by this value in parenthesis.
+a default value), the initial value is printed. If the entity is a
+discrete type, its range is printed.  If the entity is an array type,
+the ranges of its indices are printed.
 
 This is convenient to find how to name entities in rule
 files. @xref{Specifying an Ada entity name}. It is also convenient to
@@ -1407,6 +1408,10 @@ option, in which case it prints the full name image of all identifiers
 (i.e. including those that are used, but not declared, in the
 unit). The image is printed without overloading information, unless
 the ``-o'' option is given.
+
+In addition, @code{pfni} prints the initial value of variables if
+there is one, the range of discrete types, and the range of the
+indices of array types.
 
 The <unit> is given either as an Ada unit, or as a file name, provided
 the extension is ``.ads'' or ``.adb'' (as in AdaControl). If a span is

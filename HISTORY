@@ -1,22 +1,25 @@
 =============
-== V1.14b2 ==
+== V1.14b5 ==
 =============
 
 General:
 --------
 Bug fixes:
-   Mantis: 0000021
+   Mantis:  0000019, 0000021,  0000022,  0000024
 
 Naming of entities:
    Added the syntax "all type'<attribute>"
 
-Locations
+Locations:
    Added "in_generic" to the locations used in rules declarations and
    instantiations
 
 Debug:
    with -d option, AdaCtl is aborted by Ctrl-C with a message telling
    where it is
+
+PFNI:
+   print range for discrete/array types
 
 Changes to existing rules:
 --------------------------

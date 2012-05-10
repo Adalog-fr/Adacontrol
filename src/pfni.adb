@@ -282,7 +282,7 @@ procedure Pfni is
          else
             Put (Adjust_Image (Result));
 
-            -- Print initial value if there is one
+            -- Print initial value and ranges if applicable
             declare
                use Asis.Declarations;
 
