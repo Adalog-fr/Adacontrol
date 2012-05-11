@@ -61,6 +61,9 @@ package Framework.Rules_Manager is
 
    Timing_Option : Boolean := False;
 
+   type Control_Phases is (Not_Started, Preparation, Processing, Finalize);
+   Current_Phase : Control_Phases := Not_Started;
+
    function Has_Active_Rules (R_Kind : Rule_Kind) return Boolean;
 
    function Number_Of_Rules return Rules_Count;

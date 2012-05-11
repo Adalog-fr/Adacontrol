@@ -28,12 +28,19 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Ada
 with
    Ada.Interrupts,
    Ada.Interrupts.Names,
-   Ada.Task_Identification;
+     Ada.Task_Identification;
 
+-- ASIS
 with
+   ASIS.Implementation;
+
+-- AdaControl
+with
+   Adactl_Version,
    Framework.Rules_Manager,
    Units_List,
    Utilities;
@@ -51,11 +58,17 @@ package body Framework.Interrupt is
    -- BTW, we make it a separate procedure to avoid complaints from Gnat (about being
    -- potentially blocking) .
    procedure Report_State is
-      use Utilities;
+      use ASIS.Implementation;
+      use Framework.Rules_Manager, Utilities;
       Unit_Name : constant Wide_String := Units_List.Current_Unit;
    begin
-      User_Message ("Interrupt");
-      User_Message ("   In rule: " & Framework.Rules_Manager.Last_Rule);
+      User_Message ("=== Interrupt");
+      User_Message ("============= Phase: "
+                    & To_Title (Control_Phases'Wide_Image (Current_Phase))
+                    & " =============");
+      User_Message ("AdaCtl version: " & Adactl_Version
+                    & " with " & ASIS_Implementor_Version);
+      User_Message ("   In rule: " & Last_Rule);
       if Unit_Name /= "" then
          User_Message ("   For unit: " & Unit_Name);
       end if;
@@ -82,6 +95,7 @@ package body Framework.Interrupt is
       use Ada.Interrupts, Ada.Interrupts.Names;
    begin
       Attach_Handler (IT.Handler'Access, SIGINT);
+      Attach_Handler (IT.Handler'Access, SIGTERM);
    end Activate;
 
 end Framework.Interrupt;

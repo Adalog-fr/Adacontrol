@@ -109,12 +109,13 @@ package body Framework.Language.Commands is
 
    procedure Go_Command is
 
-      procedure Handle_Exception (Phase     : Wide_String;
-                                  Occur     : Ada.Exceptions.Exception_Occurrence;
+      procedure Handle_Exception (Occur     : Ada.Exceptions.Exception_Occurrence;
                                   Unit_Name : Wide_String := "")
       is
          use Ada.Exceptions, Asis.Exceptions, Ada.Characters.Handling;
          use Asis.Implementation;
+         use Framework.Rules_Manager;
+         Phase : constant Wide_String := To_Title (Control_Phases'Wide_Image (Current_Phase));
       begin
          Failure_Occurred := True;
 
@@ -172,6 +173,7 @@ package body Framework.Language.Commands is
       end Handle_Exception;
 
       use Ada.Exceptions, Ada.Characters.Handling, Ada.Wide_Text_IO, Adactl_Options;
+      use Framework.Rules_Manager;
    begin  -- Go_Command
       if Action = Check or Rule_Error_Occurred then
          return;
@@ -179,16 +181,18 @@ package body Framework.Language.Commands is
 
       Go_Count := Go_Count + 1;
       begin
+         Framework.Rules_Manager.Current_Phase := Preparation;
          Framework.Rules_Manager.Prepare_All;
       exception
          when Utilities.User_Error =>
             -- Call to Parameter_Error while preparing => propagate silently
             raise;
          when Occur : others =>
-            Handle_Exception ("Preparation", Occur);
+            Handle_Exception (Occur);
             return;
       end;
 
+      Framework.Rules_Manager.Current_Phase := Processing;
       Units_List.Reset;
       Framework.Reports.Reset;
 
@@ -206,19 +210,20 @@ package body Framework.Language.Commands is
                User_Message ("Execution cancelled due to " & To_Wide_String (Exception_Message (Occur)));
                exit;
             when Occur : others =>
-               Handle_Exception ("Processing", Occur, Units_List.Current_Unit);
+               Handle_Exception (Occur, Units_List.Current_Unit);
          end;
 
          Units_List.Skip;
       end loop;
 
       begin
+         Framework.Rules_Manager.Current_Phase := Finalize;
          -- If run has been cancelled, messages from finalization will be ignored by Report
          Framework.Rules_Manager.Finalize_All;
       exception
          -- There should be no call to Parameter_Error here...
          when Occur : others =>
-            Handle_Exception ("Finalize", Occur);
+            Handle_Exception (Occur);
             return;
       end;
 
@@ -232,6 +237,7 @@ package body Framework.Language.Commands is
       end if;
 
       Framework.Scope_Manager.Reset (Deactivate => True);
+      Framework.Rules_Manager.Current_Phase := Not_Started;
    end Go_Command;
 
    ------------------
