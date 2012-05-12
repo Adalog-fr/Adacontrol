@@ -331,14 +331,15 @@ package body Rules.Style.Keyword is
             Last := I-1;
             exit;
          end if;
+
          case State is
             when Search_Begin =>
-               if Previous_Is_Tick or not Is_Character (Line (I)) then
+               if Previous_Is_Tick and Is_In (Line (I), Identifier_Set) then
                   -- Assume it is the beginning of an identifier, cannot be a keyword
                   State := Skipping;
                elsif Line (I) = '"' then
                   -- beware of '"'
-                  if I /= Line'First and then Line (I-1) /= ''' then
+                  if I /= Line'First and then Line (I - 1) /= ''' then
                      State := In_Quotes;
                   end if;
                elsif Line (I) in '0' .. '9' then
