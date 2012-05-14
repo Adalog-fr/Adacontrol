@@ -23,6 +23,9 @@ PFNI:
 
 Changes to existing rules:
 --------------------------
+Abnormal_Function_Return:
+   no error when a branch is terminated by a call to a "No_Return" procedure.
+
 Allocators:
    Generalized to all type categories, added "not" and "anonymous" modifier.
    Allowed multiple specification of same entity with different modifiers
