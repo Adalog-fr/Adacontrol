@@ -29,5 +29,16 @@
 ----------------------------------------------------------------------
 
 package Framework.Interrupt is
-   procedure Activate;
+   Interrupted : exception;
+
+   protected IT is
+      procedure Activate;
+      entry Received;
+   private
+      procedure Handler;
+      pragma Interrupt_Handler (Handler);
+
+      Signaled : Boolean := False;
+   end IT;
+
 end Framework.Interrupt;

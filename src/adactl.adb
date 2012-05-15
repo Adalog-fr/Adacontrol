@@ -78,7 +78,7 @@ begin
 
    Analyse_Options;
    if Debug_Option then
-      Framework.Interrupt.Activate;
+      Framework.Interrupt.IT.Activate;
    end if;
 
    if Action not in No_Asis_Actions then
@@ -171,6 +171,8 @@ begin
    end if;
 
 exception
+   -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
+   -- Therefore, we reraise the exception (to get stack trace) only with -x option
    when Occur : Options_Error | Units_List.Specification_Error =>
       User_Message ("Parameter or option error: " & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       User_Message ("try -h for help");
@@ -186,8 +188,6 @@ exception
             Stack_Traceback (Occur);
             Ada.Command_Line.Set_Exit_Status (Failure);
             if Exit_Option then
-               -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
-               -- Therefore, we reraise the exception (to get stack trace) only with -x option
                raise;
             end if;
       end case;
@@ -207,8 +207,13 @@ exception
       Stack_Traceback (Occur);
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option then
-         -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
-         -- Therefore, we reraise the exception (to get stack trace) only with -x option
+         raise;
+      end if;
+
+   when Framework.Interrupt.Interrupted =>
+      User_Message ("Interrupted");
+      Ada.Command_Line.Set_Exit_Status (Failure);
+      if Exit_Option then
          raise;
       end if;
 
@@ -218,8 +223,6 @@ exception
       Stack_Traceback (Occur);
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option then
-         -- Unfortunately, GNAT sets the exit status to 1 when terminating on unhandled exception
-         -- Therefore, we reraise the exception (to get stack trace) only with -x option
          raise;
       end if;
 end Adactl;

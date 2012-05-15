@@ -51,6 +51,7 @@ with
   Adactl_Version,
   Adactl_Options,
   Framework.Control_Manager,
+  Framework.Interrupt,
   Framework.Language.Scanner,
   Framework.Reports,
   Framework.Ruler,
@@ -108,11 +109,10 @@ package body Framework.Language.Commands is
    Go_Count : Natural := 0;
 
    procedure Go_Command is
+      use Ada.Exceptions;
 
-      procedure Handle_Exception (Occur     : Ada.Exceptions.Exception_Occurrence;
-                                  Unit_Name : Wide_String := "")
-      is
-         use Ada.Exceptions, Asis.Exceptions, Ada.Characters.Handling;
+      procedure Handle_Exception (Occur : Ada.Exceptions.Exception_Occurrence := Null_Occurrence) is
+         use Asis.Exceptions, Ada.Characters.Handling;
          use Asis.Implementation;
          use Framework.Rules_Manager;
          Phase : constant Wide_String := To_Title (Control_Phases'Wide_Image (Current_Phase));
@@ -137,19 +137,27 @@ package body Framework.Language.Commands is
          User_Message ("AdaCtl version: " & Adactl_Version
                        & " with " & ASIS_Implementor_Version);
          Reraise_Occurrence (Occur);
+
+         -- If we are here, Occur = Null_Occurrence
+         User_Message ("   In rule: " & Framework.Rules_Manager.Last_Rule);
+         if Framework.Rules_Manager.Current_Phase = Processing then
+            User_Message ("   For unit: " & Units_List.Current_Unit);
+         end if;
+
+
       exception
          when Local_Occur : ASIS_Failed
-           | ASIS_Inappropriate_Context
-           | ASIS_Inappropriate_Container
-           | ASIS_Inappropriate_Compilation_Unit
-           | ASIS_Inappropriate_Element
-           | ASIS_Inappropriate_Line
-           | ASIS_Inappropriate_Line_Number
-           =>
+            | ASIS_Inappropriate_Context
+            | ASIS_Inappropriate_Container
+            | ASIS_Inappropriate_Compilation_Unit
+            | ASIS_Inappropriate_Element
+            | ASIS_Inappropriate_Line
+            | ASIS_Inappropriate_Line_Number
+            =>
             User_Message ("ASIS error: " & To_Wide_String (Exception_Name (Local_Occur)));
-            User_Message ("In rule  : " & Framework.Rules_Manager.Last_Rule);
-            if Unit_Name /= "" then
-               User_Message ("For unit : " & Unit_Name);
+            User_Message ("   In rule: " & Framework.Rules_Manager.Last_Rule);
+            if Framework.Rules_Manager.Current_Phase = Processing then
+               User_Message ("  For unit: " & Units_List.Current_Unit);
             end if;
             Asis_Exception_Messages;
 
@@ -161,8 +169,8 @@ package body Framework.Language.Commands is
          when Local_Occur : others =>
             User_Message ("Internal error: " & To_Wide_String (Exception_Name (Local_Occur)));
             User_Message ("       In rule: " & Framework.Rules_Manager.Last_Rule);
-            if Unit_Name /= "" then
-               User_Message ("      For unit: " & Unit_Name);
+            if Framework.Rules_Manager.Current_Phase = Processing then
+               User_Message ("      For unit: " & Units_List.Current_Unit);
             end if;
             User_Message ("       Message: " & To_Wide_String (Exception_Message (Local_Occur)));
 
@@ -172,61 +180,71 @@ package body Framework.Language.Commands is
             end if;
       end Handle_Exception;
 
-      use Ada.Exceptions, Ada.Characters.Handling, Ada.Wide_Text_IO, Adactl_Options;
+      use Ada.Characters.Handling, Ada.Wide_Text_IO, Adactl_Options;
       use Framework.Rules_Manager;
    begin  -- Go_Command
       if Action = Check or Rule_Error_Occurred then
          return;
       end if;
 
-      Go_Count := Go_Count + 1;
-      begin
-         Framework.Rules_Manager.Current_Phase := Preparation;
-         Framework.Rules_Manager.Prepare_All;
-      exception
-         when Utilities.User_Error =>
-            -- Call to Parameter_Error while preparing => propagate silently
-            raise;
-         when Occur : others =>
-            Handle_Exception (Occur);
-            return;
-      end;
+      -- The whole actual processing is included in the abortable part of a
+      -- "select then abort" to handle ^C
+      select
+         Framework.Interrupt.IT.Received;
+         Handle_Exception;
+         if Adactl_Options.Exit_Option then
+            raise Framework.Interrupt.Interrupted;
+         end if;
 
-      Framework.Rules_Manager.Current_Phase := Processing;
-      Units_List.Reset;
-      Framework.Reports.Reset;
-
-      for I in Natural range 1 .. Units_List.Length loop
+      then abort
+         Go_Count := Go_Count + 1;
          begin
-            Ruler.Process(Unit_Name  => Units_List.Current_Unit,
-                          Unit_Pos   => I,
-                          Spec_Only  => Adactl_Options.Spec_Option,
-                          Go_Count   => Go_Count);
+            Framework.Rules_Manager.Current_Phase := Preparation;
+            Framework.Rules_Manager.Prepare_All;
          exception
             when Utilities.User_Error =>
-               -- Call to Parameter_Error while traversing => propagate silently
+               -- Call to Parameter_Error while preparing => propagate silently
                raise;
-            when Occur : Framework.Reports.Cancellation =>
-               User_Message ("Execution cancelled due to " & To_Wide_String (Exception_Message (Occur)));
-               exit;
             when Occur : others =>
-               Handle_Exception (Occur, Units_List.Current_Unit);
+               Handle_Exception (Occur);
+               return;
          end;
 
-         Units_List.Skip;
-      end loop;
+         Units_List.Reset;
+         Framework.Reports.Reset;
+         Framework.Rules_Manager.Current_Phase := Processing;
 
-      begin
-         Framework.Rules_Manager.Current_Phase := Finalize;
-         -- If run has been cancelled, messages from finalization will be ignored by Report
-         Framework.Rules_Manager.Finalize_All;
-      exception
-         -- There should be no call to Parameter_Error here...
-         when Occur : others =>
-            Handle_Exception (Occur);
-            return;
-      end;
+         for I in Natural range 1 .. Units_List.Length loop
+            begin
+               Ruler.Process (Unit_Name  => Units_List.Current_Unit,
+                              Unit_Pos   => I,
+                              Spec_Only  => Adactl_Options.Spec_Option,
+                              Go_Count   => Go_Count);
+            exception
+               when Utilities.User_Error =>
+                  -- Call to Parameter_Error while traversing => propagate silently
+                  raise;
+               when Occur : Framework.Reports.Cancellation =>
+                  User_Message ("Execution cancelled due to " & To_Wide_String (Exception_Message (Occur)));
+                  exit;
+               when Occur : others =>
+                  Handle_Exception (Occur);
+            end;
 
+            Units_List.Skip;
+         end loop;
+
+         begin
+            Framework.Rules_Manager.Current_Phase := Finalize;
+            -- If run has been cancelled, messages from finalization will be ignored by Report
+            Framework.Rules_Manager.Finalize_All;
+         exception
+               -- There should be no call to Parameter_Error here...
+            when Occur : others =>
+               Handle_Exception (Occur);
+               return;
+         end;
+      end select;
       Framework.Reports.Report_Counts;
 
       Framework.Reports.Report_Stats;

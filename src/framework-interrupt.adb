@@ -47,55 +47,24 @@ with
 
 package body Framework.Interrupt is
    use Ada.Task_Identification;
-
-   -- It's the main task that elaborates this package:
-   Main_Task : constant Task_Id := Current_Task;
-
-   -- This procedure is called from the interrupt handler for Ctrl-C, which is evil
-   -- since it is furiously potentially blocking.
-   -- Oh well, we are not running on a bare board, so it works, and this is just
-   -- for debugging purposes...
-   -- BTW, we make it a separate procedure to avoid complaints from Gnat (about being
-   -- potentially blocking) .
-   procedure Report_State is
-      use ASIS.Implementation;
-      use Framework.Rules_Manager, Utilities;
-      Unit_Name : constant Wide_String := Units_List.Current_Unit;
-   begin
-      User_Message ("=== Interrupt");
-      User_Message ("============= Phase: "
-                    & To_Title (Control_Phases'Wide_Image (Current_Phase))
-                    & " =============");
-      User_Message ("AdaCtl version: " & Adactl_Version
-                    & " with " & ASIS_Implementor_Version);
-      User_Message ("   In rule: " & Last_Rule);
-      if Unit_Name /= "" then
-         User_Message ("   For unit: " & Unit_Name);
-      end if;
-      Abort_Task (Main_Task);
-   end Report_State;
-
-   protected IT is
-      procedure Handler;
-      pragma Interrupt_Handler (Handler);
-   end IT;
+   pragma Unreserve_All_Interrupts;
 
    protected body IT is
+      procedure Activate is
+         use Ada.Interrupts, Ada.Interrupts.Names;
+      begin
+         Attach_Handler (IT.Handler'Access, SIGINT);
+      end Activate;
+
+      entry Received when Signaled is
+      begin
+         Signaled := False;
+      end Received;
+
       procedure Handler is
       begin
-         Report_State;
+         Signaled := True;
       end Handler;
    end IT;
-
-   --------------
-   -- Activate --
-   --------------
-
-   procedure Activate is
-      use Ada.Interrupts, Ada.Interrupts.Names;
-   begin
-      Attach_Handler (IT.Handler'Access, SIGINT);
-      Attach_Handler (IT.Handler'Access, SIGTERM);
-   end Activate;
 
 end Framework.Interrupt;
