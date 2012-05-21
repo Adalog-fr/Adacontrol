@@ -198,14 +198,17 @@ package body Framework.Queries is
       use Element_Map, Utilities;
    begin
       if Element_Kind (Element) = A_Defining_Name then
-         if Defining_Name_Kind (Element) = A_Defining_Character_Literal then
-            -- Skip names of characters from Standard
-            Control := Abandon_Siblings;
-            return;
-         end if;
          Add (Symbol_Map,
               To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Element))),
               Enclosing_Element (Element));
+         declare
+            Name : constant Wide_String := Defining_Name_Image (Element);
+         begin
+            if Name'Length >= 9 and then To_Upper (Name) (Name'Last - 8 .. Name'Last) = "CHARACTER" then
+               -- Don't traverse all the character litterals, skip the type definition
+               Control := Abandon_Siblings;
+            end if;
+         end;
       end if;
    end Pre_Procedure;
 
