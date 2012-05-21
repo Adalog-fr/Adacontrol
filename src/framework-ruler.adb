@@ -67,6 +67,11 @@ pragma Elaborate_All (Asis.Iterator);
 
 package body Framework.Ruler is
 
+   -- This package is the main engine that drives the traversal of the unit.
+   -- There are a number of delicate issues that are dealt with here, in order
+   -- to save the burden to the rules.
+   -- Make sure you understand the issues before making changes!
+
    Stub_Nesting : Natural := 0;
    --  Depth of stubs traversal of proper bodies
    --  (proper bodies are traversed at the place of the corresponding stub)
@@ -79,6 +84,7 @@ package body Framework.Ruler is
    -- Used to trace whether we are in a pragma or attribute (see procedure True_Identifer);
    -- We need a counter rather than a boolean, because attributes may have multiple levels
    -- (i.e. T'Base'First)
+
 
    -----------------
    -- Enter_Unit --
@@ -97,6 +103,7 @@ package body Framework.Ruler is
                           & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
          raise;
    end Enter_Unit;
+
 
    -----------------
    -- Exit_Unit --
@@ -129,6 +136,7 @@ package body Framework.Ruler is
       Framework.Scope_Manager. Exit_Context_Clauses;
    end Exit_Context_Clauses;
 
+
    -----------------
    -- Enter_Scope --
    -----------------
@@ -139,6 +147,7 @@ package body Framework.Ruler is
       Framework.Plugs.         Enter_Scope (Element);
       Framework.Specific_Plugs.Enter_Scope (Element);
    end Enter_Scope;
+
 
    ----------------
    -- Exit_Scope --
@@ -159,6 +168,7 @@ package body Framework.Ruler is
    procedure True_Identifier (Element : in Asis.Expression; State : in Info) is
    begin
       if State.Pragma_Or_Attribute_Level /= 0 then
+         -- Not a true identifier!
          return;
       end if;
       Framework.Plugs.         True_Identifier (Element);
@@ -228,6 +238,119 @@ package body Framework.Ruler is
 
       Exit_Unit (Unit);
    end Semantic_Traverse;
+
+   ---------------------
+   -- Traverse_Pragma --
+   ---------------------
+
+   -- This is used to traverse manually pragma arguments, because we have to decide on a
+   -- case-by-case basis whether the arguments are expressions (that should be traversed)
+   -- or not (special names that should not be considered identifiers)
+   -- This replaces the normal (recursive) traversal, any code that calls this procedure must set
+   -- Control to Abandon_Children
+   procedure Traverse_Pragma (Element : Asis.Element;
+                              Control : in out Asis.Traverse_Control;
+                              State   : in out Info)
+   is
+      use Asis, Asis.Elements;
+      use Utilities;
+
+      Associations : constant Asis.Association_List := Pragma_Argument_Associations (Element);
+      Level_Delta  : Natural range 0..1;
+   begin
+      case Pragma_Kind (Element) is
+         when A_Detect_Blocking_Pragma
+            | A_Normalize_Scalars_Pragma
+            | A_Page_Pragma
+            | A_Reviewable_Pragma
+            =>
+            -- No parameters
+            return;
+         when An_All_Calls_Remote_Pragma
+            | An_Asynchronous_Pragma
+            | An_Atomic_Pragma
+            | An_Atomic_Components_Pragma
+            | An_Attach_Handler_Pragma
+            | A_Controlled_Pragma
+            | An_Elaborate_Pragma
+            | An_Elaborate_All_Pragma
+            | An_Elaborate_Body_Pragma
+            | An_Inspection_Point_Pragma
+            | An_Interrupt_Handler_Pragma
+            | An_Interrupt_Priority_Pragma
+            | A_Linker_Options_Pragma
+            | A_No_Return_Pragma
+            | A_Pack_Pragma
+            | A_Preelaborable_Initialization_Pragma
+            | A_Preelaborate_Pragma
+            | A_Priority_Pragma
+            | A_Pure_Pragma
+            | A_Relative_Deadline_Pragma
+            | A_Remote_Call_Interface_Pragma
+            | A_Remote_Types_Pragma
+            | A_Shared_Passive_Pragma
+            | A_Storage_Size_Pragma
+            | An_Unchecked_Union_Pragma
+            | A_Volatile_Pragma
+            | A_Volatile_Components_Pragma
+            =>
+            -- All parameters are true expressions (or names), no named notation
+            -- => It is safe to traverse normally
+            Level_Delta := 0;
+         when An_Assert_Pragma
+            | A_Discard_Names_Pragma
+            | An_Export_Pragma
+            | An_Import_Pragma
+            | An_Inline_Pragma
+            | A_Priority_Specific_Dispatching_Pragma
+            =>
+            -- Named parameters allowed, or name may designate several entities. TBSL.
+            Level_Delta := 1;
+         when An_Assertion_Policy_Pragma
+            | A_Convention_Pragma
+            | A_List_Pragma
+            | A_Locking_Policy_Pragma
+            | An_Optimize_Pragma
+            | A_Partition_Elaboration_Policy_Pragma
+            | A_Profile_Pragma
+            | A_Queuing_Policy_Pragma
+            | A_Restrictions_Pragma
+            | A_Suppress_Pragma
+            | A_Task_Dispatching_Policy_Pragma
+            | An_Unsuppress_Pragma
+            =>
+            -- Some parameters are special names
+            Level_Delta := 1;
+         when An_Implementation_Defined_Pragma
+            | An_Unknown_Pragma
+            =>
+            -- Who knows?
+            Level_Delta := 1;
+         when Not_A_Pragma =>
+            Failure ("Not_A_Pragma in Traverse_Pragma");
+      end case;
+
+      State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + Level_Delta;
+      for A in Associations'Range loop
+         Semantic_Traverse_Elements (Associations (A), Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - Level_Delta;
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-2");
+            when Abandon_Siblings =>
+               Control := Continue;
+               State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - Level_Delta;
+               return;
+         end case;
+      end loop;
+      State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - Level_Delta;
+
+   end Traverse_Pragma;
+
 
    ---------------------------
    -- Traverse_With_Private --
@@ -700,7 +823,9 @@ package body Framework.Ruler is
                   State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
                   Semantic_Traverse_Elements (Attribute_Designator_Identifier (Element), Control, State);
                   State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
-                  Control := Abandon_Children;
+                  if Control /= Terminate_Immediately then
+                     Control := Abandon_Children;
+                  end if;
 
                when An_Identifier
                  | An_Operator_Symbol
@@ -717,11 +842,14 @@ package body Framework.Ruler is
             end case;
 
          when A_Pragma =>
-            -- Cancel other identifier processing
-            State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
-
             Framework.Plugs.         Pre_Procedure (Element);
             Framework.Specific_Plugs.Pre_Procedure (Element);
+
+            -- Traverse manually pragma arguments
+            Traverse_Pragma (Element, Control, State);
+            if Control /= Terminate_Immediately then
+               Control := Abandon_Children;
+            end if;
 
          when others =>
             Framework.Plugs.         Pre_Procedure (Element);
@@ -747,7 +875,7 @@ package body Framework.Ruler is
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
                              State   : in out Info) is
-      pragma Unreferenced (Control);
+      pragma Unreferenced (Control, State);
       use Asis, Asis.Declarations, Asis.Elements;
       use Ada.Strings.Wide_Fixed, Rules_Manager, Utilities;
    begin
@@ -855,13 +983,6 @@ package body Framework.Ruler is
                  Framework.Plugs.         Post_Procedure (Element);
                  Framework.Specific_Plugs.Post_Procedure (Element);
             end case;
-
-         when A_Pragma =>
-            Framework.Plugs.         Post_Procedure (Element);
-            Framework.Specific_Plugs.Post_Procedure (Element);
-
-            -- Reset other identifier processing
-            State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
 
          when others =>
             Framework.Plugs.         Post_Procedure (Element);

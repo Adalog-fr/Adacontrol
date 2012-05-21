@@ -1,3 +1,4 @@
 tfw_inhibit_1.adb:1:10: Error: ENTITIES: use of element "Ada.Text_Io"
 tfw_inhibit_1.adb:2:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_inhibit_1.adb:2:27: Error: ENTITIES: use of element "Ada.Text_Io"
 tfw_inhibit_2.adb:2:1: Error: PRAGMAS: use of pragma "Elaborate_All"

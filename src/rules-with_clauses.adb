@@ -277,7 +277,7 @@ package body Rules.With_Clauses is
             -- Therefore, if the only use of Ada.Text_IO is for instantiating one of these packages, the rule
             -- will report that the "with Ada.Text_IO" is not necessary...
             --
-            -- This function filters the names of the special generix that appear to be
+            -- This function filters the names of the special generics that appear to be
             -- children of Ada.Text_IO, and reestablishes the truth.
             Magic : constant Wide_String := "ADA.TEXT_IO.";
 
