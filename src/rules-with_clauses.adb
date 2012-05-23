@@ -388,6 +388,28 @@ package body Rules.With_Clauses is
    end Process_Identifier;
 
 
+   ---------------------------
+   -- Process_Instantiation --
+   ---------------------------
+
+   procedure Process_Instantiation (Decl : in Asis.Declaration) is
+   -- A with clause may serve only to provide (implicit) actuals for formal subprograms
+   -- with a "<>" default. Since these subprograms do not appear in the text, they are
+   -- not traversed, hence the need to handle them here. They are recognized because they
+   -- are the only ones that are Is_Part_Of_Implicit (see ASIS standard).
+   -- Note that subprograms with regular defaults do not depend on visibility, and thus
+   -- need not be traversed, even when the default is used in the instantiation.
+      use Asis.Declarations, Asis.Elements, Asis.Expressions;
+      Actuals : constant Asis.Association_List := Generic_Actual_Part (Decl, Normalized => True);
+   begin
+      for A in Actuals'Range loop
+         if Is_Part_Of_Implicit (Actual_Parameter (Actuals (A))) then
+            Process_Identifier (Actual_Parameter (Actuals (A)));
+         end if;
+      end loop;
+   end Process_Instantiation;
+
+
    -----------------------
    -- Process_Unit_Exit --
    -----------------------

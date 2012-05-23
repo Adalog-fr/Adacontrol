@@ -370,6 +370,7 @@ package body Framework.Plugs is
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use.        Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
+                  Rules.With_Clauses.           Process_Instantiation         (Element);
 
                when A_Formal_Package_Declaration =>
                   Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
@@ -386,6 +387,7 @@ package body Framework.Plugs is
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use.        Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
+                  Rules.With_Clauses.           Process_Instantiation         (Element);
 
                when A_Function_Instantiation =>
                   Rules.Default_Parameter.           Process_Call_Or_Instantiation (Element);
@@ -398,6 +400,7 @@ package body Framework.Plugs is
                   Rules.Unnecessary_Use.             Process_Instantiation         (Element);
                   Rules.Unsafe_Unchecked_Conversion. Process_Instantiation         (Element);
                   Rules.Usage.                       Process_Instantiation         (Element);
+                  Rules.With_Clauses.                Process_Instantiation         (Element);
 
                when A_Procedure_Declaration
                   | A_Procedure_Body_Stub

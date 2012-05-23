@@ -1,7 +1,8 @@
-t_with_clauses.adb:2:6: Error: WITH_CLAUSES: With clause for Ada.Text_IO redundant with clause at t_with_clauses.adb:1:6
-t_with_clauses-sep.adb:3:27: Found: WITH_CLAUSES: With clause for Ada.Calendar inherited from t_with_clauses.adb:3:6
-t_with_clauses.adb:5:3: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1.Child1"
-t_with_clauses.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar" (used in separate unit(s))
+t_with_clauses-plain.adb:2:6: Error: WITH_CLAUSES: With clause for Ada.Text_IO redundant with clause at t_with_clauses-plain.adb:1:6
+t_with_clauses-plain-sep.adb:4:1: Found: WITH_CLAUSES: With clause for Ada.Calendar inherited from t_with_clauses-plain.adb:3:6
+t_with_clauses-plain.adb:5:3: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1.Child1"
+t_with_clauses-plain.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar" (used in separate unit(s))
+t_with_clauses-tgen.adb:2:6: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1"
 x_with_clauses_1.ads:4:6: Error: WITH_CLAUSES: With clause for Ada.Characters.Handling redundant with clause at x_with_clauses_1.ads:3:6
 x_with_clauses_1.ads:1:6: Error: WITH_CLAUSES: With clause for X_With_Clauses_2 can be moved to body
 x_with_clauses_1.adb:1:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Wide_Text_IO"

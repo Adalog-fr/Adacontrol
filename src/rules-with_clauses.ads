@@ -36,8 +36,9 @@ package Rules.With_Clauses is
 
    Rule_Id : constant Wide_String := "WITH_CLAUSES";
 
-   procedure Process_Identifier  (Element : in Asis.Expression);
-   procedure Process_With_Clause (Element : in Asis.Clause);
-   procedure Process_Unit_Exit   (Unit    : in Asis.Compilation_Unit);
+   procedure Process_Identifier    (Element : in Asis.Expression);
+   procedure Process_With_Clause   (Element : in Asis.Clause);
+   procedure Process_Instantiation (Decl    : in Asis.Declaration);
+   procedure Process_Unit_Exit     (Unit    : in Asis.Compilation_Unit);
 
 end Rules.With_Clauses;
