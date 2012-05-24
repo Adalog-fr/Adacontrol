@@ -77,9 +77,6 @@ begin
    Framework.Rules_Manager.Initialize;
 
    Analyse_Options;
-   if Debug_Option then
-      Framework.Interrupt.IT.Activate;
-   end if;
 
    if Action not in No_Asis_Actions then
       --

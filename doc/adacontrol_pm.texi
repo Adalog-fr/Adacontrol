@@ -996,6 +996,31 @@ procedures may be given an element (or an element list) whose basic
 characteritics are printed. If the @code{With_Source} parameter is
 @code{True}, the source correponding to the element is also printed.
 
+In the case where AdaControls enters an endless loop, the first thing
+to do is to determine the place where the loop is happening. To ease
+this, recompile AdaControl with the special version of package body
+@code{Framework.Interrupt} that handles Ctrl-C:
+@itemize @bullet
+@item
+Rename @code{framework-interrupt.adb} as @code{framework-interrupt-reg.adb}
+@item
+Rename @code{framework-interrupt-dbg.adb} as @code{framework-interrupt.adb}
+@item
+Recompile
+@end itemize
+
+Now, when you hit Ctrl-C while AdaControl is running with the ``-d''
+option, execution of the current ``go'' command is interrupted with a
+message telling which rule is active, and on which compilation
+unit. If the ``-x'' option is also given, the whole execution is
+stopped.
+
+Of course, when you are done, reestablish the normal body by doing the
+inverse manipulation. The reason we didn't put this body in the
+regular version is that it drags in the whole tasking run-time, with a
+measurable impact on efficiency (we measured 18% extra time for
+running AdaControl on the ACATS).
+
 In addition, a small stand-alone utility called @code{ptree} is
 provided. It prints the logical nesting of ASIS elements for a
 unit. The syntax of Ptree is:

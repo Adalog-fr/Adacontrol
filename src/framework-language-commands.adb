@@ -182,21 +182,8 @@ package body Framework.Language.Commands is
 
       use Ada.Characters.Handling, Ada.Wide_Text_IO, Adactl_Options;
       use Framework.Rules_Manager;
-   begin  -- Go_Command
-      if Action = Check or Rule_Error_Occurred then
-         return;
-      end if;
-
-      -- The whole actual processing is included in the abortable part of a
-      -- "select then abort" to handle ^C
-      select
-         Framework.Interrupt.IT.Received;
-         Handle_Exception;
-         if Adactl_Options.Exit_Option then
-            raise Framework.Interrupt.Interrupted;
-         end if;
-
-      then abort
+      procedure Do_It is
+      begin
          Go_Count := Go_Count + 1;
          begin
             Framework.Rules_Manager.Current_Phase := Preparation;
@@ -244,7 +231,25 @@ package body Framework.Language.Commands is
                Handle_Exception (Occur);
                return;
          end;
-      end select;
+      end Do_It;
+   begin  -- Go_Command
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
+      if Debug_Option then
+         begin
+            Framework.Interrupt.Run_Interruptable (Do_It'Access);
+         exception
+            when Framework.Interrupt.Interrupted =>
+               Handle_Exception;
+               if Adactl_Options.Exit_Option then
+                  raise;
+               end if;
+         end;
+      else
+         Do_It;
+      end if;
       Framework.Reports.Report_Counts;
 
       Framework.Reports.Report_Stats;
