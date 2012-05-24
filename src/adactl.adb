@@ -183,6 +183,7 @@ exception
          when others =>
             User_Message (Diagnosis);
             Stack_Traceback (Occur);
+            Execute ("help version;");
             Ada.Command_Line.Set_Exit_Status (Failure);
             if Exit_Option then
                raise;
@@ -202,6 +203,7 @@ exception
                     & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       User_Message (Diagnosis);
       Stack_Traceback (Occur);
+      Execute ("help version;");
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option then
          raise;
@@ -218,6 +220,7 @@ exception
       User_Message ("Unexpected exception at main level: "
                     & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       Stack_Traceback (Occur);
+      Execute ("help version;");
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option then
          raise;

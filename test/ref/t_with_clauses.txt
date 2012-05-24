@@ -1,5 +1,5 @@
 t_with_clauses-plain.adb:2:6: Error: WITH_CLAUSES: With clause for Ada.Text_IO redundant with clause at t_with_clauses-plain.adb:1:6
-t_with_clauses-plain-sep.adb:4:1: Found: WITH_CLAUSES: With clause for Ada.Calendar inherited from t_with_clauses-plain.adb:3:6
+t_with_clauses-plain-sep.adb:3:1: Found: WITH_CLAUSES: With clause for Ada.Calendar inherited from t_with_clauses-plain.adb:3:6
 t_with_clauses-plain.adb:5:3: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1.Child1"
 t_with_clauses-plain.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar" (used in separate unit(s))
 t_with_clauses-tgen.adb:2:6: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1"

@@ -27,6 +27,7 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
+pragma Ada_05;
 
 package Framework.Interrupt is
    Interrupted : exception;

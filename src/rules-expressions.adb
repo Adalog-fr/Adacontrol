@@ -52,16 +52,33 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   -- TBSL presentation
-   type Subrules is (E_And,                              E_And_Then,                E_Array_Aggregate,
-                     E_Array_Partial_Others,             E_Array_Non_Static_Range,  E_Array_Others,
-                     E_Array_Range,                      E_Complex_Parameter,
-                     E_Explicit_Dereference,             E_Fixed_Multiplying_Op,    E_Implicit_Dereference,
-                     E_Inconsistent_Attribute_Dimension, E_Inherited_Function_Call, E_Mixed_Operators,
-                     E_Or,                               E_Or_Else,                 E_Parameter_View_Conversion,
-                     E_Prefixed_Operator,                E_Real_Equality,           E_Record_Aggregate,
-                     E_Record_Partial_Others,            E_Record_Others,           E_Slice,
-                     E_Type_Conversion,                  E_Universal_Range,         E_Unqualified_Aggregate,
+   type Subrules is (E_And,                  E_And_Then,               E_Array_Aggregate,
+                     E_Array_Partial_Others, E_Array_Non_Static_Range, E_Array_Others,
+                     E_Array_Range,
+
+                     E_Complex_Parameter,
+
+                     E_Explicit_Dereference,
+
+                     E_Fixed_Multiplying_Op,
+
+                     E_Implicit_Dereference, E_Inconsistent_Attribute_Dimension, E_Inherited_Function_Call,
+
+                     E_Mixed_Operators,
+
+                     E_Or, E_Or_Else,
+
+                     E_Parameter_View_Conversion, E_Prefixed_Operator,
+
+                     E_Real_Equality, E_Record_Aggregate, E_Record_Partial_Others,
+                     E_Record_Others,
+
+                     E_Slice,
+
+                     E_Type_Conversion,
+
+                     E_Universal_Range, E_Unqualified_Aggregate,
+
                      E_Xor);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");

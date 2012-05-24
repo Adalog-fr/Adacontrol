@@ -109,12 +109,12 @@ package body Framework.Language.Commands is
    Go_Count : Natural := 0;
 
    procedure Go_Command is
-      use Ada.Exceptions;
+      use Ada.Exceptions, Ada.Wide_Text_IO;
+      use Adactl_Options, Framework.Rules_Manager;
 
       procedure Handle_Exception (Occur : Ada.Exceptions.Exception_Occurrence := Null_Occurrence) is
          use Asis.Exceptions, Ada.Characters.Handling;
          use Asis.Implementation;
-         use Framework.Rules_Manager;
          Phase : constant Wide_String := To_Title (Control_Phases'Wide_Image (Current_Phase));
       begin
          Failure_Occurred := True;
@@ -180,9 +180,8 @@ package body Framework.Language.Commands is
             end if;
       end Handle_Exception;
 
-      use Ada.Characters.Handling, Ada.Wide_Text_IO, Adactl_Options;
-      use Framework.Rules_Manager;
       procedure Do_It is
+         use Ada.Characters.Handling;
       begin
          Go_Count := Go_Count + 1;
          begin
