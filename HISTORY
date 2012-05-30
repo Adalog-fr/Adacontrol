@@ -39,6 +39,9 @@ Entities:
 Expressions: 
    added subrules array_range, array_non_static_range
 
+Style (Exposed_Literal)
+   treat negative numbers as if they were literals
+
 =============
 == V1.13r8 ==
 =============

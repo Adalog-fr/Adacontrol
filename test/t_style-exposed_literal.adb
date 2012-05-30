@@ -27,13 +27,15 @@ procedure Exposed_Literal is
    subtype Sub is T range 1 .. 5;                        -- OK
 
    V : Long_Long_Integer := +9_223_372_036_854_775_807;  -- OK
-  
+
   pragma JUNK ("ABCD");                                  -- OK
 begin
    I := 0;                                               -- OK
    I := 2;                                               -- Exposed_Literal (integer)
    F := 1.0;                                             -- OK
+   F := -1.0;                                            -- OK
    F := 2.0;                                             -- Exposed_Literal (real)
+   F := -2.0;                                            -- Exposed_Literal (real)
    S := "rosen";                                         -- OK
    if S = "" then                                        -- OK
       S := "12345";                                      -- Exposed_Literal (string)
@@ -45,8 +47,10 @@ begin
    I := I**2;                                            -- OK
    I := I**(2);                                          -- OK
    I := 2**I;                                            -- Exposed_Literal (integer)
-   V := +9_223_372_036_854_775_807;                      -- Exposed_Literal (integer)  
-   
+   V := +9_223_372_036_854_775_807;                      -- Exposed_Literal (integer)
+   V := -9_223_372_036_854_775_808;                      -- Exposed_Literal (integer)  (Mantis 0000030)
+   V := -1;                                              -- OK
+
    for I in 1 .. 10 loop                                 -- Exposed_Literal (integer)
       null;
    end loop;

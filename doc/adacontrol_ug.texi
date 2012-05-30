@@ -5494,7 +5494,7 @@ types whose designated type is class-wide.
 If you don't want any special rule for renamings (not even the one that
 applies to the renamed entity), specify:
 @example
-check (renaming, "");
+check naming_convention (renaming, "");
 @end example
 This imposes no constraint on renamings, but since it is specified
 explicitely, the implicit rule for the renamed entity won't apply.
@@ -7283,6 +7283,12 @@ style (exposed_literal, real, 0.0, 1.0);
 @subsection Tips
 Note that operators always follow the casing rule for keywords, even
 for calls that use the infix notation (i.e. in @code{"and"(A, B)}).
+
+For the ``Exposed_Literal'' subrule, negative values can be specified as
+being allowed; negative numbers are handled as if they were
+literals. This is what the casual user would expect, but to the
+language lawyer, ``-1'' is not a negative literal, it is a unary minus
+operator applied to the positive value ``1''.
 
 There are two kinds of calls where the rule does not complain about
 usage of positional association: infix operator calls (since requiring

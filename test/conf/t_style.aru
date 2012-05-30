@@ -23,8 +23,8 @@ Spans                  : check  style (multiple_elements, flexible clause, decla
 Exposed                : check  style (exposed_literal, string, "^$", "^r.*n$", pragma, constant, number);
 Exposed                : check  style (exposed_literal, integer, constant, number, var_init, type,
                                                                  repr_clause, index, exponent,
-                                                                 1, 0);
-Exposed                : check  style (exposed_literal, real, 1.0, 0.0);
+                                                                 1, 0, -1);
+Exposed                : check  style (exposed_literal, real, 1.0, 0.0, -1.0);
 Exposed                : check  style (exposed_literal, character);
 Compound               : check  style (compound_statement);
 order_regular          : check  style (parameter_order, in access, out, in_out, defaulted_in);

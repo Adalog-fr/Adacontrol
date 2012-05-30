@@ -1475,7 +1475,7 @@ package body Rules.Style is
          end Place;
 
          Enclosing : Asis.Element;
-
+         Negative  : Boolean;
       begin  -- Process_Exposed_Literal
 
          -- Note that if there is not check for the corresponding class of type,
@@ -1510,12 +1510,25 @@ package body Rules.Style is
                end if;
 
                -- Compare to allowed values
+
+               -- Check if negative: formally it's a unary minus applied to a positive literal, but the casual user
+               -- understands it as a negative value.
+               -- Is the Expression in an association in a function_call to a unary minus?
+               Enclosing := Enclosing_Element (Enclosing_Element (Expression));
+               Negative := Expression_Kind (Enclosing) = A_Function_Call
+                           and then Operator_Kind (Called_Simple_Name (Enclosing)) = A_Unary_Minus_Operator;
                declare
-                  I : constant Extended_Biggest_Int := Extended_Biggest_Int'Wide_Value (Value_Image (Expression));
+                  I : Extended_Biggest_Int;
+                  Value_Str : constant Wide_String := Value_Image (Expression);
                   -- As a special exception, we use Extended_Biggest_Int instead of Biggest_Int here, because
                   -- it cannot be non-static (it is a litteral), and the user may well spell-out the full value
                   -- of System.Max_Int
                begin
+                  if Negative then
+                     I := Extended_Biggest_Int'Wide_Value ("-" & Value_Str);
+                  else
+                     I := Extended_Biggest_Int'Wide_Value (Value_Str);
+                  end if;
                   for K in Permitted_Consts_Count range 1 .. Integer_Count loop
                      if Integer_Permitted_Values (K) = I then
                         -- OK just return
@@ -1528,7 +1541,7 @@ package body Rules.Style is
                        Corresponding_Context (St_Exposed_Literal, Image (Lit_Integer, Lower_Case)),
                        Get_Location (Expression),
                        "integer literal "
-                       & Trim_All (Element_Image (Expression))
+                       & Choose (Negative, "-", "") & Trim_All (Element_Image (Expression))
                        & " not in allowed construct");
 
             when A_Real_Literal =>
@@ -1541,9 +1554,19 @@ package body Rules.Style is
 
                -- Compare to allowed values with a delta possible
                -- due to rounding conversion problems
+
+               -- Check if negative (see above)
+               Enclosing := Enclosing_Element (Enclosing_Element (Expression));
+               Negative := Expression_Kind (Enclosing) = A_Function_Call
+                           and then Operator_Kind (Called_Simple_Name (Enclosing)) = A_Unary_Minus_Operator;
                declare
-                  F : constant Float := Float'Wide_Value (Value_Image (Expression));
+                  F : Float;
                begin
+                  if Negative then
+                     F := Float'Wide_Value ("-" & Value_Image (Expression));
+                  else
+                     F := Float'Wide_Value (Value_Image (Expression));
+                  end if;
                   for K in Permitted_Consts_Count range 1 .. Real_Count loop
                      if abs(Real_Permitted_Values (K)- F) < 2.0*Float'Model_Epsilon then
                         -- OK just return
@@ -1556,7 +1579,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Exposed_Literal, Image (Lit_Real, Lower_Case)),
                           Get_Location (Expression),
                           "real literal "
-                          & Trim_All (Element_Image (Expression))
+                          & Choose (Negative, "-", "") & Trim_All (Element_Image (Expression))
                           & " not in allowed construct");
                end;
 
