@@ -75,7 +75,7 @@ package body Rules.Multiple_Assignments is
    -- The parent of a LHS is the expression with one less selector (or indexing) than
    -- the current LHS. It is also considered a LHS.
    --
-   -- The processing of an LHS increments its parent's count of subcomponents (recursively,
+   -- The processing of a LHS increments its parent's count of subcomponents (recursively,
    -- of course) unless the parent is limited.
    --
    -- The first LHS (the one to the left of ":=") is marked as "full" assignment, others
@@ -98,7 +98,6 @@ package body Rules.Multiple_Assignments is
    Repeated_Context : Basic_Rule_Context;
 
    -- Data for subrule Groupable
-
    subtype Percentage is Natural range 0 .. 100;
    type Rule_Context is new Basic_Rule_Context with
       record
@@ -110,18 +109,20 @@ package body Rules.Multiple_Assignments is
    package Context_Queue is new Linear_Queue (Rule_Context);
    Groupable_Contexts : Context_Queue.Queue;
 
-   type LHS_Descriptor (Is_Full : Boolean := False) is
+   type Coverage_Kind is (Full, Component);
+   type LHS_Descriptor (Coverage : Coverage_Kind := Full) is
       record
          Loc : Location;
-         case Is_Full is
-            when True =>
+         case Coverage is
+            when Full =>
                null;
-            when False =>
+            when Component =>
                Total       : Thick_Queries.Extended_Biggest_Natural;
                Nb_Subcompo : Thick_Queries.Biggest_Natural;
          end case;
       end record;
    package LHS_Map is new Binary_Map (Unbounded_Wide_String, LHS_Descriptor);
+
 
    ----------
    -- Help --
@@ -139,6 +140,7 @@ package body Rules.Multiple_Assignments is
       User_Message ("Parameter(2..n): <criterion> <value>");
       Help_On_Modifiers (Header => "<criterion> :");
    end Help;
+
 
    -----------------
    -- Add_Control --
@@ -189,6 +191,7 @@ package body Rules.Multiple_Assignments is
       end case;
       Rule_Used := True;
    end Add_Control;
+
 
    -------------
    -- Command --
@@ -359,7 +362,6 @@ package body Rules.Multiple_Assignments is
          end loop;
       end Total_Fields;
 
-      type Coverage_Kind is (Full, Component);
       procedure Process_Assignment (LHS      : in Asis.Expression;
                                     Coverage : in Coverage_Kind;
                                     Key      : out Unbounded_Wide_String)
@@ -388,7 +390,7 @@ package body Rules.Multiple_Assignments is
                      exit;
                   end if;
 
-                  -- Not a record component
+                  -- Not a record component (Fully named variable from a package, f.e.)
                   Target := Selector (Target);
 
                when An_Indexed_Component =>
@@ -445,7 +447,7 @@ package body Rules.Multiple_Assignments is
             -- Variable already assigned
             Count := Fetch (LHS_Infos, Key);
             if Repeated_Used
-              and then (Coverage = Full or Count.Is_Full)
+              and then (Coverage = Full or Count.Coverage = Full)
             then
                Report (Rule_Id,
                        Repeated_Context,
@@ -457,9 +459,9 @@ package body Rules.Multiple_Assignments is
 
          case Coverage is
             when Full =>
-               Add (LHS_Infos, Key, (Is_Full => True, Loc => Get_Location (LHS)));
+               Add (LHS_Infos, Key, (Coverage => Full, Loc => Get_Location (LHS)));
             when Component =>
-               Add (LHS_Infos, Key, (Is_Full      => False,
+               Add (LHS_Infos, Key, (Coverage     => Component,
                                      Loc          => Get_Location (LHS),
                                      Total        => Total_Fields (LHS),
                                      Nb_Subcompo  => 0)); -- will be incremented by child
@@ -471,7 +473,7 @@ package body Rules.Multiple_Assignments is
 
          -- True field, not already seen: Increment parent count
          Count := Fetch (LHS_Infos, Parent_Key);
-         if Count.Is_Full then
+         if Count.Coverage = Full then
             if Repeated_Used then
                Report (Rule_Id,
                        Repeated_Context,
@@ -487,12 +489,12 @@ package body Rules.Multiple_Assignments is
 
       procedure Report_One (Key : Unbounded_Wide_String; Value : in out LHS_Descriptor) is
          use Context_Queue, Framework.Reports, Utilities;
-         Current : Cursor := First (Groupable_Contexts);
+         Current : Cursor;
          Context : Rule_Context;
          Reason  : Unbounded_Wide_String;
          Matched : Boolean;
       begin
-         if Value.Is_Full      --A global assignment
+         if Value.Coverage = Full   --A global assignment
            or else Value.Total = 0  --A null record
          then
             return;
@@ -505,6 +507,7 @@ package body Rules.Multiple_Assignments is
                      & Biggest_Int_Img (Value.Nb_Subcompo) & "/" & Biggest_Int_Img (Value.Total));
          end if;
 
+         Current := First (Groupable_Contexts);
          while Has_Element (Current) loop
             Matched := True;
             Reason  := Null_Unbounded_Wide_String;
