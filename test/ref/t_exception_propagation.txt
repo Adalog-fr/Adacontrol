@@ -1,28 +1,28 @@
 t_exception_propagation-x_declaration_parameter.adb:39:7: Error: declaration: declaration can propagate exceptions (declaration at level 3)
 t_exception_propagation-x_declaration_parameter.adb:40:7: Error: declaration: declaration can propagate exceptions (declaration at level 1)
-t_exception_propagation-x_declaration_parameter.adb:50:7: Error: declaration: declaration can propagate exceptions (declaration at level 3)
-t_exception_propagation-x_declaration_parameter.adb:51:7: Error: declaration: declaration can propagate exceptions (declaration at level 2)
-t_exception_propagation-x_declaration_parameter.adb:61:7: Error: declaration: declaration can propagate exceptions (declaration at level 3)
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Gen_Param: subprogram "Proc10" can propagate exceptions, used as call-back in instantiation at t_exception_propagation-x_declaration_parameter.adb:128:4
-t_exception_propagation-x_declaration_parameter.adb:96:4: Error: Gen_Param: generic "Gen1" can propagate exceptions, instance "Inst1" at t_exception_propagation-x_declaration_parameter.adb:100:4 used as call-back in instantiation at t_exception_propagation-x_declaration_parameter.adb:129:4
-t_exception_propagation-x_declaration_parameter.adb:131:4: Error: declaration: declaration can propagate exceptions (declaration at level 3)
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param10: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:135:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param11: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:141:4
-t_exception_propagation-x_declaration_parameter.adb:34:4: Error: Param11: subprogram "Proc11" can propagate exceptions (declaration at level 1), used as call-back at t_exception_propagation-x_declaration_parameter.adb:142:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param12: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:147:4
-t_exception_propagation-x_declaration_parameter.adb:34:4: Error: Param12: subprogram "Proc11" can propagate exceptions (declaration at level 1), used as call-back at t_exception_propagation-x_declaration_parameter.adb:148:4
-t_exception_propagation-x_declaration_parameter.adb:49:4: Error: Param12: subprogram "Proc12" can propagate exceptions (declaration at level 2), used as call-back at t_exception_propagation-x_declaration_parameter.adb:149:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param13: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:153:4
-t_exception_propagation-x_declaration_parameter.adb:34:4: Error: Param13: subprogram "Proc11" can propagate exceptions (declaration at level 3), used as call-back at t_exception_propagation-x_declaration_parameter.adb:154:4
-t_exception_propagation-x_declaration_parameter.adb:49:4: Error: Param13: subprogram "Proc12" can propagate exceptions (declaration at level 3), used as call-back at t_exception_propagation-x_declaration_parameter.adb:155:4
-t_exception_propagation-x_declaration_parameter.adb:60:4: Error: Param13: subprogram "Proc13" can propagate exceptions (declaration at level 3), used as call-back at t_exception_propagation-x_declaration_parameter.adb:156:4
-t_exception_propagation-x_declaration_parameter.adb:69:4: Error: Param10: subprogram "Proc2" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:158:4
-t_exception_propagation-x_declaration_parameter.adb:77:4: Error: Param10: subprogram "Proc3" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:159:4
-t_exception_propagation-x_declaration_parameter.adb:96:4: Error: Param10: generic "Gen1" can propagate exceptions, instance "Inst1" at t_exception_propagation-x_declaration_parameter.adb:100:4 used as call-back at t_exception_propagation-x_declaration_parameter.adb:160:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param4: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:162:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param4: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:163:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param2: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:165:4
-t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param3: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:167:4
+t_exception_propagation-x_declaration_parameter.adb:52:7: Error: declaration: declaration can propagate exceptions (declaration at level 3)
+t_exception_propagation-x_declaration_parameter.adb:53:7: Error: declaration: declaration can propagate exceptions (declaration at level 2)
+t_exception_propagation-x_declaration_parameter.adb:63:7: Error: declaration: declaration can propagate exceptions (declaration at level 3)
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Gen_Param: subprogram "Proc10" can propagate exceptions, used as call-back in instantiation at t_exception_propagation-x_declaration_parameter.adb:130:4
+t_exception_propagation-x_declaration_parameter.adb:98:4: Error: Gen_Param: generic "Gen1" can propagate exceptions, instance "Inst1" at t_exception_propagation-x_declaration_parameter.adb:102:4 used as call-back in instantiation at t_exception_propagation-x_declaration_parameter.adb:131:4
+t_exception_propagation-x_declaration_parameter.adb:133:4: Error: declaration: declaration can propagate exceptions (declaration at level 3)
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param10: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:137:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param11: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:143:4
+t_exception_propagation-x_declaration_parameter.adb:34:4: Error: Param11: subprogram "Proc11" can propagate exceptions (declaration at level 1), used as call-back at t_exception_propagation-x_declaration_parameter.adb:144:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param12: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:149:4
+t_exception_propagation-x_declaration_parameter.adb:34:4: Error: Param12: subprogram "Proc11" can propagate exceptions (declaration at level 1), used as call-back at t_exception_propagation-x_declaration_parameter.adb:150:4
+t_exception_propagation-x_declaration_parameter.adb:51:4: Error: Param12: subprogram "Proc12" can propagate exceptions (declaration at level 2), used as call-back at t_exception_propagation-x_declaration_parameter.adb:151:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param13: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:155:4
+t_exception_propagation-x_declaration_parameter.adb:34:4: Error: Param13: subprogram "Proc11" can propagate exceptions (declaration at level 3), used as call-back at t_exception_propagation-x_declaration_parameter.adb:156:4
+t_exception_propagation-x_declaration_parameter.adb:51:4: Error: Param13: subprogram "Proc12" can propagate exceptions (declaration at level 3), used as call-back at t_exception_propagation-x_declaration_parameter.adb:157:4
+t_exception_propagation-x_declaration_parameter.adb:62:4: Error: Param13: subprogram "Proc13" can propagate exceptions (declaration at level 3), used as call-back at t_exception_propagation-x_declaration_parameter.adb:158:4
+t_exception_propagation-x_declaration_parameter.adb:71:4: Error: Param10: subprogram "Proc2" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:160:4
+t_exception_propagation-x_declaration_parameter.adb:79:4: Error: Param10: subprogram "Proc3" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:161:4
+t_exception_propagation-x_declaration_parameter.adb:98:4: Error: Param10: generic "Gen1" can propagate exceptions, instance "Inst1" at t_exception_propagation-x_declaration_parameter.adb:102:4 used as call-back at t_exception_propagation-x_declaration_parameter.adb:162:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param4: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:164:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param4: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:165:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param2: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:167:4
+t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param3: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:169:4
 t_exception_propagation-x_interface.adb:7:4: Error: interf: subprogram "Proc_C1" can propagate exceptions, interfaced to C
 t_exception_propagation-x_interface.adb:11:4: Error: interf: subprogram "Proc_C2" can propagate exceptions, interfaced to C
 t_exception_propagation-x_interface.adb:21:4: Error: interf: subprogram "Proc_C3" can propagate exceptions, interfaced to C

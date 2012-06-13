@@ -4063,6 +4063,17 @@ check exception_propagation (parameter, Pack.Acc_Reg.CB);
 @end example
 All procedures registered by a call to @code{Pack.Ptr.@b{all}} will be considered.
 
+The declaration of a @b{for} loop parameter is not checked by this
+rule. In other words, the rule ``check exception_propagation (2,
+declaration)'' will not issue a message for:
+@example
+@b{for} I @b{in} Positive @b{range} 1 .. X @b{loop} ... 
+@end example
+although formally the @i{declaration} of I could raise
+Constraint_Error if X is negative. We consider that for the casual
+user, Constraint_Error appears to be raised by the @b{for} loop
+@i{statement}.
+
 @subsection Limitations
 An exception may be raised in a subprogram considered as not
 propagating by this rule, if an exception handler calls a subprogram

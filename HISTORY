@@ -36,6 +36,9 @@ Declarations:
 Entities:
    added location modifier
 
+Exception_Propagation
+   don't consider loop parameter specifications as declarations.
+
 Expressions: 
    added subrules array_range, array_non_static_range
 

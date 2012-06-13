@@ -358,6 +358,11 @@ package body Rules.Exception_Propagation is
                   Process_Aliasing_Expr (A4G_Bugs.Renamed_Entity (Element));
                   Control := Abandon_Children;
 
+               when A_Loop_Parameter_Specification =>
+                  -- Although technically a declaration, the casual user would consider this as part
+                  -- of a statement. Better not handle it as a declaration
+                  Control := Abandon_Children;
+
                when A_Procedure_Declaration
                   | A_Null_Procedure_Declaration
                   | A_Generic_Procedure_Declaration

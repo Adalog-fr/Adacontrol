@@ -39,7 +39,9 @@ procedure X_Declaration_Parameter is
       X  : Integer;                   -- declaration level 3
       Y  : Integer := X + 1;          -- declaration level 1
    begin
-      null;
+      for I in 1 .. X loop            -- OK, loop parameter specification
+         null;
+      end loop;
    exception
       when others =>
          null;
