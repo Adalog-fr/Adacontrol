@@ -717,7 +717,7 @@ package body Framework.Plugs is
       Rules.Header_Comments.  Process_Line (Line, Loc);
       Rules.Max_Blank_Lines.  Process_Line (Line, Loc);
       Rules.Max_Line_Length.  Process_Line (Line, Loc);
-      Rules.Comments. Process_Line (Line, Loc);
+      Rules.Comments.         Process_Line (Line, Loc);
       Rules.Style.            Process_Line (Line, Loc);
    end Text_Analysis;
 
