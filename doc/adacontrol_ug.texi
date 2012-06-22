@@ -2486,7 +2486,7 @@ corresponding type or category are not controlled (i.e. they are
 always allowed). If a control includes only ``not'' parameters, an
 implicit check for all allocators is assumed.
 
-If a parameter is preceded by the word ``anonymous, only allocators
+If a parameter is preceded by the word ``anonymous'', only allocators
 whose expected type is an anonymous access type are controlled.
 
 If a parameter is preceded by the word ``inconsistent'', only
@@ -4067,7 +4067,7 @@ The declaration of a @b{for} loop parameter is not checked by this
 rule. In other words, the rule ``check exception_propagation (2,
 declaration)'' will not issue a message for:
 @example
-@b{for} I @b{in} Positive @b{range} 1 .. X @b{loop} ... 
+@b{for} I @b{in} Positive @b{range} 1 .. X @b{loop} ...
 @end example
 although formally the @i{declaration} of I could raise
 Constraint_Error if X is negative. We consider that for the casual
@@ -5091,7 +5091,7 @@ various statements.
 @example
 <control_kind> max_size (<subrule>, <max allowed lines>);
 <subrule> ::= accept        | block        | case  | case_branch   |
-              if            | if_branch    |loop   | simple_block  |
+              if            | if_branch    | loop  | simple_block  |
               unnamed_block | unnamed_loop
 @end example
 @subsection Action
