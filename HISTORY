@@ -5,7 +5,8 @@
 General:
 --------
 Bug fixes:
-   Mantis:  0000019, 0000021,  0000022, 0000024, 0000025, 0000026, 0000027
+   Mantis:  0000019, 0000021, 0000022, 0000024, 0000025, 0000026, 0000027,
+            0000028, 0000030, 0000031
 
 Naming of entities:
    Added the syntax "all type'<attribute>"

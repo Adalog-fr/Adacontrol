@@ -110,6 +110,7 @@ procedure X_Declaration_Parameter is
    procedure Inst2 is new Gen2;
 
    generic
+      X : Integer := 1 + 2;            -- OK, MANTIS 0000031
    package Gen3 is
       procedure Make_Cb2 (CB : Acc_Proc);
    end Gen3;
@@ -131,6 +132,11 @@ procedure X_Declaration_Parameter is
    procedure Inst5 is new Gen4 (Inst1);
 
    Ptr : constant Acc_Registration_Proc := Make_CB_L0'Access;  -- declaration level 3
+
+   procedure Defaulted  (V : Integer := 1 + 2) is  -- OK MANTIS 0000031
+   begin
+      null;
+   end Defaulted;
 
 begin
    -- Level 0

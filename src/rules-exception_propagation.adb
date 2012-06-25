@@ -372,6 +372,9 @@ package body Rules.Exception_Propagation is
                   | A_Generic_Function_Declaration
                   | A_Function_Body_Declaration
 
+                  | A_Parameter_Specification
+                  | A_Formal_Declaration
+
                   | A_Generic_Package_Declaration
 
                   | A_Task_Type_Declaration
