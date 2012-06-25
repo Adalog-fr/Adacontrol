@@ -108,7 +108,7 @@ package body Framework.Language is
       end if;
 
       declare
-         Result : constant Wide_String := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+         Result : constant Wide_String := To_Upper (Image (Current_Token));
       begin
          if not Is_Rule_Name (Result) and then not (Allow_All and Result = "ALL") then
             Syntax_Error ("Not a rule name: " & Result, Current_Token.Position);
@@ -263,7 +263,7 @@ package body Framework.Language is
 
                         else
                            loop
-                              Command (Current_Token.Name_Text (1 .. Current_Token.Name_Length), Clear);
+                              Command (Image (Current_Token), Clear);
                               Next_Token;
                               exit when Current_Token.Kind /= Comma;
                               Next_Token;
@@ -297,8 +297,7 @@ package body Framework.Language is
                            -- syntax error. Therefore, we first accumulate names, then give all helps.
                            declare
                               use Ada.Strings, Ada.Strings.Wide_Fixed;
-                              Line  : constant Wide_String := Current_Token.Name_Text
-                                                                    (1 .. Current_Token.Name_Length);
+                              Line  : constant Wide_String := Image (Current_Token);
                               Start : Natural := Line'First;
                               Stop  : Natural;
                               Inx   : Rules_Count := 0;
@@ -347,7 +346,7 @@ package body Framework.Language is
                            Syntax_Error ("Message string expected", Current_Token.Position);
                         end if;
                         declare
-                           Mess : constant Wide_String := Current_Token.String_Text (1 .. Current_Token.String_Length);
+                           Mess : constant Wide_String := Image (Current_Token);
                            With_Pause : Boolean;
                         begin
                            Next_Token;
@@ -376,8 +375,7 @@ package body Framework.Language is
                            Syntax_Error ("Flag name expected", Current_Token.Position);
                         end if;
                         declare
-                           Option : constant Wide_String
-                             := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+                           Option : constant Wide_String := To_Upper (Image (Current_Token));
                            use Adactl_Options;
                         begin
                            if Option = "CHECK_KEY" then
@@ -545,7 +543,7 @@ package body Framework.Language is
                         end if;
 
                         declare
-                           Source : constant Wide_String := Current_Token.Name_Text (1 .. Current_Token.Name_Length);
+                           Source : constant Wide_String := Image (Current_Token);
                            Pos    : constant Location    := Current_Token.Position;
                         begin
                            Next_Token;
@@ -572,11 +570,11 @@ package body Framework.Language is
                         | Profile_Keys -- Profile keys allowed as labels
                           =>
                         -- Must be a label
-                        Process_Controls (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+                        Process_Controls (Image (Current_Token));
                   end case;
 
                when String_Value =>
-                  Process_Controls (Current_Token.String_Text (1 .. Current_Token.String_Length));
+                  Process_Controls (Image (Current_Token));
 
                when others =>
                   Syntax_Error ("Command or label expected", Current_Token.Position);
@@ -976,8 +974,7 @@ package body Framework.Language is
       if Current_Token.Kind = String_Value then
          -- Take it as an operator's name
          declare
-            Result : constant Wide_String
-              := '"' & To_Upper (Current_Token.String_Text (1 .. Current_Token.String_Length)) & '"';
+            Result : constant Wide_String := '"' & To_Upper (Image (Current_Token)) & '"';
          begin
             Next_Token;
             Next_Parameter;
@@ -995,7 +992,7 @@ package body Framework.Language is
       end if;
 
       declare
-         Result : constant Wide_String := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+         Result : constant Wide_String := To_Upper (Image (Current_Token));
       begin
          Next_Token;
          if Current_Token.Kind = Tick then
@@ -1023,7 +1020,7 @@ package body Framework.Language is
       end if;
 
       declare
-         Result : constant Wide_String := Current_Token.String_Text (1 .. Current_Token.String_Length);
+         Result : constant Wide_String := Image (Current_Token);
       begin
          Next_Token;
          Next_Parameter;
@@ -1050,7 +1047,7 @@ package body Framework.Language is
          case Current_Token.Kind is
             when Name =>
                declare
-                  Name : constant Wide_String := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+                  Name : constant Wide_String := To_Upper (Image (Current_Token));
                begin
                   Next_Token;
                   return Name;
@@ -1058,8 +1055,7 @@ package body Framework.Language is
             when String_Value =>
                -- Assume it is an operator
                declare
-                  Name : constant Wide_String
-                    := '"' & To_Upper (Current_Token.String_Text (1 .. Current_Token.String_Length)) & '"';
+                  Name : constant Wide_String := '"' & To_Upper (Image (Current_Token)) & '"';
                begin
                   Next_Token;
                   return Name;
@@ -1341,10 +1337,10 @@ package body Framework.Language is
    is
    begin
       if Current_Token.Kind = Name then
-         if To_Upper (Current_Token.Name_Text (1..Current_Token.Name_Length)) = True_KW then
+         if To_Upper (Image (Current_Token)) = True_KW then
             Next_Token;
             return True;
-         elsif To_Upper (Current_Token.Name_Text (1..Current_Token.Name_Length)) = False_KW then
+         elsif To_Upper (Image (Current_Token)) = False_KW then
             Next_Token;
             return False;
          end if;
@@ -1364,8 +1360,7 @@ package body Framework.Language is
          case Current_Token.Kind is
             when Name =>
                declare
-                  To_Compare : constant Wide_String
-                    := To_Upper (Prefix & Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+                  To_Compare : constant Wide_String := To_Upper (Prefix & Image (Current_Token));
                begin
                   for Idx in Modifiers loop
                      if Expected (Idx) and then To_Compare = Modifiers'Wide_Image (Idx) then
@@ -1532,15 +1527,13 @@ package body Framework.Language is
 
          if Current_Token.Kind = Name then
             declare
-               To_Compare : constant Wide_String := To_Upper (Prefix &
-                                                              Current_Token.Name_Text (1 .. Current_Token.Name_Length));
+               To_Compare : constant Wide_String := To_Upper (Prefix & Image (Current_Token));
             begin
                for Key in Flags loop
                   if To_Compare = Flags'Wide_Image (Key) then
                      if Allow_Any and then Key = Flags'First then
                         -- Oops, the user specified the special value
-                        Syntax_Error ("Not a valid parameter: "
-                                      & Current_Token.Name_Text (1 .. Current_Token.Name_Length),
+                        Syntax_Error ("Not a valid parameter: " & Image (Current_Token),
                                       Current_Token.Position);
                      end if;
 
@@ -1560,7 +1553,7 @@ package body Framework.Language is
 
          if Current_Token.Kind = Name then
             Syntax_Error ("Unknown keyword """
-                            & Current_Token.Name_Text (1 .. Current_Token.Name_Length)
+                            & Image (Current_Token)
                             & """, use option -h <rule name> for a list of allowable keywords",
                           Current_Token.Position);
          else

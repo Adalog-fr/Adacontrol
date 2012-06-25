@@ -93,7 +93,10 @@ private package Framework.Language.Scanner is
 
    function Current_Token return Token;
 
-   function Image (T : Token) return Wide_String;
+   function Image (T : Token; Quote_String : Boolean := False) return Wide_String;
+   -- If Quote_String is True, string tokens are returned as Ada quoted strings (surrounded by '"',
+   -- inner '"' doubled).
+   -- If false, the real value of the string is returned
 
    procedure Next_Token (Force_String : Boolean := False; No_Delay : Boolean := False);
    -- Advance to next token;

@@ -585,7 +585,7 @@ package body Framework.Language.Scanner is
    -- Image --
    -----------
 
-   function Image (T : Token) return Wide_String is
+   function Image (T : Token; Quote_String : Boolean := False) return Wide_String is
       use Thick_Queries;
       function Double_Quotes (S : Wide_String) return Wide_String is
       begin
@@ -614,7 +614,11 @@ package body Framework.Language.Scanner is
                end if;
             end;
          when String_Value =>
-            return '"' & Double_Quotes (T.String_Text (1 .. T.String_Length)) & '"';
+            if Quote_String then
+               return '"' & Double_Quotes (T.String_Text (1 .. T.String_Length)) & '"';
+            else
+               return T.String_Text (1 .. T.String_Length);
+            end if;
          when Bad_Integer | Bad_Float | Bad_Token =>
             return "#####";
          when Character_Token_Kind =>
