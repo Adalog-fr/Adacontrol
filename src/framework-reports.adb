@@ -89,7 +89,7 @@ package body Framework.Reports is
      new Framework.Variables.Register_Discrete_Variable (Natural,
                                                          Max_Messages,
                                                          Variable_Name => "MAX_MESSAGES");
-   function Decode_Level (Value : Wide_String) return Stats_Levels;
+   function Decode_Level (Level : Wide_String) return Stats_Levels;
    package Register_Stats_Level is
      new Framework.Variables.Register_Discrete_Variable (Stats_Levels,
                                                          Stats_Level,
@@ -149,9 +149,9 @@ package body Framework.Reports is
    -- Decode_Level --
    ------------------
 
-   function Decode_Level (Value : Wide_String) return Stats_Levels is
+   function Decode_Level (Level : Wide_String) return Stats_Levels is
    begin
-      return Stats_Levels'Val (Natural'Wide_Value (Value));
+      return Stats_Levels'Val (Natural'Wide_Value (Level));
    end Decode_Level;
 
    -----------

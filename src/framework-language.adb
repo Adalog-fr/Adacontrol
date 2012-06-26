@@ -55,10 +55,8 @@ with
 
 -- Adactl
 with
-  Adactl_Options,
   Framework.Language.Commands,
   Framework.Language.Scanner,
-  Framework.Reports,
   Framework.Rules_Manager,
   Framework.Variables;
 package body Framework.Language is
@@ -143,7 +141,7 @@ package body Framework.Language is
    -------------
 
    procedure Compile is
-      use Rules_Manager, Framework.Language.Commands, Framework.Reports, Ada.IO_Exceptions;
+      use Rules_Manager, Framework.Language.Commands, Ada.IO_Exceptions;
 
       procedure Process_Error (Occur : Ada.Exceptions.Exception_Occurrence) is
          use Ada.Exceptions, Ada.Characters.Handling;
@@ -365,7 +363,6 @@ package body Framework.Language is
 
                         declare
                            Option : constant Wide_String := To_Upper (Image (Current_Token));
-                           use Adactl_Options;
                         begin
                            -- Special options: file name, requires Next_Token (Force_String => True)
                            if Option = "OUTPUT" or Option = "NEW_OUTPUT" then

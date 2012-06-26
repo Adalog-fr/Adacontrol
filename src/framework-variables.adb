@@ -115,4 +115,14 @@ package body Framework.Variables is
          raise No_Such_Variable;
    end Set_Variable;
 
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+      use Writers_List;
+   begin
+      Balance (Writers_Map);
+   end Initialize;
+
 end Framework.Variables;

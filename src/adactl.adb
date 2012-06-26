@@ -56,7 +56,8 @@ with
   Framework.Interrupt,
   Framework.Language,
   Framework.Reports,
-  Framework.Rules_Manager;
+  Framework.Rules_Manager,
+  Framework.Variables;
 
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Calendar;
@@ -75,6 +76,7 @@ procedure Adactl is
 begin
    Thick_Queries.Set_Error_Procedure (Utilities.Failure'Access);
    Framework.Rules_Manager.Initialize;
+   Framework.Variables.Initialize;
 
    Analyse_Options;
 

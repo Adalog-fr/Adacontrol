@@ -71,7 +71,6 @@ package Framework.Reports is
    --
    --  Declarations below this line are for the use of the framework
    --
-   use Ada.Strings.Wide_Unbounded;
 
    -- These two procedures are for the rule Uncheckable
    procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Ctl_Kind : Control_Kinds; Label : Wide_String);

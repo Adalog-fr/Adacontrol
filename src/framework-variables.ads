@@ -79,6 +79,8 @@ package Framework.Variables is
    --  Declarations below this line are for the use of the framework
    --
 
+   procedure Initialize;
+
    procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Value : in Wide_String);
    No_Such_Variable : exception;
 
