@@ -885,7 +885,10 @@ package body Rules.Style is
             Check_Casing (Defining_Name_Image (Identifier), St_Casing_Keyword, Identifier);
          end if;
       else
-         if Rule_Used (St_Casing_Identifier) and then Expression_Kind (Identifier) = An_Identifier then
+         if Rule_Used (St_Casing_Identifier)
+           and then (        Expression_Kind (Identifier) = An_Identifier
+                     or else Expression_Kind (Identifier) = An_Enumeration_Literal)
+         then
             Check_Casing (A4G_Bugs.Name_Image (Identifier), St_Casing_Identifier, Identifier);
          elsif Rule_Used (St_Casing_Keyword) and then Expression_Kind (Identifier) = An_Operator_Symbol then
             -- This is an operator, must be the prefix of a function call

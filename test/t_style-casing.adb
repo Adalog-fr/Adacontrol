@@ -14,6 +14,9 @@ procedure Casing is
    end "AND";
    I : Integer;
 
+   type T is (Aa, Bb, Cc);
+   subtype ST is T range AA .. BB;               -- Casing_Identifier (Mantis 0000032)
+
 begin
    Int := 1;
    Ada.Text_IO.Put_Line (Integer'image (INT));  -- Casing_Identifier, Casing_Attribute
