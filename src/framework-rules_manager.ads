@@ -59,8 +59,6 @@ package Framework.Rules_Manager is
    --  Declarations below this line are for the use of the framework
    --
 
-   Timing_Option : Boolean := False;
-
    type Control_Phases is (Not_Started, Preparation, Processing, Finalize);
    Current_Phase : Control_Phases := Not_Started;
 

@@ -59,7 +59,8 @@ with
   Framework.Language.Commands,
   Framework.Language.Scanner,
   Framework.Reports,
-  Framework.Rules_Manager;
+  Framework.Rules_Manager,
+  Framework.Variables;
 package body Framework.Language is
    use Framework.Language.Scanner, Utilities;
 
@@ -215,19 +216,6 @@ package body Framework.Language is
          Last_Was_Go := False;
       end Process_Controls;
 
-      function State return Boolean is
-      begin
-         if Is_String (Current_Token, "ON") then
-            Next_Token;
-            return True;
-         elsif Is_String (Current_Token, "OFF") then
-            Next_Token;
-            return False;
-         else
-            Syntax_Error ("""on"" or ""off"" expected", Current_Token.Position);
-         end if;
-      end State;
-
    begin   -- Compile
       -- Set up initial token
       begin
@@ -372,75 +360,21 @@ package body Framework.Language is
                      when Key_Set =>
                         Next_Token;
                         if Current_Token.Kind /= Name then
-                           Syntax_Error ("Flag name expected", Current_Token.Position);
+                           Syntax_Error ("Variable name expected", Current_Token.Position);
                         end if;
+
                         declare
                            Option : constant Wide_String := To_Upper (Image (Current_Token));
                            use Adactl_Options;
                         begin
-                           if Option = "CHECK_KEY" then
-                              Next_Token;
-                              if Current_Token.Kind /= String_Value then
-                                 Syntax_Error ("String expected for message value",
-                                               Current_Token.Position);
-                              end if;
-                              Framework.Reports.Check_Message
-                                := To_Unbounded_Wide_String (Current_Token.String_Text
-                                                             (1 .. Current_Token.String_Length));
-                              Next_Token;
-                              Close_Command;
-
-                           elsif Option = "FORMAT" then
-                              Next_Token;
-                              if Current_Token.Kind /= Name then
-                                 Syntax_Error ("Format name expected", Current_Token.Position);
-                              end if;
-                              declare
-                                 Format : constant Wide_String
-                                   := To_Upper (Current_Token.Name_Text (1 .. Current_Token.Name_Length));
-                              begin
-                                 Next_Token;
-                                 Close_Command;
-
-                                 Set_Format_Command (Format);
-                              end;
-
-                           elsif Option = "MAX_ERRORS" then
-                              Next_Token;
-                              if Current_Token.Kind = Integer_Value then
-                                 if Current_Token.Value in 1 .. Thick_Queries.Biggest_Int (Natural'Last) then
-                                    Framework.Reports.Max_Errors := Natural (Current_Token.Value);
-                                    Next_Token;
-                                 else
-                                    Syntax_Error ("Incorrect value for Max_Errors", Current_Token.Position);
-                                 end if;
-                              else
-                                 Framework.Reports.Max_Errors := Natural'Last;
-                              end if;
-                              Close_Command;
-
-                           elsif Option = "MAX_MESSAGES" then
-                              Next_Token;
-                              if Current_Token.Kind = Integer_Value then
-                                 if Current_Token.Value in 1 .. Thick_Queries.Biggest_Int (Natural'Last) then
-                                    Framework.Reports.Max_Messages := Natural (Current_Token.Value);
-                                    Next_Token;
-                                 else
-                                    Syntax_Error ("Incorrect value for Max_Messages", Current_Token.Position);
-                                 end if;
-                              else
-                                 Framework.Reports.Max_Messages := Natural'Last;
-                              end if;
-                              Close_Command;
-
-                           elsif Option = "OUTPUT" or Option = "NEW_OUTPUT" then
+                           -- Special options: file name, requires Next_Token (Force_String => True)
+                           if Option = "OUTPUT" or Option = "NEW_OUTPUT" then
                               Next_Token (Force_String => True);
                               if Current_Token.Kind /= Name then
                                  Syntax_Error ("File name expected", Current_Token.Position);
                               end if;
                               declare
-                                 Output : constant Wide_String
-                                   := Current_Token.Name_Text (1 .. Current_Token.Name_Length);
+                                 Output : constant Wide_String := Image (Current_Token);
                               begin
                                  Next_Token;
                                  Close_Command;
@@ -448,64 +382,13 @@ package body Framework.Language is
                                  Set_Output_Command (Output, Force_Overwrite => Option = "NEW_OUTPUT");
                               end;
 
-                           elsif Option = "SEARCH_KEY" then
-                              Next_Token;
-                              if Current_Token.Kind /= String_Value then
-                                 Syntax_Error ("String expected for message value",
-                                               Current_Token.Position);
-                              end if;
-                              Framework.Reports.Search_Message
-                                := To_Unbounded_Wide_String (Current_Token.String_Text
-                                                             (1 .. Current_Token.String_Length));
-                              Next_Token;
-                              Close_Command;
-
-                           elsif Option = "STATISTICS" then
-                              Next_Token;
-                              if Current_Token.Kind /= Integer_Value
-                                or else Current_Token.Value not in 0 .. Stats_Levels'Pos (Stats_Levels'Last)
-                              then
-                                 Syntax_Error ("Statistics level expected (0 .. "
-                                               & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
-                                               & ')',
-                                               Current_Token.Position);
-                              end if;
-                              Stats_Level := Stats_Levels'Val (Current_Token.Value);
-                              Next_Token;
-                              Close_Command;
-
-                           elsif Option = "TAG1" then
-                              Next_Token;
-                              if Current_Token.Kind /= String_Value then
-                                 Syntax_Error ("String expected for tag value",
-                                               Current_Token.Position);
-                              end if;
-                              Framework.Reports.Adactl_Tag1
-                                := To_Unbounded_Wide_String (Current_Token.String_Text
-                                                             (1 .. Current_Token.String_Length));
-                              Next_Token;
-                              Close_Command;
-
-                           elsif Option = "TAG2" then
-                              Next_Token;
-                              if Current_Token.Kind /= String_Value then
-                                 Syntax_Error ("String expected for tag value",
-                                               Current_Token.Position);
-                              end if;
-                              Framework.Reports.Adactl_Tag2
-                                := To_Unbounded_Wide_String (Current_Token.String_Text
-                                                             (1 .. Current_Token.String_Length));
-                              Next_Token;
-                              Close_Command;
-
                            elsif Option = "TRACE" then
                               Next_Token (Force_String => True);
                               if Current_Token.Kind /= Name then
                                  Syntax_Error ("File name expected", Current_Token.Position);
                               end if;
                               declare
-                                 Trace : constant Wide_String
-                                   := Current_Token.Name_Text (1 .. Current_Token.Name_Length);
+                                 Trace : constant Wide_String := Image (Current_Token);
                               begin
                                  Next_Token;
                                  Close_Command;
@@ -513,25 +396,62 @@ package body Framework.Language is
                                  Set_Trace_Command (Trace);
                               end;
 
-                           else  -- on/off options
+                           else   -- Not file options, regular variables
                               Next_Token;
-                              if Option = "DEBUG" then
-                                 Debug_Option := State;
-                              elsif Option = "EXIT_ON_ERROR" then
-                                 Exit_Option := State;
-                              elsif Option = "IGNORE" then
-                                 Ignore_Option := State;
-                              elsif Option = "TIMING" then
-                                 Rules_Manager.Timing_Option := State;
-                              elsif Option = "VERBOSE" then
-                                 Verbose_Option := State;
-                              elsif Option = "WARNING" then
-                                 Skip_Warning_Option := not State;
-                              elsif Option = "WARNING_AS_ERROR" then
-                                 Warning_As_Error_Option := State;
+
+                              if Current_Token.Kind = Period then
+                                 -- Rule variable
+                                 Next_Token;
+                                 if Current_Token.Kind /= Name then
+                                    Syntax_Error ("Variable name expected", Current_Token.Position);
+                                 end if;
+                                 declare
+                                    use Framework.Variables;
+                                    Variable : constant Wide_String := Image (Current_Token);
+                                 begin
+                                    Next_Token;
+                                    if Current_Token.Kind in Value_Token_Kind then
+                                       Set_Variable (Rule_Id  => Option,
+                                                     Variable => Variable,
+                                                     Value    => Image (Current_Token));
+                                       Next_Token;
+                                    else  -- default
+                                       Set_Variable (Rule_Id  => Option,
+                                                     Variable => Variable,
+                                                     Value    => "");
+                                    end if;
+                                 exception
+                                    when No_Such_Variable =>
+                                       Syntax_Error ("Unknown variable " & Option & '.' & Variable,
+                                                     Current_Token.Position);
+                                    when Constraint_Error =>
+                                       Syntax_Error ("Illegal value for " & Option & '.' & Variable,
+                                                     Current_Token.Position);
+                                 end;
                               else
-                                 Syntax_Error ("Unrecognised parameter: """ & Option & '"', Current_Token.Position);
+                                 declare
+                                    use Framework.Variables;
+                                 begin
+                                    if Current_Token.Kind in Value_Token_Kind then
+                                       Set_Variable (Rule_Id  => "",
+                                                     Variable => Option,
+                                                     Value    => Image (Current_Token));
+                                       Next_Token;
+                                    else  -- default
+                                       Set_Variable (Rule_Id  => "",
+                                                     Variable => Option,
+                                                     Value    => "");
+                                    end if;
+                                 exception
+                                    when No_Such_Variable =>
+                                       Syntax_Error ("Unknown variable " & Option,
+                                                     Current_Token.Position);
+                                    when Constraint_Error =>
+                                       Syntax_Error ("Illegal value for " & Option,
+                                                     Current_Token.Position);
+                                 end;
                               end if;
+
                               Close_Command;
                            end if;
                         end;

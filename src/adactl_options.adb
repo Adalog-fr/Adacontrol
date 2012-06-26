@@ -53,7 +53,8 @@ with
 
 -- Adactl
 with
-  Framework.Reports;
+  Framework.Reports,
+  Framework.Variables;
 
 package body Adactl_Options is
 
@@ -67,6 +68,50 @@ package body Adactl_Options is
    Body_Found   : Boolean := False;
 
    Options_Commands : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
+   --
+   -- Register option variables
+   --
+   pragma Warnings (Off, "package * is not referenced");
+
+   package Register_Debug_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Utilities.Debug_Option,
+                                                         Variable_Name => "DEBUG",
+                                                         Decode        => On_Off_To_Boolean);
+   package Register_Exit_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Exit_Option,
+                                                         Variable_Name => "EXIT_ON_ERROR",
+                                                         Decode        => On_Off_To_Boolean);
+   package Register_Ignore_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Ignore_Option,
+                                                         Variable_Name => "IGNORE",
+                                                         Decode        => On_Off_To_Boolean);
+   package Register_Verbose_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Utilities.Verbose_Option,
+                                                         Variable_Name => "VERBOSE",
+                                                         Decode        => On_Off_To_Boolean);
+   pragma Warnings (On, "package * is not referenced");
+
+   -----------------------
+   -- On_Off_To_Boolean --
+   -----------------------
+
+   function On_Off_To_Boolean (Value : Wide_String) return Boolean is
+      use Utilities;
+      Upper_Value : constant Wide_String := To_Upper (Value);
+   begin
+      if Upper_Value = "ON" then
+         return True;
+      elsif Upper_Value = "OFF" then
+         return False;
+      else
+         raise Constraint_Error;
+      end if;
+   end On_Off_To_Boolean;
 
    ------------------
    -- Option_Error --

@@ -44,12 +44,76 @@ with
 
 -- Adactl
 with
+  Framework.Variables,
   Implementation_Options,
   Adactl_Options;
 
 package body Framework.Reports is
 
-   CSV_Separator : constant array (Output_Format range CSV..None) of Wide_Character := (',', ';',';');
+   --
+   -- User settable variables
+   --
+   Active_Warning_Option   : Boolean      := True;
+   Warning_As_Error_Option : Boolean      := False;
+   Max_Errors              : Natural      := Natural'Last;
+   Max_Messages            : Natural      := Natural'Last;
+   Stats_Level             : Stats_Levels := None;
+
+   Check_Message           : Unbounded_Wide_String := To_Unbounded_Wide_String ("Error");
+   Search_Message          : Unbounded_Wide_String := To_Unbounded_Wide_String ("Found");
+   Adactl_Tag1             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
+   Adactl_Tag2             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
+
+   pragma Warnings (Off, "package * is not referenced");
+
+   procedure Set_Format (Format : in Wide_String);   -- To set Format_Option (declared in spec)
+   package Register_Format_Option is
+     new Framework.Variables.Register_Special_Variable (Set_Format,
+                                                        Variable_Name => "FORMAT");
+
+   package Register_Active_Warning_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Active_Warning_Option,
+                                                         Variable_Name => "WARNING",
+                                                         Decode        => Adactl_Options.On_Off_To_Boolean);
+   package Register_Warning_As_Error_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Warning_As_Error_Option,
+                                                         Variable_Name => "WARNING_AS_ERROR",
+                                                         Decode        => Adactl_Options.On_Off_To_Boolean);
+   package Register_Max_Errors is
+     new Framework.Variables.Register_Discrete_Variable (Natural,
+                                                         Max_Errors,
+                                                         Variable_Name => "MAX_ERRORS");
+   package Register_Max_Messages is
+     new Framework.Variables.Register_Discrete_Variable (Natural,
+                                                         Max_Messages,
+                                                         Variable_Name => "MAX_MESSAGES");
+   function Decode_Level (Value : Wide_String) return Stats_Levels;
+   package Register_Stats_Level is
+     new Framework.Variables.Register_Discrete_Variable (Stats_Levels,
+                                                         Stats_Level,
+                                                         Variable_Name => "STATISTICS",
+                                                         Decode => Decode_Level);
+   package Register_Check_Message is
+     new Framework.Variables.Register_String_Variable (Check_Message,
+                                                       Variable_Name => "CHECK_KEY");
+   package Register_Search_Message is
+     new Framework.Variables.Register_String_Variable (Search_Message,
+                                                       Variable_Name => "SEARCH_KEY");
+   package Register_Tag1 is
+     new Framework.Variables.Register_String_Variable (Adactl_Tag1,
+                                                       Variable_Name => "TAG1");
+   package Register_Tag2 is
+     new Framework.Variables.Register_String_Variable (Adactl_Tag2,
+                                                       Variable_Name => "TAG2");
+
+   pragma Warnings (On, "package * is not referenced");
+
+   --
+   -- Local variables
+   --
+   CSV_Separator : constant array (Output_Format range CSV .. None) of Wide_Character := (',', ';', ';');
 
    Not_Found : constant := 0;
 
@@ -80,6 +144,15 @@ package body Framework.Reports is
    -- However, this does not guarantee that every rule is present in the map, because
    -- of Uncheckable, which does not follow the normal naming scheme of rules.
    -- Therefore, a default value must still be provided when fetching from those maps.
+
+   ------------------
+   -- Decode_Level --
+   ------------------
+
+   function Decode_Level (Value : Wide_String) return Stats_Levels is
+   begin
+      return Stats_Levels'Val (Natural'Wide_Value (Value));
+   end Decode_Level;
 
    -----------
    -- Reset --
@@ -220,6 +293,27 @@ package body Framework.Reports is
       -- deactivation)
       -- Active does not change
    end Update;
+
+   ----------------
+   -- Set_Format --
+   ----------------
+
+   procedure Set_Format (Format : Wide_String) is
+      use Utilities;
+      use Ada.Strings.Wide_Fixed;
+      Sep_Pos : Natural := Index (Format, "_");
+   begin
+      if Sep_Pos = 0 then
+         Sep_Pos            := Format'Last + 1;
+         Default_Short_Name := False;
+      elsif To_Upper (Format (Sep_Pos .. Format'Last)) = "_SHORT" then
+        Default_Short_Name := True;
+      else
+         raise Constraint_Error;
+      end if;
+
+      Format_Option := Output_Format'Wide_Value (Format (Format'First .. Sep_Pos - 1)); -- May raise C_E
+   end Set_Format;
 
    -----------
    -- "and" --
@@ -456,7 +550,7 @@ package body Framework.Reports is
                   Warning_Count := Warning_Count + 1;
                end if;
 
-               if Warning_As_Error_Option or else not Skip_Warning_Option then
+               if Warning_As_Error_Option or else Active_Warning_Option then
                   Issue_Message (To_Wide_String (Search_Message));
                end if;
             when Count =>

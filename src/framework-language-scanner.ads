@@ -49,6 +49,8 @@ private package Framework.Language.Scanner is
 
                        Eof);
 
+   --Tokens that correspond to true values
+   subtype Value_Token_Kind is Token_Kind range Name .. String_Value;
    --Tokens made of a single character
    subtype Character_Token_Kind is Token_Kind range Left_Bracket .. Equal;
 

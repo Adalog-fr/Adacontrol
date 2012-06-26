@@ -85,18 +85,9 @@ package Framework.Reports is
 
    type Output_Format is (Source, Gnat, CSV, CSVX, None);
    type Stats_Levels  is (None, General, Nulls_Only, Full);
-   Warning_As_Error_Option : Boolean       := False;
-   Skip_Warning_Option     : Boolean       := False;
-   Format_Option           : Output_Format := Gnat;
-   Stats_Level             : Stats_Levels  := None;
 
+   Format_Option           : Output_Format := Gnat;
    Just_Created            : Boolean := False;
-   Adactl_Tag1             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
-   Adactl_Tag2             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
-   Max_Messages            : Natural := Natural'Last;
-   Max_Errors              : Natural := Natural'Last;
-   Check_Message           : Unbounded_Wide_String := To_Unbounded_Wide_String ("Error");
-   Search_Message          : Unbounded_Wide_String := To_Unbounded_Wide_String ("Found");
 
    function Nb_Errors   return Natural;
    function Nb_Warnings return Natural;

@@ -30,6 +30,7 @@
 ----------------------------------------------------------------------
 
 package Adactl_Options is
+   pragma Elaborate_Body;  -- For registration of options from the body
 
    type Action_Kinds is (Help, Check, Process, Interactive_Process, Dependents);
    subtype No_Asis_Actions is Action_Kinds range Help .. Check;
@@ -61,6 +62,9 @@ package Adactl_Options is
 
    function Initialize_String return Wide_String;
    -- Returns a initialize string
+
+   function On_Off_To_Boolean (Value : Wide_String) return Boolean;
+   -- Use as Decode function for boolean variables settable with on/off
 
    Options_Error : exception;
 

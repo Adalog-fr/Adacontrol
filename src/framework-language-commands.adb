@@ -33,7 +33,6 @@
 with
   Ada.Characters.Handling,
   Ada.Exceptions,
-  Ada.Strings.Wide_Fixed,
   Ada.Wide_Text_IO;
 
 -- Asis
@@ -343,35 +342,6 @@ package body Framework.Language.Commands is
          Skip_Line;
       end if;
    end Message_Command;
-
-   ------------------------
-   -- Set_Format_Command --
-   ------------------------
-
-   procedure Set_Format_Command (Format : Wide_String) is
-      use Framework.Reports, Ada.Strings.Wide_Fixed;
-      Sep_Pos : Natural := Index (Format, "_");
-   begin
-      if Sep_Pos = 0 then
-         Sep_Pos            := Format'Last + 1;
-         Default_Short_Name := False;
-      elsif To_Upper (Format (Sep_Pos .. Format'Last)) = "_SHORT" then
-        Default_Short_Name := True;
-      else
-         raise Constraint_Error;
-      end if;
-
-      Format_Option := Output_Format'Wide_Value (Format (Format'First .. Sep_Pos - 1));
-   exception
-      when Constraint_Error =>
-         Parameter_Error ("Set format",
-                          """Gnat"", ""Gnat_Short"", "
-                          & """CSV"", ""CSV_Short"", "
-                          & """CSVX"", ""CSVX_Short"", "
-                          & """Source"", ""Source_Short"", "
-                          & """none"" "
-                          & "expected for format");
-   end Set_Format_Command;
 
    ------------------------
    -- Set_Output_Command --

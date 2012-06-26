@@ -143,7 +143,7 @@ package Framework is
    Default_Short_Name : Boolean := False;
    function Image (L          : in Location;
                    Short_Name : in Boolean := Default_Short_Name;
-                   Separator  : Wide_Character := ':')
+                   Separator  : in Wide_Character := ':')
                    return Wide_String;
    -- Returns image of a location
    -- i.e. file:1:1

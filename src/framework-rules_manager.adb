@@ -48,11 +48,30 @@ pragma Elaborate_All (Binary_Map);
 
 -- Adacontrol
 with
+  Adactl_Options,
   Framework.Control_Manager,
   Framework.Control_Manager.Generic_Context_Iterator,
+  Framework.Variables,
   Framework.Reports;
 
 package body Framework.Rules_Manager is
+
+   --
+   -- User settable variables
+   --
+   Timing_Option : Boolean := False;
+
+   pragma Warnings (Off, "package * is not referenced");
+   package Register_Timing_Option is
+     new Framework.Variables.Register_Discrete_Variable (Boolean,
+                                                         Timing_Option,
+                                                         Variable_Name => "TIMING",
+                                                         Decode        => Adactl_Options.On_Off_To_Boolean);
+   pragma Warnings (On, "package * is not referenced");
+
+   --
+   -- Local variables
+   --
    Last_Rule_Name   : Wide_String (1 .. Max_Rule_Name_Length);
    Last_Rule_Length : Natural := 0;
    Last_Rule_Start  : Ada.Calendar.Time;
