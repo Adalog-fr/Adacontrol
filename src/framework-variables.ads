@@ -43,7 +43,7 @@ package Framework.Variables is
       Variable_Name : in     Wide_String;
    package Register_String_Variable is
    private
-      procedure Writer (Value : in Wide_String);
+      procedure Writer (Val : in Wide_String);
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_String_Variable;
 
@@ -53,10 +53,10 @@ package Framework.Variables is
       Variable      : in out Variable_Type;
       Rule_Name     : in     Wide_String := "";
       Variable_Name : in     Wide_String;
-      with function Decode (Value : in Wide_String) return Variable_Type is Variable_Type'Wide_Value;
+      with function Decode (Val : in Wide_String) return Variable_Type is Variable_Type'Wide_Value;
    package Register_Discrete_Variable is
    private
-      procedure Writer (Value : in Wide_String);
+      procedure Writer (Val : in Wide_String);
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_Discrete_Variable;
 
@@ -64,15 +64,20 @@ package Framework.Variables is
    -- For cases where simple assignment is not sufficient, provide the necessary behaviour in
    -- procedure Set_Variable. If Value is incorrect, the procedure shall raise Constraint_Error.
    generic
-      with procedure Set_Variable (Value : Wide_String);
+      with procedure Set_Variable (Val : Wide_String);
       Rule_Name     : in     Wide_String := "";
       Variable_Name : in     Wide_String;
    package Register_Special_Variable is
    private
       -- Relay procedure needed, can't take 'Access of formal procedure
-      procedure Writer (Value : in Wide_String);
+      procedure Writer (Val : in Wide_String);
       Writer_Ptr : constant Writer_Access := Writer'Access;
-   end;
+   end  Register_Special_Variable;
+
+
+   function On_Off_To_Boolean (Val : Wide_String) return Boolean;
+   -- Use as Decode function for boolean variables settable with on/off
+
 
    ---------------------------------------------------------------------
    --
@@ -81,7 +86,7 @@ package Framework.Variables is
 
    procedure Initialize;
 
-   procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Value : in Wide_String);
+   procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Val : in Wide_String);
    No_Such_Variable : exception;
 
 end Framework.Variables;

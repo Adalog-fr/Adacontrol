@@ -48,7 +48,6 @@ pragma Elaborate_All (Binary_Map);
 
 -- Adacontrol
 with
-  Adactl_Options,
   Framework.Control_Manager,
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Variables,
@@ -66,7 +65,7 @@ package body Framework.Rules_Manager is
      new Framework.Variables.Register_Discrete_Variable (Boolean,
                                                          Timing_Option,
                                                          Variable_Name => "TIMING",
-                                                         Decode        => Adactl_Options.On_Off_To_Boolean);
+                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
    pragma Warnings (On, "package * is not referenced");
 
    --

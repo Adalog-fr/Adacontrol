@@ -410,12 +410,12 @@ package body Framework.Language is
                                     if Current_Token.Kind in Value_Token_Kind then
                                        Set_Variable (Rule_Id  => Option,
                                                      Variable => Variable,
-                                                     Value    => Image (Current_Token));
+                                                     Val      => Image (Current_Token));
                                        Next_Token;
                                     else  -- default
                                        Set_Variable (Rule_Id  => Option,
                                                      Variable => Variable,
-                                                     Value    => "");
+                                                     Val      => "");
                                     end if;
                                  exception
                                     when No_Such_Variable =>
@@ -432,12 +432,12 @@ package body Framework.Language is
                                     if Current_Token.Kind in Value_Token_Kind then
                                        Set_Variable (Rule_Id  => "",
                                                      Variable => Option,
-                                                     Value    => Image (Current_Token));
+                                                     Val      => Image (Current_Token));
                                        Next_Token;
                                     else  -- default
                                        Set_Variable (Rule_Id  => "",
                                                      Variable => Option,
-                                                     Value    => "");
+                                                     Val      => "");
                                     end if;
                                  exception
                                     when No_Such_Variable =>

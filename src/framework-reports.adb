@@ -75,12 +75,12 @@ package body Framework.Reports is
      new Framework.Variables.Register_Discrete_Variable (Boolean,
                                                          Active_Warning_Option,
                                                          Variable_Name => "WARNING",
-                                                         Decode        => Adactl_Options.On_Off_To_Boolean);
+                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
    package Register_Warning_As_Error_Option is
      new Framework.Variables.Register_Discrete_Variable (Boolean,
                                                          Warning_As_Error_Option,
                                                          Variable_Name => "WARNING_AS_ERROR",
-                                                         Decode        => Adactl_Options.On_Off_To_Boolean);
+                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
    package Register_Max_Errors is
      new Framework.Variables.Register_Discrete_Variable (Natural,
                                                          Max_Errors,
