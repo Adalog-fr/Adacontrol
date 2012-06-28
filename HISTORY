@@ -22,6 +22,10 @@ Debug:
 PFNI:
    print range for discrete/array types
 
+Framework:
+----------
+Added rule variables
+
 Changes to existing rules:
 --------------------------
 Abnormal_Function_Return:
