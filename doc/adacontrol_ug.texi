@@ -2148,7 +2148,7 @@ set Tag1|Tag2 "<value>";
 set Trace <trace file>;
 set Debug|Exit_On_Error|Ignore|Timing|Verbose|Warning|Warning_As_Error
       On|Off;
-set <Rule_Name>.<Parameter> <Value>
+set <Rule_Name>.<Variable> <Value>
 @end example
 The ``set format'' command selects the output format for the messages,
 like the ``-F'' option; see @ref{Control kinds and report messages} for
@@ -2214,10 +2214,12 @@ option, and ``Warning_As_Error'' to the ``-e'' option. See
 warnings}, @ref{Output format}, and @ref{Local disabling control} for
 details.
 
-Some rules may also have user-settable parameters; the parameter name
-is of the form of a qualified name (i.e. ``rule.param''), and the
-value depends on the parameter. Description of the parameters and
-appropriate values is given for each rule with such parameters.
+Some rules may also have user-settable global variables that affect
+their behaviour; the last form of the ``set'' command allows changing
+their value. The variable name is of the form of a qualified name
+(i.e. ``rule.var''), and the value depends on the variable. The
+description of the variables (if any) and appropriate values is given
+for each rule.
 
 @node Source command, Inhibit command, Set command, Other commands
 @subsection Source command
