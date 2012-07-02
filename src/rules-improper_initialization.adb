@@ -636,7 +636,7 @@ package body Rules.Improper_Initialization is
             end case;
          end loop;
          case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name)) is
-            when A_Variable_Declaration | A_Parameter_Specification | A_Return_Object_Declaration =>
+            when A_Variable_Declaration | A_Parameter_Specification | A_Return_Variable_Specification =>
                declare
                   Name_Image : constant Unbounded_Wide_String
                     := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
@@ -982,7 +982,7 @@ package body Rules.Improper_Initialization is
             if not Rule_Used (Var_Kind) then
                return;
             end if;
-            if Declaration_Kind (Decl) /= A_Return_Object_Declaration and then Extensions (Var_Kind) (M_Return) then
+            if Declaration_Kind (Decl) /= A_Return_Variable_Specification and then Extensions (Var_Kind) (M_Return) then
                return;
             end if;
             if not Extensions (Var_Kind) (M_Package) then
@@ -1209,7 +1209,7 @@ package body Rules.Improper_Initialization is
                               end case;
                            end loop;
 
-                        when A_Variable_Declaration | A_Return_Object_Declaration =>
+                        when A_Variable_Declaration | A_Return_Variable_Specification =>
                            Add_Variable (Decls (Decl_Index));
                            Check_Object_Use (Decls (Decl_Index), Global_Map);
 

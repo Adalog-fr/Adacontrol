@@ -1577,9 +1577,9 @@ package body Rules.Declarations is
       case Element_Kind (Encl) is
          when A_Declaration =>
             case Declaration_Kind (Encl) is
-               when A_Variable_Declaration | A_Return_Object_Declaration =>
+               when A_Variable_Declaration | A_Return_Variable_Specification =>
                   Do_Report (D_Anonymous_Access_Variable, Encl);
-               when A_Constant_Declaration =>
+               when A_Constant_Declaration | A_Return_Constant_Specification =>
                   Do_Report (D_Anonymous_Access_Constant, Encl);
                when A_Discriminant_Specification =>
                   Do_Report (D_Anonymous_Access_Discriminant, Encl);
