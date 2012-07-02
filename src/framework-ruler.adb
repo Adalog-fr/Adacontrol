@@ -272,9 +272,14 @@ package body Framework.Ruler is
             | An_Atomic_Components_Pragma
             | An_Attach_Handler_Pragma
             | A_Controlled_Pragma
+            | A_CPU_Pragma
+            | A_Default_Storage_Pool_Pragma
+            | A_Dispatching_Domain_Pragma
             | An_Elaborate_Pragma
             | An_Elaborate_All_Pragma
             | An_Elaborate_Body_Pragma
+            | An_Independent_Pragma
+            | A_Independent_Components_Pragma
             | An_Inspection_Point_Pragma
             | An_Interrupt_Handler_Pragma
             | An_Interrupt_Priority_Pragma
