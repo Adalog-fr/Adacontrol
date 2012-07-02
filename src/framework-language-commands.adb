@@ -95,6 +95,7 @@ package body Framework.Language.Commands is
                       & ">;");
       User_Message ("   Set trace <trace file>;");
       User_Message ("   Set debug|exit_on_error|ignore|verbose|warning|warning_as_error on|off ;");
+      User_Message ("   Set <rule>.<variable> <value>");
       User_Message ("   Source <input file> ;");
       User_Message ("   [<label>:] <control> {, <control>} ;");
       User_Message ("Control:");
