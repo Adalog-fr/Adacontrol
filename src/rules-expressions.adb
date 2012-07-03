@@ -339,7 +339,7 @@ package body Rules.Expressions is
       Called := Ultimate_Name (Called);
 
       if Rule_Used (E_Inherited_Function_Call)
-        and then Expression_Kind (Called) /= An_Attribute_reference
+        and then Expression_Kind (Called) /= An_Attribute_Reference
         and then Is_Part_Of_Inherited (Corresponding_Name_Definition (Called))
       then
          Reset (Iter, Key_Inherited_Function_Call);
