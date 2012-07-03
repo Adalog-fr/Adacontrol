@@ -68,7 +68,7 @@ package body Framework.Language is
 
    In_Parameters : Boolean := False;
    Last_Was_Go   : Boolean := True;
-   -- False if any "controlling" command (check, search, count) has been entered
+   -- False if any "controlling" command (check, search, count, set) has been entered
    -- since the last go command.
 
 
@@ -452,6 +452,7 @@ package body Framework.Language is
                               Close_Command;
                            end if;
                         end;
+                        Last_Was_Go := False;
 
                      when Key_Source =>
                         Next_Token (Force_String => True);
