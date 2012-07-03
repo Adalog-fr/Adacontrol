@@ -49,15 +49,16 @@ with
   Adactl_Options;
 
 package body Framework.Reports is
+   use Framework.Variables;
 
    --
    -- User settable variables
    --
-   Active_Warning_Option   : Boolean      := True;
-   Warning_As_Error_Option : Boolean      := False;
+   Active_Warning_Option   : Switch       := On;
+   Warning_As_Error_Option : Switch       := Off;
    Max_Errors              : Natural      := Natural'Last;
    Max_Messages            : Natural      := Natural'Last;
-   Stats_Level             : Stats_Levels := None;
+   Stats_Level             : Stats_Levels := No_Stats;
 
    Check_Message           : Unbounded_Wide_String := To_Unbounded_Wide_String ("Error");
    Search_Message          : Unbounded_Wide_String := To_Unbounded_Wide_String ("Found");
@@ -68,45 +69,37 @@ package body Framework.Reports is
 
    procedure Set_Format (Format : in Wide_String);   -- To set Format_Option (declared in spec)
    package Register_Format_Option is
-     new Framework.Variables.Register_Special_Variable (Set_Format,
-                                                        Variable_Name => "FORMAT");
+     new Register_Special_Variable (Set_Format, Variable_Name => "FORMAT");
 
    package Register_Active_Warning_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
-                                                         Active_Warning_Option,
-                                                         Variable_Name => "WARNING",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
+     new Register_Discrete_Variable (Switch,
+                                     Active_Warning_Option,
+                                     Variable_Name => "WARNING");
    package Register_Warning_As_Error_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
-                                                         Warning_As_Error_Option,
-                                                         Variable_Name => "WARNING_AS_ERROR",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
+     new Register_Discrete_Variable (Switch,
+                                     Warning_As_Error_Option,
+                                     Variable_Name => "WARNING_AS_ERROR");
    package Register_Max_Errors is
-     new Framework.Variables.Register_Discrete_Variable (Natural,
-                                                         Max_Errors,
-                                                         Variable_Name => "MAX_ERRORS");
+     new Register_Integer_Variable (Natural,
+                                    Max_Errors,
+                                    Variable_Name => "MAX_ERRORS");
    package Register_Max_Messages is
-     new Framework.Variables.Register_Discrete_Variable (Natural,
-                                                         Max_Messages,
-                                                         Variable_Name => "MAX_MESSAGES");
-   function Decode_Level (Level : Wide_String) return Stats_Levels;
+     new Register_Integer_Variable (Natural,
+                                    Max_Messages,
+                                    Variable_Name => "MAX_MESSAGES");
+
    package Register_Stats_Level is
-     new Framework.Variables.Register_Discrete_Variable (Stats_Levels,
-                                                         Stats_Level,
-                                                         Variable_Name => "STATISTICS",
-                                                         Decode => Decode_Level);
+     new Register_Integer_Variable (Stats_Levels,
+                                    Stats_Level,
+                                    Variable_Name => "STATISTICS");
    package Register_Check_Message is
-     new Framework.Variables.Register_String_Variable (Check_Message,
-                                                       Variable_Name => "CHECK_KEY");
+     new Register_String_Variable (Check_Message, Variable_Name => "CHECK_KEY");
    package Register_Search_Message is
-     new Framework.Variables.Register_String_Variable (Search_Message,
-                                                       Variable_Name => "SEARCH_KEY");
+     new Register_String_Variable (Search_Message, Variable_Name => "SEARCH_KEY");
    package Register_Tag1 is
-     new Framework.Variables.Register_String_Variable (Adactl_Tag1,
-                                                       Variable_Name => "TAG1");
+     new Register_String_Variable (Adactl_Tag1, Variable_Name => "TAG1");
    package Register_Tag2 is
-     new Framework.Variables.Register_String_Variable (Adactl_Tag2,
-                                                       Variable_Name => "TAG2");
+     new Register_String_Variable (Adactl_Tag2, Variable_Name => "TAG2");
 
    pragma Warnings (On, "package * is not referenced");
 
@@ -145,14 +138,6 @@ package body Framework.Reports is
    -- of Uncheckable, which does not follow the normal naming scheme of rules.
    -- Therefore, a default value must still be provided when fetching from those maps.
 
-   ------------------
-   -- Decode_Level --
-   ------------------
-
-   function Decode_Level (Level : Wide_String) return Stats_Levels is
-   begin
-      return Stats_Levels'Val (Natural'Wide_Value (Level));
-   end Decode_Level;
 
    -----------
    -- Reset --
@@ -496,7 +481,7 @@ package body Framework.Reports is
       -- Retrieve source line, but only if necessary since it can be quite
       -- a long operation
       if Format_Option = Source
-        or (Format_Option /= None and not Ignore_Option)
+        or (Format_Option /= None and Ignore_Option = Off)
       then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
@@ -509,13 +494,13 @@ package body Framework.Reports is
 
             for I in Natural range 1 .. Get_First_Line (Loc) - 1 loop
                Get_Line (Source_File, Line, Line_Last);
-               if not Ignore_Option then
+               if Ignore_Option = Off then
                   Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
                end if;
             end loop;
 
             Get_Line (Source_File, Line, Line_Last);
-            if not Ignore_Option then
+            if Ignore_Option = Off then
                Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
             end if;
 
@@ -544,13 +529,13 @@ package body Framework.Reports is
 
                Issue_Message (To_Wide_String(Check_Message));
             when Search =>
-               if Warning_As_Error_Option then
+               if Warning_As_Error_Option = On then
                   Error_Count := Error_Count + 1;
                else
                   Warning_Count := Warning_Count + 1;
                end if;
 
-               if Warning_As_Error_Option or else Active_Warning_Option then
+               if Warning_As_Error_Option = On or else Active_Warning_Option = On then
                   Issue_Message (To_Wide_String (Search_Message));
                end if;
             when Count =>
@@ -910,7 +895,7 @@ package body Framework.Reports is
 
       use Utilities;
    begin  -- Report_Stats
-      if Stats_Level = None then
+      if Stats_Level = No_Stats then
          return;
       end if;
 

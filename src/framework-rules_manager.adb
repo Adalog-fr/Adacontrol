@@ -54,18 +54,18 @@ with
   Framework.Reports;
 
 package body Framework.Rules_Manager is
+   use Framework.Variables;
 
    --
    -- User settable variables
    --
-   Timing_Option : Boolean := False;
+   Timing_Option : Switch := Off;
 
    pragma Warnings (Off, "package * is not referenced");
    package Register_Timing_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
+     new Framework.Variables.Register_Discrete_Variable (Switch,
                                                          Timing_Option,
-                                                         Variable_Name => "TIMING",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
+                                                         Variable_Name => "TIMING");
    pragma Warnings (On, "package * is not referenced");
 
    --
@@ -162,14 +162,14 @@ package body Framework.Rules_Manager is
    procedure Enter (Rule : Wide_String) is
       use Ada.Calendar;
    begin
-      if Timing_Option and Last_Rule_Length /= 0 then
+      if Timing_Option = On and Last_Rule_Length /= 0 then
          Accumulate_Time;
       end if;
 
       Last_Rule_Name (1 .. Rule'Length) := Rule;
       Last_Rule_Length                  := Rule'Length;
 
-      if Timing_Option then
+      if Timing_Option = On then
          Last_Rule_Start := Clock;
       end if;
    end Enter;
@@ -432,7 +432,7 @@ package body Framework.Rules_Manager is
          return;
       end if;
 
-      if Timing_Option then
+      if Timing_Option = On then
          Accumulate_Time;
 
          if Format_Option in CSV .. CSVX then

@@ -62,7 +62,7 @@ with
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Calendar;
    use Asis.Implementation;
-   use Utilities, Adactl_Options;
+   use Utilities, Adactl_Options, Framework.Variables;
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -89,7 +89,7 @@ begin
       Asis.Ada_Environments.Associate (Framework.Adactl_Context, "Adactl", Asis_Options);
       Asis.Ada_Environments.Open (Framework.Adactl_Context);
       Units_List.Register (Unit_Spec  => Ada_Units_List,
-                           Recursive  => Recursive_Option,
+                           Recursive  => Recursive_Option = On,
                            Add_Stubs  => False);
    end if;
 
@@ -187,7 +187,7 @@ exception
             Stack_Traceback (Occur);
             Execute ("help version;");
             Ada.Command_Line.Set_Exit_Status (Failure);
-            if Exit_Option then
+            if Exit_Option = On then
                raise;
             end if;
       end case;
@@ -207,14 +207,14 @@ exception
       Stack_Traceback (Occur);
       Execute ("help version;");
       Ada.Command_Line.Set_Exit_Status (Failure);
-      if Exit_Option then
+      if Exit_Option = On then
          raise;
       end if;
 
    when Framework.Interrupt.Interrupted =>
       User_Message ("Interrupted");
       Ada.Command_Line.Set_Exit_Status (Failure);
-      if Exit_Option then
+      if Exit_Option = On then
          raise;
       end if;
 
@@ -224,7 +224,7 @@ exception
       Stack_Traceback (Occur);
       Execute ("help version;");
       Ada.Command_Line.Set_Exit_Status (Failure);
-      if Exit_Option then
+      if Exit_Option = On then
          raise;
       end if;
 end Adactl;

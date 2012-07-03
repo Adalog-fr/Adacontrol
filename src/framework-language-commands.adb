@@ -57,6 +57,7 @@ with
   Framework.Rules_Manager,
   Framework.Scope_Manager,
   Framework.String_Set,
+  Framework.Variables,
   Implementation_Options;
 
 package body Framework.Language.Commands is
@@ -90,9 +91,7 @@ package body Framework.Language.Commands is
       User_Message ("   Set check_key|search_key ""<key>""");
       User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short|none ;");
       User_Message ("   Set output <output file>;");
-      User_Message ("   Set statistics <level: 0 .. "
-                      & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
-                      & ">;");
+      User_Message ("   Set statistics <level: 0 .." & Stats_Levels'Wide_Image (Stats_Levels'Last) & ">;");
       User_Message ("   Set trace <trace file>;");
       User_Message ("   Set debug|exit_on_error|ignore|verbose|warning|warning_as_error on|off ;");
       User_Message ("   Set <rule>.<variable> <value>");
@@ -110,7 +109,7 @@ package body Framework.Language.Commands is
 
    procedure Go_Command is
       use Ada.Exceptions, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.Rules_Manager;
+      use Adactl_Options, Framework.Rules_Manager, Framework.Variables;
 
       procedure Handle_Exception (Occur : Ada.Exceptions.Exception_Occurrence := Null_Occurrence) is
          use Asis.Exceptions, Ada.Characters.Handling;
@@ -162,7 +161,7 @@ package body Framework.Language.Commands is
             Asis_Exception_Messages;
 
             -- Propagate the exception only if Exit_Option set
-            if Adactl_Options.Exit_Option then
+            if Adactl_Options.Exit_Option = On then
                raise;
             end if;
 
@@ -175,7 +174,7 @@ package body Framework.Language.Commands is
             User_Message ("       Message: " & To_Wide_String (Exception_Message (Local_Occur)));
 
             -- Propagate the exception only if Exit_Option set
-            if Adactl_Options.Exit_Option then
+            if Adactl_Options.Exit_Option = On then
                raise;
             end if;
       end Handle_Exception;
@@ -204,7 +203,7 @@ package body Framework.Language.Commands is
             begin
                Ruler.Process (Unit_Name  => Units_List.Current_Unit,
                               Unit_Pos   => I,
-                              Spec_Only  => Adactl_Options.Spec_Option,
+                              Spec_Only  => Adactl_Options.Spec_Option = On,
                               Go_Count   => Go_Count);
             exception
                when Utilities.User_Error =>
@@ -236,13 +235,13 @@ package body Framework.Language.Commands is
          return;
       end if;
 
-      if Debug_Option then
+      if Utilities.Debug_Option then
          begin
             Framework.Interrupt.Run_Interruptable (Do_It'Access);
          exception
             when Framework.Interrupt.Interrupted =>
                Handle_Exception;
-               if Adactl_Options.Exit_Option then
+               if Adactl_Options.Exit_Option = On then
                   raise;
                end if;
          end;
@@ -350,7 +349,7 @@ package body Framework.Language.Commands is
 
    procedure Set_Output_Command (Output_File : Wide_String; Force_Overwrite : Boolean) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.String_Set;
+      use Adactl_Options, Framework.String_Set, Framework.Variables;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;
@@ -374,7 +373,7 @@ package body Framework.Language.Commands is
             -- File exists
             Close (Adactl_Output);
             if Force_Overwrite
-              or else (Adactl_Options.Overwrite_Option and not Is_Present (Seen_Files, Output_File))
+              or else (Adactl_Options.Overwrite_Option = On and not Is_Present (Seen_Files, Output_File))
             then
                Create (Adactl_Output, Out_File, To_String (Output_File));
                Framework.Reports.Just_Created := True;
