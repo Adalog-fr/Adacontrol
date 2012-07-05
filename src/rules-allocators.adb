@@ -243,7 +243,7 @@ package body Rules.Allocators is
                                                               (Enclosing_Element (Allocator_Subtype)));
                elsif Formal_Type_Kind (Allocator_Subtype) = A_Formal_Derived_Type_Definition then
                   -- There can be no constraint at that level, go to the parent type
-                  Allocator_Subtype := Type_Declaration_View (Corresponding_Name_Declaration
+                  Allocator_Subtype := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
                     (Simple_Name
                        (Strip_Attributes
                           (Subtype_Simple_Name (Allocator_Subtype)))));
@@ -272,7 +272,7 @@ package body Rules.Allocators is
                if A4G_Bugs.Attribute_Kind (Designated_Name) = A_Base_Attribute then
                   return;
                end if;
-               Def := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Designated_Name)));
+               Def := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Designated_Name)));
                case Declaration_Kind (Def) is
                   when A_Private_Type_Declaration | An_Incomplete_Type_Declaration =>
                      Def := Corresponding_Type_Declaration (Def);

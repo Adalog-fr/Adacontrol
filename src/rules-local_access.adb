@@ -166,7 +166,7 @@ package body Rules.Local_Access is
                when An_Indexed_Component =>
                   Good_Prefix := Prefix (Good_Prefix);
                when A_Selected_Component =>
-                  if Declaration_Kind (Corresponding_Name_Declaration (Selector (Good_Prefix)))
+                  if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (Good_Prefix)))
                     /= A_Component_Declaration
                   then
                      Good_Prefix := Selector (Good_Prefix);
@@ -198,7 +198,7 @@ package body Rules.Local_Access is
             return;
          end if;
 
-         Decl := Corresponding_Name_Declaration (Good_Prefix);
+         Decl := A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix);
          On_Declarations : loop
             case Declaration_Kind (Decl) is
                when A_Constant_Declaration =>
@@ -221,7 +221,7 @@ package body Rules.Local_Access is
                   return;
 
                when A_Function_Declaration =>
-                  if Definition_Kind (Enclosing_Element (Corresponding_Name_Declaration (Good_Prefix)))
+                  if Definition_Kind (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix)))
                     = A_Protected_Definition
                   then
                      Do_Report (K_Protected_Function);
@@ -248,7 +248,7 @@ package body Rules.Local_Access is
                   end if;
 
                when A_Procedure_Declaration =>
-                  if Definition_Kind (Enclosing_Element (Corresponding_Name_Declaration (Good_Prefix)))
+                  if Definition_Kind (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix)))
                     = A_Protected_Definition
                   then
                      Do_Report (K_Protected_Procedure);

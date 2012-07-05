@@ -261,7 +261,7 @@ package body Framework.Control_Manager is
               and then Expression_Kind (Name) = An_Attribute_Reference
             then
                -- Type'Attr
-               if Declaration_Kind (Corresponding_Name_Declaration (Good_Name))
+               if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name))
                   in An_Ordinary_Type_Declaration .. A_Subtype_Declaration   -- = All type and subtype declarations
                then
                   Name_Image := To_Unbounded_Wide_String ("TYPE'" & To_Upper (Attribute_Name_Image (Name)));

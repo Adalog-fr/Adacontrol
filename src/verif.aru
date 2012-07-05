@@ -47,6 +47,7 @@ Use_A4G_Bugs: check entities (
    Asis.Elements.Attribute_Kind,
 
    Asis.Expressions.Corresponding_Expression_Type,
+   Asis.Expressions.Corresponding_Name_Declaration,
    Asis.Expressions.Name_Image,
 
    Asis.Statements.Corresponding_Called_Entity,

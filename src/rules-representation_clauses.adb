@@ -233,9 +233,9 @@ package body Rules.Representation_Clauses is
             Name : constant Asis.Expression := Representation_Clause_Name (Target);
          begin
             if Expression_Kind (Name) = An_Attribute_Reference then
-               return Corresponding_Name_Declaration (Prefix (Name));
+               return A4G_Bugs.Corresponding_Name_Declaration (Prefix (Name));
             else
-               return Corresponding_Name_Declaration (Name);
+               return A4G_Bugs.Corresponding_Name_Declaration (Name);
             end if;
          end Clause_Name_Declaration;
 
@@ -256,9 +256,9 @@ package body Rules.Representation_Clauses is
                while Expression_Kind (Pfx) = An_Attribute_Reference loop
                   Pfx := Prefix (Pfx);
                end loop;
-               Is_Global := Static_Level (Corresponding_Name_Declaration (Simple_Name (Pfx))) = Global_Level;
+               Is_Global := Static_Level (A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (Pfx))) = Global_Level;
             else
-               Pfx_Decl  := Corresponding_Name_Declaration (Pfx);
+               Pfx_Decl  := A4G_Bugs.Corresponding_Name_Declaration (Pfx);
                Is_Object := Declaration_Kind (Pfx_Decl) in An_Object_Declaration;
                Is_Global := Static_Level (Pfx_Decl) = Global_Level;
             end if;
