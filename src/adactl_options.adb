@@ -72,7 +72,7 @@ package body Adactl_Options is
    --
    -- Register option variables
    --
-   pragma Warnings (Off, "package * is not referenced");
+   pragma Warnings (Off, "* is not referenced");
 
    package Register_Debug_Option is
      new Framework.Variables.Register_Discrete_Variable (Switch,
@@ -90,7 +90,7 @@ package body Adactl_Options is
      new Framework.Variables.Register_Discrete_Variable (Switch,
                                                          Verbose_Option,
                                                          Variable_Name => "VERBOSE");
-   pragma Warnings (On, "package * is not referenced");
+   pragma Warnings (On, "* is not referenced");
 
    ------------------
    -- Option_Error --

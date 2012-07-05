@@ -65,7 +65,7 @@ package body Framework.Reports is
    Adactl_Tag1             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
    Adactl_Tag2             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
 
-   pragma Warnings (Off, "package * is not referenced");
+   pragma Warnings (Off, "* is not referenced");
 
    procedure Set_Format (Format : in Wide_String);   -- To set Format_Option (declared in spec)
    function  Format_Image return Wide_String;
@@ -102,7 +102,7 @@ package body Framework.Reports is
    package Register_Tag2 is
      new Register_String_Variable (Adactl_Tag2, Variable_Name => "TAG2");
 
-   pragma Warnings (On, "package * is not referenced");
+   pragma Warnings (On, "* is not referenced");
 
    --
    -- Local variables

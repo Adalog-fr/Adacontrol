@@ -73,7 +73,7 @@ package body Framework.Variables is
 
       function  Value_Image return Wide_String is
       begin
-         return To_Wide_String (Variable);
+         return '"' & To_Wide_String (Variable) & '"';
       end Value_Image;
 
       procedure Writer (Val : in Wide_String) is
@@ -121,6 +121,7 @@ package body Framework.Variables is
       Add (Call_Backs,
            To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
            (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_Discrete_Variable;
 
    -------------------------------

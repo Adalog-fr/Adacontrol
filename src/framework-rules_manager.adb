@@ -61,12 +61,12 @@ package body Framework.Rules_Manager is
    --
    Timing_Option : Switch := Off;
 
-   pragma Warnings (Off, "package * is not referenced");
+   pragma Warnings (Off, "* is not referenced");
    package Register_Timing_Option is
      new Framework.Variables.Register_Discrete_Variable (Switch,
                                                          Timing_Option,
                                                          Variable_Name => "TIMING");
-   pragma Warnings (On, "package * is not referenced");
+   pragma Warnings (On, "* is not referenced");
 
    --
    -- Local variables

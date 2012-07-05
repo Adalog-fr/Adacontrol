@@ -33,6 +33,7 @@
 with
   Ada.Characters.Handling,
   Ada.Exceptions,
+  Ada.Strings.Wide_Fixed,
   Ada.Wide_Text_IO;
 
 -- Asis
@@ -42,6 +43,7 @@ with
 
 -- Adalog
 with
+  String_Matching,
   Units_List,
   Utilities;
 
@@ -100,6 +102,23 @@ package body Framework.Language.Commands is
       User_Message ("Control:");
       User_Message ("   Search|Check|Count <rule name> [ ( <parameters> ) ]");
    end Help_On_Commands;
+
+   -----------------------
+   -- Help_On_Variables --
+   -----------------------
+
+   procedure Help_On_Variables (Pattern : Wide_String) is
+      use Framework.Variables, String_Matching;
+      Var_Names : constant Name_List := All_Variables;
+   begin
+      User_Message ("Variables: ");
+      for V in Var_Names'Range loop
+         if Match (To_Wide_String(Var_Names (V)), Pattern, Ignore_Case => True) then
+            User_Message (To_Title (To_Wide_String (Var_Names (V))) & " = " & Fetch (Var_Names (V)));
+         end if;
+      end loop;
+   end Help_On_Variables;
+
 
    ----------------
    -- Go_Command --
@@ -266,6 +285,7 @@ package body Framework.Language.Commands is
    ------------------
 
    procedure Help_Command (On : in Wide_String) is
+      use Ada.Strings, Ada.Strings.Wide_Fixed;
       use Asis.Implementation;
       use Adactl_Options, Framework.Rules_Manager;
 
@@ -289,6 +309,9 @@ package body Framework.Language.Commands is
 
       elsif Upper_On = "RULES" then
          Help_On_Names (Pretty => True);
+
+      elsif Upper_On = "VARIABLE" or else Starts_With (Upper_On, "VARIABLE ") then
+         Help_On_Variables (Trim (On (On'First + 9 .. On'Last), Both));
 
       elsif Upper_On = "VERSION" then
          User_Message ("ADACTL v. "
