@@ -100,14 +100,19 @@ package Framework.Variables is
    -- Shared type for variables:
    type Switch is (Off, On);
 
+private
    ---------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
-
    procedure Initialize;
 
    procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Val : in Wide_String);
    No_Such_Variable : exception;
+
+   type Name_List is array (Natural range <>) of Unbounded_Wide_String;
+   function All_Variables return Name_List;
+
+   function Fetch (Variable : Unbounded_Wide_String) return Wide_String;
 
 end Framework.Variables;

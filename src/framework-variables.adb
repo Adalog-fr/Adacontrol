@@ -36,9 +36,15 @@ with
 
 package body Framework.Variables is
 
-   package Writers_List is new Binary_Map (Unbounded_Wide_String, Writer_Access);
-   Writers_Map : Writers_List.Map;
+   type Operations is
+      record
+         Read  : Reader_Access;
+         Write : Writer_Access;
+      end record;
+   package Variables_CB is new Binary_Map (Unbounded_Wide_String, Operations);
+   Call_Backs : Variables_CB.Map;
 
+   Number_Of_Variables : Natural := 0;
 
    ------------------
    -- Variable_Key --
@@ -74,9 +80,12 @@ package body Framework.Variables is
       begin
          Variable := To_Unbounded_Wide_String (Val);
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_String_Variable
-      Add (Writers_Map, To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_String_Variable;
 
    --------------------------------
@@ -107,9 +116,11 @@ package body Framework.Variables is
             Variable := Variable_Type'Wide_Value (Val);
          end if;
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_Discrete_Variable
-      Add (Writers_Map, To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
    end Register_Discrete_Variable;
 
    -------------------------------
@@ -139,9 +150,12 @@ package body Framework.Variables is
             Variable := Variable_Type'Wide_Value (Val);
          end if;
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_Integer_Variable
-      Add (Writers_Map, To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_Integer_Variable;
 
    -------------------------------
@@ -159,9 +173,12 @@ package body Framework.Variables is
       begin
          Set_Variable (Val);
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_Special_Variable
-      Add (Writers_Map, To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_Special_Variable;
 
    ------------------
@@ -169,9 +186,10 @@ package body Framework.Variables is
    ------------------
 
    procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Val : in Wide_String) is
-      use Utilities, Writers_List;
+      use Utilities, Variables_CB;
    begin
-      Fetch (Writers_Map, To_Unbounded_Wide_String (To_Upper (Variable_Key (Rule_Id, Variable)))) (Val);
+      Fetch (Call_Backs,
+             To_Unbounded_Wide_String (To_Upper (Variable_Key (Rule_Id, Variable)))).Write (Val);
    exception
       when Not_Present =>
          -- This exception not visible to clients, transform it
@@ -183,9 +201,41 @@ package body Framework.Variables is
    ----------------
 
    procedure Initialize is
-      use Writers_List;
+      use Variables_CB;
    begin
-      Balance (Writers_Map);
+      Balance (Call_Backs);
    end Initialize;
 
+   -------------------
+   -- All_Variables --
+   -------------------
+
+   function All_Variables return Name_List is
+      Result : Name_List (1 .. Number_Of_Variables);
+      Inx    : Natural := 0;
+      procedure Add_One (Key : Unbounded_Wide_String; Value : in out Operations) is
+         pragma Unreferenced (Value);
+      begin
+         Inx := Inx + 1;
+         Result (Inx) := Key;
+      end Add_One;
+
+      procedure Add_All is new Variables_CB.Iterate (Add_One);
+   begin
+      Add_All (Call_Backs);
+      return Result;
+   end All_Variables;
+
+   -----------
+   -- Fetch --
+   -----------
+
+   function Fetch (Variable : Unbounded_Wide_String) return Wide_String is
+      use Variables_CB;
+   begin
+      return Fetch (Call_Backs, Variable).Read.all;
+   exception
+      when Not_Present =>
+         raise No_Such_Variable;
+   end Fetch;
 end Framework.Variables;
