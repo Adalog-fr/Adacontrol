@@ -65,6 +65,11 @@ package body Framework.Variables is
          User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": ""<string>""");
       end Help_On_Variable;
 
+      function  Value_Image return Wide_String is
+      begin
+         return To_Wide_String (Variable);
+      end Value_Image;
+
       procedure Writer (Val : in Wide_String) is
       begin
          Variable := To_Unbounded_Wide_String (Val);
@@ -88,6 +93,11 @@ package body Framework.Variables is
          end loop;
          User_Message (To_Title (Variable_Type'Wide_Image (Variable_Type'Last)));
       end Help_On_Variable;
+
+      function  Value_Image return Wide_String is
+      begin
+         return Variable_Type'Wide_Image (Variable);
+      end Value_Image;
 
       procedure Writer (Val : in Wide_String) is
       begin
@@ -116,6 +126,11 @@ package body Framework.Variables is
                        & Variable_Type'Wide_Image (Variable_Type'Last));
       end Help_On_Variable;
 
+      function  Value_Image return Wide_String is
+      begin
+         return Variable_Type'Wide_Image (Variable);
+      end Value_Image;
+
       procedure Writer (Val : in Wide_String) is
       begin
          if Val = "" then
@@ -134,6 +149,12 @@ package body Framework.Variables is
    -------------------------------
 
    package body Register_Special_Variable is
+      function  Value_Image return Wide_String is
+      begin
+         return Variable_Value;
+      end Value_Image;
+
+
       procedure Writer (Val : in Wide_String) is
       begin
          Set_Variable (Val);

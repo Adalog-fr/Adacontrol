@@ -68,8 +68,9 @@ package body Framework.Reports is
    pragma Warnings (Off, "package * is not referenced");
 
    procedure Set_Format (Format : in Wide_String);   -- To set Format_Option (declared in spec)
+   function  Format_Image return Wide_String;
    package Register_Format_Option is
-     new Register_Special_Variable (Set_Format, Variable_Name => "FORMAT");
+     new Register_Special_Variable (Set_Format, Format_Image, Variable_Name => "FORMAT");
 
    package Register_Active_Warning_Option is
      new Register_Discrete_Variable (Switch,
@@ -299,6 +300,21 @@ package body Framework.Reports is
 
       Format_Option := Output_Format'Wide_Value (Format (Format'First .. Sep_Pos - 1)); -- May raise C_E
    end Set_Format;
+
+
+   ------------------
+   -- Format_Image --
+   ------------------
+
+   function  Format_Image return Wide_String is
+   begin
+      if Default_Short_Name then
+         return Output_Format'Wide_Image (Format_Option) & "_SHORT";
+      else
+         return Output_Format'Wide_Image (Format_Option);
+      end if;
+   end Format_Image;
+
 
    -----------
    -- "and" --

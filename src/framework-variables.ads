@@ -35,6 +35,7 @@ package Framework.Variables is
    --
 
    type Writer_Access is access procedure (Value : Wide_String);
+   type Reader_Access is access function return Wide_String;
    -- Used only for private part of Register_XX_Variable, useless (but harmless) for user
 
    -- When Instantiating the following generics, Rule_Name and Variable_Name are expected
@@ -46,7 +47,9 @@ package Framework.Variables is
    package Register_String_Variable is
       procedure Help_On_Variable;
    private
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_String_Variable;
 
@@ -58,7 +61,9 @@ package Framework.Variables is
    package Register_Discrete_Variable is
       procedure Help_On_Variable;
    private
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_Discrete_Variable;
 
@@ -70,7 +75,9 @@ package Framework.Variables is
    package Register_Integer_Variable is
       procedure Help_On_Variable;
    private
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_Integer_Variable;
 
@@ -78,12 +85,15 @@ package Framework.Variables is
    -- procedure Set_Variable. If Value is incorrect, the procedure shall raise Constraint_Error.
    generic
       with procedure Set_Variable (Val : Wide_String);
+      with function  Variable_Value return Wide_String;
       Rule_Name     : in     Wide_String := "";
       Variable_Name : in     Wide_String;
    package Register_Special_Variable is
    private
-      -- Relay procedure needed, can't take 'Access of formal procedure
+      -- Relay subprograms needed, can't take 'Access of formal procedure
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end  Register_Special_Variable;
 
