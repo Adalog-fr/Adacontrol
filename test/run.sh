@@ -122,6 +122,12 @@ test_case=tfw_help
 nb_fw=$((nb_fw+1))
 ${ADACTL} -h all 2>&1 \
 	| tr -d \\r >res/${test_case}.txt
+${ADACTL} -h 2>&1 \
+	| tr -d \\r >>res/${test_case}.txt
+${ADACTL} -h "^Simplifiable_*" 2>&1 \
+	| tr -d \\r >>res/${test_case}.txt
+${ADACTL} -h "variables ^tag_*" 2>&1 \
+	| tr -d \\r >>res/${test_case}.txt
 
 test_case=tfw_rule_off
 nb_fw=$((nb_fw+1))

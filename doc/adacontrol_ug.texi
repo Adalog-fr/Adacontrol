@@ -906,7 +906,7 @@ happens.
 
 Syntax:
 @example
-adactl -h [<keyword> | <rule name>...]
+adactl -h [<keyword> | <rule name> | variables ["<pattern>"] ...]
 <keyword> ::= all | commands | license | list | options | rules | version
 @end example
 
@@ -921,6 +921,10 @@ rule names (case irrelevant); its effect is:
 help message for the indicated rule. Otherwise, <rule name> is
 interpreted as a pattern, and help messages for all rules that match
 the pattern is displayed. Patterns are given using the full
+Regexp syntax. @pxref{Syntax of regular expressions} for details.
+@item
+``variables'' lists the values of all variables whose name matches <pattern>,
+or all variables if there is no <pattern>. Patterns are given using the full
 Regexp syntax. @pxref{Syntax of regular expressions} for details.
 @item
 ``all'':  display the help message for all rules.
@@ -2101,8 +2105,9 @@ itself.
 
 Syntax:
 @example
-Help [<keyword> | <rule name> @{,<keyword> | <rule name>@}]
-<keyword> ::= all | commands | license | list | options | rules | version
+Help [<help_item> @{,<help_item>@}]
+<Help_Item> ::=<keyword> | <rule name> | variables ["<pattern>"]
+<keyword>   ::= all | commands | license | list | options | rules | version
 @end example
 Without any argument, this command prints a summary of all commands
 and rule names. If given one or more keywords or rule names, it prints the
