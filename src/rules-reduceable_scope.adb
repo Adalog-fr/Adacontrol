@@ -383,7 +383,7 @@ package body Rules.Reduceable_Scope is
                   -- Renamings can be both completions and dispatching operations
                   -- (see comments above)
                   if Is_Dispatching_Operation (Decl) then
-                     return check_not_checkable;
+                     return Check_Not_Checkable;
                   elsif Is_Nil (Corresponding_Declaration (Decl)) then
                      return Check_Subprogram;
                   else

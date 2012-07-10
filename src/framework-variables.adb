@@ -36,22 +36,27 @@ with
 
 package body Framework.Variables is
 
-   package Writers_List is new Binary_Map (Unbounded_Wide_String, Writer_Access);
-   Writers_Map : Writers_List.Map;
+   type Operations is
+      record
+         Read  : Reader_Access;
+         Write : Writer_Access;
+      end record;
+   package Variables_CB is new Binary_Map (Unbounded_Wide_String, Operations);
+   Call_Backs : Variables_CB.Map;
 
+   Number_Of_Variables : Natural := 0;
 
    ------------------
    -- Variable_Key --
    ------------------
 
-   function Variable_Key (Rule_Name : Wide_String; Variable_Name : Wide_String) return Unbounded_Wide_String is
+   function Variable_Key (Rule_Name : Wide_String; Variable_Name : Wide_String) return Wide_String is
    -- Utility for the Register_XX_Variable packages
-      use Utilities;
    begin
       if Rule_Name = "" then
-         return To_Unbounded_Wide_String (To_Upper (Variable_Name));
+         return Variable_Name;
       else
-         return To_Unbounded_Wide_String (To_Upper (Rule_Name & '.' & Variable_Name));
+         return Rule_Name & '.' & Variable_Name;
       end if;
    end Variable_Key;
 
@@ -60,13 +65,27 @@ package body Framework.Variables is
    ------------------------------
 
    package body Register_String_Variable is
+      procedure Help_On_Variable is
+         use Utilities;
+      begin
+         User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": ""<string>""");
+      end Help_On_Variable;
+
+      function  Value_Image return Wide_String is
+      begin
+         return '"' & To_Wide_String (Variable) & '"';
+      end Value_Image;
+
       procedure Writer (Val : in Wide_String) is
       begin
          Variable := To_Unbounded_Wide_String (Val);
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_String_Variable
-      Add (Writers_Map, Variable_Key (Rule_Name, Variable_Name), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_String_Variable;
 
    --------------------------------
@@ -74,31 +93,93 @@ package body Framework.Variables is
    --------------------------------
 
    package body Register_Discrete_Variable is
+      procedure Help_On_Variable is
+         use Utilities;
+      begin
+         User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": ", Stay_On_Line => True);
+         for V in Variable_Type range Variable_Type'First .. Variable_Type'Pred (Variable_Type'Last) loop
+            User_Message (To_Title (Variable_Type'Wide_Image (V)) & ", ", Stay_On_Line => True);
+         end loop;
+         User_Message (To_Title (Variable_Type'Wide_Image (Variable_Type'Last)));
+      end Help_On_Variable;
+
+      function  Value_Image return Wide_String is
+      begin
+         return Variable_Type'Wide_Image (Variable);
+      end Value_Image;
+
       procedure Writer (Val : in Wide_String) is
       begin
          if Val = "" then
             Variable := Variable_Type'Last;
          else
-            Variable := Decode (Val);
+            Variable := Variable_Type'Wide_Value (Val);
          end if;
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_Discrete_Variable
-      Add (Writers_Map, Variable_Key (Rule_Name, Variable_Name), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_Discrete_Variable;
+
+   -------------------------------
+   -- Register_Integer_Variable --
+   -------------------------------
+
+   package body Register_Integer_Variable is
+      procedure Help_On_Variable is
+         use Utilities;
+      begin
+         User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": "
+                       & Variable_Type'Wide_Image (Variable_Type'First)
+                       & " .. "
+                       & Variable_Type'Wide_Image (Variable_Type'Last));
+      end Help_On_Variable;
+
+      function  Value_Image return Wide_String is
+      begin
+         return Variable_Type'Wide_Image (Variable);
+      end Value_Image;
+
+      procedure Writer (Val : in Wide_String) is
+      begin
+         if Val = "" then
+            Variable := Variable_Type'Last;
+         else
+            Variable := Variable_Type'Wide_Value (Val);
+         end if;
+      end Writer;
+      use Variables_CB;
+   begin  -- Register_Integer_Variable
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
+   end Register_Integer_Variable;
 
    -------------------------------
    -- Register_Special_Variable --
    -------------------------------
 
    package body Register_Special_Variable is
+      function  Value_Image return Wide_String is
+      begin
+         return Variable_Value;
+      end Value_Image;
+
+
       procedure Writer (Val : in Wide_String) is
       begin
          Set_Variable (Val);
       end Writer;
-      use Writers_List;
+      use Variables_CB;
    begin  -- Register_Special_Variable
-      Add (Writers_Map, Variable_Key (Rule_Name, Variable_Name), Writer_Ptr);
+      Add (Call_Backs,
+           To_Unbounded_Wide_String (Variable_Key (Rule_Name, Variable_Name)),
+           (Reader_Ptr, Writer_Ptr));
+      Number_Of_Variables := Number_Of_Variables + 1;
    end Register_Special_Variable;
 
    ------------------
@@ -106,9 +187,10 @@ package body Framework.Variables is
    ------------------
 
    procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Val : in Wide_String) is
-      use Writers_List;
+      use Utilities, Variables_CB;
    begin
-      Fetch (Writers_Map, Variable_Key (Rule_Id, Variable)) (Val);
+      Fetch (Call_Backs,
+             To_Unbounded_Wide_String (To_Upper (Variable_Key (Rule_Id, Variable)))).Write (Val);
    exception
       when Not_Present =>
          -- This exception not visible to clients, transform it
@@ -120,26 +202,41 @@ package body Framework.Variables is
    ----------------
 
    procedure Initialize is
-      use Writers_List;
+      use Variables_CB;
    begin
-      Balance (Writers_Map);
+      Balance (Call_Backs);
    end Initialize;
 
-   -----------------------
-   -- On_Off_To_Boolean --
-   -----------------------
+   -------------------
+   -- All_Variables --
+   -------------------
 
-   function On_Off_To_Boolean (Val : Wide_String) return Boolean is
-      use Utilities;
-      Upper_Value : constant Wide_String := To_Upper (Val);
+   function All_Variables return Name_List is
+      Result : Name_List (1 .. Number_Of_Variables);
+      Inx    : Natural := 0;
+      procedure Add_One (Key : Unbounded_Wide_String; Value : in out Operations) is
+         pragma Unreferenced (Value);
+      begin
+         Inx := Inx + 1;
+         Result (Inx) := Key;
+      end Add_One;
+
+      procedure Add_All is new Variables_CB.Iterate (Add_One);
    begin
-      if Upper_Value = "ON" then
-         return True;
-      elsif Upper_Value = "OFF" then
-         return False;
-      else
-         raise Constraint_Error;
-      end if;
-   end On_Off_To_Boolean;
+      Add_All (Call_Backs);
+      return Result;
+   end All_Variables;
 
+   -----------
+   -- Fetch --
+   -----------
+
+   function Fetch (Variable : Unbounded_Wide_String) return Wide_String is
+      use Variables_CB;
+   begin
+      return Fetch (Call_Backs, Variable).Read.all;
+   exception
+      when Not_Present =>
+         raise No_Such_Variable;
+   end Fetch;
 end Framework.Variables;

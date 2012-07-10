@@ -787,7 +787,7 @@ package body Rules.Declarations is
                            end if;
                         end loop;
                         if Small_Found then
-                           Do_Report ((D_Type, D_Fixed_Type, D_Ordinary_Fixed_Type, D_ordinary_Fixed_Type_With_Small),
+                           Do_Report ((D_Type, D_Fixed_Type, D_Ordinary_Fixed_Type, D_Ordinary_Fixed_Type_With_Small),
                                       Element);
                         else
                            Do_Report ((D_Type, D_Fixed_Type, D_Ordinary_Fixed_Type, D_Ordinary_Fixed_Type_No_Small),

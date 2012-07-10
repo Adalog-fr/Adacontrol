@@ -299,13 +299,13 @@ package body Rules.Simplifiable_expressions is
                   if Expression_Kind (L) = A_Function_Call then
                      Name := Called_Simple_Name (L);
                      if Operator_Kind (Name) in A_Comparison_Operator then
-                        if Ctl_Contexts (Check) (K_Logical_not).Used then
+                        if Ctl_Contexts (Check) (K_Logical_Not).Used then
                            Report (Rule_Id,
                                    To_Wide_String (Ctl_Contexts (Check) (K_Logical_Not).Label),
                                    Check,
                                    Get_Location (Call),
                                    """not"" on comparison");
-                        elsif Ctl_Contexts (Search) (K_Logical_not).Used then
+                        elsif Ctl_Contexts (Search) (K_Logical_Not).Used then
                            Report (Rule_Id,
                                    To_Wide_String (Ctl_Contexts (Search) (K_Logical_Not).Label),
                                    Search,
@@ -314,7 +314,7 @@ package body Rules.Simplifiable_expressions is
                         end if;
 
                         -- Always report count
-                        if Ctl_Contexts (Count) (K_Logical_not).Used then
+                        if Ctl_Contexts (Count) (K_Logical_Not).Used then
                            Report (Rule_Id,
                                    To_Wide_String (Ctl_Contexts (Count) (K_Logical_Not).Label),
                                    Count,

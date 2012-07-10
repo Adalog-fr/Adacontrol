@@ -36,11 +36,11 @@ with
   Asis.Clauses,
   Asis.Declarations,
   Asis.Definitions,
-  Asis.Elements,
-  Asis.Expressions;
+  Asis.Elements;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -223,7 +223,7 @@ package body Rules.Record_Declarations is
    procedure Process_Record_Definition (Definition : Asis.Definition) is
 
       procedure Process_Component (Compo : Asis.Expression; In_Variant : Boolean) is
-         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
 
          Compo_Type : Asis.Declaration;
@@ -443,7 +443,7 @@ package body Rules.Record_Declarations is
          end if;
 
          -- Relief! The component has an explicit type
-         Compo_Type := Corresponding_Name_Declaration (Subtype_Simple_Name (Temp));
+         Compo_Type := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Simple_Name (Temp));
 
          Is_Packed := False;
          declare

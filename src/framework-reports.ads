@@ -83,7 +83,11 @@ package Framework.Reports is
    -- Just output the string without formating
 
    type Output_Format is (Source, Gnat, CSV, CSVX, None);
-   type Stats_Levels  is (None, General, Nulls_Only, Full);
+   type Stats_Levels  is range 0 .. 3;
+   No_Stats   : constant Stats_Levels := 0;
+   General    : constant Stats_Levels := 1;
+   Nulls_Only : constant Stats_Levels := 2;
+   Full       : constant Stats_Levels := 3;
 
    Format_Option           : Output_Format := Gnat;
    Just_Created            : Boolean := False;

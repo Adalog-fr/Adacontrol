@@ -53,10 +53,10 @@ with
 
 -- Adactl
 with
-  Framework.Reports,
-  Framework.Variables;
+  Framework.Reports;
 
 package body Adactl_Options is
+   use Framework.Variables;
 
    package Analyzer is
       new Options_Analyzer (Binary_Options => "CDdeEhiIrsTuvwx",
@@ -72,29 +72,25 @@ package body Adactl_Options is
    --
    -- Register option variables
    --
-   pragma Warnings (Off, "package * is not referenced");
+   pragma Warnings (Off, "* is not referenced");
 
    package Register_Debug_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
-                                                         Utilities.Debug_Option,
-                                                         Variable_Name => "DEBUG",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
+     new Framework.Variables.Register_Discrete_Variable (Switch,
+                                                         Debug_Option,
+                                                         Variable_Name => "DEBUG");
    package Register_Exit_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
+     new Framework.Variables.Register_Discrete_Variable (Switch,
                                                          Exit_Option,
-                                                         Variable_Name => "EXIT_ON_ERROR",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
+                                                         Variable_Name => "EXIT_ON_ERROR");
    package Register_Ignore_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
+     new Framework.Variables.Register_Discrete_Variable (Switch,
                                                          Ignore_Option,
-                                                         Variable_Name => "IGNORE",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
+                                                         Variable_Name => "IGNORE");
    package Register_Verbose_Option is
-     new Framework.Variables.Register_Discrete_Variable (Boolean,
-                                                         Utilities.Verbose_Option,
-                                                         Variable_Name => "VERBOSE",
-                                                         Decode        => Framework.Variables.On_Off_To_Boolean);
-   pragma Warnings (On, "package * is not referenced");
+     new Framework.Variables.Register_Discrete_Variable (Switch,
+                                                         Verbose_Option,
+                                                         Variable_Name => "VERBOSE");
+   pragma Warnings (On, "* is not referenced");
 
    ------------------
    -- Option_Error --
@@ -240,7 +236,7 @@ package body Adactl_Options is
          return;
       end if;
 
-      if not Unit_Option and (Ext = ".ADS" or Ext = ".ADB") then
+      if Unit_Option = Off and (Ext = ".ADS" or Ext = ".ADB") then
          -- Take it as a file name
          if Ext = ".ADB" then
             Body_Found := True;
@@ -295,6 +291,15 @@ package body Adactl_Options is
                     & To_Wide_String (Value (Option, Explicit_Required => Required, Default => "")) & ';');
          end if;
       end Value_To_Command;
+
+      function Is_Present (Option : Character) return Switch is
+      begin
+         if Is_Present (Option) then
+            return On;
+         else
+            return Off;
+         end if;
+      end Is_Present;
 
    begin -- Analyse_Options
       --
@@ -415,7 +420,9 @@ package body Adactl_Options is
          for I in Natural range 1 .. Parameter_Count loop
             Add_Unit (To_Wide_String (Parameter (I)));
          end loop;
-         Spec_Option := Spec_Option or not Body_Found;
+         if not Body_Found then
+            Spec_Option := On;
+         end if;
       end if;
 
    exception

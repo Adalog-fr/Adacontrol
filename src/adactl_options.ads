@@ -29,6 +29,10 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Adactl
+with
+  Framework.Variables;
+
 package Adactl_Options is
    pragma Elaborate_Body;  -- For registration of options from the body
 
@@ -38,12 +42,14 @@ package Adactl_Options is
    Action : Action_Kinds;
 
    -- Options are initialized to avoid uninitialized values when Help or Check
-   Spec_Option      : Boolean := False;
-   Recursive_Option : Boolean := False;
-   Ignore_Option    : Boolean := False;
-   Unit_Option      : Boolean := False;
-   Exit_Option      : Boolean := False;
-   Overwrite_Option : Boolean := False;
+   Debug_Option     : Framework.Variables.Switch := Framework.Variables.Off;
+   Exit_Option      : Framework.Variables.Switch := Framework.Variables.Off;
+   Recursive_Option : Framework.Variables.Switch := Framework.Variables.Off;
+   Ignore_Option    : Framework.Variables.Switch := Framework.Variables.Off;
+   Overwrite_Option : Framework.Variables.Switch := Framework.Variables.Off;
+   Spec_Option      : Framework.Variables.Switch := Framework.Variables.Off;
+   Unit_Option      : Framework.Variables.Switch := Framework.Variables.Off;
+   Verbose_Option   : Framework.Variables.Switch := Framework.Variables.Off;
 
    procedure Analyse_Options;
    -- Analyses and sets program options

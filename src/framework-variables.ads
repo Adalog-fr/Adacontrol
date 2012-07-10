@@ -29,64 +29,93 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+  Ada.Strings.Wide_Unbounded;
+
 package Framework.Variables is
    --
    -- Management of rules variables
    --
 
    type Writer_Access is access procedure (Value : Wide_String);
+   type Reader_Access is access function return Wide_String;
    -- Used only for private part of Register_XX_Variable, useless (but harmless) for user
 
+   -- When Instantiating the following generics, Rule_Name and Variable_Name are expected
+   -- to be given in UPPER_CASE
    generic
       Variable      : in out Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
       Rule_Name     : in     Wide_String := "";
       Variable_Name : in     Wide_String;
    package Register_String_Variable is
+      procedure Help_On_Variable;
    private
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_String_Variable;
-
 
    generic
       type Variable_Type is (<>);
       Variable      : in out Variable_Type;
       Rule_Name     : in     Wide_String := "";
       Variable_Name : in     Wide_String;
-      with function Decode (Val : in Wide_String) return Variable_Type is Variable_Type'Wide_Value;
    package Register_Discrete_Variable is
+      procedure Help_On_Variable;
    private
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end Register_Discrete_Variable;
 
+   generic
+      type Variable_Type is (<>);
+      Variable      : in out Variable_Type;
+      Rule_Name     : in     Wide_String := "";
+      Variable_Name : in     Wide_String;
+   package Register_Integer_Variable is
+      procedure Help_On_Variable;
+   private
+      function  Value_Image return Wide_String;
+      procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
+      Writer_Ptr : constant Writer_Access := Writer'Access;
+   end Register_Integer_Variable;
 
    -- For cases where simple assignment is not sufficient, provide the necessary behaviour in
    -- procedure Set_Variable. If Value is incorrect, the procedure shall raise Constraint_Error.
    generic
       with procedure Set_Variable (Val : Wide_String);
+      with function  Variable_Value return Wide_String;
       Rule_Name     : in     Wide_String := "";
       Variable_Name : in     Wide_String;
    package Register_Special_Variable is
    private
-      -- Relay procedure needed, can't take 'Access of formal procedure
+      -- Relay subprograms needed, can't take 'Access of formal procedure
+      function  Value_Image return Wide_String;
       procedure Writer (Val : in Wide_String);
+      Reader_Ptr : constant Reader_Access := Value_Image'Access;
       Writer_Ptr : constant Writer_Access := Writer'Access;
    end  Register_Special_Variable;
 
-
-   function On_Off_To_Boolean (Val : Wide_String) return Boolean;
-   -- Use as Decode function for boolean variables settable with on/off
-
+   -- Shared type for variables:
+   type Switch is (Off, On);
 
    ---------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
-
    procedure Initialize;
 
    procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Val : in Wide_String);
    No_Such_Variable : exception;
+
+   type Name_List is array (Natural range <>) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   function All_Variables return Name_List;
+
+   function Fetch (Variable : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String) return Wide_String;
 
 end Framework.Variables;

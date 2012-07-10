@@ -55,6 +55,7 @@ with
 
 -- Adactl
 with
+  Adactl_Options,
   Framework.Language.Commands,
   Framework.Language.Scanner,
   Framework.Rules_Manager,
@@ -68,7 +69,7 @@ package body Framework.Language is
 
    In_Parameters : Boolean := False;
    Last_Was_Go   : Boolean := True;
-   -- False if any "controlling" command (check, search, count) has been entered
+   -- False if any "controlling" command (check, search, count, set) has been entered
    -- since the last go command.
 
 
@@ -141,7 +142,7 @@ package body Framework.Language is
    -------------
 
    procedure Compile is
-      use Rules_Manager, Framework.Language.Commands, Ada.IO_Exceptions;
+      use Rules_Manager, Framework.Language.Commands, Framework.Variables, Ada.IO_Exceptions;
 
       procedure Process_Error (Occur : Ada.Exceptions.Exception_Occurrence) is
          use Ada.Exceptions, Ada.Characters.Handling;
@@ -403,7 +404,6 @@ package body Framework.Language is
                                     Syntax_Error ("Variable name expected", Current_Token.Position);
                                  end if;
                                  declare
-                                    use Framework.Variables;
                                     Variable : constant Wide_String := Image (Current_Token);
                                  begin
                                     Next_Token;
@@ -426,8 +426,6 @@ package body Framework.Language is
                                                      Current_Token.Position);
                                  end;
                               else
-                                 declare
-                                    use Framework.Variables;
                                  begin
                                     if Current_Token.Kind in Value_Token_Kind then
                                        Set_Variable (Rule_Id  => "",
@@ -452,6 +450,11 @@ package body Framework.Language is
                               Close_Command;
                            end if;
                         end;
+                        Last_Was_Go := False;
+
+                        -- Mirror Debug and Verbose options
+                        Utilities.Debug_Option   := Adactl_Options.Debug_Option   = On;
+                        Utilities.Verbose_Option := Adactl_Options.Verbose_Option = On;
 
                      when Key_Source =>
                         Next_Token (Force_String => True);
