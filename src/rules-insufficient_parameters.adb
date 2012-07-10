@@ -230,25 +230,34 @@ package body Rules.Insufficient_Parameters is
             return Is_Insufficient (Short_Circuit_Operation_Left_Expression (Expr))
                and Is_Insufficient (Short_Circuit_Operation_Right_Expression (Expr));
 
-         when An_In_Range_Membership_Test
-            | A_Not_In_Range_Membership_Test
-              =>
+         when An_In_Membership_Test
+            | A_Not_In_Membership_Test
+            =>
+            -- Check both tested expression and each membership choice
             declare
-               Result : Control_Kinds_Set := Is_Insufficient (Membership_Test_Expression (Expr));
-               Constr : Asis.Range_Constraint;
+               Result  : Control_Kinds_Set := Is_Insufficient (Membership_Test_Expression (Expr));
+               Choices : constant Asis.Element_List := Membership_Test_Choices (Expr);
             begin
-               Constr := Membership_Test_Range (Expr);
-               if Discrete_Range_Kind (Constr) = A_Discrete_Simple_Expression_Range then
-                  Result := Result and Is_Insufficient (Lower_Bound (Constr))
-                                   and Is_Insufficient (Upper_Bound (Constr));
-               end if;
+               for C in Choices'Range loop
+                  if Element_Kind (Choices (C)) = An_Expression then
+                     Result := Result and Is_Insufficient (Choices (C));
+                  else
+                     -- A range
+                     case Constraint_Kind (Choices (C)) is
+                        when A_Range_Attribute_Reference =>
+                           null;
+                        when A_Simple_Expression_Range =>
+                           if Discrete_Range_Kind (Choices (C)) = A_Discrete_Simple_Expression_Range then
+                              Result := Result and Is_Insufficient (Lower_Bound (Choices (C)))
+                                               and Is_Insufficient (Upper_Bound (Choices (C)));
+                           end if;
+                        when others =>
+                           Failure (Rule_Id & ": Membership_Test_Range => invalid Constraint_Kind");
+                     end case;
+                  end if;
+               end loop;
                return Result;
             end;
-
-         when An_In_Type_Membership_Test
-           | A_Not_In_Type_Membership_Test
-              =>
-            return Is_Insufficient (Membership_Test_Expression (Expr));
 
          when A_Parenthesized_Expression =>
             return Is_Insufficient (Expression_Parenthesized (Expr));

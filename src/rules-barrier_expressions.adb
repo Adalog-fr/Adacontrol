@@ -219,23 +219,27 @@ package body Rules.Barrier_Expressions is
                         when A_Package_Declaration
                            | A_Package_Body_Declaration
                            | A_Package_Renaming_Declaration
-                           | A_Protected_Type_Declaration
-                             =>
+                           =>
                            -- Can appear only as prefix => Harmless
                            null;
                         when A_Function_Declaration
                            | A_Function_Body_Declaration
                            | A_Function_Renaming_Declaration
-                             =>
+                           =>
                            -- Can be a call or a prefix, but the case of the call was handled as
                            -- A_Function_Call
+                           null;
+                        when A_Type_Declaration
+                           | A_Subtype_Declaration
+                           =>
+                           -- Can appear in a membership choice list
                            null;
                         when A_Variable_Declaration
                            | An_Object_Renaming_Declaration
                            | A_Single_Protected_Declaration
                            | A_Loop_Parameter_Specification  -- Consider this (and next) as variables,
                            | An_Entry_Index_Specification    -- although they are strictly speaking constants
-                             =>
+                           =>
                            Do_Report ("variable",
                                       Control_Manager.Association (Contexts, Image (K_Any_Variable)),
                                       Used_Names(N));
@@ -391,37 +395,35 @@ package body Rules.Barrier_Expressions is
                   end loop;
                end;
 
-            when An_In_Range_Membership_Test
-              | A_Not_In_Range_Membership_Test
+            when An_In_Membership_Test
+              | A_Not_In_Membership_Test
               =>
                Do_Report ("membership test",
                           Control_Manager.Association (Contexts, Image (K_Logical_Operator)),
                           Loc => Get_Next_Word_Location (Membership_Test_Expression (Exp)));
 
-               -- Check both tested expression and range
+               -- Check both tested expression and each membership choice
                Check_Expression (Membership_Test_Expression (Exp));
                declare
-                  The_Range : constant Asis.Range_Constraint := Membership_Test_Range (Exp);
+                  Choices : Asis.Element_List := Membership_Test_Choices (Exp);
                begin
-                  case Constraint_Kind (The_Range) is
-                     when A_Range_Attribute_Reference =>
-                        null;
-                     when A_Simple_Expression_Range =>
-                        Check_Expression (Lower_Bound (The_Range));
-                        Check_Expression (Upper_Bound (The_Range));
-                     when others =>
-                        Failure (Rule_Id & ": Membership_Test_Range => invalid Constraint_Kind");
-                  end case;
+                  for C in Choices'Range loop
+                     if Element_Kind (Choices (C)) = An_Expression then
+                        Check_Expression (Choices (C));
+                     else
+                        -- A range
+                        case Constraint_Kind (Choices (C)) is
+                           when A_Range_Attribute_Reference =>
+                              null;
+                           when A_Simple_Expression_Range =>
+                              Check_Expression (Lower_Bound (Choices (C)));
+                              Check_Expression (Upper_Bound (Choices (C)));
+                           when others =>
+                              Failure (Rule_Id & ": Membership_Test_Range => invalid Constraint_Kind");
+                        end case;
+                     end if;
+                  end loop;
                end;
-
-            when An_In_Type_Membership_Test
-              | A_Not_In_Type_Membership_Test
-              =>
-               Do_Report ("membership test",
-                          Control_Manager.Association (Contexts, Image (K_Logical_Operator)));
-
-               -- Check membership test expression
-               Check_Expression (Membership_Test_Expression (Exp));
 
             when An_Indexed_Component =>
                Do_Report ("indexing",

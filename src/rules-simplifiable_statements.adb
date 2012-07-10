@@ -217,7 +217,7 @@ package body Rules.Simplifiable_Statements is
 
                      case Operator_Kind (Func_Name) is
                         when Not_An_Operator =>
-                           Failure ("Wrong operator", Func_Name);
+                           Failure ("Check_Condition: Wrong operator", Func_Name);
 
                         when A_Not_Operator =>
                            -- Traverse parameter only (not the function name)
@@ -288,21 +288,46 @@ package body Rules.Simplifiable_Statements is
          when A_Parenthesized_Expression =>
             Check_Condition (Expression_Parenthesized (Expr), Pivot);
 
-         when An_In_Range_Membership_Test
-           | A_Not_In_Range_Membership_Test
-           =>
-            if Discrete_Constraining_Lengths (Membership_Test_Range (Expr)) = (1 => Not_Static) then
-               raise Not_Appropriate_For_Case;
-            end if;
-            Update_Pivot (Membership_Test_Expression (Expr));
-
-         when An_In_Type_Membership_Test
-           | A_Not_In_Type_Membership_Test
-           =>
-            if Discrete_Constraining_Lengths (Membership_Test_Subtype_Mark (Expr)) = (1 => Not_Static) then
-               raise Not_Appropriate_For_Case;
-            end if;
-            Update_Pivot (Membership_Test_Expression (Expr));
+         when An_In_Membership_Test
+            | A_Not_In_Membership_Test
+            =>
+            -- Check each membership choice
+            declare
+               Choices : constant Asis.Element_List := Membership_Test_Choices (Expr);
+               Name    : Asis.Expression;
+               Decl    : Asis.Declaration;
+            begin
+               for C in Choices'Range loop
+                  if Element_Kind (Choices (C)) = An_Expression then
+                     Name := Simple_Name (Choices (C));
+                     if Expression_Kind (Name) = An_Identifier
+                       and then Declaration_Kind (Corresponding_Name_Declaration (Name))
+                                in An_Ordinary_Type_Declaration .. A_Subtype_Declaration
+                     then
+                        -- in subtype_mark
+                        if Type_Category (Name) in Discrete_Types then
+                          if Discrete_Constraining_Lengths (Name) = (1 => Not_Static) then
+                              raise Not_Appropriate_For_Case;
+                           end if;
+                        else
+                           -- Not a discrete type
+                           raise Not_Appropriate_For_Case;
+                        end if;
+                     else
+                        -- in value
+                        if Static_Expression_Value_Image (Expr) = "" then
+                           raise Not_Appropriate_For_Case;
+                        end if;
+                     end if;
+                  else
+                     -- in range
+                     if Discrete_Constraining_Lengths (Choices (C)) = (1 => Not_Static) then
+                        raise Not_Appropriate_For_Case;
+                     end if;
+                  end if;
+               end loop;
+               Update_Pivot (Membership_Test_Expression (Expr));
+            end;
 
          when A_Type_Conversion
            | A_Qualified_Expression
