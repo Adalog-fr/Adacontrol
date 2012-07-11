@@ -593,15 +593,18 @@ package body Rules.Simplifiable_Statements is
 
          when A_For_Loop_Statement =>
             if Rule_Used (Stmt_Dead) then
-               if Discrete_Constraining_Lengths (Specification_Subtype_Definition
-                                                 (For_Loop_Parameter_Specification
-                                                  (Stmt)))(1) = 0
-               then
-                  Report (Rule_Id,
-                          Usage (Stmt_Dead),
-                          Get_Location (Stmt),
-                          "for loop is never executed");
-               end if;
+               declare
+                  Loop_Spec : constant  Asis.Declaration := For_Loop_Parameter_Specification (Stmt);
+               begin
+                  if Declaration_Kind (Loop_Spec) = A_Loop_Parameter_Specification  -- 2012 Ignore other forms
+                    and then Discrete_Constraining_Lengths (Specification_Subtype_Definition (Loop_Spec)) (1) = 0
+                  then
+                     Report (Rule_Id,
+                             Usage (Stmt_Dead),
+                             Get_Location (Stmt),
+                             "for loop is never executed");
+                  end if;
+               end;
             end if;
 
          when A_While_Loop_Statement =>

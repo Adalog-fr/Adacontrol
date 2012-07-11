@@ -387,19 +387,30 @@ package body Rules.Statements is
             end;
 
          when A_For_Loop_Statement =>
-            Do_Report (Stmt_For_Loop);
-
             if Is_Nil (Statement_Identifier (Element)) then
                Do_Report (Stmt_Unnamed_For_Loop);
             end if;
 
-            if Discrete_Range_Kind (Specification_Subtype_Definition
-                                    (For_Loop_Parameter_Specification
-                                     (Element))) = A_Discrete_Simple_Expression_Range
-            then
-               Do_Report (Stmt_Untyped_For);
-            end if;
+            declare
+               Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Element);
+            begin
+               case Declaration_Kind (Loop_Spec) is
+                  when A_Loop_Parameter_Specification =>
+                     Do_Report (Stmt_For_Loop);
 
+                     if Discrete_Range_Kind (Specification_Subtype_Definition
+                                             (Loop_Spec)) = A_Discrete_Simple_Expression_Range
+                     then
+                        Do_Report (Stmt_Untyped_For);
+                     end if;
+                  when An_Element_Iterator_Specification =>
+                     null;
+                  when  A_Generalized_Iterator_Specification =>
+                     null; --TBSL
+                  when others =>
+                     Failure ("Process_Statement: unknown ""for"" iterator", Loop_Spec);
+               end case;
+            end;
          when A_Goto_Statement =>
             Do_Report (Stmt_Goto);
 

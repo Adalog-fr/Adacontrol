@@ -661,6 +661,10 @@ package body Framework.Ruler is
    is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Utilities;
+
+      -- Declarations to be added in ASIS 2012:
+      subtype A_Statement_Path   is Path_Kinds range An_If_Path .. A_Then_Abort_Path;
+      subtype An_Expression_Path is Path_Kinds range A_Case_Expression_Path .. An_Else_Expression_Path;
    begin
       case Element_Kind (Element) is
          when A_Declaration =>
@@ -768,6 +772,10 @@ package body Framework.Ruler is
                   Post_Procedure (Element, Control, State);
                   Control := Abandon_Children;
 
+               when An_Aspect_Specification =>
+                  -- 2012, ignored for the moment
+                  Control := Abandon_Children;
+
                when others =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
@@ -810,11 +818,13 @@ package body Framework.Ruler is
             end case;
 
          when A_Path =>
-                  Framework.Plugs.         Pre_Procedure (Element);
-                  Framework.Specific_Plugs.Pre_Procedure (Element);
+            Framework.Plugs.         Pre_Procedure (Element);
+            Framework.Specific_Plugs.Pre_Procedure (Element);
 
-                  Framework.Plugs.         Enter_Statement_List (Element);
-                  Framework.Specific_Plugs.Enter_Statement_List (Element);
+            if Path_Kind (Element) in A_Statement_Path then
+               Framework.Plugs.         Enter_Statement_List (Element);
+               Framework.Specific_Plugs.Enter_Statement_List (Element);
+            end if;
 
          when An_Expression =>
             case Expression_Kind (Element) is
