@@ -47,6 +47,9 @@ Exception_Propagation
 Expressions: 
    added subrules array_range, array_non_static_range
 
+Statements:
+  added For_In_Loop, For_Of_Loop
+
 Style (Exposed_Literal)
    treat negative numbers as if they were literals
 

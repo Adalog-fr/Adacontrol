@@ -73,7 +73,8 @@ package body Rules.Statements is
                      Stmt_Exit_Expanded_Name,      Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,
                      Stmt_Exit_While_Loop,         Stmt_Exited_Extended_Return, Stmt_Extended_Return,
 
-                     Stmt_For_Loop,                Stmt_Function_Return,
+                     Stmt_For_Loop,                Stmt_For_In_Loop,             Stmt_For_Of_Loop,
+                     Stmt_Function_Return,
 
                      Stmt_Goto,
 
@@ -387,16 +388,14 @@ package body Rules.Statements is
             end;
 
          when A_For_Loop_Statement =>
-            if Is_Nil (Statement_Identifier (Element)) then
-               Do_Report (Stmt_Unnamed_For_Loop);
-            end if;
-
             declare
                Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Element);
             begin
+               Do_Report (Stmt_For_Loop);
+
                case Declaration_Kind (Loop_Spec) is
                   when A_Loop_Parameter_Specification =>
-                     Do_Report (Stmt_For_Loop);
+                     Do_Report (Stmt_For_In_Loop);
 
                      if Discrete_Range_Kind (Specification_Subtype_Definition
                                              (Loop_Spec)) = A_Discrete_Simple_Expression_Range
@@ -404,13 +403,18 @@ package body Rules.Statements is
                         Do_Report (Stmt_Untyped_For);
                      end if;
                   when An_Element_Iterator_Specification =>
-                     null;
+                     Do_Report (Stmt_For_Of_Loop);
                   when  A_Generalized_Iterator_Specification =>
                      null; --TBSL
                   when others =>
                      Failure ("Process_Statement: unknown ""for"" iterator", Loop_Spec);
                end case;
+
+               if Is_Nil (Statement_Identifier (Element)) then
+                  Do_Report (Stmt_Unnamed_For_Loop);
+               end if;
             end;
+
          when A_Goto_Statement =>
             Do_Report (Stmt_Goto);
 

@@ -46,6 +46,8 @@ Loop_Stmts:       check  statements (exit_for_loop,
                                      exit_while_loop,
                                      exit_outer_loop,
                                      for_loop,
+                                     for_in_loop,
+                                     for_of_loop,
                                      loop_return,
                                      multiple_exits,
                                      simple_loop,
@@ -58,4 +60,3 @@ Loop_Stmts:       check  statements (exit_for_loop,
 If_Count   : count statements (if);
 Case_Count : count statements (case);
 All_Stmts  : count statements (any_statement);
-

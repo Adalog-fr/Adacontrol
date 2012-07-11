@@ -1,4 +1,4 @@
-pragma Ada_2005;
+pragma Ada_2012;
 with Ada.Calendar; use Ada.Calendar;
 procedure T_statements is
    procedure Test_Raise is separate;
@@ -115,7 +115,7 @@ procedure T_statements is
 
    function F_Ext_Return return Integer is
    begin
-      For_Exit:                          -- For_Loop
+      For_Exit:                          -- For_Loop, For_In_Loop
       for I in Integer range 1..10 loop
          return X : Integer do           -- Function_Return OK (first return), Loop_Return, Extended_Return, Exited_Extended_Return
             if I = 3 then                -- No_Else
@@ -195,18 +195,18 @@ B2:begin                   -- Block
 
    while Bool  loop null; end loop;  -- While_Loop, Unnamed_While_Loop, Null
 
-   for I in 1..10 loop null; end loop;               -- For_Loop, Unnamed_For_Loop, Untyped_For, Null
-   for I in Integer range 1..10 loop null; end loop; -- For_Loop, Unnamed_For_Loop, Null
+   for I in 1..10 loop null; end loop;               -- For_Loop, For_In_Loop, Unnamed_For_Loop, Untyped_For, Null
+   for I in Integer range 1..10 loop null; end loop; -- For_Loop, For_In_Loop, Unnamed_For_Loop, Null
 
    --
    -- Check Unnamed_Multiple_Loop
    --
 
-   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed_For_Loop
+   for I in Integer range 1 .. 10 loop   -- For_Loop, For_In_Loop, Unnamed_For_Loop
       P;
    end loop;
 
-   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed_Multiple_Loop
+   for I in Integer range 1 .. 10 loop   -- For_Loop, For_In_Loop, Unnamed_Multiple_Loop
       P;
       while I /= 0 loop                  -- While_Loop, Unnamed_While_Loop, Unnamed_Multiple_Loop
          null;                           -- Null
@@ -214,28 +214,28 @@ B2:begin                   -- Block
    end loop;
 
 
-   L1 : for I in Integer range 1 .. 10 loop  -- For_Loop
+   L1 : for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       Venum := VA;
       while Venum /= VA loop             -- While_Loop, Unnamed_While_Loop, Unnamed_Multiple_Loop
          null;                           -- Null
       end loop;
    end loop L1;
 
-   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
+   for I in Integer range 1 .. 10 loop   -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
       Venum := VA;
       L2: while Venum /= VA loop         -- While_Loop
          null;                           -- Null
       end loop L2;
    end loop;
 
-L3: for I in Integer range 1 .. 10 loop  -- For_Loop
+L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       Venum := VA;
       L4: while Venum /= VA loop         -- While_Loop
          null;                           -- Null
       end loop L4;
    end loop L3;
 
-   for I in Integer range 1 .. 10 loop   -- For_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
+   for I in Integer range 1 .. 10 loop   -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
       Venum := VA;
       L5: while Venum /= VA loop         -- While_Loop
          null;                           -- Null
@@ -245,32 +245,45 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
       end loop;
    end loop;
 
+   -- Check for .. of looops
+   declare                               -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
+      S : String (1 .. 10);
+   begin
+      for C of S loop                    -- For_Loop, For_Of_Loop, Unnamed_For_Loop
+         null;                           -- Null
+      end loop;
+
+      L6 : for C of S (2..8) loop        -- For_Loop, For_Of_Loop
+         null;                           -- Null
+      end loop L6;
+   end;
+
    -- Check nesting of bodies
 
-   for I in Integer range 1 .. 10 loop        -- For_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
+   for I in Integer range 1 .. 10 loop        -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
       begin                                   -- Block, Unnamed_Block
-         for J in Integer range 1 .. 10 loop  -- For_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
+         for J in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
             null;                             -- Null
          end loop;
       end;
    end loop;
 
-   for I in Integer range 1 .. 10 loop        -- For_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
+   for I in Integer range 1 .. 10 loop        -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
       begin                                   -- Block, Unnamed_Block
          null;                                -- Null
       exception
          when Constraint_Error =>
-            for J in Integer range 1 .. 10 loop -- For_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
+            for J in Integer range 1 .. 10 loop -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
                null;                            -- Null
             end loop;
       end;
    end loop;
 
-   for I in Integer range 1 .. 10 loop          -- For_Loop, Unnamed_For_Loop
+   for I in Integer range 1 .. 10 loop          -- For_Loop, For_In_Loop, Unnamed_For_Loop
       declare                                   -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
          procedure Proc is
          begin
-            for J in Integer range 1 .. 10 loop -- For_Loop, Unnamed_For_Loop
+            for J in Integer range 1 .. 10 loop -- For_Loop, For_In_Loop, Unnamed_For_Loop
                null;                            -- Null
             end loop;
          end Proc;
@@ -286,9 +299,9 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
 
       task body T2 is
       begin
-         for I in Integer range 1 .. 10 loop       -- For_Loop, Unnamed_For_Loop
+         for I in Integer range 1 .. 10 loop       -- For_Loop, For_In_Loop, Unnamed_For_Loop
             accept E do
-               for J in Integer range 1 .. 10 loop -- For_Loop, Unnamed_For_Loop
+               for J in Integer range 1 .. 10 loop -- For_Loop, For_In_Loop, Unnamed_For_Loop
                   null;                            -- Null
                end loop;
             end E;
@@ -327,7 +340,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
                      begin
                         TL:loop                    -- simple_loop
                            accept E do
-                              for J in Integer range 1 .. 10 loop -- For_Loop, Unnamed_For_Loop
+                              for J in Integer range 1 .. 10 loop -- For_Loop, For_In_Loop, Unnamed_For_Loop
                                  if J = 5 then                    -- No_Else
                                     return;                       -- Loop_Return, accept_return
                                  end if;
@@ -343,7 +356,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop
                   null;                           -- Null
                end;
                exit when True;                    -- unnamed exit, exit
-               XL1: for I in 1..10 loop           -- For_Loop, untyped for
+               XL1: for I in 1..10 loop           -- For_Loop, For_In_Loop, untyped for
                   exit Outer;                     -- multiple_exits, unconditional_exit, exit
                   while X /= 0 loop               -- While_Loop, Unnamed_While_Loop, Unnamed_Multiple_Loop
                      exit when X = 2;             -- Exit_while_loop, Unnamed_Loop_Exited
