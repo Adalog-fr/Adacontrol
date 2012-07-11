@@ -310,8 +310,8 @@ package body Framework.Language.Commands is
       elsif Upper_On = "RULES" then
          Help_On_Names (Pretty => True);
 
-      elsif Upper_On = "VARIABLE" or else Starts_With (Upper_On, "VARIABLE ") then
-         Help_On_Variables (Trim (On (On'First + 9 .. On'Last), Both));
+      elsif Upper_On = "VARIABLES" or else Starts_With (Upper_On, "VARIABLES ") then
+         Help_On_Variables (Trim (On (On'First + 10 .. On'Last), Both));
 
       elsif Upper_On = "VERSION" then
          User_Message ("ADACTL v. "

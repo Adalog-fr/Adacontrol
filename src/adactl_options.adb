@@ -142,6 +142,7 @@ package body Adactl_Options is
       User_Message ("   -h list      prints all rules names (GPS format)");
       User_Message ("   -h options   prints command-line options help");
       User_Message ("   -h rules     prints all rules names (normal format)");
+      User_Message ("   -h variables prints values of all global and rules variables");
       User_Message ("   -h version   prints version information");
       User_Message ("   -I           interactive mode");
       User_Message ("   -D           generate dependencies");
