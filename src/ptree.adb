@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------
 -- Program PTREE                                                    --
--- (C) Copyright 2001-2011 ADALOG                                   --
+-- (C) Copyright 2001-2012 ADALOG                                   --
 -- Author: J-P. Rosen                                               --
 --                                                                  --
 -- Prints a graphic representation of an ASIS tree                  --
@@ -62,6 +62,8 @@ procedure Ptree is
    use Asis;
    use Compilation_Units, Elements;
 
+   Version : constant Wide_String := "1.1";  -- Assume previous unnumbered versions were 1.0
+
    Force_Spec : Boolean := False;
 
    Unit_Name    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
@@ -85,15 +87,20 @@ procedure Ptree is
    ----------------
 
    procedure Print_Help is
-      use Ada.Wide_Text_IO;
+      use Ada.Wide_Text_IO, Ada.Characters.Handling, Asis.Implementation;
    begin
-      Put_Line ("PTREE: prints the logical nesting of ASIS elements for a unit");
+      Put_Line ("ptree " & Version & " with " & ASIS_Implementor_Version);
+      if Parameter_Count > 0 and then To_Upper (Parameter (1)) = "VERSION" then
+         return;
+      end if;
+
+      Put_Line ("prints the logical nesting of ASIS elements for a unit");
       Put_Line ("Usage: ptree [-sS] [-p <project_file>] <unit>[:<line_number>[:<column_number>]] -- <ASIS_Options>");
-      Put_Line ("   or: ptree -h");
+      Put_Line ("   or: ptree -h [version]");
       New_Line;
 
       Put_Line ("Options:");
-      Put_Line ("   -h      prints this help message");
+      Put_Line ("   -h      prints this help message (only version number if followed by ""version""");
       Put_Line ("   -p file specify an emacs ada-mode project file (.adp)");
       Put_Line ("   -s      process specifications only");
       Put_Line ("   -S      print span of each element");
