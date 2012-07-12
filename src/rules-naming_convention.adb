@@ -54,7 +54,8 @@ with
 -- AdaControl
 with
   Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Scope_Manager,
+  Framework.Variables;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
@@ -62,6 +63,15 @@ package body Rules.Naming_Convention is
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
+
+   -- Rule variables
+   Default_Case_Sensitivity : Framework.Variables.Switch := Framework.Variables.Off;
+
+   package Register_Default_Case_Sensitivity is new
+     Framework.Variables.Register_Discrete_Variable (Framework.Variables.Switch,
+                                                     Default_Case_Sensitivity,
+                                                     Rule_Name     => Rule_Id,
+                                                     Variable_Name => "DEFAULT_CASE_SENSITIVITY");
 
    -- Here are all keywords for classifying naming conventions
    -- To add a new one, just add it to the type Keys, and insert it at the appropriate places
@@ -221,6 +231,8 @@ package body Rules.Naming_Convention is
       User_Message  ("Parameter 1: [root] [others] [global|local|unit]");
       Help_On_Flags ("                ");
       User_Message  ("Parameter 2..N: [case_sensitive|case_insensitive] [not] ""<name pattern>""");
+      User_Message ("Variables:");
+      Register_Default_Case_Sensitivity.Help_On_Variable;
    end Help;
 
    -----------------
@@ -253,9 +265,10 @@ package body Rules.Naming_Convention is
 
       while Parameter_Exists loop
          declare
+            use Framework.Variables;
             Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
                                                                 False_KW => "CASE_SENSITIVE",
-                                                                Default  => True);
+                                                                Default  => Default_Case_Sensitivity = Off);
             Is_Not      : constant Boolean     := Get_Modifier ("NOT");
             Pattern     : constant Wide_String := Get_String_Parameter;
          begin

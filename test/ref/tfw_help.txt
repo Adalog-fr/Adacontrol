@@ -398,6 +398,8 @@ Parameter 1: [root] [others] [global|local|unit]
                  generic_package_renaming   | generic_sp_renaming       |
                  generic_procedure_renaming | generic_function_renaming
 Parameter 2..N: [case_sensitive|case_insensitive] [not] "<name pattern>"
+Variables:
+Naming_Convention.Default_Case_Sensitivity: Off, On (OFF)
 ----
 Rule: NON_STATIC
 Control that indicated contexts use only static expressions
