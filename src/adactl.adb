@@ -57,12 +57,12 @@ with
   Framework.Language,
   Framework.Reports,
   Framework.Rules_Manager,
-  Framework.Variables;
+  Framework.Variables.Shared_Types;
 
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Calendar;
    use Asis.Implementation;
-   use Utilities, Adactl_Options, Framework.Variables;
+   use Utilities, Adactl_Options, Framework.Variables.Shared_types;
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -187,7 +187,7 @@ exception
             Stack_Traceback (Occur);
             Execute ("help version;");
             Ada.Command_Line.Set_Exit_Status (Failure);
-            if Exit_Option = On then
+            if Exit_Option.Value = On then
                raise;
             end if;
       end case;
@@ -207,14 +207,14 @@ exception
       Stack_Traceback (Occur);
       Execute ("help version;");
       Ada.Command_Line.Set_Exit_Status (Failure);
-      if Exit_Option = On then
+      if Exit_Option.Value = On then
          raise;
       end if;
 
    when Framework.Interrupt.Interrupted =>
       User_Message ("Interrupted");
       Ada.Command_Line.Set_Exit_Status (Failure);
-      if Exit_Option = On then
+      if Exit_Option.Value = On then
          raise;
       end if;
 
@@ -224,7 +224,7 @@ exception
       Stack_Traceback (Occur);
       Execute ("help version;");
       Ada.Command_Line.Set_Exit_Status (Failure);
-      if Exit_Option = On then
+      if Exit_Option.Value = On then
          raise;
       end if;
 end Adactl;

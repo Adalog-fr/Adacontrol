@@ -31,7 +31,8 @@
 
 -- AdaControl
 with
-   Framework.Control_Manager;
+   Framework.Control_Manager,
+   Framework.Variables;
 
 package Framework.Reports is
 
@@ -83,14 +84,17 @@ package Framework.Reports is
    -- Just output the string without formating
 
    type Output_Format is (Source, Gnat, CSV, CSVX, None);
+   -- None must stay last
+   function Current_Format return Output_Format;
+
    type Stats_Levels  is range 0 .. 3;
    No_Stats   : constant Stats_Levels := 0;
    General    : constant Stats_Levels := 1;
    Nulls_Only : constant Stats_Levels := 2;
    Full       : constant Stats_Levels := 3;
+   package Stats_Levels_Type is new Framework.Variables.Integer_Type (Stats_Levels);
 
-   Format_Option           : Output_Format := Gnat;
-   Just_Created            : Boolean := False;
+   Just_Created  : Boolean := False;
 
    function Nb_Errors   return Natural;
    function Nb_Warnings return Natural;

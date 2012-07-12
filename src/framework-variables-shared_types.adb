@@ -1,8 +1,8 @@
 ----------------------------------------------------------------------
---  Adactl_Options - Package specification                          --
+--  Framework.Variables.Shared_Types - Package body                 --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2012. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
@@ -29,50 +29,24 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Adactl
-with
-  Framework.Variables.Shared_types;
+package body Framework.Variables.Shared_types is
+   package body String_Type is
+      procedure Set (Variable : in out String_Type.Object; To : Wide_String) is
+      begin
+         Variable.Value := To_Unbounded_Wide_String (To);
+      end Set;
 
-package Adactl_Options is
-   pragma Elaborate_Body;  -- For registration of options from the body
-   use Framework.Variables.Shared_Types;
+      function Value_Image  (Variable : in String_Type.Object) return Wide_String is
+      begin
+         return '"' & To_Wide_String (Variable.Value) & '"';
+      end Value_Image;
 
-   type Action_Kinds is (Help, Check, Process, Interactive_Process, Dependents);
-   subtype No_Asis_Actions is Action_Kinds range Help .. Check;
+      function All_Values (Variable : in String_Type.Object) return Wide_String is
+         pragma Unreferenced (Variable);
+      begin
+         return "String";
 
-   Action : Action_Kinds;
+      end All_Values;
+   end String_Type;
 
-   -- Options are initialized to avoid uninitialized values when Help or Check
-   -- Implemented as rule variables:
-   Debug_Option     : aliased Switch_Type.Object := (Value => Off);
-   Exit_Option      : aliased Switch_Type.Object := (Value => Off);
-   Ignore_Option    : aliased Switch_Type.Object := (Value => Off);
-   Verbose_Option   : aliased Switch_Type.Object := (Value => Off);
-
-   -- Implemented as Ada variables (not settable with the set command):
-   Recursive_Option : Switch :=  Off;
-   Overwrite_Option : Switch :=  Off;
-   Spec_Option      : Switch :=  Off;
-   Unit_Option      : Switch :=  Off;
-
-   procedure Analyse_Options;
-   -- Analyses and sets program options
-
-   procedure Help_On_Options;
-   -- Help on command line options
-
-   function Asis_Options return Wide_String;
-   -- Returns ASIS options passed by command line
-
-   function Command_Line_Commands return Wide_String;
-   -- Return the commands stated as options on the command line
-
-   function Ada_Units_List return Wide_String;
-   -- Returns list of Ada units to process
-
-   function Initialize_String return Wide_String;
-   -- Returns a initialize string
-
-   Options_Error : exception;
-
-end Adactl_Options;
+end Framework.Variables.Shared_types;

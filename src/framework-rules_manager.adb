@@ -50,23 +50,17 @@ pragma Elaborate_All (Binary_Map);
 with
   Framework.Control_Manager,
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Variables,
+  Framework.Variables.Shared_types,
   Framework.Reports;
 
 package body Framework.Rules_Manager is
-   use Framework.Variables;
+   use Framework.Variables.Shared_Types;
 
    --
    -- User settable variables
    --
-   Timing_Option : Switch := Off;
+   Timing_Option : aliased Switch_Type.Object := (Value => Off);
 
-   pragma Warnings (Off, "* is not referenced");
-   package Register_Timing_Option is
-     new Framework.Variables.Register_Discrete_Variable (Switch,
-                                                         Timing_Option,
-                                                         Variable_Name => "TIMING");
-   pragma Warnings (On, "* is not referenced");
 
    --
    -- Local variables
@@ -162,14 +156,14 @@ package body Framework.Rules_Manager is
    procedure Enter (Rule : Wide_String) is
       use Ada.Calendar;
    begin
-      if Timing_Option = On and Last_Rule_Length /= 0 then
+      if Timing_Option.Value = On and Last_Rule_Length /= 0 then
          Accumulate_Time;
       end if;
 
       Last_Rule_Name (1 .. Rule'Length) := Rule;
       Last_Rule_Length                  := Rule'Length;
 
-      if Timing_Option = On then
+      if Timing_Option.Value = On then
          Last_Rule_Start := Clock;
       end if;
    end Enter;
@@ -420,7 +414,7 @@ package body Framework.Rules_Manager is
 
          Raw_Trace (To_Wide_String (Rule)
                     and Duration'Wide_Image (Info.Total_Time)
-                        & Choose (Format_Option in CSV .. None, "", "s."));
+                        & Choose (Current_Format in CSV .. None, "", "s."));
          Info.Total_Time := 0.0;
       end Report_One_Timing;
 
@@ -432,10 +426,10 @@ package body Framework.Rules_Manager is
          return;
       end if;
 
-      if Timing_Option = On then
+      if Timing_Option.Value = On then
          Accumulate_Time;
 
-         if Format_Option in CSV .. CSVX then
+         if Current_Format in CSV .. CSVX then
             Raw_Trace ("Rule" and "Time");
          else
             Raw_Trace ("Rules timing statistics (in s.)");
@@ -545,4 +539,6 @@ package body Framework.Rules_Manager is
    begin
       Rule_List.Balance (Rule_Map);
    end Initialize;
+begin
+     Framework.Variables.Register (Timing_Option'Access, Variable_Name => "TIMING");
 end Framework.Rules_Manager;

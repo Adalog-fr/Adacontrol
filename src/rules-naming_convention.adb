@@ -54,14 +54,18 @@ with
 -- AdaControl
 with
   Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Scope_Manager,
+  Framework.Variables.Shared_types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_types;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
+
+   -- Rule variables
+   Default_Case_Sensitivity : aliased Switch_Type.Object := (Value => Off);
 
    -- Here are all keywords for classifying naming conventions
    -- To add a new one, just add it to the type Keys, and insert it at the appropriate places
@@ -213,7 +217,7 @@ package body Rules.Naming_Convention is
    ----------
 
    procedure Help is
-      use Utilities;
+      use Framework.Variables, Utilities;
    begin
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control the form of allowed (or forbidden) names in declarations");
@@ -221,6 +225,8 @@ package body Rules.Naming_Convention is
       User_Message  ("Parameter 1: [root] [others] [global|local|unit]");
       Help_On_Flags ("                ");
       User_Message  ("Parameter 2..N: [case_sensitive|case_insensitive] [not] ""<name pattern>""");
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Default_Case_Sensitivity");
    end Help;
 
    -----------------
@@ -253,9 +259,10 @@ package body Rules.Naming_Convention is
 
       while Parameter_Exists loop
          declare
+            use Framework.Variables;
             Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
                                                                 False_KW => "CASE_SENSITIVE",
-                                                                Default  => True);
+                                                                Default  => Default_Case_Sensitivity.Value = Off);
             Is_Not      : constant Boolean     := Get_Modifier ("NOT");
             Pattern     : constant Wide_String := Get_String_Parameter;
          begin
@@ -1056,4 +1063,6 @@ begin  -- Rules.Naming_Convention
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+   Framework.Variables.Register (Default_Case_Sensitivity'Access,
+                                 Variable_Name => Rule_Id & ".DEFAULT_CASE_SENSITIVITY");
 end Rules.Naming_Convention;

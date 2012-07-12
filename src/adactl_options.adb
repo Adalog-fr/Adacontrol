@@ -69,29 +69,6 @@ package body Adactl_Options is
 
    Options_Commands : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
-   --
-   -- Register option variables
-   --
-   pragma Warnings (Off, "* is not referenced");
-
-   package Register_Debug_Option is
-     new Framework.Variables.Register_Discrete_Variable (Switch,
-                                                         Debug_Option,
-                                                         Variable_Name => "DEBUG");
-   package Register_Exit_Option is
-     new Framework.Variables.Register_Discrete_Variable (Switch,
-                                                         Exit_Option,
-                                                         Variable_Name => "EXIT_ON_ERROR");
-   package Register_Ignore_Option is
-     new Framework.Variables.Register_Discrete_Variable (Switch,
-                                                         Ignore_Option,
-                                                         Variable_Name => "IGNORE");
-   package Register_Verbose_Option is
-     new Framework.Variables.Register_Discrete_Variable (Switch,
-                                                         Verbose_Option,
-                                                         Variable_Name => "VERBOSE");
-   pragma Warnings (On, "* is not referenced");
-
    ------------------
    -- Option_Error --
    ------------------
@@ -338,11 +315,11 @@ package body Adactl_Options is
       --
       -- Options that are not settable from the command language
       --
-      Recursive_Option := Is_Present (Option => 'r');
-      Spec_Option      := Is_Present (Option => 's');
-      Unit_Option      := Is_Present (Option => 'u');
-      Overwrite_Option := Is_Present (Option => 'w');
-      Exit_Option      := Is_Present (Option => 'x');
+      Recursive_Option  := Is_Present (Option => 'r');
+      Spec_Option       := Is_Present (Option => 's');
+      Unit_Option       := Is_Present (Option => 'u');
+      Overwrite_Option  := Is_Present (Option => 'w');
+      Exit_Option.Value := Is_Present (Option => 'x');
 
       --
       -- Options that are translated into the command language
@@ -480,5 +457,15 @@ package body Adactl_Options is
    begin
       return To_Wide_String (Options_Commands);
    end Command_Line_Commands;
+
+begin
+   --
+   -- Register option variables
+   --
+
+   Register (Debug_Option'Access,   Variable_Name => "DEBUG");
+   Register (Exit_Option'Access,    Variable_Name => "EXIT_ON_ERROR");
+   Register (Ignore_Option'Access,  Variable_Name => "IGNORE");
+   Register (Verbose_Option'Access, Variable_Name => "VERBOSE");
 
 end Adactl_Options;
