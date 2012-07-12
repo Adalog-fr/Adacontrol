@@ -5419,9 +5419,11 @@ package, possibly nested in other packages or generic packages.
 @end itemize
 
 If ``case_sensitive'' is specified, pattern matching considers
-casing. Otherwise (default or ``case_insensitive''), casing is
-irrelevant. Note that the rule checks the name only at the place where
-it is declared; casing might be different when the name is used later.
+casing. Otherwise (``case_insensitive''), casing is irrelevant. The
+default is ``case_insensitive'', and can be changed by setting the
+variable ``Default_Case_Sensitivity'', see below. Note that the rule
+checks the name only at the place where it is declared; casing might
+be different when the name is used later.
 
 If a pattern is preceded by ``not'', then the pattern must @i{not} be
 matched (i.e. the rule reports when there is a match).
@@ -5500,6 +5502,17 @@ check naming_convention
 -- All global variables must start with "G_"
 check naming_convention (global variable, "G_");
 @end example
+
+@subsection Variables
+The rule provides a variable that allows to specify the default
+casing.
+
+@multitable @columnfractions .20 .10 .10 .60
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Default_Case_Sensitivity @tab on/off @tab off @tab if ``on'', controls that do not explicitely specify case sensitivity are case sensitive.
+@end multitable
 
 @subsection Tips
 The rule only checks the casing of identifiers at the place where they
