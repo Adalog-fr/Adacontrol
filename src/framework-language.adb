@@ -59,7 +59,7 @@ with
   Framework.Language.Commands,
   Framework.Language.Scanner,
   Framework.Rules_Manager,
-  Framework.Variables;
+  Framework.Variables.Shared_Types;
 package body Framework.Language is
    use Framework.Language.Scanner, Utilities;
 
@@ -142,7 +142,8 @@ package body Framework.Language is
    -------------
 
    procedure Compile is
-      use Rules_Manager, Framework.Language.Commands, Framework.Variables, Ada.IO_Exceptions;
+      use Rules_Manager, Framework.Language.Commands, Framework.Variables, Framework.Variables.Shared_Types;
+      use Ada.IO_Exceptions;
 
       procedure Process_Error (Occur : Ada.Exceptions.Exception_Occurrence) is
          use Ada.Exceptions, Ada.Characters.Handling;
@@ -408,13 +409,11 @@ package body Framework.Language is
                                  begin
                                     Next_Token;
                                     if Current_Token.Kind in Value_Token_Kind then
-                                       Set_Variable (Rule_Id  => Option,
-                                                     Variable => Variable,
+                                       Set_Variable (Variable => Option & '.' & Variable,
                                                      Val      => Image (Current_Token));
                                        Next_Token;
                                     else  -- default
-                                       Set_Variable (Rule_Id  => Option,
-                                                     Variable => Variable,
+                                       Set_Variable (Variable => Option & '.' & Variable,
                                                      Val      => "");
                                     end if;
                                  exception
@@ -428,13 +427,11 @@ package body Framework.Language is
                               else
                                  begin
                                     if Current_Token.Kind in Value_Token_Kind then
-                                       Set_Variable (Rule_Id  => "",
-                                                     Variable => Option,
+                                       Set_Variable (Variable => Option,
                                                      Val      => Image (Current_Token));
                                        Next_Token;
                                     else  -- default
-                                       Set_Variable (Rule_Id  => "",
-                                                     Variable => Option,
+                                       Set_Variable (Variable => Option,
                                                      Val      => "");
                                     end if;
                                  exception
@@ -453,8 +450,8 @@ package body Framework.Language is
                         Last_Was_Go := False;
 
                         -- Mirror Debug and Verbose options
-                        Utilities.Debug_Option   := Adactl_Options.Debug_Option   = On;
-                        Utilities.Verbose_Option := Adactl_Options.Verbose_Option = On;
+                        Utilities.Debug_Option   := Adactl_Options.Debug_Option.Value   = On;
+                        Utilities.Verbose_Option := Adactl_Options.Verbose_Option.Value = On;
 
                      when Key_Source =>
                         Next_Token (Force_String => True);

@@ -399,7 +399,7 @@ Parameter 1: [root] [others] [global|local|unit]
                  generic_procedure_renaming | generic_function_renaming
 Parameter 2..N: [case_sensitive|case_insensitive] [not] "<name pattern>"
 Variables:
-Naming_Convention.Default_Case_Sensitivity: Off, On (OFF)
+Naming_Convention.Default_Case_Sensitivity: (Off, On) = Off
 ----
 Rule: NON_STATIC
 Control that indicated contexts use only static expressions
@@ -798,5 +798,5 @@ Parameter(s): block | dead           | handler     |
               loop  | loop_for_while | nested_path |
               null
 Variables: 
-Tag1 = "##"
-Tag2 = "##"
+Tag1: String = "##"
+Tag2: String = "##"

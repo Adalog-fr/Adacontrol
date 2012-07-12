@@ -34,75 +34,59 @@ with
   Ada.Strings.Wide_Unbounded;
 
 package Framework.Variables is
+   pragma Elaborate_Body;
+
    --
    -- Management of rules variables
    --
 
-   type Writer_Access is access procedure (Value : Wide_String);
-   type Reader_Access is access function return Wide_String;
-   -- Used only for private part of Register_XX_Variable, useless (but harmless) for user
 
-   -- When Instantiating the following generics, Rule_Name and Variable_Name are expected
-   -- to be given in UPPER_CASE
-   generic
-      Variable      : in out Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-      Rule_Name     : in     Wide_String := "";
-      Variable_Name : in     Wide_String;
-   package Register_String_Variable is
-      procedure Help_On_Variable;
-   private
-      function  Value_Image return Wide_String;
-      procedure Writer (Val : in Wide_String);
-      Reader_Ptr : constant Reader_Access := Value_Image'Access;
-      Writer_Ptr : constant Writer_Access := Writer'Access;
-   end Register_String_Variable;
+   --
+   -- Root type for rules variables
+   --
 
-   generic
-      type Variable_Type is (<>);
-      Variable      : in out Variable_Type;
-      Rule_Name     : in     Wide_String := "";
-      Variable_Name : in     Wide_String;
-   package Register_Discrete_Variable is
-      procedure Help_On_Variable;
-   private
-      function  Value_Image return Wide_String;
-      procedure Writer (Val : in Wide_String);
-      Reader_Ptr : constant Reader_Access := Value_Image'Access;
-      Writer_Ptr : constant Writer_Access := Writer'Access;
-   end Register_Discrete_Variable;
+   type Object is abstract tagged null record;
+   subtype Class is Object'Class;
+   type Class_Access is access all Class;
+
+   -- Methods:
+   procedure Set (Variable : in out Variables.Object; To : Wide_String)      is abstract;
+   function  Value_Image (Variable : in Variables.Object) return Wide_String is abstract;
+   function  All_Values  (Variable : in Variables.Object) return Wide_String is abstract;
+
+   -- Class_Wide subprograms:
+   procedure Register (The_Variable  : Variables.Class_Access;
+                       Variable_Name : Wide_String);
+   -- Rule_Name and Variable_Name are expected to be given in UPPER_CASE
+   procedure Help_On_Variable (Variable_Name : Wide_String);
+
+   --
+   -- Generic generators for subclasses
+   --
 
    generic
-      type Variable_Type is (<>);
-      Variable      : in out Variable_Type;
-      Rule_Name     : in     Wide_String := "";
-      Variable_Name : in     Wide_String;
-   package Register_Integer_Variable is
-      procedure Help_On_Variable;
-   private
-      function  Value_Image return Wide_String;
-      procedure Writer (Val : in Wide_String);
-      Reader_Ptr : constant Reader_Access := Value_Image'Access;
-      Writer_Ptr : constant Writer_Access := Writer'Access;
-   end Register_Integer_Variable;
+      type Value_Type is (<>);
+   package Discrete_Type is
+      type Object is new Variables.Object with
+         record
+            Value : Value_Type;
+         end record;
+      procedure Set (Variable : in out Discrete_Type.Object; To : Wide_String);
+      function  Value_Image (Variable : in Discrete_Type.Object) return Wide_String;
+      function  All_Values  (Variable : in Discrete_Type.Object) return Wide_String;
+   end Discrete_Type;
 
-   -- For cases where simple assignment is not sufficient, provide the necessary behaviour in
-   -- procedure Set_Variable. If Value is incorrect, the procedure shall raise Constraint_Error.
    generic
-      with procedure Set_Variable (Val : Wide_String);
-      with function  Variable_Value return Wide_String;
-      Rule_Name     : in     Wide_String := "";
-      Variable_Name : in     Wide_String;
-   package Register_Special_Variable is
-   private
-      -- Relay subprograms needed, can't take 'Access of formal procedure
-      function  Value_Image return Wide_String;
-      procedure Writer (Val : in Wide_String);
-      Reader_Ptr : constant Reader_Access := Value_Image'Access;
-      Writer_Ptr : constant Writer_Access := Writer'Access;
-   end  Register_Special_Variable;
-
-   -- Shared type for variables:
-   type Switch is (Off, On);
+      type Value_Type is range <>;
+   package Integer_Type is
+      type Object is new Variables.Object with
+         record
+            Value : Value_Type;
+         end record;
+      procedure Set (Variable : in out Integer_Type.Object; To : Wide_String);
+      function  Value_Image (Variable : in Integer_Type.Object) return Wide_String;
+      function  All_Values  (Variable : in Integer_Type.Object) return Wide_String;
+   end Integer_Type;
 
    ---------------------------------------------------------------------
    --
@@ -110,7 +94,7 @@ package Framework.Variables is
    --
    procedure Initialize;
 
-   procedure Set_Variable (Rule_Id : in Wide_String; Variable : in Wide_String; Val : in Wide_String);
+   procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String);
    No_Such_Variable : exception;
 
    type Name_List is array (Natural range <>) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;

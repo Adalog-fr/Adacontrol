@@ -59,7 +59,7 @@ with
   Framework.Rules_Manager,
   Framework.Scope_Manager,
   Framework.String_Set,
-  Framework.Variables,
+  Framework.Variables.Shared_types,
   Implementation_Options;
 
 package body Framework.Language.Commands is
@@ -114,7 +114,7 @@ package body Framework.Language.Commands is
       User_Message ("Variables: ");
       for V in Var_Names'Range loop
          if Match (To_Wide_String(Var_Names (V)), Pattern, Ignore_Case => True) then
-            User_Message (To_Title (To_Wide_String (Var_Names (V))) & " = " & Fetch (Var_Names (V)));
+            Help_On_Variable (To_Wide_String (Var_Names (V)));
          end if;
       end loop;
    end Help_On_Variables;
@@ -128,7 +128,7 @@ package body Framework.Language.Commands is
 
    procedure Go_Command is
       use Ada.Exceptions, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.Rules_Manager, Framework.Variables;
+      use Adactl_Options, Framework.Rules_Manager, Framework.Variables.Shared_types;
 
       procedure Handle_Exception (Occur : Ada.Exceptions.Exception_Occurrence := Null_Occurrence) is
          use Asis.Exceptions, Ada.Characters.Handling;
@@ -180,7 +180,7 @@ package body Framework.Language.Commands is
             Asis_Exception_Messages;
 
             -- Propagate the exception only if Exit_Option set
-            if Adactl_Options.Exit_Option = On then
+            if Adactl_Options.Exit_Option.Value = On then
                raise;
             end if;
 
@@ -193,7 +193,7 @@ package body Framework.Language.Commands is
             User_Message ("       Message: " & To_Wide_String (Exception_Message (Local_Occur)));
 
             -- Propagate the exception only if Exit_Option set
-            if Adactl_Options.Exit_Option = On then
+            if Adactl_Options.Exit_Option.Value = On then
                raise;
             end if;
       end Handle_Exception;
@@ -260,7 +260,7 @@ package body Framework.Language.Commands is
          exception
             when Framework.Interrupt.Interrupted =>
                Handle_Exception;
-               if Adactl_Options.Exit_Option = On then
+               if Adactl_Options.Exit_Option.Value = On then
                   raise;
                end if;
          end;
@@ -372,7 +372,7 @@ package body Framework.Language.Commands is
 
    procedure Set_Output_Command (Output_File : Wide_String; Force_Overwrite : Boolean) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.String_Set, Framework.Variables;
+      use Adactl_Options, Framework.String_Set, Framework.Variables.Shared_types;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;

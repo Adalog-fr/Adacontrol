@@ -44,65 +44,38 @@ with
 
 -- Adactl
 with
-  Framework.Variables,
+  Framework.Variables.Shared_types,
   Implementation_Options,
   Adactl_Options;
 
 package body Framework.Reports is
-   use Framework.Variables;
+   use Framework.Variables, Framework.Variables.Shared_Types, Stats_Levels_Type;
+
+   package Output_Format_Type is
+      type Object is new Variables.Object with
+         record
+            Value : Output_Format;
+         end record;
+      procedure Set (Variable : in out Output_Format_Type.Object; To : Wide_String);
+      function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String;
+      function  All_Values  (Variable : in Output_Format_Type.Object) return Wide_String;
+   end Output_Format_Type;
 
    --
    -- User settable variables
    --
-   Active_Warning_Option   : Switch       := On;
-   Warning_As_Error_Option : Switch       := Off;
-   Max_Errors              : Natural      := Natural'Last;
-   Max_Messages            : Natural      := Natural'Last;
-   Stats_Level             : Stats_Levels := No_Stats;
+   Active_Warning_Option   : aliased Switch_Type.Object       := (Value => On);
+   Warning_As_Error_Option : aliased Switch_Type.Object       := (Value => Off);
+   Max_Errors              : aliased Natural_Type.Object      := (Value => Natural'Last);
+   Max_Messages            : aliased Natural_Type.Object      := (Value => Natural'Last);
+   Stats_Level             : aliased Stats_Levels_Type.Object := (Value => No_Stats);
 
-   Check_Message           : Unbounded_Wide_String := To_Unbounded_Wide_String ("Error");
-   Search_Message          : Unbounded_Wide_String := To_Unbounded_Wide_String ("Found");
-   Adactl_Tag1             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
-   Adactl_Tag2             : Unbounded_Wide_String := To_Unbounded_Wide_String ("##");
+   Check_Message           : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("Error"));
+   Search_Message          : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("Found"));
+   Adactl_Tag1             : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("##"));
+   Adactl_Tag2             : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("##"));
 
-   pragma Warnings (Off, "* is not referenced");
-
-   procedure Set_Format (Format : in Wide_String);   -- To set Format_Option (declared in spec)
-   function  Format_Image return Wide_String;
-   package Register_Format_Option is
-     new Register_Special_Variable (Set_Format, Format_Image, Variable_Name => "FORMAT");
-
-   package Register_Active_Warning_Option is
-     new Register_Discrete_Variable (Switch,
-                                     Active_Warning_Option,
-                                     Variable_Name => "WARNING");
-   package Register_Warning_As_Error_Option is
-     new Register_Discrete_Variable (Switch,
-                                     Warning_As_Error_Option,
-                                     Variable_Name => "WARNING_AS_ERROR");
-   package Register_Max_Errors is
-     new Register_Integer_Variable (Natural,
-                                    Max_Errors,
-                                    Variable_Name => "MAX_ERRORS");
-   package Register_Max_Messages is
-     new Register_Integer_Variable (Natural,
-                                    Max_Messages,
-                                    Variable_Name => "MAX_MESSAGES");
-
-   package Register_Stats_Level is
-     new Register_Integer_Variable (Stats_Levels,
-                                    Stats_Level,
-                                    Variable_Name => "STATISTICS");
-   package Register_Check_Message is
-     new Register_String_Variable (Check_Message, Variable_Name => "CHECK_KEY");
-   package Register_Search_Message is
-     new Register_String_Variable (Search_Message, Variable_Name => "SEARCH_KEY");
-   package Register_Tag1 is
-     new Register_String_Variable (Adactl_Tag1, Variable_Name => "TAG1");
-   package Register_Tag2 is
-     new Register_String_Variable (Adactl_Tag2, Variable_Name => "TAG2");
-
-   pragma Warnings (On, "* is not referenced");
+   Format_Option           : aliased Output_Format_Type.Object := (Value => Gnat);
 
    --
    -- Local variables
@@ -162,8 +135,8 @@ package body Framework.Reports is
                      Active      : in out Boolean) is
       use Utilities, Ada.Strings.Wide_Fixed;
 
-      Mark1 : constant Wide_String := "--" & To_Wide_String (Adactl_Tag1);
-      Mark2 : constant Wide_String := To_Wide_String (Adactl_Tag2);
+      Mark1 : constant Wide_String := "--" & To_Wide_String (Adactl_Tag1.Value);
+      Mark2 : constant Wide_String := To_Wide_String (Adactl_Tag2.Value);
       Pos   : Natural := Index (Line, Mark1);
 
       function Next_Word return Wide_String is
@@ -280,41 +253,60 @@ package body Framework.Reports is
       -- Active does not change
    end Update;
 
-   ----------------
-   -- Set_Format --
-   ----------------
+   ------------------------
+   -- Output_Format_Type --
+   ------------------------
 
-   procedure Set_Format (Format : Wide_String) is
-      use Utilities;
-      use Ada.Strings.Wide_Fixed;
-      Sep_Pos : Natural := Index (Format, "_");
+   package body Output_Format_Type is
+      procedure Set (Variable : in out Output_Format_Type.Object; To : Wide_String) is
+         use Utilities;
+         use Ada.Strings.Wide_Fixed;
+         Sep_Pos : Natural := Index (To, "_");
+      begin
+         if Sep_Pos = 0 then
+            Sep_Pos            := To'Last + 1;
+            Default_Short_Name := False;
+         elsif To_Upper (To (Sep_Pos .. To'Last)) = "_SHORT" then
+            Default_Short_Name := True;
+         else
+            raise Constraint_Error;
+         end if;
+
+         Variable.Value := Output_Format'Wide_Value (To (To'First .. Sep_Pos - 1)); -- May raise C_E
+      end Set;
+
+      function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String is
+      begin
+         if Default_Short_Name then
+            return Output_Format'Wide_Image (Variable.Value) & "_SHORT";
+         else
+            return Output_Format'Wide_Image (Variable.Value);
+         end if;
+      end Value_Image;
+
+      function  All_Values  (Variable : in Output_Format_Type.Object) return Wide_String is
+         pragma Unreferenced (Variable);
+         use Utilities;
+         Buffer : Unbounded_Wide_String;
+      begin
+         for V in Output_Format range Output_Format'First .. Output_Format'Pred (None) loop
+            Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & ", ");
+            Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & "_SHORT, ");
+         end loop;
+         return
+             To_Wide_String (Buffer)
+           & To_Title (Output_Format'Wide_Image (None));
+      end All_Values;
+   end Output_Format_Type;
+
+   --------------------
+   -- Current_Format --
+   --------------------
+
+   function Current_Format return Output_Format is
    begin
-      if Sep_Pos = 0 then
-         Sep_Pos            := Format'Last + 1;
-         Default_Short_Name := False;
-      elsif To_Upper (Format (Sep_Pos .. Format'Last)) = "_SHORT" then
-        Default_Short_Name := True;
-      else
-         raise Constraint_Error;
-      end if;
-
-      Format_Option := Output_Format'Wide_Value (Format (Format'First .. Sep_Pos - 1)); -- May raise C_E
-   end Set_Format;
-
-
-   ------------------
-   -- Format_Image --
-   ------------------
-
-   function  Format_Image return Wide_String is
-   begin
-      if Default_Short_Name then
-         return Output_Format'Wide_Image (Format_Option) & "_SHORT";
-      else
-         return Output_Format'Wide_Image (Format_Option);
-      end if;
-   end Format_Image;
-
+      return Format_Option.Value;
+   end Current_Format;
 
    -----------
    -- "and" --
@@ -322,11 +314,11 @@ package body Framework.Reports is
 
    function "and" (Left, Right : Wide_String) return Wide_String is
    begin
-      case Format_Option is
+      case Format_Option.Value is
          when Gnat | Source=>
             return Left & ": " & Right;
          when CSV | CSVX | None =>
-            return Left & CSV_Separator (Format_Option) & Right;
+            return Left & CSV_Separator (Format_Option.Value) & Right;
       end case;
    end "and";
 
@@ -384,20 +376,20 @@ package body Framework.Reports is
       begin   -- Issue_Message
          if Just_Created then
             Just_Created := False;
-            case Format_Option is
+            case Format_Option.Value is
                when CSV | CSVX =>
                   Put ("File");
-                  Put (CSV_Separator (Format_Option));
+                  Put (CSV_Separator (Format_Option.Value));
                   Put ("Line");
-                  Put (CSV_Separator (Format_Option));
+                  Put (CSV_Separator (Format_Option.Value));
                   Put ("Col");
-                  Put (CSV_Separator (Format_Option));
+                  Put (CSV_Separator (Format_Option.Value));
                   Put ("Type");
-                  Put (CSV_Separator (Format_Option));
+                  Put (CSV_Separator (Format_Option.Value));
                   Put ("Label");
-                  Put (CSV_Separator (Format_Option));
+                  Put (CSV_Separator (Format_Option.Value));
                   Put ("Rule");
-                  Put (CSV_Separator (Format_Option));
+                  Put (CSV_Separator (Format_Option.Value));
                   Put ("Message");
                   New_Line;
                when others =>
@@ -405,7 +397,7 @@ package body Framework.Reports is
             end case;
          end if;
 
-         case Format_Option is
+         case Format_Option.Value is
             when Gnat =>
                if Loc /= Null_Location then
                   Put (Image (Loc));
@@ -421,15 +413,15 @@ package body Framework.Reports is
                if Loc = Null_Location then
                   Put ("""""" and """""" and """""");
                else
-                  Put (Image (Loc, Separator => CSV_Separator (Format_Option)));
+                  Put (Image (Loc, Separator => CSV_Separator (Format_Option.Value)));
                end if;
-               Put (CSV_Separator (Format_Option));
+               Put (CSV_Separator (Format_Option.Value));
                Put (Title);
-               Put (CSV_Separator (Format_Option));
+               Put (CSV_Separator (Format_Option.Value));
                Put (Choose (Ctl_Label, Otherwise => """"""));
-               Put (CSV_Separator (Format_Option));
+               Put (CSV_Separator (Format_Option.Value));
                Put (Rule_Id);
-               Put (CSV_Separator (Format_Option));
+               Put (CSV_Separator (Format_Option.Value));
                Put (Quote (Msg));
                New_Line;
             when Source =>
@@ -461,7 +453,7 @@ package body Framework.Reports is
       Active : Boolean := True;
 
    begin  -- Report
-      if Error_Count = Max_Errors or Error_Count + Warning_Count = Max_Messages then
+      if Error_Count = Max_Errors.Value or Error_Count + Warning_Count = Max_Messages.Value then
          -- This can happen for finalization messages after the run has been previously cancelled
          -- due to too many errors/messages
          return;
@@ -496,8 +488,8 @@ package body Framework.Reports is
 
       -- Retrieve source line, but only if necessary since it can be quite
       -- a long operation
-      if Format_Option = Source
-        or (Format_Option /= None and Ignore_Option = Off)
+      if Format_Option.Value = Source
+        or (Format_Option.Value /= None and Ignore_Option.Value = Off)
       then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
@@ -510,13 +502,13 @@ package body Framework.Reports is
 
             for I in Natural range 1 .. Get_First_Line (Loc) - 1 loop
                Get_Line (Source_File, Line, Line_Last);
-               if Ignore_Option = Off then
+               if Ignore_Option.Value = Off then
                   Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
                end if;
             end loop;
 
             Get_Line (Source_File, Line, Line_Last);
-            if Ignore_Option = Off then
+            if Ignore_Option.Value = Off then
                Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
             end if;
 
@@ -543,16 +535,16 @@ package body Framework.Reports is
             when Check =>
                Error_Count := Error_Count + 1;
 
-               Issue_Message (To_Wide_String(Check_Message));
+               Issue_Message (To_Wide_String(Check_Message.Value));
             when Search =>
-               if Warning_As_Error_Option = On then
+               if Warning_As_Error_Option.Value = On then
                   Error_Count := Error_Count + 1;
                else
                   Warning_Count := Warning_Count + 1;
                end if;
 
-               if Warning_As_Error_Option = On or else Active_Warning_Option = On then
-                  Issue_Message (To_Wide_String (Search_Message));
+               if Warning_As_Error_Option.Value = On or else Active_Warning_Option.Value = On then
+                  Issue_Message (To_Wide_String (Search_Message.Value));
                end if;
             when Count =>
                Add (Rule_Counter,
@@ -560,7 +552,7 @@ package body Framework.Reports is
                     Fetch (Rule_Counter, To_Unbounded_Wide_String (Label)) + 1);
          end case;
 
-         if Stats_Level >= Nulls_Only then
+         if Stats_Level.Value >= Nulls_Only then
             declare
                Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule_Id
                                                                                    & Choose (Ctl_Label = "",
@@ -571,9 +563,9 @@ package body Framework.Reports is
             end;
          end if;
 
-         if Error_Count = Max_Errors then
+         if Error_Count = Max_Errors.Value then
             Raise_Exception (Cancellation'Identity, Message => "too many errors");
-         elsif Error_Count + Warning_Count = Max_Messages then
+         elsif Error_Count + Warning_Count = Max_Messages.Value then
             Raise_Exception (Cancellation'Identity, Message => "too many messages");
          end if;
       end if;
@@ -654,7 +646,7 @@ package body Framework.Reports is
          end case;
 
          -- Add UNCHECKABLE to statistics, total under "UNCHECKABLE", subtotal under "UNCHECKABLE.<rule>"
-         if Stats_Level >= Nulls_Only then
+         if Stats_Level.Value >= Nulls_Only then
             declare
                use Counters;
                Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("UNCHECKABLE");
@@ -760,11 +752,11 @@ package body Framework.Reports is
       procedure Report_All_Counts is new Iterate (Report_One_Count);
 
    begin -- Report_Counts
-      if Is_Empty (Rule_Counter) or Format_Option = None then
+      if Is_Empty (Rule_Counter) or Format_Option.Value = None then
          return;
       end if;
 
-      case Format_Option is
+      case Format_Option.Value is
          when None =>
             return;
          when CSV | CSVX =>
@@ -864,8 +856,8 @@ package body Framework.Reports is
             Triggered_Count := Triggered_Count + Fetch (Stats_Counters (R), Key, Default_Value => 0);
          end loop;
 
-         if Triggered_Count = 0 or else Stats_Level = Full then
-            case Format_Option is
+         if Triggered_Count = 0 or else Stats_Level.Value = Full then
+            case Format_Option.Value is
                when Gnat | Source =>
                   Put (Wide_Key);
                   Put (": ");
@@ -888,18 +880,18 @@ package body Framework.Reports is
                   -- (Separates rule name from label)
                   for I in Wide_Key'Range loop
                      if Wide_Key (I) = '.' then
-                        Wide_Key (I) := CSV_Separator (Format_Option);
+                        Wide_Key (I) := CSV_Separator (Format_Option.Value);
                         Dot_Found    := True;
                         exit;
                      end if;
                   end loop;
                   Put (Wide_Key);
                   if not Dot_Found then
-                     Put (CSV_Separator (Format_Option));
+                     Put (CSV_Separator (Format_Option.Value));
                   end if;
 
                   for R in Control_Kinds loop
-                     Put (CSV_Separator (Format_Option));
+                     Put (CSV_Separator (Format_Option.Value));
                      Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
                   end loop;
             end case;
@@ -911,18 +903,18 @@ package body Framework.Reports is
 
       use Utilities;
    begin  -- Report_Stats
-      if Stats_Level = No_Stats then
+      if Stats_Level.Value = No_Stats then
          return;
       end if;
 
-      if Stats_Level >= Nulls_Only then
-         if Format_Option /= None then
+      if Stats_Level.Value >= Nulls_Only then
+         if Format_Option.Value /= None then
             -- if format_option = none, there were no messages, and the stats are output in CSVX
             -- we don't need the separator, it is better to have the header line first
             New_Line;
             Put_Line ("Rules usage statistics:");
          end if;
-         case Format_Option is
+         case Format_Option.Value is
             when Gnat | Source =>
                null;
             when CSV | CSVX  | None=>
@@ -931,11 +923,23 @@ package body Framework.Reports is
          Report_All_Stats (Stats_Counters (Control_Kinds'First));
       end if;
 
-      if Stats_Level >= General then
+      if Stats_Level.Value >= General then
          New_Line;
          Put ("Issued messages: Errors = " & Integer_Img (Nb_Errors));
          Put (", Warnings = " & Integer_Img (Nb_Warnings));
          New_Line;
       end if;
    end Report_Stats;
+
+begin
+   Register (Active_Warning_Option'Access,   Variable_Name => "WARNING");
+   Register (Warning_As_Error_Option'Access, Variable_Name => "WARNING_AS_ERROR");
+   Register (Max_Errors'Access,              Variable_Name => "MAX_ERRORS");
+   Register (Max_Messages'Access,            Variable_Name => "MAX_MESSAGES");
+   Register (Stats_Level'Access,             Variable_Name => "STATISTICS");
+   Register (Check_Message'Access,           Variable_Name => "CHECK_KEY");
+   Register (Search_Message'Access,          Variable_Name => "SEARCH_KEY");
+   Register (Adactl_Tag1'Access,             Variable_Name => "TAG1");
+   Register (Adactl_Tag2'Access,             Variable_Name => "TAG2");
+   Register (Format_Option'Access,           Variable_Name => "FORMAT");
 end Framework.Reports;
