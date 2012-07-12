@@ -716,6 +716,7 @@ Special modes:
    -h list      prints all rules names (GPS format)
    -h options   prints command-line options help
    -h rules     prints all rules names (normal format)
+   -h variables prints values of all global and rules variables
    -h version   prints version information
    -I           interactive mode
    -D           generate dependencies

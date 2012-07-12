@@ -68,7 +68,7 @@ package body Framework.Variables is
       procedure Help_On_Variable is
          use Utilities;
       begin
-         User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": ""<string>""");
+         User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": ""<string>"" (" & Value_Image & ')');
       end Help_On_Variable;
 
       function  Value_Image return Wide_String is
@@ -100,7 +100,8 @@ package body Framework.Variables is
          for V in Variable_Type range Variable_Type'First .. Variable_Type'Pred (Variable_Type'Last) loop
             User_Message (To_Title (Variable_Type'Wide_Image (V)) & ", ", Stay_On_Line => True);
          end loop;
-         User_Message (To_Title (Variable_Type'Wide_Image (Variable_Type'Last)));
+         User_Message (To_Title (Variable_Type'Wide_Image (Variable_Type'Last)), Stay_On_Line => True);
+         User_Message ( " (" & Value_Image & ')');
       end Help_On_Variable;
 
       function  Value_Image return Wide_String is
@@ -135,7 +136,8 @@ package body Framework.Variables is
          User_Message (To_Title (Variable_Key (Rule_Name, Variable_Name)) & ": "
                        & Variable_Type'Wide_Image (Variable_Type'First)
                        & " .. "
-                       & Variable_Type'Wide_Image (Variable_Type'Last));
+                       & Variable_Type'Wide_Image (Variable_Type'Last)
+                       & " (" & Value_Image & ')');
       end Help_On_Variable;
 
       function  Value_Image return Wide_String is
