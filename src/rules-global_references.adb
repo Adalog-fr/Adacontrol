@@ -371,6 +371,15 @@ package body Rules.Global_References is
                   null;
             end case;
 
+         when A_Definition =>
+               case Definition_Kind (Element) is
+                  when An_Aspect_Specification =>
+                     -- 2012, ignored for the moment
+                     Control := Abandon_Children;
+                  when others =>
+                     null;
+               end case;
+
          when An_Expression =>
             case Expression_Kind (Element) is
                when A_Function_Call =>

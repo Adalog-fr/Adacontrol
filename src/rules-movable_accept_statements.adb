@@ -502,6 +502,15 @@ package body Rules.Movable_Accept_Statements  is
                   null;
             end case;
 
+         when A_Definition =>
+            case Definition_Kind (Element) is
+               when An_Aspect_Specification =>
+                  -- 2012, ignored for the moment
+                  Control := Abandon_Children;
+               when others =>
+                  null;
+            end case;
+
          when others =>
             null;
       end case;

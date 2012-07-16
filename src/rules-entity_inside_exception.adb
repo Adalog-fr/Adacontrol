@@ -201,6 +201,15 @@ package body Rules.Entity_Inside_Exception is
       use Thick_Queries;
    begin   -- Pre_Procedure
       case Element_Kind (Element) is
+         when A_Definition =>
+            case Definition_Kind (Element) is
+               when An_Aspect_Specification =>
+                  -- 2012, ignored for the moment
+                  Control := Abandon_Children;
+               when others =>
+                  null;
+            end case;
+
          when A_Pragma =>
             -- Do not traverse pragmas
             Control := Abandon_Children;
