@@ -59,7 +59,7 @@ with
   Framework.Rules_Manager,
   Framework.Scope_Manager,
   Framework.String_Set,
-  Framework.Variables.Shared_types,
+  Framework.Variables.Shared_Types,
   Implementation_Options;
 
 package body Framework.Language.Commands is
@@ -128,7 +128,7 @@ package body Framework.Language.Commands is
 
    procedure Go_Command is
       use Ada.Exceptions, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.Rules_Manager, Framework.Variables.Shared_types;
+      use Adactl_Options, Framework.Rules_Manager, Framework.Variables.Shared_Types;
 
       procedure Handle_Exception (Occur : Ada.Exceptions.Exception_Occurrence := Null_Occurrence) is
          use Asis.Exceptions, Ada.Characters.Handling;
@@ -372,7 +372,7 @@ package body Framework.Language.Commands is
 
    procedure Set_Output_Command (Output_File : Wide_String; Force_Overwrite : Boolean) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.String_Set, Framework.Variables.Shared_types;
+      use Adactl_Options, Framework.String_Set, Framework.Variables.Shared_Types;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;

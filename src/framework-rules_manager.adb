@@ -50,7 +50,7 @@ pragma Elaborate_All (Binary_Map);
 with
   Framework.Control_Manager,
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Variables.Shared_types,
+  Framework.Variables.Shared_Types,
   Framework.Reports;
 
 package body Framework.Rules_Manager is

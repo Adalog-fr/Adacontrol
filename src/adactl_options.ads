@@ -31,7 +31,7 @@
 
 -- Adactl
 with
-  Framework.Variables.Shared_types;
+  Framework.Variables.Shared_Types;
 
 package Adactl_Options is
    pragma Elaborate_Body;  -- For registration of options from the body

@@ -29,7 +29,7 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
-package body Framework.Variables.Shared_types is
+package body Framework.Variables.Shared_Types is
    package body String_Type is
       procedure Set (Variable : in out String_Type.Object; To : Wide_String) is
       begin
@@ -49,4 +49,4 @@ package body Framework.Variables.Shared_types is
       end All_Values;
    end String_Type;
 
-end Framework.Variables.Shared_types;
+end Framework.Variables.Shared_Types;

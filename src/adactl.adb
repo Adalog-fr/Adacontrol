@@ -62,7 +62,7 @@ with
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Calendar;
    use Asis.Implementation;
-   use Utilities, Adactl_Options, Framework.Variables.Shared_types;
+   use Utilities, Adactl_Options, Framework.Variables.Shared_Types;
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
