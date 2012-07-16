@@ -120,7 +120,6 @@ package body Framework.Variables is
    package body Integer_Type is
       function  All_Values  (Variable : in Integer_Type.Object) return Wide_String is
          pragma Unreferenced (Variable);
-         use Utilities;
          First_Image : constant Wide_String := Value_Type'Wide_Image (Value_Type'First);
       begin
          return
@@ -149,7 +148,7 @@ package body Framework.Variables is
    ------------------
 
    procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String) is
-      use Utilities, Variables_Map;
+      use Variables_Map;
    begin
       Set (Fetch (Call_Backs, Variable_Key (Variable)).all,
            Val);

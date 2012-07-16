@@ -44,7 +44,7 @@ with
 
 -- Adactl
 with
-  Framework.Variables.Shared_types,
+  Framework.Variables.Shared_Types,
   Implementation_Options,
   Adactl_Options;
 

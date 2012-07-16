@@ -29,7 +29,7 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
-package Framework.Variables.Shared_types is
+package Framework.Variables.Shared_Types is
    --
    -- Concrete class packages for various kinds of rule variables
    --
@@ -48,4 +48,4 @@ package Framework.Variables.Shared_types is
    package Switch_Type is new Discrete_Type (Switch);
 
    package Natural_Type is new Integer_Type (Natural);
-end Framework.Variables.Shared_types;
+end Framework.Variables.Shared_Types;

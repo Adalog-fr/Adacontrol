@@ -35,7 +35,6 @@ with
 
 -- Asis
 with
-  Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
@@ -1453,7 +1452,7 @@ package body Rules.Usage is
    ---------------------------
 
    procedure Process_Instantiation (Instantiation : Asis.Declaration) is
-      use Asis, Asis.Compilation_Units, Asis.Elements, Asis.Declarations;
+      use Asis, Asis.Elements, Asis.Declarations;
       use Thick_Queries;
 
       The_Info    : Null_State;
@@ -1562,9 +1561,7 @@ package body Rules.Usage is
 
       -- Do not check instantiations from the standard library or banned units
       Generic_Name := Simple_Name (Generic_Unit_Name (Instantiation));
-      if Unit_Origin (Enclosing_Compilation_Unit
-                      (A4G_Bugs.Corresponding_Name_Declaration
-                       (Generic_Name))) /=  An_Application_Unit
+      if Ultimate_Origin (Generic_Name) /=  An_Application_Unit
          or Is_Banned (Generic_Name, For_Rule => Rule_Id)
       then
          return;

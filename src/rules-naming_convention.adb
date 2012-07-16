@@ -55,11 +55,11 @@ with
 with
   Framework.Language,
   Framework.Scope_Manager,
-  Framework.Variables.Shared_types;
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
-   use Framework, Framework.Control_Manager, Framework.Variables.Shared_types;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -259,7 +259,6 @@ package body Rules.Naming_Convention is
 
       while Parameter_Exists loop
          declare
-            use Framework.Variables;
             Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
                                                                 False_KW => "CASE_SENSITIVE",
                                                                 Default  => Default_Case_Sensitivity.Value = Off);

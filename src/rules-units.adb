@@ -261,7 +261,9 @@ package body Rules.Units is
       begin
          for N in Names'Range loop
             Id := Names (N);
-            if Unit_Origin (Element_Unit (Id)) = An_Application_Unit then
+            --
+            if Unit_Origin (Element_Unit (Id)) = An_Application_Unit then  --##Rule line off Use_Ultimate_Origin
+                                                                           --  Don't follow renamings here
                loop
                   case Expression_Kind (Id) is
                      when An_Identifier =>

@@ -564,19 +564,13 @@ package body Rules.Potentially_Blocking_Operations is
          Body_Info : Info;
          Decl_Body : Asis.Declaration;
       begin
-         if Is_Present (SP_Property, Decl_Name) then
+         if Is_Present (SP_Property, Decl_Name) and then Is_Nil (PTO_Def) then
             -- If it is present, but PTO_Def is not nil, it is a protected SP that we already
             -- traversed because it was called by some previously analyzed protected operation.
             -- We must traverse it again to get the messages.
-            if Is_Nil (PTO_Def) then
-               Is_Blocking    := Fetch (SP_Property, Decl_Name).Is_Blocking;
-               Referenced_PTO := Fetch (SP_Property, Decl_Name).Referenced_PTO;
-               return;
-            end if;
-         elsif Unit_Origin (Enclosing_Compilation_Unit (Decl)) /= An_Application_Unit then
-            -- This is from the standard library and not marked => not potentially blocking
-            Is_Blocking    := False;
-            Referenced_PTO := Empty_Queue;
+
+            Is_Blocking    := Fetch (SP_Property, Decl_Name).Is_Blocking;
+            Referenced_PTO := Fetch (SP_Property, Decl_Name).Referenced_PTO;
             return;
          end if;
 
@@ -603,7 +597,14 @@ package body Rules.Potentially_Blocking_Operations is
             return;
          end if;
 
-         -- Not already analyzed, not from instance
+         if Ultimate_Origin (Decl) /= An_Application_Unit then
+            -- This is from the standard library and not marked => not potentially blocking
+            Is_Blocking    := False;
+            Referenced_PTO := Empty_Queue;
+            return;
+         end if;
+
+         -- Not already analyzed, not from instance, not from standard library
          -- Here we must check the body
 
          Decl_Body := Corresponding_Body (Decl);
