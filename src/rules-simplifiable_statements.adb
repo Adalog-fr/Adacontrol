@@ -305,12 +305,10 @@ package body Rules.Simplifiable_Statements is
                                 in An_Ordinary_Type_Declaration .. A_Subtype_Declaration
                      then
                         -- in subtype_mark
-                        if Type_Category (Name) in Discrete_Types then
-                          if Discrete_Constraining_Lengths (Name) = (1 => Not_Static) then
-                              raise Not_Appropriate_For_Case;
-                           end if;
-                        else
-                           -- Not a discrete type
+                        if Type_Category (Name) not in Discrete_Types then
+                           raise Not_Appropriate_For_Case;
+                        end if;
+                        if Discrete_Constraining_Lengths (Name) = (1 => Not_Static) then
                            raise Not_Appropriate_For_Case;
                         end if;
                      else
