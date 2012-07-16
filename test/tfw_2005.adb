@@ -35,10 +35,12 @@ procedure Tfw_2005 is
    --  end G;
 
    generic
-      X : in access Integer;       -- Generic anonymous access in
-      Y : in out access Integer;   -- Generic anonymous access in out
-   procedure P;
-   procedure P is begin null; end P;
+--      X : in     access Integer;   -- Generic anonymous access in (not accepted by Gnat)
+      Y :        access Integer;   -- Generic anonymous access in
+      Z : in out access Integer;   -- Generic anonymous access in out
+   procedure GP;
+   procedure GP is begin null; end GP;
+
 begin
    X := F;
    Tab(1) := X;

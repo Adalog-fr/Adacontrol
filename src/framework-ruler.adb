@@ -805,11 +805,11 @@ package body Framework.Ruler is
             end case;
 
          when A_Path =>
-                  Framework.Plugs.         Pre_Procedure (Element);
-                  Framework.Specific_Plugs.Pre_Procedure (Element);
+            Framework.Plugs.         Pre_Procedure (Element);
+            Framework.Specific_Plugs.Pre_Procedure (Element);
 
-                  Framework.Plugs.         Enter_Statement_List (Element);
-                  Framework.Specific_Plugs.Enter_Statement_List (Element);
+            Framework.Plugs.         Enter_Statement_List (Element);
+            Framework.Specific_Plugs.Enter_Statement_List (Element);
 
          when An_Expression =>
             case Expression_Kind (Element) is

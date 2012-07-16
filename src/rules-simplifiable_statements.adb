@@ -217,7 +217,7 @@ package body Rules.Simplifiable_Statements is
 
                      case Operator_Kind (Func_Name) is
                         when Not_An_Operator =>
-                           Failure ("Wrong operator", Func_Name);
+                           Failure ("Check_Condition: Wrong operator", Func_Name);
 
                         when A_Not_Operator =>
                            -- Traverse parameter only (not the function name)
