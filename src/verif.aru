@@ -60,6 +60,9 @@ Avoid_Query: check entities (
    Asis.Definitions.Corresponding_Root_Type,
    Asis.Definitions.Corresponding_Parent_Subtype
 );
+Use_Ultimate_Origin: 
+   check entities (Asis.Compilation_Units.Unit_Origin);
+
 check characters (not_iso_646);
 check header_comments (minimum, 29);
 check max_line_length (120);
