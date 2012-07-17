@@ -304,7 +304,8 @@ procedure Pfni is
                      | A_Component_Declaration
                      | A_Parameter_Specification
                      | A_Formal_Object_Declaration
-                     | A_Return_Object_Declaration
+                     | A_Return_Variable_Specification
+                     | A_Return_Constant_Specification
                        =>
                      Init := Initialization_Expression (Decl);
                      if not Is_Nil (Init) then
