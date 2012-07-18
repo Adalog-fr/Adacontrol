@@ -159,6 +159,7 @@ begin
             Secs      : constant Integer := Exec_Time rem (60 * 10) / 10;
             Tens      : constant Integer := Exec_Time rem 10;
          begin
+            User_Log;
             -- We don't output tens if > 1 min
             User_Log ("Total execution time: "
                         & Choose (Hours /= 0, Integer_Img (Hours) & "h ", "")
