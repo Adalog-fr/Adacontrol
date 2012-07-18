@@ -540,7 +540,7 @@ package body Rules.Potentially_Blocking_Operations is
      -- or Nil_Element if check is not called immediately from a PTO
    is
       use Ada.Strings.Wide_Unbounded;
-      use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Elements;
       use SP_Property_Map, Framework.Element_Queues, Framework.Rules_Manager, Thick_Queries, Utilities;
       Decl : Asis.Declaration := Entity_Decl;
    begin

@@ -150,8 +150,7 @@ package body Framework.Variables is
    procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String) is
       use Variables_Map;
    begin
-      Set (Fetch (Call_Backs, Variable_Key (Variable)).all,
-           Val);
+      Set (Fetch (Call_Backs, Variable_Key (Variable)).all, Val);
    exception
       when Not_Present =>
          -- This exception not visible to clients, transform it
@@ -175,15 +174,15 @@ package body Framework.Variables is
    function All_Variables return Name_List is
       Result : Name_List (1 .. Number_Of_Variables);
       Inx    : Natural := 0;
-      procedure Add_One (Key : Unbounded_Wide_String; Value : in out Class_Access) is
-         pragma Unreferenced (Value);
+      procedure Add_One (Key : Unbounded_Wide_String; Info : in out Class_Access) is
+         pragma Unreferenced (Info);
       begin
          Inx := Inx + 1;
          Result (Inx) := Key;
       end Add_One;
 
       procedure Add_All is new Variables_Map.Iterate (Add_One);
-   begin
+   begin  -- All_Variables
       Add_All (Call_Backs);
       return Result;
    end All_Variables;

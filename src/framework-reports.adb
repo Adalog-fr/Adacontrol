@@ -931,7 +931,7 @@ package body Framework.Reports is
       end if;
    end Report_Stats;
 
-begin
+begin  -- Framework.Reports
    Register (Active_Warning_Option'Access,   Variable_Name => "WARNING");
    Register (Warning_As_Error_Option'Access, Variable_Name => "WARNING_AS_ERROR");
    Register (Max_Errors'Access,              Variable_Name => "MAX_ERRORS");
