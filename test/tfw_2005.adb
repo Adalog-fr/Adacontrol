@@ -40,6 +40,7 @@ procedure Tfw_2005 is
       Z : in out access Integer;   -- Generic anonymous access in out
    procedure GP;
    procedure GP is begin null; end GP;
+
 begin
    X := F;
    Tab(1) := X;

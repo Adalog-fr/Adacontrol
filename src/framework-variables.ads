@@ -67,7 +67,7 @@ package Framework.Variables is
    generic
       type Value_Type is (<>);
    package Discrete_Type is
-      type Object is new Variables.Object with
+      type Object is new Variables.Object with  --## Rule line off Local_Hiding ##"Object" is a naming convention
          record
             Value : Value_Type;
          end record;
@@ -79,7 +79,7 @@ package Framework.Variables is
    generic
       type Value_Type is range <>;
    package Integer_Type is
-      type Object is new Variables.Object with
+      type Object is new Variables.Object with  --## Rule line off Local_Hiding ##"Object" is a naming convention
          record
             Value : Value_Type;
          end record;

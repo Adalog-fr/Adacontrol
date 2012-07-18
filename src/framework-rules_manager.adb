@@ -31,7 +31,8 @@
 
 -- Ada
 with
-  Ada.Calendar;
+  Ada.Calendar,
+  Ada.Strings.Wide_Fixed;
 
 -- ASIS
 with
@@ -404,17 +405,37 @@ package body Framework.Rules_Manager is
    --------------------
 
    procedure Report_Timings is
-      use Framework.Reports, Utilities;
+      use Utilities;
+      Total_Rules_Time : Duration := 0.0;
+
+      procedure Add_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
+         pragma Unreferenced (Rule);
+      begin
+         Total_Rules_Time := Total_Rules_Time + Info.Total_Time;
+      end Add_One_Timing;
+
+      procedure Add_All_Timings is new Rule_List.Iterate (Add_One_Timing);
+
 
       procedure Report_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
-      begin
+         function Format_Duration (Item : Duration; Aft : Natural) return Wide_String is
+            -- Remove leading space and leaves only Aft digits after decimal point
+            use Ada.Strings.Wide_Fixed;
+            Image   : constant Wide_String := Duration'Wide_Image (Item);
+            Dot_Pos : constant Natural := Index (Image, ".");
+         begin
+            return Image (Image'First+1 .. Dot_Pos + Aft);
+         end Format_Duration;
+
+      begin  -- Report_One_Timing
          if Info.Total_Time = 0.0 then
             return;
          end if;
 
-         Raw_Trace (To_Wide_String (Rule)
-                    and Duration'Wide_Image (Info.Total_Time)
-                        & Choose (Current_Format in CSV .. None, "", "s."));
+         User_Message (To_Title (To_Wide_String (Rule)) & ": ",     Stay_On_Line => True);
+         User_Message (Format_Duration (Info.Total_Time, Aft => 3), Stay_On_Line => True);
+         User_Message (" (" & Format_Duration ((Info.Total_Time * 100)/Total_Rules_Time, Aft => 1) & "%)");
+
          Info.Total_Time := 0.0;
       end Report_One_Timing;
 
@@ -429,11 +450,10 @@ package body Framework.Rules_Manager is
       if Timing_Option.Value = On then
          Accumulate_Time;
 
-         if Current_Format in CSV .. CSVX then
-            Raw_Trace ("Rule" and "Time");
-         else
-            Raw_Trace ("Rules timing statistics (in s.)");
-         end if;
+         Add_All_Timings (Rule_Map);
+
+         User_Message;
+         User_Message ("Rules timing statistics (in s.)");
          Report_All_Timings (Rule_Map);
       end if;
 
@@ -539,6 +559,6 @@ package body Framework.Rules_Manager is
    begin
       Rule_List.Balance (Rule_Map);
    end Initialize;
-begin
+begin  -- Framework.Rules_Manager
      Framework.Variables.Register (Timing_Option'Access, Variable_Name => "TIMING");
 end Framework.Rules_Manager;

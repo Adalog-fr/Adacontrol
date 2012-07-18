@@ -145,7 +145,7 @@ package body Framework.Language.Scanner is
           -- Keep current char in buffer to maintain invariant
          Buffer (1) := Cur_Char;
          if Origin_Is_String then
-            Buf_Last := Integer'Min (Buffer'Size, Length (Source_String) - Source_Last) - 1;
+            Buf_Last := Integer'Min (Buffer'Length, Length (Source_String) - Source_Last) - 1;
             Buffer (2 .. Buf_Last) := Slice (Source_String, Source_Last + 1, Source_Last + Buf_Last);
             Source_Last := Source_Last + Buf_Last;
          else

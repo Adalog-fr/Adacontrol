@@ -458,7 +458,7 @@ package body Adactl_Options is
       return To_Wide_String (Options_Commands);
    end Command_Line_Commands;
 
-begin
+begin  -- Adactl_Options
    --
    -- Register option variables
    --
