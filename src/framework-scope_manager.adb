@@ -33,17 +33,14 @@
 with
   Ada.Unchecked_Deallocation;
 
--- Adalog
-with
-  A4G_Bugs;
-
 -- Adactl
 with
   Utilities;
 
 -- Asis
 with
-  Asis.Elements;
+  Asis.Elements,
+  Asis.Compilation_Units;
 
 package body Framework.Scope_Manager is
 
@@ -228,7 +225,7 @@ package body Framework.Scope_Manager is
    ----------------
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
-      use Asis, Asis.Elements;
+      use Asis, Asis.Compilation_Units, Asis.Elements;
       Current : Scoping_Link;
       Scope   : constant Asis.Declaration := Unit_Declaration (Unit);
    begin
@@ -237,7 +234,7 @@ package body Framework.Scope_Manager is
       -- A separate unit (scope_top /= 0, since Enter_Scope has not yet been called)
       -- must be handled as part of its parent
       if Scope_Top = 0 then
-         Unit_Is_Private := A4G_Bugs.Unit_Class (Unit) in A_Private_Declaration .. A_Private_Body;
+         Unit_Is_Private := Unit_Class (Unit) in A_Private_Declaration .. A_Private_Body;
          Current := Unit_Procs;
          while Current /= null loop
             Current.Proc (Scope);

@@ -38,7 +38,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -201,16 +200,16 @@ package body Rules.Side_Effect_Parameters is
          elsif Element_Kind (Formal_Elem) = A_Defining_Name then
             return ' ' & Defining_Name_Image (Formal_Elem);
          else
-            return ' ' & A4G_Bugs.Name_Image (Formal_Elem);
+            return ' ' & Name_Image (Formal_Elem);
          end if;
       end Formal_Image;
 
       function Func_Image (Func : Asis.Expression) return Wide_String is
       begin
          if Expression_Kind (Func) = An_Attribute_Reference then
-            return A4G_Bugs.Name_Image (Simple_Name (Prefix (Func))) & ''' & Attribute_Name_Image (Func);
+            return Name_Image (Simple_Name (Prefix (Func))) & ''' & Attribute_Name_Image (Func);
          else
-            return To_Title (A4G_Bugs.Name_Image (Func));
+            return To_Title (Name_Image (Func));
          end if;
       end Func_Image;
 

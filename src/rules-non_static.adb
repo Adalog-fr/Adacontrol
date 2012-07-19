@@ -323,7 +323,7 @@ package body Rules.Non_Static is
       end if;
       Temp := Subtype_Simple_Name (Temp);
       if Expression_Kind (Temp) = An_Attribute_Reference then
-         case A4G_Bugs.Attribute_Kind (Temp) is
+         case Attribute_Kind (Temp) is
             when A_Base_Attribute =>
                Temp := Prefix (Temp);
             when A_Class_Attribute =>
@@ -334,7 +334,7 @@ package body Rules.Non_Static is
       end if;
       if Type_Kind (Type_Declaration_View
                     (Ultimate_Type_Declaration
-                     (A4G_Bugs.Corresponding_Name_Declaration
+                     (Corresponding_Name_Declaration
                       (Temp)))) in Structured_Types
       then
          return;

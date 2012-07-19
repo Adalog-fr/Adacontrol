@@ -35,11 +35,11 @@ with
 with
   Asis.Declarations,
   Asis.Definitions,
-  Asis.Elements;
+  Asis.Elements,
+  Asis.Expressions;
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -540,7 +540,7 @@ package body Rules.Array_Declarations is
       end Process_Index;
 
       procedure Process_Component is
-         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
+         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
          Array_Comp : constant Asis.Expression := Component_Subtype_Indication
                                                    (Array_Component_Definition (Definition));
@@ -653,8 +653,8 @@ package body Rules.Array_Declarations is
             Compo_Report (Iterator, Lower_Case);
          else
             declare
-               Comp_Decl  : constant Asis.Declaration := A4G_Bugs.Corresponding_Name_Declaration
-                                                           (Subtype_Simple_Name (Array_Comp));
+               Comp_Decl  : constant Asis.Declaration := Corresponding_Name_Declaration
+                                                          (Subtype_Simple_Name (Array_Comp));
             begin
                -- Exact subtype
                Reset (Iterator, Subtype_Simple_Name (Array_Comp), Extend_To => All_Extensions);

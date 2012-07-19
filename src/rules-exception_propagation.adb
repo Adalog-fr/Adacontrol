@@ -35,7 +35,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -355,7 +354,7 @@ package body Rules.Exception_Propagation is
                when An_Object_Renaming_Declaration =>
                   -- Only indexing (or slicing) and dereferences are evaluated here and can raise exceptions
                   -- Traverse manually just those.
-                  Process_Aliasing_Expr (A4G_Bugs.Renamed_Entity (Element));
+                  Process_Aliasing_Expr (Renamed_Entity (Element));
                   Control := Abandon_Children;
 
                when A_Loop_Parameter_Specification =>
@@ -400,14 +399,13 @@ package body Rules.Exception_Propagation is
                   State   := Call_In_Declaration;
                   Control := Terminate_Immediately;
                when An_Identifier =>
-                  case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Element)) is
+                  case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
                      when A_Variable_Declaration =>
                         State := Risk_Level'Max (State, Variable_In_Declaration);
                      when An_Object_Renaming_Declaration =>
                         declare
                            use Utilities;
-                           Expr : Asis.Expression
-                             := A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Element));
+                           Expr : Asis.Expression := Renamed_Entity (Corresponding_Name_Declaration (Element));
                         begin
                            loop
                               case Expression_Kind (Expr) is
@@ -536,7 +534,7 @@ package body Rules.Exception_Propagation is
                                                                       (Element, Normalized => True) (1)));
                         begin
                            if Expression_Kind (Exc_Param) = An_Attribute_Reference
-                             and then A4G_Bugs.Attribute_Kind (Exc_Param) = An_Identity_Attribute
+                             and then Attribute_Kind (Exc_Param) = An_Identity_Attribute
                              and then Is_Equal (Corresponding_Name_Definition (Ultimate_Name (Prefix (Exc_Param))),
                                                 State.Exc)
                            then
@@ -565,7 +563,7 @@ package body Rules.Exception_Propagation is
    --------------------------------
 
    function Exception_Propagation_Risk (Decl : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
-      use Asis, Asis.Elements, Asis.Declarations, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Declarations, Asis.Expressions, Asis.Statements;
       use Framework.Reports, Thick_Queries, Utilities;
       SP_Body     : Asis.Declaration;
       H_State     : Handler_State;
@@ -582,7 +580,7 @@ package body Rules.Exception_Propagation is
          when A_Procedure_Instantiation
             | A_Function_Instantiation
             =>
-            SP_Body := Corresponding_Body (A4G_Bugs.Corresponding_Name_Declaration
+            SP_Body := Corresponding_Body (Corresponding_Name_Declaration
                                            (Simple_Name
                                             (Generic_Unit_Name (Decl))));
          when A_Procedure_Body_Declaration
@@ -688,7 +686,7 @@ package body Rules.Exception_Propagation is
          Good_Prefix    : Asis.Expression;
       begin
          if Expression_Kind (Element) = An_Attribute_Reference
-           and then A4G_Bugs.Attribute_Kind (Element) in An_Access_Attribute .. An_Address_Attribute
+           and then Attribute_Kind (Element) in An_Access_Attribute .. An_Address_Attribute
          then
             Good_Prefix := Simple_Name (Prefix (Element));
 
@@ -710,7 +708,7 @@ package body Rules.Exception_Propagation is
                return;
             end if;
 
-            SP_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix);
+            SP_Declaration := Corresponding_Name_Declaration (Good_Prefix);
             case Declaration_Kind (SP_Declaration) is
                when A_Procedure_Declaration
                   | A_Procedure_Body_Declaration
@@ -736,11 +734,11 @@ package body Rules.Exception_Propagation is
                      Report (Rule_Id,
                              State,
                              Get_Location (Corresponding_Body
-                                           (A4G_Bugs.Corresponding_Name_Declaration
+                                           (Corresponding_Name_Declaration
                                             (Simple_Name
                                              (Generic_Unit_Name
                                               (SP_Declaration))))),
-                             "generic """ &  A4G_Bugs.Name_Image (Simple_Name (Generic_Unit_Name (SP_Declaration)))
+                             "generic """ &  Name_Image (Simple_Name (Generic_Unit_Name (SP_Declaration)))
                              & """ can propagate exceptions"
                              & Risk_Message (Risk)
                              & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
@@ -844,7 +842,7 @@ package body Rules.Exception_Propagation is
                   -- Parameter found
                   -- Actual must be an identifier (or else it is not for us, dereference for example)
                   if Expression_Kind (Actual_Parameter (Actuals (I))) = An_Identifier then
-                     SP_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Ultimate_Name
+                     SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name
                                                                                 (Actual_Parameter
                                                                                  (Actuals (I))));
 
@@ -863,7 +861,7 @@ package body Rules.Exception_Propagation is
                               Report (Rule_Id,
                                       Current_Context,
                                       Get_Location (SP_Declaration),
-                                      "subprogram """ &  A4G_Bugs.Name_Image (Actual_Parameter (Actuals (I)))
+                                      "subprogram """ &  Name_Image (Actual_Parameter (Actuals (I)))
                                       & """ can propagate exceptions"
                                       & Risk_Message (Risk)
                                       & ", used as call-back in instantiation at "
@@ -877,10 +875,10 @@ package body Rules.Exception_Propagation is
                               Report (Rule_Id,
                                       Current_Context,
                                       Get_Location (Corresponding_Body
-                                                    (A4G_Bugs.Corresponding_Name_Declaration
+                                                    (Corresponding_Name_Declaration
                                                      (Generic_Unit_Name
                                                       (SP_Declaration)))),
-                                      "generic """ &  A4G_Bugs.Name_Image (Generic_Unit_Name (SP_Declaration))
+                                      "generic """ &  Name_Image (Generic_Unit_Name (SP_Declaration))
                                       & """ can propagate exceptions"
                                       & Risk_Message (Risk)
                                       & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
@@ -934,7 +932,7 @@ package body Rules.Exception_Propagation is
                   -- The convention is always the first argument of the pragma
                   declare
                      Convention : constant Unbounded_Wide_String
-                       := To_Unbounded_Wide_String (To_Upper (A4G_Bugs.Name_Image
+                       := To_Unbounded_Wide_String (To_Upper (Name_Image
                                                               (Actual_Parameter
                                                                (Pragma_Argument_Associations
                                                                 (All_Pragmas (I))(1)))));

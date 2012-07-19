@@ -41,7 +41,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Linear_Queue,
   Thick_Queries,
   Utilities;
@@ -223,7 +222,7 @@ package body Rules.Instantiations is
 
    function Is_Corresponding (Specification : in Entity_Specification;
                               Name          : in Asis.Defining_Name) return Boolean is
-      use Asis, Asis.Elements;
+      use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
 
       Declaration  : Asis.Declaration;
@@ -237,7 +236,7 @@ package body Rules.Instantiations is
          when An_Identifier | A_Selected_Component =>
             null;
          when An_Attribute_Reference =>
-            case A4G_Bugs.Attribute_Kind (Name) is
+            case Attribute_Kind (Name) is
                when A_Base_Attribute | A_Class_Attribute =>
                   -- The only ones that are names
                   Is_Attribute := True;
@@ -261,7 +260,7 @@ package body Rules.Instantiations is
 
       -- Special case if Name designates a type: try category
       -- (+ first named subtype if it is a subtype)
-      Declaration := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (Name));
+      Declaration := Corresponding_Name_Declaration (Simple_Name (Name));
       case Declaration_Kind (Declaration) is
          when An_Ordinary_Type_Declaration
             | A_Task_Type_Declaration

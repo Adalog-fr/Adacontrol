@@ -32,6 +32,7 @@
 -- ASIS
 with
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Elements,
   Asis.Expressions,
   Asis.Statements;
@@ -155,7 +156,7 @@ package body Rules.No_Operator_Usage is
    -----------------------------
 
    procedure Process_Type_Definition (Definition : in Asis.Definition) is
-      use Asis, Asis.Declarations, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
 
       Good_Def : Asis.Definition;
       Tmp_Usage    : Operator_Usage;
@@ -170,7 +171,7 @@ package body Rules.No_Operator_Usage is
 
       -- Get rid of derived types
       if Type_Kind (Good_Def) = A_Derived_Type_Definition then
-         Good_Def := Type_Declaration_View (A4G_Bugs.Corresponding_Root_Type (Good_Def));
+         Good_Def := Type_Declaration_View (Corresponding_Root_Type (Good_Def));
       end if;
 
       if Type_Kind (Good_Def) not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition then

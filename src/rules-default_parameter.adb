@@ -41,7 +41,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -242,6 +241,7 @@ package body Rules.Default_Parameter is
       Name : Asis.Expression;
 
       function Get_Formals_List return Asis.Element_List is
+         use Asis.Expressions;
       begin
          if Expression_Kind (Name) = An_Attribute_Reference then
             -- Calls to attributes must be ignored, since they have no formal name (and no default value)
@@ -255,7 +255,7 @@ package body Rules.Default_Parameter is
          elsif Declaration_Kind (Element) in A_Generic_Instantiation
            or Declaration_Kind (Element) = A_Formal_Package_Declaration
          then
-            return Generic_Formal_Part (A4G_Bugs.Corresponding_Name_Declaration
+            return Generic_Formal_Part (Corresponding_Name_Declaration
                                         (Simple_Name
                                          (Ultimate_Name
                                           (Generic_Unit_Name (Element)))));

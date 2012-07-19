@@ -36,31 +36,15 @@ search uncheckable (false_negative, missing_unit);
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.
 Use_A4G_Bugs: check entities (
-   Asis.Compilation_Units.Subunits,
-   Asis.Compilation_Units.Unit_Class,
-
-   Asis.Declarations.Corresponding_Last_Subtype,
-   Asis.Declarations.Renamed_Entity,
-
-   -- Asis.Definitions.Corresponding_Root_Type, => see preferred
-
-   Asis.Elements.Attribute_Kind,
-
-   Asis.Expressions.Corresponding_Expression_Type,
-   Asis.Expressions.Corresponding_Name_Declaration,
-   Asis.Expressions.Name_Image,
-
-   Asis.Statements.Corresponding_Called_Entity,
-   Asis.Statements.Corresponding_Entry
+   Asis.Expressions.Corresponding_Expression_Type
 );
 
 -- Check prefered operation from Thick_Queries
 Avoid_Query: check entities (
    Asis.Definitions.Subtype_Mark,
-   Asis.Definitions.Corresponding_Root_Type,
    Asis.Definitions.Corresponding_Parent_Subtype
 );
-Use_Ultimate_Origin: 
+Use_Ultimate_Origin:
    check entities (Asis.Compilation_Units.Unit_Origin);
 
 check characters (not_iso_646);

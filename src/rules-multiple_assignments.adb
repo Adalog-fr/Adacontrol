@@ -43,7 +43,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Linear_Queue,
   Thick_Queries,
@@ -219,7 +218,7 @@ package body Rules.Multiple_Assignments is
 
    procedure Process_Statement_Container (Element : in Asis.Element) is
       use LHS_Map, Thick_Queries;
-      use Asis, Asis.Elements, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
 
       LHS_Infos   : LHS_Map.Map;
       Dynamic_LHS : exception;
@@ -343,8 +342,8 @@ package body Rules.Multiple_Assignments is
                   end;
 
                when A_Subtype_Indication =>
-                  Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
-                                                (Subtype_Simple_Name (Def)));
+                  Def := Type_Declaration_View (Corresponding_Name_Declaration (Subtype_Simple_Name (Def)));
+
                when A_Private_Type_Definition
                   | A_Tagged_Private_Type_Definition
                   | A_Private_Extension_Definition =>
@@ -366,7 +365,7 @@ package body Rules.Multiple_Assignments is
                                     Coverage : in Coverage_Kind;
                                     Key      : out Unbounded_Wide_String)
       is
-         use Asis.Expressions;
+         use Asis.Declarations;
          use Framework.Reports, Utilities;
          Target     : Asis.Expression := LHS;
          Parent     : Asis.Expression;
@@ -376,7 +375,7 @@ package body Rules.Multiple_Assignments is
          loop
             case Expression_Kind (Target) is
                when A_Selected_Component =>
-                  if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (Target)))
+                  if Declaration_Kind (Corresponding_Name_Declaration (Selector (Target)))
                     in A_Discriminant_Specification .. A_Component_Declaration
                   then
                      Parent := Prefix (Target);
@@ -386,7 +385,7 @@ package body Rules.Multiple_Assignments is
                      end if;
                      Process_Assignment (Parent, Component, Key);
                      Parent_Key := Key;
-                     Append (Key, '.' & To_Upper (A4G_Bugs.Name_Image (Selector (Target))));
+                     Append (Key, '.' & To_Upper (Name_Image (Selector (Target))));
                      exit;
                   end if;
 
@@ -429,7 +428,7 @@ package body Rules.Multiple_Assignments is
                     =>
                   raise Dynamic_LHS;
                when others =>
-                  if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Target))
+                  if Declaration_Kind (Corresponding_Name_Declaration (Target))
                     /= An_Object_Renaming_Declaration
                   then
                      -- A truly global assignment, not groupable
@@ -439,7 +438,7 @@ package body Rules.Multiple_Assignments is
                   end if;
 
                   -- A renaming: start over with the renamed expression
-                  Target := A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Target));
+                  Target := Renamed_Entity (Corresponding_Name_Declaration (Target));
             end case;
          end loop;
 

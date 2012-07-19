@@ -37,7 +37,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -147,9 +146,9 @@ package body Rules.Local_Access is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if A4G_Bugs.Attribute_Kind (Attr) /= An_Access_Attribute
-        and A4G_Bugs.Attribute_Kind (Attr) /= An_Unchecked_Access_Attribute
-        and (A4G_Bugs.Attribute_Kind (Attr) /= An_Implementation_Defined_Attribute
+      if Attribute_Kind (Attr) /= An_Access_Attribute
+        and Attribute_Kind (Attr) /= An_Unchecked_Access_Attribute
+        and (Attribute_Kind (Attr) /= An_Implementation_Defined_Attribute
              or else To_Upper (Attribute_Name_Image (Attr)) /= "UNRESTRICTED_ACCESS")
       then
          return;
@@ -166,7 +165,7 @@ package body Rules.Local_Access is
                when An_Indexed_Component =>
                   Good_Prefix := Prefix (Good_Prefix);
                when A_Selected_Component =>
-                  if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (Good_Prefix)))
+                  if Declaration_Kind (Corresponding_Name_Declaration (Selector (Good_Prefix)))
                     /= A_Component_Declaration
                   then
                      Good_Prefix := Selector (Good_Prefix);
@@ -198,7 +197,7 @@ package body Rules.Local_Access is
             return;
          end if;
 
-         Decl := A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix);
+         Decl := Corresponding_Name_Declaration (Good_Prefix);
          On_Declarations : loop
             case Declaration_Kind (Decl) is
                when A_Constant_Declaration =>
@@ -221,7 +220,7 @@ package body Rules.Local_Access is
                   return;
 
                when A_Function_Declaration =>
-                  if Definition_Kind (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix)))
+                  if Definition_Kind (Enclosing_Element (Corresponding_Name_Declaration (Good_Prefix)))
                     = A_Protected_Definition
                   then
                      Do_Report (K_Protected_Function);
@@ -248,7 +247,7 @@ package body Rules.Local_Access is
                   end if;
 
                when A_Procedure_Declaration =>
-                  if Definition_Kind (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Good_Prefix)))
+                  if Definition_Kind (Enclosing_Element (Corresponding_Name_Declaration (Good_Prefix)))
                     = A_Protected_Definition
                   then
                      Do_Report (K_Protected_Procedure);
@@ -284,7 +283,7 @@ package body Rules.Local_Access is
                   | A_Procedure_Renaming_Declaration
                   | A_Function_Renaming_Declaration
                   =>
-                  Good_Prefix := A4G_Bugs.Renamed_Entity (Decl);
+                  Good_Prefix := Renamed_Entity (Decl);
                   exit On_Declarations;
 
                when others =>

@@ -150,7 +150,7 @@ package body Framework.Variables is
    procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String) is
       use Variables_Map;
    begin
-      Set (Fetch (Call_Backs, Variable_Key (Variable)).all, Val);
+      Set (Fetch (Call_Backs, Variable_Key (Variable)).all, Val); --## RULE LINE OFF Parameter_Aliasing
    exception
       when Not_Present =>
          -- This exception not visible to clients, transform it

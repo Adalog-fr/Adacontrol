@@ -39,7 +39,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Linear_Queue,
   Thick_Queries,
   Utilities;
@@ -577,7 +576,7 @@ package body Rules.Movable_Accept_Statements  is
          -- 2nd step: insert all of the `accept' parameters into the referenced objects queue
          declare
             Accept_Entry_Parameters : constant Asis.Parameter_Specification_List
-              := Parameter_Profile (A4G_Bugs.Corresponding_Entry (Statement));
+              := Parameter_Profile (Corresponding_Entry (Statement));
          begin
             -- Insert all of the `accept' parameters into the queue
             for P in Accept_Entry_Parameters'Range loop

@@ -127,13 +127,13 @@ package body Framework.Control_Manager is
          if Element_Kind (Name) = A_Defining_Name then
             return Defining_Name_Image (E);
          else
-            return A4G_Bugs.Name_Image (E);
+            return Name_Image (E);
          end if;
       end Any_Name_Image;
 
       Good_Name        : Asis.Element := Simple_Name (Name);
       Name_Enclosing   : Asis.Element;
-      Name_Image       : Unbounded_Wide_String;
+      Name_Key         : Unbounded_Wide_String;
       Name_Extra       : Unbounded_Wide_String; -- Initialized to Null_Unbounded_Wide_String
       Result           : Context_Node_Access := null;
       Is_Predefined_Op : Boolean := False;
@@ -144,10 +144,8 @@ package body Framework.Control_Manager is
       -- Special case for pragmas: they have no "name" in the Asis sense.
       elsif Element_Kind (Name) = A_Pragma then
          -- No overloading, no "all"
-         Name_Image := To_Unbounded_Wide_String (To_Upper (Pragma_Name_Image (Good_Name)));
-         Result     := Fetch (Into.Qualified_Names,
-                              Name_Image,
-                              Default_Value => null);
+         Name_Key := To_Unbounded_Wide_String (To_Upper (Pragma_Name_Image (Good_Name)));
+         Result   := Fetch (Into.Qualified_Names, Name_Key, Default_Value => null);
 
       else
          -- Find the place where the name is used (skipping all selections)
@@ -160,10 +158,8 @@ package body Framework.Control_Manager is
          if Is_Dispatching_Call (Name_Enclosing)
            and then Is_Equal (Good_Name, Called_Simple_Name (Name_Enclosing))
          then
-            Name_Image := To_Unbounded_Wide_String (To_Upper (A4G_Bugs.Name_Image (Good_Name)));
-            Result     := Fetch (Into.Simple_Names,
-                                 Name_Image,
-                                 Default_Value => null);
+            Name_Key := To_Unbounded_Wide_String (To_Upper (Name_Image (Good_Name)));
+            Result   := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
             -- Normal case
          else
             if Element_Kind (Good_Name) = An_Expression then
@@ -182,7 +178,7 @@ package body Framework.Control_Manager is
                      null;
                   when An_Operator_Symbol =>
                      declare
-                        Op_Decl : constant Asis.Element := A4G_Bugs.Corresponding_Name_Declaration (Good_Name);
+                        Op_Decl : constant Asis.Element := Corresponding_Name_Declaration (Good_Name);
                      begin
                         if Is_Nil (Op_Decl) then
                            Is_Predefined_Op := True;
@@ -210,7 +206,7 @@ package body Framework.Control_Manager is
                      -- This can happen if we were given something that is not appropriate,
                      -- or for something dynamic used as the prefix of an attribute.
                      Into.This.Self.Last_Returned := null;
-                     Into.This.Self.Last_Name     := Name_Image;
+                     Into.This.Self.Last_Name     := Name_Key;
                      return;
                end case;
             end if;
@@ -220,40 +216,32 @@ package body Framework.Control_Manager is
 
             -- Search without "all", with overloading
             if not Is_Predefined_Op and Result = null then
-               Name_Image := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => True)))
-                             & Name_Extra;
-               Result := Fetch (Into.Qualified_Names,
-                                Name_Image,
-                                Default_Value => null);
+               Name_Key := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => True)))
+                           & Name_Extra;
+               Result := Fetch (Into.Qualified_Names, Name_Key, Default_Value => null);
             end if;
 
             -- Search without "all", without overloading
             if Result = null then
-               Name_Image := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => False)))
-                             & Name_Extra;
-               Result := Fetch (Into.Qualified_Names,
-                                Name_Image,
-                                Default_Value => null);
+               Name_Key := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => False)))
+                           & Name_Extra;
+               Result := Fetch (Into.Qualified_Names, Name_Key, Default_Value => null);
             end if;
 
             -- Search with "all", with overloading
             if not Is_Predefined_Op and Result = null then
-               Name_Image := To_Unbounded_Wide_String (To_Upper
-                                                        (Any_Name_Image (Good_Name)
-                                                         & Profile_Image (Good_Name, With_Profile => True)))
-                             & Name_Extra;
-               Result := Fetch (Into.Simple_Names,
-                                Name_Image,
-                                Default_Value => null);
+               Name_Key := To_Unbounded_Wide_String (To_Upper
+                                                     (Any_Name_Image (Good_Name)
+                                                      & Profile_Image (Good_Name, With_Profile => True)))
+                           & Name_Extra;
+               Result := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
             end if;
 
             -- Search with "all", without overloading
             if Result = null then
-               Name_Image := To_Unbounded_Wide_String (To_Upper (Any_Name_Image (Good_Name)))
-                             & Name_Extra;
-               Result := Fetch (Into.Simple_Names,
-                                Name_Image,
-                                Default_Value => null);
+               Name_Key := To_Unbounded_Wide_String (To_Upper (Any_Name_Image (Good_Name)))
+                           & Name_Extra;
+               Result := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
             end if;
 
             -- For attribute references, search attribute name
@@ -261,29 +249,24 @@ package body Framework.Control_Manager is
               and then Expression_Kind (Name) = An_Attribute_Reference
             then
                -- Type'Attr
-               if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name))
+               if Declaration_Kind (Corresponding_Name_Declaration (Good_Name))
                   in An_Ordinary_Type_Declaration .. A_Subtype_Declaration   -- = All type and subtype declarations
                then
-                  Name_Image := To_Unbounded_Wide_String ("TYPE'" & To_Upper (Attribute_Name_Image (Name)));
-                  Result := Fetch (Into.Simple_Names,
-                                   Name_Image,
-                                   Default_Value => null);
+                  Name_Key := To_Unbounded_Wide_String ("TYPE'" & To_Upper (Attribute_Name_Image (Name)));
+                  Result   := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
                end if;
 
                -- 'Attr
                if Result = null then
-                  Name_Image := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
-                  Result := Fetch (Into.Simple_Names,
-                                   Name_Image,
-                                   Default_Value => null);
+                  Name_Key := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
+                  Result   := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
                end if;
             end if;
-
          end if;
       end if;
 
       Into.This.Self.Last_Returned := Result;
-      Into.This.Self.Last_Name     := Name_Image;
+      Into.This.Self.Last_Name     := Name_Key;
    end Query_Context;
 
    ---------------
@@ -371,7 +354,7 @@ package body Framework.Control_Manager is
                               Name      : in Asis.Element;
                               Extend_To : Extension_Set := No_Extension) return Root_Context'Class
    is
-      use Asis, Asis.Declarations, Asis.Elements, Thick_Queries;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Thick_Queries;
       Good_Name        : constant Asis.Element := Simple_Name (Name);
       Name_Declaration : Asis.Declaration;
    begin
@@ -396,7 +379,7 @@ package body Framework.Control_Manager is
       if Element_Kind (Good_Name) = A_Defining_Name then
          Name_Declaration := Enclosing_Element (Good_Name);
       else
-         Name_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Name);
+         Name_Declaration := Corresponding_Name_Declaration (Good_Name);
       end if;
 
       -- 2) if name is a renaming, try the ultimate name

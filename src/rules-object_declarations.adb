@@ -37,7 +37,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -234,7 +233,7 @@ package body Rules.Object_Declarations is
          end if;
          St_Name := Subtype_Simple_Name (Def);
          if Expression_Kind (St_Name) = An_Attribute_Reference then
-            case A4G_Bugs.Attribute_Kind (St_Name) is
+            case Attribute_Kind (St_Name) is
                when A_Base_Attribute =>
                   -- for our purpose, the prefix will do as well
                   St_Name := Simple_Name (Prefix (St_Name));
@@ -247,7 +246,7 @@ package body Rules.Object_Declarations is
                   Failure ("Bad attribute", St_Name);
             end case;
          end if;
-         return A4G_Bugs.Corresponding_Name_Declaration (St_Name);
+         return Corresponding_Name_Declaration (St_Name);
       end Decl_Type_Declaration;
 
       procedure Process_Min_Integer_Span is
@@ -387,7 +386,7 @@ package body Rules.Object_Declarations is
          return;
       end if;
 
-      if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
+      if Declaration_Kind (Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
          return;
       end if;
 
@@ -420,7 +419,7 @@ package body Rules.Object_Declarations is
       case Representation_Clause_Kind (Clause) is
          when An_Attribute_Definition_Clause =>
             Name := Representation_Clause_Name (Clause);
-            if A4G_Bugs.Attribute_Kind (Name) /= An_Address_Attribute then
+            if Attribute_Kind (Name) /= An_Address_Attribute then
                return;
             end if;
             Name := Simple_Name (Prefix (Name));
@@ -429,7 +428,7 @@ package body Rules.Object_Declarations is
          when others =>
             return;
       end case;
-      if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
+      if Declaration_Kind (Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
          return;
       end if;
 

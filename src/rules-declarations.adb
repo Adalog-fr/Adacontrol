@@ -40,7 +40,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -332,9 +331,9 @@ package body Rules.Declarations is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Asis.Definitions;
       use Thick_Queries, Utilities;
 
-      Accessed_Type  : Asis.Element;
-      Renamed_Entity : Asis.Name;
-      Enclosing      : Asis.Element;
+      Accessed_Type : Asis.Element;
+      Target_Entity : Asis.Name;
+      Enclosing     : Asis.Element;
 
       procedure Check_Abstract is
       begin
@@ -666,8 +665,7 @@ package body Rules.Declarations is
                            Accessed_Type := Simple_Name (Prefix (Accessed_Type));
                         end if;
 
-                        Accessed_Type := Ultimate_Type_Declaration (A4G_Bugs.Corresponding_Name_Declaration
-                                                                      (Accessed_Type));
+                        Accessed_Type := Ultimate_Type_Declaration (Corresponding_Name_Declaration (Accessed_Type));
                         case Declaration_Kind (Accessed_Type) is
                            when A_Task_Type_Declaration =>
                               Do_Report ((D_Type, D_Access_Type, D_Access_Task_Type), Element);
@@ -779,8 +777,7 @@ package body Rules.Declarations is
                      begin
                         for R in Rep_Clauses'Range loop
                            if Representation_Clause_Kind (Rep_Clauses (R)) = An_Attribute_Definition_Clause
-                             and then A4G_Bugs.Attribute_Kind (Representation_Clause_Name
-                                                               (Rep_Clauses (R))) = A_Small_Attribute
+                             and then Attribute_Kind (Representation_Clause_Name (Rep_Clauses (R))) = A_Small_Attribute
                            then
                               Small_Found := True;
                               exit;
@@ -987,7 +984,7 @@ package body Rules.Declarations is
                                  -- None applies to arrays, tasks, or protected
                                  exit;
                               end if;
-                              Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration (Type_Name));
+                              Def := Type_Declaration_View (Corresponding_Name_Declaration (Type_Name));
                               if Is_Nil (Def) then
                                  -- Type_Declaration_View says:
                                  -- Returns a Nil_Element for a task_type_declaration that has no explicit
@@ -1075,7 +1072,7 @@ package body Rules.Declarations is
                                  -- None applies to arrays
                                  exit;
                               end if;
-                              Def := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration (Type_Name));
+                              Def := Type_Declaration_View (Corresponding_Name_Declaration (Type_Name));
                            when A_Discriminant_Constraint
                               | A_Range_Attribute_Reference
                               | A_Simple_Expression_Range
@@ -1349,9 +1346,9 @@ package body Rules.Declarations is
               or Rule_Used (D_Non_Identical_Operator_Renaming)
               or Rule_Used (D_Library_Unit_Renaming)
             then
-               Renamed_Entity := Simple_Name (A4G_Bugs.Renamed_Entity (Element));
+               Target_Entity := Simple_Name (Renamed_Entity (Element));
 
-               case Expression_Kind (Renamed_Entity) is
+               case Expression_Kind (Target_Entity) is
                   when An_Explicit_Dereference
                      | An_Attribute_Reference
                      | A_Character_Literal
@@ -1362,7 +1359,7 @@ package body Rules.Declarations is
                   when An_Operator_Symbol =>
                      Do_Report (D_Operator_Renaming, Element);
                      if   To_Upper (Defining_Name_Image (Names (Element) (1)))
-                       /= To_Upper (A4G_Bugs.Name_Image (Renamed_Entity))
+                       /= To_Upper (Name_Image (Target_Entity))
                      then
                         Do_Report ((D_Non_Identical_Renaming, D_Non_Identical_Operator_Renaming),
                                    Element);
@@ -1372,11 +1369,11 @@ package body Rules.Declarations is
                        =>
                      Do_Report (D_Not_Operator_Renaming, Element);
                      if   To_Upper (Defining_Name_Image (Names (Element) (1)))
-                       /= To_Upper (A4G_Bugs.Name_Image (Renamed_Entity))
+                       /= To_Upper (Name_Image (Target_Entity))
                      then
                         Do_Report (D_Non_Identical_Renaming, Element);
                      end if;
-                     if Is_Nil (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Renamed_Entity))) then
+                     if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity))) then
                         Do_Report (D_Library_Unit_Renaming, Element);
                      end if;
                   when others =>
@@ -1409,9 +1406,9 @@ package body Rules.Declarations is
             if Rule_Used (D_Non_Identical_Renaming)
               or Rule_Used (D_Library_Unit_Renaming)
             then
-               Renamed_Entity := A4G_Bugs.Renamed_Entity (Element);
+               Target_Entity := Renamed_Entity (Element);
                loop
-                  case Expression_Kind (Renamed_Entity) is
+                  case Expression_Kind (Target_Entity) is
                      when An_Explicit_Dereference
                         | An_Indexed_Component
                         | A_Slice
@@ -1423,16 +1420,16 @@ package body Rules.Declarations is
                         Do_Report (D_Non_Identical_Renaming, Element);
                         exit;
                      when A_Selected_Component =>
-                        Renamed_Entity := Selector (Renamed_Entity);
+                        Target_Entity := Selector (Target_Entity);
                      when A_Type_Conversion =>
-                        Renamed_Entity := Converted_Or_Qualified_Expression (Renamed_Entity);
+                        Target_Entity := Converted_Or_Qualified_Expression (Target_Entity);
                      when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
                         if   To_Upper (Defining_Name_Image (Names (Element) (1)))
-                          /= To_Upper (A4G_Bugs.Name_Image (Renamed_Entity))
+                          /= To_Upper (Name_Image (Target_Entity))
                         then
                            Do_Report (D_Non_Identical_Renaming, Element);
                         end if;
-                        if Is_Nil (Enclosing_Element (A4G_Bugs.Corresponding_Name_Declaration (Renamed_Entity))) then
+                        if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity))) then
                            Do_Report (D_Library_Unit_Renaming, Element);
                         end if;
                         exit;
@@ -1442,7 +1439,7 @@ package body Rules.Declarations is
                end loop;
             end if;
             if Rule_Used (D_Function_Call_Renaming)
-              and then Expression_Kind (A4G_Bugs.Renamed_Entity (Element)) = A_Function_Call
+              and then Expression_Kind (Asis.Declarations.Renamed_Entity (Element)) = A_Function_Call
             then
                Do_Report (D_Function_Call_Renaming, Element);
             end if;

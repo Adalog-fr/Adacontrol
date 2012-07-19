@@ -36,11 +36,11 @@ with
   Asis.Clauses,
   Asis.Declarations,
   Asis.Definitions,
-  Asis.Elements;
+  Asis.Elements,
+  Asis.Expressions;
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -390,6 +390,7 @@ package body Rules.Record_Declarations is
             end loop;
          end Compo_Report;
 
+         use Asis.Expressions;
          Temp : Asis.Element;
       begin  -- Process_Component
 
@@ -443,7 +444,7 @@ package body Rules.Record_Declarations is
          end if;
 
          -- Relief! The component has an explicit type
-         Compo_Type := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Simple_Name (Temp));
+         Compo_Type := Corresponding_Name_Declaration (Subtype_Simple_Name (Temp));
 
          Is_Packed := False;
          declare

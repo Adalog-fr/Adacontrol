@@ -298,7 +298,7 @@ package body Rules.Return_Type is
          Do_Report (K_Class_Wide, "function returns class-wide type");
          Good_Res := Simple_Name (Prefix (Good_Expr));
 
-         Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Good_Res);
+         Result_Type_Declaration := Corresponding_Name_Declaration (Good_Res);
          if Is_Limited (Result_Type_Declaration) then
             Do_Report (K_Limited_Class_Wide, "function returns limited class-wide type");
          end if;
@@ -337,7 +337,7 @@ package body Rules.Return_Type is
          when An_Identifier =>
             null;
          when An_Attribute_Reference =>
-            case A4G_Bugs.Attribute_Kind (Result_Expression) is
+            case Attribute_Kind (Result_Expression) is
                when A_Base_Attribute =>
                   -- when matching A_Base_Attribute, we need to retrieve the Prefix
                   Result_Expression := Simple_Name (Prefix (Result_Expression));
@@ -352,7 +352,7 @@ package body Rules.Return_Type is
       end case;
 
       -- Here we have a good ol' identifier
-      Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Result_Expression);
+      Result_Type_Declaration := Corresponding_Name_Declaration (Result_Expression);
       loop
          -- Here we have a type declaration
          case Declaration_Kind (Result_Type_Declaration) is
@@ -381,13 +381,13 @@ package body Rules.Return_Type is
                      Result_Type_Expression : constant Asis.Expression := Subtype_Simple_Name (Result_Type_Definition);
                   begin
                      if Expression_Kind (Result_Type_Expression) = An_Attribute_Reference then
-                        case A4G_Bugs.Attribute_Kind (Result_Type_Expression) is
+                        case Attribute_Kind (Result_Type_Expression) is
                            when A_Base_Attribute =>
                               -- when matching A_Base_Attribute, we need to retrieve the Selector
-                              Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration
-                                                           (Simple_Name
-                                                            (Prefix
-                                                             (Result_Type_Expression)));
+                              Result_Type_Declaration := Corresponding_Name_Declaration
+                                                          (Simple_Name
+                                                           (Prefix
+                                                            (Result_Type_Expression)));
                            when A_Class_Attribute =>
                               Report_Class (Result_Type_Expression);
                               return;
@@ -395,7 +395,7 @@ package body Rules.Return_Type is
                               Failure ("unexpected subtype : attribute");
                         end case;
                      else
-                        Result_Type_Declaration := A4G_Bugs.Corresponding_Last_Subtype (Result_Type_Declaration);
+                        Result_Type_Declaration := Corresponding_Last_Subtype (Result_Type_Declaration);
                      end if;
                   end;
                end;
@@ -448,7 +448,7 @@ package body Rules.Return_Type is
                                  if Expression_Kind (Parent_Name) = An_Attribute_Reference then
                                     Parent_Name := Simple_Name (Prefix (Parent_Name));
                                  end if;
-                                 Result_Type_Declaration := A4G_Bugs.Corresponding_Name_Declaration (Parent_Name);
+                                 Result_Type_Declaration := Corresponding_Name_Declaration (Parent_Name);
                               end;
 
                            when A_Constrained_Array_Definition =>
@@ -518,7 +518,7 @@ package body Rules.Return_Type is
                                  end if;
                                  -- in any other case, we need to check the parent subtype
                                  Result_Type_Declaration :=
-                                   A4G_Bugs.Corresponding_Name_Declaration (Name);
+                                   Corresponding_Name_Declaration (Name);
                               end;
 
 

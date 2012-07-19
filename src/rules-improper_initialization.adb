@@ -43,7 +43,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -216,7 +215,7 @@ package body Rules.Improper_Initialization is
                   if Expression_Kind (Temp) = An_Attribute_Reference then
                      Temp := Simple_Name (Prefix (Temp));
                   end if;
-                  return Non_Array_Component_Declaration (A4G_Bugs.Corresponding_Name_Declaration (Temp));
+                  return Non_Array_Component_Declaration (Corresponding_Name_Declaration (Temp));
                when others =>
                   return Declaration;
             end case;
@@ -229,7 +228,7 @@ package body Rules.Improper_Initialization is
             -- Here, Temp is the simple name of the subtype
             return Non_Array_Component_Declaration
                     (Ultimate_Type_Declaration
-                     (A4G_Bugs.Corresponding_Name_Declaration (Temp)));
+                     (Corresponding_Name_Declaration (Temp)));
          when A_Private_Type_Definition =>
             return Non_Array_Component_Declaration (Corresponding_Type_Declaration
                                                     (Enclosing_Element (Definition)));
@@ -339,12 +338,12 @@ package body Rules.Improper_Initialization is
                                     Report (Rule_Id,
                                             Usage (K_Out_Parameter),
                                             Get_Location (Element),
-                                            "use of uninitialized out parameter: " & A4G_Bugs.Name_Image (Good_Name));
+                                            "use of uninitialized out parameter: " & Name_Image (Good_Name));
                                  when K_Variable =>
                                     Report (Rule_Id,
                                             Usage (K_Variable),
                                             Get_Location (Element),
-                                            "use of uninitialized variable: " & A4G_Bugs.Name_Image (Good_Name));
+                                            "use of uninitialized variable: " & Name_Image (Good_Name));
                                  when K_Initialized_Variable =>
                                     null;
                               end case;
@@ -363,7 +362,7 @@ package body Rules.Improper_Initialization is
                      -- Otherwise, we must special case the prefix, since its use is not a Read, but there
                      -- can be Reads of the components of the prefix, as in S(I,J)(K).Tab(L)'Access
                      if Is_Access_Expression (Prefix (Element)) then
-                        case A4G_Bugs.Attribute_Kind (Element) is
+                        case Attribute_Kind (Element) is
                            when A_Callable_Attribute
                               | A_Component_Size_Attribute
                               | A_Constrained_Attribute
@@ -645,7 +644,7 @@ package body Rules.Improper_Initialization is
                   Failure (Rule_Id & ": invalid expression kind", Good_Name);
             end case;
          end loop;
-         case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name)) is
+         case Declaration_Kind (Corresponding_Name_Declaration (Good_Name)) is
             when A_Variable_Declaration | A_Parameter_Specification | A_Return_Variable_Specification =>
                declare
                   Name_Image : constant Unbounded_Wide_String
@@ -917,6 +916,7 @@ package body Rules.Improper_Initialization is
             end if;
          end General_Parameter_Profile;
 
+         use Asis.Expressions;
       begin  -- Add_Out_Parameters
          if not Rule_Used (K_Out_Parameter) then
             return;
@@ -941,11 +941,11 @@ package body Rules.Improper_Initialization is
                   when Not_A_Mode =>
                      Failure (Rule_Id & ": Not_A_Mode");
                   when An_Out_Mode =>
-                     Subtype_Decl := A4G_Bugs.Corresponding_Name_Declaration
-                                              (Simple_Name
-                                               (Strip_Attributes
-                                                (Declaration_Subtype_Mark
-                                                 (Params_Profile (Profile_Index)))));
+                     Subtype_Decl := Corresponding_Name_Declaration
+                                     (Simple_Name
+                                      (Strip_Attributes
+                                       (Declaration_Subtype_Mark
+                                        (Params_Profile (Profile_Index)))));
                      Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
                      -- If Component_Decl is Nil_Element, the component is of an (anonymous) access type
                      if (Extensions (K_Out_Parameter) (M_Access)
@@ -1050,7 +1050,7 @@ package body Rules.Improper_Initialization is
                Subtype_Decl := Simple_Name (Prefix (Subtype_Decl));
             end if;
             -- Here, Subtype_Decl is the name of an appropriate subtype
-            Subtype_Decl := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Decl);
+            Subtype_Decl := Corresponding_Name_Declaration (Subtype_Decl);
             -- Now, it is the real subtype declaration
 
             Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
@@ -1165,7 +1165,7 @@ package body Rules.Improper_Initialization is
                         when An_Object_Renaming_Declaration =>
                            -- The actual variable being renamed is not a use of the variable, however
                            -- any other use of variables within the renamed expression is.
-                           Expr := A4G_Bugs.Renamed_Entity (Decls (Decl_Index));
+                           Expr := Renamed_Entity (Decls (Decl_Index));
                            loop
                               case Expression_Kind (Expr) is
                                  when An_Identifier | An_Enumeration_Literal =>
@@ -1192,7 +1192,7 @@ package body Rules.Improper_Initialization is
                                     Check_Object_Use (Slice_Range (Expr), Global_Map);
                                     Expr := Prefix (Expr);
                                  when A_Selected_Component =>
-                                    if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Selector (Expr)))
+                                    if Declaration_Kind (Corresponding_Name_Declaration (Selector (Expr)))
                                     not in A_Discriminant_Specification .. A_Component_Declaration
                                     then
                                        -- This is the object being renamed

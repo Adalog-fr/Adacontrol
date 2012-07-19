@@ -44,7 +44,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -233,9 +232,9 @@ package body Rules.Representation_Clauses is
             Name : constant Asis.Expression := Representation_Clause_Name (Target);
          begin
             if Expression_Kind (Name) = An_Attribute_Reference then
-               return A4G_Bugs.Corresponding_Name_Declaration (Prefix (Name));
+               return Corresponding_Name_Declaration (Prefix (Name));
             else
-               return A4G_Bugs.Corresponding_Name_Declaration (Name);
+               return Corresponding_Name_Declaration (Name);
             end if;
          end Clause_Name_Declaration;
 
@@ -256,9 +255,9 @@ package body Rules.Representation_Clauses is
                while Expression_Kind (Pfx) = An_Attribute_Reference loop
                   Pfx := Prefix (Pfx);
                end loop;
-               Is_Global := Static_Level (A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (Pfx))) = Global_Level;
+               Is_Global := Static_Level (Corresponding_Name_Declaration (Simple_Name (Pfx))) = Global_Level;
             else
-               Pfx_Decl  := A4G_Bugs.Corresponding_Name_Declaration (Pfx);
+               Pfx_Decl  := Corresponding_Name_Declaration (Pfx);
                Is_Object := Declaration_Kind (Pfx_Decl) in An_Object_Declaration;
                Is_Global := Static_Level (Pfx_Decl) = Global_Level;
             end if;
@@ -328,11 +327,10 @@ package body Rules.Representation_Clauses is
                                                                         Null_State_Procedure);
          Control : Asis.Traverse_Control := Continue;
          State   : Null_State;
-         Decl    : constant Asis.Declaration
-                   := A4G_Bugs.Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
+         Decl    : constant Asis.Declaration := Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
       begin  -- Check_Incomplete
          for C in Components'Range loop
-            Add (Compo_Set, To_Upper (A4G_Bugs.Name_Image (Representation_Clause_Name (Components (C)))));
+            Add (Compo_Set, To_Upper (Name_Image (Representation_Clause_Name (Components (C)))));
          end loop;
 
          if not Is_Nil (Discriminant_Part (Decl)) then
@@ -462,7 +460,7 @@ package body Rules.Representation_Clauses is
                             False_Negative,
                             Get_Location (Clause),
                             "unable to evaluate size of "
-                            & A4G_Bugs.Name_Image (Representation_Clause_Name (Clause))
+                            & Name_Image (Representation_Clause_Name (Clause))
                             & "for non_contiguous_layout subrule");
                return;
             end if;
@@ -487,7 +485,7 @@ package body Rules.Representation_Clauses is
          Value : constant Asis.Expression := Ultimate_Expression (Representation_Clause_Expression (Rep_Clause));
       begin
          if Expression_Kind (Value) = An_Attribute_Reference
-           and then A4G_Bugs.Attribute_Kind (Value) = An_Address_Attribute
+           and then Attribute_Kind (Value) = An_Address_Attribute
          then
             Do_Report (Sr_Overlay, Rep_Clause, "address clause causes overlay");
          end if;

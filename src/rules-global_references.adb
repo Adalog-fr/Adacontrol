@@ -39,7 +39,8 @@ with
   Asis.Elements,
   Asis.Exceptions,
   Asis.Expressions,
-  Asis.Iterator;
+  Asis.Iterator,
+  Asis.Statements;
 
 -- Adalog
 with
@@ -323,7 +324,7 @@ package body Rules.Global_References is
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
                             State   : in out Usage_Value) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
       use Framework.Reports;
 
@@ -350,7 +351,7 @@ package body Rules.Global_References is
          end case;
       end Process_Call;
 
-   begin  -- Pre_Procedure
+  begin  -- Pre_Procedure
       case Element_Kind (Element) is
          when A_Defining_Name =>
             if Declaration_Kind (Enclosing_Element (Element)) = A_Variable_Declaration then
@@ -386,7 +387,7 @@ package body Rules.Global_References is
                   Process_Call;
                when An_Identifier =>
                   begin
-                     case Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Element)) is
+                     case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
                         when A_Variable_Declaration =>
                            declare
                               Key : constant Unbounded_Wide_String
@@ -461,7 +462,7 @@ package body Rules.Global_References is
                                               & "assuming not an [in] out parameter");
                                  New_State := Read;
                            end case;
-                           Traverse (A4G_Bugs.Renamed_Entity (A4G_Bugs.Corresponding_Name_Declaration (Element)),
+                           Traverse (Renamed_Entity (Corresponding_Name_Declaration (Element)),
                                      Control,
                                      New_State);
                         when others =>
@@ -492,7 +493,7 @@ package body Rules.Global_References is
                when An_Entry_Call_Statement =>
                   -- Process only protected entries (not task entries)
                   declare
-                     Called : constant Asis.Declaration := A4G_Bugs.Corresponding_Called_Entity (Element);
+                     Called : constant Asis.Declaration := Corresponding_Called_Entity (Element);
                   begin
                      if not Is_Nil (Called)
                        and then Definition_Kind (Enclosing_Element (Called)) = A_Protected_Definition

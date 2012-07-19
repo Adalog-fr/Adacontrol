@@ -44,7 +44,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -399,7 +398,7 @@ package body Rules.Max_Call_Depth is
                   null;
                when A_Renaming_Declaration =>
                   -- Traverse only the renamed entity (not the new name)
-                  Traverse (A4G_Bugs.Renamed_Entity (Element), Control, Descr);
+                  Traverse (Renamed_Entity (Element), Control, Descr);
                   Control := Abandon_Children;
                when A_Package_Body_Declaration =>
                   -- Recurse normally if it is not a generic body

@@ -38,7 +38,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -201,7 +200,7 @@ package body Rules.Allocators is
             RR : Asis.Expression := Right;
          begin
             while Expression_Kind (LL) = An_Attribute_Reference loop
-               if A4G_Bugs.Attribute_Kind (LL) /= A4G_Bugs.Attribute_Kind (RR) then
+               if Attribute_Kind (LL) /= Attribute_Kind (RR) then
                   return False;
                end if;
                LL := Prefix (LL);
@@ -243,7 +242,7 @@ package body Rules.Allocators is
                                                               (Enclosing_Element (Allocator_Subtype)));
                elsif Formal_Type_Kind (Allocator_Subtype) = A_Formal_Derived_Type_Definition then
                   -- There can be no constraint at that level, go to the parent type
-                  Allocator_Subtype := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
+                  Allocator_Subtype := Type_Declaration_View (Corresponding_Name_Declaration
                     (Simple_Name
                        (Strip_Attributes
                           (Subtype_Simple_Name (Allocator_Subtype)))));
@@ -269,10 +268,10 @@ package body Rules.Allocators is
             if Element_Kind (Designated_Subtype) = An_Expression      -- a subtype mark, no constraint
               or else Is_Nil (Subtype_Constraint (Designated_Subtype))
             then
-               if A4G_Bugs.Attribute_Kind (Designated_Name) = A_Base_Attribute then
+               if Attribute_Kind (Designated_Name) = A_Base_Attribute then
                   return;
                end if;
-               Def := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Designated_Name)));
+               Def := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Designated_Name)));
                case Declaration_Kind (Def) is
                   when A_Private_Type_Declaration | An_Incomplete_Type_Declaration =>
                      Def := Corresponding_Type_Declaration (Def);
@@ -371,7 +370,7 @@ package body Rules.Allocators is
       -- T'Base is only allowed for scalar types, therefore we cannot have T'Base'Class
       -- nor T'Class'Base
       if Expression_Kind (Allocated_Subtype) = An_Attribute_Reference then
-         case A4G_Bugs.Attribute_Kind (Allocated_Subtype) is
+         case Attribute_Kind (Allocated_Subtype) is
             when A_Base_Attribute =>
                E := Simple_Name (First_Subtype_Name (Simple_Name (Prefix (Allocated_Subtype))));
             when A_Class_Attribute =>

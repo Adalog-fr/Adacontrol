@@ -38,7 +38,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -394,7 +393,7 @@ package body Rules.Local_Hiding is
                      Failure ("Unexpected name in with clause", All_Names (I));
                end case;
                declare
-                  Short_Name : constant Wide_String := To_Upper (A4G_Bugs.Name_Image (Name));
+                  Short_Name : constant Wide_String := To_Upper (Name_Image (Name));
                   Full_Name  : constant Wide_String := Short_Name & Profile_Image (Name, With_Profile => False);
                begin
                   -- Bind names to scope 0

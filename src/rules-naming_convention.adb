@@ -433,7 +433,7 @@ package body Rules.Naming_Convention is
          end loop;
       end Check;
 
-
+      use Asis.Definitions;
    begin    -- Process_Defining_Name
       if not Rule_Used then
          return;
@@ -523,7 +523,7 @@ package body Rules.Naming_Convention is
                               -- We can't use Ultimate_Name, because we need a different treatment of dereferences
                               Going_Up_Renamings :
                               while Decl_Kind in A_Renaming_Declaration loop
-                                 Renamed := A4G_Bugs.Renamed_Entity (Decl);
+                                 Renamed := Renamed_Entity (Decl);
 
                                  loop
                                     case Expression_Kind (Renamed) is
@@ -584,7 +584,7 @@ package body Rules.Naming_Convention is
                                                    Renamed);
                                     end case;
                                  end loop;
-                                 Decl      := A4G_Bugs.Corresponding_Name_Declaration (Renamed);
+                                 Decl      := Corresponding_Name_Declaration (Renamed);
                                  Decl_Kind := Declaration_Kind (Decl);
                               end loop Going_Up_Renamings;
                            end if;
@@ -640,7 +640,7 @@ package body Rules.Naming_Convention is
                         Def       := Type_Declaration_View (Decl);
                         if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
                            -- Subtype of a derived type
-                           Decl      := A4G_Bugs.Corresponding_Root_Type (Def);
+                           Decl      := Corresponding_Root_Type (Def);
                            Decl_Kind := Declaration_Kind (Decl);
                         end if;
                      end if;
@@ -653,7 +653,7 @@ package body Rules.Naming_Convention is
                      -- For derived types, get Decl and Decl_Kind from the corresponding type
                      Def := Type_Declaration_View (Decl);
                      if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
-                        Decl      := A4G_Bugs.Corresponding_Root_Type (Def);
+                        Decl      := Corresponding_Root_Type (Def);
                         Decl_Kind := Declaration_Kind (Decl);
                      end if;
 
@@ -705,14 +705,14 @@ package body Rules.Naming_Convention is
 
                            -- Here, we have an acces to object
                            Accessed := Subtype_Simple_Name (Definitions.Access_To_Object_Definition (Def));
-                           if A4G_Bugs.Attribute_Kind (Accessed) = A_Class_Attribute then
+                           if Attribute_Kind (Accessed) = A_Class_Attribute then
                               -- Directly: type T is access T'Class
                               Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Class_Type));
                               return;
                            end if;
 
                            -- Ignore a possible 'Base
-                           if A4G_Bugs.Attribute_Kind (Accessed) = A_Base_Attribute then
+                           if Attribute_Kind (Accessed) = A_Base_Attribute then
                               Accessed := Prefix (Accessed);
                            end if;
 
@@ -723,7 +723,7 @@ package body Rules.Naming_Convention is
 
                            -- Here, we should have a plain (sub)type identifier
 
-                           Accessed := A4G_Bugs.Corresponding_Name_Declaration (Accessed);
+                           Accessed := Corresponding_Name_Declaration (Accessed);
                            if Declaration_Kind (Accessed) = An_Incomplete_Type_Declaration then
                               Accessed := Corresponding_Type_Declaration (Accessed);
                               if Is_Nil (Accessed) then
@@ -753,9 +753,9 @@ package body Rules.Naming_Convention is
                               if Type_Kind (Def)
                                 in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
                               then
-                                 Accessed := A4G_Bugs.Corresponding_Root_Type (Def);
+                                 Accessed := Corresponding_Root_Type (Def);
                               elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
-                                 Accessed := A4G_Bugs.Corresponding_Name_Declaration (Subtype_Simple_Name (Def));
+                                 Accessed := Corresponding_Name_Declaration (Subtype_Simple_Name (Def));
                               else
                                  exit;
                               end if;
@@ -903,7 +903,7 @@ package body Rules.Naming_Convention is
                      if Type_Kind (Def)
                        in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
                      then
-                        Def := Type_Declaration_View (A4G_Bugs.Corresponding_Root_Type (Def));
+                        Def := Type_Declaration_View (Corresponding_Root_Type (Def));
                         if Definition_Kind (Def) = A_Type_Definition then
                            -- Must be a record type. Go to the record definition to match the
                            -- case of the underived type

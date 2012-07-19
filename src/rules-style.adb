@@ -37,6 +37,7 @@ with
 -- ASIS
 with
   Asis.Clauses,
+  Asis.Compilation_Units,
   Asis.Elements,
   Asis.Declarations,
   Asis.Definitions,
@@ -46,7 +47,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   String_Matching,
   Thick_Queries,
   Utilities;
@@ -889,12 +889,12 @@ package body Rules.Style is
            and then (        Expression_Kind (Identifier) = An_Identifier
                      or else Expression_Kind (Identifier) = An_Enumeration_Literal)
          then
-            Check_Casing (A4G_Bugs.Name_Image (Identifier), St_Casing_Identifier, Identifier);
+            Check_Casing (Name_Image (Identifier), St_Casing_Identifier, Identifier);
          elsif Rule_Used (St_Casing_Keyword) and then Expression_Kind (Identifier) = An_Operator_Symbol then
             -- This is an operator, must be the prefix of a function call
             -- If it uses infix notation, don't handle it because it will be found by the texual rule for keywords
             if Is_Prefix_Call (Enclosing_Element (Identifier)) then
-               Check_Casing (A4G_Bugs.Name_Image (Identifier), St_Casing_Keyword, Identifier);
+               Check_Casing (Name_Image (Identifier), St_Casing_Keyword, Identifier);
             end if;
          end if;
 
@@ -1246,7 +1246,7 @@ package body Rules.Style is
 
                if Expression_Kind (Expr) = A_Function_Call then
                   Func := Simple_Name (Prefix (Expr));
-                  if To_Upper (A4G_Bugs.Name_Image (Func)) = """NOT""" then
+                  if To_Upper (Name_Image (Func)) = """NOT""" then
                      Report (Rule_Id,
                              Corresponding_Context (St_Negative_Condition),
                              Get_Location(Expr),
@@ -1668,7 +1668,7 @@ package body Rules.Style is
    ----------------------
 
    procedure Process_Renaming  (Ren : in Asis.Declaration) is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports;
 
       Target : Asis.Expression;
@@ -1679,7 +1679,7 @@ package body Rules.Style is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Target := A4G_Bugs.Renamed_Entity (Ren);
+      Target := Renamed_Entity (Ren);
       if Expression_Kind (Target) = A_Type_Conversion then
          Target := Converted_Or_Qualified_Expression (Target);
       end if;
@@ -1803,6 +1803,7 @@ package body Rules.Style is
          end;
       end Check_Special_Use_Clause;
 
+      use Asis.Compilation_Units;
       Loc : Location;
    begin -- Process_Element
       if not Rule_Used (St_Multiple_Elements) then
@@ -1814,7 +1815,7 @@ package body Rules.Style is
       -- if Element is the declaration of a private compilation unit, consider it starts
       -- at the preceding "private"
       if Is_Compilation_Unit (Element)
-        and then A4G_Bugs.Unit_Class (Enclosing_Compilation_Unit (Element)) = A_Private_Declaration
+        and then Unit_Class (Enclosing_Compilation_Unit (Element)) = A_Private_Declaration
       then
          Loc := Get_Previous_Word_Location (Element, "PRIVATE");
       else
@@ -1896,7 +1897,7 @@ package body Rules.Style is
       Rules_Manager.Enter (Rule_Id);
 
       Identifier := Attribute_Designator_Identifier (Attribute);
-      Check_Casing (A4G_Bugs.Name_Image (Identifier), St_Casing_Attribute, Identifier);
+      Check_Casing (Name_Image (Identifier), St_Casing_Attribute, Identifier);
    end Process_Attribute;
 
    --------------------

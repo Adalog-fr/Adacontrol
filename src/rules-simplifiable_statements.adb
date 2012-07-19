@@ -38,7 +38,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -207,7 +206,7 @@ package body Rules.Simplifiable_Statements is
                      -- For predefined operations, either there is no "fake" declaration and
                      -- Corresponding_Name_Declaration returns Nil_Element (GNAT case), or the
                      -- Declaration_Origin is An_Implicit_Predefined_Declaration.
-                     Decl := A4G_Bugs.Corresponding_Name_Declaration (Func_Name);
+                     Decl := Corresponding_Name_Declaration (Func_Name);
 
                      if not Is_Nil (Decl)
                        and then Declaration_Origin (Decl) /= An_Implicit_Predefined_Declaration

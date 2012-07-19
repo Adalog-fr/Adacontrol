@@ -604,7 +604,7 @@ package body Rules.Usage is
          when A_Declaration =>
             Decl := Element;
          when An_Expression =>
-            Decl := A4G_Bugs.Corresponding_Name_Declaration (Element);
+            Decl := Corresponding_Name_Declaration (Element);
             case Element_Kind (Decl) is
                when Not_An_Element =>
                   -- We cannot handle things that have no declaration:
@@ -658,12 +658,12 @@ package body Rules.Usage is
                -- Type is T'Base or T'Class => not a task or protected type
                return K_Variable;
 
-            elsif Is_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Temp),
+            elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
                                             A_Task_Type_Declaration)
             then
                return K_Task;
 
-            elsif Is_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Temp),
+            elsif Is_Type_Declaration_Kind (Corresponding_Name_Declaration (Temp),
                                             A_Protected_Type_Declaration)
             then
                return K_Protected;
@@ -1003,13 +1003,12 @@ package body Rules.Usage is
    -------------------------
 
    procedure Process_Declaration (Element : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries, Utilities;
 
       function Is_Array_Initialized (Def : Asis.Definition) return Boolean is
          -- Check if the components of the (formal) array of Def are automatically initialized
          -- Currently: only access types recognized as initialized
-         use Asis.Definitions;
          Current_Definition : Asis.Definition := Def;
       begin
          loop
@@ -1018,7 +1017,7 @@ package body Rules.Usage is
                -- 2005 anonymous access component => access type => initialized
                return True;
             end if;
-            Current_Definition := Type_Declaration_View (A4G_Bugs.Corresponding_Name_Declaration
+            Current_Definition := Type_Declaration_View (Corresponding_Name_Declaration
                                                          (Subtype_Simple_Name (Current_Definition)));
             exit when Type_Kind (Current_Definition)
                       not in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition
@@ -1065,13 +1064,12 @@ package body Rules.Usage is
                            Name := Simple_Name (Prefix (Name));
                         end if;
                         Root_Definition := Type_Declaration_View (Corresponding_First_Subtype
-                                                                    (A4G_Bugs.Corresponding_Name_Declaration
-                                                                       (Name)));
+                                                                  (Corresponding_Name_Declaration (Name)));
                      end;
                      if Type_Kind (Root_Definition)
                        in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
                      then
-                        Root_Definition := Type_Declaration_View (A4G_Bugs.Corresponding_Root_Type (Root_Definition));
+                        Root_Definition := Type_Declaration_View (Corresponding_Root_Type (Root_Definition));
                      end if;
                   end if;
 
@@ -1176,7 +1174,7 @@ package body Rules.Usage is
    ------------------------
 
    procedure Process_Identifier (Name : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Statements;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Framework.Reports, Thick_Queries, Utilities;
 
       Good_Name : Asis.Expression;
@@ -1192,7 +1190,7 @@ package body Rules.Usage is
          end loop;
 
          if Expression_Kind (Enclosing) = An_Attribute_Reference then
-            case A4G_Bugs.Attribute_Kind (Enclosing) is
+            case Attribute_Kind (Enclosing) is
                when An_Access_Attribute
                   | An_Unchecked_Access_Attribute
                   | An_Address_Attribute
@@ -1203,7 +1201,7 @@ package body Rules.Usage is
                      Uncheckable (Rule_Id,
                                   False_Negative,
                                   Get_Location (Ultimate_Enclosing_Instantiation (Name)),
-                                  "Possible access to """ & A4G_Bugs.Name_Image (Name) & """ through alias");
+                                  "Possible access to """ & Name_Image (Name) & """ through alias");
                   else
                      Uncheckable (Rule_Id,
                                   False_Negative,
@@ -1262,7 +1260,7 @@ package body Rules.Usage is
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Ultimate_Enclosing_Instantiation (Name)),
-                         "Name """ & A4G_Bugs.Name_Image (Name) & """ is dynamic renaming");
+                         "Name """ & Name_Image (Name) & """ is dynamic renaming");
          else
             Uncheckable (Rule_Id,
                          False_Negative,
@@ -1292,7 +1290,7 @@ package body Rules.Usage is
                   Uncheckable (Rule_Id,
                                False_Positive,
                                Get_Location (Name),
-                               "variable """ & A4G_Bugs.Name_Image (Good_Name)
+                               "variable """ & Name_Image (Good_Name)
                                & """ used as parameter of dispatching call, treated as in-out");
                   Update (Good_Name, K_Variable, Value => (K_Read | K_Written => True, others => False));
             end case;
@@ -1349,7 +1347,7 @@ package body Rules.Usage is
                end loop;
 
                if Expression_Kind (Enclosing) = An_Attribute_Reference
-                 and then A4G_Bugs.Attribute_Kind (Enclosing) = An_Identity_Attribute
+                 and then Attribute_Kind (Enclosing) = An_Identity_Attribute
                then
                   Enclosing := Enclosing_Element (Enclosing);
                   if Element_Kind (Enclosing) = An_Association then
@@ -1385,7 +1383,7 @@ package body Rules.Usage is
                end loop;
 
                if Expression_Kind (Enclosing) = An_Attribute_Reference
-                 and then A4G_Bugs.Attribute_Kind (Enclosing) = An_Identity_Attribute
+                 and then Attribute_Kind (Enclosing) = An_Identity_Attribute
                then
                   Enclosing := Enclosing_Element (Enclosing);
                   if Element_Kind (Enclosing) = An_Association then
@@ -1531,14 +1529,14 @@ package body Rules.Usage is
                      null;
                end case;
 
-	    when A_Definition =>
-	       case Definition_Kind (Element) is
-		  when An_Aspect_Specification =>
-		     -- 2012, ignored for the moment
-		     Control := Abandon_Children;
-		  when others =>
-		     null;
-	       end case;
+            when A_Definition =>
+               case Definition_Kind (Element) is
+                  when An_Aspect_Specification =>
+                     -- 2012, ignored for the moment
+                     Control := Abandon_Children;
+                  when others =>
+                     null;
+               end case;
 
             when A_Pragma =>
                -- Nothing interesting here, and pragma elements are dangerous...

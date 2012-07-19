@@ -41,7 +41,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -214,7 +213,7 @@ package body Rules.Barrier_Expressions is
                   Name_Decl  : Asis.Declaration;
                begin
                   for N in Used_Names'Range loop
-                     Name_Decl  := A4G_Bugs.Corresponding_Name_Declaration (Used_Names(N));
+                     Name_Decl  := Corresponding_Name_Declaration (Used_Names(N));
                      case Declaration_Kind (Name_Decl) is
                         when A_Package_Declaration
                            | A_Package_Body_Declaration

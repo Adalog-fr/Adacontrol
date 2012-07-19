@@ -42,7 +42,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -445,7 +444,7 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Variable_Declaration =>
                   Def := Object_Declaration_View (Element);
                   if Definition_Kind (Def) = A_Subtype_Indication then
-                     if Contains_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration
+                     if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
                                                         (Subtype_Simple_Name (Def)),
                                                         A_Task_Type_Declaration)
                      then
@@ -462,7 +461,7 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Function_Call =>
                   Process_Call ("function");
                when An_Allocation_From_Subtype =>
-                  if Contains_Type_Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration
+                  if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
                                                      (Subtype_Simple_Name (Allocator_Subtype_Indication (Element))),
                                                      A_Task_Type_Declaration)
                   then
@@ -540,13 +539,13 @@ package body Rules.Potentially_Blocking_Operations is
      -- or Nil_Element if check is not called immediately from a PTO
    is
       use Ada.Strings.Wide_Unbounded;
-      use Asis, Asis.Declarations, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use SP_Property_Map, Framework.Element_Queues, Framework.Rules_Manager, Thick_Queries, Utilities;
       Decl : Asis.Declaration := Entity_Decl;
    begin
       -- Get rid of renamings
       while Declaration_Kind (Decl) in A_Renaming_Declaration loop
-         Decl := A4G_Bugs.Corresponding_Name_Declaration (Simple_Name (A4G_Bugs.Renamed_Entity (Decl)));
+         Decl := Corresponding_Name_Declaration (Simple_Name (Renamed_Entity (Decl)));
       end loop;
 
       if Is_Banned (Decl, Rule_Id) then

@@ -36,7 +36,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -129,7 +128,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
                Uncheckable (Rule_Id,
                             False_Positive,
                             Get_Location (Type_Name),
-                            "unable to evaluate size clause value for " & A4G_Bugs.Name_Image (Type_Name));
+                            "unable to evaluate size clause value for " & Name_Image (Type_Name));
                return Not_Specified;
             else
                return Val;

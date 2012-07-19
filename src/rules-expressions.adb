@@ -526,7 +526,7 @@ package body Rules.Expressions is
                null;
          end case;
          Def := Type_Declaration_View (Ultimate_Type_Declaration
-                                       (A4G_Bugs.Corresponding_Name_Declaration (Name)));
+                                       (Corresponding_Name_Declaration (Name)));
       end if;
 
       case Definition_Kind (Def) is
@@ -576,7 +576,7 @@ package body Rules.Expressions is
 
       case Expression_Kind (Expression) is
          when An_Attribute_Reference =>
-            case A4G_Bugs.Attribute_Kind (Expression) is
+            case Attribute_Kind (Expression) is
                when A_First_Attribute
                   | A_Last_Attribute
                   | A_Length_Attribute
@@ -790,7 +790,7 @@ package body Rules.Expressions is
             Called_Kind := Operator;
          when An_Attribute_Reference =>
             Called_Kind := Attribute;
-            if A4G_Bugs.Attribute_Kind (Called) = A_Read_Attribute then
+            if Attribute_Kind (Called) = A_Read_Attribute then
                -- This is the only attribute SP with an out parameter, in the second position
                declare
                   Parameters : constant Asis.Association_List := Actual_Parameters (Call, Normalized => False);

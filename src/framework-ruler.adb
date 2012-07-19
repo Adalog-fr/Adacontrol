@@ -46,7 +46,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Units_List,
   Utilities;
@@ -1091,7 +1090,7 @@ package body Framework.Ruler is
       -- Control specification
       -- If there is no explicit spec, no need to try and analyze the spec
       -- This saves useless messages about not found specifications
-      case A4G_Bugs.Unit_Class (Unit_Body) is
+      case Unit_Class (Unit_Body) is
          when A_Public_Declaration_And_Body | A_Separate_Body =>
             Unit_Spec := Nil_Compilation_Unit;
          when others =>

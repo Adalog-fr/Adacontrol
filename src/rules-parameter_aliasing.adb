@@ -43,7 +43,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -216,7 +215,7 @@ package body Rules.Parameter_Aliasing is
                return '"' & Defining_Name_Image (Name) & " => "
                  & Trim_All (Element_Image (Actual_Parameter (Actuals (Position)))) & '"';
             else
-               return '"' & A4G_Bugs.Name_Image (Name) & " => "
+               return '"' & Name_Image (Name) & " => "
                  & Trim_All (Element_Image (Actual_Parameter (Actuals (Position)))) & '"';
             end if;
          end Association_Image;
