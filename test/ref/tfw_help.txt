@@ -228,9 +228,9 @@ Parameter (s): and                       | and_then                         |
                real_equality             | record_aggregate                 |
                record_partial_others     | record_others                    |
                slice                     | type_conversion                  |
-               universal_range           | unqualified_aggregate            |
-               xor
-For subrules type_conversion and parameter_view_conversion:
+               underived_conversion      | universal_range                  |
+               unqualified_aggregate     | xor
+For subrules type_conversion, underived_conversion and parameter_view_conversion:
     [[<source_category>] <target_category>] <subrule>
 For subrules inherited_function_call and prefixed_operator:
     [<result_category>] <subrule>

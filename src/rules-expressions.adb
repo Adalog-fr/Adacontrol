@@ -77,7 +77,7 @@ package body Rules.Expressions is
 
                      E_Type_Conversion,
 
-                     E_Universal_Range, E_Unqualified_Aggregate,
+                     E_Underived_Conversion, E_Universal_Range, E_Unqualified_Aggregate,
 
                      E_Xor);
 
@@ -87,7 +87,6 @@ package body Rules.Expressions is
    Key_Inherited_Function_Call   : constant Entity_Specification := Value (Image (E_Inherited_Function_Call));
    Key_Parameter_View_Conversion : constant Entity_Specification := Value (Image (E_Parameter_View_Conversion));
    Key_Prefixed_Operator         : constant Entity_Specification := Value (Image (E_Prefixed_Operator));
-   Key_Type_Conversion           : constant Entity_Specification := Value (Image (E_Type_Conversion));
 
    type Usage_Flags is array (Subrules) of Boolean;
    Rule_Used : Usage_Flags := (others => False);
@@ -115,7 +114,7 @@ package body Rules.Expressions is
       User_Message ("Control occurrences of Ada expressions");
       User_Message;
       Help_On_Flags (Header => "Parameter (s):");
-      User_Message ("For subrules type_conversion and parameter_view_conversion:");
+      User_Message ("For subrules type_conversion, underived_conversion and parameter_view_conversion:");
       User_Message ("    [[<source_category>] <target_category>] <subrule>");
       User_Message ("For subrules inherited_function_call and prefixed_operator:");
       User_Message ("    [<result_category>] <subrule>");
@@ -159,6 +158,7 @@ package body Rules.Expressions is
                              Additive => True);
 
                when E_Type_Conversion
+                  | E_Underived_Conversion
                   | E_Parameter_View_Conversion
                     =>
                   case Cat_List'Length is
@@ -270,6 +270,28 @@ package body Rules.Expressions is
       end loop;
       Do_Report (Sr, Cont, Loc, Cont.Cats);
    end Do_Category_Report;
+
+
+   --------------------------
+   -- Do_Conversion_Report --
+   --------------------------
+
+   procedure Do_Conversion_Report (Source_Expr : Asis.Expression;
+                                   Target_Expr : Asis.Expression;
+                                   Subrule     : Subrules)
+   is
+      Key  : constant Entity_Specification := Value (Image (Subrule));
+      Iter : Context_Iterator := Categories_Iterator.Create;
+   begin
+      Reset (Iter, Key);
+      while not Is_Exhausted (Iter) loop
+         Do_Category_Report ((Source_Expr, Target_Expr),
+                             Categories_Context (Value (Iter)),
+                             Subrule,
+                             Get_Location (Target_Expr));
+         Next (Iter);
+      end loop;
+   end Do_Conversion_Report;
 
 
    ---------------------------
@@ -651,7 +673,8 @@ package body Rules.Expressions is
                            Do_Report (E_Array_Range, Get_Location (Choices (C)));
                            if Rule_Used (E_Array_Non_Static_Range) then
                               declare
-                                 Bounds : Extended_Biggest_Int_List := Discrete_Constraining_Values (Choices (C));
+                                 Bounds : constant Extended_Biggest_Int_List
+                                        := Discrete_Constraining_Values (Choices (C));
                               begin
                                  if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
                                     Do_Report (E_Array_Non_Static_Range, Get_Location (Choices (C)));
@@ -718,19 +741,29 @@ package body Rules.Expressions is
          when A_Type_Conversion =>
             -- E_Parameter_View_Conversion is handled by Process_Call
             if Rule_Used (E_Type_Conversion) then
+               Do_Conversion_Report (Converted_Or_Qualified_Expression (Expression),
+                                     Expression,
+                                     E_Type_Conversion);
+            end if;
+
+            if Rule_Used (E_Underived_Conversion) then
                declare
-                  Iter : Context_Iterator := Categories_Iterator.Create;
+                  Source_Type : constant Asis.Declaration := A4G_Bugs.Corresponding_Expression_Type
+                                                              (Converted_Or_Qualified_Expression (Expression));
+                  Target_Type : constant Asis.Declaration := A4G_Bugs.Corresponding_Expression_Type (Expression);
                begin
-                  Reset (Iter, Key_Type_Conversion);
-                  while not Is_Exhausted (Iter) loop
-                     Do_Category_Report ((Converted_Or_Qualified_Expression (Expression), Expression),
-                                         Categories_Context (Value (Iter)),
-                                         E_Type_Conversion,
-                                         Get_Location (Expression));
-                     Next (Iter);
-                  end loop;
+                  if Is_Nil (Source_Type)   -- Anonymous types can't be derived from
+                    or else Is_Nil (Target_Type)
+                    or else not Is_Equal (Ultimate_Type_Declaration (Source_Type),
+                                          Ultimate_Type_Declaration (Target_Type))
+                  then
+                     Do_Conversion_Report (Converted_Or_Qualified_Expression (Expression),
+                                           Expression,
+                                           E_Underived_Conversion);
+                  end if;
                end;
             end if;
+
          when others =>
             null;
       end case;

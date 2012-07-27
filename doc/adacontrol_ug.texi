@@ -4128,8 +4128,8 @@ This rule controls usage of various kinds of expressions.
    real_equality             | record_partial_others            |
    record_aggregate          | record_others                    |
    slice                     | type_conversion                  |
-   universal_range           | unqualified_aggregate            |
-   xor
+   underived_conversion      | universal_range                  | 
+   unqualified_aggregate     | xor
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4250,6 +4250,8 @@ point) values.
 @code{slice} controls usage of array slices.
 @item
 @code{type_conversion} controls all (sub)type conversions, while
+@code{underived_conversion} controls conversions between types that do
+@i{not} belong to the same derivation family, and
 @code{parameter_view_conversion} controls conversions that appear as
 @code{@b{out}} or  @code{@b{in out}} actual parameters. One or two
 categories can be specified; if only one category is specified, only
@@ -4281,6 +4283,9 @@ search expressions (delta <> conversion);
 
 -- Find all view conversions between array types:
 search expressions (array parameter_view_conversions);
+
+-- Find all "structural" conversions between arrays
+search expressions (array underived_conversion);
 @end example
 
 @subsection Tips
@@ -4292,6 +4297,9 @@ accomplished by using the @code{entities} rule. @xref{Entities}.
 
 ``inherited_function_call'' controls only @i{function} calls. For
 procedure calls, see rule @ref{Statements}.
+
+Per language rules, underived conversions are allowed only between
+numeric types, and between structurally equivalent array types.
 
 @node  Global_References, Header_Comments, Expressions, Rules reference
 @section Global_References
