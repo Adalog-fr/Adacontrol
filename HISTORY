@@ -45,7 +45,7 @@ Exception_Propagation
    don't consider loop parameter specifications as declarations.
 
 Expressions: 
-   added subrules array_range, array_non_static_range
+   added subrules array_range, array_non_static_range, underived_conversion
 
 Statements:
   added For_In_Loop, For_Of_Loop
