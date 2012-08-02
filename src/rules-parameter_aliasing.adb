@@ -185,7 +185,27 @@ package body Rules.Parameter_Aliasing is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Framework.Reports, Ada.Strings.Wide_Unbounded;
 
-   begin
+      function Are_Dangerous_Modes (Left, Right : Parameters_Descr; With_In_Mode : Boolean) return Boolean is
+         Cat : Type_Categories;
+      begin
+         if Left.Mode in An_Out_Mode .. An_In_Out_Mode and Right.Mode in An_Out_Mode .. An_In_Out_Mode then
+            return True;
+         end if;
+
+         if With_In_Mode then
+            if Left.Mode in An_Out_Mode .. An_In_Out_Mode then
+               Cat := Type_Category (Right.Expr, Follow_Derived => True, Follow_Private => True);
+               return Cat not in Scalar_Types and Cat /= An_Access_Type; -- Not a Pass by copy type
+            elsif Right.Mode in An_Out_Mode .. An_In_Out_Mode then
+               Cat := Type_Category (Left.Expr, Follow_Derived => True, Follow_Private => True);
+               return Cat not in Scalar_Types and Cat /= An_Access_Type; -- Not a Pass by copy type
+            end if;
+         end if;
+
+         return False;
+      end Are_Dangerous_Modes;
+
+   begin  -- Process_Call
       if Rule_Used = (Rule_Detail => False) then
          return;
       end if;
@@ -279,12 +299,9 @@ package body Rules.Parameter_Aliasing is
                                                        To_Check_Parameters (I).Expr);
                if Rule_Used (Param_Proximity.Confidence)
                  and then Param_Proximity.Overlap /= None
-                 and then (((To_Check_Parameters (I).Mode in An_Out_Mode .. An_In_Out_Mode
-                            or else With_In (Param_Proximity.Confidence))
-                        and To_Check_Parameters (J).Mode in An_Out_Mode .. An_In_Out_Mode)
-                     or    ((To_Check_Parameters (J).Mode in An_Out_Mode .. An_In_Out_Mode
-                            or else With_In (Param_Proximity.Confidence))
-                        and To_Check_Parameters (I).Mode in An_Out_Mode .. An_In_Out_Mode))
+                 and then Are_Dangerous_Modes (To_Check_Parameters (I),
+                                               To_Check_Parameters (J),
+                                               With_In (Param_Proximity.Confidence))
                then
                   Report (Rule_Id,
                     To_Wide_String (Ctl_Labels (Param_Proximity.Confidence)),

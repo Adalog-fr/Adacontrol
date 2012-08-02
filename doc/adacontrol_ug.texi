@@ -5829,9 +5829,10 @@ Proc (X => V, Y => V);
 
 If the modifier ``@code{with_in}'' is given, aliasing between
 @code{@b{out}} or @code{@b{in out}} parameters and @code{@b{in}}
-parameters is also considered. Although this is generally considered
-of less of an issue, it can lead to unexpected results when the
-@code{@b{in}} parameter is passed by reference.
+parameters is also considered (unless the @code{@b{in}} parameter is
+of a by-copy type). Although this is generally considered of less of
+an issue, it can lead to unexpected results when the @code{@b{in}}
+parameter is passed by reference.
 
 There are many cases where aliasing cannot be determined
 statically. The optional parameter specifies how aggressively the

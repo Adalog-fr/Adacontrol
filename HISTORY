@@ -47,6 +47,9 @@ Exception_Propagation
 Expressions: 
    added subrules array_range, array_non_static_range, underived_conversion
 
+Parameter_Aliasing:
+   don't report aliasing with an in parameter of a by-copy type.
+
 Style (Exposed_Literal)
    treat negative numbers as if they were literals
 
