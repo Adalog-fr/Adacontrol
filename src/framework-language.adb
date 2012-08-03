@@ -50,7 +50,6 @@
 with
   Ada.Characters.Handling,
   Ada.Exceptions,
-  Ada.IO_Exceptions,
   Ada.Strings.Wide_Fixed;
 
 -- Adactl
@@ -143,7 +142,6 @@ package body Framework.Language is
 
    procedure Compile is
       use Rules_Manager, Framework.Language.Commands, Framework.Variables, Framework.Variables.Shared_Types;
-      use Ada.IO_Exceptions;
 
       procedure Process_Error (Occur : Ada.Exceptions.Exception_Occurrence) is
          use Ada.Exceptions, Ada.Characters.Handling;
@@ -460,8 +458,9 @@ package body Framework.Language is
                         end if;
 
                         declare
-                           Source : constant Wide_String := Image (Current_Token);
-                           Pos    : constant Location    := Current_Token.Position;
+                           Source  : constant Wide_String := Image (Current_Token);
+                           Pos     : constant Location    := Current_Token.Position;
+                           Success : Boolean;
                         begin
                            Next_Token;
                            if (Source (1) = '/' or Source (1) = '\')
@@ -470,17 +469,28 @@ package body Framework.Language is
                                       and then (Source (3) = '/' or Source (3) = '\'))
                            then
                               -- Absolute path
-                              Source_Command (Source);
+                              Source_Command (Source, Success);
                            else
-                              -- Make it relative to the current file
-                              Source_Command (Reference_Dir & Source);
+                              -- Try it relative to the current file
+                              Source_Command (Reference_Dir & Source, Success);
+                              if not Success then
+                                 -- Try it from path
+                                 declare
+                                    use Ada.Characters.Handling;
+                                    Path_Source : constant Wide_String := Locate_Regular_File (Source, "ADACTL_PATH");
+                                 begin
+                                    if Path_Source /= "" then
+                                       Source_Command (Path_Source, Success);
+                                    end if;
+                                 end;
+                              end if;
                            end if;
 
-                           Close_Command;
-
-                        exception
-                           when Name_Error =>
+                           if Success then
+                              Close_Command;
+                           else
                               Syntax_Error ("Sourced file " & Source & " not found", Pos);
+                           end if;
                         end;
 
                      when Not_A_Key

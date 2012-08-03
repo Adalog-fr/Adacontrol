@@ -22,6 +22,9 @@ Debug:
 PFNI:
    print range for discrete/array types
 
+Source command:
+   Sourced file is searched on the path given by ADACTL_PATH
+
 Framework:
 ----------
 Added management of rule variables

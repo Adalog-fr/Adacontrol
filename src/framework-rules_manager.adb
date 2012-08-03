@@ -421,10 +421,10 @@ package body Framework.Rules_Manager is
          function Format_Duration (Item : Duration; Aft : Natural) return Wide_String is
             -- Remove leading space and leaves only Aft digits after decimal point
             use Ada.Strings.Wide_Fixed;
-            Image   : constant Wide_String := Duration'Wide_Image (Item);
-            Dot_Pos : constant Natural := Index (Image, ".");
+            Img     : constant Wide_String := Duration'Wide_Image (Item);
+            Dot_Pos : constant Natural := Index (Img, ".");
          begin
-            return Image (Image'First+1 .. Dot_Pos + Aft);
+            return Img (Img'First+1 .. Dot_Pos + Aft);
          end Format_Duration;
 
       begin  -- Report_One_Timing

@@ -2239,15 +2239,16 @@ is returned to the place after the ``source'' command. There is no
 restriction on the content of the sourced file; especially, it may
 itself include other ``source'' commands.
 
-If <input file> is not found, AdaControl will retry the same name with
-@code{.aru} appended. It is a syntax error if the file is not found
-either.
-
 If <input file> is a relative file path, it is taken relatively to the
 file where the ``source'' command is given. Especially, if no path is
 specified, the sourced file will be taken from the same directory as
 the sourcing file (irrespectively of where the command is being run
-from).
+from). If the file is not found there, it is searched on the path given
+by the environment variable @code{ADACTL_PATH}.
+
+The default extension is @code{.aru}, i.e. if <input file> is not
+found as given, AdaControl will retry the same name with @code{.aru}
+appended. It is a syntax error if the file is not found either.
 
 If the string @code{console} (case irrelevant) is given as the <input
 file>, commands are read from the console until a ``quit'' command is
