@@ -1088,7 +1088,7 @@ package body Rules.Style is
                      return Mode_Defaulted_In;
                   end if;
                when A_Default_In_Mode =>
-                  if Trait_Kind (Formal) = An_Access_Definition_Trait then
+                  if Definition_Kind (Object_Declaration_View (Formal)) = An_Access_Definition then
                      return Mode_Access;
                   elsif Is_Nil (Initialization_Expression (Formal)) then
                      return Mode_In;
@@ -1108,8 +1108,7 @@ package body Rules.Style is
                -- Note: Mode_Kind returns Not_A_Mode for generic formals that are not objects (types, subprograms...),
                --  so we don't need to special case these
                if Mode_Kind (Formals (I)) = A_Default_In_Mode
-                 and then Trait_Kind (Formals (I)) /= An_Access_Definition_Trait  -- ASIS 95
-                 and then Definition_Kind (Object_Declaration_View (Formals (I))) /= An_Access_Definition -- ASIS 2005
+                 and then Definition_Kind (Object_Declaration_View (Formals (I))) /= An_Access_Definition
                then
                   Report (Rule_Id,
                           Corresponding_Context (St_Default_In),

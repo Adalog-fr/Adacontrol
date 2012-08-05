@@ -850,7 +850,7 @@ package body Rules.Declarations is
                when Not_A_Trait
                   | An_Ordinary_Trait
                   | An_Aliased_Trait
-                  | An_Access_Definition_Trait
+                  | An_Access_Definition_Trait  -- Obsolescent
                   | A_Reverse_Trait
                   | A_Limited_Trait
                   | An_Abstract_Trait
