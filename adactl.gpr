@@ -3,9 +3,6 @@ with "adalog_comps";
 
 project Adactl is
 
-   type Fixes is
-      ("1", "none");
-   Gnat_Fix : Fixes := external ("GNAT_FIX", "none");
    for Languages use ("Ada", "Adacontrol", "Project File", "Python", "Texinfo");
    for Object_Dir use "adalib";
    for Main use ("adactl.adb", "pfni.adb", "ptree.adb");
@@ -26,17 +23,8 @@ project Adactl is
    end Builder;
 
    package Compiler is
-
-      case Gnat_Fix is
-
-         when "1" =>
-            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat05", "-fno-tree-vrp");
-            for Driver ("adacontrol") use "";
-
-         when "none" =>
-            for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat05");
-            for Driver ("adacontrol") use "";
-      end case;
+      for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat05");
+      for Driver ("adacontrol") use "";
    end Compiler;
 
    package Binder is
