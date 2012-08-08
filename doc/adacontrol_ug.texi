@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.14b5
+@settitle AdaControl User Guide V1.14r9
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -232,10 +232,9 @@ Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International C
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with GNAT version GPL 2011, as distributed
-by ACT. If you are using any other version,  please use the source
-distribution of AdaControl and compile it as indicated
-below.
+AdaControl will work only with GNAT version GPL 2012, as distributed
+by AdaCore. If you are using any other version,  please use the source
+distribution of AdaControl and compile it as indicated below.
 
 Another reason for using the source distribution of AdaControl is that
 the user may not be interested in all provided rules. It is very easy
@@ -255,14 +254,32 @@ This section is only for the source distribution of AdaControl. If you
 downloaded an executable distribution (and are using the latest
 version of GNAT GPL), you may skip to the next section.
 
+@subsection Getting the correct version of the sources for your Gnat version
+An incompatible change has been introduced in the ASIS interface, in
+order to deal properly with some Ada-2005/2012 features. This change
+has been incorporated in Gnat starting with versions GnatPRO 7.1.0 and
+GPL-2012. In the rest of this section, we will refer to Gnat versions
+that predate this change as ``old Gnat'', and to other versions as
+``new Gnat''.
+
+Previous public releases of AdaControl will compile only with the old
+Gnat. This release is provided in two versions, one whose distribution
+files start with ``adactl'' for the new Gnat, and one whose
+distribution files start with ``adactl-old'' for the old-gnat. Both
+versions provide the same features; however, it is likely that in the
+future, some improvements will be incorporated only in the version for
+the new Gnat. We strongly encourage users to move to the latest
+version of Gnat.
+
 @subsection Prerequisites
 The following software must be installed in order to compile
 AdaControl from source:
 @itemize
 @item
-A GNAT compiler, any version. Note that the compiler must also be available
-on the machine in order to run AdaControl (all ASIS application need
-the compiler).
+A GNAT compiler, any version (but please consider @ref{Getting the
+correct version of the sources for your Gnat version} above). Note
+that the compiler must also be available on the machine in order to
+run AdaControl (all ASIS application need the compiler).
 @item
 ASIS for GNAT
 @end itemize
@@ -284,7 +301,7 @@ gnatmake -Pbuild.gpr
 @end example
 You're done!
 
-Caveat: Due to a bug in recent versions, if you are using GNATPro
+Caveat (@i{old gnat only}): Due to a bug in some versions, if you are using GNATPro
 6.1.2 and above, you must set the variable GNAT_FIX to 1; i.e. invoke
 the command as:
 @example
@@ -492,22 +509,21 @@ AdaControl can process Ada-2005 as well as Ada-95 programs, even if
 there are currently few Ada-2005 related controls - but we hope to
 improve that situation in the near future.
 
-If you are using Ada-2005 features, make sure that GNAT is set up for
-Ada-2005 (this is the default for GNAT-GPL). Due to technical reasons,
+If you are using Ada-2005 (or Ada-2012) features, make sure that GNAT is set up for
+Ada-2005/2012 (this is the default for GNAT-GPL). Due to technical reasons,
 the -gnat05 option cannot be passed to the compiler in ``compile on
 the fly'' mode, but you can do any of the following:
 @itemize
 @item
 have a ``gnat.adc'' file in the current directory that contains a
-@code{@b{pragma} Ada_05;}
+@code{@b{pragma} Ada_05;} (or @code{@b{pragma} Ada_12;})
 @item
-put a @code{@b{pragma} Ada_05} on top of every compilation unit that
-uses Ada-2005 features;
+put a @code{@b{pragma} Ada_05} (or @code{@b{pragma} Ada_12;}) on top
+of every compilation unit that uses Ada-2005/2012 features;
 @item
-generate the tree
-files manually (@pxref{Generating tree files manually}) with the
-``-gnat05'' option. Note that this allows you to pass any other GNAT option
-as well.
+generate the tree files manually (@pxref{Generating tree files
+manually}) with the ``-gnat05'' (or ``-gnat12)'') option. Note that
+this allows you to pass any other GNAT option as well.
 @end itemize
 
 Note that if your program is pure Ada-95 and you are using a version
@@ -5516,7 +5532,8 @@ check naming_convention (global variable, "G_");
 The rule provides a variable that allows to specify the default
 casing.
 
-@multitable @columnfractions .20 .10 .10 .60
+@need 800
+@multitable @columnfractions .30 .10 .10 .50
 @item
 @b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
 @item

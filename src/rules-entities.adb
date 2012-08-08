@@ -52,7 +52,7 @@ package body Rules.Entities is
    -- Alas! Nothing is simple when renamings come into play.
    -- If the identifier is declared by renaming, every record field and variable name which
    -- is part of the renamed expression is "used", (but not parts that are evaluated by the
-   -- elaboration of the declaration). This is taken care of by Thick_QUeries.Used_Identifiers.
+   -- elaboration of the declaration). This is taken care of by Thick_Queries.Used_Identifiers.
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;

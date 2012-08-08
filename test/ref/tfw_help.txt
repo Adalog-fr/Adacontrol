@@ -773,7 +773,7 @@ Rules:
    Usage                           Use_Clauses                     
    With_Clauses                    
 
-ADACTL v. 1.14b8 with ASIS 2.0.R for GNAT GPL 2011 (20110428)
+ADACTL v. 1.14r9 with ASIS 2.0.R for GNAT GPL 2011 (20110428)
 ----
 Copyright (C) 2004-2008 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
