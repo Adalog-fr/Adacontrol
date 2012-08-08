@@ -249,7 +249,7 @@ package body Framework.Language.Shared_Keys is
    function Matches (Elem               : in Asis.Element;
                      Cat                : in Categories;
                      Follow_Derived     : in Boolean := False;
-                     Follow_Private     : in Boolean := False;
+                     Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
                      Separate_Extension : in Boolean := False)
                      return Boolean
    is
@@ -258,7 +258,7 @@ package body Framework.Language.Shared_Keys is
       if Cat = Cat_Any then
          return True;
       end if;
-      return Match_Table (Type_Category (Elem, Follow_Derived, Follow_Private, Separate_Extension)) = Cat;
+      return Match_Table (Type_Category (Elem, Follow_Derived, Privacy, Separate_Extension)) = Cat;
    end Matches;
 
 
@@ -269,13 +269,13 @@ package body Framework.Language.Shared_Keys is
    function Matching_Category (Elem               : in Asis.Element;
                                From_Cats          : in Categories_Utilities.Unconstrained_Modifier_Set;
                                Follow_Derived     : in Boolean := False;
-                               Follow_Private     : in Boolean := False;
+                               Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
                                Separate_Extension : in Boolean := False)
                                return Categories
    is
       use Thick_Queries;
       Cat : constant Categories
-        := Match_Table (Type_Category (Elem, Follow_Derived, Follow_Private, Separate_Extension));
+        := Match_Table (Type_Category (Elem, Follow_Derived, Privacy, Separate_Extension));
    begin
       if From_Cats (Cat) then
          return Cat;

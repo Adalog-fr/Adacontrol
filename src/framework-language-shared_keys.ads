@@ -106,7 +106,7 @@ package Framework.Language.Shared_Keys is
    function Matches (Elem               : in Asis.Element;
                      Cat                : in Categories;
                      Follow_Derived     : in Boolean := False;
-                     Follow_Private     : in Boolean := False;
+                     Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
                      Separate_Extension : in Boolean := False)
                      return Boolean;
    -- Appropriate Element_Kinds for Elem:
@@ -129,7 +129,7 @@ package Framework.Language.Shared_Keys is
    function Matching_Category (Elem               : in Asis.Element;
                                From_Cats          : in Categories_Utilities.Unconstrained_Modifier_Set;
                                Follow_Derived     : in Boolean := False;
-                               Follow_Private     : in Boolean := False;
+                               Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
                                Separate_Extension : in Boolean := False)
                                return Categories;
    -- Appropriate Element_Kinds for Elem:

@@ -390,7 +390,7 @@ package body Rules.Allocators is
          Check (Control_Manager.Association (Entities, Image (Matching_Category (E,
                                                                                  From_Cats      => Full_Set,
                                                                                  Follow_Derived => True,
-                                                                                 Follow_Private => True))));
+                                                                                 Privacy        => Follow_Private))));
       end if;
 
       -- Category not found, check all

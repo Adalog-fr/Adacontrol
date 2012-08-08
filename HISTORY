@@ -1,9 +1,11 @@
 =============
-== V1.14b8 ==
+== V1.14r9 ==
 =============
 
 General:
 --------
+Provide two distributions due to changes in ASIS.
+
 Bug fixes:
    Mantis:  0000019, 0000021, 0000022, 0000024, 0000025, 0000026, 0000027,
             0000028, 0000030, 0000031
@@ -21,6 +23,9 @@ Debug:
 
 PFNI:
    print range for discrete/array types
+
+Source command:
+   Sourced file is searched on the path given by ADACTL_PATH
 
 Framework:
 ----------
@@ -46,6 +51,9 @@ Exception_Propagation
 
 Expressions: 
    added subrules array_range, array_non_static_range, underived_conversion
+
+Parameter_Aliasing:
+   don't report aliasing with an in parameter of a by-copy type.
 
 Statements:
   added For_In_Loop, For_Of_Loop

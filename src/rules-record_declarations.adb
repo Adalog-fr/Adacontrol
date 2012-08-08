@@ -464,7 +464,7 @@ package body Rules.Record_Declarations is
                Type_Name : constant Wide_String := To_Upper
                                                    (Full_Name_Image
                                                     (Names (Ultimate_Type_Declaration (Compo_Type,
-                                                                                       Follow_Predefined => True))
+                                                                                       Privacy => Follow_Private))
                                                            (1)));
             begin
                Is_Packed :=         Type_Name = "STANDARD.STRING"

@@ -37,7 +37,7 @@ with
 package body Framework.Variables is
 
    package Variables_Map is new Binary_Map (Unbounded_Wide_String, Class_Access);
-   Call_Backs : Variables_Map.Map;
+   Variables_Table : Variables_Map.Map;
 
    Number_Of_Variables : Natural := 0;
 
@@ -58,7 +58,7 @@ package body Framework.Variables is
    procedure Register (The_Variable : Variables.Class_Access; Variable_Name : Wide_String) is
       use Variables_Map;
    begin
-      Add (Call_Backs,
+      Add (Variables_Table,
            Variable_Key (Variable_Name),
            The_Variable);
       Number_Of_Variables := Number_Of_Variables + 1;
@@ -70,7 +70,7 @@ package body Framework.Variables is
 
    procedure Help_On_Variable (Variable_Name : Wide_String) is
       use Utilities, Variables_Map;
-      Variable : constant Variables.Class := Fetch (Call_Backs, Variable_Key (Variable_Name)).all;
+      Variable : constant Variables.Class := Fetch (Variables_Table, Variable_Key (Variable_Name)).all;
    begin
       User_Message (To_Title (Variable_Name),     Stay_On_Line => True);
       User_Message (": " & All_Values (Variable), Stay_On_Line => True);
@@ -150,7 +150,7 @@ package body Framework.Variables is
    procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String) is
       use Variables_Map;
    begin
-      Set (Fetch (Call_Backs, Variable_Key (Variable)).all, Val); --## RULE LINE OFF Parameter_Aliasing
+      Set (Fetch (Variables_Table, Variable_Key (Variable)).all, Val);
    exception
       when Not_Present =>
          -- This exception not visible to clients, transform it
@@ -164,7 +164,7 @@ package body Framework.Variables is
    procedure Initialize is
       use Variables_Map;
    begin
-      Balance (Call_Backs);
+      Balance (Variables_Table);
    end Initialize;
 
    -------------------
@@ -183,7 +183,7 @@ package body Framework.Variables is
 
       procedure Add_All is new Variables_Map.Iterate (Add_One);
    begin  -- All_Variables
-      Add_All (Call_Backs);
+      Add_All (Variables_Table);
       return Result;
    end All_Variables;
 
@@ -194,7 +194,7 @@ package body Framework.Variables is
    function Fetch (Variable : Unbounded_Wide_String) return Wide_String is
       use Variables_Map;
    begin
-      return Value_Image (Fetch (Call_Backs, Variable).all);
+      return Value_Image (Fetch (Variables_Table, Variable).all);
    exception
       when Not_Present =>
          raise No_Such_Variable;

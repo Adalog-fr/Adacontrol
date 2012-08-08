@@ -437,7 +437,7 @@ package body Framework.Language.Commands is
    -- Source_Command --
    --------------------
 
-   procedure Source_Command (Name : Wide_String) is
+   procedure Source_Command (Name : Wide_String; Success : out Boolean) is
       use Ada.Wide_Text_IO, Framework.Language.Scanner;
 
       -- Note that these procedures are passed the value of Current_Input.
@@ -469,6 +469,8 @@ package body Framework.Language.Commands is
          if File_Name /= "-" then
             Close (File);
          end if;
+         Success := True;
+
       exception
          when others =>
             if Is_Open (File) then
@@ -501,6 +503,9 @@ package body Framework.Language.Commands is
 
       Restore_State (Current_State);
    exception
+      when Name_Error =>
+         Success := False;
+         Restore_State (Current_State);
       when others =>
          Restore_State (Current_State);
          raise;
