@@ -38,7 +38,7 @@ Last edited: @today{}
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2011 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2012 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -60,7 +60,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2011
+This document is Copyright @copyright{} 2005-2012
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -254,6 +254,7 @@ This section is only for the source distribution of AdaControl. If you
 downloaded an executable distribution (and are using the latest
 version of GNAT GPL), you may skip to the next section.
 
+@anchor{Getting the correct version of the sources for your Gnat version}
 @subsection Getting the correct version of the sources for your Gnat version
 An incompatible change has been introduced in the ASIS interface, in
 order to deal properly with some Ada-2005/2012 features. This change
@@ -6904,36 +6905,37 @@ This rule controls usage of certain Ada statements.
 <control_kind> statements (<statement_kw> @{, <statement_kw>@};
 
 <statement_kw> ::=
-   any_statement          | abort                    |
-   accept_return          | assignment               |
-   asynchronous_select    | block                    |
-   case                   | case_others              |
-   case_others_null       | code                     |
-   conditional_entry_call | declare_block            |
-   delay                  | delay_until              |
-   dispatching_call       | effective_declare_block  |
-   entry_call             | entry_return             |
-   exception_others       | exception_others_null    |
-   exit                   | exit_expanded_name       |
-   exit_for_loop          | exit_outer_loop          |
-   exit_while_loop        | exited_extended_return   |
-   extended_return        |
-   for_loop               | function_return          |
-   goto                   | if                       |
-   if_elsif               | inherited_procedure_call |
-   labelled               | loop_return              |
-   multiple_exits         | no_else                  |
-   null                   | procedure_return         |
-   raise                  | raise_locally_handled    |
-   raise_nonpublic        | raise_standard           |
-   reraise                | requeue                  |
-   selective_accept       | simple_loop              |
-   terminate              | timed_entry_call         |
-   unconditional_exit     | unnamed_block            |
-   unnamed_exit           | unnamed_loop_exited      |
-   unnamed_for_loop       | unnamed_multiple_loop    |
-   unnamed_simple_loop    | unnamed_while_loop       |
-   untyped_for            | while_loop
+   any_statement            | abort                   |
+   accept_return            | assignment              |
+   asynchronous_select      | block                   |
+   case                     | case_others             |
+   case_others_null         | code                    |
+   conditional_entry_call   | declare_block           |
+   delay                    | delay_until             |
+   dispatching_call         | effective_declare_block |
+   entry_call               | entry_return            |
+   exception_others         | exception_others_null   |
+   exit                     | exit_expanded_name      |
+   exit_for_loop            | exit_outer_loop         |
+   exit_while_loop          | exited_extended_return  |
+   extended_return          | for_loop                |
+   for_in_loop              | for_of_loop             |
+   function_return          | goto                    |
+   if                       | if_elsif                |
+   inherited_procedure_call | labelled                |
+   loop_return              | multiple_exits          |
+   no_else                  | null                    |
+   procedure_return         | raise                   |
+   raise_locally_handled    | raise_nonpublic         |
+   raise_standard           | reraise                 |
+   requeue                  | selective_accept        |
+   simple_loop              | terminate               |
+   timed_entry_call         | unconditional_exit      |
+   unnamed_block            | unnamed_exit            |
+   unnamed_loop_exited      | unnamed_for_loop        |
+   unnamed_multiple_loop    | unnamed_simple_loop     |
+   unnamed_while_loop       | untyped_for             |
+   while_loop
 @end example
 
 @subsection Action
@@ -7014,7 +7016,11 @@ return statements that can be left without actually returning due to
 an @b{exit} or @b{goto} statement  within their sequence of
 statements.
 @item
-@code{for_loop} controls all @code{@b{for}} loops.
+@code{for_loop} controls all @code{@b{for}} loops, while
+@code{for_in_loop} controls only the traditional form of
+@code{@b{for}} loop (@code{@b{for} I @b{in} ... @b{loop}}), and
+@code{for_of_loop} controls the new Ada 2012 form (@code{@b{for} V
+@b{of} ... @b{loop}}) (the two latter forms are not available with the old gnat version of AdaControl).
 @item
 @code{function_return} controls return statements (including extended
 return statements) from functions. Obviously, return statements cannot
@@ -7855,9 +7861,9 @@ and generics) are used.
 <control_kind> usage
    (type @{,[not]  <location> | used@});
 <control_kind> usage
-   (procedure @{,[not]  <location> | called@});
+   (procedure @{,[not]  <location> | called | accessed@});
 <control_kind> usage
-   (function @{,[not]  <location> | called@});
+   (function @{,[not]  <location> | called | accessed@});
 <control_kind> usage
    (exception @{,[not]  <location> | raised | handled@});
 <control_kind> usage
@@ -7885,11 +7891,14 @@ keyword that restrict the kind of usage being controlled.
 ``[not] from_visible'', ``[not] from_private'', and ``[not]
 from_spec'' restrict entities being checked to those that appear (or
 not) in (generic) package specifications, in the visible part, in the
-private part, or in any part, respectively.  Other keywords carry
-their obvious meaning, and are allowed only where appropriate. The
-rule will output the information only for objects that match all the
-conditions given. A combination of parameters can be given only once
-for each of ``check'', ``search'', and ``count''.
+private part, or in any part, respectively. ``accessed'' (available
+for subprograms only) restricts entities being checked to those that
+appear as the prefix of a @code{'Access} or @code{'Address}
+attribute. Other keywords carry their obvious meaning, and are allowed
+only where appropriate. The rule will output the information only for
+objects that match all the conditions given. A combination of
+parameters can be given only once for each of ``check'', ``search'',
+and ``count''.
 
 The report includes the kind of unit that declares the entity (normal
 unit, instantiation, or generic unit), the part where it is declared
