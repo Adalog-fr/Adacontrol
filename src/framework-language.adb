@@ -476,7 +476,6 @@ package body Framework.Language is
                               if not Success then
                                  -- Try it from path
                                  declare
-                                    use Ada.Characters.Handling;
                                     Path_Source : constant Wide_String := Locate_Regular_File (Source, "ADACTL_PATH");
                                  begin
                                     if Path_Source /= "" then
