@@ -8,7 +8,7 @@ Provide two distributions due to changes in ASIS.
 
 Bug fixes:
    Mantis:  0000019, 0000021, 0000022, 0000024, 0000025, 0000026, 0000027,
-            0000028, 0000030, 0000031
+            0000028, 0000030, 0000031, 0000032
 
 Naming of entities:
    Added the syntax "all type'<attribute>"
@@ -31,8 +31,16 @@ Framework:
 ----------
 Added management of rule variables
 
+Changes to existing rules (new gnat only):
+------------------------------------------
+Statements:
+   Added for_in_loop, for_of_loop
+
 Changes to existing rules:
 --------------------------
+All (relevant) rules:
+   Added support of null procedures
+
 Abnormal_Function_Return:
    no error when a branch is terminated by a call to a "No_Return" procedure.
 
@@ -41,25 +49,28 @@ Allocators:
    Allowed multiple specification of same entity with different modifiers
 
 Declarations:
-   added subrules protected_discriminant, task_discriminant
+   Added subrules protected_discriminant, task_discriminant
 
 Entities:
-   added location modifier
+   Added location modifier
 
 Exception_Propagation
-   don't consider loop parameter specifications as declarations.
+   Don't consider loop parameter specifications as declarations.
 
 Expressions: 
-   added subrules array_range, array_non_static_range, underived_conversion
+   Added subrules array_range, array_non_static_range, underived_conversion
+
+Naming_Convention:
+   Added rule variable Naming_Convention.Default_Case_Sensitivity
 
 Parameter_Aliasing:
-   don't report aliasing with an in parameter of a by-copy type.
+   Don't report aliasing with an in parameter of a by-copy type.
 
 Statements:
   added For_In_Loop, For_Of_Loop
 
 Style (Exposed_Literal)
-   treat negative numbers as if they were literals
+   Treat negative numbers as if they were literals
 
 =============
 == V1.13r8 ==
