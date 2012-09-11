@@ -79,7 +79,7 @@ The SourceForge version includes all previous versions, under version
 control, as well as the latest improvements that are not yet
 released. It is organized following Adalog's internal structure -
 components are kept separate from the program. It is mainly intended
-for those who  want to participate in the development of AdaControl,
+for those who want to participate in the development of AdaControl,
 or who want the latest bleeding-edge version.
 
 
@@ -101,3 +101,9 @@ versions are tagged with a name of the form
 components that was used for AdaControl 1.12r4, checkout
 "AdaControl_1.12r4".
 
+"Old" and "New" versions of AdaControl
+--------------------------------------
+The default branch ("master") corresponds to the latest version of
+Gnat.  It will compile only with versions more recent than
+GnatPRO-7.1.0 or GnatGPL-2012.  If you are using an older version of
+Gnat, checkout the branch "master-old_gnat".
