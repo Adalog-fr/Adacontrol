@@ -5544,8 +5544,12 @@ Default_Case_Sensitivity @tab on/off @tab off @tab if ``on'', controls that do n
 @subsection Tips
 The rule only checks the casing of identifiers at the place where they
 are declared. A useful companion rule is ``style (casing_identifier,
-original)'', which ensures that every use of the identifier will use the
-same casing as in the declaration. @xref{Style}.
+original)'', which ensures that every use of the identifier will use
+the same casing as in the declaration. @xref{Style}.
+
+Similarly, in the case of a subprogram and its parameters, the check
+is not done on the body if there is an explicit specification (since
+specification and body have to match anyway). 
 
 Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of

@@ -2,6 +2,12 @@
 == V1.15b1 ==
 =============
 
+Changes to existing rules:
+--------------------------
+Naming_Convention:
+   Do not recheck formal parameters in bodies if there is an explicit
+   specification.
+
 =============
 == V1.14r9 ==
 =============

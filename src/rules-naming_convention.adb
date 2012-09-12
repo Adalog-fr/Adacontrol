@@ -536,7 +536,7 @@ package body Rules.Naming_Convention is
                                        when A_Function_Call =>
                                           Decl_Kind := A_Constant_Declaration;
                                           exit Going_Up_Renamings;
-                                          when A_Type_Conversion =>
+                                       when A_Type_Conversion =>
                                           Renamed := Converted_Or_Qualified_Expression (Renamed);
                                        when An_Identifier
                                           | An_Enumeration_Literal
@@ -600,11 +600,19 @@ package body Rules.Naming_Convention is
                            end if;
                         when A_Procedure_Renaming_Declaration =>
                            if not Is_Used ((K_Renaming, K_Subprogram_Renaming, K_Procedure_Renaming)) then
+                              if not Is_Equal (Decl, Corresponding_Declaration (Decl)) then
+                                 -- Renaming as body
+                                 return;
+                              end if;
                               -- Decl not needed
                               Decl_Kind := A_Procedure_Declaration;
                            end if;
                         when A_Function_Renaming_Declaration =>
                            if not Is_Used ((K_Renaming, K_Subprogram_Renaming, K_Function_Renaming)) then
+                              if not Is_Equal (Decl, Corresponding_Declaration (Decl)) then
+                                 -- Renaming as body
+                                 return;
+                              end if;
                               -- Decl not needed
                               Decl_Kind := A_Function_Declaration;
                            end if;
@@ -858,6 +866,69 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Constant, K_Named_Number, K_Real_Number));
 
                   when A_Parameter_Specification =>
+                     -- Check if it is the "real" declaration of the parameter
+                     declare
+                        Sp_Decl : constant Asis.Declaration := Enclosing_Element (Decl);
+                     begin
+                        case Declaration_Kind (Sp_Decl) is
+                           when A_Procedure_Declaration
+                              | A_Generic_Procedure_Declaration
+                              | A_Formal_Procedure_Declaration
+                              | A_Function_Declaration
+                              | A_Generic_Function_Declaration
+                              | A_Formal_Function_Declaration
+                              | An_Entry_Declaration
+                              =>
+                              -- Specifications: always OK
+                              null;
+                           when A_Procedure_Body_Declaration
+                              | A_Procedure_Body_Stub
+                              | A_Function_Body_Declaration
+                              | A_Function_Body_Stub
+                              =>
+                              -- Bodies: checked only if there is no other explicit declaration
+                              if Is_Subunit (Sp_Decl) then
+                                 -- There is at least a stub
+                                 return;
+                              end if;
+                              if not Is_Nil (Corresponding_Declaration (Sp_Decl)) then
+                                 -- There is an explicit specification
+                                 return;
+                              end if;
+                           when An_Entry_Body_Declaration =>
+                              -- Those always have a spec
+                              return;
+                           when A_Procedure_Renaming_Declaration
+                              | A_Function_Renaming_Declaration
+                              =>
+                              -- Don't check if it is a renaming-as-body
+                              if not Is_Equal (Sp_Decl, Corresponding_Declaration (Sp_Decl)) then
+                                 -- Renaming-as-body
+                                 return;
+                              end if;
+                           when Not_A_Declaration =>
+                              -- Some weird cases...
+                              -- Can be an accept statement, but there is always a corresponding entry declaration
+                              case Statement_Kind (Sp_Decl) is
+                                 when An_Accept_Statement =>
+                                    return;
+                                 when others =>
+                                    null;
+                              end case;
+
+                              -- Can be An_Access_Definition (or A_Type_Definition) if inside an access to subprogram
+                              --   => keep it
+                              case Definition_Kind (Sp_Decl) is
+                                 when A_Type_Definition | An_Access_Definition =>
+                                    null;
+                                 when others =>
+                                    Failure ("Parameter specification not in callable statement (1)", Sp_Decl);
+                              end case;
+                           when others =>
+                              Failure ("Parameter specification not in callable statement (2)", Sp_Decl);
+                        end case;
+                     end;
+
                      case Mode_Kind (Decl) is
                         when A_Default_In_Mode
                           | An_In_Mode
