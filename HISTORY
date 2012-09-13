@@ -8,6 +8,10 @@ Naming_Convention:
    Do not recheck formal parameters in bodies if there is an explicit
    specification.
 
+Style (Casing_Identifier, original):
+   Check formal parameters in bodies if there is an explicit
+   specification.
+
 =============
 == V1.14r9 ==
 =============

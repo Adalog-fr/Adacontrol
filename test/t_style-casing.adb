@@ -3,10 +3,12 @@ procedure Casing is
    pragma PAGE;
    pragma Page;                                 -- Casing_Pragma
    Int : Integer;
-   function Foo ( I : in Integer ) return Integer is
+   function Foo ( I : in Integer ) return Integer;
+   function foo ( I : in Integer ) return Integer is    -- Casing_Identifier
    begin
-      return i + 1;                             -- Casing_Identifier
-   end Foo;
+      return i + 1;                                     -- Casing_Identifier
+   end foo;
+
    S   : String (1 .. 1);
    function "aNd" (L, R : in Integer) return Integer is -- Casing_Keyword
    begin

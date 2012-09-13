@@ -736,8 +736,8 @@ package body Rules.Style is
    is
       -- Element is the identifier for St_Casing_Identifier and St_Casing_Attribute
       -- and the pragma for St_Casing_Pragma
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports;
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Framework.Reports, Thick_Queries;
 
       Reference_Name : Wide_String (Source_Name'Range);
       -- Note that the source name and the refence name always have the same length!
@@ -751,12 +751,14 @@ package body Rules.Style is
          when Ca_Titlecase =>
             Reference_Name := To_Title (Source_Name);
          when Ca_Original =>
+            Def_Name := First_Defining_Name (Element);
             if Element_Kind (Element) = A_Defining_Name then
-               -- Since it *is* the original...
-               return;
+               if Is_Equal (Element, Def_Name) then
+                  -- Since it *is* the original...
+                  return;
+               end if;
             end if;
 
-            Def_Name := Corresponding_Name_Definition (Element);
             if Is_Nil (Def_Name) then
                -- some predefined stuff, give up
                return;
