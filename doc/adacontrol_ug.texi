@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.14r9
+@settitle AdaControl User Guide V1.15b1
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -5544,8 +5544,12 @@ Default_Case_Sensitivity @tab on/off @tab off @tab if ``on'', controls that do n
 @subsection Tips
 The rule only checks the casing of identifiers at the place where they
 are declared. A useful companion rule is ``style (casing_identifier,
-original)'', which ensures that every use of the identifier will use the
-same casing as in the declaration. @xref{Style}.
+original)'', which ensures that every use of the identifier will use
+the same casing as in the declaration. @xref{Style}.
+
+Similarly, in the case of a subprogram and its parameters, the check
+is not done on the body if there is an explicit specification (since
+specification and body have to match anyway). 
 
 Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
@@ -7370,6 +7374,12 @@ For calls, another rule controls positional associations according to
 the value of parameters rather than their number:
 @xref{Insufficient_Parameters}.
 
+For the ``Casing_Identifier'' subrule, if the value is ``original'',
+subprogram and parameter names from the body are checked against those
+from the specification (if any). This is what the user would expect,
+although strictly speaking it is not a usage of the name.
+
+given in a body are checked
 In many cases, badly laid-out compound statements will trigger both the
 ``multiple_elements, statement'' and the ``compound_statement''
 subrules. For example:
@@ -7399,6 +7409,11 @@ If a predefined operator or an attribute is renamed, the
 ``renamed_entity'' subrule cannot check that the original entity is not
 used in the scope of the renaming.  Such cases are
 detected by the rule ``uncheckable''. @xref{Uncheckable}.
+
+For the ``Casing_Identifier'' subrule, if the value is ``original'',
+the closing identifier of a program unit (the one after @code{@b{end}}) is
+@i{not} checked. Believe it or not, the check would be extremely difficult 
+to perform...
 
 @node Terminating_Tasks, Type_Initial_Values, Style, Rules reference
 @section Terminating_Tasks

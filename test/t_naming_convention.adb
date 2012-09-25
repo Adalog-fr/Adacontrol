@@ -63,8 +63,15 @@ package body T_naming_convention is
    type T_Good_Interface is interface; --OK
    type T_Bad_Interf is interface;
 
+   -- Procedure with a spec:
+   procedure Bad1_Gen (BadParam: Float);
+   procedure Bad1_Gen (BadParam: Float) is
+   begin
+      null;
+   end;
+
    -- Procedure body without a spec:
-   procedure Bad_Gen is
+   procedure Bad2_Gen  (BadParam: Float) is
    begin
       null;
    end;
@@ -112,7 +119,9 @@ package body T_naming_convention is
 
    generic procedure Ren_Gen_Proc renames Gen_Proc;
    generic procedure Proc_Ren_Gen renames Proc_Gen; --OK
-   procedure Ren_Bad_Gen renames Bad_Gen;
+   procedure Ren_Bad1_Gen (OtherName: Float) renames Bad1_Gen;
+   procedure Ren_Bad2_Gen (OtherName: Float);
+   procedure Ren_Bad2_Gen (OtherName: Float) renames Bad2_Gen; -- Rename as body
    procedure Ren_New_Proc renames New_Proc; --OK
 
    generic
