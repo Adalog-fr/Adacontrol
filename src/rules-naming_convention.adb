@@ -919,7 +919,9 @@ package body Rules.Naming_Convention is
                               -- Can be An_Access_Definition (or A_Type_Definition) if inside an access to subprogram
                               --   => keep it
                               case Definition_Kind (Sp_Decl) is
-                                 when A_Type_Definition | An_Access_Definition =>
+                                 when A_Type_Definition
+                                    | A_Formal_Type_Definition
+                                    | An_Access_Definition =>
                                     null;
                                  when others =>
                                     Failure ("Parameter specification not in callable statement (1)", Sp_Decl);
