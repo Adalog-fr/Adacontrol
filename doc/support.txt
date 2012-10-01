@@ -20,6 +20,12 @@ the following services:
 
 * Reduced rate for on-demand development of custom rules
 
+* Priority consideration of enhancement requests
+  Satisfying enhancement requests is not part of the support
+  contract; however, Adalog is constantly improving AdaControl, and
+  suggestions originating from supported customers are given a high
+  priority in our todo list.
+
 Adalog cannot correct problems whose origin is due to compiler bugs or
 defects in the implementation of ASIS (contact your compiler provider
 for support on these problems). However, Adalog will do its best
