@@ -872,6 +872,7 @@ package body Rules.Naming_Convention is
                      begin
                         case Declaration_Kind (Sp_Decl) is
                            when A_Procedure_Declaration
+                              | A_Null_Procedure_Declaration
                               | A_Generic_Procedure_Declaration
                               | A_Formal_Procedure_Declaration
                               | A_Function_Declaration
