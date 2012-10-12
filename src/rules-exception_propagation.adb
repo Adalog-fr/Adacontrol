@@ -368,6 +368,7 @@ package body Rules.Exception_Propagation is
                   | A_Procedure_Body_Declaration
 
                   | A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Generic_Function_Declaration
                   | A_Function_Body_Declaration
 
@@ -573,6 +574,11 @@ package body Rules.Exception_Propagation is
       case Declaration_Kind (Decl) is
          when A_Null_Procedure_Declaration =>
             return No_Risk;  -- Can't raise exception
+
+         when An_Expression_Function_Declaration =>  -- Ada 2012
+            -- Can't have an exception handler
+            return Always;
+
          when A_Procedure_Declaration
             | A_Function_Declaration
             =>
@@ -715,6 +721,7 @@ package body Rules.Exception_Propagation is
                   | A_Procedure_Body_Stub
 
                   | A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Function_Body_Declaration
                   | A_Function_Body_Stub
                     =>
@@ -852,6 +859,7 @@ package body Rules.Exception_Propagation is
                            | A_Procedure_Body_Stub
 
                            | A_Function_Declaration
+                           | An_Expression_Function_Declaration   -- Ada 2012
                            | A_Function_Body_Declaration
                            | A_Function_Body_Stub
                            =>

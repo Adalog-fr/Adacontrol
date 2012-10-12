@@ -682,6 +682,7 @@ package body Framework.Ruler is
          when A_Declaration =>
             case Declaration_Kind (Element) is
                when A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Procedure_Declaration
                   | A_Null_Procedure_Declaration
                   | An_Entry_Declaration
@@ -912,6 +913,7 @@ package body Framework.Ruler is
                when A_Procedure_Declaration   -- Any change to this list must be reflected in Framework.Symbol_Table
                   | A_Null_Procedure_Declaration
                   | A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | An_Entry_Declaration
                   | A_Package_Declaration
                   | A_Task_Type_Declaration

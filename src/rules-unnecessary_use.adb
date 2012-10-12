@@ -395,6 +395,7 @@ package body Rules.Unnecessary_Use is
          when A_Procedure_Declaration
             | A_Null_Procedure_Declaration
             | A_Function_Declaration
+            | An_Expression_Function_Declaration   -- Ada 2012
             =>
             -- Nothing to report from these, since these kind of scopes cannot include
             -- use clauses

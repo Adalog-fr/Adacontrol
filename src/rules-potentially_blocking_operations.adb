@@ -667,9 +667,10 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Procedure_Declaration | A_Function_Declaration =>
                   null;
                when A_Procedure_Body_Declaration
-                 | A_Function_Body_Declaration
-                 | An_Entry_Body_Declaration
-                 =>
+                  | A_Function_Body_Declaration
+--                  | An_Expression_Function_Declaration   -- Ada 2012 TBSL
+                  | An_Entry_Body_Declaration
+                  =>
                   Check (Items (I),
                          PTO_Def        => PTO_Def,
                          Is_Blocking    => Ignored,

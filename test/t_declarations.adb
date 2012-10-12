@@ -1,4 +1,4 @@
-pragma Ada_2005;
+pragma Ada_2012;
 with Ada.Numerics.Generic_Elementary_Functions;
 with X_Declarations.Child;
 with X_Declarations_Locations;
@@ -181,6 +181,8 @@ procedure T_declarations is       -- library_procedure
       Deferred : constant Priv1;                    -- Constant, Deferred_Constant
       procedure P_As_Body;                          -- Public Procedure, Nested Procedure, Local Procedure
       function  F_As_Body return Integer;
+      function F_Expr (I : Integer) return Integer is -- Expression_Function
+          (I+1);
    private
       type Priv1 is new Integer;                    -- Derived_Type
       type Priv2 is new Integer;                    -- Derived_Type
@@ -294,8 +296,8 @@ procedure T_declarations is       -- library_procedure
    protected body Al5 is
    end Al5;
 begin
-   begin
-      null;                                                             -- null_procedure
+   begin                                                                -- null_procedure
+      null;
    exception                                                            -- handlers
       when Constraint_Error | Numeric_Error =>
          null;

@@ -177,11 +177,12 @@ package body Rules.Return_Type is
                      Rules.Return_Type.Process_Function_Declaration (Element);
 
                   when A_Function_Declaration
-                    | A_Function_Renaming_Declaration
-                    | A_Function_Body_Stub
-                    | A_Formal_Function_Declaration
-                    | A_Generic_Function_Declaration
-                    =>
+                     | An_Expression_Function_Declaration   -- Ada 2012
+                     | A_Function_Renaming_Declaration
+                     | A_Function_Body_Stub
+                     | A_Formal_Function_Declaration
+                     | A_Generic_Function_Declaration
+                     =>
                      Rules.Return_Type.Process_Function_Declaration (Element);
                      Control := Abandon_Children;  --2005: Must traverse parameters due to access function return T;
 

@@ -219,7 +219,9 @@ package body Rules.Local_Access is
                   end case;
                   return;
 
-               when A_Function_Declaration =>
+               when A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
+                  =>
                   if Definition_Kind (Enclosing_Element (Corresponding_Name_Declaration (Good_Prefix)))
                     = A_Protected_Definition
                   then

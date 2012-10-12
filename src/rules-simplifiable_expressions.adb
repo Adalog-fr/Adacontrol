@@ -681,7 +681,8 @@ package body Rules.Simplifiable_expressions is
    ---------------------------
 
    procedure Process_Parenthesized (Expr : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries, Utilities;
 
       procedure Do_Report is
          use Framework.Reports;
@@ -728,54 +729,99 @@ package body Rules.Simplifiable_expressions is
       Rules_Manager.Enter (Rule_Id);
 
       Enclosing := Enclosing_Element (Expr);
-      if Element_Kind (Enclosing) = An_Association then
-         Enclosing := Enclosing_Element (Enclosing);
+      if Declaration_Kind (Enclosing) = An_Expression_Function_Declaration then
+         -- Special case: the parentheses around the expression of an expression function
+         -- Always required
+         return;
       end if;
 
-      case Expression_Kind (Enclosing) is
-         when Not_An_Expression
-           =>
-            Do_Report;
+      Enclosed := Expression_Parenthesized (Expr);
 
-         when A_Function_Call =>
-            if Is_Prefix_Call (Enclosing) then
-               Do_Report;
-            else
-               Enclosed := Expression_Parenthesized (Expr);
-               case Expression_Kind (Enclosed) is
-                  when A_Function_Call =>
-                     if Is_Prefix_Call (Enclosed)
-                       or else  Priority (Operator_Kind (Prefix (Enclosing)))
-                              < Priority (Operator_Kind (Prefix (Enclosed)))
+      case Expression_Kind (Enclosed) is
+         when An_If_Expression                  -- Things that generally require parentheses
+            | A_Case_Expression
+            | A_For_All_Quantified_Expression
+            | A_For_Some_Quantified_Expression
+            =>
+            -- Parentheses are not required if Expr is part of a positional association and there is
+            -- only one association in the association list (which rules out aggregates associations)
+            if Element_Kind (Enclosing) = An_Association then
+               case Association_Kind (Enclosing) is
+                  when Not_An_Association =>
+                     Failure (Rule_Id & ": Not an association");
+                  when A_Pragma_Argument_Association =>
+                     -- TBSL Minimal value, give up for now.
+                     null;
+                  when A_Discriminant_Association =>
+                     if Is_Nil (Discriminant_Selector_Names (Enclosing))
+                       and then Discriminant_Associations (Enclosing_Element (Enclosing))'Length = 1
                      then
                         Do_Report;
                      end if;
-                  when An_And_Then_Short_Circuit .. An_Or_Else_Short_Circuit =>
+
+                  when A_Record_Component_Association
+                     | An_Array_Component_Association
+                     =>
                      null;
-                  when others =>
-                     Do_Report;
+                  when A_Parameter_Association
+                     | A_Generic_Association
+                       =>
+                     if Is_Nil (Formal_Parameter (Enclosing))
+                       and then Actual_Parameters (Enclosing_Element (Enclosing))'Length = 1
+                     then
+                        Do_Report;
+                     end if;
                end case;
+            elsif Expression_Kind (Enclosing) = A_Parenthesized_Expression then
+               Do_Report;
             end if;
 
-         when An_And_Then_Short_Circuit
-           | An_Or_Else_Short_Circuit
-           =>
-            Enclosed := Expression_Parenthesized (Expr);
-            case Expression_Kind (Enclosed) is
-               when An_And_Then_Short_Circuit .. An_Or_Else_Short_Circuit =>
-                  if Expression_Kind (Enclosing) = Expression_Kind (Enclosed) then
-                     Do_Report;
-                     end if;
+         when others =>                         -- Normal expressions
+            if Element_Kind (Enclosing) = An_Association then
+               Enclosing := Enclosing_Element (Enclosing);
+            end if;
+
+            case Expression_Kind (Enclosing) is
                when A_Function_Call =>
-                  if Is_Prefix_Call (Enclosed) or else Priority (Operator_Kind (Prefix (Enclosed))) > Logical then
+                  if Is_Prefix_Call (Enclosing) then
                      Do_Report;
+                  else
+                     case Expression_Kind (Enclosed) is
+                        when A_Function_Call =>
+                           if Is_Prefix_Call (Enclosed)
+                             or else  Priority (Operator_Kind (Prefix (Enclosing)))
+                                    < Priority (Operator_Kind (Prefix (Enclosed)))
+                           then
+                              Do_Report;
+                           end if;
+                        when An_And_Then_Short_Circuit
+                           | An_Or_Else_Short_Circuit
+                           =>
+                           null;
+                        when others =>
+                           Do_Report;
+                     end case;
                   end if;
-               when others =>
+
+               when An_And_Then_Short_Circuit
+                  | An_Or_Else_Short_Circuit
+                  =>
+                  case Expression_Kind (Enclosed) is
+                     when An_And_Then_Short_Circuit .. An_Or_Else_Short_Circuit =>
+                        if Expression_Kind (Enclosing) = Expression_Kind (Enclosed) then
+                           Do_Report;
+                        end if;
+                     when A_Function_Call =>
+                        if Is_Prefix_Call (Enclosed) or else Priority (Operator_Kind (Prefix (Enclosed))) > Logical then
+                           Do_Report;
+                        end if;
+                     when others =>
+                        Do_Report;
+                  end case;
+
+               when others =>  -- Including Not_An_Expression
                   Do_Report;
             end case;
-
-         when others =>
-            null;
       end case;
 
    end Process_Parenthesized;

@@ -1,3 +1,4 @@
+pragma Ada_2012;
 procedure T_Max_Call_Depth is
 
    -- Simple cases
@@ -133,6 +134,11 @@ procedure T_Max_Call_Depth is
       Ren_Indirect;
    end Check_Unknown;
 
+   -- Check expression_Functions
+   function F8  return Integer is begin P1; return 1; end; -- Depth = 1
+   function F9  return Integer is (F8);                    -- Depth = 2
+   function F10 return Integer is (F9);                    -- Depth = 2 (since Count_Expr_Fun_Calls = Off)
+
 begin
    -- Check use in statements
    P2;                    -- Depth = 2
@@ -156,4 +162,6 @@ begin
    E := Z;                -- OK (enumeration literal)
 
    Check_Unknown;         -- Depth >= 2
+
+   I := F10;              -- Depth = 2 (since Count_Expr_Fun_Calls = Off)
 end T_Max_Call_Depth;

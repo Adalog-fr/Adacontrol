@@ -494,6 +494,7 @@ package body Rules.Comments is
                         | A_Procedure_Body_Declaration
 
                         | A_Function_Declaration
+                        | An_Expression_Function_Declaration   -- Ada 2012
                         | A_Generic_Function_Declaration
                         | A_Function_Body_Declaration
 

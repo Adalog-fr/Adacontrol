@@ -354,6 +354,7 @@ package body Rules.Reduceable_Scope is
                when A_Procedure_Declaration  ------------ Subprograms
                   | A_Null_Procedure_Declaration
                   | A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Procedure_Instantiation
                   | A_Function_Instantiation
                     =>
@@ -862,7 +863,7 @@ package body Rules.Reduceable_Scope is
          case Declaration_Kind (Elem) is
             when A_Procedure_Declaration | A_Null_Procedure_Declaration | A_Procedure_Body_Declaration =>
                return "procedure " & Defining_Name_Image (Names (Elem)(1));
-            when A_Function_Declaration | A_Function_Body_Declaration =>
+            when A_Function_Declaration | An_Expression_Function_Declaration | A_Function_Body_Declaration =>
                return "function " & Defining_Name_Image (Names (Elem)(1));
             when A_Package_Declaration | A_Package_Body_Declaration =>
                return "package " & Defining_Name_Image (Names (Elem)(1));

@@ -77,7 +77,8 @@ package body Rules.Declarations is
       D_Discriminant,
 
       D_Empty_Private_Part,              D_Empty_Visible_Part,                D_Enumeration_Type,
-      D_Entry,                           D_Exception,                         D_Extension,
+      D_Entry,                           D_Exception,                         D_Expression_Function,
+      D_Extension,
 
       D_Fixed_Type,                      D_Float_Type,                        D_Formal_Function,
       D_Formal_Package,                  D_Formal_Procedure,                  D_Formal_Type,
@@ -345,6 +346,8 @@ package body Rules.Declarations is
                   end if;
                   Do_Report (D_Abstract_Function, Element);
                end if;
+            when An_Expression_Function_Declaration =>
+               null;   -- Cannot be abstract
             when A_Procedure_Declaration =>
                if Trait_Kind (Element) in An_Abstract_Trait .. An_Abstract_Limited_Private_Trait then
                   Do_Report (D_Abstract_Procedure, Element);
@@ -359,7 +362,7 @@ package body Rules.Declarations is
                   Do_Report (D_Abstract_Type, Element);
                end if;
             when others =>
-               Failure ("Abstract not type or subprogram");
+               Failure ("Abstract not type or subprogram", Element);
          end case;
       end Check_Abstract;
 
@@ -1217,6 +1220,16 @@ package body Rules.Declarations is
             Do_Report (D_Function, Element);
             Check_Abstract;
 
+         when An_Expression_Function_Declaration =>   -- Ada 2012
+            if Defining_Name_Kind (Names (Element)(1)) = A_Defining_Operator_Symbol then
+               Do_Report (D_Operator, Element);
+               if Is_Predefined_Operator (Element) then
+                  Do_Report (D_Predefined_Operator, Element);
+               end if;
+            end if;
+            Do_Report (D_Expression_Function, Element);
+            -- Cannot be abstract
+
          when A_Function_Body_Declaration =>
             if Is_Nil (Corresponding_Declaration (Element)) then
                -- If there is no explicit spec, process as a spec.
@@ -1589,6 +1602,7 @@ package body Rules.Declarations is
                         when A_Procedure_Declaration
                            | A_Null_Procedure_Declaration
                            | A_Function_Declaration
+                           | An_Expression_Function_Declaration   -- Ada 2012
                            | An_Entry_Declaration
                            | A_Procedure_Renaming_Declaration
                            | A_Function_Renaming_Declaration
@@ -1618,6 +1632,7 @@ package body Rules.Declarations is
                      end case;
                   end;
                when A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Function_Body_Declaration
                   | A_Function_Body_Stub
                   | A_Function_Renaming_Declaration

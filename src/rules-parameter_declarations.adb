@@ -268,7 +268,9 @@ package body Rules.Parameter_Declarations is
             C         := C_Procedure;
             Good_Decl := Corresponding_Declaration (Good_Decl);
 
-         when A_Function_Declaration =>
+         when A_Function_Declaration
+            | An_Expression_Function_Declaration   -- Ada 2012
+            =>
             if Definition_Kind (Enclosing_Element (Good_Decl)) = A_Protected_Definition then
                C := C_Protected_Function;
             else

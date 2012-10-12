@@ -1,26 +1,69 @@
+pragma Ada_2012;
 separate (T_Simplifiable_Expressions)
 procedure Test_Parentheses is
-   I : Integer := 1;   -- OK
-   J : Integer := (1); -- Should Trigger
+   S1 : String := (1 .. 4 => 'A');  -- OK
+
+   type Rec is
+      record
+         F1 : Integer;
+         F2 : Boolean;
+      end record;
+   R1 : Rec;
+
+   type D_Rec (Discr : Boolean) is null record;
+   R2 : D_Rec (True);                                   -- OK
+   R3 : D_Rec ((False));                                -- Should Trigger
+--GNAT bug: rejected R4 : D_Rec (for Some C of S1 => C = 'A');            -- OK
+   R5 : D_Rec ((for Some C of S1 => C = 'A'));          -- Should Trigger
+   R6 : D_Rec (Discr => (for Some C of S1 => C = 'A')); -- OK
+
+   I  : Integer := 1;                               -- OK
+   J  : Integer := (1);                             -- Should Trigger
+   B1 : Boolean := (if True then True else False);  -- OK
+   B2 : Boolean := (for all C of S1 => C = 'A');    -- OK
+   B3 : Boolean := (for Some C of S1 => C = 'A');   -- OK
+
    B : Boolean;
-   procedure P (X : Integer) is
+   procedure P (X : Integer; Y : Integer := 0) is
    begin
       null;
    end P;
-begin
-   -- Statements
+   function F1 return Integer is (1);                            -- OK
+   function F2 return Integer is ((1));                          -- Should Trigger
+   function F3 return Boolean is (for all C of S1 => C = 'A');   -- OK
+   function F4 return Boolean is ((for all C of S1 => C = 'A')); -- Should Trigger
 
-   I := (1); -- Should Trigger
-   I := 1;   -- OK
+   generic
+      B : Boolean;
+   procedure Gen;
+   procedure Gen is begin null; end Gen;
+
+   -- Instantiations
+   procedure Inst1 is new Gen (True);                                 -- OK
+   procedure Inst2 is new Gen ((True));                              -- Should Trigger
+   procedure Inst3 is new Gen (B => (True));                         -- Should Trigger
+--GNAT bug: rejected   procedure Inst4 is new Gen (if True then True else False);        -- OK
+   procedure Inst5 is new Gen ((if True then True else False));      -- Should Trigger
+   procedure Inst6 is new Gen (B => (if True then True else False)); -- OK
+begin
+
+   -- Statements
+   I  := (1);                             -- Should Trigger
+   I  := 1;                               -- OK
+   B1 := (if True then True else False);  -- OK
+   B2 := (for all C of S1 => C = 'A');    -- OK
+   B3 := (for Some C of S1 => C = 'A');   -- OK
 
    if (B) then     -- Should Trigger
       null;
    elsif (B) then  -- Should Trigger
       null;
-   end if;
-   if B then       -- OK
+   elsif (if True then True else False) then --OK
       null;
-   elsif B then    -- OK
+   end if;
+   if B then     -- OK
+      null;
+   elsif B then  -- OK
       null;
    end if;
 
@@ -33,8 +76,13 @@ begin
          null;
    end case;
 
-   P ((1)); -- Should Trigger
-   P (1);   -- OK
+   P ((1));                          -- Should Trigger
+   P ((((1))));                      -- Should Trigger  x3
+   P ((if True then 1 else 0));      -- Should Trigger
+   P (X => (if True then 1 else 0)); -- OK
+   P ((if True then 1 else 0), 1);   -- OK
+--GNAT bug: A4G adds parentheses   P (if True then 1 else 0);        -- OK
+   P (1);                            -- OK
 
    -- Arithmetic
    I := 1 + (2*3);       -- Should Trigger
@@ -64,4 +112,16 @@ begin
    B := (I = 1) and then B;                     -- Should Trigger
    B := I = 1 and then (B);                     -- Should Trigger
    B := I = 1 and then ("or" (B, B));           -- Should Trigger
+
+   -- Aggregates
+   S1 := (('a'), 'b', others => (' '));                     -- Should Trigger x2
+   S1 := (1 => ('a'), 2 => 'b', others => (' '));           -- Should Trigger x2
+   S1 := ((if B1 then 'a' else 'b'), others => ' ');        -- OK
+   S1 := (((if B1 then ('a') else 'b')), others => (' ')); -- Should Trigger x3
+
+   R1 := (1, True);                           -- OK
+   R1 := ((1), (True));                       -- Should Trigger x2
+   R1 := ((1), F2 => (True));                 -- Should Trigger x2
+   R1 := (1, (for all C of S1 => C = 'A'));   -- OK
+   R1 := (1, ((for all C of S1 => C = 'A'))); -- Should Trigger
 end Test_Parentheses;

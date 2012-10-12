@@ -165,6 +165,7 @@ package body Framework.Symbol_Table is
                         when A_Procedure_Declaration
                            | A_Null_Procedure_Declaration
                            | A_Function_Declaration
+                           | An_Expression_Function_Declaration   -- Ada 2012
                            | An_Entry_Declaration
                            -- A_Package_Declaration     Not this one! (see below)
                            | A_Task_Type_Declaration

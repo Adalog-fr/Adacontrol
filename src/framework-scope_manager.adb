@@ -106,6 +106,7 @@ package body Framework.Scope_Manager is
          when A_Declaration =>
             case Declaration_Kind (Element) is
                when A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Procedure_Declaration
                   | A_Null_Procedure_Declaration
                   | An_Entry_Declaration

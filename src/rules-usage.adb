@@ -701,7 +701,9 @@ package body Rules.Usage is
          when A_Null_Procedure_Declaration =>
             return K_Procedure;
 
-         when A_Function_Declaration =>
+         when A_Function_Declaration
+            | An_Expression_Function_Declaration   -- Ada 2012
+            =>
             if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
                -- A protected function
                return K_Other;
@@ -1517,6 +1519,7 @@ package body Rules.Usage is
                      | A_Procedure_Body_Declaration
                      | A_Procedure_Body_Stub
                      | A_Function_Declaration
+                     | An_Expression_Function_Declaration   -- Ada 2012
                      | A_Function_Body_Declaration
                      | A_Function_Body_Stub
                      | A_Single_Task_Declaration

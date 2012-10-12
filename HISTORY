@@ -2,12 +2,18 @@
 == V1.15b2 ==
 =============
 
-=============
-== V1.15b1 ==
-=============
+General:
+--------
+Arranged to not choke on Ada 2012 constructs.
 
 Changes to existing rules:
 --------------------------
+(Many places)
+   Considered expression functions in addition to regular functions
+
+Declarations:
+   Added subrule expression_function
+
 Naming_Convention:
    Do not recheck formal parameters in bodies if there is an explicit
    specification.

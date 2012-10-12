@@ -48,8 +48,14 @@ with
   Thick_Queries,
   Utilities;
 
+-- AdaControl
+with
+  Framework.Variables,
+  Framework.Variables.Shared_Types;
+
 package body Rules.Max_Call_Depth is
-   use Framework, Ada.Strings.Wide_Unbounded;
+   use Ada.Strings.Wide_Unbounded;
+   use Framework, Framework.Variables, Framework.Variables.Shared_Types;
 
    -- Algorithm:
    --
@@ -83,6 +89,9 @@ package body Rules.Max_Call_Depth is
    Rule_Used  : Boolean := False;
    Save_Used  : Boolean;
    Ctl_Labels : array (Control_Kinds) of Unbounded_Wide_String;
+
+   -- Rule variables
+   Count_Expr_Fun_Calls : aliased Switch_Type.Object := (Value => On);
 
    Infinite : constant Natural := Natural'Last;
    Unused   : constant Integer := -1;
@@ -252,6 +261,12 @@ package body Rules.Max_Call_Depth is
             when A_Regular_Call =>
                -- Normal case
                Called_Depth := Entity_Call_Depth (Called_Descr.Declaration);
+               if Called_Depth.Kind = Regular
+                 and then Declaration_Kind (Called_Descr.Declaration) = An_Expression_Function_Declaration
+                 and then Count_Expr_Fun_Calls.Value = Off
+               then
+                  Called_Depth.Kind := Inline;
+               end if;
          end case;
 
          -- This may seem redundant with the call to Add in Entity_Call_Depth, but it isn't if
@@ -300,14 +315,11 @@ package body Rules.Max_Call_Depth is
                when A_Function_Call =>
                   This_Descr := Call_Depth (Element);
                   case This_Descr.Kind is
-                     when Inline =>
-                        -- does not count
-                        null;
                      when Recursive =>
                         Descr := This_Descr;
                         -- No need to investigate any further
                         Control := Terminate_Immediately;
-                     when Regular =>
+                     when Regular | Inline =>
                         -- If Descr.Kind = Unknown, it stays this way
                         Descr.Depth := Natural'Max (Descr.Depth, This_Descr.Depth);
                      when Unexplored | Unknown | Dynamic =>
@@ -325,14 +337,11 @@ package body Rules.Max_Call_Depth is
                     =>
                   This_Descr := Call_Depth (Element);
                   case This_Descr.Kind is
-                     when Inline =>
-                        -- does not count
-                        null;
                      when Recursive =>
                         Descr := This_Descr;
                         -- No need to investigate any further
                         Control := Terminate_Immediately;
-                     when Regular =>
+                     when Regular | Inline =>
                         -- If Descr.Kind = Unknown, it stays this way
                         Descr.Depth := Natural'Max (Descr.Depth, This_Descr.Depth);
                      when Unexplored | Unknown | Dynamic =>
@@ -373,6 +382,7 @@ package body Rules.Max_Call_Depth is
                   | A_Procedure_Declaration
                   | A_Null_Procedure_Declaration
                   | A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Procedure_Body_Declaration
                   | A_Function_Body_Declaration
                   | A_Task_Body_Declaration
@@ -548,6 +558,12 @@ package body Rules.Max_Call_Depth is
                   Result := (Unavailable, 0);
                   exit;
                end if;
+            when An_Expression_Function_Declaration =>   -- Ada 2012
+               -- Like Analyze_Body, on the result expression
+               Add (Call_Depths, Called_Name, (Recursive, Infinite));
+               Result := (Regular, 0);
+               Traverse (Result_Expression (Called_Body), Control, Result);
+               exit;
             when A_Null_Procedure_Declaration =>
                Result := (Regular, 0);
             when An_Entry_Declaration  =>
@@ -682,4 +698,6 @@ begin  -- Rules.Max_Call_Depth
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+   Framework.Variables.Register (Count_Expr_Fun_Calls'Access,
+                                 Variable_Name => Rule_Id & ".COUNT_EXPR_FUN_CALLS");
 end Rules.Max_Call_Depth;

@@ -379,6 +379,7 @@ package body Rules.Silent_Exceptions is
                      | A_Procedure_Declaration
                      | A_Null_Procedure_Declaration
                      | A_Function_Declaration
+--                   | An_Expression_Function_Declaration   -- Ada 2012 TBSL
                      | A_Procedure_Body_Declaration
                      | A_Function_Body_Declaration
                      | A_Task_Body_Declaration

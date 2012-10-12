@@ -718,6 +718,7 @@ package body Scoped_Store is
          when A_Procedure_Declaration
             | A_Null_Procedure_Declaration
             | A_Function_Declaration
+            | An_Expression_Function_Declaration   -- Ada 2012
             | A_Package_Declaration
 
             | A_Protected_Type_Declaration

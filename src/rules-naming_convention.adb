@@ -872,9 +872,11 @@ package body Rules.Naming_Convention is
                      begin
                         case Declaration_Kind (Sp_Decl) is
                            when A_Procedure_Declaration
+                              | A_Null_Procedure_Declaration
                               | A_Generic_Procedure_Declaration
                               | A_Formal_Procedure_Declaration
                               | A_Function_Declaration
+                              | An_Expression_Function_Declaration   -- Ada 2012
                               | A_Generic_Function_Declaration
                               | A_Formal_Function_Declaration
                               | An_Entry_Declaration
@@ -927,7 +929,10 @@ package body Rules.Naming_Convention is
                                     Failure ("Parameter specification not in callable statement (1)", Sp_Decl);
                               end case;
                            when others =>
-                              Failure ("Parameter specification not in callable statement (2)", Sp_Decl);
+                              Failure ("Parameter specification not in callable statement (2) ("
+                                       & Declaration_Kinds'Wide_Image (Declaration_Kind (Sp_Decl))
+                                       & ')',
+                                       Sp_Decl);
                         end case;
                      end;
 
@@ -1032,8 +1037,9 @@ package body Rules.Naming_Convention is
                      end if;
 
                   when A_Function_Declaration
-                    | A_Function_Instantiation
-                    =>
+                     | An_Expression_Function_Declaration   -- Ada 2012
+                     | A_Function_Instantiation
+                     =>
                      -- To be honest, a function instantiation cannot be in a
                      -- protected specification
                      if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then

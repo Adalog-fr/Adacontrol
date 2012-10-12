@@ -222,6 +222,7 @@ package body Rules.Barrier_Expressions is
                            -- Can appear only as prefix => Harmless
                            null;
                         when A_Function_Declaration
+                           | An_Expression_Function_Declaration   -- Ada 2012
                            | A_Function_Body_Declaration
                            | A_Function_Renaming_Declaration
                            =>

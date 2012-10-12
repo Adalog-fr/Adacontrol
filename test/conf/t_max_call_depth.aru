@@ -1,3 +1,4 @@
+set max_call_depth.count_expr_fun_calls off;
 search max_call_depth (1);
 check  max_call_depth (2);
 "Recursive calls": count max_call_depth (finite);

@@ -186,6 +186,7 @@ package body Framework.Control_Manager is
                            -- This should be a function !
                            case Declaration_Kind (Op_Decl) is
                               when A_Function_Declaration
+                                 | An_Expression_Function_Declaration   -- Ada 2012
                                  | A_Function_Body_Declaration
                                  | A_Function_Renaming_Declaration
                                  | A_Generic_Function_Renaming_Declaration

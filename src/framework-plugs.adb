@@ -410,6 +410,7 @@ package body Framework.Plugs is
                   Rules.Usage.                  Process_Declaration (Element);
 
                when A_Function_Declaration
+                  | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Function_Body_Stub
                     =>
                   Rules.Parameter_Declarations. Process_Declaration          (Element);
