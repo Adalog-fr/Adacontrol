@@ -4,6 +4,8 @@ procedure Casing is
    pragma Page;                                 -- Casing_Pragma
    Int : Integer;
    function Foo ( I : in Integer ) return Integer;
+   pragma INLINE (FOO);                                 -- Casing_Identifier
+   pragma CONVENTION (Convention => C, Entity => FOO);  -- Casing_Identifier
    function foo ( I : in Integer ) return Integer is    -- Casing_Identifier
    begin
       return i + 1;                                     -- Casing_Identifier
