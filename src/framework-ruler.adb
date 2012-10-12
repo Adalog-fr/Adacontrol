@@ -40,6 +40,7 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
+  Asis.Exceptions,
   Asis.Expressions,
   Asis.Iterator,
   Asis.Text;
@@ -165,10 +166,22 @@ package body Framework.Ruler is
    ---------------------
 
    procedure True_Identifier (Element : in Asis.Expression; State : in Info) is
+      use Asis.Exceptions, Asis.Expressions;
+      pragma Warnings (Off, "*Junk*"); -- Junk is never read, just set to test the exception
+      Junk : Asis.Definition;
+      pragma Warnings (On, "*Junk*");
    begin
+      -- An identifier appearing in a pragma that is not a true identifier raises
+      -- ASIS_Inappropriate_Element for its Corresponding_Name_Definition
       if State.Pragma_Or_Attribute_Level /= 0 then
-         -- Not a true identifier!
-         return;
+         begin
+            Junk := Corresponding_Name_Definition (Element);
+            -- OK!
+         exception
+            when ASIS_Inappropriate_Element =>
+               -- Not a true identifier!
+               return;
+         end;
       end if;
       Framework.Plugs.         True_Identifier (Element);
       Framework.Specific_Plugs.True_Identifier (Element);
