@@ -1,4 +1,5 @@
 pragma Ada_2012;
+with Ada.Containers.Indefinite_Vectors;
 procedure Tfw_2012 is
    -- Only for stress test.
    -- Does not test anything by itself (hence considered tfw),
@@ -29,11 +30,17 @@ procedure Tfw_2012 is
        with Dynamic_Predicate => Even mod 2 = 0;                   -- subtype predicates
 
                                                                    -- type invariant TBSL
-   S : String (1..10);
+   S  : String (1 .. 10);
+
+   package String_Vectors is new Ada.Containers.Indefinite_Vectors (Positive, String);
+   use String_Vectors;
+   Vect : Vector;
 begin
    for C of S loop                                                 -- for .. of
       C := ' ';
    end  loop;
+
+   Vect (1) := "ABCD";                                             -- User defined indexing
 
    if I in 1 | 2 | Sub | 1..10 then                                -- multiple membership test
       null;
