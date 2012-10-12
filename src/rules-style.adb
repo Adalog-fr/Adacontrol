@@ -846,7 +846,7 @@ package body Rules.Style is
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
-    procedure Check_Renamed is
+      procedure Check_Renamed is
          use Framework.Scope_Manager, Framework.Reports;
 
          Def : constant Asis.Definition := Corresponding_Name_Definition (Identifier);
@@ -1186,6 +1186,7 @@ package body Rules.Style is
          when A_Procedure_Declaration
             | A_Null_Procedure_Declaration
             | A_Function_Declaration
+            | An_Expression_Function_Declaration   -- Ada 2012
             | A_Procedure_Body_Declaration
             | A_Function_Body_Declaration
             | A_Procedure_Renaming_Declaration
@@ -1853,11 +1854,13 @@ package body Rules.Style is
                         when Not_A_Declaration =>
                            Failure (Rule_Id & ": Not_A_Declaration");
                         when An_Enumeration_Literal_Specification
-                          | A_Discriminant_Specification
-                          | A_Loop_Parameter_Specification
-                          | A_Parameter_Specification
-                          | An_Entry_Index_Specification
-                          | A_Choice_Parameter_Specification
+                           | A_Discriminant_Specification
+                           | A_Loop_Parameter_Specification
+                           | A_Generalized_Iterator_Specification
+                           | An_Element_Iterator_Specification
+                           | A_Parameter_Specification
+                           | An_Entry_Index_Specification
+                           | A_Choice_Parameter_Specification
                           =>
                            -- These are allowed to appear on the same line as something else
                            null;
