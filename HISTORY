@@ -7,12 +7,12 @@ General:
 Added -j option and command "set ignore inverted" (invert disabling of
 messages).
 
-=============
-== V1.15b1 ==
-=============
-
 Changes to existing rules:
 --------------------------
+Multiple_Assignment
+   Consider subcomponents as assigned only if they meet (recursively) the
+   criteria of the control.
+
 Naming_Convention:
    Do not recheck formal parameters in bodies if there is an explicit
    specification.

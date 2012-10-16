@@ -75,11 +75,22 @@ package body Rules.Multiple_Assignments is
    -- The parent of a LHS is the expression with one less selector (or indexing) than
    -- the current LHS. It is also considered a LHS.
    --
-   -- The processing of a LHS increments its parent's count of subcomponents (recursively,
-   -- of course) unless the parent is limited.
-   --
    -- The first LHS (the one to the left of ":=") is marked as "full" assignment, others
    -- (during recursion) are marked as "component".
+   --
+   -- The Repeated subrule is triggered if the LHS or any of its parents is already in the
+   -- map.
+   --
+   -- The Groupable subrule is triggered on various comparisons between the total number of
+   -- subcomponents and the number of assigned subcomponents. The difficulty is that, for a
+   -- subcomponent that is itself of a composite type, it has to be counted as "assigned" not
+   -- only if it has been assigned in full, but also if it should have been assigned in full
+   -- (i.e. if the rule would trigger on the subcomponent). And since it depends on the parameters
+   -- of the control, it has to be recomputed dynamically for each control.
+   --
+   -- The processing of a "full" LHS simply increments its parent's count of (full) subcomponents.
+   -- A "component" LHS is chained to its parent through Child/Brother links, and when evaluating
+   -- the parent, the number of assigned components is recomputed by following this chain.
    --
    -- At the end of a sequence of assignments, all LHS in the map are traversed, and
    -- messages are issued according to the values assigned/total subcomponents.
@@ -117,8 +128,10 @@ package body Rules.Multiple_Assignments is
             when Full =>
                null;
             when Component =>
-               Total       : Thick_Queries.Extended_Biggest_Natural;
-               Nb_Subcompo : Thick_Queries.Biggest_Natural;
+               Subcomp_Total      : Thick_Queries.Extended_Biggest_Natural;
+               Full_Subcomp_Count : Thick_Queries.Biggest_Natural;
+               First_Child        : Unbounded_Wide_String;
+               Brother            : Unbounded_Wide_String;
          end case;
       end record;
    package LHS_Map is new Binary_Map (Unbounded_Wide_String, LHS_Descriptor);
@@ -225,6 +238,8 @@ package body Rules.Multiple_Assignments is
       Dynamic_LHS : exception;
       -- Raised when the LHS is not statically determinable, the whole assignment
       -- is abandonned.
+      Reason  : Unbounded_Wide_String;
+
 
       function Total_Fields (Struct : Asis.Element) return Extended_Biggest_Natural is
          use Utilities;
@@ -250,7 +265,7 @@ package body Rules.Multiple_Assignments is
                   case Type_Kind (Def) is
                      when An_Unconstrained_Array_Definition
                         | A_Constrained_Array_Definition
-                          =>
+                        =>
                         declare
                            Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Struct);
                            Result  : Biggest_Natural := 1;
@@ -265,13 +280,13 @@ package body Rules.Multiple_Assignments is
                         end;
                      when A_Record_Type_Definition
                         | A_Tagged_Record_Type_Definition
-                          =>
+                        =>
                         Def := Asis.Definitions.Record_Definition (Def);
                      when A_Derived_Type_Definition =>
                         Def := Parent_Subtype_Indication (Def);
                      when A_Derived_Record_Extension_Definition =>
                         declare
-                           Parent_Fields : constant Extended_Biggest_Natural
+                           Parent_Fields    : constant Extended_Biggest_Natural
                              := Total_Fields (Parent_Subtype_Indication (Def));
                            Extension_Fields : constant Extended_Biggest_Natural
                              := Total_Fields (Asis.Definitions.Record_Definition (Def));
@@ -362,16 +377,79 @@ package body Rules.Multiple_Assignments is
          end loop;
       end Total_Fields;
 
+      function Exceeds_Thresholds (Value         : LHS_Descriptor;
+                                   Limits        : Rule_Context;
+                                   With_Messages : Boolean := False) return Boolean
+
+      is
+         use Utilities;
+
+         Subcomp_Count : Thick_Queries.Biggest_Natural := Value.Full_Subcomp_Count;
+         Subcomp_Descr : LHS_Descriptor;
+         Subcomp_Key   : Unbounded_Wide_String;
+         Matched       : Boolean := True;
+
+      begin
+         if Value.Coverage = Full then
+            return True;  -- Since aggregate required
+         end if;
+
+         Reason := Null_Unbounded_Wide_String;
+
+         Subcomp_Key := Value.First_Child;
+         while Subcomp_Key /= Null_Unbounded_Wide_String loop
+            Subcomp_Descr := Fetch (LHS_Infos, Subcomp_Key);
+            if Exceeds_Thresholds (Subcomp_Descr, Limits, With_Messages => False) then
+               Subcomp_Count := Subcomp_Count + 1;
+            end if;
+            Subcomp_Key := Subcomp_Descr.Brother;
+         end loop;
+
+         if Limits.Given > 0 then
+            if Subcomp_Count < Limits.Given then
+               Matched := False;
+            elsif With_Messages then
+               Append (Reason, ", given: " & Biggest_Int_Img (Subcomp_Count)
+                       & " (>=" & Biggest_Int_Img (Limits.Given) & ')');
+            end if;
+         end if;
+
+         if Limits.Missing < Biggest_Int'Last then
+            if Value.Subcomp_Total = Not_Static
+              or else Value.Subcomp_Total - Subcomp_Count > Limits.Missing
+            then
+               Matched := False;
+            elsif With_Messages then
+               Append (Reason, ", missing: " & Biggest_Int_Img (Value.Subcomp_Total - Subcomp_Count)
+                       & " (<=" & Biggest_Int_Img (Limits.Missing) & ')');
+            end if;
+         end if;
+
+         if Limits.Ratio > 0 then
+            if Value.Subcomp_Total = Not_Static
+              or else Subcomp_Count * 100 / Value.Subcomp_Total < Biggest_Int (Limits.Ratio)
+            then
+               Matched := False;
+            elsif With_Messages then
+               Append (Reason, ", ratio: " & Biggest_Int_Img (Subcomp_Count * 100 / Value.Subcomp_Total)
+                       & " (>=" & Integer_Img (Limits.Ratio) & ')');
+            end if;
+         end if;
+
+         return Matched;
+      end Exceeds_Thresholds;
+
       procedure Process_Assignment (LHS      : in Asis.Expression;
                                     Coverage : in Coverage_Kind;
                                     Key      : out Unbounded_Wide_String)
       is
          use Asis.Expressions;
          use Framework.Reports, Utilities;
-         Target     : Asis.Expression := LHS;
-         Parent     : Asis.Expression;
-         Parent_Key : Unbounded_Wide_String;
-         Count      : LHS_Descriptor;
+         Target       : Asis.Expression := LHS;
+         Target_Descr : LHS_Descriptor;
+         Parent       : Asis.Expression;
+         Parent_Key   : Unbounded_Wide_String;
+         Parent_Descr : LHS_Descriptor;
       begin
          loop
             case Expression_Kind (Target) is
@@ -404,6 +482,7 @@ package body Rules.Multiple_Assignments is
                   declare
                      Indices : constant Asis.Expression_List := Index_Expressions (Target);
                   begin
+                     Append (Key, '(');
                      for I in Indices'Range loop
                         declare
                            Value : constant Wide_String := Static_Expression_Value_Image (Indices (I));
@@ -411,9 +490,10 @@ package body Rules.Multiple_Assignments is
                            if Value = "" then
                               raise Dynamic_LHS;
                            end if;
-                           Append (Key, '.' & Value);
+                           Append (Key, Value & ',');
                         end;
                      end loop;
+                     Replace_Element (Key, Length (Key), ')');
                   end;
                   exit;
                when A_Slice  =>
@@ -445,108 +525,85 @@ package body Rules.Multiple_Assignments is
 
          if Is_Present (LHS_Infos, Key) then
             -- Variable already assigned
-            Count := Fetch (LHS_Infos, Key);
+            Target_Descr := Fetch (LHS_Infos, Key);
             if Repeated_Used
-              and then (Coverage = Full or Count.Coverage = Full)
+              and then (Coverage = Full or Target_Descr.Coverage = Full)
             then
                Report (Rule_Id,
                        Repeated_Context,
                        Get_Location (LHS),
-                       "variable already assigned in same group at " & Image (Count.Loc));
+                       "variable already assigned in same group at " & Image (Target_Descr.Loc));
             end if;
             return;
          end if;
 
+         -- Only "new" (not already assigned) components past this point
          case Coverage is
             when Full =>
-               Add (LHS_Infos, Key, (Coverage => Full, Loc => Get_Location (LHS)));
+               Target_Descr := (Coverage => Full, Loc => Get_Location (LHS));
             when Component =>
-               Add (LHS_Infos, Key, (Coverage     => Component,
-                                     Loc          => Get_Location (LHS),
-                                     Total        => Total_Fields (LHS),
-                                     Nb_Subcompo  => 0)); -- will be incremented by child
+               Target_Descr := (Coverage           => Component,
+                                Loc                => Get_Location (LHS),
+                                Subcomp_Total      => Total_Fields (LHS),
+                                Full_Subcomp_Count => 0,  -- will be incremented by full children
+                                First_Child        => Null_Unbounded_Wide_String,
+                                Brother            => Null_Unbounded_Wide_String);
          end case;
 
          if Is_Nil (Parent) or else Is_Limited (Parent) then
+            Add (LHS_Infos, Key, Target_Descr);
             return;
          end if;
 
-         -- True field, not already seen: Increment parent count
-         Count := Fetch (LHS_Infos, Parent_Key);
-         if Count.Coverage = Full then
+         -- True field, not already seen: Increment parent count if full child, chain otherwise
+         Parent_Descr := Fetch (LHS_Infos, Parent_Key);
+         if Parent_Descr.Coverage = Full then  -- Parent previously assigned in full
             if Repeated_Used then
                Report (Rule_Id,
                        Repeated_Context,
                        Get_Location (LHS),
-                       "variable already assigned in same group at " & Image (Count.Loc));
+                       "variable already assigned in same group at " & Image (Parent_Descr.Loc));
             end if;
          else
-            Count.Nb_Subcompo := Count.Nb_Subcompo + 1;
-            Count.Loc         := Get_Location (LHS);
-            Add (LHS_Infos, Parent_Key, Count);
+            Parent_Descr.Loc := Get_Location (LHS);
+            case Coverage is
+               when Full =>
+                  Parent_Descr.Full_Subcomp_Count := Parent_Descr.Full_Subcomp_Count + 1;
+               when Component =>
+                  if Parent_Descr.First_Child /= Null_Unbounded_Wide_String then
+                     Target_Descr.Brother := Parent_Descr.First_Child;
+                  end if;
+                  Parent_Descr.First_Child := Key;
+            end case;
+            Add (LHS_Infos, Parent_Key, Parent_Descr);
          end if;
+
+         Add (LHS_Infos, Key, Target_Descr);
       end Process_Assignment;
 
       procedure Report_One (Key : Unbounded_Wide_String; Value : in out LHS_Descriptor) is
          use Context_Queue, Framework.Reports, Utilities;
          Current : Cursor;
          Context : Rule_Context;
-         Reason  : Unbounded_Wide_String;
-         Matched : Boolean;
       begin
          if Value.Coverage = Full   --A global assignment
-           or else Value.Total = 0  --A null record
+           or else Value.Subcomp_Total = 0  --A null record
          then
             return;
          end if;
 
          -- We do not use Assert for the following sanity check, to avoid evaluating the error string
          -- (would raise Constraint_Error if Value.Total = Not_Static)
-         if Value.Total /= Not_Static and then Value.Nb_Subcompo > Value.Total then
+         if Value.Subcomp_Total /= Not_Static and then Value.Full_Subcomp_Count > Value.Subcomp_Total then
             Failure ("More assigned fields than possible for " & To_Wide_String (Key) & ": "
-                     & Biggest_Int_Img (Value.Nb_Subcompo) & "/" & Biggest_Int_Img (Value.Total));
+                     & Biggest_Int_Img (Value.Full_Subcomp_Count) & "/" & Biggest_Int_Img (Value.Subcomp_Total));
          end if;
 
          Current := First (Groupable_Contexts);
          while Has_Element (Current) loop
-            Matched := True;
-            Reason  := Null_Unbounded_Wide_String;
             Context := Fetch (Current);
 
-            if Context.Given > 0 then
-               if Value.Nb_Subcompo >= Context.Given then
-                  Append (Reason, ", given: " & Biggest_Int_Img (Value.Nb_Subcompo)
-                          & " (>=" & Biggest_Int_Img (Context.Given) & ')');
-               else
-                  Matched := False;
-               end if;
-            end if;
-
-            if Value.Total = Not_Static then
-               if Context.Missing < Biggest_Int'Last or Context.Ratio > 0 then
-                  Matched := False;
-               end if;
-            else
-               if Context.Missing < Biggest_Int'Last then
-                  if Value.Total - Value.Nb_Subcompo <= Context.Missing then
-                     Append (Reason, ", missing: " & Biggest_Int_Img (Value.Total - Value.Nb_Subcompo)
-                             & " (<=" & Biggest_Int_Img (Context.Missing) & ')');
-                  else
-                     Matched := False;
-                  end if;
-               end if;
-
-               if Context.Ratio > 0 then
-                  if Value.Nb_Subcompo * 100 / Value.Total >= Biggest_Int (Context.Ratio) then
-                     Append (Reason, ", ratio: " & Biggest_Int_Img (Value.Nb_Subcompo * 100 / Value.Total)
-                             & " (>=" & Integer_Img (Context.Ratio) & ')');
-                  else
-                     Matched := False;
-                  end if;
-               end if;
-            end if;
-
-            if Matched then
+            if Exceeds_Thresholds (Value, Limits => Context, With_Messages => True)  then
                Report (Rule_Id,
                        Context,
                        Value.Loc,
@@ -580,7 +637,9 @@ package body Rules.Multiple_Assignments is
             case Statement_Kind (Stmts (I)) is
                when An_Assignment_Statement =>
                   begin
-                     Process_Assignment (Assignment_Variable_Name (Stmts (I)), Full, Ignored);
+                     Process_Assignment (LHS      => Assignment_Variable_Name (Stmts (I)),
+                                         Coverage => Full,
+                                         Key      => Ignored);
                   exception
                      when Dynamic_LHS =>
                         null;
@@ -594,7 +653,9 @@ package body Rules.Multiple_Assignments is
             end case;
          end loop;
 
-         if Statement_Kind (Stmts (Stmts'Last)) = An_Assignment_Statement then
+         if Statement_Kind (Stmts (Stmts'Last)) = An_Assignment_Statement
+           or else Statement_Kind (Stmts (Stmts'Last)) = A_Null_Statement
+         then
             Do_Report (LHS_Infos);
             Clear (LHS_Infos);
          end if;
