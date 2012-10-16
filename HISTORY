@@ -2,6 +2,11 @@
 == V1.15b2 ==
 =============
 
+General:
+--------
+Added -j option and command "set ignore inverted" (invert disabling of
+messages).
+
 =============
 == V1.15b1 ==
 =============

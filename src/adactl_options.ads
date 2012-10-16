@@ -44,10 +44,10 @@ package Adactl_Options is
 
    -- Options are initialized to avoid uninitialized values when Help or Check
    -- Implemented as rule variables:
-   Debug_Option     : aliased Switch_Type.Object := (Value => Off);
-   Exit_Option      : aliased Switch_Type.Object := (Value => Off);
-   Ignore_Option    : aliased Switch_Type.Object := (Value => Off);
-   Verbose_Option   : aliased Switch_Type.Object := (Value => Off);
+   Debug_Option     : aliased Switch_Type.Object          := (Value => Off);
+   Exit_Option      : aliased Switch_Type.Object          := (Value => Off);
+   Ignore_Option    : aliased Extended_Switch_Type.Object := (Value => Off);
+   Verbose_Option   : aliased Switch_Type.Object          := (Value => Off);
 
    -- Implemented as Ada variables (not settable with the set command):
    Recursive_Option : Switch :=  Off;

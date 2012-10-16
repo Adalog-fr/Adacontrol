@@ -59,7 +59,7 @@ package body Adactl_Options is
    use Framework.Variables;
 
    package Analyzer is
-      new Options_Analyzer (Binary_Options => "CDdeEhiIrsTuvwx",
+      new Options_Analyzer (Binary_Options => "CDdeEhiIjrsTuvwx",
                             Valued_Options => "fFlomMpSt",
                             Tail_Separator => "--");
 
@@ -131,6 +131,7 @@ package body Adactl_Options is
       User_Message ("   -f file   use a file for the specification of rules");
       User_Message ("   -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)");
       User_Message ("   -i        ignore local deactivations");
+      User_Message ("   -j        invert local deactivations");
       User_Message ("   -l rules  process with these rules");
       User_Message ("   -o file   specify an output file");
       User_Message ("   -p file   specify an emacs ada-mode project file (.adp)");
@@ -346,7 +347,11 @@ package body Adactl_Options is
       Flag_To_Command  ('e', "warning_as_error");
       Flag_To_Command  ('E', "warning", Inverted => True);
       Value_To_Command ('F', "set format");
-      Flag_To_Command  ('i', "ignore");
+      if Is_Present (Option => 'j') then
+         Append (Options_Commands, "set ignore inverted;"); -- -i ignored if -j given
+      else
+         Flag_To_Command  ('i', "ignore");
+      end if;
       Value_To_Command ('m', "set max_errors",   Required => False);
       Value_To_Command ('M', "set max_messages", Required => False);
       Value_To_Command ('o', "set output");

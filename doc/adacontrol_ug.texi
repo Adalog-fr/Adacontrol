@@ -761,12 +761,16 @@ manually. @pxref{Generating tree files manually} for details.
 @subsection Local disabling control
 The ``-i'' option tells AdaControl to ignore disabling markers in Ada
 source code (@pxref{Disabling controls}); i.e. all controls will be
-performed, regardless of the presence of disabling markers.
+performed, regardless of the presence of disabling markers. This is
+equivalent to the command ``@code{set ignore ON;}''. Note that if you
+you have many messages, setting this option can speed-up AdaControl
+considerably.  It is therefore advisable to always set this option
+when you know that there is no disabling marker in your source code.
 
-Note that if you you have many messages, setting this option can
-speed-up AdaControl considerably.  It is therefore advisable to always
-set this option when you know that there is no disabling marker in
-your source code.
+The ``-j'' option tells AdaControl to invert the meaning of disabling
+markers, i.e. only messages marked as disabled will be printed. This
+is useful to check which messages have been disabled. This is
+equivalent to the command ``@code{set ignore INVERTED;}''.
 
 @node Verbose and debug mode, Treatment of warnings, Local disabling control, Command line parameters and options
 @subsection Verbose and debug mode
@@ -2168,8 +2172,9 @@ set Output|New_Output <output file>;
 set Statistics <level>;
 set Tag1|Tag2 "<value>";
 set Trace <trace file>;
-set Debug|Exit_On_Error|Ignore|Timing|Verbose|Warning|Warning_As_Error
+set Debug|Exit_On_Error|Timing|Verbose|Warning|Warning_As_Error
       On|Off;
+set Ignore On|Off|Inverted;
 set <Rule_Name>.<Variable> <Value>
 @end example
 The ``set format'' command selects the output format for the messages,
@@ -2226,7 +2231,7 @@ redirected to the console.  As with the ``-t'' option, if the file
 exists, output is appended to it.
 
 The ``set
-Debug|Exit_On_Error|Ignore|Timing|Verbose|Warning|Warning_As_Error''
+Debug|Exit_On_Error|Timing|Verbose|Warning|Warning_As_Error''
 command activates (``on'') or deactivates (``off'') options. ``Debug''
 corresponds to the ``-d'' option, ``Exit_On_Error'' to the ``-x''
 option, ``Ignore'' to the ``-i'' option, ``Timing'' to the ``-T''
@@ -2235,6 +2240,15 @@ option, and ``Warning_As_Error'' to the ``-e'' option. See
 @ref{Verbose and debug mode}, @ref{Exit on error}, @ref{Treatment of
 warnings}, @ref{Output format}, and @ref{Local disabling control} for
 details.
+
+The ``set Ignore'' command governs handling of disabled messages
+(@pxref{Disabling controls}). In default mode (``set Ignore Off''),
+disabled messages are not printed. When set to ``on'' (``set Ignore
+On''), all messages are printed, including those that are
+disabled. Setting this option can result in considerable speed-up of
+the printing of messages. When set to ``Inverted'' (``set Ignore
+Inverted''), @i{only} disabled messages are printed. This is useful to
+check which messages have been disabled.
 
 Some rules may also have user-settable global variables that affect
 their behaviour; the last form of the ``set'' command allows changing

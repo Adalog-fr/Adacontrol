@@ -139,6 +139,11 @@ nb_fw=$((nb_fw+1))
 ${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
+test_case=tfw_rule_off_inverted
+nb_fw=$((nb_fw+1))
+${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r >res/${test_case}.txt
+
 test_case=tfw_rule_off_tags
 nb_fw=$((nb_fw+1))
 ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
