@@ -4160,7 +4160,7 @@ This rule controls usage of various kinds of expressions.
    real_equality             | record_partial_others            |
    record_aggregate          | record_others                    |
    slice                     | type_conversion                  |
-   underived_conversion      | universal_range                  | 
+   underived_conversion      | universal_range                  |
    unqualified_aggregate     | xor
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
@@ -5568,7 +5568,7 @@ the same casing as in the declaration. @xref{Style}.
 
 Similarly, in the case of a subprogram and its parameters, the check
 is not done on the body if there is an explicit specification (since
-specification and body have to match anyway). 
+specification and body have to match anyway).
 
 Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
@@ -7431,7 +7431,7 @@ detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
 For the ``Casing_Identifier'' subrule, if the value is ``original'',
 the closing identifier of a program unit (the one after @code{@b{end}}) is
-@i{not} checked. Believe it or not, the check would be extremely difficult 
+@i{not} checked. Believe it or not, the check would be extremely difficult
 to perform...
 
 @node Terminating_Tasks, Type_Initial_Values, Style, Rules reference
@@ -8213,7 +8213,7 @@ Use file @code{no_system_entity.aru}.
 
 @rule{Predefined IO packages shall not be used}
 
-Use File @code{no_io.aru}.
+Use file @code{no_io.aru}.
 
 @rule{Standard package XXX shall not be used}
 
@@ -8255,9 +8255,19 @@ Use file @code{nasa.aru}. This file is an example of how to convert guidelines (
 
 Use file @code{no_83_unit_name.aru}.
 
-@rule{New reserved words of Ada 2005 shall not be used}
+@rule{New reserved words of Ada 2005/2012 shall not be used}
 
-Use file @code{reserved_2005.aru}.
+Use file @code{reserved_2005.aru}. (the file name mentions only 2005,
+but it checks also for 2012 - after all, there is only one extra
+reserved word).
+
+@rule{Measurements for the SQALE method}
+
+AdaControl can provide measurements required by the SQALE quality
+measurement method. The corresponding file is @code{SQALE.aru}.
+
+For information about the SQALE method, please refer to J-P Rosen's paper at
+@uref{http://www.adalog.fr/publicat/sqale.pdf}
 
 @node Automatically checkable rules, Rules that need manual inspection, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules
 @section Automatically checkable rules

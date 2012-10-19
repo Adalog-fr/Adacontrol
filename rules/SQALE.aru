@@ -1,0 +1,84 @@
+-- This file contains rules to be used as input data for the SQALE method
+-- For information about the method, and how it is applied to Ada, please
+-- refer to J-P Rosen's paper:
+--   The SQALE Quality and Analysis Models for Assessing the Quality of Ada Source Code
+--   Lecture Notes in Computer Science, n° 6652,  proceedings of the 16th Ada-Europe 
+--   International Conference on Reliable Software Technologies, Springer-Verlag, 2011
+-- The paper is also accessible from http://www.adalog.fr/publica2.htm
+
+  SQALE_01: check Parameter_Declarations (max_parameters, 7);
+--SQALE_02: check 
+--SQALE_03: check 
+--SQALE_04: check 
+--SQALE_04: check
+--SQALE_05: check 
+  SQALE_06: check simplifiable_statements (dead);
+  SQALE_07: check units (unreferenced);
+  SQALE_08: check max_call_depth (finite);
+--SQALE_09: check 
+  SQALE_10: check declarations (public variable, public tagged_type, public record_type);
+  SQALE_11: check dependencies (direct, max 50);
+--SQALE_12: check 
+--SQALE_13: compile time
+--SQALE_14: compile time
+--SQALE_15: compile time
+  SQALE_16: check entities (unchecked_conversion, ada.unchecked_conversion);
+  SQALE_17: check improper_initialization (variable);
+--SQALE_18: check 
+  SQALE_19: check statements (function_return, procedure_return);
+--SQALE_20: compile time
+--SQALE_21: compile time
+--SQALE_22: compile time
+--SQALE_23: compile time
+--SQALE_24: compile time
+  SQALE_25: check expressions (real_equality);
+--SQALE_26: compile time
+  SQALE_27: check expressions (mixed_operators);
+  SQALE_28: check global_references (multiple, procedure, function, task, protected);
+--SQALE_29: check 
+--SQALE_30: check 
+--SQALE_31: check 
+--SQALE_32: compile time 
+--SQALE_33: compile time
+  SQALE_34: check exception_propagation (interface, c);
+--SQALE_35: check 
+--SQALE_36: compile time
+--SQALE_37: compile time
+  SQALE_38: check local_hiding (not_operator overloading);
+--SQALE_39: check 
+--SQALE_40: check 
+--SQALE_41: compile time
+  SQALE_42: check style (exposed_literal, integer, 0, 1),
+            check style (exposed_literal, real, 0.0, 1.0),
+            check style (exposed_literal, string, "^$");
+  SQALE_43: check reduceable_scope (no_blocks to_body variable, 
+                                    no_blocks to_body constant, 
+                                    no_blocks to_body type, 
+                                    no_blocks to_body use);
+--SQALE_44: check
+  SQALE_45: check usage (object, not read);
+--SQALE_46: check 
+--SQALE_47: check 
+  SQALE_48: check simplifiable_statements;
+  SQALE_49: check comments (pattern, "if.*then");   --etc.
+--SQALE_50: compile time
+--SQALE_51: check 
+--SQALE_52: check 
+--SQALE_53: check 
+--SQALE_54: check 
+--SQALE_55: check 
+--SQALE_56: check 
+--SQALE_57: check 
+  SQALE_58: check style (casing_Attribute,  Uppercase), -- To be adjusted to project
+            check style (casing_identifier, Original),   -- To be adjusted to project
+            check style (casing_keyword,    Lowercase), -- To be adjusted to project
+            check style (casing_pragma,     Uppercase); -- To be adjusted to project
+  SQALE_59: check naming_convention (all, case_sensitive "^[A-Z][a-z0-9]*(_[A-Z0-9][a-z0-9]*)*$");
+                                                         -- To be adjusted to project
+--SQALE_60: check 
+--SQALE_61: check 
+--SQALE_62: compile time
+--SQALE_63: compile time
+  SQALE_64: check statements (goto);
+--SQALE_65: check 
+--SQALE_66: check 
