@@ -1,0 +1,4 @@
+set ignore inverted;
+
+check pragmas (elaborate_all);
+"special name": check pragmas (inline);

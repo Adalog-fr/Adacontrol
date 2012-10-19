@@ -1,4 +1,4 @@
-Groupable1:     search multiple_assignments (groupable, given 2, missing 2);
-Groupable2:     check  multiple_assignments (groupable, ratio 85);
+Groupable1:     search multiple_assignments (groupable, given 2, missing 1);
+Groupable2:     check  multiple_assignments (groupable, ratio 75);
 Repeated:       check  multiple_assignments (repeated);
 Fully_Assigned: count  multiple_assignments (groupable, missing 0);

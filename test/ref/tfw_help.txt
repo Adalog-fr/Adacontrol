@@ -728,6 +728,7 @@ Options:
    -f file   use a file for the specification of rules
    -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)
    -i        ignore local deactivations
+   -j        invert local deactivations
    -l rules  process with these rules
    -o file   specify an output file
    -p file   specify an emacs ada-mode project file (.adp)

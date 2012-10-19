@@ -489,7 +489,7 @@ package body Framework.Reports is
       -- Retrieve source line, but only if necessary since it can be quite
       -- a long operation
       if Format_Option.Value = Source
-        or (Format_Option.Value /= None and Ignore_Option.Value = Off)
+        or (Format_Option.Value /= None and Ignore_Option.Value /= On)
       then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
@@ -502,13 +502,13 @@ package body Framework.Reports is
 
             for I in Natural range 1 .. Get_First_Line (Loc) - 1 loop
                Get_Line (Source_File, Line, Line_Last);
-               if Ignore_Option.Value = Off then
+               if Ignore_Option.Value /= On then
                   Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
                end if;
             end loop;
 
             Get_Line (Source_File, Line, Line_Last);
-            if Ignore_Option.Value = Off then
+            if Ignore_Option.Value /= On then
                Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
             end if;
 
@@ -530,7 +530,7 @@ package body Framework.Reports is
 
       -- Here, Line is the good source line
 
-      if Active then
+      if Active xor Ignore_Option.Value = Inverted then
          case Ctl_Kind is
             when Check =>
                Error_Count := Error_Count + 1;

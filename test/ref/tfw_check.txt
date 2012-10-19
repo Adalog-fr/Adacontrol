@@ -2,6 +2,7 @@ x_errors.aru:1:0: Syntax: Command or label expected
 x_errors.aru:2:32: Syntax: Keyword expected, use option -h <rule name> for a list of allowable keywords
 x_errors.aru:4:8: Syntax: Not a rule name: NOT_A_RULE
 Syntax errors found
+../rules/SQALE.aru: No syntax error
 ../rules/gnatcheck.aru: No syntax error
 ../rules/nasa.aru: No syntax error
 ../rules/no_83_unit_name.aru: No syntax error

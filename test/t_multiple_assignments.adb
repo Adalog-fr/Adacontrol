@@ -5,6 +5,7 @@ procedure T_Multiple_Assignments is
       end record;
    type Tab is array (1 .. 5) of Integer;
    type TabRec is array (1..3) of Rec;
+   type MatRec is array (1..3, 1..4) of Rec;
    type RecRec is
       record
          X : Rec;
@@ -14,6 +15,7 @@ procedure T_Multiple_Assignments is
 
    R : Rec;
    T : Tab;
+   M : MatRec;
    RR : RecRec;
    B : Boolean;
 
@@ -32,7 +34,22 @@ begin
    T (2) := 2;
    null;
    T (3) := 3;
-   T (4) := 4;   -- Groupable1
+   T (4) := 4;
+   T (5) := 5;   -- Groupable1, Groupable2, Count
+
+   M (1, 1).A := 1;
+   M (1, 1).B := 2; -- Groupable1
+   M (1, 2)   := R;
+   M (1, 3)   := R;
+   M (1, 4)   := R;
+   M (2, 1).A := 1;
+   M (2, 2)   := R;
+   M (2, 3)   := R;
+   M (2, 4)   := R;
+   M (2, 4)   := R; -- Repeated
+   M (3, 1)   := R;
+   M (3, 2)   := R;
+   M (3, 3)   := R; -- Groupable2 (on M)
 
    if False then
       null;
@@ -41,14 +58,25 @@ begin
    R.A := 1;
    R.B := 2;
 
-   RR.X.A     := 1;   -- Check
+   RR.X.A     := 1;
    RR.Y (2)   := 2;
-   RR.Z (1).B := 3;  -- Groupable1, Groupable2, Count
-   RR.Z (2).C := 4;  -- Groupable1
+   RR.Z (1).B := 3;  -- OK by transitivity
+   RR.Z (2).C := 4;  -- OK by transitivity
 
-   RABis   := 1;     -- Repeated
-   RBBis   := 2;     -- Repeated
+   RABis  := 1;      -- Repeated
+   RBBis  := 2;      -- Repeated
    Rbis.C := 3;      -- Groupable1, Groupable2, Count
+
+   if False then
+      null;
+   end if;
+
+   RR.X.A     := 1;
+   RR.Y (2)   := 2;
+   RR.Z (1).A := 3;
+   RR.Z (1).B := 4;  -- Groupable1
+   RR.Z (2).B := 4;  -- Groupable1 (RR.Z)
+   RR.Z (2).C := 5;  -- Groupable1
 
    begin
       R.A := 1;
@@ -156,9 +184,11 @@ Bl: declare
             Prot.F2 := 1;
             Prot.F3.A := 1;
             Prot.F3.B := 1;       -- Groupable1
+            null;
          end P;
       end Prot;
    begin
       null;
    end;
+
 end T_Multiple_Assignments;
