@@ -293,10 +293,12 @@ Parameter(s):  constant            | function           |
 Rule: LOCAL_HIDING
 Control occurrences of local identifiers that hide or overload an identical name
 
-Parameter(s): <exceptions>  strict            | overloading |
-                            overloading_short
+Parameter(1): <exceptions>  strict | overloading
                             (default = strict)
+Parameter(2..N): "<Allowed Pattern>"
 <exceptions>: not_operator | not_enumeration
+Variables:
+Local_Hiding.Overloading_Report: (Compact, Detailed) = Detailed
 ----
 Rule: MAX_BLANK_LINES
 Control that there is no more than the indicated number of consecutive blank lines

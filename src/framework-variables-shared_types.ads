@@ -50,5 +50,8 @@ package Framework.Variables.Shared_Types is
    type Extended_Switch is (Off, On, Inverted);
    package Extended_Switch_Type is new Discrete_Type (Extended_Switch);
 
+   type Verbosity is (Compact, Detailed);
+   package Verbosity_Type is new Discrete_Type (Verbosity);
+
    package Natural_Type is new Integer_Type (Natural);
 end Framework.Variables.Shared_Types;

@@ -4967,42 +4967,69 @@ the same name.
 
 @subsection Syntax
 @example
-<control_kind> local_hiding [(<subrule> @{,<subrule>@})];
-<subrule>   ::= @{<exception>@}  strict | overloading | overloading_short
+<control_kind> local_hiding [(<subrule> @{,"<allowed pattern>"@})];
+<subrule>   ::= @{<exception>@}  strict | overloading
 <exception> ::= not_operator | not_enumeration
 @end example
 
 @subsection Action
 If ``strict'' is given (or if there is no subrule), the rule controls
 strict hiding (an inner subprogram that overloads an outer one is not
-considered hiding). If ``overloading'' or ``overloading_short'' is
-given, only subprograms that overload another subprogram in the same
-scope or in an outer scope are controlled. Note that following the
-normal Ada model, the declarations of enumeration literals are
-considered functions (and thus controlled).
+considered hiding). If ``overloading'' is given, only subprograms that
+overload another subprogram in the same scope or in an outer scope are
+controlled. Note that following the normal Ada model, the declarations
+of enumeration literals are considered functions (and thus
+controlled).
 
 If ``not_operator'' is mentionned, the subrule does not apply to the
 declarations of operators (i.e. things like ``@code{"+"}''). If
 ``not_enumeration'' is mentionned, the subrule does not apply to the
 hiding/overloading of enumeration literals by other enumeration
 literals (the  rule still applies to the hiding/overloading of
-functions by enumeration litterals, for example).
+functions by enumeration litterals, for example). If one or more
+<allowed pattern> are given, hiding (or overloading) of identifiers
+that match one of the patterns are not reported. The whole syntax for
+regular expressions is allowed for the pattern, but the matching is
+always case insensitive. @xref{Syntax of regular expressions}.
 
-``overloading'' and ``overloading_short'' behave the same, except for
-the way occurrences are reported. When a construct that overloads
-several other constructs is encountered, ``overloading'' will issue a
-message for each overloaded construct, while ``overloading_short''
-will issue a single message mentionning how many constructs are
-overloaded, and a pointer to the last one.
-
-This rule can be given only once for ``strict'' and once for either
-``overloading'' or ``overloading_short''.
+This rule can be given only once for ``strict'' and once for
+``overloading''.
 
 Ex:
 @example
 Hiding: check local_hiding (strict);
 Overloading: search local_hiding (not_operator overloading);
 @end example
+
+@subsection Variables
+The rule provides a variable that allows to adjust the verbosity
+of messages for the subrule ``overloading''.
+
+@need 800
+@multitable @columnfractions .20 .20 .10 .50
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Overloading_Report @tab compact/detailed @tab detailed @tab if
+``detailed'',  when a construct that overloads several other constructs
+is encountered, ``overloading'' will issue a message for each
+overloaded construct; if ``compact'', it will issue a single
+message mentionning how many constructs are overloaded, and a pointer
+to the last one.
+@end multitable
+
+@subsection Tips
+If you have a naming convention like having all tagged types named
+``instance'' (with a meaningful name for the enclosing package), and
+if in addition your package structure follows the inheritance
+hierarchy (i.e. a descendent class is in a child package), then all
+``instance'' will hide each other - but this is of course
+intended. Specifying ``@code{^instance$}'' as an allowed pattern will
+prevent error messages for these declarations.
+
+Note that the name is given between ``@code{^}'' and
+``@code{$}''. Otherwise, following normal regexp syntax, any
+identifier @i{containing} ``instance'' would be allowed.
 
 @node Max_Blank_Lines, Max_Call_Depth, Local_Hiding, Rules reference
 @section Max_Blank_Lines
@@ -8846,6 +8873,30 @@ that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
+
+@section Migrating from 1.14r9
+@subsection Local_Hiding
+Due to the introduction of extra parameters for allowed patterns, it
+is no more possible to specify the rule several times in the same
+command. Change:
+@example
+check local_hiding (strict, overloading);
+@end example
+to:
+@example
+check local_hiding (strict);
+check local_hiding (overloading);
+@end example
+The special subrule ``overloading_short'' has been replaced by a rule
+variable to choose the report format.  Change:
+@example
+check local_hiding (overloading_short);
+@end example
+to:
+@example
+set local_hiding.overloading_report compact;
+check local_hiding (overloading);
+@end example
 
 @section Migrating from 1.11r4
 @subsection Expressions
