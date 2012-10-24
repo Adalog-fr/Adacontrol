@@ -1,12 +1,11 @@
 ----------------------------------------------------------------------
---  Framework.Variables.Shared_Types - Package specification        --
+--  Framework.Pattern_Queues_Matchers - Package body                --
 --                                                                  --
---  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2012. The Ada --
---  Controller  is  free software;  you can redistribute  it and/or --
---  modify  it under  terms of  the GNU  General Public  License as --
---  published by the Free Software Foundation; either version 2, or --
---  (at your  option) any later version.  This  unit is distributed --
+--  This software is (c) Adalog 2004-2012.                          --
+--  The Ada Controller is free  software; you can  redistribute  it --
+--  and/or modify it under terms of the GNU General Public  License --
+--  as published by the Free Software Foundation; either version 2, --
+--  or (at your option) any later version. This unit is distributed --
 --  in the hope  that it will be useful,  but WITHOUT ANY WARRANTY; --
 --  without even the implied warranty of MERCHANTABILITY or FITNESS --
 --  FOR A  PARTICULAR PURPOSE.  See the GNU  General Public License --
@@ -29,29 +28,27 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
-package Framework.Variables.Shared_Types is
-   --
-   -- Concrete class packages for various kinds of rule variables
-   --
+--  Adalog
+with
+  String_Matching;
 
-   package String_Type is
-      type Object is new Variables.Object with
-         record
-            Value : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-         end record;
-      procedure Set (Variable : in out String_Type.Object; To : Wide_String);
-      function  Value_Image (Variable : in String_Type.Object) return Wide_String;
-      function  All_Values  (Variable : in String_Type.Object) return Wide_String;
-   end String_Type;
+package body Framework.Pattern_Queues_Matchers is
 
-   type Switch is (Off, On);
-   package Switch_Type is new Discrete_Type (Switch);
+   ---------------
+   -- Match_Any --
+   ---------------
 
-   type Extended_Switch is (Off, On, Inverted);
-   package Extended_Switch_Type is new Discrete_Type (Extended_Switch);
+   function Match_Any (Source : Wide_String; Patterns : Queue) return Boolean  is
+      use String_Matching;
+      C : Cursor := First (Patterns);
+   begin
+      while Has_Element (C) loop
+         if Match (Source, Fetch (C)) then
+            return True;
+         end if;
+         C := Next (C);
+      end loop;
+      return False;
+   end Match_Any;
 
-   type Verbosity is (Compact, Detailed);
-   package Verbosity_Type is new Discrete_Type (Verbosity);
-
-   package Natural_Type is new Integer_Type (Natural);
-end Framework.Variables.Shared_Types;
+end Framework.Pattern_Queues_Matchers;

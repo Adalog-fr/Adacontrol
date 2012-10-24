@@ -1,9 +1,8 @@
 ----------------------------------------------------------------------
---  Framework.Variables.Shared_Types - Package specification        --
+--  Framework.Pattern_Queues - Package specification                --
 --                                                                  --
---  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2012. The Ada --
---  Controller  is  free software;  you can redistribute  it and/or --
+--  This software is (c) Belgocontrol and Adalog 2004-2005. The Ada --
+--  Controller  is free  software; you  can redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
 --  published by the Free Software Foundation; either version 2, or --
 --  (at your  option) any later version.  This  unit is distributed --
@@ -29,29 +28,8 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
-package Framework.Variables.Shared_Types is
-   --
-   -- Concrete class packages for various kinds of rule variables
-   --
-
-   package String_Type is
-      type Object is new Variables.Object with
-         record
-            Value : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-         end record;
-      procedure Set (Variable : in out String_Type.Object; To : Wide_String);
-      function  Value_Image (Variable : in String_Type.Object) return Wide_String;
-      function  All_Values  (Variable : in String_Type.Object) return Wide_String;
-   end String_Type;
-
-   type Switch is (Off, On);
-   package Switch_Type is new Discrete_Type (Switch);
-
-   type Extended_Switch is (Off, On, Inverted);
-   package Extended_Switch_Type is new Discrete_Type (Extended_Switch);
-
-   type Verbosity is (Compact, Detailed);
-   package Verbosity_Type is new Discrete_Type (Verbosity);
-
-   package Natural_Type is new Integer_Type (Natural);
-end Framework.Variables.Shared_Types;
+-- Adalog
+with
+  Linear_Queue,
+  String_Matching;
+package Framework.Pattern_Queues is new Linear_Queue (String_Matching.Compiled_Pattern);

@@ -38,17 +38,22 @@ with
 
 -- Adalog
 with
+  String_Matching,
   Thick_Queries,
   Utilities;
 
 -- AdaControl
 with
   Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Pattern_Queues,
+  Framework.Pattern_Queues_Matchers,
+  Framework.Scope_Manager,
+  Framework.Variables,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Local_Hiding is
-   use Framework, Framework.Control_Manager, Utilities;
+   use Framework, Framework.Control_Manager, Utilities, Framework.Variables.Shared_Types;
 
    -- Algorithm:
    -- This rule is quite easy, since most of the work is done by Scoped_Store
@@ -60,9 +65,8 @@ package body Rules.Local_Hiding is
    -- is already the procedure itself, but the name must be attached to where the procedure is declared,
    -- i.e. the enclosing scope.
 
-   type Extended_Subrules is (Strict, Overloading, Overloading_Short);
-   subtype Subrules is Extended_Subrules range Extended_Subrules'First .. Extended_Subrules'Pred (Overloading_Short);
-   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Extended_Subrules);
+   type Subrules is (Strict, Overloading);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Modifiers is (Not_Operator, Not_Enumeration);
    package Modifiers_Flag_Utilities is new Framework.Language.Modifier_Utilities (Modifiers);
@@ -74,9 +78,10 @@ package body Rules.Local_Hiding is
    Save_Used    : Rule_Usage;
    Rule_Context : array (Subrules) of Basic_Rule_Context;
 
-   Include_Op           : Rule_Usage;
-   Include_Enum         : Rule_Usage;
-   Overloading_Is_Short : Boolean;
+   Include_Op         : Rule_Usage;
+   Include_Enum       : Rule_Usage;
+   Allowed_Patterns   : array (Subrules) of Framework.Pattern_Queues.Queue;
+   Overloading_Report : aliased Verbosity_Type.Object := (Value => Detailed);
 
    type Identifier_Data (Length : Positive) is
       record
@@ -98,13 +103,16 @@ package body Rules.Local_Hiding is
    ----------
 
    procedure Help is
-      use Subrules_Flag_Utilities, Modifiers_Flag_Utilities;
+      use Subrules_Flag_Utilities, Modifiers_Flag_Utilities, Framework.Variables;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of local identifiers that hide or overload an identical name");
       User_Message;
-      Help_On_Flags     ("Parameter(s): <exceptions> ", Footer => "(default = strict)");
+      Help_On_Flags ("Parameter(1): <exceptions> ", Footer => "(default = strict)");
+      User_Message  ("Parameter(2..N): ""<Allowed Pattern>""");
       Help_On_Modifiers ("<exceptions>:");
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Overloading_Report");
    end Help;
 
    -----------------
@@ -113,29 +121,33 @@ package body Rules.Local_Hiding is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Subrules_Flag_Utilities, Modifiers_Flag_Utilities;
-      Subrule         : Extended_Subrules;
+      Subrule         : Subrules;
       Modif_Specified : Modifier_Set;
    begin
       if Parameter_Exists then
+         Modif_Specified := Get_Modifier_Set;
+         Subrule := Get_Flag_Parameter (Allow_Any => False);
+         if Rule_Used (Subrule) then
+            Parameter_Error (Rule_Id, "subrule already specified");
+         end if;
+         Rule_Used    (Subrule) := True;
+         Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+         Include_Op   (Subrule) := not Modif_Specified (Not_Operator);
+         Include_Enum (Subrule) := not Modif_Specified (Not_Enumeration);
          while Parameter_Exists loop
-            Modif_Specified := Get_Modifier_Set;
-            Subrule := Get_Flag_Parameter (Allow_Any => False);
-            case Subrule is
-               when Overloading =>
-                  Overloading_Is_Short := False;
-               when Overloading_Short =>
-                  Subrule := Overloading;
-                  Overloading_Is_Short := True;
-               when others =>
-                  null;
-            end case;
-            if Rule_Used (Subrule) then
-               Parameter_Error (Rule_Id, "subrule already specified");
+            if Is_String_Parameter then
+               declare
+                  use Framework.Pattern_Queues, String_Matching;
+                  Pat : constant Wide_String := Get_String_Parameter;
+               begin
+                  Append (Allowed_Patterns (Subrule), Compile (Pat, Ignore_Case => True));
+               exception
+                  when Pattern_Error =>
+                     Parameter_Error (Rule_Id, "Incorrect pattern: " & Pat);
+               end;
+            else
+               Parameter_Error (Rule_Id, "Pattern string expected");
             end if;
-            Rule_Used    (Subrule) := True;
-            Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-            Include_Op   (Subrule) := not Modif_Specified (Not_Operator);
-            Include_Enum (Subrule) := not Modif_Specified (Not_Enumeration);
          end loop;
       else
          Rule_Used    (Strict) := True;
@@ -149,11 +161,15 @@ package body Rules.Local_Hiding is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Framework.Rules_Manager;
+      use Framework.Rules_Manager, Framework.Pattern_Queues;
    begin
       case Action is
          when Clear =>
             Rule_Used  := Not_Used;
+            for S in Subrules loop
+               Clear (Allowed_Patterns (S));
+            end loop;
+            Overloading_Report := (Value => Detailed);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -270,6 +286,7 @@ package body Rules.Local_Hiding is
             end if;
          end Hiding_Kind;
 
+         use Framework.Pattern_Queues_Matchers;
       begin
          if Is_Scope_Name then
             Scope := Enclosing_Scope;
@@ -292,9 +309,10 @@ package body Rules.Local_Hiding is
                   case Hiding_Kind (Visible_Identifiers.Current_Data) is
                      when Hides =>
                         if Rule_Used (Strict)
-                          and (Include_Op   (Strict) or Short_Name (1) /= '"')
-                          and (Include_Enum (Strict)
-                               or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                          and then (Include_Op   (Strict) or Short_Name (1) /= '"')
+                          and then (Include_Enum (Strict)
+                                    or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                          and then not Match_Any (Defining_Name_Image (First_Name), Allowed_Patterns (Strict))
                         then
                            Report (Rule_Id,
                                    Rule_Context (Strict),
@@ -305,21 +323,23 @@ package body Rules.Local_Hiding is
                         end if;
                      when Overloads =>
                         if Rule_Used (Overloading)
-                          and (Include_Op   (Overloading) or Short_Name (1) /= '"')
-                          and (Include_Enum (Overloading)
-                               or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                          and then (Include_Op   (Overloading) or Short_Name (1) /= '"')
+                          and then (Include_Enum (Overloading)
+                                    or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                          and then not Match_Any (Defining_Name_Image (First_Name), Allowed_Patterns (Overloading))
                         then
-                           if Overloading_Is_Short then
-                              Overload_Count := Overload_Count + 1;
-                              Overload_Last  := Visible_Identifiers.Current_Data.Elem;
-                           else
-                              Report (Rule_Id,
-                                      Rule_Context (Overloading),
-                                      Get_Location (Name),
-                                      '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
-                                      & """ overloads declaration at "
-                                      & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
-                           end if;
+                           case Overloading_Report.Value is
+                              when Compact =>
+                                 Overload_Count := Overload_Count + 1;
+                                 Overload_Last  := Visible_Identifiers.Current_Data.Elem;
+                              when Detailed =>
+                                 Report (Rule_Id,
+                                         Rule_Context (Overloading),
+                                         Get_Location (Name),
+                                         '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                                         & """ overloads declaration at "
+                                         & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
+                           end case;
                         end if;
                      when Not_Hiding =>
                         null;
@@ -418,4 +438,6 @@ begin  -- Rules.Local_Hiding
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
+   Framework.Variables.Register (Overloading_Report'Access,
+                                 Variable_Name => Rule_Id & ".OVERLOADING_REPORT");
 end Rules.Local_Hiding;

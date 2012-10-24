@@ -17,6 +17,10 @@ Changes to existing rules:
 Declarations:
    Added subrule expression_function
 
+Local_Hiding
+   Added exception patterns. Replaced Overloading_Short with a rule
+   variable.
+
 Multiple_Assignment
    Consider subcomponents as assigned only if they meet (recursively) the
    criteria of the control.

@@ -145,4 +145,31 @@ begin
    begin
       null;
    end;
+
+   -- Pattern exceptions
+   declare
+      Instance  : Integer;
+      Instance1 : Integer;
+      Name      : Integer;
+      Name1     : Integer;
+      function Get (I : Integer) return Integer is
+      begin
+         return 1;
+      end Get;
+
+      procedure Inner is
+         Instance  : Integer;                        -- OK (exception to hiding)
+         Instance1 : Integer;                        -- Hiding (not full name)
+         Name      : Integer;                        -- OK (exception to hiding)
+         Name1     : Integer;                        -- OK (exception to hiding)
+         function Get (F : Float) return Integer is  -- OK (exception to overloading)
+         begin
+            return 1;
+         end Get;
+      begin
+         null;
+      end Inner;
+   begin
+      null;
+   end;
 end T_local_hiding;
