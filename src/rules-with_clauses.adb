@@ -44,11 +44,15 @@ with
 -- AdaControl
 with
   Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Scope_Manager,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.With_Clauses is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
+
+   -- Rule variables
+   Check_Private_With : aliased Switch_Type.Object := (Value => On);
 
    type Subrules is (Multiple_Names, Reduceable, Inherited);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
@@ -65,6 +69,7 @@ package body Rules.With_Clauses is
       record
          Unit_Name     : Wide_String (1 .. U_Length);
          Original_Name : Wide_String (1 .. O_Length);
+         Is_Private    : Boolean;
          Unit_Loc      : Location;
          Status        : Usage;
       end record;
@@ -84,13 +89,15 @@ package body Rules.With_Clauses is
    ----------
 
    procedure Help is
-      use Utilities, Subrules_Flag_Utilities;
+      use Utilities, Subrules_Flag_Utilities, Framework.Variables;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control ""with"" clauses that use multiple names, can be moved to a more reduced scope,");
       User_Message ("or are implicitely inherited from a parent unit");
       User_Message;
       Help_On_Flags ("Parameter(s):");
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Check_Private_With");
    end Help;
 
    -----------------
@@ -133,7 +140,8 @@ package body Rules.With_Clauses is
    begin
       case Action is
          when Clear =>
-            Rule_Used := Not_Used;
+            Rule_Used          := Not_Used;
+            Check_Private_With := (Value => On);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -217,6 +225,7 @@ package body Rules.With_Clauses is
 
                if not Redundant then
                   declare
+                     use Asis.Elements;
                      O_Name : constant Wide_String := Full_Name_Image (Names (I));
                   begin
                      Withed_Units.Push ((U_Length      => U_Name'Length,
@@ -224,6 +233,7 @@ package body Rules.With_Clauses is
                                          Unit_Name     => U_Name,
                                          Unit_Loc      => Get_Location (Names (I)),
                                          Original_Name => O_Name,
+                                         Is_Private    => Has_Private (Element),
                                          Status        => Never_Used));
                   end;
                end if;
@@ -327,7 +337,8 @@ package body Rules.With_Clauses is
                                          Info.Unit_Loc,
                                          "With clause for "
                                            & Info.Original_Name
-                                           & " can be moved to body");
+                                           & " can be moved to body"
+                                           & Choose (Info.Is_Private, " (remove private)", ""));
                               end if;
                            when Parent =>
                               if Rule_Used (Inherited) then
@@ -339,7 +350,18 @@ package body Rules.With_Clauses is
                                            & " inherited from " & Image (Info.Unit_Loc));
                               end if;
                            when Same_Unit =>
-                              null;
+                              if Rule_Used (Reduceable)
+                                and then Check_Private_With.Value = On
+                                and then In_Private_Part (Compilation_Unit_Scope)
+                                and then not Info.Is_Private
+                              then
+                                 Report (Rule_Id,
+                                         Ctl_Contexts (Reduceable),
+                                         Info.Unit_Loc,
+                                         "With clause for "
+                                           & Info.Original_Name
+                                           & " can be changed to private with");
+                              end if;
                         end case;
                         Info.Status := Used;
                         Withed_Units.Update_Current (Info);
@@ -477,4 +499,6 @@ begin  -- Rules.With_Clauses
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
+   Framework.Variables.Register (Check_Private_With'Access,
+                                 Variable_Name => Rule_Id & ".CHECK_PRIVATE_WITH");
 end Rules.With_Clauses;

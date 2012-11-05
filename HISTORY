@@ -33,6 +33,10 @@ Style (Casing_Identifier, original):
    Check formal parameters in bodies if there is an explicit
    specification.
 
+With_Clauses (Reduceable)
+   Control with clauses that can be changed to private with (can be
+   disabled with the variable Check_Private_With).
+
 =============
 == V1.14r9 ==
 =============

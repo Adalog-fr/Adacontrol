@@ -1,5 +1,6 @@
 with Ada.Wide_Text_IO;             -- Redundant in spec
 package body X_With_Clauses_1 is
+   C_I : Interfaces.C.Int;
    procedure Proc is
    begin
       X_With_Clauses_2.I := 1;

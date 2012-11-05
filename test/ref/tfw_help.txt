@@ -694,6 +694,8 @@ Control "with" clauses that use multiple names, can be moved to a more reduced s
 or are implicitely inherited from a parent unit
 
 Parameter(s): multiple_names | reduceable | inherited
+Variables:
+With_Clauses.Check_Private_With: (Off, On) = On
 Usage: adactl [-deEirsTuvwx]
               [-p <project file>]     [-f <rules file>]    [-l < rules list > ]
               [-o < output file > ]   [-t <trace file>]    [-F <format>]

@@ -2144,8 +2144,9 @@ Syntax:
 Clear all | <rule name>@{,<rule name>@} ;
 @end example
 The command clears all controls given for the indicated rules, of for
-all rules if the @code{all} keyword is given. For example, the
-following program:
+all rules if the @code{all} keyword is given. Rule variables
+(@pxref{Set command}) associated to cleared rules are returned to
+their default values. For example, the following program:
 @example
 search entities (pack1);
 go;
@@ -8171,7 +8172,8 @@ it migh be useful for child units.
 @item
 Moveable @code{@b{with}} clauses, i.e. when the withed unit is not
 used in the specification, but only in the body, and should be moved
-to the body.
+to the body, or when the withed unit is only used in the private part,
+and could be replaced by a @code{@b{private}} @code{@b{with}}.
 @end itemize
 @item
 @code{inherited} controls child units and subunits that reference a
@@ -8190,6 +8192,17 @@ Ex:
 check with_clauses (multiple_names, reduceable);
 search with_clauses (inherited);
 @end example
+
+@subsection Variables
+@multitable @columnfractions .20 .15 .10 .55
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Check_Private_With @tab off/on @tab on @tab if you are working in pure
+Ada 95, you may not want messages that a @code{@b{with}} can be
+replaced with a @code{@b{private}} @code{@b{with}}. Setting this
+variable to off disables these messages.
+@end multitable
 
 @subsection Tips
 A @code{@b{with}} clause can safely be removed if it is unused, and no
