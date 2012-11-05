@@ -28,7 +28,7 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
-with  -- ASIS
+private with  -- ASIS
   Asis;
 
 -- All rules necessarily need these units. We put the with clauses

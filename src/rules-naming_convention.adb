@@ -307,6 +307,7 @@ package body Rules.Naming_Convention is
       case Action is
          when Clear =>
             Rule_Used := False;
+            Default_Case_Sensitivity := (Value => Off);
             for I in Usage'Range loop
                Clear (Usage (I).First_Positive);
                Clear (Usage (I).First_Negative);

@@ -57,6 +57,7 @@ package Framework.Scope_Manager is
    -----------------------------------------------------------------------------------
 
    type Scope_Range is range 0 .. Max_Scopes;
+   Compilation_Unit_Scope : constant Scope_Range := 1;
    type Scope_List is array (Scope_Range range <>) of Asis.Element;
 
    type Declaration_Origin is (Same_Unit, Specification, Parent);
