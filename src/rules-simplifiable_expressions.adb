@@ -652,13 +652,15 @@ package body Rules.Simplifiable_expressions is
                      end case;
 
                   when A_Variable_Declaration
-                    | A_Constant_Declaration
-                    | A_Deferred_Constant_Declaration
-                    | A_Formal_Object_Declaration
-                    | A_Parameter_Specification
-                    | A_Component_Declaration
-                    | An_Object_Renaming_Declaration
-                    =>
+                     | A_Constant_Declaration
+                     | A_Return_Variable_Specification
+                     | A_Return_Constant_Specification
+                     | A_Deferred_Constant_Declaration
+                     | A_Formal_Object_Declaration
+                     | A_Parameter_Specification
+                     | A_Component_Declaration
+                     | An_Object_Renaming_Declaration
+                     =>
                      null;
 
                   when others =>
