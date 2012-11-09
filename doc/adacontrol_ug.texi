@@ -2360,6 +2360,7 @@ is a dispatching call.
 * Abnormal_Function_Return::
 * Allocators::
 * Array_Declarations::
+* Aspects::
 * Barrier_Expressions::
 * Case_Statement::
 * Characters::
@@ -2622,7 +2623,7 @@ of the (anonymous) acccess type. Inconsistent allocators will thus not
 be controlled. Such cases are detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
 
-@node Array_Declarations, Barrier_Expressions, Allocators, Rules reference
+@node Array_Declarations, Aspects, Allocators, Rules reference
 @section Array_Declarations
 This rule controls properties of arrays, by enforcing a consistent
 value or range of values for the lower or upper bound, or by limiting
@@ -2803,7 +2804,26 @@ check array_declarations (last, min 1);
 @end example
 can be used to check that no array has a negative or zero upper bound.
 
-@node Barrier_Expressions, Case_Statement, Array_Declarations, Rules reference
+@node Aspects, Barrier_Expressions, Array_Declarations, Rules reference
+@section Aspects
+This rule controls aspect specifications (new feature in Ada 2012), either
+all of them or specific ones.
+@subsection Syntax
+@example
+<control_kind> aspects [(all | <aspect mark> @{, <aspect mark>@})];
+@end example
+@subsection Action
+Without parameters (or if ``all'' is given), controls all aspect
+specifications. Otherwise, controls only the aspect specifications
+corresponding to the given aspect marks.
+
+Ex:
+@example
+search aspects;
+DBC: check aspects (Pre, Post, Pre'Class, Post'Class);
+@end example
+
+@node Barrier_Expressions, Case_Statement, Aspects, Rules reference
 @section Barrier_Expressions
 Although the language allows any expression as the barrier of a
 protected entry, it is generally better to use only ``simple''

@@ -1,0 +1,5 @@
+t_aspects.adb:4:9: Error: DBC: use of aspect "Pre"
+t_aspects.adb:5:9: Error: DBC: use of aspect "Post"
+t_aspects.adb:6:9: Found: ASPECTS: use of aspect "convention"
+t_aspects.adb:12:6: Error: DBC: use of aspect "Pre'Class"
+t_aspects.adb:13:6: Error: DBC: use of aspect "Post'Class"

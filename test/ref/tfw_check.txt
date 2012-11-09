@@ -24,6 +24,7 @@ Syntax errors found
 conf/t_abnormal_function_return.aru: No syntax error
 conf/t_allocators.aru: No syntax error
 conf/t_array_declarations.aru: No syntax error
+conf/t_aspects.aru: No syntax error
 conf/t_barrier_expressions.aru: No syntax error
 conf/t_case_statement.aru: No syntax error
 conf/t_characters.aru: No syntax error

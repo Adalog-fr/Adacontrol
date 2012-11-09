@@ -9,6 +9,10 @@ Arranged to not choke on Ada 2012 constructs.
 Added -j option and command "set ignore inverted" (invert disabling of
 messages).
 
+New rules:
+----------
+aspects
+
 Changes to existing rules:
 --------------------------
 (Many places)

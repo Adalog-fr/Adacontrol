@@ -36,6 +36,12 @@ Parameter(3..): [not] packed | sized | component_sized (optional)
 <category>: ()      | access    | array | delta  | digits | mod |
             private | protected | range | record | tagged | task
 ----
+Rule: ASPECTS
+Control occurrences of aspect specifications
+
+Parameter(s): <Aspect_Mark> | all
+             (optional, default = all)
+----
 Rule: BARRIER_EXPRESSIONS
 Control constucts used in protected entry barriers
 
@@ -748,36 +754,36 @@ Options:
 ----
 Rules:
    Abnormal_Function_Return        Allocators                      
-   Array_Declarations              Barrier_Expressions             
-   Case_Statement                  Characters                      
-   Comments                        Declarations                    
-   Default_Parameter               Dependencies                    
-   Directly_Accessed_Globals       Duplicate_Initialization_Calls  
-   Entities                        Entity_Inside_Exception         
-   Exception_Propagation           Expressions                     
-   Global_References               Header_Comments                 
-   Improper_Initialization         Instantiations                  
-   Insufficient_Parameters         Local_Access                    
-   Local_Hiding                    Max_Blank_Lines                 
-   Max_Call_Depth                  Max_Line_Length                 
-   Max_Nesting                     Max_Size                        
-   Max_Statement_Nesting           Movable_Accept_Statements       
-   Multiple_Assignments            Naming_Convention               
-   Non_Static                      Not_Elaboration_Calls           
-   Not_Selected_Name               No_Operator_Usage               
-   Object_Declarations             Parameter_Aliasing              
-   Parameter_Declarations          Potentially_Blocking_Operations 
-   Pragmas                         Record_Declarations             
-   Reduceable_Scope                Representation_Clauses          
-   Return_Type                     Side_Effect_Parameters          
-   Silent_Exceptions               Simplifiable_Expressions        
-   Simplifiable_Statements         Statements                      
-   Style                           Terminating_Tasks               
-   Type_Initial_Values             Uncheckable                     
-   Units                           Unnecessary_Use_Clause          
-   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
-   Usage                           Use_Clauses                     
-   With_Clauses                    
+   Array_Declarations              Aspects                         
+   Barrier_Expressions             Case_Statement                  
+   Characters                      Comments                        
+   Declarations                    Default_Parameter               
+   Dependencies                    Directly_Accessed_Globals       
+   Duplicate_Initialization_Calls  Entities                        
+   Entity_Inside_Exception         Exception_Propagation           
+   Expressions                     Global_References               
+   Header_Comments                 Improper_Initialization         
+   Instantiations                  Insufficient_Parameters         
+   Local_Access                    Local_Hiding                    
+   Max_Blank_Lines                 Max_Call_Depth                  
+   Max_Line_Length                 Max_Nesting                     
+   Max_Size                        Max_Statement_Nesting           
+   Movable_Accept_Statements       Multiple_Assignments            
+   Naming_Convention               Non_Static                      
+   Not_Elaboration_Calls           Not_Selected_Name               
+   No_Operator_Usage               Object_Declarations             
+   Parameter_Aliasing              Parameter_Declarations          
+   Potentially_Blocking_Operations Pragmas                         
+   Record_Declarations             Reduceable_Scope                
+   Representation_Clauses          Return_Type                     
+   Side_Effect_Parameters          Silent_Exceptions               
+   Simplifiable_Expressions        Simplifiable_Statements         
+   Statements                      Style                           
+   Terminating_Tasks               Type_Initial_Values             
+   Uncheckable                     Units                           
+   Unnecessary_Use_Clause          Unsafe_Paired_Calls             
+   Unsafe_Unchecked_Conversion     Usage                           
+   Use_Clauses                     With_Clauses                    
 
 ADACTL v. 1.15b3 with ASIS 2.0.R for GNAT GPL 2012 (20120509)
 ----

@@ -38,6 +38,7 @@ with
   Rules.Abnormal_Function_Return,
   Rules.Allocators,
   Rules.Array_Declarations,
+  Rules.Aspects,
   Rules.Barrier_Expressions,
   Rules.Max_Call_Depth,
   Rules.Case_Statement,
@@ -256,6 +257,7 @@ package body Framework.Plugs is
             end case;
 
          when A_Declaration =>
+            Rules.Aspects.               Process_Declaration (Element);
             Rules.Declarations.          Process_Declaration (Element);
             Rules.Exception_Propagation. Process_Declaration (Element);
             Rules.Style.                 Process_Element     (Element);
