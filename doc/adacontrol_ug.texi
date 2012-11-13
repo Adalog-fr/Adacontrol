@@ -6538,14 +6538,6 @@ Ex:
 check return_type (unconstrained_discriminated, unconstrained_array);
 @end example
 
-@subsection Limitations
-There is a (very rare) case where AdaControl does not properly
-recognize that a function returns a class-wide type. This is due to an
-ASIS bug fixed in version 5.05, and therefore appears only with
-earlier versions of the compiler. This happens when a generic unit
-contains functions whose return type is a generic indefinite formal
-type, and this generic is instantiated with a class-wide type.
-
 @node Side_Effect_Parameters, Silent_Exceptions, Return_Type, Rules reference
 @section Side_Effect_Parameters
 This rule controls calls that may depend on the order of evaluation of
