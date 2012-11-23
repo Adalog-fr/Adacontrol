@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Framework.Interrupt - Package body                              --
+--  Framework.Interrupt_Std - Package specification                 --
 --                                                                  --
 --  This software  is (c) Adalog  2004-2012. The Ada  Controller is --
 --  free software;  you can redistribute it and/or  modify it under --
@@ -27,24 +27,10 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
+pragma Ada_05;
 
-package body Framework.Interrupt is
+package Framework.Interrupt_Std is
+   Interrupted : exception;
 
--- This is a dummy body for Framework.Interrupt that does NOT handle
--- interrupts. It avoids dragging in the full tasking run-time, which has
--- a small, but not neglectible effect on efficiency
---
--- For debugging purposes in the case of an endless loop, replace this body
--- by the one in file framework-interrupt-dbg.adb. See programmer manual for
--- details.
-
-   -----------------------
-   -- Run_Interruptable --
-   -----------------------
-
-   procedure Run_Interruptable (Proc : access procedure) is
-   begin
-      Proc.all;
-   end Run_Interruptable;
-
-end Framework.Interrupt;
+   procedure Run_Interruptable (Proc: access procedure);
+end Framework.Interrupt_Std;

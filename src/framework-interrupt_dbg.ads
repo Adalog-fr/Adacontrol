@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Framework.Interrupt - Package specification                     --
+--  Framework.Interrupt_Dbg - Package specification                 --
 --                                                                  --
 --  This software  is (c) Adalog  2004-2012. The Ada  Controller is --
 --  free software;  you can redistribute it and/or  modify it under --
@@ -27,14 +27,10 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
+pragma Ada_05;
 
--- To use the regular version of Framework.Interrupt, uncomment the
--- following 2 lines:
-with Framework.Interrupt_Std;
-package Framework.Interrupt renames Framework.Interrupt_Std;
+package Framework.Interrupt_Dbg is
+   Interrupted : exception;
 
--- To use the debug version of Framework.Interrupt, which is only useful
--- for debugging endless loops withing AdaControl, uncomment the
--- following 2 lines:
--- with Framework.Interrupt_Dbg;
--- package Framework.Interrupt renames Framework.Interrupt_Dbg;
+   procedure Run_Interruptable (Proc: access procedure);
+end Framework.Interrupt_Dbg;
