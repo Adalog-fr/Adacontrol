@@ -38,7 +38,6 @@ with
   Framework,
   Framework.Control_Manager;
 package Rules.Style is
-
    Rule_Id : constant Wide_String := "STYLE";
 
    procedure Process_Association        (Association : in Asis.Element);

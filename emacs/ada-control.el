@@ -1,4 +1,4 @@
-;;; ada-control.el --- Subversion interface for emacs
+;;; ada-control.el --- AdaControl interface for emacs
 ;; Copyright (C) 2007-2007 by Jérôme Haguet
 
 ;; Author: Jérôme Haguet, <j.haguet@cadwin.com>

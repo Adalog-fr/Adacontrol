@@ -30,7 +30,7 @@
 ----------------------------------------------------------------------
 
 -- Adalog
-with
+private with
   Binary_Map;
 
 package Framework.Control_Manager is

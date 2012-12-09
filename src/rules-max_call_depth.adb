@@ -308,7 +308,7 @@ package body Rules.Max_Call_Depth is
 
       Temp       : Asis.Element;
       This_Descr : Depth_Descriptor;
-      begin
+   begin
       case Element_Kind (Element) is
          when An_Expression =>
             case Expression_Kind (Element) is

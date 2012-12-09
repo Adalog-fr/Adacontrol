@@ -30,7 +30,7 @@
 ----------------------------------------------------------------------
 
 --  Ada
-with
+private with
   Ada.Strings.Wide_Unbounded;
 -- Adalog
 with

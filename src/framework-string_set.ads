@@ -28,7 +28,7 @@
 --  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
-with --  Adalog
+private with --  Adalog
   Binary_Map;
 
 package Framework.String_Set is
