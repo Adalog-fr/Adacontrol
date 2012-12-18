@@ -29,6 +29,10 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+  Ada.Strings.Wide_Unbounded;
+
 -- Adalog
 private with
   Binary_Map;

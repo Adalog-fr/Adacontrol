@@ -292,7 +292,7 @@ package body Rules.Parameter_Declarations is
                C := C_Protected_Entry;
             end if;
          when others =>
-            -- We don't call this procedure on entry bodies, since those always have
+            -- We don't plug this procedure on entry bodies, since those always have
             -- a specification
             Failure ("not a callable entity");
       end case;

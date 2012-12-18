@@ -21,7 +21,7 @@ check with_clauses (reduceable);
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);
 search max_nesting (5);
-search local_hiding;
+search local_hiding (strict, "^object$", "^class$");
 search comments (unnamed_begin, program_unit all);
 --search usage (procedure, from_spec, not called);
 --search usage (function,  from_spec, not called);

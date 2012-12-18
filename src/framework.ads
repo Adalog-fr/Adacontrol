@@ -30,12 +30,13 @@
 ----------------------------------------------------------------------
 
 -- Ada
-with
+private with
   Ada.Strings.Wide_Unbounded;
 
 -- ASIS
 with
-  Asis,
+  Asis;
+private with
   Asis.Text;
 
 -- Adactl
