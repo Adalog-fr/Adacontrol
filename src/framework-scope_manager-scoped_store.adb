@@ -189,7 +189,13 @@ package body Scoped_Store is
             Final_Scope := 0;
          when Unit_Scopes =>
             -- NB: there must be at least one unit scope
-            Final_Scope := Scope_Top;
+            if Unit_State = After_Context_Clauses then
+               -- Special case: we are between the context clauses and the unit.
+               -- The scope has been created, but Scope_Top is not incremented (yet)
+               Final_Scope := Scope_Top + 1;
+            else
+               Final_Scope := Scope_Top;
+            end if;
             while not Scope_Stack (Final_Scope).Is_Unit loop
                Final_Scope := Final_Scope - 1;
             end loop;
