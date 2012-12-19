@@ -21,6 +21,9 @@ Changes to existing rules:
 Declarations:
    Added subrule expression_function
 
+Expressions
+   Added subrules if, if_elsif, if_no_else, case, for_all, for_some
+
 Local_Hiding
    Added exception patterns. Replaced Overloading_Short with a rule
    variable.

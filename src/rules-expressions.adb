@@ -56,13 +56,15 @@ package body Rules.Expressions is
                      E_Array_Partial_Others, E_Array_Non_Static_Range, E_Array_Others,
                      E_Array_Range,
 
-                     E_Complex_Parameter,
+                     E_Case, E_Complex_Parameter,
 
                      E_Explicit_Dereference,
 
-                     E_Fixed_Multiplying_Op,
+                     E_Fixed_Multiplying_Op, E_For_All, E_For_Some,
 
-                     E_Implicit_Dereference, E_Inconsistent_Attribute_Dimension, E_Inherited_Function_Call,
+                     E_If,                      E_If_Elsif,                         E_If_No_Else,
+                     E_Implicit_Dereference,    E_Inconsistent_Attribute_Dimension,
+                     E_Inherited_Function_Call,
 
                      E_Mixed_Operators,
 
@@ -763,6 +765,29 @@ package body Rules.Expressions is
                   end if;
                end;
             end if;
+
+         when A_Case_Expression =>
+            Do_Report (E_Case, Get_Location (Expression));
+
+         when An_If_Expression =>
+            Do_Report (E_If, Get_Location (Expression));
+            declare
+               Paths : constant Asis.Path_List := Expression_Paths (Expression);
+            begin
+               if Path_Kind (Paths (Paths'Last)) /= An_Else_Expression_Path then
+                  Do_Report (E_If_No_Else, Get_Location (Expression));
+               end if;
+               if Paths'Length >= 2 and then Path_Kind (Paths (2)) = An_Elsif_Expression_Path then
+                  Do_Report (E_If_Elsif, Get_Location (Paths (2)));
+               end if;
+            end;
+
+
+         when A_For_All_Quantified_Expression =>
+            Do_Report (E_For_All, Get_Location (Expression));
+
+         when A_For_Some_Quantified_Expression =>
+            Do_Report (E_For_Some, Get_Location (Expression));
 
          when others =>
             null;

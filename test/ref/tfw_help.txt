@@ -225,8 +225,11 @@ Control occurrences of Ada expressions
 Parameter (s): and                       | and_then                         |
                array_aggregate           | array_partial_others             |
                array_non_static_range    | array_others                     |
-               array_range               | complex_parameter                |
-               explicit_dereference      | fixed_multiplying_op             |
+               array_range               | case                             |
+               complex_parameter         | explicit_dereference             |
+               fixed_multiplying_op      | for_all                          |
+               for_some                  | if                               |
+               if_elsif                  | if_no_else                       |
                implicit_dereference      | inconsistent_attribute_dimension |
                inherited_function_call   | mixed_operators                  |
                or                        | or_else                          |

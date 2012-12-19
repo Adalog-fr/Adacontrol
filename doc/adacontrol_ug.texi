@@ -4174,8 +4174,11 @@ This rule controls usage of various kinds of expressions.
    and                       | and_then                         |
    array_aggregate           | array_others                     |
    array_non_static_range    | array_partial_others             |
-   array_range               | complex_parameter                |
-   explicit_dereference      | fixed_multiplying_op             |
+   array_range               | case                             |
+   complex_parameter         | explicit_dereference             |
+   fixed_multiplying_op      | for_all                          |
+   for_some                  | if                               |
+   if_elsif                  | if_no_else                       |
    implicit_dereference      | inconsistent_attribute_dimension |
    inherited_function_call   | mixed_operators                  |
    or                        | or_else                          |
@@ -4254,6 +4257,8 @@ same, but only if there are other associations in addition to the
 =>}). @code{array_non_static_range} does the same, but only if (at
 least) one of the bounds is not static.
 @item
+@code{case} controls @b{case} expressions (introduced in Ada 2012).
+@item
 @code{complex_parameter} controls complex expressions used as actual
 parameters in subprogram (or entry) calls. A complex expression is any
 expression that includes a function call (including operators). This
@@ -4266,6 +4271,13 @@ values (i.e. with an explicit @code{.@b{all}}).
 @code{fixed_multiplying_op} controls calls to predefined fixed-point
 multiplication and division (regular fixed-point or decimal-fixed
 point).
+@item
+@code{for_all} and @code{for_some} control the two forms of
+quantifiers introduced by Ada 2012.
+@item
+@code{if} controls all @b{if} expressions (introduced in Ada 2012),
+while @code{if_elsif} only controls those that have an @b{elsif} part,
+and @code{if_no_else} only controls those that have no @b{else} part.
 @item
 @code{implicit_dereference} controls implicit dereferences of access
 values (i.e. when the @code{.@b{all}} is omitted).
