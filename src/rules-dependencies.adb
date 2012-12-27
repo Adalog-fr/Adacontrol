@@ -95,7 +95,7 @@ package body Rules.Dependencies is
       User_Message ("For other subrules:");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
-      Min_Max_Utilities.Help_On_Modifiers   (Header => "<bound>: ");
+      Help_On_Bounds (Header => "<bound>: ");
    end Help;
 
    -----------------
@@ -203,9 +203,9 @@ package body Rules.Dependencies is
                            Info  : Counting_Subrule_Contexts)
       is
          use Asis.Elements;
-         use Framework.Reports;
+         use Framework.Language.Shared_Keys, Framework.Reports;
       begin
-         if Count not in Info.Bounds.Min .. Info.Bounds.Max then
+         if not Is_In (Count, Info.Bounds) then
             if Info.Bounds.Min = 0 then
                Report (Rule_Id,
                        Info,

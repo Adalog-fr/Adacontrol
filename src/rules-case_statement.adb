@@ -79,7 +79,7 @@ package body Rules.Case_Statement is
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
-      Min_Max_Utilities.Help_On_Modifiers   (Header => "<bound>: ");
+      Help_On_Bounds (Header => "<bound>: ");
    end Help;
 
    -----------------

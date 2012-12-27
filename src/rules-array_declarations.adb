@@ -123,7 +123,7 @@ package body Rules.Array_Declarations is
       User_Message ("Parameter(2)  : <entity>|<category>");
       User_Message ("Parameter(3..): [not] packed | sized | component_sized (optional)");
       User_Message;
-      Min_Max_Utilities.Help_On_Modifiers (Header => "   <bound>:");
+      Help_On_Bounds (Header => "   <bound>:");
       User_Message ("<category>: ()      | access    | array | delta  | digits | mod |");
       User_Message ("            private | protected | range | record | tagged | task");
    end Help;
@@ -180,11 +180,8 @@ package body Rules.Array_Declarations is
             Rule_Used (Subrule) (Ctl_Kind) := True;
 
          when Length =>
-            Values (Subrule, Ctl_Kind) := Get_Bounds_Parameters (Rule_Id);
-            if Values (Subrule, Ctl_Kind).Min >= Values (Subrule, Ctl_Kind).Max then
-               Parameter_Error (Rule_Id, "Min value must be less than Max");
-            end if;
-            Labels    (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Values    (Subrule, Ctl_Kind)  := Get_Bounds_Parameters (Rule_Id);
+            Labels    (Subrule, Ctl_Kind)  := To_Unbounded_Wide_String (Ctl_Label);
             Rule_Used (Subrule) (Ctl_Kind) := True;
 
          when Index =>
@@ -333,8 +330,8 @@ package body Rules.Array_Declarations is
                Val := Discrete_Static_Expression_Value (Bounds (B));
                if Val /= Not_Static then
                   if  Rule_Used (Sr) (Check) and Rule_Used (Sr) (Search) then
-                     if Val not in Values (Sr, Check).Min .. Values (Sr, Check).Max
-                       and Val not in Values (Sr, Search).Min .. Values (Sr, Search).Max
+                     if    not Is_In (Val, Values (Sr, Check))
+                       and not Is_In (Val, Values (Sr, Search))
                      then
                         Report (Rule_Id,
                                 To_Wide_String (Labels (Sr, Check)),
@@ -345,7 +342,7 @@ package body Rules.Array_Declarations is
                                 & " and "
                                 & Bound_Image (Values (Sr, Search))
                                 & " (" & Biggest_Int_Img (Val) & ')');
-                     elsif Val not in Values (Sr, Search).Min .. Values (Sr, Search).Max then
+                     elsif not Is_In (Val, Values (Sr, Search)) then
                         Report (Rule_Id,
                                 To_Wide_String (Labels (Sr, Search)),
                                 Search,
@@ -356,7 +353,7 @@ package body Rules.Array_Declarations is
                      end if;
 
                   elsif Rule_Used (Sr) (Check)
-                    and then Val not in Values (Sr, Check).Min .. Values (Sr, Check).Max
+                    and then not Is_In (Val, Values (Sr, Check))
                   then
                      Report (Rule_Id,
                              To_Wide_String (Labels (Sr, Check)),
@@ -367,7 +364,7 @@ package body Rules.Array_Declarations is
                              & " (" & Biggest_Int_Img (Val) & ')');
 
                   elsif Rule_Used (Sr) (Search)
-                    and then Val not in Values (Sr, Search).Min .. Values (Sr, Search).Max
+                    and then not Is_In (Val, Values (Sr, Search))
                   then
                      Report (Rule_Id,
                              To_Wide_String (Labels (Sr, Search)),
@@ -379,7 +376,7 @@ package body Rules.Array_Declarations is
                   end if;
 
                   if Rule_Used (Sr) (Count)
-                    and then Val not in Values (Sr, Count).Min .. Values (Sr, Count).Max
+                    and then not Is_In (Val, Values (Sr, Count))
                   then
                      Report (Rule_Id,
                              To_Wide_String (Labels (Sr, Count)),

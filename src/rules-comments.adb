@@ -261,6 +261,7 @@ package body Rules.Comments is
       User_Message ("   Parameter(2..): ""<comment pattern>""");
       User_Message ("for position:");
       User_Message ("   Parameter(2..3): [<bound>] <value>");
+      Help_On_Bounds (Header => "      <bound>     : ");
       User_Message ("                 (at least one parameter required)");
       User_Message ("for terminating:");
       User_Message ("   Parameter(2..): ""<allowed pattern>"" | begin | end");
@@ -372,13 +373,13 @@ package body Rules.Comments is
       end if;
 
       if Rule_Used (Position) then
-         if Biggest_Int (Start) not in Pos_Bounds (Check).Min .. Pos_Bounds (Check).Max then
+         if not Is_In (Biggest_Int (Start), Pos_Bounds (Check)) then
             Report (Rule_Id,
                     To_Wide_String (Pos_Labels (Check)),
                     Check,
                     Loc,
                     "comment start position is " & Bound_Image (Pos_Bounds (Check)));
-         elsif Biggest_Int (Start) not in Pos_Bounds (Search).Min .. Pos_Bounds (Search).Max then
+         elsif not Is_In (Biggest_Int (Start), Pos_Bounds (Search)) then
             Report (Rule_Id,
                     To_Wide_String (Pos_Labels (Search)),
                     Search,
@@ -386,7 +387,7 @@ package body Rules.Comments is
                     "comment start position is " & Bound_Image (Pos_Bounds (Search)));
          end if;
 
-         if Biggest_Int (Start) not in Pos_Bounds (Count).Min .. Pos_Bounds (Count).Max then
+         if not Is_In (Biggest_Int (Start), Pos_Bounds (Count)) then
             Report (Rule_Id,
                     To_Wide_String (Pos_Labels (Count)),
                     Count,

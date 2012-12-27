@@ -68,6 +68,7 @@ for pattern:
    Parameter(2..): "<comment pattern>"
 for position:
    Parameter(2..3): [<bound>] <value>
+      <bound>     :  min | max
                  (at least one parameter required)
 for terminating:
    Parameter(2..): "<allowed pattern>" | begin | end
