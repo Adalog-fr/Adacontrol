@@ -21,7 +21,7 @@ check with_clauses (reduceable);
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);
 search max_nesting (5);
-search local_hiding;
+search local_hiding (strict, "^object$", "^class$");
 search comments (unnamed_begin, program_unit all);
 --search usage (procedure, from_spec, not called);
 --search usage (function,  from_spec, not called);
@@ -60,7 +60,7 @@ Avoid_Query: check entities (
    Asis.Definitions.Corresponding_Root_Type,
    Asis.Definitions.Corresponding_Parent_Subtype
 );
-Use_Ultimate_Origin: 
+Use_Ultimate_Origin:
    check entities (Asis.Compilation_Units.Unit_Origin);
 
 check characters (not_iso_646);
