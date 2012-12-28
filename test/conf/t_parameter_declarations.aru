@@ -1,13 +1,17 @@
-check parameter_declarations (Max_Parameters, 2, procedure);
-check parameter_declarations (Max_Parameters, 4, task_entry, protected_entry, protected_procedure, protected_function);
-check parameter_declarations (Max_Parameters, 2, function);
+check parameter_declarations (All_Parameters, min 2, max 2, procedure);
+check parameter_declarations (All_Parameters, min 2, max 4, task_entry, protected_entry, protected_procedure, protected_function);
+check parameter_declarations (All_Parameters, min 1, max 2, function);
 
-search parameter_declarations (Max_Parameters, 1, procedure, protected_entry);
-search parameter_declarations (Max_Parameters, 1, function);
-search parameter_declarations (Max_Parameters, 2, protected_procedure, protected_function);
+search parameter_declarations (All_Parameters, max 1, procedure, protected_entry);
+search parameter_declarations (All_Parameters, max 1, function);
+search parameter_declarations (All_Parameters, max 2, protected_procedure, protected_function);
 
-count parameter_declarations (Max_Parameters, 3);
+count parameter_declarations (All_Parameters, max 3);
 
-check parameter_declarations (Min_Parameters, 2);
+search  parameter_declarations (defaulted_parameters, max 2);
+search  parameter_declarations (in_parameters, max 5);
+search  parameter_declarations (out_parameters, max 5);
+search  parameter_declarations (in_out_parameters, max 5);
+search  Parameter_declarations (access_parameters, max 1);
+
 check parameter_declarations (single_out_parameter);
-search  parameter_declarations (max_defaulted_parameters, 2);

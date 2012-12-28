@@ -21,6 +21,10 @@ Naming_Convention:
    Do not recheck formal parameters in bodies if there is an explicit
    specification.
 
+Parameter_Declarations:
+   Changed syntax to allow min/max to be specified either for all parameters or
+   for parameters of a given mode.
+
 Style (Casing_Identifier, original):
    Check formal parameters in bodies if there is an explicit
    specification.

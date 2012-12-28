@@ -11,6 +11,31 @@ procedure T_Parameter_Declarations (A, B, C, D, E : Integer) is
       null;
    end P2;
 
+   procedure P3 (A, B, C, D, E, F : Integer) is
+   begin
+      null;
+   end P3;
+
+   procedure P4 (A, B, C, D, E, F : out Integer) is
+   begin
+      null;
+   end P4;
+
+   procedure P5 (A, B, C, D, E, F : in out Integer) is
+   begin
+      null;
+   end P5;
+
+   procedure P6 (A : Integer; B : access Integer) is
+   begin
+      null;
+   end P6;
+
+   procedure P7 (A : access Integer; B : access Integer) is
+   begin
+      null;
+   end P7;
+
    function F1 (A : Integer; B: Float) return integer;
    function F1 (A : Integer; B: Float) return integer is
    begin
@@ -21,6 +46,11 @@ procedure T_Parameter_Declarations (A, B, C, D, E : Integer) is
    begin
       return 0;
    end F2;
+
+   function F3 return Boolean is
+   begin
+      return False;
+   end F3;
 
    protected type Pt is
       entry E1 (A, B, C : out Integer; D, E, F: Float := 0.0);
