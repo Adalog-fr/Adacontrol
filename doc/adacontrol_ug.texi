@@ -6010,29 +6010,37 @@ for all callable entities (i.e. functions, procedures and entries).
 
 @subsection Syntax
 @example
-<control_kind> parameter_declarations (<subrule>, [<value>,] @{,<callable>@});
-<subrule>  ::= max_parameters | max_defaulted_parameters |
-               min_parameters | single_out_parameter
+<control_kind> parameter_declarations (<subrule>, [<bounds>,] @{,<callable>@});
+<subrule>  ::= all_parameters | in_parameters     | defaulted_parameters |
+               out_parameters | in_out_paramteres | access_parameters    |
+               single_out_parameter
+<bounds>    ::= min|max <value> [, min|max <value> ]
 <callable> ::= function           | procedure           | protected_entry |
                protected_function | protected_procedure | task_entry
 @end example
 
 @subsection Action
-The action depends on the first parameter:
+The first parameter is a subrule keyword. ``single_out_parameter'' has
+no parameter; all other subrules require one or two bounds.
 @itemize @bullet
 @item
-``min_parameters'': Controls callable entities that have less
-parameters than the specified required value (required).
+``all_parameters'': Controls callable entities whose number of
+parameters is less than the given ``min'' or greater than the given
+``max''. ``min'' defaults to 0 and ``max'' to infinity.
 @item
-``max_parameters'': Controls callable entities that have more
-parameters than the specified allowed value (required).
+``in_parameters'', ``out_parameters'', ``in_out_parameters'': Do the
+same, counting only parameters of modes @code{@b{in}},
+@code{@b{out}}, or @code{@b{in out}} respectively.
 @item
-``max_defaulted_parameters'': Controls callable entities that have more
-parameters with default values than the specified allowed value (required).
+``access_parameters'': Does the same, counting only (anonymous) access
+parameters.
+@item
+``defaulted_parameters'': Does the same, counting only parameters
+declared with an explicit default expression.
 @item
 ``single_out_parameter'': Controls callable entities that have exactly
-one @code{@b{out}} parameter. Such entities might be candidates to
-becoming functions. No value is allowed with this subrule.
+one @code{@b{out}} parameter. Procedures with a single  @code{@b{out}}
+parameter might be candidates to becoming functions.
 @end itemize
 
 If one or more <callable_kind> is specified after the <value>, the rule
@@ -6048,11 +6056,14 @@ Ex:
 @example
 -- Callable entities should preferably not have more than 5
 -- parameters, and in any case not have more that 10 parameters,
-check  parameter_declarations (max_parameters, 10);
-search parameter_declarations (max_parameters, 5);
+check  parameter_declarations (all_parameters, max 10);
+search parameter_declarations (all_parameters, max 5);
 
--- All functions must have parameters:
-check parameter_declarations (min_parameters, 1, function);
+-- All functions must have parameters and no out or in out 
+-- parameters (allowed in Ada 2012):
+check parameter_declarations (all_parameters,    min 1, function);
+check parameter_declarations (out_parameters,    max 0, function);
+check parameter_declarations (in_out_parameters, max 0, function);
 
 -- A regular (not protected) procedure with one out parameter
 -- should be replaced by a function
@@ -8935,6 +8946,20 @@ to:
 @example
 set local_hiding.overloading_report compact;
 check local_hiding (overloading);
+@end example
+
+@subsection Parameter_Declarations
+The subrules have been generalized, using the same syntax for bounds
+as other rules. Change:
+@example
+check parameter_declarations (min_parameters, 1);
+check parameter_declarations (max_parameters, 5);
+check parameter_declarations (max_defaulted_parameters, 3);
+@end example
+to:
+@example
+check parameter_declarations (all_parameters, min 1, max 5);
+check parameter_declarations (defaulted_parameters, max 3);
 @end example
 
 @section Migrating from 1.11r4

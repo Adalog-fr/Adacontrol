@@ -43,14 +43,19 @@ with
 
 -- Adactl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Parameter_Declarations is
-   use Framework, Thick_Queries;
+   use Framework, Framework.Language.Shared_Keys;
 
-   type Subrules is (Max_Parameters, Min_Parameters, Max_Defaulted_Parameters, Single_Out_Parameter);
-   subtype Valued_Subrules is Subrules range Max_Parameters .. Max_Defaulted_Parameters;
+   type Subrules is (All_Parameters,
+                     In_Parameters,     Defaulted_Parameters,
+                     Out_Parameters,    In_Out_Parameters,
+                     Access_Parameters,
+                     Single_Out_Parameter);
+   subtype Valued_Subrules is Subrules range All_Parameters .. Subrules'Pred(Single_Out_Parameter);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Callable_Kinds is (C_Function,           C_Procedure,           C_Protected_Entry,
@@ -62,9 +67,8 @@ package body Rules.Parameter_Declarations is
    Save_Used : Usage;
 
    Ctl_Labels : array (Subrules, Callable_Kinds, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Ctl_Values : array (Valued_Subrules, Callable_Kinds, Control_Kinds) of Biggest_Natural := (others =>
-                                                                                                (others =>
-                                                                                                   (others => 0)));
+   Ctl_Values : array (Valued_Subrules, Callable_Kinds, Control_Kinds) of Bounds_Values
+     := (others => (others => (others => Unlimited_Bounds)));
 
    ----------
    -- Help --
@@ -77,12 +81,10 @@ package body Rules.Parameter_Declarations is
       User_Message ("Controls form and metrics of parameters of callable entities");
       User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter (1):");
-      User_Message ("For Min_Parameters:");
-      User_Message ("  Parameter (2) : minimum required number of parameters");
-      User_Message ("For Max_Parameters:");
-      User_Message ("  Parameter (2) : maximum allowed number of parameters");
-      User_Message ("For Max_Defaulted_Parameters:");
-      User_Message ("  Parameter (2) : maximum allowed number of parameters with default values");
+      User_Message ("For all subrules except Single_Out_Parameter:");
+      User_Message ("Parameter(2..3): <bound> <value>");
+      User_Message ("                (at least one parameter required)");
+      Help_On_Bounds (Header => "   <bound>:");
       User_Message ("For Single_Out_Parameter:");
       User_Message ("  No value allowed");
       Callable_Kinds_Flag_Utilities.Help_On_Flags (Header => "Other parameters:",
@@ -98,7 +100,7 @@ package body Rules.Parameter_Declarations is
       use Ada.Strings.Wide_Unbounded;
       Subrule  : Subrules;
       Callable : Callable_Kinds;
-      Value    : Biggest_Int;
+      Value    : Bounds_Values;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "subrule not specified");
@@ -107,16 +109,12 @@ package body Rules.Parameter_Declarations is
       Subrule := Get_Flag_Parameter (Allow_Any => False);
 
       case Subrule is
-         when Max_Parameters | Max_Defaulted_Parameters =>
-            if not Parameter_Exists or else not Is_Integer_Parameter then
-               Parameter_Error (Rule_Id, "missing max allowed value");
+         when Valued_Subrules =>
+            if Parameter_Exists then
+               Value := Get_Bounds_Parameters (Rule_Id);
+            else
+               Parameter_Error (Rule_Id, "missing bounds of allowed value");
             end if;
-            Value := Get_Integer_Parameter (Min => 0);
-         when Min_Parameters =>
-            if not Parameter_Exists or else not Is_Integer_Parameter then
-               Parameter_Error (Rule_Id, "missing min required value");
-            end if;
-            Value := Get_Integer_Parameter (Min => 1);
          when Single_Out_Parameter =>
             if Parameter_Exists and then Is_Integer_Parameter then
                Parameter_Error (Rule_Id, "no value allowed for Single_Out_Parameter");
@@ -178,7 +176,7 @@ package body Rules.Parameter_Declarations is
 
    procedure Process_Declaration (Declaration : Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
-      use Utilities;
+      use Thick_Queries, Utilities;
 
       Good_Decl : Asis.Declaration := Declaration;
 
@@ -194,29 +192,59 @@ package body Rules.Parameter_Declarations is
       begin
 
          case Subrule is
-            when Max_Parameters =>
+            when All_Parameters =>
                Report (Rule_Id,
-                       To_Wide_String (Ctl_Labels (Max_Parameters, Entity, Ctl_Kind)),
+                       To_Wide_String (Ctl_Labels (All_Parameters, Entity, Ctl_Kind)),
                        Ctl_Kind,
                        Loc,
-                       "more than " & Biggest_Int_Img (Ctl_Values (Max_Parameters, Entity, Ctl_Kind))
-                       & " parameters in " & Image (Entity, Lower_Case)
+                       "number of parameters is "
+                       & Bound_Image (Ctl_Values (All_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
-            when Max_Defaulted_Parameters =>
+            when In_Parameters =>
                Report (Rule_Id,
-                       To_Wide_String (Ctl_Labels (Max_Parameters, Entity, Ctl_Kind)),
+                       To_Wide_String (Ctl_Labels (In_Parameters, Entity, Ctl_Kind)),
                        Ctl_Kind,
                        Loc,
-                       "more than " & Biggest_Int_Img (Ctl_Values (Max_Defaulted_Parameters, Entity, Ctl_Kind))
-                       & " defaulted parameters in " & Image (Entity, Lower_Case)
+                       "number of ""in"" parameters is "
+                       & Bound_Image (Ctl_Values (In_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
-            when Min_Parameters =>
+            when Defaulted_Parameters =>
                Report (Rule_Id,
-                       To_Wide_String (Ctl_Labels (Min_Parameters, Entity, Ctl_Kind)),
+                       To_Wide_String (Ctl_Labels (Defaulted_Parameters, Entity, Ctl_Kind)),
                        Ctl_Kind,
                        Loc,
-                       "less than " & Biggest_Int_Img (Ctl_Values (Min_Parameters, Entity, Ctl_Kind))
-                       & " parameters in " & Image (Entity, Lower_Case)
+                       "number of defaulted parameters is "
+                       & Bound_Image (Ctl_Values (Defaulted_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
+                       & " ("   & Biggest_Int_Img (Value) & ')');
+            when Out_Parameters =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Out_Parameters, Entity, Ctl_Kind)),
+                       Ctl_Kind,
+                       Loc,
+                       "number of ""out"" parameters is "
+                       & Bound_Image (Ctl_Values (Out_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
+                       & " ("   & Biggest_Int_Img (Value) & ')');
+            when In_Out_Parameters =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (In_Out_Parameters, Entity, Ctl_Kind)),
+                       Ctl_Kind,
+                       Loc,
+                       "number of ""in out"" parameters is "
+                       & Bound_Image (Ctl_Values (In_Out_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
+                       & " ("   & Biggest_Int_Img (Value) & ')');
+            when Access_Parameters =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Access_Parameters, Entity, Ctl_Kind)),
+                       Ctl_Kind,
+                       Loc,
+                       "number of access parameters is "
+                       & Bound_Image (Ctl_Values (Access_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
             when Single_Out_Parameter =>
                Report (Rule_Id,
@@ -251,6 +279,7 @@ package body Rules.Parameter_Declarations is
             null;
       end case;
 
+      -- Determine the kind of callable entity
       case Declaration_Kind (Good_Decl) is
          when A_Procedure_Declaration =>
             if Definition_Kind (Enclosing_Element (Good_Decl)) = A_Protected_Definition then
@@ -297,88 +326,158 @@ package body Rules.Parameter_Declarations is
             Failure ("not a callable entity");
       end case;
 
+      -- Count parameters for each mode
       declare
          Profile         : constant Parameter_Specification_List := Parameter_Profile (Good_Decl);
-         Param_Count     : Biggest_Natural := 0;
-         Def_Param_Count : Biggest_Natural := 0;
-         Out_Param_Count : Biggest_Natural := 0;
-         Nb_Names        : Biggest_Natural;
+         In_Param_Count     : Biggest_Natural := 0; -- Not counting defaulted ones
+         Def_Param_Count    : Biggest_Natural := 0;
+         Out_Param_Count    : Biggest_Natural := 0;
+         In_Out_Param_Count : Biggest_Natural := 0;
+         Access_Param_Count : Biggest_Natural := 0;
+         Param_Count        : Biggest_Natural;
+         Nb_Names           : Biggest_Natural;
       begin
          for P in Profile'Range loop
             Nb_Names := Names (Profile (P))'Length;
-            Param_Count := Param_Count + Nb_Names;
-            if Mode_Kind (Profile (P)) = An_Out_Mode then
-               Out_Param_Count := Out_Param_Count + Nb_Names;
-            end if;
-            if not Is_Nil (Initialization_Expression (Profile (P))) then
-               Def_Param_Count := Def_Param_Count + Nb_Names;
+            if Definition_Kind (Object_Declaration_View (Profile (P))) = An_Access_Definition then
+               Access_Param_Count := Access_Param_Count + Nb_Names;
+            else
+               case Mode_Kind (Profile (P)) is
+                  when Not_A_Mode =>
+                     Failure ("Parameter_Declarations: not a mode", Good_Decl);
+                  when An_In_Mode | A_Default_In_Mode =>
+                     if Is_Nil (Initialization_Expression (Profile (P))) then
+                        In_Param_Count := In_Param_Count + Nb_Names;
+                     else
+                        Def_Param_Count := Def_Param_Count + Nb_Names;
+                     end if;
+                  when An_Out_Mode =>
+                     Out_Param_Count := Out_Param_Count + Nb_Names;
+                  when An_In_Out_Mode =>
+                     In_Out_Param_Count := In_Out_Param_Count + Nb_Names;
+               end case;
             end if;
          end loop;
 
          --
-         -- Max_Parameters
+         -- All_Parameters
          --
-         -- Note that allowed values are at least 0, therefore the checks cannot fail
-         -- if Profile'Length = 0
-         if Rule_Used (Max_Parameters, C) (Check)
-           and then Param_Count > Ctl_Values (Max_Parameters, C, Check)
+         Param_Count := In_Param_Count + Def_Param_Count + Out_Param_Count + In_Out_Param_Count + Access_Param_Count;
+         if Rule_Used (All_Parameters, C) (Check)
+           and then not Is_In (Param_Count, Ctl_Values (All_Parameters, C, Check))
          then
-            Do_Report (Max_Parameters, Check, C, Param_Count);
-         elsif Rule_Used (Max_Parameters, C) (Search)
-           and then Param_Count > Ctl_Values (Max_Parameters, C, Search)
+            Do_Report (All_Parameters, Check, C, Param_Count);
+         elsif Rule_Used (All_Parameters, C) (Search)
+           and then not Is_In (Param_Count, Ctl_Values (All_Parameters, C, Search))
          then
-            Do_Report (Max_Parameters, Search, C, Param_Count);
+            Do_Report (All_Parameters, Search, C, Param_Count);
          end if;
 
-         if Rule_Used (Max_Parameters, C) (Count)
-           and then Param_Count > Ctl_Values (Max_Parameters, C, Count)
+         if Rule_Used (All_Parameters, C) (Count)
+           and then not Is_In (Param_Count, Ctl_Values (All_Parameters, C, Count))
          then
-            Do_Report (Max_Parameters, Count, C, Param_Count);
-         end if;
-
-         --
-         -- Max_Defaulted_Parameters
-         --
-         if Rule_Used (Max_Defaulted_Parameters, C) (Check)
-           and then Def_Param_Count > Ctl_Values (Max_Defaulted_Parameters, C, Check)
-         then
-            Do_Report (Max_Defaulted_Parameters, Check, C, Def_Param_Count);
-         elsif Rule_Used (Max_Defaulted_Parameters, C) (Search)
-           and then Def_Param_Count > Ctl_Values (Max_Defaulted_Parameters, C, Search) then
-            Do_Report (Max_Defaulted_Parameters, Search, C, Def_Param_Count);
-         end if;
-
-         if Rule_Used (Max_Defaulted_Parameters, C) (Count)
-           and then Def_Param_Count > Ctl_Values (Max_Defaulted_Parameters, C, Count)
-         then
-            Do_Report (Max_Defaulted_Parameters, Count, C, Def_Param_Count);
+            Do_Report (All_Parameters, Count, C, Param_Count);
          end if;
 
          --
-         -- Min_Parameters
+         -- In_Parameters
          --
-         -- It is here possible to fail with 0 parameters. Always refer to the declararation.
-         if Rule_Used (Min_Parameters, C) (Check)
-           and then Param_Count < Ctl_Values (Min_Parameters, C, Check)
+         Param_Count := In_Param_Count + Def_Param_Count;
+         if Rule_Used (In_Parameters, C) (Check)
+           and then not Is_In (Param_Count,Ctl_Values (In_Parameters, C, Check))
          then
-            Do_Report (Min_Parameters, Check, C, Param_Count);
-         elsif Rule_Used (Min_Parameters, C) (Search)
-           and then Param_Count < Ctl_Values (Min_Parameters, C, Search)
+            Do_Report (In_Parameters, Check, C, Param_Count);
+         elsif Rule_Used (In_Parameters, C) (Search)
+           and then not Is_In (Param_Count, Ctl_Values (In_Parameters, C, Search))
          then
-            Do_Report (Min_Parameters, Search, C, Param_Count);
+            Do_Report (In_Parameters, Search, C, Param_Count);
          end if;
 
-         if Rule_Used (Min_Parameters, C) (Count)
-           and then Param_Count < Ctl_Values (Min_Parameters, C, Count)
+         if Rule_Used (In_Parameters, C) (Count)
+           and then not Is_In (Param_Count, Ctl_Values (In_Parameters, C, Count))
          then
-            Do_Report (Min_Parameters, Count, C, Param_Count);
+            Do_Report (In_Parameters, Count, C, Param_Count);
+         end if;
+
+         --
+         -- Defaulted_Parameters
+         --
+         if Rule_Used (Defaulted_Parameters, C) (Check)
+           and then not Is_In (Def_Param_Count, Ctl_Values (Defaulted_Parameters, C, Check))
+         then
+            Do_Report (Defaulted_Parameters, Check, C, Def_Param_Count);
+         elsif Rule_Used (Defaulted_Parameters, C) (Search)
+           and then not Is_In (Def_Param_Count, Ctl_Values (Defaulted_Parameters, C, Search))
+         then
+            Do_Report (Defaulted_Parameters, Search, C, Def_Param_Count);
+         end if;
+
+         if Rule_Used (Defaulted_Parameters, C) (Count)
+           and then not Is_In (Def_Param_Count, Ctl_Values (Defaulted_Parameters, C, Count))
+         then
+            Do_Report (Defaulted_Parameters, Count, C, Def_Param_Count);
+         end if;
+
+         --
+         -- Out_Parameters
+         --
+         if Rule_Used (Out_Parameters, C) (Check)
+           and then not Is_In (Out_Param_Count, Ctl_Values (Out_Parameters, C, Check))
+         then
+            Do_Report (Out_Parameters, Check, C, Out_Param_Count);
+         elsif Rule_Used (Out_Parameters, C) (Search)
+           and then not Is_In (Out_Param_Count, Ctl_Values (Out_Parameters, C, Search))
+         then
+            Do_Report (Out_Parameters, Search, C, Out_Param_Count);
+         end if;
+
+         if Rule_Used (Out_Parameters, C) (Count)
+           and then not Is_In (Out_Param_Count, Ctl_Values (Out_Parameters, C, Count))
+         then
+            Do_Report (Out_Parameters, Count, C, Out_Param_Count);
+         end if;
+
+         --
+         -- In_Out_Parameters
+         --
+         if Rule_Used (In_Out_Parameters, C) (Check)
+           and then not Is_In (In_Out_Param_Count, Ctl_Values (In_Out_Parameters, C, Check))
+         then
+            Do_Report (In_Out_Parameters, Check, C, In_Out_Param_Count);
+         elsif Rule_Used (In_Out_Parameters, C) (Search)
+           and then not Is_In (In_Out_Param_Count, Ctl_Values (In_Out_Parameters, C, Search))
+         then
+            Do_Report (In_Out_Parameters, Search, C, In_Out_Param_Count);
+         end if;
+
+         if Rule_Used (In_Out_Parameters, C) (Count)
+           and then not Is_In (In_Out_Param_Count, Ctl_Values (In_Out_Parameters, C, Count))
+         then
+            Do_Report (In_Out_Parameters, Count, C, In_Out_Param_Count);
+         end if;
+
+         --
+         -- Access_Parameters
+         --
+         if Rule_Used (Access_Parameters, C) (Check)
+           and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Check))
+         then
+            Do_Report (Access_Parameters, Check, C, Access_Param_Count);
+         elsif Rule_Used (Access_Parameters, C) (Search)
+           and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Search))
+         then
+            Do_Report (Access_Parameters, Search, C, Access_Param_Count);
+         end if;
+
+         if Rule_Used (Access_Parameters, C) (Count)
+           and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Count))
+         then
+            Do_Report (Access_Parameters, Count, C, Access_Param_Count);
          end if;
 
          --
          -- Single_Out_Parameter
          --
-         -- Note that 0 is not controlled, therefore the checks cannot fail
-         -- if Profile'Length = 0
          if Rule_Used (Single_Out_Parameter, C) (Check) and then Out_Param_Count = 1 then
             Do_Report (Single_Out_Parameter, Check, C, 1);
          elsif Rule_Used (Single_Out_Parameter, C) (Search) and then Out_Param_Count = 1 then

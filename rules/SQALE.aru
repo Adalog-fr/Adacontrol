@@ -6,7 +6,7 @@
 --   International Conference on Reliable Software Technologies, Springer-Verlag, 2011
 -- The paper is also accessible from http://www.adalog.fr/publica2.htm
 
-  SQALE_01: check Parameter_Declarations (max_parameters, 7);
+  SQALE_01: check Parameter_Declarations (all_parameters, max 7);
 --SQALE_02: check 
 --SQALE_03: check 
 --SQALE_04: check 

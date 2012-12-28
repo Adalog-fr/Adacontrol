@@ -40,6 +40,10 @@ with
 
 package body Framework.Language.Shared_Keys is
 
+   type Min_Max is (Not_A_Bound, Min, Max);
+   package Min_Max_Utilities is new Modifier_Utilities (Min_Max);
+
+
    -------------------
    -- Is_Applicable --
    -------------------
@@ -116,7 +120,9 @@ package body Framework.Language.Shared_Keys is
       end if;
 
       while Parameter_Exists loop
-         case Get_Modifier (Required => True) is
+         case Get_Modifier (Required => False) is
+            when Not_A_Bound =>
+               exit;
             when Min =>
                if Min_Given then
                   Parameter_Error (Rule_Id, "Min value given more than once");
@@ -139,6 +145,14 @@ package body Framework.Language.Shared_Keys is
       return Result;
    end Get_Bounds_Parameters;
 
+   -----------
+   -- Is_In --
+   -----------
+
+   function Is_In (Val : Thick_Queries.Biggest_Int; Bounds : Bounds_Values) return Boolean is
+   begin
+      return Val in Bounds.Min .. Bounds.Max;
+   end Is_In;
 
    -----------------
    -- Bound_Image --
@@ -158,6 +172,14 @@ package body Framework.Language.Shared_Keys is
       end if;
    end Bound_Image;
 
+   --------------------
+   -- Help_On_Bounds --
+   --------------------
+
+   procedure Help_On_Bounds (Header : Wide_String  := "") is
+   begin
+      Min_Max_Utilities.Help_On_Modifiers (Header => Header, Expected => (Not_A_Bound => False, others => True));
+   end Help_On_Bounds;
 
    -----------
    -- Image --

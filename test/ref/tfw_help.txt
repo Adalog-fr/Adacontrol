@@ -74,6 +74,7 @@ for pattern:
    Parameter(2..): "<comment pattern>"
 for position:
    Parameter(2..3): [<bound>] <value>
+      <bound>     :  min | max
                  (at least one parameter required)
 for terminating:
    Parameter(2..): "<allowed pattern>" | begin | end
@@ -456,14 +457,14 @@ Parameter 1: [with_in]  unlikely | possible | certain
 Rule: PARAMETER_DECLARATIONS
 Controls form and metrics of parameters of callable entities
 
-Parameter (1): max_parameters           | min_parameters       |
-               max_defaulted_parameters | single_out_parameter
-For Min_Parameters:
-  Parameter (2) : minimum required number of parameters
-For Max_Parameters:
-  Parameter (2) : maximum allowed number of parameters
-For Max_Defaulted_Parameters:
-  Parameter (2) : maximum allowed number of parameters with default values
+Parameter (1): all_parameters       | in_parameters     |
+               defaulted_parameters | out_parameters    |
+               in_out_parameters    | access_parameters |
+               single_out_parameter
+For all subrules except Single_Out_Parameter:
+Parameter(2..3): <bound> <value>
+                (at least one parameter required)
+   <bound>: min | max
 For Single_Out_Parameter:
   No value allowed
 Other parameters: function            | procedure          |

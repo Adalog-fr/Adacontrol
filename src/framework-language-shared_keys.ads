@@ -60,9 +60,6 @@ package Framework.Language.Shared_Keys is
    -- Min_Max
    -----------------------------------------------------------------------------------
 
-   type Min_Max is (Min, Max);
-   package Min_Max_Utilities is new Modifier_Utilities (Min_Max);
-
    type Bounds_Values is
       record
          Min : Thick_Queries.Biggest_Int;
@@ -80,9 +77,13 @@ package Framework.Language.Shared_Keys is
    -- If Allow_Single, a single value (without specifying Min or Max) is allowed and
    -- returned in both Min and Max
 
+   function Is_In (Val : Thick_Queries.Biggest_Int; Bounds : Bounds_Values) return Boolean;
+
    function Bound_Image (Bounds : Language.Shared_Keys.Bounds_Values) return Wide_String;
    -- Basically, prints an message like "not in Min .. Max", but adjusts the message
    -- if only one bound has been specified.
+
+   procedure Help_On_Bounds (Header : Wide_String  := "");
 
    -----------------------------------------------------------------------------------
    -- Categories
