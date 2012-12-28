@@ -8355,6 +8355,12 @@ Below are examples of rules that can be directly checked by AdaControl.
 check statements (goto);
 @end example
 
+@rule{Functions shall not have @code{@b{out}} or @code{@b{in out}} parameters (Ada 2012)}
+@example
+check parameter_declarations (out_parameters,    max 0, function);
+check parameter_declarations (in_out_parameters, max 0, function);
+@end example
+
 @rule{Short circuit forms should be preferred over corresponding logical operators}
 @example
 Use_Short_Circuit: search expressions (and, or);
