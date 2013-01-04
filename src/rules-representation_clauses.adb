@@ -513,30 +513,7 @@ package body Rules.Representation_Clauses is
                                                                    (Representation_Clause_Name (Rep_Clause))));
             if Expression_Kind (Prefix (Representation_Clause_Name (Rep_Clause))) = An_Attribute_Reference then
                -- This happens only in for T'Class'Read and similar
-
-               -- TBSL: Is this kludge still necessary?
-               -- ASIS BUG:
-               -- Attribute_Designator_Identifier returns wrong value on double attributes.
-               -- (Attribute_Designator_Identifer is used by Attribute_Name_Image)
-
-               -- The following case statement should be:
-               --    Attribute := "'CLASS" & Attribute;
-               -- Unfortunately, Attribute is wrong, hence the following kludge.
-               -- Note that we call Asis.Elements.Attribute_Kind, not A4G_Bugs.Attribute_Kind
-               -- because the version in A4G_Bugs does not work due to the same ASIS bug, but the
-               -- regular version seems to work in this case. Sigh.
-               case Attribute_Kind (Representation_Clause_Name (Rep_Clause)) is --## RULE LINE OFF Use_A4G_Bugs
-                  when A_Read_Attribute =>
-                     Attribute := To_Unbounded_Wide_String ("'CLASS'READ");
-                  when A_Write_Attribute =>
-                     Attribute := To_Unbounded_Wide_String ("'CLASS'WRITE");
-                  when An_Input_Attribute =>
-                     Attribute := To_Unbounded_Wide_String ("'CLASS'INPUT");
-                  when An_Output_Attribute =>
-                     Attribute := To_Unbounded_Wide_String ("'CLASS'OUTPUT");
-                  when others =>
-                     Failure ("Unexpected double attribute in " & Rule_Id, Rep_Clause);
-               end case;
+               Attribute := "'CLASS" & Attribute;
             end if;
 
             Do_Report (Sr_Attribute, Rep_Clause, "representation clause for " & To_Wide_String (Attribute));

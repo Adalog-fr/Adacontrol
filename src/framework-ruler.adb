@@ -321,7 +321,7 @@ package body Framework.Ruler is
             | An_Inline_Pragma
             | A_Priority_Specific_Dispatching_Pragma
             =>
-            -- Named parameters allowed, or name may designate several entities. TBSL.
+            -- Named parameters allowed, or name may designate several entities.
             Level_Delta := 1;
          when An_Assertion_Policy_Pragma
             | A_Convention_Pragma
@@ -344,7 +344,7 @@ package body Framework.Ruler is
             -- Who knows?
             Level_Delta := 1;
          when Not_A_Pragma =>
-            Failure ("Not_A_Pragma in Traverse_Pragma");
+            Failure ("Not_A_Pragma in Traverse_Pragma", Element);
       end case;
 
       State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + Level_Delta;

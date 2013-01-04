@@ -42,7 +42,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -197,9 +196,8 @@ package body Framework.Control_Manager is
                                    =>
                                  Is_Predefined_Op := False;
                               when others =>
-                                 -- TBSL still necessary? A4G_Bug, this known to happen only on predefined "&" operators
-                                 Is_Predefined_Op := True;
-                                 A4G_Bugs.Trace_Bug ("Matching_Context: Bad declaration of predefined operator");
+                                 -- Safety due to previous (now extinct) A4G_Bug
+                                 Failure ("Matching_Context: Bad declaration of predefined operator", Op_Decl);
                            end case;
                         end if;
                      end;

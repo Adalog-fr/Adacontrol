@@ -752,7 +752,7 @@ package body Rules.Simplifiable_expressions is
                   when Not_An_Association =>
                      Failure (Rule_Id & ": Not an association");
                   when A_Pragma_Argument_Association =>
-                     -- TBSL Minimal value, give up for now.
+                     -- Minimal value, give up.
                      null;
                   when A_Discriminant_Association =>
                      if Is_Nil (Discriminant_Selector_Names (Enclosing))

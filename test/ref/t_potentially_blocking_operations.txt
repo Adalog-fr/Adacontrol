@@ -1,17 +1,18 @@
-t_potentially_blocking_operations.adb:23:20: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking function T_Potentially_Blocking_Operations.Func
-t_potentially_blocking_operations.adb:26:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: possible external call or requeue to same object
-t_potentially_blocking_operations.adb:43:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: possible external call or requeue to same object
-t_potentially_blocking_operations.adb:117:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: task declaration
+t_potentially_blocking_operations.adb:24:20: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking function T_Potentially_Blocking_Operations.Func
+t_potentially_blocking_operations.adb:27:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: possible external call or requeue to same object
+t_potentially_blocking_operations.adb:44:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: possible external call or requeue to same object
 t_potentially_blocking_operations.adb:118:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: task declaration
-t_potentially_blocking_operations.adb:121:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: potentially blocking statement: ENTRY CALL
-t_potentially_blocking_operations.adb:122:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Proc1
-t_potentially_blocking_operations.adb:123:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Proc2
-t_potentially_blocking_operations.adb:124:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: external call or requeue to same object from t_potentially_blocking_operations.adb:30:10
-t_potentially_blocking_operations.adb:125:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Prot2.Q
-t_potentially_blocking_operations.adb:126:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Inst_Proc
-t_potentially_blocking_operations.adb:127:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure Ada.Text_IO.New_Line
-t_potentially_blocking_operations.adb:128:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Int_Io.Put
-t_potentially_blocking_operations.adb:130:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Seq_Io.Open
-t_potentially_blocking_operations.adb:131:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: potentially blocking statement: DELAY RELATIVE
-t_potentially_blocking_operations.adb:132:15: Error: POTENTIALLY_BLOCKING_OPERATIONS: task creation
-t_potentially_blocking_operations.adb:141:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure Ada.Task_Identification.Abort_Task
+t_potentially_blocking_operations.adb:119:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: task declaration
+t_potentially_blocking_operations.adb:122:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: potentially blocking statement: ENTRY CALL
+t_potentially_blocking_operations.adb:123:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Proc1
+t_potentially_blocking_operations.adb:124:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Proc2
+t_potentially_blocking_operations.adb:125:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: external call or requeue to same object from t_potentially_blocking_operations.adb:31:10
+t_potentially_blocking_operations.adb:126:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Prot2.Q
+t_potentially_blocking_operations.adb:127:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Inst_Proc
+t_potentially_blocking_operations.adb:128:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure Ada.Text_IO.New_Line
+t_potentially_blocking_operations.adb:129:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Int_Io.Put
+t_potentially_blocking_operations.adb:131:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure T_Potentially_Blocking_Operations.Seq_Io.Open
+t_potentially_blocking_operations.adb:132:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: potentially blocking statement: DELAY RELATIVE
+t_potentially_blocking_operations.adb:133:15: Error: POTENTIALLY_BLOCKING_OPERATIONS: task creation
+t_potentially_blocking_operations.adb:142:10: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking procedure Ada.Task_Identification.Abort_Task
+t_potentially_blocking_operations.adb:181:38: Error: POTENTIALLY_BLOCKING_OPERATIONS: call of potentially blocking function T_Potentially_Blocking_Operations.Func
