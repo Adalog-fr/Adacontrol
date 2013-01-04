@@ -1,5 +1,6 @@
 pragma Ada_2012;
 with Ada.Calendar; use Ada.Calendar;
+with Ada.Containers.Vectors;
 procedure T_statements is
    procedure Test_Raise is separate;
 
@@ -245,7 +246,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       end loop;
    end loop;
 
-   -- Check for .. of looops
+   -- Check for .. of loops
    declare                               -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
       S : String (1 .. 10);
    begin
@@ -256,6 +257,17 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       L6 : for C of S (2..8) loop        -- For_Loop, For_Of_Loop
          null;                           -- Null
       end loop L6;
+   end;
+
+   -- Check for .. iterator loops
+   declare                               -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
+      package Vects is new Ada.Containers.Vectors (Positive, Integer);
+      use Vects;
+      V : Vects.Vector;
+   begin
+      for C in Iterate (V) loop          -- For_Loop, For_Iterator_loop, Unnamed_For_Loop
+         null;                           -- Null;
+      end loop;
    end;
 
    -- Check nesting of bodies

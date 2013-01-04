@@ -72,8 +72,8 @@ package body Rules.Statements is
                      Stmt_Exit_Expanded_Name,      Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,
                      Stmt_Exit_While_Loop,         Stmt_Exited_Extended_Return, Stmt_Extended_Return,
 
-                     Stmt_For_Loop,                Stmt_For_In_Loop,             Stmt_For_Of_Loop,
-                     Stmt_Function_Return,
+                     Stmt_For_Loop,                Stmt_For_In_Loop,             Stmt_For_Iterator_Loop,
+                     Stmt_For_Of_Loop,             Stmt_Function_Return,
 
                      Stmt_Goto,
 
@@ -404,7 +404,7 @@ package body Rules.Statements is
                   when An_Element_Iterator_Specification =>
                      Do_Report (Stmt_For_Of_Loop);
                   when  A_Generalized_Iterator_Specification =>
-                     null; --TBSL
+                     Do_Report (Stmt_For_Iterator_Loop);
                   when others =>
                      Failure ("Process_Statement: unknown ""for"" iterator", Loop_Spec);
                end case;

@@ -6,6 +6,8 @@ General:
 --------
 Arranged to not choke on Ada 2012 constructs.
 
+Account for [in] out parameters in functions
+
 Added -j option and command "set ignore inverted" (invert disabling of
 messages).
 
@@ -39,6 +41,9 @@ Naming_Convention:
 Parameter_Declarations:
    Changed syntax to allow min/max to be specified either for all parameters or
    for parameters of a given mode.
+
+Statements
+   Added subrule for_iterator_loop
 
 Style (Casing_Identifier, original):
    Check formal parameters in bodies if there is an explicit
