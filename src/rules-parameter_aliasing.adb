@@ -249,7 +249,7 @@ package body Rules.Parameter_Aliasing is
          end if;
 
          if Is_Dispatching_Call (Call) then
-            -- We can avoid the Uncheckable if there is at most one parameter which is a variable.
+            -- We can avoid the Uncheckable if there is at most one parameter which is modified.
             -- (provided with_in was not used)
             if With_In /= (Rule_Detail => False) then
                Uncheckable (Rule_Id, False_Negative, Get_Location (Call), "Dispatching call");
@@ -266,21 +266,10 @@ package body Rules.Parameter_Aliasing is
                      E := Converted_Or_Qualified_Expression (E);
                   end if;
 
-                  -- Using Ultimate_Expression below will eliminate selected_components, and replace
-                  -- constants by their value, so we won't consider them as variables
-                  case Expression_Kind (Ultimate_Expression (E)) is
-                     when An_Identifier
-                        | An_Explicit_Dereference
-                        | An_Indexed_Component
-                        | A_Slice
-                          =>
-                        Nb := Nb + 1;
-                     when Not_An_Expression | A_Selected_Component =>
-                        Failure ("Bad value returned by Ultimate_Expression", E);
-                     when others =>
-                        -- Not acceptable as an [in] out parameter
-                        null;
-                  end case;
+                  if Expression_Usage_Kind (E) /= Read then
+                     Nb := Nb + 1;
+                  end if;
+
                end loop;
 
                if Nb > 1 then

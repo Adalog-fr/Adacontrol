@@ -15,9 +15,11 @@ procedure Parameter_Aliasing is
 
    V : T'Class := T'(null record);
    I : Integer;
+   C : constant Integer := 1;
 begin
    P1 (V);
    P2 (V, V);           -- Possible false negative
    P3 (V, 1);
+   P3 (V, C);
    P3 (V, I);           -- Possible false negative
 end Parameter_Aliasing;
