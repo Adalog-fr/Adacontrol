@@ -42,6 +42,9 @@ Parameter_Declarations:
    Changed syntax to allow min/max to be specified either for all parameters or
    for parameters of a given mode.
 
+Parameter_Aliasing
+   Improved algorithm to reduce uncheckables due to dispatching calls
+
 Statements
    Added subrule for_iterator_loop
 

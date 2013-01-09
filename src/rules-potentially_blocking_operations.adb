@@ -468,11 +468,15 @@ package body Rules.Potentially_Blocking_Operations is
                      Set_State (True, "task creation");
                   end if;
                when An_Allocation_From_Qualified_Expression =>
-                  -- If the allocated type contains a task, it is limited, and therefore
-                  -- initialization is forbidden.
-                  -- We keep this branch of the case explicit to remember it for Ada 2005,
-                  -- where things will change...
-                  null;
+                  -- Since Ada 2005, initialization of a limited type (potentially containing a task)
+                  -- is possible
+                  if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
+                                                     (Converted_Or_Qualified_Subtype_Mark
+                                                      (Allocator_Qualified_Expression (Element))),
+                                                     A_Task_Type_Declaration)
+                  then
+                     Set_State (True, "task creation");
+                  end if;
                when An_Attribute_Reference =>
                   -- If the attribute is a function, it is a predefined function => not blocking
                   -- If the attribute is a value, we don't care

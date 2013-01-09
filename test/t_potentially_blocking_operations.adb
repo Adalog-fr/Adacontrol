@@ -108,6 +108,11 @@ procedure T_Potentially_Blocking_Operations is
                end case;
          end case;
       end record;
+   type Rec_Access is access Rec;
+   function Create_Rec return Rec is
+   begin
+      return V : Rec (False, False);
+   end Create_Rec;
 
    protected body Prot2 is
       procedure Q;
@@ -118,8 +123,9 @@ procedure T_Potentially_Blocking_Operations is
          X : TT;                    -- Task creation
          R : Rec (False, True);     -- Task creation
          A : TT_Access;
+         B : Rec_Access;
       begin
-         V1.E;                      -- Potentially statement entry call
+         V1.E;                      -- Potentially blocking statement entry call
          Proc1 (True);              -- Potentially blocking call
          Proc2;                     -- Potentially blocking call
          Proc4;                     -- External call to same object
@@ -131,6 +137,7 @@ procedure T_Potentially_Blocking_Operations is
          Open (F, In_File, "junk"); -- Potentially blocking call (from generic)
          delay 3.0;                 -- Potentially blocking statement
          A := new TT;               -- Task creation
+         B := new Rec'(Create_Rec); -- Task creation through initialized allocator
       end P1;
       procedure P2 is
       begin
