@@ -90,7 +90,7 @@ with
   Rules.Terminating_Tasks,
   Rules.Type_Initial_Values,
   Rules.Units,
-  Rules.Unnecessary_Use,
+  Rules.Unnecessary_Use_Clause,
   Rules.Unsafe_Paired_Calls,
   Rules.Unsafe_Unchecked_Conversion,
   Rules.Usage,
@@ -165,13 +165,13 @@ package body Framework.Plugs is
 
    procedure Exit_Scope (Element : in Asis.Element) is
    begin
-      Rules.Max_Nesting.         Process_Scope_Exit (Element);
-      Rules.No_Operator_Usage.   Process_Scope_Exit;
-      Rules.Object_Declarations. Process_Scope_Exit;
-      Rules.Reduceable_Scope.    Process_Scope_Exit (Element);
-      Rules.Statements.          Process_Scope_Exit (Element);
-      Rules.Type_Initial_Values. Process_Scope_Exit (Element);
-      Rules.Unnecessary_Use.     Process_Scope_Exit (Element);
+      Rules.Max_Nesting.            Process_Scope_Exit (Element);
+      Rules.No_Operator_Usage.      Process_Scope_Exit;
+      Rules.Object_Declarations.    Process_Scope_Exit;
+      Rules.Reduceable_Scope.       Process_Scope_Exit (Element);
+      Rules.Statements.             Process_Scope_Exit (Element);
+      Rules.Type_Initial_Values.    Process_Scope_Exit (Element);
+      Rules.Unnecessary_Use_Clause. Process_Scope_Exit (Element);
    end Exit_Scope;
 
    --------------------------
@@ -201,7 +201,7 @@ package body Framework.Plugs is
       Rules.Entities.                  Process_Identifier (Element);
       Rules.Not_Selected_Name.         Process_Identifier (Element);
       Rules.Reduceable_Scope.          Process_Identifier (Element);
-      Rules.Unnecessary_Use.           Process_Identifier (Element);
+      Rules.Unnecessary_Use_Clause.    Process_Identifier (Element);
       Rules.Style.                     Process_Identifier (Element);
       Rules.Usage.                     Process_Identifier (Element);
       Rules.With_Clauses.              Process_Identifier (Element);
@@ -370,14 +370,14 @@ package body Framework.Plugs is
                   Rules.Non_Static.             Process_Instantiation         (Element);
                   Rules.Return_Type.            Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
-                  Rules.Unnecessary_Use.        Process_Instantiation         (Element);
+                  Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
                   Rules.With_Clauses.           Process_Instantiation         (Element);
 
                when A_Formal_Package_Declaration =>
                   Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
-                  Rules.Unnecessary_Use.        Process_Instantiation         (Element);
+                  Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
 
                when A_Procedure_Instantiation =>
                   Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
@@ -387,7 +387,7 @@ package body Framework.Plugs is
                   Rules.Non_Static.             Process_Instantiation         (Element);
                   Rules.Return_Type.            Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
-                  Rules.Unnecessary_Use.        Process_Instantiation         (Element);
+                  Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
                   Rules.With_Clauses.           Process_Instantiation         (Element);
 
@@ -399,7 +399,7 @@ package body Framework.Plugs is
                   Rules.Non_Static.                  Process_Instantiation         (Element);
                   Rules.Return_Type.                 Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters.      Process_Call_Or_Instantiation (Element);
-                  Rules.Unnecessary_Use.             Process_Instantiation         (Element);
+                  Rules.Unnecessary_Use_Clause.      Process_Instantiation         (Element);
                   Rules.Unsafe_Unchecked_Conversion. Process_Instantiation         (Element);
                   Rules.Usage.                       Process_Instantiation         (Element);
                   Rules.With_Clauses.                Process_Instantiation         (Element);
@@ -669,7 +669,7 @@ package body Framework.Plugs is
          when A_Clause =>
             case Clause_Kind (Element) is
                when A_Use_Package_Clause =>
-                  Rules.Unnecessary_Use. Process_Use_Clause (Element);
+                  Rules.Unnecessary_Use_Clause. Process_Use_Clause (Element);
                when others =>
                   null;
             end case;

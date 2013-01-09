@@ -32,7 +32,7 @@
 -- Asis
 with Asis;
 
-package Rules.Unnecessary_Use  is
+package Rules.Unnecessary_Use_Clause  is
 
    Rule_Id : constant Wide_String := "UNNECESSARY_USE_CLAUSE";
 
@@ -59,4 +59,4 @@ package Rules.Unnecessary_Use  is
 
    procedure Process_Scope_Exit (Scope : in Asis.Element);
 
-end Rules.Unnecessary_Use;
+end Rules.Unnecessary_Use_Clause;

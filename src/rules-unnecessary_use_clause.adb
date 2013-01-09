@@ -38,7 +38,6 @@ with
 
 -- Adalog
 with
-  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -49,7 +48,7 @@ with
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
 
-package body Rules.Unnecessary_Use is
+package body Rules.Unnecessary_Use_Clause is
    use Framework, Framework.Control_Manager, Utilities;
 
    -- Algorithm:
@@ -331,7 +330,6 @@ package body Rules.Unnecessary_Use is
       -- follow the visibility rules at the point of instantiation, and must therefore be processed
       -- here.
       use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
-      use Framework.Reports;
    begin
       if Rule_Used = Not_Used then
          return;
@@ -348,16 +346,7 @@ package body Rules.Unnecessary_Use is
                                      (Formal_Parameter
                                       (Associations (I)))) = A_Box_Default
             then
-               if Is_Nil (Actual_Parameter (Associations (I))) then
-                  -- TBSL check if this is still necessary
-                  A4G_Bugs.Trace_Bug ("Unnecessary_Use.Process_Instantiation: Nil box-defaulted parameter");
-                  Uncheckable (Rule_Id,
-                               False_Positive,
-                               Get_Location (Instantiation),
-                               "Default for parameter not considered");
-               else
-                  Process_Identifier (Actual_Parameter (Associations (I)));
-               end if;
+               Process_Identifier (Actual_Parameter (Associations (I)));
             end if;
          end loop;
       end;
@@ -469,11 +458,11 @@ package body Rules.Unnecessary_Use is
 
    end Process_Scope_Exit;
 
-begin  -- Rules.Unnecessary_Use
+begin  -- Rules.Unnecessary_Use_Clause
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
-end Rules.Unnecessary_Use;
+end Rules.Unnecessary_Use_Clause;
