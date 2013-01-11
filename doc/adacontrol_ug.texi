@@ -3183,6 +3183,7 @@ those occurring at specified locations.
    non_joint_CE_NE_handler           | non_limited_private_type          |
    not_operator_renaming             | null_extension                    |
    null_ordinary_record_type         | null_procedure                    |
+   null_procedure_body               | null_procedure_declaration        |
    null_tagged_type                  | operator                          |
    operator_renaming                 | ordinary_fixed_type               |
    ordinary_fixed_type_no_small      | ordinary_fixed_type_with_small    |
@@ -3455,11 +3456,12 @@ the record definitions may be plain ``@code{@b{null}}
 contain only null components. However, a definition is not considered
 null if it contains a variant part.
 @item
-@code{null_procedure} controls procedure declarations whose sequence
-of statements contain only @code{@b{null}} statements (or blocks
-without declarations and containing only @code{@b{null}} statements).
-Controls also Ada2005 null procedures
-(i.e., ``@b{procedure} P @b{is} @b{null};'').
+@code{null_procedure_body} controls procedure declarations whose
+sequence of statements contain only @code{@b{null}} statements (or
+blocks without declarations and containing only @code{@b{null}}
+statements).  @code{null_procedure_declaration} controls Ada2005 null
+procedure declarations (i.e., ``@b{procedure} P @b{is}
+@b{null};''). @code{null_procedure} controls both.
 @item
 @code{operator} controls the definition of operators (things like
 @code{"+"}); note that the message is given on the specification if

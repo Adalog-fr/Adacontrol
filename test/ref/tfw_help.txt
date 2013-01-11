@@ -128,7 +128,8 @@ Parameter(s): {<location>} <decl>
         non_identical_renaming            | non_joint_ce_ne_handler         |
         non_limited_private_type          | not_operator_renaming           |
         null_extension                    | null_ordinary_record_type       |
-        null_procedure                    | null_tagged_type                |
+        null_procedure                    | null_procedure_body             |
+        null_procedure_declaration        | null_tagged_type                |
         operator                          | operator_renaming               |
         ordinary_fixed_type               | ordinary_fixed_type_no_small    |
         ordinary_fixed_type_with_small    | ordinary_record_type            |

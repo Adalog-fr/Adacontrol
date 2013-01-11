@@ -100,7 +100,8 @@ package body Rules.Declarations is
       D_Named_Number,                    D_Non_Binary_Modular_Type,           D_Non_Identical_Operator_Renaming,
       D_Non_Identical_Renaming,          D_Non_Joint_CE_NE_Handler,           D_Non_Limited_Private_Type,
       D_Not_Operator_Renaming,           D_Null_Extension,                    D_Null_Ordinary_Record_Type,
-      D_Null_Procedure,                  D_Null_Tagged_Type,
+      D_Null_Procedure,                  D_Null_Procedure_Body,               D_Null_Procedure_Declaration,
+      D_Null_Tagged_Type,
 
       D_Operator,                        D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
       D_Ordinary_Fixed_Type_No_Small,    D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
@@ -1178,7 +1179,7 @@ package body Rules.Declarations is
             Check_Abstract;
 
          when A_Null_Procedure_Declaration =>
-            Do_Report ((D_Procedure, D_Null_Procedure), Element);
+            Do_Report ((D_Procedure, D_Null_Procedure, D_Null_Procedure_Declaration), Element);
             -- This one can't be abstact
 
          when A_Procedure_Body_Declaration =>
@@ -1192,7 +1193,7 @@ package body Rules.Declarations is
                Called : Asis.Expression;
             begin
                if Are_Null_Statements (Stmts) then
-                  Do_Report (D_Null_Procedure, Body_Statements (Element) (1));
+                  Do_Report ((D_Null_Procedure, D_Null_Procedure_Body), Body_Statements (Element) (1));
                end if;
 
                if Stmts'Length = 1

@@ -9,6 +9,9 @@ messages).
 
 Changes to existing rules:
 --------------------------
+Declarations
+   Added null_procedure_body, null_procedure_declaration
+
 Local_Hiding
    Added exception patterns. Replaced Overloading_Short with a rule
    variable.
