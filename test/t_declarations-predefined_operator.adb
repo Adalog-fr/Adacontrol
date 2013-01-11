@@ -43,5 +43,5 @@ procedure Predefined_Operator is         -- nested procedure, local_procedure
    begin return (others => False); end;
 
 begin
-   null;                                                       -- null procedure
+   null;                                                       -- null_procedure_body, null procedure
 end Predefined_Operator;

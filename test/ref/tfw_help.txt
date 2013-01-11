@@ -135,6 +135,7 @@ Parameter(s): {<location>} <decl>
         non_joint_ce_ne_handler         | non_limited_private_type          |
         not_operator_renaming           | null_extension                    |
         null_ordinary_record_type       | null_procedure                    |
+        null_procedure_body             | null_procedure_declaration        |
         null_tagged_type                | operator                          |
         operator_renaming               | ordinary_fixed_type               |
         ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
@@ -171,12 +172,12 @@ Parameter 2: <Formal parameter name> | all
 Parameter 3: used | positional | not_used
 ----
 Rule: DEPENDENCIES
-Control units that depend on units others than those indicated,
+Control units that depend on a set of allowed/forbidden units,
 or whose number of dependencies is not in the specified range
 
-Parameter(1)   : others | raw | direct | parent
-For subrule "others":
-Parameter(2..3): allowed units
+Parameter(1)   : others | with | raw | direct | parent
+For subrules "others" and "with":
+Parameter(2..3): allowed (resp. forbidden) units
 For other subrules:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)

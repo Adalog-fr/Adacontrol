@@ -20,9 +20,12 @@ Changes to existing rules:
 (Many places)
    Considered expression functions in addition to regular functions
 
-Declarations:
-   Added subrule expression_function
+Declarations
+   Added null_procedure_body, null_procedure_declaration, expression_function
 
+Dependencies
+   Added subrule with (dependency on indicated units).
+   
 Expressions
    Added subrules if, if_elsif, if_no_else, case, for_all, for_some
 

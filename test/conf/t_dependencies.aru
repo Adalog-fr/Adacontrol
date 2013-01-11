@@ -3,4 +3,5 @@
 "all direct" :  check dependencies (direct, max 0);
 "not between 5 and 10": check dependencies (direct, min 5, max 10);
 "others": check dependencies (others, ada.text_IO, ada.strings);
+"forbidden": check dependencies (with, Text_IO);
 

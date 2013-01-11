@@ -41,7 +41,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
 
    procedure AA_P (X : access Integer) is                         -- Nested_Procedure, Local_Procedure, Anonymous_access_parameter
    begin
-      null;                                                       -- Null_Procedure
+      null;                                                       -- null_procedure_body, Null_Procedure
    end AA_P;
 
    generic                                        -- nested_generic_procedure, generic
@@ -50,7 +50,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
       F : access function return Integer;         -- anonymous_access_constant
       G : access procedure (X : access Integer);  -- anonymous_access_constant, anonymous_access_parameter
    procedure P;
-   procedure P is begin null; end;             -- null_procedure
+   procedure P is begin null; end;             -- null_procedure_body, null_procedure
 
    function F (X : access Integer) return access Integer;    -- anonymous_access_parameter
    function F (X : access Integer) return access Integer is  -- OK (message on spec)

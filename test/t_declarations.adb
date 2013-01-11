@@ -25,7 +25,7 @@ procedure T_declarations is       -- library_procedure
    task body T1 is
       procedure P is              -- task_body procedure, nested procedure, local procedure
       begin
-         null;                    -- null_procedure
+         null;                    -- null_procedure_body, null_procedure
       end;
    begin
       null;
@@ -162,7 +162,7 @@ procedure T_declarations is       -- library_procedure
    generic                                                          -- Nested_Generic_Procedure, generic
       I : Integer := 1;                                             -- defaulted_generic_parameter
    procedure P (J : Integer := 1; K : in out Float; L : out Float); -- Defaulted_Parameter, In_Out_Parameter, Out_Parameter
-   procedure P (J : Integer := 1; K : in out Float; L : out Float) is begin null; end; -- null_procedure
+   procedure P (J : Integer := 1; K : in out Float; L : out Float) is begin null; end; -- null_procedure_body, null_procedure
 
    package Pack1 is private end Pack1;              -- nested_package, empty_visible_part, empty_private_part
    package body Pack1 is
@@ -201,14 +201,14 @@ procedure T_declarations is       -- library_procedure
       type Abs3 is abstract new Abs2 with null record;   -- Null_Extension, Extension, Tagged_Type, Record_Type, Abstract_Type
       procedure Proc1 is
       begin
-         null;                                           -- Null_Procedure
+         null;                                           -- null_procedure_body, Null_Procedure
       end Proc1;
       procedure Proc2 is                                 -- Own procedure, nested procedure, local procedure
       begin
          declare
             procedure Proc3 is                           -- Nested Procedure, Local Procedure, Block Procedure
             begin
-               null;                                     -- Null Procedure
+               null;                                     -- null_procedure_body, Null Procedure
             end Proc3;
          begin
             null;
@@ -259,7 +259,7 @@ procedure T_declarations is       -- library_procedure
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
-      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, nested procedure, local procedure, null_procedure
+      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, nested procedure, local procedure, null_procedure_body, null_procedure
    begin
       null;                                                                   -- package statements
    end Test_Formals;
@@ -295,9 +295,11 @@ procedure T_declarations is       -- library_procedure
    end Al5;
    protected body Al5 is
    end Al5;
+
+   procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, nested_procedure, local_procedure
 begin
-   begin                                                                -- null_procedure
-      null;
+   begin
+      null;                                                             -- null_procedure_body, null_procedure
    exception                                                            -- handlers
       when Constraint_Error | Numeric_Error =>
          null;
