@@ -170,6 +170,8 @@ package Framework is
 
    function Image   (Entity : in Entity_Specification) return Wide_String;
    function Value   (Name   : in Wide_String)          return Entity_Specification;
+   -- (pseudo) entity specification corresponding to a string
+   -- Name can be in any case
 
    function Matches (Entity    : in Entity_Specification;
                      Name      : in Asis.Element;

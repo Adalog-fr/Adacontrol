@@ -6002,7 +6002,7 @@ for all callable entities (i.e. functions, procedures and entries).
 @example
 <control_kind> parameter_declarations (<subrule>, [<bounds>,] @{,<callable>@});
 <subrule>  ::= all_parameters | in_parameters     | defaulted_parameters |
-               out_parameters | in_out_paramteres | access_parameters    |
+               out_parameters | in_out_parameters | access_parameters    |
                single_out_parameter
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <callable> ::= function           | procedure           | protected_entry |
