@@ -56,14 +56,16 @@ package body Rules.Dependencies is
    use Framework, Framework.Control_Manager;
 
    -- Counting subrules must stay together:
-   type Subrules is (Sr_Others, Sr_Raw, Sr_Direct, Sr_Parent);
+   type Subrules is (Sr_Others, Sr_With, Sr_Raw, Sr_Direct, Sr_Parent);
    subtype Counting_Subrules is Subrules range Sr_Raw .. Sr_Parent;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
 
-   Allowed_Entities  : Context_Store;
+   Allowed_Entities   : Context_Store;
+   Forbidden_Entities : Context_Store;
 
    Counting_Subrules_Count : Control_Index := 0;
    Others_Subrule_Used     : Boolean;
+   With_Subrule_Used       : Boolean;
    Rule_Used               : Boolean;
    Save_Used               : Boolean;
 
@@ -86,12 +88,12 @@ package body Rules.Dependencies is
       use Framework.Language.Shared_Keys, Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control units that depend on units others than those indicated,");
+      User_Message ("Control units that depend on a set of allowed/forbidden units,");
       User_Message ("or whose number of dependencies is not in the specified range");
       User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
-      User_Message ("For subrule ""others"":");
-      User_Message ("Parameter(2..3): allowed units");
+      User_Message ("For subrules ""others"" and ""with"":");
+      User_Message ("Parameter(2..3): allowed (resp. forbidden) units");
       User_Message ("For other subrules:");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
@@ -146,6 +148,23 @@ package body Rules.Dependencies is
             end loop;
             Others_Context      := Basic.New_Context (Ctl_Kind, Ctl_Label);
             Others_Subrule_Used := True;
+
+         when Sr_With =>
+            if not Parameter_Exists then
+               Parameter_Error (Rule_Id, "at least one parameter required");
+            end if;
+
+            while Parameter_Exists loop
+               declare
+                  Entity : constant Entity_Specification := Get_Entity_Parameter;
+               begin
+                  Associate (Forbidden_Entities, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
+               exception
+                  when Already_In_Store =>
+                     Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
+               end;
+            end loop;
+            With_Subrule_Used := True;
       end case;
 
       Rule_Used := True;
@@ -297,6 +316,22 @@ package body Rules.Dependencies is
                           Get_Location (Elem),
                           "unit depends on " & Full_Name_Image (Ultimate_Name (Elem)));
                end if;
+            end if;
+
+            if With_Subrule_Used then
+               Elem := Names (N);
+               declare
+                  Cont : constant Root_Context'Class := Matching_Context (Forbidden_Entities,
+                                                                          Elem,
+                                                                          Extend_To => All_Extensions);
+               begin
+                  if Cont /= No_Matching_Context then
+                     Report (Rule_Id,
+                             Cont,
+                             Get_Location (Elem),
+                             "unit depends on " & Full_Name_Image (Elem));
+                  end if;
+               end;
             end if;
          end loop;
       end;

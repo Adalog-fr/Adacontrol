@@ -3638,12 +3638,13 @@ indicated parameter.
 @node Dependencies, Directly_Accessed_Globals, Default_Parameter, Rules reference
 @section Dependencies
 This rule controls dependencies of units (i.e. @code{@b{with}}
-clauses, parents...), either according to a set of allowed units, or
-by count.
+clauses, parents...), either according to a set of allowed/forbidden
+units, or by count.
 
 @subsection Syntax
 @example
 <control_kind> dependencies (others, <unit> @{,<unit>@});
+<control_kind> dependencies (with, <unit> @{,<unit>@});
 <control_kind> dependencies (<counter>, <bound> [, <bound>]);
 <counter> ::= raw | direct | parent
 <bound>   ::= min | max <value>
@@ -3654,7 +3655,15 @@ The kind of action depends on the specified subrule.
 
 The ``others'' subrule controls semantic dependencies to units other
 than those indicated. This subrule can be specified only once, and at
-least one unit must be given.
+least one unit must be given. 
+
+The ``with'' subrule controls with clauses that reference the
+indicated units. At least one unit must be given. 
+
+Note that for these two rules, renamings are followed: if you give the
+basic name of a unit, it will be identified even if used with other
+names. Similarly, if you give the name of a generic, all of its
+instantiations will also be controlled.
 
 Other subrules control that the number of various dependencies is
 whithin a specified range.  The second (and optionnally third)
@@ -3688,6 +3697,20 @@ check dependencies (parent, max 5);
 -- units that depend on nothing:
 search dependencies (direct, min 1);
 @end example
+
+@subsection Tips
+If you give a name that's already a renaming to the ``others'' or ``with'' subrules, the rule
+will only apply to this name, not to what has been renamed. Therefore:
+@example
+check dependencies (others, Ada.Text_IO); -- Allow only Ada.Text_IO
+check dependencies (with,   Text_IO);     -- But not if the plain name Text_IO is used
+@end example
+
+There is a slight overlap between this rule and the rule ``entities'
+(see @ref{Entities}). But ``entities'' will find all uses of an entity
+(not necessarily a compilation unit), while ``dependencies'' will
+control occurrences only in @code{@b{with}} clauses.
+
 
 @node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Dependencies, Rules reference
 @section Directly_Accessed_Globals

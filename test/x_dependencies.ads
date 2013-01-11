@@ -1,4 +1,4 @@
-with Text_IO;
+with Text_IO;                -- forbidden
 with Ada.Text_IO;
 with Ada.Numerics;           -- others
 with Ada, Ada, Ada;          -- others (x3)ema
