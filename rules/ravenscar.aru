@@ -46,8 +46,9 @@ Simple_Barriers : check Barrier_Expressions;
 --Max_Entry_Queue_Length
 --Max_Protected_Entries
 Max_Task_Entries : check Declarations (Task_Entry);
-No_Dependence    : check Entities (Ada.Asynchronous_Task_Control,
-                                   Ada.Calendar,
-                                   Ada.Execution_Time.Group_Budget,
-                                   Ada.Execution_Time.Timers,
-                                   Ada.Task_Attributes);
+No_Dependence    : check Dependencies (with,
+                                       Ada.Asynchronous_Task_Control,
+                                       Ada.Calendar,
+                                       Ada.Execution_Time.Group_Budget,
+                                       Ada.Execution_Time.Timers,
+                                       Ada.Task_Attributes);

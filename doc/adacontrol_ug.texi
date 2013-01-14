@@ -3706,11 +3706,20 @@ check dependencies (others, Ada.Text_IO); -- Allow only Ada.Text_IO
 check dependencies (with,   Text_IO);     -- But not if the plain name Text_IO is used
 @end example
 
-There is a slight overlap between this rule and the rule ``entities'
-(see @ref{Entities}). But ``entities'' will find all uses of an entity
-(not necessarily a compilation unit), while ``dependencies'' will
-control occurrences only in @code{@b{with}} clauses.
+There is a slight overlap between this rule and the rule
+``entities'. But ``entities'' will find all uses of an entity (not
+necessarily a compilation unit), while ``dependencies'' will control
+occurrences only of compilation units, and only in @code{@b{with}}
+clauses. @xref{Entities}.
 
+In certain contexts, only a set of the Ada predefined units is
+allowed. For example, it can be useful to forbid units defined in
+special needs annexes. The @code{rules} directory of Adacontrol
+contains files with ``Dependencies'' rules that forbid the use of
+various predefined Ada units. Comment out the lines for the units that
+you want to allow.  You can then simply ``source'' these files from
+your own rule file (or copy the content) if you want to disallow these
+units. @xref{Rules files provided with AdaControl}.
 
 @node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Dependencies, Rules reference
 @section Directly_Accessed_Globals
@@ -3911,15 +3920,21 @@ the following will report on any usage of @code{'Unchecked_Access}:
 check entities (all 'Unchecked_Access);
 @end example
 
-In certain contexts, only a limited set of the Ada predefined units is
-allowed. For example, it can be useful to forbid entities from
-@code{Standard}, @code{System}, or entities defined in special needs
-annexes. The @code{rules} directory of Adacontrol contains files with
-Entities rules that forbid the use of various predefined Ada
-units. Comment out the lines for the units that you want to allow.
-You can then simply ``source'' these files from your own rule file (or
-copy the content) if you want to disallow these units. @xref{Rules
-files provided with AdaControl}.
+If you want to make sure that certain compilation units are not used,
+it is preferable to use the rule ``Depencies (with,...)'' rather than
+``Entities'', because ``Entities'' will control all uses of the unit,
+while ``Dependencies'' will control only those in @code{@b{with}}
+clauses (which is of course sufficient).
+
+In certain contexts, it can be useful to forbid certain entities, like
+those from @code{Standard}, @code{System}, or entities defined in
+special needs annexes packages. The @code{rules} directory of
+Adacontrol contains files with ``Dependencies'' and ``Entities'' rules
+that forbid the use of various predefined Ada elements. Comment out
+the lines for the elements that you want to allow.  You can then
+simply ``source'' these files from your own rule file (or copy the
+content) if you want to disallow these elements. @xref{Rules files
+provided with AdaControl}.
 
 @subsection Limitation
 GNAT defines @code{Unchecked_Conversion} and

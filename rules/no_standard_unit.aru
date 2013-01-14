@@ -1,7 +1,7 @@
 -- Control usage of all predefined Ada unit
 -- Comment out the lines for the units you want to allow
 
-Predefined_Unit : check entities (
+Predefined_Unit : check Dependencies (with,
 Ada,
     Ada.Asynchronous_Task_Control,
     Ada.Calendar,

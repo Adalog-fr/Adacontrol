@@ -1,7 +1,7 @@
 -- Control usage of features defined in annex C.
 --
-Annex_C: check pragmas  (Interrupt_Handler, Attach_Handler);
-Annex_C: check entities (Ada.Interrupts);
-Annex_C: check pragmas  (Discard_Names);
-Annex_C: check pragmas  (Atomic, Volatile, Atomic_Components, Volatile_Components);
-Annex_C: check entities (Ada.Task_Identification, Ada.Task_Attributes);
+Annex_C: check pragmas      (Interrupt_Handler, Attach_Handler);
+Annex_C: check dependencies (with, Ada.Interrupts);
+Annex_C: check pragmas      (Discard_Names);
+Annex_C: check pragmas      (Atomic, Volatile, Atomic_Components, Volatile_Components);
+Annex_C: check dependencies (with, Ada.Task_Identification, Ada.Task_Attributes);
