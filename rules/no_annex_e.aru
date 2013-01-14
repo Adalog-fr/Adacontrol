@@ -1,5 +1,5 @@
 -- Control usage of features defined in annex E.
 --
-Annex_E: check pragmas  (Shared_Passive, Remote_Types, Remote_Call_Interface, All_Calls_Remote, Asynchronous);
-Annex_E: check entities (all 'version, all 'body_version);
-Annex_E: check entities (system.rpc);
+Annex_E: check pragmas      (Shared_Passive, Remote_Types, Remote_Call_Interface, All_Calls_Remote, Asynchronous);
+Annex_E: check entities     (all 'version, all 'body_version);
+Annex_E: check dependencies (with, system.rpc);
