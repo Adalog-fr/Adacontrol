@@ -320,18 +320,22 @@ package body Rules.Dependencies is
 
             if With_Subrule_Used then
                Elem := Names (N);
-               declare
-                  Cont : constant Root_Context'Class := Matching_Context (Forbidden_Entities,
-                                                                          Elem,
-                                                                          Extend_To => All_Extensions);
-               begin
-                  if Cont /= No_Matching_Context then
-                     Report (Rule_Id,
-                             Cont,
-                             Get_Location (Elem),
-                             "unit depends on " & Full_Name_Image (Elem));
-                  end if;
-               end;
+               loop
+                  declare
+                     Cont : constant Root_Context'Class := Matching_Context (Forbidden_Entities,
+                                                                             Elem,
+                                                                             Extend_To => All_Extensions);
+                  begin
+                     if Cont /= No_Matching_Context then
+                        Report (Rule_Id,
+                                Cont,
+                                Get_Location (Elem),
+                                "unit depends on " & Full_Name_Image (Elem));
+                     end if;
+                  end;
+                  exit when Expression_Kind (Elem) /= A_Selected_Component;
+                  Elem := Prefix (Elem);
+               end loop;
             end if;
          end loop;
       end;
