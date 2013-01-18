@@ -44,7 +44,7 @@ with
 -- AdaControl
 with
   Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Object_Declarations is
@@ -86,21 +86,10 @@ package body Rules.Object_Declarations is
    -- Data for subrule Volatile_No_Address and Address_Not_Volatile:
    type Repr_Rec is
       record
-         Variable : Asis.Defining_Name;
          Volatile : Boolean;
          Address  : Boolean;
       end record;
-   procedure Clear (Rec : in out Repr_Rec) is   -- null
-      pragma Unreferenced (Rec);
-   begin
-      null;
-   end Clear;
-   function Is_Equivalent (L, R : Repr_Rec) return Boolean is
-      use Asis.Elements;
-   begin
-      return Is_Equal (L.Variable, R.Variable);
-   end Is_Equivalent;
-   package Repr_Store is new Framework.Scope_Manager.Scoped_Store (Repr_Rec, Is_Equivalent);
+   package Repr_Table is new Framework.Symbol_Table.Data_Access (Repr_Rec);
 
    ----------
    -- Help --
@@ -196,20 +185,6 @@ package body Rules.Object_Declarations is
       end case;
    end Command;
 
-
-   -------------
-   -- Prepare --
-   -------------
-
-   procedure Prepare is
-   begin
-      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      Repr_Store.Activate;
-   end Prepare;
 
    -------------------------
    -- Process_Declaration --
@@ -317,25 +292,13 @@ package body Rules.Object_Declarations is
       end Process_Min_Integer_Span;
 
       procedure Process_Volatile_Address is
+         use Framework.Reports;
          Decl_Names : constant Asis.Defining_Name_List := Names (Decl);
-         Type_Decl  : constant Asis.Declaration := Decl_Type_Declaration;
-         Volatile_T : Boolean := False;
       begin
-         if not Is_Nil (Type_Decl) then
-            declare
-               Pragmas : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Type_Decl);
-            begin
-               for P in Pragmas'Range loop
-                  if Pragma_Kind (Pragmas (P)) = A_Volatile_Pragma then
-                     Volatile_T := True;
-                     exit;
-                  end if;
-               end loop;
-            end;
-         end  if;
-
          for N in Decl_Names'Range loop
-            Repr_Store.Push ((Decl_Names (N), Volatile => Volatile_T, Address => False));
+            Repr_Table.Store (Decl_Names (N),
+              (Volatile => Corresponding_Pragma_Set (Decl_Names (N)) (A_Volatile_Pragma),
+               Address  => False));
          end loop;
       end Process_Volatile_Address;
 
@@ -362,7 +325,7 @@ package body Rules.Object_Declarations is
 
    procedure Process_Pragma (Prgma : in Asis.Pragma_Element) is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Framework.Scope_Manager, Utilities;
+      use Thick_Queries, Framework.Reports;
 
       Name      : Asis.Expression;
       Repr_Data : Repr_Rec;
@@ -375,30 +338,25 @@ package body Rules.Object_Declarations is
       if Pragma_Kind (Prgma) /= A_Volatile_Pragma then
          return;
       end if;
+
       Name := Actual_Parameter (Pragma_Argument_Associations (Prgma) (1));
-      if Expression_Kind (Name) = An_Attribute_Reference then
-         -- A variable cannot be an attribute
-         -- pragma volatile is not allowed on T'Base
-         -- therefore, it can only be T'Class
-         Uncheckable (Rule_Id,
-                      False_Negative,
-                      Get_Location (Name),
-                      "cannot check variables of class-wide type");
+      if Attribute_Kind (Name) = A_Class_Attribute then  -- Excludes case when name is not an attribute
+         if Rule_Used (Volatile_No_Address) then
+            Uncheckable (Rule_Id,
+                         False_Negative,
+                         Get_Location (Name),
+                         "pragma ignored for types covered by " & Name_Image (Simple_Name (Prefix (Name)))
+                         & " in subrule Volatile_No_Address");
+         end if;
+         if Rule_Used (Address_Not_Volatile) then
+            Uncheckable (Rule_Id,
+                         False_Positive,
+                         Get_Location (Name),
+                         "pragma ignored for types covered by " & Name_Image (Simple_Name (Prefix (Name)))
+                         & " in subrule Address_Not_Volatile");
+         end if;
          return;
       end if;
-
-      if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Name)) /= A_Variable_Declaration then
-         return;
-      end if;
-
-      -- Here, we have a pragma volatile on a variable
-      Repr_Data := (Corresponding_Name_Definition (Name), Volatile => True, Address => False);
-      Repr_Store.Reset (Repr_Data, Current_Scope_Only);
-      Assert (Repr_Store.Data_Available, "missing declaration"); -- Pragma must be in same scope as declaration
-
-      Repr_Data := Repr_Store.Current_Data;
-      Repr_Data.Volatile := True;
-      Repr_Store.Update_Current (Repr_Data);
    end Process_Pragma;
 
    -----------------------------------
@@ -407,7 +365,7 @@ package body Rules.Object_Declarations is
 
    procedure Process_Representation_Clause (Clause : in Asis.Representation_Clause) is
       use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions;
-      use Framework.Scope_Manager, Thick_Queries, Utilities;
+      use Thick_Queries;
 
       Name      : Asis.Expression;
       Repr_Data : Repr_Rec;
@@ -434,13 +392,9 @@ package body Rules.Object_Declarations is
       end if;
 
       -- Here, we have an address repr_clause on a variable
-      Repr_Data := (Corresponding_Name_Definition (Name), Volatile => False, Address => True);
-      Repr_Store.Reset (Repr_Data, Current_Scope_Only);
-      Assert (Repr_Store.Data_Available, "missing declaration"); -- Pragma must be in same scope as declaration
-
-      Repr_Data         := Repr_Store.Current_Data;
+      Repr_Data := Repr_Table.Fetch (Name);
       Repr_Data.Address := True;
-      Repr_Store.Update_Current (Repr_Data);
+      Repr_Table.Store (Name, Repr_Data);
    end Process_Representation_Clause;
 
 
@@ -449,32 +403,33 @@ package body Rules.Object_Declarations is
    ------------------------
 
    procedure Process_Scope_Exit is
-      use Framework.Reports, Framework.Scope_Manager;
+      use Framework.Symbol_Table;
 
-      Repr_Data : Repr_Rec;
-   begin
-      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      Repr_Store.Reset (Current_Scope_Only);
-      while Repr_Store.Data_Available loop
-         Repr_Data := Repr_Store.Current_Data;
+      procedure Process_One_Scope_Variable (Entity : Asis.Defining_Name; Repr_Data : in out Repr_Rec) is
+         use Framework.Reports;
+      begin
          if Rule_Used (Volatile_No_Address) and Repr_Data.Volatile and not Repr_Data.Address then
             Report (Rule_Id,
                     Vno_Context (Volatile_No_Address),
-                    Get_Location (Repr_Data.Variable),
+                    Get_Location (Entity),
                     "variable is volatile and has no address clause");
          end if;
          if Rule_Used (Address_Not_Volatile) and Repr_Data.Address and not Repr_Data.Volatile then
             Report (Rule_Id,
                     Vno_Context (Address_Not_Volatile),
-                    Get_Location (Repr_Data.Variable),
+                    Get_Location (Entity),
                     "variable has address clause and is not volatile");
          end if;
-         Repr_Store.Next;
-      end loop;
+      end Process_One_Scope_Variable;
+
+      procedure Process_All_Scope_Variables is new Repr_Table.On_Every_Entity_From_Scope (Process_One_Scope_Variable);
+   begin  -- Process_Scope_Exit
+      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Process_All_Scope_Variables (Declaration);
    end Process_Scope_Exit;
 
 begin  -- Rules.Object_Declarations
@@ -482,6 +437,5 @@ begin  -- Rules.Object_Declarations
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
-                                     Command_CB     => Command'Access,
-                                     Prepare_CB     => Prepare'Access);
+                                     Command_CB     => Command'Access);
 end Rules.Object_Declarations;
