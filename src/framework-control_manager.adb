@@ -256,23 +256,46 @@ package body Framework.Control_Manager is
                                 Default_Value => null);
             end if;
 
-            -- For attribute references, search attribute name
+            -- For attribute references, search attribute name (or 'all)
             if Result = null
               and then Expression_Kind (Name) = An_Attribute_Reference
             then
+               -- Name'all
+               Name_Image := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => False)))
+                             & "'ALL";  -- No "extras" here
+               Result := Fetch (Into.Qualified_Names,
+                                Name_Image,
+                                Default_Value => null);
+
                -- Type'Attr
-               if Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name))
-                  in An_Ordinary_Type_Declaration .. A_Subtype_Declaration   -- = All type and subtype declarations
+               if Result = null
+                 and then Declaration_Kind (A4G_Bugs.Corresponding_Name_Declaration (Good_Name))
+                          in An_Ordinary_Type_Declaration .. A_Subtype_Declaration -- =All type and subtype declarations
                then
                   Name_Image := To_Unbounded_Wide_String ("TYPE'" & To_Upper (Attribute_Name_Image (Name)));
                   Result := Fetch (Into.Simple_Names,
                                    Name_Image,
                                    Default_Value => null);
+                  -- Type'all
+                  if Result = null then
+                     Name_Image := To_Unbounded_Wide_String ("TYPE'ALL");
+                     Result := Fetch (Into.Simple_Names,
+                                      Name_Image,
+                                      Default_Value => null);
+                  end if;
                end if;
 
                -- 'Attr
                if Result = null then
                   Name_Image := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
+                  Result := Fetch (Into.Simple_Names,
+                                   Name_Image,
+                                   Default_Value => null);
+               end if;
+
+               -- 'all
+               if Result = null then
+                  Name_Image := To_Unbounded_Wide_String ("'ALL");
                   Result := Fetch (Into.Simple_Names,
                                    Name_Image,
                                    Default_Value => null);

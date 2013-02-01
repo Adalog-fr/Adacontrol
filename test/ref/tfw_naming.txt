@@ -3,17 +3,25 @@ tfw_naming.adb:10:4: Found: inst: local instantiation of Ada.Unchecked_Deallocat
 tfw_naming.adb:10:4: Error: inst: instantiation of Ada.Unchecked_Deallocation with (Standard.String)
 tfw_naming.adb:11:4: Found: inst: local instantiation of Ada.Unchecked_Deallocation
 tfw_naming.adb:33:8: Error: ENTITIES: use of element "Standard.Integer'Base"
+tfw_naming.adb:36:28: Error: Typ_All_Attr: use of element "Type'All"
+tfw_naming.adb:36:28: Error: Typ_All_Attr: use of element "Type'All"
+tfw_naming.adb:36:28: Error: Typ_All_Attr: use of element "Type'All"
 tfw_naming.adb:42:9: Error: ENTITIES: use of element "Standard.Integer'Base'First"
 tfw_naming.adb:42:9: Error: ENTITIES: use of element "Standard.Integer'Base"
-tfw_naming.adb:51:12: Error: Typ_Attr: use of element "Type'Length"
+tfw_naming.adb:51:12: Error: Int_Attr: use of element "Standard.Integer'All"
 tfw_naming.adb:52:12: Error: Typ_Attr: use of element "Type'Length"
 tfw_naming.adb:53:12: Error: Typ_Attr: use of element "Type'Length"
-tfw_naming.adb:54:12: Error: All_Attr: use of element "'Length"
-tfw_naming.adb:57:4: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-tfw_naming.adb:61:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Tfw_Naming.Q"
-tfw_naming.adb:62:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Tfw_Naming.Q"
-tfw_naming.adb:63:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Tfw_Naming{}.P{Standard.Integer}"
-tfw_naming.adb:60:4: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
-tfw_naming.adb:66:18: Error: ENTITY_INSIDE_EXCEPTION: use of "Xfw_Naming.Proc_1{}"
+tfw_naming.adb:54:12: Error: Typ_Attr: use of element "Type'Length"
+tfw_naming.adb:55:12: Error: All_Attr: use of element "'Length"
+tfw_naming.adb:56:12: Error: Typ_All_Attr: use of element "Type'All"
+tfw_naming.adb:57:12: Error: Typ_All_Attr: use of element "Type'All"
+tfw_naming.adb:58:12: Error: Typ_All_Attr: use of element "Type'All"
+tfw_naming.adb:59:12: Error: All_All_Attr: use of element "'All"
+tfw_naming.adb:62:4: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+tfw_naming.adb:66:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Tfw_Naming.Q"
+tfw_naming.adb:67:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Tfw_Naming.Q"
+tfw_naming.adb:68:7: Found: ENTITY_INSIDE_EXCEPTION: use of "Tfw_Naming{}.P{Standard.Integer}"
 tfw_naming.adb:65:4: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
+tfw_naming.adb:71:18: Error: ENTITY_INSIDE_EXCEPTION: use of "Xfw_Naming.Proc_1{}"
+tfw_naming.adb:70:4: Error: SILENT_EXCEPTIONS: all paths are silent in exception handler
 xfw_naming.ads:2:4: Found: PRAGMAS: use of pragma "Pure"

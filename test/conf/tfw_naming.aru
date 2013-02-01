@@ -12,5 +12,8 @@ inst: Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String),
 
 check unnecessary_use_clause; -- Mantis 0000007
 
-All_Attr: check entities (all 'length);
-Typ_Attr: check entities (all type'length);
+Int_Attr     : check entities (Standard.Integer'all);
+All_Attr     : check entities (all 'length);
+Typ_Attr     : check entities (all type'length);
+Typ_All_Attr : check entities (all type'all);
+All_All_Attr : check entities (all 'all);

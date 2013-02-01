@@ -7,6 +7,8 @@ General:
 Added -j option and command "set ignore inverted" (invert disabling of
 messages).
 
+Syntax of entities: added 'all to designate all attributes
+
 Changes to existing rules:
 --------------------------
 Declarations

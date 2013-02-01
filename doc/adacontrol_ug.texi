@@ -8713,10 +8713,19 @@ whose prefix is a (sub) type (but any type or subtype), give it as
 @code{type'Attr} (i.e. the keyword ``type'' is put in front of the
 quote.
 
+@code{@b{all}} may be used in place of an attribute name to mean ``any
+attribute''. See examples below.
+
 @example
 check entities (all 'Image);      -- Find all occurrences of 'Image
 check entities (all type'Length); -- Find all occurrences of 'Length
                                   -- applied to a type
+
+check entities (Standard.Integer'all); -- Find all attributes applied
+                                       -- to type Integer
+Check entities (all type'all);         -- Find all attributes applied
+                                       -- to a type
+check entities (all 'all);             -- Find all attributes
 @end example
 
 @node Anonymous constructs and extended return statements, Record and protected types components, Attributes, Specifying an Ada entity name
