@@ -325,9 +325,13 @@ Parameter: <maximum allowed nesting level>
 Rule: MAX_SIZE
 Control the maximum length of Ada statements
 
-Parameter(1): accept        | block        | case | case_branch  |
-              if            | if_branch    | loop | simple_block |
-              unnamed_block | unnamed_loop
+Parameter(1): accept         | block         | case           |
+              case_branch    | if            | if_branch      |
+              loop           | simple_block  | unnamed_block  |
+              unnamed_loop   | package_spec  | package_body   |
+              procedure_body | function_body | protected_spec |
+              protected_body | entry_body    | task_spec      |
+              task_body      | unit
 Parameter(2): maximum acceptable number of lines
 ----
 Rule: MAX_STATEMENT_NESTING

@@ -13,6 +13,18 @@ check max_size (simple_block,  3);
 
 check max_size (accept, 4);
 
+check max_size (package_spec, 3);
+check max_size (package_body, 6);
+check max_size (function_body, 3);
+check max_size (procedure_body, 20);
+check max_size (task_spec, 3);
+check max_size (task_body, 5);
+check max_size (protected_spec, 3);
+check max_size (protected_body, 6);
+check max_size (entry_body, 3);
+
+check max_size (unit, 100);
+
 Block_Count: count max_size (block, 1);
 Loop_Count:  count max_size (loop, 1);
 

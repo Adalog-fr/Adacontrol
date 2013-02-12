@@ -21,6 +21,13 @@ Local_Hiding
    Added exception patterns. Replaced Overloading_Short with a rule
    variable.
 
+Max_Size
+   Added subrules Package_Spec, Package_Body, Procedure_Body,
+   Function_Body, Protected_Spec, Protected_Body, Entry_Body,
+   Task_Spec, Task_Body, Unit.
+
+   Put messages at end of failing element.
+
 Multiple_Assignment
    Consider subcomponents as assigned only if they meet (recursively) the
    criteria of the control.
