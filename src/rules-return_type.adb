@@ -334,22 +334,18 @@ package body Rules.Return_Type is
          return;
       end if;
 
-      case Expression_Kind (Result_Expression) is
-         when An_Identifier =>
-            null;
-         when An_Attribute_Reference =>
             case Attribute_Kind (Result_Expression) is
-               when A_Base_Attribute =>
-                  -- when matching A_Base_Attribute, we need to retrieve the Prefix
-                  Result_Expression := Simple_Name (Prefix (Result_Expression));
-               when A_Class_Attribute =>
-                  Report_Class (Result_Expression);
-                  return;
-               when others =>
-                  Failure ("unexpected return type: attribute", Result_Expression);
-            end case;
+         when A_Base_Attribute =>
+            -- when matching A_Base_Attribute, we need to retrieve the Prefix
+            Result_Expression := Simple_Name (Prefix (Result_Expression));
+         when A_Class_Attribute =>
+            Report_Class (Result_Expression);
+            return;
+         when Not_An_Attribute =>
+            -- OK, go on
+            null;
          when others =>
-            Failure ("unexpected return type: others", Result_Expression);
+            Failure ("unexpected return type: attribute", Result_Expression);
       end case;
 
       -- Here we have a good ol' identifier
@@ -396,7 +392,30 @@ package body Rules.Return_Type is
                               Failure ("unexpected subtype : attribute");
                         end case;
                      else
-                        Result_Type_Declaration := Corresponding_Last_Subtype (Result_Type_Declaration);
+                        -- It would be tempting to use Corresponding_Last_Subtype (Result_Type_Declaration), instead
+                        -- of the following block, but its behaviour is undefined (and loops forever with Gnat) if
+                        -- the last subtype is an attribute.
+                        declare
+                           Parent_Name : Asis.Expression;
+                        begin
+                           Parent_Name := Subtype_Simple_Name (Type_Declaration_View(Result_Type_Declaration));
+                           case Attribute_Kind (Parent_Name) is
+                           when A_Base_Attribute =>
+                              -- when matching A_Base_Attribute, we need to retrieve the Prefix
+                              Result_Type_Declaration := Corresponding_Name_Declaration (Simple_Name
+                                                                                         (Prefix
+                                                                                          (Parent_Name)));
+                           when A_Class_Attribute =>
+                              Report_Class (Parent_Name);
+                              return;
+                           when Not_An_Attribute =>
+                              -- OK, go on
+                              Result_Type_Declaration := Corresponding_Name_Declaration (Simple_Name
+                                                                                         (Parent_Name));
+                           when others =>
+                              Failure ("unexpected return type: attribute", Result_Expression);
+                           end case;
+                        end;
                      end if;
                   end;
                end;

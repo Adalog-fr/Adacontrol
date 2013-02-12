@@ -37,5 +37,6 @@ package Rules.Max_Size is
 
    Rule_Id : constant Wide_String := "MAX_SIZE";
 
-   procedure Process_Statement (Statement : in Asis.Statement);
+   procedure Process_Element (Element : in Asis.Element);
+   procedure Process_Unit    (Unit      : in Asis.Compilation_Unit);
 end Rules.Max_Size;

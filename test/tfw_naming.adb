@@ -48,10 +48,15 @@ begin
       I : Integer;
       V : Arr;
    begin
+      I := Integer'First;
       I := Arr'Length;
       I := Der'Length;
       I := Sub'Length;
       I := V'Length;
+      I := Arr'First;
+      I := Der'First;
+      I := Sub'First;
+      I := V'First;
    end;
 exception
    when Constraint_Error =>

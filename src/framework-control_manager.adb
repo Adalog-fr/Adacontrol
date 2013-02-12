@@ -158,7 +158,9 @@ package body Framework.Control_Manager is
            and then Is_Equal (Good_Name, Called_Simple_Name (Name_Enclosing))
          then
             Name_Key := To_Unbounded_Wide_String (To_Upper (Name_Image (Good_Name)));
-            Result   := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
+            Result   := Fetch (Into.Simple_Names,
+                               Name_Key,
+                               Default_Value => null);
             -- Normal case
          else
             if Element_Kind (Good_Name) = An_Expression then
@@ -217,14 +219,18 @@ package body Framework.Control_Manager is
             if not Is_Predefined_Op and Result = null then
                Name_Key := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => True)))
                            & Name_Extra;
-               Result := Fetch (Into.Qualified_Names, Name_Key, Default_Value => null);
+               Result := Fetch (Into.Qualified_Names,
+                                Name_Key,
+                                Default_Value => null);
             end if;
 
             -- Search without "all", without overloading
             if Result = null then
                Name_Key := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => False)))
                            & Name_Extra;
-               Result := Fetch (Into.Qualified_Names, Name_Key, Default_Value => null);
+               Result := Fetch (Into.Qualified_Names,
+                                Name_Key,
+                                Default_Value => null);
             end if;
 
             -- Search with "all", with overloading
@@ -233,34 +239,64 @@ package body Framework.Control_Manager is
                                                      (Any_Name_Image (Good_Name)
                                                       & Profile_Image (Good_Name, With_Profile => True)))
                            & Name_Extra;
-               Result := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
+               Result := Fetch (Into.Simple_Names,
+                                Name_Key,
+                                Default_Value => null);
             end if;
 
             -- Search with "all", without overloading
             if Result = null then
                Name_Key := To_Unbounded_Wide_String (To_Upper (Any_Name_Image (Good_Name)))
                            & Name_Extra;
-               Result := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
+               Result := Fetch (Into.Simple_Names,
+                                Name_Key,
+                                Default_Value => null);
             end if;
 
-            -- For attribute references, search attribute name
+            -- For attribute references, search attribute name (or 'all)
             if Result = null
               and then Expression_Kind (Name) = An_Attribute_Reference
             then
+               -- Name'all
+               Name_Key := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name, With_Profile => False)))
+                             & "'ALL";  -- No "extras" here
+               Result := Fetch (Into.Qualified_Names,
+                                Name_Key,
+                                Default_Value => null);
+
                -- Type'Attr
-               if Declaration_Kind (Corresponding_Name_Declaration (Good_Name))
-                  in An_Ordinary_Type_Declaration .. A_Subtype_Declaration   -- = All type and subtype declarations
+               if Result = null
+                 and then Declaration_Kind (Corresponding_Name_Declaration (Good_Name))
+                          in An_Ordinary_Type_Declaration .. A_Subtype_Declaration -- =All type and subtype declarations
                then
                   Name_Key := To_Unbounded_Wide_String ("TYPE'" & To_Upper (Attribute_Name_Image (Name)));
                   Result   := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
+                  -- Type'all
+                  if Result = null then
+                     Name_Key := To_Unbounded_Wide_String ("TYPE'ALL");
+                     Result := Fetch (Into.Simple_Names,
+                                      Name_Key,
+                                      Default_Value => null);
+                  end if;
                end if;
 
                -- 'Attr
                if Result = null then
                   Name_Key := To_Unbounded_Wide_String (''' & To_Upper (Attribute_Name_Image (Name)));
-                  Result   := Fetch (Into.Simple_Names, Name_Key, Default_Value => null);
+                  Result := Fetch (Into.Simple_Names,
+                                   Name_Key,
+                                   Default_Value => null);
+               end if;
+
+               -- 'all
+               if Result = null then
+                  Name_Key := To_Unbounded_Wide_String ("'ALL");
+                  Result := Fetch (Into.Simple_Names,
+                                   Name_Key,
+                                   Default_Value => null);
                end if;
             end if;
+
          end if;
       end if;
 

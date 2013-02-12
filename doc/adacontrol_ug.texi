@@ -3678,10 +3678,10 @@ The kind of action depends on the specified subrule.
 
 The ``others'' subrule controls semantic dependencies to units other
 than those indicated. This subrule can be specified only once, and at
-least one unit must be given. 
+least one unit must be given.
 
 The ``with'' subrule controls with clauses that reference the
-indicated units. At least one unit must be given. 
+indicated units. At least one unit must be given.
 
 Note that for these two rules, renamings are followed: if you give the
 basic name of a unit, it will be identified even if used with other
@@ -5240,19 +5240,25 @@ check max_nesting (7);
 @node Max_Size, Max_Statement_Nesting, Max_Nesting, Rules reference
 @section Max_Size
 This rule controls the maximum size, in source lines of code, of
-various statements.
+various statements and declarations.
 
 @subsection Syntax
 @example
 <control_kind> max_size (<subrule>, <max allowed lines>);
-<subrule> ::= accept        | block        | case  | case_branch   |
-              if            | if_branch    | loop  | simple_block  |
-              unnamed_block | unnamed_loop
+<subrule> ::= accept        | block          | case  | case_branch   |
+              if            | if_branch      | loop  | simple_block  |
+              unnamed_block | unnamed_loop   |
+              package_spec  | package_body   | procedure_body |
+              function_body | protected_spec | protected_body |
+              entry_body    | task_spec      | task_body      |
+              unit
 @end example
 @subsection Action
 The first parameter is a subrule keyword that determines which
-statements are controlled:
+elements are controlled:
 @itemize @bullet
+@item
+``accept'' controls accept statements.
 @item
 ``block'' controls all block statements, while ``simple_block''
 controls only blocks without a @code{@b{declare}} part, and
@@ -5262,18 +5268,25 @@ controls only blocks without a @code{@b{declare}} part, and
 only loops without a name.
 @item
 ``if_branch'' and ``case_branch'' control the length of each
-alternative of an @code{@b{if}} (respectively @code{@b{case}}
+alternative of an @code{@b{if}} (respectively @code{@b{case}})
 statement.
+@item
+``package_spec'', ``package_body'', ``procedure_body'',
+``function_body'', ``protected_spec'', ``protected_body'',
+``entry_body'', ``task_spec'', and ``task_body'' control the length of
+the declaration of the corresponding element.
+@item
+``unit'' controls the whole length of compilation units.
 @end itemize
 
-For each kind of statement, the indicated value is the maximum allowed
-size of the full statement; however, for branches (``if_branch'' and
+For each kind of element, the indicated value is the maximum allowed
+size of the full element; however, for branches (``if_branch'' and
 ``case_branch'') it is the maximum size of the sequence of statements
 in the branch (i.e., the line that contains the @code{@b{elsif}} is
 not counted as part of an ``if_branch'').
 
 This rule can be given once for each of check, search, and count for
-each kind of statement. This way, it is possible to have a level
+each kind of element. This way, it is possible to have a level
 considered a warning (search), and one considered an error (check). Of
 course, this makes sense only if the number of lines for search is
 less than the one for check.
@@ -5284,6 +5297,13 @@ check Max_Size (if_branch, 30);
 search Max_Size (if_branch, 50);
 check Max_Size (unnamed_loop, 20);
 @end example
+
+@subsection Tip
+Note that ``procedure_body'' and ``function_body'' apply to protected
+subprograms as well as regular ones, and that there is no subrule for
+the length of the declaration of subprograms. Such fine specifications
+didn't seem useful, but could be added if someone expresses a need for
+it.
 
 @node Max_Statement_Nesting, Movable_Accept_Statements, Max_Size, Rules reference
 @section Max_Statement_Nesting
@@ -8761,10 +8781,19 @@ whose prefix is a (sub) type (but any type or subtype), give it as
 @code{type'Attr} (i.e. the keyword ``type'' is put in front of the
 quote.
 
+@code{@b{all}} may be used in place of an attribute name to mean ``any
+attribute''. See examples below.
+
 @example
 check entities (all 'Image);      -- Find all occurrences of 'Image
 check entities (all type'Length); -- Find all occurrences of 'Length
                                   -- applied to a type
+
+check entities (Standard.Integer'all); -- Find all attributes applied
+                                       -- to type Integer
+Check entities (all type'all);         -- Find all attributes applied
+                                       -- to a type
+check entities (all 'all);             -- Find all attributes
 @end example
 
 @node Anonymous constructs and extended return statements, Record and protected types components, Attributes, Specifying an Ada entity name

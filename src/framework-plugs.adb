@@ -136,7 +136,8 @@ package body Framework.Plugs is
 
    procedure Exit_Unit (Unit : in Asis.Compilation_Unit) is
    begin
-      Rules.With_Clauses. Process_Unit_Exit (Unit) ;
+      Rules.Max_Size.     Process_Unit      (Unit);
+      Rules.With_Clauses. Process_Unit_Exit (Unit);
    end Exit_Unit;
 
    -----------------
@@ -294,71 +295,79 @@ package body Framework.Plugs is
 
                when A_Function_Body_Declaration =>
                   Rules.Abnormal_Function_Return. Process_Function_Body        (Element);
+                  Rules.Comments.                 Process_Program_Unit         (Element);
                   Rules.Exception_Propagation.    Process_SP_Declaration       (Element);
                   Rules.Global_References.        Process_Body                 (Element);
-                  Rules.Parameter_Declarations.   Process_Declaration          (Element);
                   Rules.Improper_Initialization.  Process_Structure            (Element);
+                  Rules.Max_Size.                 Process_Element              (Element);
+                  Rules.Parameter_Declarations.   Process_Declaration          (Element);
                   Rules.Return_Type.              Process_Function_Declaration (Element);
-                  Rules.Comments.                 Process_Program_Unit         (Element);
                   Rules.Statements.               Process_Function_Body        (Element);
                   Rules.Style.                    Process_Construct            (Element);
                   Rules.Style.                    Process_Declaration          (Element);
                   Rules.Usage.                    Process_Declaration          (Element);
 
                when A_Procedure_Body_Declaration =>
-                  Rules.Exception_Propagation.   Process_SP_Declaration      (Element);
-                  Rules.Global_References.       Process_Body                (Element);
-                  Rules.Parameter_Declarations.  Process_Declaration         (Element);
-                  Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Comments.        Process_Program_Unit        (Element);
-                  Rules.Style.                   Process_Construct           (Element);
-                  Rules.Style.                   Process_Declaration         (Element);
-                  Rules.Usage.                   Process_Declaration         (Element);
+                  Rules.Comments.                Process_Program_Unit   (Element);
+                  Rules.Exception_Propagation.   Process_SP_Declaration (Element);
+                  Rules.Global_References.       Process_Body           (Element);
+                  Rules.Improper_Initialization. Process_Structure      (Element);
+                  Rules.Max_Size.                Process_Element        (Element);
+                  Rules.Parameter_Declarations.  Process_Declaration    (Element);
+                  Rules.Style.                   Process_Construct      (Element);
+                  Rules.Style.                   Process_Declaration    (Element);
+                  Rules.Usage.                   Process_Declaration    (Element);
 
                when An_Entry_Body_Declaration =>
-                  Rules.Barrier_Expressions.     Process_Entry_Declaration   (Element);
-                  Rules.Global_References.       Process_Body                (Element);
-                  Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Comments.        Process_Program_Unit        (Element);
-                  Rules.Style.                   Process_Construct           (Element);
-                  Rules.Style.                   Process_Declaration         (Element);
+                  Rules.Barrier_Expressions.     Process_Entry_Declaration (Element);
+                  Rules.Comments.                Process_Program_Unit      (Element);
+                  Rules.Global_References.       Process_Body              (Element);
+                  Rules.Improper_Initialization. Process_Structure         (Element);
+                  Rules.Max_Size.                Process_Element           (Element);
+                  Rules.Style.                   Process_Construct         (Element);
+                  Rules.Style.                   Process_Declaration       (Element);
 
                when A_Package_Declaration
                  | A_Task_Type_Declaration
                  | A_Protected_Type_Declaration
-                 =>
-                  Rules.Style. Process_Construct   (Element);
-                  Rules.Usage. Process_Declaration (Element);
+                  =>
+                  Rules.Max_Size. Process_Element     (Element);
+                  Rules.Style.    Process_Construct   (Element);
+                  Rules.Usage.    Process_Declaration (Element);
 
                when A_Package_Body_Declaration =>
-                  Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Comments.        Process_Program_Unit        (Element);
-                  Rules.Style.                   Process_Construct           (Element);
+                  Rules.Comments.                Process_Program_Unit (Element);
+                  Rules.Improper_Initialization. Process_Structure    (Element);
+                  Rules.Max_Size.                Process_Element      (Element);
+                  Rules.Style.                   Process_Construct    (Element);
 
                when A_Generic_Package_Declaration =>
-                  Rules.Style. Process_Construct   (Element);
-                  Rules.Style. Process_Declaration (Element);
-                  Rules.Usage. Process_Declaration (Element);
+                  Rules.Max_Size. Process_Element     (Element);
+                  Rules.Style.    Process_Construct   (Element);
+                  Rules.Style.    Process_Declaration (Element);
+                  Rules.Usage.    Process_Declaration (Element);
 
                when A_Protected_Body_Declaration =>
+                  Rules.Max_Size.                       Process_Element        (Element);
                  Rules.Style.                           Process_Construct      (Element);
                  Rules.Potentially_Blocking_Operations. Process_Protected_Body (Element);
 
                when A_Single_Task_Declaration
                  | A_Single_Protected_Declaration
                  =>
-                  Rules.Style. Process_Construct   (Element);
-                  Rules.Usage. Process_Declaration (Element);
+                  Rules.Max_Size. Process_Element     (Element);
+                  Rules.Style.    Process_Construct   (Element);
+                  Rules.Usage.    Process_Declaration (Element);
 
                when A_Task_Body_Declaration
                  =>
-                  Rules.Exception_Propagation.   Process_Task_Body           (Element);
-                  Rules.Global_References.       Process_Body                (Element);
-
-                  Rules.Improper_Initialization. Process_Structure           (Element);
-                  Rules.Comments.        Process_Program_Unit        (Element);
-                  Rules.Style.                   Process_Construct           (Element);
-                  Rules.Terminating_Tasks.       Process_Task_Body           (Element);
+                  Rules.Comments.                Process_Program_Unit (Element);
+                  Rules.Exception_Propagation.   Process_Task_Body    (Element);
+                  Rules.Global_References.       Process_Body         (Element);
+                  Rules.Improper_Initialization. Process_Structure    (Element);
+                  Rules.Max_Size.                Process_Element      (Element);
+                  Rules.Style.                   Process_Construct    (Element);
+                  Rules.Terminating_Tasks.       Process_Task_Body    (Element);
 
                when An_Exception_Declaration =>
                   Rules.Usage. Process_Declaration (Element);
@@ -515,7 +524,7 @@ package body Framework.Plugs is
 
          when A_Statement =>
             Rules.Style.                   Process_Element   (Element);
-            Rules.Max_Size.                Process_Statement (Element);
+            Rules.Max_Size.                Process_Element (Element);
             Rules.Max_Statement_Nesting.   Process_Statement (Element);
             Rules.Simplifiable_Statements. Process_Statement (Element);
             Rules.Statements.              Process_Statement (Element);
