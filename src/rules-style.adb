@@ -59,8 +59,8 @@ with
 pragma Elaborate (Framework.Language);
 
 package body Rules.Style is
-
    use Framework, Framework.Control_Manager, Utilities;
+   use type Thick_Queries.Biggest_Int;
 
    -- See declaration of Style_Names in the private part of the specification
    subtype Casing_Styles is Subrules range St_Casing_Attribute .. St_Casing_Pragma;
@@ -69,8 +69,10 @@ package body Rules.Style is
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
                                                                              Prefix => "St_" );
 
+   -------------------------------------------------------------------------
    --
-   -- Parameters for the casing subrule
+   -- Declarations for the casing subrule
+   --                      ******
    --
 
    -- See declaration of Casing_Names in the private part of the specification
@@ -82,8 +84,10 @@ package body Rules.Style is
    -- (the rule is called on every identifier).
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the compound_statement subrule
+   --                      ******************
    --
 
    Min_Stat_Length : constant array (Asis.Statement_Kinds) of Asis.Text.Line_Number
@@ -101,17 +105,22 @@ package body Rules.Style is
          others                                  => 1);
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the exposed_literal subrule
+   --                      ***************
    --
 
    type Literal_Names is (Lit_Integer, Lit_Real, Lit_Character, Lit_String);
    package Literal_Flag_Utilities  is new Framework.Language.Flag_Utilities (Flags => Literal_Names,
                                                                              Prefix => "Lit_" );
    type Place_Names is (Pl_Other,
+                        Pl_Declaration,
                         Pl_Constant, Pl_Number,      Pl_Var_Init, Pl_Type,
                         Pl_Pragma,   Pl_Repr_Clause, Pl_Index,    Pl_Exponent);
    -- Pl_Other used internally when not in one of the other Places, not accessible to user. Must stay first.
+   subtype Other_Declarations is Place_Names range Pl_Constant .. Pl_Type;
+
    type Place_Set is array (Place_Names) of Boolean;
    No_Place : constant Place_Set := (others => False);
    package Place_Flag_Utilities  is new Framework.Language.Flag_Utilities (Flags => Place_Names,
@@ -121,6 +130,9 @@ package body Rules.Style is
    type Permitted_Consts_Count is range 0 .. Nbr_Of_Permitted_Consts;
    subtype Permitted_Consts_Range is Permitted_Consts_Count range 1 .. Permitted_Consts_Count'Last;
 
+   Uninitialized : constant  := -1;
+
+   Integer_Max_Value        : Thick_Queries.Biggest_Int := Uninitialized;
    Integer_Permitted_Values : array (Permitted_Consts_Range) of Thick_Queries.Biggest_Int;
    Real_Permitted_Values    : array (Permitted_Consts_Range) of Float;
    String_Permitted_Values  : array (Permitted_Consts_Range) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
@@ -130,8 +142,10 @@ package body Rules.Style is
    Permitted_Places         : array (Literal_Names) of Place_Set := (others => (others => False));
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the literal subrule
+   --                      *******
    --
 
    subtype Allowed_Bases is Positive range 2 .. 16;
@@ -142,8 +156,10 @@ package body Rules.Style is
       end record;
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the multiple_elements subrule
+   --                      *****************
    --
 
    type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement);
@@ -153,8 +169,10 @@ package body Rules.Style is
    -- True if at least one Flexible
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the no_closing_name subrule
+   --                      ***************
    --
 
    type Closing_Name_Context is new Basic_Rule_Context with
@@ -163,8 +181,10 @@ package body Rules.Style is
       end record;
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the [formal_]parameter_order subrule
+   --                      ************************
    --
 
    type Extended_Modes is (Mode_In,   Mode_Defaulted_In, Mode_Access,   Mode_In_Out, Mode_Out,
@@ -180,8 +200,10 @@ package body Rules.Style is
    Order_Inx  : array (St_Orders) of Order_Index;
 
 
+   -------------------------------------------------------------------------
    --
    -- Declarations for the positional_association subrule
+   --                      **********************
    --
 
    type Extended_Association_Names is (Na_No_Association,
@@ -207,8 +229,12 @@ package body Rules.Style is
    Positional_Exceptions : array (Exceptionable_Association_Names) of Context_Store;
    -- A Context_Store of Null_Context to flag entities that need not obey the rule
 
+
+   -------------------------------------------------------------------------
    --
    -- Declarations for the renamed_entity subrule
+   --                      **************
+
    --
 
    type Renaming_Data is
@@ -225,6 +251,7 @@ package body Rules.Style is
    package Renamed_Entities is new Framework.Scope_Manager.Scoped_Store (Renaming_Data,
                                                                          Equivalent_Keys => Is_Same_Def);
 
+   -------------------------------------------------------------------------
    --
    -- General parameters
    --
@@ -253,7 +280,7 @@ package body Rules.Style is
       Literal_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2)  :");
       Place_Flag_Utilities.Help_On_Flags (Header     => "   Parameter (3..):",
                                           Footer     => "(optional)",
-                                          Extra_Value => "<value>");
+                                          Extra_Value => "[max] <value>");
       User_Message ("For multiple_elements:");
       Multiple_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2..): [flexible]",
                                              Footer => "(default = all)");
@@ -296,6 +323,7 @@ package body Rules.Style is
       Places    : Place_Set := (others => False);
       P         : Place_Names;
       Flexible  :  Boolean;
+      Is_Max    : Boolean;
    begin
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => False);
@@ -336,15 +364,32 @@ package body Rules.Style is
                   if P = Pl_Other then
                      -- It is an allowed value
 
+                     Is_Max := Get_Modifier ("MAX");
                      case Lit_Kind is
                         when Lit_Integer =>
-                           if Integer_Count = Permitted_Consts_Count'Last then
-                              Parameter_Error (Rule_Id, "too many integer values");
+                           if Is_Max then
+                              if Integer_Max_Value /= Uninitialized then
+                                 Parameter_Error (Rule_Id, "max value already given");
+                              end if;
+
+                              Integer_Max_Value := Get_Integer_Parameter;
+                              if Integer_Max_Value < 0 then
+                                 Integer_Max_Value := Uninitialized;   -- Reinitialized to uninitialized ;-)
+                                 Parameter_Error (Rule_Id, "max value cannot be negative");
+                              end if;
+                           else
+                              if Integer_Count = Permitted_Consts_Count'Last then
+                                 Parameter_Error (Rule_Id, "too many integer values");
+                              end if;
+
+                              Integer_Count := Integer_Count + 1;
+                              Integer_Permitted_Values (Integer_Count) := Get_Integer_Parameter;
+                           end if;
+                        when Lit_Real =>
+                           if Is_Max then
+                              Parameter_Error (Rule_Id, "max not allowed for reals");
                            end if;
 
-                           Integer_Count := Integer_Count + 1;
-                           Integer_Permitted_Values (Integer_Count) := Get_Integer_Parameter;
-                        when Lit_Real =>
                            if Real_Count = Permitted_Consts_Count'Last then
                               Parameter_Error (Rule_Id, "too many real values");
                            end if;
@@ -352,6 +397,10 @@ package body Rules.Style is
                            Real_Count := Real_Count + 1;
                            Real_Permitted_Values (Real_Count) := Get_Float_Parameter;
                         when Lit_String =>
+                           if Is_Max then
+                              Parameter_Error (Rule_Id, "max not allowed for strings");
+                           end if;
+
                            if String_Count = Permitted_Consts_Count'Last then
                               Parameter_Error (Rule_Id, "too many string values");
                            end if;
@@ -367,7 +416,7 @@ package body Rules.Style is
                   end if;
                end loop;
 
-               if Places = (Place_Names => False) then
+               if Places = No_Place then
                   -- No Place specified, default to Constant + Number
                   Places := (Pl_Constant | Pl_Number => True, others => False);
                end if;
@@ -666,12 +715,13 @@ package body Rules.Style is
       case Action is
          when Clear =>
             Clear (Contexts);
-            Rule_Used        := (others => False);
-            Real_Count       := 0;
-            Integer_Count    := 0;
-            String_Count     := 0;
-            Permitted_Places := (others => (others => False));
-            Flexible_Clause  := False;
+            Rule_Used         := (others => False);
+            Real_Count        := 0;
+            Integer_Count     := 0;
+            Integer_Max_Value := Uninitialized;
+            String_Count      := 0;
+            Permitted_Places  := (others => (others => False));
+            Flexible_Clause   := False;
             for Assoc in Positional_Exceptions'Range loop
                Clear (Positional_Exceptions (Assoc));
             end loop;
@@ -1426,7 +1476,7 @@ package body Rules.Style is
             return Result (Result'First .. Inx_Out);
          end Normalize;
 
-         function Place return Place_Names is
+         function Get_Place return Place_Names is
          -- Search the place where the expression is used
             use Asis.Declarations;
             E        : Asis.Element := Expression;
@@ -1456,41 +1506,45 @@ package body Rules.Style is
                         if Is_Equal (Top_Expr, Initialization_Expression (E)) then
                            return Pl_Var_Init;
                         else
-                           return Pl_Other;
+                           return Pl_Declaration;
                         end if;
                      when A_Type_Declaration |
                           A_Subtype_Declaration
                           =>
                         return Pl_Type;
                      when others =>
-                        return Pl_Other;
+                        return Pl_Declaration;
                   end case;
                when A_Clause =>
                   case Clause_Kind (E) is
                      when A_Representation_Clause | A_Component_Clause =>
                         return Pl_Repr_Clause;
                      when others =>
-                        return Pl_Other;
+                        return Pl_Declaration;   -- For the sake of the casual user, consider a clause a declaration
                   end case;
                when A_Pragma =>
                   return Pl_Pragma;
                when others =>
                   return Pl_Other;
             end case;
-         end Place;
+         end Get_Place;
 
          Enclosing : Asis.Element;
          Negative  : Boolean;
+         Place     : constant Place_Names := Get_Place;
       begin  -- Process_Exposed_Literal
 
          -- Note that if there is not check for the corresponding class of type,
          -- Report will be called with an Empty_Context (and thus will not report).
          case Expression_Kind (Expression) is
             when An_Integer_Literal =>
-               if Permitted_Places (Lit_Integer) /= No_Place
-                 and then Permitted_Places (Lit_Integer) (Place)
-               then
+               if Permitted_Places (Lit_Integer) (Place) then
                   -- Always allowed
+                  return;
+               end if;
+               if Permitted_Places (Lit_Integer) (Pl_Declaration)
+                 and then Place in Other_Declarations
+               then
                   return;
                end if;
 
@@ -1534,6 +1588,15 @@ package body Rules.Style is
                   else
                      I := Extended_Biggest_Int'Wide_Value (Value_Str);
                   end if;
+
+                  if Integer_Max_Value /= Uninitialized
+                    and then I /= Biggest_Int'First     -- To avoid Constraint_Error in abs below
+                    and then abs I <= Integer_Max_Value
+                  then
+                     -- OK just return
+                     return;
+                  end if;
+
                   for K in Permitted_Consts_Count range 1 .. Integer_Count loop
                      if Integer_Permitted_Values (K) = I then
                         -- OK just return
@@ -1550,12 +1613,16 @@ package body Rules.Style is
                        & " not in allowed construct");
 
             when A_Real_Literal =>
-               if Permitted_Places (Lit_Real) /= No_Place
-                 and then Permitted_Places (Lit_Real) (Place)
-               then
+               if Permitted_Places (Lit_Real) (Place) then
                   -- Always allowed
                   return;
                end if;
+               if Permitted_Places (Lit_Real) (Pl_Declaration)
+                 and then Place in Other_Declarations
+               then
+                  return;
+               end if;
+
 
                -- Compare to allowed values with a delta possible
                -- due to rounding conversion problems
@@ -1589,10 +1656,13 @@ package body Rules.Style is
                end;
 
             when A_Character_Literal =>
-               if Permitted_Places (Lit_Character) /= No_Place
-                 and then Permitted_Places (Lit_Character) (Place)
-               then
+               if Permitted_Places (Lit_Character) (Place) then
                   -- Always allowed
+                  return;
+               end if;
+               if Permitted_Places (Lit_Character) (Pl_Declaration)
+                 and then Place in Other_Declarations
+               then
                   return;
                end if;
 
@@ -1614,10 +1684,13 @@ package body Rules.Style is
                        & " not in allowed construct");
 
             when A_String_Literal =>
-               if Permitted_Places (Lit_String) /= No_Place
-                 and then Permitted_Places (Lit_String) (Place)
-               then
+               if Permitted_Places (Lit_String) (Place) then
                   -- Always allowed
+                  return;
+               end if;
+               if Permitted_Places (Lit_String) (Pl_Declaration)
+                 and then Place in Other_Declarations
+               then
                   return;
                end if;
 

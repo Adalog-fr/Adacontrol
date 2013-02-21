@@ -44,6 +44,10 @@ Style (Casing_Identifier, original):
    Check formal parameters in bodies if there is an explicit
    specification.
 
+Style (exposed_literal):
+   Added optional "max" to value, allow in all declarations
+
+
 =============
 == V1.14r9 ==
 =============

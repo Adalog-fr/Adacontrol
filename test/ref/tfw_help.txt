@@ -609,9 +609,9 @@ For casing_*:
                   (default = Original)
 For exposed_literal:
    Parameter (2)  : integer | real | character | string
-   Parameter (3..): <value>  | constant | number      | var_init |
-                    type     | pragma   | repr_clause | index    |
-                    exponent
+   Parameter (3..): [max] <value> | declaration | constant | number      |
+                    var_init      | type        | pragma   | repr_clause |
+                    index         | exponent
                     (optional)
 For multiple_elements:
    Parameter (2..): [flexible] clause | declaration | statement

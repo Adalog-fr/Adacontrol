@@ -7272,7 +7272,7 @@ This rules controls usage of various ``general'' Ada coding style.
                   type | procedure    | function | package
 <type_kw>     ::= integer | real | character | string
 <value_place> ::= <value> | <place>
-<value>       ::= <integer number> | <real number> | "<pattern>"
+<value>       ::= [max] <integer number> | <real number> | "<pattern>"
 <place>       ::= constant    | exponent | index | number | pragma |
                   repr_clause | var_init | type
 @end example
@@ -7304,18 +7304,21 @@ allowed in that case.
 ``exposed_literal'' controls the usage of literals (aka ``magic
 values''), that appear outside of allowed places. The second parameter
 tells to which kind of literals the rule applies. The (optional)
-indicated values that follow are allowed at any place; for strings,
-they are regular expressions. @xref{Syntax of regular
+indicated values that follow are allowed at any place; for integers, a
+single value can be preced by ``max'', to indicate that all literals
+whose (absolute) value is less or equal are allowed; for strings, the
+values are regular expressions. @xref{Syntax of regular
 expressions}. Commonly allowed values are 0 and 1 for integer
 literals, 1.0 and 0.0 for real literals and "^$" (the empty string)
 for string literals. At most 20 values of each kind may be
 specified. In addition, one or several <place> keyword can be used to
-specify constructs where any literal is allowed: ``constant'' stands
-for constant declarations, ``exponent'' for the right parameter of an
-exponentiation (i.e. @code{"**"}) function call, ``index'' for array
-indexing, ``number'' for named number declarations, ``pragma'' for
-pragma arguments, ``repr_clause'' for representation clauses, ``type''
-for type (and subtype) declarations, and  ``var_init'' for the
+specify constructs where any literal is allowed: ``declaration''
+stands for any declaration, ``constant'' for constant declarations,
+``exponent'' for the right parameter of an exponentiation
+(i.e. @code{"**"}) function call, ``index'' for array indexing,
+``number'' for named number declarations, ``pragma'' for pragma
+arguments, ``repr_clause'' for representation clauses, ``type'' for
+type (and subtype) declarations, and  ``var_init'' for the
 initialization expression of variable declarations. If no <place> is
 given, it is taken as @code{number, constant}, i.e. any literal is
 allowed in named numbers and constant declarations.
