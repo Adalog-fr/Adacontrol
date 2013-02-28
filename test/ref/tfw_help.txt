@@ -320,7 +320,9 @@ Parameter: <Max allowed length>
 Rule: MAX_NESTING
 Control scopes nested deeper than a given limit.
 
-Parameter: <maximum allowed nesting level>
+Paramater (1):  all | generic | separate
+                (optional, default=all)
+Parameter (2): <maximum allowed nesting level>
 ----
 Rule: MAX_SIZE
 Control the maximum length of Ada statements

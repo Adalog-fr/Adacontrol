@@ -21,6 +21,10 @@ Local_Hiding
    Added exception patterns. Replaced Overloading_Short with a rule
    variable.
 
+Max_Nesting
+   Added subrules Generic, Separate
+   fixed level to really be the nesting level
+
 Max_Size
    Added subrules Package_Spec, Package_Body, Procedure_Body,
    Function_Body, Protected_Spec, Protected_Body, Entry_Body,

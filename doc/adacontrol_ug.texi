@@ -5183,23 +5183,39 @@ This rule controls excessive nesting of declarations.
 
 @subsection Syntax
 @example
-<control_kind> max_nesting (<max allowed depth>);
+<control_kind> max_nesting ([<subrule>,] <max allowed depth>);
+<subrule> ::= all | generic | separate
 @end example
 
 @subsection Action
-This rule controls the nesting of declarative
-constructs (like subprograms, packages, generics, block
-statements@dots{}) that exceed a given depth. Nesting of statements
-(@code{@b{loop}}, @code{@b{case}}) is not considered. This rule can be
-given once for each of check, search, and count. This way, it
-is possible to have a level considered a warning (search), and one
-considered an error (check). Of course, this makes sense only if the
-level for search is less than the one for check.
+If ``all'' (or no subrule) is given as the first parameter, this rule
+controls the nesting of declarative constructs (like subprograms,
+packages, generics, block statements@dots{}) that exceed a given
+depth. Nesting of statements (@code{@b{loop}}, @code{@b{case}}) is not
+considered.
+
+If ``generic'' is given as the first parameter, this rule controls the
+nesting of generics, ignoring all non-generic units.
+
+If ``separate'' is given as the first parameter, this rule controls the
+nesting of separate bodies.
+
+This rule can be given once for each subrule and each of check,
+search, and count. This way, it is possible to have a level considered
+a warning (search), and one considered an error (check). Of course,
+this makes sense only if the level for search is less than the one for
+check.
+
+Note that the value given is the maximum @i{allowed} nesting; f.e. if the
+value given for ``generic'' is 1, it means that a generic inside a
+generic is allowed, but not more.
 
 Ex:
 @example
 search max_nesting (5);
-check max_nesting (7);
+check max_nesting (all, 7);
+check max_nesting (generic, 1);
+check max_nesting (separate, 0); -- Do not allow separate in separate
 @end example
 
 @node Max_Size, Max_Statement_Nesting, Max_Nesting, Rules reference
@@ -6084,7 +6100,7 @@ Ex:
 check  parameter_declarations (all_parameters, max 10);
 search parameter_declarations (all_parameters, max 5);
 
--- All functions must have parameters and no out or in out 
+-- All functions must have parameters and no out or in out
 -- parameters (allowed in Ada 2012):
 check parameter_declarations (all_parameters,    min 1, function);
 check parameter_declarations (out_parameters,    max 0, function);
@@ -8979,6 +8995,19 @@ to:
 @example
 set local_hiding.overloading_report compact;
 check local_hiding (overloading);
+@end example
+
+@subsection Max_Nesting
+The value given is now the @i{nesting} level (consistent with the rule name),
+no more the maximum @i{depth}. This is more natural (Max_Nesting(1) means
+that the construct can be nested once), but it is one less than in previous
+versions. For example, change:
+@example
+check Max_Nesting (5);
+@end example
+to:
+@example
+check Max_Nesting (4);
 @end example
 
 @subsection Parameter_Declarations

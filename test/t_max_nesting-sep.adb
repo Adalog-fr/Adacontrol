@@ -1,6 +1,7 @@
 separate (T_Max_Nesting)
 procedure Sep is
-   procedure Level_3 is
+   procedure Test_Separate is separate;  -- separate > 0
+   procedure All2 is -- all > 1
    begin
       null;
    end;
