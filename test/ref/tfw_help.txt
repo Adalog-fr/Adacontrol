@@ -329,7 +329,9 @@ Parameter: <Max allowed length>
 Rule: MAX_NESTING
 Control scopes nested deeper than a given limit.
 
-Parameter: <maximum allowed nesting level>
+Paramater (1):  all | generic | separate
+                (optional, default=all)
+Parameter (2): <maximum allowed nesting level>
 ----
 Rule: MAX_SIZE
 Control the maximum length of Ada statements
@@ -619,9 +621,9 @@ For casing_*:
                   (default = Original)
 For exposed_literal:
    Parameter (2)  : integer | real | character | string
-   Parameter (3..): <value>  | constant | number      | var_init |
-                    type     | pragma   | repr_clause | index    |
-                    exponent
+   Parameter (3..): [max] <value> | declaration | constant | number      |
+                    var_init      | type        | pragma   | repr_clause |
+                    index         | exponent
                     (optional)
 For multiple_elements:
    Parameter (2..): [flexible] clause | declaration | statement

@@ -77,17 +77,19 @@ t_style-literals.adb:31:31: Error: Not_Base_13: based representation not allowed
 t_style-literals.adb:38:31: Error: Base_16_Literals: number representation does not follow convention
 t_style-literals.adb:40:32: Error: Not_Base_7: based representation not allowed
 t_style-literals.adb:43:31: Error: Base_16_Literals: number representation does not follow convention
-t_style-exposed_literal.adb:34:9: Error: Exposed: integer literal 2 not in allowed construct
-t_style-exposed_literal.adb:37:9: Error: Exposed: real literal 2.0 not in allowed construct
-t_style-exposed_literal.adb:38:10: Error: Exposed: real literal -2.0 not in allowed construct
-t_style-exposed_literal.adb:41:12: Error: Exposed: string literal "12345" not in allowed construct
-t_style-exposed_literal.adb:42:14: Error: Exposed: string literal "12345" not in allowed construct
-t_style-exposed_literal.adb:43:12: Error: Exposed: character literal 'A' not in allowed construct
-t_style-exposed_literal.adb:46:11: Error: Exposed: integer literal 5 not in allowed construct
-t_style-exposed_literal.adb:49:9: Error: Exposed: integer literal 2 not in allowed construct
-t_style-exposed_literal.adb:50:10: Error: Exposed: integer literal 9_223_372_036_854_775_807 not in allowed construct
-t_style-exposed_literal.adb:51:10: Error: Exposed: integer literal -9_223_372_036_854_775_808 not in allowed construct
-t_style-exposed_literal.adb:54:18: Error: Exposed: integer literal 10 not in allowed construct
+t_style-exposed_literal.adb:33:29: Error: Exposed: real literal 3.0 not in allowed construct
+t_style-exposed_literal.adb:40:33: Error: Exposed: real literal 3.0 not in allowed construct
+t_style-exposed_literal.adb:46:9: Error: Exposed: integer literal 2 not in allowed construct
+t_style-exposed_literal.adb:49:9: Error: Exposed: real literal 2.0 not in allowed construct
+t_style-exposed_literal.adb:50:10: Error: Exposed: real literal -2.0 not in allowed construct
+t_style-exposed_literal.adb:53:12: Error: Exposed: string literal "12345" not in allowed construct
+t_style-exposed_literal.adb:54:14: Error: Exposed: string literal "12345" not in allowed construct
+t_style-exposed_literal.adb:55:12: Error: Exposed: character literal 'A' not in allowed construct
+t_style-exposed_literal.adb:58:11: Error: Exposed: integer literal 5 not in allowed construct
+t_style-exposed_literal.adb:63:9: Error: Exposed: integer literal 2 not in allowed construct
+t_style-exposed_literal.adb:64:10: Error: Exposed: integer literal 9_223_372_036_854_775_807 not in allowed construct
+t_style-exposed_literal.adb:65:10: Error: Exposed: integer literal -9_223_372_036_854_775_808 not in allowed construct
+t_style-exposed_literal.adb:68:18: Error: Exposed: integer literal 10 not in allowed construct
 t_style-multiple_elements.adb:3:43: Error: Spans: use clause does not start line and does not come after matching with clause
 t_style-multiple_elements.adb:4:18: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
 t_style-multiple_elements.adb:5:23: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause

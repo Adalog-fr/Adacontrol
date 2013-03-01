@@ -1,20 +1,27 @@
-procedure T_max_nesting is
-   procedure Nest2 is
-      procedure Nest3 is
-         procedure Nest4 is
+procedure T_Max_Nesting is
+   procedure Test_Generic is separate;
+
+   procedure All1 is
+      procedure All2;          -- All > 1
+      procedure All2 is
+         procedure All3 is     -- All > 2
+            procedure All4 is  -- All > 2
+            begin
+               null;
+            end All4;
          begin
             null;
-         end;
+         end All3;
       begin
-         begin
+         begin                 -- All > 2
             null;
          end;
-      end;
+      end All2;
    begin
       null;
-   end;
+   end All1;
    procedure Sep is separate;
 begin
    null;
-end T_max_nesting;
+end T_Max_Nesting;
 

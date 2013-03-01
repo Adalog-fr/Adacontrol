@@ -1,2 +1,6 @@
-search max_nesting (2);
-check max_nesting (3);
+search max_nesting (1);
+check max_nesting (all, 2);
+Generics: check max_nesting (generic, 1);
+Generics: count max_nesting (generic, 1);
+Absolute: count max_nesting (all, 2);
+Separate: check max_nesting (separate, 0);

@@ -35,10 +35,13 @@ with
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities;
 
 -- Asis
 with
+  Asis.Compilation_Units,
+  Asis.Declarations,
   Asis.Elements;
 
 -- Adactl
@@ -47,34 +50,51 @@ with
   Framework.Reports,
   Framework.Rules_Manager,
   Framework.Scope_Manager;
+pragma Elaborate (Framework.Language);
 
 package body Rules.Max_Nesting is
    use Framework, Framework.Scope_Manager;
 
-   Rule_Used    : Boolean := False;
-   Save_Used    : Boolean;
-   Count_Depth  : Scope_Range := Scope_Range'Last;
-   Search_Depth : Scope_Range := Scope_Range'Last;
-   Check_Depth  : Scope_Range := Scope_Range'Last;
-   Rule_Check_Label  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Rule_Search_Label : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Rule_Count_Label  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   -- Algorithm:
+   --
+   -- Only thing worth noting is that the nesting level is one less than the depth
+   -- (i.e.: a level 2 unit is nested once). We actually count depths, not nesting,
+   -- therefore the offset is adjusted in Add_Control
+
+   type Subrules is (Sr_Default, Sr_All, Sr_Generic, Sr_Separate);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
+                                                                             Prefix => "Sr_" );
+   type Used_Set is array (Subrules) of Boolean;
+   Not_Used : constant Used_Set := (others => False);
+
+   Rule_Used    : Used_Set := Not_Used;
+   Save_Used    : Used_Set;
+
+   Max_Depth  : array (Subrules, Control_Kinds) of Scope_Range := (others => (others => Scope_Range'Last));
+   Labels     : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    Not_Counted : Scope_Range := 0;
-   -- Number of active scopes not counted for the depth
+   -- Number of active scopes not counted for the Sr_All subrule depth
    -- i.e.: for loops and accept statements
+
+   Generic_Count : Scope_Range := 0;
+   -- Depth for the Sr_Generic subrule
+
+   Separate_Count : Scope_Range := 0;
+   -- Depth for the Sr_Separate subrule
 
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Utilities;
+      use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control scopes nested deeper than a given limit.");
       User_Message;
-      User_Message ("Parameter: <maximum allowed nesting level>");
+      Help_On_Flags (Header => "Paramater (1): ", Footer => "(optional, default=all)", Extra_Value => "");
+      User_Message ("Parameter (2): <maximum allowed nesting level>");
    end Help;
 
    -----------------
@@ -83,38 +103,28 @@ package body Rules.Max_Nesting is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Language;
+      use Framework.Language, Subrules_Flag_Utilities;
 
       Max : Integer;
+      Sr  : Subrules;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "max nesting value expected");
       end if;
 
+      Sr  := Get_Flag_Parameter (Allow_Any => True);
+      if Sr = Sr_Default then
+         Sr := Sr_All;
+      end if;
       Max := Get_Integer_Parameter (Min => 0);
 
-      case Ctl_Kind is
-         when Check =>
-            if Check_Depth /= Scope_Range'Last then
-               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
-            end if;
-            Check_Depth      := Scope_Range (Max) + 1;
-            Rule_Check_Label := To_Unbounded_Wide_String (Ctl_Label);
-         when Search =>
-            if Search_Depth /= Scope_Range'Last then
-               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
-            end if;
-            Search_Depth      := Scope_Range (Max) + 1;
-            Rule_Search_Label := To_Unbounded_Wide_String (Ctl_Label);
-         when Count =>
-            if Count_Depth /= Scope_Range'Last then
-               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
-            end if;
-            Count_Depth       := Scope_Range (Max) + 1;
-            Rule_Count_Label := To_Unbounded_Wide_String (Ctl_Label);
-     end case;
+      if Max_Depth (Sr, Ctl_Kind) /= Scope_Range'Last then
+         Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
+      end if;
+      Max_Depth (Sr, Ctl_Kind) := Scope_Range (Max) + 1;
+      Labels    (Sr, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
 
-     Rule_Used  := True;
+     Rule_Used (Sr) := True;
    exception
       when Constraint_Error =>
          Parameter_Error (Rule_Id,
@@ -131,70 +141,132 @@ package body Rules.Max_Nesting is
    begin
       case Action is
          when Clear =>
-            Rule_Used         := False;
-            Count_Depth       := Scope_Range'Last;
-            Search_Depth      := Scope_Range'Last;
-            Check_Depth       := Scope_Range'Last;
-            Rule_Check_Label  := Null_Unbounded_Wide_String;
-            Rule_Search_Label := Null_Unbounded_Wide_String;
-            Rule_Count_Label  := Null_Unbounded_Wide_String;
+            Rule_Used := Not_Used;
+            Max_Depth := (others => (others => Scope_Range'Last));
+            Labels    := (others => (others => Null_Unbounded_Wide_String));
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := False;
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
    end Command;
+
+
+   ---------------
+   -- Do_Report --
+   ---------------
+
+   procedure Do_Report (Sr : Subrules; Depth : Scope_Range; Scope : Asis.Element) is
+      use Ada.Strings.Wide_Unbounded;
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Utilities, Subrules_Flag_Utilities, Framework.Reports;
+      Scope_Body : Asis.Declaration;
+   begin
+      -- Don't report on body if there is an explicit spec
+      case Declaration_Kind (Scope) is
+         when A_Procedure_Body_Declaration
+            | A_Function_Body_Declaration
+            | A_Package_Body_Declaration
+            =>
+            Scope_Body := Scope;
+            if Is_Subunit (Scope_Body) then
+               Scope_Body := Corresponding_Body_Stub (Scope_Body);
+            end if;
+            if not Is_Nil (Corresponding_Declaration (Scope_Body)) then
+               return;
+            end if;
+         when A_Task_Body_Declaration
+            | A_Protected_Body_Declaration
+            =>
+            -- Those always have an explicit spec
+            return;
+         when others =>
+            null;
+      end case;
+
+      -- We check only if it is equal to the first forbidden level.
+      -- It is not useful to issue a message if there are even deeper levels.
+      if Depth > Max_Depth (Sr, Check) then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Sr, Check)),
+                 Check,
+                 Get_Location (Scope),
+                 Choose (Sr = Sr_All, "", Image (Sr, Lower_Case) & ' ')
+                    & "nesting deeper than" & Scope_Range'Wide_Image (Max_Depth (Sr, Check)-1)
+                    & " (" & Trim_All(Scope_Range'Wide_Image (Depth-1)) & ')');  -- Nesting is Depth-1
+      elsif Depth > Max_Depth (Sr, Search) then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Sr, Search)),
+                 Search,
+                 Get_Location (Scope),
+                 Choose (Sr = Sr_All, "", Image (Sr, Lower_Case) & ' ')
+                    & "nesting deeper than" & Scope_Range'Wide_Image (Max_Depth (Sr, Search)-1)
+                    & " (" & Trim_All(Scope_Range'Wide_Image (Depth-1)) & ')');  -- Nesting is Depth-1
+      end if;
+
+      -- But counting is independent
+      if Depth > Max_Depth (Sr, Count) then
+         Report (Rule_Id,
+                 To_Wide_String (Labels (Sr, Count)),
+                 Count,
+                 Get_Location (Scope),
+                 "");
+      end if;
+   end Do_Report;
+
 
    -------------------------
    -- Process_Scope_Enter --
    -------------------------
 
    procedure Process_Scope_Enter (Scope : in Asis.Element) is
-      use Framework.Reports, Ada.Strings.Wide_Unbounded, Asis, Asis.Elements;
+      use Asis, Asis.Compilation_Units, Asis.Elements;
+      use Thick_Queries;
    begin
-      if not Rule_Used then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      -- Do not count exception handlers and statements other than blocks
-      case Element_Kind (Scope) is
-         when A_Statement =>
-            if Statement_Kind (Scope) /= A_Block_Statement then
-               Not_Counted := Not_Counted + 1;
-               return;
-            end if;
-         when An_Exception_Handler =>
-            Not_Counted := Not_Counted + 1;
-            return;
-         when others =>
-            null;
-     end case;
-
-      -- We check only if it is equal to the first forbidden level.
-      -- It is not useful to issue a message if there are even deeper levels.
-      if Current_Depth - Not_Counted = Check_Depth then
-         Report (Rule_Id,
-                 To_Wide_String (Rule_Check_Label),
-                 Check,
-                 Get_Location (Scope),
-                 "nesting deeper than" & Scope_Range'Wide_Image (Check_Depth-1));
-      elsif Current_Depth - Not_Counted = Search_Depth then
-         Report (Rule_Id,
-                 To_Wide_String (Rule_Search_Label),
-                 Search,
-                 Get_Location (Scope),
-                 "nesting deeper than" & Scope_Range'Wide_Image (Search_Depth-1));
+      -- Only Sr_Separate is interested in stubs (to report on stub rather than on separate body)
+      if Declaration_Kind (Scope) in A_Body_Stub then
+         if Rule_Used (Sr_Separate) then
+            Do_Report (Sr_Separate, Separate_Count+1, Scope); -- Separate_Count+1 since the stub is not entered
+         end if;
+         return;
       end if;
 
-      -- But counting is independent
-      if Current_Depth - Not_Counted = Count_Depth then
-         Report (Rule_Id,
-                 To_Wide_String (Rule_Count_Label),
-                 Count,
-                 Get_Location (Scope),
-                 "nesting deeper than" & Scope_Range'Wide_Image (Count_Depth-1));
+      if Rule_Used (Sr_All) then
+         -- Do not count exception handlers and statements other than blocks
+         case Element_Kind (Scope) is
+            when A_Statement =>
+               if Statement_Kind (Scope) /= A_Block_Statement then
+                  Not_Counted := Not_Counted + 1;
+                  return;
+               end if;
+            when An_Exception_Handler =>
+               Not_Counted := Not_Counted + 1;
+               return;
+            when others =>
+               null;
+         end case;
+         Do_Report (Sr_All, Current_Depth - Not_Counted, Scope);
+      end if;
+
+      -- Count generic nesting
+      if Rule_Used (Sr_Generic)
+        and then Is_Generic_Unit (Scope)
+      then
+         Generic_Count := Generic_Count + 1;
+         Do_Report (Sr_Generic, Generic_Count, Scope);
+      end if;
+
+      if Rule_Used (Sr_Separate)
+        and then Is_Compilation_Unit (Scope)
+        and then Unit_Class (Enclosing_Compilation_Unit (Scope)) = A_Separate_Body
+      then
+         Separate_Count := Separate_Count + 1;
       end if;
   end Process_Scope_Enter;
 
@@ -203,23 +275,43 @@ package body Rules.Max_Nesting is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      use Asis, Asis.Elements;
+      use Asis, Asis.Compilation_Units, Asis.Elements;
+      use Thick_Queries;
    begin
-      if not Rule_Used then
+      if Rule_Used = Not_Used then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      case Element_Kind (Scope) is
-         when A_Statement =>
-            if Statement_Kind (Scope) /= A_Block_Statement then
+      if Declaration_Kind (Scope) in A_Body_Stub then
+         return;
+      end if;
+
+      if Rule_Used (Sr_All) then
+         case Element_Kind (Scope) is
+            when A_Statement =>
+               if Statement_Kind (Scope) /= A_Block_Statement then
+                  Not_Counted := Not_Counted - 1;
+               end if;
+            when An_Exception_Handler =>
                Not_Counted := Not_Counted - 1;
-            end if;
-         when An_Exception_Handler =>
-            Not_Counted := Not_Counted - 1;
-         when others =>
-            null;
-      end case;
+            when others =>
+               null;
+         end case;
+      end if;
+
+      if Rule_Used (Sr_Generic)
+        and then Is_Generic_Unit (Scope)
+      then
+            Generic_Count := Generic_Count - 1;
+      end if;
+
+      if Rule_Used (Sr_Separate)
+        and then Is_Compilation_Unit (Scope)
+        and then Unit_Class (Enclosing_Compilation_Unit (Scope)) = A_Separate_Body
+      then
+         Separate_Count := Separate_Count - 1;
+      end if;
    end Process_Scope_Exit;
 
 begin  -- Rules.Max_Nesting
