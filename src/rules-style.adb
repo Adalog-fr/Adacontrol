@@ -780,34 +780,45 @@ package body Rules.Style is
    -- Check_Casing --
    ------------------
 
-   procedure Check_Casing (Source_Name : in Wide_String;
-                           Casing      : in Casing_Styles;
-                           Element     : in Asis.Expression)
+   procedure Check_Casing (Casing         : in Casing_Styles;
+                           Source_Element : in Asis.Element;
+                           Ref_Element    : in Asis.Element := Asis.Nil_Element)
    is
-      -- Element is the identifier for St_Casing_Identifier and St_Casing_Attribute
-      -- and the pragma for St_Casing_Pragma
+   -- Source_Element is the identifier for St_Casing_Identifier and St_Casing_Attribute
+   -- and the pragma for St_Casing_Pragma
+   -- Ref_Element is an element that allows retrieving the original defining name. If it is Nil_Element,
+   -- Source_Element is used instead. It differs from Source_Element only for end names.
       use Asis, Asis.Declarations, Asis.Elements;
       use Framework.Reports, Thick_Queries;
 
-      Reference_Name : Wide_String (Source_Name'Range);
+      Source_Image    : constant Wide_String := Extended_Name_Image (Source_Element);
+      Reference_Image : Wide_String (Source_Image'Range);
       -- Note that the source name and the refence name always have the same length!
       Def_Name : Asis.Defining_Name;
    begin
       case Casing_Policy (Casing) is
          when Ca_Uppercase =>
-            Reference_Name := To_Upper (Source_Name);
+            Reference_Image := To_Upper (Source_Image);
          when Ca_Lowercase =>
-            Reference_Name := To_Lower (Source_Name);
+            Reference_Image := To_Lower (Source_Image);
          when Ca_Titlecase =>
-            Reference_Name := To_Title (Source_Name);
+            Reference_Image := To_Title (Source_Image);
          when Ca_Original =>
-            Def_Name := First_Defining_Name (Element);
-            if Element_Kind (Element) = A_Defining_Name then
-               if Is_Equal (Element, Def_Name) then
-                  -- Since it *is* the original...
-                  return;
+            declare
+               Good_Ref : Asis.Element := Ref_Element;
+            begin
+               if Is_Nil (Good_Ref) then
+                  Good_Ref := Source_Element;
                end if;
-            end if;
+               Def_Name := First_Defining_Name (Good_Ref);
+
+               if Element_Kind (Good_Ref) = A_Defining_Name then
+                  if Is_Equal (Source_Element, Def_Name) then
+                     -- Since it *is* the original...
+                     return;
+                  end if;
+               end if;
+            end;
 
             if Is_Nil (Def_Name) then
                -- some predefined stuff, give up
@@ -818,14 +829,14 @@ package body Rules.Style is
                Def_Name := Defining_Selector (Def_Name);
             end if;
 
-            Reference_Name := Defining_Name_Image (Def_Name);
+            Reference_Image := Defining_Name_Image (Def_Name);
       end case;
 
-      if Source_Name /= Reference_Name then
+      if Source_Image /= Reference_Image then
          Report (Rule_Id,
                  Corresponding_Context (Casing),
-                 Get_Location (Element),
-                 "Wrong casing of """ & Source_Name & """, should be """ & Reference_Name & '"');
+                 Get_Location (Source_Element),
+                 "Wrong casing of " & Source_Image & ", should be " & Reference_Image);
       end if;
    end Check_Casing;
 
@@ -931,27 +942,30 @@ package body Rules.Style is
       -- Beware that if Identifier is A_Defining_Operator_Symbol or An_Operator_Symbol, we must
       -- apply the rule for keywords, not identifiers
       if Element_Kind (Identifier) = A_Defining_Name then
-         if Rule_Used (St_Casing_Identifier) and then Defining_Name_Kind (Identifier) = A_Defining_Identifier then
-            Check_Casing (Defining_Name_Image (Identifier), St_Casing_Identifier, Identifier);
+         if Rule_Used (St_Casing_Identifier)
+           and then (        Defining_Name_Kind (Identifier) = A_Defining_Identifier
+                     or else Defining_Name_Kind (Identifier) = A_Defining_Enumeration_Literal)
+         then
+            Check_Casing (St_Casing_Identifier, Identifier);
          elsif Rule_Used (St_Casing_Keyword) and then Defining_Name_Kind (Identifier) = A_Defining_Operator_Symbol then
-            Check_Casing (Defining_Name_Image (Identifier), St_Casing_Keyword, Identifier);
+            Check_Casing (St_Casing_Keyword, Identifier);
          end if;
+         -- No need to call Check_Renamed on defining names
+
       else
          if Rule_Used (St_Casing_Identifier)
            and then (        Expression_Kind (Identifier) = An_Identifier
                      or else Expression_Kind (Identifier) = An_Enumeration_Literal)
          then
-            Check_Casing (Name_Image (Identifier), St_Casing_Identifier, Identifier);
+            Check_Casing (St_Casing_Identifier, Identifier);
          elsif Rule_Used (St_Casing_Keyword) and then Expression_Kind (Identifier) = An_Operator_Symbol then
             -- This is an operator, must be the prefix of a function call
             -- If it uses infix notation, don't handle it because it will be found by the texual rule for keywords
             if Is_Prefix_Call (Enclosing_Element (Identifier)) then
-               Check_Casing (Name_Image (Identifier), St_Casing_Keyword, Identifier);
+               Check_Casing (St_Casing_Keyword, Identifier);
             end if;
          end if;
 
-         -- This procedure is also called on defining names for St_Casing, not interesting
-         -- for St_Renamed_Entity
          if Rule_Used (St_Renamed_Entity) then
             Check_Renamed;
          end if;
@@ -1974,7 +1988,7 @@ package body Rules.Style is
       Rules_Manager.Enter (Rule_Id);
 
       Identifier := Attribute_Designator_Identifier (Attribute);
-      Check_Casing (Name_Image (Identifier), St_Casing_Attribute, Identifier);
+      Check_Casing (St_Casing_Attribute, Identifier);
    end Process_Attribute;
 
    --------------------
@@ -1989,7 +2003,7 @@ package body Rules.Style is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check_Casing (Pragma_Name_Image (Pr), St_Casing_Pragma, Pr);
+      Check_Casing (St_Casing_Pragma, Pr);
    end Process_Pragma;
 
    ------------------
