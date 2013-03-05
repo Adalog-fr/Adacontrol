@@ -1,7 +1,8 @@
+with X_STYLE_CASING.CHILD_1.CHILD_2;                    -- Casing_Identifier x3
 separate (T_Style)
 procedure Casing is
    pragma PAGE;
-   pragma Page;                                 -- Casing_Pragma
+   pragma Page;                                         -- Casing_Pragma
    Int : Integer;
    function Foo ( I : in Integer ) return Integer;
    pragma INLINE (FOO);                                 -- Casing_Identifier
@@ -18,7 +19,7 @@ procedure Casing is
    end "AND";
    I : Integer;
 
-   type T is (Aa, Bb, Cc);
+   type T is (Aa, Bb, CC);
    subtype ST is T range AA .. BB;               -- Casing_Identifier (Mantis 0000032)
 
 begin

@@ -1,4 +1,4 @@
-t_style.adb:1:10: Found: Casing: Wrong casing of "Text_io", should be "Text_IO"
+t_style.adb:1:10: Found: Casing: Wrong casing of Text_io, should be Text_IO
 t_style-no_default_in.adb:3:31: Found: No_Default_In: default IN mode used for parameter specification
 t_style-no_default_in.adb:13:28: Found: No_Default_In: default IN mode used for formal parameter declaration
 t_style-no_default_in.adb:15:44: Found: No_Default_In: default IN mode used for parameter specification
@@ -7,31 +7,34 @@ t_style-no_default_in.adb:27:29: Found: No_Default_In: default IN mode used for 
 t_style-no_default_in.adb:30:29: Found: No_Default_In: default IN mode used for parameter specification
 t_style-no_default_in.adb:33:26: Found: No_Default_In: default IN mode used for parameter specification
 t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter specification
-t_style-casing.adb:4:4: Found: Casing: Wrong casing of "Page", should be "PAGE"
-t_style-casing.adb:7:19: Found: Casing: Wrong casing of "FOO", should be "Foo"
-t_style-casing.adb:8:50: Found: Casing: Wrong casing of "FOO", should be "Foo"
-t_style-casing.adb:9:13: Found: Casing: Wrong casing of "foo", should be "Foo"
-t_style-casing.adb:11:14: Found: Casing: Wrong casing of "i", should be "I"
-t_style-casing.adb:15:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
-t_style-casing.adb:22:26: Found: Casing: Wrong casing of "AA", should be "Aa"
-t_style-casing.adb:22:32: Found: Casing: Wrong casing of "BB", should be "Bb"
-t_style-casing.adb:26:34: Found: Casing: Wrong casing of "image", should be "Image"
-t_style-casing.adb:26:41: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:27:4: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:27:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
-t_style-casing.adb:27:16: Found: Casing: Wrong casing of "INt", should be "Int"
-t_style-casing.adb:28:8: Found: Casing: Wrong casing of "Text_Io", should be "Text_IO"
-t_style-casing.adb:28:41: Found: Casing: Wrong casing of "InT", should be "Int"
-t_style-casing.adb:34:7: Error: Exposed: character literal 'a' not in allowed construct
-t_style-casing.adb:41:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
-t_style-casing.adb:31:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:32:7: Found: Casing: Wrong casing of "Null", should be "null"
-t_style-casing.adb:33:4: Found: Casing: Wrong casing of "END", should be "end"
-t_style-casing.adb:33:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:35:6: Found: Casing: Wrong casing of "NULL", should be "null"
-t_style-casing.adb:36:4: Found: Casing: Wrong casing of "eND", should be "end"
-t_style-casing.adb:36:8: Found: Casing: Wrong casing of "If", should be "if"
-t_style-casing.adb:39:11: Found: Casing: Wrong casing of "AND", should be "and"
+t_style-casing.adb:1:6: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
+t_style-casing.adb:1:21: Found: Casing: Wrong casing of CHILD_1, should be Child_1
+t_style-casing.adb:1:29: Found: Casing: Wrong casing of CHILD_2, should be Child_2
+t_style-casing.adb:5:4: Found: Casing: Wrong casing of Page, should be PAGE
+t_style-casing.adb:8:19: Found: Casing: Wrong casing of FOO, should be Foo
+t_style-casing.adb:9:50: Found: Casing: Wrong casing of FOO, should be Foo
+t_style-casing.adb:10:13: Found: Casing: Wrong casing of foo, should be Foo
+t_style-casing.adb:12:14: Found: Casing: Wrong casing of i, should be I
+t_style-casing.adb:16:13: Found: Casing: Wrong casing of "aNd", should be "and"
+t_style-casing.adb:23:26: Found: Casing: Wrong casing of AA, should be Aa
+t_style-casing.adb:23:32: Found: Casing: Wrong casing of BB, should be Bb
+t_style-casing.adb:27:34: Found: Casing: Wrong casing of image, should be Image
+t_style-casing.adb:27:41: Found: Casing: Wrong casing of INT, should be Int
+t_style-casing.adb:28:4: Found: Casing: Wrong casing of INT, should be Int
+t_style-casing.adb:28:11: Found: Casing: Wrong casing of FOo, should be Foo
+t_style-casing.adb:28:16: Found: Casing: Wrong casing of INt, should be Int
+t_style-casing.adb:29:8: Found: Casing: Wrong casing of Text_Io, should be Text_IO
+t_style-casing.adb:29:41: Found: Casing: Wrong casing of InT, should be Int
+t_style-casing.adb:35:7: Error: Exposed: character literal 'a' not in allowed construct
+t_style-casing.adb:42:9: Found: Casing: Wrong casing of "AND", should be "and"
+t_style-casing.adb:32:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:33:7: Found: Casing: Wrong casing of "Null", should be "null"
+t_style-casing.adb:34:4: Found: Casing: Wrong casing of "END", should be "end"
+t_style-casing.adb:34:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:36:6: Found: Casing: Wrong casing of "NULL", should be "null"
+t_style-casing.adb:37:4: Found: Casing: Wrong casing of "eND", should be "end"
+t_style-casing.adb:37:8: Found: Casing: Wrong casing of "If", should be "if"
+t_style-casing.adb:40:11: Found: Casing: Wrong casing of "AND", should be "and"
 t_style-positional_association.adb:73:34: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
 t_style-positional_association.adb:73:37: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
 t_style-positional_association.adb:78:33: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
@@ -118,6 +121,18 @@ t_style.adb:26:7: Error: Negative_Condition: Negative condition in "if" statemen
 t_style.adb:32:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:38:4: Error: Compound: Statement has less than 4 lines
 t_style.adb:41:4: Error: Compound: Statement has less than 3 lines
+x_style_casing.adb:1:14: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
+x_style_casing-child_1.ads:1:9: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
+x_style_casing-child_1.adb:1:29: Found: Casing: Wrong casing of CHILD_1, should be Child_1
+x_style_casing-child_1.adb:10:29: Error: Exposed: integer literal 10 not in allowed construct
+x_style_casing-child_1.adb:19:14: Found: Casing: Wrong casing of Tt, should be TT
+x_style_casing-child_1.adb:21:14: Found: Casing: Wrong casing of ENTER, should be Enter
+x_style_casing-child_1.adb:30:19: Found: Casing: Wrong casing of Pt, should be PT
+x_style_casing-child_1.adb:31:13: Found: Casing: Wrong casing of ENT, should be Ent
+x_style_casing-child_1-child_2.ads:1:9: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
+x_style_casing-child_1-child_2.ads:1:24: Found: Casing: Wrong casing of CHILD_1, should be Child_1
+x_style_casing-child_1-child_2.adb:1:37: Found: Casing: Wrong casing of CHILD_2, should be Child_2
+x_style_casing-child_1-child_2.adb:3:14: Found: Casing: Wrong casing of p2, should be P2
 x_style2.ads:1:15: Error: Spans: declaration does not start line
 
 Counts summary:
