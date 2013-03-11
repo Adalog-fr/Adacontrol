@@ -22,7 +22,7 @@ Local_Hiding
    variable.
 
 Max_Nesting
-   Added subrules Generic, Separate
+   Added subrules Generic, Separate, Task
    fixed level to really be the nesting level
 
 Max_Size

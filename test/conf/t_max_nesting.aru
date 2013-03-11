@@ -4,3 +4,5 @@ Generics: check max_nesting (generic, 1);
 Generics: count max_nesting (generic, 1);
 Absolute: count max_nesting (all, 2);
 Separate: check max_nesting (separate, 0);
+Task_W  : search max_nesting (task, 0);
+Task_E  : check max_nesting  (task, 1);
