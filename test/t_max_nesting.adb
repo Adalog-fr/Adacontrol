@@ -1,5 +1,6 @@
 procedure T_Max_Nesting is
    procedure Test_Generic is separate;
+   procedure Test_Task    is separate;
 
    procedure All1 is
       procedure All2;          -- All > 1

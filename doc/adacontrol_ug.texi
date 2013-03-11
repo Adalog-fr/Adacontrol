@@ -5219,7 +5219,7 @@ This rule controls excessive nesting of declarations.
 @subsection Syntax
 @example
 <control_kind> max_nesting ([<subrule>,] <max allowed depth>);
-<subrule> ::= all | generic | separate
+<subrule> ::= all | generic | separate | task
 @end example
 
 @subsection Action
@@ -5234,6 +5234,10 @@ nesting of generics, ignoring all non-generic units.
 
 If ``separate'' is given as the first parameter, this rule controls the
 nesting of separate bodies.
+
+If ``task'' is given as the first parameter, this rule controls the
+nesting of tasks (task types and single task objects), ignoring all
+non-task units.
 
 This rule can be given once for each subrule and each of check,
 search, and count. This way, it is possible to have a level considered
@@ -5251,6 +5255,7 @@ search max_nesting (5);
 check max_nesting (all, 7);
 check max_nesting (generic, 1);
 check max_nesting (separate, 0); -- Do not allow separate in separate
+check max_nesting (task, 0);     -- Do not allow a task declared in another task
 @end example
 
 @node Max_Size, Max_Statement_Nesting, Max_Nesting, Rules reference

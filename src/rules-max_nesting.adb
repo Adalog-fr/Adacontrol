@@ -61,7 +61,7 @@ package body Rules.Max_Nesting is
    -- (i.e.: a level 2 unit is nested once). We actually count depths, not nesting,
    -- therefore the offset is adjusted in Add_Control
 
-   type Subrules is (Sr_Default, Sr_All, Sr_Generic, Sr_Separate);
+   type Subrules is (Sr_Default, Sr_All, Sr_Generic, Sr_Separate, Sr_Task);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
                                                                              Prefix => "Sr_" );
    type Used_Set is array (Subrules) of Boolean;
@@ -82,6 +82,9 @@ package body Rules.Max_Nesting is
 
    Separate_Count : Scope_Range := 0;
    -- Depth for the Sr_Separate subrule
+
+   Task_Count  : Scope_Range := 0;
+   -- Depth for the Sr_Task subrule
 
    ----------
    -- Help --
@@ -262,6 +265,19 @@ package body Rules.Max_Nesting is
          Do_Report (Sr_Generic, Generic_Count, Scope);
       end if;
 
+      -- Count task nesting
+      if Rule_Used (Sr_Task) then
+         case Declaration_Kind (Scope) is
+            when A_Single_Task_Declaration | A_Task_Type_Declaration =>
+               -- No need to increment task_count, a task cannot be declared in a task spec
+               Do_Report (Sr_Task, Task_Count+1, Scope);
+            when A_Task_Body_Declaration =>
+               Task_Count := Task_Count + 1;
+            when others =>
+               null;
+         end case;
+      end if;
+
       if Rule_Used (Sr_Separate)
         and then Is_Compilation_Unit (Scope)
         and then Unit_Class (Enclosing_Compilation_Unit (Scope)) = A_Separate_Body
@@ -304,6 +320,15 @@ package body Rules.Max_Nesting is
         and then Is_Generic_Unit (Scope)
       then
             Generic_Count := Generic_Count - 1;
+      end if;
+
+      if Rule_Used (Sr_Task) then
+         case Declaration_Kind (Scope) is
+            when A_Task_Body_Declaration =>
+               Task_Count := Task_Count - 1;
+            when others =>
+               null;
+         end case;
       end if;
 
       if Rule_Used (Sr_Separate)

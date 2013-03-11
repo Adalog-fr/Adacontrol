@@ -3,14 +3,21 @@ t_max_nesting-test_generic.adb:11:4: Found: MAX_NESTING: nesting deeper than 1 (
 t_max_nesting-test_generic.adb:13:7: Error: MAX_NESTING: nesting deeper than 2 (3)
 t_max_nesting-test_generic.adb:19:10: Error: MAX_NESTING: nesting deeper than 2 (4)
 t_max_nesting-test_generic.adb:19:10: Error: Generics: generic nesting deeper than 1 (2)
-t_max_nesting.adb:5:7: Found: MAX_NESTING: nesting deeper than 1 (2)
-t_max_nesting.adb:7:10: Error: MAX_NESTING: nesting deeper than 2 (3)
-t_max_nesting.adb:8:13: Error: MAX_NESTING: nesting deeper than 2 (4)
-t_max_nesting.adb:16:10: Error: MAX_NESTING: nesting deeper than 2 (3)
+t_max_nesting-test_task.adb:3:4: Found: MAX_NESTING: nesting deeper than 1 (2)
+t_max_nesting-test_task.adb:5:7: Error: MAX_NESTING: nesting deeper than 2 (3)
+t_max_nesting-test_task.adb:5:7: Found: Task_W: task nesting deeper than 0 (1)
+t_max_nesting-test_task.adb:7:10: Error: MAX_NESTING: nesting deeper than 2 (4)
+t_max_nesting-test_task.adb:7:10: Error: Task_E: task nesting deeper than 1 (2)
+t_max_nesting-test_task.adb:17:7: Error: MAX_NESTING: nesting deeper than 2 (3)
+t_max_nesting-test_task.adb:17:7: Found: Task_W: task nesting deeper than 0 (1)
+t_max_nesting.adb:6:7: Found: MAX_NESTING: nesting deeper than 1 (2)
+t_max_nesting.adb:8:10: Error: MAX_NESTING: nesting deeper than 2 (3)
+t_max_nesting.adb:9:13: Error: MAX_NESTING: nesting deeper than 2 (4)
+t_max_nesting.adb:17:10: Error: MAX_NESTING: nesting deeper than 2 (3)
 t_max_nesting-sep.adb:3:4: Error: Separate: separate nesting deeper than 0 (1)
 t_max_nesting-sep-test_separate.adb:2:1: Found: MAX_NESTING: nesting deeper than 1 (2)
 t_max_nesting-sep.adb:4:4: Found: MAX_NESTING: nesting deeper than 1 (2)
 
 Counts summary:
-Absolute: 5
+Absolute: 8
 Generics: 1

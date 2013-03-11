@@ -329,7 +329,7 @@ Parameter: <Max allowed length>
 Rule: MAX_NESTING
 Control scopes nested deeper than a given limit.
 
-Paramater (1):  all | generic | separate
+Paramater (1):  all | generic | separate | task
                 (optional, default=all)
 Parameter (2): <maximum allowed nesting level>
 ----
