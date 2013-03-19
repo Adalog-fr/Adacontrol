@@ -250,6 +250,8 @@ package body Rules.Style is
    end Clear;
    package Renamed_Entities is new Framework.Scope_Manager.Scoped_Store (Renaming_Data,
                                                                          Equivalent_Keys => Is_Same_Def);
+   -- Note that we cannot use Symbol_Table here, because the renamed entity is pushed
+   -- in the scope of the renaming entity
 
    -------------------------------------------------------------------------
    --
@@ -906,8 +908,9 @@ package body Rules.Style is
    ------------------------
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
+      use Asis, Asis.Elements, Asis.Expressions;
       procedure Check_Renamed is
+         use Asis.Declarations;
          use Framework.Scope_Manager, Framework.Reports;
 
          Def : constant Asis.Definition := Corresponding_Name_Definition (Identifier);
@@ -1996,7 +1999,6 @@ package body Rules.Style is
    --------------------
 
    procedure Process_Pragma (Pr : in Asis.Pragma_Element) is
-      use Asis.Elements;
    begin
       if not Rule_Used (St_Casing_Pragma) then
          return;

@@ -150,6 +150,15 @@ package Framework is
    -- i.e. file:1:1
    -- If Short_Name = True, strip File name from any path
    -- Separator: character used to separate file name, lines and cols
+   -- Fails if L = Null_Location
+
+   function Safe_Image (L          : in Location;
+                        Short_Name : in Boolean := Default_Short_Name;
+                        Separator  : in Wide_Character := ':')
+                        return Wide_String;
+   -- Like Image, but returns the string "unknown location" if L = Null_Location
+
+
 
    function Value (S : in Wide_String) return Location;
    -- Returns location value of a string
