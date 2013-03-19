@@ -398,6 +398,24 @@ package body Framework is
       end if;
    end Image;
 
+
+   ----------------
+   -- Safe_Image --
+   ----------------
+
+   function Safe_Image (L          : in Location;
+                        Short_Name : in Boolean := Default_Short_Name;
+                        Separator  : in Wide_Character := ':')
+                        return Wide_String
+   is
+   begin
+      if L = Null_Location then
+         return "unknown location";
+      else
+         return Image (L, Short_Name, Separator);
+      end if;
+   end Safe_Image;
+
    -----------
    -- Value --
    -----------
