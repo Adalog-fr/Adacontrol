@@ -250,6 +250,8 @@ package body Rules.Style is
    end Clear;
    package Renamed_Entities is new Framework.Scope_Manager.Scoped_Store (Renaming_Data,
                                                                          Equivalent_Keys => Is_Same_Def);
+   -- Note that we cannot use Symbol_Table here, because the renamed entity is pushed
+   -- in the scope of the renaming entity
 
    -------------------------------------------------------------------------
    --
