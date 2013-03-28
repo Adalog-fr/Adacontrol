@@ -158,7 +158,6 @@ package Framework is
    -- Like Image, but returns the string "unknown location" if L = Null_Location
 
 
-
    function Value (S : in Wide_String) return Location;
    -- Returns location value of a string
    -- raises Constraint_Error for an incorrect input string
