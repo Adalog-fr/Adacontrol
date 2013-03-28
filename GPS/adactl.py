@@ -234,7 +234,7 @@ def get_file (option):
    """
    opt_list=GPS.Project.root().get_tool_switches_as_list("AdaControl")
    try:
-       return opt_list[ opt_list.index(option) + 1 ]
+       return "\"" + opt_list[ opt_list.index(option) + 1 ] + "\""
    except:
        return ""
 
@@ -284,7 +284,7 @@ def options (rules, files):
       if win.language() != "ada" :
          GPS.MDI.dialog ("active window is not Ada")
          raise ValueError
-      result = result + ' ' + win.name()
+      result = result + ' "' + win.name() + '"'
    elif files == "list":
       result = result + " @" + get_file("-@")
    else:   # "project"
@@ -298,7 +298,7 @@ def options (rules, files):
          res = run("check", previous_command)
          if res != 0:
             raise ValueError
-         result = result + " -l \"\"\"" + re.sub('"', '~', previous_command) + "\"\"\""
+         result = result + " -l \"" + re.sub('"', '~', previous_command) + "\""
       else:
          raise ValueError
    elif rules == "file":
@@ -318,7 +318,7 @@ def options (rules, files):
             raise ValueError
          result = result + " -f " + win.name()
       else:
-         result = result + " -l \"\"\"" + re.sub('"', '~', files) + "\"\"\""
+         result = result + " -l \"" + re.sub('"', '~', files) + "\""
 
    # set other_params
    gps         = True
@@ -416,7 +416,7 @@ def options (rules, files):
       if not p_option:
          for I in GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
             for J in GPS.Project.source_dirs(I) :
-               result = result + " -I" + J.replace("\\", "/")
+               result = result + " -I\"" + J.replace("\\", "/") + "\""
 
    return result
 

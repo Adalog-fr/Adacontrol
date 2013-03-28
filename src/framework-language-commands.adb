@@ -498,7 +498,7 @@ package body Framework.Language.Commands is
       if To_Upper (Name) = Console_Name then
          Compile_Console (Current_Input);
       else
-         Compile_File (Name, Current_Input);
+         Compile_File (Clean_File_Name (Name), Current_Input);
       end if;
 
       Restore_State (Current_State);
