@@ -339,19 +339,19 @@ package body Rules.Object_Declarations is
       end if;
 
       Name := Actual_Parameter (Pragma_Argument_Associations (Prgma) (1));
-      if Attribute_Kind (Name) = A_Class_Attribute then  -- Excludes case when name is not an attribute
+      if A4G_Bugs.Attribute_Kind (Name) = A_Class_Attribute then  -- Excludes case when name is not an attribute
          if Rule_Used (Volatile_No_Address) then
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Name),
-                         "pragma ignored for types covered by " & Name_Image (Simple_Name (Prefix (Name)))
+                         "pragma ignored for types covered by " & A4G_Bugs.Name_Image (Simple_Name (Prefix (Name)))
                          & " in subrule Volatile_No_Address");
          end if;
          if Rule_Used (Address_Not_Volatile) then
             Uncheckable (Rule_Id,
                          False_Positive,
                          Get_Location (Name),
-                         "pragma ignored for types covered by " & Name_Image (Simple_Name (Prefix (Name)))
+                         "pragma ignored for types covered by " & A4G_Bugs.Name_Image (Simple_Name (Prefix (Name)))
                          & " in subrule Address_Not_Volatile");
          end if;
          return;
