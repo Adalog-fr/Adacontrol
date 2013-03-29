@@ -168,7 +168,7 @@ package body Adactl_Options is
             Extra_Path : constant Wide_String := S (S'First ..  Unit_Name_First);
          begin
             if Index (Extra_Pathes, Extra_Path) = 0 then
-               Append (Extra_Pathes, " -I" & Extra_Path);
+               Append (Extra_Pathes, " -I""" & Extra_Path & '"');
             end if;
 
             Unit_Name_First := Unit_Name_First + 1;
@@ -221,7 +221,7 @@ package body Adactl_Options is
             Body_Found := True;
          end if;
          declare
-            Unit : constant Wide_String := Gnat_Unit_Name (S);
+            Unit : constant Wide_String := Gnat_Unit_Name (Clean_File_Name (S));
          begin
             Add_Parents (Unit);
             Append (Unit_List, "+" & Unit);

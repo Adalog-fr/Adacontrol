@@ -51,7 +51,7 @@ with
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
-package body Rules.Simplifiable_expressions is
+package body Rules.Simplifiable_Expressions is
    use Framework, Ada.Strings.Wide_Unbounded;
 
    -- All "K_Logical_*" must stay together, and K_Logical must stay last

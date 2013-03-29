@@ -890,9 +890,10 @@ package body Framework.Ruler is
       when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
       when others =>
-         Utilities.Trace ("Exception in Pre_Procedure at " & Safe_Image (Get_Location (Element)), --## rule line off No_Trace
-                          Element,
-                          With_Source => True);
+         Utilities.Trace                                --## rule line off No_Trace
+           ("Exception in Pre_Procedure at " & Safe_Image (Get_Location (Element)),
+            Element,
+            With_Source => True);
          raise;
    end Pre_Procedure;
 

@@ -26,22 +26,19 @@ t_representation_clauses.adb:61:4: Error: streams: representation clause for 'IN
 t_representation_clauses.adb:62:4: Error: streams: representation clause for 'OUTPUT
 t_representation_clauses.adb:63:4: Error: streams: representation clause for 'CLASS'READ
 t_representation_clauses.adb:64:4: Error: streams: representation clause for 'CLASS'WRITE
-t_representation_clauses.adb:76:4: Found: Ext_record: layout representation clause for EXTENSION
-t_representation_clauses.adb:76:4: Found: record: layout representation clause
-t_representation_clauses.adb:78:10: Error: non_contig: gap at 0 range 0..47
-t_representation_clauses.adb:82:4: Error: Arr_Size: representation clause for 'SIZE for ARRAY
-t_representation_clauses.adb:82:4: Error: size: representation clause for 'SIZE
-t_representation_clauses.adb:85:4: Error: Arr_Addr: representation clause for 'ADDRESS for ARRAY
-t_representation_clauses.adb:85:4: Error: address: representation clause for 'ADDRESS
-t_representation_clauses.adb:85:4: Error: tab_over: address clause causes overlay for ARRAY
-t_representation_clauses.adb:85:4: Error: overlay: address clause causes overlay
-t_representation_clauses.adb:90:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
-t_representation_clauses.adb:90:4: Error: size: representation clause for 'SIZE
-t_representation_clauses.adb:91:4: Found: record: layout representation clause
-t_representation_clauses.adb:93:10: Error: non_contig: gap at 0 range 0..0
-t_representation_clauses.adb:93:10: Error: Arr_comp: unaligned component starts at bit 1 for ARRAY
-t_representation_clauses.adb:93:10: Error: unaligned: unaligned component starts at bit 1
-t_representation_clauses.adb:93:10: Error: non_contig: gap at end of record, at 10 range 1..7, size clause line 90
+t_representation_clauses.adb:76:4: Error: Arr_Size: representation clause for 'SIZE for ARRAY
+t_representation_clauses.adb:76:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:79:4: Error: Arr_Addr: representation clause for 'ADDRESS for ARRAY
+t_representation_clauses.adb:79:4: Error: address: representation clause for 'ADDRESS
+t_representation_clauses.adb:79:4: Error: tab_over: address clause causes overlay for ARRAY
+t_representation_clauses.adb:79:4: Error: overlay: address clause causes overlay
+t_representation_clauses.adb:84:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
+t_representation_clauses.adb:84:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:85:4: Found: record: layout representation clause
+t_representation_clauses.adb:87:10: Error: non_contig: gap at 0 range 0..0
+t_representation_clauses.adb:87:10: Error: Arr_comp: unaligned component starts at bit 1 for ARRAY
+t_representation_clauses.adb:87:10: Error: unaligned: unaligned component starts at bit 1
+t_representation_clauses.adb:87:10: Error: non_contig: gap at end of record, at 10 range 1..7, size clause line 84
 t_representation_clauses-fractional_size.adb:8:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: fractional: size clause not multiple of Storage_Unit
@@ -84,4 +81,4 @@ x_representation_clauses.ads:10:7: Error: rng_over: address clause causes overla
 x_representation_clauses.ads:10:7: Error: overlay: address clause causes overlay
 
 Counts summary:
-Total: 63
+Total: 61

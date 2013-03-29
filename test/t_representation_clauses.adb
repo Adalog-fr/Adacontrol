@@ -72,12 +72,6 @@ procedure T_representation_clauses is
    procedure My_Output(Stream : access Ada.Streams.Root_Stream_Type'Class; Item : in Tagged_Type) is
    begin null; end;
 
-   type Der_Tagged is new Tagged_Type with null record;
-   for Der_Tagged use              -- ext_record, record
-      record
-         X at 6 range 0 .. 31;     -- gap (may depend on compiler)
-      end record;
-
    type Tab is array (1 .. 10) of Integer;
    for Tab'Size use Integer'Size * 10;   -- arr_size, 'Size
    V1 : Tab;

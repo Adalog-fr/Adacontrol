@@ -291,13 +291,12 @@ package body Rules.Object_Declarations is
       end Process_Min_Integer_Span;
 
       procedure Process_Volatile_Address is
-         use Framework.Reports;
          Decl_Names : constant Asis.Defining_Name_List := Names (Decl);
       begin
          for N in Decl_Names'Range loop
             Repr_Table.Store (Decl_Names (N),
-              (Volatile => Corresponding_Pragma_Set (Decl_Names (N)) (A_Volatile_Pragma),
-               Address  => False));
+                              (Volatile => Corresponding_Pragma_Set (Decl_Names (N)) (A_Volatile_Pragma),
+                               Address  => False));
          end loop;
       end Process_Volatile_Address;
 
