@@ -19,34 +19,34 @@ aspects
 
 Changes to existing rules:
 --------------------------
-(Many places)
+(Many places):
    Considered expression functions in addition to regular functions
 
-Declarations
+Declarations:
    Added null_procedure_body, null_procedure_declaration, expression_function
 
-Dependencies
+Dependencies:
    Added subrule with (dependency on indicated units).
    
-Expressions
+Expressions:
    Added subrules if, if_elsif, if_no_else, case, for_all, for_some
 
-Local_Hiding
+Local_Hiding:
    Added exception patterns. Replaced Overloading_Short with a rule
    variable.
 
-Max_Nesting
+Max_Nesting:
    Added subrules Generic, Separate, Task
    fixed level to really be the nesting level
 
-Max_Size
+Max_Size:
    Added subrules Package_Spec, Package_Body, Procedure_Body,
    Function_Body, Protected_Spec, Protected_Body, Entry_Body,
    Task_Spec, Task_Body, Unit.
 
    Put messages at end of failing element.
 
-Multiple_Assignment
+Multiple_Assignment:
    Consider subcomponents as assigned only if they meet (recursively) the
    criteria of the control.
 
@@ -58,10 +58,13 @@ Parameter_Declarations:
    Changed syntax to allow min/max to be specified either for all parameters or
    for parameters of a given mode.
 
-Parameter_Aliasing
+Parameter_Aliasing:
    Improved algorithm to reduce uncheckables due to dispatching calls
 
-Statements
+Pragmas:
+   Added modifier "multiple"
+
+Statements:
    Added subrule for_iterator_loop
 
 Style (Casing_Identifier, original):
@@ -71,7 +74,7 @@ Style (Casing_Identifier, original):
 Style (exposed_literal):
    Added optional "max" to value, allow in all declarations
 
-With_Clauses (Reduceable)
+With_Clauses (Reduceable):
    Control with clauses that can be changed to private with (can be
    disabled with the variable Check_Private_With).
 

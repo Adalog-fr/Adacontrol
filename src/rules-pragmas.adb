@@ -31,10 +31,13 @@
 
 -- ASIS
 with
-  Asis.Elements;
+  Asis.Elements,
+  Asis.Exceptions,
+  Asis.Expressions;
 
 -- Adalog
 with
+  Thick_Queries,
   Utilities;
 
 package body Rules.Pragmas is
@@ -42,6 +45,11 @@ package body Rules.Pragmas is
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
+
+   type Pragma_Context is new Basic_Rule_Context with
+      record
+         Multiple_Only : Boolean;
+      end record;
 
    Rule_Uses : Context_Store;
 
@@ -55,7 +63,7 @@ package body Rules.Pragmas is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control usage of specific pragmas");
       User_Message;
-      User_Message ("Parameter(s): all | nonstandard | <pragma names>");
+      User_Message ("Parameter(s): [multiple] all | nonstandard | <pragma names>");
    end Help;
 
    -----------------
@@ -72,12 +80,13 @@ package body Rules.Pragmas is
 
       while Parameter_Exists loop
          declare
-            Pragma_Name : constant Wide_String := Get_Name_Parameter;
+            Multiple_Only : constant Boolean     := Get_Modifier ("MULTIPLE");
+            Pragma_Name   : constant Wide_String := Get_Name_Parameter;
          begin
             -- "Nonstandard" and "all" are handled just as if they were pragma names
             Associate (Rule_Uses,
                        Specification => Value (Pragma_Name),
-                       Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
+                       Context       => Pragma_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Multiple_Only));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, Pragma_Name & " already given");
@@ -120,8 +129,49 @@ package body Rules.Pragmas is
    --------------------
 
    procedure Process_Pragma (Pragma_Element : in Asis.Pragma_Element) is
-      use Asis, Asis.Elements, Utilities, Framework.Reports;
-   begin
+      use Asis, Asis.Elements, Utilities;
+
+      procedure Do_Report (Current_Context : Root_Context'Class; Message : Wide_String) is
+         use Asis.Expressions;
+         use Framework.Reports, Thick_Queries;
+      begin
+         if Pragma_Context(Current_Context).Multiple_Only then
+            declare
+               Assocs : constant Asis.Association_List := Pragma_Argument_Associations (Pragma_Element);
+               Actual : Asis.Expression;
+            begin
+               for A in Assocs'Range loop
+                  Actual := Simple_Name (Actual_Parameter (Assocs (A)));
+                  case Expression_Kind (Actual) is
+                     when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
+                        begin
+                           if Corresponding_Name_Definition_List (Actual)'Length /= 1 then
+                              Report (Rule_Id,
+                                      Current_Context,
+                                      Get_Location (Pragma_Element),
+                                      Message & " on multiple " & Name_Image (Actual));
+                              return;  -- No known pragma can be multiple on more than one argument (and even if some
+                              -- impl. def. pragma does it, the message is still correct)
+                           end if;
+                        exception
+                           when Asis.Exceptions.ASIS_Inappropriate_Element =>
+                              -- Some special identifier for a pragma...
+                              null;
+                        end;
+                     when others =>
+                        null;
+                  end case;
+               end loop;
+            end;
+         else
+            Report (Rule_Id,
+                    Current_Context,
+                    Get_Location (Pragma_Element),
+                    Message);
+         end if;
+      end Do_Report;
+
+   begin   -- Process_Pragma
       if not Rule_Used then
          return;
       end if;
@@ -132,10 +182,8 @@ package body Rules.Pragmas is
          Current_Context : constant Root_Context'Class := Matching_Context (Rule_Uses, Pragma_Element);
       begin
          if Current_Context /= No_Matching_Context then
-            Report (Rule_Id,
-                    Current_Context,
-                    Get_Location (Pragma_Element),
-                    "use of pragma """ & To_Title (Last_Matching_Name (Rule_Uses)) & '"');
+            Do_Report (Current_Context,
+                       "use of pragma """ & To_Title (Last_Matching_Name (Rule_Uses)) & '"');
          end if;
       end;
 
@@ -144,12 +192,10 @@ package body Rules.Pragmas is
          Current_Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "NONSTANDARD");
       begin
          if Current_Context /= No_Matching_Context
-            and then Pragma_Kind (Pragma_Element) in An_Implementation_Defined_Pragma .. An_Unknown_Pragma
+           and then Pragma_Kind (Pragma_Element) in An_Implementation_Defined_Pragma .. An_Unknown_Pragma
          then
-              Report (Rule_Id,
-                      Current_Context,
-                      Get_Location (Pragma_Element),
-                      "use of non-standard pragma """ & Pragma_Name_Image (Pragma_Element) & '"');
+            Do_Report (Current_Context,
+                       "use of non-standard pragma """ & Pragma_Name_Image (Pragma_Element) & '"');
          end if;
       end;
 
@@ -158,10 +204,8 @@ package body Rules.Pragmas is
          Current_Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "ALL");
       begin
          if Current_Context /= No_Matching_Context then
-            Report (Rule_Id,
-                    Current_Context,
-                    Get_Location (Pragma_Element),
-                    "use of pragma """ & Pragma_Name_Image (Pragma_Element) & '"');
+            Do_Report (Current_Context,
+                       "use of pragma """ & Pragma_Name_Image (Pragma_Element) & '"');
          end if;
       end;
 

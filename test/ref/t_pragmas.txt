@@ -12,8 +12,12 @@ t_pragmas.adb:14:1: Found: all_pragmas: use of pragma "TODO"
 t_pragmas.adb:17:4: Found: all_pragmas: use of pragma "Inline"
 t_pragmas.adb:18:4: Error: nonstandard: use of non-standard pragma "Annotate"
 t_pragmas.adb:18:4: Found: all_pragmas: use of pragma "Annotate"
+t_pragmas.adb:22:4: Error: Multiple: use of pragma "Convention" on multiple P
+t_pragmas.adb:22:4: Found: all_pragmas: use of pragma "Convention"
+t_pragmas.adb:28:4: Error: Multiple: use of pragma "Convention" on multiple "+"
+t_pragmas.adb:28:4: Found: all_pragmas: use of pragma "Convention"
 
 Counts summary:
-all_pragmas: 7
+all_pragmas: 9
 nonstandard: 4
 specific_pragmas: 3

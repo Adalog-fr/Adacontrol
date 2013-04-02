@@ -10,7 +10,10 @@ specific_pragmas: count pragmas (inconnu);
 nonstandard: count pragmas (nonstandard);
 all_pragmas: count pragmas (all);
 
+-- Check multiple
+Multiple: check Pragmas (multiple Convention);
+
 -- More, just to check resistance:
-Elaborate        : Check Pragmas (Elaborate); 
+Elaborate        : Check Pragmas (Elaborate);
 Checks_Suppressed: Check Pragmas (Suppress);
 Obsolete_Pragmas : Check Pragmas (Interface_Name, Import_Procedure, Import_Function);

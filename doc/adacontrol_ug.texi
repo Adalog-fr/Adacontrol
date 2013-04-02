@@ -6312,8 +6312,8 @@ This rule controls usage of one or several specific pragmas.
 
 @subsection Syntax
 @example
-<control_kind> pragmas
-    (all|nonstandard|<pragma name> @{, <pragma name>@});
+<control_kind> pragmas (<pragma spec> @{, <pragma spec>@});
+<pragma spec> ::= [multiple] all|nonstandard|<pragma name>
 @end example
 
 @subsection Action
@@ -6325,9 +6325,17 @@ controlled. Note that <pragma name> must be the simple name of the
 pragma, since pragma names are predefined and do not follow the rules
 for regular Ada entities.
 
+If ``multiple'' is specified before the pragma spec (or the special
+name), the corresponding pragma(s) are controlled only if they apply
+to multiple entities, because one of the parameters is an overloaded
+name.
+
 Ex:
 @example
 check pragmas (elaborate_all, elaborate_body);
+
+-- Search pragma Convention that apply to several entities: 
+search pragmas (multiple convention);
 @end example
 
 @subsection Tips
