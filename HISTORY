@@ -14,25 +14,25 @@ Changes to existing rules:
 Declarations
    Added null_procedure_body, null_procedure_declaration
 
-Dependencies
+Dependencies:
    Added subrule with (dependency on indicated units).
 
-Local_Hiding
+Local_Hiding:
    Added exception patterns. Replaced Overloading_Short with a rule
    variable.
 
-Max_Nesting
+Max_Nesting:
    Added subrules Generic, Separate, Task
    fixed level to really be the nesting level
 
-Max_Size
+Max_Size:
    Added subrules Package_Spec, Package_Body, Procedure_Body,
    Function_Body, Protected_Spec, Protected_Body, Entry_Body,
    Task_Spec, Task_Body, Unit.
 
    Put messages at end of failing element.
 
-Multiple_Assignment
+Multiple_Assignment:
    Consider subcomponents as assigned only if they meet (recursively) the
    criteria of the control.
 
@@ -43,6 +43,9 @@ Naming_Convention:
 Parameter_Declarations:
    Changed syntax to allow min/max to be specified either for all parameters or
    for parameters of a given mode.
+
+Pragmas:
+   Added modifier "multiple"
 
 Style (Casing_Identifier, original):
    Check formal parameters in bodies if there is an explicit
