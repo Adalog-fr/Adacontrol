@@ -154,8 +154,8 @@ Parameter(s): {<location>} <decl>
         unconstrained_array_constant      | unconstrained_array_type        |
         unconstrained_array_variable      | unconstrained_subtype           |
         uninitialized_protected_component | uninitialized_record_component  |
-        uninitialized_variable            | variable                        |
-        variant_part
+        uninitialized_variable            | unknown_discriminant            |
+        variable                          | variant_part
 ----
 Rule: DEFAULT_PARAMETER
 Control subprogram calls or generic instantiations that use the default for a

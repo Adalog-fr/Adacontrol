@@ -3296,7 +3296,8 @@ those occurring at specified locations.
    unconstrained_array_type          | unconstrained_array_variable      |
    unconstrained_subtype             | uninitialized_protected_component |
    uninitialized_record_component    | uninitialized_variable            |
-   variable                          | variant_part
+   unknown_discriminant              | variable                          |
+   variant_part
 @end example
 
 @subsection Action
@@ -3440,7 +3441,9 @@ extensions (derivations of tagged types). These are controlled by
 discriminants, while @code{protected_discriminant} and
 @code{task_discriminant} control only discriminants of protected types
 and task types, respectively.  @code{defaulted_discriminants} controls
-only discriminants where default values are provided.
+only discriminants where default values are
+provided. @code{unknown_discriminants} controls only unknown
+discriminants (AKA ``@code{(<>)}'' discriminants).
 @item
 @code{empty_private_part} controls package specification with an empty
 private part, i.e. where the word @code{@b{private}} appears, but the

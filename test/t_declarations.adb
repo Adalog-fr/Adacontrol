@@ -170,7 +170,7 @@ procedure T_declarations is       -- library_procedure
 
    package Pack2 is                                 -- nested_package
       type Priv1 is private;                        -- Non_Limited_Private_Type
-      type Priv2 is limited private;                -- Limited_Private_Type
+      type Priv2 (<>) is limited private;           -- Limited_Private_Type, Unknown_Discriminant, Discriminant
       type Ext1 is new Rec1 with private;           -- Private_Extension
       type Abs1 is abstract tagged private;         -- Tagged_Private_Type, Non_Limited_Private_Type, Abstract_Type
       type Abs2 is abstract tagged limited private; -- Tagged_Private_Type, Limited_Private_Type, Abstract_Type

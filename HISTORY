@@ -12,7 +12,7 @@ Syntax of entities: added 'all to designate all attributes
 Changes to existing rules:
 --------------------------
 Declarations
-   Added null_procedure_body, null_procedure_declaration
+   Added null_procedure_body, null_procedure_declaration, unknown_discriminant
 
 Dependencies:
    Added subrule with (dependency on indicated units).

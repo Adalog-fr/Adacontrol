@@ -133,7 +133,8 @@ check  declarations (access_type,
                      record_type,
                      renaming_as_declaration,
                      renaming_as_body,
-                     task);
+                     task,
+                     unknown_discriminant);
 locations : check declarations (block      procedure,
                                 library    procedure,
                                 local      procedure,
