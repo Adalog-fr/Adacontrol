@@ -348,6 +348,8 @@ t_declarations.adb:167:29: Found: DECLARATIONS: use of declaration "empty_privat
 t_declarations.adb:171:4: Found: DECLARATIONS: use of declaration "nested package"
 t_declarations.adb:172:7: Found: DECLARATIONS: use of declaration "non_limited_private_type"
 t_declarations.adb:173:7: Found: DECLARATIONS: use of declaration "limited_private_type"
+t_declarations.adb:173:18: Error: DECLARATIONS: use of declaration "unknown_discriminant"
+t_declarations.adb:173:18: Found: DECLARATIONS: use of declaration "discriminant"
 t_declarations.adb:174:7: Found: DECLARATIONS: use of declaration "private_extension"
 t_declarations.adb:175:7: Found: DECLARATIONS: use of declaration "tagged_private_type"
 t_declarations.adb:175:7: Found: DECLARATIONS: use of declaration "non_limited_private_type"

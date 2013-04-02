@@ -23,7 +23,8 @@ Changes to existing rules:
    Considered expression functions in addition to regular functions
 
 Declarations:
-   Added null_procedure_body, null_procedure_declaration, expression_function
+   Added null_procedure_body, null_procedure_declaration,
+   expression_function, unknown_discriminant
 
 Dependencies:
    Added subrule with (dependency on indicated units).

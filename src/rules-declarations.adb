@@ -125,7 +125,7 @@ package body Rules.Declarations is
 
       D_Unconstrained_Array_Constant,    D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
       D_Unconstrained_Subtype,           D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,
-      D_Uninitialized_Variable,
+      D_Uninitialized_Variable,          D_Unknown_Discriminant,
 
       D_Variable,                        D_Variant_Part);
    subtype All_Anonymous_Access is Subrules range D_Anonymous_Access_Component .. D_Anonymous_Access_Variable;
@@ -368,24 +368,31 @@ package body Rules.Declarations is
       end Check_Abstract;
 
       procedure Check_Discriminant (Discr : Asis.Definition; Extra_Check : Subrules := D_Any_Declaration) is
+         -- 3 below = maximum number of simultaneous subrules (Unknown and Defaulted are incompatible)
+         SRL : Subrules_List (1 .. 3);
+         SRL_Index : Natural;
       begin
          if Is_Nil (Discr) then
             return;
          end if;
 
-         if Is_Nil (Initialization_Expression (Discriminants (Discr) (1))) then
-            if Extra_Check = D_Any_Declaration then
-               Do_Report (D_Discriminant, Discr);
-            else
-               Do_Report ((D_Discriminant, Extra_Check), Discr);
-            end if;
-         else
-            if Extra_Check = D_Any_Declaration then
-               Do_Report ((D_Discriminant, D_Defaulted_Discriminant), Discr);
-            else
-               Do_Report ((D_Discriminant, D_Defaulted_Discriminant, Extra_Check), Discr);
-            end if;
+         SRL_Index       := 1;
+         SRL (SRL_Index) := D_Discriminant;
+
+         if Definition_Kind (Discr) = An_Unknown_Discriminant_Part then
+            SRL_Index       := SRL_Index + 1;
+            SRL (SRL_Index) := D_Unknown_Discriminant;
+         elsif not Is_Nil (Initialization_Expression (Discriminants (Discr) (1))) then
+            SRL_Index       := SRL_Index + 1;
+            SRL (SRL_Index) := D_Defaulted_Discriminant;
          end if;
+
+         if Extra_Check /= D_Any_Declaration then
+            SRL_Index       := SRL_Index + 1;
+            SRL (SRL_Index) := Extra_Check;
+         end if;
+
+         Do_Report (SRL (1 .. SRL_Index), Discr);
       end Check_Discriminant;
 
       procedure Check_Multiple_Entries (Def : Asis.Definition) is
@@ -873,13 +880,16 @@ package body Rules.Declarations is
                   null;
             end case;
             Check_Abstract;
+            Check_Discriminant (Discriminant_Part (Element));
 
          when A_Private_Extension_Declaration =>
             Do_Report (D_Private_Extension, Element);
             Check_Abstract;
+            Check_Discriminant (Discriminant_Part (Element));
 
          when An_Incomplete_Type_Declaration =>
             Do_Report (D_Incomplete_Type, Element);
+            Check_Discriminant (Discriminant_Part (Element));
 
          when A_Subtype_Declaration =>
             Do_Report (D_Subtype, Element);
