@@ -55,6 +55,8 @@ Style (Casing_Identifier, original):
 Style (exposed_literal):
    Added optional "max" to value, allow in all declarations
 
+Usage:
+   Speed improvement
 
 =============
 == V1.14r9 ==

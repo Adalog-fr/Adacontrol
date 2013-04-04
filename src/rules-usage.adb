@@ -846,7 +846,7 @@ package body Rules.Usage is
             when From_Generic =>
                Message := To_Unbounded_Wide_String ("(generic) ");
          end case;
-         Append (Message, Full_Name_Image (Value.Declaration));
+         Append (Message, Key);   -- Key is Full_Name_Image of defining name
 
          if True_Usage (K_From_Visible) then
             Append (Message, ", visible");
@@ -984,7 +984,7 @@ package body Rules.Usage is
                     Count,
                     Value.Decl_Location,
                     "");
-          end if;
+         end if;
       end Report_One;
 
       procedure Report_All is new Iterate (Report_One);
