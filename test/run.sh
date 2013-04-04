@@ -184,9 +184,11 @@ put "--- Stress test... "
 test_case=tfw_stress
 nb_fw=$((nb_fw+1))
 list=`find ./ '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
-find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -T -i -F csvx_short -wd -f - $list \
+export ADACTLINI="set timing global;"
+find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_short -wd -f - $list \
    1> res/${test_case}.txt 2>&1
 result=$?
+export ADACTLINI=
 # if -x option, return code is always 1
 # replace by 10 if there is a crash
 grep -q "=============" res/${test_case}.txt
@@ -194,8 +196,9 @@ if [ $? -eq 0 ] ; then
    result=10
 fi
 # Create timing file
-echo "Rule;Time" >res/rules_timing.csv
-grep -E "^[A-Z_]+; [0-9.]+" res/${test_case}.txt >>res/rules_timing.csv
+echo "Rule;Time;Percent" >res/rules_timing.csv
+grep -E "^[A-Za-z_]+: [0-9.]+" res/${test_case}.txt | sed "s/: /;/;s/ (\([0-9]*.[0-9]*\).*$/;\1/" >>res/rules_timing.csv
+###########################################################################
 # Put "PASSED" as the result if OK
 if [ $result -le 1 ]; then
    put_line "PASSED"

@@ -8,8 +8,9 @@ Arranged to not choke on Ada 2012 constructs.
 
 Account for [in] out parameters in functions
 
-Added -j option and command "set ignore inverted" (invert disabling of
-messages).
+Added -j option
+Added command "set ignore inverted" (invert disabling of messages).
+Added command "set timing global" (global timing over all "go" commands)
 
 Syntax of entities: added 'all to designate all attributes
 
@@ -78,6 +79,9 @@ Style (exposed_literal):
 With_Clauses (Reduceable):
    Control with clauses that can be changed to private with (can be
    disabled with the variable Check_Private_With).
+
+Usage:
+   Speed improvement
 
 =============
 == V1.14r9 ==

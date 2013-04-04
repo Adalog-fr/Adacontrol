@@ -798,7 +798,7 @@ run. It must be followed by a value in the range 0..3. See
 @ref{Control kinds and report messages} for details on the various
 statistics levels.
 
-The ``-T'' option prints a summary of timing at the end of the run. This
+The ``-T'' option prints a summary of timing at the end of each run. This
 indicates how long (in real-time seconds) was spent in processing each rule.
 
 Ex:
@@ -2259,8 +2259,9 @@ set Output|New_Output <output file>;
 set Statistics <level>;
 set Tag1|Tag2 "<value>";
 set Trace <trace file>;
-set Debug|Exit_On_Error|Timing|Verbose|Warning|Warning_As_Error
+set Debug|Exit_On_Error|Verbose|Warning|Warning_As_Error
       On|Off;
+set Timing On|Off|Global
 set Ignore On|Off|Inverted;
 set <Rule_Name>.<Variable> <Value>
 @end example
@@ -2317,8 +2318,7 @@ The ``set trace'' command redirects the trace messages of the
 redirected to the console.  As with the ``-t'' option, if the file
 exists, output is appended to it.
 
-The ``set
-Debug|Exit_On_Error|Timing|Verbose|Warning|Warning_As_Error''
+The ``set Debug|Exit_On_Error|Verbose|Warning|Warning_As_Error''
 command activates (``on'') or deactivates (``off'') options. ``Debug''
 corresponds to the ``-d'' option, ``Exit_On_Error'' to the ``-x''
 option, ``Ignore'' to the ``-i'' option, ``Timing'' to the ``-T''
@@ -2327,6 +2327,12 @@ option, and ``Warning_As_Error'' to the ``-e'' option. See
 @ref{Verbose and debug mode}, @ref{Exit on error}, @ref{Treatment of
 warnings}, @ref{Output format}, and @ref{Local disabling control} for
 details.
+
+The ``set Timing'' command activates (``on'') or deactivates (``off'')
+the printing of the time spent in each rule after each ``go''
+command. If set to ``global'' instead of ``on'', the timings are
+accumulated over all ``go'' commands, and output when the program
+terminates.
 
 The ``set Ignore'' command governs handling of disabled messages
 (@pxref{Disabling controls}). In default mode (``set Ignore Off''),

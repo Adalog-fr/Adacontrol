@@ -270,7 +270,7 @@ package body Framework.Language.Commands is
       Framework.Reports.Report_Counts;
 
       Framework.Reports.Report_Stats;
-      Rules_Manager.Report_Timings;
+      Rules_Manager.Report_Timings (Global_Report => False);
 
       if Is_Open (Adactl_Output) then
          Flush (Adactl_Output);
