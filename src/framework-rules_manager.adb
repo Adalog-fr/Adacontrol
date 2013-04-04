@@ -51,16 +51,18 @@ pragma Elaborate_All (Binary_Map);
 with
   Framework.Control_Manager,
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Variables.Shared_Types,
+  Framework.Variables,
   Framework.Reports;
 
 package body Framework.Rules_Manager is
-   use Framework.Variables.Shared_Types;
+   use Framework.Variables;
 
    --
    -- User settable variables
    --
-   Timing_Option : aliased Switch_Type.Object := (Value => Off);
+   type Timing_Switch is (Off, On, Global);
+   package Timing_Switch_Type is new Discrete_Type (Timing_Switch);
+   Timing_Option : aliased Timing_Switch_Type.Object := (Value => Off);
 
 
    --
@@ -157,14 +159,14 @@ package body Framework.Rules_Manager is
    procedure Enter (Rule : Wide_String) is
       use Ada.Calendar;
    begin
-      if Timing_Option.Value = On and Last_Rule_Length /= 0 then
+      if Timing_Option.Value /= Off and Last_Rule_Length /= 0 then
          Accumulate_Time;
       end if;
 
       Last_Rule_Name (1 .. Rule'Length) := Rule;
       Last_Rule_Length                  := Rule'Length;
 
-      if Timing_Option.Value = On then
+      if Timing_Option.Value /= Off then
          Last_Rule_Start := Clock;
       end if;
    end Enter;
@@ -404,7 +406,7 @@ package body Framework.Rules_Manager is
    -- Report_Timings --
    --------------------
 
-   procedure Report_Timings is
+   procedure Report_Timings (Global_Report : Boolean) is
       use Utilities;
       Total_Rules_Time : Duration := 0.0;
 
@@ -442,20 +444,28 @@ package body Framework.Rules_Manager is
       procedure Report_All_Timings is new Rule_List.Iterate (Report_One_Timing);
 
    begin  -- Report_Timings
-      if Last_Rule_Length = 0 then
-         --? empty run
+      if Timing_Option.Value = Off then
+         Last_Rule_Length := 0;
          return;
       end if;
 
-      if Timing_Option.Value = On then
-         Accumulate_Time;
-
-         Add_All_Timings (Rule_Map);
-
-         User_Message;
-         User_Message ("Rules timing statistics (in s.)");
-         Report_All_Timings (Rule_Map);
+      if not Global_Report then
+         if Last_Rule_Length = 0 then
+            return; -- empty run
+         end if;
+         Accumulate_Time;  -- Close counter for last rule
       end if;
+      Last_Rule_Length := 0;
+
+      if Global_Report /= (Timing_Option.Value = Global) then
+         return;
+      end if;
+
+      Add_All_Timings (Rule_Map);
+
+      User_Message;
+      User_Message ("Rules timing statistics (in s.)");
+      Report_All_Timings (Rule_Map);
 
    end Report_Timings;
 

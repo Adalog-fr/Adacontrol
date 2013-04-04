@@ -93,7 +93,7 @@ package Framework.Rules_Manager is
    procedure Command_All (Action : Rule_Action);
    procedure Command (Rule_Id : in Wide_String; Action : Rule_Action);
 
-   procedure Report_Timings;
+   procedure Report_Timings (Global_Report : Boolean);
 
    -------------------------------------------------------------------
    --  Inhibition management                                        --

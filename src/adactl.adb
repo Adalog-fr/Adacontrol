@@ -152,13 +152,15 @@ begin
          User_Log ("No syntax error");
       else
          declare
-            -- Execution time in tenth of seconds:
+            -- Total execution time in tenth of seconds:
             Exec_Time : constant Integer := Integer ((Clock - Start_Time) * 10);
             Hours     : constant Integer := Exec_Time / (3600 * 10);
             Mins      : constant Integer := Exec_Time rem (3600 * 10) / (60 * 10);
             Secs      : constant Integer := Exec_Time rem (60 * 10) / 10;
             Tens      : constant Integer := Exec_Time rem 10;
          begin
+            Framework.Rules_Manager.Report_Timings (Global_Report => True);
+
             -- We don't output tens if > 1 min
             User_Log ("Total execution time: "
                         & Choose (Hours /= 0, Integer_Img (Hours) & "h ", "")
