@@ -1,0 +1,8 @@
+Variable_aliasing:   check  generic_aliasing (variable);
+Type_aliasing:       search generic_aliasing (type);
+Subprogram_aliasing: check  generic_aliasing (Subprogram);
+package_aliasing:    search generic_aliasing (package);
+
+Possible_Variable:   check generic_aliasing (possible variable);
+Unlikely_Variable:   check generic_aliasing (unlikely variable);
+Unlikely_Subprogram: check generic_aliasing (unlikely subprogram);

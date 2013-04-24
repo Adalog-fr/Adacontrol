@@ -2465,6 +2465,7 @@ is a dispatching call.
 * Entity_Inside_Exception::
 * Exception_Propagation::
 * Expressions::
+* Generic_Aliasing::
 * Global_References::
 * Header_Comments::
 * Improper_Initialization::
@@ -4276,7 +4277,7 @@ the issue is quite difficult!
 These last two cases are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
-@node Expressions, Global_References, Exception_Propagation, Rules reference
+@node Expressions, Generic_Aliasing, Exception_Propagation, Rules reference
 @section Expressions
 This rule controls usage of various kinds of expressions.
 @subsection Syntax
@@ -4469,10 +4470,69 @@ procedure calls, see rule @ref{Statements}.
 Per language rules, underived conversions are allowed only between
 numeric types, and between structurally equivalent array types.
 
-@node  Global_References, Header_Comments, Expressions, Rules reference
+@node Generic_Aliasing, Global_References, Expressions, Rules reference
+@section Generic_Aliasing
+This rule controls instantiations where the same actual is given to
+more than one formal.
+@subsection Syntax
+@example
+<control_kind> generic_aliasing [( [<condition>] <entity> <@{, [<condition>] <entity>@})];
+<condition> ::= unlikely | possible | certain
+<entity>    ::= all | variable | type | subprogram | package
+@end example
+
+@subsection Action
+This rule identifies instantiations where the same variable, type,
+subprogram, or package is given several times (to different formal
+parameters). Such aliasing of variables is dangerous, since it can
+induce subtile bugs. Other elements are less dangerous, although often
+questionable (depending on the generic).
+
+The <entity> parameter indicates for which elements aliasing is
+controlled; ``all'' stands for all kinds of elements.
+
+There are many cases where aliasing cannot be determined
+statically. The optional parameter specifies how aggressively the rule
+will check for possible aliasings (see @ref{Parameter_Aliasing} for a
+more detailed description of these modifiers). Possible values are
+(case irrelevant):
+@itemize
+@item
+Certain (default): Only cases where aliasing is statically certain are
+output.
+@item
+Possible: In addition, cases where aliasing may occur depending on the
+value of an indexed component are output. This can be specified only
+for variables.
+@item
+Unlikely: In addition, cases where aliasing may occur due to access
+variables designating the same element are output. This can be
+specified only for variables and subprograms.
+@end itemize
+
+Without any parameter, the rule is the same as ``certain all''. The
+rule can be specified only once for each combination of <condition>
+and <entity>.
+
+Ex:
+@example
+check  generic_aliasing (certain  variable);
+search generic_aliasing (possible variable, type, subprogram, package);
+@end example
+
+@subsection Limitations
+Due to a limitation of ASIS for Gnat, AdaControl might not be able to
+differentiate predefined operators of different types, and may thus
+give false positives if a generic is instantiated with, for example,
+two different functions that are actually @code{"+"} on Integer and
+@code{"+"} on Float. This possibility of  false positives is detected
+by the rule ``uncheckable''. @xref{Uncheckable}.
+
+@node   Global_References, Header_Comments, Generic_Aliasing, Rules reference
 @section Global_References
 This rule controls accesses to global elements that may be subject to
 race conditions, or otherwise shared.
+
 @subsection Syntax
 @example
 <control_kind> global_references (<Ref_Kind> @{, <Root>@});
@@ -6308,7 +6368,7 @@ Ex:
 @example
 check pragmas (elaborate_all, elaborate_body);
 
--- Search pragma Convention that apply to several entities: 
+-- Search pragma Convention that apply to several entities:
 search pragmas (multiple convention);
 @end example
 

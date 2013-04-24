@@ -12,6 +12,7 @@ procedure T_Uncheckable is
    procedure Directly_Accessed_Globals       is separate;
    procedure Duplicate_Initialization_Calls  is separate;
    procedure Exception_Propagation           is separate;
+   procedure Generic_Aliasing                is separate;
    procedure Global_References               is separate;
    procedure Max_Call_Depth                  is separate;
    procedure Object_Declarations             is separate;

@@ -51,6 +51,7 @@ with
   Rules.Exception_Propagation,
   Rules.Expressions,
   Rules.Local_Access,
+  Rules.Generic_Aliasing,
   Rules.Global_References,
   Rules.Multiple_Assignments,
   Rules.Header_Comments,
@@ -373,6 +374,7 @@ package body Framework.Plugs is
                when A_Package_Instantiation =>
                   Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
+                  Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
                   Rules.Non_Static.             Process_Instantiation         (Element);
                   Rules.Return_Type.            Process_Instantiation         (Element);
@@ -389,6 +391,7 @@ package body Framework.Plugs is
                when A_Procedure_Instantiation =>
                   Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
+                  Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
                   Rules.Parameter_Declarations. Process_Declaration           (Element);
                   Rules.Non_Static.             Process_Instantiation         (Element);
@@ -401,6 +404,7 @@ package body Framework.Plugs is
                when A_Function_Instantiation =>
                   Rules.Default_Parameter.           Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.       Process_Instantiation         (Element);
+                  Rules.Generic_Aliasing.            Process_Instantiation         (Element);
                   Rules.Instantiations.              Process_Instantiation         (Element);
                   Rules.Parameter_Declarations.      Process_Declaration           (Element);
                   Rules.Non_Static.                  Process_Instantiation         (Element);
