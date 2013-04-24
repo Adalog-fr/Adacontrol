@@ -55,6 +55,9 @@ package Adactl_Options is
    Spec_Option      : Switch :=  Off;
    Unit_Option      : Switch :=  Off;
 
+   function Command_Line return Wide_String;
+   -- Returns the raw command line
+
    procedure Analyse_Options;
    -- Analyses and sets program options
 

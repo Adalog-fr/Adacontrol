@@ -453,6 +453,17 @@ package body Adactl_Options is
       return Implementation_Options.Initialize_String (Utilities.Debug_Option);
    end Initialize_String;
 
+   ------------------
+   -- Command_Line --
+   ------------------
+
+   function Command_Line return Wide_String is
+      use Ada.Characters.Handling;
+      use Analyzer;
+   begin
+      return To_Wide_String (Option_String (With_Command => True));
+   end Command_Line;
+
    ---------------------------
    -- Command_Line_Commands --
    ---------------------------
