@@ -15,6 +15,8 @@ t_uncheckable-exception_propagation.adb:12:16: Error: Uncheckable: in rule EXCEP
 t_uncheckable-exception_propagation.adb:13:16: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Prefix of attribute is not statically determinable
 x_uncheckable_proc.ads:1:1: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Body not available, assuming no risk
 t_uncheckable-exception_propagation.adb:15:4: Error: Uncheckable: in rule EXCEPTION_PROPAGATION: Possible false negative: Dispatching call
+t_uncheckable-generic_aliasing.adb:9:38: Error: Uncheckable: in rule GENERIC_ALIASING: Possible false positive: several undistinguishable "+" operators
+t_uncheckable-generic_aliasing.adb:9:38: Error: GENERIC_ALIASING: Parameter is same as parameter #1 at t_uncheckable-generic_aliasing.adb:9:33 (Certain)
 t_uncheckable-global_references.adb:4:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
 t_uncheckable-global_references.adb:5:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references
 t_uncheckable-global_references.adb:6:4: Error: Uncheckable: in rule GLOBAL_REFERENCES: Possible false negative: Dispatching call or call to dynamic entity; assuming no global references

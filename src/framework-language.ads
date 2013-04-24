@@ -131,10 +131,12 @@ package Framework.Language is
       Empty_Set : constant Modifier_Set := (others => False);
       Full_Set  : constant Modifier_Set := (others => True);
 
-      function Get_Modifier (Required : Boolean; Expected : Modifier_Set := Full_Set) return Modifiers;
+      function Get_Modifier (Required : Boolean;
+                             Expected : Modifier_Set := Full_Set;
+                             Default  : Modifiers    := Modifiers'First) return Modifiers;
       -- Gets a modifier from those allowed by Expected
       -- If Required and no modifier given, Syntax_Error
-      -- If not Required and no modifier given, returns Modifiers'First
+      -- If not Required and no modifier given, returns Default
 
       function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
 

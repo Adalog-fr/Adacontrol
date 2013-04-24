@@ -36,6 +36,12 @@ Parameter(3..): [not] packed | sized | component_sized (optional)
 <category>: ()      | access    | array | delta  | digits | mod |
             private | protected | range | record | tagged | task
 ----
+Rule: ASPECTS
+Control occurrences of aspect specifications
+
+Parameter(s): <Aspect_Mark> | all
+             (optional, default = all)
+----
 Rule: BARRIER_EXPRESSIONS
 Control constucts used in protected entry barriers
 
@@ -84,78 +90,79 @@ Control occurrences of Ada declarations
 Parameter(s): {<location>} <decl>
 <location>: all | block   | library | local      | nested    |
             own | private | public  | in_generic | task_body
-<decl>: any_declaration                   | abstract_function               |
-        abstract_operator                 | abstract_procedure              |
-        abstract_type                     | access_all_type                 |
-        access_constant_type              | access_protected_type           |
-        access_subprogram_type            | access_task_type                |
-        access_type                       | aliased_array_component         |
-        aliased_constant                  | aliased_protected_component     |
-        aliased_record_component          | aliased_variable                |
-        anonymous_access_component        | anonymous_access_constant       |
-        anonymous_access_discriminant     | anonymous_access_parameter      |
-        anonymous_access_variable         | anonymous_subtype_allocator     |
-        anonymous_subtype_case            | anonymous_subtype_declaration   |
-        anonymous_subtype_for             | anonymous_subtype_indexing      |
-        array                             | array_type                      |
-        binary_modular_type               | character_literal               |
-        child_unit                        | class_wide_constant             |
-        class_wide_variable               | constant                        |
-        constrained_array_constant        | constrained_array_type          |
-        constrained_array_variable        | controlled_type                 |
-        decimal_fixed_type                | defaulted_discriminant          |
-        defaulted_generic_parameter       | defaulted_parameter             |
-        deferred_constant                 | derived_type                    |
-        discriminant                      | empty_private_part              |
-        empty_visible_part                | enumeration_type                |
-        entry                             | exception                       |
-        extension                         | fixed_type                      |
-        float_type                        | formal_function                 |
-        formal_package                    | formal_procedure                |
-        formal_type                       | function                        |
-        function_call_renaming            | function_instantiation          |
-        generic                           | generic_function                |
-        generic_package                   | generic_procedure               |
-        handlers                          | incomplete_type                 |
-        in_out_generic_parameter          | in_out_parameter                |
-        initialized_protected_component   | initialized_record_component    |
-        initialized_variable              | instantiation                   |
-        integer_type                      | interface_type                  |
-        library_unit_renaming             | limited_private_type            |
-        modular_type                      | multiple_names                  |
-        multiple_protected_entries        | named_number                    |
-        non_binary_modular_type           | non_identical_operator_renaming |
-        non_identical_renaming            | non_joint_ce_ne_handler         |
-        non_limited_private_type          | not_operator_renaming           |
-        null_extension                    | null_ordinary_record_type       |
-        null_procedure                    | null_procedure_body             |
-        null_procedure_declaration        | null_tagged_type                |
-        operator                          | operator_renaming               |
-        ordinary_fixed_type               | ordinary_fixed_type_no_small    |
-        ordinary_fixed_type_with_small    | ordinary_record_type            |
-        ordinary_record_variable          | out_parameter                   |
-        package                           | package_instantiation           |
-        package_statements                | predefined_operator             |
-        private_extension                 | procedure                       |
-        procedure_instantiation           | protected                       |
-        protected_discriminant            | protected_entry                 |
-        protected_type                    | protected_variable              |
-        record_type                       | renaming                        |
-        renaming_as_body                  | renaming_as_declaration         |
-        scalar_variable                   | self_calling_function           |
-        self_calling_procedure            | separate                        |
-        signed_type                       | single_array                    |
-        single_protected                  | single_task                     |
-        subtype                           | tagged_private_type             |
-        tagged_type                       | tagged_variable                 |
-        task                              | task_discriminant               |
-        task_entry                        | task_type                       |
-        task_variable                     | type                            |
-        unconstrained_array_constant      | unconstrained_array_type        |
-        unconstrained_array_variable      | unconstrained_subtype           |
-        uninitialized_protected_component | uninitialized_record_component  |
-        uninitialized_variable            | unknown_discriminant            |
-        variable                          | variant_part
+<decl>: any_declaration                 | abstract_function                 |
+        abstract_operator               | abstract_procedure                |
+        abstract_type                   | access_all_type                   |
+        access_constant_type            | access_protected_type             |
+        access_subprogram_type          | access_task_type                  |
+        access_type                     | aliased_array_component           |
+        aliased_constant                | aliased_protected_component       |
+        aliased_record_component        | aliased_variable                  |
+        anonymous_access_component      | anonymous_access_constant         |
+        anonymous_access_discriminant   | anonymous_access_parameter        |
+        anonymous_access_variable       | anonymous_subtype_allocator       |
+        anonymous_subtype_case          | anonymous_subtype_declaration     |
+        anonymous_subtype_for           | anonymous_subtype_indexing        |
+        array                           | array_type                        |
+        binary_modular_type             | character_literal                 |
+        child_unit                      | class_wide_constant               |
+        class_wide_variable             | constant                          |
+        constrained_array_constant      | constrained_array_type            |
+        constrained_array_variable      | controlled_type                   |
+        decimal_fixed_type              | defaulted_discriminant            |
+        defaulted_generic_parameter     | defaulted_parameter               |
+        deferred_constant               | derived_type                      |
+        discriminant                    | empty_private_part                |
+        empty_visible_part              | enumeration_type                  |
+        entry                           | exception                         |
+        expression_function             | extension                         |
+        fixed_type                      | float_type                        |
+        formal_function                 | formal_package                    |
+        formal_procedure                | formal_type                       |
+        function                        | function_call_renaming            |
+        function_instantiation          | generic                           |
+        generic_function                | generic_package                   |
+        generic_procedure               | handlers                          |
+        incomplete_type                 | in_out_generic_parameter          |
+        in_out_parameter                | initialized_protected_component   |
+        initialized_record_component    | initialized_variable              |
+        instantiation                   | integer_type                      |
+        interface_type                  | library_unit_renaming             |
+        limited_private_type            | modular_type                      |
+        multiple_names                  | multiple_protected_entries        |
+        named_number                    | non_binary_modular_type           |
+        non_identical_operator_renaming | non_identical_renaming            |
+        non_joint_ce_ne_handler         | non_limited_private_type          |
+        not_operator_renaming           | null_extension                    |
+        null_ordinary_record_type       | null_procedure                    |
+        null_procedure_body             | null_procedure_declaration        |
+        null_tagged_type                | operator                          |
+        operator_renaming               | ordinary_fixed_type               |
+        ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
+        ordinary_record_type            | ordinary_record_variable          |
+        out_parameter                   | package                           |
+        package_instantiation           | package_statements                |
+        predefined_operator             | private_extension                 |
+        procedure                       | procedure_instantiation           |
+        protected                       | protected_discriminant            |
+        protected_entry                 | protected_type                    |
+        protected_variable              | record_type                       |
+        renaming                        | renaming_as_body                  |
+        renaming_as_declaration         | scalar_variable                   |
+        self_calling_function           | self_calling_procedure            |
+        separate                        | signed_type                       |
+        single_array                    | single_protected                  |
+        single_task                     | subtype                           |
+        tagged_private_type             | tagged_type                       |
+        tagged_variable                 | task                              |
+        task_discriminant               | task_entry                        |
+        task_type                       | task_variable                     |
+        type                            | unconstrained_array_constant      |
+        unconstrained_array_type        | unconstrained_array_variable      |
+        unconstrained_subtype           | uninitialized_protected_component |
+        uninitialized_record_component  | uninitialized_variable            |
+        unknown_discriminant            | variable                          |
+        variant_part
 ----
 Rule: DEFAULT_PARAMETER
 Control subprogram calls or generic instantiations that use the default for a
@@ -221,8 +228,11 @@ Control occurrences of Ada expressions
 Parameter (s): and                       | and_then                         |
                array_aggregate           | array_partial_others             |
                array_non_static_range    | array_others                     |
-               array_range               | complex_parameter                |
-               explicit_dereference      | fixed_multiplying_op             |
+               array_range               | case                             |
+               complex_parameter         | explicit_dereference             |
+               fixed_multiplying_op      | for_all                          |
+               for_some                  | if                               |
+               if_elsif                  | if_no_else                       |
                implicit_dereference      | inconsistent_attribute_dimension |
                inherited_function_call   | mixed_operators                  |
                or                        | or_else                          |
@@ -239,6 +249,15 @@ For subrules inherited_function_call and prefixed_operator:
 Categories: <>     | ()      | range  | mod       | delta  |
             digits | array   | record | tagged    | access |
             new    | private | task   | protected
+----
+Rule: GENERIC_ALIASING
+Control instantiations where the same actual is given for
+more than one formal
+Parameter(s): [<condition>]  all        | variable | type |
+                             subprogram | package
+                             (optional, default = all)
+ <condition>:  unlikely | possible | certain
+               (default = certain)
 ----
 Rule: GLOBAL_REFERENCES
 Control global (in a relative sense) variables referenced 
@@ -564,36 +583,37 @@ Parameter(s): block | dead           | handler     |
 Rule: STATEMENTS
 Control occurrences of Ada statements
 
-Parameter(s): any_statement            | abort                   |
-              accept_return            | assignment              |
-              asynchronous_select      | block                   |
-              case                     | case_others             |
-              case_others_null         | code                    |
-              conditional_entry_call   | declare_block           |
-              delay                    | delay_until             |
-              dispatching_call         | effective_declare_block |
-              entry_call               | entry_return            |
-              exception_others         | exception_others_null   |
-              exit                     | exit_expanded_name      |
-              exit_for_loop            | exit_outer_loop         |
-              exit_while_loop          | exited_extended_return  |
-              extended_return          | for_loop                |
-              function_return          | goto                    |
-              if                       | if_elsif                |
-              inherited_procedure_call | labelled                |
-              loop_return              | multiple_exits          |
-              no_else                  | null                    |
-              procedure_return         | raise                   |
-              raise_locally_handled    | raise_nonpublic         |
-              raise_standard           | reraise                 |
-              requeue                  | selective_accept        |
-              simple_loop              | terminate               |
-              timed_entry_call         | unconditional_exit      |
-              unnamed_block            | unnamed_exit            |
-              unnamed_loop_exited      | unnamed_for_loop        |
-              unnamed_multiple_loop    | unnamed_simple_loop     |
-              unnamed_while_loop       | untyped_for             |
-              while_loop
+Parameter(s): any_statement          | abort                    |
+              accept_return          | assignment               |
+              asynchronous_select    | block                    |
+              case                   | case_others              |
+              case_others_null       | code                     |
+              conditional_entry_call | declare_block            |
+              delay                  | delay_until              |
+              dispatching_call       | effective_declare_block  |
+              entry_call             | entry_return             |
+              exception_others       | exception_others_null    |
+              exit                   | exit_expanded_name       |
+              exit_for_loop          | exit_outer_loop          |
+              exit_while_loop        | exited_extended_return   |
+              extended_return        | for_loop                 |
+              for_in_loop            | for_iterator_loop        |
+              for_of_loop            | function_return          |
+              goto                   | if                       |
+              if_elsif               | inherited_procedure_call |
+              labelled               | loop_return              |
+              multiple_exits         | no_else                  |
+              null                   | procedure_return         |
+              raise                  | raise_locally_handled    |
+              raise_nonpublic        | raise_standard           |
+              reraise                | requeue                  |
+              selective_accept       | simple_loop              |
+              terminate              | timed_entry_call         |
+              unconditional_exit     | unnamed_block            |
+              unnamed_exit           | unnamed_loop_exited      |
+              unnamed_for_loop       | unnamed_multiple_loop    |
+              unnamed_simple_loop    | unnamed_while_loop       |
+              untyped_for            | while_loop
 ----
 Rule: STYLE
 Control various Ada style issues
@@ -701,6 +721,8 @@ Control "with" clauses that use multiple names, can be moved to a more reduced s
 or are implicitely inherited from a parent unit
 
 Parameter(s): multiple_names | reduceable | inherited
+Variables:
+With_Clauses.Check_Private_With: (Off, On) = On
 Usage: adactl [-deEirsTuvwx]
               [-p <project file>]     [-f <rules file>]    [-l < rules list > ]
               [-o < output file > ]   [-t <trace file>]    [-F <format>]
@@ -753,13 +775,14 @@ Options:
 ----
 Rules:
    Abnormal_Function_Return        Allocators                      
-   Array_Declarations              Barrier_Expressions             
-   Case_Statement                  Characters                      
-   Comments                        Declarations                    
-   Default_Parameter               Dependencies                    
-   Directly_Accessed_Globals       Duplicate_Initialization_Calls  
-   Entities                        Entity_Inside_Exception         
-   Exception_Propagation           Expressions                     
+   Array_Declarations              Aspects                         
+   Barrier_Expressions             Case_Statement                  
+   Characters                      Comments                        
+   Declarations                    Default_Parameter               
+   Dependencies                    Directly_Accessed_Globals       
+   Duplicate_Initialization_Calls  Entities                        
+   Entity_Inside_Exception         Exception_Propagation           
+   Expressions                     Generic_Aliasing                
    Global_References               Header_Comments                 
    Improper_Initialization         Instantiations                  
    Insufficient_Parameters         Local_Access                    
@@ -784,7 +807,7 @@ Rules:
    Usage                           Use_Clauses                     
    With_Clauses                    
 
-ADACTL v. 1.15b3 with ASIS 2.0.R for GNAT GPL 2011 (20110428)
+ADACTL v. 1.15b3 with ASIS 2.0.R for GNAT GPL 2012 (20120509)
 ----
 Copyright (C) 2004-2008 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.

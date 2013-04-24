@@ -14,9 +14,12 @@ Added command "set timing global" (global timing over all "go" commands)
 
 Syntax of entities: added 'all to designate all attributes
 
+Option -D: added header comment with the command that generated the list
+
 New rules:
 ----------
 aspects
+Generic_Aliasing
 
 Changes to existing rules:
 --------------------------

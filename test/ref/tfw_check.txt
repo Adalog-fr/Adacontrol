@@ -38,6 +38,7 @@ conf/t_entities.aru: No syntax error
 conf/t_entity_inside_exception.aru: No syntax error
 conf/t_exception_propagation.aru: No syntax error
 conf/t_expressions.aru: No syntax error
+conf/t_generic_aliasing.aru: No syntax error
 conf/t_global_references.aru: No syntax error
 conf/t_header_comments.aru: No syntax error
 conf/t_improper_initialization.aru: No syntax error

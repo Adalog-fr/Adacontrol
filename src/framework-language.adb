@@ -1325,7 +1325,10 @@ package body Framework.Language is
          Found := False;
       end Get_Modifier;
 
-      function Get_Modifier (Required : Boolean; Expected : Modifier_Set := Full_Set) return Modifiers is
+      function Get_Modifier (Required : Boolean;
+                             Expected : Modifier_Set := Full_Set;
+                             Default  : Modifiers    := Modifiers'First) return Modifiers
+      is
          Present : Boolean;
          Result  : Modifiers;
       begin
@@ -1339,7 +1342,7 @@ package body Framework.Language is
          elsif Required then
             Syntax_Error ("modifier expected", Current_Token.Position);
          else
-            return Modifiers'First;
+            return Default;
          end if;
       end Get_Modifier;
 
