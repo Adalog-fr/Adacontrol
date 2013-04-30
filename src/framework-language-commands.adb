@@ -65,6 +65,10 @@ with
 package body Framework.Language.Commands is
    use Utilities;
 
+   --  Messages
+   Copyright_1 : constant Wide_String := "Copyright (C) 2004-2013 Eurocontrol/Adalog and others.";
+   Copyright_2 : constant Wide_String := "This software is covered by the GNU Modified General Public License.";
+
    --  Output management
    Console_Name : constant Wide_String := "CONSOLE";
 
@@ -298,8 +302,8 @@ package body Framework.Language.Commands is
          Help_On_Commands;
 
       elsif Upper_On = "LICENSE" then
-         User_Message ("Copyright (C) 2004-2008 Eurocontrol/Adalog and others.");
-         User_Message ("This software is covered by the GNU Modified General Public License.");
+         User_Message (Copyright_1);
+         User_Message (Copyright_2);
 
       elsif Upper_On = "LIST" then
          Help_On_Names (Pretty => False);

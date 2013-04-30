@@ -294,8 +294,10 @@ package body Framework.Reports is
             Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & "_SHORT, ");
          end loop;
          return
-             To_Wide_String (Buffer)
-           & To_Title (Output_Format'Wide_Image (None));
+           '('
+           & To_Wide_String (Buffer)
+           & To_Title (Output_Format'Wide_Image (None))
+           & ')';
       end All_Values;
    end Output_Format_Type;
 

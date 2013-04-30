@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.15b3
+@settitle AdaControl User Guide V1.15b4
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -353,11 +353,12 @@ that predate this change as ``old Gnat'', and to other versions as
 Previous public releases of AdaControl will compile only with the old
 Gnat. This release is provided in two versions, one whose distribution
 files start with ``adactl'' for the new Gnat, and one whose
-distribution files start with ``adactl-old'' for the old-gnat. Both
-versions provide the same features; however, it is likely that in the
-future, some improvements will be incorporated only in the version for
-the new Gnat. We strongly encourage users to move to the latest
-version of Gnat.
+distribution files start with ``adactl-old'' for the old-gnat.  Both
+versions provide the same features, except that controls related to
+Ada-2012 are not available in the old-gnat. In the future, more and
+more improvements will be incorporated only in the version for the new
+Gnat, and the old one will be progressively frozen. We strongly
+encourage users to move to the latest version of Gnat.
 
 @subsection Prerequisites
 The following software must be installed in order to compile
