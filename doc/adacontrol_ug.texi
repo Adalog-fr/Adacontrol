@@ -2232,8 +2232,9 @@ Syntax:
 Clear all | <rule name>@{,<rule name>@} ;
 @end example
 The command clears all controls given for the indicated rules, of for
-all rules if the @code{all} keyword is given. For example, the
-following program:
+all rules if the @code{all} keyword is given. Rule variables
+(@pxref{Set command}) associated to cleared rules are returned to
+their default values. For example, the following program:
 @example
 search entities (pack1);
 go;
@@ -2453,6 +2454,7 @@ is a dispatching call.
 * Abnormal_Function_Return::
 * Allocators::
 * Array_Declarations::
+* Aspects::
 * Barrier_Expressions::
 * Case_Statement::
 * Characters::
@@ -2716,7 +2718,7 @@ of the (anonymous) acccess type. Inconsistent allocators will thus not
 be controlled. Such cases are detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
 
-@node Array_Declarations, Barrier_Expressions, Allocators, Rules reference
+@node Array_Declarations, Aspects, Allocators, Rules reference
 @section Array_Declarations
 This rule controls properties of arrays, by enforcing a consistent
 value or range of values for the lower or upper bound, or by limiting
@@ -2897,7 +2899,26 @@ check array_declarations (last, min 1);
 @end example
 can be used to check that no array has a negative or zero upper bound.
 
-@node Barrier_Expressions, Case_Statement, Array_Declarations, Rules reference
+@node Aspects, Barrier_Expressions, Array_Declarations, Rules reference
+@section Aspects
+This rule controls aspect specifications (new feature in Ada 2012), either
+all of them or specific ones.
+@subsection Syntax
+@example
+<control_kind> aspects [(all | <aspect mark> @{, <aspect mark>@})];
+@end example
+@subsection Action
+Without parameters (or if ``all'' is given), controls all aspect
+specifications. Otherwise, controls only the aspect specifications
+corresponding to the given aspect marks.
+
+Ex:
+@example
+search aspects;
+DBC: check aspects (Pre, Post, Pre'Class, Post'Class);
+@end example
+
+@node Barrier_Expressions, Case_Statement, Aspects, Rules reference
 @section Barrier_Expressions
 Although the language allows any expression as the barrier of a
 protected entry, it is generally better to use only ``simple''
@@ -3233,78 +3254,78 @@ those occurring at specified locations.
 <location_kw> ::= all | block   | library | local      | nested |
                   own | private | public  | in_generic | task_body
 <declaration_kw> ::=
-   any_declaration                   |
-   abstract_function                 | abstract_operator                 |
-   abstract_procedure                | abstract_type                     |
-   access_all_type                   | access_constant_type              |
-   access_protected_type             | access_subprogram_type            |
-   access_task_type                  | access_type                       |
-   aliased_array_component           | aliased_constant                  |
-   aliased_protected_component       | aliased_record_component          |
-   anonymous_access_component        | anonymous_access_constant         |
-   anonymous_access_discriminant     | anonymous_access_parameter        |
-   anonymous_access_variable         | aliased_variable                  |
-   anonymous_subtype_allocator       | anonymous_subtype_case            |
-   anonymous_subtype_declaration     | anonymous_subtype_for             |
-   anonymous_subtype_indexing        | array                             |
-   array_type                        | binary_modular_type               |
-   character_literal                 | child_unit                        |
-   class_wide_constant               | class_wide_variable               |
-   constant                          | constrained_array_constant        |
-   constrained_array_type            | constrained_array_variable        |
-   controlled_type                   | decimal_fixed_type                |
-   defaulted_discriminant            | defaulted_generic_parameter       |
-   defaulted_parameter               | deferred_constant                 |
-   derived_type                      | discriminant                      |
-   empty_private_part                | empty_visible_part                |
-   enumeration_type                  | entry                             |
-   exception                         | extension                         |
-   fixed_type                        | float_type                        |
-   formal_function                   | formal_package                    |
-   formal_procedure                  | formal_type                       |
-   function                          | function_call_renaming            |
-   function_instantiation            | generic                           |
-   generic_function                  | generic_package                   |
-   generic_procedure                 | handlers                          |
-   incomplete_type                   | in_out_generic_parameter          |
-   in_out_parameter                  | initialized_protected_component   |
-   initialized_record_component      | initialized_variable              |
-   instantiation                     | integer_type                      |
-   interface_type                    | library_unit_renaming             |
-   limited_private_type              | modular_type                      |
-   multiple_names                    | multiple_protected_entries        |
-   named_number                      | non_binary_modular_type           |
-   non_identical_operator_renaming   | non_identical_renaming            |
-   non_joint_CE_NE_handler           | non_limited_private_type          |
-   not_operator_renaming             | null_extension                    |
-   null_ordinary_record_type         | null_procedure                    |
-   null_procedure_body               | null_procedure_declaration        |
-   null_tagged_type                  | operator                          |
-   operator_renaming                 | ordinary_fixed_type               |
-   ordinary_fixed_type_no_small      | ordinary_fixed_type_with_small    |
-   ordinary_record_type              | ordinary_record_variable          |
-   out_parameter                     | package                           |
-   package_instantiation             | package_statements                |
-   predefined_operator               | private_extension                 |
-   procedure                         | procedure_instantiation           |
-   protected                         | protected_discriminant            |
-   protected_entry                   | protected_type                    |
-   protected_variable                | record_type                       |
-   renaming                          | renaming_as_body                  |
-   renaming_as_declaration           | scalar_variable                   |
-   self_calling_function             | self_calling_procedure            |
-   separate                          | signed_type                       |
-   single_array                      | single_protected                  |
-   single_task                       | subtype                           |
-   tagged_private_type               | tagged_type                       |
-   tagged_variable                   | task                              |
-   task_discriminant                 | task_entry                        |
-   task_type                         | task_variable                     |
-   type                              | unconstrained_array_constant      |
-   unconstrained_array_type          | unconstrained_array_variable      |
-   unconstrained_subtype             | uninitialized_protected_component |
-   uninitialized_record_component    | uninitialized_variable            |
-   unknown_discriminant              | variable                          |
+   any_declaration                 | abstract_function                 |
+   abstract_operator               | abstract_procedure                |
+   abstract_type                   | access_all_type                   |
+   access_constant_type            | access_protected_type             |
+   access_subprogram_type          | access_task_type                  |
+   access_type                     | aliased_array_component           |
+   aliased_constant                | aliased_protected_component       |
+   aliased_record_component        | aliased_variable                  |
+   anonymous_access_component      | anonymous_access_constant         |
+   anonymous_access_discriminant   | anonymous_access_parameter        |
+   anonymous_access_variable       | anonymous_subtype_allocator       |
+   anonymous_subtype_case          | anonymous_subtype_declaration     |
+   anonymous_subtype_for           | anonymous_subtype_indexing        |
+   array                           | array_type                        |
+   binary_modular_type             | character_literal                 |
+   child_unit                      | class_wide_constant               |
+   class_wide_variable             | constant                          |
+   constrained_array_constant      | constrained_array_type            |
+   constrained_array_variable      | controlled_type                   |
+   decimal_fixed_type              | defaulted_discriminant            |
+   defaulted_generic_parameter     | defaulted_parameter               |
+   deferred_constant               | derived_type                      |
+   discriminant                    | empty_private_part                |
+   empty_visible_part              | enumeration_type                  |
+   entry                           | exception                         |
+   expression_function             | extension                         |
+   fixed_type                      | float_type                        |
+   formal_function                 | formal_package                    |
+   formal_procedure                | formal_type                       |
+   function                        | function_call_renaming            |
+   function_instantiation          | generic                           |
+   generic_function                | generic_package                   |
+   generic_procedure               | handlers                          |
+   incomplete_type                 | in_out_generic_parameter          |
+   in_out_parameter                | initialized_protected_component   |
+   initialized_record_component    | initialized_variable              |
+   instantiation                   | integer_type                      |
+   interface_type                  | library_unit_renaming             |
+   limited_private_type            | modular_type                      |
+   multiple_names                  | multiple_protected_entries        |
+   named_number                    | non_binary_modular_type           |
+   non_identical_operator_renaming | non_identical_renaming            |
+   non_joint_ce_ne_handler         | non_limited_private_type          |
+   not_operator_renaming           | null_extension                    |
+   null_ordinary_record_type       | null_procedure                    |
+   null_procedure_body             | null_procedure_declaration        |
+   null_tagged_type                | operator                          |
+   operator_renaming               | ordinary_fixed_type               |
+   ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
+   ordinary_record_type            | ordinary_record_variable          |
+   out_parameter                   | package                           |
+   package_instantiation           | package_statements                |
+   predefined_operator             | private_extension                 |
+   procedure                       | procedure_instantiation           |
+   protected                       | protected_discriminant            |
+   protected_entry                 | protected_type                    |
+   protected_variable              | record_type                       |
+   renaming                        | renaming_as_body                  |
+   renaming_as_declaration         | scalar_variable                   |
+   self_calling_function           | self_calling_procedure            |
+   separate                        | signed_type                       |
+   single_array                    | single_protected                  |
+   single_task                     | subtype                           |
+   tagged_private_type             | tagged_type                       |
+   tagged_variable                 | task                              |
+   task_discriminant               | task_entry                        |
+   task_type                       | task_variable                     |
+   type                            | unconstrained_array_constant      |
+   unconstrained_array_type        | unconstrained_array_variable      |
+   unconstrained_subtype           | uninitialized_protected_component |
+   uninitialized_record_component  | uninitialized_variable            |
+   unknown_discriminant            | variable                          |
    variant_part
 @end example
 
@@ -3464,6 +3485,8 @@ if any), even if it contains pragmas.
 @code{enumeration_type} controls the declaration of enumeration types.
 @item
 @code{exception} controls exception declarations.
+@item
+@code{expression_function} controls declaration of expression functions
 @item
 @code{fixed_type} controls all declarations of fixed point types while
 @code{ordinary_fixed_type} controls only ordinary (binary) fixed point
@@ -4289,8 +4312,11 @@ This rule controls usage of various kinds of expressions.
    and                       | and_then                         |
    array_aggregate           | array_others                     |
    array_non_static_range    | array_partial_others             |
-   array_range               | complex_parameter                |
-   explicit_dereference      | fixed_multiplying_op             |
+   array_range               | case                             |
+   complex_parameter         | explicit_dereference             |
+   fixed_multiplying_op      | for_all                          |
+   for_some                  | if                               |
+   if_elsif                  | if_no_else                       |
    implicit_dereference      | inconsistent_attribute_dimension |
    inherited_function_call   | mixed_operators                  |
    or                        | or_else                          |
@@ -4369,6 +4395,8 @@ same, but only if there are other associations in addition to the
 =>}). @code{array_non_static_range} does the same, but only if (at
 least) one of the bounds is not static.
 @item
+@code{case} controls @b{case} expressions (introduced in Ada 2012).
+@item
 @code{complex_parameter} controls complex expressions used as actual
 parameters in subprogram (or entry) calls. A complex expression is any
 expression that includes a function call (including operators). This
@@ -4381,6 +4409,13 @@ values (i.e. with an explicit @code{.@b{all}}).
 @code{fixed_multiplying_op} controls calls to predefined fixed-point
 multiplication and division (regular fixed-point or decimal-fixed
 point).
+@item
+@code{for_all} and @code{for_some} control the two forms of
+quantifiers introduced by Ada 2012.
+@item
+@code{if} controls all @b{if} expressions (introduced in Ada 2012),
+while @code{if_elsif} only controls those that have an @b{elsif} part,
+and @code{if_no_else} only controls those that have no @b{else} part.
 @item
 @code{implicit_dereference} controls implicit dereferences of access
 values (i.e. when the @code{.@b{all}} is omitted).
@@ -6772,14 +6807,6 @@ Ex:
 check return_type (unconstrained_discriminated, unconstrained_array);
 @end example
 
-@subsection Limitations
-There is a (very rare) case where AdaControl does not properly
-recognize that a function returns a class-wide type. This is due to an
-ASIS bug fixed in version 5.05, and therefore appears only with
-earlier versions of the compiler. This happens when a generic unit
-contains functions whose return type is a generic indefinite formal
-type, and this generic is instantiated with a class-wide type.
-
 @node Side_Effect_Parameters, Silent_Exceptions, Return_Type, Rules reference
 @section Side_Effect_Parameters
 This rule controls calls that may depend on the order of evaluation of
@@ -7212,37 +7239,37 @@ This rule controls usage of certain Ada statements.
 <control_kind> statements (<statement_kw> @{, <statement_kw>@};
 
 <statement_kw> ::=
-   any_statement            | abort                   |
-   accept_return            | assignment              |
-   asynchronous_select      | block                   |
-   case                     | case_others             |
-   case_others_null         | code                    |
-   conditional_entry_call   | declare_block           |
-   delay                    | delay_until             |
-   dispatching_call         | effective_declare_block |
-   entry_call               | entry_return            |
-   exception_others         | exception_others_null   |
-   exit                     | exit_expanded_name      |
-   exit_for_loop            | exit_outer_loop         |
-   exit_while_loop          | exited_extended_return  |
-   extended_return          | for_loop                |
-   for_in_loop              | for_of_loop             |
-   function_return          | goto                    |
-   if                       | if_elsif                |
-   inherited_procedure_call | labelled                |
-   loop_return              | multiple_exits          |
-   no_else                  | null                    |
-   procedure_return         | raise                   |
-   raise_locally_handled    | raise_nonpublic         |
-   raise_standard           | reraise                 |
-   requeue                  | selective_accept        |
-   simple_loop              | terminate               |
-   timed_entry_call         | unconditional_exit      |
-   unnamed_block            | unnamed_exit            |
-   unnamed_loop_exited      | unnamed_for_loop        |
-   unnamed_multiple_loop    | unnamed_simple_loop     |
-   unnamed_while_loop       | untyped_for             |
-   while_loop
+   any_statement          | abort                    |
+   accept_return          | assignment               |
+   asynchronous_select    | block                    |
+   case                   | case_others              |
+   case_others_null       | code                     |
+   conditional_entry_call | declare_block            |
+   delay                  | delay_until              |
+   dispatching_call       | effective_declare_block  |
+   entry_call             | entry_return             |
+   exception_others       | exception_others_null    |
+   exit                   | exit_expanded_name       |
+   exit_for_loop          | exit_outer_loop          |
+   exit_while_loop        | exited_extended_return   |
+   extended_return        | for_loop                 |
+   for_in_loop            | for_iterator_loop        |
+   for_of_loop            | function_return          |
+   goto                   | if                       |
+   if_elsif               | inherited_procedure_call |
+   labelled               | loop_return              |
+   multiple_exits         | no_else                  |
+   null                   | procedure_return         |
+   raise                  | raise_locally_handled    |
+   raise_nonpublic        | raise_standard           |
+   reraise                | requeue                  |
+   selective_accept       | simple_loop              |
+   terminate              | timed_entry_call         |
+   unconditional_exit     | unnamed_block            |
+   unnamed_exit           | unnamed_loop_exited      |
+   unnamed_for_loop       | unnamed_multiple_loop    |
+   unnamed_simple_loop    | unnamed_while_loop       |
+   untyped_for            | while_loop
 @end example
 
 @subsection Action
@@ -7325,9 +7352,12 @@ statements.
 @item
 @code{for_loop} controls all @code{@b{for}} loops, while
 @code{for_in_loop} controls only the traditional form of
-@code{@b{for}} loop (@code{@b{for} I @b{in} ... @b{loop}}), and
-@code{for_of_loop} controls the new Ada 2012 form (@code{@b{for} V
-@b{of} ... @b{loop}}) (the two latter forms are not available with the old gnat version of AdaControl).
+@code{@b{for}} loop (@code{@b{for} I @b{in} @i{range} @b{loop}}),
+@code{for_iterator_loop} controls the iterator form (@code{@b{for} I
+@b{in} @i{Iterator} @b{loop}}), and @code{for_of_loop} controls the
+components form (@code{@b{for} V @b{of} ... @b{loop}}) (the three
+latter forms are not available with the old gnat version of
+AdaControl).
 @item
 @code{function_return} controls return statements (including extended
 return statements) from functions. Obviously, return statements cannot
@@ -8429,7 +8459,8 @@ it migh be useful for child units.
 @item
 Moveable @code{@b{with}} clauses, i.e. when the withed unit is not
 used in the specification, but only in the body, and should be moved
-to the body.
+to the body, or when the withed unit is only used in the private part,
+and could be replaced by a @code{@b{private}} @code{@b{with}}.
 @end itemize
 @item
 @code{inherited} controls child units and subunits that reference a
@@ -8448,6 +8479,17 @@ Ex:
 check with_clauses (multiple_names, reduceable);
 search with_clauses (inherited);
 @end example
+
+@subsection Variables
+@multitable @columnfractions .20 .15 .10 .55
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Check_Private_With @tab off/on @tab on @tab if you are working in pure
+Ada 95, you may not want messages that a @code{@b{with}} can be
+replaced with a @code{@b{private}} @code{@b{with}}. Setting this
+variable to off disables these messages.
+@end multitable
 
 @subsection Tips
 A @code{@b{with}} clause can safely be removed if it is unused, and no
@@ -8563,6 +8605,12 @@ Below are examples of rules that can be directly checked by AdaControl.
 @rule{Goto statement shall not be used}
 @example
 check statements (goto);
+@end example
+
+@rule{Functions shall not have @code{@b{out}} or @code{@b{in out}} parameters (Ada 2012)}
+@example
+check parameter_declarations (out_parameters,    max 0, function);
+check parameter_declarations (in_out_parameters, max 0, function);
 @end example
 
 @rule{Short circuit forms should be preferred over corresponding logical operators}
