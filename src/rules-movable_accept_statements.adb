@@ -162,15 +162,15 @@ package body Rules.Movable_Accept_Statements  is
 
 
    -- A type for statements dependencies upon parameters
-   type Dependency_Array is array (Positive range <>) of Boolean;
+   type Dependency_Array is array (Asis.List_Index range <>) of Boolean;
    type Dependency_Array_Access is access all Dependency_Array;
    -- A type for objects references within statements
-   type Reference_Array  is array (Positive range <>) of Boolean;
+   type Reference_Array  is array (Asis.List_Index range <>) of Boolean;
    -- A type for objects kinds
    type Object_Kind is (Independent, Dependent, Parameter);
 
    -- A type to store information about referenced objects
-   type Object_Information (Nb_Refs : Positive) is
+   type Object_Information (Nb_Refs : Asis.List_Index) is
       record
          Identifier : Asis.Defining_Name;
          Kind       : Object_Kind                  := Independent;
@@ -188,7 +188,7 @@ package body Rules.Movable_Accept_Statements  is
    type Last_Statement_Information is
       record
          Kind  : Last_Statement_Kind;
-         Index : Integer;
+         Index : Asis.ASIS_Natural;
       end record;
 
 
@@ -290,7 +290,7 @@ package body Rules.Movable_Accept_Statements  is
 
    procedure Add_Fictive_Object_Reference
      (The_Queue       : in out Object_Queue.Queue;
-      Statement_Index : in Natural)
+      Statement_Index : in Asis.List_Index)
    is
       use Object_Queue;
 
@@ -313,8 +313,8 @@ package body Rules.Movable_Accept_Statements  is
 
    type State_Information is
       record
-         Current_Statement    : Natural;
-         Number_Of_Statements : Natural;
+         Current_Statement    : Asis.ASIS_Natural;
+         Number_Of_Statements : Asis.ASIS_Natural;
          Last_Statement       : Last_Statement_Information;
          References_Queue     : Object_Queue.Queue;
          Movable_Statements   : Dependency_Array_Access;
@@ -669,7 +669,7 @@ package body Rules.Movable_Accept_Statements  is
                         while Has_Element (References_Iterator) loop
                            Referenced_Object := Fetch (References_Iterator);
                            -- Set all referencing statements as unmovable.
-                           for S in Integer range Body_Statements'First .. The_State.Last_Statement.Index loop
+                           for S in List_Index range Body_Statements'First .. The_State.Last_Statement.Index loop
                               if Dependent_Object.References (S) then
                                  -- Current statement is referencing the parameter dependent object.
                                  -- Set it as unmovable / parameter dependent.
@@ -704,7 +704,7 @@ package body Rules.Movable_Accept_Statements  is
          -- 5th step: report errors
          if Rule_Used (K_Possible) then
             Report_Basic_Statements :
-            for Stmt_Index in Integer range Body_Statements'First .. The_State.Last_Statement.Index loop
+            for Stmt_Index in List_Index range Body_Statements'First .. The_State.Last_Statement.Index loop
                if The_State.Movable_Statements (Stmt_Index) then
                   Report (Rule_Id,
                           Usage (K_Possible),
@@ -715,7 +715,7 @@ package body Rules.Movable_Accept_Statements  is
          end if;
 
      Report_Last_Statements:
-         for Stmt_Index in Integer range The_State.Last_Statement.Index + 1 .. Body_Statements'Last loop
+         for Stmt_Index in List_Index range The_State.Last_Statement.Index + 1 .. Body_Statements'Last loop
             case The_State.Last_Statement.Kind is
                when Exclusive =>
                   Report (Rule_Id,

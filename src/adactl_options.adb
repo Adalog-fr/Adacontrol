@@ -112,7 +112,7 @@ package body Adactl_Options is
 
       User_Message ("Special modes:");
       User_Message ("   -h           prints general help message (options, rules, version, license)");
-      User_Message ("   -h <rule>... prints specific rule(s) help");
+      User_Message ("   -h <rule>... prints specific rule(s) help (<rule> can be a regexp)");
       User_Message ("   -h all       prints all rules help");
       User_Message ("   -h commands  prints commands help");
       User_Message ("   -h license   prints license information");
@@ -297,6 +297,9 @@ package body Adactl_Options is
             end loop;
          end if;
 
+         -- Options that make sense even with "help"
+         Exit_Option.Value      := Is_Present (Option => 'x');
+         Utilities.Debug_Option := Is_Present ('d');
          return;
 
       elsif Is_Present (Option => 'C') then  -- Must be first for -C to override any other option (except help)

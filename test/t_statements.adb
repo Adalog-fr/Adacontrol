@@ -11,11 +11,11 @@ procedure T_statements is
    task body T1 is
    begin
       select             -- Selective_Accept
-         accept E1 do
+         accept E1 do    -- Accept
             requeue E2;  -- Requeue
          end E1;
       or
-         accept E2 do
+         accept E2 do   -- Accept
             return;     -- Accept_Return
          end E2;
       or terminate;     -- Terminate
@@ -59,7 +59,7 @@ procedure T_statements is
          return 1;
       when others =>    -- Exception_Others
          if I = 3 then
-            return 1;   -- Function_Return OK (first return)
+            return 1;   -- OK Function_Return (first return)
          else
             return 2;   -- Function_Return
          end if;
@@ -69,7 +69,7 @@ procedure T_statements is
    begin
       if I = 2 then
          return X : Integer do  -- Extended_Return
-            null;               -- Function_Return OK (first return)
+            null;               -- OK Function_Return (first return)
          end return;
       else
          return 2;              -- Function_Return
@@ -312,7 +312,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       task body T2 is
       begin
          for I in Integer range 1 .. 10 loop       -- For_Loop, For_In_Loop, Unnamed_For_Loop
-            accept E do
+            accept E do                            -- Accept
                for J in Integer range 1 .. 10 loop -- For_Loop, For_In_Loop, Unnamed_For_Loop
                   null;                            -- Null
                end loop;
@@ -351,7 +351,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
                      task body T is
                      begin
                         TL:loop                    -- simple_loop
-                           accept E do
+                           accept E do             -- Accept
                               for J in Integer range 1 .. 10 loop -- For_Loop, For_In_Loop, Unnamed_For_Loop
                                  if J = 5 then                    -- No_Else
                                     return;                       -- Loop_Return, accept_return

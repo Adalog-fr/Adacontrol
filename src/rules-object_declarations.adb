@@ -325,8 +325,7 @@ package body Rules.Object_Declarations is
       use Asis, Asis.Elements, Asis.Expressions;
       use Thick_Queries, Framework.Reports;
 
-      Name      : Asis.Expression;
-      Repr_Data : Repr_Rec;
+      Name : Asis.Expression;
    begin
       if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
          return;

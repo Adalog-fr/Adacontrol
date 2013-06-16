@@ -50,7 +50,7 @@ package body Rules.Max_Line_Length is
    Save_Used : Boolean;
 
    Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Maximum    : array (Control_Kinds) of Natural := (others => Natural'Last);
+   Maximum    : array (Control_Kinds) of Asis.ASIS_Natural := (others => Asis.ASIS_Natural'Last);
 
    ----------
    -- Help --
@@ -73,8 +73,9 @@ package body Rules.Max_Line_Length is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
-      if Maximum (Ctl_Kind) /= Natural'Last then
+      if Maximum (Ctl_Kind) /= Asis.ASIS_Natural'Last then
          Parameter_Error (Rule_Id, "rule already specified");
       end if;
 
@@ -83,7 +84,7 @@ package body Rules.Max_Line_Length is
       end if;
 
       begin
-         Maximum (Ctl_Kind) := Get_Integer_Parameter (Min => 10, Max => Natural'Last - 1);
+         Maximum (Ctl_Kind) := Get_Integer_Parameter (Min => 10, Max => Asis.ASIS_Natural'Last - 1);
       exception
          when Constraint_Error =>
             Parameter_Error (Rule_Id, "maximum value negative or too big");
@@ -107,7 +108,7 @@ package body Rules.Max_Line_Length is
       case Action is
          when Clear =>
             Rule_Used := False;
-            Maximum := (others => Natural'Last);
+            Maximum := (others => Asis.ASIS_Natural'Last);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -122,6 +123,8 @@ package body Rules.Max_Line_Length is
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
       use Framework.Reports, Utilities, Ada.Strings.Wide_Unbounded;
+
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if not Rule_Used then
          return;

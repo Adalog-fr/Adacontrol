@@ -35,8 +35,7 @@ private with
 
 -- ASIS
 with
-  Asis;
-private with
+  Asis,
   Asis.Text;
 
 -- Adactl
@@ -85,8 +84,8 @@ package Framework is
    type Search_Start is (From_Head, From_Tail);
 
    function Create_Location (File         : in Wide_String;
-                             First_Line   : in Natural;
-                             First_Column : in Natural) return Location;
+                             First_Line   : in Asis.Text.Line_Number;
+                             First_Column : in Asis.Text.Character_Position) return Location;
    function Get_Location (E : in Asis.Element) return Location;
    -- Returns location of an element
 
@@ -135,10 +134,10 @@ package Framework is
    function Get_File_Name (L : in Location) return Wide_String;
    -- Returns location file name
 
-   function Get_First_Line (L : in Location) return Natural;
+   function Get_First_Line (L : in Location) return Asis.Text.Line_Number;
    -- Returns location first line
 
-   function Get_First_Column (L : in Location) return Natural;
+   function Get_First_Column (L : in Location) return Asis.Text.Character_Position;
    -- Returns location first column
 
    Default_Short_Name : Boolean := False;
@@ -173,7 +172,7 @@ package Framework is
 
    type Entity_Specification is private;
    type Entity_Specification_Kinds is (Box, Equal, Regular_Id, All_Id);
-   type Entity_Specification_List is array (Natural range <>) of Entity_Specification;
+   type Entity_Specification_List is array (Asis.List_Index range <>) of Entity_Specification;
 
    function Entity_Specification_Kind (Entity : in Entity_Specification) return Entity_Specification_Kinds;
 

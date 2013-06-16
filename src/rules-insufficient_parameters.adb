@@ -52,7 +52,7 @@ package body Rules.Insufficient_Parameters is
    Rule_Used : Control_Kinds_Set := (others => False);
    Save_Used : Control_Kinds_Set;
 
-   Ctl_Counts : array (Control_Kinds) of Natural;
+   Ctl_Counts : array (Control_Kinds) of Asis.ASIS_Natural;
    Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
 
    type Insufficients_Context is new Root_Context with
@@ -298,7 +298,7 @@ package body Rules.Insufficient_Parameters is
 
       declare
          Parameters       : constant Asis.Association_List := Actual_Parameters (Element);
-         Nb_Insufficients : array (Control_Kinds) of Natural := (others => 0);
+         Nb_Insufficients : array (Control_Kinds) of Asis.ASIS_Natural := (others => 0);
          Insufficiencies  : Control_Kinds_Set;
       begin
          for I in Parameters'Range loop
@@ -322,9 +322,9 @@ package body Rules.Insufficient_Parameters is
                     Check,
                     Get_Location (Element),
                     "call has "
-                    & Integer_Img (Nb_Insufficients (Check))
+                    & ASIS_Integer_Img (Nb_Insufficients (Check))
                     & " ""insufficient"" parameters (maximum "
-                    & Integer_Img (Ctl_Counts (Check))
+                    & ASIS_Integer_Img (Ctl_Counts (Check))
                     & ')');
          elsif Rule_Used (Search) and then Nb_Insufficients (Search) > Ctl_Counts (Search) then
             Report (Rule_Id,
@@ -332,9 +332,9 @@ package body Rules.Insufficient_Parameters is
                     Search,
                     Get_Location (Element),
                     "call has "
-                    & Integer_Img (Nb_Insufficients (Search))
+                    & ASIS_Integer_Img (Nb_Insufficients (Search))
                     & " ""insufficient"" parameters (maximum "
-                    & Integer_Img (Ctl_Counts (Search))
+                    & ASIS_Integer_Img (Ctl_Counts (Search))
                     & ')');
          end if;
 

@@ -822,31 +822,32 @@ package body Framework.Language is
       end case;
    end Get_Integer_Parameter;
 
-   function Get_Integer_Parameter (Min : Integer := Integer'First;
-                                   Max : Integer := Integer'Last)
-                                   return Integer
+   function Get_Integer_Parameter (Min : Asis.ASIS_Integer := Asis.ASIS_Integer'First;
+                                   Max : Asis.ASIS_Integer := Asis.ASIS_Integer'Last)
+                                   return Asis.ASIS_Integer
    is
       use Thick_Queries;
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
       Result : constant Biggest_Int := Get_Integer_Parameter;
    begin
       if Result not in Biggest_Int (Min) .. Biggest_Int (Max) then
-         if Max = Integer'Last then
+         if Max = Asis.ASIS_Integer'Last then
             Syntax_Error ("Parameter must be >= "
-                          & Integer_Img (Min),
+                          & ASIS_Integer_Img (Min),
                           Current_Token.Position);
-         elsif Min = Integer'First then
+         elsif Min = Asis.ASIS_Integer'First then
             Syntax_Error ("Parameter must be <= "
-                          & Integer_Img (Max),
+                          & ASIS_Integer_Img (Max),
                           Current_Token.Position);
          else
             Syntax_Error ("Parameter must be in range "
-                          & Integer_Img (Min)
+                          & ASIS_Integer_Img (Min)
                           & " .. "
-                          & Integer_Img (Max),
+                          & ASIS_Integer_Img (Max),
                           Current_Token.Position);
          end if;
       end if;
-      return Integer (Result);
+      return Asis.ASIS_Integer (Result);
    end Get_Integer_Parameter;
 
    -------------------------
@@ -1411,6 +1412,7 @@ package body Framework.Language is
       function Get_Modifier_List (Expected : Modifier_Set := Full_Set) return Modifier_List is
          Modifier : Modifiers;
          Present  : Boolean;
+
       begin
          if not In_Parameters then
             Failure ("Get_Modifier_List called when not in parameters");
@@ -1425,6 +1427,7 @@ package body Framework.Language is
       end Get_Modifier_List;
 
       function Image (List : Modifier_List) return Wide_String is
+         use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
       begin
          if List = Empty_List then
             return "";

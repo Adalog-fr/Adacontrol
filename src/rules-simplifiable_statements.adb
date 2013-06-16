@@ -464,7 +464,7 @@ package body Rules.Simplifiable_Statements is
          declare
             Pivot_Var   : Asis.Expression := Nil_Element;
             Special_Var : Asis.Expression := Nil_Element;
-            Last_Elsif  : Positive;
+            Last_Elsif  : List_Index;
          begin
             if Paths'Length = 1
               or else (Paths'Length = 2 and Path_Kind (Paths (2)) = An_Else_Path)
@@ -481,7 +481,7 @@ package body Rules.Simplifiable_Statements is
 
             Check_Condition (Condition_Expression (Paths (1)), Pivot => Pivot_Var);
 
-            for I in Positive range 2 .. Last_Elsif loop
+            for I in List_Index range 2 .. Last_Elsif loop
                Check_Condition (Condition_Expression (Paths (I)), Pivot => Special_Var);
                if Variables_Proximity (Pivot_Var, Special_Var) /= Same_Variable then
                   raise Not_Appropriate_For_Case;

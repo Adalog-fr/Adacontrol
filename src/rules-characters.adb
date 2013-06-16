@@ -36,6 +36,10 @@ with
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Fixed;
 
+-- ASIS
+with
+  Asis.Text;
+
 -- Adalog
 with
   Utilities;
@@ -128,7 +132,7 @@ package body Rules.Characters is
    ------------------
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports;
+      use Framework.Reports, Asis.Text;
 
       procedure Check_Control is
          use Ada.Strings.Wide_Fixed;
@@ -165,22 +169,22 @@ package body Rules.Characters is
             if Last_Before < Line'First and First_After > Line'Last then
                Report (Rule_Id,
                        Contexts (Control),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Pos_Tab),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Pos_Tab)),
                        "Control character found");
             elsif Last_Before < Line'First and First_After <= Line'Last then
                Report (Rule_Id,
                        Contexts (Control),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Pos_Tab),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Pos_Tab)),
                        "Control character found before """  & Line (First_After .. Last_After) & '"');
             elsif Last_Before >= Line'First and First_After > Line'Last then
                Report (Rule_Id,
                        Contexts (Control),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Pos_Tab),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Pos_Tab)),
                        "Control character found after """  & Line (First_Before .. Last_Before) & '"');
             else
                Report (Rule_Id,
                        Contexts (Control),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Pos_Tab),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Pos_Tab)),
                        "Control character found between """  & Line (First_Before .. Last_Before)
                        & """ and """ & Line (First_After .. Last_After) & '"');
             end if;
@@ -205,7 +209,7 @@ package body Rules.Characters is
             end loop;
             Report (Rule_Id,
                     Contexts (Trailing_Space),
-                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Last_Separator),
+                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Last_Separator)),
                     Integer_Img (Line'Last - Last_Separator + 1) & " trailing space(s)");
          end if;
       end Check_Trailing;
@@ -219,13 +223,13 @@ package body Rules.Characters is
             if Rule_Used (Not_Iso_646) and then Line (I)>= Not_ISO_646_First then
                Report (Rule_Id,
                        Contexts (Not_Iso_646),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), I),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (I)),
                        "character not in Iso_646");
             end if;
             if Rule_Used (Wide) and then Line (I) >= Wide_First then
                Report (Rule_Id,
                        Contexts (Wide),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), I),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (I)),
                        "wide character");
             end if;
          end loop;

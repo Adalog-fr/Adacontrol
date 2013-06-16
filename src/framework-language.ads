@@ -80,9 +80,9 @@ package Framework.Language is
    function Get_Integer_Parameter (Min : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'First;
                                    Max : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'Last)
                                    return Thick_Queries.Biggest_Int;
-   function Get_Integer_Parameter (Min : Integer := Integer'First;
-                                   Max : Integer := Integer'Last)
-                                   return Integer;
+   function Get_Integer_Parameter (Min : Asis.ASIS_Integer := Asis.ASIS_Integer'First;
+                                   Max : Asis.ASIS_Integer := Asis.ASIS_Integer'Last)
+                                   return Asis.ASIS_Integer;
    function Get_Float_Parameter   return Float;
    function Get_Name_Parameter    return Wide_String;
    -- Returns either a single identifier or an attribute (possibly complex, i.e. 'Base'First)
@@ -149,7 +149,7 @@ package Framework.Language is
       -- Image of all modifiers in Set, separated and terminated by a single space
       -- "" for empty set and Default
 
-      type Modifier_List is array (Positive range <>) of Modifiers;
+      type Modifier_List is array (Asis.List_Index range <>) of Modifiers;
       Empty_List : constant Modifier_List := (1 .. 0 => Modifiers'First);
       function Get_Modifier_List (Expected : Modifier_Set := Full_Set) return Modifier_List;
       function Image (List : Modifier_List) return Wide_String;

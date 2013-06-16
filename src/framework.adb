@@ -119,8 +119,8 @@ package body Framework is
    ---------------------
 
    function Create_Location (File         : in Wide_String;
-                             First_Line   : in Natural;
-                             First_Column : in Natural) return Location is
+                             First_Line   : in Asis.Text.Line_Number;
+                             First_Column : in Asis.Text.Character_Position) return Location is
    begin
       return (To_Unbounded_Wide_String (File), First_Line, First_Column);
    end Create_Location;
@@ -193,7 +193,7 @@ package body Framework is
                   Start := Start - 1;
                end loop;
                if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
-                  return Start;
+                  return Character_Position (Start);
                end if;
                Stop := Start - 1;
             else
@@ -204,14 +204,17 @@ package body Framework is
          return 0;
       end Find_Word_Start;
 
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin  -- Get_Previous_Word_Location
       case Starting is
          when From_Head =>
             L := E_Span.First_Line;
-            Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L) (L)) (1 .. E_Span.First_Column - 1));
+            Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L) (L))
+                                           (1 .. Positive (E_Span.First_Column) - 1));
          when From_Tail =>
             L := E_Span.Last_Line;
-            Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L) (L)) (1 .. E_Span.Last_Column));
+            Word_Start := Find_Word_Start (Non_Comment_Image (Lines (E, L, L) (L))
+                                           (1 .. Positive (E_Span.Last_Column)));
       end case;
       while Word_Start = 0 loop
          L     := L - 1;
@@ -272,7 +275,7 @@ package body Framework is
                   Stop := Stop + 1;
                end loop;
                if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
-                  return Start;
+                  return Character_Position (Start);
                end if;
                Start := Stop + 1;
             else
@@ -283,6 +286,7 @@ package body Framework is
          return 0;
       end Find_Word_Start;
 
+      use type Character_Position;
    begin  -- Get_Next_Word_Location
       case Starting is
          when From_Head =>
@@ -295,9 +299,9 @@ package body Framework is
       begin
          case Starting is
             when From_Head =>
-               Word_Start := Find_Word_Start (The_Line (E_Span.First_Column + 1 .. The_Line'Last));
+               Word_Start := Find_Word_Start (The_Line (Positive (E_Span.First_Column) + 1 .. The_Line'Last));
             when From_Tail =>
-               Word_Start := Find_Word_Start (The_Line (E_Span.Last_Column + 1 .. The_Line'Last));
+               Word_Start := Find_Word_Start (The_Line (Positive (E_Span.Last_Column) + 1 .. The_Line'Last));
          end case;
       end;
       while Word_Start = 0 loop
@@ -343,18 +347,18 @@ package body Framework is
    -- Get_First_Column --
    ----------------------
 
-   function Get_First_Column (L : in Location) return Natural is
+   function Get_First_Column (L : in Location) return Asis.Text.Character_Position is
    begin
-      return Natural (L.First_Column);
+      return L.First_Column;
    end Get_First_Column;
 
    --------------------
    -- Get_First_Line --
    --------------------
 
-   function Get_First_Line (L : in Location) return Natural is
+   function Get_First_Line (L : in Location) return Asis.Text.Line_Number is
    begin
-      return Natural (L.First_Line);
+      return L.First_Line;
    end Get_First_Line;
 
    -----------
@@ -388,13 +392,13 @@ package body Framework is
       if L = Null_Location then
          Failure ("Image of null location");
       elsif L.File_Name = Null_Unbounded_Wide_String then
-         return Integer_Img (L.First_Column);
+         return ASIS_Integer_Img (L.First_Column);
       else
          return Strip (To_Wide_String (L.File_Name))
            & Separator
-           & Integer_Img (L.First_Line)
+           & ASIS_Integer_Img (L.First_Line)
            & Separator
-           & Integer_Img (L.First_Column);
+           & ASIS_Integer_Img (L.First_Column);
       end if;
    end Image;
 

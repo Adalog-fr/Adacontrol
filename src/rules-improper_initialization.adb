@@ -489,7 +489,7 @@ package body Rules.Improper_Initialization is
                              & """ not safely initialized"
                              & Choose (Report_Loc = Null_Location,
                                        "",
-                                       " before line " & Integer_Img (Get_First_Line (Report_Loc))));
+                                       " before line " & ASIS_Integer_Img (Get_First_Line (Report_Loc))));
                   when K_Variable =>
                      if not Out_Params_Only then
                         Report (Rule_Id,
@@ -499,7 +499,7 @@ package body Rules.Improper_Initialization is
                                 & """ not safely initialized"
                                 & Choose (Report_Loc = Null_Location,
                                           "",
-                                          " before line " & Integer_Img (Get_First_Line (Report_Loc))));
+                                          " before line " & ASIS_Integer_Img (Get_First_Line (Report_Loc))));
                      end if;
                   when K_Initialized_Variable =>
                      null;

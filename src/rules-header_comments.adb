@@ -34,7 +34,11 @@ with
   Ada.Characters.Handling,
   Ada.Exceptions,
   Ada.Strings.Wide_Unbounded,
-  Ada.Wide_Text_IO;
+     Ada.Wide_Text_IO;
+
+-- ASIS
+with
+  Asis.Text;
 
 -- Adalog
 with
@@ -64,10 +68,10 @@ package body Rules.Header_Comments is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   Uninitialized : constant Integer := 0;
+   Uninitialized : constant Asis.ASIS_Integer := 0;
 
    Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Comments   : array (Control_Kinds) of Integer := (others => Uninitialized);
+   Comments   : array (Control_Kinds) of Asis.ASIS_Integer := (others => Uninitialized);
 
    type Subrules is (Minimum, Model);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
@@ -230,6 +234,8 @@ package body Rules.Header_Comments is
                                    & ": " & Buff (1 .. Last));
       end Model_Error;
 
+      use Asis;      --## Rule line off Reduceable_Scope Unnecessary_use_clause
+                     --   Gela-ASIS compatibility
    begin   -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of check required");
@@ -290,7 +296,7 @@ package body Rules.Header_Comments is
 
                   if Last = Buff'Last then     --## rule line off Simplifiable_Statements ## If_For_Case
                      Parameter_Error (Rule_Id, "pattern too long at "
-                                        & To_Wide_String (Name (Model_File)) & ':'
+                                        & To_Wide_String (Ada.Wide_Text_IO.Name (Model_File)) & ':'
                                         & Ada.Wide_Text_IO.Count'Wide_Image (Line (Model_File)));
                   elsif Last /= 0 then
                      declare
@@ -362,6 +368,7 @@ package body Rules.Header_Comments is
 
    procedure Enter_Unit is
       use Ada.Wide_Text_IO;
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if not Rule_Used then
          return;
@@ -384,9 +391,9 @@ package body Rules.Header_Comments is
    ------------------
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports;
+      use Asis, Framework.Reports;
       use Ada.Strings.Wide_Unbounded;
-      Line_Num : Natural;
+      Line_Num : Asis.Text.Line_Number;
 
       procedure Check_Comments_Number (Ctl_Kind : Control_Kinds) is
       begin

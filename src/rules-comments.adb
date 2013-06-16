@@ -301,6 +301,7 @@ package body Rules.Comments is
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
       use Framework.Reports, String_Matching, Thick_Queries, Utilities;
       use Ada.Strings.Wide_Maps, Ada.Strings.Wide_Unbounded;
+      use Asis.Text;   -- Gela-ASIS compatibility
 
       type Found_State is (Nothing_Found, Begin_Found, End_Found, Others_Found);
       State     : Found_State := Nothing_Found;
@@ -408,7 +409,7 @@ package body Rules.Comments is
             if Match (Line (Start .. Line'Last), Current_P.Pattern.all) then
                Report (Rule_Id,
                        Current_P.all,
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Start),
+                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Start)),
                        '"' & Line (Start .. Line'Last) & '"');
             end if;
             Current_P := Current_P.Next;
@@ -434,7 +435,7 @@ package body Rules.Comments is
          if not Matched then
             Report (Rule_Id,
                     Terminating_Contexts,
-                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Start),
+                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Start)),
                     "Not an allowed terminating comment");
          end if;
       end if;
@@ -528,7 +529,7 @@ package body Rules.Comments is
          end if;
          declare
             Begin_Loc  : constant Location     := Get_Previous_Word_Location (Stmts, "BEGIN");
-            Begin_Line : constant Natural      := Get_First_Line (Begin_Loc);
+            Begin_Line : constant Line_Number  := Get_First_Line (Begin_Loc);
             Begin_Text : constant Program_Text := To_Upper (Line_Image
                                                             (Lines (Unit, Begin_Line, Begin_Line) (Begin_Line)));
             Comment_Pos : Natural := 0;

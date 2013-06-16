@@ -108,7 +108,7 @@ package body Rules.Multiple_Assignments is
    Repeated_Context : Basic_Rule_Context;
 
    -- Data for subrule Groupable
-   subtype Percentage is Natural range 0 .. 100;
+   subtype Percentage is Asis.ASIS_Natural range 0 .. 100;
    type Rule_Context is new Basic_Rule_Context with
       record
          Given   : Thick_Queries.Biggest_Natural;
@@ -431,7 +431,7 @@ package body Rules.Multiple_Assignments is
                Matched := False;
             elsif With_Messages then
                Append (Reason, ", ratio: " & Biggest_Int_Img (Subcomp_Count * 100 / Value.Subcomp_Total)
-                       & " (>=" & Integer_Img (Limits.Ratio) & ')');
+                       & " (>=" & ASIS_Integer_Img (Limits.Ratio) & ')');
             end if;
          end if;
 

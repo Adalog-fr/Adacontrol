@@ -95,7 +95,7 @@ package body Rules.Expressions is
    Save_Used : Usage_Flags;
    Usage     : Context_Store;
 
-   type Categories_Context (Nb_Categories : Natural) is new Basic_Rule_Context with
+   type Categories_Context (Nb_Categories : Asis.ASIS_Natural) is new Basic_Rule_Context with
       record
          Cats : Categories_Utilities.Modifier_List (1 .. Nb_Categories);
       end record;

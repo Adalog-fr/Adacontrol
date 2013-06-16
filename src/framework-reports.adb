@@ -436,7 +436,8 @@ package body Framework.Reports is
                   New_Line;
                   Put (Image (Loc));
                   Put (": ");
-                  Put ((Get_First_Column (Loc) - 1) * ' ');
+                  Put ((Integer (Get_First_Column (Loc)) - 1) * ' ');   --## Rule line off Simplifiable_expressions
+                                                                        --   Gela-ASIS compatibility
                   Put ("! ");
                end if;
                Put (Title);
@@ -452,6 +453,7 @@ package body Framework.Reports is
 
       use Ada.Exceptions;
       use Counters, False_Positive_Map;
+      use type Asis.ASIS_Integer;
       Active : Boolean := True;
 
    begin  -- Report
@@ -502,7 +504,7 @@ package body Framework.Reports is
                   To_String (Get_File_Name (Loc)),
                   Form => Implementation_Options.Form_Parameters);
 
-            for I in Natural range 1 .. Get_First_Line (Loc) - 1 loop
+            for I in Asis.Text.Line_Number range 1 .. Get_First_Line (Loc) - 1 loop
                Get_Line (Source_File, Line, Line_Last);
                if Ignore_Option.Value /= On then
                   Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
@@ -526,7 +528,7 @@ package body Framework.Reports is
                end if;
                Failure ("Report: "
                         & To_Wide_String (Exception_Name (Occur)) & " raised while searching "
-                        & Get_File_Name (Loc) & ", line " & Integer_Img (Get_First_Line (Loc)));
+                        & Get_File_Name (Loc) & ", line " & ASIS_Integer_Img (Get_First_Line (Loc)));
          end;
       end if;
 

@@ -32,6 +32,8 @@
 -- Ada
 with
   Ada.Calendar,
+  Ada.Characters.Handling,
+  Ada.Exceptions,
   Ada.Strings.Wide_Fixed;
 
 -- ASIS
@@ -195,12 +197,13 @@ package body Framework.Rules_Manager is
    -------------------
 
    procedure Help_On_Rules (Pattern : Wide_String) is
-      use Rule_List, Utilities;
+      use Rule_List, String_Matching, Utilities;
+      use Ada.Characters.Handling, Ada.Exceptions;
+
       Match_Count : Rules_Count := 0;
       Unb_Pattern  : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Pattern);
 
       procedure One_Help (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
-         use String_Matching;
       begin
          if not Match (To_Wide_String (Key), Pattern) then
             return;
@@ -226,6 +229,9 @@ package body Framework.Rules_Manager is
             Error ("No rule matches " & Pattern);
          end if;
       end if;
+   exception
+      when Occur : Pattern_Error =>
+         Error ("Incorrect pattern: """ & Pattern & """, " & To_Wide_String (Exception_Message (Occur)));
    end Help_On_Rules;
 
    -------------------

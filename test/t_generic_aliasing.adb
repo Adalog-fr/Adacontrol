@@ -40,14 +40,18 @@ procedure T_Generic_Aliasing is
    procedure Ren1 renames Proc1;
 
    generic
-      with procedure P;
-      with procedure Q;
+      with procedure Proc1 is T_Generic_Aliasing.Proc2;
+      with procedure Proc2 is <>;
    procedure Genpr;
    procedure Genpr is begin null; end Genpr;
 
-   procedure Instp1 is new Genpr (Proc1, Proc2); -- OK
-   procedure Instp2 is new Genpr (Proc1, Proc1); -- Subprogram_Aliasing
-   procedure Instp3 is new Genpr (Proc1, Ren1);  -- Subprogram_Aliasing
+   procedure Instp1 is new Genpr (Proc1, Proc2);   -- OK
+   procedure Instp2 is new Genpr (Proc1, Proc1);   -- Subprogram_Aliasing
+   procedure Instp3 is new Genpr (Proc1, Ren1);    -- Subprogram_Aliasing
+   procedure Instp4 is new Genpr (Proc2 => Proc1); -- OK
+   procedure Instp6 is new Genpr (Proc2 => Proc2); -- Subprogram_Aliasing
+   procedure Instp7 is new Genpr (Proc2);          -- Subprogram_Aliasing
+   procedure Instp8 is new Genpr;                  -- Subprogram_Aliasing
 
    -- Functions
    type Enum is (A, B, C);
@@ -116,8 +120,8 @@ procedure T_Generic_Aliasing is
 
    type Acc_Proc is access procedure;
    Proc_Ptr : Acc_Proc;
-   procedure Instp5 is new Genpr (Proc1,        Proc_Ptr.all);  -- Unlikely procedure
-   procedure Instp6 is new Genpr (Proc_Ptr.all, Proc_Ptr.all);  -- Certain procedure
+   procedure Instap1 is new Genpr (Proc1,        Proc_Ptr.all);  -- Unlikely procedure
+   procedure Instap2 is new Genpr (Proc_Ptr.all, Proc_Ptr.all);  -- Certain procedure
 
 begin
    null;

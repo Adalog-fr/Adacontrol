@@ -95,8 +95,11 @@ package body Rules.Max_Size is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Ada.Strings.Wide_Unbounded, Utilities;
+
       Subrule : Subrules;
       Max     : Line_Number_Positive;
+
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "parameters required");
@@ -110,7 +113,7 @@ package body Rules.Max_Size is
       end if;
 
       begin
-         Max := Get_Integer_Parameter (Min => 1, Max => Unused - 1);
+         Max := Get_Integer_Parameter (Min => 1, Max => Unused - 1);  -- Gela-ASIS compatibility
       exception
          when Constraint_Error =>
             Parameter_Error (Rule_Id, "maximum value negative or too big");
@@ -171,16 +174,16 @@ package body Rules.Max_Size is
                  Check,
                  Loc,
                  Choose (Stmt in SR_Statements, "statement", "declaration of") & " """ & Image (Stmt, Lower_Case)
-                 & """ is more than " & Integer_Img (Maximum (Stmt) (Check)) & " lines long ("
-                 & Integer_Img (Length) & ')');
+                 & """ is more than " & ASIS_Integer_Img (Maximum (Stmt) (Check)) & " lines long ("
+                 & ASIS_Integer_Img (Length) & ')');
       elsif Length > Maximum (Stmt) (Search) then
          Report (Rule_Id,
                  To_Wide_String (Ctl_Labels (Stmt, Search)),
                  Search,
                  Loc,
                  Choose (Stmt in SR_Statements, "statement", "declaration of") & " """ & Image (Stmt, Lower_Case)
-                 & """ is more than " & Integer_Img (Maximum (Stmt) (Search)) & " lines long ("
-                 & Integer_Img (Length) & ')');
+                 & """ is more than " & ASIS_Integer_Img (Maximum (Stmt) (Search)) & " lines long ("
+                 & ASIS_Integer_Img (Length) & ')');
       end if;
 
       if Length > Maximum (Stmt) (Count) then

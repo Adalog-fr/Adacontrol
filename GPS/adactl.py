@@ -234,7 +234,7 @@ def get_file (option):
    """
    opt_list=GPS.Project.root().get_tool_switches_as_list("AdaControl")
    try:
-       return "\"" + opt_list[ opt_list.index(option) + 1 ] + "\""
+       return opt_list[ opt_list.index(option) + 1 ]
    except:
        return ""
 
@@ -286,7 +286,7 @@ def options (rules, files):
          raise ValueError
       result = result + ' "' + win.name() + '"'
    elif files == "list":
-      result = result + " @" + get_file("-@")
+      result = result + " @\"" + get_file("-@") +"\""
    else:   # "project"
       result = result + ' ' + Project_units()
 
@@ -305,7 +305,7 @@ def options (rules, files):
       if not get_file("-f") :
          GPS.MDI.dialog ("no rules file defined in AdaControl properties")
          raise ValueError
-      result = result + " -f " + get_file("-f")
+      result = result + " -f \"" + get_file("-f") + "\""
    else:   #  "check"
       if files == "":
          try:

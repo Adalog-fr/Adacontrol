@@ -108,7 +108,7 @@ package body Rules.Max_Nesting is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language, Subrules_Flag_Utilities;
 
-      Max : Integer;
+      Max : Asis.ASIS_Integer;
       Sr  : Subrules;
    begin
       if not Parameter_Exists then

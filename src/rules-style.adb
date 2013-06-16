@@ -148,11 +148,11 @@ package body Rules.Style is
    --                      *******
    --
 
-   subtype Allowed_Bases is Positive range 2 .. 16;
+   subtype Allowed_Bases is Asis.ASIS_Positive range 2 .. 16;
    type Literal_Context is new Basic_Rule_Context with
       record
          Is_Not     : Boolean;
-         Block_Size : Natural;
+         Block_Size : Asis.ASIS_Natural;
       end record;
 
 
@@ -222,7 +222,7 @@ package body Rules.Style is
 
    type Association_Context is new Basic_Rule_Context with
       record
-         Allowed_Number  : Natural;
+         Allowed_Number  : Asis.ASIS_Natural;
          Except_Operator : Boolean;
       end record;
 
@@ -311,21 +311,22 @@ package body Rules.Style is
    -----------------
 
    procedure Add_Control(Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Asis;
       use Framework.Language, Ada.Strings.Wide_Unbounded;
       use Casing_Flag_Utilities, Literal_Flag_Utilities, Multiple_Flag_Utilities, Named_Parameter_Flag_Utilities;
       use Place_Flag_Utilities, Subrules_Flag_Utilities;
 
-      Subrule   : Subrules;
-      Max       : Integer;
-      Except_Op : Boolean;
-      Assoc     : Extended_Association_Names;
-      Next_Assoc     : Extended_Association_Names;
-      Multiple  : Multiple_Names;
-      Lit_Kind  : Literal_Names;
-      Places    : Place_Set := (others => False);
-      P         : Place_Names;
-      Flexible  :  Boolean;
-      Is_Max    : Boolean;
+      Subrule    : Subrules;
+      Max        : ASIS_Integer;
+      Except_Op  : Boolean;
+      Assoc      : Extended_Association_Names;
+      Next_Assoc : Extended_Association_Names;
+      Multiple   : Multiple_Names;
+      Lit_Kind   : Literal_Names;
+      Places     : Place_Set := (others => False);
+      P          : Place_Names;
+      Flexible   : Boolean;
+      Is_Max     : Boolean;
    begin
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => False);
@@ -475,7 +476,7 @@ package body Rules.Style is
                   -- Values needed for contexts
                   Is_Not     : constant Boolean := Get_Modifier ("NOT");
                   Base       : Allowed_Bases;
-                  Block_Size : Natural;
+                  Block_Size : Asis.ASIS_Natural;
                   -- Validation buffer
                begin
                   -- Retrieve the user-defined base
@@ -987,7 +988,7 @@ package body Rules.Style is
       procedure Check_Association (Na                  : Association_Names;
                                    Ident               : Asis.Element;
                                    Is_Positional       : Boolean;
-                                   Associations_Length : Positive;
+                                   Associations_Length : List_Index;
                                    Is_Operator         : Boolean := False)
       is
          use Named_Parameter_Flag_Utilities, Framework.Reports;
@@ -1018,7 +1019,7 @@ package body Rules.Style is
                           "positional association used in " & Image (Na, Lower_Case)
                           & Choose (Ctx.Allowed_Number = 0,
                               "",
-                              " with more than " & Integer_Img (Ctx.Allowed_Number) & " element(s)"));
+                              " with more than " & ASIS_Integer_Img (Ctx.Allowed_Number) & " element(s)"));
                end if;
             end;
          end if;
@@ -1384,9 +1385,11 @@ package body Rules.Style is
 
 
       -- Check separator positions according to the convention
-      function Check_Separators (Name : in Wide_String; Block_Size : in Positive) return Boolean is
-         Step   : constant Positive := Block_Size + 1;  -- The base step for separators
-         Cursor : Positive          := 1;               -- The current tested character position
+      function Check_Separators (Name : in Wide_String; Block_Size : in Asis.ASIS_Positive) return Boolean is
+         use type Asis.ASIS_Integer;
+
+         Step   : constant Asis.Text.Character_Position := Block_Size + 1;  -- The base step for separators
+         Cursor : Asis.Text.Character_Position          := 1;               -- The current tested character position
       begin
          for I in Name'Range loop
             -- Check if we should, or should not, match a separator
@@ -1440,7 +1443,7 @@ package body Rules.Style is
             Context           : constant Root_Context'Class := Corresponding_Context (St_Numeric_Literal,
                                                                                       " " & The_Base);
 
-            Block_Size        : Positive;
+            Block_Size        : Asis.ASIS_Positive;
          begin
             if Context = No_Matching_Context then
                -- Nothing specified for this base
@@ -1920,7 +1923,8 @@ package body Rules.Style is
          Element_Lines            : constant Line_List (1..1)   := Lines (Element, First_Line, First_Line);
          Element_First_Line_Image : constant Wide_String        := Line_Image (Element_Lines (Element_Lines'First));
       begin
-         for I in Character_Position_Positive range 1 .. First_Column - 1 loop
+         for I in Positive range 1 .. Integer (First_Column) - 1 loop   --## Rule line off Simplifiable_expressions
+                                                                        --   Gela-ASIS compatibility
             if Element_First_Line_Image (I) > ' ' then
                case Element_Kind (Element) is
                   when Not_An_Element =>

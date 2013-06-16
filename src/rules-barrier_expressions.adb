@@ -405,7 +405,7 @@ package body Rules.Barrier_Expressions is
                -- Check both tested expression and each membership choice
                Check_Expression (Membership_Test_Expression (Exp));
                declare
-                  Choices : Asis.Element_List := Membership_Test_Choices (Exp);
+                  Choices : constant Asis.Element_List := Membership_Test_Choices (Exp);
                begin
                   for C in Choices'Range loop
                      if Element_Kind (Choices (C)) = An_Expression then

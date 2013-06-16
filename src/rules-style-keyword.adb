@@ -35,6 +35,10 @@ with
   Ada.Characters.Latin_1,
   Ada.Strings.Wide_Maps.Wide_Constants;
 
+--ASIS
+with
+  Asis.Text;
+
 -- Adalog
 with
   Utilities;
@@ -319,7 +323,7 @@ package body Rules.Style.Keyword is
       begin  -- Do_Report
          Report (Rule_Id,
                  Corresponding_Context (St_Casing_Keyword),
-                 Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Kw_Start),
+                 Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Asis.Text.Character_Position (Kw_Start)),
                  "Wrong casing of """ & Line (Kw_Start .. Kw_Stop)
                  & """, should be """ & Should_Be (Line (Kw_Start .. Kw_Stop) & '"'));
       end Do_Report;

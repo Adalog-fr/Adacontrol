@@ -32,6 +32,7 @@ Sequential_Stmts: search statements (accept_return,
                                      untyped_for);
 
 Tasking_Stmts:    check  statements (abort,
+                                     accept,
                                      asynchronous_select,
                                      conditional_entry_call,
                                      delay,

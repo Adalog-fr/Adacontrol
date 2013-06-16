@@ -62,7 +62,7 @@ package body Rules.Max_Statement_Nesting is
    Save_Used : Usage;
 
    Ctl_Labels : array (Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Ctl_Values : array (Subrules, Control_Kinds) of Natural;
+   Ctl_Values : array (Subrules, Control_Kinds) of Asis.ASIS_Natural;
 
    ----------
    -- Help --
@@ -131,7 +131,7 @@ package body Rules.Max_Statement_Nesting is
       use Thick_Queries;
       Unit_Name : constant Asis.Defining_Name := Enclosing_Program_Unit (Statement, Including_Accept => True);
       Elem      : Asis.Element := Statement;
-      Counts    : array (Subrules) of Natural := (others => 0);
+      Counts    : array (Subrules) of Asis.ASIS_Natural := (others => 0);
 
       procedure Count (Stmt : Subrules) is
       begin
@@ -154,7 +154,7 @@ package body Rules.Max_Statement_Nesting is
                     Get_Location (Statement),
                     Image (Stmt, Lower_Case)
                     & " statements nesting deeper than "
-                    & Integer_Img (Ctl_Values (Stmt, Check)));
+                    & ASIS_Integer_Img (Ctl_Values (Stmt, Check)));
          elsif Rule_Used (Stmt)(Search) and then Counts (Stmt) > Ctl_Values (Stmt, Search) then
             Report (Rule_Id,
                     To_Wide_String (Ctl_Labels (Stmt, Search)),
@@ -162,7 +162,7 @@ package body Rules.Max_Statement_Nesting is
                     Get_Location (Statement),
                     Image (Stmt, Lower_Case)
                     & " statements nesting deeper than "
-                    & Integer_Img (Ctl_Values (Stmt, Search)));
+                    & ASIS_Integer_Img (Ctl_Values (Stmt, Search)));
          end if;
 
          if Rule_Used (Stmt)(Count) and then Counts (Stmt) > Ctl_Values (Stmt, Count) then
@@ -172,7 +172,7 @@ package body Rules.Max_Statement_Nesting is
                     Get_Location (Statement),
                     Image (Stmt, Lower_Case)
                     & " statements nesting deeper than "
-                    & Integer_Img (Ctl_Values (Stmt, Count)));
+                    & ASIS_Integer_Img (Ctl_Values (Stmt, Count)));
          end if;
 
       end Do_Report;

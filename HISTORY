@@ -1,5 +1,5 @@
 =============
-== V1.15b4 ==
+== V1.15r5 ==
 =============
 
 General:
@@ -7,6 +7,9 @@ General:
 Arranged to not choke on Ada 2012 constructs.
 
 Account for [in] out parameters in functions
+
+Bug fixes:
+   Mantis:  0000033, 0000034
 
 Added -j option
 Added command "set ignore inverted" (invert disabling of messages).
@@ -71,6 +74,7 @@ Pragmas:
 
 Statements:
    Added subrule for_iterator_loop
+   Added accept
 
 Style (Casing_Identifier, original):
    Check formal parameters in bodies if there is an explicit

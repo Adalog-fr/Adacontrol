@@ -69,7 +69,7 @@ package body Framework.Interrupt_Dbg is
             Attach_Handler (IT.Handler'Access, SIGTERM);
          else
             Detach_Handler (SIGINT);
-            DeTach_Handler (SIGTERM);
+            Detach_Handler (SIGTERM);
          end if;
       end Set_Active;
 

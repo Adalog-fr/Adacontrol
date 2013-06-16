@@ -57,9 +57,9 @@ package body Rules.Max_Blank_Lines is
    Save_Used : Boolean;
 
    Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Maximum    : array (Control_Kinds) of Natural := (others => Natural'Last);
+   Maximum    : array (Control_Kinds) of Asis.ASIS_Natural := (others => Asis.ASIS_Natural'Last);
 
-   Blank_Lines_Count : Natural;
+   Blank_Lines_Count : Asis.ASIS_Natural;
    Fail_Type : Control_Kinds;
    Fail_Loc  : Location;
 
@@ -84,8 +84,9 @@ package body Rules.Max_Blank_Lines is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
-      if Maximum (Ctl_Kind) /= Natural'Last then
+      if Maximum (Ctl_Kind) /= Asis.ASIS_Natural'Last then
          Parameter_Error (Rule_Id, "Rule already specified");
       end if;
 
@@ -108,7 +109,7 @@ package body Rules.Max_Blank_Lines is
       case Action is
          when Clear =>
             Rule_Used := False;
-            Maximum := (others => Natural'Last);
+            Maximum := (others => Asis.ASIS_Natural'Last);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -135,6 +136,8 @@ package body Rules.Max_Blank_Lines is
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
       use Framework.Reports, Ada.Strings.Wide_Unbounded;
       use Utilities;
+
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if not Rule_Used then
          return;
@@ -145,7 +148,7 @@ package body Rules.Max_Blank_Lines is
          if Fail_Loc /= Null_Location then
             Report (Rule_Id, To_Wide_String (Ctl_Labels (Fail_Type)), Fail_Type, Fail_Loc,
                     "Too many consecutive blank lines ("
-                    & Integer_Img (Blank_Lines_Count)
+                    & ASIS_Integer_Img (Blank_Lines_Count)
                     & ')');
             Fail_Loc := Null_Location;
          end if;
@@ -158,15 +161,15 @@ package body Rules.Max_Blank_Lines is
 
       -- Compare to Maximum (xx) + 1 to issue only one message if there is much more
       -- than the allowed number of consecutive blank lines
-      if Maximum (Check) /= Natural'Last and then Blank_Lines_Count = Maximum (Check)+1 then
+      if Maximum (Check) /= Asis.ASIS_Natural'Last and then Blank_Lines_Count = Maximum (Check)+1 then
          Fail_Loc  := Loc;
          Fail_Type := Check;
-      elsif Maximum (Search) /= Natural'Last and then Blank_Lines_Count = Maximum (Search)+1 then
+      elsif Maximum (Search) /= Asis.ASIS_Natural'Last and then Blank_Lines_Count = Maximum (Search)+1 then
          Fail_Loc  := Loc;
          Fail_Type := Search;
       end if;
 
-      if Maximum (Count) /= Natural'Last and then Blank_Lines_Count = Maximum (Count)+1 then
+      if Maximum (Count) /= Asis.ASIS_Natural'Last and then Blank_Lines_Count = Maximum (Count)+1 then
          Report (Rule_Id, To_Wide_String (Ctl_Labels (Count)), Count, Loc, "");
       end if;
   end Process_Line;

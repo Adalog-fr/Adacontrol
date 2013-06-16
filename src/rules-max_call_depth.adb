@@ -93,9 +93,9 @@ package body Rules.Max_Call_Depth is
    -- Rule variables
    Count_Expr_Fun_Calls : aliased Switch_Type.Object := (Value => On);
 
-   Infinite : constant Natural := Natural'Last;
-   Unused   : constant Integer := -1;
-   Depths   : array (Control_Kinds) of Integer := (others => Unused);
+   Infinite : constant Asis.ASIS_Natural := Asis.ASIS_Natural'Last;
+   Unused   : constant Asis.ASIS_Integer := Asis.ASIS_Integer'Val(-1);
+   Depths   : array (Control_Kinds) of Asis.ASIS_Integer := (others => Unused);
    -- Depth that triggers the message, i.e. allowed depth + 1
 
    type Called_Kind is (Regular, Inline, Recursive, Banned, Formal, Unavailable, Unknown, Dynamic);
@@ -111,7 +111,7 @@ package body Rules.Max_Call_Depth is
    type Depth_Descriptor is
       record
          Kind  : Called_Kind;
-         Depth : Natural;
+         Depth : Asis.ASIS_Natural;
          -- Infinite      for Recursive
          -- Actual depth  for Regular
          -- Minimum depth for unknown
@@ -139,6 +139,7 @@ package body Rules.Max_Call_Depth is
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "at least one parameter required");
@@ -195,7 +196,7 @@ package body Rules.Max_Call_Depth is
    -- Report_Uncheckable --
    ------------------------
 
-   procedure Report_Uncheckable (Call : Asis.Element; Message : Wide_String; Assumed : Natural) is
+   procedure Report_Uncheckable (Call : Asis.Element; Message : Wide_String; Assumed : Asis.ASIS_Natural) is
       use Asis.Elements;
       use Framework.Reports, Thick_Queries, Utilities;
    begin
@@ -205,12 +206,12 @@ package body Rules.Max_Call_Depth is
          Uncheckable (Rule_Id,
                       False_Negative,
                       Get_Location (Ultimate_Enclosing_Instantiation (Call)),
-                      Message & " in generic; assuming depth of " & Integer_Img (Assumed));
+                      Message & " in generic; assuming depth of " & ASIS_Integer_Img (Assumed));
       else
          Uncheckable (Rule_Id,
                       False_Negative,
                       Get_Location (Call),
-                      Message & "; assuming depth of " & Integer_Img (Assumed));
+                      Message & "; assuming depth of " & ASIS_Integer_Img (Assumed));
       end if;
    end Report_Uncheckable;
 
@@ -321,10 +322,10 @@ package body Rules.Max_Call_Depth is
                         Control := Terminate_Immediately;
                      when Regular | Inline =>
                         -- If Descr.Kind = Unknown, it stays this way
-                        Descr.Depth := Natural'Max (Descr.Depth, This_Descr.Depth);
+                        Descr.Depth := Asis.ASIS_Natural'Max (Descr.Depth, This_Descr.Depth);
                      when Unexplored | Unknown | Dynamic =>
                         -- All cases where the body is unknown are turned to Unknown at this point
-                        Descr := (Unknown, Natural'Max (Descr.Depth, This_Descr.Depth));
+                        Descr := (Unknown, Asis.ASIS_Natural'Max (Descr.Depth, This_Descr.Depth));
                   end case;
                when others =>
                   null;
@@ -343,10 +344,10 @@ package body Rules.Max_Call_Depth is
                         Control := Terminate_Immediately;
                      when Regular | Inline =>
                         -- If Descr.Kind = Unknown, it stays this way
-                        Descr.Depth := Natural'Max (Descr.Depth, This_Descr.Depth);
+                        Descr.Depth := Asis.ASIS_Natural'Max (Descr.Depth, This_Descr.Depth);
                      when Unexplored | Unknown | Dynamic =>
                         -- All cases where the body is unknown are turned to Unknown at this point
-                        Descr := (Unknown, Natural'Max (Descr.Depth, This_Descr.Depth));
+                        Descr := (Unknown, Asis.ASIS_Natural'Max (Descr.Depth, This_Descr.Depth));
                   end case;
                when others =>
                   null;
@@ -634,19 +635,19 @@ package body Rules.Max_Call_Depth is
                        To_Wide_String (Ctl_Labels (Ctl_Kind)),
                        Ctl_Kind,
                        Get_Location (Call),
-                       "Call has a depth of " & Integer_Img (Descr.Depth));
+                       "Call has a depth of " & ASIS_Integer_Img (Descr.Depth));
             when Dynamic =>
                Report (Rule_Id,
                        To_Wide_String (Ctl_Labels (Ctl_Kind)),
                        Ctl_Kind,
                        Get_Location (Call),
-                       "Dynamic or dispatching call has a depth of at least " & Integer_Img (Descr.Depth));
+                       "Dynamic or dispatching call has a depth of at least " & ASIS_Integer_Img (Descr.Depth));
             when Unexplored | Unknown =>
                Report (Rule_Id,
                        To_Wide_String (Ctl_Labels (Ctl_Kind)),
                        Ctl_Kind,
                        Get_Location (Call),
-                       "Call has a depth of at least " & Integer_Img (Descr.Depth));
+                       "Call has a depth of at least " & ASIS_Integer_Img (Descr.Depth));
             when Recursive =>
                Report (Rule_Id,
                        To_Wide_String (Ctl_Labels (Ctl_Kind)),
@@ -656,6 +657,7 @@ package body Rules.Max_Call_Depth is
          end case;
       end Do_Report;
 
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin  -- Process_Call
       if not Rule_Used then
          return;

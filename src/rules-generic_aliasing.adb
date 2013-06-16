@@ -170,16 +170,6 @@ package body Rules.Generic_Aliasing is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Utilities;
 
-      function Is_Good_Name (N : Asis.Expression) return Boolean is
-      begin
-         case Expression_Kind (N) is
-            when An_Identifier | An_Operator_Symbol | A_Character_Literal | An_Enumeration_Literal =>
-               return True;
-            when others =>
-               return False;
-         end case;
-      end Is_Good_Name;
-
       function Is_Same_Type (Left, Right : Asis.Expression) return Boolean is
          Good_Left  : Asis.Expression := Left;
          Good_Right : Asis.Expression := Right;
@@ -225,7 +215,7 @@ package body Rules.Generic_Aliasing is
          Left_Def  : Asis.Defining_Name;
          Right_Def : Asis.Defining_Name;
       begin
-         -- Get rid quickly of this one...
+         -- Get rid quickly of accesses to subprograms...
          if Expression_Kind (Left) = An_Explicit_Dereference then
             if Expression_Kind (Right) /= An_Explicit_Dereference then
                return (Unlikely, Complete);
@@ -289,6 +279,13 @@ package body Rules.Generic_Aliasing is
          end if;
       end Subprogram_Proximity;
 
+      function Is_Defaulted (Actual : Asis.Expression) return Boolean is
+      -- True iff Actual is not an explicitely given actual of the instantiation
+      -- The enclosing element of the Actual is the association
+      begin
+         return not Is_Equal (Enclosing_Element (Enclosing_Element (Actual)), Instantiation);
+      end Is_Defaulted;
+
    begin  -- Process_Instantiation
       if Rule_Used = Empty_Set then
          return;
@@ -296,7 +293,7 @@ package body Rules.Generic_Aliasing is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Actuals : constant Asis.Association_List := Generic_Actual_Part (Instantiation, Normalized => True);
+         Actuals      : constant Asis.Association_List := Generic_Actual_Part (Instantiation, Normalized => True);
          Left_Actual  : Asis.Element;
          Right_Actual : Asis.Element;
          Left_Formal  : Asis.Declaration;
@@ -309,12 +306,12 @@ package body Rules.Generic_Aliasing is
       begin
          for Left_Inx in List_Index range Actuals'First .. Actuals'Last - 1 loop
             Left_Actual := Simple_Name (Actual_Parameter (Actuals (Left_Inx)));
-            Left_Formal := Enclosing_Element (Formal_Parameter (Actuals (Left_Inx)));
-            Left_Kind   := Declaration_Kind (Left_Formal);
+            Left_Formal := Formal_Parameter (Actuals (Left_Inx));
+            Left_Kind   := Declaration_Kind (Enclosing_Element (Left_Formal));
 
             for Right_Inx in List_Index range Left_Inx + 1 .. Actuals'Last loop
-               Right_Formal := Enclosing_Element (Formal_Parameter (Actuals (Right_Inx)));
-               Right_Kind   := Declaration_Kind  (Right_Formal);
+               Right_Formal := Formal_Parameter (Actuals (Right_Inx));
+               Right_Kind   := Declaration_Kind  (Enclosing_Element (Right_Formal));
 
                if Left_Kind = Right_Kind
                  or else (    Left_Kind  = A_Formal_Package_Declaration
@@ -323,20 +320,20 @@ package body Rules.Generic_Aliasing is
                           and Right_Kind = A_Formal_Package_Declaration)
                then
                   Right_Actual := Simple_Name (Actual_Parameter (Actuals (Right_Inx)));
-                  case Declaration_Kind (Right_Formal) is
+                  case Declaration_Kind (Enclosing_Element (Right_Formal)) is
                      when A_Formal_Object_Declaration =>
                         if Rule_Used (Sr_Variable) /= No_Detail_Active
-                          and then Mode_Kind (Left_Formal)  = An_In_Out_Mode
-                          and then Mode_Kind (Right_Formal) = An_In_Out_Mode
+                          and then Mode_Kind (Enclosing_Element(Left_Formal))  = An_In_Out_Mode
+                          and then Mode_Kind (Enclosing_Element(Right_Formal)) = An_In_Out_Mode
                         then
                            Prox := Variables_Proximity (Left_Actual, Right_Actual);
-                           if Prox.Overlap /= None and then Rule_Used (Sr_Variable)(Prox.Confidence) then
+                           if Prox.Overlap /= None and then Rule_Used (Sr_Variable) (Prox.Confidence) then
                               Report (Rule_Id,
                                       Contexts (Sr_Variable, Prox.Confidence),
                                       Get_Location (Right_Actual),
-                                      "Parameter is same as parameter #" & Integer_Img (Left_Inx)
+                                      "Parameter is same as parameter #" & ASIS_Integer_Img (Left_Inx)
                                       & " at " & Image (Get_Location (Left_Actual))
-                                      & " (" & Image (Prox.Confidence, Title_Case) &')');
+                                      & " (" & Image (Prox.Confidence, Title_Case) & ')');
                            end if;
                         end if;
                      when A_Formal_Type_Declaration =>
@@ -344,19 +341,45 @@ package body Rules.Generic_Aliasing is
                            Report (Rule_Id,
                                    Contexts (Sr_Type, Certain),
                                    Get_Location (Right_Actual),
-                                   "Parameter is same as parameter #" & Integer_Img (Left_Inx)
+                                   "Parameter is same as parameter #" & ASIS_Integer_Img (Left_Inx)
                                    & " at " & Image (Get_Location (Left_Actual)));
                         end if;
                      when A_Formal_Procedure_Declaration | A_Formal_Function_Declaration =>
                         if Rule_Used (Sr_Subprogram) /= No_Detail_Active then
                            Prox := Subprogram_Proximity (Left_Actual, Right_Actual);
                            if Prox.Overlap /= None and then Rule_Used (Sr_Subprogram) (Prox.Confidence) then
-                              Report (Rule_Id,
-                                      Contexts (Sr_Subprogram, Prox.Confidence),
-                                      Get_Location (Right_Actual),
-                                      "Parameter is same as parameter #" & Integer_Img (Left_Inx)
-                                      & " at " & Image (Get_Location (Left_Actual))
-                                      & " (" & Image (Prox.Confidence, Title_Case) &')');
+                              -- Be careful that we may have defaulted parameters as one of the aliased SP
+                              if Is_Defaulted (Right_Actual) then
+                                 if Is_Defaulted (Left_Actual) then
+                                    Report (Rule_Id,
+                                            Contexts (Sr_Subprogram, Prox.Confidence),
+                                            Get_Location (Generic_Unit_Name(Instantiation)),
+                                            "Defaulted parameter " & Defining_Name_Image (Right_Formal)
+                                            & " is same as defaulted parameter " & Defining_Name_Image (Left_Formal)
+                                            & " (" & Image (Prox.Confidence, Title_Case) & ')');
+                                 else
+                                    Report (Rule_Id,
+                                            Contexts (Sr_Subprogram, Prox.Confidence),
+                                            Get_Location (Generic_Unit_Name(Instantiation)),
+                                            "Defaulted parameter " & Defining_Name_Image (Right_Formal)
+                                            & " is same as parameter #" & ASIS_Integer_Img (Left_Inx)
+                                            & " at " & Image (Get_Location (Left_Actual))
+                                            & " (" & Image (Prox.Confidence, Title_Case) & ')');
+                                 end if;
+                              elsif Is_Defaulted (Left_Actual) then
+                                 Report (Rule_Id,
+                                         Contexts (Sr_Subprogram, Prox.Confidence),
+                                         Get_Location (Right_Actual),
+                                         "Parameter is same as defaulted parameter " & Defining_Name_Image (Left_Formal)
+                                         & " (" & Image (Prox.Confidence, Title_Case) & ')');
+                              else
+                                 Report (Rule_Id,
+                                         Contexts (Sr_Subprogram, Prox.Confidence),
+                                         Get_Location (Right_Actual),
+                                         "Parameter is same as parameter #" & ASIS_Integer_Img (Left_Inx)
+                                         & " at " & Image (Get_Location (Left_Actual))
+                                         & " (" & Image (Prox.Confidence, Title_Case) & ')');
+                              end if;
                            end if;
                         end if;
                      when A_Formal_Package_Declaration | A_Formal_Package_Declaration_With_Box =>
@@ -367,7 +390,7 @@ package body Rules.Generic_Aliasing is
                            Report (Rule_Id,
                                    Contexts (Sr_Package, Certain),
                                    Get_Location (Right_Actual),
-                                   "Parameter is same as parameter #" & Integer_Img (Left_Inx)
+                                   "Parameter is same as parameter #" & ASIS_Integer_Img (Left_Inx)
                                    & " at " & Image (Get_Location (Left_Actual)));
                         end if;
                      when others =>

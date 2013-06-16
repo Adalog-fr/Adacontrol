@@ -40,7 +40,6 @@ with   -- Standard Ada units
   Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Unbounded,
-  Ada.Integer_Wide_Text_IO,
   Ada.Wide_Text_IO;
 
 with   -- ASIS components
@@ -185,6 +184,8 @@ procedure Ptree is
 
    Sep : constant Wide_String := Asis.Text.Delimiter_Image;
 
+   package ASIS_Integer_Wide_Text_IO is new Ada.Wide_Text_IO.Integer_IO (Asis.ASIS_Integer);
+
    procedure Put_Kind (Element : in Asis.Element) is
       use Ada.Wide_Text_IO;
    begin
@@ -237,7 +238,7 @@ procedure Ptree is
    end Put_Kind;
 
    procedure Put_Span (The_Span : Asis.Text.Span) is
-      use Ada.Wide_Text_IO, Ada.Integer_Wide_Text_IO;
+      use Ada.Wide_Text_IO, ASIS_Integer_Wide_Text_IO;
    begin
       if Span_Option then
          Put (" [");

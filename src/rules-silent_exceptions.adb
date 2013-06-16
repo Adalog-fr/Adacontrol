@@ -542,7 +542,7 @@ package body Rules.Silent_Exceptions is
                   -- The first condition is always evaluated:
                   Result := Result and Expression_Usage (Condition_Expression (Paths (1)));
 
-                  for J in Positive range 2 .. Paths'Last loop
+                  for J in List_Index range 2 .. Paths'Last loop
                      case Path_Kind (Paths (J)) is
                         when An_Elsif_Path =>
                            If_Usage := If_Usage or (Expression_Usage (Condition_Expression (Paths (J)))
@@ -576,7 +576,7 @@ package body Rules.Silent_Exceptions is
                   Paths : constant Asis.Path_List := Statement_Paths (Stmts (I));
                   Temp  : Search_Result := Statement_List_Usage (Sequence_Of_Statements (Paths (1)));
                begin
-                  for P in Positive range 2 .. Paths'Last loop
+                  for P in List_Index range 2 .. Paths'Last loop
                      Temp := Temp or Statement_List_Usage (Sequence_Of_Statements (Paths (P)));
                   end loop;
                   Result := Result and Temp;

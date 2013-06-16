@@ -475,7 +475,7 @@ package body Rules.Representation_Clauses is
                           & Biggest_Int_Img (Fields (Fields'Last).High + 1 - Starting_Unit * Storage_Unit)
                           & ".."
                           & Biggest_Int_Img (S - 1 - Starting_Unit * Storage_Unit)
-                          & ", size clause line " & Integer_Img (Get_First_Line (Get_Location (Size_Expr))),
+                          & ", size clause line " & ASIS_Integer_Img (Get_First_Line (Get_Location (Size_Expr))),
                           Get_Location (Components (Fields (Fields'Last).Compo_Inx)));
             end if;
          end;

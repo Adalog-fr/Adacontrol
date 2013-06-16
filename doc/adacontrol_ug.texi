@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.15b4
+@settitle AdaControl User Guide V1.15r5
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -38,7 +38,7 @@ Last edited: @today{}
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2012 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2013 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
 2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
@@ -60,7 +60,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2012
+This document is Copyright @copyright{} 2005-2013
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -83,7 +83,7 @@ constructs; its scope is therefore not limited to enforcing
 programming rules, although it is of course one of its main goals.
 
 AdaControl is a commercial product of
-@uref{http://www.adalog.fr/adalog2.htm,Adalog} with professional grade
+@url{http://www.adalog.fr/adalog2.htm,Adalog} with professional grade
 support available. Getting support is highly recommended for
 industrial projects. Adacontrol can also be customized or extended to
 match your special needs, please refer to @ref{Support} or contact
@@ -225,20 +225,20 @@ rules;
 consulting services for defining coding standards;
 @item
 consulting services in all areas related to Ada, real-time,
-compilation, etc. See @uref{http://www.adalog.fr/adalog2.htm,Adalog's site} for details.
+compilation, etc. See @url{http://www.adalog.fr/adalog2.htm,Adalog's site} for details.
 @end itemize
 
 For pricing information about support contract and other services,
 please contact @email{info@@adalog.fr}.
 
 @subsection Other support
-There is a Wiki for questions about AdaControl at
-@uref{https://sourceforge.net/p/adacontrol/wiki/Home/}. This is the
+There is a Wiki for questions about AdaControl at @*
+@url{https://sourceforge.net/p/adacontrol/wiki/Home/}. This is the
 place to ask for information, make suggestions, or get help from the
 community.
 
-For problem reports, please use our MantisBT system at
-@uref{http://sourceforge.net/apps/mantisbt/adacontrol}.
+For problem reports, please use our MantisBT system at @*
+@url{http://sourceforge.net/apps/mantisbt/adacontrol}.
 
 @subsection Your support to us, too!
 If you enjoy AdaControl, there are several things you can do to help
@@ -250,9 +250,9 @@ Rate it, or even better post a review, on the
 review page}
 @item
 Click ``I use it'' from
-@uref{http://www.adalog.fr/adacontrol2.htm,AdaControl's home page}.
+@url{http://www.adalog.fr/adacontrol2.htm,AdaControl's home page}.
 @item
-Rate it on @uref{http://www.ohloh.net/p/11353?ref=sample, AdaControl's
+Rate it on @url{http://www.ohloh.net/p/11353?ref=sample, AdaControl's
 Ohloh page}
 @item
 Get a support contract, or encourage your company, your friends, or
@@ -267,7 +267,7 @@ need support from our users to keep it running!
 @node History, References, Support, Introduction
 @section History
 The development of AdaControl was initially funded by Eurocontrol
-(@uref{http://www.eurocontrol.int}), which needed a tool to help in
+(@url{http://www.eurocontrol.int}), which needed a tool to help in
 verifying the million+ lines of code that does Air Traffic Flow
 Management over Europe. Because it was felt that such a tool would
 benefit the community at-large, and that further improvements made by
@@ -301,17 +301,17 @@ files. See @ref{Non upward-compatible changes} for details.
 ``On the benefits for industrials of sponsoring free software
 development'', @i{Ada User Journal}, Volume 26, n° 4, december 2005
 
-@uref{http://www.adalog.fr/publicat/Free-software.pdf}
+@url{http://www.adalog.fr/publicat/Free-software.pdf}
 @item
 ``A Comparison of Industrial Coding Rules'', @i{Ada User Journal},
 Volume 29, n° 4, december 2008
 
-@uref{http://www.adalog.fr/publicat/coding-rules.pdf}
+@url{http://www.adalog.fr/publicat/coding-rules.pdf}
 @item
 ``A Methodology for Avoiding Known Compiler Problems
 Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International Conference (SIGAda 2010)}
 
-@uref{http://www.adalog.fr/publicat/compiler-probs.pdf}
+@url{http://www.adalog.fr/publicat/compiler-probs.pdf}
 @end enumerate
 
 @node Installation, Program Usage, Introduction, Top
@@ -319,7 +319,7 @@ Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International C
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with GNAT version GPL 2012, as distributed
+AdaControl will work only with GNAT version GPL 2013, as distributed
 by AdaCore. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated below.
 
@@ -343,22 +343,33 @@ version of GNAT GPL), you may skip to the next section.
 
 @anchor{Getting the correct version of the sources for your Gnat version}
 @subsection Getting the correct version of the sources for your Gnat version
-An incompatible change has been introduced in the ASIS interface, in
-order to deal properly with some Ada-2005/2012 features. This change
-has been incorporated in Gnat starting with versions GnatPRO 7.1.0 and
-GPL-2012. In the rest of this section, we will refer to Gnat versions
-that predate this change as ``old Gnat'', and to other versions as
-``new Gnat''.
+ASIS is continuously evolving to support Ada-2005/2012 features, and
+so is AdaControl. As a consequence, the full set of features of
+AdaControl is supported only with the latest versions of Gnat, namely
+GnatPRO 7.2.0 and GnatGPL-2013 (and higher). We refer to these versions as the
+``new Gnat'', and we encourage all users to use these versions.
 
-Previous public releases of AdaControl will compile only with the old
-Gnat. This release is provided in two versions, one whose distribution
-files start with ``adactl'' for the new Gnat, and one whose
-distribution files start with ``adactl-old'' for the old-gnat.  Both
-versions provide the same features, except that controls related to
-Ada-2012 are not available in the old-gnat. In the future, more and
-more improvements will be incorporated only in the version for the new
-Gnat, and the old one will be progressively frozen. We strongly
-encourage users to move to the latest version of Gnat.
+Some user may however need to use an older version of Gnat. We provide
+also a version of AdaControl that is compatible with versions GnatPRO
+7.0.x and GnatGPL2011 and older (before some incompatible -but
+necessary- changes in ASIS happened). We refer to these versions as
+the ``old Gnat''.
+
+The release whose distribution files start with ``adactl'' is for the
+new Gnat, and the one whose distribution files start with
+``adactl-old'' is for the old-gnat.  Both versions provide the same
+features, except that controls related to Ada-2012 (or that depend on
+new features of ASIS) are not available in the old-gnat
+version. Moreover, the old-gnat version is now frozen, and will not
+receive any new features or improvements in the future, unless
+requested by a supported customer (such requests will be honoured as
+part of the support contract). See @ref{Support} for
+information on becoming a supported user.
+
+Note that intermediate releases of Gnat (GnatPRO-7.1.x, GnatGPL2012)
+are not compatible with either of these distribution. Compatible
+sources can be obtained from the Git repository of AdaControl on
+SourceForge (@url{http://adacontrol.sourceforge.net}).
 
 @subsection Prerequisites
 The following software must be installed in order to compile
@@ -481,8 +492,9 @@ known to have bugs and unimplemented features that will not allow
 AdaControl to run correctly in some cases. We strongly recommend to
 always use the most recent version of GNAT.
 @item
-You run a recent version of GNATPro (6.1.2 and above) and you forgot
-to specify the ``-XGNAT_FIX=1'' option. @xref{Build with project file}.
+You run an old-gnat version of AdaControl with GNATPro (6.1.2 and
+above) and you forgot to specify the ``-XGNAT_FIX=1''
+option. @xref{Build with project file}.
 @item
 It may happen that the test @code{tfw_check} reports ``FAILED''
 on some sytems, because it depends on the order in which the operating
@@ -517,20 +529,20 @@ rules are not currently supported, you have several options:
 @enumerate
 @item
 If you have some funding available, please contact
-@uref{mailto::info@@adalog.fr,,info@@adalog.fr}. We'll be happy to
+@url{mailto::info@@adalog.fr,,info@@adalog.fr}. We'll be happy to
 make an offer to customize AdaControl to your needs.
 @item
 If you @i{don't} have funding, but have some knowledge of ASIS
 programming, you can add the rule yourself. We have made every effort
 to make this as simple as possible. Please refer to the AdaControl
 programmer's manual for details. If you do so, please send your rules
-to @uref{mailto::rosen@@adalog.fr,,rosen@@adalog.fr}, and we'll be
+to @url{mailto::rosen@@adalog.fr,,rosen@@adalog.fr}, and we'll be
 happy to integrate them in the general release of AdaControl to make them
 available to everybody.
 @item
 If you have good ideas, but don't feel like implementing them yourself
 (nor financing them), please send a note to
-@uref{mailto::rosen@@adalog.fr,,rosen@@adalog.fr}. We will eventually
+@url{mailto::rosen@@adalog.fr,,rosen@@adalog.fr}. We will eventually
 incorporate all good suggestions, but we can't of course commit to any
 dead-line in that case.
 @end enumerate
@@ -1790,7 +1802,7 @@ problem. @xref{Inhibit command}.
 
 If you encounter a problem while using AdaControl, you are very
 welcome to report it through our
-@uref{https://sourceforge.net/apps/mantisbt/adacontrol/my_view_page.php,Mantis bug
+@url{https://sourceforge.net/apps/mantisbt/adacontrol/my_view_page.php,Mantis bug
 tracking system} (under Windows, you can click on ``Report problem''
 in the AdaControl Start menu). Please include the exact control and
 the unit that caused the problem, as well as the captured output of
@@ -3823,8 +3835,11 @@ search dependencies (direct, min 1);
 If you give a name that's already a renaming to the ``others'' or ``with'' subrules, the rule
 will only apply to this name, not to what has been renamed. Therefore:
 @example
-check dependencies (others, Ada.Text_IO); -- Allow only Ada.Text_IO
-check dependencies (with,   Text_IO);     -- But not if the plain name Text_IO is used
+ -- Allow only Ada.Text_IO:
+check dependencies (others, Ada.Text_IO);
+
+-- But not if the plain name Text_IO is used:
+check dependencies (with, Text_IO);
 @end example
 
 There is a slight overlap between this rule and the rule
@@ -4512,7 +4527,8 @@ This rule controls instantiations where the same actual is given to
 more than one formal.
 @subsection Syntax
 @example
-<control_kind> generic_aliasing [( [<condition>] <entity> <@{, [<condition>] <entity>@})];
+<control_kind> generic_aliasing [(<subrule> @{, <subrule>@})];
+<subrule>   ::= [<condition>] <entity>
 <condition> ::= unlikely | possible | certain
 <entity>    ::= all | variable | type | subprogram | package
 @end example
@@ -4571,9 +4587,9 @@ race conditions, or otherwise shared.
 
 @subsection Syntax
 @example
-<control_kind> global_references (<Ref_Kind> @{, <Root>@});
-<Ref_Kind> ::= all | multiple | multiple_non_atomic
-<Root>     ::=  <entity> | function | procedure | task | protected
+<control_kind> global_references (<subrule> @{, <root>@});
+<subrule> ::= all | multiple | multiple_non_atomic
+<root>    ::=  <entity> | function | procedure | task | protected
 @end example
 
 @subsection Action
@@ -4586,13 +4602,14 @@ usual, the whole syntax for entities is allowed for <entity>.
 are used to refer to all functions, procedures, tasks, and protected
 entities, respectively.
 
-If the first parameter (<Ref_Kind) is @code{all}, all references to
-global elements from the indicated entities are reported. If the first
-parameter is @code{multiple}, only global elements that are accessed
-by more than one of the indicated entities (i.e. shared elements) are
+The <subrule> determines the kind of references that are
+controlled. If it is @code{all}, all references to global elements
+from the indicated entities are reported. If <subrule> is
+@code{multiple}, only global elements that are accessed by more than
+one of the indicated entities (i.e. shared elements) are
 reported. Note however that if a reference is found from a task type
 or protected type, it is always reported, since there are potentially
-several objects of the same type. If the first parameter is
+several objects of the same type. If <subrule> is
 @code{multiple_non_atomic}, references reported are the same as with
 @code{multiple}, except that global variables that are @code{atomic}
 or @code{atomic_components} and written from at most one of the
@@ -5412,7 +5429,7 @@ search max_nesting (5);
 check max_nesting (all, 7);
 check max_nesting (generic, 1);
 check max_nesting (separate, 0); -- Do not allow separate in separate
-check max_nesting (task, 0);     -- Do not allow a task declared in another task
+check max_nesting (task, 0);     -- Do not allow a task in another task
 @end example
 
 @node Max_Size, Max_Statement_Nesting, Max_Nesting, Rules reference
@@ -5914,13 +5931,15 @@ This rule controls types whose usage profile indicates that they might
 be replaceable with enumerated types.
 @subsection Syntax
 @example
-<control_kind> no_operator_usage [(none | logical)];
+<control_kind> no_operator_usage [(<subrule>)];
+<subrule> ::= none | logical
 @end example
 @subsection Action
 This rule controls integer types (both signed and modular) where no
-operator of the type is used in the program (if the keyword @code{none}
-is given), or only logical operators (if the keyword @code{logical} is
-given). If no parameter is given, the rule will control both cases.
+operator of the type is used in the program (for the <subrule>
+@code{none}), or only logical operators (for the <subrule>
+@code{logical}). If no <subrule> is given, the rule will control both
+cases.
 
 An integer type that uses no operator at all is a good candidate to be
 replaced by an enumerated type. A modular type where only logical
@@ -5940,8 +5959,8 @@ user-defined operators. On the other hand, only call to operators are
 considered, operators used for example as actual generic parameters in
 instantiations are not considered.
 
-The rule applies to private types whose full declaration is an integer
-type.
+The rule applies also to private types whose full declaration is an
+integer type.
 
 @node Non_Static, Not_Elaboration_Calls, No_Operator_Usage, Rules reference
 @section Non_Static
@@ -6248,7 +6267,7 @@ for all callable entities (i.e. functions, procedures and entries).
 
 @subsection Syntax
 @example
-<control_kind> parameter_declarations (<subrule>, [<bounds>,] @{,<callable>@});
+<control_kind> parameter_declarations (<subrule> [,<bounds>] @{,<callable>@});
 <subrule>  ::= all_parameters | in_parameters     | defaulted_parameters |
                out_parameters | in_out_parameters | access_parameters    |
                single_out_parameter
@@ -7236,45 +7255,45 @@ This rule controls usage of certain Ada statements.
 
 @subsection Syntax
 @example
-<control_kind> statements (<statement_kw> @{, <statement_kw>@};
+<control_kind> statements (<subrule> @{, <subrule>@};
 
-<statement_kw> ::=
-   any_statement          | abort                    |
-   accept_return          | assignment               |
-   asynchronous_select    | block                    |
-   case                   | case_others              |
-   case_others_null       | code                     |
-   conditional_entry_call | declare_block            |
-   delay                  | delay_until              |
-   dispatching_call       | effective_declare_block  |
-   entry_call             | entry_return             |
-   exception_others       | exception_others_null    |
-   exit                   | exit_expanded_name       |
-   exit_for_loop          | exit_outer_loop          |
-   exit_while_loop        | exited_extended_return   |
-   extended_return        | for_loop                 |
-   for_in_loop            | for_iterator_loop        |
-   for_of_loop            | function_return          |
-   goto                   | if                       |
-   if_elsif               | inherited_procedure_call |
-   labelled               | loop_return              |
-   multiple_exits         | no_else                  |
-   null                   | procedure_return         |
-   raise                  | raise_locally_handled    |
-   raise_nonpublic        | raise_standard           |
-   reraise                | requeue                  |
-   selective_accept       | simple_loop              |
-   terminate              | timed_entry_call         |
-   unconditional_exit     | unnamed_block            |
-   unnamed_exit           | unnamed_loop_exited      |
-   unnamed_for_loop       | unnamed_multiple_loop    |
-   unnamed_simple_loop    | unnamed_while_loop       |
-   untyped_for            | while_loop
+<subrule> ::=
+   any_statement           | abort                    |
+   accept                  | accept_return            |
+   assignment              | asynchronous_select      | 
+   block                   | case                     | 
+   case_others             | case_others_null         | 
+   code                    | conditional_entry_call   | 
+   declare_block           | delay                    | 
+   delay_until             | dispatching_call         | 
+   effective_declare_block | entry_call               | 
+   entry_return            | exception_others         | 
+   exception_others_null   | exit                     | 
+   exit_expanded_name      | exit_for_loop            | 
+   exit_outer_loop         | exit_while_loop          | 
+   exited_extended_return  | extended_return          | 
+   for_in_loop             | for_iterator_loop        |
+   for_of_loop             | function_return          |
+   goto                    | if                       |
+   if_elsif                | inherited_procedure_call |
+   labelled                | loop_return              |
+   multiple_exits          | no_else                  |
+   null                    | procedure_return         |
+   raise                   | raise_locally_handled    |
+   raise_nonpublic         | raise_standard           |
+   reraise                 | requeue                  |
+   selective_accept        | simple_loop              |
+   terminate               | timed_entry_call         |
+   unconditional_exit      | unnamed_block            |
+   unnamed_exit            | unnamed_loop_exited      |
+   unnamed_for_loop        | unnamed_multiple_loop    |
+   unnamed_simple_loop     | unnamed_while_loop       |
+   untyped_for             | while_loop
 @end example
 
 @subsection Action
-Statement keywords that are Ada keywords control the corresponding Ada
-statements. The meaning of other keywords is as follows:
+Subrules that are Ada keywords control the corresponding Ada
+statements. The meaning of other subrules is as follows:
 @itemize @bullet
 @item
 @code{any_statement} controls all statements. This is of course not
@@ -7442,9 +7461,9 @@ The plain ``raise'' subrule controls the @code{@b{raise}} statement, and
 only this one. If you want to check all places where exceptions can be
 raised, use also the ``entities'' rule like this:
 @example
-"all raise": check statements (raise);
-"all raise": check entities (Ada.Exceptions.Raise_Exception,
-                             Ada.Exceptions.Reraise_Occurrence);
+"all raise": check statements (raise),
+             check entities   (Ada.Exceptions.Raise_Exception,
+                               Ada.Exceptions.Reraise_Occurrence);
 @end example
 
 Other subrules of the ``raise'' family are more about which kind of
@@ -7715,7 +7734,6 @@ subprogram and parameter names from the body are checked against those
 from the specification (if any). This is what the user would expect,
 although strictly speaking it is not a usage of the name.
 
-given in a body are checked
 In many cases, badly laid-out compound statements will trigger both the
 ``multiple_elements, statement'' and the ``compound_statement''
 subrules. For example:
@@ -8578,7 +8596,7 @@ while this rule file controls the declaration of access types on tasks.
 
 @rule{NASA coding guidelines shall be enforced}
 
-Use file @code{nasa.aru}. This file is an example of how to convert guidelines (available from @uref{http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf}) into an AdaControl rules file.
+Use file @code{nasa.aru}. This file is an example of how to convert guidelines (available from @url{http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf}) into an AdaControl rules file.
 
 @rule{Ada 83 unit names shall not be used (i.e. use @code{Ada.Text_IO}, not @code{Text_IO})}
 
@@ -8596,7 +8614,7 @@ AdaControl can provide measurements required by the SQALE quality
 measurement method. The corresponding file is @code{SQALE.aru}.
 
 For information about the SQALE method, please refer to J-P Rosen's paper at
-@uref{http://www.adalog.fr/publicat/sqale.pdf}
+@url{http://www.adalog.fr/publicat/sqale.pdf}
 
 @node Automatically checkable rules, Rules that need manual inspection, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules
 @section Automatically checkable rules

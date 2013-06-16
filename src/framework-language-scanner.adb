@@ -81,6 +81,7 @@ package body Framework.Language.Scanner is
 
    procedure Next_Char is
       use Ada.Strings.Wide_Fixed;
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if Buf_Inx = Buf_Last and Buf_Last = Buffer'Last then
          -- Buffer was too short, read next part
@@ -542,6 +543,7 @@ package body Framework.Language.Scanner is
    ----------------
 
    procedure Start_Scan (From_String : Boolean; Source : Wide_String) is
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       Origin_Is_String := From_String;
       Current_Line     := 1;

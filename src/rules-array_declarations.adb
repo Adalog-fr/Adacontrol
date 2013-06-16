@@ -67,7 +67,7 @@ package body Rules.Array_Declarations is
    Values : array (Dim_Subrules, Control_Kinds) of Language.Shared_Keys.Bounds_Values
      := (others => (others => (Min => 0, Max => Thick_Queries.Biggest_Natural'Last)));
 
-   type Index_Context (Nb_Dims : Positive) is new Basic_Rule_Context with
+   type Index_Context (Nb_Dims : Asis.ASIS_Positive) is new Basic_Rule_Context with
       record
          Index_Types : Entity_Specification_List (1 .. Nb_Dims);
       end record;
@@ -90,6 +90,7 @@ package body Rules.Array_Declarations is
    ----------------
 
    function List_Image (L : Entity_Specification_List) return Wide_String is
+      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
       if L'Length = 1 then
          return Image (L (L'First));
@@ -281,7 +282,7 @@ package body Rules.Array_Declarations is
       use Asis, Asis.Elements;
       use Framework.Reports, Thick_Queries;
 
-      function Get_Bound_Location (Dim : Positive) return Location is
+      function Get_Bound_Location (Dim : Asis.List_Index) return Location is
          use Asis.Definitions;
          use Utilities;
       begin

@@ -51,22 +51,22 @@ with
   Framework.Language.Shared_Keys;
 
 package body Rules.Instantiations is
-   use Framework, Framework.Control_Manager;
+   use Asis, Framework, Framework.Control_Manager;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   type Generic_Parameters is array (Positive range <>) of Entity_Specification;
+   type Generic_Parameters is array (List_Index range <>) of Entity_Specification;
    No_Parameters : constant Generic_Parameters (1 .. 0) := (others => Value ("Junk"));
 
-   type Instance_Info (Nb_Param : Positive) is
+   type Instance_Info (Nb_Param : List_Index) is
       record
          Loc    : Location;
          Values : Generic_Parameters (1 .. Nb_Param);
       end record;
    package Instance_Info_List is new Linear_Queue (Instance_Info);
 
-   type Instantiation_Context (Nb_Values : Natural; Has_Repeated : Boolean) is new Basic_Rule_Context with
+   type Instantiation_Context (Nb_Values : ASIS_Natural; Has_Repeated : Boolean) is new Basic_Rule_Context with
       record
          Values : Generic_Parameters (1 .. Nb_Values);
          Places : Framework.Language.Shared_Keys.Places_Set;
@@ -94,7 +94,7 @@ package body Rules.Instantiations is
       Append (Dummy, "(");
       Append (Dummy, Image (Values (Values'First)));
 
-      for I in Positive range Values'First + 1 .. Values'Last loop
+      for I in List_Index range Values'First + 1 .. Values'Last loop
          Append (Dummy, ", ");
          Append (Dummy, Image (Values (I)));
       end loop;
@@ -222,7 +222,7 @@ package body Rules.Instantiations is
 
    function Is_Corresponding (Specification : in Entity_Specification;
                               Name          : in Asis.Defining_Name) return Boolean is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis.Elements, Asis.Expressions;
       use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
 
       Declaration  : Asis.Declaration;
@@ -297,7 +297,7 @@ package body Rules.Instantiations is
                    Values      : in Generic_Parameters) return Boolean is
       use Asis.Expressions;
 
-      Values_Index : Natural := Values'First;
+      Values_Index : List_Index := Values'First;
    begin
       for I in Actual_Part'Range loop
          if not Is_Corresponding (Values (Values_Index), Actual_Parameter (Actual_Part (I))) then

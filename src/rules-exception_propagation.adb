@@ -106,9 +106,10 @@ package body Rules.Exception_Propagation is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
+      use Asis;   -- Gela-ASIS compatibility
 
       Subrule     : Subrules;
-      Int_Value   : Integer;
+      Int_Value   : ASIS_Integer;
       Check_Level : Risk_Level := Always;
    begin
       if not Parameter_Exists then

@@ -56,8 +56,8 @@ package body Rules.Statements is
    -- all "filtered_raise" subrules (i.e. raise subrules except the plain one) must stay together
    type Subrules is (Stmt_Any_Statement,
 
-                     Stmt_Abort,                   Stmt_Accept_Return,          Stmt_Assignment,
-                     Stmt_Asynchronous_Select,
+                     Stmt_Abort,                   Stmt_Accept,                 Stmt_Accept_Return,
+                     Stmt_Assignment,              Stmt_Asynchronous_Select,
 
                      Stmt_Block,
 
@@ -275,7 +275,7 @@ package body Rules.Statements is
             Do_Report (Stmt_Abort);
 
          when An_Accept_Statement =>
-            null;
+            Do_Report (Stmt_Accept);
 
          when An_Assignment_Statement =>
             Do_Report (Stmt_Assignment);
