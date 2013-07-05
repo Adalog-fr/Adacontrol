@@ -299,8 +299,6 @@ package body Rules.Max_Size is
 
    procedure Process_Unit (Unit : in Asis.Compilation_Unit) is
       use Asis.Elements;
-
-      Length : Line_Number;
    begin
       if not Rule_Used or else Maximum (SR_Unit) = (Control_Kinds => Unused) then
          return;

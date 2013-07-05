@@ -367,9 +367,12 @@ part of the support contract). See @ref{Support} for
 information on becoming a supported user.
 
 Note that intermediate releases of Gnat (GnatPRO-7.1.x, GnatGPL2012)
-are not compatible with either of these distribution. Compatible
-sources can be obtained from the Git repository of AdaControl on
-SourceForge (@url{http://adacontrol.sourceforge.net}).
+are not fully compatible with either of these distribution. Depending
+on exact version, problems may range from compilation errors to
+incorrect results in some rare (Ada 2012) cases. Compatible sources
+can be obtained from the Git repository of AdaControl on SourceForge
+(@url{http://adacontrol.sourceforge.net}). We will be happy to help
+our supported customers who must use one of these versions.
 
 @subsection Prerequisites
 The following software must be installed in order to compile

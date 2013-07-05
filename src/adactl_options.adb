@@ -332,7 +332,9 @@ package body Adactl_Options is
       -- Defaults from the ADACTLINI environment variable
       if Exists ("ADACTLINI") then
          Append (Options_Commands, To_Wide_String (Value ("ADACTLINI")));
-         if Element (Options_Commands, Length (Options_Commands)) /= ';' then
+         if Length (Options_Commands) > 0
+           and then  Element (Options_Commands, Length (Options_Commands)) /= ';'
+         then
             -- As a courtesy, provide the missing final ';'
             Append (Options_Commands, ';');
          end if;
