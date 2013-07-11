@@ -10,13 +10,13 @@ procedure Casing is
    function foo ( I : in Integer ) return Integer is    -- Casing_Identifier
    begin
       return i + 1;                                     -- Casing_Identifier
-   end foo;
+   end foo;                                             -- Casing_Identifier
 
    S   : String (1 .. 1);
    function "aNd" (L, R : in Integer) return Integer is -- Casing_Keyword
    begin
       return 1;
-   end "AND";
+   end "AND";                                           -- Casing_Keyword
    I : Integer;
 
    type T is (Aa, Bb, CC);

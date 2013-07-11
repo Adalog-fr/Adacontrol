@@ -934,6 +934,104 @@ package body Rules.Style is
                  Defining_Name_Image (Def) & " has been renamed at " & Image (Ren.Ren_Location));
       end Check_Renamed;
 
+      procedure Check_End_Casing (Casing : Subrules) is
+      -- Check casing of name after "end"
+      -- Called only for defining identifiers, or the name of an accept statement
+         use Asis.Declarations, Asis.Statements;
+
+         Encl_Decl : Asis.Element := Identifier;
+         Decl_Name : Asis.Element;
+         End_Name  : Asis.Element;
+      begin
+         -- Find the declaration (or statement) that encloses the [defining] name
+         loop
+            case Element_Kind (Encl_Decl) is
+               when A_Defining_Name =>
+                  -- we are still inside an expanded defining name
+                  Encl_Decl := Enclosing_Element (Encl_Decl);
+               when An_Expression =>
+                  -- happens only for the identifier of an accept statement
+                  Encl_Decl := Enclosing_Element (Encl_Decl);
+               when others =>
+                  exit;
+            end case;
+         end loop;
+         case Element_Kind (Encl_Decl) is
+            when A_Declaration =>
+               case Declaration_Kind (Encl_Decl) is
+                  when A_Package_Declaration
+                     | A_Package_Body_Declaration
+                     | A_Procedure_Body_Declaration
+                     | A_Function_Body_Declaration
+                     | A_Generic_Package_Declaration
+                     | A_Task_Type_Declaration
+                     | A_Single_Task_Declaration
+                     | A_Task_Body_Declaration
+                     | A_Protected_Type_Declaration
+                     | A_Single_Protected_Declaration
+                     | A_Protected_Body_Declaration
+                     | An_Entry_Body_Declaration
+                     =>
+                     null;
+                  when others =>
+                     return;
+               end case;
+            when A_Statement =>
+               case Statement_Kind (Encl_Decl) is
+                  when A_Loop_Statement
+                     | A_While_Loop_Statement
+                     | A_For_Loop_Statement
+                     | A_Block_Statement
+                     | An_Accept_Statement
+                     =>
+                     null;
+                  when others =>
+                     return;
+               end case;
+            when others =>
+               return;
+         end case;
+         End_Name := Corresponding_End_Name (Encl_Decl);
+         if Is_Nil (End_Name) then
+            return;
+         end if;
+
+         -- Here we have an end name to check
+         -- We must get the defining name from the true name in the declaration, since
+         -- it is impossible to get it from the end name
+         case Element_Kind (Encl_Decl) is
+            when A_Declaration =>
+               Decl_Name := Names (Encl_Decl) (1);
+            when A_Statement =>
+               if Statement_Kind (Encl_Decl) = An_Accept_Statement then
+                  Decl_Name := Accept_Entry_Direct_Name (Encl_Decl);
+               else
+                  Decl_Name := Statement_Identifier (Encl_Decl);
+               end if;
+            when others =>
+               Failure ("Wrong enclosing of identifier", Encl_Decl);
+         end case;
+         if Expression_Kind (End_Name) = A_Selected_Component then
+            -- Note that the rightmost name of Decl_Name is a defining name, but all others
+            -- are identifiers
+            Check_Casing (Casing,
+                          Source_Element =>          Selector (End_Name),
+                          Ref_Element    => Defining_Selector (Decl_Name));
+            End_Name  :=          Prefix (End_Name);
+            Decl_Name := Defining_Prefix (Decl_Name);
+            while Expression_Kind (End_Name) = A_Selected_Component loop
+               Check_Casing (Casing,
+                             Source_Element => Selector (End_Name),
+                             Ref_Element    => Selector (Decl_Name));
+               End_Name  := Prefix (End_Name);
+               Decl_Name := Prefix (Decl_Name);
+            end loop;
+         end if;
+         Check_Casing (Casing,
+                       Source_Element => End_Name,
+                       Ref_Element    => Decl_Name);
+      end Check_End_Casing;
+
    begin  -- Process_Identifier
       if not (Rule_Used (St_Casing_Identifier)
               or Rule_Used (St_Renamed_Entity)
@@ -951,8 +1049,10 @@ package body Rules.Style is
                      or else Defining_Name_Kind (Identifier) = A_Defining_Enumeration_Literal)
          then
             Check_Casing (St_Casing_Identifier, Identifier);
+            Check_End_Casing (St_Casing_Identifier);
          elsif Rule_Used (St_Casing_Keyword) and then Defining_Name_Kind (Identifier) = A_Defining_Operator_Symbol then
             Check_Casing (St_Casing_Keyword, Identifier);
+            Check_End_Casing (St_Casing_Keyword);
          end if;
          -- No need to call Check_Renamed on defining names
 
@@ -962,6 +1062,11 @@ package body Rules.Style is
                      or else Expression_Kind (Identifier) = An_Enumeration_Literal)
          then
             Check_Casing (St_Casing_Identifier, Identifier);
+            if Statement_Kind (Enclosing_Element (Identifier)) = An_Accept_Statement then
+               -- Since E in "accept E" is an identifier, not a defining_name, we must check the end name here
+               -- Lucky that an entry cannot be an operator symbol!
+               Check_End_Casing (St_Casing_Identifier);
+            end if;
          elsif Rule_Used (St_Casing_Keyword) and then Expression_Kind (Identifier) = An_Operator_Symbol then
             -- This is an operator, must be the prefix of a function call
             -- If it uses infix notation, don't handle it because it will be found by the texual rule for keywords

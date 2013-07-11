@@ -1,4 +1,14 @@
 =============
+== V1.16b1 ==
+=============
+
+Changes to existing rules:
+--------------------------
+
+Style (Casing_Identifier, original):
+   Check closing identifier
+
+=============
 == V1.15r5 ==
 =============
 
