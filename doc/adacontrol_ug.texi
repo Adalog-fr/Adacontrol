@@ -3723,9 +3723,8 @@ This rule checks usage (or non-usage) of defaulted parameters.
 @subsection Syntax
 @example
 <control_kind> default_parameter (<place>, <formal>, <usage>);
-<place>  ::= <entity> |
-   calls | instantiations
-<formal> ::=  <formal name> | all
+<place>  ::= <entity> | calls | instantiations
+<formal> ::= <formal name> | all
 <usage>  ::= used | positional | not_used
 @end example
 
@@ -3752,6 +3751,10 @@ actual parameter (i.e. the default is not used for the parameter),
 independently of whether it uses positional or named notation.
 @end itemize
 
+As usual, the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}. On the other hand,
+<formal> is the simple name of the formal parameter.
+
 Alternatively, the <entity> can be specified as @code{calls}, to
 control all calls or @code{instantiations}, to control all
 instantiations. The <formal name> can be replaced by @code{all}, in
@@ -3761,7 +3764,7 @@ Ex:
 @example
 check default_parameter (P, X, used);
 check default_parameter (P, Y, not used);
-search default_parameter (all, all, positional);
+search default_parameter (calls, all, positional);
 @end example
 
 @subsection Tip
