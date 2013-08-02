@@ -5,6 +5,9 @@
 Changes to existing rules:
 --------------------------
 
+Expressions
+   Added subrules in, not_in
+
 Style (Casing_Identifier, original):
    Check closing identifier
 

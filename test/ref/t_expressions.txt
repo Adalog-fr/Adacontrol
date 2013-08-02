@@ -147,11 +147,17 @@ t_expressions-test_fixed_multiplying_op.adb:30:16: Error: Fixed_Op: fixed point 
 t_expressions-test_fixed_multiplying_op.adb:31:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:32:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:33:17: Error: Fixed_Op: fixed point multiplying operator
-t_expressions-test_logical_operators.adb:5:13: Error: Logical: use of expression "and"
-t_expressions-test_logical_operators.adb:6:13: Error: Logical: use of expression "or"
-t_expressions-test_logical_operators.adb:7:13: Error: Logical: use of expression "xor"
-t_expressions-test_logical_operators.adb:8:13: Error: Logical: use of expression "and_then"
-t_expressions-test_logical_operators.adb:9:13: Error: Logical: use of expression "or_else"
+t_expressions-test_logical_operators.adb:8:13: Error: Logical: use of expression "and"
+t_expressions-test_logical_operators.adb:9:13: Error: Logical: use of expression "or"
+t_expressions-test_logical_operators.adb:10:13: Error: Logical: use of expression "xor"
+t_expressions-test_logical_operators.adb:11:13: Error: Logical: use of expression "and_then"
+t_expressions-test_logical_operators.adb:12:13: Error: Logical: use of expression "or_else"
+t_expressions-test_logical_operators.adb:14:16: Error: In_operators: use of expression "in"
+t_expressions-test_logical_operators.adb:15:12: Error: In_operators: use of expression "not_in"
+t_expressions-test_logical_operators.adb:16:16: Error: In_operators: use of expression "in"
+t_expressions-test_logical_operators.adb:17:12: Error: In_operators: use of expression "not_in"
+t_expressions-test_logical_operators.adb:18:16: Error: In_operators: use of expression "in"
+t_expressions-test_logical_operators.adb:19:12: Error: In_operators: use of expression "not_in"
 t_expressions-test_mixed.adb:7:15: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:7:11: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:8:17: Error: Mixed: Unparenthesized mixed operators in expression

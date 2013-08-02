@@ -4330,23 +4330,24 @@ This rule controls usage of various kinds of expressions.
 <control_kind> expressions (<subrule> @{, <subrule>@});
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
-   and                       | and_then                         |
-   array_aggregate           | array_others                     |
-   array_non_static_range    | array_partial_others             |
-   array_range               | case                             |
-   complex_parameter         | explicit_dereference             |
-   fixed_multiplying_op      | for_all                          |
-   for_some                  | if                               |
-   if_elsif                  | if_no_else                       |
-   implicit_dereference      | inconsistent_attribute_dimension |
-   inherited_function_call   | mixed_operators                  |
-   or                        | or_else                          |
-   parameter_view_conversion | prefixed_operator                |
-   real_equality             | record_partial_others            |
-   record_aggregate          | record_others                    |
-   slice                     | type_conversion                  |
-   underived_conversion      | universal_range                  |
-   unqualified_aggregate     | xor
+   and                              | and_then                |
+   array_aggregate                  | array_others            |
+   array_non_static_range           | array_partial_others    |
+   array_range                      | case                    |
+   complex_parameter                | explicit_dereference    |
+   fixed_multiplying_op             | for_all                 |
+   for_some                         | if                      |
+   if_elsif                         | if_no_else              |
+   implicit_dereference             | in                      |
+   inconsistent_attribute_dimension | inherited_function_call | 
+   mixed_operators                  | not_in                  |
+   or                               | or_else                 |
+   parameter_view_conversion        | prefixed_operator       |
+   real_equality                    | record_partial_others   |
+   record_aggregate                 | record_others           |
+   slice                            | type_conversion         |
+   underived_conversion             | universal_range         |
+   unqualified_aggregate            | xor
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4394,9 +4395,9 @@ and decimal fixed point types yet).
 The subrule define the kind of expression being controlled:
 @itemize @bullet
 @item
-@code{and}, @code{or}, @code{xor}, @code{and_then}, and @code{or_else}
-control usage of the corresponding logical operator (or short circuit
-form).
+@code{and}, @code{or}, @code{xor}, @code{and_then}, @code{or_else},
+@code{in}, and @code{not_in} control usage of the corresponding
+logical operator (or short circuit form, or membership test).
 @item
 @code{array_aggregate} and @code{record_aggregate} control array and
 record aggregates, respectively, while @code{unqualified_aggregate}

@@ -62,11 +62,13 @@ package body Rules.Expressions is
 
                      E_Fixed_Multiplying_Op, E_For_All, E_For_Some,
 
-                     E_If,                      E_If_Elsif,                         E_If_No_Else,
-                     E_Implicit_Dereference,    E_Inconsistent_Attribute_Dimension,
+                     E_If,                      E_If_Elsif, E_If_No_Else,
+                     E_Implicit_Dereference,    E_In,       E_Inconsistent_Attribute_Dimension,
                      E_Inherited_Function_Call,
 
                      E_Mixed_Operators,
+
+                     E_Not_In,
 
                      E_Or, E_Or_Else,
 
@@ -637,6 +639,12 @@ package body Rules.Expressions is
 
          when A_Function_Call =>
             Process_Function_Call (Expression);
+
+         when An_In_Membership_Test =>
+            Do_Report (E_In, Get_Next_Word_Location (Membership_Test_Expression (Expression)));
+
+         when A_Not_In_Membership_Test =>
+            Do_Report (E_Not_In, Get_Next_Word_Location (Membership_Test_Expression (Expression)));
 
          when An_Indexed_Component
             | A_Selected_Component

@@ -25,4 +25,5 @@ Fixed_Op          : check  expressions (fixed_multiplying_op);
 Impl_Deref        : search expressions (Implicit_Dereference);
 Expl_Deref        : search expressions (Explicit_Dereference);
 Ada_2012          : search expressions (if, if_elsif, if_no_else, case, for_all, for_some);
+In_operators      : check  expressions (in, not_in);
 
