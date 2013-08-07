@@ -4345,9 +4345,10 @@ This rule controls usage of various kinds of expressions.
    parameter_view_conversion        | prefixed_operator       |
    real_equality                    | record_partial_others   |
    record_aggregate                 | record_others           |
-   slice                            | type_conversion         |
-   underived_conversion             | universal_range         |
-   unqualified_aggregate            | xor
+   slice                            | static_membership       |
+   type_conversion                  | underived_conversion    |
+   universal_range                  | unqualified_aggregate   |
+   xor
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4476,11 +4477,16 @@ point) values.
 @item
 @code{slice} controls usage of array slices.
 @item
+@code{static_membership} controls membership tests (@code{@b{in}} and
+@code{@b{not in}}) where the expression on the left is statically
+known to belong to the range (or subtype) on the right, and is
+therefore always True (or false for @code{@b{not in}}).
+@item
 @code{type_conversion} controls all (sub)type conversions, while
 @code{underived_conversion} controls conversions between types that do
 @i{not} belong to the same derivation family, and
 @code{parameter_view_conversion} controls conversions that appear as
-@code{@b{out}} or  @code{@b{in out}} actual parameters. One or two
+@code{@b{out}} or @code{@b{in out}} actual parameters. One or two
 categories can be specified; if only one category is specified, only
 conversions whose result type belong to that category are
 controlled. If two categories are specified, only conversions whose
@@ -4527,6 +4533,17 @@ procedure calls, see rule @ref{Statements}.
 
 Per language rules, underived conversions are allowed only between
 numeric types, and between structurally equivalent array types.
+
+``static_membership'' is handy for finding a common misuse of
+membership tests, where the user assigns an external value (obtained
+with Unchecked_Conversion for example) to a variable, then checks the
+variable to its subtype to make sure the value is valid. Such a check
+can be optimized away by the compiler; the 'Valid attribute should be
+use instead.
+
+@subsection Limitations
+``static_membership'' does not control the complex membership tests
+with several choices that are possible with Ada 2012.
 
 @node Generic_Aliasing, Global_References, Expressions, Rules reference
 @section Generic_Aliasing

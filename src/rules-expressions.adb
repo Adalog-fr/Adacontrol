@@ -77,7 +77,7 @@ package body Rules.Expressions is
                      E_Real_Equality, E_Record_Aggregate, E_Record_Partial_Others,
                      E_Record_Others,
 
-                     E_Slice,
+                     E_Static_Membership, E_Slice,
 
                      E_Type_Conversion,
 
@@ -642,9 +642,31 @@ package body Rules.Expressions is
 
          when An_In_Membership_Test =>
             Do_Report (E_In, Get_Next_Word_Location (Membership_Test_Expression (Expression)));
+            if Rule_Used (E_Static_Membership) then
+               declare
+                  Choices : constant Asis.Element_List := Membership_Test_Choices (Expression);
+               begin
+                  if Choices'Length = 1  -- give up on multiple choices from Ada 2012
+                    and then Are_Matching_Subtypes (Membership_Test_Expression (Expression), Choices (1))
+                  then
+                     Do_Report (E_Static_Membership, Get_Location (Choices (1)));
+                  end if;
+               end;
+            end if;
 
          when A_Not_In_Membership_Test =>
             Do_Report (E_Not_In, Get_Next_Word_Location (Membership_Test_Expression (Expression)));
+            if Rule_Used (E_Static_Membership) then
+               declare
+                  Choices : constant Asis.Element_List := Membership_Test_Choices (Expression);
+               begin
+                  if Choices'Length = 1  -- give up on multiple choices from Ada 2012
+                    and then Are_Matching_Subtypes (Membership_Test_Expression (Expression), Choices (1))
+                  then
+                     Do_Report (E_Static_Membership, Get_Location (Choices (1)));
+                  end if;
+               end;
+            end if;
 
          when An_Indexed_Component
             | A_Selected_Component

@@ -6,7 +6,7 @@ Changes to existing rules:
 --------------------------
 
 Expressions
-   Added subrules in, not_in
+   Added subrules in, not_in, static_membership
 
 Style (Casing_Identifier, original):
    Check closing identifier

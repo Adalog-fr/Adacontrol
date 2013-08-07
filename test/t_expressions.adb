@@ -6,6 +6,7 @@ procedure T_Expressions is
    procedure Test_Dereference          is separate;
    procedure Test_Fixed_Multiplying_Op is separate;
    procedure Test_Logical_Operators    is separate;
+   procedure Test_Membership           is separate;
    procedure Test_Mixed                is separate;
    procedure Test_Others               is separate;
    procedure Test_Prefixed_Operator    is separate;
