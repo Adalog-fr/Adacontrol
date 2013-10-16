@@ -294,7 +294,6 @@ package body Rules.Simplifiable_Statements is
             declare
                Choices : constant Asis.Element_List := Membership_Test_Choices (Expr);
                Name    : Asis.Expression;
-               Decl    : Asis.Declaration;
             begin
                for C in Choices'Range loop
                   if Element_Kind (Choices (C)) = An_Expression then

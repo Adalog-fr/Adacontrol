@@ -4339,7 +4339,7 @@ This rule controls usage of various kinds of expressions.
    for_some                         | if                      |
    if_elsif                         | if_no_else              |
    implicit_dereference             | in                      |
-   inconsistent_attribute_dimension | inherited_function_call | 
+   inconsistent_attribute_dimension | inherited_function_call |
    mixed_operators                  | not_in                  |
    or                               | or_else                 |
    parameter_view_conversion        | prefixed_operator       |
@@ -4509,10 +4509,10 @@ search expressions (real_equality, slice);
 check  expressions (mixed_operators);
 
 -- Find all conversions between integer and floating point types
-search expression (range digits conversion);
+search expression (range digits type_conversion);
 
 -- Find all conversions from a fixed point type:
-search expressions (delta <> conversion);
+search expressions (delta <> type_conversion);
 
 -- Find all view conversions between array types:
 search expressions (array parameter_view_conversions);
@@ -4528,6 +4528,9 @@ little sense to write a function and then forbid its use! However, if
 control of calls to such a function is desired, it can be easily
 accomplished by using the @code{entities} rule. @xref{Entities}.
 
+This rule does not check the use of allocators (@code{@b{new}}), use
+the rule @code{Allocators} instead. @xref{Allocators}.
+
 ``inherited_function_call'' controls only @i{function} calls. For
 procedure calls, see rule @ref{Statements}.
 
@@ -4536,10 +4539,10 @@ numeric types, and between structurally equivalent array types.
 
 ``static_membership'' is handy for finding a common misuse of
 membership tests, where the user assigns an external value (obtained
-with Unchecked_Conversion for example) to a variable, then checks the
-variable to its subtype to make sure the value is valid. Such a check
+with Unchecked_Conversion for example) to a variable, then checks that the
+variable belongs to its subtype to make sure the value is valid. Such a check
 can be optimized away by the compiler; the 'Valid attribute should be
-use instead.
+used instead.
 
 @subsection Limitations
 ``static_membership'' does not control the complex membership tests
@@ -7284,18 +7287,18 @@ This rule controls usage of certain Ada statements.
 <subrule> ::=
    any_statement           | abort                    |
    accept                  | accept_return            |
-   assignment              | asynchronous_select      | 
-   block                   | case                     | 
-   case_others             | case_others_null         | 
-   code                    | conditional_entry_call   | 
-   declare_block           | delay                    | 
-   delay_until             | dispatching_call         | 
-   effective_declare_block | entry_call               | 
-   entry_return            | exception_others         | 
-   exception_others_null   | exit                     | 
-   exit_expanded_name      | exit_for_loop            | 
-   exit_outer_loop         | exit_while_loop          | 
-   exited_extended_return  | extended_return          | 
+   assignment              | asynchronous_select      |
+   block                   | case                     |
+   case_others             | case_others_null         |
+   code                    | conditional_entry_call   |
+   declare_block           | delay                    |
+   delay_until             | dispatching_call         |
+   effective_declare_block | entry_call               |
+   entry_return            | exception_others         |
+   exception_others_null   | exit                     |
+   exit_expanded_name      | exit_for_loop            |
+   exit_outer_loop         | exit_while_loop          |
+   exited_extended_return  | extended_return          |
    for_in_loop             | for_iterator_loop        |
    for_of_loop             | function_return          |
    goto                    | if                       |

@@ -968,4 +968,4 @@ begin  -- Rules.Simplifiable_expressions
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
-end Rules.Simplifiable_expressions;
+end Rules.Simplifiable_Expressions;
