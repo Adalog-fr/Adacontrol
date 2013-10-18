@@ -156,9 +156,9 @@ package body Rules.Header_Comments is
       end if;
    end Get_Repetition;
 
-   -----------------------
-   -- Next_Pattern_Line --
-   -----------------------
+   -----------------
+   -- Get_Pattern --
+   -----------------
 
    procedure Get_Pattern (Pat : out Pattern_Descr) is
       use Ada.Wide_Text_IO;
@@ -272,27 +272,30 @@ package body Rules.Header_Comments is
             loop
                begin
                   Get_Line (Model_File, Buff, Last);
-                  if Buff (1 .. Last) = "*" or Buff (1 .. Last) = "?" then
-                     begin
-                        Get_Line (Model_File, Buff, Last);
-                     exception
-                        when End_Error =>
-                           Parameter_Error (Rule_Id, "pattern file terminated by line repetition indication");
-                     end;
-                  elsif Buff (1) = '{' then
-                     begin
-                        Get_Repetition (Buff (1 .. Last), Min, Max);
-                        Get_Line (Model_File, Buff, Last);
-                        if Max = 0 or Max < Min then
-                           Model_Error ("Maximum value must be > 0 and >= minimum");
-                        end if;
-                     exception
-                        when Data_Error =>
-                           Model_Error ("illegal syntax for repetition indication");
-                        when End_Error =>
-                           Parameter_Error (Rule_Id, "pattern file terminated by line repetition indication");
-                     end;
-                  end if;
+                  case Buff (1) is
+                     when '*' | '+' | '?' =>
+                        begin
+                           Get_Line (Model_File, Buff, Last);
+                        exception
+                           when End_Error =>
+                              Parameter_Error (Rule_Id, "pattern file terminated by line repetition indication");
+                        end;
+                     when '{' =>
+                        begin
+                           Get_Repetition (Buff (1 .. Last), Min, Max);
+                           Get_Line (Model_File, Buff, Last);
+                           if Max = 0 or Max < Min then
+                              Model_Error ("Maximum value must be > 0 and >= minimum");
+                           end if;
+                        exception
+                           when Data_Error =>
+                              Model_Error ("illegal syntax for repetition indication");
+                           when End_Error =>
+                              Parameter_Error (Rule_Id, "pattern file terminated by line repetition indication");
+                        end;
+                     when others =>
+                        null;
+                  end case;
 
                   if Last = Buff'Last then     --## rule line off Simplifiable_Statements ## If_For_Case
                      Parameter_Error (Rule_Id, "pattern too long at "
