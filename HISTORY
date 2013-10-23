@@ -5,11 +5,14 @@
 Changes to existing rules:
 --------------------------
 
-Expressions
+Expressions:
    Added subrules in, not_in, static_membership
 
 Style (Casing_Identifier, original):
    Check closing identifier
+
+Global_References:
+   Added subrules read, written
 
 =============
 == V1.15r5 ==

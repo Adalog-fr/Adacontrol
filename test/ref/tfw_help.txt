@@ -265,7 +265,8 @@ Rule: GLOBAL_REFERENCES
 Control global (in a relative sense) variables referenced 
 directly or indirectly from some specific constructs
 
-Parameter(1):  all                 | multiple |
+Parameter(1):  all                 | read     |
+               written             | multiple |
                multiple_non_atomic
 Parameter(2..N):  <name> | task | protected | function | procedure
 ----

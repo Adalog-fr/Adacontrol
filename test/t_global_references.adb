@@ -109,6 +109,7 @@ procedure T_Global_References is
 
    function Impure return Integer is
    begin
+      Glob2 := 0;
       return Glob1;
    end Impure;
 

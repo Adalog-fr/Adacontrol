@@ -4615,7 +4615,7 @@ race conditions, or otherwise shared.
 @subsection Syntax
 @example
 <control_kind> global_references (<subrule> @{, <root>@});
-<subrule> ::= all | multiple | multiple_non_atomic
+<subrule> ::= all | read | written | multiple | multiple_non_atomic
 <root>    ::=  <entity> | function | procedure | task | protected
 @end example
 
@@ -4631,12 +4631,13 @@ entities, respectively.
 
 The <subrule> determines the kind of references that are
 controlled. If it is @code{all}, all references to global elements
-from the indicated entities are reported. If <subrule> is
-@code{multiple}, only global elements that are accessed by more than
-one of the indicated entities (i.e. shared elements) are
-reported. Note however that if a reference is found from a task type
-or protected type, it is always reported, since there are potentially
-several objects of the same type. If <subrule> is
+from the indicated entities are reported. If <subrule> is @code{read}
+or @code{written}, only read (respectively write) accesses are
+reported. If <subrule> is @code{multiple}, only global elements that
+are accessed by more than one of the indicated entities (i.e. shared
+elements) are reported. Note however that if a reference is found from
+a task type or protected type, it is always reported, since there are
+potentially several objects of the same type. If <subrule> is
 @code{multiple_non_atomic}, references reported are the same as with
 @code{multiple}, except that global variables that are @code{atomic}
 or @code{atomic_components} and written from at most one of the
@@ -4652,6 +4653,9 @@ Ex:
 @example
 -- Find global variables used by P1 or P2:
 search global_references (all, P1, P2);
+
+-- Find global variables modified by functions:
+check global_references (written, function);
 
 -- Find possible race conditions:
 check global_references (multiple, task, protected);

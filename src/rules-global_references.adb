@@ -105,7 +105,7 @@ package body Rules.Global_References is
    -- normally, but at that point we would not know whether the renaming entity is Read or Write.
    -- We therefore discard renamings during normal traversal.
 
-   type Reference_Kind is (K_All, K_Multiple, K_Multiple_Non_Atomic);
+   type Reference_Kind is (K_All, K_Read, K_Written, K_Multiple, K_Multiple_Non_Atomic);
    package Reference_Kind_Utilities is new Framework.Language.Flag_Utilities (Reference_Kind, "K_");
 
    type Checked_Kind is (K_Name, K_Task, K_Protected, K_Function, K_Procedure);
@@ -702,7 +702,7 @@ package body Rules.Global_References is
          begin
             -- Avoid cases when we must not print results
             case Rule_Params.Reference is
-               when K_All =>
+               when K_All | K_Read | K_Written =>
                   null;
 
                when K_Multiple | K_Multiple_Non_Atomic =>
@@ -754,25 +754,29 @@ package body Rules.Global_References is
             -- Cases when we must not print results are avoided, so we can print results
             Body_Ptr := Ref_Info.Bodies;
             while Body_Ptr /= null loop
-               if Is_Part_Of_Instance (Var_Value.Definition) then
-                  -- Let's refer to the instantiation
-                  Report (Rule_Id,
-                          Rule_Params,
-                          Get_Location (Ultimate_Enclosing_Instantiation (Var_Value.Definition)),
-                          '"' & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
-                          & Choose (Body_Ptr.Usage = Read, " read", " written")
-                          & " (in instance) from " & Full_Name_Image (Names (Body_Ptr.Decl) (1))
-                          & " at " & Image (Get_Location (Body_Ptr.Decl))
-                         );
-               else
-                  Report (Rule_Id,
-                          Rule_Params,
-                          Get_Location (Var_Value.Definition),
-                          '"' & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
-                          & Choose (Body_Ptr.Usage = Read, " read", " written")
-                          & " from " & Full_Name_Image (Names (Body_Ptr.Decl) (1))
-                          & " at " & Image (Get_Location (Body_Ptr.Decl))
-                         );
+               if    (Rule_Params.Reference /= K_Read    or else Body_Ptr.Usage = Read)
+                 and (Rule_Params.Reference /= K_Written or else Body_Ptr.Usage = Written)
+               then
+                  if Is_Part_Of_Instance (Var_Value.Definition) then
+                     -- Let's refer to the instantiation
+                     Report (Rule_Id,
+                             Rule_Params,
+                             Get_Location (Ultimate_Enclosing_Instantiation (Var_Value.Definition)),
+                             '"' & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
+                             & Choose (Body_Ptr.Usage = Read, " read", " written")
+                             & " (in instance) from " & Full_Name_Image (Names (Body_Ptr.Decl) (1))
+                             & " at " & Image (Get_Location (Body_Ptr.Decl))
+                            );
+                  else
+                     Report (Rule_Id,
+                             Rule_Params,
+                             Get_Location (Var_Value.Definition),
+                             '"' & To_Title (Defining_Name_Image (Var_Value.Definition)) & '"'
+                             & Choose (Body_Ptr.Usage = Read, " read", " written")
+                             & " from " & Full_Name_Image (Names (Body_Ptr.Decl) (1))
+                             & " at " & Image (Get_Location (Body_Ptr.Decl))
+                            );
+                  end if;
                end if;
                Body_Ptr := Body_Ptr.Next;
             end loop;
