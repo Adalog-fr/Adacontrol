@@ -1,6 +1,9 @@
                     check  expressions (slice);
                     search expressions (real_equality);
-Logical           : check  expressions (and, or, xor, and_then, or_else);
+Operators         : check  expressions (and, or, xor);
+Array             : check  expressions (and_array, or_array, xor_array);
+Boolean           : check  expressions (and_boolean, or_boolean, xor_boolean, and_then, or_else);
+Binary            : check  expressions (and_binary, or_binary, xor_binary);
 Others            : check  expressions (array_others, array_partial_others, record_others, record_partial_others);
 Unqualified       : check  expressions (unqualified_aggregate);
 Aggregate         : search expressions (array_aggregate, record_aggregate);

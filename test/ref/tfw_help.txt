@@ -225,25 +225,29 @@ Parameter 2 .. N: for interface: <convention name>
 Rule: EXPRESSIONS
 Control occurrences of Ada expressions
 
-Parameter (s): and                              | and_then                |
-               array_aggregate                  | array_partial_others    |
-               array_non_static_range           | array_others            |
-               array_range                      | case                    |
-               complex_parameter                | explicit_dereference    |
-               fixed_multiplying_op             | for_all                 |
-               for_some                         | if                      |
-               if_elsif                         | if_no_else              |
-               implicit_dereference             | in                      |
-               inconsistent_attribute_dimension | inherited_function_call |
-               mixed_operators                  | not_in                  |
-               or                               | or_else                 |
-               parameter_view_conversion        | prefixed_operator       |
-               real_equality                    | record_aggregate        |
-               record_partial_others            | record_others           |
-               static_membership                | slice                   |
-               type_conversion                  | underived_conversion    |
-               universal_range                  | unqualified_aggregate   |
-               xor
+Parameter (s): and                       | and_array                        |
+               and_binary                | and_boolean                      |
+               and_then                  | array_aggregate                  |
+               array_partial_others      | array_non_static_range           |
+               array_others              | array_range                      |
+               case                      | complex_parameter                |
+               explicit_dereference      | fixed_multiplying_op             |
+               for_all                   | for_some                         |
+               if                        | if_elsif                         |
+               if_no_else                | implicit_dereference             |
+               in                        | inconsistent_attribute_dimension |
+               inherited_function_call   | mixed_operators                  |
+               not_in                    | or                               |
+               or_array                  | or_binary                        |
+               or_boolean                | or_else                          |
+               parameter_view_conversion | prefixed_operator                |
+               real_equality             | record_aggregate                 |
+               record_partial_others     | record_others                    |
+               static_membership         | slice                            |
+               type_conversion           | underived_conversion             |
+               universal_range           | unqualified_aggregate            |
+               xor                       | xor_array                        |
+               xor_binary                | xor_boolean
 For subrules type_conversion, underived_conversion and parameter_view_conversion:
     [[<source_category>] <target_category>] <subrule>
 For subrules inherited_function_call and prefixed_operator:

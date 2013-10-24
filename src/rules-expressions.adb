@@ -52,7 +52,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   type Subrules is (E_And,                  E_And_Then,               E_Array_Aggregate,
+   type Subrules is (E_And,                  E_And_Array,              E_And_Binary,
+                     E_And_Boolean,          E_And_Then,               E_Array_Aggregate,
                      E_Array_Partial_Others, E_Array_Non_Static_Range, E_Array_Others,
                      E_Array_Range,
 
@@ -70,7 +71,8 @@ package body Rules.Expressions is
 
                      E_Not_In,
 
-                     E_Or, E_Or_Else,
+                     E_Or,         E_Or_Array, E_Or_Binary,
+                     E_Or_Boolean, E_Or_Else,
 
                      E_Parameter_View_Conversion, E_Prefixed_Operator,
 
@@ -83,7 +85,8 @@ package body Rules.Expressions is
 
                      E_Underived_Conversion, E_Universal_Range, E_Unqualified_Aggregate,
 
-                     E_Xor);
+                     E_Xor,         E_Xor_Array, E_Xor_Binary,
+                     E_Xor_Boolean);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");
    use Subrules_Flags_Utilities;
@@ -296,6 +299,35 @@ package body Rules.Expressions is
          Next (Iter);
       end loop;
    end Do_Conversion_Report;
+
+
+   ------------------------
+   -- Do_Operator_Report --
+   ------------------------
+
+   procedure Do_Operator_Report (Call : Asis.Expression; Normal_Op, Array_Op, Binary_Op, Logical_Op : Subrules) is
+      use Asis.Declarations, Asis.Expressions;
+      use Thick_Queries, Utilities;
+
+      Loc : constant Location := Get_Location (Prefix (Call));
+   begin
+      Do_Report (Normal_Op, Loc);
+
+      if To_Upper (Full_Name_Image (Names (A4G_Bugs.Corresponding_Expression_Type (Call)) (1)))
+        = "STANDARD.BOOLEAN"
+      then
+         Do_Report (Logical_Op, Loc);
+      end if;
+
+      case Type_Category (Call, Follow_Derived => True) is
+         when A_Modular_Type =>
+            Do_Report (Binary_Op, Loc);
+         when An_Array_Type =>
+            Do_Report (Array_Op, Loc);
+         when others =>
+            null;
+      end case;
+   end Do_Operator_Report;
 
 
    ---------------------------
@@ -512,13 +544,13 @@ package body Rules.Expressions is
             end;
 
          when An_And_Operator =>
-            Do_Report (E_And, Get_Location (Prefix (Call)));
+            Do_Operator_Report (Call, E_And, E_And_Array, E_And_Binary, E_And_Boolean);
 
          when An_Or_Operator =>
-            Do_Report (E_Or, Get_Location (Prefix (Call)));
+            Do_Operator_Report (Call, E_Or, E_Or_Array, E_Or_Binary, E_Or_Boolean);
 
          when An_Xor_Operator =>
-            Do_Report (E_Xor, Get_Location (Prefix (Call)));
+            Do_Operator_Report (Call, E_Xor, E_Xor_Array, E_Xor_Binary, E_Xor_Boolean);
 
          when others =>
             -- Including Not_An_Operator

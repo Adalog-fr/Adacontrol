@@ -11,6 +11,10 @@ Expressions:
 Style (Casing_Identifier, original):
    Check closing identifier
 
+Expressions:
+  Added subrules and_array, and_logical, and_binary, or_array,
+  or_logical, or_binary, xor_array, xor_logical, xor_binary.
+
 Global_References:
    Added subrules read, written
 

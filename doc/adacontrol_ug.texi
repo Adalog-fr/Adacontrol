@@ -4330,25 +4330,29 @@ This rule controls usage of various kinds of expressions.
 <control_kind> expressions (<subrule> @{, <subrule>@});
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
-   and                              | and_then                |
-   array_aggregate                  | array_others            |
-   array_non_static_range           | array_partial_others    |
-   array_range                      | case                    |
-   complex_parameter                | explicit_dereference    |
-   fixed_multiplying_op             | for_all                 |
-   for_some                         | if                      |
-   if_elsif                         | if_no_else              |
-   implicit_dereference             | in                      |
-   inconsistent_attribute_dimension | inherited_function_call |
-   mixed_operators                  | not_in                  |
-   or                               | or_else                 |
-   parameter_view_conversion        | prefixed_operator       |
-   real_equality                    | record_partial_others   |
-   record_aggregate                 | record_others           |
-   slice                            | static_membership       |
-   type_conversion                  | underived_conversion    |
-   universal_range                  | unqualified_aggregate   |
-   xor
+   and                       | and_array                        |
+   and_binary                | and_boolean                      |
+   and_then                  | array_aggregate                  |
+   array_others              | array_non_static_range           |
+   array_partial_others      | array_rang                       |
+   case                      | complex_parameter                |
+   explicit_dereference      | fixed_multiplying_op             |
+   for_all                   | for_some                         |
+   if                        | if_elsif                         |
+   if_no_else                | implicit_dereference             |
+   in                        | inconsistent_attribute_dimension |
+   inherited_function_call   | mixed_operators                  |
+   not_in                    | or                               |
+   or_array                  | or_binary                        |
+   or_boolean                | or_else                          |
+   parameter_view_conversion | prefixed_operator                |
+   real_equality             | record_partial_others            |
+   record_aggregate          | record_others                    |
+   slice                     | static_membership                |
+   type_conversion           | underived_conversion             |
+   universal_range           | unqualified_aggregate            |
+   xor                       | xor_array                        |
+   xor_binary                | xor_boolean
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4399,6 +4403,15 @@ The subrule define the kind of expression being controlled:
 @code{and}, @code{or}, @code{xor}, @code{and_then}, @code{or_else},
 @code{in}, and @code{not_in} control usage of the corresponding
 logical operator (or short circuit form, or membership test).
+@item
+@code{and_array}, @code{or_array}, and @code{xor_array} do the same,
+but only for operators whose result type is an array type.
+@item
+@code{and_binary}, @code{or_binary}, and @code{xor_binary} do the same,
+but only for operators whose result type is a modular type.
+@item
+@code{and_boolean}, @code{or_boolean}, and @code{xor_boolean} do the same,
+but only for operators whose result type is @code{Standard.Boolean}.
 @item
 @code{array_aggregate} and @code{record_aggregate} control array and
 record aggregates, respectively, while @code{unqualified_aggregate}
@@ -4507,6 +4520,9 @@ Ex:
 @example
 search expressions (real_equality, slice);
 check  expressions (mixed_operators);
+
+-- Find logical operators that could be replaced by short-circuits forms:
+check expressions (and_boolean, or_boolean);
 
 -- Find all conversions between integer and floating point types
 search expression (range digits type_conversion);
