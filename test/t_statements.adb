@@ -122,7 +122,7 @@ procedure T_statements is
             if I = 3 then                -- No_Else
                return;                   -- Exited_Extended_Return OK (not exiting), Function_Return, Loop_Return
             end if;
-            exit For_Exit;                -- Unconditional_Exit, Exit_For_Loop
+            exit For_Exit;                -- Exit, Exit_For_Loop, Unconditional_Exit, Named_Exit
 	 end return;
       end loop For_Exit;
       return X : Integer do              -- Function_Return, Extended_Return, Exited_Extended_Return
@@ -140,13 +140,13 @@ begin
    abort T1;             -- Abort
 
    loop                 -- Simple_Loop, Unnamed_Simple_Loop
-      exit;             -- Unconditional_Exit, Exit, Unnamed_Loop_Exited
+      exit;             -- Exit, Exit_Plain_Loop, Unconditional_Exit, Unnamed_Loop_Exited
    end loop;
 B:                      -- Simple_Loop
    loop
-      exit;                -- Unnamed_exit, unconditional_exit, exit
-      exit B;              -- Multiple_exit, unconditional_exit, exit
-      exit T_Statements.B; -- Multiple_exit, unconditional_exit, exit_expanded_name, exit
+      exit;                -- exit, exit_plain_loop, unconditional_exit, Unnamed_exit,
+      exit B;              -- Multiple_exit, exit, exit_plain_loop, unconditional_exit, named_exit
+      exit T_Statements.B; -- Multiple_exit, exit, Exit_Plain_Loop, unconditional_exit, named_exit, exit_expanded_name
    end loop B;
 
    select               -- Asynchronous select
@@ -336,7 +336,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
    end;
 
    LL1:loop                                        -- Simple_Loop
-      exit LL1 when True;                          -- Exit
+      exit LL1 when True;                          -- Exit, Exit_Plain_Loop, Named_Exit
       declare                                      -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
          procedure Test is
             X : Integer := 0;
@@ -358,7 +358,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
                                  end if;
                               end loop;
                            end E;
-                           exit TL;                -- unconditional_exit, exit
+                           exit TL;                -- Exit, Exit_Plain_Loop, unconditional_exit, Named_Exit
                         end loop TL;
                      end T;
                   begin
@@ -367,23 +367,23 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
                begin
                   null;                           -- Null
                end;
-               exit when True;                    -- unnamed exit, exit
+               exit when True;                    -- Exit, Exit_Plain_Loop, unnamed exit
                XL1: for I in 1..10 loop           -- For_Loop, For_In_Loop, untyped for
-                  exit Outer;                     -- multiple_exits, unconditional_exit, exit
+                  exit Outer;                     -- multiple_exits, Exit, Exit_Plain_Loop, unconditional_exit, Named_Exit
                   while X /= 0 loop               -- While_Loop, Unnamed_While_Loop, Unnamed_Multiple_Loop
-                     exit when X = 2;             -- Exit_while_loop, Unnamed_Loop_Exited
-                     exit Outer when False;       -- multiple_exit, exit
-                     exit XL1;                    -- Exit_for_loop, unconditional_exit
+                     exit when X = 2;             -- Exit, Exit_while_loop, Unnamed_Loop_Exited
+                     exit Outer when False;       -- multiple_exit, Exit, Exit_Plain_Loop, Named_Exit
+                     exit XL1;                    -- Exit, Exit_for_loop, unconditional_exit, Named_Exit
                   end loop;
-                  exit;                           -- multiple_exits, exit_for_loop, unconditional_exit, unnamed_exit
+                  exit;                           -- multiple_exits, Exit, exit_for_loop, unconditional_exit, unnamed_exit
                end loop XL1;
             end loop Outer;
          end Test;
       begin
-         exit LL1;                                -- multiple_exits, unconditional_exit, exit
+         exit LL1;                                -- multiple_exits, Exit, Exit_Plain_Loop, unconditional_exit, Named_Exit
       exception
          when Constraint_Error =>
-            exit;                                 -- multiple_exits, unconditional_exit, unnamed_exit, exit
+            exit;                                 -- multiple_exits, Exit, Exit_Plain_Loop, unconditional_exit, unnamed_exit
       end;
    end loop LL1;
 

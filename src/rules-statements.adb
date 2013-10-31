@@ -70,7 +70,8 @@ package body Rules.Statements is
                      Stmt_Effective_Declare_Block, Stmt_Entry_Call,             Stmt_Entry_Return,
                      Stmt_Exception_Others,        Stmt_Exception_Others_Null,  Stmt_Exit,
                      Stmt_Exit_Expanded_Name,      Stmt_Exit_For_Loop,          Stmt_Exit_Outer_Loop,
-                     Stmt_Exit_While_Loop,         Stmt_Exited_Extended_Return, Stmt_Extended_Return,
+                     Stmt_Exit_Plain_Loop,         Stmt_Exit_While_Loop,        Stmt_Exited_Extended_Return,
+                     Stmt_Extended_Return,
 
                      Stmt_For_Loop,                Stmt_For_In_Loop,             Stmt_For_Iterator_Loop,
                      Stmt_For_Of_Loop,             Stmt_Function_Return,
@@ -83,7 +84,7 @@ package body Rules.Statements is
 
                      Stmt_Multiple_Exits,
 
-                     Stmt_No_Else,                 Stmt_Null,
+                     Stmt_Named_Exit,              Stmt_No_Else,                Stmt_Null,
 
                      Stmt_Procedure_Return,
 
@@ -324,33 +325,40 @@ package body Rules.Statements is
             Do_Report (Stmt_Entry_Call);
 
          when An_Exit_Statement =>
+            Do_Report (Stmt_Exit);
+
             declare
                Exited_Loop : constant Asis.Statement := Corresponding_Loop_Exited (Element);
             begin
+               case Statement_Kind (Exited_Loop) is
+                  when A_For_Loop_Statement =>
+                     Do_Report (Stmt_Exit_For_Loop);
+                  when A_While_Loop_Statement =>
+                     Do_Report (Stmt_Exit_While_Loop);
+                  when A_Loop_Statement =>
+                     Do_Report (Stmt_Exit_Plain_Loop);
+                  when others =>
+                     Failure ("Statements: exit not from loop", Exited_Loop);
+               end case;
+
                if Is_Nil (Exit_Condition (Element)) then
                   Do_Report (Stmt_Unconditional_Exit);
                end if;
 
                if Is_Nil (Statement_Identifier (Exited_Loop)) then
                   Do_Report (Stmt_Unnamed_Loop_Exited);
-               elsif Is_Nil (Exit_Loop_Name (Element)) then
-                  Do_Report (Stmt_Unnamed_Exit);
+               end if;
+
+               if Is_Nil (Exit_Loop_Name (Element)) then
+                  if not Is_Nil (Statement_Identifier (Exited_Loop)) then
+                     Do_Report (Stmt_Unnamed_Exit);
+                  end if;
+               else
+                  Do_Report (Stmt_Named_Exit);
                end if;
 
                if Expression_Kind (Exit_Loop_Name (Element)) = A_Selected_Component then
                   Do_Report (Stmt_Exit_Expanded_Name);
-               end if;
-
-               if Rule_Used (Stmt_Exit_For_Loop)
-                 and then Statement_Kind (Exited_Loop) = A_For_Loop_Statement
-               then
-                  Do_Report (Stmt_Exit_For_Loop);
-               elsif Rule_Used (Stmt_Exit_While_Loop)
-                 and then Statement_Kind (Exited_Loop) = A_While_Loop_Statement
-               then
-                  Do_Report (Stmt_Exit_While_Loop);
-               else
-                  Do_Report (Stmt_Exit);
                end if;
 
                if Rule_Used (Stmt_Exit_Outer_Loop) then

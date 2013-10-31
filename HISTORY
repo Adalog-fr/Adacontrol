@@ -11,7 +11,11 @@ Expressions:
   xor_logical, xor_binary.
 
 Style (Casing_Identifier, original):
-   Check closing identifier
+  Check closing identifier
+
+Statements:
+  Added subrules named_exit, exit_plain_loop. 
+  Normalized behaviour of subrule exit.
 
 Object declarations:
   Added subrule type.
