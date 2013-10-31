@@ -1,3 +1,13 @@
+t_object_declarations-test_type.adb:15:4: Error: All_All Ttt: Variable declaration of type TTT
+t_object_declarations-test_type.adb:16:4: Error: All_All Ttt: Variable declaration of type TTT
+t_object_declarations-test_type.adb:17:4: Error: Const_Pack1.Ttt: Constant declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.PACK1.TTT
+t_object_declarations-test_type.adb:18:4: Error: All_All Ttt: Constant declaration of type TTT
+t_object_declarations-test_type.adb:19:4: Error: Var_Int: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.INT
+t_object_declarations-test_type.adb:20:4: Error: Var_Int: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.INT
+t_object_declarations-test_type.adb:21:4: Error: Var_Int: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.INT
+t_object_declarations-test_type.adb:22:4: Error: Const_Nat: Constant declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.NAT
+t_object_declarations-test_type.adb:23:4: Error: Var_Int: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.INT
+t_object_declarations-test_type.adb:24:4: Error: All_Tag: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.TAG
 t_object_declarations-test_min_integer_span.adb:4:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
 t_object_declarations-test_min_integer_span.adb:6:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
 t_object_declarations-test_min_integer_span.adb:10:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (5)

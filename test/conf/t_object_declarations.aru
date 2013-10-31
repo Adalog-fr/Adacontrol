@@ -3,3 +3,8 @@ count object_declarations (min_integer_span, 6);
 search object_declarations (volatile_no_address);
 search object_declarations (address_not_volatile);
 
+"All_All Ttt":     check object_declarations (type,          all Ttt);
+"Const_Pack1.Ttt": check object_declarations (type, constant T_object_declarations.Test_Type.Pack1.Ttt);
+"Var_Int":         check object_declarations (type, variable T_object_declarations.Test_Type.Int);
+"Const_Nat":       check object_declarations (type, constant T_object_declarations.Test_Type.Nat);
+"All_Tag":         check object_declarations (type,          T_object_declarations.Test_Type.Tag);

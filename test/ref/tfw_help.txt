@@ -465,10 +465,11 @@ Parameter: none | logical
 Rule: OBJECT_DECLARATIONS
 Control allowed forms of object declarations
 
-Parameter(1): min_integer_span     | volatile_no_address |
-              address_not_volatile
+Parameter(1): type                | min_integer_span     |
+              volatile_no_address | address_not_volatile
 Parameter(2..)
-   for Min_Integer_Span: [all|constant|variable] <value>
+   for Type            : [constant|variable] <entity>
+   for Min_Integer_Span: [constant|variable] <value>
 ----
 Rule: PARAMETER_ALIASING
 Control subprogram or entry calls where the same variable is given

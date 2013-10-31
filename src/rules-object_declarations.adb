@@ -51,7 +51,7 @@ package body Rules.Object_Declarations is
 
    -- Algorithm
    --
-   -- subrule Min_Integer_Span is fairly simple.
+   -- subrules Type and Min_Integer_Span are fairly simple.
    --
    -- for subrule Volatile_No_Address, we avoid relying on Corresponding_Representation_Clauses
    -- and Corresponding_Pragmas, because they are not properly defined (since they take a
@@ -59,13 +59,13 @@ package body Rules.Object_Declarations is
    -- names, and the pragma or representation clause applies only to part of them).
    --
    -- We therefore use a Scoped_Store where every declared variable is added, and updated
-   -- whenever we find a pragma volatile of address clause. At scope exit, we just need to
+   -- whenever we find a pragma volatile or address clause. At scope exit, we just need to
    -- browse the current level. Of course, it works because representation items must be
    -- declared in the same scope as the variable.
 
-   type Subrules is (Min_Integer_Span, Volatile_No_Address, Address_Not_Volatile);
-   subtype Vol_Addr_Rules is Subrules range Volatile_No_Address .. Address_Not_Volatile;
-   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
+   type Subrules is (S_Type, S_Min_Integer_Span, S_Volatile_No_Address, S_Address_Not_Volatile);
+   subtype Vol_Addr_Rules is Subrules range S_Volatile_No_Address .. S_Address_Not_Volatile;
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "S_");
 
    type Subrule_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrule_Set := (others => False);
@@ -75,12 +75,16 @@ package body Rules.Object_Declarations is
    type Object_Kinds is (K_All, K_Variable, K_Constant);
    package Object_Kinds_Utilities is new Framework.Language.Modifier_Utilities (Object_Kinds, "K_");
 
-   type Object_Context is new Basic_Rule_Context with
+   -- Data for subrule Type
+   Type_Var_Contexts   : Context_Store;
+   Type_Const_Contexts : Context_Store;
+
+   -- Data for subrule Min_Integer_Span
+   type Value_Context is new Basic_Rule_Context with
       record
          Min_Values : Thick_Queries.Biggest_Natural := 0;
       end record;
-   Ctl_Contexts : array (Subrules, Object_Kinds, Control_Kinds) of Object_Context;
-   Vno_Context  : array (Vol_Addr_Rules) of Basic_Rule_Context;
+   Ctl_Contexts : array (Subrules, Object_Kinds, Control_Kinds) of Value_Context;
 
    -- Data for subrule Volatile_No_Address and Address_Not_Volatile:
    type Repr_Rec is
@@ -89,6 +93,8 @@ package body Rules.Object_Declarations is
          Address  : Boolean;
       end record;
    package Repr_Table is new Framework.Symbol_Table.Data_Access (Repr_Rec);
+
+   Vno_Context  : array (Vol_Addr_Rules) of Basic_Rule_Context;
 
    ----------
    -- Help --
@@ -102,7 +108,8 @@ package body Rules.Object_Declarations is
       User_Message;
       Help_On_Flags ("Parameter(1):");
       User_Message ("Parameter(2..)");
-      User_Message ("   for Min_Integer_Span: [all|constant|variable] <value>");
+      User_Message ("   for Type            : [constant|variable] <entity>");
+      User_Message ("   for Min_Integer_Span: [constant|variable] <value>");
    end Help;
 
    -----------------
@@ -113,7 +120,7 @@ package body Rules.Object_Declarations is
       use Subrules_Flag_Utilities, Object_Kinds_Utilities, Thick_Queries, Framework.Language;
       Subrule : Subrules;
       Ok      : Object_Kinds;
-      Vc      : Object_Context;
+      Vc      : Value_Context;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "missing subrule name");
@@ -122,12 +129,52 @@ package body Rules.Object_Declarations is
       Subrule := Get_Flag_Parameter (Allow_Any => False);
 
       case Subrule is
-         when Min_Integer_Span =>
+         when S_Type =>
+            if not Parameter_Exists then
+               Parameter_Error (Rule_Id, "missing type entity specification");
+            end if;
+
+            declare
+               Entity  : Entity_Specification;
+            begin
+               loop
+                  Ok := Get_Modifier (Required => False,
+                                      Expected => (K_All => False, others => True),
+                                      Default  => K_All);
+                  Entity := Get_Entity_Parameter;
+                  case Ok is
+                     when K_All =>
+                        Associate (Into          => Type_Var_Contexts,
+                                   Specification => Entity,
+                                   Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
+                        Associate (Into          => Type_Const_Contexts,
+                                   Specification => Entity,
+                                   Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
+                     when K_Variable =>
+                        Associate (Into          => Type_Var_Contexts,
+                                   Specification => Entity,
+                                   Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
+                     when K_Constant =>
+                        Associate (Into          => Type_Const_Contexts,
+                                   Specification => Entity,
+                                   Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
+                  end case;
+
+                  exit when not Parameter_Exists;
+               end loop;
+            exception
+               when Already_In_Store =>
+                  Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
+            end;
+
+         when S_Min_Integer_Span =>
             if not Parameter_Exists then
                Parameter_Error (Rule_Id, "missing number of allowed values");
             end if;
             loop
-               Ok := Get_Modifier (Required => False);
+               Ok := Get_Modifier (Required => False,
+                                   Expected => (K_All => False, others => True),
+                                   Default  => K_All);
                Vc := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Get_Integer_Parameter (Min => 1));
                if Ok = K_All or Ok = K_Constant then
                   if Ctl_Contexts (Subrule, K_Constant, Ctl_Kind).Min_Values /= 0 then
@@ -143,8 +190,8 @@ package body Rules.Object_Declarations is
                end if;
                exit when not Parameter_Exists;
             end loop;
-         when Volatile_No_Address
-            | Address_Not_Volatile
+         when S_Volatile_No_Address
+            | S_Address_Not_Volatile
             =>
             if Parameter_Exists then
                Parameter_Error (Rule_Id, "subrule has no parameters");
@@ -224,6 +271,59 @@ package body Rules.Object_Declarations is
          return Corresponding_Name_Declaration (St_Name);
       end Decl_Type_Declaration;
 
+      procedure Process_Type is
+         use Framework.Reports, Utilities;
+
+         function Subtype_Or_Type_Context (Store   : Context_Store;
+                                           St_Name : Asis.Expression) return Root_Context'Class
+         is
+            use Asis.Expressions;
+            Ctxt : constant Root_Context'Class := Matching_Context (Store, St_Name);
+         begin
+            if Ctxt /= No_Matching_Context then
+               return Ctxt;
+            end if;
+
+            -- Second chance
+            case Attribute_Kind (St_Name) is
+               when A_Base_Attribute =>
+                  -- Retry without 'Base
+                  return Subtype_Or_Type_Context (Store, Strip_Attributes (St_Name));
+               when A_Class_Attribute =>
+                  -- Nothing else to check, T'Class is not T !
+                  return No_Matching_Context;
+               when Not_An_Attribute =>
+                  -- Regular case: check first subtype
+                  return Matching_Context (Store, Names (Corresponding_First_Subtype
+                                                         (Corresponding_Name_Declaration (St_Name))) (1));
+               when others =>
+                  Failure ("Object_Declarations: unknown type attribute", St_Name);
+            end case;
+         end Subtype_Or_Type_Context;
+
+         Def : constant Asis.Definition := Object_Declaration_View (Decl);
+      begin   -- Process_Type
+         if Definition_Kind (Def) /= A_Subtype_Indication then
+            -- anonymous array, task, protected
+            return;
+         end if;
+
+         case Declaration_Kind (Decl) is
+            when A_Constant_Declaration =>
+               Report (Rule_Id,
+                       Subtype_Or_Type_Context (Type_Const_Contexts, Subtype_Simple_Name (Def)),
+                       Get_Location (Decl),
+                       "Constant declaration of type " & Last_Matching_Name (Type_Const_Contexts));
+            when A_Variable_Declaration =>
+               Report (Rule_Id,
+                       Subtype_Or_Type_Context (Type_Var_Contexts, Subtype_Simple_Name (Def)),
+                       Get_Location (Decl),
+                       "Variable declaration of type " & Last_Matching_Name (Type_Var_Contexts));
+            when others =>
+               Failure ("Object_Declarations: Unexpected declaration", Decl);
+         end case;
+      end Process_Type;
+
       procedure Process_Min_Integer_Span is
          use Framework.Reports;
 
@@ -266,25 +366,25 @@ package body Rules.Object_Declarations is
 
          -- Note: Unspecified values of Range/Obj_Kind/Control contain 0, and Val is >= 0
          --       No problem in the following tests
-         if Val < Ctl_Contexts (Min_Integer_Span, Obj_Kind, Check).Min_Values  then
+         if Val < Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Check).Min_Values  then
             Report (Rule_Id,
-                    Ctl_Contexts (Min_Integer_Span, Obj_Kind, Check),
+                    Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Check),
                     Get_Location (Decl),
                     "integer object declaration has too few values ("
                     & Biggest_Int_Img (Val)
                     & ')');
-         elsif Val < Ctl_Contexts (Min_Integer_Span, Obj_Kind, Search).Min_Values  then
+         elsif Val < Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Search).Min_Values  then
             Report (Rule_Id,
-                    Ctl_Contexts (Min_Integer_Span, Obj_Kind, Search),
+                    Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Search),
                     Get_Location (Decl),
                     "integer object declaration has too few values ("
                     & Biggest_Int_Img (Val)
                     & ')');
          end if;
 
-         if Val < Ctl_Contexts (Min_Integer_Span, Obj_Kind, Count).Min_Values  then
+         if Val < Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Count).Min_Values  then
             Report (Rule_Id,
-                    Ctl_Contexts (Min_Integer_Span, Obj_Kind, Count),
+                    Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Count),
                     Get_Location (Decl),
                     "");
          end if;
@@ -306,11 +406,15 @@ package body Rules.Object_Declarations is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Rule_Used (Min_Integer_Span) then
+      if Rule_Used (S_Type) then
+         Process_Type;
+      end if;
+
+      if Rule_Used (S_Min_Integer_Span) then
          Process_Min_Integer_Span;
       end if;
 
-      if (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile))
+      if (Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile))
         and then Declaration_Kind (Decl) = A_Variable_Declaration
       then
          Process_Volatile_Address;
@@ -327,7 +431,7 @@ package body Rules.Object_Declarations is
 
       Name : Asis.Expression;
    begin
-      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
+      if not (Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -338,14 +442,14 @@ package body Rules.Object_Declarations is
 
       Name := Actual_Parameter (Pragma_Argument_Associations (Prgma) (1));
       if Attribute_Kind (Name) = A_Class_Attribute then  -- Excludes case when name is not an attribute
-         if Rule_Used (Volatile_No_Address) then
+         if Rule_Used (S_Volatile_No_Address) then
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Name),
                          "pragma ignored for types covered by " & Name_Image (Simple_Name (Prefix (Name)))
                          & " in subrule Volatile_No_Address");
          end if;
-         if Rule_Used (Address_Not_Volatile) then
+         if Rule_Used (S_Address_Not_Volatile) then
             Uncheckable (Rule_Id,
                          False_Positive,
                          Get_Location (Name),
@@ -367,7 +471,7 @@ package body Rules.Object_Declarations is
       Name      : Asis.Expression;
       Repr_Data : Repr_Rec;
    begin
-      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
+      if not (Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -405,15 +509,15 @@ package body Rules.Object_Declarations is
       procedure Process_One_Scope_Variable (Entity : Asis.Defining_Name; Repr_Data : in out Repr_Rec) is
          use Framework.Reports;
       begin
-         if Rule_Used (Volatile_No_Address) and Repr_Data.Volatile and not Repr_Data.Address then
+         if Rule_Used (S_Volatile_No_Address) and Repr_Data.Volatile and not Repr_Data.Address then
             Report (Rule_Id,
-                    Vno_Context (Volatile_No_Address),
+                    Vno_Context (S_Volatile_No_Address),
                     Get_Location (Entity),
                     "variable is volatile and has no address clause");
          end if;
-         if Rule_Used (Address_Not_Volatile) and Repr_Data.Address and not Repr_Data.Volatile then
+         if Rule_Used (S_Address_Not_Volatile) and Repr_Data.Address and not Repr_Data.Volatile then
             Report (Rule_Id,
-                    Vno_Context (Address_Not_Volatile),
+                    Vno_Context (S_Address_Not_Volatile),
                     Get_Location (Entity),
                     "variable has address clause and is not volatile");
          end if;
@@ -421,7 +525,7 @@ package body Rules.Object_Declarations is
 
       procedure Process_All_Scope_Variables is new Repr_Table.On_Every_Entity_From_Scope (Process_One_Scope_Variable);
    begin  -- Process_Scope_Exit
-      if not (Rule_Used (Volatile_No_Address) or Rule_Used (Address_Not_Volatile)) then
+      if not (Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);

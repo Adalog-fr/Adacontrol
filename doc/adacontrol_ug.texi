@@ -6153,10 +6153,12 @@ declarations.
 
 @subsection Syntax
 @example
-<control_kind> object_declarations (min_integer_span, <param> @{, <param>@});
+<control_kind> object_declarations (min_integer_span, <min_spec> @{, <min_spec>@});
+<control_kind> object_declarations (type, <type_spec> @{, <type_spec>@});
 <control_kind> object_declarations (volatile_no_address);
 <control_kind> object_declarations (address_not_volatile);
-<param> ::= [all | constant | variable] <value>
+<min_spec>  ::= [constant | variable] <value>
+<type_spec> ::= [constant | variable] <entity>
 @end example
 
 @subsection Action
@@ -6165,12 +6167,24 @@ The action depends on the subrule.
 @item
 ``min_integer_span'': controls that every object of an integer type
 has a subtype that covers at least the indicated number of
-values. Different values can be specified for variables and
-constants;``all'' (the default value if no modifier is supplied)
+values. Different values can be specified for variables and constants;
+if no modifier (``constant'' or ``variable'') is supplied, the value
 applies to both.
 
 This subrule can be given only once for each combination of
 check/search/count and constant/variable.
+@item
+``type'': controls every object whose (sub)type matches <entity>. As usual,
+the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}.  If the <entity> is a
+subtype, only objects of that exact subtype are controlled; if the
+<entity> is a type, objects declared with the type or any subtype of
+it are controlled. The control can be restricted to only variables or
+only constants; if no modifier (``constant'' or ``variable'') is
+supplied, both are controlled.
+
+This subrule can be given only once for each combination of <entity>
+and constant/variable.
 @item
 ``volatile_no_address'': controls variables that are the target of a
 pragma volatile, but have no address clause. Constants are not
@@ -9255,6 +9269,21 @@ that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
+
+@section Migrating from 1.15r5
+@subsection Object_Declarations
+Due to the necessity of avoiding a syntactic ambiguity in the new
+subrule ``type'', the keyword ``all'' is no more allowed in the syntax
+for the subrule ``min_integer_span'' (specifying neither ``variable''
+or ``constant'' still means the subrule applies to both, as
+before). Change:
+@example
+count object_declarations (min_integer_span, all 8);
+@end example
+to:
+@example
+count object_declarations (min_integer_span, 8);
+@end example
 
 @section Migrating from 1.14r9
 @subsection Local_Hiding

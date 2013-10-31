@@ -6,14 +6,15 @@ Changes to existing rules:
 --------------------------
 
 Expressions:
-   Added subrules in, not_in, static_membership
+  Added subrules in, not_in, static_membership, and_array,
+  and_logical, and_binary, or_array, or_logical, or_binary, xor_array,
+  xor_logical, xor_binary.
 
 Style (Casing_Identifier, original):
    Check closing identifier
 
-Expressions:
-  Added subrules and_array, and_logical, and_binary, or_array,
-  or_logical, or_binary, xor_array, xor_logical, xor_binary.
+Object declarations:
+  Added subrule type.
 
 Global_References:
    Added subrules read, written
