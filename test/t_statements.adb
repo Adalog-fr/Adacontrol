@@ -273,7 +273,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
    -- Check nesting of bodies
 
    for I in Integer range 1 .. 10 loop        -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
-      begin                                   -- Block, Unnamed_Block
+      begin                                   -- Block, Simple_Block, Unnamed_Block, Unnamed_Simple_Block
          for J in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop, Unnamed_For_Loop, Unnamed_Multiple_Loop
             null;                             -- Null
          end loop;
@@ -387,7 +387,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       end;
    end loop LL1;
 
-   begin                                          -- Block, Unnamed_Block
+   begin                                          -- Block, Simple_Block, Unnamed_Block, Unnamed_Simple_Block
       null;                                       -- null
    end;
    declare                                        -- Block, Unnamed_Block, Declare_Block      pragma Optimize (Time);

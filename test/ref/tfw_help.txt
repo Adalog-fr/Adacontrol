@@ -617,11 +617,12 @@ Parameter(s): any_statement           | abort                    |
               raise_locally_handled   | raise_nonpublic          |
               raise_standard          | reraise                  |
               requeue                 | selective_accept         |
-              simple_loop             | terminate                |
-              timed_entry_call        | unconditional_exit       |
-              unnamed_block           | unnamed_exit             |
-              unnamed_loop_exited     | unnamed_for_loop         |
-              unnamed_multiple_loop   | unnamed_simple_loop      |
+              simple_block            | simple_loop              |
+              terminate               | timed_entry_call         |
+              unconditional_exit      | unnamed_block            |
+              unnamed_exit            | unnamed_loop_exited      |
+              unnamed_for_loop        | unnamed_multiple_loop    |
+              unnamed_simple_block    | unnamed_simple_loop      |
               unnamed_while_loop      | untyped_for              |
               while_loop
 ----

@@ -7344,11 +7344,12 @@ This rule controls usage of certain Ada statements.
    raise                    | raise_locally_handled  |
    raise_nonpublic          | raise_standard         |
    reraise                  | requeue                |
-   selective_accept         | simple_loop            |
-   terminate                | timed_entry_call       |
-   unconditional_exit       | unnamed_block          |
-   unnamed_exit             | unnamed_loop_exited    |
-   unnamed_for_loop         | unnamed_multiple_loop  |
+   selective_accept         | simple_block           |
+   simple_loop              | terminate              |
+   timed_entry_call         | unconditional_exit     |
+   unnamed_block            | unnamed_exit           |
+   unnamed_loop_exited      | unnamed_for_loop       |
+   unnamed_multiple_loop    | unnamed_simple_block   |
    unnamed_simple_loop      | unnamed_while_loop     |
    untyped_for              | while_loop
 @end example
@@ -7384,7 +7385,10 @@ controls blocks without a name, @code{declare_block} controls blocks
 with an explicit @code{@b{declare}} (even if the declarative part is
 empty), and @code{effective_declare_block} controls blocks with a
 declarative part that includes anything else than @code{@b{use}}
-clauses and pragmas.
+clauses and pragmas. @code{simple_block} controls block statements
+that have no declarative part and no exception handlers, and
+@code{unnamed_simple_block}  does the same, but only for blocks
+without a name.
 @item
 @code{case} controls all @code{case} statements.
 @item

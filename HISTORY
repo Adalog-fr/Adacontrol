@@ -14,7 +14,8 @@ Style (Casing_Identifier, original):
   Check closing identifier
 
 Statements:
-  Added subrules named_exit, exit_plain_loop. 
+  Added subrules named_exit, exit_plain_loop, simple_block,
+  unnamed_simple_block. 
   Normalized behaviour of subrule exit.
 
 Object declarations:

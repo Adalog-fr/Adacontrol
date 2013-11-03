@@ -96,13 +96,14 @@ package body Rules.Statements is
 
                      Stmt_Requeue,
 
-                     Stmt_Selective_Accept,       Stmt_Simple_Loop,
+                     Stmt_Selective_Accept,       Stmt_Simple_Block,            Stmt_Simple_Loop,
 
                      Stmt_Terminate,              Stmt_Timed_Entry_Call,
 
                      Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,           Stmt_Unnamed_Exit,
                      Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_For_Loop,        Stmt_Unnamed_Multiple_Loop,
-                     Stmt_Unnamed_Simple_Loop,    Stmt_Unnamed_While_Loop,      Stmt_Untyped_For,
+                     Stmt_Unnamed_Simple_Block,   Stmt_Unnamed_Simple_Loop,     Stmt_Unnamed_While_Loop,
+                     Stmt_Untyped_For,
 
                      Stmt_While_Loop);
 
@@ -304,7 +305,13 @@ package body Rules.Statements is
                      end loop;
                   end;
                end if;
-            end if;
+            elsif Block_Exception_Handlers (Element) = Nil_Element_List then
+               Do_Report (Stmt_Simple_Block);
+
+               if Is_Nil (Statement_Identifier (Element)) then
+                  Do_Report (Stmt_Unnamed_Simple_Block);
+               end if;
+           end if;
 
          when A_Case_Statement =>
             Do_Report (Stmt_Case);
