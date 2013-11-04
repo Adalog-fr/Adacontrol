@@ -106,6 +106,19 @@ procedure T_Parameter_Declarations (A, B, C, D, E : Integer) is
 
    procedure Inst is new Gen;
 
+   type Tag is tagged null record;
+   subtype Tag_Wide is Tag'Class;
+
+   procedure PCW1 (P1 : Tag'Class) is
+   begin
+      null;
+   end PCW1;
+
+   procedure PCW2 (P1, P2 : Tag_Wide) is
+   begin
+      null;
+   end PCW2;
+
 begin
    null;
 end T_Parameter_Declarations;

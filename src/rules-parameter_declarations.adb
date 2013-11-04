@@ -53,7 +53,7 @@ package body Rules.Parameter_Declarations is
    type Subrules is (All_Parameters,
                      In_Parameters,     Defaulted_Parameters,
                      Out_Parameters,    In_Out_Parameters,
-                     Access_Parameters,
+                     Access_Parameters, Class_Wide_Parameters,
                      Single_Out_Parameter);
    subtype Valued_Subrules is Subrules range All_Parameters .. Subrules'Pred(Single_Out_Parameter);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
@@ -246,6 +246,15 @@ package body Rules.Parameter_Declarations is
                        & Bound_Image (Ctl_Values (Access_Parameters, Entity, Ctl_Kind))
                        & " for " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
+            when Class_Wide_Parameters =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Class_Wide_Parameters, Entity, Ctl_Kind)),
+                       Ctl_Kind,
+                       Loc,
+                       "number of class-wide parameters is "
+                       & Bound_Image (Ctl_Values (Class_Wide_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
+                       & " ("   & Biggest_Int_Img (Value) & ')');
             when Single_Out_Parameter =>
                Report (Rule_Id,
                        To_Wide_String (Ctl_Labels (Single_Out_Parameter, Entity, Ctl_Kind)),
@@ -328,14 +337,15 @@ package body Rules.Parameter_Declarations is
 
       -- Count parameters for each mode
       declare
-         Profile         : constant Parameter_Specification_List := Parameter_Profile (Good_Decl);
-         In_Param_Count     : Biggest_Natural := 0; -- Not counting defaulted ones
-         Def_Param_Count    : Biggest_Natural := 0;
-         Out_Param_Count    : Biggest_Natural := 0;
-         In_Out_Param_Count : Biggest_Natural := 0;
-         Access_Param_Count : Biggest_Natural := 0;
-         Param_Count        : Biggest_Natural;
-         Nb_Names           : Biggest_Natural;
+         Profile                : constant Parameter_Specification_List := Parameter_Profile (Good_Decl);
+         In_Param_Count         : Biggest_Natural := 0; -- Not counting defaulted ones
+         Def_Param_Count        : Biggest_Natural := 0;
+         Out_Param_Count        : Biggest_Natural := 0;
+         In_Out_Param_Count     : Biggest_Natural := 0;
+         Access_Param_Count     : Biggest_Natural := 0;
+         Class_Wide_Param_Count : Biggest_Natural := 0;
+         Param_Count            : Biggest_Natural;
+         Nb_Names               : Biggest_Natural;
       begin
          for P in Profile'Range loop
             Nb_Names := Names (Profile (P))'Length;
@@ -356,6 +366,11 @@ package body Rules.Parameter_Declarations is
                   when An_In_Out_Mode =>
                      In_Out_Param_Count := In_Out_Param_Count + Nb_Names;
                end case;
+            end if;
+            if Rule_Used (Class_Wide_Parameters, C) /= Empty_Control_Kinds_Set then
+               if Is_Class_Wide_Subtype (Object_Declaration_View (Profile (P))) then
+                  Class_Wide_Param_Count := Class_Wide_Param_Count + Nb_Names;
+               end if;
             end if;
          end loop;
 
@@ -473,6 +488,25 @@ package body Rules.Parameter_Declarations is
            and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Count))
          then
             Do_Report (Access_Parameters, Count, C, Access_Param_Count);
+         end if;
+
+         --
+         -- Class_Wide_Parameters
+         --
+         if Rule_Used (Class_Wide_Parameters, C) (Check)
+           and then not Is_In (Class_Wide_Param_Count, Ctl_Values (Class_Wide_Parameters, C, Check))
+         then
+            Do_Report (Class_Wide_Parameters, Check, C, Class_Wide_Param_Count);
+         elsif Rule_Used (Class_Wide_Parameters, C) (Search)
+           and then not Is_In (Class_Wide_Param_Count, Ctl_Values (Class_Wide_Parameters, C, Search))
+         then
+            Do_Report (Class_Wide_Parameters, Search, C, Class_Wide_Param_Count);
+         end if;
+
+         if Rule_Used (Class_Wide_Parameters, C) (Count)
+           and then not Is_In (Class_Wide_Param_Count, Ctl_Values (Class_Wide_Parameters, C, Count))
+         then
+            Do_Report (Class_Wide_Parameters, Count, C, Class_Wide_Param_Count);
          end if;
 
          --

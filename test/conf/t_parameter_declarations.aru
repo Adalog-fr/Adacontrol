@@ -13,5 +13,6 @@ search  parameter_declarations (in_parameters, max 5);
 search  parameter_declarations (out_parameters, max 5);
 search  parameter_declarations (in_out_parameters, max 5);
 search  Parameter_declarations (access_parameters, max 1);
+search  Parameter_declarations (class_wide_parameters, max 0);
 
 check parameter_declarations (single_out_parameter);

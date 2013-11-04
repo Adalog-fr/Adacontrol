@@ -6331,7 +6331,7 @@ for all callable entities (i.e. functions, procedures and entries).
 <control_kind> parameter_declarations (<subrule> [,<bounds>] @{,<callable>@});
 <subrule>  ::= all_parameters | in_parameters     | defaulted_parameters |
                out_parameters | in_out_parameters | access_parameters    |
-               single_out_parameter
+               class_wide_parameter | single_out_parameter
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <callable> ::= function           | procedure           | protected_entry |
                protected_function | protected_procedure | task_entry
@@ -6352,6 +6352,9 @@ same, counting only parameters of modes @code{@b{in}},
 @item
 ``access_parameters'': Does the same, counting only (anonymous) access
 parameters.
+@item
+``class_wide_parameters'': Does the same, counting only parameters of
+a class-wide type.
 @item
 ``defaulted_parameters'': Does the same, counting only parameters
 declared with an explicit default expression.
@@ -6386,6 +6389,9 @@ check parameter_declarations (in_out_parameters, max 0, function);
 -- A regular (not protected) procedure with one out parameter
 -- should be replaced by a function
 check parameter_declarations (single_out_parameter, procedure);
+
+-- Find all callable entities with class-wide parameters:
+search parameter_declarations (class_wide_parameters, max 0);
 @end example
 
 @subsection Tips

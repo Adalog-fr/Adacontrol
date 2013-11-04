@@ -10,19 +10,22 @@ Expressions:
   and_logical, and_binary, or_array, or_logical, or_binary, xor_array,
   xor_logical, xor_binary.
 
-Style (Casing_Identifier, original):
-  Check closing identifier
+Global_References:
+   Added subrules read, written
+
+Object declarations:
+  Added subrule type.
+
+Parameter_Declarations:
+  Added subrule class_wide_parameter
 
 Statements:
   Added subrules named_exit, exit_plain_loop, simple_block,
   unnamed_simple_block. 
   Normalized behaviour of subrule exit.
 
-Object declarations:
-  Added subrule type.
-
-Global_References:
-   Added subrules read, written
+Style (Casing_Identifier, original):
+  Check closing identifier
 
 =============
 == V1.15r5 ==
