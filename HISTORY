@@ -2,6 +2,11 @@
 == V1.16b3 ==
 =============
 
+General:
+--------
+Bug fixes:
+   Mantis:  0000035, 0000036
+
 New rules:
 ----------
 positional_associations (took over style (positional_association)

@@ -800,6 +800,12 @@ package body Rules.Simplifiable_Expressions is
                            | An_Or_Else_Short_Circuit
                            =>
                            null;
+                        when An_In_Membership_Test
+                           | A_Not_In_Membership_Test
+                           =>
+                           if Priority (Operator_Kind (Prefix (Enclosing))) < Relational then
+                              Do_Report;
+                           end if;
                         when others =>
                            Do_Report;
                      end case;
@@ -815,6 +821,25 @@ package body Rules.Simplifiable_Expressions is
                         end if;
                      when A_Function_Call =>
                         if Is_Prefix_Call (Enclosed) or else Priority (Operator_Kind (Prefix (Enclosed))) > Logical then
+                           Do_Report;
+                        end if;
+                     when others =>
+                        Do_Report;
+                  end case;
+
+               when An_In_Membership_Test
+                  | A_Not_In_Membership_Test
+                  =>
+                  -- The parenthesized expression can only be on the LHS of the membership test
+                  case Expression_Kind (Enclosed) is
+                     when An_In_Membership_Test
+                        | A_Not_In_Membership_Test
+                        =>
+                        null;
+                     when A_Function_Call =>
+                        if Is_Prefix_Call (Enclosed)
+                          or else Priority (Operator_Kind (Prefix (Enclosed))) > Relational
+                        then
                            Do_Report;
                         end if;
                      when others =>

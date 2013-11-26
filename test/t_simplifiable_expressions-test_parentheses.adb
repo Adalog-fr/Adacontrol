@@ -124,4 +124,13 @@ begin
    R1 := ((1), F2 => (True));                 -- Should Trigger x2
    R1 := (1, (for all C of S1 => C = 'A'));   -- OK
    R1 := (1, ((for all C of S1 => C = 'A'))); -- Should Trigger
+
+   -- Membership
+   B := (I in 1 .. 10) or (J not in 1 .. 10);    -- Should Trigger x2
+   B := (I in 1 .. 10) =  (J not in 1 .. 10);    -- OK
+   B := (B) in False .. False;                   -- Should Trigger
+   B := (I+1) in 1 .. 10;                        -- Should Trigger
+   B := (B or B) in False .. False;              -- OK
+   B := (B in False .. False) in False .. False; -- OK
+   B := B or (B in False .. False);              -- Should Trigger
 end Test_Parentheses;
