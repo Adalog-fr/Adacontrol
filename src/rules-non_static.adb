@@ -196,7 +196,7 @@ package body Rules.Non_Static is
          Constraint_List : constant Asis.Discriminant_Association_List := Discriminant_Associations (Elem);
       begin
          for I in Constraint_List'Range loop
-            if Static_Expression_Value_Image (Discriminant_Expression (Constraint_List (I))) = "" then
+            if not Is_Static_Expression (Discriminant_Expression (Constraint_List (I))) then
                Report (Rule_Id,
                        Usage (K_Discriminant_Constraint),
                        Get_Location (Constraint_List (I)),
@@ -242,7 +242,7 @@ package body Rules.Non_Static is
                when A_Formal_Object_Declaration =>
                   case Mode_Kind (Param_Decl) is
                      when An_In_Mode | A_Default_In_Mode =>
-                        if Static_Expression_Value_Image (Actual_Parameter (Actuals (A))) = "" then
+                        if not Is_Static_Expression (Actual_Parameter (Actuals (A))) then
                            Do_Report (Actuals (A));
                         end if;
                      when An_In_Out_Mode =>
@@ -342,7 +342,7 @@ package body Rules.Non_Static is
 
       if Rule_Used (K_Variable_Initialization)
         and then Declaration_Kind (Decl) = A_Variable_Declaration
-        and then Static_Expression_Value_Image (Expr) = ""
+        and then not Is_Static_Expression (Expr)
       then
          Report (Rule_Id,
                  Usage (K_Variable_Initialization),
@@ -352,7 +352,7 @@ package body Rules.Non_Static is
 
       if Rule_Used (K_Constant_Initialization)
         and then Declaration_Kind (Decl) = A_Constant_Declaration
-        and then Static_Expression_Value_Image (Expr) = ""
+        and then not Is_Static_Expression (Expr)
       then
          Report (Rule_Id,
                  Usage (K_Constant_Initialization),

@@ -180,7 +180,7 @@ package body Rules.Duplicate_Initialization_Calls is
          -- Check that all parameters are static (case where there is no out parameter)
       begin
          for I in Actuals'Range loop
-            if Static_Expression_Value_Image (Actual_Parameter (Actuals (I))) = "" then
+            if not Is_Static_Expression (Actual_Parameter (Actuals (I))) then
                Report (Rule_Id,
                        Context,
                        Get_Location (Actual_Parameter (Actuals (I))),
