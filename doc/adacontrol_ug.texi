@@ -7480,9 +7480,9 @@ with an explicit @code{@b{declare}} (even if the declarative part is
 empty), and @code{effective_declare_block} controls blocks with a
 declarative part that includes anything else than @code{@b{use}}
 clauses and pragmas. @code{simple_block} controls block statements
-that have no declarative part and no exception handlers, and
-@code{unnamed_simple_block}  does the same, but only for blocks
-without a name.
+that have no declarative part (or an empty declarative part) and no
+exception handlers, and @code{unnamed_simple_block}  does the same,
+but only for blocks without a name.
 @item
 @code{case} controls all @code{case} statements.
 @item

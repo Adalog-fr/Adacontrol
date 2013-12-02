@@ -403,6 +403,10 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
    begin
       null;                                       -- null
    end;
+   declare                                        -- Block, unnamed_block, declare_block, simple_block, unnamed_simple_block
+   begin
+      null;                                       -- null
+   end;
 
    Dispatching.Proc (Disp);                       -- Dispatching call
    I := Dispatching.Func (Disp);                  -- Dispatching call

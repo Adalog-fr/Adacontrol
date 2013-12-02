@@ -366,12 +366,18 @@ t_statements.adb:398:4: Found: Sequential_Stmts: use of statement "unnamed_block
 t_statements.adb:398:4: Found: Sequential_Stmts: use of statement "declare_block"
 t_statements.adb:398:4: Found: Sequential_Stmts: use of statement "effective_declare_block"
 t_statements.adb:404:7: Found: Sequential_Stmts: use of statement "null"
-t_statements.adb:407:4: Found: Sequential_Stmts: use of statement "dispatching_call"
-t_statements.adb:408:9: Found: Sequential_Stmts: use of statement "dispatching_call"
-t_statements.adb:410:1: Found: Sequential_Stmts: use of statement "block"
-t_statements.adb:410:1: Found: Sequential_Stmts: use of statement "declare_block"
-t_statements.adb:410:1: Found: Sequential_Stmts: use of statement "effective_declare_block"
-t_statements.adb:446:7: Found: Sequential_Stmts: use of statement "inherited_procedure_call"
+t_statements.adb:406:4: Found: Sequential_Stmts: use of statement "block"
+t_statements.adb:406:4: Found: Sequential_Stmts: use of statement "unnamed_block"
+t_statements.adb:406:4: Found: Sequential_Stmts: use of statement "declare_block"
+t_statements.adb:406:4: Found: Sequential_Stmts: use of statement "simple_block"
+t_statements.adb:406:4: Found: Sequential_Stmts: use of statement "unnamed_simple_block"
+t_statements.adb:408:7: Found: Sequential_Stmts: use of statement "null"
+t_statements.adb:411:4: Found: Sequential_Stmts: use of statement "dispatching_call"
+t_statements.adb:412:9: Found: Sequential_Stmts: use of statement "dispatching_call"
+t_statements.adb:414:1: Found: Sequential_Stmts: use of statement "block"
+t_statements.adb:414:1: Found: Sequential_Stmts: use of statement "declare_block"
+t_statements.adb:414:1: Found: Sequential_Stmts: use of statement "effective_declare_block"
+t_statements.adb:450:7: Found: Sequential_Stmts: use of statement "inherited_procedure_call"
 x_statements_raise.adb:6:7: Found: Sequential_Stmts: use of statement "raise"
 x_statements_raise.adb:7:7: Found: Sequential_Stmts: use of statement "raise"
 x_statements_raise.adb:7:7: Found: Sequential_Stmts: use of statement "raise_nonpublic"
@@ -384,6 +390,6 @@ x_statements_raise.adb:14:4: Found: Sequential_Stmts: use of statement "raise"
 x_statements_raise.adb:14:4: Found: Sequential_Stmts: use of statement "raise_nonpublic"
 
 Counts summary:
-All_Stmts: 214
+All_Stmts: 216
 Case_Count: 3
 If_Count: 9

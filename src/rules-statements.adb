@@ -287,9 +287,11 @@ package body Rules.Statements is
 
          when A_Block_Statement =>
             Do_Report (Stmt_Block);
+
             if Is_Nil (Statement_Identifier (Element)) then
                Do_Report (Stmt_Unnamed_Block);
             end if;
+
             if Is_Declare_Block (Element) then
                Do_Report (Stmt_Declare_Block);
                if Rule_Used (Stmt_Effective_Declare_Block) then
@@ -303,6 +305,20 @@ package body Rules.Statements is
                            exit;
                         end if;
                      end loop;
+                  end;
+               end if;
+               if Rule_Used (Stmt_Simple_Block) or Rule_Used (Stmt_Unnamed_Simple_Block) then
+                  declare
+                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Element,
+                                                                                             Include_Pragmas => True);
+                  begin
+                     if Is_Nil (Decls) then
+                        Do_Report (Stmt_Simple_Block);
+
+                        if Is_Nil (Statement_Identifier (Element)) then
+                           Do_Report (Stmt_Unnamed_Simple_Block);
+                        end if;
+                     end if;
                   end;
                end if;
             elsif Block_Exception_Handlers (Element) = Nil_Element_List then
