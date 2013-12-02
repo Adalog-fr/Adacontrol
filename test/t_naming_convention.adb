@@ -6,8 +6,10 @@ package body T_naming_convention is
    C_1       : constant := 1; -- OK, too short for "all" but rule is root
    My_Max    : constant := 2; --## RULE LINE OFF const1 ## (OK, disabled)
 
-   Xxx  : Integer;
-   Xxxx : Integer; -- OK
+   Xxx   : Integer;
+   Xxxx  : Integer; -- OK
+   C_Xxx : constant Integer := Xxx;
+   C_Xxx_Static : constant Integer := 1+2;
 
    -- Casing
    X_Yz : Integer; --OK
@@ -188,16 +190,16 @@ package body T_naming_convention is
    Const : aliased constant String := "Hello";
    Const_Access : T_Access_String_Const_Regular := Const'Access;
 
-   Ren1 : String renames Var_Access1.all;   -- OK
+   Ren1 : String renames Var_Access1.all;          -- OK
    R1 : String renames Var_Access1.all;
-   Ren2 : String renames Var_Access2.all;   -- OK
+   Ren2 : String renames Var_Access2.all;          -- OK
    R2 : String renames Var_Access2.all;
-   C_R3 : String renames Const_Access.all;  -- OK
+   C_R3 : String renames Const_Access.all;         -- OK
    Ren3 : String renames Const_Access.all;
-   C_R4 : String renames Const;             -- OK
-   C_R5 : Character renames C_R4(1);        -- OK
-   Ren5 : Character renames C_R4(1);
-   C_R6 : Character renames Ren3(1);        -- OK
+   C_R4_Static : String renames Const;             -- OK
+   C_R5_Static : Character renames C_R4_Static(1); -- OK
+   Ren5_Static : Character renames C_R4_Static(1);
+   C_R6 : Character renames Ren3(1);               -- OK
    Ren6 : Character renames Ren3(1);
 
    type Obj_T is

@@ -26,6 +26,7 @@ Rec_F     : check naming_convention     (Record_field, "^rf_");
 
 Const1    : check naming_convention (root constant, "^C_");
 Const2    : Check naming_convention (constant, "^Const_");
+Stat_Const: check naming_convention (regular_static_constant, "_Static$");
 Enums     : check naming_convention   (root Enumeration, "^Enum_");
 
 Label     : check naming_convention (label, not "_");

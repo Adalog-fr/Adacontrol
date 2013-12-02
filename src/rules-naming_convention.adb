@@ -109,6 +109,8 @@ package body Rules.Naming_Convention is
                        K_Generic_Formal_In_Out,
                     K_Constant,
                        K_Regular_Constant,
+                          K_Regular_Static_Constant,
+                          K_Regular_Nonstatic_Constant,
                        K_Named_Number,
                           K_Integer_Number,
                           K_Real_Number,
@@ -341,6 +343,10 @@ package body Rules.Naming_Convention is
    -- Process_Defining_Name --
    ---------------------------
 
+   ---------------------------
+   -- Process_Defining_Name --
+   ---------------------------
+
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Utilities;
@@ -443,7 +449,7 @@ package body Rules.Naming_Convention is
 
       declare
          Name_Str  : constant Wide_String := Defining_Name_Image (Name);
-         Renamed   : Asis.Element;
+         Renamed   : Asis.Element := Nil_Element;
          Renamed_T : Asis.Element;
          Decl_Kind : Asis.Declaration_Kinds;
          Def       : Asis.Definition;
@@ -535,6 +541,7 @@ package body Rules.Naming_Convention is
                                             =>
                                           Renamed := Prefix (Renamed);
                                        when A_Function_Call =>
+                                          Decl      := Nil_Element;  -- Renamed element declaration is unknown (dynamic)
                                           Decl_Kind := A_Constant_Declaration;
                                           exit Going_Up_Renamings;
                                        when A_Type_Conversion =>
@@ -577,6 +584,7 @@ package body Rules.Naming_Convention is
                                                             Renamed);
                                              end case;
                                           end if;
+                                          Decl := Nil_Element;  -- Renamed element declaration is unknown (dynamic)
                                           exit Going_Up_Renamings;
 
                                        when others =>
@@ -846,10 +854,29 @@ package body Rules.Naming_Convention is
                   when A_Variable_Declaration =>  ------------------------ Constants, Variables, Parameters
                      Check (Name_Str, (K_All, K_Variable, K_Regular_Variable));
 
-                  when A_Constant_Declaration
-                    | A_Deferred_Constant_Declaration
-                    =>
-                     Check (Name_Str, (K_All, K_Constant, K_Regular_Constant));
+                  when A_Constant_Declaration =>
+                     -- Decl is Nil_Element in the case of a renaming of a dereference => dynamic
+                     if not Is_Nil (Decl) and then Is_Static_Expression (Initialization_Expression (Decl)) then
+                        Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant));
+                     else
+                        Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant));
+                     end if;
+
+                  when A_Deferred_Constant_Declaration =>
+                     declare
+                        Good_Decl : Asis.Declaration;
+                     begin
+                        if Is_Nil (Renamed) then
+                           Good_Decl := Corresponding_Constant_Declaration (Name);
+                        else
+                           Good_Decl := Corresponding_Constant_Declaration (Renamed);
+                        end if;
+                        if Is_Static_Expression (Initialization_Expression (Good_Decl)) then
+                           Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant));
+                        else
+                           Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant));
+                        end if;
+                     end;
 
                   when A_Choice_Parameter_Specification =>
                      Check (Name_Str, (K_All, K_Constant, K_Occurrence_Name));

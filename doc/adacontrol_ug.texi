@@ -5754,6 +5754,8 @@ refering to.
                        Generic_Formal_In_Out |
                     Constant |
                        Regular_Constant |
+                          Regular_Static_Constant |
+                          Regular_Nonstatic_Constant |
                        Named_Number |
                           Integer_Number |
                           Real_Number |

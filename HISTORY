@@ -25,6 +25,9 @@ Global_References:
 Object declarations:
   Added subrule type.
 
+Naming_Convention:
+  Added subrules regular_static_constant, regular_nonstatic_constant
+
 Parameter_Declarations:
   Added subrule class_wide_parameter
 
