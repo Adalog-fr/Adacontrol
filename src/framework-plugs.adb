@@ -75,6 +75,7 @@ with
   Rules.Object_Declarations,
   Rules.Parameter_Aliasing,
   Rules.Parameter_Declarations,
+  Rules.Positional_Associations,
   Rules.Potentially_Blocking_Operations,
   Rules.Pragmas,
   Rules.Record_Declarations,
@@ -659,7 +660,7 @@ package body Framework.Plugs is
             end case;
 
          when An_Association =>
-            Rules.Style. Process_Association (Element);
+            Rules.Positional_Associations. Process_Association (Element);
 
          when A_Pragma =>
             Rules.Object_Declarations. Process_Pragma (Element);

@@ -41,7 +41,6 @@ private with
 package Rules.Style is
    Rule_Id : constant Wide_String := "STYLE";
 
-   procedure Process_Association        (Association : in Asis.Element);
    procedure Process_Attribute          (Attribute   : in Asis.Expression);
    procedure Process_Compound_Statement (Statement   : in Asis.Statement);
    procedure Process_Construct          (Construct   : in Asis.Declaration);
@@ -66,7 +65,7 @@ private
                      St_Casing_Pragma,          St_Compound_Statement,     St_Default_In,
                      St_Exposed_Literal,        St_Multiple_Elements,      St_Negative_Condition,
                      St_No_Closing_Name,        St_Numeric_Literal,        St_Parameter_Order,
-                     St_Formal_Parameter_Order, St_Positional_Association, St_Renamed_Entity);
+                     St_Formal_Parameter_Order, St_Renamed_Entity);
    subtype St_Orders is Subrules range St_Parameter_Order .. St_Formal_Parameter_Order;
 
    type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);

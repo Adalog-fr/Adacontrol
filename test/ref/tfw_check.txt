@@ -62,6 +62,7 @@ conf/t_not_selected_name.aru: No syntax error
 conf/t_object_declarations.aru: No syntax error
 conf/t_parameter_aliasing.aru: No syntax error
 conf/t_parameter_declarations.aru: No syntax error
+conf/t_positional_associations.aru: No syntax error
 conf/t_potentially_blocking_operations.aru: No syntax error
 conf/t_pragmas.aru: No syntax error
 conf/t_record_declarations.aru: No syntax error

@@ -2507,6 +2507,7 @@ is a dispatching call.
 * Object_Declarations::
 * Parameter_Aliasing::
 * Parameter_Declarations::
+* Positional_Associations::
 * Potentially_Blocking_Operations::
 * Pragmas::
 * Record_Declarations::
@@ -5208,10 +5209,10 @@ allowed for these.
 This rule controls the use of positional parameters according to their
 values; it is also possible to control the use of positional
 parameters according to the number of parameters with the rule
-@code{style (positional_association)}. @xref{Style}.
+@code{positional_associations}. @xref{Positional_Associations}.
 
-Note also that this rules applies only to calls, while @code{style
-(positional_association)} applies to all forms of associations.
+Note also that this rules applies only to calls, while
+@code{positional_associations} applies to all forms of associations.
 
 @node Local_Access, Local_Hiding, Insufficient_Parameters, Rules reference
 @section Local_Access
@@ -6321,7 +6322,7 @@ analyzed. Some calls cannot obviously have aliasing (if there is only
 one parameter, or if there are no variables in the parameters f.e.);
 other calls are detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
-@node  Parameter_Declarations, Potentially_Blocking_Operations, Parameter_Aliasing, Rules reference
+@node  Parameter_Declarations, Positional_Associations, Parameter_Aliasing, Rules reference
 @section Parameter_Declarations
 This rule controls various characteristics of the declaration of parameters
 for all callable entities (i.e. functions, procedures and entries).
@@ -6406,7 +6407,92 @@ from the corresponding generic.
 Note that this rule controls only ``regular'' parameters, not generic
 formal parameters.
 
-@node  Potentially_Blocking_Operations, Pragmas, Parameter_Declarations, Rules reference
+@node Positional_Associations, Potentially_Blocking_Operations, Parameter_Declarations, Rules reference
+@section Positional_Associations
+This rule controls the use of positional associations (as opposed to
+named associations) in all kinds of associations.
+
+@subsection Syntax
+@example
+<control_kind> positional_associations [(<subrule>, <max_allowed> [, <category> @{, <entity>@}])];
+<subrule>  ::= all | all_positional | same_type
+<category> ::=  [not_operator] call | pragma          | discriminant     |
+                instantiation       | array_aggregate | record_aggregate
+@end example
+
+@subsection Action
+The rule controls pragmas, discriminants, calls, aggregates, or
+instantiations that use too many positional associations. The
+definition of ``too many'' depends on the subrule:
+@itemize
+@item
+``all'': when positional associations are given in a place where there
+is more than <max_allowed> associations (both positional and named).
+@item
+``all_positional'': when there is more than <max_allowed> positional
+associations.
+@item
+``same_type'': when more than <max_allowed> positional parameters are
+of the same type.
+@end itemize
+
+In addition, a <category> can be specified to restrict the rule to
+specific kinds of associations; if not specified, all associations are
+controlled. Note that the ``same_type'' subrule is not allowed for the
+``pragma'' category. For ``pragma'', ''call'', and ``instantiation'',
+entities can also be specified; such entities are exempted from the
+rule (i.e. the rule will not control these entities). See examples
+below.
+
+For calls, positional association is @i{not} reported for operators
+that use infix notation (since named notation is not possible); in
+addition, if the ``not_operator'' modifier is specified before the
+``call'' keyword (not allowed elsewhere), positional association is
+never reported for operators, even if they are called with the syntax
+of a normal function call (i.e. @code{Pack."+" (A,B)}).  Calls to
+subprograms that are attributes are not reported either, since named
+notation is not allowed for them.
+
+This rule can be specified once for each combination of <subrule>,
+<category>, and <control_kind>.  This way, it is possible to have a
+number of positional associations considered a warning (search),  and
+one considered an error (check). Of course, this makes sense only if
+<max_allowed> for search is greater than the one for check. It is also
+possible to have different criteria for each category.
+
+If no parameter is given, it is equivalent to
+``@code{positional_associations (all, 0)}'', i.e. all positional
+associations are controlled.
+
+Ex:
+@example
+ -- All positional associations:
+check positional_associations;
+
+-- All positional associations in aggregates:
+check positional_associations(all, 0, array_aggregate);
+check positional_associations(all, 0, record_aggregate);
+
+ -- All positional associations with more than 3 elements:
+search positional_associations (all, 3);
+
+-- Positional associations in calls with more than 3 elements of the same type
+search positional_associations (same_type, 3, call);
+
+-- Positional associations in calls with more than 2 elements (except calls
+-- to any subprogram called Put)
+search positional_associations(all, 2, call, all put);
+@end example
+
+@subsection Tips
+For the purpose of the ``same_type'' subrule, integer literals are
+considered of the same type as any parameter of an integer type, and
+similarly for other universal values. The reason is that this rule is
+intended to avoid confusion between parameters, when strong typing
+would not detect an inversion of parameters for example; such a case
+would happen between parameters of a universal type. 
+
+@node  Potentially_Blocking_Operations, Pragmas, Positional_Associations, Rules reference
 @section Potentially_Blocking_Operations
 This rule controls usage of potentially blocking operations (as
 defined in LRM 9.5.1 (8..16)) from within protected operations.
@@ -7570,14 +7656,9 @@ This rules controls usage of various ``general'' Ada coding style.
 <control_kind> style (no_closing_name [, <max_lines>]);
 <control_kind> style (numeric_literal, [not] <base> [, <block_size>]);
 <control_kind> style (parameter_order @{, <mode list>@});
-<control_kind> style (positional_association
-                             @{,<context_kw> [,<max_allowed>]@{,<entity>@}@}
-                             | [, <max_allowed>]);
 <control_kind> style (renamed_entity);
 
 <casing_kw>   ::= uppercase | lowercase | titlecase | original
-<context_kw>  ::= [not_operator] call | pragma          | discriminant     |
-                  instantiation       | array_aggregate | record_aggregate
 <element_kw>  ::= [flexible] clause | declaration | statement
 <mode_list>   ::= <mode> @{<mode>@}
 <mode>        ::= in   | defaulted_in | access   | in_out  | out |
@@ -7686,27 +7767,6 @@ or ``access'' first, then ``in_out'', then ``out'', then
 then ``in'' ``defaulted_in'' and ``access'', then ``in_out'', then
 ``procedure'' and ``function'', then ``package''.
 @item
-``positional_association'' controls pragmas, discriminants, calls,
-aggregates, or instantiations that use positional associations.  Extra
-parameters specify which kind of construct to check; if not specified,
-all constructs are controlled. Each of the <context> keywords is
-optionally followed by an integer value; if it is specified, it gives
-the maximum number of associations that are allowed to be positional,
-i.e. the rule will trigger only if there are more than the indicated
-number of associations. For ``pragma'', ''call'', and
-``instantiation'', entities can also be specified; such entities are
-exempted from the rule (i.e. the rule will not control these
-entities).See examples below.
-
-For calls, positional association is @i{not} reported for operators
-that use infix notation (since named notation is not possible); in
-addition, if the ``not_operator'' modifier is specified before the
-``call'' keyword (not allowed elsewhere), positional association is
-never reported for operators, even if they are called with the syntax
-of a normal function call (i.e. @code{Pack."+" (A,B)}).  Calls to
-subprograms that are attributes are not reported either, since named
-notation is not allowed for them.
-@item
 ``renamed_entity'' controls occurrences of identifiers within the scope
 of a renaming declaration for them; i.e. it enforces that when an entity
 has been renamed, the original name should not be used anymore.
@@ -7740,32 +7800,6 @@ check style (formal_parameter_order,
                procedure function,
                package);
 
- -- All positional associations:
-check style (positional_association);
-
--- All positional associations in calls and aggregates:
-check style (positional_association, array_aggregate,
-             record_aggregate,       call);
-
- -- All positional associations with more than 3 elements:
-search style (positional_association, 3);
-
--- Positional associations in calls with more than 3 elements,
--- and positional associations in aggregates with more than 4 elements:
-search style (positional_association, call, 3,
-                                      array_aggregate, 4,
-                                      record_aggregate, 4);
-
--- Positional associations in calls with more than 2 elements (except calls
--- to any subprogram called Put), and in instantiations (except for
--- instantiations of Text_IO subpackages):
-search style (positional_association,
-                  call, 2, all put,
-                  instantiation, Ada.Text_IO.Integer_IO,
-                                 Ada.Text_IO.Fixed_IO,
-                                 Ada.Text_IO.Decimal_IO,
-                                 Ada.Text_IO.Float_IO,
-                                 Ada.Text_IO.Enumeration_IO);
 @end example
 
 Without parameter, the rule will control all style aspects with
@@ -7777,7 +7811,6 @@ style (casing_attribute, titlecase);
 style (casing_keyword, lowercase);
 style (casing_identifier, original);
 style (casing_pragma, titlecase);
-style (positional_association);
 style (default_in);
 style (negative_condition)
 style (multiple_elements)
@@ -9305,11 +9338,23 @@ count object_declarations (min_integer_span, 8);
 The subrule ``exit'' was documented as controlling all exit
 statements, but it did not report exits from @code{@b{for}} and
 @code{@b{while}} loops if ``exit_for_loop'' (respectively
-``exit_while_loop'') was also specified. It now behaves as documented, i.e. it controls
-all @code{@b{exit}} statements.
+``exit_while_loop'') was also specified. It now behaves as documented,
+i.e. it controls all @code{@b{exit}} statements.
 
 Note that if you want separate messages for each kind of loop, the new
 rule ``exit_plain_loop'' controls exit from plain loops.
+
+@subsection Style
+The subrule ``positional_association'' is now a rule of its own,
+``positional_associations''. The order of parameters is different, due
+to various subrules of the new rule. Typically, change:
+@example
+check style (parameter_association, call, 1);
+@end example
+to:
+@example
+check parameter_associations (all, 1, call);
+@end example
 
 @section Migrating from 1.14r9
 @subsection Local_Hiding

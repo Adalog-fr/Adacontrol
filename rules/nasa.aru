@@ -37,6 +37,6 @@
 
 -- Miscellaneous
 "9/1": check insufficient_parameters (1, standard.boolean);
-"9/2": check style (positional_association, instantiation);
+"9/2": check positional_associations (all, 0, instantiation);
 "9/3": check reduceable_scope (use);
 "9/4": check exception_propagation (task);

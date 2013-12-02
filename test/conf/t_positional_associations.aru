@@ -1,0 +1,15 @@
+"All":
+   check  positional_associations (All, 1, Pragma),
+   check  positional_associations (All, 1, Discriminant),
+   check  positional_associations (All, 1, not_operator Call, 
+                                           T_Positional_Associations{}.Nproc{Standard.Integer;Standard.Integer;Standard.Float}),
+   check  positional_associations (All, 1, Instantiation),
+   check  positional_associations (All, 1, Array_Aggregate),
+   check  positional_associations (All, 1, Record_Aggregate);
+
+"Same_Type":
+   search positional_associations (same_type, 1, call);
+"All_Positional":
+   search positional_associations (All_Positional, 1, call);
+
+count positional_associations (all, 0, call);

@@ -222,14 +222,14 @@ Positional_Actuals_For_Defaulted_Parameters:
    check default_parameter (calls, all, positional);
 
 Positional_Components:
-   check style (positional_association, array_aggregate),
-   check style (positional_association, record_aggregate);
+   check positional_associations(all, 0, array_aggregate),
+   check positional_associations(all, 0, record_aggregate);
 
 Positional_Generic_Parameters:
-   check style (positional_association, instantiation);
+   check positional_associations(all, 0, instantiation);
 
 Positional_Parameters:
-   check style (positional_association, call, 1);
+   check positional_associations(all, 1, call);
 
 Predefined_Numeric_Types:
    check entities (Standard.Short_Short_Integer, Standard.Short_Integer, Standard.Integer,

@@ -37,30 +37,6 @@ t_style-casing.adb:36:6: Found: Casing: Wrong casing of "NULL", should be "null"
 t_style-casing.adb:37:4: Found: Casing: Wrong casing of "eND", should be "end"
 t_style-casing.adb:37:8: Found: Casing: Wrong casing of "If", should be "if"
 t_style-casing.adb:40:11: Found: Casing: Wrong casing of "AND", should be "and"
-t_style-positional_association.adb:73:34: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:73:37: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:78:33: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:78:36: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:83:38: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:83:41: Error: Positional_Association: positional association used in instantiation with more than 1 element(s)
-t_style-positional_association.adb:91:7: Error: Compound: Statement has less than 3 lines
-t_style-positional_association.adb:100:11: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:100:14: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:103:16: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
-t_style-positional_association.adb:103:19: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
-t_style-positional_association.adb:103:22: Error: Positional_Association: positional association used in record_aggregate with more than 1 element(s)
-t_style-positional_association.adb:107:12: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:107:15: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:107:18: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:107:21: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:107:24: Error: Positional_Association: positional association used in array_aggregate with more than 1 element(s)
-t_style-positional_association.adb:108:20: Error: Exposed: integer literal 2 not in allowed construct
-t_style-positional_association.adb:108:28: Error: Exposed: integer literal 3 not in allowed construct
-t_style-positional_association.adb:108:36: Error: Exposed: integer literal 4 not in allowed construct
-t_style-positional_association.adb:108:44: Error: Exposed: integer literal 5 not in allowed construct
-t_style-positional_association.adb:111:21: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:111:24: Error: Positional_Association: positional association used in call with more than 1 element(s)
-t_style-positional_association.adb:111:24: Error: Exposed: integer literal 2 not in allowed construct
 t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:10:4: Found: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:14:4: Found: No_Closing_Name: name not repeated at the end
@@ -119,10 +95,10 @@ t_style-parameter_order.adb:66:7: Error: order_generic: parameter out of order f
 t_style-parameter_order.adb:67:45: Found: No_Default_In: default IN mode used for parameter specification
 t_style-parameter_order.adb:67:41: Error: order_regular: parameter out of order for parameter specification
 t_style-parameter_order.adb:68:45: Found: No_Default_In: default IN mode used for parameter specification
-t_style.adb:26:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:32:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:38:4: Error: Compound: Statement has less than 4 lines
-t_style.adb:41:4: Error: Compound: Statement has less than 3 lines
+t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
+t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
 x_style_casing.ads:3:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
 x_style_casing.adb:1:14: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
 x_style_casing.adb:6:8: Found: Casing: Wrong casing of PROC, should be Proc
@@ -154,6 +130,3 @@ x_style_casing-child_1-child_2.adb:8:5: Found: Casing: Wrong casing of X_STYLE_C
 x_style_casing-child_1-child_2.adb:3:14: Found: Casing: Wrong casing of p2, should be P2
 x_style_casing-child_1-child_2.adb:6:8: Found: Casing: Wrong casing of p2, should be P2
 x_style2.ads:1:15: Error: Spans: declaration does not start line
-
-Counts summary:
-STYLE: 4

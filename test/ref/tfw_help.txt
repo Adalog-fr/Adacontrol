@@ -497,6 +497,17 @@ Other parameters: function            | procedure          |
                   protected_procedure | task_entry
                   (optional, default = all)
 ----
+Rule: POSITIONAL_ASSOCIATIONS
+Control use of positional_association:
+   Parameter (1): all | all_positional | same_type
+   Parameter (2): <value>
+   Parameter (3): [not_operator] pragma          | call             |
+                                 instantiation   | discriminant     |
+                                 array_aggregate | record_aggregate
+                                 (default = all)
+   Parameter (4..): <entities>
+                    (entities not required to follow the rule)
+----
 Rule: POTENTIALLY_BLOCKING_OPERATIONS
 Control calls to potentially blocking operations from protected operations
 
@@ -629,14 +640,13 @@ Parameter(s): any_statement           | abort                    |
 Rule: STYLE
 Control various Ada style issues
 
-Parameter(1): casing_attribute       | casing_identifier      |
-              casing_keyword         | casing_pragma          |
-              compound_statement     | default_in             |
-              exposed_literal        | multiple_elements      |
-              negative_condition     | no_closing_name        |
-              numeric_literal        | parameter_order        |
-              formal_parameter_order | positional_association |
-              renamed_entity
+Parameter(1): casing_attribute       | casing_identifier |
+              casing_keyword         | casing_pragma     |
+              compound_statement     | default_in        |
+              exposed_literal        | multiple_elements |
+              negative_condition     | no_closing_name   |
+              numeric_literal        | parameter_order   |
+              formal_parameter_order | renamed_entity
 For casing_*:
    Parameter (2): uppercase | lowercase | titlecase | original
                   (default = Original)
@@ -658,13 +668,6 @@ For parameter_order:
    parameter (2..): list of in        | defaulted_in | access  |
                             in_out    | out          | type    |
                             procedure | function     | package
-For positional_association:
-   Parameter (2..): [not_operator] pragma          | call             |
-                                   instantiation   | discriminant     |
-                                   array_aggregate | record_aggregate
-                                   (default = all)
-   each value may be followed by allowed number of occurrences
-   and entities not required to follow the rule
 ----
 Rule: TERMINATING_TASKS
 Control task termination.
@@ -805,18 +808,18 @@ Rules:
    Non_Static                      Not_Elaboration_Calls           
    Not_Selected_Name               No_Operator_Usage               
    Object_Declarations             Parameter_Aliasing              
-   Parameter_Declarations          Potentially_Blocking_Operations 
-   Pragmas                         Record_Declarations             
-   Reduceable_Scope                Representation_Clauses          
-   Return_Type                     Side_Effect_Parameters          
-   Silent_Exceptions               Simplifiable_Expressions        
-   Simplifiable_Statements         Statements                      
-   Style                           Terminating_Tasks               
-   Type_Initial_Values             Uncheckable                     
-   Units                           Unnecessary_Use_Clause          
-   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
-   Usage                           Use_Clauses                     
-   With_Clauses                    
+   Parameter_Declarations          Positional_Associations         
+   Potentially_Blocking_Operations Pragmas                         
+   Record_Declarations             Reduceable_Scope                
+   Representation_Clauses          Return_Type                     
+   Side_Effect_Parameters          Silent_Exceptions               
+   Simplifiable_Expressions        Simplifiable_Statements         
+   Statements                      Style                           
+   Terminating_Tasks               Type_Initial_Values             
+   Uncheckable                     Units                           
+   Unnecessary_Use_Clause          Unsafe_Paired_Calls             
+   Unsafe_Unchecked_Conversion     Usage                           
+   Use_Clauses                     With_Clauses                    
 
 ADACTL v. 1.16b3 with ASIS 2.0.R for GNAT GPL 2013 (20130314)
 ----

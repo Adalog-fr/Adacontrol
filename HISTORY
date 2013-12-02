@@ -2,6 +2,10 @@
 == V1.16b3 ==
 =============
 
+New rules:
+----------
+positional_associations (took over style (positional_association)
+
 Changes to existing rules:
 --------------------------
 
@@ -24,8 +28,9 @@ Statements:
   unnamed_simple_block. 
   Normalized behaviour of subrule exit.
 
-Style (Casing_Identifier, original):
-  Check closing identifier
+Style 
+  (Casing_Identifier, original): Check closing identifier
+  Positional_Association: removed, now a subrule of Positional_Associations
 
 =============
 == V1.15r5 ==

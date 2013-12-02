@@ -1,33 +1,24 @@
-No_Closing_Name        : check  style (no_closing_name, 5);
-No_Closing_Name        : search style (no_closing_name);
-Casing                 : search style (casing_identifier, original);
-Casing                 : search style (casing_attribute,  Titlecase);
-Casing                 : search style (casing_pragma,     uppercase);
-Casing                 : search style (casing_keyword,    LOWERCASE);
-Positional_Association : check  style (positional_association,
-                                       Pragma, 1,
-                                       Discriminant, 1,
-                                       not_operator Call, 1, T_Style{}.Positional_Association{}.Nproc{Standard.Integer;Standard.Integer;Standard.Float},
-                                       Instantiation, 1,
-                                       Array_Aggregate, 1,
-                                       Record_Aggregate, 1);
-No_Default_In          : search style (default_in);
-Negative_Condition     : check  style (negative_condition);
-Renamed_Entity         : check  style (renamed_entity);
-Literals               : check  style (numeric_literal,     10,  3);
-Base_2_Literals        : check  style (numeric_literal,      2,  4);
-Base_16_Literals       : check  style (numeric_literal,     16,  4);
-Not_Base_7             : check  style (numeric_literal, not  7);
-Not_Base_13            : check  style (numeric_literal, not 13);
-Spans                  : check  style (multiple_elements, flexible clause, declaration, statement);
-Exposed                : check  style (exposed_literal, string, "^$", "^r.*n$", pragma, constant, number);
-Exposed                : check  style (exposed_literal, integer, constant, number, var_init, type,
-                                                                 repr_clause, index, exponent,
-                                                                 max 1, 6, 7);
-Exposed                : check  style (exposed_literal, real, 1.0, 0.0, -1.0);
-Exposed                : check  style (exposed_literal, character, declaration);
-Compound               : check  style (compound_statement);
-order_regular          : check  style (parameter_order, in access, out, in_out, defaulted_in);
-order_generic          : check  style (formal_parameter_order, in defaulted_in, in_out, type, procedure function, package);
-
-count style (positional_association, call);
+No_Closing_Name    : check  style (no_closing_name, 5);
+No_Closing_Name    : search style (no_closing_name);
+Casing             : search style (casing_identifier, original);
+Casing             : search style (casing_attribute,  Titlecase);
+Casing             : search style (casing_pragma,     uppercase);
+Casing             : search style (casing_keyword,    LOWERCASE);
+No_Default_In      : search style (default_in);
+Negative_Condition : check  style (negative_condition);
+Renamed_Entity     : check  style (renamed_entity);
+Literals           : check  style (numeric_literal,     10,  3);
+Base_2_Literals    : check  style (numeric_literal,      2,  4);
+Base_16_Literals   : check  style (numeric_literal,     16,  4);
+Not_Base_7         : check  style (numeric_literal, not  7);
+Not_Base_13        : check  style (numeric_literal, not 13);
+Spans              : check  style (multiple_elements, flexible clause, declaration, statement);
+Exposed            : check  style (exposed_literal, string, "^$", "^r.*n$", pragma, constant, number);
+Exposed            : check  style (exposed_literal, integer, constant, number, var_init, type,
+                                                             repr_clause, index, exponent,
+                                                             max 1, 6, 7);
+Exposed            : check  style (exposed_literal, real, 1.0, 0.0, -1.0);
+Exposed            : check  style (exposed_literal, character, declaration);
+Compound           : check  style (compound_statement);
+order_regular      : check  style (parameter_order, in access, out, in_out, defaulted_in);
+order_generic      : check  style (formal_parameter_order, in defaulted_in, in_out, type, procedure function, package);

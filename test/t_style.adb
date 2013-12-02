@@ -1,15 +1,14 @@
 with Ada.Text_io;                                   -- Casing
 with Ada.Strings.Wide_Unbounded;
 procedure T_Style is
-   procedure No_Default_In          is separate;
-   procedure Casing                 is separate;
-   procedure Positional_Association is separate;
-   procedure No_Closing_Name        is separate;
-   procedure Renamed_Entity         is separate;
-   procedure Literals               is separate;
-   procedure Exposed_Literal        is separate;
-   procedure Multiple_Elements      is separate;
-   procedure Parameter_Order        is separate;
+   procedure No_Default_In     is separate;
+   procedure Casing            is separate;
+   procedure No_Closing_Name   is separate;
+   procedure Renamed_Entity    is separate;
+   procedure Literals          is separate;
+   procedure Exposed_Literal   is separate;
+   procedure Multiple_Elements is separate;
+   procedure Parameter_Order   is separate;
 
    B : Boolean;
 begin

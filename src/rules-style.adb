@@ -40,7 +40,6 @@ with
   Asis.Compilation_Units,
   Asis.Elements,
   Asis.Declarations,
-  Asis.Definitions,
   Asis.Expressions,
   Asis.Statements,
   Asis.Text;
@@ -202,36 +201,6 @@ package body Rules.Style is
 
    -------------------------------------------------------------------------
    --
-   -- Declarations for the positional_association subrule
-   --                      **********************
-   --
-
-   type Extended_Association_Names is (Na_No_Association,
-                                       Na_Pragma,       Na_Call,            Na_Instantiation,
-                                       Na_Discriminant, Na_Array_Aggregate, Na_Record_Aggregate);
-   subtype Association_Names is Extended_Association_Names
-           range Extended_Association_Names'Succ (Na_No_Association) .. Extended_Association_Names'Last;
-   subtype Exceptionable_Association_Names is Association_Names range Na_Pragma .. Na_Instantiation;
-
-   package Named_Parameter_Flag_Utilities is new Framework.Language.Flag_Utilities
-     (Flags  => Extended_Association_Names,
-      Prefix => "Na_" );
-
-   type Association_Usage is array (Association_Names) of Boolean;
-   Association_Used : Association_Usage := (others => False);
-
-   type Association_Context is new Basic_Rule_Context with
-      record
-         Allowed_Number  : Asis.ASIS_Natural;
-         Except_Operator : Boolean;
-      end record;
-
-   Positional_Exceptions : array (Exceptionable_Association_Names) of Context_Store;
-   -- A Context_Store of Null_Context to flag entities that need not obey the rule
-
-
-   -------------------------------------------------------------------------
-   --
    -- Declarations for the renamed_entity subrule
    --                      **************
 
@@ -296,14 +265,6 @@ package body Rules.Style is
 
       User_Message ("For parameter_order:");
       Extended_Modes_Utilities.Help_On_Modifiers(Header => "   parameter (2..): list of");
-
-      User_Message ("For positional_association:");
-      Named_Parameter_Flag_Utilities.Help_On_Flags
-        (Header      => "   Parameter (2..): [not_operator]",
-         Extra_Value => "",
-         Footer      => "(default = all)");
-      User_Message ("   each value may be followed by allowed number of occurrences");
-      User_Message ("   and entities not required to follow the rule");
    end Help;
 
    -----------------
@@ -313,20 +274,17 @@ package body Rules.Style is
    procedure Add_Control(Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Asis;
       use Framework.Language, Ada.Strings.Wide_Unbounded;
-      use Casing_Flag_Utilities, Literal_Flag_Utilities, Multiple_Flag_Utilities, Named_Parameter_Flag_Utilities;
+      use Casing_Flag_Utilities, Literal_Flag_Utilities, Multiple_Flag_Utilities;
       use Place_Flag_Utilities, Subrules_Flag_Utilities;
 
-      Subrule    : Subrules;
-      Max        : ASIS_Integer;
-      Except_Op  : Boolean;
-      Assoc      : Extended_Association_Names;
-      Next_Assoc : Extended_Association_Names;
-      Multiple   : Multiple_Names;
-      Lit_Kind   : Literal_Names;
-      Places     : Place_Set := (others => False);
-      P          : Place_Names;
-      Flexible   : Boolean;
-      Is_Max     : Boolean;
+      Subrule  : Subrules;
+      Max      : ASIS_Integer;
+      Multiple : Multiple_Names;
+      Lit_Kind : Literal_Names;
+      Places   : Place_Set := (others => False);
+      P        : Place_Names;
+      Flexible : Boolean;
+      Is_Max   : Boolean;
    begin
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => False);
@@ -549,72 +507,6 @@ package body Rules.Style is
                end;
                Rule_Used (Subrule) := True;
                Associate (Contexts, Value (Image (Subrule, Lower_Case)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-
-            when St_Positional_Association =>
-               if Parameter_Exists and then not Is_Integer_Parameter then
-                  Except_Op := Get_Modifier ("NOT_OPERATOR");
-                  Assoc     := Get_Flag_Parameter (Allow_Any => False);
-
-                  Association_Parameters :
-                  loop
-                     if Assoc = Na_No_Association then
-                        -- This is possible if the user specified "No_Association" the first time,
-                        -- or "not_operator no_association" later. Quite unlikely, but this is not
-                        -- a reason to ignore that case
-                        Parameter_Error (Rule_Id, "Not a valid parameter: No_Association");
-                     end if;
-
-                     if Except_Op and Assoc /= Na_Call then
-                        Parameter_Error (Rule_Id, "Not_Operator can be specified only with ""call""");
-                     end if;
-                     Association_Used (Assoc) := True;
-
-                     if Parameter_Exists and then Is_Integer_Parameter then
-                        Max := Get_Integer_Parameter (Min => 0);
-                     else
-                        Max := 0;
-                     end if;
-                     Associate (Contexts,
-                                Value (Image (St_Positional_Association) & Image (Assoc)),
-                                Association_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Max, Except_Op));
-                     exit when not Parameter_Exists;
-
-                     Except_Op  := Get_Modifier ("NOT_OPERATOR");
-                     Next_Assoc := Get_Flag_Parameter (Allow_Any => not Except_Op);
-
-                     if not Except_Op and Next_Assoc = Na_No_Association then
-                        -- exception entities
-                        if Assoc not in Exceptionable_Association_Names then
-                           Parameter_Error (Rule_Id, "no exempted entities allowed for """
-                                            & Image (Assoc, Lower_Case) & '"');
-                        end if;
-
-                        loop
-                           Associate (Positional_Exceptions (Assoc), Get_Entity_Parameter, Null_Context);
-                           exit Association_Parameters when not Parameter_Exists;
-
-                           Except_Op  := Get_Modifier ("NOT_OPERATOR");
-                           Next_Assoc := Get_Flag_Parameter (Allow_Any => not Except_Op);
-                           exit when Except_Op or Next_Assoc /= Na_No_Association;
-                        end loop;
-                     end if;
-                     Assoc := Next_Assoc;
-                  end loop Association_Parameters;
-               else
-                  if Parameter_Exists then
-                     -- Must be integer parameter
-                     Max := Get_Integer_Parameter (Min => 0);
-                  else
-                     Max := 0;
-                  end if;
-                  Association_Used := (others => True);
-                  for A in Association_Names loop
-                     Associate (Contexts,
-                                Value (Image (St_Positional_Association) & Image (A)),
-                                Association_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Max, False));
-                  end loop;
-               end if;
-               Rule_Used (St_Positional_Association) := True;
          end case;
 
       else
@@ -693,15 +585,6 @@ package body Rules.Style is
                                           (Mode_Package                              => True, others => False),
                                           others => (others => False)));
             Order_Inx := (St_Parameter_Order => 4, St_Formal_Parameter_Order => 5);
-
-         -- Positional_Association
-         Association_Used := (others => True);
-         for A in Association_Names loop
-            Associate (Contexts,
-                       Value (Image (St_Positional_Association) & Image (A)),
-                       Association_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with 0, False));
-         end loop;
-
        end if;
    exception
       when Already_In_Store =>
@@ -725,9 +608,6 @@ package body Rules.Style is
             String_Count      := 0;
             Permitted_Places  := (others => (others => False));
             Flexible_Clause   := False;
-            for Assoc in Positional_Exceptions'Range loop
-               Clear (Positional_Exceptions (Assoc));
-            end loop;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);
@@ -1081,124 +961,6 @@ package body Rules.Style is
       end if;
 
    end Process_Identifier;
-
-   --------------------------
-   -- Process__Association --
-   --------------------------
-
-   procedure Process_Association (Association : in Asis.Association) is
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Expressions, Asis.Elements, Asis.Statements;
-      use Thick_Queries;
-
-      procedure Check_Association (Na                  : Association_Names;
-                                   Ident               : Asis.Element;
-                                   Is_Positional       : Boolean;
-                                   Associations_Length : List_Index;
-                                   Is_Operator         : Boolean := False)
-      is
-         use Named_Parameter_Flag_Utilities, Framework.Reports;
-      begin
-         if Association_Used (Na) and Is_Positional then
-            if Na in Exceptionable_Association_Names then
-               declare
-                  Indicator : constant Root_Context'Class
-                    := Matching_Context (Positional_Exceptions (Na), Ident, Extend_To => All_Extensions);
-               begin
-                  if Indicator /= No_Matching_Context then
-                     return;
-                  end if;
-               end;
-            end if;
-
-            declare
-               Ctx : constant Association_Context
-                 := Association_Context (Corresponding_Context (St_Positional_Association, Image (Na)));
-            begin
-               if Is_Operator and Ctx.Except_Operator then
-                  return;
-               end if;
-               if Associations_Length > Ctx.Allowed_Number then
-                  Report (Rule_Id,
-                          Ctx,
-                          Get_Location (Association),
-                          "positional association used in " & Image (Na, Lower_Case)
-                          & Choose (Ctx.Allowed_Number = 0,
-                              "",
-                              " with more than " & ASIS_Integer_Img (Ctx.Allowed_Number) & " element(s)"));
-               end if;
-            end;
-         end if;
-      end Check_Association;
-
-      Encl   : Asis.Element;
-      Called : Asis.Element;
-   begin -- Process_Association
-      if not Rule_Used (St_Positional_Association) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      Encl := Enclosing_Element (Association);
-      case Association_Kind (Association) is
-         when Not_An_Association =>
-            Failure ("Not an association", Association);
-         when A_Discriminant_Association =>
-            Check_Association (Na_Discriminant,
-                               Nil_Element,
-                               Is_Nil (Discriminant_Selector_Names (Association)),
-                               Discriminant_Associations (Encl)'Length);
-         when A_Record_Component_Association =>
-            Check_Association (Na_Record_Aggregate,
-                               Nil_Element,
-                               Is_Nil (Record_Component_Choices (Association)),
-                               Record_Component_Associations (Encl)'Length);
-         when An_Array_Component_Association =>
-            Check_Association (Na_Array_Aggregate,
-                               Nil_Element,
-                               Is_Nil (Array_Component_Choices (Association)),
-                               Array_Component_Associations (Encl)'Length);
-         when A_Pragma_Argument_Association =>
-            Check_Association (Na_Pragma,
-                               Encl,
-                               Is_Nil (Formal_Parameter (Association)),
-                               Pragma_Argument_Associations (Encl)'Length);
-         when A_Parameter_Association =>
-            -- Do not check infix (operators) function calls or attribute functions and procedures
-            if Expression_Kind (Encl) = A_Function_Call then
-               if Is_Prefix_Call (Encl) and then Expression_Kind (Prefix (Encl)) /= An_Attribute_Reference then
-                  Check_Association (Na_Call,
-                                     Called_Simple_Name (Encl),
-                                     Is_Nil (Formal_Parameter (Association)),
-                                     Function_Call_Parameters (Encl)'Length,
-                                     Operator_Kind (Simple_Name (Prefix (Encl))) /= Not_An_Operator);
-               end if;
-            elsif Statement_Kind (Encl) = A_Procedure_Call_Statement then
-               Called := Called_Simple_Name (Encl);
-               if Expression_Kind (Called) /= An_Attribute_Reference then
-                  Check_Association (Na_Call,
-                                     Called,
-                                     Is_Nil (Formal_Parameter (Association)),
-                                     Call_Statement_Parameters (Encl)'Length);
-               end if;
-            else
-               -- Entries, cannot be attributes...
-               Called := Called_Simple_Name (Encl);
-               if Expression_Kind (Called) = An_Indexed_Component then
-                  -- Member of a family
-                  Called := Prefix (Called);
-               end if;
-               Check_Association (Na_Call,
-                                  Called,
-                                  Is_Nil (Formal_Parameter (Association)),
-                                  Call_Statement_Parameters (Encl)'Length);
-            end if;
-         when A_Generic_Association =>
-            Check_Association (Na_Instantiation,
-                               Generic_Unit_Name (Encl),
-                               Is_Nil (Formal_Parameter (Association)),
-                               Generic_Actual_Part (Encl)'Length);
-      end case;
-   end Process_Association;
 
    --------------------------------
    -- Process_Compound_Statement --
