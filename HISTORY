@@ -19,6 +19,8 @@ Expressions:
   and_logical, and_binary, or_array, or_logical, or_binary, xor_array,
   xor_logical, xor_binary.
 
+  Subrule Mixed_Operators considers membership tests and short circuit forms
+
 Global_References:
    Added subrules read, written
 

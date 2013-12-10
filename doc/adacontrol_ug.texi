@@ -4475,7 +4475,10 @@ category cannot be specified for this subrule.
 @code{mixed_operators} controls expressions that involve several
 different operators, without parentheses. In a sense, it extends the
 language rule that forbids mixing @code{@b{and}} and @code{@b{or}} in
-logical expressions to all other operators.
+logical expressions to all other operators. Note that for the purpose
+of this subrule, membership tests (@code{@b{in}}, @code{@b{not in}})
+and short circuit forms (@code{@b{and then}}, @code{@b{or else}}) are
+considered operators.
 @item
 @code{prefixed_operator} controls calls to operators that use prefixed
 notation (i.e. @code{"+"(A, B)}). If a category is specified, only

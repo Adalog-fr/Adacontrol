@@ -330,6 +330,45 @@ package body Rules.Expressions is
    end Do_Operator_Report;
 
 
+   ---------------------
+   -- Do_Mixed_Report --
+   ---------------------
+
+   procedure Do_Mixed_Report (Call : Asis.Expression; Parameter : Asis.Expression) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Reports;
+   begin
+      case Expression_Kind (Parameter) is
+         when A_Function_Call =>
+            if not Is_Prefix_Call (Parameter)
+              and then (Expression_Kind (Call) /= A_Function_Call
+                        or else Operator_Kind (Prefix (Parameter)) /= Operator_Kind (Prefix (Call)))
+            then
+               Report (Rule_Id,
+                       Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
+                       Get_Location (Prefix (Parameter)),
+                       "Unparenthesized mixed operators in expression");
+            end if;
+         when An_And_Then_Short_Circuit | An_Or_Else_Short_Circuit =>
+            if Expression_Kind (Call) /= Expression_Kind (Parameter) then
+               Report (Rule_Id,
+                       Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
+                       Get_Location (Short_Circuit_Operation_Left_Expression (Parameter)),
+                       "Unparenthesized mixed operators in expression");
+            end if;
+         when An_In_Membership_Test | A_Not_In_Membership_Test =>
+            if Expression_Kind (Call) /= Expression_Kind (Parameter) then
+               Report (Rule_Id,
+                       Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
+                       Get_Location (Membership_Test_Expression (Parameter)),
+                       "Unparenthesized mixed operators in expression");
+            end if;
+         when others =>
+            null;
+      end case;
+   end Do_Mixed_Report;
+
+
    ---------------------------
    -- Process_Function_Call --
    ---------------------------
@@ -339,7 +378,7 @@ package body Rules.Expressions is
    --                   And, Or, Xor
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
-      Called : Asis.Expression := Called_Simple_Name (Call);
+      Called : Asis.Expression  := Called_Simple_Name (Call);
       Iter   : Context_Iterator := Categories_Iterator.Create;
    begin
       if Is_Nil (Called) then
@@ -364,30 +403,16 @@ package body Rules.Expressions is
          end if;
 
          -- Mixed_Operators
-         if Rule_Used (E_Mixed_Operators)
-           and then not Is_Prefix_Call (Call)
-           and then
-             (        Operator_Kind (Called) in A_Plus_Operator     .. A_Concatenate_Operator  -- Binary adding ops
-              or else Operator_Kind (Called) in A_Multiply_Operator .. A_Rem_Operator          -- Binary mutiplying ops
-              or else Operator_Kind (Called) =  An_Exponentiate_Operator)                      -- Binary highest ops
-         then
+         if Rule_Used (E_Mixed_Operators) and then not Is_Prefix_Call (Call) then
             declare
                Params : constant Asis.Association_List := Function_Call_Parameters (Call);
-               Expr   : Asis.Expression;
                Called_Kind : constant Asis.Operator_Kinds := Operator_Kind (Called);
             begin
-               for P in Params'Range loop
-                  Expr := Actual_Parameter (Params (P));
-                  if Expression_Kind (Expr) = A_Function_Call
-                    and then not Is_Prefix_Call (Expr)
-                    and then Operator_Kind (Prefix (Expr)) /= Called_Kind
-                  then
-                     Report (Rule_Id,
-                             Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
-                             Get_Location (Prefix (Expr)),
-                             "Unparenthesized mixed operators in expression");
-                  end if;
-               end loop;
+               if Called_Kind /= Not_An_Operator and Params'Length = 2 then -- Only binary operators
+                  for P in Params'Range loop
+                     Do_Mixed_Report (Call, Actual_Parameter (Params (P)));
+                  end loop;
+               end if;
             end;
          end if;
       end if;
@@ -674,6 +699,7 @@ package body Rules.Expressions is
 
          when An_In_Membership_Test =>
             Do_Report (E_In, Get_Next_Word_Location (Membership_Test_Expression (Expression)));
+
             if Rule_Used (E_Static_Membership) then
                declare
                   Choices : constant Asis.Element_List := Membership_Test_Choices (Expression);
@@ -686,8 +712,13 @@ package body Rules.Expressions is
                end;
             end if;
 
+            if Rule_Used (E_Mixed_Operators) then
+               Do_Mixed_Report (Expression, Membership_Test_Expression (Expression));
+            end if;
+
          when A_Not_In_Membership_Test =>
             Do_Report (E_Not_In, Get_Next_Word_Location (Membership_Test_Expression (Expression)));
+
             if Rule_Used (E_Static_Membership) then
                declare
                   Choices : constant Asis.Element_List := Membership_Test_Choices (Expression);
@@ -698,6 +729,10 @@ package body Rules.Expressions is
                      Do_Report (E_Static_Membership, Get_Location (Choices (1)));
                   end if;
                end;
+            end if;
+
+            if Rule_Used (E_Mixed_Operators) then
+               Do_Mixed_Report (Expression, Membership_Test_Expression (Expression));
             end if;
 
          when An_Indexed_Component
@@ -717,8 +752,18 @@ package body Rules.Expressions is
          when An_And_Then_Short_Circuit =>
             Do_Report (E_And_Then, Get_Next_Word_Location (Short_Circuit_Operation_Left_Expression(Expression)));
 
+            if Rule_Used (E_Mixed_Operators) then
+               Do_Mixed_Report (Expression, Short_Circuit_Operation_Left_Expression  (Expression));
+               Do_Mixed_Report (Expression, Short_Circuit_Operation_Right_Expression (Expression));
+            end if;
+
          when An_Or_Else_Short_Circuit =>
             Do_Report (E_Or_Else, Get_Next_Word_Location (Short_Circuit_Operation_Left_Expression(Expression)));
+
+            if Rule_Used (E_Mixed_Operators) then
+               Do_Mixed_Report (Expression, Short_Circuit_Operation_Left_Expression  (Expression));
+               Do_Mixed_Report (Expression, Short_Circuit_Operation_Right_Expression (Expression));
+            end if;
 
          when A_Named_Array_Aggregate
             | A_Positional_Array_Aggregate
