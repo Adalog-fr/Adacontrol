@@ -293,6 +293,11 @@ package body Rules.Positional_Associations is
                                               (Association_Value (All_Associations (A))))
                         then
                            Count := Count + 1;
+                        elsif Expression_Kind (Strip_Parentheses (Expr)) = A_Character_Literal
+                          and then Is_Character_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition
+                                                         (Association_Value (All_Associations (A))))
+                        then
+                           Count := Count + 1;
                         end if;
                   end case;
                end loop;
