@@ -66,7 +66,7 @@ package body Rules.Declarations is
       D_Anonymous_Subtype_For,           D_Anonymous_Subtype_Indexing,        D_Array,
       D_Array_Type,
 
-      D_Binary_Modular_Type,
+      D_Binary_Modular_Type,             D_Box_Defaulted_Formal_Function,     D_Box_Defaulted_Formal_Procedure,
 
       D_Character_Literal,               D_Child_Unit,                        D_Class_Wide_Constant,
       D_Class_Wide_Variable,             D_Constant,                          D_Constrained_Array_Constant,
@@ -97,9 +97,10 @@ package body Rules.Declarations is
 
       D_Modular_Type,                    D_Multiple_Names,                    D_Multiple_Protected_Entries,
 
-      D_Named_Number,                    D_Non_Binary_Modular_Type,           D_Non_Identical_Operator_Renaming,
-      D_Non_Identical_Renaming,          D_Non_Joint_CE_NE_Handler,           D_Non_Limited_Private_Type,
-      D_Not_Operator_Renaming,           D_Null_Extension,                    D_Null_Ordinary_Record_Type,
+      D_Name_Defaulted_Formal_Function,  D_Name_Defaulted_Formal_Procedure,   D_Named_Number,
+      D_Non_Binary_Modular_Type,         D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,
+      D_Non_Joint_CE_NE_Handler,         D_Non_Limited_Private_Type,          D_Not_Operator_Renaming,
+      D_Null_Defaulted_Formal_Procedure, D_Null_Extension,                    D_Null_Ordinary_Record_Type,
       D_Null_Procedure,                  D_Null_Procedure_Body,               D_Null_Procedure_Declaration,
       D_Null_Tagged_Type,
 
@@ -1471,11 +1472,37 @@ package body Rules.Declarations is
          when A_Formal_Function_Declaration =>
             Do_Report (D_Formal_Function, Element);
 
+            case Default_Kind (Element) is
+               when Not_A_Default =>
+                  Failure ("Declarations: Not_A_Default (1)");
+               when A_Name_Default =>
+                  Do_Report (D_Name_Defaulted_Formal_Function, Element);
+               when A_Box_Default =>
+                  Do_Report (D_Box_Defaulted_Formal_Function, Element);
+               when A_Null_Default =>
+                  Failure ("Declarations: A_Null_Default");
+               when A_Nil_Default =>
+                  null;
+            end case;
+
          when A_Formal_Package_Declaration | A_Formal_Package_Declaration_With_Box =>
             Do_Report (D_Formal_Package, Element);
 
          when A_Formal_Procedure_Declaration =>
             Do_Report (D_Formal_Procedure, Element);
+
+            case Default_Kind (Element) is
+               when Not_A_Default =>
+                  Failure ("Declarations: Not_A_Default (1)");
+               when A_Name_Default =>
+                  Do_Report (D_Name_Defaulted_Formal_Procedure, Element);
+               when A_Box_Default =>
+                  Do_Report (D_Box_Defaulted_Formal_Procedure, Element);
+               when A_Null_Default =>
+                  Do_Report (D_Null_Defaulted_Formal_Procedure, Element);
+               when A_Nil_Default =>
+                  null;
+            end case;
 
          when A_Formal_Type_Declaration =>
             Do_Report (D_Formal_Type, Element);

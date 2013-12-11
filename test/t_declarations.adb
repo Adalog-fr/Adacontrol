@@ -159,7 +159,7 @@ procedure T_declarations is       -- library_procedure
    for T_Fixed1'Small use 0.01;
    type T_Fixed2 is delta 0.01 digits 7;                     -- decimal_fixed_type, fixed_type
 
-   generic                                                          -- Nested_Generic_Procedure, generic
+   generic                                                          -- Nested Generic_Procedure, generic
       I : Integer := 1;                                             -- defaulted_generic_parameter
    procedure P (J : Integer := 1; K : in out Float; L : out Float); -- Defaulted_Parameter, In_Out_Parameter, Out_Parameter
    procedure P (J : Integer := 1; K : in out Float; L : out Float) is begin null; end; -- null_procedure_body, null_procedure
@@ -251,11 +251,16 @@ procedure T_declarations is       -- library_procedure
    function F2  (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
    function "*" (X, Y : Integer) return Integer renames Standard."*";   -- renaming_as_declaration, renaming, operator_renaming, multiple_names
 
-   generic                                                                    -- Nested_Generic_Package, generic
+   generic                                                                    -- Nested Generic_Package, generic
       Global : in out Integer;                                                -- in_out_generic_parameter
       type T is private;                                                      -- formal type
-      with procedure Formal_P;                                                -- formal_procedure
-      with function Formal_F return Integer;                                  -- formal_function
+      with procedure Formal_P1;                                               -- formal_procedure
+      with procedure Formal_P2 is <>;                                         -- formal_procedure, box_defaulted_formal_procedure
+      with procedure Formal_P3 is Test_Self_SP;                               -- formal_procedure, name_defaulted_formal_procedure
+      with procedure Formal_P4 is null;                                       -- formal_procedure, null_defaulted_formal_procedure
+      with function  Formal_F1 return Integer;                                -- formal_function
+      with function  Formal_F2 return Integer is <>;                          -- formal_function, box_defaulted_formal_function
+      with function  Formal_F3 return Integer is Pack2.F_As_Body;             -- formal_function, name_defaulted_formal_function
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
