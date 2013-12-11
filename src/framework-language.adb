@@ -91,7 +91,7 @@ package body Framework.Language is
             Next_Token;
             In_Parameters := False;
          when others =>
-            Syntax_Error ("Unexpected element after parameter", Current_Token.Position);
+            Syntax_Error ("',' or ')' expected after parameter", Current_Token.Position);
       end case;
    end Next_Parameter;
 

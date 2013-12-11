@@ -6938,7 +6938,7 @@ to a record and forget to update the associated representation clause,
 there will be no compilation error. The ``incomplete_record'' subrule
 is handy for making sure that this does not happen.
 
-Derived types with a representation clause may incur efficiently
+Derived types with a representation clause may suffer an efficiency
 penalty, since calling an inherited subrograms requires a change of
 representation.  Representation clauses for tagged types are dubious,
 since these types have hidden fields added by the compiler.
