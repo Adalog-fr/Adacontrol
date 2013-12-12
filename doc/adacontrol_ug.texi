@@ -5277,7 +5277,7 @@ the same name.
 @example
 <control_kind> local_hiding [(<subrule> @{,"<allowed pattern>"@})];
 <subrule>   ::= @{<exception>@}  strict | overloading
-<exception> ::= not_operator | not_enumeration
+<exception> ::= not_operator | not_enumeration | not_identical_renaming
 @end example
 
 @subsection Action
@@ -5294,11 +5294,16 @@ declarations of operators (i.e. things like ``@code{"+"}''). If
 ``not_enumeration'' is mentionned, the subrule does not apply to the
 hiding/overloading of enumeration literals by other enumeration
 literals (the  rule still applies to the hiding/overloading of
-functions by enumeration litterals, for example). If one or more
-<allowed pattern> are given, hiding (or overloading) of identifiers
-that match one of the patterns are not reported. The whole syntax for
-regular expressions is allowed for the pattern, but the matching is
-always case insensitive. @xref{Syntax of regular expressions}.
+functions by enumeration litterals, for example). If
+``not_identical_renaming'' is mentionned (only allowed with
+``strict''), the subrule does not apply to renamings where the
+renaming name is the same as the name of the renamed entity.
+
+If one or more <allowed pattern> are given, hiding (or overloading) of
+identifiers that match one of the patterns are not reported. The whole
+syntax for regular expressions is allowed for the pattern, but the
+matching is always case insensitive. @xref{Syntax of regular
+expressions}.
 
 This rule can be given only once for ``strict'' and once for
 ``overloading''.

@@ -68,7 +68,7 @@ package body Rules.Local_Hiding is
    type Subrules is (Strict, Overloading);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Modifiers is (Not_Operator, Not_Enumeration);
+   type Modifiers is (Not_Operator, Not_Enumeration, Not_Identical_Renaming);
    package Modifiers_Flag_Utilities is new Framework.Language.Modifier_Utilities (Modifiers);
 
    type Rule_Usage is array (Subrules) of Boolean;
@@ -80,6 +80,7 @@ package body Rules.Local_Hiding is
 
    Include_Op         : Rule_Usage;
    Include_Enum       : Rule_Usage;
+   Exclude_Renaming   : Boolean;     -- Simple boolean since not allowed for Overloading
    Allowed_Patterns   : array (Subrules) of Framework.Pattern_Queues.Queue;
    Overloading_Report : aliased Verbosity_Type.Object := (Value => Detailed);
 
@@ -134,6 +135,15 @@ package body Rules.Local_Hiding is
          Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
          Include_Op   (Subrule) := not Modif_Specified (Not_Operator);
          Include_Enum (Subrule) := not Modif_Specified (Not_Enumeration);
+         case Subrule is
+            when Overloading =>
+               if Modif_Specified (Not_Identical_Renaming) then
+                  Parameter_Error (Rule_Id, "Not_Identical_Renaming cannot be specified with Overloading");
+               end if;
+            when Strict =>
+               Exclude_Renaming := Modif_Specified (Not_Identical_Renaming);
+         end case;
+
          while Parameter_Exists loop
             if Is_String_Parameter then
                declare
@@ -153,6 +163,7 @@ package body Rules.Local_Hiding is
          Rule_Used    (Strict) := True;
          Rule_Context (Strict) := Basic.New_Context (Ctl_Kind, Ctl_Label);
          Include_Op   (Strict) := True;
+         Exclude_Renaming      := False;
       end if;
    end Add_Control;
 
@@ -201,11 +212,14 @@ package body Rules.Local_Hiding is
       First_Name : Asis.Defining_Name;
 
       function Not_An_Appropriate_Name return Boolean is
-         -- This function detects names that are not to be processed by this rule, since
-         -- they do not hide anything nor can they be hidden:
-         --   - Names of record components (but not protected components), including discriminants
-         --   - Names of formal parameters in a SP renaming declaration
-         --   - Names of formal parameters in the declaration of an access to SP type
+      -- This function detects names that are not to be processed by this rule, since
+      -- they do not hide anything nor can they be hidden:
+      --   - Names of record components (but not protected components), including discriminants
+      --   - Names of formal parameters in a SP renaming declaration
+      --   - Names of formal parameters in the declaration of an access to SP type
+      -- or because they are identical renamings with the appropriate option
+         use Asis.Expressions;
+
          Decl           : constant Asis.Declaration := Enclosing_Element (Name);
          Decl_Enclosing : constant Asis.Element     := Enclosing_Element (Decl);
       begin
@@ -226,6 +240,17 @@ package body Rules.Local_Hiding is
                   when others =>
                      Failure ("Unexpected enclosing of name declaration", Decl_Enclosing);
                end case;
+            when A_Renaming_Declaration =>
+               if Exclude_Renaming then
+                  declare
+                     Renamed : constant Asis.Expression := Simple_Name (Renamed_Entity (Decl));
+                  begin
+                     return Expression_Kind (Renamed) = An_Identifier -- Not an indexed component...
+                       and then To_Upper (Defining_Name_Image (Name)) = To_Upper (Name_Image (Renamed));
+                  end;
+               else
+                  return False;
+               end if;
             when others =>
                return False;
          end case;

@@ -26,6 +26,9 @@ Expressions:
 
   Subrule Mixed_Operators considers membership tests and short circuit forms
 
+Local_Hiding:
+   Added modifier Not_Identical_Renaming
+
 Global_References:
    Added subrules read, written
 

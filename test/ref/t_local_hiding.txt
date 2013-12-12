@@ -1,3 +1,4 @@
+t_local_hiding.adb:4:4: Error: Hiding: "Text_Io" hides declaration at t_local_hiding.adb:1:15
 t_local_hiding.adb:4:4: Error: Hiding: "Text_Io" hides declaration at t_local_hiding.adb:1:6
 t_local_hiding.adb:13:7: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
 t_local_hiding.adb:15:17: Found: Overloading: "P{}" overloads declaration at t_local_hiding.adb:12:14
@@ -39,12 +40,12 @@ t_local_hiding.adb:76:23: Error: Hiding: "P{Standard.Integer}" hides declaration
 t_local_hiding.adb:77:16: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
 t_local_hiding.adb:82:10: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
 t_local_hiding.adb:86:10: Error: Hiding: "Z" hides declaration at t_local_hiding.adb:47:7
-t_local_hiding.adb:102:7: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
-t_local_hiding.adb:112:13: Error: Hiding: "Y" hides declaration at t_local_hiding.adb:110:12
-t_local_hiding.adb:116:12: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
-t_local_hiding.adb:139:19: Found: Overloading: "A{ return T_Local_Hiding._Anonymous_.T1}" overloads declaration at t_local_hiding.adb:134:16
-t_local_hiding.adb:140:19: Found: Overloading: "A{ return T_Local_Hiding._Anonymous_.T2}" overloads declaration at t_local_hiding.adb:134:16
-t_local_hiding.adb:141:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:140:19
-t_local_hiding.adb:141:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:139:19
-t_local_hiding.adb:141:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:134:16
-t_local_hiding.adb:162:10: Error: Hiding: "Instance1" hides declaration at t_local_hiding.adb:152:7
+t_local_hiding.adb:103:7: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:113:13: Error: Hiding: "Y" hides declaration at t_local_hiding.adb:111:12
+t_local_hiding.adb:117:12: Error: Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:140:19: Found: Overloading: "A{ return T_Local_Hiding._Anonymous_.T1}" overloads declaration at t_local_hiding.adb:135:16
+t_local_hiding.adb:141:19: Found: Overloading: "A{ return T_Local_Hiding._Anonymous_.T2}" overloads declaration at t_local_hiding.adb:135:16
+t_local_hiding.adb:142:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:141:19
+t_local_hiding.adb:142:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:140:19
+t_local_hiding.adb:142:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:135:16
+t_local_hiding.adb:163:10: Error: Hiding: "Instance1" hides declaration at t_local_hiding.adb:153:7

@@ -1,4 +1,4 @@
-with Text_IO;
+with Text_IO, Text_IO.Complex_IO;
 procedure T_local_hiding is
    X : Integer;     -- OK
    Text_IO : Float; -- Hiding
@@ -97,6 +97,7 @@ procedure T_local_hiding is
 
    procedure Sep_Proc (A, B : Integer) is separate;
 
+   generic package Complex_IO renames Standard.Text_IO.Complex_IO; -- OK (identical names);
 begin
    declare
       X : Integer; -- Hiding
