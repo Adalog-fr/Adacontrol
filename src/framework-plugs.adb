@@ -252,6 +252,7 @@ package body Framework.Plugs is
 
                when A_Defining_Operator_Symbol =>
                   Rules.Local_Hiding.      Process_Defining_Name (Element);
+                  Rules.Naming_Convention. Process_Defining_Name (Element);
                   Rules.Reduceable_Scope.  Process_Defining_Name (Element);
                   Rules.Style.             Process_Identifier    (Element);
 

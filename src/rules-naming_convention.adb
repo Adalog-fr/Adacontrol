@@ -1080,8 +1080,8 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Generic_Formal_Function));
 
                   when A_Function_Body_Declaration
-                    | A_Function_Body_Stub
-                    =>
+                     | A_Function_Body_Stub
+                     =>
                      -- Check body only if there is no explicit spec
                      if Is_Nil (Corresponding_Declaration (Decl)) then
                         Check (Name_Str, (K_All, K_Subprogram, K_Function));
