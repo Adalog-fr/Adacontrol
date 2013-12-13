@@ -6348,12 +6348,14 @@ for all callable entities (i.e. functions, procedures and entries).
 @subsection Syntax
 @example
 <control_kind> parameter_declarations (<subrule> [,<bounds>] @{,<callable>@});
-<subrule>  ::= all_parameters | in_parameters     | defaulted_parameters |
-               out_parameters | in_out_parameters | access_parameters    |
-               class_wide_parameter | single_out_parameter
+<subrule>  ::= all_parameters    | in_parameters         | defaulted_parameters |
+               out_parameters    | in_out_parameters     | access_parameters    |
+               tagged_parameters | class_wide_parameters | single_out_parameter
 <bounds>    ::= min|max <value> [, min|max <value> ]
-<callable> ::= function           | procedure           | protected_entry |
-               protected_function | protected_procedure | task_entry
+<callable> ::= function             | procedure             | 
+               dispatching_function | dispatching_procedure | 
+               protected_function   | protected_procedure   | 
+               protected_entry      | task_entry
 @end example
 
 @subsection Action
@@ -6369,23 +6371,31 @@ parameters is less than the given ``min'' or greater than the given
 same, counting only parameters of modes @code{@b{in}},
 @code{@b{out}}, or @code{@b{in out}} respectively.
 @item
+``defaulted_parameters'': Does the same, counting only parameters
+declared with an explicit default expression.
+@item
 ``access_parameters'': Does the same, counting only (anonymous) access
 parameters.
 @item
+``tagged_parameters'': Does the same, counting only parameters of
+a specific tagged type.
+@item
 ``class_wide_parameters'': Does the same, counting only parameters of
 a class-wide type.
-@item
-``defaulted_parameters'': Does the same, counting only parameters
-declared with an explicit default expression.
 @item
 ``single_out_parameter'': Controls callable entities that have exactly
 one @code{@b{out}} parameter. Procedures with a single  @code{@b{out}}
 parameter might be candidates to becoming functions.
 @end itemize
 
-If one or more <callable_kind> is specified after the <value>, the rule
-applies only to the corresponding declaration(s), otherwise it applies
-to all callable entities.
+If one or more <callable_kind> is specified after the <value>, the
+rule applies only to the corresponding declaration(s), otherwise it
+applies to all callable entities. ``dispatching_function'' and
+``dispatching_procedure'' allow different counts for dispatching
+subprograms (i.e. primitive subprograms of a tagged type).  If
+``dispatching_function'' or ``dispatching_procedure'' is not
+explicitely specified, ``function'' (conversely ``procedure'') applies
+also to dispatching functions (conversely dispatching procedures).
 
 This rule can be given once for each of check, search, and count for
 each subrule and each kind of entity. This way, it is possible to have
@@ -6411,6 +6421,12 @@ check parameter_declarations (single_out_parameter, procedure);
 
 -- Find all callable entities with class-wide parameters:
 search parameter_declarations (class_wide_parameters, max 0);
+
+-- Dispatching operations may have only one parameter of a tagged type:
+check parameter_declarations (tagged_parameter, 
+                              max 1, 
+                              dispatching_function, 
+                              dispatching_procedure);
 @end example
 
 @subsection Tips
@@ -6424,6 +6440,11 @@ from the corresponding generic.
 
 Note that this rule controls only ``regular'' parameters, not generic
 formal parameters.
+
+Note that dispatching operations have necessarily at least one tagged
+parameter, although a ``max 0'' could be specified in the example
+above. If you do this, all declarations of dispatching subprograms
+will be controlled. Maybe that's what you want...
 
 @node Positional_Associations, Potentially_Blocking_Operations, Parameter_Declarations, Rules reference
 @section Positional_Associations

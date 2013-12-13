@@ -39,7 +39,8 @@ Naming_Convention:
   Added subrules regular_static_constant, regular_nonstatic_constant
 
 Parameter_Declarations:
-  Added subrule class_wide_parameter
+  Added subrules tagged_parameters, class_wide_parameters.
+  Added callables dispatching_function, dispatching_parameter
 
 Statements:
   Added subrules named_exit, exit_plain_loop, simple_block,

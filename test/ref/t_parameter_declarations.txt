@@ -29,10 +29,13 @@ t_parameter_declarations.adb:101:14: Error: PARAMETER_DECLARATIONS: number of pa
 t_parameter_declarations.adb:101:14: Found: PARAMETER_DECLARATIONS: number of defaulted parameters is not in 0 .. 2 for procedure (3)
 t_parameter_declarations.adb:107:14: Error: PARAMETER_DECLARATIONS: number of parameters is not 2 for procedure (3)
 t_parameter_declarations.adb:107:14: Found: PARAMETER_DECLARATIONS: number of defaulted parameters is not in 0 .. 2 for procedure (3)
-t_parameter_declarations.adb:112:14: Error: PARAMETER_DECLARATIONS: number of parameters is not 2 for procedure (1)
-t_parameter_declarations.adb:112:14: Found: PARAMETER_DECLARATIONS: number of class-wide parameters is not 0 for procedure (1)
-t_parameter_declarations.adb:117:14: Found: PARAMETER_DECLARATIONS: number of parameters is not in 0 .. 1 for procedure (2)
-t_parameter_declarations.adb:117:14: Found: PARAMETER_DECLARATIONS: number of class-wide parameters is not 0 for procedure (2)
+t_parameter_declarations.adb:112:16: Error: PARAMETER_DECLARATIONS: number of parameters is not in 1 .. 2 for function (4)
+t_parameter_declarations.adb:113:16: Error: PARAMETER_DECLARATIONS: number of parameters is not in 1 .. 2 for function (4)
+t_parameter_declarations.adb:113:16: Found: PARAMETER_DECLARATIONS: number of tagged parameters is not in 0 .. 1 for dispatching_function (2)
+t_parameter_declarations.adb:129:14: Error: PARAMETER_DECLARATIONS: number of parameters is not 2 for procedure (1)
+t_parameter_declarations.adb:129:14: Found: PARAMETER_DECLARATIONS: number of class-wide parameters is not 0 for procedure (1)
+t_parameter_declarations.adb:134:14: Found: PARAMETER_DECLARATIONS: number of parameters is not in 0 .. 1 for procedure (2)
+t_parameter_declarations.adb:134:14: Found: PARAMETER_DECLARATIONS: number of class-wide parameters is not 0 for procedure (2)
 
 Counts summary:
-PARAMETER_DECLARATIONS: 8
+PARAMETER_DECLARATIONS: 10

@@ -51,15 +51,18 @@ package body Rules.Parameter_Declarations is
    use Framework, Framework.Language.Shared_Keys;
 
    type Subrules is (All_Parameters,
-                     In_Parameters,     Defaulted_Parameters,
-                     Out_Parameters,    In_Out_Parameters,
-                     Access_Parameters, Class_Wide_Parameters,
-                     Single_Out_Parameter);
+                     In_Parameters,         Defaulted_Parameters,
+                     Out_Parameters,        In_Out_Parameters,
+                     Access_Parameters,     Tagged_Parameters,
+                     Class_Wide_Parameters, Single_Out_Parameter);
    subtype Valued_Subrules is Subrules range All_Parameters .. Subrules'Pred(Single_Out_Parameter);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Callable_Kinds is (C_Function,           C_Procedure,           C_Protected_Entry,
-                           C_Protected_Function, C_Protected_Procedure, C_Task_Entry);
+   type Callable_Kinds is (C_Function,             C_Procedure,
+                           C_Dispatching_Function, C_Dispatching_Procedure,
+                           C_Protected_Function,   C_Protected_Procedure,   C_Protected_Entry,
+                           C_Task_Entry);
+   subtype Dispatching_Kinds is Callable_Kinds range C_Dispatching_Function .. C_Dispatching_Procedure;
    package Callable_Kinds_Flag_Utilities  is new Framework.Language.Flag_Utilities (Callable_Kinds, Prefix => "C_");
 
    type Usage is array (Subrules, Callable_Kinds) of Control_Kinds_Set;
@@ -170,6 +173,7 @@ package body Rules.Parameter_Declarations is
       end case;
    end Command;
 
+
    -------------------------
    -- Process_Declaration --
    -------------------------
@@ -246,6 +250,15 @@ package body Rules.Parameter_Declarations is
                        & Bound_Image (Ctl_Values (Access_Parameters, Entity, Ctl_Kind))
                        & " for " & Image (Entity, Lower_Case)
                        & " ("   & Biggest_Int_Img (Value) & ')');
+            when Tagged_Parameters =>
+               Report (Rule_Id,
+                       To_Wide_String (Ctl_Labels (Tagged_Parameters, Entity, Ctl_Kind)),
+                       Ctl_Kind,
+                       Loc,
+                       "number of tagged parameters is "
+                       & Bound_Image (Ctl_Values (Tagged_Parameters, Entity, Ctl_Kind))
+                       & " for " & Image (Entity, Lower_Case)
+                       & " ("   & Biggest_Int_Img (Value) & ')');
             when Class_Wide_Parameters =>
                Report (Rule_Id,
                        To_Wide_String (Ctl_Labels (Class_Wide_Parameters, Entity, Ctl_Kind)),
@@ -264,9 +277,50 @@ package body Rules.Parameter_Declarations is
          end case;
       end Do_Report;
 
+      procedure Check_Value (Subrule  : Subrules;
+                             Callable : Callable_Kinds;
+                             Value    : Biggest_Int)
+      is
+         Non_Dispatching : constant array (Dispatching_Kinds) of Callable_Kinds
+           := (C_Dispatching_Function  => C_Function,
+               C_Dispatching_Procedure => C_Procedure);
+      begin
+         if Rule_Used (Subrule, Callable) (Check)
+           and then not Is_In (Value, Ctl_Values (Subrule, Callable, Check))
+         then
+            Do_Report (Subrule, Check, Callable, Value);
+         elsif Rule_Used (Subrule, Callable) (Search)
+           and then not Is_In (Value, Ctl_Values (Subrule, Callable, Search))
+         then
+            Do_Report (Subrule, Search, Callable, Value);
+         elsif Callable in Dispatching_Kinds then
+            -- Try with the non-dispatching equivalent
+            if Rule_Used (Subrule, Non_Dispatching (Callable)) (Check)
+              and then not Is_In (Value, Ctl_Values (Subrule, Non_Dispatching (Callable), Check))
+            then
+               Do_Report (Subrule, Check, Non_Dispatching (Callable), Value);
+            elsif Rule_Used (Subrule, Non_Dispatching (Callable)) (Search)
+              and then not Is_In (Value, Ctl_Values (Subrule, Non_Dispatching (Callable), Search))
+            then
+               Do_Report (Subrule, Search, Non_Dispatching (Callable), Value);
+            end if;
+         end if;
+
+         if Rule_Used (Subrule, Callable) (Count)
+           and then not Is_In (Value, Ctl_Values (Subrule, Callable, Count))
+         then
+            Do_Report (Subrule, Count, Callable, Value);
+         elsif Callable in Dispatching_Kinds then
+            -- Try with the non-dispatching equivalent
+            if Rule_Used (Subrule, Non_Dispatching (Callable)) (Count)
+              and then not Is_In (Value, Ctl_Values (Subrule, Non_Dispatching (Callable), Count))
+            then
+               Do_Report (Subrule, Count, Non_Dispatching (Callable), Value);
+            end if;
+         end if;
+      end Check_Value;
 
       C : Callable_Kinds;
-
 
    begin  -- Process_Declaration
       if Rule_Used = (Subrules => (Callable_Kinds => Empty_Control_Kinds_Set)) then
@@ -293,6 +347,8 @@ package body Rules.Parameter_Declarations is
          when A_Procedure_Declaration =>
             if Definition_Kind (Enclosing_Element (Good_Decl)) = A_Protected_Definition then
                C := C_Protected_Procedure;
+            elsif Is_Dispatching_Operation (Good_Decl) then
+               C := C_Dispatching_Procedure;
             else
                C := C_Procedure;
             end if;
@@ -301,9 +357,17 @@ package body Rules.Parameter_Declarations is
             | A_Procedure_Body_Declaration
             | A_Procedure_Body_Stub
             =>
-            C := C_Procedure;
+            if Is_Dispatching_Operation (Good_Decl) then
+               C := C_Dispatching_Procedure;
+            else
+               C := C_Procedure;
+            end if;
          when A_Procedure_Instantiation =>
-            C         := C_Procedure;
+            if Is_Dispatching_Operation (Good_Decl) then
+               C := C_Dispatching_Procedure;
+            else
+               C := C_Procedure;
+            end if;
             Good_Decl := Corresponding_Declaration (Good_Decl);
 
          when A_Function_Declaration
@@ -311,6 +375,8 @@ package body Rules.Parameter_Declarations is
             =>
             if Definition_Kind (Enclosing_Element (Good_Decl)) = A_Protected_Definition then
                C := C_Protected_Function;
+            elsif Is_Dispatching_Operation (Good_Decl) then
+               C := C_Dispatching_Function;
             else
                C := C_Function;
             end if;
@@ -318,9 +384,17 @@ package body Rules.Parameter_Declarations is
             | A_Function_Body_Declaration
             | A_Function_Body_Stub
               =>
-            C := C_Function;
+            if Is_Dispatching_Operation (Good_Decl) then
+               C := C_Dispatching_Function;
+            else
+               C := C_Function;
+            end if;
          when A_Function_Instantiation =>
-            C         := C_Function;
+            if Is_Dispatching_Operation (Good_Decl) then
+               C := C_Dispatching_Function;
+            else
+               C := C_Function;
+            end if;
             Good_Decl := Corresponding_Declaration (Good_Decl);
 
          when An_Entry_Declaration =>
@@ -342,9 +416,9 @@ package body Rules.Parameter_Declarations is
          Def_Param_Count        : Biggest_Natural := 0;
          Out_Param_Count        : Biggest_Natural := 0;
          In_Out_Param_Count     : Biggest_Natural := 0;
+         Tagged_Param_Count     : Biggest_Natural := 0;
          Access_Param_Count     : Biggest_Natural := 0;
          Class_Wide_Param_Count : Biggest_Natural := 0;
-         Param_Count            : Biggest_Natural;
          Nb_Names               : Biggest_Natural;
       begin
          for P in Profile'Range loop
@@ -367,7 +441,15 @@ package body Rules.Parameter_Declarations is
                      In_Out_Param_Count := In_Out_Param_Count + Nb_Names;
                end case;
             end if;
-            if Rule_Used (Class_Wide_Parameters, C) /= Empty_Control_Kinds_Set then
+            if Rule_Used (Tagged_Parameters, C) /= Empty_Control_Kinds_Set then
+               if Type_Category (Object_Declaration_View (Profile (P)),
+                                 Follow_Derived     => True,
+                                 Privacy            => Follow_Private,
+                                 Separate_Extension => False) = A_Tagged_Type
+               then
+                  Tagged_Param_Count := Tagged_Param_Count + Nb_Names;
+               end if;
+            elsif Rule_Used (Class_Wide_Parameters, C) /= Empty_Control_Kinds_Set then
                if Is_Class_Wide_Subtype (Object_Declaration_View (Profile (P))) then
                   Class_Wide_Param_Count := Class_Wide_Param_Count + Nb_Names;
                end if;
@@ -377,137 +459,44 @@ package body Rules.Parameter_Declarations is
          --
          -- All_Parameters
          --
-         Param_Count := In_Param_Count + Def_Param_Count + Out_Param_Count + In_Out_Param_Count + Access_Param_Count;
-         if Rule_Used (All_Parameters, C) (Check)
-           and then not Is_In (Param_Count, Ctl_Values (All_Parameters, C, Check))
-         then
-            Do_Report (All_Parameters, Check, C, Param_Count);
-         elsif Rule_Used (All_Parameters, C) (Search)
-           and then not Is_In (Param_Count, Ctl_Values (All_Parameters, C, Search))
-         then
-            Do_Report (All_Parameters, Search, C, Param_Count);
-         end if;
-
-         if Rule_Used (All_Parameters, C) (Count)
-           and then not Is_In (Param_Count, Ctl_Values (All_Parameters, C, Count))
-         then
-            Do_Report (All_Parameters, Count, C, Param_Count);
-         end if;
+         Check_Value (All_Parameters, C, Value => In_Param_Count     + Def_Param_Count
+                                                + Out_Param_Count    + In_Out_Param_Count
+                                                + Access_Param_Count);
 
          --
          -- In_Parameters
          --
-         Param_Count := In_Param_Count + Def_Param_Count;
-         if Rule_Used (In_Parameters, C) (Check)
-           and then not Is_In (Param_Count,Ctl_Values (In_Parameters, C, Check))
-         then
-            Do_Report (In_Parameters, Check, C, Param_Count);
-         elsif Rule_Used (In_Parameters, C) (Search)
-           and then not Is_In (Param_Count, Ctl_Values (In_Parameters, C, Search))
-         then
-            Do_Report (In_Parameters, Search, C, Param_Count);
-         end if;
-
-         if Rule_Used (In_Parameters, C) (Count)
-           and then not Is_In (Param_Count, Ctl_Values (In_Parameters, C, Count))
-         then
-            Do_Report (In_Parameters, Count, C, Param_Count);
-         end if;
+         Check_Value (In_Parameters, C, Value => In_Param_Count + Def_Param_Count);
 
          --
          -- Defaulted_Parameters
          --
-         if Rule_Used (Defaulted_Parameters, C) (Check)
-           and then not Is_In (Def_Param_Count, Ctl_Values (Defaulted_Parameters, C, Check))
-         then
-            Do_Report (Defaulted_Parameters, Check, C, Def_Param_Count);
-         elsif Rule_Used (Defaulted_Parameters, C) (Search)
-           and then not Is_In (Def_Param_Count, Ctl_Values (Defaulted_Parameters, C, Search))
-         then
-            Do_Report (Defaulted_Parameters, Search, C, Def_Param_Count);
-         end if;
-
-         if Rule_Used (Defaulted_Parameters, C) (Count)
-           and then not Is_In (Def_Param_Count, Ctl_Values (Defaulted_Parameters, C, Count))
-         then
-            Do_Report (Defaulted_Parameters, Count, C, Def_Param_Count);
-         end if;
+         Check_Value (Defaulted_Parameters, C, Value => Def_Param_Count);
 
          --
          -- Out_Parameters
          --
-         if Rule_Used (Out_Parameters, C) (Check)
-           and then not Is_In (Out_Param_Count, Ctl_Values (Out_Parameters, C, Check))
-         then
-            Do_Report (Out_Parameters, Check, C, Out_Param_Count);
-         elsif Rule_Used (Out_Parameters, C) (Search)
-           and then not Is_In (Out_Param_Count, Ctl_Values (Out_Parameters, C, Search))
-         then
-            Do_Report (Out_Parameters, Search, C, Out_Param_Count);
-         end if;
-
-         if Rule_Used (Out_Parameters, C) (Count)
-           and then not Is_In (Out_Param_Count, Ctl_Values (Out_Parameters, C, Count))
-         then
-            Do_Report (Out_Parameters, Count, C, Out_Param_Count);
-         end if;
+         Check_Value (Out_Parameters, C, Value => Out_Param_Count);
 
          --
          -- In_Out_Parameters
          --
-         if Rule_Used (In_Out_Parameters, C) (Check)
-           and then not Is_In (In_Out_Param_Count, Ctl_Values (In_Out_Parameters, C, Check))
-         then
-            Do_Report (In_Out_Parameters, Check, C, In_Out_Param_Count);
-         elsif Rule_Used (In_Out_Parameters, C) (Search)
-           and then not Is_In (In_Out_Param_Count, Ctl_Values (In_Out_Parameters, C, Search))
-         then
-            Do_Report (In_Out_Parameters, Search, C, In_Out_Param_Count);
-         end if;
-
-         if Rule_Used (In_Out_Parameters, C) (Count)
-           and then not Is_In (In_Out_Param_Count, Ctl_Values (In_Out_Parameters, C, Count))
-         then
-            Do_Report (In_Out_Parameters, Count, C, In_Out_Param_Count);
-         end if;
+         Check_Value (In_Out_Parameters, C, Value => In_Out_Param_Count);
 
          --
          -- Access_Parameters
          --
-         if Rule_Used (Access_Parameters, C) (Check)
-           and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Check))
-         then
-            Do_Report (Access_Parameters, Check, C, Access_Param_Count);
-         elsif Rule_Used (Access_Parameters, C) (Search)
-           and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Search))
-         then
-            Do_Report (Access_Parameters, Search, C, Access_Param_Count);
-         end if;
+         Check_Value (Access_Parameters, C, Value => Access_Param_Count);
 
-         if Rule_Used (Access_Parameters, C) (Count)
-           and then not Is_In (Access_Param_Count, Ctl_Values (Access_Parameters, C, Count))
-         then
-            Do_Report (Access_Parameters, Count, C, Access_Param_Count);
-         end if;
+         --
+         -- Tagged_Parameters
+         --
+         Check_Value (Tagged_Parameters, C, Value => Tagged_Param_Count);
 
          --
          -- Class_Wide_Parameters
          --
-         if Rule_Used (Class_Wide_Parameters, C) (Check)
-           and then not Is_In (Class_Wide_Param_Count, Ctl_Values (Class_Wide_Parameters, C, Check))
-         then
-            Do_Report (Class_Wide_Parameters, Check, C, Class_Wide_Param_Count);
-         elsif Rule_Used (Class_Wide_Parameters, C) (Search)
-           and then not Is_In (Class_Wide_Param_Count, Ctl_Values (Class_Wide_Parameters, C, Search))
-         then
-            Do_Report (Class_Wide_Parameters, Search, C, Class_Wide_Param_Count);
-         end if;
-
-         if Rule_Used (Class_Wide_Parameters, C) (Count)
-           and then not Is_In (Class_Wide_Param_Count, Ctl_Values (Class_Wide_Parameters, C, Count))
-         then
-            Do_Report (Class_Wide_Parameters, Count, C, Class_Wide_Param_Count);
-         end if;
+         Check_Value (Class_Wide_Parameters, C, Value => Class_Wide_Param_Count);
 
          --
          -- Single_Out_Parameter

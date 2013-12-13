@@ -106,8 +106,25 @@ procedure T_Parameter_Declarations (A, B, C, D, E : Integer) is
 
    procedure Inst is new Gen;
 
-   type Tag is tagged null record;
-   subtype Tag_Wide is Tag'Class;
+   package Class_Package is
+      type Tag is tagged null record;
+      subtype Tag_Wide is Tag'Class;
+      function F4 (A : Tag; B, C, D : Integer) return Integer;
+      function F5 (A, B : Tag; C, D : Integer) return Integer;
+   end Class_Package;
+
+   package body Class_Package is
+      function F4 (A : Tag; B, C, D : Integer) return Integer is
+      begin
+         return 0;
+      end F4;
+
+      function F5 (A, B : Tag; C, D : Integer) return Integer is
+      begin
+         return 0;
+      end F5;
+   end Class_Package;
+   use Class_Package;
 
    procedure PCW1 (P1 : Tag'Class) is
    begin
