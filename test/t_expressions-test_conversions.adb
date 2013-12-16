@@ -8,6 +8,10 @@ procedure Test_Conversions is
    type Str10_New is new Str10;
    type Str10_Underived is array (Int10_New) of Character;
 
+   type Tag1 is tagged null record;
+   type Tag2 is new Tag1 with null record;
+   type Tag3 is new Tag2 with null record;
+
    I1, I2 : Integer;
    INew   : Int10_New;
    IUnd   : Int10_Underived;
@@ -15,7 +19,9 @@ procedure Test_Conversions is
    S1, S2 : Str10;
    SN     : Str10_New;
    SU     : Str10_Underived;
-
+   T1     : Tag1;
+   T2     : Tag2;
+   T3     : Tag3;
 
    procedure P1 (X : in Integer) is
    begin
@@ -50,4 +56,8 @@ begin
 
    String'Read (Stream (Standard_Input), S1);          -- complex_parameter (x2)
    String'Read (Stream (Standard_Input), String (S1)); -- complex_parameter (x2), parameter_view_conversion, <> array type_conversion, type_conversion
+
+   T1 := Tag1 (T2);            -- type_conversion, tagged upward_conversion
+   T1 := Tag1 (T3);            -- type_conversion, tagged upward_conversion
+   T3 := Tag3(Tag1'Class(T3)); -- type_conversion x2, tagged_downward_conversion, tagged upward_conversion
 end Test_Conversions;

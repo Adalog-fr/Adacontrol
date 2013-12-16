@@ -4339,29 +4339,30 @@ This rule controls usage of various kinds of expressions.
 <control_kind> expressions (<subrule> @{, <subrule>@});
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
-   and                       | and_array                        |
-   and_binary                | and_boolean                      |
-   and_then                  | array_aggregate                  |
-   array_others              | array_non_static_range           |
-   array_partial_others      | array_rang                       |
-   case                      | complex_parameter                |
-   explicit_dereference      | fixed_multiplying_op             |
-   for_all                   | for_some                         |
-   if                        | if_elsif                         |
-   if_no_else                | implicit_dereference             |
-   in                        | inconsistent_attribute_dimension |
-   inherited_function_call   | mixed_operators                  |
-   not_in                    | or                               |
-   or_array                  | or_binary                        |
-   or_boolean                | or_else                          |
-   parameter_view_conversion | prefixed_operator                |
-   real_equality             | record_partial_others            |
-   record_aggregate          | record_others                    |
-   slice                     | static_membership                |
-   type_conversion           | underived_conversion             |
-   universal_range           | unqualified_aggregate            |
-   xor                       | xor_array                        |
-   xor_binary                | xor_boolean
+   and                              | and_array                 |
+   and_binary                       | and_boolean               |
+   and_then                         | array_aggregate           |
+   array_others                     | array_non_static_range    |
+   array_partial_others             | array_rang                |
+   case                             | complex_parameter         |
+   downward_conversion              | explicit_dereference      | 
+   fixed_multiplying_op             | for_all                   | 
+   for_some                         | if                        | 
+   if_elsif                         | if_no_else                | 
+   implicit_dereference             | in                        | 
+   inconsistent_attribute_dimension | inherited_function_call   | 
+   mixed_operators                  | not_in                    | 
+   or                               | or_array                  | 
+   or_binary                        | or_boolean                | 
+   or_else                          | parameter_view_conversion | 
+   prefixed_operator                | real_equality             | 
+   record_partial_others            | record_aggregate          | 
+   record_others                    | slice                     | 
+   static_membership                | type_conversion           | 
+   upward_conversion                | underived_conversion      |
+   universal_range                  | unqualified_aggregate     |
+   xor                              | xor_array                 |
+   xor_binary                       | xor_boolean
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4509,14 +4510,18 @@ therefore always True (or false for @code{@b{not in}}).
 @item
 @code{type_conversion} controls all (sub)type conversions, while
 @code{underived_conversion} controls conversions between types that do
-@i{not} belong to the same derivation family, and
-@code{parameter_view_conversion} controls conversions that appear as
-@code{@b{out}} or @code{@b{in out}} actual parameters. One or two
-categories can be specified; if only one category is specified, only
-conversions whose result type belong to that category are
-controlled. If two categories are specified, only conversions whose
-souce type belongs to the first category and whose target type belong
-to the second category are controlled.
+@i{not} belong to the same derivation
+family. @code{downward_conversion} and @code{upward_conversion}
+control conversions between types that belong to the same family,
+converting away from the root or toward the root,
+respectively. @code{parameter_view_conversion} controls conversions
+that appear as @code{@b{out}} or @code{@b{in out}} actual parameters. 
+
+One or two categories can be specified; if only one category is
+specified, only conversions whose result type belong to that category
+are controlled. If two categories are specified, only conversions
+whose souce type belongs to the first category and whose target type
+belong to the second category are controlled.
 
 Derived types are followed, i.e. the ``real'' category from the
 original type is used for the matching; as a consequence, the ``new''
@@ -4547,6 +4552,9 @@ search expressions (array parameter_view_conversions);
 
 -- Find all "structural" conversions between arrays
 search expressions (array underived_conversion);
+
+-- Some think that downward conversions of tagged types are evil:
+check expressions (tagged downward_conversion);
 @end example
 
 @subsection Tips

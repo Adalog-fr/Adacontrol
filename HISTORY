@@ -22,7 +22,7 @@ Declarations:
 Expressions:
   Added subrules in, not_in, static_membership, and_array,
   and_logical, and_binary, or_array, or_logical, or_binary, xor_array,
-  xor_logical, xor_binary.
+  xor_logical, xor_binary, upward_conversion, downward_conversion.
 
   Subrule Mixed_Operators considers membership tests and short circuit forms
 

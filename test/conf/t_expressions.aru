@@ -19,6 +19,8 @@ Float_To_Int_Conv : search expressions (digits range type_conversion);
 View_Conv         : search expressions (parameter_view_conversion);
 Structural_Conv   : search expressions (array underived_conversion);
 Numeric_Conv      : search expressions (range underived_conversion);
+Tagged_Up         : check  expressions (tagged upward_conversion);
+Tagged_Down       : check  expressions (tagged downward_conversion);
 Ranges            : check  expressions (universal_range);
 Prefixed          : check  expressions (prefixed_operator);
 Prefixed_Float    : check  expressions (digits prefixed_operator);
