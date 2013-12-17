@@ -99,10 +99,10 @@ package body Rules.Declarations is
 
       D_Name_Defaulted_Formal_Function,  D_Name_Defaulted_Formal_Procedure,   D_Named_Number,
       D_Non_Binary_Modular_Type,         D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,
-      D_Non_Joint_CE_NE_Handler,         D_Non_Limited_Private_Type,          D_Not_Operator_Renaming,
-      D_Null_Defaulted_Formal_Procedure, D_Null_Extension,                    D_Null_Ordinary_Record_Type,
-      D_Null_Procedure,                  D_Null_Procedure_Body,               D_Null_Procedure_Declaration,
-      D_Null_Tagged_Type,
+      D_Non_Joint_CE_NE_Handler,         D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,
+      D_Not_Operator_Renaming,           D_Null_Defaulted_Formal_Procedure,   D_Null_Extension,
+      D_Null_Ordinary_Record_Type,       D_Null_Procedure,                    D_Null_Procedure_Body,
+      D_Null_Procedure_Declaration,      D_Null_Tagged_Type,
 
       D_Operator,                        D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
       D_Ordinary_Fixed_Type_No_Small,    D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
@@ -981,6 +981,9 @@ package body Rules.Declarations is
                         exit;
                      when A_Task_Definition =>
                         Do_Report (D_Task_Variable, Element);
+                        if not Is_Profile_Applied (Element, "RAVENSCAR") then
+                           Do_Report (D_Non_Ravenscar_Task, Element);
+                        end if;
                         exit;
                      when A_Subtype_Indication =>
                         case Constraint_Kind (Subtype_Constraint (Def)) is
@@ -1005,6 +1008,9 @@ package body Rules.Declarations is
                                  -- Returns a Nil_Element for a task_type_declaration that has no explicit
                                  --  task_definition.
                                  Do_Report (D_Task_Variable, Element);
+                                 if not Is_Profile_Applied (Element, "RAVENSCAR") then
+                                    Do_Report (D_Non_Ravenscar_Task, Element);
+                                 end if;
                                  exit;
                               end if;
                            when A_Range_Attribute_Reference
@@ -1284,10 +1290,16 @@ package body Rules.Declarations is
 
          when A_Task_Type_Declaration =>
             Do_Report ((D_Type, D_Task, D_Task_Type), Element);
+            if not Is_Profile_Applied (Element, "RAVENSCAR") then
+               Do_Report (D_Non_Ravenscar_Task, Element);
+            end if;
             Check_Discriminant (Discriminant_Part (Element), Extra_Check => D_Task_Discriminant);
 
          when A_Single_Task_Declaration =>
             Do_Report ((D_Task, D_Task_Variable, D_Single_Task), Element);
+            if not Is_Profile_Applied (Element, "RAVENSCAR") then
+               Do_Report (D_Non_Ravenscar_Task, Element);
+            end if;
 
          when A_Protected_Type_Declaration =>
             Do_Report ((D_Type, D_Protected, D_Protected_Type), Element);

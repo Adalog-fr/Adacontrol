@@ -18,6 +18,7 @@ Declarations:
   Added subrulse box_defaulted_formal_function,
   name_defaulted_formal_function, box_defaulted_formal_procedure,
   name_defaulted_formal_procedure, null_defaulted_formal_procedure,
+  non_ravenscar_task
 
 Expressions:
   Added subrules in, not_in, static_membership, and_array,

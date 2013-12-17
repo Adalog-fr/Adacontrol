@@ -19,7 +19,7 @@ procedure T_declarations is       -- library_procedure
    type Enum is (A, B, 'c', D, 'e');       -- enumeration_type, character_literal x2
    V_Enum : Enum := A;                     -- variable, scalar_variable, initialized_variable
 
-   task T1 is                     -- single_task, task_variable, task
+   task T1 is                     -- single_task, task_variable, task, non_ravenscar_task
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
    end T1;
    task body T1 is
@@ -34,7 +34,7 @@ procedure T_declarations is       -- library_procedure
          null;
    end T1;
 
-   task type T2 (X : Integer) is  -- task_type, task, task_discriminant, discriminant
+   task type T2 (X : Integer) is  -- task_type, task, non_ravenscar_task, task_discriminant, discriminant
      entry E;                     -- task_entry
    end T2;
    task body T2 is
@@ -42,13 +42,13 @@ procedure T_declarations is       -- library_procedure
       null;
    end T2;
 
-   task type T3;                  -- task_type, task
+   task type T3;                  -- task_type, task, non_ravenscar_task
    task body T3 is
    begin
       null;
    end T3;
 
-   VT3 : T3;                      -- variable, task_variable
+   VT3 : T3;                      -- variable, task_variable, non_ravenscar_task
 
    protected P1 is                                     -- single_protected, protected_variable, protected
       entry E1 (I : out Integer; J : in out Integer);  -- protected_entry, out_parameter, in_out_parameter
