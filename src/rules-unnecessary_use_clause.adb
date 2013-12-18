@@ -88,11 +88,6 @@ package body Rules.Unnecessary_Use_Clause is
          Original_Name   : Wide_String (1..Length_2);
          User            : User_Kind;
       end record;
-   procedure Clear (Item : in out Package_Info) is  -- null proc
-      pragma Unreferenced (Item);
-   begin
-      null;
-   end Clear;
    package Used_Packages is new Framework.Scope_Manager.Scoped_Store (Package_Info);
 
    ----------

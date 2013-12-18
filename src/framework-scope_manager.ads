@@ -98,7 +98,7 @@ package Framework.Scope_Manager is
    generic
       type Data (<>) is private;
       with function Equivalent_Keys (L, R : Data) return Boolean is "=";
-      with procedure Clear (Item : in out Data) is <>;
+      with procedure Clear (Item : in out Data) is null;
    package Scoped_Store is
       -- This package manages user data that are to be associated to a scope.
       -- It is managed as a stack. Data associated to a scope are automatically

@@ -119,7 +119,7 @@ package body Rules.Reduceable_Scope is
       end record;
    function Equivalent_Keys (L, R : Declaration_Info) return Boolean;
    procedure Clear (Item : in out Declaration_Info);
-   package Local_Declarations is new Scoped_Store (Declaration_Info, Equivalent_Keys);
+   package Local_Declarations is new Scoped_Store (Declaration_Info, Equivalent_Keys, Clear);
 
    -- Management of declaration information, package visible items
    type Package_Usage is (Not_Used, Body_Used, Outside_Used);
@@ -139,7 +139,7 @@ package body Rules.Reduceable_Scope is
       end record;
    function Equivalent_Keys (L, R : Use_Info) return Boolean;
    procedure Clear (Item : in out Use_Info);
-   package Use_Clauses is new Scoped_Store (Use_Info, Equivalent_Keys);
+   package Use_Clauses is new Scoped_Store (Use_Info, Equivalent_Keys, Clear);
 
 
    ----------

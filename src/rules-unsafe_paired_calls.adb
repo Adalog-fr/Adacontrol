@@ -76,11 +76,6 @@ package body Rules.Unsafe_Paired_Calls is
       end record;
 
    Checked_Subprograms  : Context_Store;
-   procedure Clear (Item : in out Asis.Element) is  -- null proc
-      pragma Unreferenced (Item);
-   begin
-      null;
-   end Clear;
    package Active_Procs is new Framework.Scope_Manager.Scoped_Store (Asis.Element,
                                                                      Equivalent_Keys => Asis.Elements.Is_Equal);
 

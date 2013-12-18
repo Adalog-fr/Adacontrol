@@ -92,11 +92,6 @@ package body Rules.Local_Hiding is
          Is_Callable    : Boolean;
          Is_Enumeration : Boolean;
       end record;
-   procedure Clear (Item : in out Identifier_Data) is  -- null proc
-      pragma Unreferenced (Item);
-   begin
-      null;
-   end Clear;
    package Visible_Identifiers is new Framework.Scope_Manager.Scoped_Store (Identifier_Data);
 
    ----------

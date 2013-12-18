@@ -212,11 +212,6 @@ package body Rules.Style is
          Renamed_Def  : Asis.Defining_Name;
       end record;
    function Is_Same_Def (L, R : Renaming_Data) return Boolean;
-   procedure Clear (Item : in out Renaming_Data) is  -- null proc
-      pragma Unreferenced (Item);
-   begin
-      null;
-   end Clear;
    package Renamed_Entities is new Framework.Scope_Manager.Scoped_Store (Renaming_Data,
                                                                          Equivalent_Keys => Is_Same_Def);
    -- Note that we cannot use Symbol_Table here, because the renamed entity is pushed

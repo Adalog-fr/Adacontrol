@@ -77,11 +77,6 @@ package body Rules.With_Clauses is
    begin
       return Left.Unit_Name = Right.Unit_Name;
    end Equivalent_Info;
-   procedure Clear (Item : in out With_Info) is  -- null proc
-      pragma Unreferenced (Item);
-   begin
-      null;
-   end Clear;
    package Withed_Units is new Framework.Scope_Manager.Scoped_Store (With_Info, Equivalent_Info);
 
    ----------
