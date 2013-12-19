@@ -1,0 +1,2 @@
+"Single_Tagged_Type"   : check unit_pattern (single_tagged_type);
+"Tagged_Type_Hierarchy": check unit_pattern (tagged_type_hierarchy);

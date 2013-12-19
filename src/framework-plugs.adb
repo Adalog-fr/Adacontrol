@@ -73,6 +73,7 @@ with
   Rules.Not_Elaboration_Calls,
   Rules.Not_Selected_Name,
   Rules.Object_Declarations,
+  Rules.Unit_Pattern,
   Rules.Parameter_Aliasing,
   Rules.Parameter_Declarations,
   Rules.Positional_Associations,
@@ -268,6 +269,7 @@ package body Framework.Plugs is
 
             case Declaration_Kind (Element) is
                when An_Ordinary_Type_Declaration =>
+                  Rules.Unit_Pattern.        Process_Type_Declaration (Element);
                   Rules.Type_Initial_Values. Process_Type_Declaration (Element);
                   Rules.Usage.               Process_Declaration      (Element);
 

@@ -1,0 +1,19 @@
+t_unit_pattern-test_single_tagged_type.adb:12:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:11:7
+t_unit_pattern-test_single_tagged_type.adb:13:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:11:7
+t_unit_pattern-test_single_tagged_type.adb:13:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+t_unit_pattern-test_single_tagged_type.adb:14:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:11:7
+t_unit_pattern-test_single_tagged_type.adb:14:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+t_unit_pattern-test_single_tagged_type.adb:18:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:11:7
+t_unit_pattern-test_single_tagged_type.adb:19:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:11:7
+t_unit_pattern-test_single_tagged_type.adb:19:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+t_unit_pattern-test_single_tagged_type.adb:23:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+t_unit_pattern-test_single_tagged_type.adb:24:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:23:7
+t_unit_pattern-test_single_tagged_type.adb:24:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+t_unit_pattern-test_single_tagged_type.adb:25:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:23:7
+t_unit_pattern-test_single_tagged_type.adb:25:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+x_tagged_type_hierarchy.ads:3:4: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy.ads:2:4
+x_tagged_type_hierarchy.ads:3:4: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+x_tagged_type_hierarchy-child.ads:3:4: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy-child.ads:2:4
+x_tagged_type_hierarchy-child-grand_child.ads:3:7: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy-child-grand_child.ads:2:7
+x_tagged_type_hierarchy-child-grand_child.ads:3:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+x_tagged_type_hierarchy-child-grand_child.ads:4:7: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy-child-grand_child.ads:2:7

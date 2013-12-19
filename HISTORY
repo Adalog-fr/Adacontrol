@@ -11,6 +11,8 @@ New rules:
 ----------
 positional_associations (took over style (positional_association)
 
+unit_pattern
+
 Changes to existing rules:
 --------------------------
 

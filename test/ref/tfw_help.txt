@@ -698,6 +698,11 @@ Control units not analyzed, or not referenced from the rest of the project
 
 Parameter(s): unreferenced | unchecked
 ----
+Rule: UNIT_PATTERN
+Controls various usage patterns of units and entities in them
+
+Parameters: single_tagged_type | tagged_type_hierarchy
+----
 Rule: UNNECESSARY_USE_CLAUSE
 Control use clauses that can be removed, moved, or changed to use type.
 
@@ -825,9 +830,10 @@ Rules:
    Statements                      Style                           
    Terminating_Tasks               Type_Initial_Values             
    Uncheckable                     Units                           
-   Unnecessary_Use_Clause          Unsafe_Paired_Calls             
-   Unsafe_Unchecked_Conversion     Usage                           
-   Use_Clauses                     With_Clauses                    
+   Unit_Pattern                    Unnecessary_Use_Clause          
+   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
+   Usage                           Use_Clauses                     
+   With_Clauses                    
 
 ADACTL v. 1.16b4 with ASIS 2.0.R for GNAT GPL 2013 (20130314)
 ----

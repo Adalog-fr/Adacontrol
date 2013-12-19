@@ -2505,6 +2505,7 @@ is a dispatching call.
 * Not_Elaboration_Calls::
 * Not_Selected_Name::
 * Object_Declarations::
+* Unit_Pattern::
 * Parameter_Aliasing::
 * Parameter_Declarations::
 * Positional_Associations::
@@ -3316,36 +3317,36 @@ those occurring at specified locations.
    named_number                    | non_binary_modular_type           |
    non_identical_operator_renaming | non_identical_renaming            |
    non_joint_ce_ne_handler         | non_limited_private_type          |
-   non_ravenscar_task              | not_operator_renaming             | 
-   null_defaulted_formal_procedure | null_extension                    | 
-   null_ordinary_record_type       | null_procedure                    | 
-   null_procedure_body             | null_procedure_declaration        | 
-   null_tagged_type                | operator                          | 
-   operator_renaming               | ordinary_fixed_type               | 
-   ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    | 
-   ordinary_record_type            | ordinary_record_variable          | 
-   out_parameter                   | package                           | 
-   package_instantiation           | package_statements                | 
-   predefined_operator             | private_extension                 | 
-   procedure                       | procedure_instantiation           | 
-   protected                       | protected_discriminant            | 
-   protected_entry                 | protected_type                    | 
-   protected_variable              | record_type                       | 
-   renaming                        | renaming_as_body                  | 
-   renaming_as_declaration         | scalar_variable                   | 
-   self_calling_function           | self_calling_procedure            | 
-   separate                        | signed_type                       | 
-   single_array                    | single_protected                  | 
-   single_task                     | subtype                           | 
-   tagged_private_type             | tagged_type                       | 
-   tagged_variable                 | task                              | 
-   task_discriminant               | task_entry                        | 
-   task_type                       | task_variable                     | 
-   type                            | unconstrained_array_constant      | 
-   unconstrained_array_type        | unconstrained_array_variable      | 
-   unconstrained_subtype           | uninitialized_protected_component | 
-   uninitialized_record_component  | uninitialized_variable            | 
-   unknown_discriminant            | variable                          | 
+   non_ravenscar_task              | not_operator_renaming             |
+   null_defaulted_formal_procedure | null_extension                    |
+   null_ordinary_record_type       | null_procedure                    |
+   null_procedure_body             | null_procedure_declaration        |
+   null_tagged_type                | operator                          |
+   operator_renaming               | ordinary_fixed_type               |
+   ordinary_fixed_type_no_small    | ordinary_fixed_type_with_small    |
+   ordinary_record_type            | ordinary_record_variable          |
+   out_parameter                   | package                           |
+   package_instantiation           | package_statements                |
+   predefined_operator             | private_extension                 |
+   procedure                       | procedure_instantiation           |
+   protected                       | protected_discriminant            |
+   protected_entry                 | protected_type                    |
+   protected_variable              | record_type                       |
+   renaming                        | renaming_as_body                  |
+   renaming_as_declaration         | scalar_variable                   |
+   self_calling_function           | self_calling_procedure            |
+   separate                        | signed_type                       |
+   single_array                    | single_protected                  |
+   single_task                     | subtype                           |
+   tagged_private_type             | tagged_type                       |
+   tagged_variable                 | task                              |
+   task_discriminant               | task_entry                        |
+   task_type                       | task_variable                     |
+   type                            | unconstrained_array_constant      |
+   unconstrained_array_type        | unconstrained_array_variable      |
+   unconstrained_subtype           | uninitialized_protected_component |
+   uninitialized_record_component  | uninitialized_variable            |
+   unknown_discriminant            | variable                          |
    variant_part
 @end example
 
@@ -4349,20 +4350,20 @@ This rule controls usage of various kinds of expressions.
    array_others                     | array_non_static_range    |
    array_partial_others             | array_rang                |
    case                             | complex_parameter         |
-   downward_conversion              | explicit_dereference      | 
-   fixed_multiplying_op             | for_all                   | 
-   for_some                         | if                        | 
-   if_elsif                         | if_no_else                | 
-   implicit_dereference             | in                        | 
-   inconsistent_attribute_dimension | inherited_function_call   | 
-   mixed_operators                  | not_in                    | 
-   or                               | or_array                  | 
-   or_binary                        | or_boolean                | 
-   or_else                          | parameter_view_conversion | 
-   prefixed_operator                | real_equality             | 
-   record_partial_others            | record_aggregate          | 
-   record_others                    | slice                     | 
-   static_membership                | type_conversion           | 
+   downward_conversion              | explicit_dereference      |
+   fixed_multiplying_op             | for_all                   |
+   for_some                         | if                        |
+   if_elsif                         | if_no_else                |
+   implicit_dereference             | in                        |
+   inconsistent_attribute_dimension | inherited_function_call   |
+   mixed_operators                  | not_in                    |
+   or                               | or_array                  |
+   or_binary                        | or_boolean                |
+   or_else                          | parameter_view_conversion |
+   prefixed_operator                | real_equality             |
+   record_partial_others            | record_aggregate          |
+   record_others                    | slice                     |
+   static_membership                | type_conversion           |
    upward_conversion                | underived_conversion      |
    universal_range                  | unqualified_aggregate     |
    xor                              | xor_array                 |
@@ -4519,7 +4520,7 @@ family. @code{downward_conversion} and @code{upward_conversion}
 control conversions between types that belong to the same family,
 converting away from the root or toward the root,
 respectively. @code{parameter_view_conversion} controls conversions
-that appear as @code{@b{out}} or @code{@b{in out}} actual parameters. 
+that appear as @code{@b{out}} or @code{@b{in out}} actual parameters.
 
 One or two categories can be specified; if only one category is
 specified, only conversions whose result type belong to that category
@@ -6177,7 +6178,7 @@ declared with a special name (like @code{Instance}, @code{Object},
 @code{T}) and are intended to be always used with the name of the
 enclosing package.
 
-@node Object_Declarations, Parameter_Aliasing, Not_Selected_Name, Rules reference
+@node  Object_Declarations, Unit_Pattern, Not_Selected_Name, Rules reference
 @section Object_Declarations
 This rule controls various aspects of object (constants and variables)
 declarations.
@@ -6259,7 +6260,36 @@ to a class-wide type is detected by the rule
 Declaring a class-wide @emph{type} as volatile seems very peculiar
 anyway...
 
-@node  Parameter_Aliasing, Parameter_Declarations, Object_Declarations, Rules reference
+@node Unit_Pattern, Parameter_Aliasing, Object_Declarations, Rules reference
+@section Unit_Pattern
+This rule controls various usage patterns of program units and elements declared in
+them.
+
+@subsection Syntax
+@example
+<control_kind> unit_pattern (<subrule>);
+<subrule> ::= Single_Tagged_Type | Tagged_Type_Hierarchy
+@end example
+
+@subsection Action
+The pattern depends on the given subrule:
+@itemize @bullet
+@item
+@code{single_tagged_type}: at most one tagged type is allowed to be
+declared in any package.
+@item
+@code{tagged_type_hierarchy}: tagged types must follow packages
+hierarchy, i.e. the parent of a type extension (derivation of a tagged
+type) must be in the parent unit of the one that declared the
+derivation.
+@end itemize
+Ex:
+@example
+check unit_pattern (single_tagged_type);
+check unit_pattern (tagged_type_hierarchy);
+@end example
+
+@node  Parameter_Aliasing, Parameter_Declarations, Unit_Pattern, Rules reference
 @section Parameter_Aliasing
 This rule controls aliased use of variables in subprogram
 calls.
@@ -6364,9 +6394,9 @@ for all callable entities (i.e. functions, procedures and entries).
                out_parameters    | in_out_parameters     | access_parameters    |
                tagged_parameters | class_wide_parameters | single_out_parameter
 <bounds>    ::= min|max <value> [, min|max <value> ]
-<callable> ::= function             | procedure             | 
-               dispatching_function | dispatching_procedure | 
-               protected_function   | protected_procedure   | 
+<callable> ::= function             | procedure             |
+               dispatching_function | dispatching_procedure |
+               protected_function   | protected_procedure   |
                protected_entry      | task_entry
 @end example
 
@@ -6435,9 +6465,9 @@ check parameter_declarations (single_out_parameter, procedure);
 search parameter_declarations (class_wide_parameters, max 0);
 
 -- Dispatching operations may have only one parameter of a tagged type:
-check parameter_declarations (tagged_parameter, 
-                              max 1, 
-                              dispatching_function, 
+check parameter_declarations (tagged_parameter,
+                              max 1,
+                              dispatching_function,
                               dispatching_procedure);
 @end example
 
@@ -6541,7 +6571,7 @@ considered of the same type as any parameter of an integer type, and
 similarly for other universal values. The reason is that this rule is
 intended to avoid confusion between parameters, when strong typing
 would not detect an inversion of parameters for example; such a case
-would happen between parameters of a universal type. 
+would happen between parameters of a universal type.
 
 @node  Potentially_Blocking_Operations, Pragmas, Positional_Associations, Rules reference
 @section Potentially_Blocking_Operations
