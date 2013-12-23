@@ -869,7 +869,7 @@ package body Rules.Naming_Convention is
                         if Is_Nil (Renamed) then
                            Good_Decl := Corresponding_Constant_Declaration (Name);
                         else
-                           Good_Decl := Corresponding_Constant_Declaration (Renamed);
+                           Good_Decl := Corresponding_Constant_Declaration (Corresponding_Name_Definition (Renamed));
                         end if;
                         if Is_Static_Expression (Initialization_Expression (Good_Decl)) then
                            Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant));
