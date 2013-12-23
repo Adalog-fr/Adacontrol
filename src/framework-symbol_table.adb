@@ -145,7 +145,7 @@ package body Framework.Symbol_Table is
             -- The element's declaration scope is the first enclosing element considered a scope
             -- starting from the enclosing element of its own declaration
             Symbol.Declaration_Scope := Enclosing_Element (Enclosing_Element (Symbol.Name));
-            while not Is_Scope (Symbol.Declaration_Scope) loop
+            while not Is_Nil (Symbol.Declaration_Scope) and then Not Is_Scope (Symbol.Declaration_Scope) loop
                Symbol.Declaration_Scope := Enclosing_Element (Symbol.Declaration_Scope);
             end loop;
 

@@ -51,6 +51,7 @@ package Framework.Symbol_Table is
    -- The Declaration scope is the scope where the entity is declared
    -- The Visibility scope is the outermost scope where the entity is visible
    -- They are different for entities declared in package specs and formal parameters
+   -- The global scope (where library elements are declared) is represented by Nil_Element
 
    Not_In_Table   : exception;
    Delete_Current : exception;
@@ -89,6 +90,7 @@ package Framework.Symbol_Table is
          end record;
    end Data_Access;
 
+   ----------------------------------------------------------------------------------------
    --
    --  Declarations below this line are for the use of the framework
    --
