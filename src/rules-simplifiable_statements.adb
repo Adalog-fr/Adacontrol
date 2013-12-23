@@ -246,16 +246,16 @@ package body Rules.Simplifiable_Statements is
                               Param      : Asis.Expression;
                            begin
                               Param := Actual_Parameter (Param_List (1));
-                              if not Is_Static_Expression (Param) then
+                              if Is_Static_Expression (Param) then
+                                 -- Left operand is static value, right must be variable
+                                 Update_Pivot (Actual_Parameter (Param_List (2)));
+                              else
                                  -- Left operand not static, assume it is a variable
                                  Update_Pivot (Param);
                                  if not Is_Static_Expression (Actual_Parameter (Param_List (2))) then
                                     -- Left operand is the good variable, but right is not static
                                     raise Not_Appropriate_For_Case;
                                  end if;
-                              else
-                                 -- Left operand is static value, right must be variable
-                                 Update_Pivot (Actual_Parameter (Param_List (2)));
                               end if;
                            end;
 

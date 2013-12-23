@@ -7979,7 +7979,7 @@ Since this rule has no parameters, it can be given only once.
 
 Ex:
 @example
-check terminating_tasks
+check terminating_tasks;
 @end example
 
 @subsection Tips
@@ -8148,18 +8148,18 @@ In this case, the @code{@b{use}} clause can safely be removed, but you
 may want to keep it for documentation purposes, since the package is
 actually used within this scope.
 @item
-``operator'': a @code{@b{use}} clause is given, but the only elements that do not
-use a qualified name are operators. The message starts with ``only
-used for operators:''.
+``operator'': a @code{@b{use}} clause is given, but the only elements
+that do not use a qualified name are operators. The message starts
+with ``only used for operators:''.
 
 In this case, and except for some pathological cases (definition of
 operators that are not primitive operations of the corresponding
 type), the @code{@b{use}} clause can be replaced by one or several
 @code{@b{use type}} clause(s).
 @item
-``nested'': a @code{@b{use}} clause is given within the scope of an enclosing
-@code{@b{use}} clause for the same package. The message tells the
-location of the other @code{@b{use}} clause.
+``nested'': a @code{@b{use}} clause is given within the scope of an
+enclosing @code{@b{use}} clause for the same package. The message
+tells the location of the other @code{@b{use}} clause.
 
 If you also have a message that the outer @code{@b{use}} clause is
 unnecessary, this means that all references to the package appear
@@ -8168,9 +8168,9 @@ removed. If not, you can either remove the inner @code{@b{use}}
 clauses, or remove the outer one and add more local @code{@b{use}}
 clauses where necessary.
 @item
-``movable'': a @code{@b{use}} clause is given in a package specification, but all
-uses are from the corresponding body. The message starts with ``use
-clause can be moved to body:''.
+``movable'': a @code{@b{use}} clause is given in a package
+specification, but all uses are from the corresponding body. The
+message starts with ``use clause can be moved to body:''.
 
 In this case, the @code{@b{use}} clause can safely be moved to the
 body, unless it appears in a library package, and there are

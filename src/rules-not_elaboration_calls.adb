@@ -117,6 +117,11 @@ package body Rules.Not_Elaboration_Calls is
       Balance (Subprograms);
    end Prepare;
 
+
+   -----------
+   -- Check --
+   -----------
+
    procedure Check (Current_Context : Root_Context'Class; Loc : Location) is
       use Asis, Asis.Elements;
       use Framework.Reports, Framework.Scope_Manager;
