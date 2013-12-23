@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.16b4
+@settitle AdaControl User Guide V1.16b5
 @c %**end of header
 @macro rule{text}
 @sp 1
