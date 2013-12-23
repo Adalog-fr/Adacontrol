@@ -13,6 +13,8 @@ positional_associations (took over style (positional_association)
 
 unit_pattern
 
+unsafe_elaboration
+
 Changes to existing rules:
 --------------------------
 

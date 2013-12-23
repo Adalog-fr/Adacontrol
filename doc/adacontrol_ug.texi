@@ -2526,6 +2526,7 @@ is a dispatching call.
 * Uncheckable::
 * Units::
 * Unnecessary_Use_Clause::
+* Unsafe_Elaboration::
 * Unsafe_Paired_Calls::
 * Unsafe_Unchecked_Conversion::
 * Usage::
@@ -8116,7 +8117,7 @@ message can be disabled by putting the comment:
 @end example
 on the main program.
 
-@node Unnecessary_Use_Clause, Unsafe_Paired_Calls, Units, Rules reference
+@node Unnecessary_Use_Clause, Unsafe_Elaboration, Units, Rules reference
 @section Unnecessary_Use_Clause
 This rule controls @code{@b{use}} clauses that do not serve any
 purpose.
@@ -8222,7 +8223,40 @@ feature. @xref{Disabling controls}. Note that for the third alternative
 of the second case, you can also qualify one of the parameters, so it
 is not universal any more.
 
-@node Unsafe_Paired_Calls, Unsafe_Unchecked_Conversion, Unnecessary_Use_Clause, Rules reference
+@node  Unsafe_Elaboration, Unsafe_Paired_Calls, Unnecessary_Use_Clause, Rules reference
+@section Unsafe_Elaboration
+This rule controls (generic) packages that may be subject to
+elaboration order dependencies.
+
+@subsection Syntax
+@example
+<control_kind> unsafe_elaboration;
+@end example
+
+@subsection Action
+The rule controls library packages (or generic packages) whose
+elaboration calls or instantiates elements from other units (except
+language defined units) that are not subject to a @code{@b{pragma}}
+@code{Elaborate} or @code{Elaborate_All}. The elaboration of such
+packages may depend on elaboration order.
+
+Since this rule has no parameters, it can be given only once.
+
+Ex:
+@example
+check unsafe_elaboration;
+@end example
+
+@subsection Tips
+If the package contains tasks, they are considered as being part of
+the elaboration code of the package, since tasks could be started by
+the elaboration of the package. This is somehow pessimistic in the
+unlikely case where a package would contain a local task type (whose
+specification is not part of the package specification) and no task
+object of that type is declared. Anyway, this could create only false
+positives, therefore there is no risk associated to it.
+
+@node  Unsafe_Paired_Calls, Unsafe_Unchecked_Conversion, Unsafe_Elaboration, Rules reference
 @section Unsafe_Paired_Calls
 This rule controls usage of calls to operations that are normally
 paired (like P/V operations) and do not follow a "safe" coding

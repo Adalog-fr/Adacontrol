@@ -94,6 +94,7 @@ with
   Rules.Type_Initial_Values,
   Rules.Units,
   Rules.Unnecessary_Use_Clause,
+  Rules.Unsafe_Elaboration,
   Rules.Unsafe_Paired_Calls,
   Rules.Unsafe_Unchecked_Conversion,
   Rules.Usage,
@@ -110,11 +111,12 @@ package body Framework.Plugs is
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
    begin
-      Rules.Max_Blank_Lines. Enter_Unit   (Unit);
-      Rules.Dependencies.    Enter_Unit   (Unit);
-      Rules.Declarations.    Process_Unit (Unit);
-      Rules.Statements.      Enter_Unit   (Unit);
-      Rules.Units.           Process_Unit (Unit);
+      Rules.Max_Blank_Lines.    Enter_Unit   (Unit);
+      Rules.Dependencies.       Enter_Unit   (Unit);
+      Rules.Declarations.       Process_Unit (Unit);
+      Rules.Statements.         Enter_Unit   (Unit);
+      Rules.Units.              Process_Unit (Unit);
+      Rules.Unsafe_Elaboration. Process_Unit (Unit);
    end Enter_Unit;
 
 

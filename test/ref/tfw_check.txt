@@ -80,6 +80,7 @@ conf/t_type_initial_values.aru: No syntax error
 conf/t_uncheckable.aru: No syntax error
 conf/t_unit_pattern.aru: No syntax error
 conf/t_unnecessary_use_clause.aru: No syntax error
+conf/t_unsafe_elaboration.aru: No syntax error
 conf/t_unsafe_paired_calls.aru: No syntax error
 conf/t_unsafe_unchecked_conversion.aru: No syntax error
 conf/t_usage.aru: No syntax error

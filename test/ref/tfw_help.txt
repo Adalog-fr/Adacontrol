@@ -708,6 +708,11 @@ Control use clauses that can be removed, moved, or changed to use type.
 
 Parameter(s): unused | qualified | operator | nested | movable
 ----
+Rule: UNSAFE_ELABORATION
+Controls elaboration code of (generic) packages that may cause elaboration issues
+
+Parameter(s): none
+----
 Rule: UNSAFE_PAIRED_CALLS
 Controls calls like P/V operations that are not safely paired
 
@@ -831,9 +836,9 @@ Rules:
    Terminating_Tasks               Type_Initial_Values             
    Uncheckable                     Units                           
    Unit_Pattern                    Unnecessary_Use_Clause          
-   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
-   Usage                           Use_Clauses                     
-   With_Clauses                    
+   Unsafe_Elaboration              Unsafe_Paired_Calls             
+   Unsafe_Unchecked_Conversion     Usage                           
+   Use_Clauses                     With_Clauses                    
 
 ADACTL v. 1.16b4 with ASIS 2.0.R for GNAT GPL 2013 (20130314)
 ----
