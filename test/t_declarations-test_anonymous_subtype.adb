@@ -18,7 +18,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
       record
          C : Integer range 0 .. 100;           -- uninitialized_record_component, anonymous_subtype_declaration
       end record;
-   type Acc_Rec is access Rec;                 -- access_type
+   type Acc_Rec is access Rec;                 -- access_nondef_discriminated_type, access_type
    Acc : Acc_Rec;                              -- variable, uninitialized_variable
 
    J : Integer;                                -- variable, scalar_variable, uninitialized_variable

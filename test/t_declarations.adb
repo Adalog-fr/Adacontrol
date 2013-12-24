@@ -95,11 +95,11 @@ procedure T_declarations is       -- library_procedure
    type Acc1;                      -- incomplete_type
    type Acc1 is access Integer;    -- access_type
    type Acc2 is access procedure;  -- access_subprogram_type, access_type
-   type Acc3 is access T2;         -- access_task_type, access_type
-   type Acc4 is access P2;         -- access_protected_type, access_type
+   type Acc3 is access T2;         -- access_nondef_discriminated_type, access_task_type, access_type
+   type Acc4 is access P2;         -- access_def_discriminated_type, access_protected_type, access_type
 
    type Der_Task is new T2;        -- derived_type
-   type Acc5 is access Der_Task;   -- access_task_type, access_type
+   type Acc5 is access Der_Task;   -- access_nondef_discriminated_type, access_task_type, access_type
 
    type Acc6 is access all Integer;      -- access_type, access_all_type
    type Acc7 is access constant Integer; -- access_type, access_constant_type
@@ -133,6 +133,8 @@ procedure T_declarations is       -- library_procedure
    VRec1  : Rec1;                                             -- variable, tagged_variable, uninitialized_variable
    VRec3  : Rec3;                                             -- variable, ordinary_record_variable, uninitialized_variable
    VRec4  : Rec4;                                             -- variable, ordinary_record_variable, uninitialized_variable
+   type Acc_Rec2 is access Rec2;                              -- access_nondef_discriminated_type, access_type
+   type Acc_Rec3 is access Rec4;                              -- access_def_discriminated_type, access_type
 
    type Arr1 is array (1 .. 10) of Character;                 -- constrained_array_type, array, anonymous_subtype_declaration
    type Arr2 is array (Positive range <>) of Integer;         -- unconstrained_array_type, array
@@ -146,6 +148,8 @@ procedure T_declarations is       -- library_procedure
    Varr4 : Subarr21 := (1,2, 3);                              -- variable, unconstrained_array_variable, array, initialized_variable
    Varr5 : Subarr23;                                          -- variable, constrained_array_variable, array, uninitialized_variable
    Carr2 : constant Subarr23 := Varr5;                        -- constant, constrained_array_constant, array
+   type Acc_Arr1 is access Arr1;                              -- access_constrained_array_type, access_type
+   type Acc_Arr2 is access Arr2;                              -- access_unconstrained_array_type, access_type
 
    type Der1 is new Rec1 with null record;                   -- null_extension, extension, tagged_type, record_type
    type Der2 (Y : Integer) is new Rec1 with null record;     -- null_extension, extension, tagged_type, record_type, discriminant
@@ -183,6 +187,7 @@ procedure T_declarations is       -- library_procedure
       function  F_As_Body return Integer;
       function F_Expr (I : Integer) return Integer is -- Expression_Function
           (I+1);
+      type Acc_Priv2 is access Priv2;               -- access_type (not access_unknown_discriminated_type because of full type)
    private
       type Priv1 is new Integer;                    -- Derived_Type
       type Priv2 is new Integer;                    -- Derived_Type
@@ -253,7 +258,8 @@ procedure T_declarations is       -- library_procedure
 
    generic                                                                    -- Nested Generic_Package, generic
       Global : in out Integer;                                                -- in_out_generic_parameter
-      type T is private;                                                      -- formal type
+      type T1 is private;                                                     -- formal type
+      type T2(<>) is private;                                                 -- formal type
       with procedure Formal_P1;                                               -- formal_procedure
       with procedure Formal_P2 is <>;                                         -- formal_procedure, box_defaulted_formal_procedure
       with procedure Formal_P3 is Test_Self_SP;                               -- formal_procedure, name_defaulted_formal_procedure
@@ -265,6 +271,8 @@ procedure T_declarations is       -- library_procedure
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
       procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, nested procedure, local procedure, null_procedure_body, null_procedure
+      type Acc_T1 is access T1;                                               -- access_formal_type, access_type
+      type Acc_T2 is access T2;                                               -- access_unknown_discriminated_type, access_formal_type, access_type;
    begin
       null;                                                                   -- package statements
    end Test_Formals;

@@ -55,80 +55,81 @@ package body Rules.Declarations is
 
    type Subrules is
      (D_Any_Declaration,
-      D_Abstract_Function,               D_Abstract_Operator,                 D_Abstract_Procedure,
-      D_Abstract_Type,                   D_Access_All_Type,                   D_Access_Constant_Type,
-      D_Access_Protected_Type,           D_Access_Subprogram_Type,            D_Access_Task_Type,
-      D_Access_Type,                     D_Aliased_Array_Component,           D_Aliased_Constant,
-      D_Aliased_Protected_Component,     D_Aliased_Record_Component,          D_Aliased_Variable,
-      D_Anonymous_Access_Component,      D_Anonymous_Access_Constant,         D_Anonymous_Access_Discriminant,
-      D_Anonymous_Access_Parameter,      D_Anonymous_Access_Variable,
-      D_Anonymous_Subtype_Allocator,     D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,
-      D_Anonymous_Subtype_For,           D_Anonymous_Subtype_Indexing,        D_Array,
-      D_Array_Type,
+      D_Abstract_Function,                 D_Abstract_Operator,                 D_Abstract_Procedure,
+      D_Abstract_Type,                     D_Access_All_Type,                   D_Access_Constant_Type,
+      D_Access_Constrained_Array_Type,     D_Access_Def_Discriminated_Type,     D_Access_Formal_Type,
+      D_Access_Nondef_Discriminated_Type,  D_Access_Protected_Type,             D_Access_Subprogram_Type,
+      D_Access_Task_Type,                  D_Access_Type,                       D_Access_Unconstrained_Array_Type,
+      D_Access_Unknown_Discriminated_Type, D_Aliased_Array_Component,           D_Aliased_Constant,
+      D_Aliased_Protected_Component,       D_Aliased_Record_Component,          D_Aliased_Variable,
+      D_Anonymous_Access_Component,        D_Anonymous_Access_Constant,         D_Anonymous_Access_Discriminant,
+      D_Anonymous_Access_Parameter,        D_Anonymous_Access_Variable,         D_Anonymous_Subtype_Allocator,
+      D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,     D_Anonymous_Subtype_For,
+      D_Anonymous_Subtype_Indexing,        D_Array,                             D_Array_Type,
 
-      D_Binary_Modular_Type,             D_Box_Defaulted_Formal_Function,     D_Box_Defaulted_Formal_Procedure,
+      D_Binary_Modular_Type,               D_Box_Defaulted_Formal_Function,     D_Box_Defaulted_Formal_Procedure,
 
-      D_Character_Literal,               D_Child_Unit,                        D_Class_Wide_Constant,
-      D_Class_Wide_Variable,             D_Constant,                          D_Constrained_Array_Constant,
-      D_Constrained_Array_Type,          D_Constrained_Array_Variable,        D_Controlled_Type,
+      D_Character_Literal,                 D_Child_Unit,                        D_Class_Wide_Constant,
+      D_Class_Wide_Variable,               D_Constant,                          D_Constrained_Array_Constant,
+      D_Constrained_Array_Type,            D_Constrained_Array_Variable,        D_Controlled_Type,
 
-      D_Decimal_Fixed_Type,              D_Defaulted_Discriminant,            D_Defaulted_Generic_Parameter,
-      D_Defaulted_Parameter,             D_Deferred_Constant,                 D_Derived_Type,
+      D_Decimal_Fixed_Type,                D_Defaulted_Discriminant,            D_Defaulted_Generic_Parameter,
+      D_Defaulted_Parameter,               D_Deferred_Constant,                 D_Derived_Type,
       D_Discriminant,
 
-      D_Empty_Private_Part,              D_Empty_Visible_Part,                D_Enumeration_Type,
-      D_Entry,                           D_Exception,                         D_Expression_Function,
+      D_Empty_Private_Part,                D_Empty_Visible_Part,                D_Enumeration_Type,
+      D_Entry,                             D_Exception,                         D_Expression_Function,
       D_Extension,
 
-      D_Fixed_Type,                      D_Float_Type,                        D_Formal_Function,
-      D_Formal_Package,                  D_Formal_Procedure,                  D_Formal_Type,
-      D_Function,                        D_Function_Call_Renaming,            D_Function_Instantiation,
+      D_Fixed_Type,                        D_Float_Type,                        D_Formal_Function,
+      D_Formal_Package,                    D_Formal_Procedure,                  D_Formal_Type,
+      D_Function,                          D_Function_Call_Renaming,            D_Function_Instantiation,
 
-      D_Generic,                         D_Generic_Function,                  D_Generic_Package,
+      D_Generic,                           D_Generic_Function,                  D_Generic_Package,
       D_Generic_Procedure,
 
       D_Handlers,
 
-      D_Incomplete_Type,                 D_In_Out_Generic_Parameter,          D_In_Out_Parameter,
-      D_Initialized_Protected_Component, D_Initialized_Record_Component,      D_Initialized_Variable,
-      D_Instantiation,                   D_Integer_Type,                      D_Interface_Type,
+      D_Incomplete_Type,                   D_In_Out_Generic_Parameter,          D_In_Out_Parameter,
+      D_Initialized_Protected_Component,   D_Initialized_Record_Component,      D_Initialized_Variable,
+      D_Instantiation,                     D_Integer_Type,                      D_Interface_Type,
 
-      D_Library_Unit_Renaming,           D_Limited_Private_Type,
+      D_Library_Unit_Renaming,             D_Limited_Private_Type,
 
-      D_Modular_Type,                    D_Multiple_Names,                    D_Multiple_Protected_Entries,
+      D_Modular_Type,                      D_Multiple_Names,                    D_Multiple_Protected_Entries,
 
-      D_Name_Defaulted_Formal_Function,  D_Name_Defaulted_Formal_Procedure,   D_Named_Number,
-      D_Non_Binary_Modular_Type,         D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,
-      D_Non_Joint_CE_NE_Handler,         D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,
-      D_Not_Operator_Renaming,           D_Null_Defaulted_Formal_Procedure,   D_Null_Extension,
-      D_Null_Ordinary_Record_Type,       D_Null_Procedure,                    D_Null_Procedure_Body,
-      D_Null_Procedure_Declaration,      D_Null_Tagged_Type,
+      D_Name_Defaulted_Formal_Function,    D_Name_Defaulted_Formal_Procedure,   D_Named_Number,
+      D_Non_Binary_Modular_Type,           D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,
+      D_Non_Joint_CE_NE_Handler,           D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,
+      D_Not_Operator_Renaming,             D_Null_Defaulted_Formal_Procedure,   D_Null_Extension,
+      D_Null_Ordinary_Record_Type,         D_Null_Procedure,                    D_Null_Procedure_Body,
+      D_Null_Procedure_Declaration,        D_Null_Tagged_Type,
 
-      D_Operator,                        D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
-      D_Ordinary_Fixed_Type_No_Small,    D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
-      D_Ordinary_Record_Variable,        D_Out_Parameter,
+      D_Operator,                          D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
+      D_Ordinary_Fixed_Type_No_Small,      D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
+      D_Ordinary_Record_Variable,          D_Out_Parameter,
 
-      D_Package,                         D_Package_Instantiation,             D_Package_Statements,
-      D_Predefined_Operator,             D_Private_Extension,                 D_Procedure,
-      D_Procedure_Instantiation,         D_Protected,                         D_Protected_Discriminant,
-      D_Protected_Entry,                 D_Protected_Type,                    D_Protected_Variable,
+      D_Package,                           D_Package_Instantiation,             D_Package_Statements,
+      D_Predefined_Operator,               D_Private_Extension,                 D_Procedure,
+      D_Procedure_Instantiation,           D_Protected,                         D_Protected_Discriminant,
+      D_Protected_Entry,                   D_Protected_Type,                    D_Protected_Variable,
 
-      D_Record_Type,                     D_Renaming,                          D_Renaming_As_Body,
+      D_Record_Type,                       D_Renaming,                          D_Renaming_As_Body,
       D_Renaming_As_Declaration,
 
-      D_Scalar_Variable,                 D_Self_Calling_Function,             D_Self_Calling_Procedure,
-      D_Separate,                        D_Signed_Type,                       D_Single_Array,
-      D_Single_Protected,                D_Single_Task,                       D_Subtype,
+      D_Scalar_Variable,                   D_Self_Calling_Function,             D_Self_Calling_Procedure,
+      D_Separate,                          D_Signed_Type,                       D_Single_Array,
+      D_Single_Protected,                  D_Single_Task,                       D_Subtype,
 
-      D_Tagged_Private_Type,             D_Tagged_Type,                       D_Tagged_Variable,
-      D_Task,                            D_Task_Discriminant,                 D_Task_Entry,
-      D_Task_Type,                       D_Task_Variable,                     D_Type,
+      D_Tagged_Private_Type,               D_Tagged_Type,                       D_Tagged_Variable,
+      D_Task,                              D_Task_Discriminant,                 D_Task_Entry,
+      D_Task_Type,                         D_Task_Variable,                     D_Type,
 
-      D_Unconstrained_Array_Constant,    D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
-      D_Unconstrained_Subtype,           D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,
-      D_Uninitialized_Variable,          D_Unknown_Discriminant,
+      D_Unconstrained_Array_Constant,      D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
+      D_Unconstrained_Subtype,             D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,
+      D_Uninitialized_Variable,            D_Unknown_Discriminant,
 
-      D_Variable,                        D_Variant_Part);
+      D_Variable,                          D_Variant_Part);
    subtype All_Anonymous_Access is Subrules range D_Anonymous_Access_Component .. D_Anonymous_Access_Variable;
    type Subrules_List is array (Positive range <>) of Subrules;
 
@@ -368,33 +369,46 @@ package body Rules.Declarations is
          end case;
       end Check_Abstract;
 
-      procedure Check_Discriminant (Discr : Asis.Definition; Extra_Check : Subrules := D_Any_Declaration) is
-         -- 3 below = maximum number of simultaneous subrules (Unknown and Defaulted are incompatible)
-         SRL : Subrules_List (1 .. 3);
-         SRL_Index : Natural;
+      procedure Check_Discriminant (Decl : Asis.Declaration; Extra_Check : Subrules := D_Any_Declaration) is
+         Discr  : constant Asis.Definition         := Discriminant_Part (Decl);
+         D_Kind : constant Discriminant_Part_Kinds := Discriminant_Part_Kind (Discr);
       begin
-         if Is_Nil (Discr) then
+         if D_Kind = No_Discriminant_Part then
             return;
          end if;
 
-         SRL_Index       := 1;
-         SRL (SRL_Index) := D_Discriminant;
-
-         if Definition_Kind (Discr) = An_Unknown_Discriminant_Part then
-            SRL_Index       := SRL_Index + 1;
-            SRL (SRL_Index) := D_Unknown_Discriminant;
-         elsif not Is_Nil (Initialization_Expression (Discriminants (Discr) (1))) then
-            SRL_Index       := SRL_Index + 1;
-            SRL (SRL_Index) := D_Defaulted_Discriminant;
-         end if;
-
          if Extra_Check /= D_Any_Declaration then
-            SRL_Index       := SRL_Index + 1;
-            SRL (SRL_Index) := Extra_Check;
+            Do_Report (Extra_Check, Discr);
          end if;
 
-         Do_Report (SRL (1 .. SRL_Index), Discr);
+         case D_Kind is
+            when No_Discriminant_Part =>
+               Failure ("Check_Discriminant", Decl);
+            when An_Unknown_Discriminant_Part =>
+               Do_Report (D_Unknown_Discriminant, Discr);
+            when A_Defaulted_Discriminant_Part =>
+               Do_Report (D_Defaulted_Discriminant, Discr);
+            when A_Nondefaulted_Discriminant_Part =>
+               null;
+         end case;
+
+         Do_Report (D_Discriminant, Discr);
       end Check_Discriminant;
+
+      procedure Check_Access_Discriminated (Decl : Asis.Declaration; Accessed : Asis.Declaration) is
+         D_Kind : constant Discriminant_Part_Kinds := Discriminant_Part_Kind (Accessed);
+      begin
+         case D_Kind is
+            when No_Discriminant_Part =>
+               return;
+            when An_Unknown_Discriminant_Part =>
+               Do_Report (D_Access_Unknown_Discriminated_Type, Decl);
+            when  A_Defaulted_Discriminant_Part =>
+               Do_Report (D_Access_Def_Discriminated_Type, Decl);
+            when  A_Nondefaulted_Discriminant_Part =>
+               Do_Report (D_Access_Nondef_Discriminated_Type, Decl);
+         end case;
+      end Check_Access_Discriminated;
 
       procedure Check_Multiple_Entries (Def : Asis.Definition) is
          Decls : constant Asis.Declaration_List := Visible_Part_Items (Def)
@@ -680,11 +694,26 @@ package body Rules.Declarations is
                         Accessed_Type := Ultimate_Type_Declaration (Corresponding_Name_Declaration (Accessed_Type));
                         case Declaration_Kind (Accessed_Type) is
                            when A_Task_Type_Declaration =>
+                              Check_Access_Discriminated (Element, Accessed_Type);
                               Do_Report ((D_Type, D_Access_Type, D_Access_Task_Type), Element);
                            when A_Protected_Type_Declaration =>
+                              Check_Access_Discriminated (Element, Accessed_Type);
                               Do_Report ((D_Type, D_Access_Type, D_Access_Protected_Type), Element);
+                           when An_Ordinary_Type_Declaration =>
+                              case Type_Kind (Type_Declaration_View (Accessed_Type)) is
+                                 when A_Constrained_Array_Definition =>
+                                    Do_Report ((D_Type, D_Access_Type, D_Access_Constrained_Array_Type), Element);
+                                 when An_Unconstrained_Array_Definition =>
+                                    Do_Report ((D_Type, D_Access_Type, D_Access_Unconstrained_Array_Type), Element);
+                                 when others =>
+                                    Check_Access_Discriminated (Element, Accessed_Type);
+                                    Do_Report ((D_Type, D_Access_Type), Element);
+                              end case;
+                           when A_Formal_Type_Declaration =>
+                              Check_Access_Discriminated (Element, Accessed_Type);
+                              Do_Report ((D_Type, D_Access_Type, D_Access_Formal_Type), Element);
                            when others =>
-                              Do_Report ((D_Type, D_Access_Type), Element);
+                              Failure ("Declarations: unexpected accessed type", Accessed_Type);
                         end case;
                   end case;
 
@@ -852,7 +881,7 @@ package body Rules.Declarations is
                   Do_Report ((D_Type, D_Interface_Type), Element);
             end case;
 
-            Check_Discriminant (Discriminant_Part (Element));
+            Check_Discriminant (Element);
 
          when A_Private_Type_Declaration =>
             if Definition_Kind (Type_Declaration_View (Element)) = A_Tagged_Private_Type_Definition then
@@ -881,16 +910,16 @@ package body Rules.Declarations is
                   null;
             end case;
             Check_Abstract;
-            Check_Discriminant (Discriminant_Part (Element));
+            Check_Discriminant (Element);
 
          when A_Private_Extension_Declaration =>
             Do_Report (D_Private_Extension, Element);
             Check_Abstract;
-            Check_Discriminant (Discriminant_Part (Element));
+            Check_Discriminant (Element);
 
          when An_Incomplete_Type_Declaration =>
             Do_Report (D_Incomplete_Type, Element);
-            Check_Discriminant (Discriminant_Part (Element));
+            Check_Discriminant (Element);
 
          when A_Subtype_Declaration =>
             Do_Report (D_Subtype, Element);
@@ -1293,7 +1322,7 @@ package body Rules.Declarations is
             if not Is_Profile_Applied (Element, "RAVENSCAR") then
                Do_Report (D_Non_Ravenscar_Task, Element);
             end if;
-            Check_Discriminant (Discriminant_Part (Element), Extra_Check => D_Task_Discriminant);
+            Check_Discriminant (Element, Extra_Check => D_Task_Discriminant);
 
          when A_Single_Task_Declaration =>
             Do_Report ((D_Task, D_Task_Variable, D_Single_Task), Element);
@@ -1303,7 +1332,7 @@ package body Rules.Declarations is
 
          when A_Protected_Type_Declaration =>
             Do_Report ((D_Type, D_Protected, D_Protected_Type), Element);
-            Check_Discriminant (Discriminant_Part (Element), Extra_Check => D_Protected_Discriminant);
+            Check_Discriminant (Element, Extra_Check => D_Protected_Discriminant);
             if Rule_Used (D_Multiple_Protected_Entries) then
                Check_Multiple_Entries (Type_Declaration_View (Element));
             end if;

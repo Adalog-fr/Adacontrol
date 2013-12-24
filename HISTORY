@@ -19,10 +19,14 @@ Changes to existing rules:
 --------------------------
 
 Declarations:
-  Added subrulse box_defaulted_formal_function,
+  Added subrules box_defaulted_formal_function,
   name_defaulted_formal_function, box_defaulted_formal_procedure,
   name_defaulted_formal_procedure, null_defaulted_formal_procedure,
-  non_ravenscar_task
+  non_ravenscar_task, access_constrained_array_type,
+  access_unconstrained_array_type, access_def_discriminated_type,
+  access_nondef_discriminated_type, access_unknown_discriminated_type,
+  access_formal_type
+
 
 Expressions:
   Added subrules in, not_in, static_membership, and_array,
