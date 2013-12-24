@@ -27,6 +27,8 @@ Declarations:
   access_nondef_discriminated_type, access_unknown_discriminated_type,
   access_formal_type
 
+Dependencies:
+  Added subrules public_child, private_child
 
 Expressions:
   Added subrules in, not_in, static_membership, and_array,

@@ -3803,13 +3803,14 @@ indicated parameter.
 @node Dependencies, Directly_Accessed_Globals, Default_Parameter, Rules reference
 @section Dependencies
 This rule controls dependencies of units (i.e. @code{@b{with}}
-clauses, parents...), either according to a set of allowed/forbidden
-units, or by count.
+clauses, parents, child units...), either according to a set of
+allowed/forbidden units, or by count.
 
 @subsection Syntax
 @example
 <control_kind> dependencies (others, <unit> @{,<unit>@});
 <control_kind> dependencies (with, <unit> @{,<unit>@});
+<control_kind> dependencies (public_child | private_child);
 <control_kind> dependencies (<counter>, <bound> [, <bound>]);
 <counter> ::= raw | direct | parent
 <bound>   ::= min | max <value>
@@ -3829,6 +3830,10 @@ Note that for these two rules, renamings are followed: if you give the
 basic name of a unit, it will be identified even if used with other
 names. Similarly, if you give the name of a generic, all of its
 instantiations will also be controlled.
+
+``public_child'' and ``private_child'' control units that depend on
+their own public (respectively private) child units. Since these
+subrules have no parameters, they can be given only once.
 
 Other subrules control that the number of various dependencies is
 whithin a specified range.  The second (and optionnally third)
@@ -3861,11 +3866,15 @@ check dependencies (parent, max 5);
 
 -- units that depend on nothing:
 search dependencies (direct, min 1);
+
+-- units that depend on their public children:
+check dependencies (public_child);
 @end example
 
 @subsection Tips
-If you give a name that's already a renaming to the ``others'' or ``with'' subrules, the rule
-will only apply to this name, not to what has been renamed. Therefore:
+If you give a name that's already a renaming to the ``others'' or
+``with'' subrules, the rule will only apply to this name, not to what
+has been renamed. Therefore:
 @example
  -- Allow only Ada.Text_IO:
 check dependencies (others, Ada.Text_IO);
@@ -3873,6 +3882,11 @@ check dependencies (others, Ada.Text_IO);
 -- But not if the plain name Text_IO is used:
 check dependencies (with, Text_IO);
 @end example
+
+The notion of public or private for the rules ``public_child'' or
+``private_child'' refer to the real unit, which is not necessarily the
+name used in the with clause, if for example you have a private
+library renaming of a public unit.
 
 There is a slight overlap between this rule and the rule
 ``entities'. But ``entities'' will find all uses of an entity (not

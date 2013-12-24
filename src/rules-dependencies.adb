@@ -37,6 +37,7 @@ with
 with
   Asis.Clauses,
   Asis.Compilation_Units,
+  Asis.Declarations,
   Asis.Elements,
   Asis.Expressions;
 
@@ -56,7 +57,7 @@ package body Rules.Dependencies is
    use Framework, Framework.Control_Manager;
 
    -- Counting subrules must stay together:
-   type Subrules is (Sr_Others, Sr_With, Sr_Raw, Sr_Direct, Sr_Parent);
+   type Subrules is (Sr_Others, Sr_With, Sr_Raw, Sr_Direct, Sr_Parent, Sr_Public_Child, Sr_Private_Child);
    subtype Counting_Subrules is Subrules range Sr_Raw .. Sr_Parent;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
 
@@ -66,6 +67,8 @@ package body Rules.Dependencies is
    Counting_Subrules_Count : Control_Index := 0;
    Others_Subrule_Used     : Boolean;
    With_Subrule_Used       : Boolean;
+   Public_Child_Used       : Boolean;
+   Private_Child_Used      : Boolean;
    Rule_Used               : Boolean;
    Save_Used               : Boolean;
 
@@ -74,8 +77,10 @@ package body Rules.Dependencies is
          Count_Kind : Counting_Subrules;
          Bounds     : Framework.Language.Shared_Keys.Bounds_Values;
       end record;
-   Counting_Contexts : array (Control_Index range 1 .. Control_Index'Last) of Counting_Subrule_Contexts;
-   Others_Context    : Basic_Rule_Context;
+   Counting_Contexts     : array (Control_Index range 1 .. Control_Index'Last) of Counting_Subrule_Contexts;
+   Others_Context        : Basic_Rule_Context;
+   Public_Child_Context  : Basic_Rule_Context;
+   Private_Child_Context : Basic_Rule_Context;
 
    Raw_Count       : Thick_Queries.Biggest_Natural;
    Direct_Name_Set : Framework.String_Set.Set;
@@ -92,6 +97,7 @@ package body Rules.Dependencies is
       User_Message ("or whose number of dependencies is not in the specified range");
       User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
+      User_Message ("Subrules ""public_child"" and ""private_child"" have no parameters");
       User_Message ("For subrules ""others"" and ""with"":");
       User_Message ("Parameter(2..3): allowed (resp. forbidden) units");
       User_Message ("For other subrules:");
@@ -165,6 +171,30 @@ package body Rules.Dependencies is
                end;
             end loop;
             With_Subrule_Used := True;
+
+         when Sr_Public_Child =>
+            if Public_Child_Used then
+               Parameter_Error (Rule_Id, """Public_Child"" subrule already specified");
+            end if;
+
+            if Parameter_Exists then
+               Parameter_Error (Rule_Id, "rule has no parameter");
+            end if;
+
+            Public_Child_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Public_Child_Used    := True;
+
+         when Sr_Private_Child =>
+            if Private_Child_Used then
+               Parameter_Error (Rule_Id, """Private_Child"" subrule already specified");
+            end if;
+
+            if Parameter_Exists then
+               Parameter_Error (Rule_Id, "rule has no parameter");
+            end if;
+
+            Private_Child_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            Private_Child_Used    := True;
       end case;
 
       Rule_Used := True;
@@ -182,6 +212,8 @@ package body Rules.Dependencies is
             Counting_Subrules_Count := 0;
             Others_Subrule_Used     := False;
             Rule_Used               := False;
+            Public_Child_Used       := False;
+            Private_Child_Used      := False;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -284,7 +316,7 @@ package body Rules.Dependencies is
    -------------------------
 
    procedure Process_With_Clause (Clause : in Asis.Clause) is
-      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Clauses, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Framework.String_Set, Thick_Queries, Utilities;
    begin
       if not Rule_Used then
@@ -292,15 +324,16 @@ package body Rules.Dependencies is
       end if;
 
       declare
-         Names : constant Asis.Name_List := Clause_Names (Clause);
-         Elem  : Asis.Expression;
+         Withed_Names : constant Asis.Name_List := Clause_Names (Clause);
+         Elem         : Asis.Expression;
+         This_Name    : constant Asis.Name := Names (Unit_Declaration (Enclosing_Compilation_Unit (Clause))) (1);
       begin
          if Counting_Subrules_Count /= 0 then
-            Raw_Count := Raw_Count + Names'Length;
+            Raw_Count := Raw_Count + Withed_Names'Length;
          end if;
-         for N in Names'Range loop
+         for N in Withed_Names'Range loop
             if Counting_Subrules_Count /= 0 then
-               Elem := Names (N);
+               Elem := Withed_Names (N);
                Add (Direct_Name_Set, To_Upper (Full_Name_Image (Ultimate_Name (Elem))));
                while Expression_Kind (Elem) = A_Selected_Component loop
                   Elem := Prefix (Elem);
@@ -309,7 +342,7 @@ package body Rules.Dependencies is
             end if;
 
             if Others_Subrule_Used then
-               Elem := Names (N);
+               Elem := Withed_Names (N);
                if Matching_Context (Allowed_Entities, Elem, Extend_To => All_Extensions) = No_Matching_Context then
                   Report (Rule_Id,
                           Others_Context,
@@ -319,7 +352,7 @@ package body Rules.Dependencies is
             end if;
 
             if With_Subrule_Used then
-               Elem := Names (N);
+               Elem := Withed_Names (N);
                loop
                   declare
                      Cont : constant Root_Context'Class := Matching_Context (Forbidden_Entities,
@@ -336,6 +369,22 @@ package body Rules.Dependencies is
                   exit when Expression_Kind (Elem) /= A_Selected_Component;
                   Elem := Prefix (Elem);
                end loop;
+            end if;
+
+            Elem := Corresponding_Name_Definition (Simple_Name (Withed_Names (N)));
+            if Public_Child_Used
+              and then Unit_Class (Enclosing_Compilation_Unit (Ultimate_Name (Elem)))
+                       in A_Public_Declaration .. A_Public_Declaration_And_Body
+              and then Starts_With (To_Upper (Full_Name_Image (Elem)), To_Upper (Full_Name_Image (This_Name)))
+            then
+               Report (Rule_Id, Public_Child_Context, Get_Location (Withed_Names (N)), "Use of public child");
+            end if;
+
+            if Private_Child_Used
+              and then Unit_Class (Enclosing_Compilation_Unit (Ultimate_Name (Elem))) = A_Private_Declaration
+              and then Starts_With (To_Upper (Full_Name_Image (Elem)), To_Upper (Full_Name_Image (This_Name)))
+            then
+               Report (Rule_Id, Private_Child_Context, Get_Location (Withed_Names (N)), "Use of private child");
             end if;
          end loop;
       end;

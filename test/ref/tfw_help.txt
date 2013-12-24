@@ -182,7 +182,10 @@ Rule: DEPENDENCIES
 Control units that depend on a set of allowed/forbidden units,
 or whose number of dependencies is not in the specified range
 
-Parameter(1)   : others | with | raw | direct | parent
+Parameter(1)   : others        | with   | raw          |
+                 direct        | parent | public_child |
+                 private_child
+Subrules "public_child" and "private_child" have no parameters
 For subrules "others" and "with":
 Parameter(2..3): allowed (resp. forbidden) units
 For other subrules:

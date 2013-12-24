@@ -12,10 +12,14 @@ x_dependencies.ads:5:1: Found: more than 2: number of withed units > 2 (6)
 x_dependencies.ads:5:1: Error: less than 10: number of withed units < 10 (6)
 x_dependencies.ads:5:1: Error: all direct: direct dependencies > 0 (3)
 x_dependencies.ads:5:1: Error: not between 5 and 10: direct dependencies not in 5..10 (3)
-x_dependencies.adb:2:6: Error: others: unit depends on Ada.Strings.Fixed
-x_dependencies.adb:3:1: Error: less than 10: number of withed units < 10 (2)
-x_dependencies.adb:3:1: Error: all direct: direct dependencies > 0 (3)
-x_dependencies.adb:3:1: Error: not between 5 and 10: direct dependencies not in 5..10 (3)
+x_dependencies.adb:1:6: Error: others: unit depends on Ada.Strings.Fixed
+x_dependencies.adb:2:6: Error: others: unit depends on X_Dependencies.Child
+x_dependencies.adb:2:6: Error: public child: Use of public child
+x_dependencies.adb:3:6: Error: others: unit depends on X_Dependencies.Priv
+x_dependencies.adb:3:6: Error: private child: Use of private child
+x_dependencies.adb:4:1: Found: more than 2: number of withed units > 2 (3)
+x_dependencies.adb:4:1: Error: less than 10: number of withed units < 10 (3)
+x_dependencies.adb:4:1: Error: all direct: direct dependencies > 0 (6)
 x_dependencies-child.ads:1:6: Error: others: unit depends on Ada.Strings.Fixed
 x_dependencies-child.ads:2:6: Error: others: unit depends on Ada
 x_dependencies-child.ads:2:11: Error: others: unit depends on Ada.Calendar
@@ -34,3 +38,5 @@ x_dependencies_ren.ads:1:6: Error: others: unit depends on X_Dependencies.Child
 x_dependencies_ren.ads:2:1: Error: less than 10: number of withed units < 10 (1)
 x_dependencies_ren.ads:2:1: Error: all direct: direct dependencies > 0 (2)
 x_dependencies_ren.ads:2:1: Error: not between 5 and 10: direct dependencies not in 5..10 (2)
+x_dependencies-priv.ads:1:9: Error: less than 10: number of withed units < 10 (0)
+x_dependencies-priv.ads:1:9: Error: not between 5 and 10: direct dependencies not in 5..10 (0)
