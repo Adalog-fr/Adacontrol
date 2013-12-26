@@ -102,9 +102,14 @@ procedure T_statements is
       function  Func (X : Object) return Integer;
    end Dispatching;
    package body Dispatching is
+      I : Integer;
       procedure Proc (X : Object) is
+         procedure Nested is
+         begin
+            I := Func (Object'Class (X));     -- Dispatching_call, redispatching_call
+         end Nested;
       begin
-         null;            -- Null
+         Proc (Object'Class (X));             -- Dispatching_call, redispatching_call
       end Proc;
       function  Func (X : Object) return Integer is
       begin

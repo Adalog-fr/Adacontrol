@@ -55,7 +55,7 @@ Parameter_Declarations:
 
 Statements:
   Added subrules named_exit, exit_plain_loop, simple_block,
-  unnamed_simple_block. 
+  unnamed_simple_block, redispatching_call. 
   Normalized behaviour of subrule exit.
 
 Style 

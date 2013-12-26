@@ -88,7 +88,7 @@ package body Rules.Statements is
 
                      Stmt_Procedure_Return,
 
-                     Stmt_Raise,
+                     Stmt_Raise,                   Stmt_Redispatching_Call,
 
                      -- all "filtered_raise"
                      Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,         Stmt_Raise_Standard,
@@ -474,6 +474,19 @@ package body Rules.Statements is
          when A_Procedure_Call_Statement =>
             if Is_Dispatching_Call (Element) then
                Do_Report (Stmt_Dispatching_Call);
+
+               if Rule_Used (Stmt_Redispatching_Call) then
+                  declare
+                     Name : Asis.Defining_Name := Enclosing_Program_Unit (Element);
+                  begin
+                     while not Is_Nil (Name) loop
+                        if Is_Dispatching_Operation (Corresponding_Declaration (Enclosing_Element (Name))) then
+                           Do_Report (Stmt_Redispatching_Call);
+                        end if;
+                        Name := Enclosing_Program_Unit (Name);
+                     end loop;
+                  end;
+               end if;
             end if;
 
             if Rule_Used (Stmt_Inherited_Procedure_Call) then
@@ -712,19 +725,37 @@ package body Rules.Statements is
    ---------------------------
 
    procedure Process_Function_Call (Call : in Asis.Expression) is
-      use Asis.Statements, Utilities;
+      use Asis.Declarations, Asis.Elements, Asis.Statements, Thick_Queries, Utilities;
       use Framework.Reports;
    begin
-      if not Rule_Used (Stmt_Dispatching_Call) then
+      if not (Rule_Used (Stmt_Dispatching_Call) or Rule_Used (Stmt_Redispatching_Call)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       if Is_Dispatching_Call (Call) then
-         Report (Rule_Id,
-                 Usage (Stmt_Dispatching_Call),
-                 Get_Location (Call),
-                 "use of statement """ & Image (Stmt_Dispatching_Call, Lower_Case) & '"');
+         if Rule_Used (Stmt_Dispatching_Call) then
+            Report (Rule_Id,
+                    Usage (Stmt_Dispatching_Call),
+                    Get_Location (Call),
+                    "use of statement """ & Image (Stmt_Dispatching_Call, Lower_Case) & '"');
+         end if;
+
+         if Rule_Used (Stmt_Redispatching_Call) then
+            declare
+               Name : Asis.Defining_Name := Enclosing_Program_Unit (Call);
+            begin
+               while not Is_Nil (Name) loop
+                  if Is_Dispatching_Operation (Corresponding_Declaration (Enclosing_Element (Name))) then
+                     Report (Rule_Id,
+                             Usage (Stmt_Dispatching_Call),
+                             Get_Location (Call),
+                             "use of statement """ & Image (Stmt_Redispatching_Call, Lower_Case) & '"');
+                  end if;
+                  Name := Enclosing_Program_Unit (Name);
+               end loop;
+            end;
+         end if;
       end if;
    end Process_Function_Call;
 

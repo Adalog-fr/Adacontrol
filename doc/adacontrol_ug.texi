@@ -7542,15 +7542,16 @@ This rule controls usage of certain Ada statements.
    null                     | procedure_return       |
    raise                    | raise_locally_handled  |
    raise_nonpublic          | raise_standard         |
-   reraise                  | requeue                |
-   selective_accept         | simple_block           |
-   simple_loop              | terminate              |
-   timed_entry_call         | unconditional_exit     |
-   unnamed_block            | unnamed_exit           |
-   unnamed_loop_exited      | unnamed_for_loop       |
-   unnamed_multiple_loop    | unnamed_simple_block   |
-   unnamed_simple_loop      | unnamed_while_loop     |
-   untyped_for              | while_loop
+   redispatching_call       | reraise                |
+   requeue                  | selective_accept       |
+   simple_block             | simple_loop            |
+   terminate                | timed_entry_call       |
+   unconditional_exit       | unnamed_block          |
+   unnamed_exit             | unnamed_loop_exited    |
+   unnamed_for_loop         | unnamed_multiple_loop  |
+   unnamed_simple_block     | unnamed_simple_loop    |
+   unnamed_while_loop       | untyped_for            |
+while_loop
 @end example
 
 @subsection Action
@@ -7605,7 +7606,9 @@ statements.
 @code{dispatching_call} controls all dispatching calls. Note that this
 subrule controls dispatching procedure calls as well as dispatching
 function calls, although the latter is technically an expression and
-not a statement.
+not a statement. @code{redispatching_call} does the same, but only for
+dispatching calls that are (directly or indirectly) inside a primitive
+operation of a tagged type.
 @item
 @code{entry_call} controls all entry call statements, including those
 that are part of a conditional or timed entry call statement.
