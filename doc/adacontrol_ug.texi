@@ -2614,7 +2614,7 @@ controlled. As usual, the whole syntax for entities is allowed for
 @item
 ``()'': The allocated value is of an enumerated type.
 @item
-``access'':  The allocated value is of an acces type.
+``access'':  The allocated value is of an access type.
 @item
 ``array'': The allocated value is of an array type.
 @item
@@ -2813,7 +2813,7 @@ subtypes) are controlled. The meaning of <category> is:
 @item
 ``()'': The component is of an enumerated type.
 @item
-``access'':  The component is of an acces type.
+``access'':  The component is of an access type.
 @item
 ``array'': The component is of an array type.
 @item
@@ -5124,7 +5124,7 @@ category:
 @item
 ``()'': The parameter is of an enumerated type.
 @item
-``access'':  The parameter is of an acces type.
+``access'':  The parameter is of an access type.
 @item
 ``array'': The parameter is of an array type.
 @item
@@ -6730,7 +6730,7 @@ controlled. The meaning of <category> is:
 @item
 ``()'': The component is of an enumerated type.
 @item
-``access'':  The component is of an acces type.
+``access'':  The component is of an access type.
 @item
 ``array'': The component is of an array type.
 @item
@@ -9239,7 +9239,7 @@ To designate all occurrences of an attribute, use @code{@b{all}} in
 front of the attribute. To designate only occurrences of an attribute
 whose prefix is a (sub) type (but any type or subtype), give it as
 @code{type'Attr} (i.e. the keyword ``type'' is put in front of the
-quote.
+quote).
 
 @code{@b{all}} may be used in place of an attribute name to mean ``any
 attribute''. See examples below.

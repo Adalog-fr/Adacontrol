@@ -172,7 +172,7 @@ package body Rules.Unsafe_Elaboration is
          end if;
       end Applicable_Context_Clauses;
 
-   begin
+   begin   -- Check_Unit
       if Unit_Origin (Unit) /= An_Application_Unit then
          return;
       end if;
