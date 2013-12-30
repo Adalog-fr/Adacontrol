@@ -31,7 +31,9 @@
 
 -- ASIS
 with
-  Asis.Elements;
+  Asis.Declarations,
+  Asis.Elements,
+  Asis.Expressions;
 
 -- Adacontrol
 with
@@ -231,19 +233,24 @@ package body Framework.Language.Shared_Keys is
       if Spec.Kind /= Regular_Id then
          return Cat_Any;
       end if;
+      return Value (To_Wide_String (Spec.Specification));
+   end Value;
 
-      declare
-         Val : constant Wide_String := To_Wide_String (Spec.Specification);
-      begin
-         if Val = "()" then
-            return Cat_Enum;
-         else
-            return Categories'Wide_Value ("CAT_" & Val);
-         end if;
-      exception
-         when Constraint_Error =>
-            return Cat_Any;
-      end;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (Spec : Wide_String) return Categories is
+   begin
+      if Spec = "()" then
+         return Cat_Enum;
+      else
+         return Categories'Wide_Value ("CAT_" & Spec);
+      end if;
+   exception
+      when Constraint_Error =>
+         return Cat_Any;
    end Value;
 
    -------------
@@ -307,4 +314,90 @@ package body Framework.Language.Shared_Keys is
    end Matching_Category;
 
 
+   ---------------------------
+   -- Get_Aspects_Parameter --
+   ---------------------------
+
+   function Get_Aspects_Parameter (Rule_Id  : Wide_String;
+                                   Expected : Aspects_Set := (others => Present))
+                                   return Aspects_Set
+   is
+      use Aspects_Utilities, Utilities;
+
+      Result : Aspects_Set := (others => Unspecified);
+      Temp   : Aspect_Presence;
+      A      : Aspects;
+   begin
+      while Parameter_Exists loop
+         if Get_Modifier ("NOT") then
+            Temp := Absent;
+         else
+            Temp := Present;
+         end if;
+
+         A := Get_Flag_Parameter (Allow_Any => False);
+         if Expected (A) /= Present then
+            Parameter_Error (Rule_Id, "aspect not allowed for this rule");
+         end if;
+         if Result (A) /= Unspecified then
+            Parameter_Error (Rule_Id, "aspect already specified: " & Image (A, Title_Case));
+         end if;
+
+         Result (A) := Temp;
+      end loop;
+      return Result;
+   end Get_Aspects_Parameter;
+
+
+   -------------------------------
+   -- Corresponding_Aspects_Set --
+   -------------------------------
+
+   function Corresponding_Aspects_Set (Elem : Asis.Element) return Aspects_Set is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Thick_Queries, Utilities;
+
+      Decl         : Asis.Declaration;
+      Result       : Aspects_Set := (others => Absent);
+   begin
+      case Element_Kind (Elem) is
+         when A_Declaration =>
+            Decl := Elem;
+         when A_Defining_Name | A_Definition =>
+            Decl := Enclosing_Element (Elem);
+         when An_Expression =>
+            Decl := Corresponding_Name_Declaration (Simple_Name (Elem));
+         when others =>
+            Failure ("Corresponding_Aspects_Set: incorrect elem", Elem);
+      end case;
+
+      declare
+         Repr_Clauses : constant Asis.Representation_Clause_List := Corresponding_Representation_Clauses (Decl);
+      begin
+         for R in Repr_Clauses'Range loop
+            case Representation_Clause_Kind (Repr_Clauses (R)) is
+               when An_Enumeration_Representation_Clause | A_Record_Representation_Clause =>
+                  Result (Representation) := Present;
+               when others =>
+                  null;
+            end case;
+         end loop;
+      end;
+      if Declaration_Kind (Decl) = An_Ordinary_Type_Declaration
+      -- Pragma pack does not apply to objects
+        and then Corresponding_Pragma_Set (Names (Decl) (1)) (A_Pack_Pragma)
+      then
+         Result (Pack) := Present;
+      end if;
+
+      if not Is_Nil (Attribute_Clause_Expression (A_Size_Attribute, Decl)) then
+         Result (Size) := Present;
+      end if;
+
+      if not Is_Nil (Attribute_Clause_Expression (A_Component_Size_Attribute, Decl)) then
+         Result (Component_Size) := Present;
+      end if;
+
+      return Result;
+   end Corresponding_Aspects_Set;
 end Framework.Language.Shared_Keys;

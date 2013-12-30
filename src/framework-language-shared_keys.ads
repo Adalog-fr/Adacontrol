@@ -85,6 +85,7 @@ package Framework.Language.Shared_Keys is
 
    procedure Help_On_Bounds (Header : Wide_String  := "");
 
+
    -----------------------------------------------------------------------------------
    -- Categories
    -----------------------------------------------------------------------------------
@@ -99,6 +100,7 @@ package Framework.Language.Shared_Keys is
                                                            Box_Pos  => 0,
                                                            Pars_Pos => 1);
 
+   function Value (Spec : Wide_String)          return Categories;
    function Value (Spec : Entity_Specification) return Categories;
    -- If Spec kind is a Regular_Id that matches the image of a category (or "()"),
    -- return that category.
@@ -140,4 +142,44 @@ package Framework.Language.Shared_Keys is
 
    function Image (Item : Thick_Queries.Type_Categories) return Wide_String;
    -- Image of a type category, in upper case
+
+
+   -----------------------------------------------------------------------------------
+   -- Aspects
+   -----------------------------------------------------------------------------------
+
+   type Aspects is (Representation, Pack, Size, Component_Size);
+   type Aspect_Presence is (Unspecified, Present, Absent);
+   type Aspects_Set is array (Aspects) of Aspect_Presence;
+   No_Aspect : constant Aspects_Set := (others => Unspecified);
+   package Aspects_Utilities is new Flag_Utilities (Aspects);
+
+   function Get_Aspects_Parameter (Rule_Id  : Wide_String;
+                                   Expected : Aspects_Set := (others => Present)) return Aspects_Set;
+   -- with pre => (for all E of Expected => E /= Unspecified);
+
+   function Corresponding_Aspects_Set (Elem : Asis.Element) return Aspects_Set;
+   -- with post => (for all E of Corresponding_Aspects_Set'Result => E /= Unspecified)
+   -- Return the aspects that apply (or not) to Elem
+   -- Appropriate Element_Kinds for Elem:
+   --       A_Declaration
+   --       A_Definition
+   --       An_Expression
+   --       A_Defining_Name
+   -- Appropriate Declaration_Kinds:
+   --       An_Ordinary_Type_Declaration
+   --       A_Task_Type_Declaration
+   --       A_Protected_Type_Declaration
+   --       A_Private_Type_Declaration
+   --       A_Private_Extension_Declaration
+   --       A_Subtype_Declaration
+   --       A_Formal_Type_Declaration
+   -- Appropriate Definition_Types:
+   --       A_Type_Definition
+   --       A_Task_Definition
+   --       A_Protected_Definition
+   -- Appropriate Expression_Kinds
+   --       An_Identifier
+   --       A_Selected_Name (applies to selector)
+
 end Framework.Language.Shared_Keys;
