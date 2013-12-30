@@ -40,7 +40,7 @@ begin
       C := ' ';
    end  loop;
 
-   Vect (1) := "ABCD";                                             -- User defined indexing
+   -- TBSL does not compile: Vect (1) := "ABCD";                                             -- User defined indexing
 
    if I in 1 | 2 | Sub | 1..10 then                                -- multiple membership test
       null;
