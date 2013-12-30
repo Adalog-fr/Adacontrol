@@ -71,13 +71,13 @@ t_array_declarations-dimensions.adb:11:78: Error: ARRAY_DECLARATIONS: upper boun
 t_array_declarations-dimensions.adb:11:15: Error: ARRAY_DECLARATIONS: array has more than 3 dimensions (4)
 t_array_declarations-component.adb:3:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:3:33: Error: compo_ident: array component is "Standard.Character"
-t_array_declarations-component.adb:3:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:3:33: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
 t_array_declarations-component.adb:4:8: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:4:24: Error: compo_ident: array component is "Standard.Character"
-t_array_declarations-component.adb:4:24: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:4:24: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
 t_array_declarations-component.adb:6:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:6:33: Error: compo_ident: array component is "Standard.Character"
-t_array_declarations-component.adb:6:33: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:6:33: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
 t_array_declarations-component.adb:8:15: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:8:33: Error: compo_array: array component is "array"
 t_array_declarations-component.adb:11:15: Error: Index_T6: array index is Range
@@ -99,16 +99,16 @@ t_array_declarations-component.adb:51:34: Error: compo_tagged: array component i
 t_array_declarations-component.adb:53:16: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:53:34: Error: compo_delta: array component is "delta"
 t_array_declarations-component.adb:56:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:56:34: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:56:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
 t_array_declarations-component.adb:57:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:57:34: Error: compo_enum_p_us: packed unsized array component is "()"
+t_array_declarations-component.adb:57:34: Error: compo_enum_p_ns: component is "()" of array with pack not size 
 t_array_declarations-component.adb:59:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:59:34: Error: compo_enum_up_s: unpacked sized array component is "()"
+t_array_declarations-component.adb:59:34: Error: compo_enum_np_s: component is "()" of array with not pack size 
 t_array_declarations-component.adb:61:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:61:34: Error: compo_enum_p_s: packed sized array component is "()"
+t_array_declarations-component.adb:61:34: Error: compo_enum_p_s: component is "()" of array with pack size 
 t_array_declarations-component.adb:64:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:64:34: Error: compo_enum_cs: component_sized array component is "()"
-t_array_declarations-component.adb:64:34: Error: compo_enum_up_us: unpacked unsized array component is "()"
+t_array_declarations-component.adb:64:34: Error: compo_enum_cs: component is "()" of array with component_size 
+t_array_declarations-component.adb:64:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
 t_array_declarations-component.adb:70:19: Error: Index_T6: array index is Range
 t_array_declarations-component.adb:70:37: Error: compo_float: array component is "digits"
 t_array_declarations-index_types.adb:10:15: Error: Index_T5: array index is ()

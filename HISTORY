@@ -18,6 +18,9 @@ unsafe_elaboration
 Changes to existing rules:
 --------------------------
 
+Array_Declarations:
+  Slightly changed the syntax of the component subrule.
+
 Declarations:
   Added subrules box_defaulted_formal_function,
   name_defaulted_formal_function, box_defaulted_formal_procedure,

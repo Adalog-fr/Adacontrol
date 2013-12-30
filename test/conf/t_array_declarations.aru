@@ -22,11 +22,11 @@ compo_private:    check array_declarations (component, private);
 compo_record:     check array_declarations (component, record);
 compo_delta:      check array_declarations (component, delta);
 compo_float:      check array_declarations (component, digits);
-compo_enum_up_us: check array_declarations (component, (), not packed, not sized);
-compo_enum_p_us:  check array_declarations (component, (), not sized, packed);
-compo_enum_up_s:  check array_declarations (component, (), not packed, sized);
-compo_enum_p_s:   check array_declarations (component, (), packed, sized);
-compo_enum_cs:    check array_declarations (component, (), component_sized);
+compo_enum_np_ns: check array_declarations (component, (), not pack, not size);
+compo_enum_p_ns:  check array_declarations (component, (), not size, pack);
+compo_enum_np_s:  check array_declarations (component, (), not pack, size);
+compo_enum_p_s:   check array_declarations (component, (), pack, size);
+compo_enum_cs:    check array_declarations (component, (), component_size);
 
 Index_T1: check array_declarations (index, T_Array_Declarations.Index_Types.enum);
 Index_T2: check array_declarations (index, T_Array_Declarations.Index_Types.int);

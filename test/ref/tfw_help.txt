@@ -30,7 +30,7 @@ Parameter(2..)  : <entity>|<category>
 
 For component:
 Parameter(2)  : <entity>|<category>
-Parameter(3..): [not] packed | sized | component_sized (optional)
+Parameter(3..): [not] pack | size | component_size (optional)
 
    <bound>: min | max
 <category>: ()      | access    | array | delta  | digits | mod |

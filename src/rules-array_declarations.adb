@@ -74,12 +74,9 @@ package body Rules.Array_Declarations is
    Index_Contexts : Context_Store;
    package Index_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Index_Contexts);
 
-   type Repr_Condition is (None, Present, Absent);
    type Compo_Context is new Basic_Rule_Context with
       record
-         Packing      : Repr_Condition;
-         Sizing       : Repr_Condition;
-         Compo_Sizing : Repr_Condition;
+         Aspects : Framework.Language.Shared_Keys.Aspects_Set;
       end record;
    Compo_Contexts : Context_Store;
    package Compo_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Compo_Contexts);
@@ -122,7 +119,7 @@ package body Rules.Array_Declarations is
       User_Message;
       User_Message ("For component:");
       User_Message ("Parameter(2)  : <entity>|<category>");
-      User_Message ("Parameter(3..): [not] packed | sized | component_sized (optional)");
+      User_Message ("Parameter(3..): [not] pack | size | component_size (optional)");
       User_Message;
       Help_On_Bounds (Header => "   <bound>:");
       User_Message ("<category>: ()      | access    | array | delta  | digits | mod |");
@@ -203,46 +200,14 @@ package body Rules.Array_Declarations is
 
          when Component =>
             declare
-               Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
-
-               Packing       : Repr_Condition := None;
-               Sizing        : Repr_Condition := None;
-               Compo_Sizing  : Repr_Condition := None;
-               Temp          : Repr_Condition;
+               Entity      : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+               The_Aspects : constant Aspects_Set := Get_Aspects_Parameter (Rule_Id,
+                                                                            Expected => (Representation => Absent,
+                                                                                         others         => Present));
             begin
-               while Parameter_Exists loop
-                  if Get_Modifier ("NOT") then
-                     Temp := Absent;
-                  else
-                     Temp := Present;
-                  end if;
-
-                  declare
-                     Name : constant Wide_String := Get_Name_Parameter;
-                  begin
-                     if Name = "PACKED" then
-                        if Packing /= None then
-                           Parameter_Error (Rule_Id, "packing already specified");
-                        end if;
-                        Packing := Temp;
-                     elsif Name = "SIZED" then
-                        if Sizing /= None then
-                           Parameter_Error (Rule_Id, "sizing already specified");
-                        end if;
-                        Sizing := Temp;
-                     elsif Name = "COMPONENT_SIZED" then
-                        if Compo_Sizing /= None then
-                           Parameter_Error (Rule_Id, "component sizing already specified");
-                        end if;
-                        Compo_Sizing := Temp;
-                     else
-                        Parameter_Error (Rule_Id, """packed"" or ""sized"" expected");
-                     end if;
-                  end;
-               end loop;
                Associate (Compo_Contexts,
                           Entity,
-                          Compo_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Packing, Sizing, Compo_Sizing),
+                          Compo_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with The_Aspects),
                           Additive => True);
             exception
                when Already_In_Store =>
@@ -542,13 +507,10 @@ package body Rules.Array_Declarations is
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
          Array_Comp : constant Asis.Expression := Component_Subtype_Indication
                                                    (Array_Component_Definition (Definition));
-         Arr_Decl   : constant Asis.Declaration := Enclosing_Element (Definition);
          First_St   : Asis.Declaration;
          Iterator   : Context_Iterator := Compo_Iterator.Create;
 
-         Is_Packed      : Boolean;
-         Is_Sized       : Boolean;
-         Is_Compo_Sized : Boolean;
+         Compo_Aspects : constant Aspects_Set := Corresponding_Aspects_Set (Definition);
 
          procedure Compo_Report (Iter : in out Context_Iterator; In_Case : Casing) is
             use Ada.Strings.Wide_Unbounded;
@@ -556,93 +518,58 @@ package body Rules.Array_Declarations is
             Extra           : Unbounded_Wide_String;
             Current_Context : Compo_Context;
             Applicable      : Boolean;
-         begin
+
+            procedure Check_Aspect (A : Aspects) is
+            begin
+               case Current_Context.Aspects (A) is
+                  when Unspecified =>
+                     null;
+                  when Present =>
+                     if Compo_Aspects (A) = Present then
+                        Append (Extra, To_Lower (Aspects'Wide_Image (A)) & ' ');
+                     else
+                        Applicable := False;
+                     end if;
+                  when Absent =>
+                     if Compo_Aspects (A) = Present then
+                        Applicable := False;
+                     else
+                        Append (Extra, "not " & To_Lower (Aspects'Wide_Image (A)) & ' ');
+                     end if;
+               end case;
+            end Check_Aspect;
+         begin  -- Compo_Report
             while not Is_Exhausted (Iter) loop
-               Current_Context := Compo_Context (Value (Iter));
                Applicable := True;
                Extra      := Null_Unbounded_Wide_String;
-               case Current_Context.Packing is
-                  when None =>
-                     null;
-                  when Present =>
-                     if Is_Packed then
-                        Append (Extra, "packed ");
-                     else
-                        Applicable := False;
-                     end if;
-                  when Absent =>
-                     if Is_Packed then
-                        Applicable := False;
-                     else
-                        Append (Extra, "unpacked ");
-                     end if;
-               end case;
 
-               case Current_Context.Sizing is
-                  when None =>
-                     null;
-                  when Present =>
-                     if Is_Sized then
-                        Append (Extra, "sized ");
-                     else
-                        Applicable := False;
-                     end if;
-                  when Absent =>
-                     if Is_Sized then
-                        Applicable := False;
-                     else
-                        Append (Extra, "unsized ");
-                     end if;
-               end case;
-
-               case Current_Context.Compo_Sizing is
-                  when None =>
-                     null;
-                  when Present =>
-                     if Is_Compo_Sized then
-                        Append (Extra, "component_sized ");
-                     else
-                        Applicable := False;
-                     end if;
-                  when Absent =>
-                     if Is_Compo_Sized then
-                        Applicable := False;
-                     else
-                        Append (Extra, "component unsized ");
-                     end if;
-               end case;
+               Current_Context := Compo_Context (Value (Iter));
+               for A in Aspects loop
+                  Check_Aspect (A);
+               end loop;
 
                if Applicable then
-                  Report (Rule_Id,
-                          Current_Context,
-                          Get_Location (Array_Comp),
-                          To_Wide_String (Extra)
-                          & "array component is """
-                          & Set_Casing (Last_Matching_Name (Compo_Contexts), In_Case)
-                          & '"');
+                  if Extra = Null_Unbounded_Wide_String then
+                     Report (Rule_Id,
+                             Current_Context,
+                             Get_Location (Array_Comp),
+                             "array component is """
+                             & Set_Casing (Last_Matching_Name (Compo_Contexts), In_Case)
+                             & '"');
+                  else
+                     Report (Rule_Id,
+                             Current_Context,
+                             Get_Location (Array_Comp),
+                             "component is """
+                             & Set_Casing (Last_Matching_Name (Compo_Contexts), In_Case)
+                             & """ of array with "
+                             & To_Wide_String (Extra));
+                  end if;
                end if;
                Next (Iter);
             end loop;
          end Compo_Report;
       begin  -- Process_Component
-         Is_Packed := False;
-         if Declaration_Kind (Arr_Decl) = An_Ordinary_Type_Declaration then
-            -- Pragma pack does not apply to objects
-            declare
-               Pragma_List : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Arr_Decl);
-            begin
-               for P in Pragma_List'Range loop
-                  if Pragma_Kind (Pragma_List (P)) = A_Pack_Pragma then
-                     Is_Packed := True;
-                     exit;
-                  end if;
-               end loop;
-            end;
-         end if;
-
-         Is_Sized       := not Is_Nil (Attribute_Clause_Expression (A_Size_Attribute, Arr_Decl));
-         Is_Compo_Sized := not Is_Nil (Attribute_Clause_Expression (A_Component_Size_Attribute, Arr_Decl));
-
          -- 2005 Array_Comp is nil if the component is of an anonymous access type
          -- Give up on matching (sub)types, only match access category
          if Is_Nil (Array_Comp) then

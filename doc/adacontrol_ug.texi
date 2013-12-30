@@ -2754,7 +2754,7 @@ component type of the array.
 <type>      ::= <entity>|<category>
 <category > ::= () | access    | array | delta  | digits | mod | private
                    | protected | range | record | tagged | task
-<repr_cond> ::= [not] packed | sized | component_sized
+<repr_cond> ::= [not] pack | size | component_size
 @end example
 @subsection Action
 The first parameter is a subrule keyword:
@@ -2843,18 +2843,18 @@ If <repr_cond> are specified, the rule controls only arrays to which
 all the corresponding representation items apply:
 @itemize @bullet
 @item
-``packed'': A pragma Pack applies to the array.
+``pack'': A pragma Pack applies to the array.
 @item
-``not packed'': No pragma Pack applies to the array.
+``not pack'': No pragma Pack applies to the array.
 @item
-``sized'': A size representation clause applies to the array.
+``size'': A size representation clause applies to the array.
 @item
-``not sized'': No size representation clause applies to the array.
+``not size'': No size representation clause applies to the array.
 @item
-``component_sized'': A component_size representation clause applies to
+``component_size'': A component_size representation clause applies to
 the array.
 @item
-``not component_sized'': No component_size representation clause
+``not component_size'': No component_size representation clause
 applies to the array.
 @end itemize
 
@@ -2894,10 +2894,10 @@ check array_declarations (length, min 1);
 check array_declarations (component, private);
 
 -- Packed arrays of Character
-check array_declarations (component, Standard.Character, packed);
+check array_declarations (component, Standard.Character, pack);
 
 -- Packed arrays of record without size clause
-check array_declarations (component, record, packed, not sized);
+check array_declarations (component, record, packed, not size);
 
 -- One-dimensional arrays indexed by Integer
 check array_declarations (index, standard.integer);
@@ -9463,6 +9463,12 @@ changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
 
 @section Migrating from 1.15r5
+@subsection Array_Declarations
+The extension of aspects to more rules required a slight change in the
+syntax of the ``component'' subrule: the keywords ``packed'',
+``sized'', and ``component_sized'' have been changed to ``pack'',
+``size'', and  ``component_size'', respectively.
+
 @subsection Object_Declarations
 Due to the necessity of avoiding a syntactic ambiguity in the new
 subrule ``type'', the keyword ``all'' is no more allowed in the syntax
