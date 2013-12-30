@@ -61,7 +61,7 @@ package body Rules.Expressions is
 
                      E_Downward_Conversion,
 
-                     E_Explicit_Dereference,
+                     E_Explicit_Dereference, E_Extendable_Aggregate, E_Extension_Aggregate,
 
                      E_Fixed_Multiplying_Op, E_For_All, E_For_Some,
 
@@ -821,9 +821,7 @@ package body Rules.Expressions is
                Do_Report (E_Unqualified_Aggregate, Get_Location (Expression));
             end if;
 
-         when A_Record_Aggregate
-            | An_Extension_Aggregate
-              =>
+         when A_Record_Aggregate =>
             Do_Report (E_Record_Aggregate, Get_Location (Expression));
 
             declare
@@ -851,6 +849,59 @@ package body Rules.Expressions is
             if Expression_Kind (Enclosing_Element (Expression)) /= A_Qualified_Expression then
                Do_Report (E_Unqualified_Aggregate, Get_Location (Expression));
             end if;
+
+            if Type_Category (A4G_Bugs.Corresponding_Expression_Type (Expression), Separate_Extension => True)
+                 = An_Extended_Tagged_Type
+            then
+               Do_Report (E_Extendable_Aggregate, Get_Location (Expression));
+            end if;
+
+         when An_Extension_Aggregate =>
+            Do_Report (E_Record_Aggregate,    Get_Location (Expression));
+            Do_Report (E_Extension_Aggregate, Get_Location (Expression));
+
+            declare
+               Assocs  : constant Asis.Association_List := Record_Component_Associations (Expression);
+            begin
+               -- check for (null record)
+               if not Is_Nil (Assocs) then
+                  declare
+                     Choices : constant Asis.Expression_List  := Record_Component_Choices (Assocs (Assocs'Last));
+                  begin
+                     if not Is_Nil (Choices)
+                       and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
+                     then
+                        Do_Report (E_Record_Others, Get_Location (Choices (Choices'First)));
+                        if Assocs'Length > 1 then
+                           -- Note that others must appear alone as a choice, therefore we cannot
+                           -- be fooled by multiple choices
+                           Do_Report (E_Record_Partial_Others, Get_Location (Choices (Choices'First)));
+                        end if;
+                     end if;
+                  end;
+               end if;
+            end;
+
+            if Expression_Kind (Enclosing_Element (Expression)) /= A_Qualified_Expression then
+               Do_Report (E_Unqualified_Aggregate, Get_Location (Expression));
+            end if;
+
+            declare
+               Ancestor_Decl : Asis.Declaration := Simple_Name (Extension_Aggregate_Expression (Expression));
+            begin
+               if Expression_Kind (Ancestor_Decl) = An_Identifier then
+                  Ancestor_Decl := Corresponding_Name_Declaration (Ancestor_Decl);
+               end if;
+               if Declaration_Kind (Ancestor_Decl) not in An_Ordinary_Type_Declaration .. A_Subtype_Declaration then
+                  Ancestor_Decl := A4G_Bugs.Corresponding_Expression_Type (Extension_Aggregate_Expression (Expression));
+               end if;
+
+               if Derivation_Depth (A4G_Bugs.Corresponding_Expression_Type (Expression))
+                 /= 1 +  Derivation_Depth (Ancestor_Decl)
+               then
+                  Do_Report (E_Extendable_Aggregate, Get_Location (Expression));
+               end if;
+            end;
 
          when A_Type_Conversion =>
             -- E_Parameter_View_Conversion is handled by Process_Call

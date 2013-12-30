@@ -4382,7 +4382,8 @@ This rule controls usage of various kinds of expressions.
    array_others                     | array_non_static_range    |
    array_partial_others             | array_rang                |
    case                             | complex_parameter         |
-   downward_conversion              | explicit_dereference      |
+   downward_conversion              | extendable_aggregate      |
+   extension_aggregate              | explicit_dereference      |
    fixed_multiplying_op             | for_all                   |
    for_some                         | if                        |
    if_elsif                         | if_no_else                |
@@ -4463,7 +4464,12 @@ but only for operators whose result type is @code{Standard.Boolean}.
 @code{array_aggregate} and @code{record_aggregate} control array and
 record aggregates, respectively, while @code{unqualified_aggregate}
 controls aggregates (both arrays and records) that do not appear
-directly within a qualified expression
+directly within a qualified expression. @code{extension_aggregate}
+controls extension aggregates, while @code{extendable_aggregate}
+controls aggregates that are @i{not} extension aggregates, but whose
+type is a non-root tagged type, or are extension aggregates whose ancestor part
+is not their immediate parent (such aggregates could be written as
+extension aggregates).
 @item
 @code{array_others} and @code{record_others} control the occurrence of
 a @code{@b{others} =>} association in array and record

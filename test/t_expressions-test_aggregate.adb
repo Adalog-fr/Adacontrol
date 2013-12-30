@@ -9,10 +9,15 @@ procedure Test_Aggregate is
       record
          Z : Float;
       end record;
+   type Der2 is new Der with
+      record
+         C : Character;
+      end record;
 
-   A : Arr;
-   R : Rec;
-   D : Der;
+   A   : Arr;
+   R   : Rec;
+   D   : Der;
+   D2  : Der2;
    One : Integer := 1;
 begin
    A := Arr'(1 => 1, 2 .. 3 => 3, 4 => 4);    -- Array_Aggregate, Array_Range, Universal_Range
@@ -33,8 +38,13 @@ begin
    R :=     (others => 0.0);                  -- Record_Aggregate, Unqualified, Record_Others
    R :=     (0.0, others => 0.0);             -- Record_Aggregate, Unqualified, Record_Others, record_partial_others
 
-   D := Der'(0.0, 1.0, 2.0);                  -- Record_Aggregate
-   D :=     (0.0, 1.0, 2.0);                  -- Record_Aggregate, Unqualified
-   D := Der'(R with 2.0);                     -- Record_Aggregate
-   D :=     (R with 2.0);                     -- Record_Aggregate, Unqualified
+   D := Der'(0.0, 1.0, 2.0);                  -- Record_Aggregate, Extendable
+   D :=     (0.0, 1.0, 2.0);                  -- Record_Aggregate, Unqualified, Extendable
+   D := Der'(R with 2.0);                     -- Record_Aggregate, Extension_Aggregate
+   D :=     (R with 2.0);                     -- Record_Aggregate, Extension_Aggregate, Unqualified
+   D2 :=     (0.0, 1.0, 2.0, '1');            -- Record_Aggregate, Unqualified, Extendable
+   D2 :=     (R with 2.0, '1');               -- Record_Aggregate, Extension_Aggregate, Unqualified, Extendable
+   D2 :=     (D with '1');                    -- Record_Aggregate, Extension_Aggregate, Unqualified
+   D2 :=     (Rec with 2.0, '1');             -- Record_Aggregate, Extension_Aggregate, Unqualified, Extendable
+   D2 :=     (Der with '1');                  -- Record_Aggregate, Extension_Aggregate, Unqualified
 end Test_Aggregate;

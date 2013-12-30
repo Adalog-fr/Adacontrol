@@ -22,9 +22,9 @@ begin
    R := (I => 1, others => 0);        -- Unqualified, record_others
    R := (1, 2, 3);                    -- Unqualified
 
-   E := (R with 1, others => 0);      -- Unqualified, record_others
-   E := (R with A => 1, others => 0); -- Unqualified, record_others
-   E := (R with 1, 0);                -- Unqualified
+   E := (R with 1, others => 0);      -- Unqualified, record_others, extension_aggregate
+   E := (R with A => 1, others => 0); -- Unqualified, record_others, extension_aggregate
+   E := (R with 1, 0);                -- Unqualified, extension_aggregate
 
    N := (null record);                -- Unqualified
 end Test_Others;

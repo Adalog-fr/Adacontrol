@@ -241,6 +241,7 @@ Parameter (s): and                              | and_array                 |
                array_others                     | array_range               |
                case                             | complex_parameter         |
                downward_conversion              | explicit_dereference      |
+               extendable_aggregate             | extension_aggregate       |
                fixed_multiplying_op             | for_all                   |
                for_some                         | if                        |
                if_elsif                         | if_no_else                |
