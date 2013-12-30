@@ -54,8 +54,9 @@ package body Rules.Positional_Associations is
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
                                                                              Prefix => "Sr_" );
 
-   type Association_Names is (Na_Pragma,       Na_Call,            Na_Instantiation,
-                              Na_Discriminant, Na_Array_Aggregate, Na_Record_Aggregate);
+   type Association_Names is (Na_Pragma,           Na_Call,         Na_Enumeration_Representation,
+                              Na_Instantiation,    Na_Discriminant, Na_Array_Aggregate,
+                              Na_Record_Aggregate);
    -- Na_Pragma must stay first. When adding a new value, take
    -- also care of the following subtype:
    subtype Exceptionable_Association_Names is Association_Names range Na_Pragma .. Na_Instantiation;
@@ -398,10 +399,17 @@ package body Rules.Positional_Associations is
                                Component_Expression (Association),
                                Record_Component_Associations (Encl));
          when An_Array_Component_Association =>
-            Check_Association (Na_Array_Aggregate,
-                               Nil_Element,
-                               Component_Expression (Association),
-                               Array_Component_Associations (Encl));
+            if Representation_Clause_Kind (Enclosing_Element (Encl)) = An_Enumeration_Representation_Clause then
+               Check_Association (Na_Enumeration_Representation,
+                                  Nil_Element,
+                                  Component_Expression (Association),
+                                  Array_Component_Associations (Encl));
+            else
+               Check_Association (Na_Array_Aggregate,
+                                  Nil_Element,
+                                  Component_Expression (Association),
+                                  Array_Component_Associations (Encl));
+            end if;
          when A_Pragma_Argument_Association =>
             Check_Association (Na_Pragma,
                                Encl,

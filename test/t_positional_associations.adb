@@ -92,6 +92,12 @@ procedure T_Positional_Associations is
       accept EntryCall (I : Integer; J : in Integer := 0);    -- OK
    end Taske;
 
+   type Enum1 is (X, Y);
+   for Enum1 use (1, Y => 2);                         -- OK
+
+   type Enum2 is (A, B);
+   for Enum2 use (1, 2);                              -- all_positional x2
+
 begin
    Variable := Nothing (X => 1);
    Variable := Nothing (1);                           -- OK, count 1

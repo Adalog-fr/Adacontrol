@@ -4,36 +4,38 @@ t_positional_associations.adb:77:33: Error: All: positional association used in 
 t_positional_associations.adb:77:36: Error: All: positional association used in instantiation with more than 1 association(s)
 t_positional_associations.adb:82:38: Error: All: positional association used in instantiation with more than 1 association(s)
 t_positional_associations.adb:82:41: Error: All: positional association used in instantiation with more than 1 association(s)
-t_positional_associations.adb:99:11: Error: All: positional association used in call with more than 1 association(s)
-t_positional_associations.adb:99:11: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:99:11: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:99:14: Error: All: positional association used in call with more than 1 association(s)
-t_positional_associations.adb:99:14: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:99:14: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:100:11: Error: All: positional association used in call with more than 1 association(s)
-t_positional_associations.adb:101:11: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:101:11: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:101:14: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:101:14: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:101:17: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:103:16: Error: All: positional association used in record_aggregate with more than 1 association(s)
-t_positional_associations.adb:103:19: Error: All: positional association used in record_aggregate with more than 1 association(s)
-t_positional_associations.adb:103:22: Error: All: positional association used in record_aggregate with more than 1 association(s)
-t_positional_associations.adb:107:12: Error: All: positional association used in array_aggregate with more than 1 association(s)
-t_positional_associations.adb:107:15: Error: All: positional association used in array_aggregate with more than 1 association(s)
-t_positional_associations.adb:107:18: Error: All: positional association used in array_aggregate with more than 1 association(s)
-t_positional_associations.adb:107:21: Error: All: positional association used in array_aggregate with more than 1 association(s)
-t_positional_associations.adb:107:24: Error: All: positional association used in array_aggregate with more than 1 association(s)
-t_positional_associations.adb:111:21: Error: All: positional association used in call with more than 1 association(s)
-t_positional_associations.adb:111:21: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:111:21: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:111:24: Error: All: positional association used in call with more than 1 association(s)
-t_positional_associations.adb:111:24: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:111:24: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:115:20: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:115:20: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
-t_positional_associations.adb:115:29: Found: All_Positional: positional association used in call with more than 1 positional association(s)
-t_positional_associations.adb:115:29: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:99:19: Error: All_Positional: positional association used in enumeration_representation with more than 1 positional association(s)
+t_positional_associations.adb:99:22: Error: All_Positional: positional association used in enumeration_representation with more than 1 positional association(s)
+t_positional_associations.adb:105:11: Error: All: positional association used in call with more than 1 association(s)
+t_positional_associations.adb:105:11: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:105:11: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:105:14: Error: All: positional association used in call with more than 1 association(s)
+t_positional_associations.adb:105:14: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:105:14: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:106:11: Error: All: positional association used in call with more than 1 association(s)
+t_positional_associations.adb:107:11: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:107:11: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:107:14: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:107:14: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:107:17: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:109:16: Error: All: positional association used in record_aggregate with more than 1 association(s)
+t_positional_associations.adb:109:19: Error: All: positional association used in record_aggregate with more than 1 association(s)
+t_positional_associations.adb:109:22: Error: All: positional association used in record_aggregate with more than 1 association(s)
+t_positional_associations.adb:113:12: Error: All: positional association used in array_aggregate with more than 1 association(s)
+t_positional_associations.adb:113:15: Error: All: positional association used in array_aggregate with more than 1 association(s)
+t_positional_associations.adb:113:18: Error: All: positional association used in array_aggregate with more than 1 association(s)
+t_positional_associations.adb:113:21: Error: All: positional association used in array_aggregate with more than 1 association(s)
+t_positional_associations.adb:113:24: Error: All: positional association used in array_aggregate with more than 1 association(s)
+t_positional_associations.adb:117:21: Error: All: positional association used in call with more than 1 association(s)
+t_positional_associations.adb:117:21: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:117:21: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:117:24: Error: All: positional association used in call with more than 1 association(s)
+t_positional_associations.adb:117:24: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:117:24: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:121:20: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:121:20: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
+t_positional_associations.adb:121:29: Found: All_Positional: positional association used in call with more than 1 positional association(s)
+t_positional_associations.adb:121:29: Found: Same_Type: positional association used in call with more than 1 element(s) of the same type
 
 Counts summary:
-POSITIONAL_ASSOCIATIONS: 12
+All_Positional: 12

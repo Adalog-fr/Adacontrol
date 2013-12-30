@@ -6530,7 +6530,8 @@ named associations) in all kinds of associations.
 <control_kind> positional_associations [(<subrule>, <max_allowed> [, <category> @{, <entity>@}])];
 <subrule>  ::= all | all_positional | same_type
 <category> ::=  [not_operator] call | pragma          | discriminant     |
-                instantiation       | array_aggregate | record_aggregate
+                instantiation       | array_aggregate | record_aggregate |
+                enumeration_representation
 @end example
 
 @subsection Action
@@ -6551,7 +6552,11 @@ of the same type.
 
 In addition, a <category> can be specified to restrict the rule to
 specific kinds of associations; if not specified, all associations are
-controlled. Note that the ``same_type'' subrule is not allowed for the
+controlled. The categories carry their obvious meaning, with the
+distinction that ``array_aggregate'' applies only to ``true'' array
+aggregates, while ``enumeration_representation'' applies to the
+special array aggregate used in enumeration representation
+clauses. Note that the ``same_type'' subrule is not allowed for the
 ``pragma'' category. For ``pragma'', ''call'', and ``instantiation'',
 entities can also be specified; such entities are exempted from the
 rule (i.e. the rule will not control these entities). See examples
@@ -9600,6 +9605,9 @@ to:
 @example
 check parameter_associations (all, 1, call);
 @end example
+
+Note that the new rule distinguishes between regular array aggregates
+and aggregates used for enumeration representation clauses.
 
 @section Migrating from 1.14r9
 @subsection Local_Hiding

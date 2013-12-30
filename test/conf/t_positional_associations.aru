@@ -10,6 +10,7 @@
 "Same_Type":
    search positional_associations (same_type, 1, call);
 "All_Positional":
-   search positional_associations (All_Positional, 1, call);
+   search positional_associations (All_Positional, 1, call),
+   check  positional_associations (All_Positional, 1, Enumeration_Representation),
 
 count positional_associations (all, 0, call);
