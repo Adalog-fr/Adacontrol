@@ -92,6 +92,7 @@ with
   Rules.Style,
   Rules.Terminating_Tasks,
   Rules.Type_Initial_Values,
+  Rules.Type_Usage,
   Rules.Units,
   Rules.Unnecessary_Use_Clause,
   Rules.Unsafe_Elaboration,
@@ -484,8 +485,10 @@ package body Framework.Plugs is
                      when A_Constrained_Array_Definition =>
                         Rules.Array_Declarations. Process_Array_Definition             (Element);
                         Rules.Non_Static.         Process_Constrained_Array_Definition (Element);
+                        Rules.Type_Usage.         Process_Array_Definition             (Element);
                      when An_Unconstrained_Array_Definition =>
                         Rules.Array_Declarations. Process_Array_Definition (Element);
+                        Rules.Type_Usage.         Process_Array_Definition (Element);
                      when others =>
                         null;
                   end case;
@@ -623,6 +626,7 @@ package body Framework.Plugs is
                   Rules.Entities.     Process_Attribute (Element);
                   Rules.Local_Access. Process_Attribute (Element);
                   Rules.Style.        Process_Attribute (Element);
+                  Rules.Type_Usage.   Process_Attribute (Element);
 
                when An_Operator_Symbol =>
                   Rules.No_Operator_Usage. Process_Operator (Element);

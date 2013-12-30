@@ -155,13 +155,14 @@ package Framework.Control_Manager is
    -- Framework.Control_Manager.Generic_Context_Iterator (hence the unknown discriminant)
    type Context_Iterator (<>) is private;
 
-   procedure Reset        (Iter      : in out Context_Iterator;
-                           Name      : in     Asis.Element;
-                           Extend_To : in     Extension_Set := No_Extension);
-   procedure Reset        (Iter : in out Context_Iterator; Name : in Entity_Specification);
-   function  Value        (Iter : in     Context_Iterator) return Root_Context'Class;
-   procedure Next         (Iter : in out Context_Iterator);
-   function  Is_Exhausted (Iter : in     Context_Iterator) return Boolean;
+   procedure Reset              (Iter      : in out Context_Iterator;
+                                 Name      : in     Asis.Element;
+                                 Extend_To : in     Extension_Set := No_Extension);
+   procedure Reset              (Iter      : in out Context_Iterator; Name : in Entity_Specification);
+   function  Value              (Iter      : in     Context_Iterator) return Root_Context'Class;
+   function  Last_Matching_Name (Iter      : in     Context_Iterator) return Wide_String;
+   procedure Next               (Iter      : in out Context_Iterator);
+   function  Is_Exhausted       (Iter      : in     Context_Iterator) return Boolean;
 
 private
 

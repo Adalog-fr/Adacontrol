@@ -1,0 +1,7 @@
+"First":         check type_usage ('first, ());
+"Last":          check type_usage ('LAST, range);
+"Index_Mod":     check type_usage (Index, mod);
+"Index_Integer": check type_usage (Index, Standard.Integer);
+"Pos_Repr":      check type_usage ('Pos, (), representation);
+"Pos_Size":      check type_usage ('Pos, (), not representation, size);
+"Pos_Repr_Size": check type_usage ('Pos, (), representation, size);

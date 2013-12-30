@@ -10,9 +10,8 @@ Bug fixes:
 New rules:
 ----------
 positional_associations (took over style (positional_association))
-
+type_usage
 unit_pattern
-
 unsafe_elaboration
 
 Changes to existing rules:

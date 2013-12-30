@@ -601,6 +601,14 @@ package body Framework.Control_Manager is
       return Iter.Last_Returned.Value.all;
    end Value;
 
+   ------------------------
+   -- Last_Matching_Name --
+   ------------------------
+
+   function Last_Matching_Name (Iter : in Context_Iterator) return Wide_String is
+   begin
+      return Last_Matching_Name (Iter.all);
+   end Last_Matching_Name;
 
    ----------
    -- Next --

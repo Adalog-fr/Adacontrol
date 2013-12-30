@@ -2523,6 +2523,7 @@ is a dispatching call.
 * Style::
 * Terminating_Tasks::
 * Type_Initial_Values::
+* Type_Usage::
 * Uncheckable::
 * Units::
 * Unnecessary_Use_Clause::
@@ -2916,6 +2917,11 @@ Requiring the same @i{upper} bound for all arrays is not very useful, but:
 check array_declarations (last, min 1);
 @end example
 can be used to check that no array has a negative or zero upper bound.
+
+The subrule ``index'' controls  a precise pattern of types used as
+indices. To control the use of a type as an index at any position and
+irrespectively of the number of indices of the array, use the rule
+``type_usage''. @xref{Type_Usage}.
 
 @node Aspects, Barrier_Expressions, Array_Declarations, Rules reference
 @section Aspects
@@ -8020,7 +8026,7 @@ is aborted.
 If aborts are also to be reported, use the rule ``statements
 (abort)''. @xref{Statements}.
 
-@node Type_Initial_Values, Uncheckable, Terminating_Tasks, Rules reference
+@node  Type_Initial_Values, Type_Usage, Terminating_Tasks, Rules reference
 @section Type_Initial_Values
 This rule controls that a special constant is declared together with
 each type, for example to serve as a default initial value.
@@ -8043,7 +8049,97 @@ check type_initial_values ("^C_Init_");
 The above example will ensure that every declared type features a
 constant of the type whose name starts with ``C_Init_''.
 
-@node Uncheckable, Units, Type_Initial_Values, Rules reference
+@node Type_Usage, Uncheckable, Type_Initial_Values, Rules reference
+@section Type_Usage
+This rule controls usage of indicated types, either individually
+or by category.
+
+@subsection Syntax
+@example
+<control_kind> type_usage (<attribute>, <category> @{, <aspect>@}]);
+<control_kind> type_usage (index, <entity>|<category> @{, <aspect>@}]);
+<category> ::= ()  | access    | array | delta  | digits |
+               mod | protected | range | record | tagged | task
+<aspect>   ::= [not] representation | pack | size | component_size
+@end example
+
+@subsection Action
+If the first parameter is an attribute (a name starting with a simple
+quote), the rule controls all occurrences of the attribute where the
+prefix designates a type belonging to the <category> given as second
+parameter.
+
+If the first parameter is ``index'', the rule controls all array types
+that have an index of the type given by <entity>, or belonging to the
+<category> given as second parameter. As usual, the whole syntax for
+entities is allowed for <entity>. @xref{Specifying an Ada entity
+name}.
+
+For both subrules, if one or several <aspect> are given, only types
+featuring (or not featuring if ``not'' is given) the provided aspects
+are controlled.
+
+The meaning of <category> is:
+@itemize @bullet
+@item
+``()'': The type is an enumerated type.
+@item
+``access'':  The type is an access type.
+@item
+``array'': The type is an array type.
+@item
+``delta'': The type is a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The type is a floating point type.
+@item
+``mod'': The type is a modular type.
+@item
+``protected'': The type is a protected type.
+@item
+``range'': The type is a signed integer type.
+@item
+``record'': The type is an (untagged) record type.
+@item
+``tagged'': The type is a tagged type (including type
+extensions).
+@item
+``task'': The type is a task type.
+@end itemize
+
+The meaning of <aspect> is:
+@itemize @bullet
+@item
+``representation'': the type has an enumeration representation clause
+or a record representation clause.
+@item
+``pack'': the type is the target of a pack @code{@b{pragma}}.
+@item
+``size'' and ``component_size'': the type has the corresponding
+attribute specified.
+@end itemize
+
+Ex:
+@example
+-- Don't use the 'Pos attribute for enumerated types with a representation
+check type_usage ('Pos, (), representation);
+
+-- Don't use modular type for array indexes
+check type_usage (index, mod);
+@end example
+
+@subsection Tips
+The subrule ``index'' controls the use of a type as an index at any
+position and irrespectively of the number of indices of the array. To
+control a precise pattern of types used as indices, use the rule
+``array_declarations''. @xref{Array_Declarations}.
+
+The subrule that uses attribute names does not allow an <entity>. To
+control occurrences of an attribute on a precise type, use the rule
+``entities''.  @xref{Entities}.
+
+@node  Uncheckable, Units, Type_Usage, Rules reference
 @section Uncheckable
 This rules controls cases where it is not possible to guarantee the
 accuracy of checks performed by AdaControl, and where manual

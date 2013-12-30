@@ -693,6 +693,15 @@ Control types without proper initialization constants
 
 Parameter(1): <pattern>
 ----
+Rule: TYPE_USAGE
+Controls usage of types at various places
+
+Parameter(1)  : <attribute> | index
+Parameter(2)  : <entity>|<category>
+Parameter(3..): [not]  representation | pack | size |
+                       component_size
+                       (optional)
+----
 Rule: UNCHECKABLE
 Control occurrences of uncheckable constructs in other rules
 
@@ -840,11 +849,12 @@ Rules:
    Simplifiable_Expressions        Simplifiable_Statements         
    Statements                      Style                           
    Terminating_Tasks               Type_Initial_Values             
-   Uncheckable                     Units                           
-   Unit_Pattern                    Unnecessary_Use_Clause          
-   Unsafe_Elaboration              Unsafe_Paired_Calls             
-   Unsafe_Unchecked_Conversion     Usage                           
-   Use_Clauses                     With_Clauses                    
+   Type_Usage                      Uncheckable                     
+   Units                           Unit_Pattern                    
+   Unnecessary_Use_Clause          Unsafe_Elaboration              
+   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
+   Usage                           Use_Clauses                     
+   With_Clauses                    
 
 ADACTL v. 1.16b5 with ASIS 2.0.R for GNAT GPL 2013 (20130314)
 ----

@@ -77,6 +77,7 @@ conf/t_statements.aru: No syntax error
 conf/t_style.aru: No syntax error
 conf/t_terminating_tasks.aru: No syntax error
 conf/t_type_initial_values.aru: No syntax error
+conf/t_type_usage.aru: No syntax error
 conf/t_uncheckable.aru: No syntax error
 conf/t_unit_pattern.aru: No syntax error
 conf/t_unnecessary_use_clause.aru: No syntax error
