@@ -1,5 +1,6 @@
 pragma Ada_2012;
 with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Text_IO, Ada.Finalization;
 with X_Declarations.Child;
 with X_Declarations_Locations;
 procedure T_declarations is       -- library_procedure
@@ -101,8 +102,10 @@ procedure T_declarations is       -- library_procedure
    type Der_Task is new T2;        -- derived_type
    type Acc5 is access Der_Task;   -- access_nondef_discriminated_type, access_task_type, access_type
 
-   type Acc6 is access all Integer;      -- access_type, access_all_type
-   type Acc7 is access constant Integer; -- access_type, access_constant_type
+   type Acc6 is access all Integer;                 -- access_type, access_all_type
+   type Acc7 is access constant Integer;            -- access_type, access_constant_type
+   type Acc8 is access Ada.Text_IO.File_Type;       -- access_language_type, access_type;
+   type Acc9 is access Ada.Finalization.Controlled; -- access_language_type, access_type;
 
    I,J,K : aliased Integer;               -- variable x3, aliased_variable x3, scalar_variable x3, uninitialized_variable x3, multiple_names
    C : aliased constant Character := ' '; -- constant, aliased_constant

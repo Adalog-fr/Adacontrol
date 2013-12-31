@@ -58,14 +58,15 @@ package body Rules.Declarations is
       D_Abstract_Function,                 D_Abstract_Operator,                 D_Abstract_Procedure,
       D_Abstract_Type,                     D_Access_All_Type,                   D_Access_Constant_Type,
       D_Access_Constrained_Array_Type,     D_Access_Def_Discriminated_Type,     D_Access_Formal_Type,
-      D_Access_Nondef_Discriminated_Type,  D_Access_Protected_Type,             D_Access_Subprogram_Type,
-      D_Access_Task_Type,                  D_Access_Type,                       D_Access_Unconstrained_Array_Type,
-      D_Access_Unknown_Discriminated_Type, D_Aliased_Array_Component,           D_Aliased_Constant,
-      D_Aliased_Protected_Component,       D_Aliased_Record_Component,          D_Aliased_Variable,
-      D_Anonymous_Access_Component,        D_Anonymous_Access_Constant,         D_Anonymous_Access_Discriminant,
-      D_Anonymous_Access_Parameter,        D_Anonymous_Access_Variable,         D_Anonymous_Subtype_Allocator,
-      D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,     D_Anonymous_Subtype_For,
-      D_Anonymous_Subtype_Indexing,        D_Array,                             D_Array_Type,
+      D_Access_Language_Type,              D_Access_Nondef_Discriminated_Type,  D_Access_Protected_Type,
+      D_Access_Subprogram_Type,            D_Access_Task_Type,                  D_Access_Type,
+      D_Access_Unconstrained_Array_Type,   D_Access_Unknown_Discriminated_Type, D_Aliased_Array_Component,
+      D_Aliased_Constant,                  D_Aliased_Protected_Component,       D_Aliased_Record_Component,
+      D_Aliased_Variable,                  D_Anonymous_Access_Component,        D_Anonymous_Access_Constant,
+      D_Anonymous_Access_Discriminant,     D_Anonymous_Access_Parameter,        D_Anonymous_Access_Variable,
+      D_Anonymous_Subtype_Allocator,       D_Anonymous_Subtype_Case,            D_Anonymous_Subtype_Declaration,
+      D_Anonymous_Subtype_For,             D_Anonymous_Subtype_Indexing,        D_Array,
+      D_Array_Type,
 
       D_Binary_Modular_Type,               D_Box_Defaulted_Formal_Function,     D_Box_Defaulted_Formal_Procedure,
 
@@ -712,6 +713,9 @@ package body Rules.Declarations is
                            when A_Formal_Type_Declaration =>
                               Check_Access_Discriminated (Element, Accessed_Type);
                               Do_Report ((D_Type, D_Access_Type, D_Access_Formal_Type), Element);
+                           when A_Private_Type_Declaration | A_Private_Extension_Declaration =>
+                              Check_Access_Discriminated (Element, Accessed_Type);
+                              Do_Report ((D_Type, D_Access_Type, D_Access_Language_Type), Element);
                            when others =>
                               Failure ("Declarations: unexpected accessed type", Accessed_Type);
                         end case;
