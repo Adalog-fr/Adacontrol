@@ -6053,35 +6053,64 @@ This rule does not support wide characters outside the basic Latin-1 set.
 
 @node No_Operator_Usage, Non_Static, Naming_Convention, Rules reference
 @section No_Operator_Usage
-This rule controls types whose usage profile indicates that they might
-be replaceable with enumerated types.
+This rule controls integer types that do not use any arithmetic
+operators, which indicates that they might be replaceable with other
+kinds of types.
 @subsection Syntax
 @example
-<control_kind> no_operator_usage [(<subrule>)];
-<subrule> ::= none | logical
+<control_kind> no_operator_usage [(<parameter> [,<parameter>])];
+<parameter> ::= [<filter>] <observed>
+<filter>    ::= not | ignore | report
+<observed>  ::= indexing | logical
 @end example
 @subsection Action
 This rule controls integer types (both signed and modular) where no
-operator of the type is used in the program (for the <subrule>
-@code{none}), or only logical operators (for the <subrule>
-@code{logical}). If no <subrule> is given, the rule will control both
-cases.
+arithmetic operator of the type is used in the program.
 
+When such a type is found, it migh be interesting to find out other
+usages to determine a possible better kind of type. ``indexing'' means
+that the type is used as an index in some array type, and ``logical''
+means that logical (@code{@b{and}}, @code{@b{or}}, @code{@b{xor}})
+operators are used.
+
+If an <observed> property is given as parameter, only types that
+feature the property are controlled, or those that do @i{not} feature
+the property if the <observed> is preceded by ``not''. If the
+<observed> is preceded by ``ignore'' the type is controlled
+irrrespectively of the property, and the message does not mention it
+at all, while if it is preceded by ``report'', the message still
+mentions if the <observed> is used.
+
+Without parameters, the rule is equivalent to ``ignore indexing,
+ignore logical''.
+
+This rule can be given only once for each combination of values of the
+parameters.
+
+Ex:
+@example
+-- Simply report types that don't use arithmetic operators:
+check no_operator_usage;
+
+-- Do the same, but mention if indexing/logical ops are used:
+check no_operator_usage (report indexing, report logical);
+
+-- Find integer types that use only logical operators:
+check no_operator_usage (logical);
+
+-- Find integer types that don't use artihmetic operators and are
+-- not used for indexing:
+check no_operator_usage (not indexing);
+@end example
+
+@subsection Tips
 An integer type that uses no operator at all is a good candidate to be
 replaced by an enumerated type. A modular type where only logical
 operators are used is likely to be used as a bit field or a set, and
 is a good canditate for being replaced by an array of booleans.
 
-This rule can be given only once for each value of the parameters.
-
-Ex:
-@example
-check no_operator_usage;
-@end example
-
-@subsection Tips
 The rule does not make a distinction between predefined and
-user-defined operators. On the other hand, only call to operators are
+user-defined operators. On the other hand, only calls to operators are
 considered, operators used for example as actual generic parameters in
 instantiations are not considered.
 
@@ -9584,6 +9613,37 @@ The extension of aspects to more rules required a slight change in the
 syntax of the ``component'' subrule: the keywords ``packed'',
 ``sized'', and ``component_sized'' have been changed to ``pack'',
 ``size'', and  ``component_size'', respectively.
+
+@subsection No_Operator_Usage
+The syntax has been changed, due to the introduction of
+``indexing''. Moreover, the rule was not consistent, in that the
+result of ``none'' was affected by the presence or absence of
+``logical'' (without ``logical'', ``none'' included all types, while
+with it, it counted only those not counted with ``logical''). If you
+want that exact same behaviour (which  might not be desirable),
+change:
+@example
+-- (1)
+check no_operator_usage (none);
+
+-- (2)
+check no_operator_usage (logical);
+
+-- (3)
+check no_operator_usage (none, logical) -- or no parameters
+@end example
+to:
+@example
+-- (1)
+check no_operator_usage(ignore indexing, ignore logical); -- or no parameters
+
+-- (2)
+check no_operator_usage (logical);
+
+-- (3)
+check no_operator_usage (not logical),
+check no_operator_usage (logical);
+@end example
 
 @subsection Object_Declarations
 Due to the necessity of avoiding a syntactic ambiguity in the new

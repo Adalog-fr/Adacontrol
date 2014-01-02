@@ -471,9 +471,11 @@ Parameter(1) : none | unit | compilation | family
 Parameter(2..): <Entity name>
 ----
 Rule: NO_OPERATOR_USAGE
-Control integer types where no operators, except as indicated, are used
+Control integer types where no arithmetic operators are used
 
-Parameter: none | logical
+Parameters: [<filter>] <observed>
+<filter>  :  not | ignore | report
+<observed>:  logical | indexing
 ----
 Rule: OBJECT_DECLARATIONS
 Control allowed forms of object declarations

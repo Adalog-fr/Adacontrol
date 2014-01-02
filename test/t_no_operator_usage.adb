@@ -1,6 +1,6 @@
 with X_No_Operator_Usage;
 procedure T_No_Operator_Usage is
-   type T1 is mod 10;                     -- logical operators
+   type T1 is mod 10;                     -- All info, Only ops, log+inx
    type T2 is new T1;
    V1 : T1;
    V2 : T2;
@@ -10,8 +10,8 @@ procedure T_No_Operator_Usage is
    use type X_No_Operator_Usage.X4;
 begin
    declare
-      type T11 is range 1 .. 10;          -- no operators
-      type T12 is new T1;                 -- no operators
+      type T11 is range 1 .. 10;          -- All info, Only ops, nolog+noinx
+      type T12 is new T1;                 -- All info, Only ops, nolog+noinx
 
       V11 : T11;
       V12 : T12;
@@ -24,4 +24,21 @@ begin
 
    VX2 := X_No_Operator_Usage.Internal."+" (VX2, 1);
    VX4 := abs VX4;
+
+   declare
+      type T13 is range 1 .. 10;
+      type T14 is new T13;                 -- All info, Only ops
+      subtype ST13 is T13 range 1 .. 5;
+      function "+" (L, R : ST13) return  ST13 is
+      begin
+         return L;
+      end "+";
+
+      type Arr_1_13 is array (T1) of Character;
+      V13 : array (T14) of T2;
+
+      VST13 : ST13;
+   begin
+      VST13 := VST13 + 1;
+   end;
 end T_No_Operator_Usage;

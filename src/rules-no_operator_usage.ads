@@ -37,8 +37,9 @@ package Rules.No_Operator_Usage is
 
    Rule_Id : constant Wide_String := "NO_OPERATOR_USAGE";
 
-   procedure Process_Type_Definition (Definition : in Asis.Definition);
-   procedure Process_Operator        (Oper       : in Asis.Expression);
+   procedure Process_Type_Definition  (Definition : in Asis.Definition);
+   procedure Process_Operator         (Oper       : in Asis.Expression);
+   procedure Process_Array_Definition (Definition : in Asis.Definition);
 
    procedure Process_Scope_Exit;
 end Rules.No_Operator_Usage;

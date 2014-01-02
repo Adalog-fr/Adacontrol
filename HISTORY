@@ -52,6 +52,10 @@ Object declarations:
 Naming_Convention:
   Added subrules regular_static_constant, regular_nonstatic_constant
 
+No_Operator_Usage
+  Changed syntax
+  Filtering on indexing in addition to logical operators
+
 Parameter_Declarations:
   Added subrules tagged_parameters, class_wide_parameters.
   Added callables dispatching_function, dispatching_parameter

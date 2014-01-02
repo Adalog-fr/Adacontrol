@@ -1,1 +1,5 @@
-check no_operator_usage;
+"All info":    check no_operator_usage (report logical, report indexing);
+"Only ops":    check no_operator_usage (ignore logical, ignore indexing);
+"log+inx":     check no_operator_usage (logical, indexing);
+"nolog+noinx": check no_operator_usage (not logical, not indexing);
+count no_operator_usage;
