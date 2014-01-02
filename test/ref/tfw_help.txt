@@ -760,12 +760,13 @@ Parameter(s): variable | object    {, [not] <location> | initialized | read | wr
 location ::= from_visible | from_private | from_spec
 ----
 Rule: USE_CLAUSES
-Control occurrences of use clauses that mention
-any package but the ones passed as parameters (if any)
+Control occurrences of use clauses or use type clauses that mention
+any package/type other than the ones passed as parameters (if any)
 
-Parameter(1):  <Allowed package name> | local | global
+Parameter(1):  local       | global | type | type_local |
+               type_global
                (optional)
-Parameter(2..): <Allowed package name>
+Parameter(2..): <Allowed package/type name>
 ----
 Rule: WITH_CLAUSES
 Control "with" clauses that use multiple names, can be moved to a more reduced scope,

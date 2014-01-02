@@ -1,5 +1,10 @@
 t_use_clauses.adb:2:1: Found: use global: use clause for "Ada.Strings"
 t_use_clauses.adb:2:1: Error: USE_CLAUSES: use clause for "System"
-t_use_clauses.adb:5:4: Found: use local: use clause for "Ada.Strings"
+t_use_clauses.adb:3:1: Found: use type global: use type clause for "Ada.Text_IO.File_Type"
 t_use_clauses.adb:6:4: Found: use local: use clause for "Ada.Strings"
-t_use_clauses.adb:6:4: Error: USE_CLAUSES: use clause for "System"
+t_use_clauses.adb:7:4: Found: use local: use clause for "Ada.Strings"
+t_use_clauses.adb:7:4: Error: USE_CLAUSES: use clause for "System"
+t_use_clauses.adb:8:4: Found: use type local: use type clause for "Ada.Strings.Alignment"
+
+Counts summary:
+use type: 3

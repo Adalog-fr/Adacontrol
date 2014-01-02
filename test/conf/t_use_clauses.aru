@@ -1,3 +1,7 @@
 "use local" : search use_clauses (local,  Ada.Text_IO);
 "use global": search use_clauses (global, Ada.Text_IO);
 check  use_clauses (Ada.Text_IO, Ada.Strings);
+
+"use type local" : search use_clauses (type_local);
+"use type global": search use_clauses (type_global, Ada.Numerics.Complex_Types.Complex);
+"use type": count use_clauses (type);

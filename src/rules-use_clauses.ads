@@ -36,6 +36,6 @@ package Rules.Use_Clauses is
 
    Rule_Id : constant Wide_String := "USE_CLAUSES";
 
-   procedure Process_Use_Clause (Clause : in Asis.Clause);
+   procedure Process_Use_Clause (Clause : in Asis.Clause; Is_Type : Boolean);
 
 end Rules.Use_Clauses;

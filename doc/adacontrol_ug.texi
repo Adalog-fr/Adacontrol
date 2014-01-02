@@ -8811,18 +8811,28 @@ This rule controls usage of @code{@b{use}} clauses.
 @example
 <control_kind> use_clauses
    [([<subrule>,] <package name> @{, <package name>@})];
-<subrule> ::= local | global
+<subrule> ::= local | global | type | type_local | type_global
 @end example
 
 @subsection Action
-The rule controls every  @code{@b{use}} clause, @i{except} those that
-name one of the mentioned packages. It is therefore possible to allow
-@code{@b{use}} clauses just for certain packages. If the keyword
-``global'' is given, only @code{@b{use}} clauses that appear in
-context clauses (i.e. together with the @code{@b{with}} clauses) are
-controlled; if the keyword ``local'' is given, only @code{@b{use}}
-clauses that appear as declarations are controlled. If no ``local'' or
-``global'' is given, all @code{@b{use}} clauses are controlled.
+The rule controls every  @code{@b{use}} or @code{@b{use type}} clause,
+@i{except} those that name one of the mentioned packages/types. It is
+therefore possible to allow @code{@b{use}} or  @code{@b{use type}}
+clauses just for certain packages/types.
+
+If no keyword is given, all (package) @code{@b{use}} clauses are
+controlled. If the keyword ``global'' is given, only @code{@b{use}}
+clauses that appear in context clauses (i.e. together with the
+@code{@b{with}} clauses) are controlled; if the keyword ``local'' is
+given, only @code{@b{use}} clauses that appear as declarations are
+controlled.
+
+If the keyword ``type'' is given, all @code{@b{use type}} clauses are
+controlled. If the keyword ``type_global'' is given, only @code{@b{use
+type}} clauses that appear in context clauses (i.e. together with the
+@code{@b{with}} clauses) are controlled; if the keyword ``type_local''
+is given, only @code{@b{use type}} clauses that appear as declarations
+are controlled.
 
 This rule can be given at most once for each of check, search and
 count. This way, it is possible to have a level considered a warning
@@ -8833,6 +8843,10 @@ Ex:
 -- Global use clauses are disallowed, local ones only for IO:
 check use_clauses (global);
 check use_clauses (local, Ada.Text_IO, Ada.Wide_Text_IO);
+
+-- No use type in context clauses, count types that are "use type"'d
+check (type_global);
+count (type);
 @end example
 
 @node With_Clauses,  , Use_Clauses, Rules reference
