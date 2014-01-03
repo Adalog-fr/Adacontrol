@@ -37,5 +37,5 @@ package Rules.Unit_Pattern is
    Rule_Id : constant Wide_String := "UNIT_PATTERN";
 
    procedure Process_Type_Declaration (Declaration : in Asis.Declaration);
-
+   procedure Process_Unit             (Unit        : in Asis.Compilation_Unit);
 end Rules.Unit_Pattern;

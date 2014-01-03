@@ -11,6 +11,8 @@ t_unit_pattern-test_single_tagged_type.adb:24:7: Error: Single_Tagged_Type: Tagg
 t_unit_pattern-test_single_tagged_type.adb:24:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
 t_unit_pattern-test_single_tagged_type.adb:25:7: Error: Single_Tagged_Type: Tagged type already declared at t_unit_pattern-test_single_tagged_type.adb:23:7
 t_unit_pattern-test_single_tagged_type.adb:25:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
+t_unit_pattern-test_context_clauses_order.adb:7:1: Found: Clauses_Order: clause (or pragma) out of order
+t_unit_pattern-test_context_clauses_order.adb:9:1: Found: Clauses_Order: clause (or pragma) out of order
 x_tagged_type_hierarchy.ads:3:4: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy.ads:2:4
 x_tagged_type_hierarchy.ads:3:4: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
 x_tagged_type_hierarchy-child.ads:3:4: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy-child.ads:2:4

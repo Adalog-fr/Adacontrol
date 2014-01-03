@@ -2505,7 +2505,6 @@ is a dispatching call.
 * Not_Elaboration_Calls::
 * Not_Selected_Name::
 * Object_Declarations::
-* Unit_Pattern::
 * Parameter_Aliasing::
 * Parameter_Declarations::
 * Positional_Associations::
@@ -2525,6 +2524,7 @@ is a dispatching call.
 * Type_Initial_Values::
 * Type_Usage::
 * Uncheckable::
+* Unit_Pattern::
 * Units::
 * Unnecessary_Use_Clause::
 * Unsafe_Elaboration::
@@ -6254,7 +6254,7 @@ declared with a special name (like @code{Instance}, @code{Object},
 @code{T}) and are intended to be always used with the name of the
 enclosing package.
 
-@node  Object_Declarations, Unit_Pattern, Not_Selected_Name, Rules reference
+@node  Object_Declarations, Parameter_Aliasing, Not_Selected_Name, Rules reference
 @section Object_Declarations
 This rule controls various aspects of object (constants and variables)
 declarations.
@@ -6336,36 +6336,7 @@ to a class-wide type is detected by the rule
 Declaring a class-wide @emph{type} as volatile seems very peculiar
 anyway...
 
-@node Unit_Pattern, Parameter_Aliasing, Object_Declarations, Rules reference
-@section Unit_Pattern
-This rule controls various usage patterns of program units and elements declared in
-them.
-
-@subsection Syntax
-@example
-<control_kind> unit_pattern (<subrule>);
-<subrule> ::= Single_Tagged_Type | Tagged_Type_Hierarchy
-@end example
-
-@subsection Action
-The pattern depends on the given subrule:
-@itemize @bullet
-@item
-@code{single_tagged_type}: at most one tagged type is allowed to be
-declared in any package.
-@item
-@code{tagged_type_hierarchy}: tagged types must follow packages
-hierarchy, i.e. the parent of a type extension (derivation of a tagged
-type) must be in the parent unit of the one that declared the
-derivation.
-@end itemize
-Ex:
-@example
-check unit_pattern (single_tagged_type);
-check unit_pattern (tagged_type_hierarchy);
-@end example
-
-@node  Parameter_Aliasing, Parameter_Declarations, Unit_Pattern, Rules reference
+@node  Parameter_Aliasing, Parameter_Declarations, Object_Declarations, Rules reference
 @section Parameter_Aliasing
 This rule controls aliased use of variables in subprogram
 calls.
@@ -8188,7 +8159,7 @@ The subrule that uses attribute names does not allow an <entity>. To
 control occurrences of an attribute on a precise type, use the rule
 ``entities''.  @xref{Entities}.
 
-@node  Uncheckable, Units, Type_Usage, Rules reference
+@node  Uncheckable, Unit_Pattern, Type_Usage, Rules reference
 @section Uncheckable
 This rules controls cases where it is not possible to guarantee the
 accuracy of checks performed by AdaControl, and where manual
@@ -8255,7 +8226,53 @@ locations window, under which the message will appear, with a file
 name of ``none''. Don't try to click on the error message, since GPS
 will find no file named ``none''!
 
-@node Units, Unnecessary_Use_Clause, Uncheckable, Rules reference
+@node Unit_Pattern, Units, Uncheckable, Rules reference
+@section Unit_Pattern
+This rule controls various usage patterns of program units and elements declared in
+them.
+
+@subsection Syntax
+@example
+<control_kind> unit_pattern (Single_Tagged_Type);
+<control_kind> unit_pattern (Tagged_Type_Hierarchy);
+<control_kind> unit_pattern (Context_Clauses_Order @{, <clause_list>@});
+
+<clause_list> ::= <clause> @{<clause>@}
+<clause>      ::= with | use | use_type | pragma
+@end example
+
+@subsection Action
+The checked pattern depends on the given subrule:
+@itemize @bullet
+@item
+``single_tagged_type'' controls that at most one tagged type is
+declared in any package.
+@item
+``tagged_type_hierarchy'' controls that tagged types follow packages
+hierarchy, i.e. tjat the parent of a type extension (derivation of a tagged
+type) is declared in the parent unit of the one that declared the
+derivation.
+@item
+``context_clauses_order'' controls the order of context clauses (and
+pragmas) given on top of the unit.  Each parameter of the rule
+consists in one or several of the <clause> keywords, and describes, in
+order, which kind of parameter is allowed. Note that ``use_type''
+covers the regular @code{@b{use type}} clause as well as the Ada 2012
+@code{@b{use all type}} clause. All <clause>s not specified
+explicitely are allowed after the ones that are specified. See example
+below.
+@end itemize
+Ex:
+@example
+check unit_pattern (single_tagged_type);
+check unit_pattern (tagged_type_hierarchy);
+
+-- All with clauses must come first, then use and use type clauses
+-- (freely mixed), then pragmas
+check context_clauses_order (with, use use_type, pragma);
+@end example
+
+@node Units, Unnecessary_Use_Clause, Unit_Pattern, Rules reference
 @section Units
 This rule controls that all necessary units, and only those, are
 processed by AdaControl.

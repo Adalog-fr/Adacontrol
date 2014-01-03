@@ -54,9 +54,9 @@ package body Rules.Unit_Pattern is
 
    -- Algorithm:
    --
-   -- Easy for Single_Tagged_Type and Tagged_Type_Hierarchy
+   -- Easy for Single_Tagged_Type, Tagged_Type_Hierarchy, Context_Clauses_Order
 
-   type Subrules is (Single_Tagged_Type, Tagged_Type_Hierarchy);
+   type Subrules is (Single_Tagged_Type, Tagged_Type_Hierarchy, Context_Clauses_Order);
    type Subrules_Set is array (Subrules) of Boolean;
    Empty_Set : constant Subrules_Set := (others => False);
 
@@ -67,7 +67,33 @@ package body Rules.Unit_Pattern is
    Save_Used : Subrules_Set;
    Contexts  : array (Subrules) of Basic_Rule_Context;
 
+   ---- Declarations for Single_Tagged type
+   --                    ******************
+
    package Declarations_Store is new Framework.Scope_Manager.Scoped_Store (Asis.Declaration);
+
+
+   ---- Declarations for Tagged_Type_Hierarchy
+   --                    *********************
+
+   -- (none)
+
+
+   ---- Declarations for Context_Clauses_Order
+   --                    *********************
+
+   type Context_Clause_Element is (CC_With, CC_Use, CC_Use_Type, CC_Pragma);
+   package Context_Clause_Element_Utilities is new Framework.Language.Modifier_Utilities
+                                                     (Modifiers => Context_Clause_Element,
+                                                      Prefix    => "CC_");
+   type Order_Index is range 1 .. Context_Clause_Element'Pos (Context_Clause_Element'Last) + 1 + 1;
+   -- Number of orders that can be specified.
+   -- Quite arbitrary; here we allow one position for each Context_Clause_Element, plus the extra
+   -- guard value.
+   type Clauses_Array is array (Order_Index) of Context_Clause_Element_Utilities.Modifier_Set;
+   Clauses_Order : Clauses_Array;
+   Order_Inx     : Order_Index;
+
 
    ----------
    -- Help --
@@ -79,7 +105,9 @@ package body Rules.Unit_Pattern is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Controls various usage patterns of units and entities in them");
       User_Message;
-      Help_On_Flags ("Parameters:");
+      Help_On_Flags ("Parameter (1):");
+      User_Message ("For Context_Clauses_Order:");
+      Context_Clause_Element_Utilities.Help_On_Modifiers(Header => "   parameter (2..): list of");
    end Help;
 
    -----------------
@@ -99,6 +127,36 @@ package body Rules.Unit_Pattern is
       if Rule_Used (Subrule) then
          Parameter_Error (Rule_Id, "This rule can be given only once");
       end if;
+
+      case Subrule is
+         when Single_Tagged_Type | Tagged_Type_Hierarchy =>
+            null;
+         when Context_Clauses_Order =>
+            if not Parameter_Exists then
+               Parameter_Error (Rule_Id, "At least one clause set must be specified");
+            end if;
+
+            declare
+               use Context_Clause_Element_Utilities;
+               Not_Specified : Modifier_Set := Full_Set;
+            begin
+               Order_Inx := 1;
+               loop
+                  Clauses_Order (Order_Inx) := Get_Modifier_Set (No_Parameter => True);
+                  Not_Specified := Not_Specified and not Clauses_Order (Order_Inx);
+                  exit when not Parameter_Exists;
+                  if Order_Inx = Order_Index'Last - 1 then
+                     Parameter_Error (Rule_Id, "Too many parameters");
+                  end if;
+                  Order_Inx := Order_Inx + 1;
+               end loop;
+               if Not_Specified /= Context_Clause_Element_Utilities.Empty_Set then
+                  -- allow all clauses not explicitely specified after the ones specified
+                        Order_Inx := Order_Inx + 1;
+                        Clauses_Order (Order_Inx) := Not_Specified;
+               end if;
+            end;
+      end case;
 
       Rule_Used (Subrule) := True;
       Contexts  (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
@@ -222,6 +280,65 @@ package body Rules.Unit_Pattern is
             null;
       end case;
    end Process_Type_Declaration;
+
+
+   ----------------
+   -- Enter_Unit --
+   ----------------
+
+   procedure Process_Unit (Unit : in Asis.Compilation_Unit) is
+      use Asis, Asis.Elements;
+      use Framework.Reports, Utilities;
+   begin
+      if not Rule_Used (Context_Clauses_Order) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Context_Elements : constant Asis.Element_List := Context_Clause_Elements (Unit, Include_Pragmas => True);
+         State            : Order_Index := Order_Index'First;
+         Old_State        : Order_Index;
+         Clause           : Context_Clause_Element;
+      begin
+         for C in Context_Elements'Range loop
+            case Element_Kind (Context_Elements (C)) is
+               when A_Clause =>
+                  case Clause_Kind (Context_Elements (C)) is
+                     when A_Use_Package_Clause =>
+                        Clause := CC_Use;
+                     when A_Use_Type_Clause | A_Use_All_Type_Clause =>
+                        Clause := CC_Use_Type;
+                     when A_With_Clause =>
+                        Clause := CC_With;
+                     when others =>
+                        Failure ("Enter_Unit: unexpected clause", Context_Elements (C));
+                  end case;
+
+               when A_Pragma =>
+                  Clause := CC_Pragma;
+
+               when others =>
+                  Failure ("Enter_Unit: unexpected clause", Context_Elements (C));
+            end case;
+
+            Old_State := State;
+            while not Clauses_Order (State) (Clause) loop
+               if State = Order_Inx then
+                  Report (Rule_Id,
+                          Contexts (Context_Clauses_Order),
+                          Get_Location (Context_Elements (C)),
+                          "clause (or pragma) out of order");
+                  -- Avoid multiple messages if there was only one clause out of order:
+                  State := Old_State;
+                  exit;
+               end if;
+
+               State := State + 1;
+            end loop;
+         end loop;
+      end;
+   end Process_Unit;
 
 begin  -- Rules.Unit_Pattern
    Framework.Rules_Manager.Register (Rule_Id,

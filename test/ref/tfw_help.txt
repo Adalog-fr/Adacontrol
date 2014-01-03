@@ -720,7 +720,10 @@ Parameter(s): unreferenced | unchecked
 Rule: UNIT_PATTERN
 Controls various usage patterns of units and entities in them
 
-Parameters: single_tagged_type | tagged_type_hierarchy
+Parameter (1): single_tagged_type    | tagged_type_hierarchy |
+               context_clauses_order
+For Context_Clauses_Order:
+   parameter (2..): list of with | use | use_type | pragma
 ----
 Rule: UNNECESSARY_USE_CLAUSE
 Control use clauses that can be removed, moved, or changed to use type.

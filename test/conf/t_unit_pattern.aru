@@ -1,2 +1,3 @@
-"Single_Tagged_Type"   : check unit_pattern (single_tagged_type);
-"Tagged_Type_Hierarchy": check unit_pattern (tagged_type_hierarchy);
+"Single_Tagged_Type"   : check  unit_pattern (single_tagged_type);
+"Tagged_Type_Hierarchy": check  unit_pattern (tagged_type_hierarchy);
+"Clauses_Order"        : search unit_pattern (context_clauses_order, with, use use_type, pragma);

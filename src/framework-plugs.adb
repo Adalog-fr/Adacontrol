@@ -116,6 +116,7 @@ package body Framework.Plugs is
       Rules.Dependencies.       Enter_Unit   (Unit);
       Rules.Declarations.       Process_Unit (Unit);
       Rules.Statements.         Enter_Unit   (Unit);
+      Rules.Unit_Pattern.       Process_Unit (Unit);
       Rules.Units.              Process_Unit (Unit);
       Rules.Unsafe_Elaboration. Process_Unit (Unit);
    end Enter_Unit;
