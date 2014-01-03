@@ -156,21 +156,27 @@ t_expressions-test_dereference.adb:37:14: Found: Expl_Deref: use of expression "
 t_expressions-test_dereference.adb:38:9: Found: Impl_Deref: use of expression "implicit_dereference"
 t_expressions-test_dereference.adb:39:14: Found: Expl_Deref: use of expression "explicit_dereference"
 t_expressions-test_fixed_multiplying_op.adb:11:15: Error: Fixed_Op: fixed point multiplying operator
-t_expressions-test_fixed_multiplying_op.adb:12:15: Error: Fixed_Op: fixed point multiplying operator
+t_expressions-test_fixed_multiplying_op.adb:11:15: Found: Unconv_Fixed_Op: unconverted fixed point multiplying operator
+t_expressions-test_fixed_multiplying_op.adb:12:11: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_fixed_multiplying_op.adb:12:19: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:13:15: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:14:15: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:15:15: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:16:15: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:17:15: Error: Fixed_Op: fixed point multiplying operator
-t_expressions-test_fixed_multiplying_op.adb:19:17: Error: Fixed_Op: fixed point multiplying operator
+t_expressions-test_fixed_multiplying_op.adb:19:12: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_fixed_multiplying_op.adb:19:22: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:20:17: Error: Fixed_Op: fixed point multiplying operator
+t_expressions-test_fixed_multiplying_op.adb:20:17: Found: Unconv_Fixed_Op: unconverted fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:21:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:22:16: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:23:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:24:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:25:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:27:17: Error: Fixed_Op: fixed point multiplying operator
+t_expressions-test_fixed_multiplying_op.adb:27:17: Found: Unconv_Fixed_Op: unconverted fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:28:17: Error: Fixed_Op: fixed point multiplying operator
+t_expressions-test_fixed_multiplying_op.adb:28:17: Found: Unconv_Fixed_Op: unconverted fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:29:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:30:16: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:31:17: Error: Fixed_Op: fixed point multiplying operator

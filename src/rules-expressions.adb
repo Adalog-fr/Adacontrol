@@ -85,8 +85,8 @@ package body Rules.Expressions is
 
                      E_Type_Conversion,
 
-                     E_Underived_Conversion, E_Universal_Range, E_Unqualified_Aggregate,
-                     E_Upward_Conversion,
+                     E_Unconverted_Fixed_Multiplying_Op, E_Underived_Conversion, E_Universal_Range,
+                     E_Unqualified_Aggregate,            E_Upward_Conversion,
 
                      E_Xor,         E_Xor_Array, E_Xor_Binary,
                      E_Xor_Boolean);
@@ -380,7 +380,7 @@ package body Rules.Expressions is
 
    procedure Process_Function_Call (Call : in Asis.Expression) is
    -- Handles subrules: Prefixed_Operator, Mixed_Operators, Real_Equality, Fixed_Multiplying_Op,
-   --                   And, Or, Xor
+   --                   Unconverted_Fixed_Multiplying_Op, And, Or, Xor
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
       Called : Asis.Expression  := Called_Simple_Name (Call);
@@ -527,7 +527,7 @@ package body Rules.Expressions is
          when A_Multiply_Operator
             | A_Divide_Operator
               =>
-            if not Rule_Used (E_Fixed_Multiplying_Op) then
+            if not Rule_Used (E_Fixed_Multiplying_Op) and not Rule_Used (E_Unconverted_Fixed_Multiplying_Op) then
                return;
             end if;
 
@@ -565,11 +565,18 @@ package body Rules.Expressions is
                   end;
                end loop;
                if Fixed_Parameters_Count > 0 then
-                  Report
-                    (Rule_Id,
-                     Control_Manager.Association (Usage, Image (E_Fixed_Multiplying_Op)),
-                              Get_Location (Prefix (Call)),
-                              "fixed point multiplying operator");
+                  Report (Rule_Id,
+                          Control_Manager.Association (Usage, Image (E_Fixed_Multiplying_Op)),
+                          Get_Location (Prefix (Call)),
+                          "fixed point multiplying operator");
+                  if Fixed_Parameters_Count = 2      -- Otherwise, it's "*" or "/" with Integer
+                    and then Expression_Kind (Enclosing_Element (Call)) /= A_Type_Conversion
+                  then
+                     Report (Rule_Id,
+                             Control_Manager.Association (Usage, Image (E_Unconverted_Fixed_Multiplying_Op)),
+                             Get_Location (Prefix (Call)),
+                             "unconverted fixed point multiplying operator");
+                  end if;
                end if;
             end;
 

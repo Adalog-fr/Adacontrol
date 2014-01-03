@@ -255,10 +255,11 @@ Parameter (s): and                              | and_array                 |
                record_aggregate                 | record_partial_others     |
                record_others                    | static_membership         |
                slice                            | type_conversion           |
-               underived_conversion             | universal_range           |
-               unqualified_aggregate            | upward_conversion         |
-               xor                              | xor_array                 |
-               xor_binary                       | xor_boolean
+               unconverted_fixed_multiplying_op | underived_conversion      |
+               universal_range                  | unqualified_aggregate     |
+               upward_conversion                | xor                       |
+               xor_array                        | xor_binary                |
+               xor_boolean
 For all *_conversion subrules:
     [[<source_category>] <target_category>] <subrule>
 For subrules inherited_function_call and prefixed_operator:

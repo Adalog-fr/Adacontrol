@@ -28,6 +28,7 @@ Prefixed_Float    : check  expressions (digits prefixed_operator);
 Record_Inherited  : check  expressions (record inherited_function_call);
 All_Inherited     : check  expressions (inherited_function_call);
 Fixed_Op          : check  expressions (fixed_multiplying_op);
+Unconv_Fixed_Op   : search expressions (unconverted_fixed_multiplying_op);
 Impl_Deref        : search expressions (Implicit_Dereference);
 Expl_Deref        : search expressions (Explicit_Dereference);
 Ada_2012          : search expressions (if, if_elsif, if_no_else, case, for_all, for_some);

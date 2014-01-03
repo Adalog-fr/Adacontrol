@@ -4385,31 +4385,32 @@ This rule controls usage of various kinds of expressions.
 <control_kind> expressions (<subrule> @{, <subrule>@});
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
-   and                              | and_array                 |
-   and_binary                       | and_boolean               |
-   and_then                         | array_aggregate           |
-   array_others                     | array_non_static_range    |
-   array_partial_others             | array_rang                |
-   case                             | complex_parameter         |
-   downward_conversion              | extendable_aggregate      |
-   extension_aggregate              | explicit_dereference      |
-   fixed_multiplying_op             | for_all                   |
-   for_some                         | if                        |
-   if_elsif                         | if_no_else                |
-   implicit_dereference             | in                        |
-   inconsistent_attribute_dimension | inherited_function_call   |
-   mixed_operators                  | not_in                    |
-   or                               | or_array                  |
-   or_binary                        | or_boolean                |
-   or_else                          | parameter_view_conversion |
-   prefixed_operator                | real_equality             |
-   record_partial_others            | record_aggregate          |
-   record_others                    | slice                     |
-   static_membership                | type_conversion           |
-   upward_conversion                | underived_conversion      |
-   universal_range                  | unqualified_aggregate     |
-   xor                              | xor_array                 |
-   xor_binary                       | xor_boolean
+   and                              | and_array                  |
+   and_binary                       | and_boolean                |
+   and_then                         | array_aggregate            |
+   array_others                     | array_non_static_range     |
+   array_partial_others             | array_rang                 |
+   case                             | complex_parameter          |
+   downward_conversion              | extendable_aggregate       |
+   extension_aggregate              | explicit_dereference       |
+   fixed_multiplying_op             | for_all                    |
+   for_some                         | if                         |
+   if_elsif                         | if_no_else                 |
+   implicit_dereference             | in                         |
+   inconsistent_attribute_dimension | inherited_function_call    |
+   mixed_operators                  | not_in                     |
+   or                               | or_array                   |
+   or_binary                        | or_boolean                 |
+   or_else                          | parameter_view_conversion  |
+   prefixed_operator                | real_equality              |
+   record_partial_others            | record_aggregate           |
+   record_others                    | slice                      |
+   static_membership                | type_conversion            |
+   upward_conversion                | unconverted_multiplying_op |
+   underived_conversion             | universal_range            |
+   unqualified_aggregate            | xor                        |
+   xor_array                        | xor_binary                 |
+   xor_boolean
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4506,7 +4507,10 @@ values (i.e. with an explicit @code{.@b{all}}).
 @item
 @code{fixed_multiplying_op} controls calls to predefined fixed-point
 multiplication and division (regular fixed-point or decimal-fixed
-point).
+point). @code{unconverted_fixed_multiplying_op} does the same, but
+only when both operands are objects (not literals) of a fixed_point
+type (not Integer); this is when type conversion is required by Ada
+83.
 @item
 @code{for_all} and @code{for_some} control the two forms of
 quantifiers introduced by Ada 2012.
