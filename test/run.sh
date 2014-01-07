@@ -273,5 +273,10 @@ if [ $SILENT -eq 1 ] ; then
     else
 	echo "FAILED ($nb_failed)"
     fi
+else
+    print_time "Total run time: " `expr $run_stop - $run_start`
+    if [ $nb_failed -ne 0 ] ; then
+	. failed.sh
+    fi
+
 fi
-print_time "Total run time: " `expr $run_stop - $run_start`

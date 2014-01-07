@@ -89,7 +89,7 @@ package body Rules.Use_Clauses is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Language, Subrules_Flag_Utilities, Utilities;
+      use Framework.Language, Subrules_Flag_Utilities;
 
       Subrule : Subrules;
    begin
@@ -99,57 +99,60 @@ package body Rules.Use_Clauses is
          Subrule := Sr_Package;
       end if;
 
-      if Subrule = Sr_Package then
-         if Rule_Used (Sr_Local, Ctl_Kind) or Rule_Used (Sr_Global, Ctl_Kind) then
-            Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
-         end if;
-         Ctl_Labels (Sr_Local,  Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-         Ctl_Labels (Sr_Global, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-         Rule_Used  (Sr_Local,  Ctl_Kind) := True;
-         Rule_Used  (Sr_Global, Ctl_Kind) := True;
-      elsif Subrule = Sr_Type then
-         if Rule_Used (Sr_Type_Local, Ctl_Kind) or Rule_Used (Sr_Type_Global, Ctl_Kind) then
-            Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
-         end if;
-         Ctl_Labels (Sr_Type_Local,  Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-         Ctl_Labels (Sr_Type_Global, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-         Rule_Used  (Sr_Type_Local,  Ctl_Kind) := True;
-         Rule_Used  (Sr_Type_Global, Ctl_Kind) := True;
-      else
-         if Rule_Used (Subrule, Ctl_Kind) then
-            Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
-         end if;
-         Ctl_Labels (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-         Rule_Used  (Subrule, Ctl_Kind) := True;
-      end if;
+      case Subrule is
+         when Sr_Package =>
+            if Rule_Used (Sr_Local, Ctl_Kind) or Rule_Used (Sr_Global, Ctl_Kind) then
+               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
+            end if;
+            Ctl_Labels (Sr_Local,  Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Ctl_Labels (Sr_Global, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Rule_Used  (Sr_Local,  Ctl_Kind) := True;
+            Rule_Used  (Sr_Global, Ctl_Kind) := True;
+         when Sr_Type =>
+            if Rule_Used (Sr_Type_Local, Ctl_Kind) or Rule_Used (Sr_Type_Global, Ctl_Kind) then
+               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
+            end if;
+            Ctl_Labels (Sr_Type_Local,  Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Ctl_Labels (Sr_Type_Global, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Rule_Used  (Sr_Type_Local,  Ctl_Kind) := True;
+            Rule_Used  (Sr_Type_Global, Ctl_Kind) := True;
+         when others =>
+            if Rule_Used (Subrule, Ctl_Kind) then
+               Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
+            end if;
+            Ctl_Labels (Subrule, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+            Rule_Used  (Subrule, Ctl_Kind) := True;
+      end case;
 
       while Parameter_Exists loop
          declare
             Entity : constant Entity_Specification := Get_Entity_Parameter;
             Value  : Package_Context := (Allowed => (others => (others => False)));
          begin
-            if Subrule = Sr_Package then
-               Value.Allowed (Sr_Local,  Ctl_Kind) := True;
-               Value.Allowed (Sr_Global, Ctl_Kind) := True;
-            elsif Subrule = Sr_Type then
-               Value.Allowed (Sr_Type_Local,  Ctl_Kind) := True;
-               Value.Allowed (Sr_Type_Global, Ctl_Kind) := True;
-            else
-               Value.Allowed (Subrule, Ctl_Kind) := True;
-            end if;
+            case Subrule is
+               when Sr_Package =>
+                  Value.Allowed (Sr_Local,  Ctl_Kind) := True;
+                  Value.Allowed (Sr_Global, Ctl_Kind) := True;
+               when Sr_Type =>
+                  Value.Allowed (Sr_Type_Local,  Ctl_Kind) := True;
+                  Value.Allowed (Sr_Type_Global, Ctl_Kind) := True;
+               when others =>
+                  Value.Allowed (Subrule, Ctl_Kind) := True;
+            end case;
             Associate (Allowed_Packages, Entity, Value);
          exception
             when Already_In_Store =>
                Value := Package_Context (Association (Allowed_Packages, Entity));
-               if Subrule = Sr_Package then
-                  Value.Allowed (Sr_Local,  Ctl_Kind) := True;
-                  Value.Allowed (Sr_Global, Ctl_Kind) := True;
-               elsif Subrule = Sr_Type then
-                  Value.Allowed (Sr_Type_Local,  Ctl_Kind) := True;
-                  Value.Allowed (Sr_Type_Global, Ctl_Kind) := True;
-               else
-                  Value.Allowed (Subrule, Ctl_Kind) := True;
-               end if;
+               case Subrule is
+                  when Sr_Package =>
+                     Value.Allowed (Sr_Local,  Ctl_Kind) := True;
+                     Value.Allowed (Sr_Global, Ctl_Kind) := True;
+                  when Sr_Type =>
+                     Value.Allowed (Sr_Type_Local,  Ctl_Kind) := True;
+                     Value.Allowed (Sr_Type_Global, Ctl_Kind) := True;
+                  when others =>
+                     Value.Allowed (Subrule, Ctl_Kind) := True;
+               end case;
                Update (Allowed_Packages, Value);
          end;
       end loop;

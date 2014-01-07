@@ -26,11 +26,11 @@ to use AdaControl. On the other hand, it is assumed that the reader
 is familiar with how to use AdaControl.
 
 @menu
-* General::                     
-* The framework and utilities packages::  
-* Writing a new rule::          
-* Plugging-in a new rule into the framework::  
-* Testing and debugging a rule::  
+* General::
+* The framework and utilities packages::
+* Writing a new rule::
+* Plugging-in a new rule into the framework::
+* Testing and debugging a rule::
 @end menu
 
 Commercial support is available for AdaControl. If you plan to use
@@ -155,18 +155,18 @@ package. Existing rules are also typical examples of how to use these
 functionnalities.
 
 @menu
-* The package Adactl_Constants::  
-* The package Framework::       
-* The package Framework.Rules_Manager::  
-* The package Framework.Reports::  
-* The package Framework.Language::  
-* The package Framework.Scope_Manager::  
-* The package Framework.Plugs::  
-* The package Rules::           
-* The package Utilities::       
-* The package Thick_Queries::   
-* The packages Linear_Queue and Binary_Map::  
-* The package A4G_Bugs::        
+* The package Adactl_Constants::
+* The package Framework::
+* The package Framework.Rules_Manager::
+* The package Framework.Reports::
+* The package Framework.Language::
+* The package Framework.Scope_Manager::
+* The package Framework.Plugs::
+* The package Rules::
+* The package Utilities::
+* The package Thick_Queries::
+* The packages Linear_Queue and Binary_Map::
+* The package A4G_Bugs::
 @end menu
 
 @node  The package Adactl_Constants, The package Framework, The framework and utilities packages, The framework and utilities packages
@@ -306,7 +306,7 @@ There is a generic package @code{Flag_Utilities} to help manage flags
 of this package provides a @code{Get_Flag_Parameter} procedure to
 parse the flags, an @code{Image} function to get a string
 representation of a flag, and a @code{Help_On_Flags} function to print
-the help message that enumerates all possible flag values. 
+the help message that enumerates all possible flag values.
 
 There is a @code{Get_Modifier} to process modifiers (things like
 ``not'' or ``case_sensitive'' in front of a parameter). For more
@@ -823,9 +823,9 @@ and do your own analysis, depending on whether the returned
 @chapter Plugging-in a new rule into the framework
 
 @menu
-* Normal case::                 
-* Specific rules::              
-* User documentation::          
+* Normal case::
+* Specific rules::
+* User documentation::
 @end menu
 
 @node Normal case, Specific rules, Plugging-in a new rule into the framework, Plugging-in a new rule into the framework
@@ -958,9 +958,9 @@ you need will be quite straightforward to understand.
 @chapter Testing and debugging a rule
 
 @menu
-* Testing::                     
-* Debugging aids::              
-* Integrating the test in the test suite::  
+* Testing::
+* Debugging aids::
+* Integrating the test in the test suite::
 @end menu
 
 @node Testing, Debugging aids, Testing and debugging a rule, Testing and debugging a rule
@@ -1026,9 +1026,9 @@ provided. It prints the logical nesting of ASIS elements for a
 unit. The syntax of Ptree is:
 @example
 ptree [-sS] [-p <project_file>] <unit>[:<span>] -- <ASIS_Options>
-<span> ::=   <line_number> 
+<span> ::=   <line_number>
            | [<first_line>]-[<last_line>]
-           | <line_number>:<column_number> 
+           | <line_number>:<column_number>
 @end example
 If the ``-s'' option is given, @code{ptree} processes the
 specification of the unit, otherwise it processes the body. If the

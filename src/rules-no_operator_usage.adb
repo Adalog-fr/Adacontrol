@@ -149,7 +149,7 @@ package body Rules.No_Operator_Usage is
       -- Check if already there, but allow same value being specified twice if one (and only one) is "count"
       for C in Asis.List_Index range 1 .. Rule_Used loop
          if Given_Controls (C).Observed_Filter = SF
-           and then ((Given_Controls (C).Context.Ctl_Kind = Count) = (Ctl_Kind = Count))
+           and then (Given_Controls (C).Context.Ctl_Kind = Count) = (Ctl_Kind = Count)
          then
             Parameter_Error (Rule_Id, "combination of parameters already given");
          end if;
