@@ -29,6 +29,8 @@ Declarations:
   access_nondef_discriminated_type, access_unknown_discriminated_type,
   access_formal_type, access_language_type
 
+  Better placement of some messages
+
 Dependencies:
   Added subrules public_child, private_child
 

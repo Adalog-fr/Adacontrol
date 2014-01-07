@@ -254,10 +254,13 @@ package body Rules.Declarations is
 
    procedure Do_Report (Decl : Subrules; Elem : Asis.Element) is
       use Asis, Asis.Declarations, Asis.Elements;
+      Decl_Kind : constant Asis.Declaration_Kinds := Declaration_Kind (Elem);
    begin
       -- For an object declaration, report individually for each name
       -- in the object declaration (otherwise, count f. e. would be wrong)
-      if Declaration_Kind (Elem) in A_Variable_Declaration .. A_Deferred_Constant_Declaration then
+      if   Decl_Kind in A_Variable_Declaration       .. A_Deferred_Constant_Declaration
+        or Decl_Kind in A_Discriminant_Specification .. A_Component_Declaration
+      then
          declare
             Var_Names : constant Name_List := Names (Elem);
          begin
@@ -1741,7 +1744,8 @@ package body Rules.Declarations is
          when A_Definition =>
             case Definition_Kind (Encl) is
                when A_Component_Definition =>
-                  Do_Report (D_Anonymous_Access_Component, Encl);
+                  Do_Report (D_Anonymous_Access_Component, Enclosing_Element (Encl));
+                  -- Enclosing_Element because we want the declaration
                when others =>
                   Failure ("Declarations: unexpected definition for an access definition", Encl);
             end case;
