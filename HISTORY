@@ -27,7 +27,7 @@ Declarations:
   non_ravenscar_task, access_constrained_array_type,
   access_unconstrained_array_type, access_def_discriminated_type,
   access_nondef_discriminated_type, access_unknown_discriminated_type,
-  access_formal_type, access_language_type
+  access_formal_type, access_language_type, equality_operator
 
   Better placement of some messages
 

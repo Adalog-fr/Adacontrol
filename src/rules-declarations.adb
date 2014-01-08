@@ -79,8 +79,8 @@ package body Rules.Declarations is
       D_Discriminant,
 
       D_Empty_Private_Part,                D_Empty_Visible_Part,                D_Enumeration_Type,
-      D_Entry,                             D_Exception,                         D_Expression_Function,
-      D_Extension,
+      D_Entry,                             D_Equality_Operator,                 D_Exception,
+      D_Expression_Function,               D_Extension,
 
       D_Fixed_Type,                        D_Float_Type,                        D_Formal_Function,
       D_Formal_Package,                    D_Formal_Procedure,                  D_Formal_Type,
@@ -147,6 +147,19 @@ package body Rules.Declarations is
    Save_Used : Usage_Flags;
    Usage     : Context_Store;
    package Usage_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
+
+   -- Convenience subtypes (for binary operators only)
+   subtype Logical_Operators     is Asis.Operator_Kinds range Asis.An_And_Operator     .. Asis.An_Xor_Operator;
+   subtype Equality_Operators    is Asis.Operator_Kinds range Asis.An_Equal_Operator   .. Asis.A_Not_Equal_Operator;
+   subtype Relational_Operators  is Asis.Operator_Kinds
+           range Asis.An_Equal_Operator   .. Asis.A_Greater_Than_Or_Equal_Operator;
+   subtype Adding_Operators      is Asis.Operator_Kinds range Asis.A_Plus_Operator     .. Asis.A_Minus_Operator;
+   subtype Multiplying_Operators is Asis.Operator_Kinds range Asis.A_Multiply_Operator .. Asis.A_Rem_Operator;
+
+   subtype Discrete_Type_Kinds is Asis.Type_Kinds
+           range Asis.An_Enumeration_Type_Definition .. Asis.A_Modular_Type_Definition;
+   subtype Fixed_Type_Kinds    is Asis.Type_Kinds
+           range Asis.An_Ordinary_Fixed_Point_Definition .. Asis.A_Decimal_Fixed_Point_Definition;
 
    ----------
    -- Help --
@@ -458,17 +471,6 @@ package body Rules.Declarations is
          --    A_Function_Body_Declaration
          -- (of operator)
          -- Returns True if the operator is identical to a predefined one.
-
-         -- Convenience subtypes (for binary operators only)
-         subtype Logical_Operators     is Operator_Kinds range An_And_Operator     .. An_Xor_Operator;
-         subtype Equality_Operators    is Operator_Kinds range An_Equal_Operator   .. A_Not_Equal_Operator;
-         subtype Relational_Operators  is Operator_Kinds range An_Equal_Operator   .. A_Greater_Than_Or_Equal_Operator;
-         subtype Adding_Operators      is Operator_Kinds range A_Plus_Operator     .. A_Minus_Operator;
-         subtype Multiplying_Operators is Operator_Kinds range A_Multiply_Operator .. A_Rem_Operator;
-
-         subtype Discrete_Type_Kinds is Type_Kinds range An_Enumeration_Type_Definition .. A_Modular_Type_Definition;
-         subtype Fixed_Type_Kinds    is Type_Kinds
-                 range An_Ordinary_Fixed_Point_Definition .. A_Decimal_Fixed_Point_Definition;
 
          Profile : constant Profile_Descriptor := Types_Profile (Decl);
          Temp    : Asis.Element;
@@ -1270,6 +1272,9 @@ package body Rules.Declarations is
                if Is_Predefined_Operator (Element) then
                   Do_Report (D_Predefined_Operator, Element);
                end if;
+               if Operator_Kind (Names (Element) (1)) in Equality_Operators then
+                  Do_Report (D_Equality_Operator, Element);
+               end if;
             end if;
             Do_Report (D_Function, Element);
             Check_Abstract;
@@ -1279,6 +1284,9 @@ package body Rules.Declarations is
                Do_Report (D_Operator, Element);
                if Is_Predefined_Operator (Element) then
                   Do_Report (D_Predefined_Operator, Element);
+               end if;
+               if Operator_Kind (Names (Element) (1)) in Equality_Operators then
+                  Do_Report (D_Equality_Operator, Element);
                end if;
             end if;
             Do_Report (D_Expression_Function, Element);
@@ -1291,6 +1299,9 @@ package body Rules.Declarations is
                   Do_Report (D_Operator, Element);
                   if Is_Predefined_Operator (Element) then
                      Do_Report (D_Predefined_Operator, Element);
+                  end if;
+                  if Operator_Kind (Names (Element) (1)) in Equality_Operators then
+                     Do_Report (D_Equality_Operator, Element);
                   end if;
                end if;
                Do_Report (D_Function, Element);

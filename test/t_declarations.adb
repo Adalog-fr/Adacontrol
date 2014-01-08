@@ -313,6 +313,10 @@ procedure T_declarations is       -- library_procedure
    end Al5;
 
    procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, nested_procedure, local_procedure
+   function "=" (L : Rec1; R : Rec1) return Boolean is                  -- operator, predefined_operator, equality_operator
+   begin
+      return False;
+   end "=";
 begin
    begin
       null;                                                             -- null_procedure_body, null_procedure
