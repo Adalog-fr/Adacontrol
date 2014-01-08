@@ -54,12 +54,13 @@ with
 -- AdaControl
 with
   Framework.Language,
+  Framework.Language.Shared_Keys,
   Framework.Scope_Manager,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
-   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types, Framework.Language.Shared_Keys;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -166,6 +167,7 @@ package body Rules.Naming_Convention is
                 );
    Max_Hierarchy_Depth : constant := 5;
    -- Maximum logical depth of the above hierarchy
+   subtype Object_Keys is Keys range K_Variable .. K_Entry_Index;
 
    package Keys_Flags_Utilities is new Framework.Language.Flag_Utilities (Keys, "K_");
    use Keys_Flags_Utilities;
@@ -183,10 +185,11 @@ package body Rules.Naming_Convention is
    type Pattern_Access is access String_Matching.Compiled_Pattern;
    type Usage_Rec is new Basic_Rule_Context with
       record
-         Scopes    : Scope_Set;
-         Is_Others : Boolean := False;
-         Pattern   : Pattern_Access;
-         Next      : Usage_Rec_Access;
+         Scopes     : Scope_Set;
+         Categories : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
+         Is_Others  : Boolean := False;
+         Pattern    : Pattern_Access;
+         Next       : Usage_Rec_Access;
       end record;
 
    type Rule_Rec is
@@ -196,6 +199,10 @@ package body Rules.Naming_Convention is
          First_Negative : Usage_Rec_Access;
       end record;
    Usage : array (Keys) of Rule_Rec;
+
+   Naming_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Any                 => False,
+                                                                      Cat_New | Cat_Extension => False,
+                                                                      others                  => True);
 
    -----------
    -- Clear --
@@ -224,10 +231,12 @@ package body Rules.Naming_Convention is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control the form of allowed (or forbidden) names in declarations");
       User_Message;
-      User_Message  ("Parameter 1: [root] [others] [global|local|unit]");
+      User_Message  ("Parameter 1: [root] [others] {<location>} {<category>}");
       Help_On_Flags ("                ");
       User_Message  ("Parameter 2..N: [case_sensitive|case_insensitive] [not] ""<name pattern>""");
-      User_Message ("Variables:");
+      Visibility_Utilities.Help_On_Modifiers  (Header => "<location>:");
+      Categories_Utilities.Help_On_Modifiers (Header => "<category>:", Expected => Naming_Categories);
+      User_Message  ("Variables:");
       Help_On_Variable (Rule_Id & ".Default_Case_Sensitivity");
    end Help;
 
@@ -238,22 +247,31 @@ package body Rules.Naming_Convention is
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Ada.Characters.Handling, Ada.Exceptions, Framework.Language, String_Matching;
       use Visibility_Utilities;
+      use Categories_Utilities;
 
-      Key       : Keys;
-      Scopes    : Scope_Set;
-      Is_Root   : Boolean;
-      Is_Others : Boolean;
+      Key        : Keys;
+      Scopes     : Scope_Set;
+      Categories : Categories_Utilities.Modifier_Set;
+      Is_Root    : Boolean;
+      Is_Others  : Boolean;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of filter required");
       end if;
+
       Is_Root   := Get_Modifier ("ROOT");
       Is_Others := Get_Modifier ("OTHERS");
+
       Scopes    := Visibility_Utilities.Get_Modifier_Set;
-      if Scopes = Empty_Set then
-         Scopes := Full_Set;
+      if Scopes = Visibility_Utilities.Empty_Set then
+         Scopes := Visibility_Utilities.Full_Set;
       end if;
+
+      Categories := Get_Modifier_Set (Expected => Naming_Categories);
       Key := Get_Flag_Parameter (Allow_Any => False);
+      if Key not in Object_Keys and Categories /= Categories_Utilities.Empty_Set then
+         Parameter_Error (Rule_Id, "categories allowed only for variables and constants");
+      end if;
 
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "at least one pattern required");
@@ -272,19 +290,23 @@ package body Rules.Naming_Convention is
                                First_Positive => Usage (Key).First_Positive,
                                First_Negative => new Usage_Rec'
                                                     (Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                                     Scopes    => Scopes,
-                                                     Is_Others => Is_Others,
-                                                     Pattern   => new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
-                                                     Next      => Usage (Key).First_Negative)
+                                                     Scopes     => Scopes,
+                                                     Categories => Categories,
+                                                     Is_Others  => Is_Others,
+                                                     Pattern    => new Compiled_Pattern'(Compile (Pattern,
+                                                                                                  Ignore_Case)),
+                                                     Next       => Usage (Key).First_Negative)
                               );
             else
                Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
                                First_Positive => new Usage_Rec'
                                                     (Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                                     Scopes    => Scopes,
-                                                     Is_Others => Is_Others,
-                                                     Pattern   => new Compiled_Pattern'(Compile (Pattern, Ignore_Case)),
-                                                     Next      => Usage (Key).First_Positive),
+                                                     Scopes     => Scopes,
+                                                     Categories => Categories,
+                                                     Is_Others  => Is_Others,
+                                                     Pattern    => new Compiled_Pattern'(Compile (Pattern,
+                                                                                                  Ignore_Case)),
+                                                     Next       => Usage (Key).First_Positive),
                                First_Negative => Usage (Key).First_Negative
                               );
             end if;
@@ -352,10 +374,14 @@ package body Rules.Naming_Convention is
       use Thick_Queries, Utilities;
 
       Decl : Asis.Declaration;
-      -- The (true) enclosing declaration of Name
+      -- The declaration on which we base the classification
 
       -- Applicable rules must be given in order of decreasing generality
-      procedure Check (Name_Str : in Wide_String; Set : in Key_Set) is
+      procedure Check (Name_Str : in Wide_String;
+                       Set      : in Key_Set;
+                       Category : Categories := Cat_Any)
+      is
+         -- For objects (constants and variables), Object_Type is an identifier or definition of its type
          use Framework.Scope_Manager;
 
          Is_Program_Unit        : constant Boolean := Is_Equal (Decl, Current_Scope);
@@ -365,15 +391,15 @@ package body Rules.Naming_Convention is
          Positive_Pattern_Found : Boolean := False;
 
          procedure Check_One (Key : in Keys) is
-            use String_Matching, Visibility_Utilities, Framework.Reports;
-
+            use String_Matching, Visibility_Utilities, Categories_Utilities, Framework.Reports;
             Current                 : Usage_Rec_Access;
             Matches                 : Boolean;
             Last_Applicable_Pattern : Usage_Rec_Access := null;
          begin
             Current := Usage (Key).First_Negative;
             while Current /= null loop
-               if (Current.Scopes and Scopes_Mask) /= Empty_Set
+               if (Current.Scopes and Scopes_Mask) /= Visibility_Utilities.Empty_Set
+                 and (Current.Categories = Categories_Utilities.Empty_Set or else Current.Categories (Category))
                  and not (Current.Is_Others and Positive_Pattern_Found)
                then
                   Matches := Match (Name_Str, Current.Pattern.all);
@@ -382,7 +408,11 @@ package body Rules.Naming_Convention is
                              Current.all,
                              Get_Location (Name),
                              "Name does not follow naming rule for """
-                             & Image (Current.Scopes, Default => Full_Set) & Image (Key, Lower_Case)
+                             & Image (Current.Scopes, Default => Visibility_Utilities.Full_Set)
+                             & Choose (Current.Categories = Categories_Utilities.Empty_Set or Category = Cat_Any,
+                                       "",
+                                       Image (Category, Lower_Case))
+                             & Image (Key, Lower_Case)
                              & """: """
                              & Defining_Name_Image (Name) & '"');
                   end if;
@@ -392,7 +422,8 @@ package body Rules.Naming_Convention is
 
             Current := Usage (Key).First_Positive;
             while Current /= null loop
-               if (Current.Scopes and Scopes_Mask) /= Empty_Set
+               if (Current.Scopes and Scopes_Mask) /= Visibility_Utilities.Empty_Set
+                 and (Current.Categories = Categories_Utilities.Empty_Set or else Current.Categories (Category))
                  and not (Current.Is_Others and Positive_Pattern_Found)
                then
                   Last_Applicable_Pattern := Current;
@@ -416,7 +447,12 @@ package body Rules.Naming_Convention is
                        Last_Applicable_Pattern.all,
                        Get_Location (Name),
                        "Name does not follow naming rule for """
-                       & Image (Last_Applicable_Pattern.Scopes, Default => Full_Set) & Image (Key, Lower_Case)
+                       & Image (Last_Applicable_Pattern.Scopes, Default => Visibility_Utilities.Full_Set)
+                       & Choose (Last_Applicable_Pattern.Categories = Categories_Utilities.Empty_Set
+                                    or Category = Cat_Any,
+                                 "",
+                                 Image (Category, Lower_Case) & ' ')
+                       & Image (Key, Lower_Case)
                        & """: """
                        & Defining_Name_Image (Name) & '"');
             end if;
@@ -440,7 +476,26 @@ package body Rules.Naming_Convention is
          end loop;
       end Check;
 
-      use Asis.Definitions;
+      procedure Check (Name_Str : in Wide_String; Set : in Key_Set; Object_Type : Asis.Element) is
+      -- For objects (constants and variables), Object_Type is an identifier or definition of its type
+         Category : Categories;
+      begin
+         if Is_Nil (Object_Type) then
+            Category := Cat_Any;
+         else
+            Category := Matching_Category (Object_Type,
+                                           From_Cats          => Categories_Utilities.Modifier_Set'
+                                                                  (Cat_New | Cat_Extension => False,
+                                                                   others                  => True),
+                                           Follow_Derived     => True,
+                                           Privacy            => Stop_At_Private,
+                                           Separate_Extension => True);
+         end if;
+
+         Check (Name_Str, Set, Category);
+      end Check;
+
+         use Asis.Definitions;
    begin    -- Process_Defining_Name
       if not Rule_Used then
          return;
@@ -448,12 +503,14 @@ package body Rules.Naming_Convention is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Name_Str  : constant Wide_String := Defining_Name_Image (Name);
-         Renamed   : Asis.Element := Nil_Element;
-         Renamed_T : Asis.Element;
-         Decl_Kind : Asis.Declaration_Kinds;
-         Def       : Asis.Definition;
-         Accessed  : Asis.Element;
+         Name_Str      : constant Wide_String := Defining_Name_Image (Name);
+         Renamed       : Asis.Element := Nil_Element;
+         Renamed_T     : Asis.Element;
+         Original_Decl : Asis.Declaration; -- The (true) enclosing declaration of Name;
+                                           -- it can differ from decl in cases like renaming
+         Decl_Kind     : Asis.Declaration_Kinds;
+         Def           : Asis.Definition;
+         Accessed      : Asis.Element;
 
       begin
          Decl := Enclosing_Element (Name);
@@ -461,6 +518,7 @@ package body Rules.Naming_Convention is
             -- Name was the name of a child compilation unit
             Decl := Enclosing_Element (Decl);
          end loop;
+         Original_Decl := Decl;
 
          -- Every path in the following case statement must end with a call to Check,
          -- and perform nothing after.
@@ -849,17 +907,33 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Type, K_Generic_Formal_Type));
 
                   when An_Enumeration_Literal_Specification =>
-                     Check (Name_Str, (K_All, K_Constant, K_Enumeration));
+                     Check (Name_Str, (K_All, K_Constant, K_Enumeration), Cat_Enum);
 
                   when A_Variable_Declaration =>  ------------------------ Constants, Variables, Parameters
-                     Check (Name_Str, (K_All, K_Variable, K_Regular_Variable));
+                     if Is_Nil (Decl) then
+                        Check (Name_Str,
+                               (K_All, K_Variable, K_Regular_Variable),
+                               Object_Type => Simple_Name (Object_Declaration_View (Original_Decl)));
+                     else
+                        Check (Name_Str,
+                               (K_All, K_Variable, K_Regular_Variable),
+                               Object_Type => Object_Declaration_View (Decl));
+                     end if;
 
                   when A_Constant_Declaration =>
                      -- Decl is Nil_Element in the case of a renaming of a dereference => dynamic
-                     if not Is_Nil (Decl) and then Is_Static_Expression (Initialization_Expression (Decl)) then
-                        Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant));
+                     if Is_Nil (Decl) then
+                        Check (Name_Str,
+                               (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
+                               Object_Type => Simple_Name (Object_Declaration_View (Original_Decl)));
+                     elsif Is_Static_Expression (Initialization_Expression (Decl)) then
+                        Check (Name_Str,
+                               (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
+                               Object_Type => Object_Declaration_View (Decl));
                      else
-                        Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant));
+                        Check (Name_Str,
+                               (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
+                               Object_Type => Object_Declaration_View (Decl));
                      end if;
 
                   when A_Deferred_Constant_Declaration =>
@@ -872,26 +946,38 @@ package body Rules.Naming_Convention is
                            Good_Decl := Corresponding_Constant_Declaration (Corresponding_Name_Definition (Renamed));
                         end if;
                         if Is_Static_Expression (Initialization_Expression (Good_Decl)) then
-                           Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant));
+                           Check (Name_Str,
+                                  (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
+                                  Object_Declaration_View (Original_Decl));
                         else
-                           Check (Name_Str, (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant));
+                           Check (Name_Str,
+                                  (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
+                                  Object_Declaration_View (Original_Decl));
                         end if;
                      end;
 
                   when A_Choice_Parameter_Specification =>
                      Check (Name_Str, (K_All, K_Constant, K_Occurrence_Name));
+                     -- We don't pass an Object_Type here, short of being able
+                     -- to retrieve Ada.Exceptions.Exception_Occurrence
 
                   when An_Entry_Index_Specification =>
-                     Check (Name_Str, (K_All, K_Constant, K_Entry_Index));
+                     Check (Name_Str,
+                            (K_All, K_Constant, K_Entry_Index),
+                            Object_Type => Range_Ultimate_Name (Specification_Subtype_Definition (Decl)));
 
                   when A_Loop_Parameter_Specification =>
-                     Check (Name_Str, (K_All, K_Constant, K_Loop_Control));
+                     Check (Name_Str,
+                            (K_All, K_Constant, K_Loop_Control),
+                            Object_Type => Range_Ultimate_Name (Specification_Subtype_Definition (Decl)));
 
                   when An_Integer_Number_Declaration =>
                      Check (Name_Str, (K_All, K_Constant, K_Named_Number, K_Integer_Number));
+                     -- We don't pass an Object_Type here, since it can be used as signed or modular
 
                   when A_Real_Number_Declaration =>
                      Check (Name_Str, (K_All, K_Constant, K_Named_Number, K_Real_Number));
+                     -- We don't pass an Object_Type here, since it can be used as float or fixed
 
                   when A_Parameter_Specification =>
                      -- Check if it is the "real" declaration of the parameter
@@ -968,11 +1054,17 @@ package body Rules.Naming_Convention is
                         when A_Default_In_Mode
                           | An_In_Mode
                           =>
-                           Check (Name_Str, (K_All, K_Constant, K_Sp_Formal_In));
+                           Check (Name_Str,
+                                  (K_All, K_Constant, K_Sp_Formal_In),
+                                  Object_Type => Object_Declaration_View (Decl));
                         when An_Out_Mode =>
-                           Check (Name_Str, (K_All, K_Variable, K_Procedure_Formal_Out));
+                           Check (Name_Str,
+                                  (K_All, K_Variable, K_Procedure_Formal_Out),
+                                  Object_Type => Object_Declaration_View (Decl));
                         when An_In_Out_Mode =>
-                           Check (Name_Str, (K_All, K_Variable, K_Procedure_Formal_In_Out));
+                           Check (Name_Str,
+                                  (K_All, K_Variable, K_Procedure_Formal_In_Out),
+                                  Object_Type => Object_Declaration_View (Decl));
                         when Not_A_Mode =>
                            Failure ("Unexpected mode: " & Mode_Kinds'Wide_Image (Mode_Kind (Decl)));
                      end case;
@@ -982,9 +1074,13 @@ package body Rules.Naming_Convention is
                         when A_Default_In_Mode
                           | An_In_Mode
                           =>
-                           Check (Name_Str, (K_All, K_Constant, K_Generic_Formal_In));
+                           Check (Name_Str,
+                                  (K_All, K_Constant, K_Generic_Formal_In),
+                                  Object_Type => Simple_Name (Object_Declaration_View (Decl)));
                         when An_In_Out_Mode =>
-                           Check (Name_Str, (K_All, K_Variable, K_Generic_Formal_In_Out));
+                           Check (Name_Str,
+                                  (K_All, K_Variable, K_Generic_Formal_In_Out),
+                                  Object_Type => Simple_Name (Object_Declaration_View (Decl)));
                         when An_Out_Mode
                           | Not_A_Mode
                           =>
@@ -992,7 +1088,9 @@ package body Rules.Naming_Convention is
                      end case;
 
                   when A_Discriminant_Specification =>
-                     Check (Name_Str, (K_All, K_Variable, K_Field, K_Discriminant));
+                     Check (Name_Str,
+                            (K_All, K_Variable, K_Field, K_Discriminant),
+                            Object_Type => Simple_Name (Object_Declaration_View (Decl)));
 
                   when A_Component_Declaration =>
                      -- We must determine whether it is declared within a record or protected type
@@ -1019,11 +1117,13 @@ package body Rules.Naming_Convention is
 
                      case Definition_Kind (Def) is
                         when A_Protected_Definition =>
-                           Check (Name_Str, (K_All, K_Variable, K_Field, K_Protected_Field));
-                        when A_Record_Definition
-                           | A_Private_Extension_Definition
-                           =>
-                           Check (Name_Str, (K_All, K_Variable, K_Field, K_Record_Field));
+                           Check (Name_Str,
+                                  (K_All, K_Variable, K_Field, K_Protected_Field),
+                                  Object_Type => Component_Definition_View (Object_Declaration_View (Decl)));
+                        when A_Record_Definition | A_Private_Extension_Definition  =>
+                           Check (Name_Str,
+                                  (K_All, K_Variable, K_Field, K_Record_Field),
+                                  Object_Type => Component_Definition_View (Object_Declaration_View (Decl)));
                         when others =>
                            Failure ("Not a record or protected field: "
                                     & Definition_Kinds'Wide_Image (Definition_Kind (Def)),
@@ -1098,16 +1198,16 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Package, K_Generic_Formal_Package));
 
                   when A_Task_Type_Declaration =>  ------------------------ Tasks
-                     Check (Name_Str, (K_All, K_Task, K_Task_Type));
+                     Check (Name_Str, (K_All, K_Task, K_Task_Type), Cat_Task);
 
                   when A_Single_Task_Declaration =>
-                     Check (Name_Str, (K_All, K_Task, K_Task_Object));
+                     Check (Name_Str, (K_All, K_Variable, K_Task, K_Task_Object));
 
                   when A_Protected_Type_Declaration =>  ------------------------ Protected
                      Check (Name_Str, (K_All, K_Protected, K_Protected_Type));
 
                   when A_Single_Protected_Declaration =>
-                     Check (Name_Str, (K_All, K_Protected, K_Protected_Object));
+                     Check (Name_Str, (K_All, K_Variable, K_Protected, K_Protected_Object), Cat_Protected);
 
                   when An_Exception_Declaration =>  ------------------------ Exceptions
                      Check (Name_Str, (K_All, K_Exception));

@@ -53,6 +53,7 @@ Object declarations:
   Added subrule type.
 
 Naming_Convention:
+  Added specific patterns by object type categories
   Added subrules regular_static_constant, regular_nonstatic_constant
 
 No_Operator_Usage

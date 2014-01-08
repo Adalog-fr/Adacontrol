@@ -5792,10 +5792,12 @@ refering to.
 @subsection Syntax
 @example
 <control_kind> naming_convention
-   ([root] [others] @{<location>@} <filter_kind>,
+   ([root] [others] @{<location>@} @{<category>@} <filter_kind>,
     [case_sensitive|case_insensitive] [not] "<pattern>"
     @{, ...@});
 <location> ::= global | local | unit
+<category> ::= ()      | access    | array | delta  | digits | mod |
+               private | protected | range | record | tagged | task
 <filter_kind> ::= All |
                     Type |
                        Discrete_Type |
@@ -5896,7 +5898,7 @@ is applicable, and other parameters are strings, interpreted as
 regular expressions that define the patterns that must be
 matched. @xref{Syntax of regular expressions}.
 
-If one or more <Location> keyword is specified, the pattern applies
+If one or more <location> keyword is specified, the pattern applies
 only to identifiers declared at the corresponding place. Otherwise,
 the pattern applies to all identifiers, irrespectively of where they
 are declared. The definition of locations is as follows:
@@ -5908,6 +5910,42 @@ are declared. The definition of locations is as follows:
 package, possibly nested in other packages or generic packages.
 @item
 ``local'': All other cases.
+@end itemize
+
+Similarly, if one or more <category> keyword is specified (which is
+allowed only for filters in the ``variable'' and ``constant''
+families), the pattern applies only to identifiers of objects
+belonging to one of the given categories of types.  The meaning of
+<category> is:
+@itemize @bullet
+@item
+``()'': The object is of an enumerated type.
+@item
+``access'':  The object is of an access type.
+@item
+``array'': The object is of an array type.
+@item
+``delta'': The object is of a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The object is of a floating point type.
+@item
+``mod'': The object is of a modular type.
+@item
+``private'': The object is of a private type (including private
+extensions).
+@item
+``protected'': The object is of a protected type.
+@item
+``range'': The object is of a signed integer type.
+@item
+``record'': The object is of an (untagged) record type.
+@item
+``tagged'': The object is of a tagged type (including type
+extensions).
+@item
+``task'': The object is of a task type.
 @end itemize
 
 If ``case_sensitive'' is specified, pattern matching considers

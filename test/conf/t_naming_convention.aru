@@ -23,6 +23,8 @@ Title_Case: check naming_convention (variable, case_sensitive "^[A-Z][a-z0-9]*(_
 Discr     : check naming_convention     (Discriminant, "^D_");
 Protec_F  : check naming_convention     (protected_field, "^pf_");
 Rec_F     : check naming_convention     (Record_field, "^rf_");
+Enum_Var  : check naming_convention     (root ()        procedure_formal_out, "^E_");
+Int_Var   : check naming_convention     (root range mod procedure_formal_out, "^I_");
 
 Const1    : check naming_convention (root constant, "^C_");
 Const2    : Check naming_convention (constant, "^Const_");

@@ -115,6 +115,7 @@ package Framework.Language.Shared_Keys is
    -- Appropriate Element_Kinds for Elem:
    --       A_Declaration
    --       A_Definition
+   --       A_Defining_Name
    --       An_Expression
    -- Appropriate Declaration_Kinds:
    --       An_Ordinary_Type_Declaration

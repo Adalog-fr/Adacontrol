@@ -400,7 +400,7 @@ Parameter(2..n): <criterion> <value>
 Rule: NAMING_CONVENTION
 Control the form of allowed (or forbidden) names in declarations
 
-Parameter 1: [root] [others] [global|local|unit]
+Parameter 1: [root] [others] {<location>} {<category>}
                  all                        | type                       |
                  discrete_type              | enumeration_type           |
                  integer_type               | signed_integer_type        |
@@ -448,6 +448,10 @@ Parameter 1: [root] [others] [global|local|unit]
                  generic_package_renaming   | generic_sp_renaming        |
                  generic_procedure_renaming | generic_function_renaming
 Parameter 2..N: [case_sensitive|case_insensitive] [not] "<name pattern>"
+<location>: global | local | unit
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 Variables:
 Naming_Convention.Default_Case_Sensitivity: (Off, On) = Off
 ----

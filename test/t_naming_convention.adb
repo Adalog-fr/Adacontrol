@@ -1,5 +1,7 @@
 pragma Ada_2005;
 package body T_naming_convention is
+   procedure T_Cat is separate;
+
    My_Const  : constant Integer := 1;
    My_Number : constant := 1.0;
    C_Max     : constant := 1; -- OK
