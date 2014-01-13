@@ -11,19 +11,24 @@ begin
       Derived_Integer_Case : Derived_Integer_Type := 15;
 
    begin
-      case Integer_Subtype (Integer_Case) is          -- Max Values check, Min_Paths OK
+      case Integer_Subtype (Integer_Case) is          -- Max Values check, Max Values_Others check, Min_Paths OK
          when 10 .. 11 => null;
          when 12 .. 15 => null;
          when 16 .. 20 => null;                       -- Range_Span search
          when others => null;                         -- Min_Others covers 0, check, count
       end case;
 
-      case Integer_Subtype (Integer_Case) is          -- Max Values check, Min_Paths check, count
+      case Integer_Subtype (Integer_Case) is          -- Max Values check, Max_Values_Others OK, Min_Paths check
+         when 10 .. 11 => null;
+         when 12 .. 20 => null;                       -- Range_Span check
+      end case;
+
+      case Integer_Subtype (Integer_Case) is          -- Max Values check, Max Values_Others check, Min_Paths check, count
          when 10 .. 15 => null;                       -- Range_Span Check
          when others => null;                         -- Min_Others covers 5, search
       end case;
 
-      case Integer_Subtype (Derived_Integer_Case) is  -- Max Values check, Min_Paths check, count
+      case Integer_Subtype (Derived_Integer_Case) is  -- Max Values check, Max Values_Others check, Min_Paths check, count
          when 10 .. 15 => null;                       -- Range_Span check
          when others => null;                         -- Min_Others covers 5, search
       end case;
@@ -33,7 +38,7 @@ begin
          when 2 => null;
       end case;
 
-      case Derived_Integer_Case is                    -- Max Values check, count, Min_Paths search, count
+      case Derived_Integer_Case is                    -- Max Values check, Max Values_Others check, count, Min_Paths search, count
          when 10 .. 99 => null;                       -- Range_Span check, count
          when 100 | 102 | 104 | 106 => null;
          when others => null;                         -- Min_Others covers 97, search
@@ -115,7 +120,7 @@ begin
       A : constant := 20;
       B : constant Integer := 30;
    begin
-      case I is                                             -- Max Values check, count
+      case I is                                             -- Max Values check, Max Values_Others check, count
          when Integer'First .. Integer'Pred (-10) => null;  -- Range_Span check, count
          when -9 .. 0 => null;                              -- Range_Span check
          when 1+2 .. 5+3 => null;                           -- Range_Span check

@@ -20,6 +20,9 @@ Changes to existing rules:
 Array_Declarations:
   Slightly changed the syntax of the component subrule.
 
+Case_Statements:
+  Added subrule values_if_others
+
 Declarations:
   Added subrules box_defaulted_formal_function,
   name_defaulted_formal_function, box_defaulted_formal_procedure,

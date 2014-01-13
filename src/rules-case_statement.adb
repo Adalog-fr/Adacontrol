@@ -54,7 +54,7 @@ package body Rules.Case_Statement is
 
    use Asis, Framework, Thick_Queries;
 
-   type Subrules is (Others_Span, Paths, Range_Span, Values);
+   type Subrules is (Others_Span, Paths, Range_Span, Values, Values_If_Others);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Usage is array (Subrules) of Control_Kinds_Set;
@@ -282,10 +282,13 @@ package body Rules.Case_Statement is
       -- of the case selector
       --
       procedure Process_Max_Values is
-         Subtype_Span : Extended_Biggest_Int;
+         Subtype_Span : constant Extended_Biggest_Int := Discrete_Constraining_Lengths
+                                                          (A4G_Bugs.Corresponding_Expression_Type
+                                                           (Case_Expression (Statement))) (1);
+         Case_Paths   : constant Path_List := Statement_Paths (Statement);
+         Has_Others   : constant Boolean   := Definition_Kind (Case_Statement_Alternative_Choices
+                                                               (Case_Paths (Case_Paths'Last)) (1)) = An_Others_Choice;
       begin
-         Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
-                                                        (Case_Expression (Statement))) (1);
          if Subtype_Span = Not_Static then
             return;
          end if;
@@ -295,10 +298,17 @@ package body Rules.Case_Statement is
                        Message => "values for subtype of selector in case statement",
                        Elem    => Statement);
 
+         if Has_Others then
+            Check_Report (Values_If_Others,
+                          Value   => Subtype_Span,
+                          Message => "values for subtype of selector in case statement with ""others""",
+                          Elem    => Statement);
+         end if;
+
       exception
          when Non_Evaluable =>
             return;
-     end Process_Max_Values;
+      end Process_Max_Values;
 
       procedure Process_Min_Paths is
       begin
@@ -314,7 +324,9 @@ package body Rules.Case_Statement is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-       if Rule_Used (Values) /= (Control_Kinds => False) then
+      if   Rule_Used (Values)           /= (Control_Kinds => False)
+        or Rule_Used (Values_If_Others) /= (Control_Kinds => False)
+      then
           Process_Max_Values;
        end if;
 

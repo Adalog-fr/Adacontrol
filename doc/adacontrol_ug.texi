@@ -3038,7 +3038,7 @@ course it makes sense only if the set of allowed features for
 ``search'' is a superset of those allowed for ``check''.  This way, the
 use of certain features can be interpreted only as a warning.
 
-@node  Case_Statement, Characters, Barrier_Expressions, Rules reference
+@node Case_Statement, Characters, Barrier_Expressions, Rules reference
 @section Case_Statement
 This rule controls various metrics related to the @code{@b{case}}
 statement.  It is intended for cases where it is desired to limit the
@@ -3046,7 +3046,7 @@ complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
 <control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
-<subrule> ::= others_span | paths | range_span | values
+<subrule> ::= others_span | paths | range_span | values | values_if_others
 <bound>   ::= min | max <value>
 @end example
 
@@ -3068,6 +3068,10 @@ choices.
 @item
 ``values'' controls the number of values covered by the subtype
 of the @code{@b{case}} selector.
+@item
+``values_if_others'' is like ``values'', but is activated only for
+@code{@b{case}} statements with a @code{@b{when}} @code{@b{others}}
+alternative.
 @end itemize
 
 This rule can be specified at most once for each subrule and for each

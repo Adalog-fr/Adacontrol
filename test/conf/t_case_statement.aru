@@ -3,6 +3,7 @@ Min_Others_Span:    search case_statement (others_span, min 100);
 Number_Empty_Others: count  case_statement (others_span, min 1);
 
 Values:          check  case_statement (values, min 3, max 10);
+Values_Others:   check  case_statement (values_if_others, min 3, max 10);
 Max_Values:      search case_statement (values, max 3);
 Number_big_case: count  case_statement (values, max 100);
 
