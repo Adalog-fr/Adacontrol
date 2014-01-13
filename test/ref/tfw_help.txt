@@ -396,7 +396,7 @@ to components of a structured variable that could be replaced by an aggregate
 Parameter (1) : repeated | groupable
 For groupable:
 Parameter(2..n): <criterion> <value>
-<criterion> : given | missing | ratio
+<criterion> : given | missing | ratio | total
 ----
 Rule: NAMING_CONVENTION
 Control the form of allowed (or forbidden) names in declarations

@@ -5700,7 +5700,7 @@ whose execution must be part of the accept statement for logical
 reasons. They can also be global variables, when the rendezvous is
 intended to prevent concurrent access to these variables.
 
-@node  Multiple_Assignments, Naming_Convention, Movable_Accept_Statements, Rules reference
+@node Multiple_Assignments, Naming_Convention, Movable_Accept_Statements, Rules reference
 @section Multiple_Assignments
 This rule controls groups of assignments that are either redundant of
 replaceable by aggregate assignment.
@@ -5709,7 +5709,7 @@ replaceable by aggregate assignment.
 @example
 <control_kind> multiple_assignments (repeated);
 <control_kind> multiple_assignments (groupable, <filter> @{,<filter>@});
-<filter> ::= given <min_val> | missing <max_val> | ratio <min_val>
+<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> | total <max_val>
 @end example
 
 @subsection Action
@@ -5743,6 +5743,11 @@ lesser or equal to the indicated value).
 percentage of assigned subcomponents that will trigger the rule
 (i.e. the rule is triggered if  the percentage of assigned
 subcomponents is greater or equal to the indicated value).
+@item
+``total'': <max_val> (an integer value) indicates the maximum number
+of subcomponents of the type that will trigger the rule (i.e. the
+rule is triggered if  the number of subcomponents of the record type is
+lesser or equal to the indicated value).
 @end itemize
 
 If several filters are given, the rule is triggered if all conditions

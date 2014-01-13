@@ -3,6 +3,10 @@ procedure T_Multiple_Assignments is
       record
          A, B, C : Integer;
       end record;
+   type Small_Rec is
+      record
+         C1, C2 : Integer;
+      end record;
    type Tab is array (1 .. 5) of Integer;
    type TabRec is array (1..3) of Rec;
    type MatRec is array (1..3, 1..4) of Rec;
@@ -13,11 +17,12 @@ procedure T_Multiple_Assignments is
          Z : TabRec;
       end record;
 
-   R : Rec;
-   T : Tab;
-   M : MatRec;
+   R  : Rec;
+   SR : Small_Rec;
+   T  : Tab;
+   M  : MatRec;
    RR : RecRec;
-   B : Boolean;
+   B  : Boolean;
 
    Rbis  : Rec     renames R;
    RABis : integer renames RBis.A;
@@ -85,6 +90,8 @@ begin
       end if;
       R.C := 3;
    end;
+
+   SR.C1 := 1;      -- Small_Rec
 
    -- subtypes and derived types
    declare
@@ -161,9 +168,9 @@ Bl: declare
       V1 : T1;
       V2 : T2;
    begin
-      V1.I1 := 1;  -- Groupable2, Count
+      V1.I1 := 1;  -- Groupable2, Small_Rec, Count
       V2.I1 := 1;
-      V2.I2 := 2;  -- Groupable1, Groupable2, Count
+      V2.I2 := 2;  -- Groupable1, Groupable2, Small_Rec, Count
    end;
 
    -- Protected types         Mantis 0000009

@@ -97,7 +97,7 @@ package body Rules.Multiple_Assignments is
    type Subrules is (Repeated, Groupable);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio);
+   type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio, Crit_Total);
    package Criteria_Utilities is new Framework.Language.Modifier_Utilities (Criteria, Prefix => "Crit_");
 
    Rule_Used : Boolean := False;
@@ -114,6 +114,7 @@ package body Rules.Multiple_Assignments is
          Given   : Thick_Queries.Biggest_Natural;
          Missing : Thick_Queries.Biggest_Natural;
          Ratio   : Percentage;
+         Total   : Thick_Queries.Biggest_Natural;
       end record;
 
    package Context_Queue is new Linear_Queue (Rule_Context);
@@ -163,6 +164,7 @@ package body Rules.Multiple_Assignments is
       Given   : Biggest_Natural := 0;
       Missing : Biggest_Natural := Biggest_Natural'Last;
       Ratio   : Percentage      := 0;
+      Total   : Biggest_Natural := 0;
       Crit    : Criteria;
       Subrule : Subrules;
    begin
@@ -197,9 +199,11 @@ package body Rules.Multiple_Assignments is
                      Missing := Get_Integer_Parameter (Min => 0);
                   when Crit_Ratio =>
                      Ratio := Get_Integer_Parameter (Min => 1, Max => 100);
+                  when Crit_Total =>
+                     Total := Get_Integer_Parameter (Min => 1);
                end case;
             end loop;
-            Append (Groupable_Contexts, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Given, Missing, Ratio));
+            Append (Groupable_Contexts, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Given, Missing, Ratio, Total));
       end case;
       Rule_Used := True;
    end Add_Control;
@@ -404,6 +408,9 @@ package body Rules.Multiple_Assignments is
             Subcomp_Key := Subcomp_Descr.Brother;
          end loop;
 
+         --
+         -- Given
+         --
          if Limits.Given > 0 then
             if Subcomp_Count < Limits.Given then
                Matched := False;
@@ -413,6 +420,9 @@ package body Rules.Multiple_Assignments is
             end if;
          end if;
 
+         --
+         -- Missing
+         --
          if Limits.Missing < Biggest_Int'Last then
             if Value.Subcomp_Total = Not_Static
               or else Value.Subcomp_Total - Subcomp_Count > Limits.Missing
@@ -424,6 +434,9 @@ package body Rules.Multiple_Assignments is
             end if;
          end if;
 
+         --
+         -- Ratio
+         --
          if Limits.Ratio > 0 then
             if Value.Subcomp_Total = Not_Static
               or else Subcomp_Count * 100 / Value.Subcomp_Total < Biggest_Int (Limits.Ratio)
@@ -432,6 +445,20 @@ package body Rules.Multiple_Assignments is
             elsif With_Messages then
                Append (Reason, ", ratio: " & Biggest_Int_Img (Subcomp_Count * 100 / Value.Subcomp_Total)
                        & " (>=" & ASIS_Integer_Img (Limits.Ratio) & ')');
+            end if;
+         end if;
+
+         --
+         -- Total
+         --
+         if Limits.Total > 0 then
+            if Value.Subcomp_Total = Not_Static
+              or else Value.Subcomp_Total > Limits.Total
+            then
+               Matched := False;
+            elsif With_Messages then
+               Append (Reason, ", total: " & Biggest_Int_Img (Value.Subcomp_Total)
+                       & " (<=" & Biggest_Int_Img (Limits.Total) & ')');
             end if;
          end if;
 

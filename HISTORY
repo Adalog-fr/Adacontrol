@@ -49,8 +49,8 @@ Local_Hiding:
 Global_References:
    Added subrules read, written
 
-Object declarations:
-  Added subrule type.
+Multiple_Assignments:
+   Added criterion total
 
 Naming_Convention:
   Added specific patterns by object type categories
@@ -59,6 +59,9 @@ Naming_Convention:
 No_Operator_Usage
   Changed syntax
   Filtering on indexing in addition to logical operators
+
+Object declarations:
+  Added subrule type.
 
 Parameter_Declarations:
   Added subrules tagged_parameters, class_wide_parameters.
