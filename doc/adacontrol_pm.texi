@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.16b6
+@settitle AdaControl Programmer Manual V1.16b7
 @c %**end of header
 
 @titlepage
