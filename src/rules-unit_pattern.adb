@@ -44,10 +44,12 @@ with
 -- Adactl
 with
   Framework.Language,
+  Framework.Ordering_Machine,
   Framework.Rules_Manager,
   Framework.Reports,
   Framework.Scope_Manager;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Ordering_Machine);
 
 package body Rules.Unit_Pattern is
    use Framework, Framework.Control_Manager;
@@ -86,13 +88,9 @@ package body Rules.Unit_Pattern is
    package Context_Clause_Element_Utilities is new Framework.Language.Modifier_Utilities
                                                      (Modifiers => Context_Clause_Element,
                                                       Prefix    => "CC_");
-   type Order_Index is range 1 .. Context_Clause_Element'Pos (Context_Clause_Element'Last) + 1 + 1;
-   -- Number of orders that can be specified.
-   -- Quite arbitrary; here we allow one position for each Context_Clause_Element, plus the extra
-   -- guard value.
-   type Clauses_Array is array (Order_Index) of Context_Clause_Element_Utilities.Modifier_Set;
-   Clauses_Order : Clauses_Array;
-   Order_Inx     : Order_Index;
+   package Context_Clause_Ordering_Machine is new Framework.Ordering_Machine
+     (Rule_Id, Context_Clause_Element, Context_Clause_Element_Utilities.Modifier_Set);
+   Context_Clauses_Ordering : Context_Clause_Ordering_Machine.Instance;
 
 
    ----------
@@ -137,23 +135,20 @@ package body Rules.Unit_Pattern is
             end if;
 
             declare
-               use Context_Clause_Element_Utilities;
+               use Context_Clause_Element_Utilities, Context_Clause_Ordering_Machine;
+               State         : Modifier_Set;
                Not_Specified : Modifier_Set := Full_Set;
             begin
-               Order_Inx := 1;
                loop
-                  Clauses_Order (Order_Inx) := Get_Modifier_Set (No_Parameter => True);
-                  Not_Specified := Not_Specified and not Clauses_Order (Order_Inx);
+                  State         := Get_Modifier_Set (No_Parameter => True);
+                  Not_Specified := Not_Specified and not State;
+                  Add_State (Context_Clauses_Ordering, State);
                   exit when not Parameter_Exists;
-                  if Order_Inx = Order_Index'Last - 1 then
-                     Parameter_Error (Rule_Id, "Too many parameters");
-                  end if;
-                  Order_Inx := Order_Inx + 1;
                end loop;
                if Not_Specified /= Context_Clause_Element_Utilities.Empty_Set then
                   -- allow all clauses not explicitely specified after the ones specified
-                        Order_Inx := Order_Inx + 1;
-                        Clauses_Order (Order_Inx) := Not_Specified;
+                  Add_State (Context_Clauses_Ordering, Not_Specified);
+               end if;
                end if;
             end;
       end case;
@@ -167,11 +162,12 @@ package body Rules.Unit_Pattern is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Framework.Rules_Manager;
+      use Framework.Rules_Manager, Context_Clause_Ordering_Machine;
    begin
       case Action is
          when Clear =>
             Rule_Used := Empty_Set;
+            Reset (Context_Clauses_Ordering);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Empty_Set;
@@ -288,7 +284,7 @@ package body Rules.Unit_Pattern is
 
    procedure Process_Unit (Unit : in Asis.Compilation_Unit) is
       use Asis, Asis.Elements;
-      use Framework.Reports, Utilities;
+      use Framework.Reports, Utilities, Context_Clause_Ordering_Machine;
    begin
       if not Rule_Used (Context_Clauses_Order) then
          return;
@@ -297,10 +293,9 @@ package body Rules.Unit_Pattern is
 
       declare
          Context_Elements : constant Asis.Element_List := Context_Clause_Elements (Unit, Include_Pragmas => True);
-         State            : Order_Index := Order_Index'First;
-         Old_State        : Order_Index;
          Clause           : Context_Clause_Element;
       begin
+         Set_Initial (Context_Clauses_Ordering);
          for C in Context_Elements'Range loop
             case Element_Kind (Context_Elements (C)) is
                when A_Clause =>
@@ -322,20 +317,14 @@ package body Rules.Unit_Pattern is
                   Failure ("Enter_Unit: unexpected clause", Context_Elements (C));
             end case;
 
-            Old_State := State;
-            while not Clauses_Order (State) (Clause) loop
-               if State = Order_Inx then
-                  Report (Rule_Id,
-                          Contexts (Context_Clauses_Order),
-                          Get_Location (Context_Elements (C)),
-                          "clause (or pragma) out of order");
-                  -- Avoid multiple messages if there was only one clause out of order:
-                  State := Old_State;
-                  exit;
-               end if;
-
-               State := State + 1;
-            end loop;
+            Set_State (Context_Clauses_Ordering, Clause);
+            if not Is_Allowed (Context_Clauses_Ordering) then
+               Report (Rule_Id,
+                       Control_Manager.Association (Contexts, Value (Subrules'Wide_Image (Context_Clauses_Order))),
+                       Get_Location (Context_Elements (C)),
+                       "clause (or pragma) out of order");
+               -- Avoid multiple messages if there was only one clause out of order:
+            end if;
          end loop;
       end;
    end Process_Unit;

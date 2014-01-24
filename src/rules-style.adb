@@ -53,9 +53,11 @@ with
 -- Adactl
 with
   Framework.Language,
+  Framework.Ordering_Machine,
   Framework.Scope_Manager,
   Rules.Style.Keyword;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Ordering_Machine);
 
 package body Rules.Style is
    use Framework, Framework.Control_Manager, Utilities;
@@ -190,14 +192,11 @@ package body Rules.Style is
                            Mode_Type, Mode_Procedure,    Mode_Function, Mode_Package);
    package Extended_Modes_Utilities is new Framework.Language.Modifier_Utilities (Modifiers => Extended_Modes,
                                                                                   Prefix    => "Mode_");
-   type Order_Index is range 1 .. Extended_Modes'Pos (Extended_Modes'Last) + 1 + 1;
-   -- Number of orders that can be specified.
-   -- Quite arbitrary; here we allow one position for each Extended_Mode, plus the extra
-   -- guard value.
-   type Modes_Array is array (Order_Index) of Extended_Modes_Utilities.Modifier_Set;
-   Mode_Order : array (St_Orders) of Modes_Array;
-   Order_Inx  : array (St_Orders) of Order_Index;
-
+   package Parameter_Ordering_Machine is new Framework.Ordering_Machine (Rule_Id,
+                                                                         Extended_Modes,
+                                                                         Extended_Modes_Utilities.Modifier_Set);
+   Parameter_Ordering        : Parameter_Ordering_Machine.Instance;
+   Formal_Parameter_Ordering : Parameter_Ordering_Machine.Instance;
 
    -------------------------------------------------------------------------
    --
@@ -270,7 +269,7 @@ package body Rules.Style is
       use Asis;
       use Framework.Language, Ada.Strings.Wide_Unbounded;
       use Casing_Flag_Utilities, Literal_Flag_Utilities, Multiple_Flag_Utilities;
-      use Place_Flag_Utilities, Subrules_Flag_Utilities;
+      use Place_Flag_Utilities, Subrules_Flag_Utilities, Parameter_Ordering_Machine;
 
       Subrule  : Subrules;
       Max      : ASIS_Integer;
@@ -457,46 +456,51 @@ package body Rules.Style is
             when St_Parameter_Order | St_Formal_Parameter_Order =>
                declare
                   use Extended_Modes_Utilities;
+                  State         : Modifier_Set;
                   Not_Specified : Modifier_Set := Full_Set;
                begin
                   if Rule_Used (Subrule) then
                      Parameter_Error (Rule_Id, Image (Subrule, Lower_Case) & " already specified for rule");
                   end if;
                   if Parameter_Exists then
-                     Order_Inx (Subrule):= 1;
                      loop
-                        Mode_Order (Subrule)(Order_Inx (Subrule)) := Get_Modifier_Set (No_Parameter => True);
-                        Not_Specified := Not_Specified and not Mode_Order (Subrule)(Order_Inx (Subrule));
+                        State         := Get_Modifier_Set (No_Parameter => True);
+                        Not_Specified := Not_Specified and not State;
+                        case St_Orders (Subrule) is
+                           when St_Parameter_Order =>
+                              Add_State (Parameter_Ordering, State);
+                           when St_Formal_Parameter_Order =>
+                              Add_State (Formal_Parameter_Ordering, State);
+                        end case;
                         exit when not Parameter_Exists;
-                        if Order_Inx (Subrule) = Order_Index'Last - 1 then
-                           Parameter_Error (Rule_Id, "Too many parameters");
-                        end if;
-                        Order_Inx (Subrule) := Order_Inx (Subrule) + 1;
                      end loop;
                      if Not_Specified /= Empty_Set then
                         -- allow all modes not explicitely specified after the ones specified
-                        Order_Inx  (Subrule):= Order_Inx (Subrule) + 1;
-                        Mode_Order (Subrule)(Order_Inx (Subrule)) := Not_Specified;
+                        case St_Orders (Subrule) is
+                           when St_Parameter_Order =>
+                              Add_State (Parameter_Ordering, Not_Specified);
+                           when St_Formal_Parameter_Order =>
+                              Add_State (Formal_Parameter_Ordering, Not_Specified);
+                        end case;
                      end if;
                   else
                      case St_Orders (Subrule) is
                         when St_Parameter_Order =>
-                           Mode_Order (St_Parameter_Order)
-                             := ((Mode_In | Mode_Access => True, others => False),
-                                 (Mode_In_Out           => True, others => False),
-                                 (Mode_Out              => True, others => False),
-                                 (Mode_Defaulted_In     => True, others => False),
-                                 others =>                      (others => False));
-                           Order_Inx (St_Parameter_Order) := 4;
+                           Add_State (Parameter_Ordering, (Mode_In | Mode_Access => True, others => False));
+                           Add_State (Parameter_Ordering, (Mode_In_Out           => True, others => False));
+                           Add_State (Parameter_Ordering, (Mode_Out              => True, others => False));
+                           Add_State (Parameter_Ordering, (Mode_Defaulted_In     => True, others => False));
                         when St_Formal_Parameter_Order =>
-                           Mode_Order (St_Formal_Parameter_Order )
-                             := ((Mode_Type                                 => True, others => False),
-                                 (Mode_In | Mode_Access | Mode_Defaulted_In => True, others => False),
-                                 (Mode_In_Out                               => True, others => False),
-                                 (Mode_Procedure | Mode_Function            => True, others => False),
-                                 (Mode_Package                              => True, others => False),
-                                 others =>                                          (others => False));
-                           Order_Inx (St_Formal_Parameter_Order) := 5;
+                           Add_State (Formal_Parameter_Ordering,
+                                      (Mode_Type                                 => True, others => False));
+                           Add_State (Formal_Parameter_Ordering,
+                                      (Mode_In | Mode_Access | Mode_Defaulted_In => True, others => False));
+                           Add_State (Formal_Parameter_Ordering,
+                                      (Mode_In_Out                               => True, others => False));
+                           Add_State (Formal_Parameter_Ordering,
+                                      (Mode_Procedure | Mode_Function            => True, others => False));
+                           Add_State (Formal_Parameter_Ordering,
+                                      (Mode_Package                              => True, others => False));
                      end case;
                   end if;
                end;
@@ -567,19 +571,18 @@ package body Rules.Style is
 
          -- Parameter_Order
          Associate (Contexts, Value (Image (St_Parameter_Order)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Mode_Order :=
-           (St_Parameter_Order => ((Mode_In | Mode_Access => True, others => False),
-                                   (Mode_In_Out           => True, others => False),
-                                   (Mode_Out              => True, others => False),
-                                   (Mode_Defaulted_In     => True, others => False),
-                                others => (others => False)),
-            St_Formal_Parameter_Order => ((Mode_Type                                 => True, others => False),
-                                          (Mode_In | Mode_Access | Mode_Defaulted_In => True, others => False),
-                                          (Mode_In_Out                               => True, others => False),
-                                          (Mode_Procedure | Mode_Function            => True, others => False),
-                                          (Mode_Package                              => True, others => False),
-                                          others => (others => False)));
-            Order_Inx := (St_Parameter_Order => 4, St_Formal_Parameter_Order => 5);
+         Add_State (Parameter_Ordering, (Mode_In | Mode_Access => True, others => False));
+         Add_State (Parameter_Ordering, (Mode_In_Out           => True, others => False));
+         Add_State (Parameter_Ordering, (Mode_Out              => True, others => False));
+         Add_State (Parameter_Ordering, (Mode_Defaulted_In     => True, others => False));
+
+         -- Formal_Parameter_Order
+         Associate (Contexts, Value (Image (St_Formal_Parameter_Order)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Add_State (Formal_Parameter_Ordering, (Mode_Type                                 => True, others => False));
+         Add_State (Formal_Parameter_Ordering, (Mode_In | Mode_Access | Mode_Defaulted_In => True, others => False));
+         Add_State (Formal_Parameter_Ordering, (Mode_In_Out                               => True, others => False));
+         Add_State (Formal_Parameter_Ordering, (Mode_Procedure | Mode_Function            => True, others => False));
+         Add_State (Formal_Parameter_Ordering, (Mode_Package                              => True, others => False));
        end if;
    exception
       when Already_In_Store =>
@@ -591,7 +594,7 @@ package body Rules.Style is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Framework.Rules_Manager;
+      use Framework.Rules_Manager, Parameter_Ordering_Machine;
    begin
       case Action is
          when Clear =>
@@ -603,6 +606,8 @@ package body Rules.Style is
             String_Count      := 0;
             Permitted_Places  := (others => (others => False));
             Flexible_Clause   := False;
+            Reset (Parameter_Ordering);
+            Reset (Formal_Parameter_Ordering);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);
@@ -1000,12 +1005,14 @@ package body Rules.Style is
    procedure Process_Declaration (Declaration: in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
 
-      procedure Check_Formals (Subrule : St_Orders; Formals : Asis.Element_List; Message : Wide_String) is
-         use Framework.Reports;
-         State     : Order_Index := Order_Index'First;
-         E_Mode    : Extended_Modes;
-         Old_State : Order_Index;
+      -------------------
+      -- Check_Formals --
+      -------------------
+
+      procedure Check_Formals (Subrule : St_Orders; Formals : Asis.Element_List) is
+         use Framework.Reports, Parameter_Ordering_Machine;
          Enclosing : Asis.Declaration;
+         E_Mode    : Extended_Modes;
          Ignore    : Boolean;
 
          function Object_Mode (Formal : Asis.Declaration) return Extended_Modes is
@@ -1035,6 +1042,10 @@ package body Rules.Style is
          end Object_Mode;
 
       begin  -- Check_Formals
+         if Formals = Nil_Element_List then
+            return;
+         end if;
+
          if Rule_Used (St_Default_In) then
             for I in Formals'Range loop
                -- Note: Mode_Kind returns Not_A_Mode for generic formals that are not objects (types, subprograms...),
@@ -1045,61 +1056,64 @@ package body Rules.Style is
                   Report (Rule_Id,
                           Corresponding_Context (St_Default_In),
                           Get_Location (Declaration_Subtype_Mark (Formals (I))),
-                          "default IN mode used for " & Message);
+                          "default IN mode used for parameter");
                end if;
             end loop;
          end if;
 
-         if (Rule_Used (St_Parameter_Order) or Rule_Used (St_Formal_Parameter_Order))
-           and then Formals /= Nil_Element_List
-         then
+         if Subrule = St_Parameter_Order and Rule_Used (St_Parameter_Order) then
             Enclosing := Enclosing_Element (Formals (Formals'First));
            -- if it is a subprogram with an explicit spec, do not repeat message on body
             if Declaration_Kind (Enclosing) not in A_Procedure_Body_Declaration .. A_Function_Body_Declaration
                 or else Is_Nil (Corresponding_Declaration (Enclosing))
             then
+               Set_Initial (Parameter_Ordering);
                for I in Formals'Range loop
-                  Ignore := False;
-                  case Declaration_Kind (Formals (I)) is
-                     when A_Parameter_Specification =>
-                        E_Mode  := Object_Mode (Formals (I));
-                     when A_Formal_Object_Declaration =>
-                        E_Mode  := Object_Mode (Formals (I));
-                     when A_Formal_Type_Declaration =>
-                        E_Mode  := Mode_Type;
-                     when A_Formal_Procedure_Declaration =>
-                        E_Mode  := Mode_Procedure;
-                     when A_Formal_Function_Declaration =>
-                        E_Mode  := Mode_Function;
-                     when A_Formal_Package_Declaration
-                        | A_Formal_Package_Declaration_With_Box
-                          =>
-                        E_Mode  := Mode_Package;
-                     when Not_A_Declaration =>
-                        -- presumably, a use clause for a generic formal package
-                        Ignore := True;
-                     when others =>
-                        Failure ("style: inappropriate declaration_kind for formal", Formals (I));
-                  end case;
-
-                  if Rule_Used (Subrule) and not Ignore then
-                     Old_State := State;
-                     while not Mode_Order (Subrule) (State) (E_Mode) loop
-                        if State = Order_Inx (Subrule) then
-                           Report (Rule_Id,
-                                   Corresponding_Context (Subrule),
-                                   Get_Location (Formals (I)),
-                                   "parameter out of order for " & Message);
-                           -- Avoid multiple messages if there was only one parameter out of order:
-                           State := Old_State;
-                           exit;
-                        end if;
-
-                        State := State + 1;
-                     end loop;
+                  Set_State (Parameter_Ordering, Object_Mode (Formals (I)));
+                  if not Is_Allowed (Parameter_Ordering) then
+                     Report (Rule_Id,
+                             Corresponding_Context (Subrule),
+                             Get_Location (Formals (I)),
+                             "subprogram parameter out of order");
                   end if;
                end loop;
             end if;
+         end if;
+
+         if Subrule = St_Formal_Parameter_Order and Rule_Used (St_Formal_Parameter_Order) then
+            Set_Initial (Formal_Parameter_Ordering);
+            for I in Formals'Range loop
+               Ignore := False;
+               case Declaration_Kind (Formals (I)) is
+                  when A_Formal_Object_Declaration =>
+                     E_Mode  := Object_Mode (Formals (I));
+                  when A_Formal_Type_Declaration =>
+                     E_Mode  := Mode_Type;
+                  when A_Formal_Procedure_Declaration =>
+                     E_Mode  := Mode_Procedure;
+                  when A_Formal_Function_Declaration =>
+                     E_Mode  := Mode_Function;
+                  when A_Formal_Package_Declaration
+                     | A_Formal_Package_Declaration_With_Box
+                     =>
+                     E_Mode  := Mode_Package;
+                  when Not_A_Declaration =>
+                     -- presumably, a use clause for a generic formal package
+                     Ignore := True;
+                  when others =>
+                     Failure ("style: inappropriate declaration_kind for formal", Formals (I));
+               end case;
+
+               if not Ignore then
+                  Set_State (Formal_Parameter_Ordering, E_Mode);
+                  if not Is_Allowed (Formal_Parameter_Ordering) then
+                     Report (Rule_Id,
+                             Corresponding_Context (Subrule),
+                             Get_Location (Formals (I)),
+                             "generic formal parameter out of order");
+                  end if;
+               end if;
+            end loop;
          end if;
       end Check_Formals;
 
@@ -1128,22 +1142,16 @@ package body Rules.Style is
             | A_Formal_Function_Declaration
             | A_Formal_Procedure_Declaration
             =>
-            Check_Formals (St_Parameter_Order, Parameter_Profile (Declaration), "parameter specification");
+            Check_Formals (St_Parameter_Order, Parameter_Profile (Declaration));
 
          when A_Generic_Procedure_Declaration
            | A_Generic_Function_Declaration
               =>
-            Check_Formals (St_Formal_Parameter_Order,
-                           Generic_Formal_Part (Declaration),
-                           "formal parameter declaration");
-            Check_Formals (St_Parameter_Order,
-                           Parameter_Profile (Declaration),
-                           "parameter specification");
+            Check_Formals (St_Formal_Parameter_Order, Generic_Formal_Part (Declaration));
+            Check_Formals (St_Parameter_Order, Parameter_Profile (Declaration));
 
           when A_Generic_Package_Declaration =>
-            Check_Formals (St_Formal_Parameter_Order,
-                           Generic_Formal_Part (Declaration),
-                           "formal parameter declaration");
+            Check_Formals (St_Formal_Parameter_Order, Generic_Formal_Part (Declaration));
 
          when others =>
             null;

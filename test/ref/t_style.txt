@@ -1,12 +1,12 @@
 t_style.adb:1:10: Found: Casing: Wrong casing of Text_io, should be Text_IO
-t_style-no_default_in.adb:3:31: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:13:28: Found: No_Default_In: default IN mode used for formal parameter declaration
-t_style-no_default_in.adb:15:44: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:26:13: Found: No_Default_In: default IN mode used for formal parameter declaration
-t_style-no_default_in.adb:27:29: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:30:29: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:33:26: Found: No_Default_In: default IN mode used for parameter specification
-t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter specification
+t_style-no_default_in.adb:3:31: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:13:28: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:15:44: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:26:13: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:27:29: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:30:29: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:33:26: Found: No_Default_In: default IN mode used for parameter
+t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter
 t_style-casing.adb:1:6: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
 t_style-casing.adb:1:21: Found: Casing: Wrong casing of CHILD_1, should be Child_1
 t_style-casing.adb:1:29: Found: Casing: Wrong casing of CHILD_2, should be Child_2
@@ -85,16 +85,16 @@ t_style-multiple_elements.adb:23:4: Error: Compound: Statement has less than 3 l
 t_style-multiple_elements.adb:23:26: Error: Spans: statement does not start line
 t_style-multiple_elements.adb:25:22: Error: Spans: statement does not start line
 t_style-multiple_elements.adb:26:22: Error: Spans: statement does not start line
-t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter specification
-t_style-parameter_order.adb:13:24: Found: No_Default_In: default IN mode used for parameter specification
-t_style-parameter_order.adb:23:18: Error: order_regular: parameter out of order for parameter specification
-t_style-parameter_order.adb:37:18: Error: order_regular: parameter out of order for parameter specification
-t_style-parameter_order.adb:64:7: Error: order_generic: parameter out of order for formal parameter declaration
-t_style-parameter_order.adb:65:7: Error: order_generic: parameter out of order for formal parameter declaration
-t_style-parameter_order.adb:66:7: Error: order_generic: parameter out of order for formal parameter declaration
-t_style-parameter_order.adb:67:45: Found: No_Default_In: default IN mode used for parameter specification
-t_style-parameter_order.adb:67:41: Error: order_regular: parameter out of order for parameter specification
-t_style-parameter_order.adb:68:45: Found: No_Default_In: default IN mode used for parameter specification
+t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter
+t_style-parameter_order.adb:13:24: Found: No_Default_In: default IN mode used for parameter
+t_style-parameter_order.adb:23:18: Error: order_regular: subprogram parameter out of order
+t_style-parameter_order.adb:37:18: Error: order_regular: subprogram parameter out of order
+t_style-parameter_order.adb:64:7: Error: order_generic: generic formal parameter out of order
+t_style-parameter_order.adb:65:7: Error: order_generic: generic formal parameter out of order
+t_style-parameter_order.adb:66:7: Error: order_generic: generic formal parameter out of order
+t_style-parameter_order.adb:67:45: Found: No_Default_In: default IN mode used for parameter
+t_style-parameter_order.adb:67:41: Error: order_regular: subprogram parameter out of order
+t_style-parameter_order.adb:68:45: Found: No_Default_In: default IN mode used for parameter
 t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
