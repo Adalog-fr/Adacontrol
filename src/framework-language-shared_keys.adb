@@ -77,7 +77,7 @@ package body Framework.Language.Shared_Keys is
    end Is_Applicable;
 
    ------------------------------
-   -- Get_Places_Set_Parameter --
+   -- Get_Places_Set_Modifiers --
    ------------------------------
 
    function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return  Places_Set is

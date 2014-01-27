@@ -4959,7 +4959,7 @@ not ``properly'' initialized, i.e. those that are not ``safely''
 initialized, those that have a useless initialization in their
 declaration, and those where the value is known to be used before
 having been assigned. The notion of variable includes the return
-object of an extended return statement (Ada 2005).
+object of an extended return statement (Ada 2005+).
 
 A variable (or @code{@b{out}} parameter) is considered safely
 initialized if there is an initialization expression in its
@@ -4995,9 +4995,9 @@ safely initialized before the first non-trivial statement, and before
 every (trivial) @code{return} statement.
 @item
 @code{variable} controls that local variables are safely initialized
-before the first non-trivial statement. If the modifier @code{return}
-is specified, only return objects of extended return statements  are
-controlled.
+before the first non-trivial statement. If the <extra> modifier
+@code{return} is specified, only return objects of extended return
+statements are controlled.
 @item
 @code{initialized_variable} controls variables that are safely
 initialized before the first non-trivial statement, but also have an
@@ -5018,17 +5018,23 @@ assigned to globally, i.e. assigning to some elements of an array, or
 some fields of a record, does not count as an initialization of the
 variable.
 
+Some variables are @i{not} controlled, unless the corresponding
+<extra> modifier is given:
+@itemize
+@item
 Variables declared immediately within a (generic) package
-specification or body are not checked, unless the modifier ``package''
-is specified (quite often, package state variables are initialized
-through calls to dedicated procedures).
-
-Normally, the rule does not control objects of an access types, or
-arrays whose components are of an access type, since these are always
-initialized by the compiler. Similarly, the rule does not control
-objects of a limited type, since global assignment is not available
-for them. The <extra> modifiers @code{access} and @code{limited} force
-the controlling of these two kinds of objects, respectively.
+specification or body, since in general, package state variables are
+initialized through calls to dedicated procedures. Use the ``package''
+modifier to control also package variables.
+@item
+Variables of an access types, or arrays whose components are of an
+access type, since these are always initialized by the compiler. Use
+the ``access'' modifier to control also variables of an access type.
+@item
+Variables of a limited type, since global assignment is not available
+for them. Use the ``limited'' modifier to control also variables of a
+limited type.
+@end itemize
 
 This rule can be given only once for each value of <target>. Without
 parameters, it is equivalent to giving all, without any <extra>.

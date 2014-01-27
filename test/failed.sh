@@ -10,13 +10,15 @@ fi
 	diff=`diff ${test_case} ../ref/${test_case}`
 	if [ "$diff" != "" ]; then
 	    while true ; do
-		echo -n "$test_case: [Diff, Interactive, Validate, Nothing, Quit]? "
+		echo -n "$test_case: [Diff, Edit, Interactive, Validate, Nothing, Quit]? "
 		read REP
 		case $REP in
 	            d | D )
-			diff ${test_case} ../ref/${test_case} 2>/dev/null;;
+			diff ../ref/${test_case} ${test_case}  2>/dev/null;;
+                    e | E )
+			emacs.bat ${test_case};;
 	            i | I )
-			"$WINMERGE" ${test_case} ../ref/${test_case} 2>/dev/null;;
+			"$WINMERGE" ../ref/${test_case} ${test_case} 2>/dev/null;;
 	            v | V )
 			cp  ${test_case} ../ref/${test_case}
 			break;;
