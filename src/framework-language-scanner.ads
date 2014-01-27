@@ -43,7 +43,7 @@ private package Framework.Language.Scanner is
                        Bad_Token, Bad_Integer, Bad_Float,
 
                        Left_Bracket, Right_Bracket, Left_Parenthesis, Right_Parenthesis,
-                       Left_Angle,   Right_Angle,
+                       Left_Angle,   Right_Angle,   Vertical_Bar,
                        Tick, Colon,  Semi_Colon, Comma, Period, Equal,
                        -- Modify Character_Token_Kind if you add to this list
 

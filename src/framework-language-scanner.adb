@@ -171,7 +171,7 @@ package body Framework.Language.Scanner is
    -- and forget to modify the following elements.
    Char_Tokens : constant Wide_String (Token_Kind'Pos (Character_Token_Kind'First) ..
                                        Token_Kind'Pos (Character_Token_Kind'Last))
-     := "{}()<>':;,.=";
+     := "{}()<>|':;,.=";
    Char_Token_Values : constant array (Char_Tokens'Range) of Token
      := ((Kind => Left_Bracket,      Position => Null_Location),
          (Kind => Right_Bracket,     Position => Null_Location),
@@ -179,6 +179,7 @@ package body Framework.Language.Scanner is
          (Kind => Right_Parenthesis, Position => Null_Location),
          (Kind => Left_Angle,        Position => Null_Location),
          (Kind => Right_Angle,       Position => Null_Location),
+         (Kind => Vertical_Bar,      Position => Null_Location),
          (Kind => Tick,              Position => Null_Location),
          (Kind => Colon,             Position => Null_Location),
          (Kind => Semi_Colon,        Position => Null_Location),
@@ -376,7 +377,7 @@ package body Framework.Language.Scanner is
 
       else
          case Cur_Char is
-            when '{' | '}' | '(' | ')' | '<' | '>' | ''' | ':' | ';' | ',' | '.' | '=' =>
+            when '{' | '}' | '(' | ')' | '<' | '>' | '|' | ''' | ':' | ';' | ',' | '.' | '=' =>
                The_Token := Char_Token_Values (Index (Char_Tokens, Cur_Char & ""));
                The_Token.Position := (Current_File, First_Line, First_Column);
                Next_Char;

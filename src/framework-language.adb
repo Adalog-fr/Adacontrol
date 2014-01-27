@@ -1359,10 +1359,27 @@ package body Framework.Language is
             Failure ("Get_Modifier_Set called when not in parameters");
          end if;
 
-         loop
-            Get_Modifier (Modifier, Present, Expected);
-            exit when not Present;
+         Get_Modifier (Modifier, Present, Expected);
+         while Present loop
             Result (Modifier) := True;
+            if No_Parameter then
+               -- separating '|' required
+               case Current_Token.Kind is
+                  when Vertical_Bar =>
+                     Next_Token;
+                     Get_Modifier (Modifier, Present, Expected);
+                     if not Present then
+                        Syntax_Error ("Keyword expected after '|'", Current_Token.Position);
+                     end if;
+                  when Name =>
+                     -- This branch not strictly necessary, but gives a more user-friendly message
+                        Syntax_Error ("'|' expected between keywords", Current_Token.Position);
+                  when others =>
+                     Present := False;
+               end case;
+            else
+               Get_Modifier (Modifier, Present, Expected);
+            end if;
          end loop;
 
          if No_Parameter then

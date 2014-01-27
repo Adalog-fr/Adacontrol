@@ -213,7 +213,7 @@ Overly_Nested_Control_Structures:
    check max_statement_nesting (all, 4);
 
 Parameters_Out_Of_Order:
-   check style (parameter_order, in access, in_out, out, defaulted_in);
+   check style (parameter_order, in | access, in_out, out, defaulted_in);
 
 Positional_Actuals_For_Defaulted_Generic_Parameters:
    check default_parameter (instantiations, all, positional);

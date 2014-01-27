@@ -258,7 +258,8 @@ package body Rules.Style is
       User_Message ("   Parameter (3): <block_size>");
 
       User_Message ("For parameter_order:");
-      Extended_Modes_Utilities.Help_On_Modifiers(Header => "   parameter (2..): list of");
+      Extended_Modes_Utilities.Help_On_Modifiers (Header => "   parameter (2..): list of",
+                                                  Footer => "(separated by '|')");
    end Help;
 
    -----------------

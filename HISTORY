@@ -78,6 +78,7 @@ Statements:
 Style 
   (Casing_Identifier, original): Check closing identifier
   Positional_Association: removed, now a subrule of Positional_Associations
+  Parameter_Order, Formal_Parameter_Order: modes are separated by "|".
 
 Use_Clauses
   Added subrules type, type_global, type_local.

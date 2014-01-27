@@ -7856,7 +7856,7 @@ This rules controls usage of various ``general'' Ada coding style.
 
 <casing_kw>   ::= uppercase | lowercase | titlecase | original
 <element_kw>  ::= [flexible] clause | declaration | statement
-<mode_list>   ::= <mode> @{<mode>@}
+<mode_list>   ::= <mode> @{| <mode>@}
 <mode>        ::= in   | defaulted_in | access   | in_out  | out |
                   type | procedure    | function | package
 <type_kw>     ::= integer | real | character | string
@@ -7983,7 +7983,7 @@ check style (exposed_literal, real, 0.0, 1.0);
  -- out parameters. In parameters are allowed last if they
  -- have defaults.
 check style (parameter_order,
-               in defaulted_in access,
+               in | defaulted_in | access,
                in_out,
                out
                defaulted_in);
@@ -7991,9 +7991,9 @@ check style (parameter_order,
  -- For generics, formal objects must come first, then formal
  -- types, then formal subprograms, then formal package:
 check style (formal_parameter_order,
-               in in_out,
+               in | in_out,
                type,
-               procedure function,
+               procedure | function,
                package);
 
 @end example
@@ -8297,8 +8297,8 @@ them.
 <control_kind> unit_pattern (Tagged_Type_Hierarchy);
 <control_kind> unit_pattern (Context_Clauses_Order @{, <clause_list>@});
 
-<clause_list> ::= <clause> @{<clause>@}
-<clause>      ::= with | use | use_type | pragma
+<clause_list>      ::= <clause> @{| <clause>@}
+<clause>           ::= with | use | use_type | pragma
 @end example
 
 @subsection Action
@@ -8329,7 +8329,8 @@ check unit_pattern (tagged_type_hierarchy);
 
 -- All with clauses must come first, then use and use type clauses
 -- (freely mixed), then pragmas
-check context_clauses_order (with, use use_type, pragma);
+check unit_pattern (context_clauses_order, with, use | use_type | use_all_type, pragma);
+
 @end example
 
 @node Units, Unnecessary_Use_Clause, Unit_Pattern, Rules reference
@@ -9774,6 +9775,18 @@ check parameter_associations (all, 1, call);
 
 Note that the new rule distinguishes between regular array aggregates
 and aggregates used for enumeration representation clauses.
+
+Modes of the subrules ``parameter_order'' and
+``formal_parameter_order'' are now separated by ``|''. With the
+previous syntax, forgetting a comma was changing the meaning of the
+rule without introducing a syntax error. Typically, change:
+@example
+check style (parameter_order, in defaulted_in, out in_out);
+@end example
+to:
+@example
+check style (parameter_order, in | defaulted_in, out | in_out);
+@end example
 
 @section Migrating from 1.14r9
 @subsection Local_Hiding

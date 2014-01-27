@@ -693,6 +693,7 @@ For parameter_order:
    parameter (2..): list of in        | defaulted_in | access  |
                             in_out    | out          | type    |
                             procedure | function     | package
+                            (separated by '|')
 ----
 Rule: TERMINATING_TASKS
 Control task termination.
