@@ -117,11 +117,11 @@ package body Rules.Instantiations is
       User_Message ("or those made with the indicated actual parameters.");
       User_Message ("Optionally, control is restricted to instantiations appearing at indicated locations");
       User_Message;
-      User_Message ("Parameter 1     : {<location>} <Generic name>");
-      User_Message ("Parameter 2 .. N: <Entity name> | <category> | <> | = (optional)");
-      Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>      :");
-      User_Message ("<category>      : ()      | access   | array | delta  | digits | mod |");
-      User_Message ("                  private |protected | range | record | tagged | task");
+      User_Message ("Parameter(1): {<location>} <Generic name>");
+      User_Message ("Parameter(2 .. N): <Entity name> | <category> | <> | = (optional)");
+      Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:");
+      User_Message ("<category>: ()      | access   | array | delta  | digits | mod |");
+      User_Message ("            private |protected | range | record | tagged | task");
    end Help;
 
 

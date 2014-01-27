@@ -148,10 +148,11 @@ package body Rules.Multiple_Assignments is
       User_Message ("Control repeated assignments in a sequence to a same variable, or sequences of assignments");
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
       User_Message;
-      Help_On_Flags ("Parameter (1) :");
+      Help_On_Flags ("Parameter(1):");
+      User_Message;
       User_Message ("For groupable:");
       User_Message ("Parameter(2..n): <criterion> <value>");
-      Help_On_Modifiers (Header => "<criterion> :");
+      Help_On_Modifiers (Header => "<criterion>:");
    end Help;
 
 

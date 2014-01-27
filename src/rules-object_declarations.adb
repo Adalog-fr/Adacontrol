@@ -107,9 +107,12 @@ package body Rules.Object_Declarations is
       User_Message ("Control allowed forms of object declarations");
       User_Message;
       Help_On_Flags ("Parameter(1):");
-      User_Message ("Parameter(2..)");
-      User_Message ("   for Type            : [constant|variable] <entity>");
-      User_Message ("   for Min_Integer_Span: [constant|variable] <value>");
+      User_Message;
+      User_Message ("for type:");
+      User_Message ("Parameter(2..N): [constant|variable] <entity>");
+      User_Message;
+      User_Message("for Min_Integer_Span:");
+      User_Message ("Parameter(2..N): [constant|variable] <value>");
    end Help;
 
    -----------------

@@ -63,27 +63,31 @@ Parameter(2..3): <bound> <value>
 Rule: CHARACTERS
 Controls source lines that contain specified kind of characters
 
-Parameter (s): control | not_iso_646 | trailing_space |
-               wide
-               (optional, default = all)
+Parameter(s): control | not_iso_646 | trailing_space |
+              wide
+              (optional, default = all)
 ----
 Rule: COMMENTS
 Control the content or placement of comments
 
 Parameter (1) pattern | position | terminating | unnamed_begin
+
 for pattern:
-   Parameter(2..): "<comment pattern>"
+Parameter(2..): "<comment pattern>"
+
 for position:
-   Parameter(2..3): [<bound>] <value>
+Parameter(2..3): [<bound>] <value>
       <bound>     :  min | max
                  (at least one parameter required)
+
 for terminating:
-   Parameter(2..): "<allowed pattern>" | begin | end
+Parameter(2..): "<allowed pattern>" | begin | end
+
 for unnamed_begin:
-   Parameter(2..): [<condition>] <unit>
-      <condition>: always | declaration | program_unit
-           <unit>: all  | procedure | function | entry | package |
-                   task
+Parameter(2..): [<condition>] <unit>
+<condition>: always | declaration | program_unit
+<unit>     : all  | procedure | function | entry | package |
+             task
 ----
 Rule: DECLARATIONS
 Control occurrences of Ada declarations
@@ -176,20 +180,22 @@ Rule: DEFAULT_PARAMETER
 Control subprogram calls or generic instantiations that use the default for a
 given defaulted parameter, or provide it, positionally or using any notation
 
-Parameter 1: <Subprogram or generic name> | calls | instantiations
-Parameter 2: <Formal parameter name> | all
-Parameter 3: used | positional | not_used
+Parameter(1): <Subprogram or generic name> | calls | instantiations
+Parameter(2): <Formal parameter name> | all
+Parameter(3): used | positional | not_used
 ----
 Rule: DEPENDENCIES
 Control units that depend on a set of allowed/forbidden units,
 or whose number of dependencies is not in the specified range
 
-Parameter(1)   : others        | with   | raw          |
-                 direct        | parent | public_child |
-                 private_child
+Parameter(1): others | with         | raw           | direct |
+              parent | public_child | private_child
+
 Subrules "public_child" and "private_child" have no parameters
+
 For subrules "others" and "with":
 Parameter(2..3): allowed (resp. forbidden) units
+
 For other subrules:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
@@ -223,47 +229,48 @@ Rule: EXCEPTION_PROPAGATION
 Control that certain kinds of subprograms, tasks, or declarations cannot propagate exceptions
 and that local exceptions cannot propagate out of scope
 
-Parameter 1     : [<level>,] interface       | parameter   |
-                             task            | declaration |
-                             local_exception
-                             (<level> is required for declaration)
-Parameter 2 .. N: for interface: <convention name>
-                  for parameter: <full name of parameters known to expect call-backs>
-                  for task: nothing
-                  for declaration: nothing
-                  for local_exception: nothing, no <level> allowed
+Parameter(1): [<level>,] interface   | parameter       | task |
+                         declaration | local_exception
+                         (<level> is required for declaration)
+Parameter(2 .. N): for interface: <convention name>
+                   for parameter: <full name of parameters known to expect call-backs>
+                   for task: nothing
+                   for declaration: nothing
+                   for local_exception: nothing, no <level> allowed
 ----
 Rule: EXPRESSIONS
 Control occurrences of Ada expressions
 
-Parameter (s): and                              | and_array                 |
-               and_binary                       | and_boolean               |
-               and_then                         | array_aggregate           |
-               array_partial_others             | array_non_static_range    |
-               array_others                     | array_range               |
-               case                             | complex_parameter         |
-               downward_conversion              | explicit_dereference      |
-               extendable_aggregate             | extension_aggregate       |
-               fixed_multiplying_op             | for_all                   |
-               for_some                         | if                        |
-               if_elsif                         | if_no_else                |
-               implicit_dereference             | in                        |
-               inconsistent_attribute_dimension | inherited_function_call   |
-               mixed_operators                  | not_in                    |
-               or                               | or_array                  |
-               or_binary                        | or_boolean                |
-               or_else                          | parameter_view_conversion |
-               prefixed_operator                | real_equality             |
-               record_aggregate                 | record_partial_others     |
-               record_others                    | static_membership         |
-               slice                            | type_conversion           |
-               unconverted_fixed_multiplying_op | underived_conversion      |
-               universal_range                  | unqualified_aggregate     |
-               upward_conversion                | xor                       |
-               xor_array                        | xor_binary                |
-               xor_boolean
+Parameter(s): and                              | and_array                 |
+              and_binary                       | and_boolean               |
+              and_then                         | array_aggregate           |
+              array_partial_others             | array_non_static_range    |
+              array_others                     | array_range               |
+              case                             | complex_parameter         |
+              downward_conversion              | explicit_dereference      |
+              extendable_aggregate             | extension_aggregate       |
+              fixed_multiplying_op             | for_all                   |
+              for_some                         | if                        |
+              if_elsif                         | if_no_else                |
+              implicit_dereference             | in                        |
+              inconsistent_attribute_dimension | inherited_function_call   |
+              mixed_operators                  | not_in                    |
+              or                               | or_array                  |
+              or_binary                        | or_boolean                |
+              or_else                          | parameter_view_conversion |
+              prefixed_operator                | real_equality             |
+              record_aggregate                 | record_partial_others     |
+              record_others                    | static_membership         |
+              slice                            | type_conversion           |
+              unconverted_fixed_multiplying_op | underived_conversion      |
+              universal_range                  | unqualified_aggregate     |
+              upward_conversion                | xor                       |
+              xor_array                        | xor_binary                |
+              xor_boolean
+
 For all *_conversion subrules:
     [[<source_category>] <target_category>] <subrule>
+
 For subrules inherited_function_call and prefixed_operator:
     [<result_category>] <subrule>
 Categories: <>     | ()      | range  | mod       | delta  |
@@ -276,8 +283,8 @@ more than one formal
 Parameter(s): [<condition>]  all        | variable | type |
                              subprogram | package
                              (optional, default = all)
- <condition>:  unlikely | possible | certain
-               (default = certain)
+<condition>: unlikely | possible | certain
+             (default = certain)
 ----
 Rule: GLOBAL_REFERENCES
 Control global (in a relative sense) variables referenced 
@@ -292,11 +299,13 @@ Rule: HEADER_COMMENTS
 Control that  each unit starts with at least indicated number of comment lines
 or matches the specified model
 
-Parameter (1): minimum | model
+Parameter(1): minimum | model
+
 For minimum:
-   Parameter (2) : <Required number of comment lines>
+Parameter(2): <Required number of comment lines>
+
 For model:
-   Parameter (2) : <model file>
+Parameter(2): <model file>
 ----
 Rule: IMPROPER_INITIALIZATION
 Control out parameters and local variables that are improperly initialized
@@ -311,13 +320,12 @@ Control generic instantiations of specified units, either all of them
 or those made with the indicated actual parameters.
 Optionally, control is restricted to instantiations appearing at indicated locations
 
-Parameter 1     : {<location>} <Generic name>
-Parameter 2 .. N: <Entity name> | <category> | <> | = (optional)
-<location>      : all        | block     | library | local  |
-                  nested     | own       | private | public |
-                  in_generic | task_body
-<category>      : ()      | access   | array | delta  | digits | mod |
-                  private |protected | range | record | tagged | task
+Parameter(1): {<location>} <Generic name>
+Parameter(2 .. N): <Entity name> | <category> | <> | = (optional)
+<location>: all | block   | library | local      | nested    |
+            own | private | public  | in_generic | task_body
+<category>: ()      | access   | array | delta  | digits | mod |
+            private |protected | range | record | tagged | task
 ----
 Rule: INSUFFICIENT_PARAMETERS
 Control calls where absence of named notation can lead to confusion
@@ -361,9 +369,9 @@ Parameter: <Max allowed length>
 Rule: MAX_NESTING
 Control scopes nested deeper than a given limit.
 
-Paramater (1):  all | generic | separate | task
-                (optional, default=all)
-Parameter (2): <maximum allowed nesting level>
+Parameter(1): all | generic | separate | task
+              (optional, default=all)
+Parameter(2): <maximum allowed nesting level>
 ----
 Rule: MAX_SIZE
 Control the maximum length of Ada statements
@@ -380,8 +388,8 @@ Parameter(2): maximum acceptable number of lines
 Rule: MAX_STATEMENT_NESTING
 Control max nesting of compound statements
 
-Parameter 1: block | case | if | loop | all
-Parameter 2: nesting depth
+Parameter(1): block | case | if | loop | all
+Parameter(2): nesting depth
 ----
 Rule: MOVABLE_ACCEPT_STATEMENTS
 Control (re)movable statements from `accept' bodies.
@@ -394,15 +402,16 @@ Rule: MULTIPLE_ASSIGNMENTS
 Control repeated assignments in a sequence to a same variable, or sequences of assignments
 to components of a structured variable that could be replaced by an aggregate
 
-Parameter (1) : repeated | groupable
+Parameter(1): repeated | groupable
+
 For groupable:
 Parameter(2..n): <criterion> <value>
-<criterion> : given | missing | ratio | total
+<criterion>: given | missing | ratio | total
 ----
 Rule: NAMING_CONVENTION
 Control the form of allowed (or forbidden) names in declarations
 
-Parameter 1: [root] [others] {<location>} {<category>}
+Parameter(1): [root] [others] {<location>} {<category>}
                  all                        | type                       |
                  discrete_type              | enumeration_type           |
                  integer_type               | signed_integer_type        |
@@ -449,11 +458,12 @@ Parameter 1: [root] [others] {<location>} {<category>}
                  function_renaming          | generic_renaming           |
                  generic_package_renaming   | generic_sp_renaming        |
                  generic_procedure_renaming | generic_function_renaming
-Parameter 2..N: [case_sensitive|case_insensitive] [not] "<name pattern>"
+Parameter(2..N): [case_sensitive|case_insensitive] [not] "<name pattern>"
 <location>: global | local | unit
 <category>: ()    | range     | mod    | delta  | digits  |
             array | record    | tagged | access | private |
             task  | protected
+
 Variables:
 Naming_Convention.Default_Case_Sensitivity: (Off, On) = Off
 ----
@@ -474,14 +484,14 @@ Parameter(s): <subprogram name>|new
 Rule: NOT_SELECTED_NAME
 Control usages of an Ada entities that do not use selected notation
 
-Parameter(1) : none | unit | compilation | family
+Parameter(1): none | unit | compilation | family
 Parameter(2..): <Entity name>
 ----
 Rule: NO_OPERATOR_USAGE
 Control integer types where no arithmetic operators are used
 
 Parameters: [<filter>] <observed>
-<filter>  :  not | ignore | report
+<filter>:  not | ignore | report
 <observed>:  logical | indexing
 ----
 Rule: OBJECT_DECLARATIONS
@@ -489,32 +499,38 @@ Control allowed forms of object declarations
 
 Parameter(1): type                | min_integer_span     |
               volatile_no_address | address_not_volatile
-Parameter(2..)
-   for Type            : [constant|variable] <entity>
-   for Min_Integer_Span: [constant|variable] <value>
+
+for type:
+Parameter(2..N): [constant|variable] <entity>
+
+for Min_Integer_Span:
+Parameter(2..N): [constant|variable] <value>
 ----
 Rule: PARAMETER_ALIASING
 Control subprogram or entry calls where the same variable is given
 for more than one [in] out parameter.
 If "with_in" is given, consider also in parameters
 
-Parameter 1: [with_in]  unlikely | possible | certain
+Parameter(1): [with_in] unlikely | possible | certain
                         (optional, default=certain)
 ----
 Rule: PARAMETER_DECLARATIONS
 Controls form and metrics of parameters of callable entities
 
-Parameter (1): all_parameters       | in_parameters         |
-               defaulted_parameters | out_parameters        |
-               in_out_parameters    | access_parameters     |
-               tagged_parameters    | class_wide_parameters |
-               single_out_parameter
+Parameter(1): all_parameters       | in_parameters         |
+              defaulted_parameters | out_parameters        |
+              in_out_parameters    | access_parameters     |
+              tagged_parameters    | class_wide_parameters |
+              single_out_parameter
+
 For all subrules except Single_Out_Parameter:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
    <bound>: min | max
+
 For Single_Out_Parameter:
   No value allowed
+
 Other parameters: function             | procedure             |
                   dispatching_function | dispatching_procedure |
                   protected_function   | protected_procedure   |
@@ -523,15 +539,15 @@ Other parameters: function             | procedure             |
 ----
 Rule: POSITIONAL_ASSOCIATIONS
 Control use of positional_association:
-   Parameter (1): all | all_positional | same_type
-   Parameter (2): <value>
-   Parameter (3): [not_operator] pragma                     | call            |
-                                 enumeration_representation | instantiation   |
-                                 discriminant               | array_aggregate |
-                                 record_aggregate
-                                 (default = all)
-   Parameter (4..): <entities>
-                    (entities not required to follow the rule)
+Parameter (1): all | all_positional | same_type
+Parameter (2): <value>
+Parameter (3): [not_operator] pragma                     | call            |
+                              enumeration_representation | instantiation   |
+                              discriminant               | array_aggregate |
+                              record_aggregate
+                              (default = all)
+Parameter (4..N): <entities>
+                 (entities not required to follow the rule)
 ----
 Rule: POTENTIALLY_BLOCKING_OPERATIONS
 Control calls to potentially blocking operations from protected operations
@@ -547,11 +563,12 @@ Rule: RECORD_DECLARATIONS
 Controls various parameters related to record types declarations
 
 Parameter(1): component
+
 For component:
-Parameter(2)  : <entity>|<category>
-  <category>  : ()      | access    | array | delta  | digits | mod |
-                private | protected | range | record | tagged | task
-Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)
+Parameter(2): <entity>|<category>
+<category>  : ()      | access    | array | delta  | digits | mod |
+              private | protected | range | record | tagged | task
+Parameter(3..N): [not] in_variant | packed | sized | initialized | aligned (optional)
 ----
 Rule: REDUCEABLE_SCOPE
 Control declarations that could be moved to an inner scope,
@@ -584,10 +601,10 @@ Categories: <>     | ()    | range   | mod    | delta     |
 Rule: RETURN_TYPE
 Control various forms of the type returned by functions
 
-Parameter(s):  class_wide                  | limited_class_wide  |
-               protected                   | task                |
-               constrained_array           | unconstrained_array |
-               unconstrained_discriminated | anonymous_access
+Parameter(s): class_wide                  | limited_class_wide  |
+              protected                   | task                |
+              constrained_array           | unconstrained_array |
+              unconstrained_discriminated | anonymous_access
 ----
 Rule: SIDE_EFFECT_PARAMETERS
 Control subprogram calls or generic instantiations that call
@@ -599,9 +616,9 @@ Rule: SILENT_EXCEPTIONS
 Control exception handlers that do not re-raise an exception 
 nor call a report procedure
 
-Parameter(s)   : <control-item> | <report-item>
-<control-item> : not | with   <exception> | <library unit> | others
- <report-item> : raise | explicit_raise | reraise |
+Parameter(s): <control-item> | <report-item>
+<control-item>: not | with   <exception> | <library unit> | others
+<report-item>: raise | explicit_raise | reraise |
                  return | requeue | <report procedure name>
 ----
 Rule: SIMPLIFIABLE_EXPRESSIONS
@@ -672,28 +689,34 @@ Parameter(1): casing_attribute       | casing_identifier |
               negative_condition     | no_closing_name   |
               numeric_literal        | parameter_order   |
               formal_parameter_order | renamed_entity
+
 For casing_*:
-   Parameter (2): uppercase | lowercase | titlecase | original
-                  (default = Original)
+Parameter(2): uppercase | lowercase | titlecase | original
+              (default = Original)
+
 For exposed_literal:
-   Parameter (2)  : integer | real | character | string
-   Parameter (3..): [max] <value> | declaration | constant | number      |
-                    var_init      | type        | pragma   | repr_clause |
-                    index         | exponent
-                    (optional)
+Parameter(2): integer | real | character | string
+Parameter(3..N): [max] <value> | declaration | constant | number      |
+                 var_init      | type        | pragma   | repr_clause |
+                 index         | exponent
+                 (optional)
+
 For multiple_elements:
-   Parameter (2..): [flexible] clause | declaration | statement
-                               (default = all)
+Parameter(2..N): [flexible] clause | declaration | statement
+                            (default = all)
+
 For no_closing_name:
-   Parameter (2): maximum number of lines allowed
+Parameter(2): maximum number of lines allowed
+
 For numeric_literal:
-   Parameter (2): [not] <base>
-   Parameter (3): <block_size>
+Parameter(2): [not] <base>
+Parameter(3): <block_size>
+
 For parameter_order:
-   parameter (2..): list of in        | defaulted_in | access  |
-                            in_out    | out          | type    |
-                            procedure | function     | package
-                            (separated by '|')
+parameter(3..N): list of in        | defaulted_in | access  |
+                         in_out    | out          | type    |
+                         procedure | function     | package
+                         (separated by '|')
 ----
 Rule: TERMINATING_TASKS
 Control task termination.
@@ -708,11 +731,11 @@ Parameter(1): <pattern>
 Rule: TYPE_USAGE
 Controls usage of types at various places
 
-Parameter(1)  : <attribute> | index
-Parameter(2)  : <entity>|<category>
-Parameter(3..): [not]  representation | pack | size |
-                       component_size
-                       (optional)
+Parameter(1): <attribute> | index
+Parameter(2): <entity>|<category>
+Parameter(3..N): [not]  representation | pack | size |
+                        component_size
+                        (optional)
 ----
 Rule: UNCHECKABLE
 Control occurrences of uncheckable constructs in other rules
@@ -728,30 +751,32 @@ Parameter(s): unreferenced | unchecked
 Rule: UNIT_PATTERN
 Controls various usage patterns of units and entities in them
 
-Parameter (1): single_tagged_type    | tagged_type_hierarchy |
-               context_clauses_order | declarations_order
+Parameter(1): single_tagged_type    | tagged_type_hierarchy |
+              context_clauses_order | declarations_order
+
 For Context_Clauses_Order:
-   parameter (2..): list of with         | use    | use_type |
-                            use_all_type | pragma
+parameter(2..N): list of with         | use    | use_type |
+                         use_all_type | pragma
+
 For Declarations_Order:
-   parameter (2): package_public | package_private | package_body |
-                  subprogram
-   parameter (3..): list of use                   | use_type                 |
-                            use_all_type          | number                   |
-                            constant              | variable                 |
-                            private_type          | full_type                |
-                            subtype               | subprogram_spec          |
-                            package_spec          | generic_subprogram_spec  |
-                            generic_package_spec  | task_spec                |
-                            protected_spec        | subprogram_body          |
-                            package_body          | generic_subprogram_body  |
-                            generic_package_body  | task_body                |
-                            protected_body        | object_renaming          |
-                            subprogram_renaming   | package_renaming         |
-                            exception_renaming    | subprogram_instantiation |
-                            package_instantiation | exception                |
-                            others
-                            (separated by '|')
+parameter(2): package_public | package_private | package_body |
+              subprogram
+parameter(3..N): list of use                   | use_type                 |
+                         use_all_type          | number                   |
+                         constant              | variable                 |
+                         private_type          | full_type                |
+                         subtype               | subprogram_spec          |
+                         package_spec          | generic_subprogram_spec  |
+                         generic_package_spec  | task_spec                |
+                         protected_spec        | subprogram_body          |
+                         package_body          | generic_subprogram_body  |
+                         generic_package_body  | task_body                |
+                         protected_body        | object_renaming          |
+                         subprogram_renaming   | package_renaming         |
+                         exception_renaming    | subprogram_instantiation |
+                         package_instantiation | exception                |
+                         others
+                         (separated by '|')
 ----
 Rule: UNNECESSARY_USE_CLAUSE
 Control use clauses that can be removed, moved, or changed to use type.
@@ -797,13 +822,14 @@ any package/type other than the ones passed as parameters (if any)
 Parameter(1):  local       | global | type | type_local |
                type_global
                (optional)
-Parameter(2..): <Allowed package/type name>
+Parameter(2..N): <Allowed package/type name>
 ----
 Rule: WITH_CLAUSES
 Control "with" clauses that use multiple names, can be moved to a more reduced scope,
 or are implicitely inherited from a parent unit
 
 Parameter(s): multiple_names | reduceable | inherited
+
 Variables:
 With_Clauses.Check_Private_With: (Off, On) = On
 Usage: adactl [-deEirsTuvwx]

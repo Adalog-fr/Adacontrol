@@ -91,6 +91,7 @@ package body Rules.With_Clauses is
       User_Message ("or are implicitely inherited from a parent unit");
       User_Message;
       Help_On_Flags ("Parameter(s):");
+      User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Check_Private_With");
    end Help;

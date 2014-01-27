@@ -257,18 +257,22 @@ package body Rules.Comments is
       User_Message ("Control the content or placement of comments");
       User_Message;
       Subrules_Flags_Utilities.Help_On_Flags ("Parameter (1)");
+      User_Message;
       User_Message ("for pattern:");
-      User_Message ("   Parameter(2..): ""<comment pattern>""");
+      User_Message ("Parameter(2..): ""<comment pattern>""");
+      User_Message;
       User_Message ("for position:");
-      User_Message ("   Parameter(2..3): [<bound>] <value>");
+      User_Message ("Parameter(2..3): [<bound>] <value>");
       Help_On_Bounds (Header => "      <bound>     : ");
       User_Message ("                 (at least one parameter required)");
+      User_Message;
       User_Message ("for terminating:");
-      User_Message ("   Parameter(2..): ""<allowed pattern>"" | begin | end");
+      User_Message ("Parameter(2..): ""<allowed pattern>"" | begin | end");
+      User_Message;
       User_Message ("for unnamed_begin:");
-      User_Message ("   Parameter(2..): [<condition>] <unit>");
-      Decl_Conditions_Utilities.Help_On_Modifiers (Header => "      <condition>:");
-      Units_Flags_Utilities.Help_On_Flags         (Header => "           <unit>:");
+      User_Message ("Parameter(2..): [<condition>] <unit>");
+      Decl_Conditions_Utilities.Help_On_Modifiers (Header => "<condition>:");
+      Units_Flags_Utilities.Help_On_Flags         (Header => "<unit>     :");
    end Help;
 
    -------------

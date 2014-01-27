@@ -94,7 +94,7 @@ package body Rules.Return_Type is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control various forms of the type returned by functions");
       User_Message;
-      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s): ");
+      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s):");
    end Help;
 
 

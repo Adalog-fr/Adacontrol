@@ -231,11 +231,12 @@ package body Rules.Naming_Convention is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control the form of allowed (or forbidden) names in declarations");
       User_Message;
-      User_Message  ("Parameter 1: [root] [others] {<location>} {<category>}");
+      User_Message  ("Parameter(1): [root] [others] {<location>} {<category>}");
       Help_On_Flags ("                ");
-      User_Message  ("Parameter 2..N: [case_sensitive|case_insensitive] [not] ""<name pattern>""");
+      User_Message  ("Parameter(2..N): [case_sensitive|case_insensitive] [not] ""<name pattern>""");
       Visibility_Utilities.Help_On_Modifiers  (Header => "<location>:");
       Categories_Utilities.Help_On_Modifiers (Header => "<category>:", Expected => Naming_Categories);
+      User_Message;
       User_Message  ("Variables:");
       Help_On_Variable (Rule_Id & ".Default_Case_Sensitivity");
    end Help;

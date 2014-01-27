@@ -96,8 +96,8 @@ package body Rules.Max_Nesting is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control scopes nested deeper than a given limit.");
       User_Message;
-      Help_On_Flags (Header => "Paramater (1): ", Footer => "(optional, default=all)", Extra_Value => "");
-      User_Message ("Parameter (2): <maximum allowed nesting level>");
+      Help_On_Flags (Header => "Parameter(1):", Footer => "(optional, default=all)", Extra_Value => "");
+      User_Message ("Parameter(2): <maximum allowed nesting level>");
    end Help;
 
    -----------------

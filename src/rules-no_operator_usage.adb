@@ -102,7 +102,7 @@ package body Rules.No_Operator_Usage is
       User_Message ("Control integer types where no arithmetic operators are used");
       User_Message;
       User_Message ("Parameters: [<filter>] <observed>");
-      Help_On_Modifiers ("<filter>  : ", Extra_Value => "");
+      Help_On_Modifiers ("<filter>: ", Extra_Value => "");
       Help_On_Flags ("<observed>: ");
    end Help;
 

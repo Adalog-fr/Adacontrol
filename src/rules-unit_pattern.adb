@@ -147,13 +147,15 @@ package body Rules.Unit_Pattern is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Controls various usage patterns of units and entities in them");
       User_Message;
-      Help_On_Flags ("Parameter (1):");
+      Help_On_Flags ("Parameter(1):");
+      User_Message;
       User_Message ("For Context_Clauses_Order:");
-      Context_Clause_Element_Utilities.Help_On_Modifiers(Header => "   parameter (2..): list of");
+      Context_Clause_Element_Utilities.Help_On_Modifiers(Header => "parameter(2..N): list of");
+      User_Message;
       User_Message ("For Declarations_Order:");
-      Parts_Flags_Utilities.Help_On_Flags ("   parameter (2):");
-      Declarations_Group_Utilities.Help_On_Modifiers (Header => "   parameter (3..): list of",
-                                                      Footer =>  "(separated by '|')");
+      Parts_Flags_Utilities.Help_On_Flags ("parameter(2):");
+      Declarations_Group_Utilities.Help_On_Modifiers (Header => "parameter(3..N): list of",
+                                                      Footer => "(separated by '|')");
    end Help;
 
    -----------------

@@ -80,7 +80,7 @@ package body Rules.Use_Clauses is
       User_Message ("any package/type other than the ones passed as parameters (if any)");
       User_Message;
       Help_On_Flags ("Parameter(1): ", Extra_Value => "", Footer => "(optional)");
-      User_Message ("Parameter(2..): <Allowed package/type name>");
+      User_Message ("Parameter(2..N): <Allowed package/type name>");
    end Help;
 
    -----------------

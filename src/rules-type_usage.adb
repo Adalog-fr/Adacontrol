@@ -85,9 +85,9 @@ package body Rules.Type_Usage is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Controls usage of types at various places");
       User_Message;
-      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)  :", Extra_Value => "<attribute>");
-      User_Message ("Parameter(2)  : <entity>|<category>");
-      Aspects_Utilities.Help_On_Flags (Header => "Parameter(3..): [not] ", Footer =>"(optional)");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):", Extra_Value => "<attribute>");
+      User_Message ("Parameter(2): <entity>|<category>");
+      Aspects_Utilities.Help_On_Flags (Header => "Parameter(3..N): [not] ", Footer =>"(optional)");
    end Help;
 
    -----------------

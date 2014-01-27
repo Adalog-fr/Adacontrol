@@ -236,29 +236,30 @@ package body Rules.Style is
       User_Message ("Control various Ada style issues");
       User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
-
+      User_Message;
       User_Message ("For casing_*:");
-      Casing_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2):",
+      Casing_Flag_Utilities.Help_On_Flags (Header => "Parameter(2):",
                                            Footer => "(default = Original)");
-
+      User_Message;
       User_Message ("For exposed_literal:");
-      Literal_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2)  :");
-      Place_Flag_Utilities.Help_On_Flags (Header     => "   Parameter (3..):",
+      Literal_Flag_Utilities.Help_On_Flags (Header => "Parameter(2):");
+      Place_Flag_Utilities.Help_On_Flags (Header     => "Parameter(3..N):",
                                           Footer     => "(optional)",
                                           Extra_Value => "[max] <value>");
+      User_Message;
       User_Message ("For multiple_elements:");
-      Multiple_Flag_Utilities.Help_On_Flags (Header => "   Parameter (2..): [flexible]",
+      Multiple_Flag_Utilities.Help_On_Flags (Header => "Parameter(2..N): [flexible]",
                                              Footer => "(default = all)");
-
+      User_Message;
       User_Message ("For no_closing_name:");
-      User_Message ("   Parameter (2): maximum number of lines allowed");
-
+      User_Message ("Parameter(2): maximum number of lines allowed");
+      User_Message;
       User_Message ("For numeric_literal:");
-      User_Message ("   Parameter (2): [not] <base>");
-      User_Message ("   Parameter (3): <block_size>");
-
+      User_Message ("Parameter(2): [not] <base>");
+      User_Message ("Parameter(3): <block_size>");
+      User_Message;
       User_Message ("For parameter_order:");
-      Extended_Modes_Utilities.Help_On_Modifiers (Header => "   parameter (2..): list of",
+      Extended_Modes_Utilities.Help_On_Modifiers (Header => "parameter(3..N): list of",
                                                   Footer => "(separated by '|')");
    end Help;
 

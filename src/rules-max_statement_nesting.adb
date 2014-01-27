@@ -74,8 +74,8 @@ package body Rules.Max_Statement_Nesting is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control max nesting of compound statements");
       User_Message;
-      Help_On_Flags ("Parameter 1:");
-      User_Message  ("Parameter 2: nesting depth");
+      Help_On_Flags ("Parameter(1):");
+      User_Message  ("Parameter(2): nesting depth");
    end Help;
 
    -----------------

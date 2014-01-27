@@ -70,7 +70,7 @@ package body Rules.Not_Selected_Name is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control usages of an Ada entities that do not use selected notation");
       User_Message;
-      Help_On_Flags ("Parameter(1) :");
+      Help_On_Flags ("Parameter(1):");
       User_Message ("Parameter(2..): <Entity name>");
    end Help;
 

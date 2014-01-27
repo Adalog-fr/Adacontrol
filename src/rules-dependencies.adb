@@ -96,10 +96,13 @@ package body Rules.Dependencies is
       User_Message ("Control units that depend on a set of allowed/forbidden units,");
       User_Message ("or whose number of dependencies is not in the specified range");
       User_Message;
-      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1)   :");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
+      User_Message;
       User_Message ("Subrules ""public_child"" and ""private_child"" have no parameters");
+      User_Message;
       User_Message ("For subrules ""others"" and ""with"":");
       User_Message ("Parameter(2..3): allowed (resp. forbidden) units");
+      User_Message;
       User_Message ("For other subrules:");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");

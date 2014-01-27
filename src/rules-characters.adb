@@ -77,7 +77,7 @@ package body Rules.Characters is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Controls source lines that contain specified kind of characters");
       User_Message;
-      Help_On_Flags ("Parameter (s):",
+      Help_On_Flags ("Parameter(s):",
                      Footer => "(optional, default = all)");
    end Help;
 

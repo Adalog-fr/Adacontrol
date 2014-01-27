@@ -101,7 +101,7 @@ package body Rules.Generic_Aliasing is
       User_Message ("Control instantiations where the same actual is given for");
       User_Message ("more than one formal");
       Help_On_Flags     (Header => "Parameter(s): [<condition>] ", Footer => "(optional, default = all)");
-      Help_On_Modifiers (Header => " <condition>: ", Footer => "(default = certain)");
+      Help_On_Modifiers (Header => "<condition>:", Footer => "(default = certain)");
    end Help;
 
    -----------------

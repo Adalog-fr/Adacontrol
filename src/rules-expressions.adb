@@ -123,9 +123,11 @@ package body Rules.Expressions is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of Ada expressions");
       User_Message;
-      Help_On_Flags (Header => "Parameter (s):");
+      Help_On_Flags (Header => "Parameter(s):");
+      User_Message;
       User_Message ("For all *_conversion subrules:");
       User_Message ("    [[<source_category>] <target_category>] <subrule>");
+      User_Message;
       User_Message ("For subrules inherited_function_call and prefixed_operator:");
       User_Message ("    [<result_category>] <subrule>");
       Help_On_Modifiers (Header => "Categories:", Expected => Expected_Categories);
