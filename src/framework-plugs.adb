@@ -2,11 +2,11 @@
 --  Framework.Plugs - Package body                                  --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Controller  is  free software;  you can redistribute  it and/or --
---  modify  it under  terms of  the GNU  General Public  License as --
---  published by the Free Software Foundation; either version 2, or --
---  (at your  option) any later version.  This  unit is distributed --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2014.         --
+--  The Ada Controller is  free software; you can  redistribute  it --
+--  and/or modify it under  terms of the GNU General Public License --
+--  as published by the Free Software Foundation; either version 2, --
+--  or (at your option) any later version. This unit is distributed --
 --  in the hope  that it will be useful,  but WITHOUT ANY WARRANTY; --
 --  without even the implied warranty of MERCHANTABILITY or FITNESS --
 --  FOR A  PARTICULAR PURPOSE.  See the GNU  General Public License --
@@ -112,13 +112,13 @@ package body Framework.Plugs is
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
    begin
-      Rules.Max_Blank_Lines.    Enter_Unit   (Unit);
-      Rules.Dependencies.       Enter_Unit   (Unit);
-      Rules.Declarations.       Process_Unit (Unit);
-      Rules.Statements.         Enter_Unit   (Unit);
-      Rules.Unit_Pattern.       Process_Unit (Unit);
-      Rules.Units.              Process_Unit (Unit);
-      Rules.Unsafe_Elaboration. Process_Unit (Unit);
+      Rules.Max_Blank_Lines.    Enter_Unit               (Unit);
+      Rules.Dependencies.       Enter_Unit               (Unit);
+      Rules.Declarations.       Process_Unit             (Unit);
+      Rules.Statements.         Enter_Unit               (Unit);
+      Rules.Unit_Pattern.       Process_Compilation_Unit (Unit);
+      Rules.Units.              Process_Unit             (Unit);
+      Rules.Unsafe_Elaboration. Process_Unit             (Unit);
    end Enter_Unit;
 
 
@@ -315,6 +315,7 @@ package body Framework.Plugs is
                   Rules.Statements.               Process_Function_Body        (Element);
                   Rules.Style.                    Process_Construct            (Element);
                   Rules.Style.                    Process_Declaration          (Element);
+                  Rules.Unit_Pattern.             Process_Program_Unit         (Element);
                   Rules.Usage.                    Process_Declaration          (Element);
 
                when A_Procedure_Body_Declaration =>
@@ -326,6 +327,7 @@ package body Framework.Plugs is
                   Rules.Parameter_Declarations.  Process_Declaration    (Element);
                   Rules.Style.                   Process_Construct      (Element);
                   Rules.Style.                   Process_Declaration    (Element);
+                  Rules.Unit_Pattern.            Process_Program_Unit   (Element);
                   Rules.Usage.                   Process_Declaration    (Element);
 
                when An_Entry_Body_Declaration =>
@@ -336,9 +338,15 @@ package body Framework.Plugs is
                   Rules.Max_Size.                Process_Element           (Element);
                   Rules.Style.                   Process_Construct         (Element);
                   Rules.Style.                   Process_Declaration       (Element);
+                  Rules.Unit_Pattern.            Process_Program_Unit      (Element);
 
-               when A_Package_Declaration
-                 | A_Task_Type_Declaration
+               when A_Package_Declaration =>
+                  Rules.Max_Size.     Process_Element      (Element);
+                  Rules.Style.        Process_Construct    (Element);
+                  Rules.Unit_Pattern. Process_Program_Unit (Element);
+                  Rules.Usage.        Process_Declaration  (Element);
+
+               when A_Task_Type_Declaration
                  | A_Protected_Type_Declaration
                   =>
                   Rules.Max_Size. Process_Element     (Element);
@@ -349,13 +357,15 @@ package body Framework.Plugs is
                   Rules.Comments.                Process_Program_Unit (Element);
                   Rules.Improper_Initialization. Process_Structure    (Element);
                   Rules.Max_Size.                Process_Element      (Element);
+                  Rules.Unit_Pattern.            Process_Program_Unit (Element);
                   Rules.Style.                   Process_Construct    (Element);
 
                when A_Generic_Package_Declaration =>
-                  Rules.Max_Size. Process_Element     (Element);
-                  Rules.Style.    Process_Construct   (Element);
-                  Rules.Style.    Process_Declaration (Element);
-                  Rules.Usage.    Process_Declaration (Element);
+                  Rules.Max_Size.     Process_Element      (Element);
+                  Rules.Style.        Process_Construct    (Element);
+                  Rules.Style.        Process_Declaration  (Element);
+                  Rules.Unit_Pattern. Process_Program_Unit (Element);
+                  Rules.Usage.        Process_Declaration  (Element);
 
                when A_Protected_Body_Declaration =>
                   Rules.Max_Size.                       Process_Element        (Element);

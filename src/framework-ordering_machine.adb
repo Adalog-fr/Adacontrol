@@ -104,4 +104,13 @@ package body Framework.Ordering_Machine is
       Machine.Current_State := New_State;
    end Set_State;
 
+   -------------------
+   -- Current_State --
+   -------------------
+
+   function Current_State (Machine : Instance) return Positive is
+   begin
+      return Integer (Machine.Current_State);
+   end Current_State;
+
 end Framework.Ordering_Machine;

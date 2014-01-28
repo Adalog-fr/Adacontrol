@@ -66,6 +66,8 @@ package Framework.Ordering_Machine is
    function Is_Allowed (Machine : Instance) return Boolean;
    -- Returns True if Machine is not in the Not_Allowed state.
 
+   function Current_State (Machine : Instance) return Positive;
+
 private
    type States_Index_Base is range 0 .. Max_Controls_Set;
    -- Absolute limit for the number of possible states

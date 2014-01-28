@@ -8288,17 +8288,35 @@ will find no file named ``none''!
 
 @node Unit_Pattern, Units, Uncheckable, Rules reference
 @section Unit_Pattern
-This rule controls various usage patterns of program units and elements declared in
-them.
+This rule controls various usage patterns of program units and
+elements declared in them.
 
 @subsection Syntax
 @example
 <control_kind> unit_pattern (Single_Tagged_Type);
 <control_kind> unit_pattern (Tagged_Type_Hierarchy);
 <control_kind> unit_pattern (Context_Clauses_Order @{, <clause_list>@});
+<control_kind> unit_pattern (Declarations_Order, <target>, @{, <declaration_list>@});
 
 <clause_list>      ::= <clause> @{| <clause>@}
 <clause>           ::= with | use | use_type | pragma
+<target>           ::= package_public | package_private | package_body | subprogram
+<declaration_list> ::= <declaration> @{| <declaration>@}
+<declaration>      ::= use                   | use_type                 |
+                       use_all_type          | number                   |
+                       constant              | variable                 |
+                       private_type          | full_type                |
+                       subtype               | subprogram_spec          |
+                       package_spec          | generic_subprogram_spec  |
+                       generic_package_spec  | task_spec                |
+                       protected_spec        | subprogram_body          |
+                       package_body          | generic_subprogram_body  |
+                       generic_package_body  | task_body                |
+                       protected_body        | object_renaming          |
+                       subprogram_renaming   | package_renaming         |
+                       exception_renaming    | subprogram_instantiation |
+                       package_instantiation | exception                |
+                       others
 @end example
 
 @subsection Action
@@ -8309,17 +8327,39 @@ The checked pattern depends on the given subrule:
 declared in any package.
 @item
 ``tagged_type_hierarchy'' controls that tagged types follow packages
-hierarchy, i.e. tjat the parent of a type extension (derivation of a tagged
+hierarchy, i.e. that the parent of a type extension (derivation of a tagged
 type) is declared in the parent unit of the one that declared the
 derivation.
 @item
 ``context_clauses_order'' controls the order of context clauses (and
-pragmas) given on top of the unit.  Each parameter of the rule
-consists in one or several of the <clause> keywords, and describes, in
-order, which kind of parameter is allowed. Note that ``use_type''
-covers the regular @code{@b{use type}} clause as well as the Ada 2012
-@code{@b{use all type}} clause. All <clause>s not specified
-explicitely are allowed after the ones that are specified. See example
+pragmas) given on top of the unit. Each parameter of the rule consists
+in one or several of the <clause> keywords, and describes, in order,
+which kind of clause is allowed. Note that ``use_type'' covers only
+the regular @code{@b{use type}} clause, specify also ``use_all_type''
+to include the Ada 2012 @code{@b{use all type}} clause as well. Note
+that all <clause>s not specified explicitely have no place, and thus
+are not allowed at all.
+@item
+``declarations_order'' controls the order of declarations (and use clauses)
+given in various parts, depending on the second parameter:
+@itemize
+@item
+``package_public'' controls elements in the visible part of a package specification;
+@item
+``package_private'' controls elements in the private part of a package
+specification;
+@item
+``package_body'' controls elements in the body of a package;
+@item
+``subprogram'' controls elements in the body of subprograms
+(procedures and functions) and entries.
+@end itemize
+Each parameter of the rule consists in one or several of the
+<declaration> keywords, and describes, in order, which kind of
+declaration is allowed. Note that all <declaration>s not specified
+explicitely have no place, and thus are not allowed at all, unless
+``others'' is given as the last parameter, in which case it covers all
+elements not part of any of the preceding parameters. See example
 below.
 @end itemize
 Ex:
@@ -8331,7 +8371,34 @@ check unit_pattern (tagged_type_hierarchy);
 -- (freely mixed), then pragmas
 check unit_pattern (context_clauses_order, with, use | use_type | use_all_type, pragma);
 
+-- In the public part of a package, declare constants and named numbers first,
+-- then private types, then any of regular types, constants, and variables, then
+-- subprograms specifications (including generics and instantiations), then anything else:
+check unit_pattern (declarations_order, package_public,
+   number | constant,
+   private_type,
+   full_type | constant | variable,
+   subprogram_spec | generic_subprogram_spec | subprogram_instantiation,
+   others);
 @end example
+
+@subsection Tips
+For ``context_clauses_order'' and ``declarations_order'', elements
+given as part of the same parameter (i.e. with a vertical bar between
+them) can be freely mixed, then followed by any of the elements of the
+next parameter, etc. An element may appear several times in different
+parameters. If the last parameter is ``others'', any element not
+mentionned at all is allowed after the ones for which you specify an
+order; this way, it is possible to specify an order for just some
+elements, and then don't care for the rest.
+
+Expression functions and null procedures are classified as
+``subprogram_spec'' unless they are the completion of an explicit
+specification, in which case they are classified as
+``subprogram_body''.
+
+If you don't want a declaration to appear at all, you can also use the
+rule ``declarations''. @xref{Declarations}.
 
 @node Units, Unnecessary_Use_Clause, Unit_Pattern, Rules reference
 @section Units

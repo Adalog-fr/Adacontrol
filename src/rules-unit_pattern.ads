@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Rules.Unit_Pattern - Package specification                      --
 --                                                                  --
---  This software  is (c) Adalog/Alstom  2004-2013.                 --
+--  This software  is (c) Adalog/Alstom  2004-2014.                 --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -37,5 +37,6 @@ package Rules.Unit_Pattern is
    Rule_Id : constant Wide_String := "UNIT_PATTERN";
 
    procedure Process_Type_Declaration (Declaration : in Asis.Declaration);
-   procedure Process_Unit             (Unit        : in Asis.Compilation_Unit);
+   procedure Process_Compilation_Unit (Unit        : in Asis.Compilation_Unit);
+   procedure Process_Program_Unit     (Unit        : in Asis.Declaration);
 end Rules.Unit_Pattern;

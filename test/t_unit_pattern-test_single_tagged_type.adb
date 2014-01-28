@@ -14,16 +14,17 @@ procedure Test_Single_Tagged_Type is
       type Tag7 is new Tag5 with null record;  -- Single_Tagged_Type, Tagged_Type_Hierarchy
    end Pack2;
 
-   package body Pack2 is
-      type Tag8 is tagged null record;         -- Single_Tagged_Type
-      type Tag9 is new Tag4 with null record;  -- Single_Tagged_Type, Tagged_Type_Hierarchy
-   end Pack2;
-
    package Pack3 is
       type Tag10 is new Pack2.Tag4 with null record;  -- Tagged_Type_Hierarchy
       type Tag11 is new Pack2.Tag4 with null record;  -- Single_Tagged_Type, Tagged_Type_Hierarchy
       type Tag12 is new Tag10 with null record;       -- Single_Tagged_Type, Tagged_Type_Hierarchy
    end Pack3;
+
+   package body Pack2 is
+      type Tag8 is tagged null record;         -- Single_Tagged_Type
+      type Tag9 is new Tag4 with null record;  -- Single_Tagged_Type, Tagged_Type_Hierarchy
+   end Pack2;
+
 begin
    null;
 end;
