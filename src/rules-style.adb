@@ -79,8 +79,8 @@ package body Rules.Style is
    -- See declaration of Casing_Names in the private part of the specification
    package Casing_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Casing_Names,
                                                                            Prefix => "Ca_" );
-   Casing_Policy : array (Casing_Styles) of Casing_Names;
-   -- We use a simple variable here rather than going through the context,
+   Casing_Policy : array (Casing_Styles) of Casing_Set := (others => (others => False));
+   -- We use a simple variable here rather than storing into the context,
    -- because the rule can be given only once, and efficiency is a concern
    -- (the rule is called on every identifier).
 
@@ -238,8 +238,7 @@ package body Rules.Style is
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
       User_Message;
       User_Message ("For casing_*:");
-      Casing_Flag_Utilities.Help_On_Flags (Header => "Parameter(2):",
-                                           Footer => "(default = Original)");
+      Casing_Flag_Utilities.Help_On_Flags (Header => "Parameter(2..N):");
       User_Message;
       User_Message ("For exposed_literal:");
       Literal_Flag_Utilities.Help_On_Flags (Header => "Parameter(2):");
@@ -300,10 +299,13 @@ package body Rules.Style is
             when Casing_Styles =>
                Associate (Contexts, Value (Image (Subrule, Lower_Case)), Basic.New_Context (Ctl_Kind, Ctl_Label));
                if Parameter_Exists then
-                  Casing_Policy (Subrule) := Get_Flag_Parameter (Allow_Any => False);
-                  if Casing_Policy (Subrule) = Ca_Original and Subrule /= St_Casing_Identifier then
-                     Parameter_Error (Rule_Id, """Original"" allowed only for identifiers");
-                  end if;
+                  loop
+                     Casing_Policy (Subrule) (Get_Flag_Parameter (Allow_Any => False)) := True;
+                     if Casing_Policy (Subrule) (Ca_Original) and Subrule /= St_Casing_Identifier then
+                        Parameter_Error (Rule_Id, """Original"" allowed only for identifiers");
+                     end if;
+                     exit when not Parameter_Exists;
+                  end loop;
                else
                   Parameter_Error (Rule_Id, "missing indication of casing policy");
                end if;
@@ -516,19 +518,19 @@ package body Rules.Style is
 
          -- Casing_Attribute
          Associate (Contexts, Value (Image (St_Casing_Attribute)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Attribute) := Ca_Titlecase;
+         Casing_Policy (St_Casing_Attribute) := (Ca_Titlecase => True, others => False);
 
          -- Casing_Keyword
          Associate (Contexts, Value (Image (St_Casing_Keyword)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Keyword) := Ca_Lowercase;
+         Casing_Policy (St_Casing_Keyword) := (Ca_Lowercase => True, others => False);
 
          -- Casing_Identifier
          Associate (Contexts, Value (Image (St_Casing_Identifier)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Identifier) := Ca_Original;
+         Casing_Policy (St_Casing_Identifier) := (Ca_Original => True, others => False);
 
          -- Casing_Pragma
          Associate (Contexts, Value (Image (St_Casing_Pragma)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Identifier) := Ca_Titlecase;
+         Casing_Policy (St_Casing_Identifier) := (Ca_Titlecase => True, others => False);
 
          -- Compound_Statement
          Associate (Contexts, Value (Image (St_Compound_Statement)), Basic.New_Context (Ctl_Kind, Ctl_Label));
@@ -606,6 +608,7 @@ package body Rules.Style is
             Integer_Count     := 0;
             Integer_Max_Value := Uninitialized;
             String_Count      := 0;
+            Casing_Policy     := (others => (others => False));
             Permitted_Places  := (others => (others => False));
             Flexible_Clause   := False;
             Reset (Parameter_Ordering);
@@ -661,6 +664,49 @@ package body Rules.Style is
       return Association (Contexts, Image (Subrule) & Complement);
    end Corresponding_Context;
 
+   ---------------
+   -- Should_Be --
+   ---------------
+
+   function Should_Be (Source   : Wide_String;
+                       Expected : Casing_Set;
+                       Original : Wide_String := "") return Wide_String
+   is
+      use Ada.Strings.Wide_Unbounded;
+
+      Result : Unbounded_Wide_String;
+      procedure Append_Result (Name : Wide_String; Force : Boolean := False) is
+      begin
+         if not Force and then Expected (Ca_Original) and then Name = Original then
+            -- Don't issue the name twice if the original is the same as another allowed one
+            return;
+         end if;
+         if Result /= Null_Unbounded_Wide_String then
+            Append (Result, " or ");
+         end if;
+         Append (Result, '"' & Name & '"');
+      end Append_Result;
+   begin   --  Should_Be
+      for E in Expected'Range loop
+         if Expected (E) then
+            case E is
+               when Ca_Original =>
+                  if Original /= (Original'Range => ' ') then  -- works with ""
+                     Append_Result (Original, Force => True);
+                  end if;
+               when Ca_Uppercase =>
+                  Append_Result (To_Upper (Source));
+               when Ca_Lowercase =>
+                  Append_Result (To_Lower (Source));
+               when Ca_Titlecase =>
+                  Append_Result (To_Title (Source));
+            end case;
+         end if;
+      end loop;
+
+      return To_Wide_String (Result);
+   end Should_Be;
+
    ------------------
    -- Check_Casing --
    ------------------
@@ -676,53 +722,61 @@ package body Rules.Style is
       use Asis, Asis.Declarations, Asis.Elements;
       use Framework.Reports, Thick_Queries;
 
-      Source_Image    : constant Wide_String := Extended_Name_Image (Source_Element);
-      Reference_Image : Wide_String (Source_Image'Range);
-      -- Note that the source name and the refence name always have the same length!
-      Def_Name : Asis.Defining_Name;
+      Source_Image   : constant Wide_String := Extended_Name_Image (Source_Element);
+      Original_Image : Wide_String (Source_Image'Range) := (others => ' ');
+      -- Note that the source name and the original name always have the same length!
+      Def_Name              : Asis.Defining_Name;
    begin
-      case Casing_Policy (Casing) is
-         when Ca_Uppercase =>
-            Reference_Image := To_Upper (Source_Image);
-         when Ca_Lowercase =>
-            Reference_Image := To_Lower (Source_Image);
-         when Ca_Titlecase =>
-            Reference_Image := To_Title (Source_Image);
-         when Ca_Original =>
-            declare
-               Good_Ref : Asis.Element := Ref_Element;
-            begin
-               if Is_Nil (Good_Ref) then
-                  Good_Ref := Source_Element;
-               end if;
-               Def_Name := First_Defining_Name (Good_Ref);
-
-               if Element_Kind (Good_Ref) = A_Defining_Name then
-                  if Is_Equal (Source_Element, Def_Name) then
-                     -- Since it *is* the original...
+      for Name in Casing_Names loop
+         if Casing_Policy (Casing) (Name) then
+            case Name is
+               when Ca_Uppercase =>
+                  if Source_Image =  To_Upper (Source_Image) then
                      return;
                   end if;
-               end if;
-            end;
+               when Ca_Lowercase =>
+                  if Source_Image =  To_Lower (Source_Image) then
+                     return;
+                  end if;
+               when Ca_Titlecase =>
+                  if Source_Image =  To_Title (Source_Image) then
+                     return;
+                  end if;
+               when Ca_Original =>
+                  declare
+                     Good_Ref : Asis.Element := Ref_Element;
+                  begin
+                     if Is_Nil (Good_Ref) then
+                        Good_Ref := Source_Element;
+                     end if;
+                     Def_Name := First_Defining_Name (Good_Ref);
 
-            if Is_Nil (Def_Name) then
-               -- some predefined stuff, give up
-               return;
-            end if;
+                     if (Element_Kind (Good_Ref) = A_Defining_Name and then Is_Equal (Source_Element, Def_Name))
+                       -- Don't check when it *is* the original...
+                       or Is_Nil (Def_Name)
+                       -- some predefined stuff, give up
+                     then
+                        -- Note that we assume here that there are no other policy after Ca_Original
+                        return;
+                     end if;
 
-            if Defining_Name_Kind (Def_Name) = A_Defining_Expanded_Name then
-               Def_Name := Defining_Selector (Def_Name);
-            end if;
+                     if Defining_Name_Kind (Def_Name) = A_Defining_Expanded_Name then
+                        Def_Name := Defining_Selector (Def_Name);
+                     end if;
+                     Original_Image := Defining_Name_Image (Def_Name);
+                     if Source_Image = Original_Image then
+                        return;
+                     end if;
+                  end;
+            end case;
+         end if;
+      end loop;
 
-            Reference_Image := Defining_Name_Image (Def_Name);
-      end case;
-
-      if Source_Image /= Reference_Image then
-         Report (Rule_Id,
-                 Corresponding_Context (Casing),
-                 Get_Location (Source_Element),
-                 "Wrong casing of " & Source_Image & ", should be " & Reference_Image);
-      end if;
+      Report (Rule_Id,
+              Corresponding_Context (Casing),
+              Get_Location (Source_Element),
+              "Wrong casing of """ & Source_Image
+              & """, should be " & Should_Be (Source_Image,  Casing_Policy (Casing), Original_Image));
    end Check_Casing;
 
    -----------------------

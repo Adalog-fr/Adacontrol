@@ -1,4 +1,4 @@
-t_style.adb:1:10: Found: Casing: Wrong casing of Text_io, should be Text_IO
+t_style.adb:1:10: Found: Casing: Wrong casing of "Text_io", should be "Text_Io" or "Text_IO"
 t_style-no_default_in.adb:3:31: Found: No_Default_In: default IN mode used for parameter
 t_style-no_default_in.adb:13:28: Found: No_Default_In: default IN mode used for parameter
 t_style-no_default_in.adb:15:44: Found: No_Default_In: default IN mode used for parameter
@@ -7,29 +7,29 @@ t_style-no_default_in.adb:27:29: Found: No_Default_In: default IN mode used for 
 t_style-no_default_in.adb:30:29: Found: No_Default_In: default IN mode used for parameter
 t_style-no_default_in.adb:33:26: Found: No_Default_In: default IN mode used for parameter
 t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter
-t_style-casing.adb:1:6: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-t_style-casing.adb:1:21: Found: Casing: Wrong casing of CHILD_1, should be Child_1
-t_style-casing.adb:1:29: Found: Casing: Wrong casing of CHILD_2, should be Child_2
-t_style-casing.adb:5:4: Found: Casing: Wrong casing of Page, should be PAGE
-t_style-casing.adb:8:19: Found: Casing: Wrong casing of FOO, should be Foo
-t_style-casing.adb:9:50: Found: Casing: Wrong casing of FOO, should be Foo
-t_style-casing.adb:10:13: Found: Casing: Wrong casing of foo, should be Foo
-t_style-casing.adb:13:8: Found: Casing: Wrong casing of foo, should be Foo
-t_style-casing.adb:12:14: Found: Casing: Wrong casing of i, should be I
-t_style-casing.adb:16:13: Found: Casing: Wrong casing of "aNd", should be "and"
-t_style-casing.adb:19:8: Found: Casing: Wrong casing of "AND", should be "and"
-t_style-casing.adb:23:26: Found: Casing: Wrong casing of AA, should be Aa
-t_style-casing.adb:23:32: Found: Casing: Wrong casing of BB, should be Bb
-t_style-casing.adb:27:34: Found: Casing: Wrong casing of image, should be Image
-t_style-casing.adb:27:41: Found: Casing: Wrong casing of INT, should be Int
-t_style-casing.adb:28:4: Found: Casing: Wrong casing of INT, should be Int
-t_style-casing.adb:28:11: Found: Casing: Wrong casing of FOo, should be Foo
-t_style-casing.adb:28:16: Found: Casing: Wrong casing of INt, should be Int
-t_style-casing.adb:29:8: Found: Casing: Wrong casing of Text_Io, should be Text_IO
-t_style-casing.adb:29:41: Found: Casing: Wrong casing of InT, should be Int
+t_style-casing.adb:1:6: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+t_style-casing.adb:1:21: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+t_style-casing.adb:1:29: Found: Casing: Wrong casing of "CHILD_2", should be "Child_2"
+t_style-casing.adb:5:4: Found: Casing: Wrong casing of "Page", should be "PAGE"
+t_style-casing.adb:8:19: Found: Casing: Wrong casing of "FOO", should be "Foo"
+t_style-casing.adb:9:50: Found: Casing: Wrong casing of "FOO", should be "Foo"
+t_style-casing.adb:10:13: Found: Casing: Wrong casing of "foo", should be "Foo"
+t_style-casing.adb:13:8: Found: Casing: Wrong casing of "foo", should be "Foo"
+t_style-casing.adb:12:14: Found: Casing: Wrong casing of "i", should be "I"
+t_style-casing.adb:16:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
+t_style-casing.adb:19:8: Found: Casing: Wrong casing of ""AND"", should be ""and""
+t_style-casing.adb:23:26: Found: Casing: Wrong casing of "AA", should be "Aa"
+t_style-casing.adb:23:32: Found: Casing: Wrong casing of "BB", should be "Bb"
+t_style-casing.adb:27:34: Found: Casing: Wrong casing of "image", should be "Image"
+t_style-casing.adb:27:41: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:28:4: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:28:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+t_style-casing.adb:28:16: Found: Casing: Wrong casing of "INt", should be "Int"
+t_style-casing.adb:29:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_Io" or "Text_IO"
+t_style-casing.adb:29:41: Found: Casing: Wrong casing of "InT", should be "Int"
 t_style-casing.adb:32:12: Error: Multiple_Stmts: "loop" does not start line
 t_style-casing.adb:35:7: Error: Exposed: character literal 'a' not in allowed construct
-t_style-casing.adb:42:9: Found: Casing: Wrong casing of "AND", should be "and"
+t_style-casing.adb:42:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
 t_style-casing.adb:32:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
 t_style-casing.adb:33:7: Found: Casing: Wrong casing of "Null", should be "null"
 t_style-casing.adb:34:4: Found: Casing: Wrong casing of "END", should be "end"
@@ -134,34 +134,34 @@ t_style.adb:38:16: Error: Multiple_Stmts: "end" does not start line
 t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
 t_style.adb:41:13: Error: Multiple_Stmts: "end" does not start line
 t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
-x_style_casing.ads:3:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing.adb:1:14: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing.adb:6:8: Found: Casing: Wrong casing of PROC, should be Proc
-x_style_casing-child_1.ads:1:9: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing-child_1.ads:3:20: Found: Casing: Wrong casing of CHILD_1, should be Child_1
-x_style_casing-child_1.adb:1:29: Found: Casing: Wrong casing of CHILD_1, should be Child_1
-x_style_casing-child_1.adb:36:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing-child_1.adb:8:11: Found: Casing: Wrong casing of Block1, should be BLock1
-x_style_casing-child_1.adb:12:16: Found: Casing: Wrong casing of Loop1, should be LoOp1
+x_style_casing.ads:3:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing.adb:1:14: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing.adb:6:8: Found: Casing: Wrong casing of "PROC", should be "Proc"
+x_style_casing-child_1.ads:1:9: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing-child_1.ads:3:20: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+x_style_casing-child_1.adb:1:29: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+x_style_casing-child_1.adb:36:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing-child_1.adb:8:11: Found: Casing: Wrong casing of "BlOck1", should be "Block1" or "BLock1"
+x_style_casing-child_1.adb:12:16: Found: Casing: Wrong casing of "LOop1", should be "Loop1" or "LoOp1"
 x_style_casing-child_1.adb:10:29: Error: Exposed: integer literal 10 not in allowed construct
-x_style_casing-child_1.adb:17:8: Found: Casing: Wrong casing of Tt, should be TT
-x_style_casing-child_1.adb:19:14: Found: Casing: Wrong casing of Tt, should be TT
-x_style_casing-child_1.adb:24:8: Found: Casing: Wrong casing of Tt, should be TT
-x_style_casing-child_1.adb:21:14: Found: Casing: Wrong casing of ENTER, should be Enter
-x_style_casing-child_1.adb:23:11: Found: Casing: Wrong casing of ENTER, should be Enter
-x_style_casing-child_1.adb:28:8: Found: Casing: Wrong casing of Pt, should be PT
-x_style_casing-child_1.adb:30:19: Found: Casing: Wrong casing of Pt, should be PT
-x_style_casing-child_1.adb:35:8: Found: Casing: Wrong casing of Pt, should be PT
-x_style_casing-child_1.adb:31:13: Found: Casing: Wrong casing of ENT, should be Ent
-x_style_casing-child_1.adb:34:11: Found: Casing: Wrong casing of ENT, should be Ent
-x_style_casing-child_1-child_2.ads:1:9: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing-child_1-child_2.ads:1:24: Found: Casing: Wrong casing of CHILD_1, should be Child_1
-x_style_casing-child_1-child_2.ads:3:28: Found: Casing: Wrong casing of child_2, should be Child_2
-x_style_casing-child_1-child_2.ads:3:20: Found: Casing: Wrong casing of child_1, should be Child_1
-x_style_casing-child_1-child_2.ads:3:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing-child_1-child_2.adb:1:37: Found: Casing: Wrong casing of CHILD_2, should be Child_2
-x_style_casing-child_1-child_2.adb:8:20: Found: Casing: Wrong casing of CHILD_1, should be Child_1
-x_style_casing-child_1-child_2.adb:8:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
-x_style_casing-child_1-child_2.adb:3:14: Found: Casing: Wrong casing of p2, should be P2
-x_style_casing-child_1-child_2.adb:6:8: Found: Casing: Wrong casing of p2, should be P2
+x_style_casing-child_1.adb:17:8: Found: Casing: Wrong casing of "TTt", should be "Ttt" or "TTT"
+x_style_casing-child_1.adb:19:14: Found: Casing: Wrong casing of "TtT", should be "Ttt" or "TTT"
+x_style_casing-child_1.adb:24:8: Found: Casing: Wrong casing of "TTt", should be "Ttt" or "TTT"
+x_style_casing-child_1.adb:21:14: Found: Casing: Wrong casing of "ENTER", should be "Enter"
+x_style_casing-child_1.adb:23:11: Found: Casing: Wrong casing of "ENTER", should be "Enter"
+x_style_casing-child_1.adb:28:8: Found: Casing: Wrong casing of "PtP", should be "Ptp" or "PTP"
+x_style_casing-child_1.adb:30:19: Found: Casing: Wrong casing of "PtP", should be "Ptp" or "PTP"
+x_style_casing-child_1.adb:35:8: Found: Casing: Wrong casing of "PTp", should be "Ptp" or "PTP"
+x_style_casing-child_1.adb:31:13: Found: Casing: Wrong casing of "ENT", should be "Ent"
+x_style_casing-child_1.adb:34:11: Found: Casing: Wrong casing of "ENT", should be "Ent"
+x_style_casing-child_1-child_2.ads:1:9: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing-child_1-child_2.ads:1:24: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+x_style_casing-child_1-child_2.ads:3:28: Found: Casing: Wrong casing of "child_2", should be "Child_2"
+x_style_casing-child_1-child_2.ads:3:20: Found: Casing: Wrong casing of "child_1", should be "Child_1"
+x_style_casing-child_1-child_2.ads:3:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing-child_1-child_2.adb:1:37: Found: Casing: Wrong casing of "CHILD_2", should be "Child_2"
+x_style_casing-child_1-child_2.adb:8:20: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+x_style_casing-child_1-child_2.adb:8:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+x_style_casing-child_1-child_2.adb:3:14: Found: Casing: Wrong casing of "p2", should be "P2"
+x_style_casing-child_1-child_2.adb:6:8: Found: Casing: Wrong casing of "p2", should be "P2"
 x_style2.ads:1:15: Error: Multiple_Decl: declaration does not start line

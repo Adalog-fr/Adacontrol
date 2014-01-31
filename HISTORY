@@ -76,7 +76,8 @@ Statements:
   Normalized behaviour of subrule exit.
 
 Style 
-  (Casing_Identifier, original): Check closing identifier
+  (Casing_Identifier, original): Check closing identifier, allow multiple
+     casing options.
   Positional_Association: removed, now a subrule of Positional_Associations
   Parameter_Order, Formal_Parameter_Order: modes are separated by "|".
   Multiple_Element: also checks proper presentation of "end", "for ... loop",

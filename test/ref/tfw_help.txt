@@ -691,8 +691,7 @@ Parameter(1): casing_attribute       | casing_identifier |
               formal_parameter_order | renamed_entity
 
 For casing_*:
-Parameter(2): uppercase | lowercase | titlecase | original
-              (default = Original)
+Parameter(2..N): uppercase | lowercase | titlecase | original
 
 For exposed_literal:
 Parameter(2): integer | real | character | string

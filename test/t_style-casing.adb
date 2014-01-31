@@ -26,7 +26,7 @@ begin
    Int := 1;
    Ada.Text_IO.Put_Line (Integer'image (INT));  -- Casing_Identifier, Casing_Attribute
    INT := FOo (INt);                            -- Casing_Identifier x3
-   Ada.Text_Io.Put_Line (Integer'Image (InT));  -- Casing_Identifier x2
+   Ada.TEXT_IO.Put_Line (Integer'Image (InT));  -- Casing_Identifier x2
    for I in S
      '
      Range LOOP                                 -- Casing_Keyword, Multiple_Stmts

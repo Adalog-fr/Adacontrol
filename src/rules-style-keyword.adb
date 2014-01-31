@@ -289,7 +289,7 @@ package body Rules.Style.Keyword is
    -- We need to be careful however, because 'in' is a keyword in:
    --    if 'a' in character then ...
    Wide_HT : constant Wide_Character := Wide_Character'Val(Character'Pos (Ada.Characters.Latin_1.HT));
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : in Framework.Location; Expected : in Casing_Names) is
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : in Framework.Location; Expected : in Casing_Set) is
       use Ada.Strings, Ada.Strings.Wide_Maps.Wide_Constants;
       use Utilities;
 
@@ -306,26 +306,12 @@ package body Rules.Style.Keyword is
       procedure Do_Report (Kw_Start, Kw_Stop : Positive) is
          use Framework, Framework.Reports;
 
-         function Should_Be (Source : Wide_String) return Wide_String is
-         begin
-            case Expected is
-               when Ca_Original =>
-                  Failure ("Orignal casing for keyword");
-               when Ca_Uppercase =>
-                  return To_Upper (Source);
-               when Ca_Lowercase =>
-                  return To_Lower (Source);
-               when Ca_Titlecase =>
-                  return To_Title (Source);
-            end case;
-         end Should_Be;
-
       begin  -- Do_Report
          Report (Rule_Id,
                  Corresponding_Context (St_Casing_Keyword),
                  Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Asis.Text.Character_Position (Kw_Start)),
                  "Wrong casing of """ & Line (Kw_Start .. Kw_Stop)
-                 & """, should be """ & Should_Be (Line (Kw_Start .. Kw_Stop) & '"'));
+                 & """, should be " & Should_Be (Line (Kw_Start .. Kw_Stop), Expected));
       end Do_Report;
 
    begin  -- Process_Line
@@ -420,16 +406,16 @@ package body Rules.Style.Keyword is
                   -- Keyword found
                   case Case_Others is
                      when Upper =>
-                        if Case_First /= Upper or else Expected /= Ca_Uppercase then
+                        if Case_First /= Upper or else not Expected (Ca_Uppercase) then
                            Do_Report (First, I-1);
                         end if;
                      when Lower =>
                         if Case_First = Upper then
-                           if Expected /= Ca_Titlecase then
+                           if not Expected (Ca_Titlecase) then
                               Do_Report (First, I - 1);
                            end if;
                         else
-                           if Expected /= Ca_Lowercase then
+                           if not Expected (Ca_Lowercase) then
                               Do_Report (First, I - 1);
                            end if;
                         end if;
@@ -469,16 +455,16 @@ package body Rules.Style.Keyword is
          -- Line ended with keyword
          case Case_Others is
             when Upper =>
-               if Case_First /= Upper or else Expected /= Ca_Uppercase then
+               if Case_First /= Upper or else not Expected (Ca_Uppercase) then
                   Do_Report (First, Last);
                end if;
             when Lower =>
                if Case_First = Upper then
-                  if Expected /= Ca_Titlecase then
+                  if not Expected (Ca_Titlecase) then
                      Do_Report (First, Last);
                   end if;
                else
-                  if Expected /= Ca_Lowercase then
+                  if not Expected (Ca_Lowercase) then
                      Do_Report (First, Last);
                   end if;
                end if;

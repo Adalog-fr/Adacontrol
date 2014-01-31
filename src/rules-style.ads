@@ -69,8 +69,14 @@ private
    subtype St_Orders is Subrules range St_Parameter_Order .. St_Formal_Parameter_Order;
 
    type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
+   -- Ca_Original must stay last, assumed in Check_Casing
+   type Casing_Set   is array (Casing_Names) of Boolean;
 
-   function Corresponding_Context (Subrule : Subrules; Complement : Wide_String := "")
+   function Corresponding_Context (Subrule    : Subrules;
+                                   Complement : Wide_String := "")
                                    return Framework.Control_Manager.Root_Context'Class;
-
+   function Should_Be (Source   : Wide_String;
+                       Expected : Casing_Set;
+                       Original : Wide_String := "")
+                       return Wide_String;
 end Rules.Style;
