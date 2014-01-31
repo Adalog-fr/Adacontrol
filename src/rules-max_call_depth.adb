@@ -303,7 +303,8 @@ package body Rules.Max_Call_Depth is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            Descr   : in out Depth_Descriptor) is
+                            Descr   : in out Depth_Descriptor)
+   is
       use Thick_Queries, Utilities;
       use Asis, Asis.Declarations, Asis.Elements;
 
@@ -464,7 +465,8 @@ package body Rules.Max_Call_Depth is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             Descr   : in out Depth_Descriptor) is
+                             Descr   : in out Depth_Descriptor)
+   is
       pragma Unreferenced (Element, Control, Descr);
    begin
       null;

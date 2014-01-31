@@ -84,7 +84,8 @@ package body Rules.Allocators is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String;
-                          Ctl_Kind  : in Control_Kinds) is
+                          Ctl_Kind  : in Control_Kinds)
+   is
       use Framework.Language;
       Entity      : Entity_Specification;
       Filter      : Filter_Kinds;

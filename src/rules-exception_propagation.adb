@@ -249,7 +249,8 @@ package body Rules.Exception_Propagation is
                                         State   : in out Risk_Level);
    procedure Post_Procedure_Declaration (Element : in     Asis.Element;
                                          Control : in out Asis.Traverse_Control;
-                                         State   : in out Risk_Level) is
+                                         State   : in out Risk_Level)
+   is
       pragma Unreferenced (Element, Control, State);
    begin
       null;
@@ -261,7 +262,8 @@ package body Rules.Exception_Propagation is
 
    procedure Pre_Procedure_Declaration (Element : in     Asis.Element;
                                         Control : in out Asis.Traverse_Control;
-                                        State   : in out Risk_Level) is
+                                        State   : in out Risk_Level)
+   is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
 
@@ -486,7 +488,8 @@ package body Rules.Exception_Propagation is
                                     State   : in out Handler_State);
    procedure Post_Procedure_Handler (Element : in     Asis.Element;
                                      Control : in out Asis.Traverse_Control;
-                                     State   : in out Handler_State) is
+                                     State   : in out Handler_State)
+   is
       pragma Unreferenced (Element, Control, State);
    begin
       null;
@@ -498,7 +501,8 @@ package body Rules.Exception_Propagation is
 
    procedure Pre_Procedure_Handler (Element : in     Asis.Element;
                                     Control : in out Asis.Traverse_Control;
-                                    State   : in out Handler_State) is
+                                    State   : in out Handler_State)
+   is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Utilities, Thick_Queries;
       SP : Asis.Expression;
@@ -762,7 +766,8 @@ package body Rules.Exception_Propagation is
 
       procedure Post_Procedure_Parameter (Element : in     Asis.Element;
                                           Control : in out Asis.Traverse_Control;
-                                          State   : in out EP_Rule_Context) is
+                                          State   : in out EP_Rule_Context)
+      is
          pragma Unreferenced (Element, Control, State);
       begin
          null;

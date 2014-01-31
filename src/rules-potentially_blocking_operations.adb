@@ -318,7 +318,8 @@ package body Rules.Potentially_Blocking_Operations is
       end record;
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out Info) is
+                            State   : in out Info)
+   is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Framework.Reports, Framework.Element_Queues;
 
@@ -524,7 +525,8 @@ package body Rules.Potentially_Blocking_Operations is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             State   : in out Info) is
+                             State   : in out Info)
+   is
       pragma Unreferenced (Element, Control, State);
    begin
       null;

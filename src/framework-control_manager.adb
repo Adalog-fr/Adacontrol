@@ -465,7 +465,8 @@ package body Framework.Control_Manager is
    ------------
 
    procedure Update (Into          : in out Context_Store;
-                     Context       : in     Root_Context'Class) is
+                     Context       : in     Root_Context'Class)
+   is
    begin
       Into.Last_Returned.Value.all := Context;
    end Update;
@@ -475,7 +476,8 @@ package body Framework.Control_Manager is
    -----------------
 
    function Association (Into          : in Context_Store;
-                         Specification : in Entity_Specification) return Root_Context'Class is
+                         Specification : in Entity_Specification) return Root_Context'Class
+   is
       use Context_Tree, Utilities;
       Result : Context_Node_Access;
    begin
@@ -536,7 +538,8 @@ package body Framework.Control_Manager is
    ----------------
 
    procedure Dissociate (From          : in out Context_Store;
-                         Specification : in     Entity_Specification) is
+                         Specification : in     Entity_Specification)
+   is
       use Context_Tree, Utilities;
       Temp : Context_Node_Access;
    begin

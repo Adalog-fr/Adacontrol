@@ -551,7 +551,7 @@ package body Framework.Plugs is
 
          when A_Statement =>
             Rules.Style.                   Process_Element   (Element);
-            Rules.Max_Size.                Process_Element (Element);
+            Rules.Max_Size.                Process_Element   (Element);
             Rules.Max_Statement_Nesting.   Process_Statement (Element);
             Rules.Simplifiable_Statements. Process_Statement (Element);
             Rules.Statements.              Process_Statement (Element);

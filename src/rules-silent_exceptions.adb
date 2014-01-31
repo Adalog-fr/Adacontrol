@@ -302,7 +302,8 @@ package body Rules.Silent_Exceptions is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out Search_Result) is
+                            State   : in out Search_Result)
+   is
       use Asis, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
    begin
@@ -335,7 +336,8 @@ package body Rules.Silent_Exceptions is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             State   : in out Search_Result) is
+                             State   : in out Search_Result)
+   is
       pragma Unreferenced (Element, Control, State);
    begin
       null;

@@ -116,7 +116,8 @@ package body Framework.Rules_Manager is
                        Add_Control_CB : Add_Control_Procedure;
                        Command_CB     : Command_Procedure;
                        Prepare_CB     : Prepare_Procedure  := null;
-                       Finalize_CB    : Finalize_Procedure := null) is
+                       Finalize_CB    : Finalize_Procedure := null)
+   is
       use Utilities;
    begin
       if Rule'Length > Max_Rule_Name_Length then
@@ -275,7 +276,8 @@ package body Framework.Rules_Manager is
 
    procedure Add_Control (Ctl_Label : in Wide_String;
                           Ctl_Kind  : in Control_Kinds;
-                          Rule_Name : in Wide_String) is
+                          Rule_Name : in Wide_String)
+   is
       use Rule_List, Framework.Reports;
 
       -- Existence of rule checked by the language (ours, not Ada!)

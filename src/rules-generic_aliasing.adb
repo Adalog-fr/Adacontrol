@@ -109,7 +109,8 @@ package body Rules.Generic_Aliasing is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String;
-                          Ctl_Kind  : in Control_Kinds) is
+                          Ctl_Kind  : in Control_Kinds)
+   is
       use Framework.Control_Manager, Framework.Language, Subrules_Flags_Utilities, Detail_Modifier_Utilities;
       SR : Extended_Subrules;
       Detail : Rule_Detail;

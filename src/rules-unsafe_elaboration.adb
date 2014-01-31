@@ -111,7 +111,8 @@ package body Rules.Unsafe_Elaboration is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String;
-                          Ctl_Kind  : in Control_Kinds) is
+                          Ctl_Kind  : in Control_Kinds)
+   is
       use Framework.Language;
    begin
       if Parameter_Exists then
@@ -151,7 +152,7 @@ package body Rules.Unsafe_Elaboration is
 
    procedure Check_Unit (Unit     : in Asis.Compilation_Unit;
                          For_Unit : in Asis.Compilation_Unit;
-                           Name   : in Asis.Name)
+                         Name     : in Asis.Name)
    is
    -- Unit is an external unit used by elaboration calls or instantiations from For_Unit.
    -- Check appropriate pragmas.
@@ -183,7 +184,7 @@ package body Rules.Unsafe_Elaboration is
         or Has_Pragma (A_Remote_Types_Pragma)
         or Has_Pragma (A_Remote_Call_Interface_Pragma)
       then
-         -- no elaboration control neede
+         -- no elaboration control needed
          return;
       end if;
 

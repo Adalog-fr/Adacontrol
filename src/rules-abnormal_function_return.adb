@@ -63,7 +63,8 @@ package body Rules.Abnormal_Function_Return is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String;
-                          Ctl_Kind  : in Control_Kinds) is
+                          Ctl_Kind  : in Control_Kinds)
+   is
       use Framework.Language;
 
    begin

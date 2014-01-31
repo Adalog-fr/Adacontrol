@@ -323,7 +323,8 @@ package body Rules.Global_References is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out Usage_Value) is
+                            State   : in out Usage_Value)
+   is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
       use Framework.Reports;
@@ -516,7 +517,8 @@ package body Rules.Global_References is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             State   : in out Usage_Value) is
+                             State   : in out Usage_Value)
+   is
       pragma Unreferenced (Element, Control, State);
    begin
       null;

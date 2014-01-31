@@ -132,7 +132,8 @@ package body Framework.Reports is
                      Label       : in     Wide_String;
                      Line        : in     Wide_String;
                      Single_Line : in     Boolean;
-                     Active      : in out Boolean) is
+                     Active      : in out Boolean)
+   is
       use Utilities, Ada.Strings.Wide_Fixed;
 
       Mark1 : constant Wide_String := "--" & To_Wide_String (Adactl_Tag1.Value);

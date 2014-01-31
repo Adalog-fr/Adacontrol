@@ -903,7 +903,8 @@ package body Framework.Ruler is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             State   : in out Info) is
+                             State   : in out Info)
+   is
       pragma Unreferenced (Control, State);
       use Asis, Asis.Declarations, Asis.Elements;
       use Ada.Strings.Wide_Fixed, Rules_Manager, Utilities;
@@ -1039,7 +1040,8 @@ package body Framework.Ruler is
    procedure Process (Unit_Name  : in Wide_String;
                       Unit_Pos   : in Integer;
                       Spec_Only  : in Boolean;
-                      Go_Count   : in Positive) is
+                      Go_Count   : in Positive)
+   is
       use Asis, Asis.Compilation_Units;
       use Utilities;
 

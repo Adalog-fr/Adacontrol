@@ -1524,7 +1524,8 @@ package body Framework.Language is
 
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
-                               Extra_Value : Wide_String := "NONE") is
+                               Extra_Value : Wide_String := "NONE")
+      is
       begin
          Local_Utilities.Help_On_Flags (Header, Footer, Extra_Value);
       end Help_On_Flags;

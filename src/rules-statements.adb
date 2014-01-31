@@ -833,7 +833,8 @@ package body Rules.Statements is
 
       procedure Post_Procedure (Element : in     Asis.Element;
                                 Control : in out Traverse_Control;
-                                State   : in out State_Info) is
+                                State   : in out State_Info)
+      is
          pragma Unreferenced (Element, Control, State);
       begin
          null;

@@ -138,7 +138,8 @@ package body Rules.Entity_Inside_Exception is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out Null_State) is
+                            State   : in out Null_State)
+   is
 
       procedure Check (Identifiers : in Asis.Expression_List) is
          use Framework.Reports;

@@ -184,7 +184,8 @@ package body Rules.Side_Effect_Parameters is
 
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
-                            State   : in out State_Information) is
+                            State   : in out State_Information)
+   is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
 
@@ -287,7 +288,8 @@ package body Rules.Side_Effect_Parameters is
 
    procedure Post_Procedure (Element : in     Asis.Element;
                              Control : in out Asis.Traverse_Control;
-                             State   : in out State_Information) is
+                             State   : in out State_Information)
+   is
       pragma Unreferenced (Element, Control, State);
    begin
       null;

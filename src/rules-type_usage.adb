@@ -95,7 +95,8 @@ package body Rules.Type_Usage is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String;
-                          Ctl_Kind  : in Control_Kinds) is
+                          Ctl_Kind  : in Control_Kinds)
+   is
       use Framework.Control_Manager, Framework.Language, Framework.Language.Shared_Keys, Subrules_Flag_Utilities;
       Subrule : Subrules;
       Param   : Entity_Specification;
@@ -180,7 +181,8 @@ package body Rules.Type_Usage is
    procedure Do_Report (Iter         : in out Control_Manager.Context_Iterator;
                         Type_Aspects : in Language.Shared_Keys.Aspects_Set;
                         Message      : in Wide_String;
-                        Loc          : in Location) is
+                        Loc          : in Location)
+   is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Control_Manager, Framework.Language.Shared_Keys, Framework.Reports;
 

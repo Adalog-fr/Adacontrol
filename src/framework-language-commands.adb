@@ -447,7 +447,8 @@ package body Framework.Language.Commands is
       -- Note that these procedures are passed the value of Current_Input.
       -- This allows to restore it at the end, although it is limited.
       procedure Compile_File (File_Name      : Wide_String;
-                              Previous_Input : File_Type) is
+                              Previous_Input : File_Type)
+      is
          use Ada.Characters.Handling;
          File      : File_Type;
       begin

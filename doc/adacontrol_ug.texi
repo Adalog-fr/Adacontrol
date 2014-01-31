@@ -6684,12 +6684,22 @@ search positional_associations(all, 2, call, all put);
 @end example
 
 @subsection Tips
+There are two kinds of calls where the rule does not complain about
+usage of positional association: infix operator calls (since requiring
+named notation would not allow infix notation any more), and calls to
+subprograms that are attributes (since named notation is not allowed
+for these).
+
 For the purpose of the ``same_type'' subrule, integer literals are
 considered of the same type as any parameter of an integer type, and
 similarly for other universal values. The reason is that this rule is
 intended to avoid confusion between parameters, when strong typing
 would not detect an inversion of parameters for example; such a case
 would happen between parameters of a universal type.
+
+For calls, another rule controls positional associations according to
+the value of parameters rather than their number:
+@xref{Insufficient_Parameters}.
 
 @node  Potentially_Blocking_Operations, Pragmas, Positional_Associations, Rules reference
 @section Potentially_Blocking_Operations
@@ -8038,21 +8048,6 @@ literals. This is what the casual user would expect, but to the
 language lawyer, ``-1'' is not a negative literal, it is a unary minus
 operator applied to the positive value ``1''.
 
-There are two kinds of calls where the rule does not complain about
-usage of positional association: infix operator calls (since requiring
-named notation would not allow infix notation any more), and calls to
-subprograms that are attributes (since named notation is not allowed
-for these).
-
-For calls, another rule controls positional associations according to
-the value of parameters rather than their number:
-@xref{Insufficient_Parameters}.
-
-For the ``Casing_Identifier'' subrule, if the value is ``original'',
-subprogram and parameter names from the body are checked against those
-from the specification (if any). This is what the user would expect,
-although strictly speaking it is not a usage of the name.
-
 ``compound_statement'' was a simplistic way of finding badly laid-out
 statements, at a time when ``multiple_elements'' did not control the
 end or intermediate parts of declarations and statements. It is of
@@ -8063,11 +8058,6 @@ If a predefined operator or an attribute is renamed, the
 ``renamed_entity'' subrule cannot check that the original entity is not
 used in the scope of the renaming.  Such cases are
 detected by the rule ``uncheckable''. @xref{Uncheckable}.
-
-For the ``Casing_Identifier'' subrule, if the value is ``original'',
-the closing identifier of a program unit (the one after @code{@b{end}}) is
-@i{not} checked. Believe it or not, the check would be extremely difficult
-to perform...
 
 @node Terminating_Tasks, Type_Initial_Values, Style, Rules reference
 @section Terminating_Tasks

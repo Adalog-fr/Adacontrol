@@ -120,7 +120,8 @@ package body Framework is
 
    function Create_Location (File         : in Wide_String;
                              First_Line   : in Asis.Text.Line_Number;
-                             First_Column : in Asis.Text.Character_Position) return Location is
+                             First_Column : in Asis.Text.Character_Position) return Location
+   is
    begin
       return (To_Unbounded_Wide_String (File), First_Line, First_Column);
    end Create_Location;
@@ -173,7 +174,8 @@ package body Framework is
    function Get_Previous_Word_Location (E        : in Asis.Element;
                                         Matching : Wide_String := "";
                                         Starting : Search_Start := From_Head)
-                                        return Location is
+                                        return Location
+   is
       use Asis.Text;
       E_Span     : constant Span := Element_Span (E);
       L          : Line_Number;

@@ -112,6 +112,8 @@ package Framework.Language.Shared_Keys is
                      Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
                      Separate_Extension : in Boolean := False)
                      return Boolean;
+   -- See Thick_Queries.Type_Category for details of parameters Follow_Derived, Privacy, and Separate_Extension
+   --
    -- Appropriate Element_Kinds for Elem:
    --       A_Declaration
    --       A_Definition

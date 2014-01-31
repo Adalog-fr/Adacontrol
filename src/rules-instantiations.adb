@@ -221,7 +221,8 @@ package body Rules.Instantiations is
    ----------------------
 
    function Is_Corresponding (Specification : in Entity_Specification;
-                              Name          : in Asis.Defining_Name) return Boolean is
+                              Name          : in Asis.Defining_Name) return Boolean
+   is
       use Asis.Elements, Asis.Expressions;
       use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
 
@@ -294,7 +295,8 @@ package body Rules.Instantiations is
    -----------
 
    function Match (Actual_Part : in Asis.Association_List;
-                   Values      : in Generic_Parameters) return Boolean is
+                   Values      : in Generic_Parameters) return Boolean
+   is
       use Asis.Expressions;
 
       Values_Index : List_Index := Values'First;
