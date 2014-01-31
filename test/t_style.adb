@@ -34,11 +34,11 @@ begin
       null;
    end if;
 
-   case B is  when others =>                        -- Compound_Statement
-         null; end case;
+   case B is  when others =>                        -- Compound_Statement, Multiple_Stmts
+         null; end case;                            -- Multiple_Stmts
 
    for I in 0 .. 1 loop                             -- Compound_Statement
-      null; end loop;
+      null; end loop;                               -- Multiple_Stmts
    -- An acceptable comment
 end T_Style;
 

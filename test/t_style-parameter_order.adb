@@ -5,13 +5,15 @@ procedure Parameter_Order is
                  Y   : access Integer;
                  Z   : out Integer;
                  T   : in out Integer;
-                 Def : in Integer := 1) is
+                 Def : in Integer := 1)
+   is
    begin
       null;
    end P1;
 
    procedure P2 (X   : Integer;              -- no_default_in
-                 Def : in Integer := 1) is
+                 Def : in Integer := 1)
+   is
    begin
       null;
    end P2;
@@ -36,12 +38,14 @@ procedure Parameter_Order is
                  Z   : out Integer;
                  Y   : access Integer;       -- out_of_order
                  T   : in out Integer;
-                 Def : in Integer := 0) is
+                 Def : in Integer := 0)
+   is
    begin
       null;
    end P4;
 
-   procedure P5 (X : in out Integer) is begin
+   procedure P5 (X : in out Integer) is
+   begin
       null;
    end P5;
 

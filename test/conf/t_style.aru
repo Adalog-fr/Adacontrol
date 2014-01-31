@@ -12,7 +12,9 @@ Base_2_Literals    : check  style (numeric_literal,      2,  4);
 Base_16_Literals   : check  style (numeric_literal,     16,  4);
 Not_Base_7         : check  style (numeric_literal, not  7);
 Not_Base_13        : check  style (numeric_literal, not 13);
-Spans              : check  style (multiple_elements, flexible clause, declaration, statement);
+Multiple_Clause    : check  style (multiple_elements, flexible clause);
+Multiple_Decl      : check  style (multiple_elements, declaration);
+Multiple_Stmts     : check  style (multiple_elements, statement);
 Exposed            : check  style (exposed_literal, string, "^$", "^r.*n$", pragma, constant, number);
 Exposed            : check  style (exposed_literal, integer, constant, number, var_init, type,
                                                              repr_clause, index, exponent,

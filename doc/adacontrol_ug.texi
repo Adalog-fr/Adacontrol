@@ -7918,15 +7918,22 @@ initialization expression of variable declarations. If no <place> is
 given, it is taken as @code{number, constant}, i.e. any literal is
 allowed in named numbers and constant declarations.
 @item
-``multiple_elements'' controls clauses, declarations, and statements
-that do not start on a line of their own (i.e. when there are more
-than one of these on the same line). Extra parameters specify which
-kind of element to check; if not specified, all kind of elements are
-controlled. If ``flexible'' is specified in front of ``clause'' (not
-allowed otherwise), it allows a @code{@b{use}} clause to be on the
-same line as a @code{@b{with}} clause, provided all packages named in
-the @code{@b{use}} clause are also named in the preceding
-@code{@b{with}} clause.
+``multiple_elements'' controls clauses, declarations, statements, and
+handlers that do not start on a line of their own (i.e. when there are
+more than one of these on the same line). Similarly, the
+@code{@b{end}} is required to be on a line of its own, together with
+the possible keyword or identifier attached to it and the semi-colon.
+In addition, the @code{@b{is}}, @code{@b{loop}} or @code{@b{do}} that
+terminates the first part of some declarations or statements is
+required to be on the same line as the begining of the element, or
+on a line of its own.
+
+Extra parameters specify which kind of element to check; if not
+specified, all kind of elements are controlled. If ``flexible'' is
+specified in front of ``clause'' (not allowed otherwise), it allows a
+@code{@b{use}} clause to be on the same line as a @code{@b{with}}
+clause, provided all packages named in the @code{@b{use}} clause are
+also named in the preceding @code{@b{with}} clause.
 @item
 ``negative_condition'' controls ``if'' statements with an ``else''
 part and no ``elsif'', where the condition starts with a
@@ -8046,29 +8053,10 @@ subprogram and parameter names from the body are checked against those
 from the specification (if any). This is what the user would expect,
 although strictly speaking it is not a usage of the name.
 
-In many cases, badly laid-out compound statements will trigger both the
-``multiple_elements, statement'' and the ``compound_statement''
-subrules. For example:
-@example
-@b{if} C @b{then} I := 1; @b{end} @b{if};
-@end example
-will complain that the assignment is on the same line as the
-@code{@b{if}}, and that the @code{@b{if}} statement spans less than 3
-lines. However, the subrules are not equivalent. For example,
-@example
-@b{if} C @b{then} I := 1;
-@b{end}
-@b{if};
-@end example
-will only find that the assignment is on the same line as the
-@code{@b{if}}, while
-@example
-@b{if} C @b{then}
-   I := 1; @b{end} @b{if};
-@end example
-will only find that the @code{@b{if}} statement spans less than 3
-lines. In most cases, you'll want to specify both subrules to ensure
-proper lay-out.
+``compound_statement'' was a simplistic way of finding badly laid-out
+statements, at a time when ``multiple_elements'' did not control the
+end or intermediate parts of declarations and statements. It is of
+little use now that ``multiple_elements'' has been enhanced.
 
 @subsection Limitations
 If a predefined operator or an attribute is renamed, the

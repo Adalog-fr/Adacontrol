@@ -29,7 +29,7 @@ begin
    Ada.Text_Io.Put_Line (Integer'Image (InT));  -- Casing_Identifier x2
    for I in S
      '
-     Range LOOP                                 -- Casing_Keyword
+     Range LOOP                                 -- Casing_Keyword, Multiple_Stmts
       Null;                                     -- Casing_Keyword
    END LOOP;                                    -- Casing_Keyword x2
    if 'a'in Character then                      -- exposed_literal

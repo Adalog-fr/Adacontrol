@@ -27,6 +27,7 @@ t_style-casing.adb:28:11: Found: Casing: Wrong casing of FOo, should be Foo
 t_style-casing.adb:28:16: Found: Casing: Wrong casing of INt, should be Int
 t_style-casing.adb:29:8: Found: Casing: Wrong casing of Text_Io, should be Text_IO
 t_style-casing.adb:29:41: Found: Casing: Wrong casing of InT, should be Int
+t_style-casing.adb:32:12: Error: Multiple_Stmts: "loop" does not start line
 t_style-casing.adb:35:7: Error: Exposed: character literal 'a' not in allowed construct
 t_style-casing.adb:42:9: Found: Casing: Wrong casing of "AND", should be "and"
 t_style-casing.adb:32:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
@@ -71,33 +72,67 @@ t_style-exposed_literal.adb:63:9: Error: Exposed: integer literal 2 not in allow
 t_style-exposed_literal.adb:64:10: Error: Exposed: integer literal 9_223_372_036_854_775_807 not in allowed construct
 t_style-exposed_literal.adb:65:10: Error: Exposed: integer literal -9_223_372_036_854_775_808 not in allowed construct
 t_style-exposed_literal.adb:68:18: Error: Exposed: integer literal 10 not in allowed construct
-t_style-multiple_elements.adb:3:43: Error: Spans: use clause does not start line and does not come after matching with clause
-t_style-multiple_elements.adb:4:18: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
-t_style-multiple_elements.adb:5:23: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
-t_style-multiple_elements.adb:7:69: Error: Spans: use clause does not start line and Ada.Strings.Unbounded is not part of the preceding with clause
-t_style-multiple_elements.adb:7:92: Error: Spans: use clause does not start line and Text_IO is not part of the preceding with clause
-t_style-multiple_elements.adb:8:90: Error: Spans: use clause does not start line and does not come after matching with clause
-t_style-multiple_elements.adb:12:26: Error: Spans: declaration does not start line
-t_style-multiple_elements.adb:14:12: Error: Spans: declaration does not start line
-t_style-multiple_elements.adb:16:21: Error: Spans: clause does not start line
-t_style-multiple_elements.adb:22:20: Error: Spans: statement does not start line
-t_style-multiple_elements.adb:23:4: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:23:26: Error: Spans: statement does not start line
-t_style-multiple_elements.adb:25:22: Error: Spans: statement does not start line
-t_style-multiple_elements.adb:26:22: Error: Spans: statement does not start line
+t_style-multiple_elements.adb:4:43: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
+t_style-multiple_elements.adb:5:18: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:6:23: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:8:69: Error: Multiple_Clause: use clause does not start line and Ada.Strings.Unbounded is not part of the preceding with clause
+t_style-multiple_elements.adb:8:92: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:9:90: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
+t_style-multiple_elements.adb:13:26: Error: Multiple_Decl: declaration does not start line
+t_style-multiple_elements.adb:15:12: Error: Multiple_Decl: declaration does not start line
+t_style-multiple_elements.adb:17:21: Error: Multiple_Clause: clause does not start line
+t_style-multiple_elements.adb:23:19: Error: Multiple_Stmts: "begin" does not start line
+t_style-multiple_elements.adb:24:13: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:27:7: Error: Multiple_Stmts: "is" does not start line
+t_style-multiple_elements.adb:27:10: Error: Multiple_Stmts: "begin" does not start line
+t_style-multiple_elements.adb:29:4: Error: Multiple_Decl: closing keywords of declaration split
+t_style-multiple_elements.adb:46:19: Error: Multiple_Stmts: "exception" does not start line
+t_style-multiple_elements.adb:48:16: Error: Multiple_Stmts: "when" does not start line
+t_style-multiple_elements.adb:49:17: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:49:17: Error: Multiple_Decl: closing keywords of declaration split
+t_style-multiple_elements.adb:36:18: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:41:7: Error: Multiple_Stmts: closing keywords of statement split
+t_style-multiple_elements.adb:44:21: Error: Multiple_Stmts: "do" does not start line
+t_style-multiple_elements.adb:47:32: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:52:20: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:53:41: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:53:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:53:26: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:57:17: Error: Multiple_Stmts: "when" does not start line
+t_style-multiple_elements.adb:57:38: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:55:22: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:57:32: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:59:12: Error: Multiple_Stmts: "then" does not start line
+t_style-multiple_elements.adb:61:13: Error: Multiple_Stmts: "elsif/else" does not start line
+t_style-multiple_elements.adb:62:27: Error: Multiple_Stmts: "then" does not start line
+t_style-multiple_elements.adb:66:13: Error: Multiple_Stmts: "elsif/else" does not start line
+t_style-multiple_elements.adb:67:19: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:67:19: Error: Multiple_Stmts: closing keywords of statement split
+t_style-multiple_elements.adb:72:9: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:70:10: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:74:35: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:74:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:74:10: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:74:18: Error: Multiple_Stmts: "begin" does not start line
+t_style-multiple_elements.adb:74:30: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:74:10: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:74:24: Error: Multiple_Stmts: statement does not start line
 t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter
-t_style-parameter_order.adb:13:24: Found: No_Default_In: default IN mode used for parameter
-t_style-parameter_order.adb:23:18: Error: order_regular: subprogram parameter out of order
-t_style-parameter_order.adb:37:18: Error: order_regular: subprogram parameter out of order
-t_style-parameter_order.adb:64:7: Error: order_generic: generic formal parameter out of order
-t_style-parameter_order.adb:65:7: Error: order_generic: generic formal parameter out of order
-t_style-parameter_order.adb:66:7: Error: order_generic: generic formal parameter out of order
-t_style-parameter_order.adb:67:45: Found: No_Default_In: default IN mode used for parameter
-t_style-parameter_order.adb:67:41: Error: order_regular: subprogram parameter out of order
-t_style-parameter_order.adb:68:45: Found: No_Default_In: default IN mode used for parameter
+t_style-parameter_order.adb:14:24: Found: No_Default_In: default IN mode used for parameter
+t_style-parameter_order.adb:25:18: Error: order_regular: subprogram parameter out of order
+t_style-parameter_order.adb:39:18: Error: order_regular: subprogram parameter out of order
+t_style-parameter_order.adb:68:7: Error: order_generic: generic formal parameter out of order
+t_style-parameter_order.adb:69:7: Error: order_generic: generic formal parameter out of order
+t_style-parameter_order.adb:70:7: Error: order_generic: generic formal parameter out of order
+t_style-parameter_order.adb:71:45: Found: No_Default_In: default IN mode used for parameter
+t_style-parameter_order.adb:71:41: Error: order_regular: subprogram parameter out of order
+t_style-parameter_order.adb:72:45: Found: No_Default_In: default IN mode used for parameter
 t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+t_style.adb:37:15: Error: Multiple_Stmts: "when" does not start line
+t_style.adb:38:16: Error: Multiple_Stmts: "end" does not start line
 t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
+t_style.adb:41:13: Error: Multiple_Stmts: "end" does not start line
 t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
 x_style_casing.ads:3:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
 x_style_casing.adb:1:14: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
@@ -129,4 +164,4 @@ x_style_casing-child_1-child_2.adb:8:20: Found: Casing: Wrong casing of CHILD_1,
 x_style_casing-child_1-child_2.adb:8:5: Found: Casing: Wrong casing of X_STYLE_CASING, should be X_Style_Casing
 x_style_casing-child_1-child_2.adb:3:14: Found: Casing: Wrong casing of p2, should be P2
 x_style_casing-child_1-child_2.adb:6:8: Found: Casing: Wrong casing of p2, should be P2
-x_style2.ads:1:15: Error: Spans: declaration does not start line
+x_style2.ads:1:15: Error: Multiple_Decl: declaration does not start line

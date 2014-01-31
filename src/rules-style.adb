@@ -1693,7 +1693,7 @@ package body Rules.Style is
    ---------------------
 
    procedure Process_Element (Element : in Asis.Element) is
-      use Asis, Asis.Elements, Asis.Text;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Framework.Reports, Framework.Scope_Manager, Thick_Queries;
       use Multiple_Flag_Utilities;
 
@@ -1770,6 +1770,72 @@ package body Rules.Style is
          end;
       end Check_Special_Use_Clause;
 
+      function Has_Non_Spaces_Ahead (Loc : Location) return Boolean is
+         use Asis.Text;
+
+         First_Line               : constant Line_Number        := Get_First_Line (Loc);
+         First_Column             : constant Character_Position := Get_First_Column (Loc);
+         Element_Lines            : constant Line_List (1..1)   := Lines (Element, First_Line, First_Line);
+         Element_First_Line_Image : constant Wide_String        := Line_Image (Element_Lines (Element_Lines'First));
+      begin
+         for I in Positive range 1 .. Integer (First_Column) - 1 loop   --## Rule line off Simplifiable_expressions
+                                                                        --   Gela-ASIS compatibility
+            if Element_First_Line_Image (I) > ' ' then
+               return True;
+            end if;
+         end loop;
+         return False;
+      end Has_Non_Spaces_Ahead;
+
+      function Actual_Stmt_Start_Loc (Stmt : Asis.Statement) return Location is
+      -- Finds the "true" beginning of a statement, i.e. after labels and names
+      -- Note that names are textually after labels!
+      begin
+         if Statement_Kind (Stmt) in A_Loop_Statement .. A_Block_Statement then
+            -- those that can have names
+            declare
+               Name : constant Asis.Defining_Name := Statement_Identifier (Stmt);
+            begin
+               if not Is_Nil (Name) then
+                  return Get_Next_Word_Location (Name, Starting => From_Tail);
+               end if;
+            end;
+         end if;
+
+         declare
+            Labels : constant Asis.Defining_Name_List := Label_Names (Stmt);
+         begin
+            if Is_Nil (Labels) then
+               return Get_Location (Stmt);
+            end if;
+            return Get_Next_Word_Location (Labels, Starting => From_Tail);
+         end;
+      end Actual_Stmt_Start_Loc;
+
+      procedure Check_Split_End (End_Loc : Location) is
+      -- Check that constructs that have an "end" have it on the same line as
+      -- the end of Element (i.e. than "end XXX;" is not split on several lines
+      begin
+         if Get_First_Line (End_Loc) /= Get_First_Line (Get_End_Location (Element)) then
+            case Element_Kind (Element) is
+               when A_Declaration =>
+                  Report
+                    (Rule_Id,
+                     Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration, Lower_Case)),
+                     End_Loc,
+                     "closing keywords of declaration split");
+               when A_Statement =>
+                  Report
+                    (Rule_Id,
+                     Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                     End_Loc,
+                     "closing keywords of statement split");
+               when others =>
+                  Failure (Rule_Id & ": no end for element", Element);
+            end case;
+         end if;
+      end Check_Split_End;
+
       use Asis.Compilation_Units;
       Loc : Location;
    begin -- Process_Element
@@ -1777,6 +1843,8 @@ package body Rules.Style is
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      -- Check that the element starts a line
 
       -- Special case:
       -- if Element is the declaration of a private compilation unit, consider it starts
@@ -1789,68 +1857,289 @@ package body Rules.Style is
          Loc := Get_Location (Element);
       end if;
 
-      declare
-         First_Line               : constant Line_Number        := Get_First_Line (Loc);
-         First_Column             : constant Character_Position := Get_First_Column (Loc);
-         Element_Lines            : constant Line_List (1..1)   := Lines (Element, First_Line, First_Line);
-         Element_First_Line_Image : constant Wide_String        := Line_Image (Element_Lines (Element_Lines'First));
-      begin
-         for I in Positive range 1 .. Integer (First_Column) - 1 loop   --## Rule line off Simplifiable_expressions
-                                                                        --   Gela-ASIS compatibility
-            if Element_First_Line_Image (I) > ' ' then
-               case Element_Kind (Element) is
-                  when Not_An_Element =>
-                     Failure (Rule_Id & ": Not_An_Element");
+      if Has_Non_Spaces_Ahead (Loc) then
+         case Element_Kind (Element) is
+            when A_Clause =>
+               if Flexible_Clause
+                 and then Clause_Kind (Element) = A_Use_Package_Clause
+                 and then In_Context_Clauses
+               then
+                  Check_Special_Use_Clause (Element);
+               else
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
+                          Loc,
+                          "clause does not start line");
+               end if;
 
-                  when A_Clause =>
-                     if Flexible_Clause
-                       and then Clause_Kind (Element) = A_Use_Package_Clause
-                       and then In_Context_Clauses
-                     then
-                        Check_Special_Use_Clause (Element);
-                     else
-                        Report (Rule_Id,
-                                Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
-                                Loc,
-                                "clause does not start line");
-                     end if;
+            when A_Declaration =>
+               case Declaration_Kind (Element) is
+                  when Not_A_Declaration =>
+                     Failure (Rule_Id & ": Not_A_Declaration");
+                  when An_Enumeration_Literal_Specification
+                     | A_Discriminant_Specification
+                     | A_Loop_Parameter_Specification
+                     | A_Generalized_Iterator_Specification
+                     | An_Element_Iterator_Specification
+                     | A_Parameter_Specification
+                     | An_Entry_Index_Specification
+                     | A_Choice_Parameter_Specification
+                     | A_Return_Constant_Specification
+                     | A_Return_Variable_Specification
+                     =>
+                     -- These are allowed to appear on the same line as something else
+                     null;
+                  when others =>
+                     Report
+                       (Rule_Id,
+                        Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration, Lower_Case)),
+                        Loc,
+                        "declaration does not start line");
+               end case;
 
-                  when A_Declaration =>
-                     case Declaration_Kind (Element) is
-                        when Not_A_Declaration =>
-                           Failure (Rule_Id & ": Not_A_Declaration");
-                        when An_Enumeration_Literal_Specification
-                           | A_Discriminant_Specification
-                           | A_Loop_Parameter_Specification
-                           | A_Generalized_Iterator_Specification
-                           | An_Element_Iterator_Specification
-                           | A_Parameter_Specification
-                           | An_Entry_Index_Specification
-                           | A_Choice_Parameter_Specification
-                          =>
-                           -- These are allowed to appear on the same line as something else
-                           null;
-                        when others =>
-                           Report
-                             (Rule_Id,
-                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration, Lower_Case)),
-                              Loc,
-                              "declaration does not start line");
-                     end case;
+            when A_Statement =>
+               Report (Rule_Id,
+                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                       Loc,
+                       "statement does not start line");
 
-                  when A_Statement =>
+            when others =>
+               Failure (Rule_Id & ": inappropriate element kind");
+         end case;
+      end if;
+
+      -- For program unit bodies, check that "is" is on the same line, or starts a line
+      -- Check that "begin" and "end" start a line
+      -- Check that "exception" as well as each exception handler start a line
+      case Declaration_Kind (Element) is
+         when A_Procedure_Body_Declaration
+            | A_Function_Body_Declaration
+            | A_Package_Body_Declaration
+            | A_Task_Body_Declaration
+            | An_Entry_Body_Declaration
+            =>
+            Loc := Get_Next_Word_Location (Element, Matching => "IS", Starting => From_Head);
+            if Get_First_Line (Loc) /=  Get_First_Line (Get_Location (Element))
+              and then Has_Non_Spaces_Ahead (Loc)
+            then
+               Report (Rule_Id,
+                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                       Loc,
+                       """is"" does not start line");
+            end if;
+
+            declare
+               Stmts : constant Asis.Statement_List := Body_Statements (Element, Include_Pragmas => True);
+            begin
+               if Stmts /= Nil_Element_List then
+                  Loc := Get_Previous_Word_Location (Stmts, Starting => From_Head);
+                  if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
                              Loc,
-                             "statement does not start line");
+                             """begin"" does not start line");
+                  end if;
+                  Loc := Get_Next_Word_Location (Stmts, Starting => From_Tail);
 
-                  when others =>
-                     Failure (Rule_Id & ": inappropriate element kind");
-               end case;
-               return;
+                  declare
+                     Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers
+                                                                          (Element, Include_Pragmas => True);
+                  begin
+                     if Handlers /= Nil_Element_List then
+                        Loc := Get_Previous_Word_Location (Handlers, Starting => From_Head);
+                        if Has_Non_Spaces_Ahead (Loc) then
+                           Report (Rule_Id,
+                                   Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                                   Loc,
+                                   """exception"" does not start line");
+                        end if;
+
+                        for H in Handlers'Range loop
+                           Loc := Get_Location (Handlers (H));
+                           if Has_Non_Spaces_Ahead (Loc) then
+                              Report (Rule_Id,
+                                      Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                                      Loc,
+                                      """when"" does not start line");
+                           end if;
+                        end loop;
+
+                        Loc := Get_Next_Word_Location (Handlers, Starting => From_Tail);
+                     end if;
+                  end;
+
+                  -- Here, Loc is the position of "end", either as word that follows the statements,
+                  -- or if there are exception handlers, as the word that follows the last exception
+                  -- handler
+                  if Has_Non_Spaces_Ahead (Loc) then
+                     Report (Rule_Id,
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Loc,
+                             """end"" does not start line");
+                  end if;
+                  Check_Split_End (Loc);
+               end if;
+            end;
+         when others =>
+            null;
+      end case;
+
+      -- For statements, check that "then", "is", "loop", "do" are on the same line as Element, or start a line
+      case Statement_Kind (Element) is
+         when An_If_Statement =>
+            declare
+               Paths : constant Path_List := Statement_Paths (Element, Include_Pragmas => True);
+            begin
+               Loc := Get_Previous_Word_Location (Thick_Queries.Statements (Paths (1), Include_Pragmas => True),
+                                                  Starting => From_Head);
+               if Get_First_Line (Loc) /=  Get_First_Line (Actual_Stmt_Start_Loc (Element))
+                 and then Has_Non_Spaces_Ahead (Loc)
+               then
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Loc,
+                          """then"" does not start line");
+               end if;
+
+               for P in List_Index range 2 .. Paths'Last loop
+                  Loc := Get_Location (Paths (P));
+                  if Has_Non_Spaces_Ahead (Loc) then
+                     Report (Rule_Id,
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Loc,
+                             """elsif/else"" does not start line");
+                  end if;
+                  Loc := Get_Previous_Word_Location (Thick_Queries.Statements (Paths (P), Include_Pragmas => True),
+                                                     Starting => From_Head);
+                  if Get_First_Line (Loc) /=  Get_First_Line (Get_Location (Paths (P)))
+                    and then Has_Non_Spaces_Ahead (Loc)
+                  then
+                     Report (Rule_Id,
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Loc,
+                             """then"" does not start line");
+                  end if;
+               end loop;
+
+            end;
+
+         when A_Case_Statement =>
+            declare
+               Paths : constant Path_List := Statement_Paths (Element, Include_Pragmas => True);
+            begin
+               Loc := Get_Previous_Word_Location (Paths, Starting => From_Head);
+               if Get_First_Line (Loc) /= Get_First_Line (Actual_Stmt_Start_Loc (Element))
+                 and then Has_Non_Spaces_Ahead (Loc)
+               then
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Loc,
+                          """is"" does not start line");
+               end if;
+
+               for P in Paths'Range loop
+                  Loc := Get_Location (Paths (P));
+                  if Has_Non_Spaces_Ahead (Loc) then
+                     Report (Rule_Id,
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Loc,
+                             """when"" does not start line");
+                  end if;
+               end loop;
+            end;
+
+         when A_Loop_Statement
+            | A_While_Loop_Statement
+            | A_For_Loop_Statement
+            =>
+            declare
+               Stmts : constant Asis.Statement_List := Thick_Queries.Statements (Element, Include_Pragmas => True);
+            begin
+               Loc := Get_Previous_Word_Location (Stmts, Starting => From_Head);
+               if Get_First_Line (Loc) /= Get_First_Line (Actual_Stmt_Start_Loc (Element))
+                 and then Has_Non_Spaces_Ahead (Loc)
+               then
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Loc,
+                          """loop"" does not start line");
+               end if;
+            end;
+         when An_Accept_Statement
+            | An_Extended_Return_Statement
+            =>
+            declare
+               Stmts : constant Asis.Statement_List := Thick_Queries.Statements (Element, Include_Pragmas => True);
+            begin
+               if Stmts /= Nil_Element_List then  -- Statements are optional for accept and extended return
+                  Loc := Get_Previous_Word_Location (Stmts, Starting => From_Head);
+                  if Get_First_Line (Loc) /= Get_First_Line (Get_Location (Element))
+                    and then Has_Non_Spaces_Ahead (Loc)
+                  then
+                     Report (Rule_Id,
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Loc,
+                             """do"" does not start line");
+                  end if;
+               end if;
+            end;
+         when A_Block_Statement =>
+            if Is_Declare_Block (Element) then -- otherwise the message is already issued
+               declare
+                  Stmts : constant Asis.Statement_List := Block_Statements (Element, Include_Pragmas => True);
+               begin
+                  Loc := Get_Previous_Word_Location (Stmts, Starting => From_Head);
+                  if Has_Non_Spaces_Ahead (Loc) then
+                     Report (Rule_Id,
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Loc,
+                          """begin"" does not start line");
+                  end if;
+               end;
             end if;
-         end loop;
-      end;
+
+         when others =>
+            null;
+      end case;
+
+      -- For statements, Check that corresponding "end" starts a line
+      case Statement_Kind (Element) is
+         when An_If_Statement
+            | A_Case_Statement
+            | A_Loop_Statement
+            | A_While_Loop_Statement
+            | A_For_Loop_Statement
+            | A_Block_Statement
+            | An_Extended_Return_Statement
+            | A_Selective_Accept_Statement
+            | A_Timed_Entry_Call_Statement
+            | A_Conditional_Entry_Call_Statement
+            | An_Asynchronous_Select_Statement
+            =>
+            Loc := Get_Previous_Word_Location (Element, Matching => "END", Starting => From_Tail);
+            if Has_Non_Spaces_Ahead (Loc) then
+               Report (Rule_Id,
+                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                       Loc,
+                       """end"" does not start line");
+            end if;
+            Check_Split_End (Loc);
+
+         when An_Accept_Statement => -- Statements are optional...
+            if Accept_Body_Statements (Element, Include_Pragmas => True) /= Nil_Element_List then
+               Loc := Get_Previous_Word_Location (Element, Matching => "END", Starting => From_Tail);
+               if Has_Non_Spaces_Ahead (Loc) then
+                  Report (Rule_Id,
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Loc,
+                          """end"" does not start line");
+               end if;
+               Check_Split_End (Loc);
+            end if;
+
+         when others =>
+            null;
+      end case;
    end Process_Element;
 
    -----------------------
