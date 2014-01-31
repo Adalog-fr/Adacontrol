@@ -207,12 +207,22 @@ package body Rules.Unsafe_Elaboration is
          end loop;
       end;
 
-      Report (Rule_Id,
-              Usage,
-              Get_Location (Unit_Declaration (For_Unit)),
-              Defining_Name_Image (Names (Unit_Declaration (Unit)) (1))
-              & " used in elaboration code at " & Image (Get_Location (Name))
-              & ", needs pragma Elaborate or Elaborate_All");
+      if Is_Part_Of_Instance (Name) then
+         Report (Rule_Id,
+                 Usage,
+                 Get_Location (Unit_Declaration (For_Unit)),
+                 Defining_Name_Image (Names (Unit_Declaration (Unit)) (1))
+                 & " used in elaboration code through instantiation at "
+                 & Image (Get_Location (Ultimate_Enclosing_Instantiation (Name)))
+                 & ", needs pragma Elaborate or Elaborate_All");
+      else
+         Report (Rule_Id,
+                 Usage,
+                 Get_Location (Unit_Declaration (For_Unit)),
+                 Defining_Name_Image (Names (Unit_Declaration (Unit)) (1))
+                 & " used in elaboration code at " & Image (Get_Location (Name))
+                 & ", needs pragma Elaborate or Elaborate_All");
+      end if;
    end Check_Unit;
 
 

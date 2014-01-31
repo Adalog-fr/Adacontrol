@@ -382,9 +382,9 @@ package body Rules.Unit_Pattern is
                      when A_Use_Package_Clause =>
                         Clause := CC_Use;
                      when A_Use_Type_Clause =>
-                        Clause := CC_Use_All_Type;
-                     when A_Use_All_Type_Clause =>
                         Clause := CC_Use_Type;
+                     when A_Use_All_Type_Clause =>
+                        Clause := CC_Use_All_Type;
                      when A_With_Clause =>
                         Clause := CC_With;
                      when others =>

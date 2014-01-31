@@ -382,7 +382,6 @@ package body Rules.Naming_Convention is
                        Set      : in Key_Set;
                        Category : Categories := Cat_Any)
       is
-         -- For objects (constants and variables), Object_Type is an identifier or definition of its type
          use Framework.Scope_Manager;
 
          Is_Program_Unit        : constant Boolean := Is_Equal (Decl, Current_Scope);
@@ -946,7 +945,11 @@ package body Rules.Naming_Convention is
                         else
                            Good_Decl := Corresponding_Constant_Declaration (Corresponding_Name_Definition (Renamed));
                         end if;
-                        if Is_Static_Expression (Initialization_Expression (Good_Decl)) then
+                        -- Good_Decl can be Nil_Element if the constant is completed by pragma Import
+                        -- Considered non static, since anything can happen on the other side...
+                        if not Is_Nil (Good_Decl)
+                          and then Is_Static_Expression (Initialization_Expression (Good_Decl))
+                        then
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
                                   Object_Declaration_View (Original_Decl));
