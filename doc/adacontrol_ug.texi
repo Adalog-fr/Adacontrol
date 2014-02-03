@@ -6992,7 +6992,7 @@ a package specification that could be moved to the body. Such clauses
 appear as ``unused'' (but of course, the compiler will complain on the
 body if the clause is removed).
 
-@node  Representation_Clauses, Return_Type, Reduceable_Scope, Rules reference
+@node Representation_Clauses, Return_Type, Reduceable_Scope, Rules reference
 @section Representation_Clauses
 This rule controls usage of representation clause.
 
@@ -7001,9 +7001,10 @@ This rule controls usage of representation clause.
 <control_kind> representation_clauses [(<subrule> @{, <subrule>@})];
 <subrule> ::= @{<category>@} <repr_kw> | [global] [object] <attribute>
 <repr_kw> ::=
-   at                    | at_mod            | enumeration           |
-   fractional_size       | incomplete_layout | non_aligned_component |
-   non_contiguous_layout | overlay           | layout
+   at                    | at_mod                | enumeration         |
+   fractional_size       | incomplete_layout     | layout              |
+   non_aligned_component | non_contiguous_layout | no_bit_order_layout |
+   overlay
 <category> ::=
    ()     | range     | mod    | delta | digits  | array | record   |
    tagged | extension | access | new   | private | task  | protected
@@ -7067,7 +7068,10 @@ multiple of @code{System.Storage_Unit}.
 ``incomplete_layout'' controls record representation clauses that miss
 the specification of some components of the record's type.
 @item
-``layout'' controls record representation clauses.
+``layout'' controls all record representation clauses, while
+``no_bit_order_layout'' controls record representation clauses whose
+type is not also the target of a bit_order attribute specification
+(such types have a non-portable representation).
 @item
 ``non_aligned_component'' controls components that do not start on a
 storage unit boundary. The message gives the offset (in bits) relative

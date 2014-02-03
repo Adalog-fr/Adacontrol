@@ -9,7 +9,7 @@ procedure Non_Contiguous_Unaligned is
       end record;
 
    -- Normal clause
-   for Rec1 use                     -- record
+   for Rec1 use                     -- record, bit_order
       record
          I at 0 range 8 .. 39;      -- gap at beginning
          S at 6 range 0 .. 23;      -- gap before
@@ -27,7 +27,7 @@ procedure Non_Contiguous_Unaligned is
    for Rec2'Size use 96;            -- 'Size
 
    -- Unordered components
-   for Rec2 use                     -- record
+   for Rec2 use                     -- record, bit_order
       record
          C at 6 range 33 .. 40;     -- gap before, gap at end, unaligned
          S at 6 range 0 .. 23;      -- gap before

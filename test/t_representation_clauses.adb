@@ -1,4 +1,4 @@
-with System.Storage_Elements; use System.Storage_Elements;
+with System.Storage_Elements; use System, System.Storage_Elements;
 with Ada.Streams;
 with X_Representation_Clauses;
 procedure T_representation_clauses is
@@ -31,7 +31,7 @@ procedure T_representation_clauses is
          X : Integer;
          C : Character;
       end record;
-   for Rec use                       -- record, 83 alignment
+   for Rec use                       -- record, 83 alignment, bit_order
       record at mod 4;
          X at 0 range 0..31;
          C at 4 range 0..7;
@@ -43,12 +43,13 @@ procedure T_representation_clauses is
          X at 0 range 0..31;
          C at 4 range 0..7;
       end record;
+   for Der_Rec'Bit_Order use Low_Order_First;
 
    type Tagged_Type is tagged
       record
          X : Integer;
       end record;
-   for Tagged_Type use              -- Tag_record, record
+   for Tagged_Type use              -- Tag_record, record, bit_order
       record
          X at 6 range 0 .. 31;      -- gap (may depend on compiler)
       end record;
@@ -81,6 +82,7 @@ procedure T_representation_clauses is
       record
          S : String (1 .. 10);
       end record;
+   for RecTab'Bit_Order use Low_Order_First;
    for RecTab'Size use 88;               -- rec_size, 'size
    for RecTab use                        -- layout
      record

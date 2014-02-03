@@ -16,6 +16,7 @@ procedure Incomplete_Record is
          I1 at 0 range 0 .. 31;
          I3 at 4 range 0 .. 31;
       end record;
+   for T1'Bit_Order use Low_Order_First;
 begin
    null;
 end Incomplete_Record;

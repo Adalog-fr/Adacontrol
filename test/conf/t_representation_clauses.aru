@@ -9,6 +9,7 @@ record     : search representation_clauses (layout);
 Der_record : search representation_clauses (new layout);
 Ext_record : search representation_clauses (extension layout);
 Tag_record : search representation_clauses (tagged layout);
+Bit_Order  : check  representation_clauses (no_bit_order_layout);
 size       : check  representation_clauses ('SIZE);
 obj_size   : check  representation_clauses (object 'size);
 fractional : check  representation_clauses (fractional_size);

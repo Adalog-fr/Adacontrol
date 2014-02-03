@@ -62,10 +62,10 @@ package body Rules.Representation_Clauses is
    Storage_Unit : Thick_Queries.Biggest_Int;
 
    -- Sr_Attribute must stay first
-   type Subrules is (Sr_Attribute,   Sr_At,                    Sr_At_Mod,
-                     Sr_Enumeration, Sr_Fractional_Size,       Sr_Incomplete_Layout,
-                     Sr_Layout,      Sr_Non_Aligned_Component, Sr_Non_Contiguous_Layout,
-                     Sr_Overlay);
+   type Subrules is (Sr_Attribute,           Sr_At,                    Sr_At_Mod,
+                     Sr_Enumeration,         Sr_Fractional_Size,       Sr_Incomplete_Layout,
+                     Sr_Layout,              Sr_Non_Aligned_Component, Sr_Non_Contiguous_Layout,
+                     Sr_No_Bit_Order_Layout, Sr_Overlay);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
    use Subrules_Flags_Utilities, Framework.Language.Shared_Keys.Categories_Utilities;
@@ -491,6 +491,27 @@ package body Rules.Representation_Clauses is
          end if;
       end Check_Overlay;
 
+      procedure Check_Bit_Order is
+         use Asis.Declarations;
+         Rep_List  : constant Asis.Representation_Clause_List := Corresponding_Representation_Clauses
+                                                                  (Corresponding_Name_Declaration
+                                                                   (Simple_Name
+                                                                    (Representation_Clause_Name (Rep_Clause))));
+      begin
+         for R in Rep_List'Range loop
+            if Representation_Clause_Kind (Rep_List (R)) = An_Attribute_Definition_Clause
+              and then Attribute_Kind (Representation_Clause_Name (Rep_List (R))) = A_Bit_Order_Attribute
+            then
+               return;
+            end if;
+         end loop;
+         Do_Report (Sr_No_Bit_Order_Layout,
+                    Rep_Clause,
+                    "type in layout representation clause has no bit ordering specified",
+                    Loc => Get_Location (Representation_Clause_Name (Rep_Clause)));
+
+      end Check_Bit_Order;
+
    begin   -- Process_Clause
       if Rule_Used = Not_Used then
          return;
@@ -554,6 +575,10 @@ package body Rules.Representation_Clauses is
 
             if Rule_Used (Sr_Non_Contiguous_Layout) or Rule_Used (Sr_Non_Aligned_Component) then
                Check_Components (Rep_Clause);
+            end if;
+
+            if Rule_Used (Sr_No_Bit_Order_Layout) then
+               Check_Bit_Order;
             end if;
 
          when An_At_Clause =>

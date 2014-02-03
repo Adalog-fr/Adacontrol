@@ -592,6 +592,7 @@ Parameter(s): [<categories>] [global] [object] <specifiable attribute> |
                              layout                                    |
                              non_aligned_component                     |
                              non_contiguous_layout                     |
+                             no_bit_order_layout                       |
                              overlay
                              (optional)
 Categories: <>     | ()    | range   | mod    | delta     |

@@ -70,6 +70,9 @@ Parameter_Declarations:
   Added subrules tagged_parameters, class_wide_parameters.
   Added callables dispatching_function, dispatching_parameter
 
+Representation_Clauses:
+  Added subrule no_bit_order_layout
+
 Statements:
   Added subrules named_exit, exit_plain_loop, simple_block,
   unnamed_simple_block, redispatching_call. 
