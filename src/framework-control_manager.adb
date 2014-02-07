@@ -328,7 +328,7 @@ package body Framework.Control_Manager is
                -- Check value not already in the list
                Current := Node;
                while Current /= null loop
-                  if Current.Value.all = Context then
+                  if Equivalent_Values (Current.Value.all, Context) then
                      exit;
                   end if;
                   Current := Current.Next;
@@ -565,6 +565,14 @@ package body Framework.Control_Manager is
       end case;
    end Dissociate;
 
+   -----------------------
+   -- Equivalent_Values --
+   -----------------------
+
+   function Equivalent_Values (Left, Right : Root_Context) return Boolean is
+   begin
+      return Root_Context'Class (Left) = Root_Context'Class (Right);
+   end Equivalent_Values;
 
    -----------
    -- Reset --
@@ -635,5 +643,26 @@ package body Framework.Control_Manager is
       return Iter.Last_Returned = null;
    end Is_Exhausted;
 
+   ----------
+   -- Save --
+   ----------
+
+   procedure Save (Iter : in Context_Iterator; Into : out Iterator_Position) is
+   begin
+      Into := Iterator_Position (Iter.Last_Returned.Value);
+   end Save;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (Position : in Iterator_Position) return Root_Context'Class is
+   begin
+      if Position = null then
+         return No_Matching_Context;
+      else
+         return Position.all;
+      end if;
+   end Value;
 
 end Framework.Control_Manager;

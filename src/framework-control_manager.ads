@@ -47,9 +47,14 @@ package Framework.Control_Manager is
 
    type Root_Context is tagged null record;
 
+   function Equivalent_Values (Left, Right : Root_Context) return Boolean;
+   -- Compares the significative parts of a contex (i.e. those that must be unique
+   -- for an additive association - see below)
+   -- Default is regular equality
+
    procedure Clear (Context : in out Root_Context);
    -- The default (inherited) Clear does nothing.
-   -- Redefine clear if you extend Rule_Context with fields (like maps
+   -- Redefine clear if you extend Root_Context with fields (like maps
    -- or access value) that need finalization when the context store is cleared.
 
    No_Matching_Context : constant Root_Context'Class;
@@ -77,6 +82,7 @@ package Framework.Control_Manager is
    Null_Context : constant Root_Context := (null record);
    -- For rules that need a simple set of entities, use a Context_Store
    -- of Null_Context
+
 
    -------------------------------------------------------------------
    --  Context_Store                                                --
@@ -164,6 +170,10 @@ package Framework.Control_Manager is
    procedure Next               (Iter      : in out Context_Iterator);
    function  Is_Exhausted       (Iter      : in     Context_Iterator) return Boolean;
 
+   type Iterator_Position is private;
+   procedure Save (Iter     : in Context_Iterator; Into : out Iterator_Position);
+   function Value (Position : in Iterator_Position) return Root_Context'Class;
+
 private
 
    --
@@ -210,5 +220,6 @@ private
       end record;
 
    type Context_Iterator is access all Context_Store;
+   type Iterator_Position is new Context_Access;
 
 end Framework.Control_Manager;
