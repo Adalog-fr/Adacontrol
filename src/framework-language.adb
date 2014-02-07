@@ -962,7 +962,19 @@ package body Framework.Language is
    function Get_Entity_Parameter (Allow_Extended : Boolean := False;
                                   Ghost          : Wide_String := "") return Entity_Specification
    is
+      Result : Entity_Specification := Get_Entity_Modifier (Allow_Extended, Ghost);
+   begin
+      Next_Parameter;
+      return Result;
+   end Get_Entity_Parameter;
 
+   -------------------------
+   -- Get_Entity_Modifier --
+   -------------------------
+
+   function Get_Entity_Modifier (Allow_Extended : Boolean := False;
+                                 Ghost          : Wide_String := "") return Entity_Specification
+   is
       -- Information set by the parsing functions:
       Qualified  : Boolean;
 
@@ -1131,7 +1143,7 @@ package body Framework.Language is
          end if;
       end Full_Name;
 
-   begin  -- Get_Entity_Parameter
+   begin  -- Get_Entity_Modifier
       if not In_Parameters then
          Failure ("Get_Entity_Parameter called when not in parameters");
       end if;
@@ -1148,7 +1160,6 @@ package body Framework.Language is
             end if;
 
             Next_Token;
-            Next_Parameter;
             return (Kind => Box);
 
          when Equal =>
@@ -1157,7 +1168,6 @@ package body Framework.Language is
             end if;
 
             Next_Token;
-            Next_Parameter;
             return (Kind => Equal);
 
          when Left_Parenthesis =>
@@ -1171,30 +1181,19 @@ package body Framework.Language is
             end if;
 
             Next_Token;
-            Next_Parameter;
-               return (Kind          => Regular_Id,
-                       Specification => To_Unbounded_Wide_String ("()"));
+            return (Kind          => Regular_Id,
+                    Specification => To_Unbounded_Wide_String ("()"));
 
          when String_Value =>
             -- Can be an operator
-            declare
-               Result : constant Wide_String := Full_Name;
-            begin
-               Next_Parameter;
-               return (Kind          => Regular_Id,
-                       Specification => To_Unbounded_Wide_String (Result));
-            end;
+            return (Kind          => Regular_Id,
+                    Specification => To_Unbounded_Wide_String (Full_Name));
 
          when Name =>
             if Current_Token.Key /= Key_All then
                -- Normal case, no "all"
-               declare
-                  Result : constant Wide_String := Full_Name;
-               begin
-                  Next_Parameter;
-                  return (Kind          => Regular_Id,
-                          Specification => To_Unbounded_Wide_String (Result));
-               end;
+               return (Kind          => Regular_Id,
+                       Specification => To_Unbounded_Wide_String (Full_Name));
             end if;
 
             -- "all"
@@ -1202,27 +1201,16 @@ package body Framework.Language is
             if Current_Token.Kind = Tick then
                -- "all 'image"
                Next_Token;
-               declare
-                  Result : constant Wide_String := Identifier;
-               begin
-                  Next_Parameter;
-                  return (Kind          => All_Id,
-                          Specification => To_Unbounded_Wide_String (''' & Result));
-               end;
+               return (Kind          => All_Id,
+                       Specification => To_Unbounded_Wide_String (''' & Identifier));
             else
-               declare
-                  Result : constant Wide_String := Attributed_Name;
-               begin
-                  Next_Parameter;
-                  return (Kind          => All_Id,
-                          Specification => To_Unbounded_Wide_String (Result));
-               end;
+               return (Kind          => All_Id,
+                       Specification => To_Unbounded_Wide_String (Attributed_Name));
             end if;
 
          when Comma | Right_Parenthesis =>
             -- "ghost" parameter
             if Ghost /= "" then
-               Next_Parameter;
                return Value (Ghost);
             end if;
 
@@ -1230,7 +1218,7 @@ package body Framework.Language is
          when others =>
             Syntax_Error ("Entity specification expected", Current_Token.Position);
       end case;
-   end Get_Entity_Parameter;
+   end Get_Entity_Modifier;
 
    ------------------------
    -- Get_File_Parameter --

@@ -110,6 +110,11 @@ package Framework.Language is
    -- An empty string is allowed for either of them, meaning there is no
    -- corresponding keyword
 
+   function Get_Entity_Modifier (Allow_Extended : Boolean := False;
+                                 Ghost          : Wide_String := "") return Entity_Specification;
+   -- Like Get_Entity_Parameter, but treats the entity specification as a modifier (i.e. does not call
+   -- Next_Parameter)
+
    --  The following two packages can be instantiated to parse modifiers and "flag"
    --  parameters (keywords). The flags are the 'Image of the values
    --  of the generic formal type, with the initial Prefix removed (if not "").
