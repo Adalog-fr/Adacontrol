@@ -127,7 +127,7 @@ package Framework.Language.Shared_Keys is
    --       A_Private_Extension_Declaration
    --       A_Subtype_Declaration
    --       A_Formal_Type_Declaration
-   -- Appropriate Definition_Types:
+   -- Appropriate Definition_Kinds:
    --       A_Type_Definition
    --       A_Task_Definition
    --       A_Protected_Definition
