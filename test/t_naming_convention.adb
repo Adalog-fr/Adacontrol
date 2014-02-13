@@ -1,4 +1,5 @@
 pragma Ada_2005;
+with Ada.Unchecked_Conversion;
 package body T_naming_convention is
    procedure T_Cat is separate;
 
@@ -8,8 +9,8 @@ package body T_naming_convention is
    C_1       : constant := 1; -- OK, too short for "all" but rule is root
    My_Max    : constant := 2; --## RULE LINE OFF const1 ## (OK, disabled)
 
-   Xxx   : Integer;
-   Xxxx  : Integer; -- OK
+   Xxx   : Integer;                       -- Too_short
+   Xxxx  : Integer;                       -- OK
    C_Xxx : constant Integer := Xxx;
    C_Xxx_Static : constant Integer := 1+2;
 
@@ -20,6 +21,12 @@ package body T_naming_convention is
    W_z : Integer;
    WW : Integer;
    W_WW : Integer;
+
+   Is_OK        : Boolean;   -- OK
+   Has_Correct  : Boolean;   -- OK
+   IsIncorrect  : Boolean;   -- Bool_var
+   Is_Incorrect : Integer;   -- Not_Bool
+   Has_Bad      : Integer;   -- Not_Bool
 
    type T_Enum is (Enum_A, Enum_B, Enum_C); -- OK
    type T_Enum_Bad is (A, B, C);
@@ -38,7 +45,7 @@ package body T_naming_convention is
 
    type T_Rec           -- OK
      (D_Bool : Boolean; -- OK
-      Bad_2 : Boolean)
+      Bad_2  : Boolean)
    is
      record
         Field    : Boolean;
@@ -79,6 +86,37 @@ package body T_naming_convention is
    begin
       null;
    end;
+
+   -- Functions
+   function Wide_Body return Character is          -- Non_Wide_F
+   begin
+      return '1';
+   end Wide_Body;
+
+   function Wide_Wide_Body return Character is     -- Non_Wide_F
+   begin
+      return '1';
+   end Wide_Wide_Body;
+
+   function Wide_Wide_Image (C_X : Float) return Wide_String is -- Wide_F
+   begin
+      return Float'Wide_Image (C_X);
+   end Wide_Wide_Image;
+
+   function Wide_Image (C_X : Float) return Wide_String is          -- OK
+   begin
+      return Float'Wide_Image (C_X);
+   end Wide_Image;
+
+   function Wide_Wide_Image (C_X : Float) return Wide_Wide_String is -- OK
+   begin
+      return Float'Wide_Wide_Image (C_X);
+   end Wide_Wide_Image;
+
+   subtype T_String10      is String (1..10);
+   subtype T_Wide_String10 is Wide_String (1..10);
+   function Wide_Conv is new Ada.Unchecked_Conversion (T_String10,      T_String10);      -- Non_Wide_F
+   function Wide_Conv is new Ada.Unchecked_Conversion (T_Wide_String10, T_Wide_String10); -- OK
 
    -- Package
    package Pack is

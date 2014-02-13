@@ -7,6 +7,7 @@ General:
 Bug fixes:
    Mantis:  0000035, 0000036
 
+
 New rules:
 ----------
 positional_associations (took over style (positional_association))
@@ -56,7 +57,7 @@ Multiple_Assignments:
    Added criterion total
 
 Naming_Convention:
-  Added specific patterns by object type categories
+  Added specific patterns by object and functions type names and categories
   Added subrules regular_static_constant, regular_nonstatic_constant
 
 No_Operator_Usage

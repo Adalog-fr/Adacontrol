@@ -5809,12 +5809,13 @@ refering to.
 @subsection Syntax
 @example
 <control_kind> naming_convention
-   ([root] [others] @{<location>@} @{<category>@} <filter_kind>,
+   ([root] [others] @{<location>@} [<type_spec>] <filter_kind>,
     [case_sensitive|case_insensitive] [not] "<pattern>"
     @{, ...@});
-<location> ::= global | local | unit
-<category> ::= ()      | access    | array | delta  | digits | mod |
-               private | protected | range | record | tagged | task
+<location>  ::= global | local | unit
+<type_spec> ::= <entity> | @{<category>@}
+<category>  ::= ()      | access    | array | delta  | digits | mod |
+                private | protected | range | record | tagged | task
 <filter_kind> ::= All |
                     Type |
                        Discrete_Type |
@@ -5913,7 +5914,7 @@ refering to.
 The first parameter defines the kind of declaration to which the rule
 is applicable, and other parameters are strings, interpreted as
 regular expressions that define the patterns that must be
-matched. @xref{Syntax of regular expressions}.
+matched (or not). @xref{Syntax of regular expressions}.
 
 If one or more <location> keyword is specified, the pattern applies
 only to identifiers declared at the corresponding place. Otherwise,
@@ -5929,10 +5930,14 @@ package, possibly nested in other packages or generic packages.
 ``local'': All other cases.
 @end itemize
 
-Similarly, if one or more <category> keyword is specified (which is
-allowed only for filters in the ``variable'' and ``constant''
-families), the pattern applies only to identifiers of objects
-belonging to one of the given categories of types.  The meaning of
+In the case of objects (corresponding to filters  in the ``variable''
+and ``constant'' families) and functions (in the ``function'' family),
+it is possible to be more specific, depending on the type of the
+object (or the return type of the function), as specified by the
+<type_spec> modifier. The <type_spec> modifier is either a single
+<entity> giving the type of the object or one or more <category>
+keywords. As usual, the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}). The meaning of
 <category> is:
 @itemize @bullet
 @item
@@ -5964,6 +5969,12 @@ extensions).
 @item
 ``task'': The object is of a task type.
 @end itemize
+
+For a given layer of the hierarchy (i.e. ``variable'',
+``regular_variable''), only the most specific filter is applicable,
+i.e. ``standard.boolean variable'' will apply to all boolean
+variables, while plain ``variable'' will apply to other variables. See
+examples below.
 
 If ``case_sensitive'' is specified, pattern matching considers
 casing. Otherwise (``case_insensitive''), casing is irrelevant. The
@@ -6015,6 +6026,21 @@ check naming_convention (others type, case_sensitive "^t[A-Z]");
 
 -- Access types must start with "ta", then an upper-case letter:
 check naming_convention (access_type, case_sensitive "^ta[A-Z]");
+
+-- Boolean variables, and only these, must start with "Is_" or
+-- "Has_":
+check naming_convention (variable, not "^Is_", not "^Has_");
+check naming_convention (standard.boolean variable, "^Is_", "^Has_");
+
+-- Functions returning Wide_String must start with "Wide_", and
+-- similarly for Wide_Wide_String, and no other:
+check naming_convention (standard.wide_string function, 
+   "^Wide_", 
+   not "^Wide_Wide_");
+check naming_convention (standard.wide_wide_string function, 
+   "^Wide_Wide_");
+check naming_convention (function, not "^Wide_");
+
 
 @end example
 

@@ -32,8 +32,7 @@
 -- Ada
 with
   Ada.Characters.Handling,
-  Ada.Exceptions,
-  Ada.Unchecked_Deallocation;
+  Ada.Exceptions;
 
 -- ASIS
 with
@@ -53,14 +52,51 @@ with
 
 -- AdaControl
 with
+  Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
   Framework.Language.Shared_Keys,
+  Framework.Pattern_Queues,
+  Framework.Pattern_Queues_Matchers,
   Framework.Scope_Manager,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Naming_Convention is
    use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types, Framework.Language.Shared_Keys;
+
+   -- Algorithm:
+   --
+   -- The classification of elements is done by a gigantic case in Process_Defining_Name, that
+   -- calls Check with a list of keys, in order of decreasing generality.
+   --
+   -- Check calls Check_One_Key for each of the keys, in order of increasing generality (i.e. reverse),
+   -- due to "others" filters that are not considered if a more specialized filter exists.
+   --
+   -- The core of the algorith is in Check_One_Key. The hierarchy between the filters for a given key
+   -- is established by checking first with a type or else with a category or else without anything.
+   -- Unlike types/categories that make a hierarchy, the visibility parameter of a filter is just used
+   -- to determine if a filter is applicable or not.
+   --
+   -- The checking process first determines if a filter is applicable, then (if applicable) checks
+   -- negative patterns (which immediately trigger an error if matched), then checks the positive patterns.
+   -- That's where it gets more complicated: it is an error if no positive pattern is matched for any
+   -- applicable filter, unless there is no positive pattern at all among applicable patterns. This is
+   -- managed through various flags:
+   --   - Global_Applicable_Found: (the only one that runs through all keys) is true once an applicable
+   --     filter has been found; it means that upper "others" filter are no more considered
+   --   - Appropriate_Found: An appropriate filter has been found. If it has any positive filter, it is an
+   --     error if there is no match.
+   --   - Positive_Found: An appropriate filter with positive patterns has been found.
+   --   - Positive_Matched: A positive pattern has been matched.
+   --   - Root_Found: At least one of the filters is a "root" filter
+   --
+   -- Note that the matching process is stopped as soon as a certain error is diagnosed, or a certain
+   -- OK is diagnosed (the latter can happen early only when a "root" filter is encountered. This is
+   -- done by raising an exception, since it can happen deep in the call tree.
+   --
+   -- This algorithm is what seems to give the most "natural" behaviour, but we may have to refine it
+   -- in the future.
+
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -72,7 +108,8 @@ package body Rules.Naming_Convention is
    -- To add a new one, just add it to the type Keys, and insert it at the appropriate places
    -- in the calls to Check in the Process_XXX procedures.
    -- Presentation reflects the hierarchy of naming conventions
-   type Keys is (K_All,
+   type Keys is (K_Not_A_Key,   -- Not allowed to user
+                 K_All,
                     K_Type,
                        K_Discrete_Type,
                           K_Enumeration_Type,
@@ -167,7 +204,8 @@ package body Rules.Naming_Convention is
                 );
    Max_Hierarchy_Depth : constant := 5;
    -- Maximum logical depth of the above hierarchy
-   subtype Object_Keys is Keys range K_Variable .. K_Entry_Index;
+   subtype Object_Keys   is Keys range K_Variable .. K_Entry_Index;
+   subtype Function_Keys is Keys range K_Function .. K_Generic_Formal_Function;
 
    package Keys_Flags_Utilities is new Framework.Language.Flag_Utilities (Keys, "K_");
    use Keys_Flags_Utilities;
@@ -180,45 +218,44 @@ package body Rules.Naming_Convention is
                                                                               Prefix     => "SCOPE_");
    subtype Scope_Set is Visibility_Utilities.Modifier_Set;
 
-   type Usage_Rec;
-   type Usage_Rec_Access is access Usage_Rec;
-   type Pattern_Access is access String_Matching.Compiled_Pattern;
-   type Usage_Rec is new Basic_Rule_Context with
+   type Usage_Filter_Kind is (None, Category, Entity);
+   type Naming_Context (Filter_Kind : Usage_Filter_Kind) is new Basic_Rule_Context with
       record
-         Scopes     : Scope_Set;
-         Categories : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
-         Is_Others  : Boolean := False;
-         Pattern    : Pattern_Access;
-         Next       : Usage_Rec_Access;
+         Scopes            : Scope_Set;
+         Is_Root           : Boolean := False;
+         Is_Others         : Boolean := False;
+         Positive_Patterns : Pattern_Queues.Queue;
+         Negative_Patterns : Pattern_Queues.Queue;
+         case Filter_Kind is
+            when None =>
+               null;
+            when Category =>
+               Categories : Framework.Language.Shared_Keys.Categories_Utilities.Modifier_Set;
+            when Entity =>
+               Spec : Entity_Specification;
+         end case;
       end record;
+   overriding procedure Clear (Context : in out Naming_Context);
 
-   type Rule_Rec is
-      record
-         Is_Root        : Boolean := False;
-         First_Positive : Usage_Rec_Access;
-         First_Negative : Usage_Rec_Access;
-      end record;
-   Usage : array (Keys) of Rule_Rec;
+   Contexts : Context_Store;
+   package Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Contexts);
 
-   Naming_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Any                 => False,
+   Usage : array (Keys) of Boolean := (others => False);
+
+   Active_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Any                 => False,
                                                                       Cat_New | Cat_Extension => False,
                                                                       others                  => True);
+   No_More_Checks : exception;
 
    -----------
    -- Clear --
    -----------
 
-   procedure Clear (Rec : in out Usage_Rec_Access) is
-      procedure Free is new Ada.Unchecked_Deallocation (Usage_Rec, Usage_Rec_Access);
-      procedure Free is new Ada.Unchecked_Deallocation (String_Matching.Compiled_Pattern, Pattern_Access);
-      Temp : Usage_Rec_Access;
+   procedure Clear (Context : in out Naming_Context) is
+      use Pattern_Queues;
    begin
-      while Rec /= null loop
-         Temp := Rec.Next;
-         Free (Rec.Pattern);
-         Free (Rec);
-         Rec := Temp;
-      end loop;
+      Clear (Context.Positive_Patterns);
+      Clear (Context.Negative_Patterns);
    end Clear;
 
    ----------
@@ -231,11 +268,12 @@ package body Rules.Naming_Convention is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control the form of allowed (or forbidden) names in declarations");
       User_Message;
-      User_Message  ("Parameter(1): [root] [others] {<location>} {<category>}");
-      Help_On_Flags ("                ");
+      User_Message  ("Parameter(1): [root] [others] {<location>} [<type_spec>]");
+      Help_On_Flags ("                ", Extra_Value => "");
       User_Message  ("Parameter(2..N): [case_sensitive|case_insensitive] [not] ""<name pattern>""");
-      Visibility_Utilities.Help_On_Modifiers  (Header => "<location>:");
-      Categories_Utilities.Help_On_Modifiers (Header => "<category>:", Expected => Naming_Categories);
+      Visibility_Utilities.Help_On_Modifiers  (Header => "<location> :");
+      User_Message  ("<type_spec>: <entity> | {<category>}");
+      Categories_Utilities.Help_On_Modifiers (Header => "<category> :", Expected => Active_Categories);
       User_Message;
       User_Message  ("Variables:");
       Help_On_Variable (Rule_Id & ".Default_Case_Sensitivity");
@@ -255,6 +293,8 @@ package body Rules.Naming_Convention is
       Categories : Categories_Utilities.Modifier_Set;
       Is_Root    : Boolean;
       Is_Others  : Boolean;
+      Spec       : Entity_Specification;
+      Kind       : Usage_Filter_Kind;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of filter required");
@@ -268,58 +308,96 @@ package body Rules.Naming_Convention is
          Scopes := Visibility_Utilities.Full_Set;
       end if;
 
-      Categories := Get_Modifier_Set (Expected => Naming_Categories);
-      Key := Get_Flag_Parameter (Allow_Any => False);
-      if Key not in Object_Keys and Categories /= Categories_Utilities.Empty_Set then
-         Parameter_Error (Rule_Id, "categories allowed only for variables and constants");
+      Categories := Get_Modifier_Set (Expected => Active_Categories);
+      if Categories = Categories_Utilities.Empty_Set then
+         Key := Get_Flag_Parameter (Allow_Any => True);
+         if Key = K_Not_A_Key then   -- Presumably an entity
+            Kind := Entity;
+            Spec := Get_Entity_Modifier;
+            Key  := Get_Flag_Parameter (Allow_Any => True);
+         else
+            Kind := None;
+         end if;
+      else
+         Kind := Category;
+         Key  := Get_Flag_Parameter (Allow_Any => True);
+      end if;
+
+      if Key = K_Not_A_Key then
+         Parameter_Error (Rule_Id, "Filter expected");
+      elsif Kind /= None and Key not in Object_Keys and Key not in Function_Keys then
+         Parameter_Error (Rule_Id, "categories or entity allowed only for variables and constants");
       end if;
 
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "at least one pattern required");
       end if;
 
-      while Parameter_Exists loop
-         declare
-            Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
-                                                                False_KW => "CASE_SENSITIVE",
-                                                                Default  => Default_Case_Sensitivity.Value = Off);
-            Is_Not      : constant Boolean     := Get_Modifier ("NOT");
-            Pattern     : constant Wide_String := Get_String_Parameter;
-         begin
-            if Is_Not then
-               Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
-                               First_Positive => Usage (Key).First_Positive,
-                               First_Negative => new Usage_Rec'
-                                                    (Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                                     Scopes     => Scopes,
-                                                     Categories => Categories,
-                                                     Is_Others  => Is_Others,
-                                                     Pattern    => new Compiled_Pattern'(Compile (Pattern,
-                                                                                                  Ignore_Case)),
-                                                     Next       => Usage (Key).First_Negative)
-                              );
-            else
-               Usage (Key) := (Is_Root => Usage (Key).Is_Root or Is_Root,
-                               First_Positive => new Usage_Rec'
-                                                    (Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                                     Scopes     => Scopes,
-                                                     Categories => Categories,
-                                                     Is_Others  => Is_Others,
-                                                     Pattern    => new Compiled_Pattern'(Compile (Pattern,
-                                                                                                  Ignore_Case)),
-                                                     Next       => Usage (Key).First_Positive),
-                               First_Negative => Usage (Key).First_Negative
-                              );
-            end if;
-         exception
-            when Occur: Pattern_Error =>
-               Parameter_Error (Rule_Id,
-                                "Incorrect pattern: " & Pattern
-                                & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
-         end;
-      end loop;
+      declare
+         use Pattern_Queues;
+         Cont : Naming_Context (Kind);
+      begin
+         case Kind is
+            when  None =>
+               Cont := (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                        Filter_Kind    => None,
+                        Scopes         => Scopes,
+                        Is_Root        => Is_Root,
+                        Is_Others      => Is_Others,
+                        Positive_Patterns => Empty_Queue,
+                        Negative_Patterns => Empty_Queue);
+            when Category =>
+               Cont := (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                        Filter_Kind    => Category,
+                        Scopes         => Scopes,
+                        Is_Root        => Is_Root,
+                        Is_Others      => Is_Others,
+                        Positive_Patterns => Empty_Queue,
+                        Negative_Patterns => Empty_Queue,
+                        Categories     => Categories);
+            when Entity =>
+               Cont := (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                        Filter_Kind    => Entity,
+                        Scopes         => Scopes,
+                        Is_Root        => Is_Root,
+                        Is_Others      => Is_Others,
+                        Positive_Patterns => Empty_Queue,
+                        Negative_Patterns => Empty_Queue,
+                        Spec           => Spec);
+         end case;
 
-      Rule_Used := True;
+         while Parameter_Exists loop
+            declare
+               Ignore_Case : constant Boolean     := Get_Modifier (True_KW  => "CASE_INSENSITIVE",
+                                                                   False_KW => "CASE_SENSITIVE",
+                                                                   Default  => Default_Case_Sensitivity.Value = Off);
+               Is_Not      : constant Boolean     := Get_Modifier ("NOT");
+               Pattern     : constant Wide_String := Get_String_Parameter;
+            begin
+               if Is_Not then
+                  Append (Cont.Negative_Patterns, Compile (Pattern, Ignore_Case));
+               else
+                  Append (Cont.Positive_Patterns, Compile (Pattern, Ignore_Case));
+               end if;
+            exception
+               when Occur : Pattern_Error =>
+                  Parameter_Error (Rule_Id,
+                                   "Incorrect pattern: " & Pattern
+                                   & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
+            end;
+         end loop;
+
+         Associate (Contexts,
+                    Value (Image (Key) & '_' & Usage_Filter_Kind'Wide_Image (Kind)),
+                    Cont,
+                    Additive => True);
+      exception
+         when Already_In_Store =>
+            Parameter_Error (Rule_Id, "These filters already given");
+      end;
+
+      Rule_Used   := True;
+      Usage (Key) := True;
    end Add_Control;
 
    -------------
@@ -333,11 +411,8 @@ package body Rules.Naming_Convention is
          when Clear =>
             Rule_Used := False;
             Default_Case_Sensitivity := (Value => Off);
-            for I in Usage'Range loop
-               Clear (Usage (I).First_Positive);
-               Clear (Usage (I).First_Negative);
-               Usage (I).Is_Root := False;
-            end loop;
+            Clear (Contexts);
+            Usage := (others => False);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -353,9 +428,7 @@ package body Rules.Naming_Convention is
    function Is_Used (Filters : Key_Set) return Boolean is
    begin
       for I in Filters'Range loop
-         if Usage (Filters (I)).First_Positive /= null
-           or Usage (Filters (I)).First_Negative /= null
-         then
+         if Usage (Filters (I)) then
             return True;
          end if;
       end loop;
@@ -366,97 +439,203 @@ package body Rules.Naming_Convention is
    -- Process_Defining_Name --
    ---------------------------
 
-   ---------------------------
-   -- Process_Defining_Name --
-   ---------------------------
-
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Utilities;
 
       Decl : Asis.Declaration;
       -- The declaration on which we base the classification
 
-      -- Applicable rules must be given in order of decreasing generality
-      procedure Check (Name_Str : in Wide_String;
-                       Set      : in Key_Set;
-                       Category : Categories := Cat_Any)
+      -- Applicable rules must be given in Set in order of decreasing generality
+      -- For objects (constants and variables), Object_Type is an identifier or definition of its type,
+      -- For other elements, it is Nil_Element
+      procedure Check (Name_Str        : in Wide_String;
+                       Set             : in Key_Set;
+                       Object_Category : in Categories   := Cat_Any;
+                       Object_Type     : in Asis.Element := Asis.Nil_Element)
       is
          use Framework.Scope_Manager;
 
-         Is_Program_Unit        : constant Boolean := Is_Equal (Decl, Current_Scope);
-         Is_Compilation_Unit    : constant Boolean := Is_Program_Unit and Current_Depth = 1;
-         Is_Global              : Boolean;
-         Scopes_Mask            : Scope_Set;
-         Positive_Pattern_Found : Boolean := False;
+         Is_Program_Unit         : constant Boolean := Is_Equal (Decl, Current_Scope);
+         Is_Compilation_Unit     : constant Boolean := Is_Program_Unit and Current_Depth = 1;
+         Is_Global               : Boolean;
+         Scopes_Mask             : Scope_Set;
+         Good_Cat                : Categories := Object_Category;
+         Global_Applicable_Found : Boolean := False;
+         Last_Position           : Iterator_Position;
 
-         procedure Check_One (Key : in Keys) is
-            use String_Matching, Visibility_Utilities, Categories_Utilities, Framework.Reports;
-            Current                 : Usage_Rec_Access;
-            Matches                 : Boolean;
-            Last_Applicable_Pattern : Usage_Rec_Access := null;
-         begin
-            Current := Usage (Key).First_Negative;
-            while Current /= null loop
-               if (Current.Scopes and Scopes_Mask) /= Visibility_Utilities.Empty_Set
-                 and (Current.Categories = Categories_Utilities.Empty_Set or else Current.Categories (Category))
-                 and not (Current.Is_Others and Positive_Pattern_Found)
-               then
-                  Matches := Match (Name_Str, Current.Pattern.all);
-                  if Matches then
-                     Report (Rule_Id,
-                             Current.all,
-                             Get_Location (Name),
-                             "Name does not follow naming rule for """
-                             & Image (Current.Scopes, Default => Visibility_Utilities.Full_Set)
-                             & Choose (Current.Categories = Categories_Utilities.Empty_Set or Category = Cat_Any,
-                                       "",
-                                       Image (Category, Lower_Case))
-                             & Image (Key, Lower_Case)
-                             & """: """
-                             & Defining_Name_Image (Name) & '"');
-                  end if;
+         procedure Check_One_Key (Key : in Keys) is
+            use Visibility_Utilities, Framework.Reports;
+            Key_Image         : constant Wide_String := Image (Key, Lower_Case);
+            Iter              : Context_Iterator := Iterator.Create;
+            Type_Def_Name     : Asis.Declaration;
+            First_St_Def_Name : Asis.Declaration;
+            Appropriate_Found : Boolean := False;
+            Positive_Found    : Boolean := False;
+            Positive_Matched  : Boolean := False;
+            Root_Found        : Boolean := False;
+            OK_For_Type       : Boolean;
+
+            function Filter_Image (Cont : Naming_Context) return Wide_String is
+               use Categories_Utilities;
+               Scope_Image : constant Wide_String := Image (Cont.Scopes, Default => Visibility_Utilities.Full_Set);
+            begin
+               case Cont.Filter_Kind is
+                  when None =>
+                     return Scope_Image & Key_Image;
+                  when Category =>
+                     return Scope_Image
+                       & Image (Good_Cat, Lower_Case) & ' '
+                       & Key_Image;
+                  when Entity =>
+                     return Scope_Image
+                       & Image (Cont.Spec) & ' '
+                       & Key_Image;
+               end case;
+            end Filter_Image;
+
+            procedure Check_Context (Cont : Naming_Context) is
+               use Framework.Pattern_Queues, Framework.Pattern_Queues_Matchers;
+            begin
+               if Cont.Is_Others and Global_Applicable_Found then
+                  return;
                end if;
-               Current  := Current.Next;
-            end loop;
+               Global_Applicable_Found := True;
 
-            Current := Usage (Key).First_Positive;
-            while Current /= null loop
-               if (Current.Scopes and Scopes_Mask) /= Visibility_Utilities.Empty_Set
-                 and (Current.Categories = Categories_Utilities.Empty_Set or else Current.Categories (Category))
-                 and not (Current.Is_Others and Positive_Pattern_Found)
-               then
-                  Last_Applicable_Pattern := Current;
-                  Matches := Match (Name_Str, Current.Pattern.all);
-                  if Matches then
-                     Positive_Pattern_Found := True;
-                     return;
-                  end if;
+               if Match_Any (Name_Str, Cont.Negative_Patterns) then
+                  Report (Rule_Id,
+                          Cont,
+                          Get_Location (Name),
+                          "Name does not follow naming rule for """
+                          & Filter_Image (Cont)
+                          & """: """
+                          & Defining_Name_Image (Name) & '"');
+                  raise No_More_Checks;
                end if;
-               exit when Current.Next = null;
-               Current := Current.Next;
-            end loop;
 
-            -- No match found here => error, unless there were no positive patterns, or
-            --                        all positive patterns were "others"
-            -- Note that Last_Applicable_Pattern points to the last non-others pattern checked, which is
-            -- the first one given by the user since we chain on head.
-            if Last_Applicable_Pattern /= null then
-               Positive_Pattern_Found := True;
+               if Cont.Positive_Patterns = Empty_Queue or Positive_Matched then
+                  -- Rule with no positive pattern => No check
+                  -- or already found a matching pattern (but we need to go on to check
+                  -- other negative patterns)
+                  return;
+               end if;
+
+               Positive_Found := True;
+               Root_Found     := Root_Found or Cont.Is_Root;
+               Save (Iter, Last_Position);
+               if Match_Any (Name_Str, Cont.Positive_Patterns) then
+                  Positive_Matched := True;
+                  if Cont.Is_Root then
+                     raise No_More_Checks;
+                  end if;
+                  return;
+               end if;
+            end Check_Context;
+
+            use Asis;
+         begin   -- Check_One_Key
+
+            -- Check with type
+            case Element_Kind (Object_Type) is
+               when A_Definition =>
+                  if Definition_Kind (Object_Type) = A_Subtype_Indication then
+                     Type_Def_Name :=  Corresponding_Name_Definition (Simple_Name
+                                                                      (Strip_Attributes
+                                                                       (Subtype_Simple_Name (Object_Type))));
+                     OK_For_Type := True;
+                  else
+                     -- Other Definition_Kinds are for anonymous types, cannot match an entity_specification
+                     OK_For_Type := False;
+                  end if;
+               when A_Defining_Name =>
+                  Type_Def_Name := Object_Type;
+                  OK_For_Type   := True;
+               when An_Expression =>  -- Should be an identifier
+                  Type_Def_Name := Corresponding_Name_Definition (Simple_Name (Strip_Attributes (Object_Type)));
+                  OK_For_Type   := True;
+               when Not_An_Element =>
+                  OK_For_Type := False;
+               when others =>
+                  Failure ("Check_One_Key : bad Object_Type", Object_Type);
+            end case;
+
+            if OK_For_Type  then
+               Reset (Iter, Value (Key_Image & "_ENTITY"));
+               while not Is_Exhausted (Iter) loop
+                  declare
+                     Good_Context : Naming_Context renames Naming_Context (Value (Iter));
+                  begin
+                     if (Scopes_Mask and Good_Context.Scopes) /= Visibility_Utilities.Empty_Set then
+                        if Matches (Good_Context.Spec, Type_Def_Name) then
+                           -- Exact subtype
+                           Appropriate_Found := True;
+                           Check_Context (Good_Context);
+                        else
+                           -- First subtype (aka type), if different
+                           First_St_Def_Name := Names (Corresponding_First_Subtype
+                                                       (Enclosing_Element
+                                                        (Type_Def_Name))) (1);
+                           if not Is_Equal (First_St_Def_Name, Type_Def_Name)
+                             and then Matches (Good_Context.Spec, First_St_Def_Name)
+                           then
+                              Appropriate_Found := True;
+                              Check_Context (Good_Context);
+                           end if;
+                        end if;
+                     end if;
+                  end;
+                  Next (Iter);
+               end loop;
+            end if;
+
+            -- Check with category
+            if not Appropriate_Found and Good_Cat /= Cat_Any then
+               Reset (Iter, Value (Key_Image & "_CATEGORY"));
+               while not Is_Exhausted (Iter) loop
+                  declare
+                     Good_Context : Naming_Context renames Naming_Context (Value (Iter));
+                  begin
+                     if (Scopes_Mask and Good_Context.Scopes) /= Visibility_Utilities.Empty_Set
+                       and then Good_Context.Categories (Good_Cat)
+                     then
+                        Appropriate_Found := True;
+                        Check_Context (Good_Context);
+                     end if;
+                  end;
+                  Next (Iter);
+               end loop;
+            end if;
+
+            -- Check without type/category
+            if not Appropriate_Found then
+               Reset (Iter, Value (Key_Image & "_NONE"));
+               while not Is_Exhausted (Iter) loop
+                  declare
+                     Good_Context : Naming_Context renames Naming_Context (Value (Iter));
+                  begin
+                     if (Scopes_Mask and Good_Context.Scopes) /= Visibility_Utilities.Empty_Set then
+                        Appropriate_Found := True;
+                        Check_Context (Good_Context);
+                     end if;
+                  end;
+                  Next (Iter);
+               end loop;
+            end if;
+
+            -- Error if there were positive patterns, but none matched
+            if Positive_Found and not Positive_Matched then
                Report (Rule_Id,
-                       Last_Applicable_Pattern.all,
+                       Naming_Context (Value (Last_Position)),
                        Get_Location (Name),
                        "Name does not follow naming rule for """
-                       & Image (Last_Applicable_Pattern.Scopes, Default => Visibility_Utilities.Full_Set)
-                       & Choose (Last_Applicable_Pattern.Categories = Categories_Utilities.Empty_Set
-                                    or Category = Cat_Any,
-                                 "",
-                                 Image (Category, Lower_Case) & ' ')
-                       & Image (Key, Lower_Case)
+                       & Filter_Image (Naming_Context (Value (Last_Position)))
                        & """: """
                        & Defining_Name_Image (Name) & '"');
+               if Root_Found then
+                  raise No_More_Checks;
+               end if;
             end if;
-         end Check_One;
+         end Check_One_Key;
 
       begin  -- Check
          if Is_Compilation_Unit then
@@ -470,32 +649,27 @@ package body Rules.Naming_Convention is
                          Scope_Global => Is_Global,
                          Scope_Unit   => Is_Compilation_Unit);
 
-         for I in reverse Set'Range loop
-            Check_One (Set (I));
-            exit when Usage (Set (I)).Is_Root;
-         end loop;
-      end Check;
-
-      procedure Check (Name_Str : in Wide_String; Set : in Key_Set; Object_Type : Asis.Element) is
-      -- For objects (constants and variables), Object_Type is an identifier or definition of its type
-         Category : Categories;
-      begin
-         if Is_Nil (Object_Type) then
-            Category := Cat_Any;
-         else
-            Category := Matching_Category (Object_Type,
-                                           From_Cats          => Categories_Utilities.Modifier_Set'
-                                                                  (Cat_New | Cat_Extension => False,
-                                                                   others                  => True),
-                                           Follow_Derived     => True,
-                                           Privacy            => Stop_At_Private,
-                                           Separate_Extension => True);
+         if Good_Cat = Cat_Any and not Is_Nil (Object_Type) then
+            Good_Cat := Matching_Category  (Object_Type,
+                                            From_Cats => Categories_Utilities.Modifier_Set'
+                                                          (Cat_New | Cat_Extension => False,
+                                                           others                  => True),
+                                            Follow_Derived     => True,
+                                            Privacy            => Stop_At_Private,
+                                            Separate_Extension => True);
          end if;
+         for I in reverse Set'Range loop
+            if Usage (Set (I)) then
+               Check_One_Key (Set (I));
+            end if;
+         end loop;
 
-         Check (Name_Str, Set, Category);
+      exception
+         when No_More_Checks =>
+            null;
       end Check;
 
-         use Asis.Definitions;
+         use Asis, Asis.Definitions;
    begin    -- Process_Defining_Name
       if not Rule_Used then
          return;
@@ -907,13 +1081,15 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Type, K_Generic_Formal_Type));
 
                   when An_Enumeration_Literal_Specification =>
-                     Check (Name_Str, (K_All, K_Constant, K_Enumeration), Cat_Enum);
+                     Check (Name_Str, (K_All, K_Constant, K_Enumeration), Object_Category => Cat_Enum);
 
                   when A_Variable_Declaration =>  ------------------------ Constants, Variables, Parameters
                      if Is_Nil (Decl) then
+                     -- Decl is Nil_Element in the case of a renaming of a dereference => dynamic
+                     -- but Decl_Kind is correct
                         Check (Name_Str,
                                (K_All, K_Variable, K_Regular_Variable),
-                               Object_Type => Simple_Name (Object_Declaration_View (Original_Decl)));
+                               Object_Type => Object_Declaration_View (Original_Decl));
                      else
                         Check (Name_Str,
                                (K_All, K_Variable, K_Regular_Variable),
@@ -922,10 +1098,11 @@ package body Rules.Naming_Convention is
 
                   when A_Constant_Declaration =>
                      -- Decl is Nil_Element in the case of a renaming of a dereference => dynamic
+                     -- but Decl_Kind is correct
                      if Is_Nil (Decl) then
                         Check (Name_Str,
                                (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
-                               Object_Type => Simple_Name (Object_Declaration_View (Original_Decl)));
+                               Object_Type => Object_Declaration_View (Original_Decl));
                      elsif Is_Static_Expression (Initialization_Expression (Decl)) then
                         Check (Name_Str,
                                (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
@@ -952,11 +1129,11 @@ package body Rules.Naming_Convention is
                         then
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
-                                  Object_Declaration_View (Original_Decl));
+                                  Object_Type => Object_Declaration_View (Original_Decl));
                         else
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
-                                  Object_Declaration_View (Original_Decl));
+                                  Object_Type => Object_Declaration_View (Original_Decl));
                         end if;
                      end;
 
@@ -1080,11 +1257,11 @@ package body Rules.Naming_Convention is
                           =>
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Generic_Formal_In),
-                                  Object_Type => Simple_Name (Object_Declaration_View (Decl)));
+                                  Object_Type => Object_Declaration_View (Decl));
                         when An_In_Out_Mode =>
                            Check (Name_Str,
                                   (K_All, K_Variable, K_Generic_Formal_In_Out),
-                                  Object_Type => Simple_Name (Object_Declaration_View (Decl)));
+                                  Object_Type => Object_Declaration_View (Decl));
                         when An_Out_Mode
                           | Not_A_Mode
                           =>
@@ -1094,7 +1271,7 @@ package body Rules.Naming_Convention is
                   when A_Discriminant_Specification =>
                      Check (Name_Str,
                             (K_All, K_Variable, K_Field, K_Discriminant),
-                            Object_Type => Simple_Name (Object_Declaration_View (Decl)));
+                            Object_Type => Object_Declaration_View (Decl));
 
                   when A_Component_Declaration =>
                      -- We must determine whether it is declared within a record or protected type
@@ -1170,25 +1347,35 @@ package body Rules.Naming_Convention is
 
                   when A_Function_Declaration
                      | An_Expression_Function_Declaration   -- Ada 2012
-                     | A_Function_Instantiation
                      =>
-                     -- To be honest, a function instantiation cannot be in a
-                     -- protected specification
                      if Definition_Kind (Enclosing_Element (Decl)) = A_Protected_Definition then
-                        Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Protected_Function));
+                        Check (Name_Str,
+                               (K_All, K_Subprogram, K_Function, K_Protected_Function),
+                               Object_Type => Result_Profile (Decl));
                      else
-                        Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Regular_Function));
+                        Check (Name_Str,
+                               (K_All, K_Subprogram, K_Function, K_Regular_Function),
+                               Object_Type => Result_Profile (Decl));
                      end if;
 
+                  when A_Function_Instantiation =>
+                        Check (Name_Str,
+                               (K_All, K_Subprogram, K_Function, K_Regular_Function),
+                               Object_Type => Result_Profile (Corresponding_Declaration (Decl)));
+
                   when A_Formal_Function_Declaration =>
-                     Check (Name_Str, (K_All, K_Subprogram, K_Function, K_Generic_Formal_Function));
+                     Check (Name_Str,
+                            (K_All, K_Subprogram, K_Function, K_Generic_Formal_Function),
+                            Object_Type => Result_Profile (Decl));
 
                   when A_Function_Body_Declaration
                      | A_Function_Body_Stub
                      =>
                      -- Check body only if there is no explicit spec
                      if Is_Nil (Corresponding_Declaration (Decl)) then
-                        Check (Name_Str, (K_All, K_Subprogram, K_Function));
+                        Check (Name_Str,
+                               (K_All, K_Subprogram, K_Function),
+                               Object_Type => Result_Profile (Decl));
                      end if;
 
                   when A_Package_Declaration  ------------------------ Packages
@@ -1202,16 +1389,20 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Package, K_Generic_Formal_Package));
 
                   when A_Task_Type_Declaration =>  ------------------------ Tasks
-                     Check (Name_Str, (K_All, K_Task, K_Task_Type), Cat_Task);
+                     Check (Name_Str, (K_All, K_Task, K_Task_Type));
 
                   when A_Single_Task_Declaration =>
-                     Check (Name_Str, (K_All, K_Variable, K_Task, K_Task_Object));
+                     Check (Name_Str,
+                            (K_All, K_Variable, K_Task, K_Task_Object),
+                            Object_Category => Cat_Task);
 
                   when A_Protected_Type_Declaration =>  ------------------------ Protected
                      Check (Name_Str, (K_All, K_Protected, K_Protected_Type));
 
                   when A_Single_Protected_Declaration =>
-                     Check (Name_Str, (K_All, K_Variable, K_Protected, K_Protected_Object), Cat_Protected);
+                     Check (Name_Str,
+                            (K_All, K_Variable, K_Protected, K_Protected_Object),
+                            Object_Category => Cat_Protected);
 
                   when An_Exception_Declaration =>  ------------------------ Exceptions
                      Check (Name_Str, (K_All, K_Exception));
