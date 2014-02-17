@@ -352,7 +352,6 @@ package body Rules.Declarations is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Asis.Definitions;
       use Thick_Queries, Utilities;
 
-      Accessed_Type : Asis.Element;
       Target_Entity : Asis.Name;
       Enclosing     : Asis.Element;
 
@@ -690,40 +689,54 @@ package body Rules.Declarations is
                      when Access_To_Subprogram_Definition =>
                         Do_Report ((D_Type, D_Access_Type, D_Access_Subprogram_Type), Element);
                      when others =>
-                        Accessed_Type := Subtype_Simple_Name (Asis.Definitions.Access_To_Object_Definition
-                                                              (Type_Declaration_View (Element)));
-                        if Expression_Kind (Accessed_Type) = An_Attribute_Reference then
-                           -- Must be 'Base or 'Class, the prefix is as good for our purpose
-                           Accessed_Type := Simple_Name (Prefix (Accessed_Type));
-                        end if;
+                        declare
+                           Accessed_Type : Asis.Declaration := Subtype_Simple_Name
+                                                                (Asis.Definitions.Access_To_Object_Definition
+                                                                 (Type_Declaration_View (Element)));
+                           Accessed_Ancestor_Descr : Derivation_Descriptor;
+                        begin
+                           if Expression_Kind (Accessed_Type) = An_Attribute_Reference then
+                              -- Must be 'Base or 'Class, the prefix is as good for our purpose
+                              Accessed_Type := Simple_Name (Prefix (Accessed_Type));
+                           end if;
 
-                        Accessed_Type := Ultimate_Type_Declaration (Corresponding_Name_Declaration (Accessed_Type));
-                        case Declaration_Kind (Accessed_Type) is
-                           when A_Task_Type_Declaration =>
-                              Check_Access_Discriminated (Element, Accessed_Type);
-                              Do_Report ((D_Type, D_Access_Type, D_Access_Task_Type), Element);
-                           when A_Protected_Type_Declaration =>
-                              Check_Access_Discriminated (Element, Accessed_Type);
-                              Do_Report ((D_Type, D_Access_Type, D_Access_Protected_Type), Element);
-                           when An_Ordinary_Type_Declaration =>
-                              case Type_Kind (Type_Declaration_View (Accessed_Type)) is
-                                 when A_Constrained_Array_Definition =>
-                                    Do_Report ((D_Type, D_Access_Type, D_Access_Constrained_Array_Type), Element);
-                                 when An_Unconstrained_Array_Definition =>
-                                    Do_Report ((D_Type, D_Access_Type, D_Access_Unconstrained_Array_Type), Element);
-                                 when others =>
-                                    Check_Access_Discriminated (Element, Accessed_Type);
-                                    Do_Report ((D_Type, D_Access_Type), Element);
-                              end case;
-                           when A_Formal_Type_Declaration =>
-                              Check_Access_Discriminated (Element, Accessed_Type);
-                              Do_Report ((D_Type, D_Access_Type, D_Access_Formal_Type), Element);
-                           when A_Private_Type_Declaration | A_Private_Extension_Declaration =>
-                              Check_Access_Discriminated (Element, Accessed_Type);
-                              Do_Report ((D_Type, D_Access_Type, D_Access_Language_Type), Element);
-                           when others =>
-                              Failure ("Declarations: unexpected accessed type", Accessed_Type);
-                        end case;
+                           Accessed_Ancestor_Descr := Corresponding_Derivation_Description
+                                                       (Corresponding_Name_Declaration (Accessed_Type));
+                           case Declaration_Kind (Accessed_Ancestor_Descr.Ultimate_Type) is
+                              when A_Task_Type_Declaration =>
+                                 Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
+                                 Do_Report ((D_Type, D_Access_Type, D_Access_Task_Type), Element);
+                              when A_Protected_Type_Declaration =>
+                                 Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
+                                 Do_Report ((D_Type, D_Access_Type, D_Access_Protected_Type), Element);
+                              when An_Ordinary_Type_Declaration =>
+                                 case Type_Kind (Type_Declaration_View (Accessed_Ancestor_Descr.Ultimate_Type)) is
+                                    when A_Constrained_Array_Definition =>
+                                       Do_Report ((D_Type, D_Access_Type, D_Access_Constrained_Array_Type),
+                                                  Element);
+                                    when An_Unconstrained_Array_Definition =>
+                                       -- It might have been constrained on the way up
+                                       if Is_Nil (Accessed_Ancestor_Descr.First_Constraint) then
+                                          Do_Report ((D_Type, D_Access_Type, D_Access_Unconstrained_Array_Type),
+                                                     Element);
+                                       else
+                                          Do_Report ((D_Type, D_Access_Type, D_Access_Constrained_Array_Type),
+                                                     Element);
+                                       end if;
+                                    when others =>
+                                       Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
+                                       Do_Report ((D_Type, D_Access_Type), Element);
+                                 end case;
+                              when A_Formal_Type_Declaration =>
+                                 Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
+                                 Do_Report ((D_Type, D_Access_Type, D_Access_Formal_Type), Element);
+                              when A_Private_Type_Declaration | A_Private_Extension_Declaration =>
+                                 Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
+                                 Do_Report ((D_Type, D_Access_Type, D_Access_Language_Type), Element);
+                              when others =>
+                                 Failure ("Declarations: unexpected accessed type", Accessed_Type);
+                           end case;
+                        end;
                   end case;
 
                   -- Check for "all" or "constant"

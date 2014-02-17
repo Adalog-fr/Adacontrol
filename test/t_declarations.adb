@@ -141,9 +141,11 @@ procedure T_declarations is       -- library_procedure
 
    type Arr1 is array (1 .. 10) of Character;                 -- constrained_array_type, array, anonymous_subtype_declaration
    type Arr2 is array (Positive range <>) of Integer;         -- unconstrained_array_type, array
+   type Arr3 is new Arr2 (1..10);                             -- derived_type, anonymous_subtype_declaration x2
    subtype Subarr21 is Arr2;                                  -- subtype, unconstrained_subtype
    subtype Subarr22 is Arr2 (1 .. 3);                         -- subtype, anonymous_subtype_declaration
    subtype Subarr23 is Subarr22;                              -- subtype, unconstrained_subtype
+   type Arr4 is new Subarr22;                                 -- derived_type
    VArr1 : array (1 .. 10) of Character;                      -- anonymous_subtype_declaration, variable, single_array, constrained_array_variable, array, uninitialized_variable
    Varr2 : Arr2 := (1, 2, 3);                                 -- variable, unconstrained_array_variable, array, initialized_variable
    Carr1 : constant Arr2 := Varr2;                            -- constant, unconstrained_array_constant, array
@@ -151,8 +153,11 @@ procedure T_declarations is       -- library_procedure
    Varr4 : Subarr21 := (1,2, 3);                              -- variable, unconstrained_array_variable, array, initialized_variable
    Varr5 : Subarr23;                                          -- variable, constrained_array_variable, array, uninitialized_variable
    Carr2 : constant Subarr23 := Varr5;                        -- constant, constrained_array_constant, array
-   type Acc_Arr1 is access Arr1;                              -- access_constrained_array_type, access_type
-   type Acc_Arr2 is access Arr2;                              -- access_unconstrained_array_type, access_type
+   type Acc_Arr1  is access Arr1;                              -- access_constrained_array_type, access_type
+   type Acc_Arr2  is access Arr2;                              -- access_unconstrained_array_type, access_type
+   type Acc_Arr22 is access Subarr22;                          -- access_constrained_array_type, access_type
+   type Acc_Arr3  is access Arr3;                              -- access_constrained_array_type, access_type
+   type Acc_Arr4  is access Arr4;                              -- access_constrained_array_type, access_type
 
    type Der1 is new Rec1 with null record;                   -- null_extension, extension, tagged_type, record_type
    type Der2 (Y : Integer) is new Rec1 with null record;     -- null_extension, extension, tagged_type, record_type, discriminant
