@@ -28,8 +28,8 @@ begin
    A :=     (1, 2, 3, 4);                     -- Array_Aggregate, Unqualified
    A := Arr'(others => 0);                    -- Array_Aggregate, Array_Others
    A :=     (others => 0);                    -- Array_Aggregate, Unqualified, array_others
-   A := Arr'(1, others => 0);                 -- Array_Aggregate, Array_Others, Array_Partial_Others
-   A :=     (1 => 1, others => 0);            -- Array_Aggregate, Unqualified, Array_Others, Array_Partial_Others
+   A := Arr'(1, others => 0);                 -- Array_Aggregate, Array_Others, Array_Positional_Others, Array_Partial_Others
+   A :=     (1 => 1, others => 0);            -- Array_Aggregate, Unqualified, Array_Others, Array_Named_Others, Array_Partial_Others
 
    R := Rec'(X => 1.0, Y => 0.0);             -- Record_Aggregate
    R :=     (X => 1.0, Y => 0.0);             -- Record_Aggregate, Unqualified

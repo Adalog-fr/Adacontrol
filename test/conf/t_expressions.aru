@@ -5,6 +5,7 @@ Array             : check  expressions (and_array, or_array, xor_array);
 Boolean           : check  expressions (and_boolean, or_boolean, xor_boolean, and_then, or_else);
 Binary            : check  expressions (and_binary, or_binary, xor_binary);
 Others            : check  expressions (array_others, array_partial_others, record_others, record_partial_others);
+Others_Special    : check  expressions (array_positional_others, array_named_others);
 Unqualified       : check  expressions (unqualified_aggregate);
 Aggregate         : search expressions (array_aggregate, record_aggregate, extension_aggregate);
 Extendable        : search expressions (extendable_aggregate);

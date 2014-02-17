@@ -4394,8 +4394,9 @@ This rule controls usage of various kinds of expressions.
    and                              | and_array                  |
    and_binary                       | and_boolean                |
    and_then                         | array_aggregate            |
-   array_others                     | array_non_static_range     |
-   array_partial_others             | array_rang                 |
+   array_named_others               | array_non_static_range     |
+   array_others                     | array_partial_others       |
+   array_positional_others          | array_range                |
    case                             | complex_parameter          |
    downward_conversion              | extendable_aggregate       |
    extension_aggregate              | explicit_dereference       |
@@ -4493,12 +4494,14 @@ aggregates, respectively.
 @item
 @code{array_partial_others} and @code{record_partial_others} do the
 same, but only if there are other associations in addition to the
-@code{@b{others} =>} in the aggregate.
+@code{@b{others} =>} in the aggregate. @code{array_named_others} and
+@code{array_positional_others} do the same, but only for named
+(respectively positional) array aggregates.
 @item
 @code{array_range} controls array aggregates that include a range
-(i.e. an association like @code{A .. B
-=>}). @code{array_non_static_range} does the same, but only if (at
-least) one of the bounds is not static.
+(i.e. an association like @code{A .. B =>}).
+@code{array_non_static_range} does the same, but only if (at least)
+one of the bounds is not static.
 @item
 @code{case} controls @b{case} expressions (introduced in Ada 2012).
 @item
@@ -4631,6 +4634,11 @@ the rule @code{Allocators} instead. @xref{Allocators}.
 
 ``inherited_function_call'' controls only @i{function} calls. For
 procedure calls, see rule @ref{Statements}.
+
+Specifying @code{array_partial_others} is the same as specifying both
+@code{array_named_others} and @code{array_positional_others}. It is
+retained for compatibility, and also for symetry with
+@code{record_partial_others}.
 
 Per language rules, underived conversions are allowed only between
 numeric types, and between structurally equivalent array types.

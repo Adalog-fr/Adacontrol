@@ -244,7 +244,8 @@ Control occurrences of Ada expressions
 Parameter(s): and                              | and_array                 |
               and_binary                       | and_boolean               |
               and_then                         | array_aggregate           |
-              array_partial_others             | array_non_static_range    |
+              array_named_others               | array_non_static_range    |
+              array_partial_others             | array_positional_others   |
               array_others                     | array_range               |
               case                             | complex_parameter         |
               downward_conversion              | explicit_dereference      |

@@ -42,8 +42,8 @@ Expressions:
   Added subrules in, not_in, static_membership, and_array,
   and_logical, and_binary, or_array, or_logical, or_binary, xor_array,
   xor_logical, xor_binary, upward_conversion, downward_conversion,
-  extension_aggregate, extendable_aggregate,
-  unconverted_fixed_multiplying_op
+  extension_aggregate, extendable_aggregate, array_positional_others,
+  array_named_others, unconverted_fixed_multiplying_op
 
   Subrule Mixed_Operators considers membership tests and short circuit forms
 

@@ -52,10 +52,10 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   type Subrules is (E_And,                  E_And_Array,              E_And_Binary,
-                     E_And_Boolean,          E_And_Then,               E_Array_Aggregate,
-                     E_Array_Partial_Others, E_Array_Non_Static_Range, E_Array_Others,
-                     E_Array_Range,
+   type Subrules is (E_And,                     E_And_Array,              E_And_Binary,
+                     E_And_Boolean,             E_And_Then,               E_Array_Aggregate,
+                     E_Array_Named_Others,      E_Array_Non_Static_Range, E_Array_Partial_Others,
+                     E_Array_Positional_Others, E_Array_Others,           E_Array_Range,
 
                      E_Case, E_Complex_Parameter,
 
@@ -665,6 +665,8 @@ package body Rules.Expressions is
    procedure Process_Expression (Expression : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
+
+      subtype An_Array_Aggregate is Expression_Kinds range A_Positional_Array_Aggregate .. A_Named_Array_Aggregate;
    begin
       if Rule_Used = (Subrules => False) then
          return;
@@ -820,6 +822,12 @@ package body Rules.Expressions is
                      if Assocs'Length > 1 then
                         -- Note that others must appear alone as a choice, therefore we cannot
                         -- be fooled by multiple choices
+                        case An_Array_Aggregate (Expression_Kind (Expression)) is
+                           when A_Named_Array_Aggregate =>
+                              Do_Report (E_Array_Named_Others, Get_Location (Choices (Choices'First)));
+                           when A_Positional_Array_Aggregate =>
+                              Do_Report (E_Array_Positional_Others, Get_Location (Choices (Choices'First)));
+                        end case;
                         Do_Report (E_Array_Partial_Others, Get_Location (Choices (Choices'First)));
                      end if;
                   end if;
