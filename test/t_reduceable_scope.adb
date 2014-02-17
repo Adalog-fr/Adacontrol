@@ -17,13 +17,13 @@ procedure T_Reduceable_Scope (X : Integer) is
       null;
    end For_Access;
 
-   package Pack2 is  -- Movable to P
+   package Pack2 is   -- Movable to P
       I  : Integer;   -- Movable to body
       E1 : exception; -- Movable to body
    end Pack2;
    package body Pack2 is
       E2 : exception; -- OK (movable to P, but exceptions are only to_body)
-      procedure P is -- Not movable
+      procedure P is  -- Not movable
       begin
          Pack2.I := 1;
          raise E1;
@@ -60,11 +60,24 @@ procedure T_Reduceable_Scope (X : Integer) is
    T2  : TT1;  -- Not movable
 
    type Param_T is range 1 .. 10;   -- Not movable
-   procedure Proc (X : Param_T) is  -- Not used
+   procedure Proc (X : Param_T) is  -- Movable to Include_Gen, but not Gen_P
    begin
       null;
    end Proc;
 
+   Count : Natural := 0;
+   procedure Include_Gen is         -- Not used
+      generic
+         with procedure P (X : Param_T) is Proc;   -- This usage does not bring Proc in formals scope
+      procedure Gen_P;                 -- Not used
+      procedure Gen_P is
+      begin
+         Count := Count + 1;           -- Used in generic => not movable
+      end Gen_P;
+      procedure Inst is new Gen_P;
+   begin
+      Inst;
+   end Include_Gen;
 begin
 
 For_Loop : for I in 1..10 loop -- Not movable (For_Loop, I)

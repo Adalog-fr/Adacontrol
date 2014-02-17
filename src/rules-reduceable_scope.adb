@@ -592,6 +592,19 @@ package body Rules.Reduceable_Scope is
             end loop;
          end if;
 
+         -- Trim Usage_Path at first generic from bottom, since nothing can be moved into a generic
+         for S in Usage_Path'Range loop
+            if Declaration_Kind (Usage_Path (S)) in A_Generic_Declaration then
+               if S = Usage_Path'First then
+                  -- Nothing left => remove declaration
+                  Action := Delete;
+                  return;
+               end if;
+               Top := S;
+               exit;
+            end if;
+         end loop;
+
          -- Get rid of top scopes where nothing can be moved to
          while     Statement_Kind   (Usage_Path (Top)) = A_For_Loop_Statement
            or else Statement_Kind   (Usage_Path (Top)) = An_Accept_Statement
