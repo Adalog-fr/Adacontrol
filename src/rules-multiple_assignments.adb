@@ -59,7 +59,8 @@ package body Rules.Multiple_Assignments is
 
    -- Algorithm:
    --
-   -- Since this rule is about sequences of assignments, it is plugged on any construct
+   -- Subrules repeated and groupable:
+   -- Since the rules are about sequences of assignments, they are plugged on any construct
    -- that can contain statements. The sequence of statements is scanned for consecutive
    -- assignments.
    --
@@ -100,11 +101,12 @@ package body Rules.Multiple_Assignments is
    type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio, Crit_Total);
    package Criteria_Utilities is new Framework.Language.Modifier_Utilities (Criteria, Prefix => "Crit_");
 
-   Rule_Used : Boolean := False;
-   Save_Used : Boolean;
+   type Usage_Flags is array (Subrules) of Boolean;
+   Not_Used : constant Usage_Flags := (others => False);
+   Rule_Used : Usage_Flags := Not_Used;
+   Save_Used : Usage_Flags;
 
    -- Data for subrule Repeated:
-   Repeated_Used    : Boolean := False;
    Repeated_Context : Basic_Rule_Context;
 
    -- Data for subrule Groupable
@@ -179,11 +181,10 @@ package body Rules.Multiple_Assignments is
             if Parameter_Exists then
                Parameter_Error (Rule_Id, "No parameter for subrule ""repeated""");
             end if;
-            if Repeated_Used then
+            if Rule_Used (Repeated) then
                Parameter_Error (Rule_Id, "subrule ""repeated"" already specified");
             end if;
 
-            Repeated_Used    := True;
             Repeated_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
 
          when Groupable =>
@@ -206,7 +207,7 @@ package body Rules.Multiple_Assignments is
             end loop;
             Append (Groupable_Contexts, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Given, Missing, Ratio, Total));
       end case;
-      Rule_Used := True;
+      Rule_Used (Subrule) := True;
    end Add_Control;
 
 
@@ -219,11 +220,10 @@ package body Rules.Multiple_Assignments is
    begin
       case Action is
          when Clear =>
-            Rule_Used     := False;
-            Repeated_Used := False;
+            Rule_Used := Not_Used;
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := False;
+            Rule_Used := Not_Used;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -553,7 +553,7 @@ package body Rules.Multiple_Assignments is
          if Is_Present (LHS_Infos, Key) then
             -- Variable already assigned
             Target_Descr := Fetch (LHS_Infos, Key);
-            if Repeated_Used
+            if Rule_Used (Repeated)
               and then (Coverage = Full or Target_Descr.Coverage = Full)
             then
                Report (Rule_Id,
@@ -585,7 +585,7 @@ package body Rules.Multiple_Assignments is
          -- True field, not already seen: Increment parent count if full child, chain otherwise
          Parent_Descr := Fetch (LHS_Infos, Parent_Key);
          if Parent_Descr.Coverage = Full then  -- Parent previously assigned in full
-            if Repeated_Used then
+            if Rule_Used (Repeated) then
                Report (Rule_Id,
                        Repeated_Context,
                        Get_Location (LHS),
@@ -646,7 +646,7 @@ package body Rules.Multiple_Assignments is
       procedure Do_Report is new LHS_Map.Iterate (Report_One);
 
    begin   -- Process_Statement_Container
-      if not Rule_Used then
+      if not Rule_Used (Groupable) and not Rule_Used (Repeated) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
