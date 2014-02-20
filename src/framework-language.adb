@@ -962,7 +962,7 @@ package body Framework.Language is
    function Get_Entity_Parameter (Allow_Extended : Boolean := False;
                                   Ghost          : Wide_String := "") return Entity_Specification
    is
-      Result : Entity_Specification := Get_Entity_Modifier (Allow_Extended, Ghost);
+      Result : constant Entity_Specification := Get_Entity_Modifier (Allow_Extended, Ghost);
    begin
       Next_Parameter;
       return Result;

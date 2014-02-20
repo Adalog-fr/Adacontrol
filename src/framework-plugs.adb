@@ -186,7 +186,7 @@ package body Framework.Plugs is
    -- Enter_Statement_List --
    --------------------------
 
-   -- Plug calls here to rules that need to process a Sequence_of_statements
+   -- Plug calls here to rules that need to process a Sequence_of_statements.
    -- Element is one of the elements to which Thick_Queries.Statements applies
    -- (i.e. a statement container)
    procedure Enter_Statement_List (Element : in Asis.Element) is

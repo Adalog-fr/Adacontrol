@@ -378,7 +378,7 @@ package body Rules.Dependencies is
             if Public_Child_Used
               and then Unit_Class (Enclosing_Compilation_Unit (Ultimate_Name (Elem)))
                        in A_Public_Declaration .. A_Public_Declaration_And_Body
-              and then Starts_With (To_Upper (Full_Name_Image (Elem)), To_Upper (Full_Name_Image (This_Name)))
+              and then Starts_With (To_Upper (Full_Name_Image (Elem)), To_Upper (Full_Name_Image (This_Name)) & '.')
             then
                Report (Rule_Id, Public_Child_Context, Get_Location (Withed_Names (N)), "Use of public child");
             end if;

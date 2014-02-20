@@ -6042,10 +6042,10 @@ check naming_convention (standard.boolean variable, "^Is_", "^Has_");
 
 -- Functions returning Wide_String must start with "Wide_", and
 -- similarly for Wide_Wide_String, and no other:
-check naming_convention (standard.wide_string function, 
-   "^Wide_", 
+check naming_convention (standard.wide_string function,
+   "^Wide_",
    not "^Wide_Wide_");
-check naming_convention (standard.wide_wide_string function, 
+check naming_convention (standard.wide_wide_string function,
    "^Wide_Wide_");
 check naming_convention (function, not "^Wide_");
 
@@ -7691,7 +7691,7 @@ This rule controls usage of certain Ada statements.
    unnamed_for_loop         | unnamed_multiple_loop  |
    unnamed_simple_block     | unnamed_simple_loop    |
    unnamed_while_loop       | untyped_for            |
-while_loop
+   while_loop
 @end example
 
 @subsection Action
