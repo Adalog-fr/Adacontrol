@@ -1,4 +1,4 @@
-separate (T_Multiple_Assignments)
+separate (T_Assignments)
 procedure Sliding is
 
    function F return String is
@@ -31,10 +31,10 @@ One_Dimensional :
       Make_Other_Group;
       S1 := From_2'("1234567890");       -- Sliding
       Make_Other_Group;
-      S1 := From_2 (S1);                  -- Sliding
+      S1 := From_2 (S1);                 -- Sliding
       Make_Other_Group;
       S1 := S2;                          -- Sliding
-      S2 := "2345678901";               -- Sliding
+      S2 := "2345678901";                -- Sliding
    end One_Dimensional;
 
 Two_Dimensional :

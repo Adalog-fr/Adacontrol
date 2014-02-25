@@ -25,6 +25,7 @@ conf/t_abnormal_function_return.aru: No syntax error
 conf/t_allocators.aru: No syntax error
 conf/t_array_declarations.aru: No syntax error
 conf/t_aspects.aru: No syntax error
+conf/t_assignments.aru: No syntax error
 conf/t_barrier_expressions.aru: No syntax error
 conf/t_case_statement.aru: No syntax error
 conf/t_characters.aru: No syntax error
@@ -53,7 +54,6 @@ conf/t_max_nesting.aru: No syntax error
 conf/t_max_size.aru: No syntax error
 conf/t_max_statement_nesting.aru: No syntax error
 conf/t_movable_accept_statements.aru: No syntax error
-conf/t_multiple_assignments.aru: No syntax error
 conf/t_naming_convention.aru: No syntax error
 conf/t_no_operator_usage.aru: No syntax error
 conf/t_non_static.aru: No syntax error

@@ -1,0 +1,6 @@
+Groupable1:     search assignments (groupable, given 2, missing 1);
+Groupable2:     check  assignments (groupable, ratio 75);
+Repeated:       check  assignments (repeated);
+Fully_Assigned: count  assignments (groupable, missing 0);
+Small_Rec:      check  assignments (groupable, total 2);
+Sliding:        check  assignments (sliding);

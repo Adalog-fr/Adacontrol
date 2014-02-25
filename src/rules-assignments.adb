@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Multiple_Assignments - Package body                       --
+--  Rules.Assignments - Package body                                --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
@@ -53,7 +53,7 @@ with
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
-package body Rules.Multiple_Assignments is
+package body Rules.Assignments is
    use Ada.Strings.Wide_Unbounded;
    use Framework, Framework.Control_Manager;
 
@@ -757,10 +757,10 @@ package body Rules.Multiple_Assignments is
       end;
    end Process_Assignment;
 
-begin  -- Rules.Multiple_Assignments
+begin  -- Rules.Assignments
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
-end Rules.Multiple_Assignments;
+end Rules.Assignments;

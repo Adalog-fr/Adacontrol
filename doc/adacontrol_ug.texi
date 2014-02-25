@@ -2470,6 +2470,7 @@ is a dispatching call.
 * Allocators::
 * Array_Declarations::
 * Aspects::
+* Assignments::
 * Barrier_Expressions::
 * Case_Statement::
 * Characters::
@@ -2498,7 +2499,6 @@ is a dispatching call.
 * Max_Size::
 * Max_Statement_Nesting::
 * Movable_Accept_Statements::
-* Multiple_Assignments::
 * Naming_Convention::
 * No_Operator_Usage::
 * Non_Static::
@@ -2923,7 +2923,7 @@ indices. To control the use of a type as an index at any position and
 irrespectively of the number of indices of the array, use the rule
 ``type_usage''. @xref{Type_Usage}.
 
-@node Aspects, Barrier_Expressions, Array_Declarations, Rules reference
+@node Aspects, Assignments, Array_Declarations, Rules reference
 @section Aspects
 This rule controls aspect specifications (new feature in Ada 2012), either
 all of them or specific ones.
@@ -2942,7 +2942,117 @@ search aspects;
 DBC: check aspects (Pre, Post, Pre'Class, Post'Class);
 @end example
 
-@node Barrier_Expressions, Case_Statement, Aspects, Rules reference
+@node  Assignments, Barrier_Expressions, Aspects, Rules reference
+@section Assignments
+This rule controls various issues related to the assignment
+statement: assignments that involve array sliding, redundant
+assignments to the same variable, or groups of assignments that are
+replaceable by aggregate assignment.
+
+@subsection Syntax
+@example
+<control_kind> assignments (sliding);
+<control_kind> assignments (repeated);
+<control_kind> assignments (groupable, <filter> @{,<filter>@});
+<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> | total <max_val>
+@end example
+
+@subsection Action
+The first form (keyword ``sliding'') controls array assignments where
+the target variable has a different lower bound than the assigned
+expression; this is allowed by the language only in so-called
+``sliding'' contexts.
+
+Other subrules control properties of groups of assignment statements. A
+group is made of consecutive assignments, without any other
+intervening kind of statements (except null statements).
+
+The second form (keyword ``repeated'') controls when a same variable
+(or a same subcomponent of a structured variable) is assigned several
+times in the same group of assignments. This form of the rule can be
+given only once.
+
+The third form (keyword ``groupable'') controls assignments to
+different subcomponents of a same structured variable; such
+assignments are often replaceable by a global assignment of an
+aggregate to the variable. One or several <filter> parameters
+indicate under which conditions a group is reported:
+@itemize @bullet
+@item
+``given'': <min_val> (an integer value) indicates the minimum number
+of assigned subcomponents that will trigger the rule (i.e. the rule is
+triggered if  the number of assignments to subcomponents of a same
+variable is greater or equal to the indicated value).
+@item
+``missing'': <max_val> (an integer value) indicates the maximum number
+of subcomponents not assigned that will trigger the rule (i.e. the
+rule is triggered if  the number of subcomponents not assigned to is
+lesser or equal to the indicated value).
+@item
+``ratio'': <min_val> (an integer value) indicates the minimum
+percentage of assigned subcomponents that will trigger the rule
+(i.e. the rule is triggered if  the percentage of assigned
+subcomponents is greater or equal to the indicated value).
+@item
+``total'': <max_val> (an integer value) indicates the maximum number
+of subcomponents of the type that will trigger the rule (i.e. the
+rule is triggered if  the number of subcomponents of the record type is
+lesser or equal to the indicated value).
+@end itemize
+
+If several filters are given, the rule is triggered if all conditions
+are met (``and'' logic). Note however that this rule can be given
+several times, thus achieving ``or'' logic.
+
+The rule is @i{not} triggered on an object if a subcomponent of that object
+is of a limited type, since global assignment would not be allowed in
+that case.
+
+For other structured objects, a subcomponent is counted as assigned if
+it has been assigned in full, or if it @i{should} have been assigned
+in full (in other words: if the rule is triggered on those
+subcomponents as well) - recursively, of course.
+
+Ex:
+@example
+search Assignments (sliding);
+check  Assignments (repeated);
+
+-- Warn if a at least 3 fields are given and at most
+-- two fields are missing, or if 80% of the fields are given:
+search assignments (groupable, given 3, missing 2);
+search assignments (groupable, ratio 80);
+@end example
+
+@subsection Tip
+The ``sliding'' subrule is not intended to prevent all cases of
+slidings (the dynamic ones are uncheckable), it is rather an
+indication of ``obvious'' cases that could be avoided.
+
+Note that for the ``groupable'' subrule, it is possible to give 1 for
+the ``given'' criterion; in this case, any assignment to parts of a
+structured variable will be reported, only global assignment is
+allowed.
+
+@subsection Limitations
+As usual, AdaControl can control only static aspects of
+assignments. Therefore, it cannot control assignments whose target is
+not statically known (like dynamic indexing of arrays). Slices are
+always considered dynamic (the cases where it would be useful did not
+seem  worth the additional complexity).
+
+For the ``sliding'' subrule, if the assigned expression is a
+multidimensional aggregate, only the first dimension is checked for
+sliding, other dimensions are ignored. This is not considered an
+important issue, since in any case the rule can detect only static
+cases, and the handling of sliding in multi-dimensional array
+aggregates is extremely touchy (see RM 4.3.3 for details).
+
+For the ``groupable'' subrule, if the number of subcomponents is not
+statically determinable (dynamic arrays, discriminated records), only
+the ``given'' criterion can be met.
+
+@node Barrier_Expressions, Case_Statement, Assignments, Rules reference
 @section Barrier_Expressions
 Although the language allows any expression as the barrier of a
 protected entry, it is generally better to use only ``simple''
@@ -5676,7 +5786,7 @@ check max_statement_nesting (loop, 3);
 search max_statement_nesting (all, 5);
 @end example
 
-@node Movable_Accept_Statements, Multiple_Assignments, Max_Statement_Nesting, Rules reference
+@node Movable_Accept_Statements, Naming_Convention, Max_Statement_Nesting, Rules reference
 @section Movable_Accept_Statements
 This rule controls statements that are inside accept statements and
 could safely be moved outside.
@@ -5718,117 +5828,7 @@ whose execution must be part of the accept statement for logical
 reasons. They can also be global variables, when the rendezvous is
 intended to prevent concurrent access to these variables.
 
-@node Multiple_Assignments, Naming_Convention, Movable_Accept_Statements, Rules reference
-@section Multiple_Assignments
-This rule controls various issues related to the assignment
-statement: assignments that involve array sliding, redundant
-assignments to the same variable, or groups of assignments that are
-replaceable by aggregate assignment.
-
-@subsection Syntax
-@example
-<control_kind> multiple_assignments (sliding);
-<control_kind> multiple_assignments (repeated);
-<control_kind> multiple_assignments (groupable, <filter> @{,<filter>@});
-<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> | total <max_val>
-@end example
-
-@subsection Action
-The first form (keyword ``sliding'') controls array assignments where
-the target variable has a different lower bound than the assigned
-expression; this is allowed by the language only in so-called
-``sliding'' contexts.
-
-Other subrules control properties of groups of assignment statements. A
-group is made of consecutive assignments, without any other
-intervening kind of statements (except null statements).
-
-The second form (keyword ``repeated'') controls when a same variable
-(or a same subcomponent of a structured variable) is assigned several
-times in the same group of assignments. This form of the rule can be
-given only once.
-
-The third form (keyword ``groupable'') controls assignments to
-different subcomponents of a same structured variable; such
-assignments are often replaceable by a global assignment of an
-aggregate to the variable. One or several <filter> parameters
-indicate under which conditions a group is reported:
-@itemize @bullet
-@item
-``given'': <min_val> (an integer value) indicates the minimum number
-of assigned subcomponents that will trigger the rule (i.e. the rule is
-triggered if  the number of assignments to subcomponents of a same
-variable is greater or equal to the indicated value).
-@item
-``missing'': <max_val> (an integer value) indicates the maximum number
-of subcomponents not assigned that will trigger the rule (i.e. the
-rule is triggered if  the number of subcomponents not assigned to is
-lesser or equal to the indicated value).
-@item
-``ratio'': <min_val> (an integer value) indicates the minimum
-percentage of assigned subcomponents that will trigger the rule
-(i.e. the rule is triggered if  the percentage of assigned
-subcomponents is greater or equal to the indicated value).
-@item
-``total'': <max_val> (an integer value) indicates the maximum number
-of subcomponents of the type that will trigger the rule (i.e. the
-rule is triggered if  the number of subcomponents of the record type is
-lesser or equal to the indicated value).
-@end itemize
-
-If several filters are given, the rule is triggered if all conditions
-are met (``and'' logic). Note however that this rule can be given
-several times, thus achieving ``or'' logic.
-
-The rule is @i{not} triggered on an object if a subcomponent of that object
-is of a limited type, since global assignment would not be allowed in
-that case.
-
-For other structured objects, a subcomponent is counted as assigned if
-it has been assigned in full, or if it @i{should} have been assigned
-in full (in other words: if the rule is triggered on those
-subcomponents as well) - recursively, of course.
-
-Ex:
-@example
-search Multiple_Assignments (sliding);
-check  Multiple_Assignments (repeated);
-
--- Warn if a at least 3 fields are given and at most
--- two fields are missing, or if 80% of the fields are given:
-search multiple_assignments (groupable, given 3, missing 2);
-search multiple_assignments (groupable, ratio 80);
-@end example
-
-@subsection Tip
-The ``sliding'' subrule is not intended to prevent all cases of
-slidings (the dynamic ones are uncheckable), it is rather an
-indication of ``obvious'' cases that could be avoided.
-
-Note that for the ``groupable'' subrule, it is possible to give 1 for
-the ``given'' criterion; in this case, any assignment to parts of a
-structured variable will be reported, only global assignment is
-allowed.
-
-@subsection Limitations
-As usual, AdaControl can control only static aspects of
-assignments. Therefore, it cannot control assignments whose target is
-not statically known (like dynamic indexing of arrays). Slices are
-always considered dynamic (the cases where it would be useful did not
-seem  worth the additional complexity).
-
-For the ``sliding'' subrule, if the assigned expression is a
-multidimensional aggregate, only the first dimension is checked for
-sliding, other dimensions are ignored. This is not considered an
-important issue, since in any case the rule can detect only static
-cases, and the handling of sliding in multi-dimensional array
-aggregates is extremely touchy (see RM 4.3.3 for details).
-
-For the ``groupable'' subrule, if the number of subcomponents is not
-statically determinable (dynamic arrays, discriminated records), only
-the ``given'' criterion can be met.
-
-@node Naming_Convention, No_Operator_Usage, Multiple_Assignments, Rules reference
+@node Naming_Convention, No_Operator_Usage, Movable_Accept_Statements, Rules reference
 @section Naming_Convention
 This rule controls the form of identifiers to make sure that they
 follow the project's naming conventions. Different naming conventions
@@ -5966,7 +5966,7 @@ object (or the return type of the function), as specified by the
 <type_spec> modifier. The <type_spec> modifier is either a single
 <entity> giving the type of the object or one or more <category>
 keywords. As usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}). The meaning of
+<entity>. @xref{Specifying an Ada entity name}. The meaning of
 <category> is:
 @itemize @bullet
 @item
@@ -9827,6 +9827,10 @@ The extension of aspects to more rules required a slight change in the
 syntax of the ``component'' subrule: the keywords ``packed'',
 ``sized'', and ``component_sized'' have been changed to ``pack'',
 ``size'', and  ``component_size'', respectively.
+
+@subsection Multiple_Assignments
+Due to new functionalities, and expecting more in the future, the rule
+has been renamed to ``Assignments''.
 
 @subsection No_Operator_Usage
 The syntax has been changed, due to the introduction of

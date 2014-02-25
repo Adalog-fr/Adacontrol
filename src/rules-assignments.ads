@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Multiple_Assignments - Package specification              --
+--  Rules.Assignments - Package specification                       --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2007. The Ada --
@@ -33,11 +33,11 @@
 with
   Asis;
 
-package Rules.Multiple_Assignments is
+package Rules.Assignments is
 
-   Rule_Id : constant Wide_String := "MULTIPLE_ASSIGNMENTS";
+   Rule_Id : constant Wide_String := "ASSIGNMENTS";
 
    procedure Process_Statement_Container (Element   : in Asis.Element);
    procedure Process_Assignment          (Statement : in Asis.Statement);
 
-end Rules.Multiple_Assignments;
+end Rules.Assignments;

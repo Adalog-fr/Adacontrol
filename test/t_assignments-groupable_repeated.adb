@@ -1,4 +1,4 @@
-separate (T_Multiple_Assignments)
+separate (T_Assignments)
 procedure Groupable_Repeated is
    type Rec is
       record
@@ -151,9 +151,9 @@ Bl: declare
       X := 1;
       Y := 1;
       X := 1;                                                -- Repeated
-      T_Multiple_Assignments.Groupable_Repeated.Bl.X := 1;   -- Repeated
+      T_Assignments.Groupable_Repeated.Bl.X := 1;   -- Repeated
       Z := 1;                                                -- Repeated
-      T_Multiple_Assignments.Groupable_Repeated.Bl.Z := 1;   -- Repeated
+      T_Assignments.Groupable_Repeated.Bl.Z := 1;   -- Repeated
    end Bl;
 
    -- Tagged types

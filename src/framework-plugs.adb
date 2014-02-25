@@ -39,6 +39,7 @@ with
   Rules.Allocators,
   Rules.Array_Declarations,
   Rules.Aspects,
+  Rules.Assignments,
   Rules.Barrier_Expressions,
   Rules.Max_Call_Depth,
   Rules.Case_Statement,
@@ -54,7 +55,6 @@ with
   Rules.Local_Access,
   Rules.Generic_Aliasing,
   Rules.Global_References,
-  Rules.Multiple_Assignments,
   Rules.Header_Comments,
   Rules.Improper_Initialization,
   Rules.Instantiations,
@@ -191,7 +191,7 @@ package body Framework.Plugs is
    -- (i.e. a statement container)
    procedure Enter_Statement_List (Element : in Asis.Element) is
    begin
-      Rules.Multiple_Assignments. Process_Statement_Container (Element);
+      Rules.Assignments. Process_Statement_Container (Element);
    end Enter_Statement_List;
 
    ---------------------
@@ -558,7 +558,7 @@ package body Framework.Plugs is
 
             case Statement_Kind (Element) is
                when An_Assignment_Statement =>
-                  Rules.Multiple_Assignments.Process_Assignment (Element);
+                  Rules.Assignments.Process_Assignment (Element);
 
                when A_Procedure_Call_Statement =>
                   Rules.Max_Call_Depth.                 Process_Call                  (Element);
