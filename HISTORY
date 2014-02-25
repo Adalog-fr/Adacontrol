@@ -54,7 +54,8 @@ Global_References:
    Added subrules read, written
 
 Multiple_Assignments:
-   Added criterion total
+   Added subrule sliding.
+   Added criterion total.
 
 Naming_Convention:
   Added specific patterns by object and functions type names and categories

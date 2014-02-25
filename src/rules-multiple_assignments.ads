@@ -37,6 +37,7 @@ package Rules.Multiple_Assignments is
 
    Rule_Id : constant Wide_String := "MULTIPLE_ASSIGNMENTS";
 
-   procedure Process_Statement_Container (Element : in Asis.Element);
+   procedure Process_Statement_Container (Element   : in Asis.Element);
+   procedure Process_Assignment          (Statement : in Asis.Statement);
 
 end Rules.Multiple_Assignments;

@@ -3,3 +3,4 @@ Groupable2:     check  multiple_assignments (groupable, ratio 75);
 Repeated:       check  multiple_assignments (repeated);
 Fully_Assigned: count  multiple_assignments (groupable, missing 0);
 Small_Rec:      check  multiple_assignments (groupable, total 2);
+Sliding:        check  multiple_assignments (sliding);

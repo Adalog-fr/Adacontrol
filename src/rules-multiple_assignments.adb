@@ -59,8 +59,11 @@ package body Rules.Multiple_Assignments is
 
    -- Algorithm:
    --
+   -- Subrule Sliding:
+   -- Easy
+   --
    -- Subrules repeated and groupable:
-   -- Since the rules are about sequences of assignments, they are plugged on any construct
+   -- Since this rule is about sequences of assignments, it is plugged on any construct
    -- that can contain statements. The sequence of statements is scanned for consecutive
    -- assignments.
    --
@@ -95,7 +98,7 @@ package body Rules.Multiple_Assignments is
    -- At the end of a sequence of assignments, all LHS in the map are traversed, and
    -- messages are issued according to the values assigned/total subcomponents.
 
-   type Subrules is (Repeated, Groupable);
+   type Subrules is (Sliding, Repeated, Groupable);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio, Crit_Total);
@@ -105,6 +108,9 @@ package body Rules.Multiple_Assignments is
    Not_Used : constant Usage_Flags := (others => False);
    Rule_Used : Usage_Flags := Not_Used;
    Save_Used : Usage_Flags;
+
+   -- Data for subrule Sliding:
+   Sliding_Context : Basic_Rule_Context;
 
    -- Data for subrule Repeated:
    Repeated_Context : Basic_Rule_Context;
@@ -147,7 +153,8 @@ package body Rules.Multiple_Assignments is
       use Utilities, Criteria_Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control repeated assignments in a sequence to a same variable, or sequences of assignments");
+      User_Message ("Control various issues in relation to assignments: obvious array slidings,");
+      User_Message ("repeated assignments in a sequence to a same variable, or sequences of assignments");
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
       User_Message;
       Help_On_Flags ("Parameter(1):");
@@ -177,6 +184,17 @@ package body Rules.Multiple_Assignments is
 
       Subrule := Get_Flag_Parameter (Allow_Any => False);
       case Subrule is
+         when Sliding =>
+            if Parameter_Exists then
+               Parameter_Error (Rule_Id, "No parameter for subrule ""sliding""");
+            end if;
+
+            if Rule_Used (Sliding) then
+               Parameter_Error (Rule_Id, "subrule ""sliding"" already specified");
+            end if;
+
+            Sliding_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+
          when Repeated =>
             if Parameter_Exists then
                Parameter_Error (Rule_Id, "No parameter for subrule ""repeated""");
@@ -688,6 +706,56 @@ package body Rules.Multiple_Assignments is
          end if;
       end;
    end Process_Statement_Container;
+
+
+   ------------------------
+   -- Process_Assignment --
+   ------------------------
+
+   procedure Process_Assignment (Statement : in Asis.Statement) is
+      use Asis.Statements;
+      use Framework.Reports, Thick_Queries, Utilities;
+   begin
+      if not Rule_Used (Sliding) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         LHS : constant Asis.Expression := Assignment_Variable_Name (Statement);
+         RHS : constant Asis.Expression := Assignment_Expression (Statement);
+      begin
+         if Type_Category (LHS) /= An_Array_Type then
+            return;
+         end if;
+
+         declare
+            LH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (LHS);
+            RH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (RHS);
+            Inx       : Asis.List_Index;
+         begin
+            for Dim in Asis.List_Index range 1 .. LH_Bounds'Last / 2 loop
+               Inx := 2 * Dim - 1;
+               if         LH_Bounds (Inx) /= Not_Static
+                 and then RH_Bounds (Inx) /= Not_Static
+                 and then LH_Bounds (Inx) /= RH_Bounds (Inx)
+               then
+                  if LH_Bounds'Length = 2 then
+                     Report (Rule_Id,
+                             Sliding_Context,
+                             Get_Location (RHS),
+                             "Lower bound does not match assigned variable");
+                  else
+                     Report (Rule_Id,
+                             Sliding_Context,
+                             Get_Location (RHS),
+                             "Lower bound of dimension " & Integer_Img (Dim) & " does not match assigned variable");
+                  end if;
+               end if;
+            end loop;
+         end;
+      end;
+   end Process_Assignment;
 
 begin  -- Rules.Multiple_Assignments
    Framework.Rules_Manager.Register (Rule_Id,

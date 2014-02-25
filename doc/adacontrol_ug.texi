@@ -5720,27 +5720,35 @@ intended to prevent concurrent access to these variables.
 
 @node Multiple_Assignments, Naming_Convention, Movable_Accept_Statements, Rules reference
 @section Multiple_Assignments
-This rule controls groups of assignments that are either redundant of
+This rule controls various issues related to the assignment
+statement: assignments that involve array sliding, redundant
+assignments to the same variable, or groups of assignments that are
 replaceable by aggregate assignment.
 
 @subsection Syntax
 @example
+<control_kind> multiple_assignments (sliding);
 <control_kind> multiple_assignments (repeated);
 <control_kind> multiple_assignments (groupable, <filter> @{,<filter>@});
 <filter> ::= given <min_val> | missing <max_val> | ratio <min_val> | total <max_val>
 @end example
 
 @subsection Action
-This rule controls properties of groups of assignment statements. A
+The first form (keyword ``sliding'') controls array assignments where
+the target variable has a different lower bound than the assigned
+expression; this is allowed by the language only in so-called
+``sliding'' contexts.
+
+Other subrules control properties of groups of assignment statements. A
 group is made of consecutive assignments, without any other
 intervening kind of statements (except null statements).
 
-The first form (keyword ``repeated'') controls when a same variable
+The second form (keyword ``repeated'') controls when a same variable
 (or a same subcomponent of a structured variable) is assigned several
 times in the same group of assignments. This form of the rule can be
 given only once.
 
-The second form (keyword ``groupable'') controls assignments to
+The third form (keyword ``groupable'') controls assignments to
 different subcomponents of a same structured variable; such
 assignments are often replaceable by a global assignment of an
 aggregate to the variable. One or several <filter> parameters
@@ -5783,7 +5791,8 @@ subcomponents as well) - recursively, of course.
 
 Ex:
 @example
-check Multiple_Assignments (repeated);
+search Multiple_Assignments (sliding);
+check  Multiple_Assignments (repeated);
 
 -- Warn if a at least 3 fields are given and at most
 -- two fields are missing, or if 80% of the fields are given:
@@ -5792,9 +5801,14 @@ search multiple_assignments (groupable, ratio 80);
 @end example
 
 @subsection Tip
-Note that it is possible to give 1 for the ``given'' criterion; in
-this case, any assignment to parts of a structured variable will be
-reported, only global assignment is allowed.
+The ``sliding'' subrule is not intended to prevent all cases of
+slidings (the dynamic ones are uncheckable), it is rather an
+indication of ``obvious'' cases that could be avoided.
+
+Note that for the ``groupable'' subrule, it is possible to give 1 for
+the ``given'' criterion; in this case, any assignment to parts of a
+structured variable will be reported, only global assignment is
+allowed.
 
 @subsection Limitations
 As usual, AdaControl can control only static aspects of
@@ -5803,9 +5817,16 @@ not statically known (like dynamic indexing of arrays). Slices are
 always considered dynamic (the cases where it would be useful did not
 seem  worth the additional complexity).
 
-Similarly, if the number of subcomponents is not statically
-determinable (dynamic arrays, discriminated records), only the
-``given'' criterion can be met.
+For the ``sliding'' subrule, if the assigned expression is a
+multidimensional aggregate, only the first dimension is checked for
+sliding, other dimensions are ignored. This is not considered an
+important issue, since in any case the rule can detect only static
+cases, and the handling of sliding in multi-dimensional array
+aggregates is extremely touchy (see RM 4.3.3 for details).
+
+For the ``groupable'' subrule, if the number of subcomponents is not
+statically determinable (dynamic arrays, discriminated records), only
+the ``given'' criterion can be met.
 
 @node Naming_Convention, No_Operator_Usage, Multiple_Assignments, Rules reference
 @section Naming_Convention

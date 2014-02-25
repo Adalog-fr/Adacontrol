@@ -400,10 +400,11 @@ Parameter(1): certain | possible
 Parameter(2..N): <name>
 ----
 Rule: MULTIPLE_ASSIGNMENTS
-Control repeated assignments in a sequence to a same variable, or sequences of assignments
+Control various issues in relation to assignments: obvious array slidings,
+repeated assignments in a sequence to a same variable, or sequences of assignments
 to components of a structured variable that could be replaced by an aggregate
 
-Parameter(1): repeated | groupable
+Parameter(1): sliding | repeated | groupable
 
 For groupable:
 Parameter(2..n): <criterion> <value>

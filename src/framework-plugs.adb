@@ -557,6 +557,9 @@ package body Framework.Plugs is
             Rules.Statements.              Process_Statement (Element);
 
             case Statement_Kind (Element) is
+               when An_Assignment_Statement =>
+                  Rules.Multiple_Assignments.Process_Assignment (Element);
+
                when A_Procedure_Call_Statement =>
                   Rules.Max_Call_Depth.                 Process_Call                  (Element);
                   Rules.Default_Parameter.              Process_Call_Or_Instantiation (Element);
