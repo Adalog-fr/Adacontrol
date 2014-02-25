@@ -505,7 +505,7 @@ package body Rules.Array_Declarations is
       procedure Process_Component is
          use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
          use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
-         Array_Comp : constant Asis.Expression := Component_Subtype_Indication
+         Array_Comp : constant Asis.Expression := Component_Definition_View
                                                    (Array_Component_Definition (Definition));
          First_St   : Asis.Declaration;
          Iterator   : Context_Iterator := Compo_Iterator.Create;
@@ -570,9 +570,9 @@ package body Rules.Array_Declarations is
             end loop;
          end Compo_Report;
       begin  -- Process_Component
-         -- 2005 Array_Comp is nil if the component is of an anonymous access type
-         -- Give up on matching (sub)types, only match access category
-         if Is_Nil (Array_Comp) then
+         if Definition_Kind (Array_Comp) = An_Access_Definition then
+            -- Anonymous access type
+            -- Give up on matching (sub)types, only match access category
             -- Category
             Reset (Iterator, Framework.Value (Image (An_Access_Type)));
             Compo_Report (Iterator, Lower_Case);

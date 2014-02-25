@@ -1014,9 +1014,9 @@ package body Rules.Usage is
          Current_Definition : Asis.Definition := Def;
       begin
          loop
-            Current_Definition := Component_Subtype_Indication (Array_Component_Definition (Current_Definition));
-            if Is_Nil (Current_Definition) then
-               -- 2005 anonymous access component => access type => initialized
+            Current_Definition := Component_Definition_View (Array_Component_Definition (Current_Definition));
+            if Definition_Kind (Current_Definition) = An_Access_Definition then
+               -- anonymous access component => access type => initialized
                return True;
             end if;
             Current_Definition := Type_Declaration_View (Corresponding_Name_Declaration

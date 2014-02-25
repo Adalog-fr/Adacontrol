@@ -206,8 +206,8 @@ package body Rules.Improper_Initialization is
                when An_Unconstrained_Array_Definition
                   | A_Constrained_Array_Definition
                     =>
-                  Temp := Component_Subtype_Indication (Array_Component_Definition (Definition));
-                  if Is_Nil (Temp) then
+                  Temp := Component_Definition_View (Array_Component_Definition (Definition));
+                  if Definition_Kind (Temp) = An_Access_Definition then
                      -- anonymous access component
                      return Nil_Element;
                   end if;
@@ -1026,9 +1026,9 @@ package body Rules.Improper_Initialization is
             elsif Type_Kind (Subtype_Decl) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition then
                -- Damn anonymous array
                -- Work on the components, but only one level (case of components of a limited private type)
-               Subtype_Decl := Component_Subtype_Indication (Array_Component_Definition (Subtype_Decl));
-               if Is_Nil (Subtype_Decl) then
-                  -- 2005 Anonymous array of anonymous access! Those people should not be allowed to program...
+               Subtype_Decl := Component_Definition_View (Array_Component_Definition (Subtype_Decl));
+               if Definition_Kind (Subtype_Decl) = An_Access_Definition then
+                  -- Anonymous array of anonymous access! Those people should not be allowed to program...
                   -- Handle as above
                   if not Extensions (Var_Kind) (M_Access) then
                      return;

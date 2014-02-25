@@ -537,7 +537,7 @@ package body Rules.Declarations is
                   end if;
                   -- Temp <- True component type name definition
                   Temp := Corresponding_Name_Definition (Subtype_Simple_Name
-                                                         (Component_Subtype_Indication
+                                                         (Component_Definition_View
                                                           (Array_Component_Definition
                                                            (Operation_Ultimate_Type))));
                   -- Boolean array?
@@ -624,7 +624,7 @@ package body Rules.Declarations is
 
                -- Temp <- True component type name definition
                Temp := Corresponding_Name_Definition (Subtype_Simple_Name
-                                                      (Component_Subtype_Indication
+                                                      (Component_Definition_View
                                                        (Array_Component_Definition
                                                         (Operation_Ultimate_Type))));
                -- Boolean array?

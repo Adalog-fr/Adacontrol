@@ -252,7 +252,7 @@ package body Rules.Barrier_Expressions is
                               -- A field of the protected element, boolean fields always allowed
                               if To_Upper (Full_Name_Image
                                            (Subtype_Simple_Name
-                                            (Component_Subtype_Indication
+                                            (Component_Definition_View
                                              (Object_Declaration_View (Name_Decl)))))
                                   /= "STANDARD.BOOLEAN"
                               then
