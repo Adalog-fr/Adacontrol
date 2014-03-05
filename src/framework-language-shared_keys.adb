@@ -117,7 +117,7 @@ package body Framework.Language.Shared_Keys is
    begin
       if Allow_Single and then Is_Integer_Parameter then
          Result.Min := Get_Integer_Parameter (Min => Bound_Min, Max => Bound_Max);
-         Result.Max := Result.Min;                --## rule line off Multiple_Assignments
+         Result.Max := Result.Min;                --## rule line off Assignments
          return Result;
       end if;
 

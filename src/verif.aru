@@ -15,13 +15,13 @@ check simplifiable_statements;
 check statements (untyped_for);
 check max_blank_lines (2);
 check characters (control, trailing_space);
-check multiple_assignments (groupable, given 2, ratio 100);
+check assignments (groupable, given 2, ratio 100);
 check with_clauses (reduceable);
 
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);
 search max_nesting (5);
-search local_hiding (strict, "^object$", "^class$");
+search local_hiding (strict, "^object$", "^class$", "^instance$");
 search comments (unnamed_begin, program_unit all);
 --search usage (procedure, from_spec, not called);
 --search usage (function,  from_spec, not called);

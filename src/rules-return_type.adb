@@ -70,7 +70,7 @@ package body Rules.Return_Type is
    --   protected and task types.
    --
 
-   type Subrules is (K_Class_Wide,        K_Limited_Class_Wide,  K_Protected,           K_Task,
+   type Subrules is (K_Class_Wide,        K_Limited_Class_Wide,  K_Protected,                   K_Task,
                      K_Constrained_Array, K_Unconstrained_Array, K_Unconstrained_Discriminated,
                      K_Anonymous_Access);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");

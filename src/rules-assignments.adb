@@ -713,7 +713,7 @@ package body Rules.Assignments is
    ------------------------
 
    procedure Process_Assignment (Statement : in Asis.Statement) is
-      use Asis.Statements;
+      use Asis, Asis.Statements;
       use Framework.Reports, Thick_Queries, Utilities;
    begin
       if not Rule_Used (Sliding) then
@@ -749,7 +749,8 @@ package body Rules.Assignments is
                      Report (Rule_Id,
                              Sliding_Context,
                              Get_Location (RHS),
-                             "Lower bound of dimension " & Integer_Img (Dim) & " does not match assigned variable");
+                             "Lower bound of dimension " & ASIS_Integer_Img (Dim)
+                               & " does not match assigned variable");
                   end if;
                end if;
             end loop;

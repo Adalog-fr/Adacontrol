@@ -52,43 +52,43 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   type Subrules is (E_And,                     E_And_Array,              E_And_Binary,
-                     E_And_Boolean,             E_And_Then,               E_Array_Aggregate,
-                     E_Array_Named_Others,      E_Array_Non_Static_Range, E_Array_Partial_Others,
-                     E_Array_Positional_Others, E_Array_Others,           E_Array_Range,
+   type Subrules is (E_And,                              E_And_Array,              E_And_Binary,
+                     E_And_Boolean,                      E_And_Then,               E_Array_Aggregate,
+                     E_Array_Named_Others,               E_Array_Non_Static_Range, E_Array_Partial_Others,
+                     E_Array_Positional_Others,          E_Array_Others,           E_Array_Range,
 
-                     E_Case, E_Complex_Parameter,
+                     E_Case,                             E_Complex_Parameter,
 
                      E_Downward_Conversion,
 
-                     E_Explicit_Dereference, E_Extendable_Aggregate, E_Extension_Aggregate,
+                     E_Explicit_Dereference,             E_Extendable_Aggregate,   E_Extension_Aggregate,
 
-                     E_Fixed_Multiplying_Op, E_For_All, E_For_Some,
+                     E_Fixed_Multiplying_Op,             E_For_All,                E_For_Some,
 
-                     E_If,                      E_If_Elsif, E_If_No_Else,
-                     E_Implicit_Dereference,    E_In,       E_Inconsistent_Attribute_Dimension,
+                     E_If,                               E_If_Elsif,               E_If_No_Else,
+                     E_Implicit_Dereference,             E_In,                     E_Inconsistent_Attribute_Dimension,
                      E_Inherited_Function_Call,
 
                      E_Mixed_Operators,
 
                      E_Not_In,
 
-                     E_Or,         E_Or_Array, E_Or_Binary,
-                     E_Or_Boolean, E_Or_Else,
+                     E_Or,                               E_Or_Array,               E_Or_Binary,
+                     E_Or_Boolean,                       E_Or_Else,
 
-                     E_Parameter_View_Conversion, E_Prefixed_Operator,
+                     E_Parameter_View_Conversion,        E_Prefixed_Operator,
 
-                     E_Real_Equality, E_Record_Aggregate, E_Record_Partial_Others,
+                     E_Real_Equality,                    E_Record_Aggregate,       E_Record_Partial_Others,
                      E_Record_Others,
 
-                     E_Static_Membership, E_Slice,
+                     E_Static_Membership,                E_Slice,
 
                      E_Type_Conversion,
 
-                     E_Unconverted_Fixed_Multiplying_Op, E_Underived_Conversion, E_Universal_Range,
+                     E_Unconverted_Fixed_Multiplying_Op, E_Underived_Conversion,   E_Universal_Range,
                      E_Unqualified_Aggregate,            E_Upward_Conversion,
 
-                     E_Xor,         E_Xor_Array, E_Xor_Binary,
+                     E_Xor,                              E_Xor_Array,              E_Xor_Binary,
                      E_Xor_Boolean);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");

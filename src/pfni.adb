@@ -318,7 +318,7 @@ procedure Pfni is
                      =>
                      declare
                         Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Decl);
-                        Inx    : Positive := Bounds'First;
+                        Inx    : ASIS_Integer := Bounds'First;
                      begin
                         if Bounds /= Nil_Extended_Biggest_Int_List
                           and Bounds /= (Bounds'Range => Not_Static)

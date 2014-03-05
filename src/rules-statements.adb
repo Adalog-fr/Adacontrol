@@ -73,7 +73,7 @@ package body Rules.Statements is
                      Stmt_Exit_Plain_Loop,         Stmt_Exit_While_Loop,        Stmt_Exited_Extended_Return,
                      Stmt_Extended_Return,
 
-                     Stmt_For_Loop,                Stmt_For_In_Loop,             Stmt_For_Iterator_Loop,
+                     Stmt_For_Loop,                Stmt_For_In_Loop,            Stmt_For_Iterator_Loop,
                      Stmt_For_Of_Loop,             Stmt_Function_Return,
 
                      Stmt_Goto,

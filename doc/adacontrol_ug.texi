@@ -2954,7 +2954,8 @@ replaceable by aggregate assignment.
 <control_kind> assignments (sliding);
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
-<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> | total <max_val>
+<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> |
+             total <max_val>
 @end example
 
 @subsection Action
@@ -6382,7 +6383,8 @@ declarations.
 
 @subsection Syntax
 @example
-<control_kind> object_declarations (min_integer_span, <min_spec> @{, <min_spec>@});
+<control_kind> object_declarations (min_integer_span, <min_spec>
+                                                   @{, <min_spec>@});
 <control_kind> object_declarations (type, <type_spec> @{, <type_spec>@});
 <control_kind> object_declarations (volatile_no_address);
 <control_kind> object_declarations (address_not_volatile);
@@ -6550,7 +6552,7 @@ analyzed. Some calls cannot obviously have aliasing (if there is only
 one parameter, or if there are no variables in the parameters f.e.);
 other calls are detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
-@node  Parameter_Declarations, Positional_Associations, Parameter_Aliasing, Rules reference
+@node Parameter_Declarations, Positional_Associations, Parameter_Aliasing, Rules reference
 @section Parameter_Declarations
 This rule controls various characteristics of the declaration of parameters
 for all callable entities (i.e. functions, procedures and entries).
@@ -6558,9 +6560,11 @@ for all callable entities (i.e. functions, procedures and entries).
 @subsection Syntax
 @example
 <control_kind> parameter_declarations (<subrule> [,<bounds>] @{,<callable>@});
-<subrule>  ::= all_parameters    | in_parameters         | defaulted_parameters |
-               out_parameters    | in_out_parameters     | access_parameters    |
-               tagged_parameters | class_wide_parameters | single_out_parameter
+<subrule>  ::= all_parameters       | in_parameters         |
+               defaulted_parameters | out_parameters        |
+               in_out_parameters    | access_parameters     |
+               tagged_parameters    | class_wide_parameters |
+               single_out_parameter
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <callable> ::= function             | procedure             |
                dispatching_function | dispatching_procedure |
@@ -6663,7 +6667,8 @@ named associations) in all kinds of associations.
 
 @subsection Syntax
 @example
-<control_kind> positional_associations [(<subrule>, <max_allowed> [, <category> @{, <entity>@}])];
+<control_kind> positional_associations [(<subrule>, <max_allowed>
+                                         [, <category> @{, <entity>@}])];
 <subrule>  ::= all | all_positional | same_type
 <category> ::=  [not_operator] call | pragma          | discriminant     |
                 instantiation       | array_aggregate | record_aggregate |
@@ -6730,11 +6735,11 @@ check positional_associations(all, 0, record_aggregate);
  -- All positional associations with more than 3 elements:
 search positional_associations (all, 3);
 
--- Positional associations in calls with more than 3 elements of the same type
+-- Positional associations in calls with more than 3 params of the same type
 search positional_associations (same_type, 3, call);
 
--- Positional associations in calls with more than 2 elements (except calls
--- to any subprogram called Put)
+-- Positional associations in calls with more than 2 elements (except
+-- calls to any subprogram called Put)
 search positional_associations(all, 2, call, all put);
 @end example
 
@@ -8351,11 +8356,13 @@ elements declared in them.
 <control_kind> unit_pattern (Single_Tagged_Type);
 <control_kind> unit_pattern (Tagged_Type_Hierarchy);
 <control_kind> unit_pattern (Context_Clauses_Order @{, <clause_list>@});
-<control_kind> unit_pattern (Declarations_Order, <target>, @{, <declaration_list>@});
+<control_kind> unit_pattern (Declarations_Order, <target>,
+                             @{, <declaration_list>@});
 
 <clause_list>      ::= <clause> @{| <clause>@}
 <clause>           ::= with | use | use_type | pragma
-<target>           ::= package_public | package_private | package_body | subprogram
+<target>           ::= package_public | package_private | package_body |
+                       subprogram
 <declaration_list> ::= <declaration> @{| <declaration>@}
 <declaration>      ::= use                   | use_type                 |
                        use_all_type          | number                   |
@@ -8426,9 +8433,10 @@ check unit_pattern (tagged_type_hierarchy);
 -- (freely mixed), then pragmas
 check unit_pattern (context_clauses_order, with, use | use_type | use_all_type, pragma);
 
--- In the public part of a package, declare constants and named numbers first,
--- then private types, then any of regular types, constants, and variables, then
--- subprograms specifications (including generics and instantiations), then anything else:
+-- In the public part of a package, declare constants and named numbers
+-- first,then private types, then any of regular types, constants, and
+-- variables, then subprograms specifications (including generics and
+-- instantiations), then anything else:
 check unit_pattern (declarations_order, package_public,
    number | constant,
    private_type,
@@ -9011,7 +9019,7 @@ This rule controls usage of @code{@b{use}} clauses.
 @example
 <control_kind> use_clauses
    [([<subrule>,] <package name> @{, <package name>@})];
-<subrule> ::= local | global | type | type_local | type_global
+<subrule> ::= package | local | global | type | type_local | type_global
 @end example
 
 @subsection Action
@@ -9020,12 +9028,12 @@ The rule controls every  @code{@b{use}} or @code{@b{use type}} clause,
 therefore possible to allow @code{@b{use}} or  @code{@b{use type}}
 clauses just for certain packages/types.
 
-If no keyword is given, all (package) @code{@b{use}} clauses are
-controlled. If the keyword ``global'' is given, only @code{@b{use}}
-clauses that appear in context clauses (i.e. together with the
-@code{@b{with}} clauses) are controlled; if the keyword ``local'' is
-given, only @code{@b{use}} clauses that appear as declarations are
-controlled.
+If the keyword ``package'' is given (or no keyword at all), all
+package @code{@b{use}} clauses are controlled. If the keyword
+``global'' is given, only @code{@b{use}} clauses that appear in
+context clauses (i.e. together with the @code{@b{with}} clauses) are
+controlled; if the keyword ``local'' is given, only @code{@b{use}}
+clauses that appear as declarations are controlled.
 
 If the keyword ``type'' is given, all @code{@b{use type}} clauses are
 controlled. If the keyword ``type_global'' is given, only @code{@b{use
@@ -9848,12 +9856,14 @@ check no_operator_usage (none);
 check no_operator_usage (logical);
 
 -- (3)
-check no_operator_usage (none, logical) -- or no parameters
+check no_operator_usage (none, logical)
+                     -- or no parameters
 @end example
 to:
 @example
 -- (1)
-check no_operator_usage(ignore indexing, ignore logical); -- or no parameters
+check no_operator_usage(ignore indexing, ignore logical);
+                     -- or no parameters
 
 -- (2)
 check no_operator_usage (logical);

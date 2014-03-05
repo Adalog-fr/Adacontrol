@@ -111,6 +111,7 @@ package body Rules.No_Operator_Usage is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
+      use Asis;
       use Framework.Language, Observed_Flag_Utilities, Filters_Modifiers_Utilities;
       Filter1, Filter2   : Filters;
       Subrule1, Subrule2 : Observed;
@@ -341,7 +342,7 @@ package body Rules.No_Operator_Usage is
    ------------------------------
 
    procedure Process_Array_Definition (Definition : in Asis.Definition) is
-      use Asis.Declarations, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Elements;
       use Thick_Queries;
    begin
       if Rule_Used = 0 then
@@ -430,6 +431,7 @@ package body Rules.No_Operator_Usage is
    procedure Report_All is new Type_Usage.On_Every_Entity_From_Scope (Report_One);
 
    procedure Process_Scope_Exit is
+      use Asis;                  --## Rule line off UNNECESSARY_USE_CLAUSE REDUCEABLE_SCOPE ## Required for Gela-ASIS
       use Framework.Symbol_Table;
    begin
       if Rule_Used = 0 then

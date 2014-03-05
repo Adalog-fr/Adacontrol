@@ -105,8 +105,8 @@ package body Rules.Global_References is
    -- normally, but at that point we would not know whether the renaming entity is Read or Write.
    -- We therefore discard renamings during normal traversal.
 
-   type Reference_Kind is (K_All, K_Read, K_Written, K_Multiple, K_Multiple_Non_Atomic);
-   package Reference_Kind_Utilities is new Framework.Language.Flag_Utilities (Reference_Kind, "K_");
+   type Subrules is (K_All, K_Read, K_Written, K_Multiple, K_Multiple_Non_Atomic);
+   package Subrules_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
 
    type Checked_Kind is (K_Name, K_Task, K_Protected, K_Function, K_Procedure);
    package Checked_Kind_Utilities is new Framework.Language.Flag_Utilities (Checked_Kind, "K_");
@@ -145,7 +145,7 @@ package body Rules.Global_References is
    -- Management of rules
    type Rule_Info is new Basic_Rule_Context with
       record
-         Reference : Reference_Kind;
+         Reference : Subrules;
       end record;
    package Rules_Info_Map is new Binary_Map (Control_Index, Rule_Info);
 
@@ -201,7 +201,7 @@ package body Rules.Global_References is
       User_Message ("Control global (in a relative sense) variables referenced ");
       User_Message ("directly or indirectly from some specific constructs");
       User_Message;
-      Reference_Kind_Utilities.Help_On_Flags ("Parameter(1): ");
+      Subrules_Utilities.Help_On_Flags ("Parameter(1): ");
       Checked_Kind_Utilities.Help_On_Flags ("Parameter(2..N): ", Extra_Value => "<name>");
    end Help;
 
@@ -210,10 +210,10 @@ package body Rules.Global_References is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Reference_Kind_Utilities, Checked_Kind_Utilities;
+      use Framework.Language, Subrules_Utilities, Checked_Kind_Utilities;
       use Rules_Info_Map;
 
-      Reference : Reference_Kind;
+      Reference : Subrules;
       Check     : Checked_Kind;
    begin
       if not Parameter_Exists then
