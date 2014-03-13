@@ -554,12 +554,45 @@ package body Rules.Reduceable_Scope is
                        Blocks_Forbidden : in     Boolean;
                        Action           : out    Merge_Action)
       is
+         function Is_Movable_Target (Target : Asis.Declaration) return Boolean is
+            -- Is the given Target a place where a declaration can be moved?
+         begin
+            case Element_Kind (Target) is
+               when A_Statement =>
+                  case Statement_Kind (Target) is
+                     when A_For_Loop_Statement
+                        | An_Accept_Statement
+                        | An_Extended_Return_Statement
+                        =>
+                        return False;
+                     when A_Block_Statement =>
+                        return not Blocks_Forbidden;
+                     when others =>
+                        Failure ("Is_Movable_Target: bad target 1", Target);
+                  end case;
+               when An_Exception_Handler =>
+                  return False;
+               when A_Declaration =>
+                  case Declaration_Kind (Target) is
+                     when A_Generic_Instantiation
+                        | A_Task_Type_Declaration
+                        | A_Single_Task_Declaration
+                        =>
+                        return False;
+                     when others =>
+                        return True;
+                  end case;
+               when others =>
+                  Failure ("Is_Movable_Target: bad target 2", Target);
+            end case;
+         end Is_Movable_Target;
+
          -- Assert: Declaration_Path'First = Usage_Path'First, since they both correspond
          --         to the level (+1) where the same element is declared.
          -- Merge does /not/ free paths. This will be done by a call to Clear for the
          -- node of the scoped_store that contains the path.
          Top : Scope_Range := Usage_Path'Last;
-      begin
+      begin   -- Merge
          if Usage_Path'Length = 0 then
             -- Reference from same level as declaration
             -- This declaration cannot be moved. Remove it.
@@ -606,12 +639,7 @@ package body Rules.Reduceable_Scope is
          end loop;
 
          -- Get rid of top scopes where nothing can be moved to
-         while     Statement_Kind   (Usage_Path (Top)) = A_For_Loop_Statement
-           or else Statement_Kind   (Usage_Path (Top)) = An_Accept_Statement
-           or else (Statement_Kind  (Usage_Path (Top)) = A_Block_Statement and Blocks_Forbidden)
-           or else Element_Kind     (Usage_Path (Top)) = An_Exception_Handler
-           or else Declaration_Kind (Usage_Path (Top)) in A_Generic_Instantiation
-         loop
+         while not Is_Movable_Target (Usage_Path (Top)) loop
             if Top = Usage_Path'First then
                -- Nothing left => remove declaration
                Action := Delete;
