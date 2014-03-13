@@ -744,13 +744,22 @@ package body Rules.Assignments is
                      Report (Rule_Id,
                              Sliding_Context,
                              Get_Location (RHS),
-                             "Lower bound does not match assigned variable");
+                             "Lower bound ("
+                             & Biggest_Int_Img (RH_Bounds (Inx))
+                             & ") does not match assigned variable ("
+                             & Biggest_Int_Img (LH_Bounds (Inx))
+                             & ')'
+                            );
                   else
                      Report (Rule_Id,
                              Sliding_Context,
                              Get_Location (RHS),
-                             "Lower bound of dimension " & ASIS_Integer_Img (Dim)
-                               & " does not match assigned variable");
+                             "Lower bound of dimension " & ASIS_Integer_Img (Dim) & " ("
+                             & Biggest_Int_Img (RH_Bounds (Inx))
+                             & ") does not match assigned variable ("
+                             & Biggest_Int_Img (LH_Bounds (Inx))
+                             & ')'
+                            );
                   end if;
                end if;
             end loop;
