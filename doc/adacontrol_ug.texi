@@ -5472,7 +5472,8 @@ the same name.
 @example
 <control_kind> local_hiding [(<subrule> @{,"<allowed pattern>"@})];
 <subrule>   ::= @{<exception>@}  strict | overloading
-<exception> ::= not_operator | not_enumeration | not_identical_renaming
+<exception> ::= not_operator           | not_enumeration       |
+                not_identical_renaming | not_different_families
 @end example
 
 @subsection Action
@@ -5484,16 +5485,29 @@ controlled. Note that following the normal Ada model, the declarations
 of enumeration literals are considered functions (and thus
 controlled).
 
-If ``not_operator'' is mentionned, the subrule does not apply to the
-declarations of operators (i.e. things like ``@code{"+"}''). If
-``not_enumeration'' is mentionned, the subrule does not apply to the
+Modifiers are used to exclude some controls (i.e. to allow the corresponding hiding):
+@itemize @bullet
+@item
+``not_operator'': the subrule does not apply to the declarations of
+operators (i.e. things like ``@code{"+"}'').
+@item
+``not_enumeration'': the subrule does not apply to the
 hiding/overloading of enumeration literals by other enumeration
 literals (the  rule still applies to the hiding/overloading of
-functions by enumeration litterals, for example). If
-``not_identical_renaming'' is mentionned (only allowed with
-``strict''), the subrule does not apply to renamings where the
-renaming name is the same as the name of the renamed entity.
-
+functions by enumeration litterals, for example).
+@item
+``not_identical_renaming'' (only allowed with ``strict''): the subrule
+does not apply to renamings where the renaming name is the same as the
+name of the renamed entity. Such renamings are commonly used to
+provide visibility of identifiers in a controlled way.
+@item
+``not_different_families'' (only allowed with ``strict''): the subrule
+does not apply  if the hiding identifier and the hidden one do not
+belong to the same ``family''. Families are either data (constant,
+variables, numbers, etc.), types, subprograms (including entries),
+packages, generics, exceptions, and labels (including block and loop
+names).
+@end itemize
 If one or more <allowed pattern> are given, hiding (or overloading) of
 identifiers that match one of the patterns are not reported. The whole
 syntax for regular expressions is allowed for the pattern, but the
@@ -5538,6 +5552,11 @@ prevent error messages for these declarations.
 Note that the name is given between ``@code{^}'' and
 ``@code{$}''. Otherwise, following normal regexp syntax, any
 identifier @i{containing} ``instance'' would be allowed.
+
+A confusion between names belonging to different ``families'' (as
+defined here) always leads to a compilation error; it may be
+acceptable to allow local hiding of names belonging to different
+families, since there is no risk involved.
 
 @node Max_Blank_Lines, Max_Call_Depth, Local_Hiding, Rules reference
 @section Max_Blank_Lines

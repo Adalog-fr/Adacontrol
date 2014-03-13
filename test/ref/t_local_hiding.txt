@@ -49,3 +49,25 @@ t_local_hiding.adb:142:16: Found: Overloading: "A{ return Standard.Integer}" ove
 t_local_hiding.adb:142:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:140:19
 t_local_hiding.adb:142:16: Found: Overloading: "A{ return Standard.Integer}" overloads declaration at t_local_hiding.adb:135:16
 t_local_hiding.adb:163:10: Error: Hiding: "Instance1" hides declaration at t_local_hiding.adb:153:7
+t_local_hiding.adb:13:7: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:16:17: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:12:14
+t_local_hiding.adb:17:10: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:13:7
+t_local_hiding.adb:17:10: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:36:7: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:49:17: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:12:14
+t_local_hiding.adb:54:23: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:49:17
+t_local_hiding.adb:54:23: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:12:14
+t_local_hiding.adb:55:16: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:67:17: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:12:14
+t_local_hiding.adb:70:23: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:71:17: Error: Family_Hiding: "Proc{}" hides declaration at t_local_hiding.adb:64:14
+t_local_hiding.adb:73:10: Error: Family_Hiding: "Z" hides declaration at t_local_hiding.adb:47:7
+t_local_hiding.adb:76:23: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:49:17
+t_local_hiding.adb:76:23: Error: Family_Hiding: "P{Standard.Integer}" hides declaration at t_local_hiding.adb:12:14
+t_local_hiding.adb:77:16: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:82:10: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:86:10: Error: Family_Hiding: "Z" hides declaration at t_local_hiding.adb:47:7
+t_local_hiding.adb:103:7: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:113:13: Error: Family_Hiding: "Y" hides declaration at t_local_hiding.adb:111:12
+t_local_hiding.adb:117:12: Error: Family_Hiding: "X" hides declaration at t_local_hiding.adb:3:4
+t_local_hiding.adb:163:10: Error: Family_Hiding: "Instance1" hides declaration at t_local_hiding.adb:153:7

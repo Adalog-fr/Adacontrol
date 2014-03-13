@@ -1,7 +1,7 @@
 with Text_IO, Text_IO.Complex_IO;
 procedure T_local_hiding is
    X : Integer;     -- OK
-   Text_IO : Float; -- Hiding
+   Text_IO : Float; -- Hiding (x2)
    type T is
       record
          X : Integer; -- OK
@@ -10,11 +10,11 @@ procedure T_local_hiding is
      (X : Integer);                   -- OK
 
    procedure P     -- OK
-     (X : Integer) -- Hiding
+     (X : Integer) -- Hiding, Family_Hiding
    is
       procedure P is begin null; end; -- Overloading
-      procedure P                     -- Overloading, Hiding
-        (X : Integer)                 -- Hiding (x2)
+      procedure P                     -- Overloading, Hiding, Family_Hiding
+        (X : Integer)                 -- Hiding (x2), Family_Hiding (x2)
       is begin null; end;
       type Enum                       -- OK
          is (T);                      -- Hiding
@@ -33,7 +33,7 @@ procedure T_local_hiding is
      renames P;
 
    procedure Q is     -- OK
-      X: Integer;     -- Hiding
+      X: Integer;     -- Hiding, Family_Hiding
       procedure T     -- Hiding
         (A : Integer) -- OK
         renames P;
@@ -46,13 +46,13 @@ procedure T_local_hiding is
       type Priv is private;  -- OK
       Z : Integer;           -- OK
       procedure Proc;        -- OK
-      procedure P            -- Overloading, Hiding
+      procedure P            -- Overloading, Hiding, Family_Hiding
         (Param : Integer);   -- OK
       package Internal is    -- OK
          protected Protec is -- OK
             procedure P;     -- Overloading (x3)
-            procedure P      -- Overloading (x2), Hiding (x2)
-              (X : Integer); -- Hiding
+            procedure P      -- Overloading (x2), Hiding (x2), Family_Hiding (x2)
+              (X : Integer); -- Hiding, Family_Hiding
          end Protec;
       end Internal;
    private
@@ -64,26 +64,26 @@ procedure T_local_hiding is
    procedure Proc is begin null; end; -- OK
 
    package body Pack is                     -- OK
-      procedure P                           -- Overloading, Hiding
+      procedure P                           -- Overloading, Hiding, Family_Hiding
         (Param : Integer)                   -- OK
         is begin null; end;
-      procedure Proc (X : Float) is begin null; end; -- Overloading (x2), Hiding (No explicit spec)
-      procedure Proc is begin null; end;    -- Overloading, Hiding
+      procedure Proc (X : Float) is begin null; end; -- Overloading (x2), Hiding (No explicit spec), Family_Hiding
+      procedure Proc is begin null; end;    -- Overloading, Hiding, Family_Hiding
       package body Internal is              -- OK
-         Z : Integer;                       -- Hiding
+         Z : Integer;                       -- Hiding, Family_Hiding
          protected body Protec is           -- OK
             procedure P is begin null; end; -- Overloading (x4)
-            procedure P                     -- Overloading (x2), Hiding (x2)
-              (X : Integer)                 -- Hiding
+            procedure P                     -- Overloading (x2), Hiding (x2), Family_Hiding (x2)
+              (X : Integer)                 -- Hiding, Family_Hiding
             is begin null; end;
          end Protec;
       end Internal;
       procedure P_Int     -- OK
-        (X : Integer)     -- Hiding
+        (X : Integer)     -- Hiding, Family_Hiding
       is begin null; end;
    begin
       declare
-         Z : Float; -- Hiding
+         Z : Float; -- Hiding, Family_Hiding
       begin
          null;
       end;
@@ -100,7 +100,7 @@ procedure T_local_hiding is
    generic package Complex_IO renames Standard.Text_IO.Complex_IO; -- OK (identical names);
 begin
    declare
-      X : Integer; -- Hiding
+      X : Integer; -- Hiding, Family_Hiding
    begin
       null;
    end;
@@ -110,11 +110,11 @@ begin
    exception
       when Y : Constraint_Error => -- OK
          declare
-            Y : Integer;           -- Hiding
+            Y : Integer;           -- Hiding, Family_Hiding
          begin
             null;
          end;
-      when X : others =>           -- Hiding
+      when X : others =>           -- Hiding, Family_Hiding
          null;
    end;
 
@@ -159,11 +159,11 @@ begin
       end Get;
 
       procedure Inner is
-         Instance  : Integer;                        -- OK (exception to hiding)
-         Instance1 : Integer;                        -- Hiding (not full name)
-         Name      : Integer;                        -- OK (exception to hiding)
-         Name1     : Integer;                        -- OK (exception to hiding)
-         function Get (F : Float) return Integer is  -- OK (exception to overloading)
+         Instance  : Integer;                        -- OK (exception to Hiding and Family_Hiding)
+         Instance1 : Integer;                        -- Hiding, Family_Hiding   (not full name)
+         Name      : Integer;                        -- OK (exception to Hiding and Family_Hiding)
+         Name1     : Integer;                        -- OK (exception to Hiding and Family_Hiding)
+         function Get (F : Float) return Integer is  -- OK (exception to Overloading)
          begin
             return 1;
          end Get;

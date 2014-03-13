@@ -68,8 +68,17 @@ package body Rules.Local_Hiding is
    type Subrules is (Strict, Overloading);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
-   type Modifiers is (Not_Operator, Not_Enumeration, Not_Identical_Renaming);
+   type Modifiers is (Not_Operator, Not_Enumeration, Not_Identical_Renaming, Not_Different_Families);
    package Modifiers_Flag_Utilities is new Framework.Language.Modifier_Utilities (Modifiers);
+
+   type Declaration_Families is (Data,         -- Constant, Variable, Named number, Parameter, Component...
+                                 Types,        -- Including task and protected types
+                                 Subprograms,  -- Procedure, Function, Entry (and instantiations thereof)
+                                 Packages,     -- including formal packages, instantiations
+                                 Generics,
+                                 Exceptions,
+                                 Labels        -- True labels, block and loop names
+                                );
 
    type Rule_Usage is array (Subrules) of Boolean;
    Not_Used : constant Rule_Usage := (others => False);
@@ -80,6 +89,7 @@ package body Rules.Local_Hiding is
 
    Include_Op         : Rule_Usage;
    Include_Enum       : Rule_Usage;
+   Ignore_Families    : Boolean;     -- Simple boolean since not allowed for Overloading
    Exclude_Renaming   : Boolean;     -- Simple boolean since not allowed for Overloading
    Allowed_Patterns   : array (Subrules) of Framework.Pattern_Queues.Queue;
    Overloading_Report : aliased Verbosity_Type.Object := (Value => Detailed);
@@ -91,6 +101,7 @@ package body Rules.Local_Hiding is
          Elem           : Asis.Element;
          Is_Callable    : Boolean;
          Is_Enumeration : Boolean;
+         Family         : Declaration_Families;
       end record;
    package Visible_Identifiers is new Framework.Scope_Manager.Scoped_Store (Identifier_Data);
 
@@ -126,17 +137,21 @@ package body Rules.Local_Hiding is
          if Rule_Used (Subrule) then
             Parameter_Error (Rule_Id, "subrule already specified");
          end if;
-         Rule_Used    (Subrule) := True;
-         Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-         Include_Op   (Subrule) := not Modif_Specified (Not_Operator);
-         Include_Enum (Subrule) := not Modif_Specified (Not_Enumeration);
+         Rule_Used        (Subrule) := True;
+         Rule_Context     (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+         Include_Op       (Subrule) := not Modif_Specified (Not_Operator);
+         Include_Enum     (Subrule) := not Modif_Specified (Not_Enumeration);
          case Subrule is
             when Overloading =>
                if Modif_Specified (Not_Identical_Renaming) then
                   Parameter_Error (Rule_Id, "Not_Identical_Renaming cannot be specified with Overloading");
                end if;
+               if Modif_Specified (Not_Different_Families) then
+                  Parameter_Error (Rule_Id, "Not_Different_Families cannot be specified with Overloading");
+               end if;
             when Strict =>
-               Exclude_Renaming := Modif_Specified (Not_Identical_Renaming);
+               Exclude_Renaming :=     Modif_Specified (Not_Identical_Renaming);
+               Ignore_Families  := not Modif_Specified (Not_Different_Families);
          end case;
 
          while Parameter_Exists loop
@@ -194,6 +209,112 @@ package body Rules.Local_Hiding is
          Visible_Identifiers.Activate;
       end if;
    end Prepare;
+
+   ------------------------
+   -- Declaration_Family --
+   ------------------------
+
+   function Declaration_Family (Name : Asis.Element) return Declaration_Families is
+   -- Expected elements:
+   -- - A_Name
+   -- - A_Defining_Name
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
+      Decl : Asis.Declaration := Name;
+   begin
+      loop  -- Loop to get rid of defining expanded names
+         case Element_Kind (Decl) is
+            when An_Expression =>
+               Decl := Corresponding_Name_Declaration (Simple_Name (Decl));
+            when A_Defining_Name =>
+               Decl := Enclosing_Element (Decl);
+            when A_Declaration =>
+               exit;
+            when A_Statement =>
+               -- This happens only for block and loop names or labels
+               return Labels;
+            when others =>
+               Failure ("Declaration_Family: not a (defining) name", Decl);
+         end case;
+      end loop;
+
+      case Declaration_Kind (Decl) is
+         when An_Object_Declaration
+            | A_Number_Declaration
+            | An_Enumeration_Literal_Specification
+            | A_Parameter_Specification
+            | A_Component_Declaration
+            | A_Discriminant_Specification
+            | A_Loop_Parameter_Specification
+            | A_Generalized_Iterator_Specification
+            | An_Element_Iterator_Specification
+            | An_Object_Renaming_Declaration
+            | A_Return_Variable_Specification
+            | A_Return_Constant_Specification
+            | An_Entry_Index_Specification
+            | A_Choice_Parameter_Specification
+            | A_Formal_Object_Declaration
+            =>
+            return Data;
+
+         when A_Type_Declaration
+            | A_Subtype_Declaration
+            | A_Formal_Type_Declaration
+            | A_Formal_Incomplete_Type_Declaration
+            =>
+            return Types;
+
+         when A_Procedure_Declaration
+            | A_Null_Procedure_Declaration
+            | A_Function_Declaration
+            | An_Expression_Function_Declaration
+            | An_Entry_Declaration
+            | A_Procedure_Body_Declaration
+            | A_Function_Body_Declaration
+            | An_Entry_Body_Declaration
+            | A_Procedure_Instantiation
+            | A_Function_Instantiation
+            | A_Procedure_Body_Stub
+            | A_Function_Body_Stub
+            | A_Formal_Procedure_Declaration
+            | A_Formal_Function_Declaration
+            | A_Procedure_Renaming_Declaration
+            | A_Function_Renaming_Declaration
+            =>
+            return Subprograms;
+
+         when A_Package_Declaration
+            | A_Package_Body_Declaration
+            | A_Package_Instantiation
+            | A_Package_Renaming_Declaration
+            | A_Package_Body_Stub
+            | A_Formal_Package_Declaration
+            | A_Formal_Package_Declaration_With_Box
+            =>
+            return Packages;
+
+         when A_Generic_Declaration
+            | A_Generic_Package_Renaming_Declaration
+            | A_Generic_Procedure_Renaming_Declaration
+            | A_Generic_Function_Renaming_Declaration
+            =>
+            return Generics;
+
+         when An_Exception_Declaration
+            | An_Exception_Renaming_Declaration
+            =>
+            return Exceptions;
+
+         when A_Task_Body_Declaration
+            | A_Protected_Body_Declaration
+            | A_Task_Body_Stub
+            | A_Protected_Body_Stub
+            =>
+            return Declaration_Family (Corresponding_Declaration (Decl));
+         when Not_A_Declaration =>
+            Failure ("Declaration_Family: Not_A_Declaration", Decl);
+      end case;
+   end Declaration_Family;
 
    ---------------------------
    -- Process_Defining_Name --
@@ -332,6 +453,8 @@ package body Rules.Local_Hiding is
                           and then (Include_Op   (Strict) or Short_Name (1) /= '"')
                           and then (Include_Enum (Strict)
                                     or not Is_Enumeration or not Visible_Identifiers.Current_Data.Is_Enumeration)
+                          and then (Ignore_Families
+                                    or Declaration_Family (First_Name) =  Visible_Identifiers.Current_Data.Family)
                           and then not Match_Any (Defining_Name_Image (First_Name), Allowed_Patterns (Strict))
                         then
                            Report (Rule_Id,
@@ -390,14 +513,16 @@ package body Rules.Local_Hiding is
                                                     Short_Name'Length,
                                                     First_Name,
                                                     Is_Callable    => Callable_Name,
-                                                    Is_Enumeration => Is_Enumeration));
+                                                    Is_Enumeration => Is_Enumeration,
+                                                    Family         => Declaration_Family (First_Name)));
             else
                Visible_Identifiers.Push ((Full_Name'Length,
                                           Full_Name,
                                           Short_Name'Length,
                                           First_Name,
                                           Is_Callable    => Callable_Name,
-                                          Is_Enumeration => Is_Enumeration));
+                                          Is_Enumeration => Is_Enumeration,
+                                         Family          => Declaration_Family (First_Name)));
             end if;
          end if;
       end;
@@ -442,7 +567,8 @@ package body Rules.Local_Hiding is
                                                        Short_Name'Length,
                                                        Name,
                                                        Is_Callable    => Is_Callable_Construct (Name),
-                                                       Is_Enumeration => False));
+                                                       Is_Enumeration => False,
+                                                      Family         => Declaration_Family (Name)));
                end;
                exit when Expression_Kind (Current) = An_Identifier;
                Current := Prefix (Current);

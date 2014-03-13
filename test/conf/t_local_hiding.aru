@@ -1,2 +1,7 @@
 Hiding: check local_hiding (Not_Identical_Renaming Strict, "^name", "^INSTANCE$");
 Overloading: search local_hiding (not_operator not_enumeration overloading, "^get$");
+go;
+clear all;
+
+-- Same test (for hiding) as before, but only if in same family
+Family_Hiding: check local_hiding (Not_Different_Families Not_Identical_Renaming Strict, "^name", "^INSTANCE$");
