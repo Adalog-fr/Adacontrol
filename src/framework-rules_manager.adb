@@ -169,7 +169,7 @@ package body Framework.Rules_Manager is
       Last_Rule_Name (1 .. Rule'Length) := Rule;
       Last_Rule_Length                  := Rule'Length;
 
-      if Timing_Option.Value /= Off then
+      if Timing_Option.Value /= Off and Last_Rule_Length /= 0 then
          Last_Rule_Start := Clock;
       end if;
    end Enter;

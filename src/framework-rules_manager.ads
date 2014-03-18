@@ -52,6 +52,7 @@ package Framework.Rules_Manager is
                        Prepare_CB     : Prepare_Procedure  := null;
                        Finalize_CB    : Finalize_Procedure := null);
 
+   No_Rule : constant Wide_String := "";
    procedure Enter (Rule : Wide_String);
 
    ---------------------------------------------------------------------

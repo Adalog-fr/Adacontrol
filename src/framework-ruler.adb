@@ -1071,6 +1071,7 @@ package body Framework.Ruler is
          if Has_Active_Rules (Textual) then
             Textual_Traverse (My_Unit);
          end if;
+         Enter (No_Rule);   -- Close timers
 
          Process_Inhibition (My_Unit, Resume);
       exception
