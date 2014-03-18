@@ -615,8 +615,13 @@ package body Framework.Ruler is
       Framework.Plugs.         Text_Enter_Unit (Unit);
       Framework.Specific_Plugs.Text_Enter_Unit (Unit);
       for I in Unit_Lines'Range loop
-         Framework.Plugs.         Text_Analysis (Line_Image (Unit_Lines (I)), Create_Location (File_Name, I, 1));
-         Framework.Specific_Plugs.Text_Analysis (Line_Image (Unit_Lines (I)), Create_Location (File_Name, I, 1));
+         declare
+            Line : constant Asis.Program_Text := Line_Image (Unit_Lines (I));
+            Loc  : constant Location          := Create_Location (File_Name, I, 1);
+         begin
+            Framework.Plugs.         Text_Analysis (Line, Loc);
+            Framework.Specific_Plugs.Text_Analysis (Line, Loc);
+         end;
       end loop;
 
       -- If there are no semantic rules, subunits have not been traversed, therefore we must do it here.
