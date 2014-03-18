@@ -6089,8 +6089,6 @@ check naming_convention (standard.wide_string function,
 check naming_convention (standard.wide_wide_string function,
    "^Wide_Wide_");
 check naming_convention (function, not "^Wide_");
-
-
 @end example
 
 It is of course not necessary to specify all the filter kinds, nor to
@@ -6141,7 +6139,10 @@ Default_Case_Sensitivity @tab on/off @tab off @tab if ``on'', controls that do n
 The rule only checks the casing of identifiers at the place where they
 are declared. A useful companion rule is ``style (casing_identifier,
 original)'', which ensures that every use of the identifier will use
-the same casing as in the declaration. @xref{Style}.
+the same casing as in the declaration. @xref{Style}.  Similarly, in
+the case of a subprogram and its parameters, the check is not done on
+the body if there is an explicit specification (since specification
+and body have to match anyway).
 
 The rule does @i{not} check the names of operators, since it would
 make little sense to have naming conventions for things whose name is
@@ -6150,13 +6151,16 @@ the rule ``declarations'' and its subrules ``operator'',
 ``equality_operator'', and``predefined_operator''.
 @xref{Declarations}.
 
-Similarly, in the case of a subprogram and its parameters, the check
-is not done on the body if there is an explicit specification (since
-specification and body have to match anyway).
-
 Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
 the name, or both.
+
+A constant is considered static for the purpose of
+``Regular_Static_Constant'' and ``Regular_Nonstatic_Constant'' if it
+is of a discrete type initialized by a static expression, or if it is
+an aggregate whose components all have static values. This is
+different from the official definition of ``static'' in the language,
+but corresponds to what most users would expect.
 
 ``class_type'' is applicable to subtypes that designate a class-wide
 type. Similarly, ``access_to_class_type'' is applicable to access
