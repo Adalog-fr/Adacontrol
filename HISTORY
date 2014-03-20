@@ -1,12 +1,11 @@
 =============
-== V1.16b8 ==
+== V1.16r9 ==
 =============
 
 General:
 --------
 Bug fixes:
    Mantis:  0000035, 0000036
-
 
 New rules:
 ----------
@@ -17,7 +16,6 @@ unsafe_elaboration
 
 Changes to existing rules:
 --------------------------
-
 Array_Declarations:
   Slightly changed the syntax of the component subrule.
 
@@ -26,12 +24,13 @@ Case_Statements:
 
 Declarations:
   Added subrules box_defaulted_formal_function,
-  name_defaulted_formal_function, box_defaulted_formal_procedure,
-  name_defaulted_formal_procedure, null_defaulted_formal_procedure,
-  non_ravenscar_task, access_constrained_array_type,
-  access_unconstrained_array_type, access_def_discriminated_type,
-  access_nondef_discriminated_type, access_unknown_discriminated_type,
-  access_formal_type, access_language_type, equality_operator
+    name_defaulted_formal_function, box_defaulted_formal_procedure,
+    name_defaulted_formal_procedure, null_defaulted_formal_procedure,
+    non_ravenscar_task, access_constrained_array_type,
+    access_unconstrained_array_type, access_def_discriminated_type,
+    access_nondef_discriminated_type,
+    access_unknown_discriminated_type, access_formal_type,
+    access_language_type, equality_operator
 
   Better placement of some messages
 
@@ -40,10 +39,11 @@ Dependencies:
 
 Expressions:
   Added subrules in, not_in, static_membership, and_array,
-  and_logical, and_binary, or_array, or_logical, or_binary, xor_array,
-  xor_logical, xor_binary, upward_conversion, downward_conversion,
-  extension_aggregate, extendable_aggregate, array_positional_others,
-  array_named_others, unconverted_fixed_multiplying_op
+    and_logical, and_binary, or_array, or_logical, or_binary,
+    xor_array, xor_logical, xor_binary, upward_conversion,
+    downward_conversion, extension_aggregate, extendable_aggregate,
+    array_positional_others, array_named_others,
+    unconverted_fixed_multiplying_op
 
   Subrule Mixed_Operators considers membership tests and short circuit forms
 
@@ -54,9 +54,9 @@ Global_References:
    Added subrules read, written
 
 Multiple_Assignments:
+   The rule has been renamed to "Assignments"
    Added subrule sliding.
    Added criterion total.
-   The rule has been renamed to "Assignments"
 
 Naming_Convention:
   Added specific patterns by object and functions type names and categories
@@ -73,18 +73,21 @@ Parameter_Declarations:
   Added subrules tagged_parameters, class_wide_parameters.
   Added callables dispatching_function, dispatching_parameter
 
+Reduceable_Scope:
+   Don't suggest moving declarations to a task specification
+
 Representation_Clauses:
   Added subrule no_bit_order_layout
 
 Statements:
   Added subrules named_exit, exit_plain_loop, simple_block,
-  unnamed_simple_block, redispatching_call. 
+    unnamed_simple_block, redispatching_call.  
   Normalized behaviour of subrule exit.
 
 Style 
   (Casing_Identifier, original): Check closing identifier, allow multiple
      casing options.
-  Positional_Association: removed, now a subrule of Positional_Associations
+  Positional_Association: removed, now a subrule of Positional_Associations.
   Parameter_Order, Formal_Parameter_Order: modes are separated by "|".
   Multiple_Element: also checks proper presentation of "end", "for ... loop",
     etc.

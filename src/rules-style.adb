@@ -846,6 +846,7 @@ package body Rules.Style is
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
+
       procedure Check_Renamed is
          use Asis.Declarations;
          use Framework.Scope_Manager, Framework.Reports;
