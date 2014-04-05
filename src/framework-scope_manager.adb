@@ -145,6 +145,7 @@ package body Framework.Scope_Manager is
                when A_For_Loop_Statement
                   | A_Block_Statement
                   | An_Accept_Statement
+                  | An_Extended_Return_Statement
                     =>
                   return True;
                when others =>
