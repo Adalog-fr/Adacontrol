@@ -7958,7 +7958,9 @@ This rules controls usage of various ``general'' Ada coding style.
 <control_kind> style (renamed_entity);
 
 <casing_kw>   ::= uppercase | lowercase | titlecase | original
-<element_kw>  ::= [flexible] clause | declaration | statement
+<element_kw>  ::= [flexible] clause | declaration | statement |
+                  handler | begin | end  | then | when |
+                  else    | is    | loop | do   | keywords
 <mode_list>   ::= <mode> @{| <mode>@}
 <mode>        ::= in   | defaulted_in | access   | in_out  | out |
                   type | procedure    | function | package
@@ -8020,17 +8022,18 @@ allowed in named numbers and constant declarations.
 @item
 ``multiple_elements'' controls clauses, declarations, statements, and
 handlers that do not start on a line of their own (i.e. when there are
-more than one of these on the same line). Similarly, the
-@code{@b{end}} is required to be on a line of its own, together with
-the possible keyword or identifier attached to it and the semi-colon.
-In addition, the @code{@b{is}}, @code{@b{loop}} or @code{@b{do}} that
-terminates the first part of some declarations or statements is
-required to be on the same line as the begining of the element, or
-on a line of its own.
+more than one of these on the same line). Similarly,
+@code{@b{begin}}, @code{@b{end}}, @code{@b{then}} and @code{@b{when}}
+are required to be on a line of their own, together with the possible
+keyword or identifier attached to them and the semi-colon.  In addition,
+the @code{@b{is}}, @code{@b{loop}} or @code{@b{do}} that terminates
+the first part of some declarations or statements is required to be on
+the same line as the begining of the element, or on a line of its own.
 
 Extra parameters specify which kind of element to check; if not
-specified, all kind of elements are controlled. If ``flexible'' is
-specified in front of ``clause'' (not allowed otherwise), it allows a
+specified, all kind of elements are controlled. ``keywords'' is a
+shorthand for specifying all keywords. If ``flexible'' is specified in
+front of ``clause'' (not allowed otherwise), it allows a
 @code{@b{use}} clause to be on the same line as a @code{@b{with}}
 clause, provided all packages named in the @code{@b{use}} clause are
 also named in the preceding @code{@b{with}} clause.

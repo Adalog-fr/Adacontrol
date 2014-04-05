@@ -163,7 +163,12 @@ package body Rules.Style is
    --                      *****************
    --
 
-   type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement);
+   type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement, Mu_Handler,           -- Construct must start line
+                           Mu_Begin,  Mu_End,         Mu_Then,      Mu_When,    Mu_Else,  -- Keyword must start line
+                           Mu_Is,     Mu_Loop,        Mu_Do,                              -- Keyword must start line or
+                                                                                          -- be on same line
+                           Mu_Keywords);  -- Special value, equivalent to all keywords
+   subtype Multiple_Keywords is Multiple_Names range Mu_Begin .. Mu_Do;
    package Multiple_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Multiple_Names,
                                                                              Prefix => "Mu_" );
    Flexible_Clause : Boolean;
@@ -398,9 +403,17 @@ package body Rules.Style is
                         Parameter_Error (Rule_Id, """flexible"" allowed only for ""clause""");
                      end if;
 
-                     Associate (Contexts,
-                                Value (Image (St_Multiple_Elements, Lower_Case) & Image (Multiple)),
-                                Basic.New_Context (Ctl_Kind, Ctl_Label));
+                     if Multiple = Mu_Keywords then
+                        for K in Multiple_Keywords loop
+                           Associate (Contexts,
+                                      Value (Image (St_Multiple_Elements, Lower_Case) & Image (K)),
+                                      Basic.New_Context (Ctl_Kind, Ctl_Label));
+                        end loop;
+                     else
+                        Associate (Contexts,
+                                   Value (Image (St_Multiple_Elements, Lower_Case) & Image (Multiple)),
+                                   Basic.New_Context (Ctl_Kind, Ctl_Label));
+                     end if;
                   end loop;
                else
                   for M in Multiple_Names loop
@@ -1876,13 +1889,13 @@ package body Rules.Style is
                when A_Declaration =>
                   Report
                     (Rule_Id,
-                     Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration, Lower_Case)),
+                     Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                      End_Loc,
                      "closing keywords of declaration split");
                when A_Statement =>
                   Report
                     (Rule_Id,
-                     Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                     Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                      End_Loc,
                      "closing keywords of statement split");
                when others =>
@@ -1963,9 +1976,7 @@ package body Rules.Style is
          end case;
       end if;
 
-      -- For program unit bodies, check that "is" is on the same line, or starts a line
-      -- Check that "begin" and "end" start a line
-      -- Check that "exception" as well as each exception handler start a line
+      -- Check keywords
       case Declaration_Kind (Element) is
          when A_Procedure_Body_Declaration
             | A_Function_Body_Declaration
@@ -1978,7 +1989,7 @@ package body Rules.Style is
               and then Has_Non_Spaces_Ahead (Loc)
             then
                Report (Rule_Id,
-                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Is, Lower_Case)),
                        Loc,
                        """is"" does not start line");
             end if;
@@ -1990,7 +2001,7 @@ package body Rules.Style is
                   Loc := Get_Previous_Word_Location (Stmts, Starting => From_Head);
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Begin, Lower_Case)),
                              Loc,
                              """begin"" does not start line");
                   end if;
@@ -2004,7 +2015,7 @@ package body Rules.Style is
                         Loc := Get_Previous_Word_Location (Handlers, Starting => From_Head);
                         if Has_Non_Spaces_Ahead (Loc) then
                            Report (Rule_Id,
-                                   Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                                   Corresponding_Context (St_Multiple_Elements, Image (Mu_Handler, Lower_Case)),
                                    Loc,
                                    """exception"" does not start line");
                         end if;
@@ -2013,7 +2024,7 @@ package body Rules.Style is
                            Loc := Get_Location (Handlers (H));
                            if Has_Non_Spaces_Ahead (Loc) then
                               Report (Rule_Id,
-                                      Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                                      Corresponding_Context (St_Multiple_Elements, Image (Mu_Handler, Lower_Case)),
                                       Loc,
                                       """when"" does not start line");
                            end if;
@@ -2028,7 +2039,7 @@ package body Rules.Style is
                   -- handler
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                              Loc,
                              """end"" does not start line");
                   end if;
@@ -2051,7 +2062,7 @@ package body Rules.Style is
                  and then Has_Non_Spaces_Ahead (Loc)
                then
                   Report (Rule_Id,
-                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Then, Lower_Case)),
                           Loc,
                           """then"" does not start line");
                end if;
@@ -2060,7 +2071,7 @@ package body Rules.Style is
                   Loc := Get_Location (Paths (P));
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Else, Lower_Case)),
                              Loc,
                              """elsif/else"" does not start line");
                   end if;
@@ -2070,7 +2081,7 @@ package body Rules.Style is
                     and then Has_Non_Spaces_Ahead (Loc)
                   then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Then, Lower_Case)),
                              Loc,
                              """then"" does not start line");
                   end if;
@@ -2087,7 +2098,7 @@ package body Rules.Style is
                  and then Has_Non_Spaces_Ahead (Loc)
                then
                   Report (Rule_Id,
-                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Is, Lower_Case)),
                           Loc,
                           """is"" does not start line");
                end if;
@@ -2096,7 +2107,7 @@ package body Rules.Style is
                   Loc := Get_Location (Paths (P));
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_When, Lower_Case)),
                              Loc,
                              """when"" does not start line");
                   end if;
@@ -2115,11 +2126,12 @@ package body Rules.Style is
                  and then Has_Non_Spaces_Ahead (Loc)
                then
                   Report (Rule_Id,
-                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Loop, Lower_Case)),
                           Loc,
                           """loop"" does not start line");
                end if;
             end;
+
          when An_Accept_Statement
             | An_Extended_Return_Statement
             =>
@@ -2132,12 +2144,13 @@ package body Rules.Style is
                     and then Has_Non_Spaces_Ahead (Loc)
                   then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Do, Lower_Case)),
                              Loc,
                              """do"" does not start line");
                   end if;
                end if;
             end;
+
          when A_Block_Statement =>
             if Is_Declare_Block (Element) then -- otherwise the message is already issued
                declare
@@ -2146,7 +2159,7 @@ package body Rules.Style is
                   Loc := Get_Previous_Word_Location (Stmts, Starting => From_Head);
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
-                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                             Corresponding_Context (St_Multiple_Elements, Image (Mu_Begin, Lower_Case)),
                              Loc,
                           """begin"" does not start line");
                   end if;
@@ -2174,7 +2187,7 @@ package body Rules.Style is
             Loc := Get_Previous_Word_Location (Element, Matching => "END", Starting => From_Tail);
             if Has_Non_Spaces_Ahead (Loc) then
                Report (Rule_Id,
-                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                       Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                        Loc,
                        """end"" does not start line");
             end if;
@@ -2185,7 +2198,7 @@ package body Rules.Style is
                Loc := Get_Previous_Word_Location (Element, Matching => "END", Starting => From_Tail);
                if Has_Non_Spaces_Ahead (Loc) then
                   Report (Rule_Id,
-                          Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
+                          Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                           Loc,
                           """end"" does not start line");
                end if;

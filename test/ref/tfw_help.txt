@@ -705,7 +705,11 @@ Parameter(3..N): [max] <value> | declaration | constant | number      |
                  (optional)
 
 For multiple_elements:
-Parameter(2..N): [flexible] clause | declaration | statement
+Parameter(2..N): [flexible] clause   | declaration | statement |
+                            handler  | begin       | end       |
+                            then     | when        | else      |
+                            is       | loop        | do        |
+                            keywords
                             (default = all)
 
 For no_closing_name:

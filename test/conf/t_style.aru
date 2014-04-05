@@ -15,6 +15,8 @@ Not_Base_13        : check  style (numeric_literal, not 13);
 Multiple_Clause    : check  style (multiple_elements, flexible clause);
 Multiple_Decl      : check  style (multiple_elements, declaration);
 Multiple_Stmts     : check  style (multiple_elements, statement);
+Multiple_Handler   : check  style (multiple_elements, handler);
+Multiple_Keyword   : check  style (multiple_elements, keywords);
 Exposed            : check  style (exposed_literal, string, "^$", "^r.*n$", pragma, constant, number);
 Exposed            : check  style (exposed_literal, integer, constant, number, var_init, type,
                                                              repr_clause, index, exponent,

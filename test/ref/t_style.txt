@@ -27,7 +27,7 @@ t_style-casing.adb:28:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
 t_style-casing.adb:28:16: Found: Casing: Wrong casing of "INt", should be "Int"
 t_style-casing.adb:29:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_Io" or "Text_IO"
 t_style-casing.adb:29:41: Found: Casing: Wrong casing of "InT", should be "Int"
-t_style-casing.adb:32:12: Error: Multiple_Stmts: "loop" does not start line
+t_style-casing.adb:32:12: Error: Multiple_Keyword: "loop" does not start line
 t_style-casing.adb:35:7: Error: Exposed: character literal 'a' not in allowed construct
 t_style-casing.adb:42:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
 t_style-casing.adb:32:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
@@ -81,40 +81,40 @@ t_style-multiple_elements.adb:9:90: Error: Multiple_Clause: use clause does not 
 t_style-multiple_elements.adb:13:26: Error: Multiple_Decl: declaration does not start line
 t_style-multiple_elements.adb:15:12: Error: Multiple_Decl: declaration does not start line
 t_style-multiple_elements.adb:17:21: Error: Multiple_Clause: clause does not start line
-t_style-multiple_elements.adb:23:19: Error: Multiple_Stmts: "begin" does not start line
-t_style-multiple_elements.adb:24:13: Error: Multiple_Stmts: "end" does not start line
-t_style-multiple_elements.adb:27:7: Error: Multiple_Stmts: "is" does not start line
-t_style-multiple_elements.adb:27:10: Error: Multiple_Stmts: "begin" does not start line
-t_style-multiple_elements.adb:29:4: Error: Multiple_Decl: closing keywords of declaration split
-t_style-multiple_elements.adb:46:19: Error: Multiple_Stmts: "exception" does not start line
-t_style-multiple_elements.adb:48:16: Error: Multiple_Stmts: "when" does not start line
-t_style-multiple_elements.adb:49:17: Error: Multiple_Stmts: "end" does not start line
-t_style-multiple_elements.adb:49:17: Error: Multiple_Decl: closing keywords of declaration split
-t_style-multiple_elements.adb:36:18: Error: Multiple_Stmts: "end" does not start line
-t_style-multiple_elements.adb:41:7: Error: Multiple_Stmts: closing keywords of statement split
-t_style-multiple_elements.adb:44:21: Error: Multiple_Stmts: "do" does not start line
+t_style-multiple_elements.adb:23:19: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:24:13: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:27:7: Error: Multiple_Keyword: "is" does not start line
+t_style-multiple_elements.adb:27:10: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:29:4: Error: Multiple_Keyword: closing keywords of declaration split
+t_style-multiple_elements.adb:46:19: Error: Multiple_Handler: "exception" does not start line
+t_style-multiple_elements.adb:48:16: Error: Multiple_Handler: "when" does not start line
+t_style-multiple_elements.adb:49:17: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:49:17: Error: Multiple_Keyword: closing keywords of declaration split
+t_style-multiple_elements.adb:36:18: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:41:7: Error: Multiple_Keyword: closing keywords of statement split
+t_style-multiple_elements.adb:44:21: Error: Multiple_Keyword: "do" does not start line
 t_style-multiple_elements.adb:47:32: Error: Multiple_Stmts: statement does not start line
 t_style-multiple_elements.adb:52:20: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:53:41: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:53:41: Error: Multiple_Keyword: "end" does not start line
 t_style-multiple_elements.adb:53:4: Error: Compound: Statement has less than 3 lines
 t_style-multiple_elements.adb:53:26: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:57:17: Error: Multiple_Stmts: "when" does not start line
-t_style-multiple_elements.adb:57:38: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:57:17: Error: Multiple_Keyword: "when" does not start line
+t_style-multiple_elements.adb:57:38: Error: Multiple_Keyword: "end" does not start line
 t_style-multiple_elements.adb:55:22: Error: Multiple_Stmts: statement does not start line
 t_style-multiple_elements.adb:57:32: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:59:12: Error: Multiple_Stmts: "then" does not start line
-t_style-multiple_elements.adb:61:13: Error: Multiple_Stmts: "elsif/else" does not start line
-t_style-multiple_elements.adb:62:27: Error: Multiple_Stmts: "then" does not start line
-t_style-multiple_elements.adb:66:13: Error: Multiple_Stmts: "elsif/else" does not start line
-t_style-multiple_elements.adb:67:19: Error: Multiple_Stmts: "end" does not start line
-t_style-multiple_elements.adb:67:19: Error: Multiple_Stmts: closing keywords of statement split
-t_style-multiple_elements.adb:72:9: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:59:12: Error: Multiple_Keyword: "then" does not start line
+t_style-multiple_elements.adb:61:13: Error: Multiple_Keyword: "elsif/else" does not start line
+t_style-multiple_elements.adb:62:27: Error: Multiple_Keyword: "then" does not start line
+t_style-multiple_elements.adb:66:13: Error: Multiple_Keyword: "elsif/else" does not start line
+t_style-multiple_elements.adb:67:19: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:67:19: Error: Multiple_Keyword: closing keywords of statement split
+t_style-multiple_elements.adb:72:9: Error: Multiple_Keyword: "end" does not start line
 t_style-multiple_elements.adb:70:10: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:74:35: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:74:35: Error: Multiple_Keyword: "end" does not start line
 t_style-multiple_elements.adb:74:4: Error: Compound: Statement has less than 3 lines
 t_style-multiple_elements.adb:74:10: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:74:18: Error: Multiple_Stmts: "begin" does not start line
-t_style-multiple_elements.adb:74:30: Error: Multiple_Stmts: "end" does not start line
+t_style-multiple_elements.adb:74:18: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:74:30: Error: Multiple_Keyword: "end" does not start line
 t_style-multiple_elements.adb:74:10: Error: Compound: Statement has less than 3 lines
 t_style-multiple_elements.adb:74:24: Error: Multiple_Stmts: statement does not start line
 t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter
@@ -129,10 +129,10 @@ t_style-parameter_order.adb:71:41: Error: order_regular: subprogram parameter ou
 t_style-parameter_order.adb:72:45: Found: No_Default_In: default IN mode used for parameter
 t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:37:15: Error: Multiple_Stmts: "when" does not start line
-t_style.adb:38:16: Error: Multiple_Stmts: "end" does not start line
+t_style.adb:37:15: Error: Multiple_Keyword: "when" does not start line
+t_style.adb:38:16: Error: Multiple_Keyword: "end" does not start line
 t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
-t_style.adb:41:13: Error: Multiple_Stmts: "end" does not start line
+t_style.adb:41:13: Error: Multiple_Keyword: "end" does not start line
 t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
 x_style_casing.ads:3:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
 x_style_casing.adb:1:14: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
