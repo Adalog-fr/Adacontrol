@@ -39,6 +39,7 @@ package Rules.No_Operator_Usage is
 
    procedure Process_Type_Definition  (Definition : in Asis.Definition);
    procedure Process_Operator         (Oper       : in Asis.Expression);
+   procedure Process_Membership       (Test       : in Asis.Expression);
    procedure Process_Array_Definition (Definition : in Asis.Definition);
 
    procedure Process_Scope_Exit;

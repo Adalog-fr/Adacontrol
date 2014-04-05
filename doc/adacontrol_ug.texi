@@ -6206,17 +6206,19 @@ kinds of types.
 <control_kind> no_operator_usage [(<parameter> [,<parameter>])];
 <parameter> ::= [<filter>] <observed>
 <filter>    ::= not | ignore | report
-<observed>  ::= indexing | logical
+<observed>  ::= relational | logical | indexing
 @end example
 @subsection Action
 This rule controls integer types (both signed and modular) where no
 arithmetic operator of the type is used in the program.
 
 When such a type is found, it migh be interesting to find out other
-usages to determine a possible better kind of type. ``indexing'' means
-that the type is used as an index in some array type, and ``logical''
-means that logical (@code{@b{and}}, @code{@b{or}}, @code{@b{xor}})
-operators are used.
+usages to determine a possible better kind of type. ``relational''
+means that relational operators (@code{<}, @code{<=}, @code{>},
+@code{>=}, @code{@b{in}}, @code{@b{not in}}) are used, ``logical''
+means that logical operators (@code{@b{and}}, @code{@b{or}},
+@code{@b{xor}}) are used, and  ``indexing'' means  that the type is
+used as an index in some array type.
 
 If an <observed> property is given as parameter, only types that
 feature the property are controlled, or those that do @i{not} feature
@@ -6224,10 +6226,11 @@ the property if the <observed> is preceded by ``not''. If the
 <observed> is preceded by ``ignore'' the type is controlled
 irrrespectively of the property, and the message does not mention it
 at all, while if it is preceded by ``report'', the message still
-mentions if the <observed> is used.
+mentions whether the <observed> is used or not.
 
-Without parameters, the rule is equivalent to ``ignore indexing,
-ignore logical''.
+Without parameters, the rule is equivalent to ``ignore relational,
+ignore logical, ignore indexing'' (i.e. it controls all types that do
+not use any arithmetic operator).
 
 This rule can be given only once for each combination of values of the
 parameters.
@@ -6244,8 +6247,8 @@ check no_operator_usage (report indexing, report logical);
 check no_operator_usage (logical);
 
 -- Find integer types that don't use artihmetic operators and are
--- not used for indexing:
-check no_operator_usage (not indexing);
+-- not used for indexing nor in relational operators:
+check no_operator_usage (not indexing, not relational);
 @end example
 
 @subsection Tips

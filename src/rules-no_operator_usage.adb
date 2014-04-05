@@ -68,7 +68,7 @@ package body Rules.No_Operator_Usage is
    -- but since we don't allow two identical controls, the length of the list is bounded by
    -- (# of filters) * (# of observed)
 
-   type Observed is (Logical, Indexing);
+   type Observed is (Relational, Logical, Indexing);
    package Observed_Flag_Utilities is new Framework.Language.Flag_Utilities (Observed);
 
    type Filters is (F_Used, F_Not, F_Ignore, F_Report);
@@ -86,7 +86,8 @@ package body Rules.No_Operator_Usage is
    Rule_Used : Asis.ASIS_Natural := 0;
    Save_Used : Asis.ASIS_Natural;
 
-   type Operator_Class is (Arithmetic, Logical, Indexing); -- Indexing is a bit of a stretch as an operator...
+   type Operator_Class is (Arithmetic, Relational, Logical, Indexing);
+   -- Indexing is a bit of a stretch as an operator...
    type Operator_Usage is array (Operator_Class) of Boolean;
    package Type_Usage is new Framework.Symbol_Table.Data_Access (Operator_Usage);
 
@@ -113,39 +114,21 @@ package body Rules.No_Operator_Usage is
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Asis;
       use Framework.Language, Observed_Flag_Utilities, Filters_Modifiers_Utilities;
-      Filter1, Filter2   : Filters;
-      Subrule1, Subrule2 : Observed;
-      SF : Observed_Filters;
+      Filter  : Filters;
+      Subrule : Observed;
+      SF      : Observed_Filters := (others => F_Ignore);
+      Given   : array (Observed) of Boolean := (others => False);
    begin
-      if Parameter_Exists then
-         Filter1  := Get_Modifier (Required => False);
-         Subrule1 := Get_Flag_Parameter (Allow_Any => False);
+      while Parameter_Exists loop
+         Filter  := Get_Modifier (Required => False);
+         Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-         if Parameter_Exists then
-            Filter2  := Get_Modifier (Required => False);
-            Subrule2 := Get_Flag_Parameter (Allow_Any => False);
-         else
-            Filter2 := F_Ignore;
-            case Subrule1 is
-               when Logical =>
-                  Subrule2 := Indexing;
-               when Indexing =>
-                  Subrule2 := Logical;
-            end case;
-         end if;
-
-         if Subrule1 = Subrule2 then
+         if Given (Subrule) then
             Parameter_Error (Rule_Id, "same <observed> given twice in control");
          end if;
-
-      else
-         Filter1  := F_Ignore;
-         Subrule1 := Logical;
-         Filter2  := F_Ignore;
-         Subrule2 := Indexing;
-      end if;
-      SF (Subrule1) := Filter1;
-      SF (Subrule2) := Filter2;
+         SF    (Subrule) := Filter;
+         Given (Subrule) := True;
+      end loop;
 
       -- Check if already there, but allow same value being specified twice if one (and only one) is "count"
       for C in Asis.List_Index range 1 .. Rule_Used loop
@@ -200,6 +183,33 @@ package body Rules.No_Operator_Usage is
       Process_Scope_Exit;
    end Finalize;
 
+   ------------------
+   -- Update_Store --
+   ------------------
+
+   procedure Update_Store (T : Asis.Declaration; Class : Operator_Class) is
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Thick_Queries;
+
+      Decl : Asis.Declaration;
+   begin
+      Decl := Corresponding_First_Subtype (T);
+
+      if Type_Kind (Type_Declaration_View (Ultimate_Type_Declaration (Decl)))
+         not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition
+      then
+         return;
+      end if;
+
+      declare
+         Type_Name : constant Asis.Expression := Names (Decl) (1);
+         U         : Operator_Usage           := Type_Usage.Fetch (Type_Name, Default => (others => False));
+      begin
+         U (Class) := True;
+         Type_Usage.Store (Type_Name, U);
+      end;
+   end Update_Store;
+
    -----------------------------
    -- Process_Type_Definition --
    -----------------------------
@@ -241,7 +251,6 @@ package body Rules.No_Operator_Usage is
 
    procedure Process_Operator (Oper : in Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Thick_Queries;
 
       E     : Asis.Element;
       Class : Operator_Class;
@@ -269,6 +278,12 @@ package body Rules.No_Operator_Usage is
             | An_Abs_Operator
               =>
             Class := Arithmetic;
+         when A_Less_Than_Operator
+            | A_Less_Than_Or_Equal_Operator
+            | A_Greater_Than_Operator
+            | A_Greater_Than_Or_Equal_Operator
+            =>
+            Class := Relational;
          when others =>
             return;
       end case;
@@ -293,7 +308,6 @@ package body Rules.No_Operator_Usage is
             Parameters : constant Asis.Element_List := Function_Call_Parameters (E);
          begin
             E := A4G_Bugs.Corresponding_Expression_Type (Actual_Parameter (Parameters (1)));
-
             -- Annoying cases:
             -- A string litteral will return a nil element for E
             -- A universal value will return a declaration, however there is
@@ -317,25 +331,43 @@ package body Rules.No_Operator_Usage is
                return;
             end if;
          end;
-         E := Corresponding_First_Subtype (E);
 
          -- Here, E is the declaration of the type the operator operates on.
-         if Type_Kind (Type_Declaration_View (Ultimate_Type_Declaration (E)))
-            not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition
-         then
-            return;
-         end if;
-
-         declare
-            Type_Name : constant Asis.Expression := Names (E) (1);
-            U         : Operator_Usage := Type_Usage.Fetch (Type_Name, Default => (others => False));
-         begin
-            U (Class) := True;
-            Type_Usage.Store (Type_Name, U);
-         end;
+         Update_Store (E, Class);
       end if;
    end Process_Operator;
 
+   ------------------------
+   -- Process_Membership --
+   ------------------------
+
+   procedure Process_Membership (Test : in Asis.Expression) is
+   -- Like Process_Operator, but for membership tests
+   -- Class is Relational
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+
+      Decl : Asis.Declaration;
+   begin
+      if Rule_Used = 0 then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Decl := A4G_Bugs.Corresponding_Expression_Type (Membership_Test_Expression (Test));
+
+      if Is_Nil (Decl)
+        or else Is_Nil (Enclosing_Element (Decl))
+        or else (Declaration_Kind (Decl) = An_Ordinary_Type_Declaration
+                 and then Type_Kind (Type_Declaration_View (Decl)) = A_Root_Type_Definition)
+      then
+         -- Expression is universal or equivalent => give up
+         -- TBSL we could try harder to get the type from the RHS list, but constructs such as
+         -- "5 in T'Range" are unlikely
+         return;
+      end if;
+
+      Update_Store (Decl, Relational);
+   end Process_Membership;
 
    ------------------------------
    -- Process_Array_Definition --
@@ -378,6 +410,23 @@ package body Rules.No_Operator_Usage is
          use Reports, Thick_Queries, Utilities;
          Extra : Unbounded_Wide_String := Null_Unbounded_Wide_String;
       begin
+         case Param.Observed_Filter (Relational) is
+            when F_Used =>
+               if not Operator_Used (Relational) then
+                  return;
+               end if;
+               Append (Extra, ", relational operator");
+            when F_Not =>
+               if Operator_Used (Relational) then
+                  return;
+               end if;
+               Append (Extra, ", no relational operator");
+            when F_Report =>
+               Append (Extra, Choose (Operator_Used (Relational),  ", ", ", no ") & "relational operator");
+            when F_Ignore =>
+               null;
+         end case;
+
          case Param.Observed_Filter (Logical) is
             when F_Used =>
                if not Operator_Used (Logical) then

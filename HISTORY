@@ -7,9 +7,13 @@ Changes to existing rules:
 Style (Multiple_Elements): 
   separated keywords from other subrules
 
+No_Operator_Usage:
+  added observed relational
+
 =============
 == V1.16r9 ==
 =============
+(Specific release, not released publicly)
 
 General:
 --------

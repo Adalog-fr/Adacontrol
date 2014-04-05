@@ -495,7 +495,7 @@ Control integer types where no arithmetic operators are used
 
 Parameters: [<filter>] <observed>
 <filter>:  not | ignore | report
-<observed>:  logical | indexing
+<observed>:  relational | logical | indexing
 ----
 Rule: OBJECT_DECLARATIONS
 Control allowed forms of object declarations

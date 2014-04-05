@@ -1,6 +1,6 @@
 with X_No_Operator_Usage;
 procedure T_No_Operator_Usage is
-   type T1 is mod 10;                     -- All info, Only ops, log+inx
+   type T1 is mod 10;                     -- All info, Only ops, rel+log+inx
    type T2 is new T1;
    V1 : T1;
    V2 : T2;
@@ -10,13 +10,18 @@ procedure T_No_Operator_Usage is
    use type X_No_Operator_Usage.X4;
 begin
    declare
-      type T11 is range 1 .. 10;          -- All info, Only ops, nolog+noinx
-      type T12 is new T1;                 -- All info, Only ops, nolog+noinx
+      type T11 is range 1 .. 10;          -- All info, Only ops, norel+nolog+noinx
+      type T12 is new T1;                 -- All info, Only ops, rel+nolog+noinx
 
       V11 : T11;
       V12 : T12;
    begin
-      null;
+      if V1 > 1 then
+         null;
+      end if;
+      if V12 in 5..7 then
+         null;
+      end if;
    end;
 
    V1 := V1 and 1;

@@ -2,7 +2,7 @@ package body X_No_Operator_Usage is
    package body Internal is
       function "+" (L, R : X2) return X2 is
       begin
-         return 1;
+         return Boolean'Pos (X3'Last > X3'First);
       end "+";
    end Internal;
 

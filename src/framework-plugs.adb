@@ -648,6 +648,11 @@ package body Framework.Plugs is
                when An_Operator_Symbol =>
                   Rules.No_Operator_Usage. Process_Operator (Element);
 
+               when An_In_Membership_Test
+                  | A_Not_In_Membership_Test
+                  =>
+                  Rules.No_Operator_Usage. Process_Membership (Element);
+
                when An_Allocation_From_Subtype
                  | An_Allocation_From_Qualified_Expression
                  =>

@@ -1,23 +1,23 @@
-t_no_operator_usage.adb:13:12: Error: All info: type T_No_Operator_Usage._anonymous_.T11 uses no arithmetic operator, no logical operator, no indexing
+t_no_operator_usage.adb:13:12: Error: All info: type T_No_Operator_Usage._anonymous_.T11 uses no arithmetic operator, no relational operator, no logical operator, no indexing
 t_no_operator_usage.adb:13:12: Error: Only ops: type T_No_Operator_Usage._anonymous_.T11 uses no arithmetic operator
-t_no_operator_usage.adb:13:12: Error: nolog+noinx: type T_No_Operator_Usage._anonymous_.T11 uses no arithmetic operator, no logical operator, no indexing
-t_no_operator_usage.adb:14:12: Error: All info: type T_No_Operator_Usage._anonymous_.T12 uses no arithmetic operator, no logical operator, no indexing
+t_no_operator_usage.adb:13:12: Error: norel+nolog+noinx: type T_No_Operator_Usage._anonymous_.T11 uses no arithmetic operator, no relational operator, no logical operator, no indexing
+t_no_operator_usage.adb:14:12: Error: All info: type T_No_Operator_Usage._anonymous_.T12 uses no arithmetic operator, relational operator, no logical operator, no indexing
 t_no_operator_usage.adb:14:12: Error: Only ops: type T_No_Operator_Usage._anonymous_.T12 uses no arithmetic operator
-t_no_operator_usage.adb:14:12: Error: nolog+noinx: type T_No_Operator_Usage._anonymous_.T12 uses no arithmetic operator, no logical operator, no indexing
-t_no_operator_usage.adb:30:12: Error: All info: type T_No_Operator_Usage._anonymous_.T14 uses no arithmetic operator, no logical operator, indexing
-t_no_operator_usage.adb:30:12: Error: Only ops: type T_No_Operator_Usage._anonymous_.T14 uses no arithmetic operator
-t_no_operator_usage.adb:3:9: Error: All info: type T_No_Operator_Usage.T1 uses no arithmetic operator, logical operator, indexing
+t_no_operator_usage.adb:14:12: Error: rel+nolog+noinx: type T_No_Operator_Usage._anonymous_.T12 uses no arithmetic operator, relational operator, no logical operator, no indexing
+t_no_operator_usage.adb:35:12: Error: All info: type T_No_Operator_Usage._anonymous_.T14 uses no arithmetic operator, no relational operator, no logical operator, indexing
+t_no_operator_usage.adb:35:12: Error: Only ops: type T_No_Operator_Usage._anonymous_.T14 uses no arithmetic operator
+t_no_operator_usage.adb:3:9: Error: All info: type T_No_Operator_Usage.T1 uses no arithmetic operator, relational operator, logical operator, indexing
 t_no_operator_usage.adb:3:9: Error: Only ops: type T_No_Operator_Usage.T1 uses no arithmetic operator
-t_no_operator_usage.adb:3:9: Error: log+inx: type T_No_Operator_Usage.T1 uses no arithmetic operator, logical operator, indexing
-x_no_operator_usage.ads:13:9: Error: All info: type X_No_Operator_Usage.Intermediate1 uses no arithmetic operator, no logical operator, no indexing
+t_no_operator_usage.adb:3:9: Error: rel+log+inx: type T_No_Operator_Usage.T1 uses no arithmetic operator, relational operator, logical operator, indexing
+x_no_operator_usage.ads:13:9: Error: All info: type X_No_Operator_Usage.Intermediate1 uses no arithmetic operator, no relational operator, no logical operator, no indexing
 x_no_operator_usage.ads:13:9: Error: Only ops: type X_No_Operator_Usage.Intermediate1 uses no arithmetic operator
-x_no_operator_usage.ads:13:9: Error: nolog+noinx: type X_No_Operator_Usage.Intermediate1 uses no arithmetic operator, no logical operator, no indexing
-x_no_operator_usage.ads:2:9: Error: All info: type X_No_Operator_Usage.X1 uses no arithmetic operator, no logical operator, no indexing
+x_no_operator_usage.ads:13:9: Error: norel+nolog+noinx: type X_No_Operator_Usage.Intermediate1 uses no arithmetic operator, no relational operator, no logical operator, no indexing
+x_no_operator_usage.ads:2:9: Error: All info: type X_No_Operator_Usage.X1 uses no arithmetic operator, no relational operator, no logical operator, no indexing
 x_no_operator_usage.ads:2:9: Error: Only ops: type X_No_Operator_Usage.X1 uses no arithmetic operator
-x_no_operator_usage.ads:2:9: Error: nolog+noinx: type X_No_Operator_Usage.X1 uses no arithmetic operator, no logical operator, no indexing
-x_no_operator_usage.ads:15:9: Error: All info: type X_No_Operator_Usage.X3 uses no arithmetic operator, no logical operator, no indexing
+x_no_operator_usage.ads:2:9: Error: norel+nolog+noinx: type X_No_Operator_Usage.X1 uses no arithmetic operator, no relational operator, no logical operator, no indexing
+x_no_operator_usage.ads:15:9: Error: All info: type X_No_Operator_Usage.X3 uses no arithmetic operator, relational operator, no logical operator, no indexing
 x_no_operator_usage.ads:15:9: Error: Only ops: type X_No_Operator_Usage.X3 uses no arithmetic operator
-x_no_operator_usage.ads:15:9: Error: nolog+noinx: type X_No_Operator_Usage.X3 uses no arithmetic operator, no logical operator, no indexing
+x_no_operator_usage.ads:15:9: Error: rel+nolog+noinx: type X_No_Operator_Usage.X3 uses no arithmetic operator, relational operator, no logical operator, no indexing
 
 Counts summary:
 NO_OPERATOR_USAGE: 7
