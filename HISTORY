@@ -4,11 +4,15 @@
 
 Changes to existing rules:
 --------------------------
+No_Operator_Usage:
+  added observed relational
+
 Style (Multiple_Elements): 
   separated keywords from other subrules
 
-No_Operator_Usage:
-  added observed relational
+With_Clauses:
+  Handle correctly case of with clauses required due to a use clause
+  or pragma Elaborate for the same package in the context clauses.
 
 =============
 == V1.16r9 ==

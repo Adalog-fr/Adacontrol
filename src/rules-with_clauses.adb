@@ -177,9 +177,74 @@ package body Rules.With_Clauses is
    -------------------------
 
    procedure Process_With_Clause (Element : in Asis.Clause) is
-      use Asis.Clauses;
+      use Asis.Clauses, Asis.Elements;
       use Framework.Scope_Manager, Framework.Reports, Thick_Queries, Utilities;
-   begin
+
+      function Required_For_Other_Context_Clauses (Name : Asis.Name) return Boolean is
+      -- Is Name used in a use clause from the same context clause?
+         use Asis, Asis.Expressions;
+
+         Unit_Clauses : constant Asis.Context_Clause_List := Context_Clause_Elements
+                                                              (Enclosing_Compilation_Unit (Name),
+                                                               Include_Pragmas =>  True);
+         Name_Def : constant Asis.Defining_Name := Thick_Queries.First_Defining_Name (Name);
+      begin
+         for C in Unit_Clauses'Range loop
+            case Clause_Kind (Unit_Clauses (C)) is
+               when A_Use_Package_Clause =>
+                  declare
+                     Use_Names : constant Asis.Name_List := Clause_Names (Unit_Clauses (C));
+                  begin
+                     for U in Use_Names'Range loop
+                        if Is_Equal (First_Defining_Name (Use_Names (U)), Name_Def) then
+                           return True;
+                        end if;
+                     end loop;
+                  end;
+               when A_Use_Type_Clause
+                  | A_Use_All_Type_Clause
+                  =>
+                  declare
+                     Use_Names : constant Asis.Name_List := Clause_Names (Unit_Clauses (C));
+                  begin
+                     for U in Use_Names'Range loop
+                        -- Normally, a use type will use a selected name. The only way to have a
+                        -- simple name is if there is already a use clause for the containing package,
+                        -- and of course this use clause will be analyzed. We can thus safely ignore
+                        -- simple names
+                        if Expression_Kind (Use_Names (U)) = A_Selected_Component
+                          and then Is_Equal (First_Defining_Name (Prefix (Use_Names (U))), Name_Def)
+                        then
+                           return True;
+                        end if;
+                     end loop;
+                  end;
+               when others =>    -- Including Not_A_Clause (pragma)
+                  null;
+            end case;
+
+            case Pragma_Kind (Unit_Clauses (C)) is
+               when An_Elaborate_Pragma
+                  | An_Elaborate_All_Pragma
+                  =>
+                  declare
+                     Assocs : constant Asis.Association_List := Pragma_Argument_Associations (Unit_Clauses (C));
+                  begin
+                     for A in Assocs'Range loop
+                        if Is_Equal (First_Defining_Name (Actual_Parameter (Assocs (A))), Name_Def) then
+                           return True;
+                        end if;
+                     end loop;
+                  end;
+               when others =>   -- Including Not_A_Pragma
+                  null;
+            end case;
+         end loop;
+
+         return False;
+      end Required_For_Other_Context_Clauses;
+
+   begin   -- Process_With_Clause
       if Rule_Used = Not_Used then
          return;
       end if;
@@ -202,26 +267,34 @@ package body Rules.With_Clauses is
          for I in Names'Range loop
             declare
                U_Name    : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names (I))));
-               Redundant : Boolean := False;
+               type With_Status is (OK, Redundant, Required_For_Use);
+               Status : With_Status := OK;
             begin
                -- Check if already there
                Withed_Units.Reset (Unit_Scopes);
                while Withed_Units.Data_Available loop
                   if U_Name = Withed_Units.Current_Data.Unit_Name then
-                     Report (Rule_Id,
-                             Ctl_Contexts (Reduceable),
-                             Get_Location (Names (I)),
-                             "With clause for " & Extended_Name_Image (Names (I))
-                               & " redundant with clause at " & Image (Withed_Units.Current_Data.Unit_Loc));
-                     Redundant := True;
-                     exit;
+                     -- Redundant, unless in a body, the other with is from the spec,
+                     -- and some context use clause mentions this package
+                     if Withed_Units.Current_Origin /= Specification
+                       or else not Required_For_Other_Context_Clauses (Names (I))
+                     then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Reduceable),
+                                Get_Location (Names (I)),
+                                "With clause for " & Extended_Name_Image (Names (I))
+                                & " redundant with clause at " & Image (Withed_Units.Current_Data.Unit_Loc));
+                        Status := Redundant;
+                        exit;
+                     end if;
+
+                     Status := Required_For_Use;
                   end if;
                   Withed_Units.Next;
                end loop;
 
-               if not Redundant then
+               if Status /= Redundant then
                   declare
-                     use Asis.Elements;
                      O_Name : constant Wide_String := Full_Name_Image (Names (I));
                   begin
                      Withed_Units.Push ((U_Length      => U_Name'Length,
