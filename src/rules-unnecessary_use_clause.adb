@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Unnecessary_Use - Package body                            --
+--  Rules.Unnecessary_Use_Clause - Package body                     --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2008. The Ada --

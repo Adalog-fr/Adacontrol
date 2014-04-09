@@ -2,6 +2,10 @@
 == V1.16r10 ==
 ==============
 
+General:
+--------
+Added .txt format for user guide and programmer manual
+
 Changes to existing rules:
 --------------------------
 No_Operator_Usage:
