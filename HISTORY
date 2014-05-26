@@ -1,4 +1,15 @@
 ==============
+== V1.16r11 ==
+==============
+
+General:
+--------
+Recompiled for Gnat GPL 2014
+
+Now up to date with the description (some changes mentionned under
+1.16r10 didn't actually make it to the released sources)
+
+==============
 == V1.16r10 ==
 ==============
 
