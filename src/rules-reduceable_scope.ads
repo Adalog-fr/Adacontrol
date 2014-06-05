@@ -38,6 +38,7 @@ package Rules.Reduceable_Scope  is
 
    procedure Process_Defining_Name (Def    : in Asis.Defining_Name);
    procedure Process_Identifier    (Name   : in Asis.Name);
+   procedure Process_Instantiation (Inst   : in Asis.Declaration);
    procedure Process_Use_Clause    (Clause : in Asis.Clause);
    procedure Process_Scope_Exit    (Scope  : in Asis.Element);
 

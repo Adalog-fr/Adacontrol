@@ -150,4 +150,30 @@ For_Loop : for I in 1..10 loop -- Not movable (For_Loop, I)
    begin
       K := 1;
    end;
+
+   declare            -- case of box-defaulted parameters, Mantis 0000038
+      package Pack is
+         procedure P; -- OK
+      end Pack;
+      use Pack;       -- OK
+
+      generic
+         with procedure P is <>;
+      procedure Gen;
+      procedure Gen is
+      begin
+         null;
+      end;
+
+      package body Pack is
+         procedure P is
+         begin
+            null;
+         end P;
+      end Pack;
+
+      procedure Inst is new Gen;
+   begin
+      Inst;
+   end;
 end T_Reduceable_Scope;

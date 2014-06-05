@@ -398,6 +398,7 @@ package body Framework.Plugs is
                   Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
                   Rules.Non_Static.             Process_Instantiation         (Element);
+                  Rules.Reduceable_Scope.       Process_Instantiation         (Element);
                   Rules.Return_Type.            Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
@@ -416,6 +417,7 @@ package body Framework.Plugs is
                   Rules.Instantiations.         Process_Instantiation         (Element);
                   Rules.Parameter_Declarations. Process_Declaration           (Element);
                   Rules.Non_Static.             Process_Instantiation         (Element);
+                  Rules.Reduceable_Scope.       Process_Instantiation         (Element);
                   Rules.Return_Type.            Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
@@ -429,6 +431,7 @@ package body Framework.Plugs is
                   Rules.Instantiations.              Process_Instantiation         (Element);
                   Rules.Parameter_Declarations.      Process_Declaration           (Element);
                   Rules.Non_Static.                  Process_Instantiation         (Element);
+                  Rules.Reduceable_Scope.            Process_Instantiation         (Element);
                   Rules.Return_Type.                 Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters.      Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use_Clause.      Process_Instantiation         (Element);

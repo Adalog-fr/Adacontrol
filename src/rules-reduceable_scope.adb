@@ -83,6 +83,11 @@ package body Rules.Reduceable_Scope is
    -- We just use a symbol table, where we keep elements and where they were used from.
    -- Reports are issued when leaving the corresponding visibility scope.
    --
+   -- Special case for instantiations:
+   -- When an instantiation uses defaults for box-defaulted formals, the visibility
+   -- is the one at the place of instantiation, but the actuals do not appear textually.
+   -- Therefore, actuals (obtained from normalized associations) must be manually analyzed.
+   --
    -- Note on memory management of paths:
    -- Paths that are no more needed are freed by the scope manager from the associated Clear
    -- procedures; they should not be freed from any other place.
@@ -859,6 +864,28 @@ package body Rules.Reduceable_Scope is
          Check_Movable_Use_Clause;
       end if;
    end Process_Identifier;
+
+   ---------------------------
+   -- Process_Instantiation --
+   ---------------------------
+
+   procedure Process_Instantiation (Inst : in Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      Actuals     : constant Asis.Association_List := Generic_Actual_Part (Inst, Normalized => True);
+      Formal_Decl : Asis.Declaration;
+   begin
+      for A in Actuals'Range loop
+         if Is_Defaulted_Association (Actuals (A)) then
+            Formal_Decl := Enclosing_Element (Formal_Parameter (Actuals (A)));
+            if Declaration_Kind (Formal_Decl) in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration
+              and then Default_Kind (Formal_Decl) = A_Box_Default
+            then
+               -- The actual must be a name in this case
+               Process_Identifier (Actual_Parameter (Actuals (A)));
+            end if;
+         end if;
+      end loop;
+   end Process_Instantiation;
 
    ------------------------
    -- Process_Use_Clause --
