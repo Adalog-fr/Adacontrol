@@ -161,7 +161,7 @@ package body Framework.Control_Manager is
             Result   := Fetch (Into.Simple_Names,
                                Name_Key,
                                Default_Value => null);
-            -- Normal case
+         -- Normal case
          else
             if Element_Kind (Good_Name) = An_Expression then
                -- Build Good_Name for attributes
@@ -392,6 +392,7 @@ package body Framework.Control_Manager is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Thick_Queries;
       Good_Name        : constant Asis.Element := Simple_Name (Name);
       Name_Declaration : Asis.Declaration;
+      Name_Definition  : Asis.Definition;
    begin
       if Is_Nil (Good_Name) then
          return No_Matching_Context;
@@ -441,7 +442,12 @@ package body Framework.Control_Manager is
       if Extend_To (Instance)
         and then Is_Part_Of_Instance (Name_Declaration)
       then
-         Query_Context (Into, Corresponding_Generic_Element (Good_Name));
+         if Element_Kind (Good_Name) = A_Defining_Name then
+            Name_Definition := Good_Name;
+         else
+            Name_Definition := Corresponding_Name_Definition (Good_Name);
+         end if;
+         Query_Context (Into, Corresponding_Generic_Element (Name_Definition));
          if Into.Last_Returned /= null then
             return Into.Last_Returned.Value.all;
          end if;

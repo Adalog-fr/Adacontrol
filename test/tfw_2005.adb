@@ -13,6 +13,11 @@ procedure Tfw_2005 is
                                              -- Several 'Base were already allowed before 2005 (sigh)
       end record;
 
+   type Rec2 is
+      record
+	 Next : access Rec2;                 -- Self references through anonymous access type
+      end record;
+
    procedure P (F : access function return Integer) is -- Parameter of anonymous access to SP type
    begin
       null;
