@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.16r11
+@settitle AdaControl User Guide V1.16r12
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -8005,7 +8005,7 @@ allowed in that case.
 values''), that appear outside of allowed places. The second parameter
 tells to which kind of literals the rule applies. The (optional)
 indicated values that follow are allowed at any place; for integers, a
-single value can be preced by ``max'', to indicate that all literals
+single value can be preceded by ``max'', to indicate that all literals
 whose (absolute) value is less or equal are allowed; for strings, the
 values are regular expressions. @xref{Syntax of regular
 expressions}. Commonly allowed values are 0 and 1 for integer

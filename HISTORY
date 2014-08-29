@@ -1,9 +1,14 @@
 ==============
+== V1.16r12 ==
+==============
+Minor bug fix release.
+(fixes to tests and doc, small improvements to code)
+
+==============
 == V1.16r11 ==
 ==============
 
 General:
---------
 Recompiled for Gnat GPL 2014
 
 Now up to date with the description (some changes mentionned under
