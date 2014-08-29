@@ -22,7 +22,7 @@ t_representation_clauses.adb:41:4: Found: Der_record: layout representation clau
 t_representation_clauses.adb:41:4: Found: record: layout representation clause
 t_representation_clauses.adb:52:4: Found: Tag_record: layout representation clause for TAGGED
 t_representation_clauses.adb:52:4: Found: record: layout representation clause
-t_representation_clauses.adb:54:10: Error: non_contig: gap at 0 range 0..47
+t_representation_clauses.adb:54:10: Error: non_contig: gap at 0 range 0..71
 t_representation_clauses.adb:52:8: Error: Bit_Order: type in layout representation clause has no bit ordering specified
 t_representation_clauses.adb:62:4: Error: streams: representation clause for 'INPUT
 t_representation_clauses.adb:63:4: Error: streams: representation clause for 'OUTPUT

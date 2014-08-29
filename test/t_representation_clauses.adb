@@ -51,7 +51,7 @@ procedure T_representation_clauses is
       end record;
    for Tagged_Type use              -- Tag_record, record, bit_order
       record
-         X at 6 range 0 .. 31;      -- gap (may depend on compiler)
+         X at 9 range 0 .. 31;      -- gap (may depend on compiler)
       end record;
 
    function My_Input(Stream : access Ada.Streams.Root_Stream_Type'Class) return Tagged_Type;
