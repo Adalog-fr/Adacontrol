@@ -160,12 +160,12 @@ nb_fw=$((nb_fw+1))
 # This test requires -v in all cases
 ${ADACTL} -Cv -f conf/x_errors.aru 2>&1 \
 	| tr -d \\r >res/${test_case}.txt
-for I in ../rules/*.aru; do
+for I in `ls ../rules/*.aru | sort -df `; do
    echo -n "$I: " >>res/${test_case}.txt
    ${ADACTL} -Cv -f $I 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 done
-for I in conf/t_*.aru conf/ts_*.aru; do
+for I in `ls conf/t_*.aru conf/ts_*.aru | sort -df `; do
    echo -n "$I: " >>res/${test_case}.txt
    ${ADACTL} -Cv -f $I 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt

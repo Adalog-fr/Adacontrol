@@ -2,7 +2,6 @@ x_errors.aru:1:0: Syntax: Command or label expected
 x_errors.aru:2:37: Parameter: NAMING_CONVENTION: Filter expected
 x_errors.aru:4:8: Syntax: Not a rule name: NOT_A_RULE
 Syntax errors found
-../rules/SQALE.aru: No syntax error
 ../rules/gnatcheck.aru: No syntax error
 ../rules/nasa.aru: No syntax error
 ../rules/no_83_unit_name.aru: No syntax error
@@ -20,6 +19,7 @@ Syntax errors found
 ../rules/no_system_entity.aru: No syntax error
 ../rules/ravenscar.aru: No syntax error
 ../rules/reserved_2005.aru: No syntax error
+../rules/SQALE.aru: No syntax error
 ../rules/verif.aru: No syntax error
 conf/t_abnormal_function_return.aru: No syntax error
 conf/t_allocators.aru: No syntax error
@@ -55,8 +55,8 @@ conf/t_max_size.aru: No syntax error
 conf/t_max_statement_nesting.aru: No syntax error
 conf/t_movable_accept_statements.aru: No syntax error
 conf/t_naming_convention.aru: No syntax error
-conf/t_no_operator_usage.aru: No syntax error
 conf/t_non_static.aru: No syntax error
+conf/t_no_operator_usage.aru: No syntax error
 conf/t_not_elaboration_calls.aru: No syntax error
 conf/t_not_selected_name.aru: No syntax error
 conf/t_object_declarations.aru: No syntax error
@@ -75,6 +75,7 @@ conf/t_simplifiable_expressions.aru: No syntax error
 conf/t_simplifiable_statements.aru: No syntax error
 conf/t_statements.aru: No syntax error
 conf/t_style.aru: No syntax error
+conf/ts_units.aru: No syntax error
 conf/t_terminating_tasks.aru: No syntax error
 conf/t_type_initial_values.aru: No syntax error
 conf/t_type_usage.aru: No syntax error
@@ -87,4 +88,3 @@ conf/t_unsafe_unchecked_conversion.aru: No syntax error
 conf/t_usage.aru: No syntax error
 conf/t_use_clauses.aru: No syntax error
 conf/t_with_clauses.aru: No syntax error
-conf/ts_units.aru: No syntax error
