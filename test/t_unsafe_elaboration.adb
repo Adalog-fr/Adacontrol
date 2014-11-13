@@ -24,7 +24,7 @@ package body T_Unsafe_Elaboration is
 
    task T1;
    task body T1 is
-      package Inst is new X_Unsafe_Elaboration.Normal3.Gen;
+      package Inst2 is new X_Unsafe_Elaboration.Normal3.Gen;
    begin
       null;
    end T1;
@@ -34,6 +34,7 @@ package body T_Unsafe_Elaboration is
       Not_Called.Proc;
    end Exported1;
 
+   I : Integer := Inst1.FG;     -- Ticket #38
    procedure Exported2 is
    begin
       null;

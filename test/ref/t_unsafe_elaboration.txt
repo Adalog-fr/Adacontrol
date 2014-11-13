@@ -1,3 +1,3 @@
-t_unsafe_elaboration.adb:9:1: Error: UNSAFE_ELABORATION: X_Unsafe_Elaboration.Normal3 used in elaboration code at t_unsafe_elaboration.adb:27:56, needs pragma Elaborate or Elaborate_All
+t_unsafe_elaboration.adb:9:1: Error: UNSAFE_ELABORATION: X_Unsafe_Elaboration.Normal3 used in elaboration code at t_unsafe_elaboration.adb:27:57, needs pragma Elaborate or Elaborate_All
 t_unsafe_elaboration.adb:9:1: Error: UNSAFE_ELABORATION: X_Unsafe_Elaboration.Normal2 used in elaboration code at t_unsafe_elaboration.adb:15:7, needs pragma Elaborate or Elaborate_All
-t_unsafe_elaboration.adb:9:1: Error: UNSAFE_ELABORATION: X_Unsafe_Elaboration.Normal1 used in elaboration code at t_unsafe_elaboration.adb:44:12, needs pragma Elaborate or Elaborate_All
+t_unsafe_elaboration.adb:9:1: Error: UNSAFE_ELABORATION: X_Unsafe_Elaboration.Normal1 used in elaboration code at t_unsafe_elaboration.adb:45:12, needs pragma Elaborate or Elaborate_All

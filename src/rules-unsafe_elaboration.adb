@@ -155,6 +155,7 @@ package body Rules.Unsafe_Elaboration is
                          Name     : in Asis.Name)
    is
    -- Unit is an external unit used by elaboration calls or instantiations from For_Unit.
+   -- Name is the name of the called or instantiated program unit
    -- Check appropriate pragmas.
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Thick_Queries;
@@ -261,6 +262,7 @@ package body Rules.Unsafe_Elaboration is
       use Thick_Queries;
 
       procedure Check_Name (Name : Asis.Name; Must_Traverse : out Boolean) is
+      -- Checks that there is an elaboration pragma for the unit that contains Name
       -- Must_Traverse is true if further analysis of some body is necessary.
       -- Since what is to be traversed depends on the caller, it is better to have
       -- an "out" boolean than to traverse from inside this procedure
@@ -281,7 +283,12 @@ package body Rules.Unsafe_Elaboration is
          Name_Unit := Enclosing_Compilation_Unit (Corresponding_Name_Declaration (Name));
 
          if Is_Equal (Corresponding_Declaration (Name_Unit), Corresponding_Declaration (State.Unit)) then
-            Must_Traverse := True;
+            -- Internal call/instantiation
+            if not Is_Part_Of_Instance (Corresponding_Name_Declaration (Name)) then
+               -- Except those that are inside an expanded generic unit
+               -- (dependences are checked on the instantiation) (Ticket #38)
+               Must_Traverse := True;
+            end if;
          else
             Check_Unit (Name_Unit, State.Unit, Name);
          end if;
