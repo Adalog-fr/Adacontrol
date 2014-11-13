@@ -1,3 +1,5 @@
+-- Objective: check "set" command
+
 check declarations (integer_type);
 search declarations (variable);
 go;

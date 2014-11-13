@@ -1,3 +1,4 @@
+-- Objective: check derogation (derogation inverted case)
 with Ada.Text_Io;
 
 pragma Elaborate_All (Ada.Text_Io);--## rule line off pragmas ## some comment

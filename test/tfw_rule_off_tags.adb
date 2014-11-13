@@ -1,3 +1,5 @@
+-- Objective: check derogation (user defined derogation keywords)
+
 with Ada.Text_Io;
 
 pragma Elaborate_All (Ada.Text_Io);--%DEROG rule line off pragmas -- some comment

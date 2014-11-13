@@ -1,2 +1,4 @@
+-- Objective: check derogation (normal case)
+
 check pragmas (elaborate_all);
 "special name": check pragmas (inline);

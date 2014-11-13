@@ -1,3 +1,5 @@
+-- Objective: check "inhibit" command
+
 inhibit pragmas (tfw_inhibit_3);
 inhibit entities(tfw_inhibit_2, all tfw_inhibit_3);
 

@@ -1,3 +1,5 @@
+-- Objective: check various ways of naming entities
+
 Check  Entity_Inside_Exception  (xfw_naming.Proc_1{});
 Search Entity_Inside_Exception (tfw_naming.Q,
                                 Tfw_naming{}.P{STANDARD.INTEGER});

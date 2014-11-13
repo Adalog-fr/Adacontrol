@@ -1,4 +1,4 @@
-tfw_rule_off_ignored.adb:3:1: Error: PRAGMAS: use of pragma "Elaborate_All"
 tfw_rule_off_ignored.adb:5:1: Error: PRAGMAS: use of pragma "Elaborate_All"
-tfw_rule_off_ignored.adb:8:1: Error: PRAGMAS: use of pragma "Elaborate_All"
-tfw_rule_off_ignored.adb:11:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_rule_off_ignored.adb:7:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_rule_off_ignored.adb:10:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_rule_off_ignored.adb:13:1: Error: PRAGMAS: use of pragma "Elaborate_All"

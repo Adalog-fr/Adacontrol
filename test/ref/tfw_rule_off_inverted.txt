@@ -1,4 +1,4 @@
-tfw_rule_off_inverted.adb:3:1: Error: PRAGMAS: use of pragma "Elaborate_All"
-tfw_rule_off_inverted.adb:8:1: Error: PRAGMAS: use of pragma "Elaborate_All"
-tfw_rule_off_inverted.adb:14:4: Error: special name: use of pragma "Inline"
-tfw_rule_off_inverted.adb:18:7: Error: special name: use of pragma "Inline"
+tfw_rule_off_inverted.adb:4:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_rule_off_inverted.adb:9:1: Error: PRAGMAS: use of pragma "Elaborate_All"
+tfw_rule_off_inverted.adb:15:4: Error: special name: use of pragma "Inline"
+tfw_rule_off_inverted.adb:19:7: Error: special name: use of pragma "Inline"
