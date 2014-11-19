@@ -368,8 +368,8 @@ package body Framework is
    -----------
 
    function Image (L          : in Location;
-                   Short_Name : in Boolean := Default_Short_Name;
-                   Separator  : in Wide_Character := ':')
+                   Separator  : in Wide_Character := ':';
+                   Quoted     : in Boolean        := False)
                    return Wide_String
    is
       use Utilities;
@@ -394,13 +394,27 @@ package body Framework is
       if L = Null_Location then
          Failure ("Image of null location");
       elsif L.File_Name = Null_Unbounded_Wide_String then
-         return ASIS_Integer_Img (L.First_Column);
+         if Quoted then
+            return Quote (ASIS_Integer_Img (L.First_Column));
+         else
+            return ASIS_Integer_Img (L.First_Column);
+         end if;
       else
-         return Strip (To_Wide_String (L.File_Name))
-           & Separator
-           & ASIS_Integer_Img (L.First_Line)
-           & Separator
-           & ASIS_Integer_Img (L.First_Column);
+         if Quoted then
+            return
+              Quote (Strip (To_Wide_String (L.File_Name)))
+              & Separator
+              & Quote (ASIS_Integer_Img (L.First_Line))
+              & Separator
+              & Quote (ASIS_Integer_Img (L.First_Column));
+         else
+            return
+              Strip (To_Wide_String (L.File_Name))
+              & Separator
+              & ASIS_Integer_Img (L.First_Line)
+              & Separator
+              & ASIS_Integer_Img (L.First_Column);
+         end if;
       end if;
    end Image;
 
@@ -409,16 +423,15 @@ package body Framework is
    -- Safe_Image --
    ----------------
 
-   function Safe_Image (L          : in Location;
-                        Short_Name : in Boolean := Default_Short_Name;
-                        Separator  : in Wide_Character := ':')
+   function Safe_Image (L         : in Location;
+                        Separator : in Wide_Character := ':')
                         return Wide_String
    is
    begin
       if L = Null_Location then
          return "unknown location";
       else
-         return Image (L, Short_Name, Separator);
+         return Image (L, Separator);
       end if;
    end Safe_Image;
 

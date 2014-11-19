@@ -1,0 +1,24 @@
+-- Objective: check the various output formats
+
+Label_For_Check     : check declarations (integer_type);
+"Label, for ""Search;""": search declarations (variable);
+
+set format gnat;
+go;
+set format gnat_short;
+go;
+
+set format csv;
+go;
+set format csv_short;
+go;
+
+set format csvx;
+go;
+set format csvx_short;
+go;
+
+set format source;
+go;
+set format source_short;
+go;

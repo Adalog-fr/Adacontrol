@@ -103,21 +103,12 @@ put_line_line
 
 #
 # Framework tests, must be on case-by-case
+# In alphabetical order
 #
 run_start=`date +%s`
 nb_fw=0
 
 put_line "--- General framework tests"
-test_case=tfw_naming
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
-	| tr -d \\r >res/${test_case}.txt
-
-test_case=tfw_set
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
-	| tr -d \\r >res/${test_case}.txt
-
 test_case=tfw_help
 nb_fw=$((nb_fw+1))
 ${ADACTL} -h all 2>&1 \
@@ -128,6 +119,21 @@ ${ADACTL} -h "^Simplifiable_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 ${ADACTL} -h "variables ^tag_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
+
+test_case=tfw_formats
+nb_fw=$((nb_fw+1))
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r >res/${test_case}.txt
+
+test_case=tfw_inhibit
+nb_fw=$((nb_fw+1))
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb \
+	| tr -d \\r >res/${test_case}.txt
+
+test_case=tfw_naming
+nb_fw=$((nb_fw+1))
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
+	| tr -d \\r >res/${test_case}.txt
 
 test_case=tfw_rule_off
 nb_fw=$((nb_fw+1))
@@ -149,9 +155,9 @@ nb_fw=$((nb_fw+1))
 ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_inhibit
+test_case=tfw_set
 nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb \
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
 put_line "--- Syntax check test"

@@ -266,9 +266,9 @@ package body Framework.Reports is
       begin
          if Sep_Pos = 0 then
             Sep_Pos            := To'Last + 1;
-            Default_Short_Name := False;
+            Short_Name := False;
          elsif To_Upper (To (Sep_Pos .. To'Last)) = "_SHORT" then
-            Default_Short_Name := True;
+            Short_Name := True;
          else
             raise Constraint_Error;
          end if;
@@ -278,7 +278,7 @@ package body Framework.Reports is
 
       function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String is
       begin
-         if Default_Short_Name then
+         if Short_Name then
             return Output_Format'Wide_Image (Variable.Value) & "_SHORT";
          else
             return Output_Format'Wide_Image (Variable.Value);
@@ -355,27 +355,6 @@ package body Framework.Reports is
 
       procedure Issue_Message (Title : Wide_String) is
          use Ada.Strings.Wide_Fixed, Ada.Wide_Text_IO;
-
-         function Quote (Item : Wide_String) return Wide_String is
-            Result : Wide_String (Item'First .. Item'Last + Ada.Strings.Wide_Fixed.Count (Item, """") + 2);
-            Index  : Positive;
-         begin
-            Index := Result'First;
-            Result (Index) := '"';
-
-            for I in Item'Range loop
-               if Item (I) = '"' then
-                  Index := Index + 1;
-                  Result (Index) := '"';
-               end if;
-               Index := Index + 1;
-               Result (Index) := Item (I);
-            end loop;
-            Result (Result'Last) := '"';
-
-            return Result;
-         end Quote;
-
       begin   -- Issue_Message
          if Just_Created then
             Just_Created := False;
@@ -416,14 +395,14 @@ package body Framework.Reports is
                if Loc = Null_Location then
                   Put ("""""" and """""" and """""");
                else
-                  Put (Image (Loc, Separator => CSV_Separator (Format_Option.Value)));
+                  Put (Image (Loc, Separator => CSV_Separator (Format_Option.Value), Quoted => True));
                end if;
                Put (CSV_Separator (Format_Option.Value));
-               Put (Title);
+               Put (Quote (Title));
                Put (CSV_Separator (Format_Option.Value));
-               Put (Choose (Ctl_Label, Otherwise => """"""));
+               Put (Quote (Ctl_Label));
                Put (CSV_Separator (Format_Option.Value));
-               Put (Rule_Id);
+               Put (Quote (Rule_Id));
                Put (CSV_Separator (Format_Option.Value));
                Put (Quote (Msg));
                New_Line;
