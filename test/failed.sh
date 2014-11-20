@@ -6,7 +6,7 @@ if [ $OSTYPE == "linux-gnu" ] ; then
     WINMERGE='/usr/bin/meld'
     EMACS=emacs
 else
-    WINMERGE='/cygdrive/c/Program Files (x86)/KDiff3/kdiff3.exe'
+    WINMERGE='/cygdrive/c/Program Files/KDiff3/kdiff3.exe'
     EMACS=emacs.bat
 fi
 

@@ -1,4 +1,18 @@
 ==============
+== V1.16b13 ==
+==============
+
+General:
+--------
+Quote all fields in CSV(X) format
+Uniformize some error messages
+
+Changes to existing rules:
+--------------------------
+No_Operator_Usage:
+    Separate controls for Signed/Unsigned integers
+
+==============
 == V1.16r12 ==
 ==============
 Minor bug fix release.

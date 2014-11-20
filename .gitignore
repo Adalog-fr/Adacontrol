@@ -1,10 +1,11 @@
 b~*
 *~
-*.bak
-*.ali
 *.adt
+*.ali
+*.bak
 *.dmc
 *.exe
+*.lnk
 *.log
 *.o
 *.tgz
