@@ -1,5 +1,5 @@
 package X_No_Operator_Usage is
-   type X1 is new Integer;                 -- all info, only ops, norel+nolog+noinx
+   type X1 is new Integer;                 -- Signed all info, only ops, norel+nolog+noinx
 
    package Internal is
       type X2 is new X1 range 1 .. 10;
@@ -10,8 +10,8 @@ package X_No_Operator_Usage is
    type X4 is private;
    function "abs" (L : X4) return X4;
 private
-   type Intermediate1 is range 1 .. 10;    -- all info, only ops, norel+nolog+noinx
+   type Intermediate1 is range 1 .. 10;    -- Signed all info, only ops, norel+nolog+noinx
    subtype Intermediate2 is Intermediate1 range 3..5;
-   type X3 is new intermediate2;           -- all info, only ops, rel+nolog+noinx
+   type X3 is new intermediate2;           -- Signed all info, only ops, rel+nolog+noinx
    type X4 is range 1 .. 10;
 end X_No_Operator_Usage;

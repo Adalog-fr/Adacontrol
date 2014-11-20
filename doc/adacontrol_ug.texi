@@ -6203,14 +6203,17 @@ operators, which indicates that they might be replaceable with other
 kinds of types.
 @subsection Syntax
 @example
-<control_kind> no_operator_usage [(<parameter> [,<parameter>])];
+<control_kind> no_operator_usage [([<category>] <parameter> [,<parameter>])];
+<category>  ::= range | mod
 <parameter> ::= [<filter>] <observed>
 <filter>    ::= not | ignore | report
 <observed>  ::= relational | logical | indexing
 @end example
 @subsection Action
-This rule controls integer types (both signed and modular) where no
-arithmetic operator of the type is used in the program.
+This rule controls integer types where no arithmetic operator of the
+type is used in the program. If the <category> is @code{range}, the
+control applies only to signed integer types; if it is @code{mod}, it
+applies only to modular integer types; otherwise, it applies to both.
 
 When such a type is found, it migh be interesting to find out other
 usages to determine a possible better kind of type. ``relational''
@@ -6243,8 +6246,8 @@ check no_operator_usage;
 -- Do the same, but mention if indexing/logical ops are used:
 check no_operator_usage (report indexing, report logical);
 
--- Find integer types that use only logical operators:
-check no_operator_usage (logical);
+-- Find modular integer types that use only logical operators:
+check no_operator_usage (mod logical);
 
 -- Find integer types that don't use artihmetic operators and are
 -- not used for indexing nor in relational operators:

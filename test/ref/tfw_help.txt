@@ -493,7 +493,9 @@ Parameter(2..): <Entity name>
 Rule: NO_OPERATOR_USAGE
 Control integer types where no arithmetic operators are used
 
-Parameters: [<filter>] <observed>
+Parameter(1): [<target>] [<filter>] <observed> (optional)
+Parameter(2..): [<filter>] <observed>
+<target>:  range | mod
 <filter>:  not | ignore | report
 <observed>:  relational | logical | indexing
 ----

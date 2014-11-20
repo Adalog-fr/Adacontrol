@@ -47,17 +47,15 @@ with
   Thick_Queries,
   Utilities;
 
--- Adactl
-with
-  Framework.Symbol_Table;
-
 -- AdaControl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Language.Shared_Keys,
+  Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
 package body Rules.No_Operator_Usage is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    -- Algorithm
    --
@@ -79,6 +77,7 @@ package body Rules.No_Operator_Usage is
    type Observed_Filters is array (Observed) of Filters;
    type Control_Parameters is
       record
+         Category        : Categories;
          Observed_Filter : Observed_Filters;
          Context         : Basic_Rule_Context;
       end record;
@@ -89,7 +88,12 @@ package body Rules.No_Operator_Usage is
    type Operator_Class is (Arithmetic, Relational, Logical, Indexing);
    -- Indexing is a bit of a stretch as an operator...
    type Operator_Usage is array (Operator_Class) of Boolean;
-   package Type_Usage is new Framework.Symbol_Table.Data_Access (Operator_Usage);
+   type Type_Info is
+      record
+         Category : Categories;
+         Usage    : Operator_Usage;
+      end record;
+   package Type_Usage is new Framework.Symbol_Table.Data_Access (Type_Info);
 
 
    ----------
@@ -97,13 +101,15 @@ package body Rules.No_Operator_Usage is
    ----------
 
    procedure Help is
-      use Utilities, Observed_Flag_Utilities, Filters_Modifiers_Utilities;
+      use Utilities, Observed_Flag_Utilities, Categories_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control integer types where no arithmetic operators are used");
       User_Message;
-      User_Message ("Parameters: [<filter>] <observed>");
-      Help_On_Modifiers ("<filter>: ", Extra_Value => "");
+      User_Message ("Parameter(1): [<target>] [<filter>] <observed> (optional)");
+      User_Message ("Parameter(2..): [<filter>] <observed>");
+      Categories_Utilities.       Help_On_Modifiers ("<target>: ", Expected => Integer_Set);
+      Filters_Modifiers_Utilities.Help_On_Modifiers ("<filter>: ", Extra_Value => "");
       Help_On_Flags ("<observed>: ");
    end Help;
 
@@ -113,26 +119,33 @@ package body Rules.No_Operator_Usage is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Asis;
-      use Framework.Language, Observed_Flag_Utilities, Filters_Modifiers_Utilities;
+      use Framework.Language, Observed_Flag_Utilities, Filters_Modifiers_Utilities, Categories_Utilities;
+      Cat     : Categories := Cat_Any;
       Filter  : Filters;
       Subrule : Observed;
       SF      : Observed_Filters := (others => F_Ignore);
       Given   : array (Observed) of Boolean := (others => False);
    begin
-      while Parameter_Exists loop
-         Filter  := Get_Modifier (Required => False);
-         Subrule := Get_Flag_Parameter (Allow_Any => False);
+      if Parameter_Exists then
+         Cat := Get_Modifier (Required => False, Expected => Integer_Set);  -- Returns Cat_Any by default
+         while Parameter_Exists loop
+            Filter  := Get_Modifier (Required => False);
+            Subrule := Get_Flag_Parameter (Allow_Any => False);
 
-         if Given (Subrule) then
-            Parameter_Error (Rule_Id, "same <observed> given twice in control");
-         end if;
-         SF    (Subrule) := Filter;
-         Given (Subrule) := True;
-      end loop;
+            if Given (Subrule) then
+               Parameter_Error (Rule_Id, "same <observed> given twice in control");
+            end if;
+            SF    (Subrule) := Filter;
+            Given (Subrule) := True;
+         end loop;
+      end if;
 
       -- Check if already there, but allow same value being specified twice if one (and only one) is "count"
       for C in Asis.List_Index range 1 .. Rule_Used loop
          if Given_Controls (C).Observed_Filter = SF
+           and then (Given_Controls (C).Category = Cat_Any
+                     or else Cat = Cat_Any
+                     or else Given_Controls (C).Category = Cat)
            and then (Given_Controls (C).Context.Ctl_Kind = Count) = (Ctl_Kind = Count)
          then
             Parameter_Error (Rule_Id, "combination of parameters already given");
@@ -140,7 +153,7 @@ package body Rules.No_Operator_Usage is
       end loop;
 
       Rule_Used                  := Rule_Used + 1; -- No need to check since it allows all possible combinations
-      Given_Controls (Rule_Used) := (SF, Basic.New_Context (Ctl_Kind, Ctl_Label));
+      Given_Controls (Rule_Used) := (Cat, SF, Basic.New_Context (Ctl_Kind, Ctl_Label));
    end Add_Control;
 
    -------------
@@ -203,10 +216,10 @@ package body Rules.No_Operator_Usage is
 
       declare
          Type_Name : constant Asis.Expression := Names (Decl) (1);
-         U         : Operator_Usage           := Type_Usage.Fetch (Type_Name, Default => (others => False));
+         TI        : Type_Info                := Type_Usage.Fetch (Type_Name, Default => (Cat_Any, (others => False)));
       begin
-         U (Class) := True;
-         Type_Usage.Store (Type_Name, U);
+         TI.Usage (Class) := True;
+         Type_Usage.Store (Type_Name, TI);
       end;
    end Update_Store;
 
@@ -217,9 +230,11 @@ package body Rules.No_Operator_Usage is
    procedure Process_Type_Definition (Definition : in Asis.Definition) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
 
-      Good_Def : Asis.Definition;
-      Tmp_Usage    : Operator_Usage;
-      Name     : Asis.Expression;
+      Good_Def  : Asis.Definition;
+      Tmp_Usage : Type_Info;
+      Name      : Asis.Expression;
+      Kind      : Type_Kinds;
+      subtype Integer_Kinds is Type_Kinds range A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition;
    begin
       if Rule_Used = 0 then
          return;
@@ -233,15 +248,22 @@ package body Rules.No_Operator_Usage is
          Good_Def := Type_Declaration_View (Corresponding_Root_Type (Good_Def));
       end if;
 
-      if Type_Kind (Good_Def) not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition then
+      Kind := Type_Kind (Good_Def);
+      if Kind not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition then
          return;
       end if;
 
       Name      := Names (Enclosing_Element (Definition)) (1);
-      Tmp_Usage := Type_Usage.Fetch (Name, Default => (others => False));
-      -- If it was already there, don't change it
+      Tmp_Usage := Type_Usage.Fetch (Name, Default => (Cat_Any, (others => False)));
+      -- If it was already there, don't change it (but update category)
       -- If not, Usage has the initial value
-      -- => In all cases, don't change it (but update in case it was not there)
+      -- => In all cases, don't change Usage (but update needed anyway)
+      case Integer_Kinds'(Kind) is
+         when A_Signed_Integer_Type_Definition =>
+            Tmp_Usage.Category := Cat_Range;
+         when A_Modular_Type_Definition =>
+            Tmp_Usage.Category := Cat_Mod;
+      end case;
       Type_Usage.Store (Name, Tmp_Usage);
    end Process_Type_Definition;
 
@@ -385,14 +407,14 @@ package body Rules.No_Operator_Usage is
       declare
          Subtypes   : constant Asis.Defining_Name_List := Index_Subtypes_Names (Definition);
          Type_Name  : Asis.Defining_Name;
-         U          : Operator_Usage;
+         TI         : Type_Info;
       begin
          for S in Subtypes'Range loop
             if Type_Category (Subtypes (S), Follow_Derived => True) in Integer_Types then
-               Type_Name    := Names (Corresponding_First_Subtype (Enclosing_Element (Subtypes (S))))(1);
-               U            := Type_Usage.Fetch (Type_Name, Default => (others => False));
-               U (Indexing) := True;
-               Type_Usage.Store (Type_Name, U);
+               Type_Name           := Names (Corresponding_First_Subtype (Enclosing_Element (Subtypes (S))))(1);
+               TI                  := Type_Usage.Fetch (Type_Name, Default => (Cat_Any, (others => False)));
+               TI.Usage (Indexing) := True;
+               Type_Usage.Store (Type_Name, TI);
             end if;
          end loop;
       end;
@@ -403,60 +425,64 @@ package body Rules.No_Operator_Usage is
    -- Process_Scope_Exit --
    ------------------------
 
-   procedure Report_One (Entity : Asis.Defining_Name; Operator_Used : in out Operator_Usage) is
+   procedure Report_One (Entity : Asis.Defining_Name; Info : in out Type_Info) is
 
       procedure Do_Report (Param : Control_Parameters) is
          use Ada.Strings.Wide_Unbounded;
          use Reports, Thick_Queries, Utilities;
          Extra : Unbounded_Wide_String := Null_Unbounded_Wide_String;
       begin
+         if Param.Category /= Cat_Any and then Param.Category /= Info.Category then
+            return;
+         end if;
+
          case Param.Observed_Filter (Relational) is
             when F_Used =>
-               if not Operator_Used (Relational) then
+               if not Info.Usage (Relational) then
                   return;
                end if;
                Append (Extra, ", relational operator");
             when F_Not =>
-               if Operator_Used (Relational) then
+               if Info.Usage (Relational) then
                   return;
                end if;
                Append (Extra, ", no relational operator");
             when F_Report =>
-               Append (Extra, Choose (Operator_Used (Relational),  ", ", ", no ") & "relational operator");
+               Append (Extra, Choose (Info.Usage (Relational),  ", ", ", no ") & "relational operator");
             when F_Ignore =>
                null;
          end case;
 
          case Param.Observed_Filter (Logical) is
             when F_Used =>
-               if not Operator_Used (Logical) then
+               if not Info.Usage (Logical) then
                   return;
                end if;
                Append (Extra, ", logical operator");
             when F_Not =>
-               if Operator_Used (Logical) then
+               if Info.Usage (Logical) then
                   return;
                end if;
                Append (Extra, ", no logical operator");
             when F_Report =>
-               Append (Extra, Choose (Operator_Used (Logical),  ", ", ", no ") & "logical operator");
+               Append (Extra, Choose (Info.Usage (Logical),  ", ", ", no ") & "logical operator");
             when F_Ignore =>
                null;
          end case;
 
          case Param.Observed_Filter (Indexing) is
             when F_Used =>
-               if not Operator_Used (Indexing) then
+               if not Info.Usage (Indexing) then
                   return;
                end if;
                Append (Extra, ", indexing");
             when F_Not =>
-               if Operator_Used (Indexing) then
+               if Info.Usage (Indexing) then
                   return;
                end if;
                Append (Extra, ", no indexing");
             when F_Report =>
-               Append (Extra, Choose (Operator_Used (Indexing),  ", ", ", no ") & "indexing");
+               Append (Extra, Choose (Info.Usage (Indexing),  ", ", ", no ") & "indexing");
             when F_Ignore =>
                null;
          end case;
@@ -468,7 +494,7 @@ package body Rules.No_Operator_Usage is
       end Do_Report;
 
    begin   -- Report_One
-      if Operator_Used (Arithmetic) then
+      if Info.Usage (Arithmetic) then
          return;
       end if;
 

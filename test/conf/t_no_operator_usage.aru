@@ -1,4 +1,5 @@
-"All info":          check no_operator_usage (report relational, report logical, report indexing);
+"Signed all info":   check no_operator_usage (range report relational, report logical, report indexing);
+"Unsigned all info": check no_operator_usage (mod   report relational, report logical, report indexing);
 "Only ops":          check no_operator_usage (ignore relational, ignore logical, ignore indexing);
 "rel+log+inx":       check no_operator_usage (       relational,        logical,        indexing);
 "norel+nolog+noinx": check no_operator_usage (not    relational, not    logical, not    indexing);

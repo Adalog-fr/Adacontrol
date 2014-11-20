@@ -1,6 +1,6 @@
 with X_No_Operator_Usage;
 procedure T_No_Operator_Usage is
-   type T1 is mod 10;                     -- All info, Only ops, rel+log+inx
+   type T1 is mod 10;                     -- Unsigned all info, Only ops, rel+log+inx
    type T2 is new T1;
    V1 : T1;
    V2 : T2;
@@ -10,8 +10,8 @@ procedure T_No_Operator_Usage is
    use type X_No_Operator_Usage.X4;
 begin
    declare
-      type T11 is range 1 .. 10;          -- All info, Only ops, norel+nolog+noinx
-      type T12 is new T1;                 -- All info, Only ops, rel+nolog+noinx
+      type T11 is range 1 .. 10;          -- Signed all info, Only ops, norel+nolog+noinx
+      type T12 is new T1;                 -- Unsigned all info, Only ops, rel+nolog+noinx
 
       V11 : T11;
       V12 : T12;
@@ -32,7 +32,7 @@ begin
 
    declare
       type T13 is range 1 .. 10;
-      type T14 is new T13;                 -- All info, Only ops
+      type T14 is new T13;                 -- Signed all info, Only ops
       subtype ST13 is T13 range 1 .. 5;
       function "+" (L, R : ST13) return  ST13 is
       begin
