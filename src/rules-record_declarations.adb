@@ -96,7 +96,7 @@ package body Rules.Record_Declarations is
       User_Message ("Parameter(2): <entity>|<category>");
       User_Message ("<category>  : ()      | access    | array | delta  | digits | mod |");
       User_Message ("              private | protected | range | record | tagged | task");
-      User_Message ("Parameter(3..N): [not] in_variant | packed | sized | initialized | aligned (optional)");
+      User_Message ("Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)");
    end Help;
 
    -----------------

@@ -243,16 +243,16 @@ package body Rules.Style is
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
       User_Message;
       User_Message ("For casing_*:");
-      Casing_Flag_Utilities.Help_On_Flags (Header => "Parameter(2..N):");
+      Casing_Flag_Utilities.Help_On_Flags (Header => "Parameter(2..):");
       User_Message;
       User_Message ("For exposed_literal:");
       Literal_Flag_Utilities.Help_On_Flags (Header => "Parameter(2):");
-      Place_Flag_Utilities.Help_On_Flags (Header     => "Parameter(3..N):",
+      Place_Flag_Utilities.Help_On_Flags (Header     => "Parameter(3..):",
                                           Footer     => "(optional)",
                                           Extra_Value => "[max] <value>");
       User_Message;
       User_Message ("For multiple_elements:");
-      Multiple_Flag_Utilities.Help_On_Flags (Header => "Parameter(2..N): [flexible]",
+      Multiple_Flag_Utilities.Help_On_Flags (Header => "Parameter(2..): [flexible]",
                                              Footer => "(default = all)");
       User_Message;
       User_Message ("For no_closing_name:");
@@ -263,7 +263,7 @@ package body Rules.Style is
       User_Message ("Parameter(3): <block_size>");
       User_Message;
       User_Message ("For parameter_order:");
-      Extended_Modes_Utilities.Help_On_Modifiers (Header => "parameter(3..N): list of",
+      Extended_Modes_Utilities.Help_On_Modifiers (Header => "parameter(3..): list of",
                                                   Footer => "(separated by '|')");
    end Help;
 

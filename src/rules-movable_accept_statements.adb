@@ -209,7 +209,7 @@ package body Rules.Movable_Accept_Statements  is
       User_Message  ("Movable statements might be moved to an outer scope.");
       User_Message;
       Help_On_Flags ("Parameter(1):");
-      User_Message  ("Parameter(2..N): <name>");
+      User_Message  ("Parameter(2..): <name>");
    end Help;
 
 

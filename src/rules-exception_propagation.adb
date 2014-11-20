@@ -93,11 +93,11 @@ package body Rules.Exception_Propagation is
       User_Message  ("and that local exceptions cannot propagate out of scope");
       User_Message;
       Help_On_Flags ("Parameter(1): [<level>,]", Footer => "(<level> is required for declaration)");
-      User_Message  ("Parameter(2 .. N): for interface: <convention name>");
-      User_Message  ("                   for parameter: <full name of parameters known to expect call-backs>");
-      User_Message  ("                   for task: nothing");
-      User_Message  ("                   for declaration: nothing");
-      User_Message  ("                   for local_exception: nothing, no <level> allowed");
+      User_Message  ("Parameter(2..): for interface: <convention name>");
+      User_Message  ("                for parameter: <full name of parameters known to expect call-backs>");
+      User_Message  ("                for task: nothing");
+      User_Message  ("                for declaration: nothing");
+      User_Message  ("                for local_exception: nothing, no <level> allowed");
    end Help;
 
    -----------------

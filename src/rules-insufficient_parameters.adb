@@ -75,7 +75,7 @@ package body Rules.Insufficient_Parameters is
       User_Message ("Control calls where absence of named notation can lead to confusion");
       User_Message;
       User_Message ("Parameter(1): Allowed number of ""insufficient"" parameters");
-      User_Message ("Parameter(2..N): Enumeration type names whose values are insufficient");
+      User_Message ("Parameter(2..): Enumeration type names whose values are insufficient");
    end Help;
 
    -----------------

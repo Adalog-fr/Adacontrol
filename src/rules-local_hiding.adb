@@ -116,7 +116,7 @@ package body Rules.Local_Hiding is
       User_Message ("Control occurrences of local identifiers that hide or overload an identical name");
       User_Message;
       Help_On_Flags ("Parameter(1): <exceptions> ", Footer => "(default = strict)");
-      User_Message  ("Parameter(2..N): ""<Allowed Pattern>""");
+      User_Message  ("Parameter(2..): ""<Allowed Pattern>""");
       Help_On_Modifiers ("<exceptions>:");
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Overloading_Report");

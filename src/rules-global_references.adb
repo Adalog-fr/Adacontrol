@@ -202,7 +202,7 @@ package body Rules.Global_References is
       User_Message ("directly or indirectly from some specific constructs");
       User_Message;
       Subrules_Utilities.Help_On_Flags ("Parameter(1): ");
-      Checked_Kind_Utilities.Help_On_Flags ("Parameter(2..N): ", Extra_Value => "<name>");
+      Checked_Kind_Utilities.Help_On_Flags ("Parameter(2..): ", Extra_Value => "<name>");
    end Help;
 
    -----------------

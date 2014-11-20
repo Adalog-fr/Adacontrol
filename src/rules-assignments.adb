@@ -160,7 +160,7 @@ package body Rules.Assignments is
       Help_On_Flags ("Parameter(1):");
       User_Message;
       User_Message ("For groupable:");
-      User_Message ("Parameter(2..n): <criterion> <value>");
+      User_Message ("Parameter(2..): <criterion> <value>");
       Help_On_Modifiers (Header => "<criterion>:");
    end Help;
 

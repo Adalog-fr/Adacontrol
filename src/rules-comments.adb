@@ -256,7 +256,7 @@ package body Rules.Comments is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control the content or placement of comments");
       User_Message;
-      Subrules_Flags_Utilities.Help_On_Flags ("Parameter (1)");
+      Subrules_Flags_Utilities.Help_On_Flags ("Parameter(1)");
       User_Message;
       User_Message ("for pattern:");
       User_Message ("Parameter(2..): ""<comment pattern>""");

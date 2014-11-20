@@ -96,8 +96,8 @@ package body Rules.Positional_Associations is
       Association_Flag_Utilities.Help_On_Flags
         (Header =>  "Parameter (3): [not_operator]",
          Footer =>  "(default = all)");
-      User_Message ("Parameter (4..N): <entities>");
-      User_Message ("                 (entities not required to follow the rule)");
+      User_Message ("Parameter (4..): <entities>");
+      User_Message ("                (entities not required to follow the rule)");
    end Help;
 
    -----------------
