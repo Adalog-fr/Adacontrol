@@ -569,22 +569,23 @@ package body Framework.Language is
          begin
             if Extra_Value = "NONE" or Extra_Value = "" then
                return Natural'Max (2, 1 + (Display_Width - Header'Length
-                                            - True_Width - 3 -- Width of 1st col
+                                            - True_Width - 3      -- Width of 1st col
                                            ) / (True_Width + 3)); -- 3 => " | "
             else
                return Natural'Max (2, 1 + (Display_Width - Header'Length
                                             - Natural'Max (True_Width, Extra_Value'Length) - 3 -- Width of 1st col
-                                           ) / (True_Width + 3)); -- 3 => " | "
+                                           ) / (True_Width + 3));                              -- 3 => " | "
 
             end if;
          end Default_Nb_Col;
 
-         Buffer        : Wide_String (1 .. Display_Width);
-         Index         : Natural;
-         Nb_Col        : Natural := Default_Nb_Col;
-         Col_Widthes   : array (1 .. Nb_Col) of Natural := (others => 0);
-         Current_Col   : Natural;
-         First_Flag    : Flags;
+         Buffer      : Wide_String (1 .. Display_Width);
+         Index       : Natural;
+         Nb_Col      : Natural := Default_Nb_Col;
+         Col_Widthes : array (1 .. Nb_Col) of Natural := (others => 0);
+         Current_Col : Natural;
+         First_Flag  : Flags;
+         Last_Flag   : Flags;
       begin  -- Help_On_Flags
          if Extra_Value = "NONE" then
             Current_Col := 1;
@@ -598,7 +599,15 @@ package body Framework.Language is
             First_Flag      := Flags'Succ (Flags'First);
          end if;
 
-         for F in Flags range First_Flag .. Flags'Last loop
+         -- We assume here that Expected /= Empty_Set (not worth checking)
+         for I in reverse Expected'Range loop
+            if Expected (I) then
+               Last_Flag := I;
+               exit;
+            end if;
+         end loop;
+
+         for F in Flags range First_Flag .. Last_Flag loop
             if Expected (F) then
                declare
                   Length : constant Natural := Image (F)'Length;
@@ -663,7 +672,7 @@ package body Framework.Language is
             pragma Warnings (On);
          end if;
 
-         for I in Flags range First_Flag .. Flags'Last loop
+         for I in Flags range First_Flag .. Last_Flag loop
             if Expected (I) then
                declare
                   Img : constant Wide_String := Image (I, Lower_Case);
@@ -671,7 +680,7 @@ package body Framework.Language is
                   Index := Index + 1;  -- Add space
 
                   Buffer (Index + 1 .. Index + Img'Length) := Img;
-                  if I = Flags'Last then
+                  if I = Last_Flag then
                      Index := Index + Img'Length;
                      User_Message (Buffer (1 .. Index));
                      exit;

@@ -139,6 +139,7 @@ package Framework.Language is
       function Get_Modifier (Required : Boolean;
                              Expected : Modifier_Set := Full_Set;
                              Default  : Modifiers    := Modifiers'First) return Modifiers;
+             -- with Pre => Expected /= Empty_Set;
       -- Gets a modifier from those allowed by Expected
       -- If Required and no modifier given, Syntax_Error
       -- If not Required and no modifier given, returns Default
@@ -147,6 +148,7 @@ package Framework.Language is
 
       function Get_Modifier_Set (No_Parameter : Boolean := False;
                                  Expected     : Modifier_Set := Full_Set) return Modifier_Set;
+             -- with Pre => Expected /= Empty_Set;
       -- If No_Parameter, there is no flag after the modifiers, at least one modifier
       -- required.
       function Image (Set     : Unconstrained_Modifier_Set;
@@ -163,6 +165,7 @@ package Framework.Language is
                                    Footer      : Wide_String  := "";
                                    Extra_Value : Wide_String  := "NONE";
                                    Expected    : Modifier_Set := Full_Set);
+             -- with Pre => Expected /= Empty_Set;
 
    end Modifier_Utilities;
 
