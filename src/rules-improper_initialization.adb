@@ -743,6 +743,25 @@ package body Rules.Improper_Initialization is
                declare
                   Called : constant Asis.Expression := Called_Name (Statement_List (Stmt_Index));
                begin
+                  -- Handle calls to Raise_Exception, Reraise_Occurrence and non returning procedures
+                  -- like a raise statement
+                  if Expression_Kind (Called) /= An_Indexed_Component            -- Do not choke on entry families
+                    and then not Is_Access_Expression (Called)                   -- or implicit dereferences
+                    and then Expression_Kind (Called) /= An_Explicit_Dereference -- or explicit ones
+                  then
+                     declare
+                        SP_Name : constant Wide_String := To_Upper (Full_Name_Image (Called));
+                     begin
+                        if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
+                          or else SP_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE"
+                          or else Corresponding_Pragma_Set (Called) (A_No_Return_Pragma)
+                        then
+                           Exit_Cause := Return_Statement;
+                           return;
+                        end if;
+                     end;
+                  end if;
+
                   if Expression_Kind (Called) = An_Explicit_Dereference or else Is_Access_Expression (Called) then
                      -- Call is through implicit or explicit dereference
                      Check_Object_Use (Called, Object_Map);
@@ -836,6 +855,13 @@ package body Rules.Improper_Initialization is
 
                -- Out parameters must be OK at this point
                Do_Report (Final_Location, Out_Params_Only => True);
+
+               Exit_Cause := Return_Statement;
+               return;
+
+            when A_Raise_Statement =>
+               -- This is somehow like a return statement, except that since out parameters are not guaranteed
+               -- to be properly written back, there is no point in checking that they are initialized.
 
                Exit_Cause := Return_Statement;
                return;

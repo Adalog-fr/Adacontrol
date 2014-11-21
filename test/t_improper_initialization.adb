@@ -1,4 +1,5 @@
 with System;
+with Ada.Exceptions;
 procedure T_Improper_Initialization is
 
    procedure Init (I : out Integer) is
@@ -199,6 +200,32 @@ procedure T_Improper_Initialization is
          BVB := False;
       end if;
    end My_Pack;
+
+   -- check case of branches with raise
+   procedure Check_Raise (V1, V2 : out Integer; X : Integer) is
+      use Ada.Exceptions;
+   begin
+      if X = 1 then
+         V1 := 1;
+      elsif X = 2 then
+         raise Constraint_Error;
+      elsif X = 3 then
+         Raise_Exception (Program_Error'Identity);
+      else
+         V1 := 2;
+      end if;
+
+      case X is
+         when 1 =>
+            V2 := 1;
+         when 2 =>
+            raise Constraint_Error;
+         when 3 =>
+            Raise_Exception (Program_Error'Identity);
+         when others =>
+            V2 := 2;
+      end case;
+   end Check_Raise;
 
    -- case of separate body (with and Without Explicit Spec)
    procedure Sep1 (Var1, Var2 : out Integer);

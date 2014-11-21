@@ -9,8 +9,11 @@ Uniformize some error messages
 
 Changes to existing rules:
 --------------------------
+Improper_Initialization:
+   Do not consider branches terminated by raise as non-initializing
+
 No_Operator_Usage:
-    Separate controls for Signed/Unsigned integers
+   Separate controls for Signed/Unsigned integers
 
 ==============
 == V1.16r12 ==

@@ -5100,6 +5100,8 @@ procedure calls;
 @item
 return statements;
 @item
+raise statements;
+@item
 extended return statements, unless they contain a nested non-trivial
 statement.
 @item
@@ -5111,7 +5113,10 @@ The <target> parameters determines what is to be checked:
 @item
 @code{out_parameter} controls that @code{@b{out}} parameters are
 safely initialized before the first non-trivial statement, and before
-every (trivial) @code{return} statement.
+every (trivial) @code{@b{return}} statement. Note that  @code{@b{out}}
+parameters are @i{not} checked before  @code{@b{raise}} statements,
+since the language does not guarantee that  @code{@b{out}} parameters
+are transmitted back in the case of exceptions.
 @item
 @code{variable} controls that local variables are safely initialized
 before the first non-trivial statement. If the <extra> modifier
