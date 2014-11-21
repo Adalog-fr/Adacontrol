@@ -120,16 +120,6 @@ package body Framework.Control_Manager is
       use Context_Tree, Utilities, Thick_Queries;
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
 
-      function Any_Name_Image (E : Asis.Element) return Wide_String is
-         use Asis.Declarations;
-      begin
-         if Element_Kind (Name) = A_Defining_Name then
-            return Defining_Name_Image (E);
-         else
-            return Name_Image (E);
-         end if;
-      end Any_Name_Image;
-
       Good_Name        : Asis.Element := Simple_Name (Name);
       Name_Enclosing   : Asis.Element;
       Name_Key         : Unbounded_Wide_String;
@@ -236,7 +226,7 @@ package body Framework.Control_Manager is
             -- Search with "all", with overloading
             if not Is_Predefined_Op and Result = null then
                Name_Key := To_Unbounded_Wide_String (To_Upper
-                                                     (Any_Name_Image (Good_Name)
+                                                     (Extended_Name_Image (Good_Name)
                                                       & Profile_Image (Good_Name, With_Profile => True)))
                            & Name_Extra;
                Result := Fetch (Into.Simple_Names,
@@ -246,7 +236,7 @@ package body Framework.Control_Manager is
 
             -- Search with "all", without overloading
             if Result = null then
-               Name_Key := To_Unbounded_Wide_String (To_Upper (Any_Name_Image (Good_Name)))
+               Name_Key := To_Unbounded_Wide_String (To_Upper (Extended_Name_Image (Good_Name)))
                            & Name_Extra;
                Result := Fetch (Into.Simple_Names,
                                 Name_Key,
