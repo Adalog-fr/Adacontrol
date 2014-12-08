@@ -28,9 +28,10 @@ search comments (unnamed_begin, program_unit all);
 
 -- Check that there is no more debugging code, warn about missing (TBSL)
 -- and uncheckable code
-No_Trace : check entities (Utilities.trace);
-No_Debug : check entities (debug, debug.timing, tracer, tracer.timing);
-No_TBSL  : search comments (pattern, "TBSL");
+No_Trace         : check entities (Utilities.trace);
+No_Debug         : check entities (debug, debug.timing, tracer, tracer.timing);
+No_TBSL          : search comments (pattern, "TBSL");
+No_Unimplemented : check entities (Utilities.Unimplemented);
 search uncheckable (false_negative, missing_unit);
 
 -- Check that functions for which there is a replacement in A4G_Bugs
