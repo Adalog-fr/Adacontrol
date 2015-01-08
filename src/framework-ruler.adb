@@ -31,6 +31,8 @@
 
 -- Ada
 with
+  Ada.Characters.Handling,
+  Ada.Exceptions,
   Ada.Strings.Wide_Fixed;
 
 -- ASIS
@@ -91,14 +93,17 @@ package body Framework.Ruler is
    -----------------
 
    procedure Enter_Unit (Unit : in Asis.Compilation_Unit) is
+      use Ada.Characters.Handling, Ada.Exceptions;
       use Asis, Asis.Compilation_Units;
    begin
       Framework.Scope_Manager. Enter_Unit (Unit);
       Framework.Plugs.         Enter_Unit (Unit);
       Framework.Specific_Plugs.Enter_Unit (Unit);
    exception
-      when others =>
-         Utilities.Trace ("Exception in Enter_Unit for "  --## rule line off No_Trace
+      when Occur: others =>
+         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                          & To_Wide_String (Exception_Name (Occur))
+                          & " in Enter_Unit for "
                           & Unit_Full_Name (Unit)
                           & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
          raise;
@@ -110,6 +115,7 @@ package body Framework.Ruler is
    -----------------
 
    procedure Exit_Unit (Unit : in Asis.Compilation_Unit) is
+      use Ada.Characters.Handling, Ada.Exceptions;
       use Asis, Asis.Compilation_Units;
 
    begin
@@ -117,8 +123,10 @@ package body Framework.Ruler is
       Framework.Specific_Plugs.Exit_Unit (Unit);
       Framework.Scope_Manager. Exit_Unit (Unit);
    exception
-      when others =>
-         Utilities.Trace ("Exception in Exit_Unit for "   --## rule line off No_Trace
+      when Occur: others =>
+         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                          & To_Wide_String (Exception_Name (Occur))
+                          & " in Exit_Unit for "   --## rule line off No_Trace
                           & Unit_Full_Name (Unit)
                           & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
          raise;
@@ -676,6 +684,7 @@ package body Framework.Ruler is
                             Control : in out Asis.Traverse_Control;
                             State   : in out Info)
    is
+      use Ada.Characters.Handling, Ada.Exceptions;
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Utilities;
 
@@ -894,9 +903,11 @@ package body Framework.Ruler is
          raise;
       when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
-      when others =>
-         Utilities.Trace                                --## rule line off No_Trace
-           ("Exception in Pre_Procedure at " & Safe_Image (Get_Location (Element)),
+      when Occur: others =>
+         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                          & To_Wide_String (Exception_Name (Occur))
+                          & " in Pre_Procedure at "
+                          & Safe_Image (Get_Location (Element)),
             Element,
             With_Source => True);
          raise;
@@ -911,8 +922,9 @@ package body Framework.Ruler is
                              State   : in out Info)
    is
       pragma Unreferenced (Control, State);
+      use Ada.Characters.Handling, Ada.Exceptions, Ada.Strings.Wide_Fixed;
       use Asis, Asis.Declarations, Asis.Elements;
-      use Ada.Strings.Wide_Fixed, Rules_Manager, Utilities;
+      use Rules_Manager, Utilities;
    begin
       case Element_Kind (Element) is
          when A_Declaration =>
@@ -1030,9 +1042,11 @@ package body Framework.Ruler is
          raise;
       when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
-      when others =>
-         Utilities.Trace ("Exception in Post_Procedure at "   --## rule line off No_Trace
-                            & Safe_Image (Get_Location (Element)),
+      when Occur: others =>
+         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                          & To_Wide_String (Exception_Name (Occur))
+                          & " in Post_Procedure at "   --## rule line off No_Trace
+                          & Safe_Image (Get_Location (Element)),
                           Element,
                           With_Source => True);
          raise;
@@ -1160,4 +1174,3 @@ package body Framework.Ruler is
    end Reset;
 
 end Framework.Ruler;
-
