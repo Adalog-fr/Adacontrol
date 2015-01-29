@@ -38,10 +38,11 @@ AdaControl for industrial projects, or if you want it to be customized
 or extended to match your own needs, please contact Adalog at
 @uref{mailto::info@@adalog.fr,,info@@adalog.fr}.
 
-AdaControl is Copyright @copyright{} 2005-2014 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-201 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
-Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
-2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
+Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
+2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog. AdaControl is
+free software; you can redistribute
 it and/or modify it under terms of the GNU General Public License as
 published by the Free Software Foundation; either version 2, or (at
 your option) any later version. This unit is distributed in the hope
@@ -60,7 +61,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2014
+This document is Copyright @copyright{} 2005-2015
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this

@@ -66,7 +66,7 @@ package body Framework.Language.Commands is
    use Utilities;
 
    --  Messages
-   Copyright_1 : constant Wide_String := "Copyright (C) 2004-2014 Eurocontrol/Adalog and others.";
+   Copyright_1 : constant Wide_String := "Copyright (C) 2004-2015 Eurocontrol/Adalog and others.";
    Copyright_2 : constant Wide_String := "This software is covered by the GNU Modified General Public License.";
 
    --  Output management

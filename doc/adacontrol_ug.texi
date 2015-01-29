@@ -38,10 +38,11 @@ Last edited: @today{}
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2014 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2015 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
-Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, or @copyright{}
-2006 SAGEM/Adalog. AdaControl is free software; you can redistribute
+Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
+2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog.
+AdaControl is free software; you can redistribute
 it and/or modify it under terms of the GNU General Public License as
 published by the Free Software Foundation; either version 2, or (at
 your option) any later version. This unit is distributed in the hope
@@ -60,7 +61,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2014
+This document is Copyright @copyright{} 2005-2015
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -351,7 +352,7 @@ GnatPRO 7.2.0 and GnatGPL-2013 (and higher). We refer to these versions as the
 
 Some user may however need to use an older version of Gnat. We provide
 also a version of AdaControl that is compatible with versions GnatPRO
-7.0.x and GnatGPL2011 and older (before some incompatible -but
+7.0.x and GnatGPL-2011 and older (before some incompatible -but
 necessary- changes in ASIS happened). We refer to these versions as
 the ``old Gnat''.
 
@@ -366,7 +367,7 @@ requested by a supported customer (such requests will be honoured as
 part of the support contract). See @ref{Support} for
 information on becoming a supported user.
 
-Note that intermediate releases of Gnat (GnatPRO-7.1.x, GnatGPL2012)
+Note that intermediate releases of Gnat (GnatPRO-7.1.x, GnatGPL-2012)
 are not fully compatible with either of these distribution. Depending
 on exact version, problems may range from compilation errors to
 incorrect results in some rare (Ada 2012) cases. Compatible sources

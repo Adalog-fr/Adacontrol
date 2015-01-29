@@ -929,7 +929,7 @@ Rules:
 
 ADACTL v. 1.16b13 with ASIS 2.0.R for GNAT GPL 2014 (20140331)
 ----
-Copyright (C) 2004-2014 Eurocontrol/Adalog and others.
+Copyright (C) 2004-2015 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
 Rule: SIMPLIFIABLE_EXPRESSIONS
 Control occurrence of various forms of expressions that could be made simpler:
