@@ -138,6 +138,11 @@ package Framework.Control_Manager is
    -- Name that found the context in the last query to Matching_Context or Association
    -- "" if the last query was not succesfull
 
+   type Matching_Kind is (Original, Renamed, Instance, From_Instance, None);
+   function Last_Matching_Kind (Into : in Context_Store) return Matching_Kind;
+   -- Kind of match in the last query to Matching_Context or Association
+   -- None if the last query was not succesfull
+
    procedure Update (Into    : in out Context_Store;
                      Context : in     Root_Context'Class);
    -- Updates context last returned by Matching_Context or Association
@@ -217,6 +222,7 @@ private
          Qualified_Names  : Context_Tree.Map;
          Last_Returned    : Context_Node_Access;
          Last_Name        : Unbounded_Wide_String;
+         Last_Kind        : Matching_Kind;
       end record;
 
    type Context_Iterator is access all Context_Store;

@@ -290,6 +290,11 @@ package body Framework.Control_Manager is
          end if;
       end if;
 
+      if Result = null then
+         Into.This.Self.Last_Kind := None;
+      else
+         Into.This.Self.Last_Kind := Original;
+      end if;
       Into.This.Self.Last_Returned := Result;
       Into.This.Self.Last_Name     := Name_Key;
    end Query_Context;
@@ -414,6 +419,7 @@ package body Framework.Control_Manager is
       then
          Query_Context (Into, Ultimate_Name (Good_Name));
          if Into.Last_Returned /= null then
+            Into.This.Self.Last_Kind := Renamed;
             return Into.Last_Returned.Value.all;
          end if;
       end if;
@@ -424,6 +430,7 @@ package body Framework.Control_Manager is
       then
          Query_Context (Into, Generic_Unit_Name (Name_Declaration));
          if Into.Last_Returned /= null then
+            Into.This.Self.Last_Kind := Instance;
             return Into.Last_Returned.Value.all;
          end if;
       end if;
@@ -439,6 +446,7 @@ package body Framework.Control_Manager is
          end if;
          Query_Context (Into, Corresponding_Generic_Element (Name_Definition));
          if Into.Last_Returned /= null then
+            Into.This.Self.Last_Kind := From_Instance;
             return Into.Last_Returned.Value.all;
          end if;
       end if;
@@ -455,6 +463,15 @@ package body Framework.Control_Manager is
    begin
       return To_Wide_String (Into.Last_Name);
    end Last_Matching_Name;
+
+   ------------------------
+   -- Last_Matching_Kind --
+   ------------------------
+
+   function Last_Matching_Kind (Into : in Context_Store) return Matching_Kind is
+   begin
+      return Into.Last_Kind;
+   end Last_Matching_Kind;
 
    ------------
    -- Update --
@@ -490,8 +507,10 @@ package body Framework.Control_Manager is
       Into.This.Self.Last_Name     := Specification.Specification;
 
       if Result = null then
+         Into.This.Self.Last_Kind := None;
          return No_Matching_Context;
       else
+         Into.This.Self.Last_Kind := Original;
          return Result.Value.all;
       end if;
    end Association;
@@ -513,8 +532,10 @@ package body Framework.Control_Manager is
       Into.This.Self.Last_Name     := Unbounded_Key;
 
       if Result = null then
+         Into.This.Self.Last_Kind := None;
          return No_Matching_Context;
       else
+         Into.This.Self.Last_Kind := Original;
          return Result.Value.all;
       end if;
    end Association;
