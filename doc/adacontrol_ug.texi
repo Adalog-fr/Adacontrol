@@ -4168,7 +4168,7 @@ This rule is used to control usage of Ada entities, i.e. any declared
 element (type, variables, packages, etc).
 @subsection Syntax
 @example
-<control_kind> entities (@{<location>@} <entity> @{, @{<location>@} <entity>@});
+<control_kind> entities (@{<location>@} [instance] <entity> @{, @{<location>@} <entity>@});
 <location> ::= block   | library | local      | nested    | own |
                private | public  | in_generic | task_body
 
@@ -4209,19 +4209,24 @@ specification or body.
 @code{task_body}: the entity appears directly in a task body.
 @end itemize
 
+If the given entity is a generic unit or an
+entity declared inside a generic unit, all corresponding uses in all
+instances will be reported. Uses of the generic entity itself will also
+be reported normally, unless the keyword @code{instance} is given.
+
 Note that this rules reports on the use of the @i{entity}, not the
 @i{name}: if an entity has been renamed, it will be found under its
-various names.  Similarly, if the given entity is a generic unit or an
-entity declared inside a generic unit, all corresponding uses in all
-instances will be reported.
+various names. 
 
 Ex:
 @example
 search entities (Debug.Trace);
 check  entities (Ada.Text_IO.Float_IO.Put);
+check  entities (instance Ada.Unchecked_Conversion);
 @end example
 The second line will report on any use of a @code{Put} from any
-instantiation of @code{Float_IO}.
+instantiation of @code{Float_IO}. The third one will report only
+on uses of instances of @code{Ada.Unchecked_Conversion}.
 
 @subsection Tips
 This rule is not intended to replace cross-references, but can
@@ -8857,7 +8862,7 @@ size clause refers to a size attribute of a predefined type, like:
 @end example
 
 This can lead to false positives (i.e. detection of instantiations of
-@code{Unchecked_Conversion} that are actually OK. Such cases are
+@code{Unchecked_Conversion} that are actually OK). Such cases are
 detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
 @node  Usage, Use_Clauses, Unsafe_Unchecked_Conversion, Rules reference

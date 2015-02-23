@@ -227,7 +227,7 @@ Parameter(s): <Procedure name>
 Rule: ENTITIES
 Control occurrences of any Ada entity
 
-Parameter(s): {<location>} <Entity name>
+Parameter(s): {<location>} [instance] <Entity name>
 <location>: block   | library | local      | nested    | own |
             private | public  | in_generic | task_body
 ----

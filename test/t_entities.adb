@@ -1,6 +1,9 @@
 with Ada.Text_Io, Ada.Integer_Text_IO;
 use Ada.Text_IO, Ada.Integer_Text_IO;
+with Ada.Unchecked_Conversion;
 procedure T_entities is
+   function I_To_I is new Ada.Unchecked_Conversion (Integer, Integer);
+
    F : File_Type;
    S1 : String := Float'Image (1.0);              -- 'Image
    S2 : String := Integer'Image (Integer'First);  -- 'Image, standard.integer'first
@@ -21,7 +24,7 @@ procedure T_entities is
    procedure Q is new P;
    procedure R is new P ("<");                    -- "<"
 
-   I : Standard.Integer;
+   I : Standard.Integer := I_To_I (5);            -- Unchecked_Conversion
 
    type Rec is
       record
@@ -49,4 +52,6 @@ begin
    begin
       I := Integer'First;                         -- Standard.Integer'first, block standard.Integer
    end;
+
+   I := I_To_I (I);                               -- Ada.Unchecked_Conversion
 end T_entities;

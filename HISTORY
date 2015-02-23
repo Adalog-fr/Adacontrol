@@ -9,6 +9,9 @@ Uniformize some error messages
 
 Changes to existing rules:
 --------------------------
+Entities:
+   Added modifier "instance" to report only on instances of a generic.
+
 Improper_Initialization:
    Do not consider branches terminated by raise as non-initializing
 

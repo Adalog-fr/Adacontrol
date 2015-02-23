@@ -59,7 +59,8 @@ package body Rules.Entities is
 
    type Entity_Context is new Basic_Rule_Context with
       record
-         Places : Language.Shared_Keys.Places_Set;
+         Places        : Language.Shared_Keys.Places_Set;
+         Instance_Only : Boolean;
       end record;
    Searched_Entities  : Context_Store;
 
@@ -73,7 +74,7 @@ package body Rules.Entities is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of any Ada entity");
       User_Message;
-      User_Message ("Parameter(s): {<location>} <Entity name>");
+      User_Message ("Parameter(s): {<location>} [instance] <Entity name>");
       Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:", Expected => (S_All => False, others => True));
    end Help;
 
@@ -90,10 +91,12 @@ package body Rules.Entities is
 
       while Parameter_Exists loop
          declare
-            Places : constant Places_Set           := Get_Places_Set_Modifiers (Allow_All => False);
-            Entity : constant Entity_Specification := Get_Entity_Parameter;
+            Places        : constant Places_Set           := Get_Places_Set_Modifiers (Allow_All => False);
+            Instance_Only : constant Boolean              := Get_Modifier ("INSTANCE");
+            Entity        : constant Entity_Specification := Get_Entity_Parameter;
          begin
-            Associate (Searched_Entities, Entity, Entity_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Places));
+            Associate (Searched_Entities, Entity, Entity_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label)
+                                                                  with Places, Instance_Only));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, "entity already given: " & Image (Entity));
@@ -149,7 +152,10 @@ package body Rules.Entities is
          declare
             Good_Context : Entity_Context renames Entity_Context (Current_Context);
          begin
-            if Is_Applicable (Good_Context.Places) then
+            if Is_Applicable (Good_Context.Places)
+              and then (not Good_Context.Instance_Only
+                        or Last_Matching_Kind (Searched_Entities) in Instance .. From_Instance)
+            then
                if Good_Context.Places = Everywhere then
                   Report (Rule_Id,
                           Current_Context,
