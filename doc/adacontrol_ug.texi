@@ -5627,6 +5627,20 @@ search max_call_depth (9);
 check  max_call_depth (finite);
 @end example
 
+@subsection Variables
+The rule provides a variable that allows to specify how to handle
+expression functions (Ada 2012).
+
+@need 800
+@multitable @columnfractions .30 .10 .10 .50
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Count_Expr_Fun_Calls @tab on/off @tab on @tab if ``on'', calls to
+expression functions are counted like regular calls; if ``off'', such
+calls are assumed to be inlined and do not add an extra depth level.
+@end multitable
+
 @subsection Tip
 It is possible to give the value 0 for <allowed depth>. Of course,
 it would not make sense to forbid all subprogram calls in an Ada program,
@@ -6055,17 +6069,18 @@ identifiers must have the form of (at least) one of the ``positive''
 patterns (if any), but not the form of one of the ``negative''
 patterns.
 
-The filter kinds are organized hierarchically, as reflected in the
-syntax above. To be valid, the name must match the patterns specified
-for its own filter, and for all filters above it in the hierarchy.
-For example, a modular type declaration must follow the rules (if
-specified) for ``all'', ``type'',''discrete_type'', ``integer_type''
-and ``modular_integer_type''. However, if a filter kind is preceded by
-``others'', the rule will apply only if there is no applicable
-positive pattern deeper in the hierarchy; similarly, if a filter kind
-is preceded by ``root'', no rule above it in the hierarchy is
-considered (neither for itself nor its children). This is useful to
-make exceptions to a more general rule. For example:
+The filter kinds are organized hierarchically, as reflected by
+indentation in the syntax above. To be valid, the name must match the
+patterns specified for its own filter, and for all filters above it in
+the hierarchy.  For example, a modular type declaration must follow
+the rules (if specified) for ``all'', ``type'',''discrete_type'',
+``integer_type'' and ``modular_integer_type''. However, if a filter
+kind is preceded by ``others'', the rule will apply only if there is
+no applicable positive pattern deeper in the hierarchy; similarly, if
+a filter kind is preceded by ``root'', no rule above it in the
+hierarchy is considered (neither for itself nor its children). This is
+useful to make exceptions to a more general rule. For example:
+
 @example
 -- All identifiers must have at least 3 characters:
 check naming_convention (all, "...");
