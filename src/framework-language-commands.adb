@@ -450,7 +450,7 @@ package body Framework.Language.Commands is
                               Previous_Input : File_Type)
       is
          use Ada.Characters.Handling;
-         File      : File_Type;
+         File : File_Type;
       begin
          if File_Name = "-" then
             -- By convention: treat Standard_Input as file (not interactive)
@@ -474,7 +474,6 @@ package body Framework.Language.Commands is
          if File_Name /= "-" then
             Close (File);
          end if;
-         Success := True;
 
       exception
          when others =>
@@ -507,6 +506,7 @@ package body Framework.Language.Commands is
       end if;
 
       Restore_State (Current_State);
+      Success := True;
    exception
       when Name_Error =>
          Success := False;
