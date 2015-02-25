@@ -1,5 +1,9 @@
 pragma Ada_2012;
 procedure T_Max_Call_Depth is
+   procedure Dont_Count is  -- Recursive, but forced
+   begin
+      Dont_Count;
+   end Dont_Count;
 
    -- Simple cases
    procedure P1 is
@@ -141,6 +145,7 @@ procedure T_Max_Call_Depth is
 
 begin
    -- Check use in statements
+   Dont_Count;            -- Depth = 1
    P2;                    -- Depth = 2
    P3;                    -- Depth = 2
    P4;                    -- OK

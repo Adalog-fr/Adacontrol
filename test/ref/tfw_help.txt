@@ -371,7 +371,8 @@ Parameter: <Max allowed consecutive blank lines>
 Rule: MAX_CALL_DEPTH
 Control maximum call depth
 
-Parameter: <Allowed depth> | finite
+Parameter (1): <Allowed depth> | finite
+Parameter (2..): <Forced entity>
 ----
 Rule: MAX_LINE_LENGTH
 Control that no source line is longer than the indicated maximum

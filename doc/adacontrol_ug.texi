@@ -5598,23 +5598,32 @@ check max_blank_lines (5);
 This rule controls the maximum depth of subprograms (or entry) calls.
 @subsection Syntax
 @example
-<control_kind> max_call_depth (<allowed depth> | finite);
+<control_kind> max_call_depth (<allowed depth> | finite @{, <entity>@});
 @end example
 @subsection Action
-Roughly, the call depth is the number of frames that are stacked by a
-call: if you call a subprogram that calls another subprogram that
-calls nothing, then the call depth is 2. Note that a call to a task
-(not protected) entry has always a depth of 1, since the accept body
-that corresponds to the entry is executed on a different stack.
+Roughly speaking, the call depth is the number of frames that are
+stacked by a call: if you call a subprogram that calls another
+subprogram that calls nothing, then the call depth is 2. Note that a
+call to a task (not protected) entry has always a depth of 1, since
+the accept body that corresponds to the entry is executed on a
+different stack.
 
-The value of the parameter is the maximum @i{allowed} depth, i.e. the
-rule will trigger if the call depth is strictly greater than the
-indicated value. A call to a (directly or indirectly) recursive
+The value of the first parameter is the maximum @i{allowed} depth,
+i.e. the rule will trigger if the call depth is strictly greater than
+the indicated value. A call to a (directly or indirectly) recursive
 procedure is considered of infinite depth, and will be therefore
 signaled (with an appropriate message) for any value of <allowed
 depth>. Alternatively, the keyword ``finite'' can be given in place of
 the <allowed depth>: in this case, only calls to recursive subprograms
 will be signalled.
+
+If entity names are given after the first parameter, they are
+interpreted as callable entities that are not to be analyzed, and
+assumed of depth 0 (not calling anything else). As usual, the whole
+syntax for entities is allowed for <entity>. @xref{Specifying an Ada
+entity name}. This can be useful, for example, when a subprogram
+appears to be recursive (but is not, due to the algorithm), to prevent
+all those who call it to be flagged as having infinite call depth.
 
 This rule can be given once for each of check, search, and count. This
 way, it is possible to have a call depth considered a warning
@@ -5627,7 +5636,7 @@ search max_call_depth (9);
 check  max_call_depth (finite);
 @end example
 
-@subsection Variables
+@subsection Variable
 The rule provides a variable that allows to specify how to handle
 expression functions (Ada 2012).
 
@@ -5654,6 +5663,10 @@ the call chain includes a call to a subprogram whose depth is unknown
 subprogram does not call anything else. Of course, the rule issues a
 message if this minimal value is greater than the maximum allowed
 value.
+
+There is only one set of entities that are forced to depth 0;
+therefore, if the control is given several times, each with various
+<entity>, all controls will use the union of all entities given.
 
 @subsection Limitations
 Calls to subprograms that are attributes are assumed to have a depth

@@ -15,6 +15,9 @@ Entities:
 Improper_Initialization:
    Do not consider branches terminated by raise as non-initializing
 
+Max_Call_Depth:
+   Added parameters to specify entities that are not to be analyzed.
+
 No_Operator_Usage:
    Separate controls for Signed/Unsigned integers
 

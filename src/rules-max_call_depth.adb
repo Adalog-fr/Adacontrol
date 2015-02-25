@@ -63,8 +63,11 @@ package body Rules.Max_Call_Depth is
    -- at least 1.
    -- Since the call depth is a property of the callable entity, the value is kept in the
    -- Call_Depths map to avoid analyzing the same callable entity twice.
-   -- The map is *not* reset between runs, since it is a static property, once you have it,
-   -- it won't change depending on parameters!
+   -- "Forced" entities provided as parameters are kept in a separate context store (Forced_Entities), and
+   -- entered into Call_Depths as they are encountered.
+   --
+   -- The Call_Depths map is reset between runs only if there are forced entities; otherwise, it is a static
+   -- property, once you have it, it won't change.
    --
    -- The "call depth" is defined as the number of frames pushed on the stack, therefore:
    --   - A task entry call counts always for 1, irrespectively of what happens in the accept body,
@@ -119,6 +122,8 @@ package body Rules.Max_Call_Depth is
    package Depth_Map is new Binary_Map (Unbounded_Wide_String, Depth_Descriptor);
    Call_Depths : Depth_Map.Map;
 
+   Forced_Entities : Control_Manager.Context_Store;
+
    ----------
    -- Help --
    ----------
@@ -129,7 +134,8 @@ package body Rules.Max_Call_Depth is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control maximum call depth");
       User_Message;
-      User_Message ("Parameter: <Allowed depth> | finite");
+      User_Message ("Parameter (1): <Allowed depth> | finite");
+      User_Message ("Parameter (2..): <Forced entity>");
    end Help;
 
    -----------------
@@ -137,7 +143,8 @@ package body Rules.Max_Call_Depth is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language;
+      use Framework.Language, Framework.Control_Manager;
+      use Depth_Map;
 
       use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
    begin
@@ -166,7 +173,12 @@ package body Rules.Max_Call_Depth is
       end if;
 
       if Parameter_Exists then
-         Parameter_Error (Rule_Id, "only one parameter allowed");
+         -- Forced entities provided: cannot keep previous Call_Depths
+         Clear (Call_Depths);
+
+         while Parameter_Exists loop
+            Associate (Forced_Entities, Get_Entity_Parameter, Null_Context);
+         end loop;
       end if;
 
       Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
@@ -178,12 +190,18 @@ package body Rules.Max_Call_Depth is
    -------------
 
    procedure Command (Action : Framework.Rules_Manager.Rule_Action) is
-      use Framework.Rules_Manager;
+      use Framework.Rules_Manager, Framework.Control_Manager;
+      use Depth_Map;
    begin
       case Action is
          when Clear =>
             Rule_Used := False;
             Depths    := (others => Unused);
+            if not Is_Empty (Forced_Entities) then
+               -- we had forced entities, need to clear Call_Depths
+               Clear (Call_Depths);
+            end if;
+            Clear (Forced_Entities);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -191,6 +209,17 @@ package body Rules.Max_Call_Depth is
             Rule_Used := Save_Used;
       end case;
    end Command;
+
+   -------------
+   -- Prepare --
+   -------------
+
+   procedure Prepare is
+      use Framework.Control_Manager;
+   begin
+      Balance (Forced_Entities);
+   end Prepare;
+
 
    ------------------------
    -- Report_Uncheckable --
@@ -224,7 +253,7 @@ package body Rules.Max_Call_Depth is
    function Call_Depth (Call : Asis.Element) return Depth_Descriptor is
    -- Computes the depth of a call, including itself
       use Asis, Asis.Elements;
-      use Depth_Map, Thick_Queries, Utilities;
+      use Depth_Map, Framework.Control_Manager, Thick_Queries, Utilities;
 
       Called       : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Call));
       Called_Name  : Unbounded_Wide_String;
@@ -238,6 +267,10 @@ package body Rules.Max_Call_Depth is
       Called_Name := To_Unbounded_Wide_String (Full_Name_Image (Called, With_Profile => True));
       if Is_Present (Call_Depths, Called_Name) then
          Called_Depth := Fetch (Call_Depths, Called_Name);
+
+      elsif Matching_Context (Forced_Entities, Called, Extend_To => All_Extensions) /= No_Matching_Context then
+         Called_Depth := (Regular, 0);
+         Add (Call_Depths, Called_Name, Called_Depth);   -- will be found faster next time
 
       else
          Called_Descr := Corresponding_Call_Description (Call);
@@ -701,7 +734,8 @@ begin  -- Rules.Max_Call_Depth
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
-                                     Command_CB     => Command'Access);
+                                     Command_CB     => Command'Access,
+                                     Prepare_CB     => Prepare'Access);
    Framework.Variables.Register (Count_Expr_Fun_Calls'Access,
                                  Variable_Name => Rule_Id & ".COUNT_EXPR_FUN_CALLS");
 end Rules.Max_Call_Depth;
