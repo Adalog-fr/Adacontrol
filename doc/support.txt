@@ -6,19 +6,18 @@ the following services:
 * Explanations regarding the use of the tool, and help for translating
   coding standards into AdaControl rules.
 
-* Dedicated account into our MantisBT system for priority handling of
-  problem reports.
+* Priority handling of tickets reported through our BT system.
 
 * Correction of problems encountered in the use of AdaControl.
   Pre-releases versions of AdaControl are provided for each corrected
   problem.
 
-* Access to beta-versions before they are released
+* Access to beta-versions before they are released.
 
 * Keeping in sync customer's own custom rules with the latest version
   of AdaControl.
 
-* Reduced rate for on-demand development of custom rules
+* Reduced rate for on-demand development of custom rules.
 
 * Priority consideration of enhancement requests.
   Satisfying enhancement requests is not part of the support
@@ -29,13 +28,14 @@ the following services:
 Adalog cannot correct problems whose origin is due to compiler bugs or
 defects in the implementation of ASIS (contact your compiler provider
 for support on these problems). However, Adalog will do its best
-effort to find workarounds for such problems.
+effort to help reporting such problems to the compiler vendor, and to
+find workarounds until the problem is fixed.
 
 
 In addition, Adalog can provide various services:
 
 - Custom improvements to AdaControl, including application-specific
-  rules;
+  or company-specific rules;
  
 - consulting services for defining coding standards;
 
