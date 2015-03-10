@@ -6,7 +6,8 @@ units:        check entities (ada.calendar);
 operator:     check entities (all "<");
 rec:          check entities (t_entities.VR);
 rec_field:    check entities (t_entities.Rec.I);
-public:       check entities (block Standard.Integer);
+Block:        check entities (block Standard.Integer);
+Not_Block:    check entities (not block Standard.Duration);
 instances:    check entities (instance Ada.Unchecked_Conversion);
 Gnat_Specific_Attribute: Check Entities (all 'Abort_Signal,
                                          all 'Address_Size,

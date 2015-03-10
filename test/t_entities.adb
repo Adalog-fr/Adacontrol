@@ -33,6 +33,8 @@ procedure T_entities is
    VR  : Rec;
    Ren : Integer renames VR.I;                    -- T_Entities.VR, T_Entities.Rec.I
 
+   Dur1 : Duration;                               -- Standard.Duration
+
 begin
    Put ("Hello world");                           -- Ada.Text_Io.Put{Standard.String}
    Put (F, "Hello world");                        -- Ada.Text_Io.Put
@@ -48,7 +50,8 @@ begin
    Ren  := 0;                                     -- T_Entities.VR, T_Entities.Rec.I
 
    declare
-      I : Integer;                                -- block standard.integer
+      I    : Integer;                             -- block standard.integer
+      Dur1 : Duration;                            -- OK Standard.Duration, in block
    begin
       I := Integer'First;                         -- Standard.Integer'first, block standard.Integer
    end;

@@ -6,6 +6,8 @@ General:
 --------
 Quote all fields in CSV(X) format
 Uniformize some error messages
+Locations now accept the form "not <loc>", removed "nested" (same as
+   "not library").
 
 Changes to existing rules:
 --------------------------

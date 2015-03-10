@@ -27,4 +27,15 @@ package body X_Declarations_Locations is
       end;
    end In_Private;
 
+   generic                  -- not library generic_package, generic
+   package Gen is
+      procedure P;          -- not library public in_generic procedure, not library procedure, in_generic procedure, public procedure
+   private
+      procedure Q;          -- not library procedure, in_generic procedure, private procedure
+   end Gen;
+
+   package body Gen is
+      procedure P is begin null; end;  -- null_procdure_body, null_procedure
+      procedure Q is begin null; end;  -- null_procdure_body, null_procedure
+   end Gen;
 end X_Declarations_Locations;

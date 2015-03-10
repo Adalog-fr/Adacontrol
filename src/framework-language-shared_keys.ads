@@ -45,16 +45,22 @@ package Framework.Language.Shared_Keys is
    -- Scope_Places
    -----------------------------------------------------------------------------------
 
-   type Scope_Places is (S_All, S_Block,   S_Library, S_Local,      S_Nested,
+   type Scope_Places is (S_All, S_Block,   S_Library, S_Local,
                          S_Own, S_Private, S_Public,  S_In_Generic, S_Task_Body);
    package Scope_Places_Utilities is new Modifier_Utilities (Scope_Places, "S_");
 
-   subtype Places_Set is Scope_Places_Utilities.Modifier_Set;
-   Everywhere : constant Places_Set := (S_All => True, others => False);
+   type Places_Set is private;
+   Everywhere : constant Places_Set;
+   No_Places  : constant Places_Set;
    function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return Places_Set;
    function Is_Applicable (Expected_Places : Places_Set) return Boolean;
    -- Checks if Current_Scope matches all Scope_Places in Expected_Places
 
+   function Image (Set     : Places_Set;
+                   Default : Places_Set := No_Places) return Wide_String;
+
+   procedure Help_On_Scope_Places (Header   : Wide_String := "";
+                                   Expected : Scope_Places_Utilities.Modifier_Set  := Scope_Places_Utilities.Full_Set);
 
    -----------------------------------------------------------------------------------
    -- Min_Max
@@ -189,5 +195,16 @@ package Framework.Language.Shared_Keys is
    -- Appropriate Expression_Kinds
    --       An_Identifier
    --       A_Selected_Name (applies to selector)
+
+private
+   type Places_Set is
+      record
+         Specified : Scope_Places_Utilities.Modifier_Set;
+         Presence  : Scope_Places_Utilities.Modifier_Set;
+      end record;
+   Everywhere : constant Places_Set := (Specified => (S_All => True, others => False),
+                                        Presence  => Scope_Places_Utilities.Full_Set);
+   No_Places  : constant Places_Set := (Specified => Scope_Places_Utilities.Empty_Set,
+                                        Presence  => Scope_Places_Utilities.Empty_Set);
 
 end Framework.Language.Shared_Keys;

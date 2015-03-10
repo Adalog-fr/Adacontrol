@@ -55,26 +55,77 @@ package body Framework.Language.Shared_Keys is
       use Asis, Asis.Elements;
       Scope_Kind : constant Declaration_Kinds := Declaration_Kind (Current_Scope);
 
-      Locations  : constant Places_Set := (S_All        => False,
-                                           S_Block      => Statement_Kind (Current_Scope) = A_Block_Statement,
-                                           S_Library    => Current_Depth = 0,
-                                           S_Local      => not Is_Current_Scope_Global,
-                                           S_Nested     => Current_Depth /= 0,
-                                           S_Own        => Scope_Kind = A_Package_Body_Declaration,
-                                           S_Private    => In_Private_Part,
-                                           S_Public     => (Scope_Kind = A_Package_Declaration
-                                                            or Scope_Kind = A_Generic_Package_Declaration)
-                                                           and not In_Private_Part,
-                                           S_In_Generic => Is_Generic_Unit (Current_Scope)
-                                                           or else Is_Part_Of_Generic (Current_Scope),
-                                           S_Task_Body  => Scope_Kind = A_Task_Body_Declaration);
+      Locations  : constant Modifier_Set := (S_All        => False,
+                                             S_Block      => Statement_Kind (Current_Scope) = A_Block_Statement,
+                                             S_Library    => Current_Depth = 0,
+                                             S_Local      => not Is_Current_Scope_Global,
+                                             S_Own        => Scope_Kind = A_Package_Body_Declaration,
+                                             S_Private    => In_Private_Part,
+                                             S_Public     => (Scope_Kind = A_Package_Declaration
+                                                              or Scope_Kind = A_Generic_Package_Declaration)
+                                                             and not In_Private_Part,
+                                             S_In_Generic => Is_Generic_Unit (Current_Scope)
+                                                             or else Is_Part_Of_Generic (Current_Scope),
+                                             S_Task_Body  => Scope_Kind = A_Task_Body_Declaration);
    begin
-      if Expected_Places (S_All) then
+      if Expected_Places.Specified (S_All) then
          return True;
       end if;
 
-      return (Expected_Places and Locations) = Expected_Places;
+      return (Expected_Places.Specified and Locations) = Expected_Places.Presence;
    end Is_Applicable;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Set     : Places_Set;
+                   Default : Places_Set := No_Places) return Wide_String is
+      use Scope_Places_Utilities, Utilities;
+
+      function Image (From : Scope_Places) return Wide_String Is
+      begin
+         if not Set.Specified (From) then
+            if From = Scope_Places'Last then
+               return "";
+            else
+               return Image (From => Scope_Places'Succ (From));
+            end if;
+         end if;
+
+         if From = Scope_Places'Last then
+            if Set.Presence (From) then
+               return Image (From, Lower_Case) & ' ';
+            else
+               return "not " & Image (From, Lower_Case) & ' ';
+            end if;
+         else
+            if Set.Presence (From) then
+               return Image (From, Lower_Case) & ' ' & Image (From => Scope_Places'Succ (From));
+            else
+               return "not " & Image (From, Lower_Case) & ' ' & Image (From => Scope_Places'Succ (From));
+            end if;
+         end if;
+      end Image;
+   begin    -- Image
+      if Set.Specified = (Set.Specified'Range => False) or else Set = Default then
+         return "";
+      end if;
+
+      return Image (From => Scope_Places'First);
+   end Image;
+
+   --------------------------
+   -- Help_On_Scope_Places --
+   --------------------------
+
+   procedure Help_On_Scope_Places (Header : Wide_String  := "";
+                                   Expected : Scope_Places_Utilities.Modifier_Set  := Scope_Places_Utilities.Full_Set)
+   is
+   begin
+      Scope_Places_Utilities.Help_On_Modifiers (Header => Header & " [not]", Expected => Expected);
+   end Help_On_Scope_Places;
+
 
    ------------------------------
    -- Get_Places_Set_Modifiers --
@@ -82,20 +133,28 @@ package body Framework.Language.Shared_Keys is
 
    function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return  Places_Set is
       use Scope_Places_Utilities, Framework.Language.Scanner;
-      Loc : Places_Set;
+      Result   : Places_Set := No_Places;
+      Loc      : Scope_Places;
+      Found    : Boolean;
+      Presence : Boolean;
    begin
-      if Allow_All then
-         Loc := Get_Modifier_Set (Expected => Full_Set);
-      else
-         Loc := Get_Modifier_Set (Expected => (S_All => False, others => True));
-      end if;
+      loop
+         Presence := not Get_Modifier ("NOT");
+         Get_Modifier (Loc, Found, Expected => (S_All => Allow_All, others => True));
+         exit when not Found;
+         if Loc = S_All and not Presence then
+            Syntax_Error ("""all"" cannot be specified with ""not""", Current_Token.Position);
+         end if;
+         Result.Specified (Loc) := True;
+         Result.Presence  (Loc) := Presence;
+      end loop;
 
-      if Loc = Empty_Set then
+      if Result = No_Places then
          return Everywhere;
-      elsif Loc (S_All) and Loc /= Everywhere then
+      elsif Result.Specified (S_All) and Result.Specified /= Empty_Set then
          Syntax_Error ("""all"" cannot be specified with other locations", Current_Token.Position);
       else
-         return Loc;
+         return Result;
       end if;
    end Get_Places_Set_Modifiers;
 
@@ -122,7 +181,7 @@ package body Framework.Language.Shared_Keys is
       end if;
 
       while Parameter_Exists loop
-         case Get_Modifier (Required => False) is
+         case Min_Max'(Get_Modifier (Required => False)) is
             when Not_A_Bound =>
                exit;
             when Min =>

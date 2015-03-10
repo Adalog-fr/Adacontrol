@@ -173,7 +173,7 @@ package body Rules.Declarations is
       User_Message ("Control occurrences of Ada declarations");
       User_Message;
       User_Message ("Parameter(s): {<location>} <decl>");
-      Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:");
+      Help_On_Scope_Places (Header => "<location>:");
       Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl>:");
 
    end Help;
@@ -241,7 +241,7 @@ package body Rules.Declarations is
 
    procedure Do_Report (Decl : Subrules; Loc : Location) is
       use Framework.Reports, Framework.Language.Shared_Keys;
-      use Scope_Places_Utilities, Subrules_Flag_Utilities, Utilities;
+      use Subrules_Flag_Utilities, Utilities;
 
       Iter : Context_Iterator := Usage_Iterator.Create;
    begin

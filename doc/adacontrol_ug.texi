@@ -3390,7 +3390,7 @@ those occurring at specified locations.
 @subsection Syntax
 @example
 <control_kind> declarations (<subrule> @{, <subrule>@});
-<subrule>     ::= @{<location_kw>@} <declaration_kw>
+<subrule>     ::= @{[not] <location_kw>@} <declaration_kw>
 <location_kw> ::= all | block   | library | local      | nested |
                   own | private | public  | in_generic | task_body
 <declaration_kw> ::=
@@ -3479,15 +3479,17 @@ those occurring at specified locations.
 
 @subsection Action
 The <location_kw> restricts the places where the occurrence of the
-declaration is controlled.  Several <location_kw> can be given, in
-which case the declaration is controlled at places where all the
-keywords apply. If there is no <location_kw>, it is assumed to be
-``all''.
+declaration is controlled. If it is preceded by ``not'', the
+declaration is controlled except at this location. Several
+<location_kw> can be given, in which case the declaration is
+controlled at places where all the keywords apply. If there is no
+<location_kw>, it is assumed to be ``all''.
 @itemize @bullet
 @item
 @code{all}: puts no special restriction to the location. This keyword
 can be specified for readability purposes, and if specified must
-appear alone (not with other <location_kw>).
+appear alone (not with other <location_kw>), and ``not'' is not
+allowed.
 @item
 @code{block}: only declarations appearing in block statements are controlled.
 @item
@@ -3495,9 +3497,6 @@ appear alone (not with other <location_kw>).
 @item
 @code{local}: only local declarations are controlled (i.e. only declarations
 appearing in (generic) packages, possibly nested, are allowed).
-@item
-@code{nested}: only declarations nested in another declaration are
-controlled (i.e. only library level declarations are allowed).
 @item
 @code{own}: only declarations that are local to a (generic) package body
 are controlled.
@@ -3822,9 +3821,17 @@ of a class-wide type.  @code{task_variable} and
 
 Ex:
 @example
+-- No task, no exception:
 search declarations (task, exception);
+
+-- Don't declare subprograms or packages inside a block:
 check declarations (block procedure, block function, block package);
+
+-- No task in the public part of a package:
 check declarations (public task);
+
+-- Generics allowed only as top-level units
+check declarations (not library generic);
 @end example
 
 @subsection Tips
@@ -4168,7 +4175,7 @@ This rule is used to control usage of Ada entities, i.e. any declared
 element (type, variables, packages, etc).
 @subsection Syntax
 @example
-<control_kind> entities (@{<location>@} [instance] <entity> @{, @{<location>@} <entity>@});
+<control_kind> entities (@{[not] <location>@} [instance] <entity> @{, @{<location>@} <entity>@});
 <location> ::= block   | library | local      | nested    | own |
                private | public  | in_generic | task_body
 
@@ -4181,8 +4188,10 @@ for entities is allowed for <entity>. @xref{Specifying an Ada entity
 name}.
 
 When present, the <location_kw> restricts the places where the entity
-is controlled.  Several <location_kw> can be given, in which case the
-entity is controlled at places where all the keywords apply.
+is controlled. If it is preceded by ``not'', the entity is
+controlled except at this location. Several <location_kw> can be
+given, in which case the entity is controlled at places where all the
+keywords apply.
 @itemize @bullet
 @item
 @code{block}: the entity appears in a block statement.
@@ -4191,9 +4200,6 @@ entity is controlled at places where all the keywords apply.
 @item
 @code{local}: the entity appears in a local scope (i.e. not in
 (generic) packages, possibly nested)
-@item
-@code{nested}: the entity appears in a nested context (i.e. not at
-library level).
 @item
 @code{own}: the entity appers in a (generic) package body.
 @item
@@ -5218,7 +5224,7 @@ places.
 @subsection Syntax
 @example
 <control_kind> instantiations (<generic_spec>);
-<generic_spec> ::= @{<location_kw>@} <entity> @{, <formal_spec>@}
+<generic_spec> ::= @{[not] <location_kw>@} <entity> @{, <formal_spec>@}
 <formal_spec>  ::= <entity> | <category> | <> | =
 <location_kw>  ::= all | block   | library | local      | nested |
                    own | private | public  | in_generic | task_body
@@ -5232,15 +5238,17 @@ the whole syntax for entities is allowed for <entity>.
 @xref{Specifying an Ada entity name}.
 
 The <location_kw> restricts the places where the occurrence of the
-instantiation is controlled.  Several <location_kw> can be given, in
-which case the instantiation is controlled at places where all the
-keywords apply. If there is no <location_kw>, it is assumed to be
-``all''.
+instantiation is controlled. If it is preceded by ``not'', the
+instantiation is controlled except at this location. Several
+<location_kw> can be given, in which case the instantiation is
+controlled at places where all the keywords apply. If there is no
+<location_kw>, it is assumed to be ``all''.
 @itemize @bullet
 @item
 @code{all}: puts no special restriction to the location. This keyword
 can be specified for readability purposes, and if specified must
-appear alone (not with other <location_kw>).
+appear alone (not with other <location_kw>), and ``not'' is not
+allowed.
 @item
 @code{block}: only instantiations appearing in block statements are
 controlled.
@@ -5250,9 +5258,6 @@ controlled.
 @code{local}: only local instantiations are controlled (i.e. only
 instantiations appearing in (generic) packages, possibly nested, are
 allowed).
-@item
-@code{nested}: only instantiations nested in another declaration are
-controlled (i.e. only library level instantiations are allowed).
 @item
 @code{own}: only instantiations that are local to a (generic) package
 body are controlled.
@@ -9899,6 +9904,21 @@ that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
+
+@section Migrating from 1.16r11
+@subsection Declarations, Entities, Instantiations
+These rules use the concept of ``location'' to restrict the places
+where some constructs are controlled. It is now possible to specify
+``not'' in front of a location keyword. As a consequence, the
+keyword ``nested'' has been removed, as it was the same thing
+as ``not library''. In short, change:
+@example
+check declarations (nested procedure);
+@end example
+to:
+@example
+check declarations (not library procedure);
+@end example
 
 @section Migrating from 1.15r5
 @subsection Array_Declarations

@@ -104,8 +104,9 @@ Rule: DECLARATIONS
 Control occurrences of Ada declarations
 
 Parameter(s): {<location>} <decl>
-<location>: all | block   | library | local      | nested    |
-            own | private | public  | in_generic | task_body
+<location>: [not] all       | block   | library | local      |
+                  own       | private | public  | in_generic |
+                  task_body
 <decl>: any_declaration                 | abstract_function                 |
         abstract_operator               | abstract_procedure                |
         abstract_type                   | access_all_type                   |
@@ -228,8 +229,8 @@ Rule: ENTITIES
 Control occurrences of any Ada entity
 
 Parameter(s): {<location>} [instance] <Entity name>
-<location>: block   | library | local      | nested    | own |
-            private | public  | in_generic | task_body
+<location>: [not] block   | library | local      | own       |
+                  private | public  | in_generic | task_body
 ----
 Rule: ENTITY_INSIDE_EXCEPTION
 Control occurrences of an entity inside an exception handler.
@@ -334,8 +335,9 @@ Optionally, control is restricted to instantiations appearing at indicated locat
 
 Parameter(1): {<location>} <Generic name>
 Parameter(2..): <Entity name> | <category> | <> | = (optional)
-<location>: all | block   | library | local      | nested    |
-            own | private | public  | in_generic | task_body
+<location>: [not] all       | block   | library | local      |
+                  own       | private | public  | in_generic |
+                  task_body
 <category>: ()      | access   | array | delta  | digits | mod |
             private |protected | range | record | tagged | task
 ----

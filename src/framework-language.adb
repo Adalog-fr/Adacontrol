@@ -1370,7 +1370,7 @@ package body Framework.Language is
                      end if;
                   when Name =>
                      -- This branch not strictly necessary, but gives a more user-friendly message
-                        Syntax_Error ("'|' expected between keywords", Current_Token.Position);
+                     Syntax_Error ("'|' expected between keywords", Current_Token.Position);
                   when others =>
                      Present := False;
                end case;

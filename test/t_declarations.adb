@@ -3,7 +3,7 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_IO, Ada.Finalization;
 with X_Declarations.Child;
 with X_Declarations_Locations;
-procedure T_declarations is       -- library_procedure
+procedure T_declarations is       -- library procedure
    procedure Test_Anonymous_Subtype is separate;   -- separate
    procedure Test_Self_SP           is separate;   -- separate
 
@@ -24,7 +24,7 @@ procedure T_declarations is       -- library_procedure
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
    end T1;
    task body T1 is
-      procedure P is              -- task_body procedure, nested procedure, local procedure
+      procedure P is              -- task_body procedure, not library procedure, local procedure
       begin
          null;                    -- null_procedure_body, null_procedure
       end;
@@ -171,27 +171,27 @@ procedure T_declarations is       -- library_procedure
    for T_Fixed1'Small use 0.01;
    type T_Fixed2 is delta 0.01 digits 7;                     -- decimal_fixed_type, fixed_type
 
-   generic                                                          -- Nested Generic_Procedure, generic
+   generic                                                          -- Not Library Generic_Procedure, generic
       I : Integer := 1;                                             -- defaulted_generic_parameter
    procedure P (J : Integer := 1; K : in out Float; L : out Float); -- Defaulted_Parameter, In_Out_Parameter, Out_Parameter
    procedure P (J : Integer := 1; K : in out Float; L : out Float) is begin null; end; -- null_procedure_body, null_procedure
 
-   package Pack1 is private end Pack1;              -- nested_package, empty_visible_part, empty_private_part
+   package Pack1 is private end Pack1;              -- not library package, empty_visible_part, empty_private_part
    package body Pack1 is
    end Pack1;
 
-   package Pack2 is                                 -- nested_package
+   package Pack2 is                                 -- not library package
       type Priv1 is private;                        -- Non_Limited_Private_Type
       type Priv2 (<>) is limited private;           -- Limited_Private_Type, Unknown_Discriminant, Discriminant
       type Ext1 is new Rec1 with private;           -- Private_Extension
       type Abs1 is abstract tagged private;         -- Tagged_Private_Type, Non_Limited_Private_Type, Abstract_Type
       type Abs2 is abstract tagged limited private; -- Tagged_Private_Type, Limited_Private_Type, Abstract_Type
       type Int1 is interface;
-      procedure P (X : Abs1) is abstract;           -- Public Procedure, Nested Procedure, Local Procedure, Abstract_Procedure
+      procedure P (X : Abs1) is abstract;           -- Public Procedure, Not Library Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract;   -- Abstract_Function
       function  "+" (L : Abs1) return Integer is abstract; -- Operator, Abstract_Operator, Abstract_Function
       Deferred : constant Priv1;                    -- Constant, Deferred_Constant
-      procedure P_As_Body;                          -- Public Procedure, Nested Procedure, Local Procedure
+      procedure P_As_Body;                          -- Public Procedure, Not Library Procedure, Local Procedure
       function  F_As_Body return Integer;
       function F_Expr (I : Integer) return Integer is -- Expression_Function
           (I+1);
@@ -207,7 +207,7 @@ procedure T_declarations is       -- library_procedure
          record
             X : Integer;                            -- Uninitialized_Record_component
          end record;
-      procedure Proc1;                              -- Private Procedure, Nested Procedure, Local Procedure
+      procedure Proc1;                              -- Private Procedure, Not Library Procedure, Local Procedure
       Deferred : constant Priv1 := 0;
    end Pack2;
    package body Pack2 is
@@ -216,10 +216,10 @@ procedure T_declarations is       -- library_procedure
       begin
          null;                                           -- null_procedure_body, Null_Procedure
       end Proc1;
-      procedure Proc2 is                                 -- Own procedure, nested procedure, local procedure
+      procedure Proc2 is                                 -- Own procedure, not library procedure, local procedure
       begin
          declare
-            procedure Proc3 is                           -- Nested Procedure, Local Procedure, Block Procedure
+            procedure Proc3 is                           -- Not Library Procedure, Local Procedure, Block Procedure
             begin
                null;                                     -- null_procedure_body, Null Procedure
             end Proc3;
@@ -264,7 +264,7 @@ procedure T_declarations is       -- library_procedure
    function F2  (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
    function "*" (X, Y : Integer) return Integer renames Standard."*";   -- renaming_as_declaration, renaming, operator_renaming, multiple_names
 
-   generic                                                                    -- Nested Generic_Package, generic
+   generic                                                                    -- Not Library Generic_Package, generic
       Global : in out Integer;                                                -- in_out_generic_parameter
       type T1 is private;                                                     -- formal type
       type T2(<>) is private;                                                 -- formal type
@@ -278,7 +278,7 @@ procedure T_declarations is       -- library_procedure
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
-      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, nested procedure, local procedure, null_procedure_body, null_procedure
+      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, not library procedure, local procedure, null_procedure_body, null_procedure
       type Acc_T1 is access T1;                                               -- access_formal_type, access_type
       type Acc_T2 is access T2;                                               -- access_unknown_discriminated_type, access_formal_type, access_type;
    begin
@@ -317,7 +317,7 @@ procedure T_declarations is       -- library_procedure
    protected body Al5 is
    end Al5;
 
-   procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, nested_procedure, local_procedure
+   procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, not librar_procedure, local_procedure
    function "=" (L : Rec1; R : Rec1) return Boolean is                  -- operator, predefined_operator, equality_operator
    begin
       return False;

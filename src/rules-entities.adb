@@ -75,7 +75,7 @@ package body Rules.Entities is
       User_Message ("Control occurrences of any Ada entity");
       User_Message;
       User_Message ("Parameter(s): {<location>} [instance] <Entity name>");
-      Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:", Expected => (S_All => False, others => True));
+      Help_On_Scope_Places (Header => "<location>:", Expected => (S_All => False, others => True));
    end Help;
 
    -----------------
@@ -141,7 +141,7 @@ package body Rules.Entities is
 
    procedure Do_Report (Entity : Asis.Expression; Loc : Location) is
       use Framework.Language, Framework.Reports, Framework.Language.Shared_Keys;
-      use Scope_Places_Utilities, Utilities;
+      use Utilities;
 
       Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,
                                                                          Entity,
@@ -168,7 +168,7 @@ package body Rules.Entities is
                           Current_Context,
                           Loc,
                           Image (Good_Context.Places)
-                          & " use of element """
+                          & "use of element """
                           & Adjust_Image (To_Title (Last_Matching_Name (Searched_Entities)))
                           & '"');
                end if;

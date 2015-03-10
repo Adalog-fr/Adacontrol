@@ -119,7 +119,7 @@ package body Rules.Instantiations is
       User_Message;
       User_Message ("Parameter(1): {<location>} <Generic name>");
       User_Message ("Parameter(2..): <Entity name> | <category> | <> | = (optional)");
-      Scope_Places_Utilities.Help_On_Modifiers (Header => "<location>:");
+      Help_On_Scope_Places (Header => "<location>:");
       User_Message ("<category>: ()      | access   | array | delta  | digits | mod |");
       User_Message ("            private |protected | range | record | tagged | task");
    end Help;
@@ -346,7 +346,7 @@ package body Rules.Instantiations is
 
       procedure Process_Context is
          use Framework.Language.Shared_Keys, Framework.Reports;
-         use Scope_Places_Utilities, Utilities;
+         use Utilities;
          Good_Context : Instantiation_Context := Instantiation_Context (Value (Iter));
       begin
          if not Is_Applicable (Good_Context.Places) then

@@ -136,6 +136,9 @@ package Framework.Language is
       Empty_Set : constant Modifier_Set := (others => False);
       Full_Set  : constant Modifier_Set := (others => True);
 
+      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean; Expected : Modifier_Set);
+      -- Gets a modifier from those allowed by Expected (if Found = True), unspecified otherwise
+
       function Get_Modifier (Required : Boolean;
                              Expected : Modifier_Set := Full_Set;
                              Default  : Modifiers    := Modifiers'First) return Modifiers;
