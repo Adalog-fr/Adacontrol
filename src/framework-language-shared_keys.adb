@@ -80,10 +80,12 @@ package body Framework.Language.Shared_Keys is
    -----------
 
    function Image (Set     : Places_Set;
-                   Default : Places_Set := No_Places) return Wide_String is
-      use Scope_Places_Utilities, Utilities;
+                   Default : Places_Set := No_Places) return Wide_String
+   is
+      use Scope_Places_Utilities;
 
-      function Image (From : Scope_Places) return Wide_String Is
+      function Image (From : Scope_Places) return Wide_String is
+         use  Utilities;
       begin
          if not Set.Specified (From) then
             if From = Scope_Places'Last then

@@ -19,6 +19,7 @@ fi
 		read REP
 		case $REP in
 	            d | D )
+                        echo "           <... ref, >... res"
 			diff ../ref/${test_case} ${test_case}  2>/dev/null;;
                     e | E )
 			${EMACS} ${test_case};;
