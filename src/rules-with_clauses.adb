@@ -51,8 +51,29 @@ pragma Elaborate (Framework.Language);
 package body Rules.With_Clauses is
    use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
 
+   -- Algorithm
+   --
+   -- Multiple_Names is trivial (just checks that names count is 1).
+   --
+   -- A Scoped_Store (Withed_Units) holds the description of withed units. Since the Scoped_Store is saved
+   -- and restored between spec and body, it allows checking for units mentionned twice, either in the same
+   -- compilation unit, or between spec and body.
+   --
+   -- When an identifier is encountered, and it is declared in another compilation unit, the state of the
+   -- unit is updated accordingly in Withed_Units.
+   --
+   -- As usual, things get subtle when you consider renamings (Text_IO!). A "with Text_IO" is useful if we
+   -- encounter something declared in Ada.Text_IO. For this reason, we compare the name of the unit that declared
+   -- an indentifier to the Ultimate_Name of withed units (stored in Withed_Units); we also keep the original name
+   -- for use in the error message.
+   --
+   -- Use clauses are special: it is the only case where the name directly matters (not the name of the enclosing
+   -- unit). Therefore, an identifier in a use clause should be compared against the original name, not the ultimate
+   -- name.
+
    -- Rule variables
    Check_Private_With : aliased Switch_Type.Object := (Value => On);
+   Ignore_Use_Clause  : aliased Switch_Type.Object := (Value => On);
 
    type Subrules is (Multiple_Names, Reduceable, Inherited);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
@@ -94,6 +115,7 @@ package body Rules.With_Clauses is
       User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Check_Private_With");
+      Help_On_Variable (Rule_Id & ".Ignore_Use_Clause");
    end Help;
 
    -----------------
@@ -138,6 +160,7 @@ package body Rules.With_Clauses is
          when Clear =>
             Rule_Used          := Not_Used;
             Check_Private_With := (Value => On);
+            Ignore_Use_Clause  := (Value => On);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -320,6 +343,7 @@ package body Rules.With_Clauses is
       use Framework.Reports, Framework.Scope_Manager, Thick_Queries, Utilities;
       Elem_Def      : Asis.Defining_Name;
       Elem_Def_Unit : Asis.Compilation_Unit;
+      Is_From_Use   : Boolean;
    begin
       if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
          return;
@@ -331,9 +355,10 @@ package body Rules.With_Clauses is
          return;
       end if;
 
-      if Is_Within (Element, Asis.A_Use_Package_Clause) then
-         -- Ignore names in use clauses
-         return;
+      Is_From_Use := Is_Within (Element, Asis.A_Use_Package_Clause) ;
+      if Is_From_Use and Ignore_Use_Clause.Value = On then
+            -- Ignore names in use clauses
+            return;
       end if;
 
       Elem_Def := Corresponding_Name_Definition (Element);
@@ -395,7 +420,9 @@ package body Rules.With_Clauses is
             declare
                Info : With_Info := Withed_Units.Current_Data;
             begin
-               if Info.Unit_Name = U_Name then
+               if (Is_From_Use and To_Upper(Info.Original_Name) = U_Name)
+                 or else Info.Unit_Name = U_Name
+               then
                   case Info.Status is
                      when Never_Used | Used_In_Separate =>
                         case Withed_Units.Current_Origin is
@@ -570,4 +597,6 @@ begin  -- Rules.With_Clauses
                                      Prepare_CB     => Prepare'Access);
    Framework.Variables.Register (Check_Private_With'Access,
                                  Variable_Name => Rule_Id & ".CHECK_PRIVATE_WITH");
+   Framework.Variables.Register (Ignore_Use_Clause'Access,
+                                 Variable_Name => Rule_Id & ".IGNORE_USE_CLAUSE");
 end Rules.With_Clauses;

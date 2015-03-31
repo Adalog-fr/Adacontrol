@@ -23,6 +23,9 @@ Max_Call_Depth:
 No_Operator_Usage:
    Separate controls for Signed/Unsigned integers
 
+With_Clauses:
+   Add variable to consider names in use clauses.
+
 ==============
 == V1.16r12 ==
 ==============

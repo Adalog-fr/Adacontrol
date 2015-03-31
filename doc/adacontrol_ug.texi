@@ -9164,12 +9164,10 @@ corresponding body, and the case of renamings of a same unit
 subunit) is @i{not} considered redundant.
 @item
 Unused @code{@b{with}} clauses, i.e. when nothing from the withed unit
-is referenced in the corresponding unit. Use of a package name in a
-@code{@b{use}} clause is @i{not} considered a usage of the
-package. The rule signals when a withed unit is not used in a unit,
-but used in one or more of its subunits. If an unused @code{@b{with}}
-clause is given on a package specification, the message reminds that
-it migh be useful for child units.
+is referenced in the corresponding unit. The rule signals when a withed
+unit is not used in a unit, but used in one or more of its subunits. If
+an unused @code{@b{with}} clause is given on a package specification, the
+message reminds that it migh be useful for child units.
 @item
 Moveable @code{@b{with}} clauses, i.e. when the withed unit is not
 used in the specification, but only in the body, and should be moved
@@ -9203,11 +9201,26 @@ Check_Private_With @tab off/on @tab on @tab if you are working in pure
 Ada 95, you may not want messages that a @code{@b{with}} can be
 replaced with a @code{@b{private}} @code{@b{with}}. Setting this
 variable to off disables these messages.
+@item
+Ignore_Use_Clause @tab off/on @tab on @tab Normally, package names
+appearing in use clauses are not considered. Setting this variable
+to off will result in them being treated like any other identifier
+(see tip below).
 @end multitable
 
 @subsection Tips
 A @code{@b{with}} clause can safely be removed if it is unused, and no
 child unit (or subunit) reports that the unit is inherited.
+
+Normally, use of a package name in a @code{@b{use}} clause is @i{not}
+considered a usage of the package; clearly, the @code{@b{with}} clause
+can (and should) be removed (or moved) if the only use of the package
+is in @code{@b{use}} clauses (removing or moving the @code{@b{use}}
+clauses by the same token). However, some programming rules may require
+placing @code{@b{use}} clauses in certain places, forcing the corresponding
+@code{@b{with}} clause. Set the variable @code{Ignore_Use_Clause} to
+@code{off} to make sure that a @code{@b{use}} clause does mark the
+@code{@b{with}} clause as necessary.
 
 @node Examples of using AdaControl for common programming rules, Specifying an Ada entity name, Rules reference, Top
 @chapter Examples of using AdaControl for common programming rules
