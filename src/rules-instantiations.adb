@@ -221,7 +221,7 @@ package body Rules.Instantiations is
    ----------------------
 
    function Is_Corresponding (Specification : in Entity_Specification;
-                              Name          : in Asis.Defining_Name) return Boolean
+                              Name          : in Asis.Expression) return Boolean
    is
       use Asis.Elements, Asis.Expressions;
       use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
@@ -306,7 +306,7 @@ package body Rules.Instantiations is
             return False;
          end if;
 
-         -- Safety if there are too many parameters specified by user:
+         -- Safety if there are too few parameters specified by user:
          exit when Values_Index = Values'Last;
 
          Values_Index := Values_Index + 1;
@@ -324,21 +324,27 @@ package body Rules.Instantiations is
 
       Iter : Context_Iterator := Rule_Uses_Iterator.Create;
 
+      ---------------
+      -- Make_Info --
+      ---------------
+
       function Make_Info (Origin : Generic_Parameters;
                           Using  : Asis.Association_List)
                           return Instance_Info
       is
-         use Asis.Expressions;
+         use Asis.Elements, Asis.Expressions;
          use Thick_Queries;
-         Result : Instance_Info := (Origin'Length, Get_Location (Instantiation), Origin);
+         Result : Instance_Info := (List_Index'Min (Origin'Length, Using'Length), Get_Location (Instantiation), Origin);
       begin
          for I in Result.Values'Range loop
             -- We know that both Origin and Result have 'First = 1, so we can use the same index for both
-            if Entity_Specification_Kind (Result.Values (I)) = Equal then
+            -- Replace any "=" by the actual parameter, except if the "=" corresponds to an "in" object
+            if Entity_Specification_Kind (Result.Values (I)) = Equal
+              and then Mode_Kind (Enclosing_Element (Formal_Parameter (Using (I))))
+                       not in A_Default_In_Mode .. An_In_Mode
+            then
                Result.Values (I) := Value (Full_Name_Image (Actual_Parameter (Using (I)), With_Profile => True));
             end if;
-            exit when I > Using'Length;
-            -- Security if (user provided) type list is longer than expected by generic
          end loop;
 
          return Result;

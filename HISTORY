@@ -17,6 +17,10 @@ Entities:
 Improper_Initialization:
    Do not consider branches terminated by raise as non-initializing
 
+Instantiations
+   Allow more "=" than necessary. Do not consider generic "in" formals
+  corresponding to "=" in the rule specification.
+
 Max_Call_Depth:
    Added parameters to specify entities that are not to be analyzed.
 

@@ -61,11 +61,31 @@ procedure T_instantiations is
    procedure G2;
    procedure G2 is begin null; end;
 
+   generic
+      type T1 is private;
+      Val : String := "";
+   procedure G3;
+   procedure G3 is begin null; end;
+   procedure IG31 is new G3 (Integer);
+   procedure IG32 is new G3 (Integer, "Some Message");     -- Repeat6
+   procedure IG33 is new G3 (Integer, "Something else");   -- Repeat6
+   procedure IG34 is new G3 (Float, "Some Message");
+   procedure IG35 is new G3 (Float, "Some Other Message"); -- Repeat6
+
    procedure P21 is new G2 (Integer, Proc, Float);
-   procedure P22 is new G2 (Integer, Proc, Float);        -- Repeat4
-   procedure P23 is new G2 (T2 => Float, T1 => Integer);  -- Repeat4
-   procedure P24 is new G2 (Integer, Proc1, Float);       -- Repeat4
-   procedure P25 is new G2 (Integer, Proc1, Float);       -- Repeat4, Repeat5
+   procedure P22 is new G2 (Integer, Proc, Float);         -- Repeat4
+   procedure P23 is new G2 (T2 => Float, T1 => Integer);   -- Repeat4
+   procedure P24 is new G2 (Integer, Proc1, Float);        -- Repeat4
+   procedure P25 is new G2 (Integer, Proc1, Float);        -- Repeat4, Repeat5
+
+   generic
+      type T1 is private;
+      type T2 is private;
+      type T3 is private;
+   procedure G4;
+   procedure G4 is begin null; end;
+   procedure IG41 is new G4 (Integer, Integer, Integer);
+   procedure IG42 is new G4 (Integer, Float,   Integer);   -- Repeat 7
 
    generic
    package GP is
