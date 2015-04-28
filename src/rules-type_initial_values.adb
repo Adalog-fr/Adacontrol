@@ -40,13 +40,13 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   String_Matching,
   Thick_Queries,
   Utilities;
 
 -- Adactl
 with
-  Framework.Scope_Manager,
   Framework.Symbol_Table;
 
 package body Rules.Type_Initial_Values is
@@ -149,7 +149,7 @@ package body Rules.Type_Initial_Values is
 
    procedure Process_Constant_Declaration (Decl : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
-      use Framework.Scope_Manager, String_Matching, Thick_Queries;
+      use Scope_Manager, String_Matching, Thick_Queries;
 
       Def        : Asis.Definition;
       Const_Type : Asis.Name;

@@ -37,7 +37,7 @@ with
 
 -- Adacontrol
 with
-  Framework.Scope_Manager,
+  Scope_Manager,
   Framework.Language.Scanner;
 
 package body Framework.Language.Shared_Keys is
@@ -51,7 +51,7 @@ package body Framework.Language.Shared_Keys is
    -------------------
 
    function Is_Applicable (Expected_Places : Places_Set) return Boolean is
-      use Framework.Scope_Manager, Scope_Places_Utilities, Thick_Queries;
+      use Scope_Manager, Scope_Places_Utilities, Thick_Queries;
       use Asis, Asis.Elements;
       Scope_Kind : constant Declaration_Kinds := Declaration_Kind (Current_Scope);
 

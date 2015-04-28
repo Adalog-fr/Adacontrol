@@ -38,6 +38,7 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
@@ -46,8 +47,7 @@ with
   Framework.Language,
   Framework.Ordering_Machine,
   Framework.Rules_Manager,
-  Framework.Reports,
-  Framework.Scope_Manager;
+  Framework.Reports;
 pragma Elaborate (Framework.Language);
 pragma Elaborate (Framework.Ordering_Machine);
 
@@ -74,7 +74,7 @@ package body Rules.Unit_Pattern is
    ---- Declarations for Single_Tagged type
    --                    ******************
 
-   package Declarations_Store is new Framework.Scope_Manager.Scoped_Store (Asis.Declaration);
+   package Declarations_Store is new Scope_Manager.Scoped_Store (Asis.Declaration);
 
 
    ---- Declarations for Tagged_Type_Hierarchy
@@ -273,7 +273,7 @@ package body Rules.Unit_Pattern is
    procedure Check_Single_Tagged_Type (Declaration : in Asis.Declaration) is
       -- Precondition: Declaration is for a tagged type
       use Asis, Asis.Elements;
-      use Framework.Reports, Framework.Scope_Manager;
+      use Framework.Reports, Scope_Manager;
    begin
       if not Rule_Used (Single_Tagged_Type) then
          return;

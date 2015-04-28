@@ -40,7 +40,7 @@ with
 -- Adalog
 with
   Binary_Map,
-  Framework.Scope_Manager,
+  Scope_Manager,
   Thick_Queries;
 
 -- AdaControl
@@ -48,7 +48,7 @@ with
   Utilities;
 
 package body Framework.Symbol_Table is
-   use Framework.Scope_Manager;
+   use Scope_Manager;
 
    -- Algorithm:
    --

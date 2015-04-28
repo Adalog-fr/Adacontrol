@@ -29,18 +29,15 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Adalog
-with
-  Thick_Queries,
-  Utilities;
-
 -- Asis
 with
   Asis.Elements;
 
--- AdaControl
+-- Adalog
 with
-  Framework.Scope_Manager;
+  Scope_Manager,
+  Thick_Queries,
+  Utilities;
 
 package body Rules.Not_Elaboration_Calls is
    use Framework, Framework.Control_Manager, Utilities;
@@ -124,7 +121,7 @@ package body Rules.Not_Elaboration_Calls is
 
    procedure Check (Current_Context : Root_Context'Class; Loc : Location) is
       use Asis, Asis.Elements;
-      use Framework.Reports, Framework.Scope_Manager;
+      use Framework.Reports, Scope_Manager;
       Scopes : constant Scope_List := Active_Scopes;
    begin
       if Current_Context = No_Matching_Context then

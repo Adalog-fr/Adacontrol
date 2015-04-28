@@ -37,6 +37,7 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
@@ -44,8 +45,7 @@ with
 with
   Framework.Language,
   Framework.Rules_Manager,
-  Framework.Reports,
-  Framework.Scope_Manager;
+  Framework.Reports;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Local_Access is
@@ -124,7 +124,7 @@ package body Rules.Local_Access is
 
    procedure Process_Attribute (Attr : Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Scope_Manager, Utilities, Thick_Queries;
+      use Scope_Manager, Utilities, Thick_Queries;
 
       Good_Prefix : Asis.Expression;
       Decl        : Asis.Declaration;

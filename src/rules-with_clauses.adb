@@ -28,11 +28,6 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Adalog
-with
-  Thick_Queries,
-  Utilities;
-
 -- Asis
 with
   Asis.Clauses,
@@ -41,10 +36,15 @@ with
   Asis.Elements,
   Asis.Expressions;
 
+-- Adalog
+with
+  Scope_Manager,
+  Thick_Queries,
+  Utilities;
+
 -- AdaControl
 with
   Framework.Language,
-  Framework.Scope_Manager,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
@@ -98,7 +98,7 @@ package body Rules.With_Clauses is
    begin
       return Left.Unit_Name = Right.Unit_Name;
    end Equivalent_Info;
-   package Withed_Units is new Framework.Scope_Manager.Scoped_Store (With_Info, Equivalent_Info);
+   package Withed_Units is new Scope_Manager.Scoped_Store (With_Info, Equivalent_Info);
 
    ----------
    -- Help --
@@ -201,7 +201,7 @@ package body Rules.With_Clauses is
 
    procedure Process_With_Clause (Element : in Asis.Clause) is
       use Asis.Clauses, Asis.Elements;
-      use Framework.Scope_Manager, Framework.Reports, Thick_Queries, Utilities;
+      use Scope_Manager, Framework.Reports, Thick_Queries, Utilities;
 
       function Required_For_Other_Context_Clauses (Name : Asis.Name) return Boolean is
       -- Is Name used in a use clause from the same context clause?
@@ -340,7 +340,7 @@ package body Rules.With_Clauses is
 
    procedure Process_Identifier (Element : in Asis.Expression) is
       use Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Framework.Scope_Manager, Thick_Queries, Utilities;
+      use Framework.Reports, Scope_Manager, Thick_Queries, Utilities;
       Elem_Def      : Asis.Defining_Name;
       Elem_Def_Unit : Asis.Compilation_Unit;
       Is_From_Use   : Boolean;
@@ -533,7 +533,7 @@ package body Rules.With_Clauses is
    -----------------------
 
    procedure Process_Unit_Exit (Unit : in Asis.Compilation_Unit) is
-      use Framework.Reports, Framework.Scope_Manager, Utilities;
+      use Framework.Reports, Scope_Manager, Utilities;
       use Asis, Asis.Elements, Asis.Declarations;
 
       Decl : constant Asis.Declaration := Unit_Declaration (Unit);

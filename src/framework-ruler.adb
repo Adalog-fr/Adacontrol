@@ -59,7 +59,7 @@ with
   Framework.Queries,
   Framework.Reports,
   Framework.Rules_Manager,
-  Framework.Scope_Manager,
+  Scope_Manager,
   Framework.Specific_Plugs,
   Framework.Symbol_Table,
   Rules.Uncheckable;
@@ -96,7 +96,7 @@ package body Framework.Ruler is
       use Ada.Characters.Handling, Ada.Exceptions;
       use Asis, Asis.Compilation_Units;
    begin
-      Framework.Scope_Manager. Enter_Unit (Unit);
+      Scope_Manager.           Enter_Unit (Unit);
       Framework.Plugs.         Enter_Unit (Unit);
       Framework.Specific_Plugs.Enter_Unit (Unit);
    exception
@@ -121,7 +121,7 @@ package body Framework.Ruler is
    begin
       Framework.Plugs.         Exit_Unit (Unit);
       Framework.Specific_Plugs.Exit_Unit (Unit);
-      Framework.Scope_Manager. Exit_Unit (Unit);
+      Scope_Manager.           Exit_Unit (Unit);
    exception
       when Occur: others =>
          Utilities.Trace ("Exception "                                  --## rule line off No_Trace
@@ -141,7 +141,7 @@ package body Framework.Ruler is
    begin
       Framework.Plugs.         Exit_Context_Clauses (Unit);
       Framework.Specific_Plugs.Exit_Context_Clauses (Unit);
-      Framework.Scope_Manager. Exit_Context_Clauses;
+      Scope_Manager.           Exit_Context_Clauses;
    end Exit_Context_Clauses;
 
 
@@ -151,7 +151,7 @@ package body Framework.Ruler is
 
    procedure Enter_Scope (Element : in Asis.Element) is
    begin
-      Framework.Scope_Manager. Enter_Scope (Element);  -- Must stay first
+      Scope_Manager.           Enter_Scope (Element);  -- Must stay first
       Framework.Plugs.         Enter_Scope (Element);
       Framework.Specific_Plugs.Enter_Scope (Element);
    end Enter_Scope;
@@ -166,7 +166,7 @@ package body Framework.Ruler is
       Framework.Plugs.         Exit_Scope (Element);
       Framework.Specific_Plugs.Exit_Scope (Element);
       Framework.Symbol_Table.  Exit_Scope (Element);
-      Framework.Scope_Manager. Exit_Scope (Element);  -- Must stay last
+      Scope_Manager.           Exit_Scope (Element);  -- Must stay last
    end Exit_Scope;
 
    ---------------------
@@ -409,7 +409,7 @@ package body Framework.Ruler is
          end case;
       end loop;
 
-      Framework.Scope_Manager.Enter_Private_Part;
+      Scope_Manager.Enter_Private_Part;
 
       for I in Private_Part'Range loop
          Semantic_Traverse_Elements (Private_Part (I), Control, State);

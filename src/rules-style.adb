@@ -46,6 +46,7 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   String_Matching,
   Thick_Queries,
   Utilities;
@@ -54,7 +55,6 @@ with
 with
   Framework.Language,
   Framework.Ordering_Machine,
-  Framework.Scope_Manager,
   Rules.Style.Keyword;
 pragma Elaborate (Framework.Language);
 pragma Elaborate (Framework.Ordering_Machine);
@@ -216,8 +216,7 @@ package body Rules.Style is
          Renamed_Def  : Asis.Defining_Name;
       end record;
    function Is_Same_Def (L, R : Renaming_Data) return Boolean;
-   package Renamed_Entities is new Framework.Scope_Manager.Scoped_Store (Renaming_Data,
-                                                                         Equivalent_Keys => Is_Same_Def);
+   package Renamed_Entities is new Scope_Manager.Scoped_Store (Renaming_Data, Equivalent_Keys => Is_Same_Def);
    -- Note that we cannot use Symbol_Table here, because the renamed entity is pushed
    -- in the scope of the renaming entity
 
@@ -862,7 +861,7 @@ package body Rules.Style is
 
       procedure Check_Renamed is
          use Asis.Declarations;
-         use Framework.Scope_Manager, Framework.Reports;
+         use Scope_Manager, Framework.Reports;
 
          Def : constant Asis.Definition := Corresponding_Name_Definition (Identifier);
          Ren : Renaming_Data;
@@ -1762,7 +1761,7 @@ package body Rules.Style is
 
    procedure Process_Element (Element : in Asis.Element) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Framework.Scope_Manager, Thick_Queries;
+      use Framework.Reports, Scope_Manager, Thick_Queries;
       use Multiple_Flag_Utilities;
 
       procedure Check_Special_Use_Clause (Use_Clause : Asis.Clause) is

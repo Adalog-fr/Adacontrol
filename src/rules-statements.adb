@@ -40,14 +40,14 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
 -- AdaControl
 with
   Adactl_Constants,
-  Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Statements is
@@ -119,9 +119,9 @@ package body Rules.Statements is
 
    -- For Stmt_Unnamed_Multiple_Loop:
    type Loops_Level is range 0 .. Max_Loop_Nesting;
-   Body_Depth  : Framework.Scope_Manager.Scope_Range := 0;
-   Loops_Depth : array (Framework.Scope_Manager.Scope_Range) of Loops_Level;
-   Top_Loop    : array (Framework.Scope_Manager.Scope_Range) of Asis.Statement;
+   Body_Depth  : Scope_Manager.Scope_Range := 0;
+   Loops_Depth : array (Scope_Manager.Scope_Range) of Loops_Level;
+   Top_Loop    : array (Scope_Manager.Scope_Range) of Asis.Statement;
 
    ----------
    -- Help --
@@ -931,7 +931,7 @@ package body Rules.Statements is
 
    procedure Process_Scope_Enter (Scope : in Asis.Element) is
       use Asis, Asis.Elements;
-      use Framework.Scope_Manager;
+      use Scope_Manager;
    begin
       if Rule_Used = (Subrules => False) then
          return;
@@ -960,7 +960,7 @@ package body Rules.Statements is
 
    procedure Process_Scope_Exit  (Scope : in Asis.Element) is
       use Asis, Asis.Elements;
-      use Framework.Scope_Manager;
+      use Scope_Manager;
    begin
       if Rule_Used = (Subrules => False) then
          return;

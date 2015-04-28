@@ -33,27 +33,27 @@
 with
   Ada.Strings.Wide_Unbounded;
 
--- Adalog
-with
-  Thick_Queries,
-  Utilities;
-
 -- Asis
 with
   Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements;
 
+-- Adalog
+with
+  Scope_Manager,
+  Thick_Queries,
+  Utilities;
+
 -- Adactl
 with
   Framework.Language,
   Framework.Reports,
-  Framework.Rules_Manager,
-  Framework.Scope_Manager;
+  Framework.Rules_Manager;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Max_Nesting is
-   use Framework, Framework.Scope_Manager;
+   use Framework, Scope_Manager;
 
    -- Algorithm:
    --

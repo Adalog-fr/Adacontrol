@@ -39,13 +39,13 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
 -- AdaControl
 with
-  Framework.Language,
-  Framework.Scope_Manager;
+  Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Use_Clauses is
@@ -193,7 +193,7 @@ package body Rules.Use_Clauses is
 
    procedure Process_Use_Clause (Clause : in Asis.Clause; Is_Type : Boolean) is
       use Ada.Strings.Wide_Unbounded, Asis.Clauses, Thick_Queries;
-      use Framework.Reports, Framework.Scope_Manager, Utilities;
+      use Framework.Reports, Scope_Manager, Utilities;
       Loc : Subrules;
    begin
       if Rule_Used = (Subrules => (Control_Kinds => False)) then

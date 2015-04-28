@@ -38,6 +38,7 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   String_Matching,
   Thick_Queries,
   Utilities;
@@ -47,7 +48,6 @@ with
   Framework.Language,
   Framework.Pattern_Queues,
   Framework.Pattern_Queues_Matchers,
-  Framework.Scope_Manager,
   Framework.Variables,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
@@ -103,7 +103,7 @@ package body Rules.Local_Hiding is
          Is_Enumeration : Boolean;
          Family         : Declaration_Families;
       end record;
-   package Visible_Identifiers is new Framework.Scope_Manager.Scoped_Store (Identifier_Data);
+   package Visible_Identifiers is new Scope_Manager.Scoped_Store (Identifier_Data);
 
    ----------
    -- Help --
@@ -322,7 +322,7 @@ package body Rules.Local_Hiding is
 
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
       use Asis, Asis.Elements, Asis.Declarations;
-      use Thick_Queries, Framework.Scope_Manager;
+      use Thick_Queries, Scope_Manager;
 
       Scope      : Asis.Element;
       First_Name : Asis.Defining_Name;

@@ -57,7 +57,7 @@ with
   Framework.Reports,
   Framework.Ruler,
   Framework.Rules_Manager,
-  Framework.Scope_Manager,
+  Scope_Manager,
   Framework.String_Set,
   Framework.Variables.Shared_Types,
   Implementation_Options;
@@ -144,7 +144,7 @@ package body Framework.Language.Commands is
          -- Clean-up:
          begin
             Ruler.Reset;
-            Framework.Scope_Manager.Reset (Deactivate => False);
+            Scope_Manager.Reset (Deactivate => False);
          exception
             when Other_Occur : others =>
                -- Sounds really bad here... warn, but preserve the original exception
@@ -280,7 +280,7 @@ package body Framework.Language.Commands is
          Flush (Adactl_Output);
       end if;
 
-      Framework.Scope_Manager.Reset (Deactivate => True);
+      Scope_Manager.Reset (Deactivate => True);
       Framework.Rules_Manager.Current_Phase := Not_Started;
    end Go_Command;
 

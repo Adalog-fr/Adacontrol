@@ -5330,8 +5330,10 @@ if there has been already an instantiation with the same value for
 this parameter (i.e. it matches the second time it is encountered).
 @end enumerate
 
-If an actual is an expression (which is possible only for a formal
-@code{@b{in}} object), it cannot be matched.
+Formal @code{@b{in}} parameters cannot be matched, since the actual
+can be any expression and it is not clear how to specify it in the
+rule; therefore, the rule should normally specify a box (@code{<>}) at
+the place of such parameters.
 
 Ex:
 @example
@@ -5381,6 +5383,28 @@ check instantiations (ada.unchecked_deallocation (standard.integer));
 @end example
 will find instantiations that use either @code{Integer},
 @code{Positive}, or @code{Natural}.
+
+If an equal sign (@code{=}) is provided for a formal @code{@b{in}}
+parameter, it is @i{not} part of the comparison of existing
+instantiations (it behaves like a  box (@code{<>})), i.e.  given:
+@example
+generic
+   type T1 is private;
+   Val : String := "";
+package Gen;
+
+package body Gen is ...  end Gen;
+
+package Inst1 is new Gen (Float, "Some Message");
+package Inst2 is new Gen (Float, "Some Other Message");
+@end example
+and the rule:
+@example
+check instantiations (Gen, =, =);
+@end example
+Adacontrol will issue a message for Inst2 that it has already been
+instantiated with the same parameters, although the second
+(@code{@b{in}}) parameter is different.
 
 @subsection Limitation
 GNAT defines @code{Unchecked_Conversion} and

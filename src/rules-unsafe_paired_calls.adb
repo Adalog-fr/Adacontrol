@@ -41,12 +41,9 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
-
--- Adactl
-with
-  Framework.Scope_Manager;
 
 package body Rules.Unsafe_Paired_Calls is
    use Framework, Framework.Control_Manager;
@@ -76,8 +73,8 @@ package body Rules.Unsafe_Paired_Calls is
       end record;
 
    Checked_Subprograms  : Context_Store;
-   package Active_Procs is new Framework.Scope_Manager.Scoped_Store (Asis.Element,
-                                                                     Equivalent_Keys => Asis.Elements.Is_Equal);
+   package Active_Procs is new Scope_Manager.Scoped_Store (Asis.Element,
+                                                           Equivalent_Keys => Asis.Elements.Is_Equal);
 
    ----------
    -- Help --

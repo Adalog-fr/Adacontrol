@@ -38,14 +38,14 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
 -- AdaControl
 with
   Framework.Language,
-  Framework.Queries,
-  Framework.Scope_Manager;
+  Framework.Queries;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Unnecessary_Use_Clause is
@@ -88,7 +88,7 @@ package body Rules.Unnecessary_Use_Clause is
          Original_Name   : Wide_String (1..Length_2);
          User            : User_Kind;
       end record;
-   package Used_Packages is new Framework.Scope_Manager.Scoped_Store (Package_Info);
+   package Used_Packages is new Scope_Manager.Scoped_Store (Package_Info);
 
    ----------
    -- Help --
@@ -191,7 +191,7 @@ package body Rules.Unnecessary_Use_Clause is
          --
          for I in Names'Range loop
             declare
-               use Framework.Scope_Manager, Framework.Reports;
+               use Scope_Manager, Framework.Reports;
                Info : constant Package_Info := Build_Info (Names (I));
             begin
                -- Check if already there
@@ -274,7 +274,7 @@ package body Rules.Unnecessary_Use_Clause is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         use Framework.Scope_Manager;
+         use Scope_Manager;
          Enclosing_Name : constant Wide_String := Enclosing_Package_Name (Rule_Id, Name);
       begin
          if Enclosing_Name = "" then
@@ -352,7 +352,7 @@ package body Rules.Unnecessary_Use_Clause is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      use Framework.Reports, Framework.Scope_Manager;
+      use Framework.Reports, Scope_Manager;
       use Asis, Asis.Elements, Asis.Declarations;
 
       Is_Package_Spec : Boolean := False;

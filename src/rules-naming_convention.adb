@@ -46,6 +46,7 @@ with
 -- Adalog
 with
   A4G_Bugs,
+  Scope_Manager,
   String_Matching,
   Thick_Queries,
   Utilities;
@@ -57,7 +58,6 @@ with
   Framework.Language.Shared_Keys,
   Framework.Pattern_Queues,
   Framework.Pattern_Queues_Matchers,
-  Framework.Scope_Manager,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
@@ -454,7 +454,7 @@ package body Rules.Naming_Convention is
                        Object_Category : in Categories   := Cat_Any;
                        Object_Type     : in Asis.Element := Asis.Nil_Element)
       is
-         use Framework.Scope_Manager;
+         use Scope_Manager;
 
          Is_Program_Unit         : constant Boolean := Is_Equal (Decl, Current_Scope);
          Is_Compilation_Unit     : constant Boolean := Is_Program_Unit and Current_Depth = 1;

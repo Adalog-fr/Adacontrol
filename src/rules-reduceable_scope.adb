@@ -44,6 +44,7 @@ with
 
 -- Adalog
 with
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
@@ -51,12 +52,11 @@ with
 with
   Framework.Language,
   Framework.Queries,
-  Framework.Scope_Manager,
   Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Reduceable_Scope is
-   use Framework, Framework.Control_Manager, Framework.Scope_Manager, Utilities;
+   use Framework, Framework.Control_Manager, Scope_Manager, Utilities;
    use Ada.Strings.Wide_Unbounded;
 
    -- Algorithm:
