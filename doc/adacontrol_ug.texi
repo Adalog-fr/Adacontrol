@@ -19,12 +19,13 @@
 @ifnottex
 @node Top, Introduction, (dir), (dir)
 @top AdaControl User Guide
-This is the AdaControl User Guide. It describes how to install and use
-AdaControl. Please refer to the AdaControl Programmer Manual to learn
-how to add new kinds of rules to AdaControl.
 @end ifnottex
 
 Last edited: @today{}
+
+This is the AdaControl User Guide. It describes how to install and use
+AdaControl. Please refer to the AdaControl Programmer Manual to learn
+how to add new kinds of rules to AdaControl.
 
 @menu
 * Introduction::
@@ -610,14 +611,14 @@ adactl [-deEirsTuvwx]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
 
-AdaControl can process Ada-2005 as well as Ada-95 programs, even if
-there are currently few Ada-2005 related controls - but we hope to
+AdaControl can process Ada-2012 as well as Ada-95 programs, even if
+there are currently few Ada-2012 related controls - but we hope to
 improve that situation in the near future.
 
-If you are using Ada-2005 (or Ada-2012) features, make sure that GNAT is set up for
-Ada-2005/2012 (this is the default for GNAT-GPL). Due to technical reasons,
-the -gnat05 option cannot be passed to the compiler in ``compile on
-the fly'' mode, but you can do any of the following:
+If you are using Ada-2005 (or Ada-2012) features, make sure that GNAT
+is set up for Ada-2005/2012 (this is the default for GNAT-GPL). Due to
+technical reasons, the -gnat05 option cannot be passed to the compiler
+in ``compile on the fly'' mode, but you can do any of the following:
 @itemize
 @item
 have a ``gnat.adc'' file in the current directory that contains a
