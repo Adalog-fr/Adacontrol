@@ -1,16 +1,23 @@
 procedure T_parameter_aliasing is
+   package Wrapper is
+      type By_Copy is private;     -- A by copy type that is not subject to Ada 2012 aliasing checks
+   private
+      type By_Copy is new Character;
+   end Wrapper;
+   use Wrapper;
+   type BC_String is array (Positive range <>) of By_Copy;
 
    type By_Ref is tagged null record;
 
-   procedure Proc_CC  (X : out Character; Y : in out Character) is begin null; end;
-   procedure Proc_CC2 (X : in  Character; Y : out    Character) is begin null; end;
-   procedure Proc_CCC (X : out Character; Y : in     Character; Z : in Character) is begin null; end;
-   procedure Proc_RRR (X : out By_Ref;    Y : in     By_Ref;    Z : in By_Ref)    is begin null; end;
-   procedure Proc_CC3 (                   Y : in     Character; Z : in Character; X : out Character) is begin null; end;
-   procedure Proc_RR3 (                   Y : in     By_Ref;    Z : in By_Ref;    X : out By_Ref)    is begin null; end;
-   procedure Proc_SC  (X : out String;    Y : out    Character) is begin null; end;
+   procedure Proc_CC  (X : out By_Copy;   Y : in out By_Copy) is begin null; end;
+   procedure Proc_CC2 (X : in  By_Copy;   Y : out    By_Copy) is begin null; end;
+   procedure Proc_CCC (X : out By_Copy;   Y : in     By_Copy; Z : in By_Copy) is begin null; end;
+   procedure Proc_RRR (X : out By_Ref;    Y : in     By_Ref;  Z : in By_Ref)  is begin null; end;
+   procedure Proc_CC3 (                   Y : in     By_Copy; Z : in By_Copy; X : out By_Copy) is begin null; end;
+   procedure Proc_RR3 (                   Y : in     By_Ref;  Z : in By_Ref;  X : out By_Ref)  is begin null; end;
+   procedure Proc_SC  (X : out BC_String; Y : out    By_Copy) is begin null; end;
 
-   function "+" (C : Character; I : integer) return Character is
+   function "+" (C : By_Copy; I : Integer) return By_Copy is
    begin
       return C;
    end "+";
@@ -18,12 +25,12 @@ begin
 Simple_Cases :
    declare
       package Pack1 is
-         X : Character;
+         X : By_Copy;
       end Pack1;
       package Pack2 renames Pack1;
 
-      I,J : Character;
-      Alias1 : Character renames I;
+      I,J : By_Copy;
+      Alias1 : By_Copy renames I;
 
       R1, R2 : By_Ref;
    begin
@@ -41,7 +48,7 @@ Simple_Cases :
       Proc_CC (X => I, Y => J);               -- OK
       Proc_CC (X => Simple_Cases.I, Y => I);  -- Aliasing
 
-      Proc_CC (I, Character(I));              -- Aliasing
+      Proc_CC (I, By_Copy(I));                -- Aliasing
 
       Proc_CC (I, Alias1);                    -- Aliasing
       Proc_CC (Pack1.X, Pack2.X);             -- Aliasing
@@ -51,18 +58,18 @@ Selectors:
    declare
       type Rec1 is
          record
-            I, J : Character;
+            I, J : By_Copy;
          end record;
 
       type Rec2 is
          record
-            I, J : Character;
+            I, J : By_Copy;
             K, L : Rec1;
          end record;
 
-      procedure Proc_R1C (X : out Rec1; Y : in out Character) is begin null;  end;
+      procedure Proc_R1C (X : out Rec1; Y : in out By_Copy) is begin null;  end;
 
-      procedure Proc_R2C (X : out Rec2; Y : in out Character) is begin null; end;
+      procedure Proc_R2C (X : out Rec2; Y : in out By_Copy) is begin null; end;
 
       R1, R2 : Rec2;
       Alias2 : Rec2 renames R1;
@@ -88,13 +95,13 @@ Indexing:
    declare
       type Rec is
          record
-            S : String (1..10);
+            S : BC_String (1..10);
          end record;
       X   : Rec;
       I,J : Integer;
       Tab1 : array (1..10) of Rec;
       type Enum is (A, B);
-      Tab2 : array (Enum) of Character;
+      Tab2 : array (Enum) of By_Copy;
       E : Enum;
    begin
       Proc_SC (X.S,               X.S(1));            -- Aliasing
@@ -111,16 +118,16 @@ Indexing:
 
 Dereferences:
    declare
-      type Acc is access all String (1..10);
+      type Acc is access all BC_String (1..10);
 
       function F return Acc is begin return null; end;
       function G return Acc renames F;
 
-      procedure Proc_AS (X : out Acc; Y : out String) is begin null; end;
+      procedure Proc_AS (X : out Acc; Y : out BC_String) is begin null; end;
 
       type Rec is
          record
-            S : aliased String (1..10);
+            S : aliased BC_String (1..10);
             A : Acc;
             B : Acc;
          end record;
@@ -181,7 +188,7 @@ Dispatching:
    declare
       type T is tagged
          record
-            I : Integer;
+            I : By_Copy;
          end record;
       type T_Acc is access T;
       type TC_Acc is access T'Class;
@@ -191,17 +198,17 @@ Dispatching:
       VTA : T_Acc;
       VTAC : TC_Acc;
 
-      procedure P1 (X, Y : in out Integer) is
+      procedure P1 (X, Y : in out By_Copy) is
       begin
          null;
       end P1;
 
-      procedure P2 (L : access T'Class; R : Integer) is
+      procedure P2 (L : access T'Class; R : By_Copy) is
       begin
          null;
       end P2;
 
-      procedure P3 (L : Integer; R : access T'Class) is
+      procedure P3 (L : By_Copy; R : access T'Class) is
       begin
          null;
       end P3;
@@ -227,4 +234,3 @@ Dispatching:
       P1 (VTA.I, VTAC.I);                     -- Unlikely aliasing
    end Mantis_0000013;
 end T_parameter_aliasing;
-
