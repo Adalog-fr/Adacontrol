@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="iso-8859-1" ?>
 
 <!--  This file adds support for AdaControl -->
 <AdaControl>
@@ -6,7 +6,7 @@
  <!--  Rules syntax -->
  <Language>
   <Name>AdaControl</Name>
-  <Body_Suffix>.aru</Body_Suffix> <!-- Without this, GPS will complain “Warning, no source files for adacontrol” -->
+  <Body_Suffix>.aru</Body_Suffix> <!-- Without this, GPS will complain "Warning, no source files for adacontrol" -->
   <Extension>.aru</Extension>
   <Keywords>^(check|clear|count|go|help|inhibit|message|quit|search|source|set)\b</Keywords>
 
@@ -66,17 +66,17 @@
             page="AdaControl"
             label="Display AdaControl run"
             default="False"
-               type="boolean"
-               tip="Displays AdaControl command line and results in Messages window"/>
+            type="boolean"
+            tip="Displays AdaControl command line and results in Messages window"/>
 
  <preference name="button-target"
                page="AdaControl"
                label="Buttons operate on"
                default="1"
                type="choices" >
-                  <choice>Current File</choice>
-                  <choice>Root Project</choice>
-                  <choice>Units from List</choice>
+   <choice>Current File</choice>
+   <choice>Root Project</choice>
+   <choice>Units from List</choice>
  </preference>
 
  <preference name="help-format"
@@ -84,8 +84,8 @@
              label="Help on rule"
              default="1"
              type="choices" >
-                <choice>Pop-up</choice>
-                <choice>User Guide</choice>
+   <choice>Pop-up</choice>
+   <choice>User Guide</choice>
  </preference>
 
  <preference name="max-errors"
@@ -112,76 +112,76 @@
   <language>Ada</language>
 
   <switches lines="4" columns="2" separator="&#32;">
-   <title line="1" column="1" column-span="2"> Files </title>
-   <field line="1" column="1"
-     label="Rules file" switch="-f" separator="&#32;" as-file="true" />
-   <field line="1" column="1"
-     label="Units file" switch="-@" separator="&#32;" as-file="true" />
-   <field line="1" column="1"
-     label=".adp project file" switch="-p" separator="&#32;" as-file="true" />
+    <title line="1" column="1" column-span="2"> Files </title>
+    <field line="1" column="1"
+           label="Rules file" switch="-f" separator="&#32;" as-file="true" />
+    <field line="1" column="1"
+           label="Units file" switch="-@" separator="&#32;" as-file="true" />
+    <field line="1" column="1"
+           label=".adp project file" switch="-p" separator="&#32;" as-file="true" />
 
-   <title line="1" column="2" column-span="0"></title>
+    <title line="1" column="2" column-span="0"></title>
 
-   <title line="2" column="1"> Processing </title>
-   <check line="2" column="1" label="Recursive mode" switch="-r"
-    tip="Process recursively all units the given units depend on"/>
-   <check line="2" column="1" label="Ignore local deactivation" switch="-i"
-    tip="Ignore local deactivation tags in source file"/>
-   <check line="2" column="1" label="Process specs only" switch="-s"/>
-   <check line="2" column="1" label="Compilation unit mode" switch="-u"
-    tip="Treat all source names as compilation units even if they look like file names"/>
+    <title line="2" column="1"> Processing </title>
+    <check line="2" column="1" label="Recursive mode" switch="-r"
+           tip="Process recursively all units the given units depend on"/>
+    <check line="2" column="1" label="Ignore local deactivation" switch="-i"
+           tip="Ignore local deactivation tags in source file"/>
+    <check line="2" column="1" label="Process specs only" switch="-s"/>
+    <check line="2" column="1" label="Compilation unit mode" switch="-u"
+           tip="Treat all source names as compilation units even if they look like file names"/>
 
-   <title line="2" column="2"> Debug </title>
-   <check line="2" column="2" label="Debug messages" switch="-d"
-    tip="Displays debug information (not useful for normal user)"/>
-   <check line="2" column="2" label="Halt on error" switch="-x"
-    tip="Terminate AdaControl if a fatal error is encountered"/>
+    <title line="2" column="2"> Debug </title>
+    <check line="2" column="2" label="Debug messages" switch="-d"
+           tip="Displays debug information (not useful for normal user)"/>
+    <check line="2" column="2" label="Halt on error" switch="-x"
+           tip="Terminate AdaControl if a fatal error is encountered"/>
 
-   <title line="3" column="1" column-span="2"> Output </title>
-   <check line="3" column="1" label="Display only errors" switch="-E"
-    tip="Print only errors (Check)"/>
-   <check line="3" column="1" label="Warnings as errors" switch="-e"
-    tip="Treat warnings (Search) as errors (Check)"/>
-   <combo line="3" column="1" label="Statistics" switch="-S" separator="&#32;" noswitch="0"
-    tip="Define the statistics displayed in the Message window at the end or the run">
-    <combo-entry label="None"                      value="0" />
-    <combo-entry label="Errors and warnings count" value="1" />
-    <combo-entry label="Report untriggered rules"  value="2" />
-    <combo-entry label="Full rules statistics"     value="3" />
-   </combo>
-   <radio line="3" column="1">
-     <radio-entry label="Send results to GPS"
-        tip="Send the output to the locations window in GPS"/>
-     <radio-entry label="Send results to File"
-        tip="Send the output to a file (file name below is required)"
-        switch="-NOGPS" />
-     <radio-entry label="Send results to File and GPS"
-        tip="Send the output to a file and load it into locations window"
-        switch="-GPS" />
-   </radio>
-   <field line="3" column="1"
-     label="File name" switch="-o" separator="&#32;" as-file="true" />
-   <combo line="3" column="1" label="File format" switch="-F" noswitch="0"
-    tip="Define the output format when destination is file">
-    <combo-entry label="Gnat, short file names"   value="gnat_short" />
-    <combo-entry label="Gnat, long file names"    value="gnat" />
-    <combo-entry label="CSV, short file names"    value="csv_short" />
-    <combo-entry label="CSV, long file names"     value="csv" />
-    <combo-entry label="CSVX, short file names"   value="csvx_short" />
-    <combo-entry label="CSVX, long file names"    value="csvx" />
-    <combo-entry label="Source, short file names" value="source_short" />
-    <combo-entry label="Source, long file names"  value="source" />
-   </combo>
+    <title line="3" column="1" column-span="2"> Output </title>
+    <check line="3" column="1" label="Display only errors" switch="-E"
+           tip="Print only errors (Check)"/>
+    <check line="3" column="1" label="Warnings as errors" switch="-e"
+           tip="Treat warnings (Search) as errors (Check)"/>
+    <combo line="3" column="1" label="Statistics" switch="-S" separator="&#32;" noswitch="0"
+           tip="Define the statistics displayed in the Message window at the end or the run">
+      <combo-entry label="None"                      value="0" />
+      <combo-entry label="Errors and warnings count" value="1" />
+      <combo-entry label="Report untriggered rules"  value="2" />
+      <combo-entry label="Full rules statistics"     value="3" />
+    </combo>
+    <radio line="3" column="1">
+      <radio-entry label="Send results to GPS"
+                   tip="Send the output to the locations window in GPS"/>
+      <radio-entry label="Send results to File"
+                   tip="Send the output to a file (file name below is required)"
+                   switch="-NOGPS" />
+      <radio-entry label="Send results to File and GPS"
+                   tip="Send the output to a file and load it into locations window"
+                   switch="-GPS" />
+    </radio>
+    <field line="3" column="1"
+           label="File name" switch="-o" separator="&#32;" as-file="true" />
+    <combo line="3" column="1" label="File format" switch="-F" noswitch="0"
+           tip="Define the output format when destination is file">
+      <combo-entry label="Gnat, short file names"   value="gnat_short" />
+      <combo-entry label="Gnat, long file names"    value="gnat" />
+      <combo-entry label="CSV, short file names"    value="csv_short" />
+      <combo-entry label="CSV, long file names"     value="csv" />
+      <combo-entry label="CSVX, short file names"   value="csvx_short" />
+      <combo-entry label="CSVX, long file names"    value="csvx" />
+      <combo-entry label="Source, short file names" value="source_short" />
+      <combo-entry label="Source, long file names"  value="source" />
+    </combo>
 
-   <title line="3" column="2" column-span="0"></title>
+    <title line="3" column="2" column-span="0"></title>
 
-   <title line="4" column="1" column-span="2">ASIS</title>
-   <field line="4" column="1"
-     label="ASIS options" switch="--" separator="&#32;"/>
+    <title line="4" column="1" column-span="2">ASIS</title>
+    <field line="4" column="1"
+           label="ASIS options" switch="--" separator="&#32;"/>
 
-   <title line="4" column="2" column-span="0"></title>
+    <title line="4" column="2" column-span="0"></title>
 
-</switches>
+  </switches>
  </tool>
 
 

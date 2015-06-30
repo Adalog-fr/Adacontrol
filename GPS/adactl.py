@@ -519,20 +519,35 @@ def on_GPS_start (H):
    # We must define the buttons here in order to compute the place of the icons from
    # the GPS directory, but we cannot call GPS.Button(), because it does not allow
    # the declaration of an icon (hence we use parse_xml).
-   GPS.parse_xml("""
-   <button action='Check_Unknown_File'>
-      <title>Launch AdaControl (rules file)</title>
-      <pixmap>"""
-              + GPS.get_system_dir()
-              + """share/gps/plug-ins/adactl.gif</pixmap>
-   </button>
-   <button action='Check_Unknown_Ask'>
-      <title>Launch AdaControl (interactive)</title>
-      <pixmap>"""
-              + GPS.get_system_dir()
-              + """share/gps/plug-ins/adactl_ask.gif</pixmap>
-   </button>
-   """)
+   if GPS.version() < "6.1.1":
+      # Old GPS: Buttons have title and pixmap
+      GPS.parse_xml("""
+      <button action='Check_Unknown_File'>
+         <title>Launch AdaControl (rules file)</title>
+         <pixmap>%sshare/gps/plug-ins/adactl.gif</pixmap>
+      </button>
+      <button action='Check_Unknown_Ask'>
+         <title>Launch AdaControl (interactive)</title>
+         <pixmap>%sshare/gps/plug-ins/adactl_ask.gif</pixmap>
+      </button>
+      """ % (GPS.get_system_dir(), GPS.get_system_dir()))
+   else:
+      # New GPS: Buttons use stock
+      GPS.parse_xml('''
+      <stock>
+         <icon id="adactl"
+               label="Launch AdaControl (rules file)"
+               file="%sshare/gps/plug-ins/adactl.gif" />
+         <icon id="adactl_ask"
+               label="Launch AdaControl (interactive)"
+               file= "%sshare/gps/plug-ins/adactl_ask.gif" />
+      </stock>
+      ''' % (GPS.get_system_dir(), GPS.get_system_dir()))
+
+      GPS.parse_xml("""
+      <button action='Check_Unknown_File' stock="adactl" />
+      <button action='Check_Unknown_Ask'  stock="adactl_ask" />
+      """)
 
    # Create the Help/Adacontrol/Help rule menu
    GPS.Process (command_name()+" -h list", ".+", Add_Rule_Menu)
