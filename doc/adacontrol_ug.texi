@@ -301,12 +301,12 @@ files. See @ref{Non upward-compatible changes} for details.
 @enumerate
 @item
 ``On the benefits for industrials of sponsoring free software
-development'', @i{Ada User Journal}, Volume 26, n° 4, december 2005
+development'', @i{Ada User Journal}, Volume 26, number 4, december 2005
 
 @url{http://www.adalog.fr/publicat/Free-software.pdf}
 @item
 ``A Comparison of Industrial Coding Rules'', @i{Ada User Journal},
-Volume 29, n° 4, december 2008
+Volume 29, number 4, december 2008
 
 @url{http://www.adalog.fr/publicat/coding-rules.pdf}
 @item
