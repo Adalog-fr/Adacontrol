@@ -6,6 +6,110 @@
 #######################################################################
 import GPS, os, glob, re, sets
 
+################################################################
+# General utilities
+#
+def get_file (option):
+   """Get the file corresponding to the given option
+   """
+   opt_list=GPS.Project.root().get_tool_switches_as_list("AdaControl")
+   try:
+       return opt_list[ opt_list.index(option) + 1 ]
+   except:
+       return ""
+
+def open_file (name):
+   """Open the given file in a new buffer (unless it exists)
+      and raise the corresponding window
+   """
+   ed = GPS.EditorBuffer.get(GPS.File (name))
+   GPS.MDI.get_by_child(ed.current_view()).raise_window()
+
+################################################################
+# Units
+#
+def Project_units ():
+   """Make a '+'-separated list of all units in the project
+   """
+   files=GPS.Project.root().sources()
+   result= ""
+   prev_unit=""
+   for f in files:
+      if f.language () == "ada":
+         unit= os.path.splitext(os.path.basename (f.name()))[0]
+         unit= re.sub("-", ".", unit)
+         if unit != prev_unit:
+            result= result + '+' + unit
+            prev_unit=unit
+   return result
+
+def create_units ():
+   """Create units file from project
+   """
+   name = get_units_file()
+   if not name:
+      name= GPS.Project.file(GPS.Project.root()).name()[:-4]+".txt"
+   value = GPS.MDI.input_dialog ("Create units file",  "File=" + name)
+   if value != [] and value [0] != "":
+      name = value [0]
+      unitsFile=open (name, 'w')
+      files=GPS.Project.root().sources()
+      prev_unit=""
+      for f in files:
+         if f.language() == "ada":
+            unit= os.path.splitext(os.path.basename (f.name()))[0]
+            unit= re.sub("-", ".", unit)
+            if unit != prev_unit:
+                unitsFile.write(unit+"\n")
+                prev_unit=unit
+      unitsFile.close()
+      print ("Units file " + name + " created")
+
+def get_units_file ():
+   """Return the units file name
+   """
+   return get_file ("-@")
+
+def units_file_defined ():
+   if get_file ("-@"):
+      return "true"
+   else:
+      return "false"
+
+################################################################
+# Rules
+#
+def rules_file_defined ():
+   if get_file ("-f"):
+      return "true"
+   else:
+      return "false"
+
+################################################################
+# Project
+#
+def create_adp ():
+   """Create adp file from project
+   """
+   name = get_file ("-p")
+   if not name:
+      name= GPS.Project.file(GPS.Project.root()).name()[:-4]+".adp"
+   value = GPS.MDI.input_dialog ("Create .adp file",  "File=" + name)
+   if value != [] and value [0] != "":
+      name = value [0]
+      f=open (name, 'w')
+      for I in GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
+         for J in GPS.Project.source_dirs(I) :
+            f.write ("src_dir=" + J + "\n")
+         for J in GPS.Project.object_dirs(I) :
+            f.write ("obj_dir=" + J + "\n")
+      f.close()
+      GPS.MDI.dialog ("Project file " + name + " created")
+
+################################################################
+# Run AdaControl
+#
+
 def pre_clean ():
    """clean-up various windows before running AdaControl
    """
@@ -32,21 +136,6 @@ def command_name ():
    """Get the command name for AdaControl
    """
    return GPS.Project.root().get_attribute_as_string("Compiler_Command", "Ide", "adacontrol") or "adactl"
-
-def Project_units ():
-   """Make a '+'-separated list of all units in the project
-   """
-   files=GPS.Project.root().sources()
-   result= ""
-   prev_unit=""
-   for f in files:
-      if f.language () == "ada":
-         unit= os.path.splitext(os.path.basename (f.name()))[0]
-         unit= re.sub("-", ".", unit)
-         if unit != prev_unit:
-            result= result + '+' + unit
-            prev_unit=unit
-   return result
 
 def parse (output):
    """Sort and parse the result of running Adacontrol
@@ -170,85 +259,6 @@ def load_result (file = ""):
       GPS.MDI.dialog ("File " + previous_locfile + " is not a valid result file");
       return
    GPS.MDI.get("Locations").raise_window()
-
-def del_tree (confirm):
-   """Ask for confirmation, then delete tree files (and possibly .ali files)
-   """
-   dir      = os.getcwd()
-   ali_also = GPS.Preference ("delete-ali").get()
-   if ali_also:
-      supp = "and .ali "
-   else:
-      supp = ""
-   if not confirm or GPS.MDI.yes_no_dialog ("Remove all tree "
-                                            + supp
-                                            + "files from " + dir + "?"):
-      for I in glob.glob (os.path.join (dir, "*.adt")):
-         os.remove (I)
-      if ali_also:
-         for I in glob.glob (os.path.join (dir, "*.ali")):
-            os.remove (I)
-
-def create_adp ():
-   """Create adp file from project
-   """
-   name = get_file ("-p")
-   if not name:
-      name= GPS.Project.file(GPS.Project.root()).name()[:-4]+".adp"
-   value = GPS.MDI.input_dialog ("Create .adp file",  "File=" + name)
-   if value != [] and value [0] != "":
-      name = value [0]
-      f=open (name, 'w')
-      for I in GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
-         for J in GPS.Project.source_dirs(I) :
-            f.write ("src_dir=" + J + "\n")
-         for J in GPS.Project.object_dirs(I) :
-            f.write ("obj_dir=" + J + "\n")
-      f.close()
-      GPS.MDI.dialog ("Project file " + name + " created")
-
-def create_units ():
-   """Create units file from project
-   """
-   name = get_file ("-@")
-   if not name:
-      name= GPS.Project.file(GPS.Project.root()).name()[:-4]+".txt"
-   value = GPS.MDI.input_dialog ("Create units file",  "File=" + name)
-   if value != [] and value [0] != "":
-      name = value [0]
-      unitsFile=open (name, 'w')
-      files=GPS.Project.root().sources()
-      prev_unit=""
-      for f in files:
-         if f.language() == "ada":
-            unit= os.path.splitext(os.path.basename (f.name()))[0]
-            unit= re.sub("-", ".", unit)
-            if unit != prev_unit:
-                unitsFile.write(unit+"\n")
-                prev_unit=unit
-      unitsFile.close()
-      print ("Units file " + name + " created")
-
-def get_file (option):
-   """Get the file corresponding to the given option
-   """
-   opt_list=GPS.Project.root().get_tool_switches_as_list("AdaControl")
-   try:
-       return opt_list[ opt_list.index(option) + 1 ]
-   except:
-       return ""
-
-def rules_file_defined ():
-   if get_file ("-f"):
-      return "true"
-   else:
-      return "false"
-
-def units_file_defined ():
-   if get_file ("-@"):
-      return "true"
-   else:
-      return "false"
 
 def options (rules, files):
    """Builds the options string
@@ -459,6 +469,9 @@ def run (rules, files):
    if rules == "check" and files:
       return res
 
+################################################################
+# GUI
+#
 def Help_On_Rule (self):
    """provide help in order to use AdaControl
    """
@@ -479,9 +492,28 @@ def Add_Rule_Menu (self, matched, unmatched):
                           add_before=True);
    entry.name=matched
 
+
 def about ():
    proc = GPS.Process (command_name()+" -h version license")
    GPS.MDI.dialog (proc.get_result())
+
+def del_tree (confirm):
+   """Ask for confirmation, then delete tree files (and possibly .ali files)
+   """
+   dir      = os.getcwd()
+   ali_also = GPS.Preference ("delete-ali").get()
+   if ali_also:
+      supp = "and .ali "
+   else:
+      supp = ""
+   if not confirm or GPS.MDI.yes_no_dialog ("Remove all tree "
+                                            + supp
+                                            + "files from " + dir + "?"):
+      for I in glob.glob (os.path.join (dir, "*.adt")):
+         os.remove (I)
+      if ali_also:
+         for I in glob.glob (os.path.join (dir, "*.ali")):
+            os.remove (I)
 
 def on_pref_changed (H):
    """Hook on preference changes
@@ -515,6 +547,166 @@ def on_GPS_start (H):
    #                                      1                  2
    message_statistics_pat = re.compile(r"^(Issued messages:) (.*)$")
 
+   # Actions and submenus are now parsed from Python because otherwise
+   # filters involving Python actions do not work anymore
+   # (starting from GPS 6.1.1)
+
+   # Actions
+   GPS.parse_xml("""
+   <action name="Check_File_File">
+     <filter_and>
+       <filter language="ada" />
+       <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+     </filter_and>
+
+     <shell lang="Python" show-command="false" output="">adactl.run("file", "current")</shell>
+   </action>
+
+   <action name="Check_Project_File">
+     <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+     <shell lang="Python" show-command="false" output="">adactl.run("file", "project")</shell>
+   </action>
+
+   <action name="Check_Units_File">
+     <filter_and>
+       <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+       <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
+     </filter_and>
+     <shell lang="Python" show-command="false" output="">adactl.run("file", "list")</shell>
+   </action>
+
+   <action name="Check_Unknown_File">
+      <shell lang="Python" show-command="false" output="">adactl.run("file", "")</shell>
+   </action>
+
+   <action name="Check_File_Ask">
+     <filter language="ada" />
+     <shell lang="Python" show-command="false" output="">adactl.run("ask", "current")</shell>
+   </action>
+
+   <action name="Check_Project_Ask">
+     <shell lang="Python" show-command="false" output="">adactl.run("ask", "project")</shell>
+   </action>
+
+   <action name="Check_Units_Ask">
+     <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
+     <shell lang="Python" show-command="false" output="">adactl.run("ask", "list")</shell>
+   </action>
+
+   <action name="Check_Unknown_Ask">
+     <shell lang="Python" show-command="false" output="">adactl.run("ask", "")</shell>
+   </action>
+
+   <action name="Check_AdaCtl">
+     <filter language="AdaControl" />
+     <shell lang="Python" show-command="false" output="">adactl.run("check", "")</shell>
+   </action>
+
+   <action name="Get_Units" show-command="false" output="none">
+     <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
+     <shell lang="python">adactl.open_file(adactl.get_units_file())</shell>
+    </action>
+
+   <action name="Get_Rules" show-command="false" output="none">
+     <filter shell_cmd="adactl.rules_file_defined()" shell_lang="python" />
+     <shell lang="python">adactl.open_file(adactl.get_file("-f"))</shell>
+   </action>
+
+   <action name="Del_Tree">
+     <shell lang="python" show-command="false" output="none">adactl.del_tree(confirm=True)</shell>
+   </action>
+
+   <action name="Create_adp">
+     <shell lang="python" show-command="false" output="">adactl.create_adp()</shell>
+   </action>
+
+   <action name="Load_Result">
+     <shell lang="python" show-command="false" output="none">adactl.load_result()</shell>
+   </action>
+
+    <action name="Create_units">
+     <shell lang="python" show-command="false" output="">adactl.create_units()</shell>
+    </action>
+
+   <action name="About">
+     <shell lang="python" show-command="false" output="none">adactl.about()</shell>
+   </action>
+   """);
+
+   # Submenus
+   GPS.parse_xml("""
+   <submenu before="About">
+     <title>/Help/AdaControl</title>
+
+     <menu action="About">
+        <title>About</title>
+     </menu>
+
+   </submenu>
+
+   <submenu before="Help">
+     <title>/AdaControl</title>
+
+     <menu action="Check_File_File">
+        <title>Control Current File (rules file)</title>
+     </menu>
+
+     <menu action="Check_Project_File">
+        <title>Control Root Project (rules file)</title>
+     </menu>
+
+     <menu action="Check_Units_File">
+        <title>Control Units from List (rules file)</title>
+     </menu>
+
+     <menu />
+
+     <menu action="Check_File_Ask">
+        <title>Control Current File (interactive)</title>
+     </menu>
+
+     <menu action="Check_Project_Ask">
+        <title>Control Root Project (interactive)</title>
+     </menu>
+
+     <menu action="Check_Units_Ask">
+        <title>Control Units from List (interactive)</title>
+     </menu>
+
+     <menu />
+
+     <menu action="Check_AdaCtl">
+        <title>Check Rules File Syntax</title>
+     </menu>
+
+     <menu action="Get_Rules">
+        <title>Open rules file</title>
+     </menu>
+
+     <menu action="Get_Units">
+        <title>Open units file</title>
+     </menu>
+
+     <menu action="Load_Result">
+        <title>Load results file</title>
+     </menu>
+
+     <menu />
+
+     <menu action="Create_units">
+        <title>Create units file</title>
+     </menu>
+
+     <menu action="Create_adp">
+        <title>Create .adp project</title>
+     </menu>
+
+     <menu action="Del_Tree">
+        <title>Delete Tree Files</title>
+     </menu>
+
+   </submenu>
+   """)
 
    # We must define the buttons here in order to compute the place of the icons from
    # the GPS directory, but we cannot call GPS.Button(), because it does not allow
@@ -524,25 +716,25 @@ def on_GPS_start (H):
       GPS.parse_xml("""
       <button action='Check_Unknown_File'>
          <title>Launch AdaControl (rules file)</title>
-         <pixmap>%sshare/gps/plug-ins/adactl.gif</pixmap>
+         <pixmap>{base_dir}share/gps/plug-ins/adactl.gif</pixmap>
       </button>
       <button action='Check_Unknown_Ask'>
          <title>Launch AdaControl (interactive)</title>
-         <pixmap>%sshare/gps/plug-ins/adactl_ask.gif</pixmap>
+         <pixmap>{base_dir}share/gps/plug-ins/adactl_ask.gif</pixmap>
       </button>
-      """ % (GPS.get_system_dir(), GPS.get_system_dir()))
+      """ .format (base_dir=GPS.get_system_dir()))
    else:
       # New GPS: Buttons use stock
       GPS.parse_xml('''
       <stock>
          <icon id="adactl"
                label="Launch AdaControl (rules file)"
-               file="%sshare/gps/plug-ins/adactl.gif" />
+               file="{base_dir}share/gps/plug-ins/adactl.gif" />
          <icon id="adactl_ask"
                label="Launch AdaControl (interactive)"
-               file= "%sshare/gps/plug-ins/adactl_ask.gif" />
+               file= "{base_dir}share/gps/plug-ins/adactl_ask.gif" />
       </stock>
-      ''' % (GPS.get_system_dir(), GPS.get_system_dir()))
+      ''' .format (base_dir=GPS.get_system_dir()))
 
       GPS.parse_xml("""
       <button action='Check_Unknown_File' stock="adactl" />
