@@ -334,7 +334,7 @@ package body Rules.Return_Type is
          return;
       end if;
 
-            case Attribute_Kind (Result_Expression) is
+      case Attribute_Kind (Result_Expression) is
          when A_Base_Attribute =>
             -- when matching A_Base_Attribute, we need to retrieve the Prefix
             Result_Expression := Simple_Name (Prefix (Result_Expression));

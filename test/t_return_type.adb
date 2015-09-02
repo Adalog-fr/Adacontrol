@@ -425,6 +425,26 @@ package body T_Return_Type is
       return 5;
    end Generic_Returning_Integer_Base;
 
+   ----------------------------------------------------
+   -- Checking functions in procedure instantiations --
+   ----------------------------------------------------
+   generic
+      type T is private;
+      V : T;
+   procedure Gen;
+   procedure Gen is
+      function F return T is
+      begin
+         return V;
+      end F;
+   begin
+      null;
+   end Gen;
+
+   procedure Inst1 is new Gen (Integer, 1);            -- OK
+   subtype Str10 is String (1..10);
+   procedure Inst2 is new Gen (Str10, "0123456789");   -- Return_Constrained_Array
+
 begin
    null;
 end T_Return_Type;

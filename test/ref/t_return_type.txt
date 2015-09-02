@@ -28,5 +28,6 @@ t_return_type.adb:393:4: Error: Return_Limited_CW: function returns limited clas
 t_return_type.adb:393:4: Error: Return_Task: function returns task type from instantiation
 t_return_type.adb:393:4: Error: Return_Protected: function returns protected type from instantiation
 t_return_type.adb:393:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
+t_return_type.adb:446:4: Found: Return_Constrained_Array: function returns constrained array type from instantiation
 t_return_type-anonymous_access.adb:3:39: Error: Return_Anonymous_Access: function returns anonymous access type
 t_return_type-anonymous_access.adb:8:39: Error: Return_Anonymous_Access: function returns anonymous access type
