@@ -42,6 +42,7 @@ with
 -- Asis
 with
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Elements,
   Asis.Expressions,
   Asis.Iterator,
@@ -264,7 +265,7 @@ package body Rules.Exception_Propagation is
                                         Control : in out Asis.Traverse_Control;
                                         State   : in out Risk_Level)
    is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
 
       procedure Process_Aliasing_Expr (Aliasing_Expr : Asis.Expression) is
@@ -392,6 +393,24 @@ package body Rules.Exception_Propagation is
                      Control := Abandon_Children;
                   end if;
 
+               when others =>
+                  null;
+            end case;
+
+         when A_Definition =>
+            case Definition_Kind (Element) is
+               when An_Aspect_Specification =>
+                  -- Do not traverse the aspect mark
+                  declare
+                     Aspect_Def : constant Asis.Expression := Aspect_Definition (Element);
+                  begin
+                     if not Is_Nil (Aspect_Def) then  -- Nil for (implicit) boolean aspects
+                        Traverse_Declaration (Aspect_Def, Control, State);
+                     end if;
+                     if Control /= Terminate_Immediately then
+                        Control := Abandon_Children;
+                     end if;
+                  end;
                when others =>
                   null;
             end case;
