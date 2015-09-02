@@ -1493,7 +1493,7 @@ package body Rules.Style is
          Place     : constant Place_Names := Get_Place;
       begin  -- Process_Exposed_Literal
 
-         -- Note that if there is not check for the corresponding class of type,
+         -- Note that if there is no check for the corresponding class of type,
          -- Report will be called with an Empty_Context (and thus will not report).
          case Expression_Kind (Expression) is
             when An_Integer_Literal =>
@@ -1532,9 +1532,15 @@ package body Rules.Style is
                -- Check if negative: formally it's a unary minus applied to a positive literal, but the casual user
                -- understands it as a negative value.
                -- Is the Expression in an association in a function_call to a unary minus?
-               Enclosing := Enclosing_Element (Enclosing_Element (Expression));
-               Negative := Expression_Kind (Enclosing) = A_Function_Call
-                           and then Operator_Kind (Called_Simple_Name (Enclosing)) = A_Unary_Minus_Operator;
+               Enclosing := Enclosing_Element (Expression);
+               if Association_Kind (Enclosing) = A_Parameter_Association then
+                  Enclosing := Enclosing_Element (Enclosing);
+                  Negative := Expression_Kind (Enclosing) = A_Function_Call
+                              and then Operator_Kind (Called_Simple_Name (Enclosing)) = A_Unary_Minus_Operator;
+               else
+                  Negative := False;
+               end if;
+
                declare
                   I : Extended_Biggest_Int;
                   Value_Str : constant Wide_String := Value_Image (Expression);

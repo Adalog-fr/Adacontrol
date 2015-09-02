@@ -383,7 +383,7 @@ package body Rules.Positional_Associations is
          return;
       end if;
 
-      Encl := Enclosing_Element (Association);
+      Encl := Strip_Parentheses (Enclosing_Element (Association));
       case Association_Kind (Association) is
          when Not_An_Association =>
             Failure ("Not an association", Association);

@@ -99,9 +99,10 @@ package body Rules.Expressions is
    Key_Prefixed_Operator         : constant Entity_Specification := Value (Image (E_Prefixed_Operator));
 
    type Usage_Flags is array (Subrules) of Boolean;
-   Rule_Used : Usage_Flags := (others => False);
-   Save_Used : Usage_Flags;
-   Usage     : Context_Store;
+   No_Rule_Used : constant Usage_Flags := (others => False);
+   Rule_Used    : Usage_Flags := No_Rule_Used;
+   Save_Used    : Usage_Flags;
+   Usage        : Context_Store;
 
    type Categories_Context (Nb_Categories : Asis.ASIS_Natural) is new Basic_Rule_Context with
       record
@@ -426,6 +427,7 @@ package body Rules.Expressions is
 
       -- Rules that follow renamings
       -- Real_Equality, and, or, xor, Inherited_Function_Call
+
       Called := Ultimate_Name (Called);
 
       if Rule_Used (E_Inherited_Function_Call)
@@ -786,53 +788,61 @@ package body Rules.Expressions is
               =>
             Do_Report (E_Array_Aggregate, Get_Location (Expression));
 
-            declare
-               Assocs  : constant Asis.Association_List := Array_Component_Associations (Expression);
-            begin
-               for A in Assocs'Range loop
-                  declare
-                     Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (A));
-                  begin
-                     for C in Choices'Range loop
-                        if Definition_Kind (Choices (C)) = A_Discrete_Range then
-                           Do_Report (E_Array_Range, Get_Location (Choices (C)));
-                           if Rule_Used (E_Array_Non_Static_Range) then
-                              declare
-                                 Bounds : constant Extended_Biggest_Int_List
-                                        := Discrete_Constraining_Values (Choices (C));
-                              begin
-                                 if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
-                                    Do_Report (E_Array_Non_Static_Range, Get_Location (Choices (C)));
-                                 end if;
-                              end;
-                           end if;
-                        end if;
-                     end loop;
-                  end;
-               end loop;
-
-               Check_Others :
+            -- Processing internals of aggregates is quite costly in Asis-for-Gnat, do it only if necessary
+            if (Rule_Used and Usage_Flags'(E_Array_Range        | E_Array_Non_Static_Range  | E_Array_Others |
+                                           E_Array_Named_Others | E_Array_Positional_Others | E_Array_Partial_Others
+                                                  => True,
+                                           others => False))
+              /= No_Rule_Used
+            then
                declare
-                  Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (Assocs'Last));
+                  Assocs  : constant Asis.Association_List := Array_Component_Associations (Expression);
                begin
-                  if not Is_Nil (Choices)
-                    and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
-                  then
-                     Do_Report (E_Array_Others, Get_Location (Choices (Choices'First)));
-                     if Assocs'Length > 1 then
-                        -- Note that others must appear alone as a choice, therefore we cannot
-                        -- be fooled by multiple choices
-                        case An_Array_Aggregate (Expression_Kind (Expression)) is
-                           when A_Named_Array_Aggregate =>
-                              Do_Report (E_Array_Named_Others, Get_Location (Choices (Choices'First)));
-                           when A_Positional_Array_Aggregate =>
-                              Do_Report (E_Array_Positional_Others, Get_Location (Choices (Choices'First)));
-                        end case;
-                        Do_Report (E_Array_Partial_Others, Get_Location (Choices (Choices'First)));
+                  for A in Assocs'Range loop
+                     declare
+                        Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (A));
+                     begin
+                        for C in Choices'Range loop
+                           if Definition_Kind (Choices (C)) = A_Discrete_Range then
+                              Do_Report (E_Array_Range, Get_Location (Choices (C)));
+                              if Rule_Used (E_Array_Non_Static_Range) then
+                                 declare
+                                    Bounds : constant Extended_Biggest_Int_List
+                                      := Discrete_Constraining_Values (Choices (C));
+                                 begin
+                                    if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
+                                       Do_Report (E_Array_Non_Static_Range, Get_Location (Choices (C)));
+                                    end if;
+                                 end;
+                              end if;
+                           end if;
+                        end loop;
+                     end;
+                  end loop;
+
+                  Check_Others :
+                  declare
+                     Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (Assocs'Last));
+                  begin
+                     if not Is_Nil (Choices)
+                       and then Definition_Kind (Choices (Choices'First)) = An_Others_Choice
+                     then
+                        Do_Report (E_Array_Others, Get_Location (Choices (Choices'First)));
+                        if Assocs'Length > 1 then
+                           -- Note that others must appear alone as a choice, therefore we cannot
+                           -- be fooled by multiple choices
+                           case An_Array_Aggregate (Expression_Kind (Expression)) is
+                              when A_Named_Array_Aggregate =>
+                                 Do_Report (E_Array_Named_Others, Get_Location (Choices (Choices'First)));
+                              when A_Positional_Array_Aggregate =>
+                                 Do_Report (E_Array_Positional_Others, Get_Location (Choices (Choices'First)));
+                           end case;
+                           Do_Report (E_Array_Partial_Others, Get_Location (Choices (Choices'First)));
+                        end if;
                      end if;
-                  end if;
-               end Check_Others;
-            end;
+                  end Check_Others;
+               end;
+            end if;
 
             if Expression_Kind (Enclosing_Element (Expression)) /= A_Qualified_Expression then
                Do_Report (E_Unqualified_Aggregate, Get_Location (Expression));
