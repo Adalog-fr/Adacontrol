@@ -1,4 +1,4 @@
-pragma Ada_2005;
+pragma Ada_2012;
 separate (T_Declarations)
 procedure Test_Anonymous_Subtype is            -- nested_procedure, local_procedure
    subtype Int is Integer range 1 .. 10;       -- subtype
@@ -88,6 +88,17 @@ begin
       when others =>
          null;
    end case;
+
+   J := (case J is
+            when Int =>
+               0,
+            when 11 .. 20 =>                   -- anonymous_subtype_case
+               1,
+            when Integer range 21 .. 30 =>     -- anonymous_subtype_case
+               2,
+            when others =>
+               J
+         );
 
    V1 (1..10) := (others => 'a');              -- anonymous_subtype_indexing
    V1 (Int)   := (others => 'a');              --

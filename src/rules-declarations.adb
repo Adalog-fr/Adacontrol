@@ -1610,14 +1610,6 @@ package body Rules.Declarations is
                         Do_Report (D_Anonymous_Subtype_Declaration, Element);
                         exit;
                   end case;
-               when A_Statement =>
-                  case Statement_Kind (Ctxt) is
-                     when A_Case_Statement =>
-                        Do_Report (D_Anonymous_Subtype_Case, Element);
-                        exit;
-                     when others =>
-                        Failure ("Anonymous_subtype_report: bad statement");
-                  end case;
                when An_Expression =>
                   case Expression_Kind (Ctxt) is
                      when An_Allocation_From_Subtype =>
@@ -1629,6 +1621,14 @@ package body Rules.Declarations is
                      when others =>
                         Ctxt := Enclosing_Element (Ctxt);
                   end case;
+               when A_Path =>
+                  case Path_Kind (Ctxt) is
+                     when A_Case_Path | A_Case_Expression_Path =>
+                        Do_Report (D_Anonymous_Subtype_Case, Element);
+                        exit;
+                     when others =>
+                        Failure ("Anonymous_subtype_report: bad path", Ctxt);
+                  end case;
                when others =>
                   Ctxt := Enclosing_Element (Ctxt);
             end case;
@@ -1637,10 +1637,10 @@ package body Rules.Declarations is
 
    begin  -- Process_Definition
       if (Rule_Used
-          and Usage_Flags'(D_Variant_Part
-                           | D_Anonymous_Subtype_Case | D_Anonymous_Subtype_Declaration
-                           | D_Anonymous_Subtype_For  | D_Anonymous_Subtype_Indexing => True,
-                           others                                                    => False))
+          and Usage_Flags'(D_Variant_Part |
+                           D_Anonymous_Subtype_Case | D_Anonymous_Subtype_Declaration |
+                           D_Anonymous_Subtype_For  | D_Anonymous_Subtype_Indexing => True,
+                           others                                                  => False))
           = No_Rule_Used
       then
          return;
