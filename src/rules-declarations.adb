@@ -1566,6 +1566,10 @@ package body Rules.Declarations is
                         Failure ("Process_Access_Definition: bad mode");
                   end case;
 
+               when An_Object_Renaming_Declaration =>
+                  -- Renaming of an element of an anonymous access type
+                  null;
+
                when others =>
                   Failure ("Process_Access_Definition: unexpected declaration for an access definition", Encl);
             end case;

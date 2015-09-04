@@ -471,6 +471,10 @@ package body Rules.Max_Call_Depth is
                when An_Aspect_Specification =>
                   -- 2012, ignored for the moment
                   Control := Abandon_Children;
+               when An_Access_Definition =>
+                  -- Nothing can make a call here, and traversing it would make problems with
+                  -- access to subprograms (we assume the formals are not traversed)
+                  Control := Abandon_Children;
                when others =>
                   null;
             end case;
