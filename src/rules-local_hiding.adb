@@ -460,7 +460,7 @@ package body Rules.Local_Hiding is
                            Report (Rule_Id,
                                    Rule_Context (Strict),
                                    Get_Location (Name),
-                                   '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                                   '"' & Adjust_Image (To_Title (Full_Name))
                                    & """ hides declaration at "
                                    & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
                         end if;
@@ -479,7 +479,7 @@ package body Rules.Local_Hiding is
                                  Report (Rule_Id,
                                          Rule_Context (Overloading),
                                          Get_Location (Name),
-                                         '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                                         '"' & Adjust_Image (To_Title (Full_Name))
                                          & """ overloads declaration at "
                                          & Image (Get_Location (Visible_Identifiers.Current_Data.Elem)));
                            end case;
@@ -496,7 +496,7 @@ package body Rules.Local_Hiding is
                Report (Rule_Id,
                        Rule_Context (Overloading),
                        Get_Location (Name),
-                       '"' & Framework.Language.Adjust_Image (To_Title (Full_Name))
+                       '"' & Adjust_Image (To_Title (Full_Name))
                        & """ overloads "
                        & Integer_Img (Overload_Count)
                        & " declaration(s), last at "

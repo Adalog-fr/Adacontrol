@@ -179,58 +179,6 @@ procedure Pfni is
       Put_Line ("   -s      process specifications only");
    end Print_Help;
 
-   ------------------
-   -- Adjust_Image --
-   ------------------
-
-   function Adjust_Image (Original : Wide_String) return Wide_String is
-      -- Transform a Full_Name_Image according to the syntax we use externally.
-      -- The differences with the string return by Full_Name_Image are:
-      --   we use "return" rather than ":" for the return type of functions.
-      --   we use "access" rather than "*" for access parameters
-      use Ada.Strings.Wide_Fixed;
-
-      Pos   : Natural;
-      Start : Natural;
-   begin
-      Pos := Index (Original, ":");
-      if Pos = 0 then
-         -- Find a real * meaning "access", discard the "*" and "**" operators
-         Start := Original'First;
-         loop
-            Pos := Index (Original (Start .. Original'Last), "*");
-
-            if Pos = 0 then
-               -- No * found
-               return Original;
-
-            elsif Original (Pos+1) = '"' then
-               -- "*" operator
-               Start := Pos+2;
-
-            elsif Original (Pos+1) = '*' then
-               -- "**" operator
-               Start := Pos+3;
-
-            else
-               -- Real access parameter
-               exit;
-            end if;
-         end loop;
-
-         return
-           Original (Original'First..Pos - 1) &
-           " access " &
-           Adjust_Image (Original (Pos + 1 .. Original'Last));
-
-      else
-         return
-           Adjust_Image (Original (Original'First..Pos - 1)) &
-           " return " &
-           Adjust_Image (Original (Pos + 1 .. Original'Last));
-      end if;
-   end Adjust_Image;
-
    ----------------
    -- Print_Name --
    ----------------
@@ -458,6 +406,8 @@ procedure Pfni is
    use Implementation_Options;
    use Ada.Strings.Wide_Unbounded;
 begin  -- PFNI
+   Thick_Queries.Set_Error_Procedure (Utilities.Failure'Access);
+
    if Is_Present (Option => 'h') then
       Print_Help;
       return;

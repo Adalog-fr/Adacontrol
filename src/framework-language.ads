@@ -196,12 +196,6 @@ package Framework.Language is
    procedure Parameter_Error (Rule : Wide_String; Message : Wide_String; Position : Location);
    pragma No_Return (Parameter_Error);
 
-   function Adjust_Image (Original : Wide_String) return Wide_String;
-   -- Transform a Full_Name_Image according to the syntax we use externally.
-   -- The differences with the string return by Full_Name_Image are:
-   --   we use "return" rather than ":" for the return type of functions.
-   --   we use "access" rather than "*" for access parameters
-
 
    ------------------------------------------------------------------
    --
