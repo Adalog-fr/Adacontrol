@@ -1,5 +1,5 @@
 package Xfw_Naming is
-   pragma Pure (Xfw_Naming);
+   pragma Remote_Types (Xfw_Naming);
 
    procedure Proc_1;
 

@@ -62,6 +62,13 @@ with
 package body Framework.Language is
    use Framework.Language.Scanner, Utilities;
 
+   -- Algorithm
+   --
+   -- This is a classical recursive descent parser, following the grammar given in the specification.
+   -- Invariant:
+   --   when a parsing subprogram is called, the current token is the first one it has to care about
+   --   when a parsing subprogram is left, it leaves in the current token the first one that is not for it.
+
    ------------------------------------------------------
    --  Internal utilities                              --
    ------------------------------------------------------
@@ -987,8 +994,9 @@ package body Framework.Language is
       -- Information set by the parsing functions:
       Qualified  : Boolean;
 
-      -- Forward declaration:
+      -- Forward declarations:
       function Full_Name return Wide_String;
+      function Profile return Wide_String;
 
       function Identifier return Wide_String is
       begin
@@ -1013,65 +1021,100 @@ package body Framework.Language is
          end case;
       end Identifier;
 
-      function Profile_List return Wide_String is
-         With_Access : Boolean := False;
+      function Type_Spec return Wide_String is
+         type Access_Forms is (No_Access, Access_Object, Access_Function, Access_Procedure);
+         subtype Access_SP is Access_Forms range Access_Function .. Access_Procedure;
+         Access_Form : Access_Forms := No_Access;
 
-         function Formated_Name (Name : Wide_String) return Wide_String is
+         function Formatted_Name (Name : Wide_String; Add_Standard : Boolean) return Wide_String is
          begin
-            if Qualified then
-               if With_Access then
-                  return '*' & Name;
-               else
-                  return Name;
-               end if;
-            else
-               if With_Access then
-                  return '*' & "STANDARD." & Name;
-               else
-                  return "STANDARD." & Name;
-               end if;
-            end if;
-         end Formated_Name;
+            case Access_Form is
+               when No_Access =>
+                  return Choose (Add_Standard, "STANDARD.", "") & Name;
+               when Access_Object =>
+                  return "*O" & Choose (Add_Standard, "STANDARD.", "") & Name;
+               when  Access_Function =>
+                  return "*F" & Choose (Add_Standard, "STANDARD.", "") & Name;
+               when Access_Procedure =>
+                  return "*P" & Choose (Add_Standard, "STANDARD.", "") & Name;
+            end case;
+         end Formatted_Name;
 
-      begin  -- Profile_List
+      begin
          if Current_Token.Kind = Name and then Current_Token.Key = Key_Access then
-            With_Access := True;
             Next_Token;
+            if Current_Token.Kind = Name then
+               case Current_Token.Key is
+                  when Key_Procedure =>
+                     Access_Form := Access_Procedure;
+                     Next_Token;
+                  when Key_Function =>
+                     Access_Form := Access_Function;
+                     Next_Token;
+                  when others =>
+                     Access_Form := Access_Object;
+               end case;
+            else
+               Access_Form := Access_Object;
+            end if;
          end if;
 
-         -- If not qualified, assume the identifier is declared in Standard
-         Qualified := False;
-         declare
-            Name1 : constant Wide_String := Formated_Name (Full_Name);
-         begin
-            if Current_Token.Kind = Semi_Colon then
-               Next_Token;
-               return Name1 & ';' & Profile_List;
-            else
-               return Name1;
+         if Access_Form in Access_SP then
+            -- no identifier, just a profile
+            if Current_Token.Kind /= Left_Bracket then
+               Syntax_Error ("""{"" expected", Current_Token.Position);
             end if;
-         end;
-      end Profile_List;
-
-      function Profile return Wide_String is
-      begin
-         if Current_Token.Kind = Name and then Current_Token.Key = Key_Return then
             Next_Token;
+
+            if Current_Token.Kind = Right_Bracket then
+               Next_Token;
+               return Formatted_Name ("{}", Add_Standard => False);
+            end if;
+
+            declare
+               Profile1 : constant Wide_String := Profile;
+            begin
+               if Current_Token.Kind /= Right_Bracket then
+                  Syntax_Error ("Missing ""}""", Current_Token.Position);
+               end if;
+
+               Next_Token;
+               return Formatted_Name ('{' & Profile1 & '}', Add_Standard => False);
+            end;
+
+         else
+            -- If not qualified, assume the identifier is declared in Standard
             Qualified := False;
             declare
-               Result_Type : constant Wide_String := Full_Name;
+               Raw_Name : constant Wide_String := Full_Name;  -- Intermediate necessary to ensure evaluation order
             begin
-               if Qualified then
-                  return ':' & Result_Type;
-               else
-                  -- If not qualified, assume the identifier is declared in Standard
-                  return ':' & "STANDARD." & Result_Type;
-               end if;
+               return Formatted_Name (Raw_Name, Add_Standard => not Qualified);
             end;
+         end if;
+      end Type_Spec;
+
+      function Profile return Wide_String is
+
+         function Parameter_List return Wide_String is
+            Parameter1 : constant Wide_String := Type_Spec;
+         begin  -- Parameter_List
+            if Current_Token.Kind = Semi_Colon then
+               Next_Token;
+               return Parameter1 & ';' & Parameter_List;
+            else
+               return Parameter1;
+            end if;
+         end Parameter_List;
+
+      begin  -- Profile
+         if Current_Token.Kind = Name and then Current_Token.Key = Key_Return then
+            -- return alone, no parameters
+            Next_Token;
+            return ':' & Type_Spec;
          end if;
 
          declare
-            List1 : constant Wide_String := Profile_List;
+            List1 : constant Wide_String := Parameter_List;
          begin
             if Current_Token.Kind /= Name or else Current_Token.Key /= Key_Return then
                return List1;
@@ -1079,17 +1122,7 @@ package body Framework.Language is
 
             -- We have a "return" here
             Next_Token;
-            Qualified := False;
-            declare
-               Result_Type : constant Wide_String := Full_Name;
-            begin
-               if Qualified then
-                  return List1 & ':' & Result_Type;
-               else
-                  -- If not qualified, assume the identifier is declared in Standard
-                  return List1 & ':' & "STANDARD." & Result_Type;
-               end if;
-            end;
+            return List1 & ':' & Type_Spec;
          end;
       end Profile;
 
@@ -1118,18 +1151,18 @@ package body Framework.Language is
          end;
       end Typed_Name;
 
-      function Attribute_List return Wide_String is
-         Name1 : constant Wide_String := Identifier;
-      begin
-         if Current_Token.Kind = Tick then
-            Next_Token;
-            return Name1 & ''' & Attribute_List;
-         else
-            return Name1;
-         end if;
-      end Attribute_List;
-
       function Attributed_Name return Wide_String is
+         function Attribute_List return Wide_String is
+            Name1 : constant Wide_String := Identifier;
+         begin
+            if Current_Token.Kind = Tick then
+               Next_Token;
+               return Name1 & ''' & Attribute_List;
+            else
+               return Name1;
+            end if;
+         end Attribute_List;
+
          Name1 : constant Wide_String := Typed_Name;
       begin
          if Current_Token.Kind = Tick then

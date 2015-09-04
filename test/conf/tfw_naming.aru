@@ -6,7 +6,7 @@ Search Entity_Inside_Exception (tfw_naming.Q,
 check  Entities (Standard.Integer'Base, Standard.Integer'Base'First);
 Check  Silent_Exceptions (Ada.Text_Io.Put_Line);
 
-Search Pragmas (Pure),
+Search Pragmas (Remote_Types),
 Search Pragmas (elaborate_all);
 
 inst: Check  Instantiations (Ada.Unchecked_Deallocation, Standard.String),
@@ -19,3 +19,14 @@ All_Attr     : check entities (all 'length);
 Typ_Attr     : check entities (all type'length);
 Typ_All_Attr : check entities (all type'all);
 All_All_Attr : check entities (all 'all);
+
+T1: check entities(xfw_naming.F{integer; integer return standard.integer});
+T2: check entities(xfw_naming.F{float return access standard.integer});
+T3: check entities(xfw_naming.p{access standard.integer});
+T4: check entities(xfw_naming.p{access procedure{}});
+T5: check entities(xfw_naming.p{access procedure{}; access procedure{access integer}});
+T6: check entities(xfw_naming.p{access procedure{float;standard.float}});
+T7: check entities(xfw_naming.p{access function {return float}});
+T8: check entities(xfw_naming.p{access function {access procedure {float; float}
+                                  return access function
+                                                    {return access function{standard.float return access integer}}}});
