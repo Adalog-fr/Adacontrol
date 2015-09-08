@@ -68,7 +68,7 @@ package body Rules.Local_Access is
       use Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control usage of non-local 'Access attribute (and similar ones)");
+      User_Message ("Control usage of local (non-global) 'Access attribute (and similar ones)");
       User_Message;
       Help_On_Flags ("Parameter(s): ");
    end Help;
@@ -129,14 +129,16 @@ package body Rules.Local_Access is
       Good_Prefix : Asis.Expression;
       Decl        : Asis.Declaration;
 
-      procedure Do_Report (Sr : Subrules) is
+      procedure Do_Report (Sr : Subrules; Certain : Boolean := True) is
          use Framework.Reports, Subrules_Flag_Utilities;
       begin
          if  Rule_Used (Sr) then
             Report (Rule_Id,
                     Contexts (Sr),
                     Get_Location (Good_Prefix),
-                    ''' & Attribute_Name_Image (Attr) & " of non local " & Image (Sr, Lower_Case));
+                    ''' & Attribute_Name_Image (Attr)
+                    & Choose (Certain, " of local ", " of possibly local ")
+                    & Image (Sr, Lower_Case));
             end if;
       end Do_Report;
 
@@ -155,10 +157,10 @@ package body Rules.Local_Access is
       end if;
 
       Good_Prefix := Prefix (Attr);
-      -- Get rid of indexing and components to get to the real element
 
       On_Names: loop
          loop
+            -- Get rid of indexing and components to get to the real element
             case Expression_Kind (Good_Prefix) is
                when An_Identifier =>
                   exit;
@@ -193,11 +195,15 @@ package body Rules.Local_Access is
             end case;
          end loop;
 
-         if Static_Level (Good_Prefix) = Global_Level then
+         -- Global objects are safe, but if the prefix is a type, it is a self pointer, and there can be local objects.
+         -- (special case handled below)
+         Decl := Corresponding_Name_Declaration (Good_Prefix);
+         if Static_Level (Good_Prefix) = Global_Level
+           and then Declaration_Kind (Decl) not in A_Type_Declaration
+         then
             return;
          end if;
 
-         Decl := Corresponding_Name_Declaration (Good_Prefix);
          On_Declarations : loop
             case Declaration_Kind (Decl) is
                when A_Constant_Declaration =>
@@ -211,7 +217,7 @@ package body Rules.Local_Access is
                when A_Parameter_Specification | A_Formal_Object_Declaration =>
                   case Mode_Kind (Decl) is
                      when Not_A_Mode =>
-                        Failure ("Bad mode in Local_Access");
+                        Failure ("Local_Access: Bad mode");
                      when A_Default_In_Mode | An_In_Mode =>
                         Do_Report (K_Constant);
                      when An_Out_Mode | An_In_Out_Mode =>
@@ -276,9 +282,17 @@ package body Rules.Local_Access is
                      return;
                   end if;
 
-               when An_Ordinary_Type_Declaration =>
+               when An_Ordinary_Type_Declaration
+                  | A_Task_Type_Declaration
+                  | A_Protected_Type_Declaration
+                  =>
                   -- Prefix of 'Access is a type => self pointer
-                  -- Not considered local for this rule
+                  -- The real level is the one of the object, i.e. we should check every object declaration of
+                  -- This type. A bit complicated for this corner case .. .
+                  -- If the /type/ is not global, then there is certainly no global objects => report normally.
+                  -- Otherwise, report as uncertain.
+                  Trace ("type prefix", Decl);
+                  Do_Report (K_Variable, Certain => Static_Level (Decl) /= Global_Level);
                   return;
 
                when An_Object_Renaming_Declaration
@@ -289,7 +303,7 @@ package body Rules.Local_Access is
                   exit On_Declarations;
 
                when others =>
-                  Failure ("Unexpected declaration kind in Local_Access", Decl);
+                  Failure ("Local_Access: Unexpected declaration kind", Decl);
             end case;
          end loop On_Declarations;
       end loop On_Names;
