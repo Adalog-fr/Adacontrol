@@ -1050,34 +1050,39 @@ package body Rules.Expressions is
 
       Called := Called_Simple_Name (Call);
 
-      if Rule_Used (E_Implicit_Dereference)
-        and then Is_Nil (Called) -- Access to subprogram, cf. Called_Simple_Name
-      then
-         -- Make sure it is an /implicit/ dereference
-         if Expression_Kind (Call) = A_Function_Call then
-             if Expression_Kind (Prefix (Call)) /= An_Explicit_Dereference then
-               Do_Report (E_Implicit_Dereference, Get_Location (Simple_Name (Prefix (Call))));
-            end if;
-         else
-            -- Must be a procedure or entry call
-            if Expression_Kind (Called_Name (Call)) /= An_Explicit_Dereference then
-               Do_Report (E_Implicit_Dereference, Get_Location (Simple_Name (Called_Name (Call))));
+      if Rule_Used (E_Implicit_Dereference) then
+         if Is_Nil (Called) then -- Access to subprogram, cf. Called_Simple_Name
+            -- Make sure it is an /implicit/ dereference
+            if Expression_Kind (Call) = A_Function_Call then
+               if Expression_Kind (Prefix (Call)) /= An_Explicit_Dereference then
+                  Do_Report (E_Implicit_Dereference, Get_Location (Simple_Name (Prefix (Call))));
+               end if;
+            else
+               -- Must be a procedure or entry call
+               if Expression_Kind (Called_Name (Call)) /= An_Explicit_Dereference then
+                  Do_Report (E_Implicit_Dereference, Get_Location (Simple_Name (Called_Name (Call))));
+               end if;
             end if;
          end if;
-         if not (   Rule_Used (E_Complex_Parameter)
-                 or Rule_Used (E_Parameter_View_Conversion))
-         then
+
+         if Is_Prefix_Notation (Call) then
+            -- The first parameter may be an implicit dereference (there must be at least one parameter!)
+            declare
+               First_Param : constant Asis.Expression := Actual_Parameter (Actual_Parameters (Call) (1));
+            begin
+               if Is_Access_Expression (First_Param) and Expression_Kind (First_Param) /= An_Explicit_Dereference then
+                  Do_Report (E_Implicit_Dereference, Get_Location (First_Param));
+               end if;
+            end;
+         end if;
+
+         if not (Rule_Used (E_Complex_Parameter) or Rule_Used (E_Parameter_View_Conversion)) then
             return;
          end if;
-      end if;
+   end if;
 
       case Expression_Kind (Called) is
          when An_Operator_Symbol =>
-            -- The complex_parameter subrule does not apply to operators, otherwise no expression
-            -- more complicated than a single operation would be allowed.
-            if not Rule_Used (E_Parameter_View_Conversion) then
-               return;
-            end if;
             Called_Kind := Operator;
          when An_Attribute_Reference =>
             Called_Kind := Attribute;
@@ -1113,7 +1118,9 @@ package body Rules.Expressions is
          Expression : Asis.Expression;
          Formal     : Asis.Expression;
       begin
-         if Rule_Used (E_Complex_Parameter) then
+         -- The complex_parameter subrule does not apply to operators, otherwise no expression
+         -- more complicated than a single operation would be allowed.
+         if Rule_Used (E_Complex_Parameter) and Called_Kind /= Operator then
             for P in Parameters'Range loop
                Expression := Actual_Parameter (Parameters (P));
                if Called_Kind /= Operator
@@ -1124,9 +1131,7 @@ package body Rules.Expressions is
             end loop;
          end if;
 
-         if Rule_Used (E_Parameter_View_Conversion)
-           and then Expression_Kind (Call) /= A_Function_Call  -- Functions have no [in] out parameters...
-         then
+         if Rule_Used (E_Parameter_View_Conversion) then
             for P in Parameters'Range loop
                Expression := Actual_Parameter (Parameters (P));
                if Called_Kind /= Attribute

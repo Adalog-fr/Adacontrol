@@ -1,3 +1,4 @@
+pragma Ada_2005;
 separate (T_Expressions)
 procedure Test_Dereference is
    type As is access String;
@@ -22,7 +23,21 @@ procedure Test_Dereference is
       Ptr.all (1) := 'a';        -- Explicit dereference
    end P;
 
+   package Obj is
+      type T is tagged null record;
+      function F (X : T) return Integer;
+   end Obj;
+   package body Obj is
+      function F (X : T) return Integer is begin return 0; end;
+   end Obj;
+   use Obj;
+
    I : Integer;
+   V : aliased Obj.T;
+   Ptr : access Obj.T := V'Access;
+
+   function Object_Method return Integer renames Ptr.F; -- Implicit dereference
+
 begin
    V_As     (1) := 'a';          -- Implicit dereference
    V_As.all (1) := 'a';          -- Explicit dereference
@@ -37,4 +52,6 @@ begin
    I := V_As.all'First;          -- Explicit dereference
    I := V_As    'Component_Size; -- Implicit dereference
    I := V_As.all'Component_Size; -- Explicit dereference
+
+   I := Ptr.F;                   -- Implicit dereference
 end Test_Dereference;
