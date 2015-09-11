@@ -253,6 +253,7 @@ package body Rules.Non_Static is
                         Failure ("Bad formal object mode");
                   end case;
                when A_Formal_Type_Declaration
+                  | A_Formal_Incomplete_Type_Declaration
                   | A_Formal_Package_Declaration
                   | A_Formal_Package_Declaration_With_Box
                     =>
@@ -278,7 +279,7 @@ package body Rules.Non_Static is
                         end if;
                   end case;
                when others =>
-                  Failure ("Not a formal parameter declaration");
+                  Failure ("Not a formal parameter declaration", Param_Decl);
             end case;
          end loop;
       end;

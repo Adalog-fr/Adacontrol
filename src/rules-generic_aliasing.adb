@@ -337,7 +337,7 @@ package body Rules.Generic_Aliasing is
                                       & " (" & Image (Prox.Confidence, Title_Case) & ')');
                            end if;
                         end if;
-                     when A_Formal_Type_Declaration =>
+                     when A_Formal_Type_Declaration | A_Formal_Incomplete_Type_Declaration =>
                         if Rule_Used (Sr_Type)(Certain) and then Is_Same_Type (Left_Actual, Right_Actual) then
                            Report (Rule_Id,
                                    Contexts (Sr_Type, Certain),
@@ -395,7 +395,7 @@ package body Rules.Generic_Aliasing is
                                    & " at " & Image (Get_Location (Left_Actual)));
                         end if;
                      when others =>
-                        Failure ("Generic_Aliasing: Unexpected formal parameter", Actuals (Left_Inx));
+                        Failure ("Generic_Aliasing: Unexpected formal parameter", Enclosing_Element (Right_Formal));
                   end case;
 
                end if;
