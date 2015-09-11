@@ -1,14 +1,14 @@
+pragma Ada_2012;
 separate (T_Exception_Propagation)
 procedure X_Interface is
    procedure Proc is begin null; end;
 
-   procedure Proc_C1;
-   pragma Convention (C, Proc_C1);
+   procedure Proc_C1 with Convention => C;
    procedure Proc_C1 is begin null; end; -- Interface
 
    procedure Proc_C2;
    pragma Convention (C, Proc_C2);
-   procedure Proc_C2 is                  -- Interfac
+   procedure Proc_C2 is                  -- Interface
    begin
       null;
    exception

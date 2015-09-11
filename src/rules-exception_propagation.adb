@@ -422,6 +422,7 @@ package body Rules.Exception_Propagation is
                   State   := Call_In_Declaration;
                   Control := Terminate_Immediately;
                when An_Identifier =>
+                  Utilities.Trace ("Identifier", Element);
                   case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
                      when A_Variable_Declaration =>
                         State := Risk_Level'Max (State, Variable_In_Declaration);
@@ -940,10 +941,29 @@ package body Rules.Exception_Propagation is
    ----------------------------
 
    procedure Process_SP_Declaration (Element : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Utilities;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions, Utilities;
       use Framework.Reports;
       Spec_Declaration : Asis.Declaration;
-   begin
+
+      procedure Check (Convention : Asis.Expression) is
+         Risk           : Risk_Level;
+         Convention_Img : constant Unbounded_Wide_String
+           := To_Unbounded_Wide_String (To_Upper (Name_Image (Convention)));
+      begin
+         if Is_Present (Conventions, Convention_Img) then
+            Risk := Exception_Propagation_Risk (Element,  Fetch (Conventions, Convention_Img).Check_Level);
+            if Risk >= Fetch (Conventions, Convention_Img).Check_Level then
+               Report (Rule_Id,
+                       Fetch (Conventions, Convention_Img),
+                       Get_Location (Element),
+                       "subprogram """ & Defining_Name_Image (Names (Element) (1))
+                       & """ can propagate exceptions"
+                       & Risk_Message (Risk)
+                       & ", interfaced to " & To_Wide_String (Convention_Img));
+            end if;
+         end if;
+      end Check;
+   begin   -- Process_SP_Declaration
       if not Rule_Used (Kw_Interface) then
          return;
       end if;
@@ -951,44 +971,38 @@ package body Rules.Exception_Propagation is
 
       Spec_Declaration := Corresponding_Declaration (Element);
       if Is_Nil (Spec_Declaration) then
-         -- If there is no explicit specification, it cannot have an Export or Convention pragma
+         -- If there is no explicit specification, it cannot have an Export or Convention pragma (or aspect)
          return;
       end if;
 
+      -- Convention given by pragma:
       declare
          All_Pragmas : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Spec_Declaration);
-         Risk        : Risk_Level;
       begin
          for I in All_Pragmas'Range loop
             case Pragma_Kind (All_Pragmas (I)) is
                when An_Export_Pragma | A_Convention_Pragma =>
                   -- The convention is always the first argument of the pragma
-                  declare
-                     Convention : constant Unbounded_Wide_String
-                       := To_Unbounded_Wide_String (To_Upper (Name_Image
-                                                              (Actual_Parameter
-                                                               (Pragma_Argument_Associations
-                                                                (All_Pragmas (I))(1)))));
-                  begin
-                     if Is_Present (Conventions, Convention) then
-                       Risk := Exception_Propagation_Risk (Element,  Fetch (Conventions, Convention).Check_Level);
-                       if Risk >= Fetch (Conventions, Convention).Check_Level then
-                          Report (Rule_Id,
-                                  Fetch (Conventions, Convention),
-                                  Get_Location (Element),
-                                  "subprogram """ & Defining_Name_Image (Names (Element)(1))
-                                  & """ can propagate exceptions"
-                                  & Risk_Message (Risk)
-                                  & ", interfaced to " & To_Wide_String (Convention));
-                       end if;
-                     end if;
-                  end;
-
+                  Check (Actual_Parameter (Pragma_Argument_Associations (All_Pragmas (I)) (1)));
                when others =>
                   null;
             end case;
          end loop;
       end;
+
+      -- Convention given by aspect:
+      declare
+         All_Aspects : constant Asis.Element_List := Aspect_Specifications (Spec_Declaration);
+      begin
+         for I in All_Aspects'Range loop
+            if Expression_Kind (Aspect_Mark (All_Aspects (I))) = An_Identifier  -- Could be An_Attribute_Specification
+              and then To_Upper (Name_Image (Aspect_Mark (All_Aspects (I)))) = "CONVENTION"
+            then
+                  Check (Aspect_Definition (All_Aspects (I)));
+            end if;
+         end loop;
+      end;
+
    end Process_SP_Declaration;
 
    -----------------------
