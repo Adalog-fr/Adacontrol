@@ -2183,7 +2183,6 @@ package body Rules.Style is
             | A_While_Loop_Statement
             | A_For_Loop_Statement
             | A_Block_Statement
-            | An_Extended_Return_Statement
             | A_Selective_Accept_Statement
             | A_Timed_Entry_Call_Statement
             | A_Conditional_Entry_Call_Statement
@@ -2198,8 +2197,10 @@ package body Rules.Style is
             end if;
             Check_Split_End (Loc);
 
-         when An_Accept_Statement => -- Statements are optional...
-            if Accept_Body_Statements (Element, Include_Pragmas => True) /= Nil_Element_List then
+         when An_Accept_Statement  -- Statements are optional...
+            | An_Extended_Return_Statement
+            =>
+            if Thick_Queries.Statements (Element, Include_Pragmas => True) /= Nil_Element_List then
                Loc := Get_Previous_Word_Location (Element, Matching => "END", Starting => From_Tail);
                if Has_Non_Spaces_Ahead (Loc) then
                   Report (Rule_Id,

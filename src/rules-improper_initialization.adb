@@ -878,27 +878,34 @@ package body Rules.Improper_Initialization is
                                                             (Statement_List (Stmt_Index)));
                   -- Local_Map is not really used, since there is only one path, but we need to call Process_Statements
                   -- to detect non trivial statements and uses before intialisation
-                  Local_Map : Map := Clean_Map (Object_Map);
+                  Local_Map         : Map := Clean_Map (Object_Map);
+                  Return_Statements : constant Asis.Statement_List
+                    := Extended_Return_Statements (Statement_List (Stmt_Index));
                begin
                   if not Is_Nil (Init_Expr) then
                      Check_Object_Use (Init_Expr, Object_Map);
                   end if;
                   Process_Statements (Local_Map,
-                                      Extended_Return_Statements (Statement_List (Stmt_Index)),
+                                      Return_Statements,
                                       Final_Location => Final_Location,
                                       Exit_Cause     => Exit_Cause);
+                  case Exit_Cause is
+                     when Non_Trivial_Statement =>
+                        return;
+                     when Return_Statement =>
+                        null;
+                     when End_Of_Statements =>
+                        -- Note: end of statements is an implicit return, but Final_Location must point at "end"
+                        -- Beware that the statement list (and "end") is optional!
+                        if Is_Nil (Return_Statements) then
+                           Final_Location := Get_End_Location (Statement_List (Stmt_Index));
+                        else
+                           Final_Location := Get_Previous_Word_Location (Statement_List (Stmt_Index),
+                                                                         Matching => "END",
+                                                                         Starting => From_Tail);
+                        end if;
+                  end case;
                end;
-               case Exit_Cause is
-                  when Non_Trivial_Statement =>
-                     return;
-                  when Return_Statement =>
-                     null;
-                  when End_Of_Statements =>
-                     -- Note: end of statements is an implicit return, but Final_Location must point at "end"
-                     Final_Location := Get_Previous_Word_Location (Statement_List (Stmt_Index),
-                                                                   Matching => "END",
-                                                                   Starting => From_Tail);
-               end case;
 
                -- Out parameters must be OK at this point (2012!)
                Do_Report (Final_Location, Out_Params_Only => True);
