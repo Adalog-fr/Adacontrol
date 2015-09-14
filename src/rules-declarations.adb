@@ -1547,6 +1547,7 @@ package body Rules.Declarations is
                      end case;
                   end;
                when A_Function_Declaration
+                  | A_Formal_Function_Declaration
                   | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Function_Body_Declaration
                   | A_Function_Body_Stub
