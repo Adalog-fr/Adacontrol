@@ -44,6 +44,7 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
+  Asis.Exceptions,
   Asis.Expressions,
   Asis.Iterator,
   Asis.Statements;
@@ -317,6 +318,17 @@ package body Rules.Exception_Propagation is
          end loop;
       end Process_Aliasing_Expr;
 
+      function Safe_Corresponding_Name_Declaration (Name : Asis.Expression) return Asis.Declaration is
+      -- Like Corresponding_Name_Declaration, but returns Nil_Element instead of raising Value_Error
+      -- when given an identifier particular to a pragma or aspect.
+         use Asis.Exceptions;
+      begin
+         return Corresponding_Name_Declaration (Name);
+      exception
+         when ASIS_Inappropriate_Element =>
+            return Nil_Element;
+      end Safe_Corresponding_Name_Declaration;
+
    begin   -- Pre_Procedure_Declaration
       case Element_Kind (Element) is
          when A_Declaration =>
@@ -422,8 +434,7 @@ package body Rules.Exception_Propagation is
                   State   := Call_In_Declaration;
                   Control := Terminate_Immediately;
                when An_Identifier =>
-                  Utilities.Trace ("Identifier", Element);
-                  case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
+                  case Declaration_Kind (Safe_Corresponding_Name_Declaration (Element)) is
                      when A_Variable_Declaration =>
                         State := Risk_Level'Max (State, Variable_In_Declaration);
                      when An_Object_Renaming_Declaration =>
