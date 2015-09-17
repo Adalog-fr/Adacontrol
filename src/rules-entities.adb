@@ -140,7 +140,7 @@ package body Rules.Entities is
    ---------------
 
    procedure Do_Report (Entity : Asis.Expression; Loc : Location) is
-      use Framework.Language, Framework.Reports, Framework.Language.Shared_Keys;
+      use Framework.Reports, Framework.Language.Shared_Keys;
       use Utilities;
 
       Current_Context : constant Root_Context'Class := Matching_Context (Searched_Entities,

@@ -291,7 +291,6 @@ package body Rules.Local_Access is
                   -- This type. A bit complicated for this corner case .. .
                   -- If the /type/ is not global, then there is certainly no global objects => report normally.
                   -- Otherwise, report as uncertain.
-                  Trace ("type prefix", Decl);
                   Do_Report (K_Variable, Certain => Static_Level (Decl) /= Global_Level);
                   return;
 

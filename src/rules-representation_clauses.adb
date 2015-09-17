@@ -499,9 +499,7 @@ package body Rules.Representation_Clauses is
          -- if the rep clause applies to the full declaration of a private/incomplete type.
          -- Must loop because of incomplete completed by private
          Type_Decl := Corresponding_Name_Declaration (Simple_Name (Representation_Clause_Name (Rep_Clause)));
-         loop
-            exit when
-              Declaration_Kind (Type_Decl) not in An_Incomplete_Type_Declaration .. A_Private_Extension_Declaration;
+         while Declaration_Kind (Type_Decl) in An_Incomplete_Type_Declaration .. A_Private_Extension_Declaration loop
             Type_Decl := Corresponding_Type_Completion (Type_Decl);
          end loop;
 

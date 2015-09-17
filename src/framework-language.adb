@@ -1040,7 +1040,7 @@ package body Framework.Language is
             end case;
          end Formatted_Name;
 
-      begin
+      begin   -- Type_Spec
          if Current_Token.Kind = Name and then Current_Token.Key = Key_Access then
             Next_Token;
             if Current_Token.Kind = Name then
@@ -1164,7 +1164,7 @@ package body Framework.Language is
          end Attribute_List;
 
          Name1 : constant Wide_String := Typed_Name;
-      begin
+      begin   -- Attributed_Name
          if Current_Token.Kind = Tick then
             Next_Token;
             return Name1 & ''' & Attribute_List;

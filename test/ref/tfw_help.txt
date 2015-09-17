@@ -348,7 +348,7 @@ Parameter(1): Allowed number of "insufficient" parameters
 Parameter(2..): Enumeration type names whose values are insufficient
 ----
 Rule: LOCAL_ACCESS
-Control usage of non-local 'Access attribute (and similar ones)
+Control usage of local (non-global) 'Access attribute (and similar ones)
 
 Parameter(s):  constant            | function           |
                procedure           | protected_function |

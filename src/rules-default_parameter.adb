@@ -392,17 +392,11 @@ package body Rules.Default_Parameter is
                                  Failure ("Not_A_Default");
                               when A_Name_Default
                                  | A_Box_Default
+                                 | A_Null_Default
                                    =>
                                  Check (Names (Formals (I))(1), Name_Context, All_Context);
                               when A_Nil_Default =>
                                  null;
-
-                              -- Depending on A4G version, the following branch may cover 0 values, causing
-                              -- a warning
-                              pragma Warnings (Off);
-                              when others =>  -- Ada 2005: A_Null_Default
-                                 null;
-                              pragma Warnings (On);
                            end case;
                         when others =>
                            -- Others cases have no possible default value

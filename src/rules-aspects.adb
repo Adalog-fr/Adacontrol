@@ -51,7 +51,7 @@ package body Rules.Aspects is
 
    -- Algorithm:
    --
-   -- This rule very simple: just check if the aspect mark is associated to a context.
+   -- This rule is very simple: just check if the aspect mark is associated to a context.
    -- One little nasty detail though: Corresponding_Name_Definition does not work on an aspect mark,
    -- it is therefore necessary to pass an image of the identifier rather than the identifier itself
    -- to the context store.

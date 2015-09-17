@@ -953,10 +953,10 @@ package body Rules.Exception_Propagation is
 
    procedure Process_SP_Declaration (Element : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions, Utilities;
-      use Framework.Reports;
       Spec_Declaration : Asis.Declaration;
 
       procedure Check (Convention : Asis.Expression) is
+         use Framework.Reports;
          Risk           : Risk_Level;
          Convention_Img : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Name_Image (Convention)));
