@@ -96,6 +96,9 @@ procedure T_Max_Call_Depth is
    procedure In_C;
    pragma Import (C, In_C);
 
+   -- Check null procedure
+   procedure Null_Proc is null;
+
    -- Check renamings
    function F4 return Integer renames F3;
    function F5 return Integer  renames F4;
@@ -158,6 +161,7 @@ begin
    T1.E;                  -- OK
    T2.E;                  -- OK
    In_C;                  -- OK
+   Null_Proc;             -- OK
    I := Integer'Succ (1); -- OK (Attribute)
    I := F4;               -- Depth = 3
    I := F5;               -- Depth = 3

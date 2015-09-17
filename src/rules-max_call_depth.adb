@@ -598,14 +598,15 @@ package body Rules.Max_Call_Depth is
                   Result := (Unavailable, 0);
                   exit;
                end if;
+            when A_Null_Procedure_Declaration =>
+               Result := (Regular, 0);
+               exit;
             when An_Expression_Function_Declaration =>   -- Ada 2012
                -- Like Analyze_Body, on the result expression
                Add (Call_Depths, Called_Name, (Recursive, Infinite));
                Result := (Regular, 0);
                Traverse (Result_Expression (Called_Body), Control, Result);
                exit;
-            when A_Null_Procedure_Declaration =>
-               Result := (Regular, 0);
             when An_Entry_Declaration  =>
                if Is_Task_Entry (Called_Body) then
                   -- A task entry => not followed

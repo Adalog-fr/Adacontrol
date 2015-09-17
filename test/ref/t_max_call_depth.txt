@@ -3,21 +3,21 @@ t_max_call_depth.adb:53:7: Error: MAX_CALL_DEPTH: Call to recursive entity
 t_max_call_depth.adb:69:7: Found: MAX_CALL_DEPTH: Call has a depth of 2
 t_max_call_depth.adb:80:10: Found: MAX_CALL_DEPTH: Call has a depth of 2
 t_max_call_depth.adb:90:10: Found: MAX_CALL_DEPTH: Call has a depth of 2
-t_max_call_depth.adb:114:19: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:115:28: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:116:38: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:143:36: Found: MAX_CALL_DEPTH: Call has a depth of 2
-t_max_call_depth.adb:144:36: Found: MAX_CALL_DEPTH: Call has a depth of 2
-t_max_call_depth.adb:149:4: Found: MAX_CALL_DEPTH: Call has a depth of 2
-t_max_call_depth.adb:150:4: Found: MAX_CALL_DEPTH: Call has a depth of 2
-t_max_call_depth.adb:152:4: Error: MAX_CALL_DEPTH: Call to recursive entity
-t_max_call_depth.adb:156:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:157:12: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:162:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:163:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:165:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
-t_max_call_depth.adb:169:4: Found: MAX_CALL_DEPTH: Call has a depth of at least 2
-t_max_call_depth.adb:171:9: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:117:19: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:118:28: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:119:38: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:146:36: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:147:36: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:152:4: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:153:4: Found: MAX_CALL_DEPTH: Call has a depth of 2
+t_max_call_depth.adb:155:4: Error: MAX_CALL_DEPTH: Call to recursive entity
+t_max_call_depth.adb:159:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:160:12: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:166:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:167:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:169:9: Error: MAX_CALL_DEPTH: Call has a depth of 3
+t_max_call_depth.adb:173:4: Found: MAX_CALL_DEPTH: Call has a depth of at least 2
+t_max_call_depth.adb:175:9: Found: MAX_CALL_DEPTH: Call has a depth of 2
 
 Counts summary:
 Recursive calls: 3
