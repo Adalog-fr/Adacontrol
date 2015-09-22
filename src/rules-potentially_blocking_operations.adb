@@ -415,13 +415,23 @@ package body Rules.Potentially_Blocking_Operations is
       begin
          case Called.Kind is
             when A_Regular_Call =>
-               Check (Called.Declaration,
-                      PTO_Def        => Nil_Element,
-                      Is_Blocking    => Is_Blocking,
-                      Referenced_PTO => Referenced_PTO);
-               Set_State (Is_Blocking,
-                          "call of potentially blocking " & Kind & ' '
-                          & Full_Name_Image (Names (Called.Declaration) (1)));
+               if Declaration_Kind (Called.Declaration)
+                  in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration
+               then
+                  -- TBSL As long as we don't traverse instantiated bodies, consider these as dynamic => Uncheckable
+                  Uncheckable (Rule_Id,
+                               False_Negative,
+                               Get_Location (Element),
+                               "Call to formal generic subprogram; assuming not blocking");
+               else
+                  Check (Called.Declaration,
+                         PTO_Def        => Nil_Element,
+                         Is_Blocking    => Is_Blocking,
+                         Referenced_PTO => Referenced_PTO);
+                  Set_State (Is_Blocking,
+                             "call of potentially blocking " & Kind & ' '
+                             & Full_Name_Image (Names (Called.Declaration) (1)));
+               end if;
             when An_Enumeration_Literal | A_Predefined_Entity_Call | An_Attribute_Call =>
                -- Assumed never potentially blocking
                null;
@@ -451,7 +461,6 @@ package body Rules.Potentially_Blocking_Operations is
                      then
                         Set_State (True, "task declaration");
                      end if;
-                     Control := Abandon_Children;
                   end if;
                when others =>
                   null;
@@ -472,8 +481,9 @@ package body Rules.Potentially_Blocking_Operations is
                   -- Since Ada 2005, initialization of a limited type (potentially containing a task)
                   -- is possible
                   if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
-                                                     (Converted_Or_Qualified_Subtype_Mark
-                                                      (Allocator_Qualified_Expression (Element))),
+                                                     (Simple_Name
+                                                      (Converted_Or_Qualified_Subtype_Mark
+                                                       (Allocator_Qualified_Expression (Element)))),
                                                      A_Task_Type_Declaration)
                   then
                      Set_State (True, "task creation");
@@ -590,7 +600,7 @@ package body Rules.Potentially_Blocking_Operations is
             --  1) It avoids analyzing several times instantiations of the same generic
             --  2) It allows recognizing instantiations from the generic IO packages that
             --     are already in SP_Property
-            -- TBSL But what if a SP calls a formal SP which is potentially blocking?
+            -- Drawback: if a SP calls a generic formal SP, it is considered uncheckable
             Check (Enclosing_Element (Corresponding_Generic_Element (Names (Decl)(1))),
                    PTO_Def          => Nil_Element,
                    Is_Blocking      => Is_Blocking,
@@ -616,10 +626,12 @@ package body Rules.Potentially_Blocking_Operations is
          if Is_Nil (Decl_Body)                         -- Predefined operations, f.e. ...
            or else Element_Kind (Decl_Body) = A_Pragma -- Imported operations are not defined as potentially blocking
          then
-            Is_Blocking := False;
+            Is_Blocking    := False;
+            Referenced_PTO := Empty_Queue;
             return;
          end if;
-         Control  := Asis.Continue;
+
+         Control   := Asis.Continue;
          Body_Info := (PTO_Def          => PTO_Def,
                        Referenced_PTO   => Empty_Queue,
                        Is_Blocking      => False); -- Assume not blocking until proven wrong

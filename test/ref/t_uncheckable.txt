@@ -34,6 +34,8 @@ t_uncheckable-parameter_aliasing.adb:24:4: Error: Uncheckable: in rule PARAMETER
 t_uncheckable-potentially_blocking_operations.adb:9:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:10:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
 t_uncheckable-potentially_blocking_operations.adb:11:10: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Dispatching call or call to dynamic entity; assuming not blocking
+t_uncheckable-potentially_blocking_operations.adb:26:28: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Call to formal generic subprogram; assuming not blocking
+t_uncheckable-potentially_blocking_operations.adb:28:13: Error: Uncheckable: in rule POTENTIALLY_BLOCKING_OPERATIONS: Possible false negative: Call to formal generic subprogram; assuming not blocking
 t_uncheckable-record_declarations.adb:9:10: Error: Uncheckable: in rule RECORD_DECLARATIONS: Possible false positive: unable to evaluate component position, assuming not aligned
 t_uncheckable-record_declarations.adb:5:10: Error: RECORD_DECLARATIONS: Component S is unaligned "array"
 t_uncheckable-record_declarations.adb:17:10: Error: Uncheckable: in rule RECORD_DECLARATIONS: Possible false positive: unable to evaluate component position, assuming aligned

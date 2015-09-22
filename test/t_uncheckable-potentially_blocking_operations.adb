@@ -11,6 +11,25 @@ procedure Potentially_Blocking_Operations is
          Dispatch (Dyn_Tagged);     -- Uncheckable
       end P;
    end Prot;
+
+   generic
+      with function F return Integer;
+      with procedure P;
+   package Gen is
+   end Gen;
+   package body Gen is
+      protected PO is
+         procedure Proc;
+      end PO;
+      protected body PO is
+         procedure Proc is
+            I : Integer := F;     -- Uncheckable
+         begin
+            P;                    -- Uncheckable
+         end Proc;
+      end PO;
+   end Gen;
+
 begin
    null;
 end Potentially_Blocking_Operations;

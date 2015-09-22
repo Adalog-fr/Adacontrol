@@ -6910,9 +6910,9 @@ call'' in this case.
 There is one case defined in LRM E.4(17) which is not recognized:
 remote subprograms calls.
 
-Calls through pointers to subprograms and dispatching calls are
-unknown statically; they are assumed to be non potentially
-blocking. Such calls are detected by the rule
+Calls through pointers to subprograms, dispatching calls and calls to
+generic formal subprograms are unknown statically; they are assumed to
+be non potentially blocking. Such calls are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
 @node Pragmas, Record_Declarations, Potentially_Blocking_Operations, Rules reference
