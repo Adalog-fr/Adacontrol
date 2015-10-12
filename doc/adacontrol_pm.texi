@@ -26,11 +26,11 @@ to use AdaControl. On the other hand, it is assumed that the reader
 is familiar with how to use AdaControl.
 
 @menu
-* General::
-* The framework and utilities packages::
-* Writing a new rule::
-* Plugging-in a new rule into the framework::
-* Testing and debugging a rule::
+* General::                     
+* The framework and utilities packages::  
+* Writing a new rule::          
+* Plugging-in a new rule into the framework::  
+* Testing and debugging a rule::  
 @end menu
 
 Commercial support is available for AdaControl. If you plan to use
@@ -156,18 +156,18 @@ package. Existing rules are also typical examples of how to use these
 functionnalities.
 
 @menu
-* The package Adactl_Constants::
-* The package Framework::
-* The package Framework.Rules_Manager::
-* The package Framework.Reports::
-* The package Framework.Language::
-* The package Framework.Scope_Manager::
-* The package Framework.Plugs::
-* The package Rules::
-* The package Utilities::
-* The package Thick_Queries::
-* The packages Linear_Queue and Binary_Map::
-* The package A4G_Bugs::
+* The package Adactl_Constants::  
+* The package Framework::       
+* The package Framework.Rules_Manager::  
+* The package Framework.Reports::  
+* The package Framework.Language::  
+* The package Framework.Scope_Manager::  
+* The package Framework.Plugs::  
+* The package Rules::           
+* The package Utilities::       
+* The packages Thick_Queries and Framework.Queries::  
+* The packages Linear_Queue and Binary_Map::  
+* The package A4G_Bugs::        
 @end menu
 
 @node  The package Adactl_Constants, The package Framework, The framework and utilities packages, The framework and utilities packages
@@ -237,7 +237,7 @@ rules being temporarily disabled, therefore the rule does not have to
 care.
 
 The main service provided by this package is the @code{Report} procedure,
-which come in two flavors. This is the only allowed way for a rule to
+which comes in two flavors. This is the only allowed way for a rule to
 report its findings, never use @code{Wide_Text_IO} or any other
 mean. The specifications of the Report procedures are:
 
@@ -249,19 +249,14 @@ mean. The specifications of the Report procedures are:
                   Msg        : @b{in} Wide_String);
 
 @b{procedure} Report (Rule_Id    : @b{in} Wide_String;
-                     Context    : @b{in} Root_Context'class;
-                     Loc        : @b{in} Location;
-                     Msg        : @b{in} Wide_String;
-                     Count_Only : @b{in} Boolean := False);
+                  Context    : @b{in} Root_Context'class;
+                  Loc        : @b{in} Location;
+                  Msg        : @b{in} Wide_String);
 @end example
 
 The first procedure expects the label and type to be given
 explicitely, while the second one gets them from a @code{Context}
-object (see comments in the package).  If @code{Count_Only} is
-@code{True}, the message is not issued, but simply counted for the
-statistics. This is useful to avoid redundant messages in some cases,
-while keeping the number of detections accurate. See an example of
-this in @code{Rules.Pragmas}.
+object (see comments in the package).
 
 Note that there is only one string for the message. Please do not try
 to ``improve'' the presentation by introducing line breaks in the
@@ -287,20 +282,28 @@ non-checkable construct, since it is what allows the rule
 
 @node The package Framework.Language, The package Framework.Scope_Manager, The package Framework.Reports, The framework and utilities packages
 @section The package Framework.Language
-The package @code{Framework.Language} deals with the command language
-used to specify controls used in a rules file. Only the subprograms
-used to parse parameters are relevant to the writing of rules.
+The package @code{Framework.Language} provides functionalities
+for parsing parameters, as well as the rest of the command language;
+but of course only the subprograms used to parse parameters are
+relevant to the writing of rules.
 
-There is a @code{Parameter_Exists} function that returns @code{True}
-if there are parameters left to parse. The corresponding parameter
-value can be retrieved with the @code{Get_Integer_Parameter},
+The functionalities provided here allow a good deal of freedom for
+defining the syntax of a rule's parameters (although it is a good idea
+to stay as close as possible to the syntax of other rules). Look at
+the syntax of various rules to see what can be accomplished.
+
+The package provides a @code{Parameter_Exists} function that returns
+@code{True} if there are parameters left to parse. The kind of the
+next parameter can be checked with the @code{Is_Integer_Parameter},
+@code{Is_Float_Parameter}, or @code{Is_String_Parameter}
+functions. The corresponding parameter value can be retrieved with the
+@code{Get_Integer_Parameter}, @code{Get_Float_Parameter},
+@code{Get_Name_Parameter}, @code{Get_File_Parameter},
 @code{Get_String_Parameter}, or @code{Get_Entity_Parameter}
-functions. The two former functions return the parameter as an
-@code{Integer} or @code{Wide_String}, respectively. The latter one
-returns an entity specification, i.e. a descriptor for something which
-is expected to be a general specification for an Ada entity (including
-overloading information, for example). Such an entity can be used as a
-key for a context.
+functions. The latter function returns an entity specification, i.e. a
+descriptor for something which is expected to be a general
+specification for an Ada entity (including overloading information,
+for example). Such an entity can be used as a key for a context.
 
 There is a generic package @code{Flag_Utilities} to help manage flags
 (keywords) parameters defined by an enumerated type. An instantiation
@@ -357,17 +360,17 @@ framework}.
 The package @code{Rules} is (almost) empty. It's  purpose is to serve as the
 parent package of all rules.
 
-It simply provides an empty state type, and a null procedure that can
-be used for instantiating @code{Traverse_Element}in simple cases.
+It simply provides an empty state type (@code{Null_State}), and a null procedure that can
+be used for instantiating @code{Traverse_Element} in simple cases.
 
-@node The package Utilities, The package Thick_Queries, The package Rules, The framework and utilities packages
+@node The package Utilities, The packages Thick_Queries and Framework.Queries, The package Rules, The framework and utilities packages
 @section The package Utilities
 This package provides various general facilities that are not specific
 to AdaControl. The main elements provided are:
 
 @itemize
 @item
-@code{User_Message} and @code{User_Log}. Both procedure output a
+@code{User_Message} and @code{User_Log}. Both procedures output a
 message, the difference being that @code{User_Log} outputs its message
 only in verbose mode. @code{User_Message} is used to print help
 messages. @code{User_Log} could be used if some rule wanted to print
@@ -382,11 +385,12 @@ String handling services, see package specification
 Error management. The @code{Error} procedure is not to be called
 directly, use @code{Framework.Language.Parameter_Error} instead to
 report errors in user provided parameters. In most cases, parameters
-are checked in the @code{Add_Control} procedure, and therefore errors are
-reported during the parsing of the commands. In some cases, incorrect
-parameters are discovered while traversing the code. It is acceptable
-to call @code{Framework.Language.Parameter_Error} at any time, but be
-aware that this will immediately stop all analysis. See the
+are checked in the @code{Add_Control} procedure of the rule
+(@pxref{Writing a new rule}), and therefore errors are reported during
+the parsing of the commands. In some cases, incorrect parameters are
+discovered while traversing the code. It is acceptable to call
+@code{Framework.Language.Parameter_Error} at any time, but be aware
+that this will immediately stop all analysis. See the
 @code{Rules.Unsafe_Paired_Calls} for an example of this.
 
 The @code{Failure} procedure is used to report internal failures. It
@@ -411,14 +415,21 @@ framework, but not useful for writing rules.
 
 @end itemize
 
-@node The package Thick_Queries, The packages Linear_Queue and Binary_Map, The package Utilities, The framework and utilities packages
-@section The package Thick_Queries
-This package contains high level services that are built on top of
+@node  The packages Thick_Queries and Framework.Queries, The packages Linear_Queue and Binary_Map, The package Utilities, The framework and utilities packages
+@section The packages Thick_Queries and Framework.Queries
+These packages contain high level services that are built on top of
 Asis queries, and can therefore be quite useful to the writing of
-rules. These queries are documented in the specification of the
-package.
+rules. The queries are documented in the specification of the
+packages.
 
-@node The packages Linear_Queue and Binary_Map, The package A4G_Bugs, The package Thick_Queries, The framework and utilities packages
+The difference between the packages is that @code{Thick_Queries} does
+not depend in any way on the other parts of AdaControl (and notably on
+the framework); it is therefore directly reusable for any ASIS
+application. On the other hand, @code{Framework.Queries} requires
+facilities provided by the framework, and is therefore not directly
+reusable outside of AdaControl.
+
+@node The packages Linear_Queue and Binary_Map, The package A4G_Bugs, The packages Thick_Queries and Framework.Queries, The framework and utilities packages
 @section The packages Linear_Queue and Binary_Map
 These packages provide simple generic containers that are needed by several rules.
 
@@ -465,8 +476,8 @@ There are two kinds of rules: @i{semantic} rules, which operate on Ada
 elements, and @i{textual} rules, which operate on the source text. In
 some rare cases, a rule can be of both kinds at the same time; see the
 rule ``Style'' for an example of this. Note that a semantic rule can
-access the text of an Ada construct with the facilities provided by
-the package @code{Asis.Text}, this does not require the rule to be
+still access the text of an Ada construct with the facilities provided
+by the package @code{Asis.Text}, this does not require the rule to be
 @code{Semantic_Textual}.
 
 All rules currently provided follow a common pattern, described below;
@@ -502,7 +513,7 @@ rule identifier of a rule. It is used by the package
 @code{Framework.Rules_Manager} as the key in the rules list to
 dispatch to the corresponding registered operation, and as the rule
 name used by the user on the command line to parameterize and use the
-rule. The name of the rule should be all upper-case (to allow for
+rule. The name of the rule must be given in upper-case (to allow for
 case-independant recognition).
 
 Ex:
@@ -544,7 +555,11 @@ line, and the corresponding location.
 @section Body
 It is a good habit to start the body of a rule by giving a comment
 explaining the general principles of the algorithm used, especially if
-the algorithm is not trivial.
+the algorithm is not trivial. To be honest, not all current rules do
+provide this information, and some crucial information may be missing
+in the rules that do... You are more than welcome to improve these
+comments, especially if you think that some fundamental information
+should have been provided here.
 
 The body must contain a @code{Help}, an @code{Add_Control}, and a
 @code{Command} procedure. It may also optionnally contain a
@@ -568,12 +583,26 @@ for all rules, the message must be structured as follows:
 @item
 The word ``Rule:'' followed by the rule ID.
 @item
-The word ``Parameters:'' followed by a description of parameters. Note that if
+A short description of the purpose of the rule. This description can span
+several lines, but don't make it too long.
+@item
+A blank line (call @code{Utilities.User_Message} without parameter).
+@item
+The word ``Parameter(s):'' followed by a description of parameters. Note that if
 you have a parameter of an enumerated type, the package @code{Flag_Utilities}
 features a @code{Help_On_Flag} procedure that formats automatically the values.
-@item
-A helpful message describing the purpose of the rule.
+
+If the different parameters have different meanings, you can use the
+form  ``Parameter(1):'', ``Parameter(2):'' etc. instead. If the rule
+has no parameters, just say ``Parameters: none''.
+
 @end itemize
+Note that the command:
+@example
+adactl -h all
+@end example
+outputs the help messages for all rules, providing examples of how you
+should write your own help messages.
 
 Ex:
 @example
@@ -581,9 +610,9 @@ Ex:
    @b{use} Utilities;
 @b{begin}
    User_Message ("Rule: " & Rule_Id);
-   User_Message ("Parameter(s): pragma name (e.g. Elaborate_Body)");
-   User_Message ("This rule can be used to check/search for the usage "
-                 & "of a specific pragma.");
+   User_Message ("Control usage of specific pragmas");
+   User_Message;
+   User_Message ("Parameter(s): [multiple] all | nonstandard | <pragma names>");
 @b{end} Help;
 @end example
 
@@ -815,7 +844,7 @@ you want to do if there is a @code{'Base} in the derivation chain.
 @item Asis.Definitions.Corresponding_Parent_Subtype
 This query suffers from the same problem as
 @code{Corresponding_Root_Type}. Don't use it, rather take
-the@code{Subtype_Simple_name} of the @code{Parent_Subtype_Indication},
+the @code{Subtype_Simple_name} of the @code{Parent_Subtype_Indication},
 and do your own analysis, depending on whether the returned
 @code{Expression_Kind} is @code{An_Attribute_Reference} or not.
 @end table
@@ -824,9 +853,9 @@ and do your own analysis, depending on whether the returned
 @chapter Plugging-in a new rule into the framework
 
 @menu
-* Normal case::
-* Specific rules::
-* User documentation::
+* Normal case::                 
+* Specific rules::              
+* User documentation::          
 @end menu
 
 @node Normal case, Specific rules, Plugging-in a new rule into the framework, Plugging-in a new rule into the framework
@@ -861,7 +890,7 @@ the usual @code{Pre_Procedure} used in the instantiation of
 @code{An_Operator_Symbol}, or @code{An_Enumeration_Literal} node that
 corresponds to a real identifier, i.e. not to a pragma name or other
 forms of irrelevant names. This avoids special cases in rules dealing
-with identifiers.*
+with identifiers.
 @item
 @code{Text_Analysis}: Called on every source line of the code.
 @end itemize
@@ -959,9 +988,9 @@ you need will be quite straightforward to understand.
 @chapter Testing and debugging a rule
 
 @menu
-* Testing::
-* Debugging aids::
-* Integrating the test in the test suite::
+* Testing::                     
+* Debugging aids::              
+* Integrating the test in the test suite::  
 @end menu
 
 @node Testing, Debugging aids, Testing and debugging a rule, Testing and debugging a rule
@@ -999,16 +1028,12 @@ characteritics are printed. If the @code{With_Source} parameter is
 
 In the case where AdaControls enters an endless loop, the first thing
 to do is to determine the place where the loop is happening. To ease
-this, recompile AdaControl with the special version of package body
-@code{Framework.Interrupt} that handles Ctrl-C:
-@itemize @bullet
-@item
-Rename @code{framework-interrupt.adb} as @code{framework-interrupt-reg.adb}
-@item
-Rename @code{framework-interrupt-dbg.adb} as @code{framework-interrupt.adb}
-@item
-Recompile
-@end itemize
+this, AdaControl may be compiled in ``interruptible'' mode. In normal
+mode, the package @code{Framework.Interrupt} is a renaming of
+@code{Framework.Interrupt_Std}, a dummy package that does
+nothing. Edit  @code{Framework.Interrupt} to make it a renaming of
+@code{Framework.Interrupt_Dbg} (instructions provided in the package)
+and recompile.
 
 Now, when you hit Ctrl-C while AdaControl is running with the ``-d''
 option, execution of the current ``go'' command is interrupted with a
@@ -1016,8 +1041,8 @@ message telling which rule is active, and on which compilation
 unit. If the ``-x'' option is also given, the whole execution is
 stopped.
 
-Of course, when you are done, reestablish the normal body by doing the
-inverse manipulation. The reason we didn't put this body in the
+Of course, when you are done, reestablish the normal package by doing the
+inverse manipulation. The reason we didn't put the debug version in the
 regular version is that it drags in the whole tasking run-time, with a
 measurable impact on efficiency (we measured 18% extra time for
 running AdaControl on the ACATS).
