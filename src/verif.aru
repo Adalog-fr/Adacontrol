@@ -2,7 +2,7 @@
 check unnecessary_use_clause (unused, nested, movable);
 check reduceable_scope (no_blocks use);
 check style (no_closing_name);
-check style (casing_identifier, original);
+check style (casing_identifier, original, titlecase);
 check style (casing_attribute, titlecase);
 check style (negative_condition);
 check style (compound_statement);
@@ -21,7 +21,7 @@ check with_clauses (reduceable);
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);
 search max_nesting (5);
-search local_hiding (strict, "^object$", "^class$", "^instance$");
+search local_hiding (not_different_families strict, "^object$", "^class$", "înstance$");
 search comments (unnamed_begin, program_unit all);
 --search usage (procedure, from_spec, not called);
 --search usage (function,  from_spec, not called);
