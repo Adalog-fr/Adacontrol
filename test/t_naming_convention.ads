@@ -11,4 +11,7 @@ package T_Naming_Convention is
       procedure G_Proc;
    end Inner;
 
+   type Incomplete_T;     -- Ticket #0000041
+   type T_Incomplete_Access_Sp is access procedure (C_Param : Incomplete_T);
+   type Incomplete_T is new Integer;
 end T_Naming_Convention;
