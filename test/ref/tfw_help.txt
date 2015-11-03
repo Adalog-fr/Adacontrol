@@ -937,6 +937,7 @@ ADACTL v. 1.17b3 with ASIS 2.0.R for GNAT GPL 2015 (20150428)
 ----
 Copyright (C) 2004-2015 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
+Commercial support is available, see http://www.adalog.fr/en/adacontrol.html
 Rule: SIMPLIFIABLE_EXPRESSIONS
 Control occurrence of various forms of expressions that could be made simpler:
   T'FIRST .. T'LAST that can be replaced by T'RANGE or T.

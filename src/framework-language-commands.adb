@@ -68,6 +68,7 @@ package body Framework.Language.Commands is
    --  Messages
    Copyright_1 : constant Wide_String := "Copyright (C) 2004-2015 Eurocontrol/Adalog and others.";
    Copyright_2 : constant Wide_String := "This software is covered by the GNU Modified General Public License.";
+   Support     : constant Wide_String := "Commercial support is available, see http://www.adalog.fr/en/adacontrol.html";
 
    --  Output management
    Console_Name : constant Wide_String := "CONSOLE";
@@ -304,6 +305,7 @@ package body Framework.Language.Commands is
       elsif Upper_On = "LICENSE" then
          User_Message (Copyright_1);
          User_Message (Copyright_2);
+         User_Message (Support);
 
       elsif Upper_On = "LIST" then
          Help_On_Names (Pretty => False);
