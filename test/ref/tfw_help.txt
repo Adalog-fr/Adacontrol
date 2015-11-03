@@ -187,6 +187,8 @@ Parameter(s): {<location>} <decl>
         uninitialized_record_component  | uninitialized_variable            |
         unknown_discriminant            | variable                          |
         variant_part
+Variables:
+Declarations.Limited_Initialization: (Off, On) = Off
 ----
 Rule: DEFAULT_PARAMETER
 Control subprogram calls or generic instantiations that use the default for a

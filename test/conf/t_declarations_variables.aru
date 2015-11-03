@@ -1,0 +1,5 @@
+set declarations.limited_initialization off;
+check declarations (uninitialized_variable);
+go;
+set declarations.limited_initialization on;
+go;

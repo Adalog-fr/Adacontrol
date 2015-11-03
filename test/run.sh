@@ -252,7 +252,7 @@ popd 1>/dev/null
 nb_passed=0
 nb_failed=0
 put_line_line
-put_title_line "Test result for $nb_rules rules, $nb_fw framework tests"
+put_title_line "Test result for $nb_rules rules tests, $nb_fw framework tests"
 put_line_line
 for test_case in $list; do
     diff=`diff --strip-trailing-cr res/${test_case} ref/${test_case} 2>&1 `

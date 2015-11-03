@@ -31,6 +31,7 @@ conf/t_case_statement.aru: No syntax error
 conf/t_characters.aru: No syntax error
 conf/t_comments.aru: No syntax error
 conf/t_declarations.aru: No syntax error
+conf/t_declarations_variables.aru: No syntax error
 conf/t_default_parameter.aru: No syntax error
 conf/t_dependencies.aru: No syntax error
 conf/t_directly_accessed_globals.aru: No syntax error

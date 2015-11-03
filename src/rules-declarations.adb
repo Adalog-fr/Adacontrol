@@ -47,11 +47,13 @@ with
 with
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
-  Framework.Language.Shared_Keys;
+  Framework.Language.Shared_Keys,
+  Framework.Variables,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Declarations is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
 
    type Subrules is
      (D_Any_Declaration,
@@ -147,14 +149,14 @@ package body Rules.Declarations is
    Save_Used : Usage_Flags;
    Usage     : Context_Store;
    package Usage_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
-
+   Limited_Initialization : aliased Switch_Type.Object := (Value => Off);
 
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Framework.Language.Shared_Keys;
+      use Framework.Language.Shared_Keys, Framework.Variables;
       use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
@@ -163,6 +165,8 @@ package body Rules.Declarations is
       User_Message ("Parameter(s): {<location>} <decl>");
       Help_On_Scope_Places (Header => "<location>:");
       Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl>:");
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Limited_Initialization");
 
    end Help;
 
@@ -883,7 +887,10 @@ package body Rules.Declarations is
                end loop;
 
                if Is_Nil (Initialization_Expression (Element)) then
-                  if not Is_Limited (Element) then
+                  if not Is_Limited (Element)
+                    or else (Limited_Initialization.Value = On
+                             and then Type_Category (Element, Follow_Derived => True) not in Synchronized_Types)
+                  then
                      Do_Report (D_Uninitialized_Variable, Element);
                   end if;
                else
@@ -1636,4 +1643,6 @@ begin  -- Rules.Declarations
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
+   Framework.Variables.Register (Limited_Initialization'Access,
+                                 Rule_Id & ".LIMITED_INITIALIZATION");
 end Rules.Declarations;

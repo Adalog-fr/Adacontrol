@@ -3803,10 +3803,13 @@ all task type and task object declarations from a unit to which no
 @item
 @code{type} controls all type (but not subtype) declarations.
 @item
-@code{variable} controls all variable declarations, while
-@code{uninitialized_variable} controls only variable declarations that
-do not include an initialization expression, unless they are of a
-limited type since initialization would not be allowed in that case.
+@code{uninitialized_variable} controls variable declarations that
+do not include an initialization expression. Depending on the value of
+the rule variable ``limited_initialization'' (see below), variables of
+a limited type, or only variables of a task or protected type, are not
+reported, since initialization would not be allowed in that case.
+@item
+@code{variable} controls all variable declarations.
 @code{scalar_variable} controls the declarations of variables of a
 scalar type (integer, enumeration, float, fixed).
 @code{ordinary_record_variable} controls declarations of variables of
@@ -3834,6 +3837,24 @@ check declarations (public task);
 -- Generics allowed only as top-level units
 check declarations (not library generic);
 @end example
+
+@subsection Variable
+The rule provides a variable that allows to adjust the handling of
+limited types for the subrule
+``uninitialized_variable''. Initialization of  variables of a limited
+time was not permitted until Ada 2005.
+
+@need 800
+@multitable @columnfractions .20 .20 .10 .50
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Limited_Initialization @tab off/on @tab off @tab if ``off'',
+uninitialized variables of a limited type are never reported; if
+``on'', they are reported like non-limited variables, unless they are
+of a task or protected type, since no initialization would be allowed
+in that case.
+@end multitable
 
 @subsection Tips
 Certain keywords are @i{not} exclusive, and it may be the case that

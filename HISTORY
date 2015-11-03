@@ -1,5 +1,5 @@
 =============
-== V1.17b1 ==
+== V1.17b3 ==
 =============
 
 General:
@@ -11,6 +11,10 @@ Locations now accept the form "not <loc>", removed "nested" (same as
 
 Changes to existing rules:
 --------------------------
+Declarations:
+   Added rule variable Declarations.Limited_Initialization to manage handling
+   of initialization of variables of a limited type.
+
 Entities:
    Added modifier "instance" to report only on instances of a generic.
 
