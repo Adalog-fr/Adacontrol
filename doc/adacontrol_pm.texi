@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_pm.info
-@settitle AdaControl Programmer Manual V1.17b1
+@settitle AdaControl Programmer Manual V1.17b3
 @c %**end of header
 
 @titlepage
@@ -26,11 +26,11 @@ to use AdaControl. On the other hand, it is assumed that the reader
 is familiar with how to use AdaControl.
 
 @menu
-* General::                     
-* The framework and utilities packages::  
-* Writing a new rule::          
-* Plugging-in a new rule into the framework::  
-* Testing and debugging a rule::  
+* General::
+* The framework and utilities packages::
+* Writing a new rule::
+* Plugging-in a new rule into the framework::
+* Testing and debugging a rule::
 @end menu
 
 Commercial support is available for AdaControl. If you plan to use
@@ -156,18 +156,18 @@ package. Existing rules are also typical examples of how to use these
 functionnalities.
 
 @menu
-* The package Adactl_Constants::  
-* The package Framework::       
-* The package Framework.Rules_Manager::  
-* The package Framework.Reports::  
-* The package Framework.Language::  
-* The package Framework.Scope_Manager::  
-* The package Framework.Plugs::  
-* The package Rules::           
-* The package Utilities::       
-* The packages Thick_Queries and Framework.Queries::  
-* The packages Linear_Queue and Binary_Map::  
-* The package A4G_Bugs::        
+* The package Adactl_Constants::
+* The package Framework::
+* The package Framework.Rules_Manager::
+* The package Framework.Reports::
+* The package Framework.Language::
+* The package Framework.Scope_Manager::
+* The package Framework.Plugs::
+* The package Rules::
+* The package Utilities::
+* The packages Thick_Queries and Framework.Queries::
+* The packages Linear_Queue and Binary_Map::
+* The package A4G_Bugs::
 @end menu
 
 @node  The package Adactl_Constants, The package Framework, The framework and utilities packages, The framework and utilities packages
@@ -853,9 +853,9 @@ and do your own analysis, depending on whether the returned
 @chapter Plugging-in a new rule into the framework
 
 @menu
-* Normal case::                 
-* Specific rules::              
-* User documentation::          
+* Normal case::
+* Specific rules::
+* User documentation::
 @end menu
 
 @node Normal case, Specific rules, Plugging-in a new rule into the framework, Plugging-in a new rule into the framework
@@ -988,9 +988,9 @@ you need will be quite straightforward to understand.
 @chapter Testing and debugging a rule
 
 @menu
-* Testing::                     
-* Debugging aids::              
-* Integrating the test in the test suite::  
+* Testing::
+* Debugging aids::
+* Integrating the test in the test suite::
 @end menu
 
 @node Testing, Debugging aids, Testing and debugging a rule, Testing and debugging a rule

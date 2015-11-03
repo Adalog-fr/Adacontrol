@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.17b1
+@settitle AdaControl User Guide V1.17b3
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -4223,7 +4223,7 @@ be reported normally, unless the keyword @code{instance} is given.
 
 Note that this rules reports on the use of the @i{entity}, not the
 @i{name}: if an entity has been renamed, it will be found under its
-various names. 
+various names.
 
 Ex:
 @example
