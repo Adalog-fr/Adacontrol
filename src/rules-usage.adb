@@ -1570,7 +1570,9 @@ package body Rules.Usage is
 
       declare
          Instantiated_Spec : constant Asis.Declaration := Corresponding_Declaration (Instantiation);
-         Instantiated_Body : constant Asis.Declaration := Corresponding_Body        (Instantiation);
+         Instantiated_Body : constant Asis.Declaration := Corresponding_Body        (Instantiated_Spec);
+         -- Note: it would seem better to use Corresponding_Body (Instantiation), but this seems to return
+         -- Nil_Element, in hardly reproduceable manner. See Ticket #0000029
       begin
          Traverse (Instantiated_Spec, The_Control, The_Info);
 
