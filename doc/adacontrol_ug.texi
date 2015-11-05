@@ -193,7 +193,7 @@ Help with installation procedures.
 Explanations regarding the use of the tool, and help for translating
 coding standards into AdaControl rules.
 @item
-Dedicated account into our MantisBT system for priority handling of
+Dedicated account into our BT system for priority handling of
 problem reports.
 @item
 Correction of problems encountered in the use of AdaControl.
@@ -239,8 +239,8 @@ There is a Wiki for questions about AdaControl at @*
 place to ask for information, make suggestions, or get help from the
 community.
 
-For problem reports, please use our MantisBT system at @*
-@url{http://sourceforge.net/apps/mantisbt/adacontrol}.
+For problem reports, please create a ticket into our BT system at @*
+@url{https://sourceforge.net/p/adacontrol/tickets/}.
 
 @subsection Your support to us, too!
 If you enjoy AdaControl, there are several things you can do to help
@@ -263,7 +263,7 @@ anybody else to get a support contract!
 Provide good ideas, new rules, suggestions for improvements...
 @end itemize
 And remember: developing AdaControl is an expensive effort (according
-to Ohlo's COCOMO model, it is worth 13 man.year of development). We
+to Ohlo's COCOMO model, it is worth 15 man.year of development). We
 need support from our users to keep it running!
 
 @node History, References, Support, Introduction
@@ -313,7 +313,7 @@ Volume 29, number 4, december 2008
 ``A Methodology for Avoiding Known Compiler Problems
 Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International Conference (SIGAda 2010)}
 
-@url{http://www.adalog.fr/publicat/compiler-probs.pdf}
+@url{http://dl.acm.org/authorize?316395}
 @end enumerate
 
 @node Installation, Program Usage, Introduction, Top
@@ -321,7 +321,7 @@ Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International C
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with GNAT version GPL 2014, as distributed
+AdaControl will work only with GNAT version GPL 2015, as distributed
 by AdaCore. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated below.
 
@@ -347,9 +347,10 @@ version of GNAT GPL), you may skip to the next section.
 @subsection Getting the correct version of the sources for your Gnat version
 ASIS is continuously evolving to support Ada-2005/2012 features, and
 so is AdaControl. As a consequence, the full set of features of
-AdaControl is supported only with the latest versions of Gnat, namely
-GnatPRO 7.2.0 and GnatGPL-2013 (and higher). We refer to these versions as the
-``new Gnat'', and we encourage all users to use these versions.
+AdaControl is supported only with recent versions of Gnat, namely with
+GnatPRO 7.2.0 and GnatGPL-2013 (and higher). We refer to these
+versions as the ``new Gnat'', and we encourage all users to use the
+latest versions.
 
 Some user may however need to use an older version of Gnat. We provide
 also a version of AdaControl that is compatible with versions GnatPRO
@@ -501,15 +502,11 @@ You run an old-gnat version of AdaControl with GNATPro (6.1.2 and
 above) and you forgot to specify the ``-XGNAT_FIX=1''
 option. @xref{Build with project file}.
 @item
-It may happen that the test @code{tfw_check} reports ``FAILED''
-on some sytems, because it depends on the order in which the operating
-system lists files. If this happens, try (from the @code{test}
-directory):
-@example
-diff res/tfw_check.txt ref/
-@end example
-If the only difference is that some lines are at different places, the
-test is OK.
+It may happen that the test @code{tfw_help} reports ``FAILED'' because
+it includes a check on the version of AdaControl, and the version string
+refers to Gnat-GPL2015. The only difference (you can see it by typing
+``d'' when prompted for checking the differences) should be the name
+of the compiler.
 @end itemize
 
 @anchor{Customizing AdaControl}
