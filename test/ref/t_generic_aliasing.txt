@@ -23,3 +23,6 @@ t_generic_aliasing.adb:118:49: Error: Variable_aliasing: Parameter is same as pa
 t_generic_aliasing.adb:119:51: Error: Possible_Variable: Parameter is same as parameter #3 at t_generic_aliasing.adb:119:41 (Possible)
 t_generic_aliasing.adb:123:50: Error: Unlikely_Subprogram: Parameter is same as parameter #1 at t_generic_aliasing.adb:123:36 (Unlikely)
 t_generic_aliasing.adb:124:50: Error: Subprogram_aliasing: Parameter is same as parameter #1 at t_generic_aliasing.adb:124:36 (Certain)
+t_generic_aliasing.adb:138:35: Error: Subprogram_aliasing: Parameter is same as parameter #1 at t_generic_aliasing.adb:138:27 (Certain)
+t_generic_aliasing.adb:141:39: Error: Subprogram_aliasing: Parameter is same as parameter #1 at t_generic_aliasing.adb:141:27 (Certain)
+t_generic_aliasing.adb:142:40: Error: Unlikely_Subprogram: Parameter is same as parameter #1 at t_generic_aliasing.adb:142:27 (Possible)

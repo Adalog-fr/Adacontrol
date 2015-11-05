@@ -123,6 +123,24 @@ procedure T_Generic_Aliasing is
    procedure Instap1 is new Genpr (Proc1,        Proc_Ptr.all);  -- Unlikely procedure
    procedure Instap2 is new Genpr (Proc_Ptr.all, Proc_Ptr.all);  -- Certain procedure
 
+   -- Special case, Gnat dependent: implementation defined attributes
+   -- whose prefix is a variable
+   generic
+      with function F1 return String;
+      with function F2 return String;
+   procedure P;
+   procedure P is begin null; end;
+
+   V5 : Integer;
+   V6 : Integer;
+   V7 : String (1 .. 10);
+
+   procedure I1 is new P (V5'Img, V5'Img);              -- Certain subprogram
+   procedure I2 is new P (V5'Img, V6'Img);              -- OK
+   procedure I3 is new P (V7 (1)'Img, V7 (2)'Img);      -- OK
+   procedure I4 is new P (V7 (1)'Img, V7 (1)'Img);      -- Certain subprogram
+   procedure I5 is new P (V7 (V1)'Img, V7 (V2)'Img);    -- Possible subprogram
+
 begin
    null;
 end T_Generic_Aliasing;

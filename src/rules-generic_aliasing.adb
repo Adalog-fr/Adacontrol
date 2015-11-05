@@ -81,7 +81,7 @@ package body Rules.Generic_Aliasing is
    All_Set : constant array (Rule_Detail) of Subrules_Set
      := (Unlikely => (Sr_Variable | Sr_Subprogram => (Unlikely => True, others => False),
                       others                      => (Certain  => True, others => False)),
-         Possible => (Sr_Variable                 => (Possible => True, others => False),
+         Possible => (Sr_Variable | Sr_Subprogram => (Possible => True, others => False),
                       others                      => (Certain  => True, others => False)),
          Certain  => (others                      => (Certain  => True, others => False)));
 
@@ -125,22 +125,27 @@ package body Rules.Generic_Aliasing is
                else
                   Parameter_Error (Rule_Id, "subrule already specified");
                end if;
-            elsif        (SR = Sr_Type       and Detail /= Certain)
-              or else (SR = Sr_Subprogram and Detail  = Possible)
-              or else (SR = Sr_Package    and Detail /= Certain)
-            then
-               Parameter_Error (Rule_Id, Image (Detail) & " not allowed for " & Subrules'Wide_Image (SR));
-            end if;
-            if Rule_Used (SR)(Detail) then
-               Parameter_Error (Rule_Id, "Parameter already given : " & Subrules'Wide_Image (SR));
             else
-               Rule_Used (SR)(Detail) := True;
-               Contexts  (SR, Detail) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               if        (SR = Sr_Type    and Detail /= Certain)
+                 or else (SR = Sr_Package and Detail /= Certain)
+               then
+                  Parameter_Error (Rule_Id, Image (Detail) & " not allowed for " & Subrules'Wide_Image (SR));
+               end if;
+               if Rule_Used (SR) (Detail) then
+                  Parameter_Error (Rule_Id, "Parameter already given : " & Subrules'Wide_Image (SR));
+               else
+                  Rule_Used (SR) (Detail) := True;
+                  Contexts  (SR, Detail) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               end if;
             end if;
          end loop;
       else
          -- Default to "certain all"
-         Rule_Used := All_Set (Certain);
+         if Rule_Used = Empty_Set then
+            Rule_Used := All_Set (Certain);
+         else
+            Parameter_Error (Rule_Id, "subrule already specified");
+         end if;
       end if;
    end Add_Control;
 
@@ -171,17 +176,19 @@ package body Rules.Generic_Aliasing is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Utilities;
 
-      function Is_Same_Type (Left, Right : Asis.Expression) return Boolean is
+      function Name_Proximity (Left, Right : Asis.Expression) return Proximity is
+         -- Left and Right should refer to a (formal) type or object
          Good_Left  : Asis.Expression := Left;
          Good_Right : Asis.Expression := Right;
       begin
+         -- Get rid of case when the prefix is itself an attribute reference
          case Attribute_Kind (Good_Left) is
             when A_Base_Attribute =>
                -- 'Base does not change the type
                Good_Left := Prefix (Good_Left);
             when A_Class_Attribute =>
                if Attribute_Kind (Good_Right) /= A_Class_Attribute then
-                  return False;
+                  return (Certain, None);
                end if;
                -- Both are 'Class: check the prefixes
                Good_Left  := Prefix (Good_Left);
@@ -189,7 +196,7 @@ package body Rules.Generic_Aliasing is
             when Not_An_Attribute =>
                null;
             when others =>
-               Failure ("Is_Same_Type: Unexpected attribute for left type", Good_Left);
+               Failure ("Prefix_Proximity: Unexpected attribute for left type", Good_Left);
          end case;
 
          case Attribute_Kind (Good_Right) is
@@ -198,16 +205,49 @@ package body Rules.Generic_Aliasing is
                Good_Right := Prefix (Good_Right);
             when A_Class_Attribute =>
                -- Since Good_Left is not 'Class
-               return False;
+               return (Certain, None);
             when Not_An_Attribute =>
                null;
             when others =>
-               Failure ("Is_Same_Type: Unexpected attribute for right type", Good_Right);
+               Failure ("Prefix_Proximity: Unexpected attribute for right type", Good_Right);
          end case;
 
-         return Is_Equal (Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Left)),
-                          Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Right)));
-      end Is_Same_Type;
+         if Expression_Kind (Good_Left) = An_Identifier
+           and then Expression_Kind (Good_Right) = An_Identifier
+           and then Declaration_Kind (Corresponding_Name_Declaration (Good_Left))
+                       in An_Ordinary_Type_Declaration .. A_Subtype_Declaration
+           and then Declaration_Kind (Corresponding_Name_Declaration (Good_Right))
+                       in An_Ordinary_Type_Declaration .. A_Subtype_Declaration
+         then
+            -- Both are types
+            if Is_Equal (Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Left)),
+                         Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Right)))
+            then
+               return (Certain, Complete);
+            else
+               return (Certain, None);
+            end if;
+         end if;
+
+         -- Normal case: variables
+         return Variables_Proximity (Good_Left, Good_Right);
+      end Name_Proximity;
+
+      function Is_Same_Attribute (Left, Right : Asis.Expression) return Boolean is
+         -- Expected Expression_Kind: An_Attribute_Reference
+      begin
+         if Attribute_Kind (Left) = Attribute_Kind (Right) then
+            if Attribute_Kind (Left) = An_Implementation_Defined_Attribute then
+               -- Must compare images for implementation defined attributes
+               return To_Upper (Name_Image (Attribute_Designator_Identifier (Left))) =
+                      To_Upper (Name_Image (Attribute_Designator_Identifier (Right)));
+            else
+               return True;
+            end if;
+         else
+            return False;
+         end if;
+      end Is_Same_Attribute;
 
       function Subprogram_Proximity (Left, Right : Asis.Expression) return Proximity is
          -- Confidence = Possible and Overlap = Partial do not apply to subprograms
@@ -237,12 +277,10 @@ package body Rules.Generic_Aliasing is
                return (Certain, None);
             end if;
             -- Both are attributes. The SP are the same if they are the same attribute and the prefixes
-            -- are the same types (only types have SP attributes)
-            -- TBSL: implementation defined attributes
-            if Attribute_Kind (Good_Left) = Attribute_Kind (Good_Right)
-              and then Is_Same_Type (Prefix (Good_Left), Prefix (Good_Right))
-            then
-               return (Certain, Complete);
+            -- are the same types or objects (only types have SP attributes for predefine attributes, but
+            -- objects can have implementation defined attributes, e.g. Gnat's X'Img)
+            if Is_Same_Attribute (Good_Left, Good_Right) then
+               return Name_Proximity (Prefix (Good_Left), Prefix (Good_Right));
             else
                return (Certain, None);
             end if;
@@ -287,6 +325,19 @@ package body Rules.Generic_Aliasing is
          return not Is_Equal (Enclosing_Element (Enclosing_Element (Actual)), Instantiation);
       end Is_Defaulted;
 
+      function Matching_Context (Subrule : Subrules; Detail : Rule_Detail)
+                                 return Framework.Control_Manager.Root_Context'Class
+      is
+         use Framework.Control_Manager;
+      begin
+         for D in reverse Rule_Detail range Rule_Detail'First .. Detail loop
+            if Rule_Used (Subrule) (D) then
+               return Contexts (Subrule, D);
+            end if;
+         end loop;
+         return No_Matching_Context;
+      end Matching_Context;
+
    begin  -- Process_Instantiation
       if Rule_Used = Empty_Set then
          return;
@@ -328,9 +379,9 @@ package body Rules.Generic_Aliasing is
                           and then Mode_Kind (Enclosing_Element(Right_Formal)) = An_In_Out_Mode
                         then
                            Prox := Variables_Proximity (Left_Actual, Right_Actual);
-                           if Prox.Overlap /= None and then Rule_Used (Sr_Variable) (Prox.Confidence) then
+                           if Prox.Overlap /= None then
                               Report (Rule_Id,
-                                      Contexts (Sr_Variable, Prox.Confidence),
+                                      Matching_Context (Sr_Variable, Prox.Confidence),
                                       Get_Location (Right_Actual),
                                       "Parameter is same as parameter #" & ASIS_Integer_Img (Left_Inx)
                                       & " at " & Image (Get_Location (Left_Actual))
@@ -338,7 +389,9 @@ package body Rules.Generic_Aliasing is
                            end if;
                         end if;
                      when A_Formal_Type_Declaration | A_Formal_Incomplete_Type_Declaration =>
-                        if Rule_Used (Sr_Type)(Certain) and then Is_Same_Type (Left_Actual, Right_Actual) then
+                        if Rule_Used (Sr_Type) (Certain)
+                          and then Name_Proximity (Left_Actual, Right_Actual) = Same_Variable
+                        then
                            Report (Rule_Id,
                                    Contexts (Sr_Type, Certain),
                                    Get_Location (Right_Actual),
@@ -348,19 +401,19 @@ package body Rules.Generic_Aliasing is
                      when A_Formal_Procedure_Declaration | A_Formal_Function_Declaration =>
                         if Rule_Used (Sr_Subprogram) /= No_Detail_Active then
                            Prox := Subprogram_Proximity (Left_Actual, Right_Actual);
-                           if Prox.Overlap /= None and then Rule_Used (Sr_Subprogram) (Prox.Confidence) then
+                           if Prox.Overlap /= None then
                               -- Be careful that we may have defaulted parameters as one of the aliased SP
                               if Is_Defaulted (Right_Actual) then
                                  if Is_Defaulted (Left_Actual) then
                                     Report (Rule_Id,
-                                            Contexts (Sr_Subprogram, Prox.Confidence),
+                                            Matching_Context (Sr_Subprogram, Prox.Confidence),
                                             Get_Location (Generic_Unit_Name(Instantiation)),
                                             "Defaulted parameter " & Defining_Name_Image (Right_Formal)
                                             & " is same as defaulted parameter " & Defining_Name_Image (Left_Formal)
                                             & " (" & Image (Prox.Confidence, Title_Case) & ')');
                                  else
                                     Report (Rule_Id,
-                                            Contexts (Sr_Subprogram, Prox.Confidence),
+                                            Matching_Context (Sr_Subprogram, Prox.Confidence),
                                             Get_Location (Generic_Unit_Name(Instantiation)),
                                             "Defaulted parameter " & Defining_Name_Image (Right_Formal)
                                             & " is same as parameter #" & ASIS_Integer_Img (Left_Inx)
@@ -369,13 +422,13 @@ package body Rules.Generic_Aliasing is
                                  end if;
                               elsif Is_Defaulted (Left_Actual) then
                                  Report (Rule_Id,
-                                         Contexts (Sr_Subprogram, Prox.Confidence),
+                                         Matching_Context (Sr_Subprogram, Prox.Confidence),
                                          Get_Location (Right_Actual),
                                          "Parameter is same as defaulted parameter " & Defining_Name_Image (Left_Formal)
                                          & " (" & Image (Prox.Confidence, Title_Case) & ')');
                               else
                                  Report (Rule_Id,
-                                         Contexts (Sr_Subprogram, Prox.Confidence),
+                                         Matching_Context (Sr_Subprogram, Prox.Confidence),
                                          Get_Location (Right_Actual),
                                          "Parameter is same as parameter #" & ASIS_Integer_Img (Left_Inx)
                                          & " at " & Image (Get_Location (Left_Actual))
