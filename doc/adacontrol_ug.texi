@@ -3438,7 +3438,6 @@ those occurring at specified locations.
    limited_private_type              | modular_type                      |
    multiple_names                    | multiple_protected_entries        |
    name_defaulted_formal_function    | name_defaulted_formal_procedure   |
-   name_defaulted_formal_function    | name_defaulted_formal_procedure   |
    named_number                      | non_binary_modular_type           |
    non_identical_operator_renaming   | non_identical_renaming            |
    non_joint_ce_ne_handler           | non_limited_private_type          |
@@ -3842,7 +3841,7 @@ limited types for the subrule
 time was not permitted until Ada 2005.
 
 @need 800
-@multitable @columnfractions .20 .20 .10 .50
+@multitable @columnfractions .25 .10 .10 .55
 @item
 @b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
 @item
@@ -4194,7 +4193,8 @@ This rule is used to control usage of Ada entities, i.e. any declared
 element (type, variables, packages, etc).
 @subsection Syntax
 @example
-<control_kind> entities (@{[not] <location>@} [instance] <entity> @{, @{<location>@} <entity>@});
+<control_kind> entities (@{[not] <location>@} [instance] <entity>
+                      @{, @{[not] <location>@} [instance] <entity>@});
 <location> ::= block   | library | local      | nested    | own |
                private | public  | in_generic | task_body
 
@@ -5689,7 +5689,7 @@ The rule provides a variable that allows to specify how to handle
 expression functions (Ada 2012).
 
 @need 800
-@multitable @columnfractions .30 .10 .10 .50
+@multitable @columnfractions .25 .10 .10 .55
 @item
 @b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
 @item
@@ -6215,7 +6215,7 @@ The rule provides a variable that allows to specify the default
 casing.
 
 @need 800
-@multitable @columnfractions .30 .10 .10 .50
+@multitable @columnfractions .25 .10 .10 .55
 @item
 @b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
 @item
@@ -8550,7 +8550,10 @@ check unit_pattern (tagged_type_hierarchy);
 
 -- All with clauses must come first, then use and use type clauses
 -- (freely mixed), then pragmas
-check unit_pattern (context_clauses_order, with, use | use_type | use_all_type, pragma);
+check unit_pattern (context_clauses_order, 
+                       with, 
+                       use | use_type | use_all_type, 
+                       pragma);
 
 -- In the public part of a package, declare constants and named numbers
 -- first,then private types, then any of regular types, constants, and

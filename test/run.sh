@@ -120,10 +120,14 @@ ${ADACTL} -h "^Simplifiable_*" 2>&1 \
 ${ADACTL} -h "variables ^tag_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 
+# This one has full path names in the result file, the result depens on the directory 
+# where it's run from...
+# translate \ to / to make independant from OS, keep only the "test/" part of the path
 test_case=tfw_formats
 nb_fw=$((nb_fw+1))
 ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
-	| tr -d \\r >res/${test_case}.txt
+	| tr -d \\r \
+        | sed "s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
 
 test_case=tfw_inhibit
 nb_fw=$((nb_fw+1))

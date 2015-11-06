@@ -8,15 +8,26 @@ Quote all fields in CSV(X) format
 Uniformize some error messages
 Locations now accept the form "not <loc>", removed "nested" (same as
    "not library").
+Handle anonymous access to subprograms in various rules (previously 
+  ignored) and other fixes related to anonymous access types.
+Support of aspects (especially for things that relied previously on
+   pragmas)
 
 Changes to existing rules:
 --------------------------
 Declarations:
+   Subrule Anonymous_Subtype_Case considers case expressions (2012)
    Added rule variable Declarations.Limited_Initialization to manage handling
    of initialization of variables of a limited type.
 
 Entities:
    Added modifier "instance" to report only on instances of a generic.
+
+Exception_Propagation:
+   Consider expressions in aspects (2012)
+
+Expressions:
+   Handle calls in prefixed notation
 
 Improper_Initialization:
    Do not consider branches terminated by raise as non-initializing
@@ -24,6 +35,9 @@ Improper_Initialization:
 Instantiations
    Allow more "=" than necessary. Do not consider generic "in" formals
   corresponding to "=" in the rule specification.
+
+Local_Access:
+   Handle case of co-extensions
 
 Max_Call_Depth:
    Added parameters to specify entities that are not to be analyzed.

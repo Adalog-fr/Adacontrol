@@ -236,17 +236,17 @@ package body Rules.Generic_Aliasing is
       function Is_Same_Attribute (Left, Right : Asis.Expression) return Boolean is
          -- Expected Expression_Kind: An_Attribute_Reference
       begin
-         if Attribute_Kind (Left) = Attribute_Kind (Right) then
-            if Attribute_Kind (Left) = An_Implementation_Defined_Attribute then
-               -- Must compare images for implementation defined attributes
-               return To_Upper (Name_Image (Attribute_Designator_Identifier (Left))) =
-                      To_Upper (Name_Image (Attribute_Designator_Identifier (Right)));
-            else
-               return True;
-            end if;
-         else
+         if Attribute_Kind (Left) /= Attribute_Kind (Right) then
             return False;
          end if;
+
+         if Attribute_Kind (Left) /= An_Implementation_Defined_Attribute then
+            return True;
+         end if;
+
+         -- Must compare images for implementation defined attributes
+         return To_Upper (Name_Image (Attribute_Designator_Identifier (Left))) =
+                To_Upper (Name_Image (Attribute_Designator_Identifier (Right)));
       end Is_Same_Attribute;
 
       function Subprogram_Proximity (Left, Right : Asis.Expression) return Proximity is

@@ -1,19 +1,19 @@
-C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb:2:4: Error: Label_For_Check: use of declaration "integer_type"
-C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb:3:4: Found: Label, for "Search;": use of declaration "variable"
+test/tfw_formats.adb:2:4: Error: Label_For_Check: use of declaration "integer_type"
+test/tfw_formats.adb:3:4: Found: Label, for "Search;": use of declaration "variable"
 tfw_formats.adb:2:4: Error: Label_For_Check: use of declaration "integer_type"
 tfw_formats.adb:3:4: Found: Label, for "Search;": use of declaration "variable"
-"C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb","2","4","Error","Label_For_Check","DECLARATIONS","use of declaration ""integer_type"""
-"C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb","3","4","Found","Label, for ""Search;""","DECLARATIONS","use of declaration ""variable"""
+test/tfw_formats.adb","2","4","Error","Label_For_Check","DECLARATIONS","use of declaration ""integer_type"""
+test/tfw_formats.adb","3","4","Found","Label, for ""Search;""","DECLARATIONS","use of declaration ""variable"""
 "tfw_formats.adb","2","4","Error","Label_For_Check","DECLARATIONS","use of declaration ""integer_type"""
 "tfw_formats.adb","3","4","Found","Label, for ""Search;""","DECLARATIONS","use of declaration ""variable"""
-"C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb";"2";"4";"Error";"Label_For_Check";"DECLARATIONS";"use of declaration ""integer_type"""
-"C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb";"3";"4";"Found";"Label, for ""Search;""";"DECLARATIONS";"use of declaration ""variable"""
+test/tfw_formats.adb";"2";"4";"Error";"Label_For_Check";"DECLARATIONS";"use of declaration ""integer_type"""
+test/tfw_formats.adb";"3";"4";"Found";"Label, for ""Search;""";"DECLARATIONS";"use of declaration ""variable"""
 "tfw_formats.adb";"2";"4";"Error";"Label_For_Check";"DECLARATIONS";"use of declaration ""integer_type"""
 "tfw_formats.adb";"3";"4";"Found";"Label, for ""Search;""";"DECLARATIONS";"use of declaration ""variable"""
-C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb:2:4:    type Int is range 1 .. 10;
-C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb:2:4:    ! Error: Label_For_Check: use of declaration "integer_type"
-C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb:3:4:    I : Int;
-C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\tfw_formats.adb:3:4:    ! Found: Label, for "Search;": use of declaration "variable"
+test/tfw_formats.adb:2:4:    type Int is range 1 .. 10;
+test/tfw_formats.adb:2:4:    ! Error: Label_For_Check: use of declaration "integer_type"
+test/tfw_formats.adb:3:4:    I : Int;
+test/tfw_formats.adb:3:4:    ! Found: Label, for "Search;": use of declaration "variable"
 tfw_formats.adb:2:4:    type Int is range 1 .. 10;
 tfw_formats.adb:2:4:    ! Error: Label_For_Check: use of declaration "integer_type"
 tfw_formats.adb:3:4:    I : Int;

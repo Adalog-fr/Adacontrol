@@ -607,12 +607,12 @@ should write your own help messages.
 Ex:
 @example
 @b{procedure} Help @b{is}
-   @b{use} Utilities;
+  @b{use} Utilities;
 @b{begin}
-   User_Message ("Rule: " & Rule_Id);
-   User_Message ("Control usage of specific pragmas");
-   User_Message;
-   User_Message ("Parameter(s): [multiple] all | nonstandard | <pragma names>");
+  User_Message ("Rule: " & Rule_Id);
+  User_Message ("Control usage of specific pragmas");
+  User_Message;
+  User_Message ("Parameter(s): [multiple] all | nonstandard | <pragma>");
 @b{end} Help;
 @end example
 
