@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Usage:
 # ./run.sh [-q] [<adactl options>]
 # If -q is given as the first parameter:
@@ -9,48 +9,48 @@
 #
 # functions
 #
-function put () {
+put () {
     if [ $SILENT -eq 1 ]; then return; fi
 
     local msg="$1"
-    local pad=$2
-    local ali=$3
+    local pad="${2:-}"
+    local ali="${3:-}"
 
-    if [ "$3" = "center" ]; then
-	lef=$[(${pad}-${#msg})/2]
+    if [ "$ali" = "center" ]; then
+	lef=$(((${pad}-${#msg})/2))
 	printf "%${lef}s%s" "" "${msg}"
-	rig=$[${pad}-${#msg}-${lef}]
+	rig=$((${pad}-${#msg}-${lef}))
 	printf "%${rig}s" ""
-    elif [ "$3" = "right" ]; then
+    elif [ "$ali" = "right" ]; then
 	printf "%-${pad}s" "${msg}"
     else
 	printf "%${pad}s" "${msg}"
     fi
 }
 
-function put_line () {
+put_line () {
     if [ $SILENT -eq 1 ]; then return; fi
 
-    put "$1" $2 $3
+    put "$1" "${2:-}" "${3:-}"
     printf "\n"
 }
 
-function put_title_line () {
+put_title_line () {
     if [ $SILENT -eq 1 ]; then return; fi
 
     put "--"
-    put "$1" 75 center
+    put "${1:-}" 75 center
     put_line "--"
 }
 
-function put_line_line () {
+put_line_line () {
     if [ $SILENT -eq 1 ]; then return; fi
 
     put      "----------------------------------------"
     put_line "---------------------------------------"
 }
 
-function print_time () {
+print_time () {
     t=$2
     if [ $t -ge 3600 ]; then
 	h=`expr $t / 3600`"h "
@@ -75,7 +75,7 @@ function print_time () {
 #
 # Initialization
 #
-if [ "$1" == -q ]; then
+if [ "${1:-}" = -q ]; then
    SILENT=1
    shift
    ADACTL="../src/adactl -F gnat_short $*"
@@ -170,12 +170,12 @@ nb_fw=$((nb_fw+1))
 # This test requires -v in all cases
 ${ADACTL} -Cv -f conf/x_errors.aru 2>&1 \
 	| tr -d \\r >res/${test_case}.txt
-for I in `ls ../rules/*.aru | sort -df `; do
+for I in `find ../rules -name "*.aru" | sort -df `; do
    echo -n "$I: " >>res/${test_case}.txt
    ${ADACTL} -Cv -f $I 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 done
-for I in `ls conf/t_*.aru conf/ts_*.aru | sort -df `; do
+for I in `find conf -name "t_*.aru" -o -name "ts_*.aru" | sort -df `; do
    echo -n "$I: " >>res/${test_case}.txt
    ${ADACTL} -Cv -f $I 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
@@ -195,16 +195,17 @@ test_case=tfw_stress
 nb_fw=$((nb_fw+1))
 list=`find ./ '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
 export ADACTLINI="set timing global;"
+result=0
 find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_short -wd -f - $list \
-   1> res/${test_case}.txt 2>&1
-result=$?
+   1> res/${test_case}.txt 2>&1 \
+   || result=$?
 export ADACTLINI=
 # if -x option, return code is always 1
 # replace by 10 if there is a crash
-grep -q "=============" res/${test_case}.txt
-if [ $? -eq 0 ] ; then
+if grep -q "=============" res/${test_case}.txt; then
    result=10
 fi
+
 # Create timing file
 echo "Rule;Time;Percent" >res/rules_timing.csv
 grep -E "^[A-Za-z_]+: [0-9.]+" res/${test_case}.txt | sed "s/: /;/;s/ (\([0-9]*.[0-9]*\).*$/;\1/" >>res/rules_timing.csv
@@ -212,6 +213,7 @@ grep -E "^[A-Za-z_]+: [0-9.]+" res/${test_case}.txt | sed "s/: /;/;s/ (\([0-9]*.
 # Put "PASSED" as the result if OK
 if [ $result -le 1 ]; then
    put_line "PASSED"
+   rm -f res/${test_case}.txt
    echo "PASSED" | tr -d \\r >res/${test_case}.txt
 else
    put_line "FAILED ($result)"
@@ -249,9 +251,7 @@ ${ADACTL} -uw -f conf/${test_case}.aru $test_case+x_units_2 \
 #
 
 run_stop=`date +%s`
-pushd ref 1>/dev/null
-list=`ls *.txt`
-popd 1>/dev/null
+list=`find ref -name "*.txt" -printf "%P "`
 
 nb_passed=0
 nb_failed=0
@@ -259,8 +259,8 @@ put_line_line
 put_title_line "Test result for $nb_rules rules tests, $nb_fw framework tests"
 put_line_line
 for test_case in $list; do
-    diff=`diff --strip-trailing-cr res/${test_case} ref/${test_case} 2>&1 `
-    if [ "$diff" == "" ]; then
+    diff=`diff --strip-trailing-cr res/${test_case} ref/${test_case} 2>&1 || true`
+    if [ -z "$diff" ]; then
 	nb_passed=$((nb_passed+1))
 	if [ $SILENT -eq 0 ]; then
 	    printf "=> %-60s%-13s <=\n" ${test_case} "       PASSED"
@@ -286,7 +286,7 @@ if [ $SILENT -eq 1 ] ; then
 else
     print_time "Total run time: " `expr $run_stop - $run_start`
     if [ $nb_failed -ne 0 ] ; then
-	. failed.sh
+	. ./failed.sh
     fi
 
 fi

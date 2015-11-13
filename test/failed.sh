@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 PATCHFILE=testpatch.diff
 
-if [ $OSTYPE == "linux-gnu" ] ; then
+if [ "${OSTYPE:-}" = "linux-gnu" ] ; then
     WINMERGE='/usr/bin/meld'
     EMACS=emacs
 else
@@ -11,9 +11,9 @@ else
 fi
 
 (cd res
-    for test_case in *.txt; do
-	diff=`diff ${test_case} ../ref/${test_case}`
-	if [ "$diff" != "" ]; then
+    for test_case in `find . -name "*.txt" -printf "%P "`; do
+	diff=`diff ${test_case} ../ref/${test_case} || true`
+	if [ -n "$diff" ]; then
 	    while true ; do
 		echo -n "$test_case: [Diff, Edit, Interactive, save Patch, Validate, Nothing, Quit]? "
 		read REP
