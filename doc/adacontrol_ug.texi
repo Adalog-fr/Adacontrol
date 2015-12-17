@@ -3456,22 +3456,23 @@ those occurring at specified locations.
    protected                         | protected_discriminant            |
    protected_entry                   | protected_type                    |
    protected_variable                | record_type                       |
-   renaming                          | renaming_as_body                  |
-   renaming_as_declaration           | scalar_variable                   |
-   self_calling_function             | self_calling_procedure            |
-   separate                          | signed_type                       |
-   single_array                      | single_protected                  |
-   single_task                       | subtype                           |
-   tagged_private_type               | tagged_type                       |
-   tagged_variable                   | task                              |
-   task_discriminant                 | task_entry                        |
-   task_type                         | task_variable                     |
-   type                              | unconstrained_array_constant      |
-   unconstrained_array_type          | unconstrained_array_variable      |
-   unconstrained_subtype             | uninitialized_protected_component |
-   uninitialized_record_component    | uninitialized_variable            |
-   unknown_discriminant              | variable                          |
-   variant_part
+   relay_function                    | relay_package                     |
+   relay_procedure                   | renaming                          |
+   renaming_as_body                  | renaming_as_declaration           |
+   scalar_variable                   | self_calling_function             |
+   self_calling_procedure            | separate                          |
+   signed_type                       | single_array                      |
+   single_protected                  | single_task                       |
+   subtype                           | tagged_private_type               |
+   tagged_type                       | tagged_variable                   |
+   task                              | task_discriminant                 |
+   task_entry                        | task_type                         |
+   task_variable                     | type                              |
+   unconstrained_array_constant      | unconstrained_array_type          |
+   unconstrained_array_variable      | unconstrained_subtype             |
+   uninitialized_protected_component | uninitialized_record_component    |
+   uninitialized_variable            | unknown_discriminant              |
+   variable                          | variant_part
 @end example
 
 @subsection Action
@@ -3762,6 +3763,14 @@ not), while @code{ordinary_record_type} controls only non-tagged
 record types, and @code{tagged_type} controls only tagged record types.
 @item
 @code{interface_type} controls interface type declarations.
+@item
+@code{relay_function} controls functions whose statement part includes
+only a single @code{@b{return}} statement whose expression is another
+function call; similarly, @code{relay_procedure} controls procedures
+whose statement part includes only a call to another procedure, and
+@code{relay_package} controls packages whose visible part includes
+only the declaration of another package (regular package,
+instantiation of a generic package, or renaming of package).
 @item
 @code{renaming} controls all renaming declarations, while
 @code{renaming_as_body} controls only those that are renamings as
@@ -8550,9 +8559,9 @@ check unit_pattern (tagged_type_hierarchy);
 
 -- All with clauses must come first, then use and use type clauses
 -- (freely mixed), then pragmas
-check unit_pattern (context_clauses_order, 
-                       with, 
-                       use | use_type | use_all_type, 
+check unit_pattern (context_clauses_order,
+                       with,
+                       use | use_type | use_all_type,
                        pragma);
 
 -- In the public part of a package, declare constants and named numbers

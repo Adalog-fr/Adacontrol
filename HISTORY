@@ -2,6 +2,11 @@
 == V1.17b4 ==
 =============
 
+Changes to existing rules:
+--------------------------
+Declarations:
+   Subrules relay_function, relay_procedure, relay_package
+
 =============
 == V1.17r3 ==
 =============

@@ -117,7 +117,8 @@ package body Rules.Declarations is
       D_Procedure_Instantiation,           D_Protected,                         D_Protected_Discriminant,
       D_Protected_Entry,                   D_Protected_Type,                    D_Protected_Variable,
 
-      D_Record_Type,                       D_Renaming,                          D_Renaming_As_Body,
+      D_Record_Type,                       D_Relay_Function,                    D_Relay_Package,
+      D_Relay_Procedure,                   D_Renaming,                          D_Renaming_As_Body,
       D_Renaming_As_Declaration,
 
       D_Scalar_Variable,                   D_Self_Calling_Function,             D_Self_Calling_Procedure,
@@ -1038,9 +1039,19 @@ package body Rules.Declarations is
          when A_Package_Declaration =>
             Do_Report (D_Package, Element);
 
-            if Visible_Part_Declarative_Items (Element) = Nil_Element_List then
-               Do_Report (D_Empty_Visible_Part, Element);
-            end if;
+            declare
+               Visible_Part : constant Element_List := Visible_Part_Declarative_Items (Element);
+            begin
+               if Visible_Part = Nil_Element_List then
+                  Do_Report (D_Empty_Visible_Part, Element);
+               elsif Visible_Part'Length = 1
+                 and then   (   Declaration_Kind (Visible_Part (1)) = A_Package_Declaration
+                             or Declaration_Kind (Visible_Part (1)) = A_Package_Instantiation
+                             or Declaration_Kind (Visible_Part (1)) = A_Package_Renaming_Declaration)
+               then
+                  Do_Report (D_Relay_Package, Element);
+               end if;
+            end;
 
             if Asis.Declarations.Is_Private_Present (Element)
               and then Private_Part_Declarative_Items (Element) = Nil_Element_List
@@ -1085,6 +1096,8 @@ package body Rules.Declarations is
                            = Full_Name_Image (Names(Element)(1), With_Profile => True)
                   then
                      Do_Report (D_Self_Calling_Procedure, Element);
+                  else
+                     Do_Report (D_Relay_Procedure, Element);
                   end if;
                end if;
             end;
@@ -1148,6 +1161,8 @@ package body Rules.Declarations is
                               = Full_Name_Image (Names(Element)(1), With_Profile => True)
                      then
                         Do_Report (D_Self_Calling_Function, Element);
+                     else
+                        Do_Report (D_Relay_Function, Element);
                      end if;
                   end if;
                end if;
