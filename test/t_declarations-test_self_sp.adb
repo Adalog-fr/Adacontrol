@@ -5,15 +5,20 @@ procedure Test_Self_Sp is                       -- self_calling_procedure, neste
       return F (X);
    end;
 
-   function G (X : Integer) return Integer is
+   function G (X : Integer) return Integer is   -- relay_function
    begin
       return F (X);
    end;
 
-   procedure P is                               -- nested procedure, local procedure
+   procedure P is                               -- nested procedure, local procedure, relay_procedure
    begin
       Test_Self_Sp;
    end P;
+
+   package Pack is                              -- not_library_package, relay_package
+      package Inner is                          -- not_library_package, empty_visible_part
+      end Inner;
+   end Pack;
 begin
    Test_Self_Sp;
 end Test_Self_Sp;

@@ -142,5 +142,6 @@ begin
    V17 := new Priv;                            -- All_Arrays
    V18 := new Rec;                             -- All_Records
 
-   V19 := new Wide_Wide_String'("ABCD");       -- All_Arrays
+   V19 := new Wide_Wide_String'("ABCD");       -- OK, not Wide_Wide_String
+   V19 := new Wide_Wide_String (1..100);       -- OK, not Wide_Wide_String
 end T_allocators;

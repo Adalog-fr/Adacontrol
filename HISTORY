@@ -2,6 +2,11 @@
 == V1.17b4 ==
 =============
 
+General:
+--------
+Bug fixes:
+   #0000044
+
 Changes to existing rules:
 --------------------------
 Declarations:

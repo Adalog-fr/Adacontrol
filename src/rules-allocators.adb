@@ -105,13 +105,13 @@ package body Rules.Allocators is
                Filter := Never;
                Entity := Get_Entity_Parameter;
             else
-               Filter := Always;
-               Entity := Get_Entity_Parameter (Ghost => "ALL");
+               Filter      := Always;
+               Entity      := Get_Entity_Parameter (Ghost => "ALL");
                No_Positive := False;
             end if;
 
             declare
-               Context : Root_Context'Class := Association (Entities, Entity);
+               Context       : Root_Context'Class := Association (Entities, Entity);
                Active_Filter : Filter_Set := (others => False);
                Contexts      : Context_Set;
             begin
@@ -309,6 +309,7 @@ package body Rules.Allocators is
 
             end if;
          end Check_Inconsistent;
+
       begin   -- Check
          if Current_Context = No_Matching_Context then
             return;
@@ -341,7 +342,7 @@ package body Rules.Allocators is
                      Check_Inconsistent;
 
                   when Never =>
-                     null;
+                     Found := True;
                end case;
             end if;
          end loop;

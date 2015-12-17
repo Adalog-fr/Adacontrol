@@ -41,4 +41,3 @@ t_allocators.adb:140:11: Error: all_arrays: allocator for Array
 t_allocators.adb:141:11: Error: all_arrays: allocator for Array
 t_allocators.adb:142:11: Error: all_arrays: allocator for Array
 t_allocators.adb:143:11: Error: all_records: allocator for Record
-t_allocators.adb:145:11: Error: all_arrays: allocator for Array
