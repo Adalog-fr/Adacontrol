@@ -13,7 +13,7 @@ t_allocators.adb:107:12: Error: Inconsistent: allocator for Standard.Integer not
 t_allocators.adb:108:10: Error: ALLOCATORS: allocator for Standard.String
 t_allocators.adb:109:10: Error: ALLOCATORS: allocator for Standard.String
 t_allocators.adb:110:10: Error: specific_task: allocator for T_Allocators.T1
-t_allocators.adb:111:10: Error: all_tasks: allocator for Task
+t_allocators.adb:111:10: Error: Other_tasks: allocator for Task
 t_allocators.adb:112:10: Error: specific_prot: allocator for T_Allocators.P1
 t_allocators.adb:113:10: Error: all_prot: allocator for Protected
 t_allocators.adb:114:10: Error: tagged: allocator for T_Allocators.Tag1
