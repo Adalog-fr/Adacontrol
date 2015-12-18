@@ -124,6 +124,7 @@ package body Rules.Declarations is
       D_Scalar_Variable,                   D_Self_Calling_Function,             D_Self_Calling_Procedure,
       D_Separate,                          D_Signed_Type,                       D_Single_Array,
       D_Single_Protected,                  D_Single_Task,                       D_Subtype,
+      D_Synonym_Renaming,
 
       D_Tagged_Private_Type,               D_Tagged_Type,                       D_Tagged_Variable,
       D_Task,                              D_Task_Discriminant,                 D_Task_Entry,
@@ -346,7 +347,6 @@ package body Rules.Declarations is
       use Thick_Queries, Utilities;
 
       Target_Entity : Asis.Name;
-      Enclosing     : Asis.Element;
 
       procedure Check_Abstract is
       begin
@@ -1009,23 +1009,26 @@ package body Rules.Declarations is
          when A_Parameter_Specification =>
             -- Do not print message if the parameter is for a procedure or function body
             -- with an explicit specification
-            Enclosing := Enclosing_Element (Element);
-            if Declaration_Kind (Enclosing) not in A_Procedure_Body_Declaration .. A_Function_Body_Declaration
-              or else Is_Nil (Corresponding_Declaration (Enclosing))
-            then
-               if not Is_Nil (Initialization_Expression (Element)) then
-                  Do_Report (D_Defaulted_Parameter, Element);
-               end if;
+            declare
+               Enclosing : constant Asis.Element := Enclosing_Element (Element);
+            begin
+               if Declaration_Kind (Enclosing) not in A_Procedure_Body_Declaration .. A_Function_Body_Declaration
+                 or else Is_Nil (Corresponding_Declaration (Enclosing))
+               then
+                  if not Is_Nil (Initialization_Expression (Element)) then
+                     Do_Report (D_Defaulted_Parameter, Element);
+                  end if;
 
-               case Mode_Kind (Element) is
-                  when An_Out_Mode =>
-                     Do_Report (D_Out_Parameter, Element);
-                  when An_In_Out_Mode =>
-                     Do_Report (D_In_Out_Parameter, Element);
-                  when others =>
-                     null;
-               end case;
-            end if;
+                  case Mode_Kind (Element) is
+                     when An_Out_Mode =>
+                        Do_Report (D_Out_Parameter, Element);
+                     when An_In_Out_Mode =>
+                        Do_Report (D_In_Out_Parameter, Element);
+                     when others =>
+                        null;
+                  end case;
+               end if;
+            end;
 
          when A_Formal_Object_Declaration =>
             if not Is_Nil (Initialization_Expression (Element)) then
@@ -1269,6 +1272,7 @@ package body Rules.Declarations is
               or Rule_Used (D_Operator_Renaming)
               or Rule_Used (D_Non_Identical_Operator_Renaming)
               or Rule_Used (D_Library_Unit_Renaming)
+              or Rule_Used (D_Synonym_Renaming)
             then
                Target_Entity := Simple_Name (Renamed_Entity (Element));
 
@@ -1297,9 +1301,23 @@ package body Rules.Declarations is
                      then
                         Do_Report (D_Non_Identical_Renaming, Element);
                      end if;
+
                      if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity))) then
                         Do_Report (D_Library_Unit_Renaming, Element);
                      end if;
+
+                     declare
+                        Good_Rename : Asis.Declaration := Element;
+                     begin
+                        if Declaration_Kind (Element) = A_Function_Renaming_Declaration then
+                           Good_Rename := Corresponding_Declaration (Element);
+                        end if;
+                        if Is_Equal (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity)),
+                                     Enclosing_Element (Good_Rename))
+                        then
+                           Do_Report (D_Synonym_Renaming, Element);
+                        end if;
+                     end;
                   when others =>
                      Failure ("Not a function name in function renaming");
                end case;
@@ -1327,8 +1345,10 @@ package body Rules.Declarations is
             if Rule_Used (D_Not_Operator_Renaming) then
                Do_Report (D_Not_Operator_Renaming, Element);
             end if;
+
             if Rule_Used (D_Non_Identical_Renaming)
               or Rule_Used (D_Library_Unit_Renaming)
+              or Rule_Used (D_Synonym_Renaming)
             then
                Target_Entity := Renamed_Entity (Element);
                loop
@@ -1353,15 +1373,31 @@ package body Rules.Declarations is
                         then
                            Do_Report (D_Non_Identical_Renaming, Element);
                         end if;
+
                         if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity))) then
                            Do_Report (D_Library_Unit_Renaming, Element);
                         end if;
+
+                        declare
+                           Good_Rename : Asis.Declaration := Element;
+                        begin
+                           if Declaration_Kind (Element) = A_Procedure_Renaming_Declaration then
+                              Good_Rename := Corresponding_Declaration (Element);
+                           end if;
+                           if Is_Equal (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity)),
+                                        Enclosing_Element (Good_Rename))
+                           then
+                              Do_Report (D_Synonym_Renaming, Element);
+                           end if;
+                        end;
+
                         exit;
                      when others =>
                         Failure ("Not a name in renaming");
                   end case;
                end loop;
             end if;
+
             if Rule_Used (D_Function_Call_Renaming)
               and then Expression_Kind (Asis.Declarations.Renamed_Entity (Element)) = A_Function_Call
             then

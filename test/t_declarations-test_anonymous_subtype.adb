@@ -58,7 +58,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
       return X;
    end F;
 
-   function G(X : access Integer) return access Integer renames F;  -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming, anonymous_access_parameter
+   function G(X : access Integer) return access Integer renames F;  -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming, anonymous_access_parameter, synonym_renaming
 
    generic                                                   -- nested_generic_function, generic
    function H (X : access Integer) return access Integer;    -- anonymous access_parameter

@@ -242,7 +242,7 @@ procedure T_declarations is       -- library procedure
          null;
    end Pack2;
 
-   package Pack3 renames Pack2;                          -- renaming, not_operator_renaming, non_identical_renaming
+   package Pack3 renames Pack2;                          -- renaming, not_operator_renaming, non_identical_renaming, synonym_renaming
    generic package Generic_Elementary_Functions          -- renaming, Not_Operator_Renaming, library_unit_renaming
       renames Ada.Numerics.Generic_Elementary_Functions;
 

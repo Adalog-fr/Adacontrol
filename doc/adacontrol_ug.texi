@@ -3463,16 +3463,17 @@ those occurring at specified locations.
    self_calling_procedure            | separate                          |
    signed_type                       | single_array                      |
    single_protected                  | single_task                       |
-   subtype                           | tagged_private_type               |
-   tagged_type                       | tagged_variable                   |
-   task                              | task_discriminant                 |
-   task_entry                        | task_type                         |
-   task_variable                     | type                              |
-   unconstrained_array_constant      | unconstrained_array_type          |
-   unconstrained_array_variable      | unconstrained_subtype             |
-   uninitialized_protected_component | uninitialized_record_component    |
-   uninitialized_variable            | unknown_discriminant              |
-   variable                          | variant_part
+   subtype                           | synonym_renaming                  |
+   tagged_private_type               | tagged_type                       |
+   tagged_variable                   | task                              |
+   task_discriminant                 | task_entry                        |
+   task_type                         | task_variable                     |
+   type                              | unconstrained_array_constant      |
+   unconstrained_array_type          | unconstrained_array_variable      |
+   unconstrained_subtype             | uninitialized_protected_component |
+   uninitialized_record_component    | uninitialized_variable            |
+   unknown_discriminant              | variable                          |
+   variant_part
 @end example
 
 @subsection Action
@@ -3784,7 +3785,9 @@ controls renaming of the result of a function call, and
 @code{non_identical_renaming} controls only renamings where the new
 name and the old name are not the same, and
 @code{non_identical_operator_renaming} does the same, but only for
-renamings of operators.
+renamings of operators. @code{synonym_renaming} controls renamings declared in
+the same declarative part as the entity being renamed (these serve no purpose
+as far as visibility is concerned, and are thus pure synonyms).
 @item
 @code{self_calling_function} controls functions whose body contains
 only a single (simple) @code{@b{return}} statement, and the return
