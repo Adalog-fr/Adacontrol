@@ -13,6 +13,7 @@ Bit_Order  : check  representation_clauses (no_bit_order_layout);
 size       : check  representation_clauses ('SIZE);
 obj_size   : check  representation_clauses (object 'size);
 fractional : check  representation_clauses (fractional_size);
+non_power2 : check  representation_clauses (non_power2_size);
 non_contig : check  representation_clauses (non_contiguous_layout);
 unaligned  : check  representation_clauses (non_aligned_component);
 incomplete : check  representation_clauses (incomplete_layout);
@@ -26,4 +27,3 @@ Arr_comp   : check  representation_clauses (array non_aligned_component);
 overlay    : check  representation_clauses (overlay);
 tab_over   : check  representation_clauses (array overlay);
 rng_over   : check  representation_clauses (range overlay);
-

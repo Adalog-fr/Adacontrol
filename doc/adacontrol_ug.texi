@@ -7191,8 +7191,8 @@ This rule controls usage of representation clause.
 <repr_kw> ::=
    at                    | at_mod                | enumeration         |
    fractional_size       | incomplete_layout     | layout              |
-   non_aligned_component | non_contiguous_layout | no_bit_order_layout |
-   overlay
+   non_aligned_component | non_contiguous_layout | non_power2_size     |
+   no_bit_order_layout   | overlay
 <category> ::=
    ()     | range     | mod    | delta | digits  | array | record   |
    tagged | extension | access | new   | private | task  | protected
@@ -7250,8 +7250,11 @@ use record at mod XX;'').
 @item
 ``enumeration'' controls enumeration representation clauses.
 @item
-``fractional_size'' controls size clauses whose value is not an integral
-multiple of @code{System.Storage_Unit}.
+``fractional_size'' controls size clauses whose value is not an
+integral multiple of @code{System.Storage_Unit}. ``non_power2_size''
+controls size clauses whose value in @code{System.Storage_Unit} is not
+a power of 2 (i.e. for most machines, it will mean a value different
+from 8, 16, 32, and 64).
 @item
 ``incomplete_layout'' controls record representation clauses that miss
 the specification of some components of the record's type.

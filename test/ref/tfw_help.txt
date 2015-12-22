@@ -604,6 +604,7 @@ Parameter(s): [<categories>] [global] [object] <specifiable attribute> |
                              layout                                    |
                              non_aligned_component                     |
                              non_contiguous_layout                     |
+                             non_power2_size                           |
                              no_bit_order_layout                       |
                              overlay
                              (optional)

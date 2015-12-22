@@ -40,11 +40,11 @@ t_uncheckable-record_declarations.adb:9:10: Error: Uncheckable: in rule RECORD_D
 t_uncheckable-record_declarations.adb:5:10: Error: RECORD_DECLARATIONS: Component S is unaligned "array"
 t_uncheckable-record_declarations.adb:17:10: Error: Uncheckable: in rule RECORD_DECLARATIONS: Possible false positive: unable to evaluate component position, assuming aligned
 t_uncheckable-record_declarations.adb:13:10: Error: RECORD_DECLARATIONS: Component I is aligned "range"
-t_uncheckable-representation_clauses.adb:5:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size subrule
+t_uncheckable-representation_clauses.adb:5:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size/non_power2_size subrule
 t_uncheckable-representation_clauses.adb:17:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
 t_uncheckable-representation_clauses.adb:18:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
 t_uncheckable-representation_clauses.adb:19:10: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate component position for non_contiguous_layout and non_aligned_component subrules
-t_uncheckable-representation_clauses.adb:21:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size subrule
+t_uncheckable-representation_clauses.adb:21:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size/non_power2_size subrule
 t_uncheckable-style.adb:3:58: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of attribute
 t_uncheckable-style.adb:4:69: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of predefined operation
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: Uncheckable: in rule UNSAFE_UNCHECKED_CONVERSION: Possible false positive: unable to evaluate size clause value for T2

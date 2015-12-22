@@ -65,7 +65,7 @@ package body Rules.Representation_Clauses is
    type Subrules is (Sr_Attribute,           Sr_At,                    Sr_At_Mod,
                      Sr_Enumeration,         Sr_Fractional_Size,       Sr_Incomplete_Layout,
                      Sr_Layout,              Sr_Non_Aligned_Component, Sr_Non_Contiguous_Layout,
-                     Sr_No_Bit_Order_Layout, Sr_Overlay);
+                     Sr_Non_Power2_Size,     Sr_No_Bit_Order_Layout,   Sr_Overlay);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
    use Subrules_Flags_Utilities, Framework.Language.Shared_Keys.Categories_Utilities;
@@ -533,6 +533,7 @@ package body Rules.Representation_Clauses is
          when An_Attribute_Definition_Clause =>
             if not Rule_Used (Sr_Attribute)
               and not Rule_Used (Sr_Fractional_Size)
+              and not Rule_Used (Sr_Non_Power2_Size)
               and not Rule_Used (Sr_Overlay)
             then
                return;
@@ -547,18 +548,34 @@ package body Rules.Representation_Clauses is
 
             Do_Report (Sr_Attribute, Rep_Clause, "representation clause for " & To_Wide_String (Attribute));
 
-            if Attribute = "'SIZE" and then Rule_Used (Sr_Fractional_Size) then
+            if Attribute = "'SIZE" and then (Rule_Used (Sr_Fractional_Size) or Rule_Used (Sr_Non_Power2_Size)) then
                declare
-                  Value : constant Extended_Biggest_Natural
+                  Value : Extended_Biggest_Natural
                     := Discrete_Static_Expression_Value (Representation_Clause_Expression (Rep_Clause));
                begin
                   if Value = Not_Static then
                      Uncheckable (Rule_Id,
                                   False_Negative,
                                   Get_Location (Representation_Clause_Expression (Rep_Clause)),
-                                  "unable to evaluate size for fractional_size subrule");
-                  elsif Value rem Storage_Unit /= 0 then
-                     Do_Report (Sr_Fractional_Size, Rep_Clause, "size clause not multiple of Storage_Unit");
+                                  "unable to evaluate size for fractional_size/non_power2_size subrule");
+                  else
+                     if Value rem Storage_Unit /= 0 then
+                        if Rule_Used (Sr_Fractional_Size) then
+                           Do_Report (Sr_Fractional_Size, Rep_Clause, "size clause not multiple of Storage_Unit");
+                        end if;
+                        if Rule_Used (Sr_Non_Power2_Size) then
+                           Do_Report (Sr_Non_Power2_Size, Rep_Clause, "size clause not power of 2 of Storage_Unit");
+                        end if;
+                     elsif Rule_Used (Sr_Non_Power2_Size) then
+                        Value := Value / Storage_Unit;
+                        while Value /= 1 loop
+                           if Value rem 2 /= 0 then
+                              Do_Report (Sr_Non_Power2_Size, Rep_Clause, "size clause not power of 2 of Storage_Unit");
+                              exit;
+                           end if;
+                           Value := Value / 2;
+                        end loop;
+                     end if;
                   end if;
                end;
             end if;

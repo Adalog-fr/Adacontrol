@@ -6,7 +6,7 @@ procedure Fractional_Size is
    type T4 is range 1 .. 10;
 
    for T1'Size use 8;               -- 'Size
-   for T2'Size use 9;               -- 'Size, not multiple
+   for T2'Size use 9;               -- 'Size, not multiple, non_power2
    for T3'Size use 2 ** 5;          -- 'Size
    for T4'Size use T3'Size*2 - 1;   -- 'Size, not multiple
 

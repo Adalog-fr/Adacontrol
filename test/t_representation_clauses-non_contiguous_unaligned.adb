@@ -16,7 +16,7 @@ procedure Non_Contiguous_Unaligned is
          C at 6 range 33 .. 40;     -- gap before, unaligned
          F at 6 range 41 .. 72;     -- unaligned, gap at end
       end record;
-   for Rec1'Size use 122;            -- 'Size, not multiple
+   for Rec1'Size use 122;            -- 'Size, not multiple, non_power2
 
    type Rec2 is
       record
@@ -24,7 +24,7 @@ procedure Non_Contiguous_Unaligned is
          S : String (1 .. 3);
          C : Character;
       end record;
-   for Rec2'Size use 96;            -- 'Size
+   for Rec2'Size use 96;            -- 'Size, non_power2
 
    -- Unordered components
    for Rec2 use                     -- record, bit_order

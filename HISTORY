@@ -7,6 +7,9 @@ Changes to existing rules:
 Declarations:
    Subrule Synonym_Renaming
 
+Representation_Clauses:
+   Subrule non_power2_size
+
 =============
 == V1.17b4 ==
 =============

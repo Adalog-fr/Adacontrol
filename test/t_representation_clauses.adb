@@ -74,7 +74,7 @@ procedure T_representation_clauses is
    begin null; end;
 
    type Tab is array (1 .. 10) of Integer;
-   for Tab'Size use Integer'Size * 10;   -- arr_size, 'Size
+   for Tab'Size use Integer'Size * 10;   -- arr_size, 'Size, non_power2
    V1 : Tab;
    V2 : Tab;
    for V2'Address use V1'Address;        -- Arr_Addr, 'Address, tab_over, overlay
@@ -83,7 +83,7 @@ procedure T_representation_clauses is
          S : String (1 .. 10);
       end record;
    for RecTab'Bit_Order use Low_Order_First;
-   for RecTab'Size use 88;               -- rec_size, 'size
+   for RecTab'Size use 88;               -- rec_size, 'size, non_power2
    for RecTab use                        -- layout
      record
          S at 0 range 1 .. 80;           -- gap x2, arr_comp, unaligned

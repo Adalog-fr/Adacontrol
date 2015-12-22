@@ -30,12 +30,14 @@ t_representation_clauses.adb:64:4: Error: streams: representation clause for 'CL
 t_representation_clauses.adb:65:4: Error: streams: representation clause for 'CLASS'WRITE
 t_representation_clauses.adb:77:4: Error: Arr_Size: representation clause for 'SIZE for ARRAY
 t_representation_clauses.adb:77:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:77:4: Error: non_power2: size clause not power of 2 of Storage_Unit
 t_representation_clauses.adb:80:4: Error: Arr_Addr: representation clause for 'ADDRESS for ARRAY
 t_representation_clauses.adb:80:4: Error: address: representation clause for 'ADDRESS
 t_representation_clauses.adb:80:4: Error: tab_over: address clause causes overlay for ARRAY
 t_representation_clauses.adb:80:4: Error: overlay: address clause causes overlay
 t_representation_clauses.adb:86:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
 t_representation_clauses.adb:86:4: Error: size: representation clause for 'SIZE
+t_representation_clauses.adb:86:4: Error: non_power2: size clause not power of 2 of Storage_Unit
 t_representation_clauses.adb:87:4: Found: record: layout representation clause
 t_representation_clauses.adb:89:10: Error: non_contig: gap at 0 range 0..0
 t_representation_clauses.adb:89:10: Error: Arr_comp: unaligned component starts at bit 1 for ARRAY
@@ -44,9 +46,11 @@ t_representation_clauses.adb:89:10: Error: non_contig: gap at end of record, at 
 t_representation_clauses-fractional_size.adb:8:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:9:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-fractional_size.adb:9:4: Error: non_power2: size clause not power of 2 of Storage_Unit
 t_representation_clauses-fractional_size.adb:10:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:11:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:11:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-fractional_size.adb:11:4: Error: non_power2: size clause not power of 2 of Storage_Unit
 t_representation_clauses-fractional_size.adb:16:4: Error: obj_size: object representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:16:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-fractional_size.adb:17:4: Error: obj_size: object representation clause for 'SIZE
@@ -62,8 +66,10 @@ t_representation_clauses-non_contiguous_unaligned.adb:12:8: Error: Bit_Order: ty
 t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
 t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: size: representation clause for 'SIZE
 t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: fractional: size clause not multiple of Storage_Unit
+t_representation_clauses-non_contiguous_unaligned.adb:19:4: Error: non_power2: size clause not power of 2 of Storage_Unit
 t_representation_clauses-non_contiguous_unaligned.adb:27:4: Error: Rec_Size: representation clause for 'SIZE for RECORD
 t_representation_clauses-non_contiguous_unaligned.adb:27:4: Error: size: representation clause for 'SIZE
+t_representation_clauses-non_contiguous_unaligned.adb:27:4: Error: non_power2: size clause not power of 2 of Storage_Unit
 t_representation_clauses-non_contiguous_unaligned.adb:30:4: Found: record: layout representation clause
 t_representation_clauses-non_contiguous_unaligned.adb:34:10: Error: non_contig: gap at 0 range 0..7
 t_representation_clauses-non_contiguous_unaligned.adb:33:10: Error: non_contig: gap before component, at 5 range 0..7
@@ -85,4 +91,4 @@ x_representation_clauses.ads:10:7: Error: rng_over: address clause causes overla
 x_representation_clauses.ads:10:7: Error: overlay: address clause causes overlay
 
 Counts summary:
-Total: 68
+Total: 74
