@@ -1,0 +1,9 @@
+"from Integer": check Derivations (from, standard.integer);
+check derivations (From, T_derivations.From.T3);
+check derivations (From, T_derivations.From.T4);
+search derivations (from, range, ());
+"from Standard": search derivations (from, Standard);
+check derivations (from,T_derivations.From.S3);
+
+check derivations (max_parents, 2);
+search derivations (max_parents, 1);

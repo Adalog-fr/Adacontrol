@@ -46,6 +46,7 @@ with
   Rules.Characters,
   Rules.Declarations,
   Rules.Default_Parameter,
+  Rules.Derivations,
   Rules.Directly_Accessed_Globals,
   Rules.Duplicate_Initialization_Calls,
   Rules.Entities,
@@ -349,9 +350,10 @@ package body Framework.Plugs is
                when A_Task_Type_Declaration
                  | A_Protected_Type_Declaration
                   =>
-                  Rules.Max_Size. Process_Element     (Element);
-                  Rules.Style.    Process_Construct   (Element);
-                  Rules.Usage.    Process_Declaration (Element);
+                  Rules.Derivations. Process_Synchronized (Element);
+                  Rules.Max_Size.    Process_Element      (Element);
+                  Rules.Style.       Process_Construct    (Element);
+                  Rules.Usage.       Process_Declaration  (Element);
 
                when A_Package_Body_Declaration =>
                   Rules.Comments.                Process_Program_Unit (Element);
@@ -375,9 +377,10 @@ package body Framework.Plugs is
                when A_Single_Task_Declaration
                  | A_Single_Protected_Declaration
                  =>
-                  Rules.Max_Size. Process_Element     (Element);
-                  Rules.Style.    Process_Construct   (Element);
-                  Rules.Usage.    Process_Declaration (Element);
+                  Rules.Derivations. Process_Synchronized (Element);
+                  Rules.Max_Size.    Process_Element      (Element);
+                  Rules.Style.       Process_Construct    (Element);
+                  Rules.Usage.       Process_Declaration  (Element);
 
                when A_Task_Body_Declaration
                  =>
@@ -494,9 +497,15 @@ package body Framework.Plugs is
                   case Type_Kind (Element) is
                      when A_Signed_Integer_Type_Definition
                         | A_Modular_Type_Definition
-                        | A_Derived_Type_Definition
-                          =>
+                        =>
                         Rules.No_Operator_Usage. Process_Type_Definition (Element);
+                     when A_Derived_Type_Definition =>
+                        Rules.No_Operator_Usage. Process_Type_Definition (Element);
+                        Rules.Derivations.       Process_Derivation (Element);
+                     when A_Derived_Record_Extension_Definition
+                        | An_Interface_Type_Definition
+                        =>
+                        Rules.Derivations. Process_Derivation (Element);
                      when A_Constrained_Array_Definition =>
                         Rules.Array_Declarations. Process_Array_Definition             (Element);
                         Rules.No_Operator_Usage.  Process_Array_Definition (Element);
@@ -506,6 +515,16 @@ package body Framework.Plugs is
                         Rules.Array_Declarations. Process_Array_Definition (Element);
                         Rules.No_Operator_Usage.  Process_Array_Definition (Element);
                         Rules.Type_Usage.         Process_Array_Definition (Element);
+                     when others =>
+                        null;
+                  end case;
+
+               when A_Formal_Type_Definition =>
+                  case Formal_Type_Kind (Element) is
+                     when A_Formal_Derived_Type_Definition
+                        | A_Formal_Interface_Type_Definition
+                        =>
+                        Rules.Derivations. Process_Derivation (Element);
                      when others =>
                         null;
                   end case;

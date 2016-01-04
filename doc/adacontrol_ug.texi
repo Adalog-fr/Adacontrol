@@ -2477,6 +2477,7 @@ is a dispatching call.
 * Declarations::
 * Default_Parameter::
 * Dependencies::
+* Derivations::
 * Directly_Accessed_Globals::
 * Duplicate_Initialization_Calls::
 * Entities::
@@ -3970,7 +3971,7 @@ parameter) as the <formal name>; in this case, all instantiations of
 the indicated generic subprogram will be controlled for the use of the
 indicated parameter.
 
-@node Dependencies, Directly_Accessed_Globals, Default_Parameter, Rules reference
+@node Dependencies, Derivations, Default_Parameter, Rules reference
 @section Dependencies
 This rule controls dependencies of units (i.e. @code{@b{with}}
 clauses, parents, child units...), either according to a set of
@@ -4073,7 +4074,109 @@ you want to allow.  You can then simply ``source'' these files from
 your own rule file (or copy the content) if you want to disallow these
 units. @xref{Rules files provided with AdaControl}.
 
-@node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Dependencies, Rules reference
+@node Derivations, Directly_Accessed_Globals, Dependencies, Rules reference
+@section Derivations
+This rule controls various properties of the declaration of derived types.
+
+@subsection Syntax
+@example
+<control_kind> derivations (from, <entity>|<category> @{, <entity>|<category>@})
+<control_kind> derivations (max_parents, <value>)
+<category>     ::= ()      | access    | array | delta  | digits | mod  |
+                   private | protected | range | record | tagged | task
+@end example
+
+@subsection Action
+The ``from'' subrule controls derivations according to the parent
+type.
+
+If <entity> is a type name, it controls types that are derived
+(directly or indirectly) from the given type, or one of its subtypes;
+however, if it is a @i{subtype} name, only types that are derived
+(directly or indirectly) from the given subtype are controlled. If
+<entity> is the name of a compilation unit, it controls types that are
+derived (directly or indirectly) from a type (or subtype) declared
+inside the given unit.  As usual, the whole syntax for entities is
+allowed for <entity>. @xref{Specifying an Ada entity name}.
+
+If <category> is given, it controls derived types that belong to the
+corresponding category. The meaning of <category> is:
+@itemize @bullet
+@item
+``()'': The parent is of an enumerated type.
+@item
+``access'':  The parent is of an access type.
+@item
+``array'': The parent is of an array type.
+@item
+``delta'': The parent is of a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The parent is of a floating point type.
+@item
+``mod'': The parent is of a modular type.
+@item
+``private'': The parent is of a private type (including private
+extensions).
+@item
+``protected'': The parent is of a protected type.
+@item
+``range'': The parent is of a signed integer type.
+@item
+``record'': The parent is of an (untagged) record type.
+@item
+``tagged'': The parent is of a tagged type (including type
+extensions).
+@item
+``task'': The parent is of a task type.
+@end itemize
+
+It may be the case that several controls apply to a given derived type. In this case, the message
+corresponds to the most specific control, according to the following priority order:
+@enumerate
+@item
+Specific subtype
+@item
+Specific type
+@item
+Type or subtype from a compilation unit
+@item
+Category
+@end enumerate
+
+Ex:
+@example
+check derivations (from, Standard.Integer);  -- Types derived from Integer
+search derivations (from, range);            -- Types derived from an integer type, except
+                                             -- Standard.Integer (caught above)
+search derivations (from, standard);         -- Types derived from a type in Standard, except
+                                             -- Standard.Integer (caught above)
+@end example
+
+The ``max_parents'' subrule controls the maximum number of parents in
+a derivation. The parents are the direct ancestor in a derived type
+definition, plus all of the progenitors (the interfaces that are
+implemented by the type). <n> is the maximum number of @i{allowed}
+parents, i.e. the rule is triggered if the number of parents is
+strictly greater than <n>.
+
+This subrule can be given once for each of check, search, and
+count. This way, it is possible to have a number of parents
+considered a warning (search), and one considered an error (check). Of
+course, this makes sense only if the number for search is less than
+the one for check.
+
+@example
+check derivations (max_parents, 5);   -- error if more than 5 parents
+search derivations (max_parents, 3);  -- warning if more than 3 parents
+@end example
+
+@subsection Limitations
+Currently, the ``from'' subrule controls only parent types, progenitors are ignored. This limitation will be
+removed in future versions.
+
+@node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Derivations, Rules reference
 @section Directly_Accessed_Globals
 This rule checks that global variables in package bodies are accessed
 only through dedicated subprograms. Especially, it can be used to

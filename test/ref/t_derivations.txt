@@ -1,0 +1,21 @@
+t_derivations-from.adb:4:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:5:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:11:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:12:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
+t_derivations-from.adb:18:15: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-from.adb:20:15: Found: DERIVATIONS: Type derived from category ()
+t_derivations-from.adb:22:16: Found: from Standard: Type derived from type in unit STANDARD
+t_derivations-from.adb:25:18: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:26:18: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:27:18: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
+t_derivations-from.adb:30:19: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:31:19: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:36:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:38:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.S3
+t_derivations-from.adb:39:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:40:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.S3
+t_derivations-max_parents.adb:10:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_parents.adb:11:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_parents.adb:12:15: Error: DERIVATIONS: More than 2 parents (3)
+t_derivations-max_parents.adb:22:4: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_parents.adb:27:4: Error: DERIVATIONS: More than 2 parents (3)

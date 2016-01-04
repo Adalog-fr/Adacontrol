@@ -34,6 +34,7 @@ conf/t_declarations.aru: No syntax error
 conf/t_declarations_variables.aru: No syntax error
 conf/t_default_parameter.aru: No syntax error
 conf/t_dependencies.aru: No syntax error
+conf/t_derivations.aru: No syntax error
 conf/t_directly_accessed_globals.aru: No syntax error
 conf/t_duplicate_initialization_calls.aru: No syntax error
 conf/t_entities.aru: No syntax error
