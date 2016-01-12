@@ -3315,7 +3315,7 @@ alternative acceptable one; i.e., it is a warning if the value is the
 one given for ``check'', and an error if it is neither. In short:
 @example
 search comments (position, 1);
-check  comments (first, min 1, max 6);
+check  comments (position, min 1, max 6);
 @end example
 will be silent for comments that start in column 1, it will issue a
 warning for comments that start at columns 2 to 6, and an error otherwise.
@@ -3643,6 +3643,9 @@ if any), even if it contains pragmas.
 @code{exception} controls exception declarations.
 @item
 @code{expression_function} controls declaration of expression functions
+@item
+@code{extension} controls type extensions, i.e. derivations from a tagged type
+with a @code{@b{with record}} extension part.
 @item
 @code{fixed_type} controls all declarations of fixed point types while
 @code{ordinary_fixed_type} controls only ordinary (binary) fixed point
@@ -4421,7 +4424,7 @@ the keyword ``entry_calls'' is given, it stands for all entry calls
 (task or protected).  If an <entity> (or ``calls'' or ``entry_calls'')
 is preceded by the keyword ``not'', it is not included in the list of
 controlled entities (i.e.  the entity is allowed in the exception
-hhandler). This allows to make exceptions to a more general
+handler). This allows to make exceptions to a more general
 specification of an entity, or to allow calls to well-defined
 procedures if the keyword ``calls'' is given.
 

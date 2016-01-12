@@ -57,7 +57,8 @@ package Framework.Variables is
    -- Class_Wide subprograms:
    procedure Register (The_Variable  : Variables.Class_Access;
                        Variable_Name : Wide_String);
-   -- Rule_Name and Variable_Name are expected to be given in UPPER_CASE
+   -- Variable_Name is expected to be given in UPPER_CASE
+   -- For rule variables, the name should be Rule_Id & ".XXX"
    procedure Help_On_Variable (Variable_Name : Wide_String);
 
    --

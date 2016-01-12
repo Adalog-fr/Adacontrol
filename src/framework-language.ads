@@ -93,7 +93,7 @@ package Framework.Language is
    -- enclosed doubled quotes are reduced to a single one.
    function Get_Entity_Parameter (Allow_Extended : Boolean := False;
                                   Ghost          : Wide_String := "") return Entity_Specification;
-   -- If Allow_Extended is True, allow entities of the form <> and ()
+   -- If Allow_Extended is True, allow entities of the form =, <>, and ()
    -- If no entity is found and Ghost /= "", returns Value (Ghost)
 
    function Get_File_Parameter    return Wide_String;
