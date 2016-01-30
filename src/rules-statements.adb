@@ -47,11 +47,12 @@ with
 -- AdaControl
 with
   Adactl_Constants,
-  Framework.Language;
+  Framework.Language,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Statements is
-   use Adactl_Constants, Framework, Framework.Control_Manager;
+   use Adactl_Constants, Framework, Framework.Control_Manager, Framework.Variables, Framework.Variables.Shared_Types;
 
    -- all "filtered_raise" subrules (i.e. raise subrules except the plain one) must stay together
    type Subrules is (Stmt_Any_Statement,
@@ -65,7 +66,7 @@ package body Rules.Statements is
                      Stmt_Code,                    Stmt_Conditional_Entry_Call,
 
                      Stmt_Declare_Block,           Stmt_Delay,                  Stmt_Delay_Until,
-                     Stmt_Dispatching_Call,
+                     Stmt_Dispatching_Call,        Stmt_Dynamic_Procedure_Call,
 
                      Stmt_Effective_Declare_Block, Stmt_Entry_Call,             Stmt_Entry_Return,
                      Stmt_Exception_Others,        Stmt_Exception_Others_Null,  Stmt_Exit,
@@ -86,7 +87,7 @@ package body Rules.Statements is
 
                      Stmt_Named_Exit,              Stmt_No_Else,                Stmt_Null,
 
-                     Stmt_Procedure_Return,
+                     Stmt_Procedure_Call,          Stmt_Procedure_Return,
 
                      Stmt_Raise,                   Stmt_Redispatching_Call,
 
@@ -123,6 +124,9 @@ package body Rules.Statements is
    Loops_Depth : array (Scope_Manager.Scope_Range) of Loops_Level;
    Top_Loop    : array (Scope_Manager.Scope_Range) of Asis.Statement;
 
+   -- Rule variables
+   Called_Info : aliased Extra_Infos_Type.Object := (Value => None);
+
    ----------
    -- Help --
    ----------
@@ -134,6 +138,9 @@ package body Rules.Statements is
       User_Message  ("Control occurrences of Ada statements");
       User_Message;
       Help_On_Flags ("Parameter(s):");
+      User_Message;
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Called_Info");
    end Help;
 
    -----------------
@@ -212,6 +219,39 @@ package body Rules.Statements is
                  Get_Location (Element),
                  "use of statement """ & Image (Stmt, Lower_Case) & """, " & Extra_Info);
       end Do_Report;
+
+      procedure Do_Call_Report (Stmt : in Subrules) is
+      begin
+         if not Rule_Used (Stmt) then
+            return;
+         end if;
+
+         if Called_Info.Value = None then
+            Do_Report (Stmt);
+         else
+            declare
+               Called : constant Asis.Expression := Called_Simple_Name (Element);
+            begin
+               if Is_Nil (Called) then
+                  Do_Report (Stmt, "Dynamic call");
+               else
+                  case Called_Info.Value is
+                     when None =>
+                        Failure (Rule_Id & ": impossible value None");
+                     when Compact =>
+                        Do_Report (Stmt,
+                                   Adjust_Image (Full_Name_Image (Called, With_Profile => False)));
+                     when Detailed =>
+                        Do_Report (Stmt,
+                                   Adjust_Image (Full_Name_Image (Called, With_Profile => True)));
+                     when Root_Detailed =>
+                        Do_Report (Stmt,
+                                   Adjust_Image (Full_Name_Image (Ultimate_Name (Called), With_Profile => True)));
+                  end case;
+               end if;
+            end;
+         end if;
+      end Do_Call_Report;
 
       procedure Check_Filtered_Raise (Exc : Asis.Expression) is
          -- process filtered (i.e. non trivial) raises.
@@ -345,7 +385,7 @@ package body Rules.Statements is
             Do_Report (Stmt_Delay_Until);
 
          when An_Entry_Call_Statement =>
-            Do_Report (Stmt_Entry_Call);
+            Do_Call_Report (Stmt_Entry_Call);
 
          when An_Exit_Statement =>
             Do_Report (Stmt_Exit);
@@ -472,6 +512,8 @@ package body Rules.Statements is
             Do_Report (Stmt_Null);
 
          when A_Procedure_Call_Statement =>
+            Do_Call_Report (Stmt_Procedure_Call);
+
             if Is_Dispatching_Call (Element) then
                Do_Report (Stmt_Dispatching_Call);
 
@@ -487,6 +529,10 @@ package body Rules.Statements is
                      end loop;
                   end;
                end if;
+            end if;
+
+            if Is_Nil (Called_Simple_Name (Element)) then
+               Do_Report (Stmt_Dynamic_Procedure_Call);
             end if;
 
             if Rule_Used (Stmt_Inherited_Procedure_Call) then
@@ -719,45 +765,6 @@ package body Rules.Statements is
          end loop;
       end;
    end Process_Function_Body;
-
-   ---------------------------
-   -- Process_Function_Call --
-   ---------------------------
-
-   procedure Process_Function_Call (Call : in Asis.Expression) is
-      use Asis.Declarations, Asis.Elements, Asis.Statements, Thick_Queries, Utilities;
-      use Framework.Reports;
-   begin
-      if not (Rule_Used (Stmt_Dispatching_Call) or Rule_Used (Stmt_Redispatching_Call)) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      if Is_Dispatching_Call (Call) then
-         if Rule_Used (Stmt_Dispatching_Call) then
-            Report (Rule_Id,
-                    Usage (Stmt_Dispatching_Call),
-                    Get_Location (Call),
-                    "use of statement """ & Image (Stmt_Dispatching_Call, Lower_Case) & '"');
-         end if;
-
-         if Rule_Used (Stmt_Redispatching_Call) then
-            declare
-               Name : Asis.Defining_Name := Enclosing_Program_Unit (Call);
-            begin
-               while not Is_Nil (Name) loop
-                  if Is_Dispatching_Operation (Corresponding_Declaration (Enclosing_Element (Name))) then
-                     Report (Rule_Id,
-                             Usage (Stmt_Dispatching_Call),
-                             Get_Location (Call),
-                             "use of statement """ & Image (Stmt_Redispatching_Call, Lower_Case) & '"');
-                  end if;
-                  Name := Enclosing_Program_Unit (Name);
-               end loop;
-            end;
-         end if;
-      end if;
-   end Process_Function_Call;
 
 
    --------------------------
@@ -1006,4 +1013,6 @@ begin  -- Rules.Statements
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+   Framework.Variables.Register (Called_Info'Access,
+                                 Variable_Name => Rule_Id & ".CALLED_INFO");
 end Rules.Statements;

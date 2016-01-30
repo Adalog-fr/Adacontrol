@@ -40,7 +40,6 @@ package Rules.Statements is
    procedure Process_Statement         (Element       : in Asis.Statement);
    procedure Process_Others            (Definition    : in Asis.Definition);
    procedure Process_Function_Body     (Function_Body : in Asis.Declaration);
-   procedure Process_Function_Call     (Call          : in Asis.Expression);
 
    procedure Pre_Process_Loop  (Stmt : in Asis.Statement);
    procedure Post_Process_Loop (Stmt : in Asis.Statement);

@@ -18,6 +18,10 @@ Expressions
 Representation_Clauses:
    Subrule non_power2_size
 
+Statements
+   procedure_call, dynamic_procedure_call
+   (does not control dispatching function calls anymore)
+
 =============
 == V1.17b4 ==
 =============

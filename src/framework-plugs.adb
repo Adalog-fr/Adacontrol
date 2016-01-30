@@ -690,7 +690,6 @@ package body Framework.Plugs is
                   Rules.Not_Elaboration_Calls.    Process_Call                  (Element);
                   Rules.Side_Effect_Parameters.   Process_Call_Or_Instantiation (Element);
                   Rules.Simplifiable_Expressions. Process_Call                  (Element);
-                  Rules.Statements.               Process_Function_Call         (Element);
 
                when A_Parenthesized_Expression =>
                   Rules.Simplifiable_Expressions. Process_Parenthesized (Element);

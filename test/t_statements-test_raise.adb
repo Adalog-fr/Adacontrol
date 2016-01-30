@@ -21,8 +21,8 @@ procedure Test_Raise is
       raise Tasking_Error;     -- raise, raise_standard, locally handled (in task)
 
       accept E do
-         Raise_Exception (Constraint_Error'Identity, "message"); -- raise_standard
-         Raise_Exception (C2);                                   -- raise_standard
+         Raise_Exception (Constraint_Error'Identity, "message"); -- raise_standard, procedure_call
+         Raise_Exception (C2);                                   -- raise_standard, procedure_call
          raise Constraint_Error;  -- raise, raise_standard
          raise Tasking_Error;     -- raise, raise_standard
          raise Storage_Error;     -- raise, raise_standard, locally handled (in accept)
@@ -52,7 +52,7 @@ begin
          raise Program_Error;     -- raise, raise_standard
       exception
          when Occur: Tasking_Error =>
-            Reraise_Occurrence (Occur); -- reraise
+            Reraise_Occurrence (Occur); -- reraise, procedure_call
       end Pack2;
    begin
       raise Storage_Error;  -- raise, raise_standard, locally handled (in block)

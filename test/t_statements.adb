@@ -3,6 +3,8 @@ with Ada.Calendar; use Ada.Calendar;
 with Ada.Containers.Vectors;
 procedure T_statements is
    procedure Test_Raise is separate;
+   type Acc_Proc is access procedure;
+   Ptr_Proc : Acc_Proc := Test_Raise'Access;
 
    task T1 is
       entry E1;
@@ -109,7 +111,7 @@ procedure T_statements is
             I := Func (Object'Class (X));     -- Dispatching_call, redispatching_call
          end Nested;
       begin
-         Proc (Object'Class (X));             -- Dispatching_call, redispatching_call
+         Proc (Object'Class (X));             -- Dispatching_call, redispatching_call, procedure_call
       end Proc;
       function  Func (X : Object) return Integer is
       begin
@@ -213,7 +215,7 @@ B2:begin                   -- Block
    end loop;
 
    for I in Integer range 1 .. 10 loop   -- For_Loop, For_In_Loop, Unnamed_Multiple_Loop
-      P;
+      P;                                 -- procedure_call
       while I /= 0 loop                  -- While_Loop, Unnamed_While_Loop, Unnamed_Multiple_Loop
          null;                           -- Null
       end loop;
@@ -413,8 +415,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
       null;                                       -- null
    end;
 
-   Dispatching.Proc (Disp);                       -- Dispatching call
-   I := Dispatching.Func (Disp);                  -- Dispatching call
+   Dispatching.Proc (Disp);                       -- Dispatching call, procedure_call
 
 IPC:                                              -- Block, Declare Block, Effective Declare Block
    declare
@@ -449,10 +450,16 @@ IPC:                                              -- Block, Declare Block, Effec
 
       O : Orig;
       D : Der;
+      type Acc_Proc_Param is access procedure (X : out Pack.Orig);
+      Ptr : Acc_Proc_Param := Pack.Inh'Access;
    begin
-      Inh (O);
-      Redef (O);
-      Inh (D);       -- Inherited_Procedure_Call
-      Redef (D);
+      Inh (O);       -- procedure_call
+      Redef (O);     -- procedure_call
+      Inh (D);       -- Inherited_Procedure_Call, procedure_call
+      Redef (D);     -- procedure_call
+      Ptr (O);       -- procedure_call, dynamic_procedure_call
+      Ptr.all (O);   -- procedure_call, dynamic_procedure_call
    end IPC;
+
+   Ptr_Proc.all;     -- procedure_call, dynamic_procedure_call
 end T_statements;
