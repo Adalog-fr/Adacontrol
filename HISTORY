@@ -11,6 +11,10 @@ Changes to existing rules:
 Declarations:
    Subrule Synonym_Renaming
 
+Expressions
+   Subrules not, function_call, dynamic_function_call
+   dispatching_function_call, redispatching_function_call
+
 Representation_Clauses:
    Subrule non_power2_size
 

@@ -44,7 +44,7 @@ procedure Test_Real_Equality is
    type E is new Float;
    function "=" (A, B : E) return Boolean is
    begin
-      return abs (A - B) < 0.01;
+      return abs (A - B) < 0.01;   -- Unparenthesized
    end "=";
 
    VE1, VE2 : E;
@@ -60,11 +60,11 @@ begin
       null;
    elsif 1.0 /= VB1 then           -- real_equality
       null;
-   elsif VB1 /= X then             -- real_equality
+   elsif VB1 /= X then             -- real_equality, function_call
       null;
    elsif VSB1 = VSB2 then          -- real_equality
       null;
-   elsif VSB1 = X then             -- real_equality
+   elsif VSB1 = X then             -- real_equality, function_call
       null;
    elsif VC1 /= 0.0 then           -- real_equality
       null;
@@ -72,7 +72,7 @@ begin
       null;
    elsif VC1 /= C (0.0) then       -- real_equality, type_conversion
       null;
-   elsif VC1 = X then              -- real_equality
+   elsif VC1 = X then              -- real_equality, function_call
       null;
    elsif VD1 = VD2 then            -- real_equality
       null;
@@ -82,33 +82,33 @@ begin
       null;
    elsif VSD1 /= SD (0.0) then     -- real_equality, type_conversion
       null;
-   elsif VFloat /= X then          -- real_equality
+   elsif VFloat /= X then          -- real_equality, function_call
       null;
    elsif 0.0 = 1.0 then            -- real_equality
       null;
    end if;
 
-   if Equal (VA1, VA2) then        -- real_equality
+   if Equal (VA1, VA2) then        -- real_equality, function_call
       null;
    end if;
 
-   if VE1 = 1.0 then               -- OK
+   if VE1 = 1.0 then               -- function_call
       null;
-   elsif VE1 = VE2 then            -- OK
+   elsif VE1 = VE2 then            -- function_call
       null;
-   elsif VE2 /= 0.0 then           -- OK
+   elsif VE2 /= 0.0 then           -- function_call
       null;
-   elsif VE2 /= VE1 then           -- OK
+   elsif VE2 /= VE1 then           -- function_call
       null;
    end if;
 
-   if VDE1 = 1.0 then              -- Inherited_Function_Call
+   if VDE1 = 1.0 then              -- Inherited_Function_Call, Function_Call
       null;
-   elsif VDE1 = VDE2 then          -- Inherited_Function_Call
+   elsif VDE1 = VDE2 then          -- Inherited_Function_Call, Function_Call
       null;
-   elsif VDE2 /= 0.0 then          -- OK
+   elsif VDE2 /= 0.0 then          -- Function_Call
       null;
-   elsif VDE2 /= VDE1 then         -- OK
+   elsif VDE2 /= VDE1 then         -- Function_Call
       null;
    end if;
 

@@ -11,6 +11,7 @@ procedure Test_Logical_Operators is
    type Set is array (Byte) of Boolean;
    S1, S2 : Set;
 begin
+   B1 := not B2;          -- Not
    B1 := B1 and B2;       -- And, And_Boolean
    B1 := B1 or B2;        -- Or,  Or_Boolean
    B1 := B1 xor B2;       -- Xor, Xor_Boolean
@@ -30,5 +31,5 @@ begin
 
    S1 := S1 and S2;    -- And, And_Array
    S1 := S1 or  S2;    -- Or,  Or_Array
-   S1 := S1 xor S2;    -- Xor, Xor_Arrayy
+   S1 := S1 xor S2;    -- Xor, Xor_Array
 end Test_Logical_Operators;

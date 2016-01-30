@@ -7,10 +7,10 @@ procedure Test_2012 is
    S2  : constant String  := (if Set (1) then "One"                              -- if
                               elsif Set (2)then "Two"                            -- if_elsif
                               else "False");
---     S3  : constant String := (case S1 (1) is                                  -- case
---                               when 'A' .. 'Z' => "upper_letter",
---                               when 'a' .. 'z' => "lower letter",
---                               when others     => "not a letter");
+   S3  : constant String := (case S1 (1) is                                      -- case
+                                when 'A' .. 'Z' => "upper_letter",
+                                when 'a' .. 'z' => "lower letter",
+                                when others     => "not a letter");
 begin
    if (for all I in Set'Range => Set (I)) then                                   -- For_All
         null;

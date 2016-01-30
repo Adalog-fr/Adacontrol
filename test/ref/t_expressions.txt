@@ -82,15 +82,39 @@ t_expressions-test_attributes.adb:72:9: Error: attributes: use of expression "in
 t_expressions-test_attributes.adb:76:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_attributes.adb:78:13: Error: attributes: use of expression "inconsistent_attribute_dimension"
 t_expressions-test_attributes.adb:84:9: Error: attributes: use of expression "inconsistent_attribute_dimension"
-t_expressions-test_call.adb:29:22: Found: Aggregate: use of expression "record_aggregate"
-t_expressions-test_call.adb:34:22: Found: Aggregate: use of expression "record_aggregate"
-t_expressions-test_call.adb:39:21: Found: Aggregate: use of expression "record_aggregate"
-t_expressions-test_call.adb:50:7: Error: Calls: use of expression "complex_parameter"
-t_expressions-test_call.adb:51:7: Error: Calls: use of expression "complex_parameter"
-t_expressions-test_call.adb:52:7: Error: Calls: use of expression "complex_parameter"
-t_expressions-test_call.adb:52:10: Error: Calls: use of expression "complex_parameter"
-t_expressions-test_call.adb:56:9: Error: All_Inherited: use of expression "inherited_function_call"
-t_expressions-test_call.adb:56:9: Error: Record_Inherited: use of expression "record inherited_function_call"
+t_expressions-test_call.adb:31:22: Found: Aggregate: use of expression "record_aggregate"
+t_expressions-test_call.adb:36:22: Found: Aggregate: use of expression "record_aggregate"
+t_expressions-test_call.adb:41:21: Found: Aggregate: use of expression "record_aggregate"
+t_expressions-test_call.adb:52:9: Error: Int_Func_Call: use of expression "range function_call", T_Expressions{}.Test_Call{}.F{Standard.Integer return Standard.Integer}
+t_expressions-test_call.adb:52:9: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.F{Standard.Integer return Standard.Integer}
+t_expressions-test_call.adb:53:7: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_call.adb:53:7: Error: Int_Func_Call: use of expression "range function_call", T_Expressions{}.Test_Call{}.F{Standard.Integer return Standard.Integer}
+t_expressions-test_call.adb:53:7: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.F{Standard.Integer return Standard.Integer}
+t_expressions-test_call.adb:54:7: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_call.adb:55:7: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_call.adb:55:7: Error: Int_Func_Call: use of expression "range function_call", T_Expressions{}.Test_Call{}.F{Standard.Integer return Standard.Integer}
+t_expressions-test_call.adb:55:7: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.F{Standard.Integer return Standard.Integer}
+t_expressions-test_call.adb:55:10: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_call.adb:57:9: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.Pack.Inh{ return T_Expressions{}.Test_Call{}.Pack.Orig}
+t_expressions-test_call.adb:58:9: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.Pack.Redef{ return T_Expressions{}.Test_Call{}.Pack.Orig}
+t_expressions-test_call.adb:59:9: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.Pack.Inh{ return T_Expressions{}.Test_Call{}.Pack.Der}
+t_expressions-test_call.adb:59:9: Error: All_Inherited: use of expression "inherited_function_call"
+t_expressions-test_call.adb:59:9: Error: Record_Inherited: use of expression "record inherited_function_call"
+t_expressions-test_call.adb:60:9: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}.Pack.Redef{ return T_Expressions{}.Test_Call{}.Pack.Der}
+t_expressions-test_call.adb:62:9: Error: Int_Func_Call: use of expression "range function_call", Dynamic call
+t_expressions-test_call.adb:62:9: Error: Function_Call: use of expression "function_call", Dynamic call
+t_expressions-test_call.adb:62:9: Error: Dynamic: use of expression "dynamic_function_call"
+t_expressions-test_call.adb:62:9: Found: Impl_Deref: use of expression "implicit_dereference"
+t_expressions-test_call.adb:76:20: Error: Int_Func_Call: use of expression "range function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:76:20: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:76:20: Error: Dispatching: use of expression "dispatching_function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:76:20: Error: Dispatching: use of expression "redispatching_function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:76:24: Found: Conversions: use of expression "type_conversion"
+t_expressions-test_call.adb:80:29: Found: Aggregate: use of expression "record_aggregate"
+t_expressions-test_call.adb:86:24: Error: Int_Func_Call: use of expression "range function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:86:24: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:86:24: Error: Dispatching: use of expression "dispatching_function_call", T_Expressions{}.Test_Call{}._anonymous_.Object.F1{T_Expressions{}.Test_Call{}._anonymous_.Object.Instance return Standard.Integer}
+t_expressions-test_call.adb:86:28: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_conversions.adb:39:10: Found: From_Int_Conv: use of expression "range <> type_conversion"
 t_expressions-test_conversions.adb:39:10: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_conversions.adb:40:10: Found: From_Int_Conv: use of expression "range <> type_conversion"
@@ -123,10 +147,14 @@ t_expressions-test_conversions.adb:55:8: Found: View_Conv: use of expression "pa
 t_expressions-test_conversions.adb:55:8: Found: From_Int_Conv: use of expression "range <> type_conversion"
 t_expressions-test_conversions.adb:55:8: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_conversions.adb:57:17: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_conversions.adb:57:17: Error: Function_Call: use of expression "function_call", Ada.Text_IO.Text_Streams.Stream{Ada.Text_IO.File_Type return Ada.Text_IO.Text_Streams.Stream_Access}
 t_expressions-test_conversions.adb:57:25: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_conversions.adb:57:25: Error: Function_Call: use of expression "function_call", Ada.Text_IO.Standard_Input{ return Ada.Text_IO.File_Type}
 t_expressions-test_conversions.adb:58:42: Found: View_Conv: use of expression "parameter_view_conversion"
 t_expressions-test_conversions.adb:58:17: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_conversions.adb:58:17: Error: Function_Call: use of expression "function_call", Ada.Text_IO.Text_Streams.Stream{Ada.Text_IO.File_Type return Ada.Text_IO.Text_Streams.Stream_Access}
 t_expressions-test_conversions.adb:58:25: Error: Calls: use of expression "complex_parameter"
+t_expressions-test_conversions.adb:58:25: Error: Function_Call: use of expression "function_call", Ada.Text_IO.Standard_Input{ return Ada.Text_IO.File_Type}
 t_expressions-test_conversions.adb:58:42: Found: Arr_Conv: use of expression "<> array type_conversion"
 t_expressions-test_conversions.adb:58:42: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_conversions.adb:60:10: Found: Conversions: use of expression "type_conversion"
@@ -149,8 +177,14 @@ t_expressions-test_dereference.adb:45:14: Error: EXPRESSIONS: use of expression 
 t_expressions-test_dereference.adb:45:9: Found: Expl_Deref: use of expression "explicit_dereference"
 t_expressions-test_dereference.adb:45:14: Error: Ranges: use of expression "universal_range"
 t_expressions-test_dereference.adb:46:4: Found: Impl_Deref: use of expression "implicit_dereference"
+t_expressions-test_dereference.adb:46:18: Error: Int_Func_Call: use of expression "range function_call", Dynamic call
+t_expressions-test_dereference.adb:46:18: Error: Function_Call: use of expression "function_call", Dynamic call
+t_expressions-test_dereference.adb:46:18: Error: Dynamic: use of expression "dynamic_function_call"
 t_expressions-test_dereference.adb:46:18: Found: Impl_Deref: use of expression "implicit_dereference"
 t_expressions-test_dereference.adb:47:9: Found: Expl_Deref: use of expression "explicit_dereference"
+t_expressions-test_dereference.adb:47:18: Error: Int_Func_Call: use of expression "range function_call", Dynamic call
+t_expressions-test_dereference.adb:47:18: Error: Function_Call: use of expression "function_call", Dynamic call
+t_expressions-test_dereference.adb:47:18: Error: Dynamic: use of expression "dynamic_function_call"
 t_expressions-test_dereference.adb:47:23: Found: Expl_Deref: use of expression "explicit_dereference"
 t_expressions-test_dereference.adb:48:4: Found: Impl_Deref: use of expression "implicit_dereference"
 t_expressions-test_dereference.adb:49:9: Found: Expl_Deref: use of expression "explicit_dereference"
@@ -158,6 +192,8 @@ t_expressions-test_dereference.adb:51:9: Found: Impl_Deref: use of expression "i
 t_expressions-test_dereference.adb:52:14: Found: Expl_Deref: use of expression "explicit_dereference"
 t_expressions-test_dereference.adb:53:9: Found: Impl_Deref: use of expression "implicit_dereference"
 t_expressions-test_dereference.adb:54:14: Found: Expl_Deref: use of expression "explicit_dereference"
+t_expressions-test_dereference.adb:56:13: Error: Int_Func_Call: use of expression "range function_call", T_Expressions{}.Test_Dereference{}.Obj.F{T_Expressions{}.Test_Dereference{}.Obj.T return Standard.Integer}
+t_expressions-test_dereference.adb:56:13: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Dereference{}.Obj.F{T_Expressions{}.Test_Dereference{}.Obj.T return Standard.Integer}
 t_expressions-test_dereference.adb:56:9: Found: Impl_Deref: use of expression "implicit_dereference"
 t_expressions-test_fixed_multiplying_op.adb:11:15: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:11:15: Found: Unconv_Fixed_Op: unconverted fixed point multiplying operator
@@ -186,32 +222,33 @@ t_expressions-test_fixed_multiplying_op.adb:30:16: Error: Fixed_Op: fixed point 
 t_expressions-test_fixed_multiplying_op.adb:31:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:32:17: Error: Fixed_Op: fixed point multiplying operator
 t_expressions-test_fixed_multiplying_op.adb:33:17: Error: Fixed_Op: fixed point multiplying operator
-t_expressions-test_logical_operators.adb:14:13: Error: Operators: use of expression "and"
-t_expressions-test_logical_operators.adb:14:13: Error: Boolean: use of expression "and_boolean"
-t_expressions-test_logical_operators.adb:15:13: Error: Operators: use of expression "or"
-t_expressions-test_logical_operators.adb:15:13: Error: Boolean: use of expression "or_boolean"
-t_expressions-test_logical_operators.adb:16:13: Error: Operators: use of expression "xor"
-t_expressions-test_logical_operators.adb:16:13: Error: Boolean: use of expression "xor_boolean"
-t_expressions-test_logical_operators.adb:17:13: Error: Boolean: use of expression "and_then"
-t_expressions-test_logical_operators.adb:18:13: Error: Boolean: use of expression "or_else"
-t_expressions-test_logical_operators.adb:20:16: Error: In_operators: use of expression "in"
-t_expressions-test_logical_operators.adb:21:12: Error: In_operators: use of expression "not_in"
-t_expressions-test_logical_operators.adb:22:16: Error: In_operators: use of expression "in"
-t_expressions-test_logical_operators.adb:23:12: Error: In_operators: use of expression "not_in"
-t_expressions-test_logical_operators.adb:24:16: Error: In_operators: use of expression "in"
-t_expressions-test_logical_operators.adb:25:12: Error: In_operators: use of expression "not_in"
-t_expressions-test_logical_operators.adb:27:13: Error: Operators: use of expression "and"
-t_expressions-test_logical_operators.adb:27:13: Error: Binary: use of expression "and_binary"
-t_expressions-test_logical_operators.adb:28:13: Error: Operators: use of expression "or"
-t_expressions-test_logical_operators.adb:28:13: Error: Binary: use of expression "or_binary"
-t_expressions-test_logical_operators.adb:29:13: Error: Operators: use of expression "xor"
-t_expressions-test_logical_operators.adb:29:13: Error: Binary: use of expression "xor_binary"
-t_expressions-test_logical_operators.adb:31:13: Error: Operators: use of expression "and"
-t_expressions-test_logical_operators.adb:31:13: Error: Array: use of expression "and_array"
-t_expressions-test_logical_operators.adb:32:13: Error: Operators: use of expression "or"
-t_expressions-test_logical_operators.adb:32:13: Error: Array: use of expression "or_array"
-t_expressions-test_logical_operators.adb:33:13: Error: Operators: use of expression "xor"
-t_expressions-test_logical_operators.adb:33:13: Error: Array: use of expression "xor_array"
+t_expressions-test_logical_operators.adb:14:10: Error: Operators: use of expression "not"
+t_expressions-test_logical_operators.adb:15:13: Error: Operators: use of expression "and"
+t_expressions-test_logical_operators.adb:15:13: Error: Boolean: use of expression "and_boolean"
+t_expressions-test_logical_operators.adb:16:13: Error: Operators: use of expression "or"
+t_expressions-test_logical_operators.adb:16:13: Error: Boolean: use of expression "or_boolean"
+t_expressions-test_logical_operators.adb:17:13: Error: Operators: use of expression "xor"
+t_expressions-test_logical_operators.adb:17:13: Error: Boolean: use of expression "xor_boolean"
+t_expressions-test_logical_operators.adb:18:13: Error: Boolean: use of expression "and_then"
+t_expressions-test_logical_operators.adb:19:13: Error: Boolean: use of expression "or_else"
+t_expressions-test_logical_operators.adb:21:16: Error: In_operators: use of expression "in"
+t_expressions-test_logical_operators.adb:22:12: Error: In_operators: use of expression "not_in"
+t_expressions-test_logical_operators.adb:23:16: Error: In_operators: use of expression "in"
+t_expressions-test_logical_operators.adb:24:12: Error: In_operators: use of expression "not_in"
+t_expressions-test_logical_operators.adb:25:16: Error: In_operators: use of expression "in"
+t_expressions-test_logical_operators.adb:26:12: Error: In_operators: use of expression "not_in"
+t_expressions-test_logical_operators.adb:28:13: Error: Operators: use of expression "and"
+t_expressions-test_logical_operators.adb:28:13: Error: Binary: use of expression "and_binary"
+t_expressions-test_logical_operators.adb:29:13: Error: Operators: use of expression "or"
+t_expressions-test_logical_operators.adb:29:13: Error: Binary: use of expression "or_binary"
+t_expressions-test_logical_operators.adb:30:13: Error: Operators: use of expression "xor"
+t_expressions-test_logical_operators.adb:30:13: Error: Binary: use of expression "xor_binary"
+t_expressions-test_logical_operators.adb:32:13: Error: Operators: use of expression "and"
+t_expressions-test_logical_operators.adb:32:13: Error: Array: use of expression "and_array"
+t_expressions-test_logical_operators.adb:33:13: Error: Operators: use of expression "or"
+t_expressions-test_logical_operators.adb:33:13: Error: Array: use of expression "or_array"
+t_expressions-test_logical_operators.adb:34:13: Error: Operators: use of expression "xor"
+t_expressions-test_logical_operators.adb:34:13: Error: Array: use of expression "xor_array"
 t_expressions-test_membership.adb:20:12: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:21:12: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:21:9: Error: Operators: use of expression "or"
@@ -358,23 +395,36 @@ t_expressions-test_real_equality.adb:57:11: Found: EXPRESSIONS: equality or ineq
 t_expressions-test_real_equality.adb:59:14: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:61:14: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:63:14: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:63:17: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}.X{ return T_Expressions{}.Test_Real_Equality{}.B}
 t_expressions-test_real_equality.adb:65:15: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:67:15: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:67:17: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}.X{ return T_Expressions{}.Test_Real_Equality{}.B}
 t_expressions-test_real_equality.adb:69:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
 t_expressions-test_real_equality.adb:71:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
 t_expressions-test_real_equality.adb:73:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
 t_expressions-test_real_equality.adb:73:17: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:75:14: Found: EXPRESSIONS: equality or inequality with Ordinary Fixed Point
+t_expressions-test_real_equality.adb:75:16: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}.X{ return T_Expressions{}.Test_Real_Equality{}.C}
 t_expressions-test_real_equality.adb:77:14: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:79:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:81:14: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:83:15: Found: EXPRESSIONS: equality or inequality with Decimal Fixed Point
 t_expressions-test_real_equality.adb:83:18: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:85:17: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:85:20: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}.X{ return Standard.Float}
 t_expressions-test_real_equality.adb:87:14: Found: EXPRESSIONS: equality or inequality with two Universal Real constants
+t_expressions-test_real_equality.adb:91:7: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}.Equal{T_Expressions{}.Test_Real_Equality{}.A;T_Expressions{}.Test_Real_Equality{}.A return Standard.Boolean}
 t_expressions-test_real_equality.adb:91:7: Found: EXPRESSIONS: equality or inequality with Floating Point
+t_expressions-test_real_equality.adb:95:11: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."="{T_Expressions{}.Test_Real_Equality{}.E;T_Expressions{}.Test_Real_Equality{}.E return Standard.Boolean}
+t_expressions-test_real_equality.adb:97:14: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."="{T_Expressions{}.Test_Real_Equality{}.E;T_Expressions{}.Test_Real_Equality{}.E return Standard.Boolean}
+t_expressions-test_real_equality.adb:99:14: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."/="{T_Expressions{}.Test_Real_Equality{}.E;T_Expressions{}.Test_Real_Equality{}.E return Standard.Boolean}
+t_expressions-test_real_equality.adb:101:14: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."/="{T_Expressions{}.Test_Real_Equality{}.E;T_Expressions{}.Test_Real_Equality{}.E return Standard.Boolean}
+t_expressions-test_real_equality.adb:105:12: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."="{T_Expressions{}.Test_Real_Equality{}.DE;T_Expressions{}.Test_Real_Equality{}.DE return Standard.Boolean}
 t_expressions-test_real_equality.adb:105:7: Error: All_Inherited: use of expression "inherited_function_call"
+t_expressions-test_real_equality.adb:107:15: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."="{T_Expressions{}.Test_Real_Equality{}.DE;T_Expressions{}.Test_Real_Equality{}.DE return Standard.Boolean}
 t_expressions-test_real_equality.adb:107:10: Error: All_Inherited: use of expression "inherited_function_call"
+t_expressions-test_real_equality.adb:109:15: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."/="{T_Expressions{}.Test_Real_Equality{}.DE;T_Expressions{}.Test_Real_Equality{}.DE return Standard.Boolean}
+t_expressions-test_real_equality.adb:111:15: Error: Function_Call: use of expression "function_call", T_Expressions{}.Test_Real_Equality{}."/="{T_Expressions{}.Test_Real_Equality{}.DE;T_Expressions{}.Test_Real_Equality{}.DE return Standard.Boolean}
 t_expressions-test_slice.adb:5:10: Error: EXPRESSIONS: use of expression "slice"
 t_expressions-test_2012.adb:4:60: Found: Aggregate: use of expression "array_aggregate"
 t_expressions-test_2012.adb:4:60: Error: Unqualified: use of expression "unqualified_aggregate"
@@ -383,5 +433,6 @@ t_expressions-test_2012.adb:6:31: Found: Ada_2012: use of expression "if"
 t_expressions-test_2012.adb:6:31: Found: Ada_2012: use of expression "if_no_else"
 t_expressions-test_2012.adb:7:31: Found: Ada_2012: use of expression "if"
 t_expressions-test_2012.adb:8:31: Found: Ada_2012: use of expression "if_elsif"
+t_expressions-test_2012.adb:10:30: Found: Ada_2012: use of expression "case"
 t_expressions-test_2012.adb:15:8: Found: Ada_2012: use of expression "for_all"
 t_expressions-test_2012.adb:17:11: Found: Ada_2012: use of expression "for_some"

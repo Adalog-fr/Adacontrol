@@ -4651,33 +4651,35 @@ This rule controls usage of various kinds of expressions.
 <control_kind> expressions (<subrule> @{, <subrule>@});
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
-   and                              | and_array                  |
-   and_binary                       | and_boolean                |
-   and_then                         | array_aggregate            |
-   array_named_others               | array_non_static_range     |
-   array_others                     | array_partial_others       |
-   array_positional_others          | array_range                |
-   case                             | complex_parameter          |
-   downward_conversion              | extendable_aggregate       |
-   extension_aggregate              | explicit_dereference       |
-   fixed_multiplying_op             | for_all                    |
-   for_some                         | if                         |
-   if_elsif                         | if_no_else                 |
-   implicit_dereference             | in                         |
-   inconsistent_attribute_dimension | inherited_function_call    |
-   mixed_operators                  | not_in                     |
-   or                               | or_array                   |
-   or_binary                        | or_boolean                 |
-   or_else                          | parameter_view_conversion  |
-   prefixed_operator                | real_equality              |
-   record_partial_others            | record_aggregate           |
-   record_others                    | slice                      |
-   static_membership                | type_conversion            |
-   upward_conversion                | unconverted_multiplying_op |
-   underived_conversion             | universal_range            |
-   unqualified_aggregate            | xor                        |
-   xor_array                        | xor_binary                 |
-   xor_boolean
+   and                        | and_array                        |
+   and_binary                 | and_boolean                      |
+   and_then                   | array_aggregate                  |
+   array_named_others         | array_non_static_range           |
+   array_others               | array_partial_others             |
+   array_positional_others    | array_range                      |
+   case                       | complex_parameter                |
+   downward_conversion        | dispatching_function_calls       |
+   dynamic_function_calls     | extendable_aggregate             |
+   extension_aggregate        | explicit_dereference             |
+   fixed_multiplying_op       | for_all                          |
+   for_some                   | function_calls                   |
+   if                         | if_elsif                         |
+   if_no_else                 | implicit_dereference             |
+   in                         | inconsistent_attribute_dimension |
+   inherited_function_call    | mixed_operators                  |
+   not                        | not_in                           |
+   or                         | or_array                         |
+   or_binary                  | or_boolean                       |
+   or_else                    | parameter_view_conversion        |
+   prefixed_operator          | real_equality                    |
+   record_partial_others      | record_aggregate                 |
+   record_others              | redispatching_function_calls     |
+   slice                      | static_membership                |
+   type_conversion            | upward_conversion                |
+   unconverted_multiplying_op | underived_conversion             |
+   universal_range            | unqualified_aggregate            |
+   xor                        | xor_array                        |
+   xor_binary                 | xor_boolean
 <category> ::=
    <>     | ()     | range  | mod | delta   | digits | array    |
    record | tagged | access | new | private | task   | protected
@@ -4725,9 +4727,10 @@ and decimal fixed point types yet).
 The subrule define the kind of expression being controlled:
 @itemize @bullet
 @item
-@code{and}, @code{or}, @code{xor}, @code{and_then}, @code{or_else},
-@code{in}, and @code{not_in} control usage of the corresponding
-logical operator (or short circuit form, or membership test).
+@code{not}, @code{and}, @code{or}, @code{xor}, @code{and_then},
+@code{or_else}, @code{in}, and @code{not_in} control usage of the
+corresponding logical operator (or short circuit form, or membership
+test).
 @item
 @code{and_array}, @code{or_array}, and @code{xor_array} do the same,
 but only for operators whose result type is an array type.
@@ -4797,11 +4800,19 @@ explicitely given for a @code{'First}, @code{'Last}, @code{'Range} or
 multi-dimensional array, or conversely, when an explicit dimension is
 given, but the attribute applies to a one-dimensional array.
 @item
-@code{inherited_function_call} controls calls to functions that have
-been inherited by a derived type and not redefined. If a category is
-specified, only calls whose result type belongs to the category are
-controlled.
+@code{function_call} controls all calls to functions, incuding user
+defined operators, but not predefined operators (including the latter
+would generate too much noise). @code{dispatching_function_call} does
+the same, but only for dispatching calls while
+@code{redispatching_function_call} does the same, but only for
+dispatching calls that are (directly or indirectly) inside a primitive
+operation of a tagged type.  @code{dynamic_function_call} does the
+same, but only for calls through
+pointers. @code{inherited_function_call} controls calls to functions
+that have been inherited by a derived type and not redefined.
 
+For all @code{*_function_call} subrules, if a category is specified,
+only calls whose result type belongs to the category are controlled.
 Derived types are followed, i.e. the ``real'' category from the
 original type is used for the matching; as a consequence, the ``new''
 category cannot be specified for this subrule.

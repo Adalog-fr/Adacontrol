@@ -268,42 +268,47 @@ Parameter(2..): for interface: <convention name>
 Rule: EXPRESSIONS
 Control occurrences of Ada expressions
 
-Parameter(s): and                              | and_array                 |
-              and_binary                       | and_boolean               |
-              and_then                         | array_aggregate           |
-              array_named_others               | array_non_static_range    |
-              array_partial_others             | array_positional_others   |
-              array_others                     | array_range               |
-              case                             | complex_parameter         |
-              downward_conversion              | explicit_dereference      |
-              extendable_aggregate             | extension_aggregate       |
-              fixed_multiplying_op             | for_all                   |
-              for_some                         | if                        |
-              if_elsif                         | if_no_else                |
-              implicit_dereference             | in                        |
-              inconsistent_attribute_dimension | inherited_function_call   |
-              mixed_operators                  | not_in                    |
-              or                               | or_array                  |
-              or_binary                        | or_boolean                |
-              or_else                          | parameter_view_conversion |
-              prefixed_operator                | real_equality             |
-              record_aggregate                 | record_partial_others     |
-              record_others                    | static_membership         |
-              slice                            | type_conversion           |
-              unconverted_fixed_multiplying_op | underived_conversion      |
-              universal_range                  | unqualified_aggregate     |
-              upward_conversion                | xor                       |
-              xor_array                        | xor_binary                |
-              xor_boolean
+Parameter(s): and                       | and_array                        |
+              and_binary                | and_boolean                      |
+              and_then                  | array_aggregate                  |
+              array_named_others        | array_non_static_range           |
+              array_partial_others      | array_positional_others          |
+              array_others              | array_range                      |
+              case                      | complex_parameter                |
+              dispatching_function_call | dynamic_function_call            |
+              downward_conversion       | explicit_dereference             |
+              extendable_aggregate      | extension_aggregate              |
+              fixed_multiplying_op      | for_all                          |
+              for_some                  | function_call                    |
+              if                        | if_elsif                         |
+              if_no_else                | implicit_dereference             |
+              in                        | inconsistent_attribute_dimension |
+              inherited_function_call   | mixed_operators                  |
+              not                       | not_in                           |
+              or                        | or_array                         |
+              or_binary                 | or_boolean                       |
+              or_else                   | parameter_view_conversion        |
+              prefixed_operator         | real_equality                    |
+              record_aggregate          | record_partial_others            |
+              record_others             | redispatching_function_call      |
+              static_membership         | slice                            |
+              type_conversion           | unconverted_fixed_multiplying_op |
+              underived_conversion      | universal_range                  |
+              unqualified_aggregate     | upward_conversion                |
+              xor                       | xor_array                        |
+              xor_binary                | xor_boolean
 
 For all *_conversion subrules:
     [[<source_category>] <target_category>] <subrule>
 
-For subrules inherited_function_call and prefixed_operator:
+For all *_function_call and prefixed_operator subrules:
     [<result_category>] <subrule>
 Categories: <>     | ()      | range  | mod       | delta  |
             digits | array   | record | tagged    | access |
             new    | private | task   | protected
+
+Variables:
+Expressions.Called_Info: (None, Compact, Detailed, Root_Detailed) = None
 ----
 Rule: GENERIC_ALIASING
 Control instantiations where the same actual is given for

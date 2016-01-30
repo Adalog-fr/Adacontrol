@@ -6,9 +6,9 @@ procedure Test_Prefixed_Operator is
    P, Q : Float;
 begin
    -- Errors:
-   I := "+" (J, 1);                                         -- <>
-   A := T_Expressions.Test_Prefixed_Operator."-" (B, A);    -- <>
-   P := "+" (P, Q);                                         -- digits, <>
+   I := "+" (J, 1);                                         -- Prefixed_Operator
+   A := T_Expressions.Test_Prefixed_Operator."-" (B, A);    -- Prefixed_Operator
+   P := "+" (P, Q);                                         -- digits Prefixed_Operator, Prefixed_Operator
 
    -- OK:
    I := J + 1;

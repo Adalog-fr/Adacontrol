@@ -46,11 +46,13 @@ with
 with
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language,
-  Framework.Language.Shared_Keys;
+  Framework.Language.Shared_Keys,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Expressions is
-   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys,
+       Framework.Variables, Framework.Variables.Shared_Types;
 
    type Subrules is (E_And,                              E_And_Array,              E_And_Binary,
                      E_And_Boolean,                      E_And_Then,               E_Array_Aggregate,
@@ -59,11 +61,12 @@ package body Rules.Expressions is
 
                      E_Case,                             E_Complex_Parameter,
 
-                     E_Downward_Conversion,
+                     E_Dispatching_Function_Call,        E_Dynamic_Function_Call,  E_Downward_Conversion,
 
                      E_Explicit_Dereference,             E_Extendable_Aggregate,   E_Extension_Aggregate,
 
                      E_Fixed_Multiplying_Op,             E_For_All,                E_For_Some,
+                     E_Function_Call,
 
                      E_If,                               E_If_Elsif,               E_If_No_Else,
                      E_Implicit_Dereference,             E_In,                     E_Inconsistent_Attribute_Dimension,
@@ -71,7 +74,7 @@ package body Rules.Expressions is
 
                      E_Mixed_Operators,
 
-                     E_Not_In,
+                     E_Not,                              E_Not_In,
 
                      E_Or,                               E_Or_Array,               E_Or_Binary,
                      E_Or_Boolean,                       E_Or_Else,
@@ -79,7 +82,7 @@ package body Rules.Expressions is
                      E_Parameter_View_Conversion,        E_Prefixed_Operator,
 
                      E_Real_Equality,                    E_Record_Aggregate,       E_Record_Partial_Others,
-                     E_Record_Others,
+                     E_Record_Others,                    E_Redispatching_Function_Call,
 
                      E_Static_Membership,                E_Slice,
 
@@ -93,10 +96,6 @@ package body Rules.Expressions is
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "E_");
    use Subrules_Flags_Utilities;
-
-   Key_Inherited_Function_Call   : constant Entity_Specification := Value (Image (E_Inherited_Function_Call));
-   Key_Parameter_View_Conversion : constant Entity_Specification := Value (Image (E_Parameter_View_Conversion));
-   Key_Prefixed_Operator         : constant Entity_Specification := Value (Image (E_Prefixed_Operator));
 
    type Usage_Flags is array (Subrules) of Boolean;
    No_Rule_Used : constant Usage_Flags := (others => False);
@@ -112,6 +111,9 @@ package body Rules.Expressions is
    package Categories_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
 
    Expected_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Extension => False, others => True);
+
+   -- Rule variables
+   Called_Info : aliased Extra_Infos_Type.Object := (Value => None);
 
 
    ----------
@@ -129,9 +131,12 @@ package body Rules.Expressions is
       User_Message ("For all *_conversion subrules:");
       User_Message ("    [[<source_category>] <target_category>] <subrule>");
       User_Message;
-      User_Message ("For subrules inherited_function_call and prefixed_operator:");
+      User_Message ("For all *_function_call and prefixed_operator subrules:");
       User_Message ("    [<result_category>] <subrule>");
       Help_On_Modifiers (Header => "Categories:", Expected => Expected_Categories);
+      User_Message;
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Called_Info");
    end Help;
 
    -----------------
@@ -159,7 +164,13 @@ package body Rules.Expressions is
             Subrule := Get_Flag_Parameter (Allow_Any => False);
 
             case Subrule is
-               when E_Prefixed_Operator | E_Inherited_Function_Call =>
+               when E_Dispatching_Function_Call
+                  | E_Dynamic_Function_Call
+                  | E_Function_Call
+                  | E_Inherited_Function_Call
+                  | E_Prefixed_Operator
+                  | E_Redispatching_Function_Call
+                  =>
                   if Cat_List'Length > 1 then
                      Parameter_Error (Rule_Id, "At most one category allowed");
                   end if;
@@ -238,75 +249,71 @@ package body Rules.Expressions is
    ---------------
 
    -- This one for simple rules with only one context
-   procedure Do_Report (Expr : Subrules; Loc : Location) is
+   procedure Do_Report (Expr : Subrules; Loc : Location; Extra_Info : Wide_String := "") is
       use Framework.Reports, Utilities;
    begin
       if not Rule_Used (Expr) then
          return;
       end if;
 
-      Report (Rule_Id,
-              Association (Usage, Image (Expr)),
-              Loc,
-              "use of expression """ & Image (Expr, Lower_Case) & '"');
+      if Extra_Info = "" then
+         Report (Rule_Id,
+                 Association (Usage, Image (Expr)),
+                 Loc,
+                 "use of expression """ & Image (Expr, Lower_Case) & '"');
+      else
+         Report (Rule_Id,
+                 Association (Usage, Image (Expr)),
+                 Loc,
+                 "use of expression """ & Image (Expr, Lower_Case) & """, " & Extra_Info);
+      end if;
    end Do_Report;
-
-   -- This one for rules with several contexts
-   -- Avoids calling Association, which would reset the iterator while we are iterating!
-   -- Pre-Condition: Rule_Used (subrule) = True
-   procedure Do_Report (Expr : Subrules;
-                        Cont : Basic_Rule_Context'Class;
-                        Loc  : Location;
-                        Cats : Categories_Utilities.Modifier_List := Categories_Utilities.Empty_List)
-   is
-      use Framework.Reports, Categories_Utilities, Utilities;
-   begin
-      Report (Rule_Id,
-              Cont,
-              Loc,
-              "use of expression """ & Image (Cats) & Image (Expr, Lower_Case) & '"');
-   end Do_Report;
-
 
    ------------------------
    -- Do_Category_Report --
    ------------------------
 
-   procedure Do_Category_Report (Expr_List : Asis.Expression_List;
-                                 Cont      : Categories_Context;
-                                 Sr        : Subrules;
-                                 Loc       : Location)
+   -- For reports where a list of expressions (possibly 1) has to match a list of categories given as
+   -- contexts to the subrule
+   procedure Do_Category_Report (Subrule   : Subrules;
+                                 Expr_List : Asis.Expression_List;
+                                 Loc       : Location;
+                                 Extra     : Wide_String := "")
    is
-   begin
-      for E in Cont.Cats'Range loop
-         if not Matches (Expr_List (E), Cont.Cats (E), Follow_Derived => True) then
-            return;
-         end if;
-      end loop;
-      Do_Report (Sr, Cont, Loc, Cont.Cats);
-   end Do_Category_Report;
+      use Framework.Reports, Categories_Utilities, Utilities;
 
-
-   --------------------------
-   -- Do_Conversion_Report --
-   --------------------------
-
-   procedure Do_Conversion_Report (Source_Expr : Asis.Expression;
-                                   Target_Expr : Asis.Expression;
-                                   Subrule     : Subrules)
-   is
       Key  : constant Entity_Specification := Value (Image (Subrule));
       Iter : Context_Iterator := Categories_Iterator.Create;
    begin
       Reset (Iter, Key);
       while not Is_Exhausted (Iter) loop
-         Do_Category_Report ((Source_Expr, Target_Expr),
-                             Categories_Context (Value (Iter)),
-                             Subrule,
-                             Get_Location (Target_Expr));
+         declare
+            Cont        : constant Categories_Context := Categories_Context (Value (Iter));
+            All_Matches : Boolean := True;
+         begin
+            for E in Cont.Cats'Range loop
+               if not Matches (Expr_List (E), Cont.Cats (E), Follow_Derived => True) then
+                  All_Matches := False;
+                  exit;
+               end if;
+            end loop;
+            if All_Matches then
+               if Extra = "" then
+                  Report (Rule_Id,
+                          Cont,
+                          Loc,
+                          "use of expression """ & Image (Cont.Cats) & Image (Subrule, Lower_Case) & '"');
+               else
+                  Report (Rule_Id,
+                          Cont,
+                          Loc,
+                          "use of expression """ & Image (Cont.Cats) & Image (Subrule, Lower_Case) & """, " & Extra);
+               end if;
+            end if;
+         end;
          Next (Iter);
       end loop;
-   end Do_Conversion_Report;
+   end Do_Category_Report;
 
 
    ------------------------
@@ -384,11 +391,78 @@ package body Rules.Expressions is
    procedure Process_Function_Call (Call : in Asis.Expression) is
    -- Handles subrules: Prefixed_Operator, Mixed_Operators, Real_Equality, Fixed_Multiplying_Op,
    --                   Unconverted_Fixed_Multiplying_Op, And, Or, Xor
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Framework.Reports, Thick_Queries;
       Called : Asis.Expression  := Called_Simple_Name (Call);
-      Iter   : Context_Iterator := Categories_Iterator.Create;
-   begin
+
+      function Extra_Info (Name : Asis.Name) return Wide_String is
+         use Utilities;
+      begin
+         if Is_Nil (Name) then
+            if Called_Info.Value = None then
+               return "";
+            else
+               return "Dynamic call";
+            end if;
+         end if;
+
+         case Called_Info.Value is
+            when None =>
+               return "";
+            when Compact =>
+               return Adjust_Image (Full_Name_Image (Name, With_Profile => False));
+            when Detailed =>
+               return Adjust_Image (Full_Name_Image (Name, With_Profile => True));
+            when Root_Detailed =>
+               return Adjust_Image (Full_Name_Image (Ultimate_Name (Name), With_Profile => True));
+         end case;
+      end Extra_Info;
+
+   begin  -- Process_Function_Call
+
+      -- Rules for all calls, even dynamic ones
+      if   Rule_Used (E_Redispatching_Function_Call)
+        or Rule_Used (E_Dispatching_Function_Call)
+        or Rule_Used (E_Dynamic_Function_Call)
+        or Rule_Used (E_Function_Call)
+      then
+         if Expression_Kind (Called) /= An_Operator_Symbol
+           or else not Is_Nil (Corresponding_Name_Declaration (Called))
+         then
+            -- Predefined operators purposedly excluded
+
+            if Is_Nil (Called) then
+               Do_Category_Report (E_Function_Call,         (1 => Call), Get_Location (Call), Extra_Info (Called));
+               Do_Category_Report (E_Dynamic_Function_Call, (1 => Call), Get_Location (Call));
+            else
+               Do_Category_Report (E_Function_Call, (1 => Call), Get_Location (Called), Extra_Info (Called));
+            end if;
+
+            if Is_Dispatching_Call (Call) then
+               Do_Category_Report (E_Dispatching_Function_Call,
+                                   (1 => Call),
+                                   Get_Location (Called),
+                                   Extra_Info (Called));
+
+               if Rule_Used (E_Redispatching_Function_Call) then
+                  declare
+                     Name : Asis.Defining_Name := Enclosing_Program_Unit (Call);
+                  begin
+                     while not Is_Nil (Name) loop
+                        if Is_Dispatching_Operation (Corresponding_Declaration (Enclosing_Element (Name))) then
+                           Do_Category_Report (E_Redispatching_Function_Call,
+                                               (1 => Call),
+                                               Get_Location (Called),
+                                               Extra_Info (Called));
+                        end if;
+                        Name := Enclosing_Program_Unit (Name);
+                     end loop;
+                  end;
+               end if;
+            end if;
+         end if;
+      end if;
+
       if Is_Nil (Called) then
          -- Implicit or explicit dereference
          -- It could be argued that this is an uncheckable, but in this case no rule
@@ -400,14 +474,9 @@ package body Rules.Expressions is
       if Expression_Kind (Called) = An_Operator_Symbol then
          -- Prefixed_Operator
          if Rule_Used (E_Prefixed_Operator) and then Is_Prefix_Call (Call) then
-            Reset (Iter, Key_Prefixed_Operator);
-            while not Is_Exhausted (Iter) loop
-               Do_Category_Report ((1 => Call),
-                                   Categories_Context (Value (Iter)),
-                                   E_Prefixed_Operator,
-                                   Get_Location (Call));
-               Next (Iter);
-            end loop;
+            Do_Category_Report (E_Prefixed_Operator,
+                                  (1 => Call),
+                                  Get_Location (Call));
          end if;
 
          -- Mixed_Operators
@@ -434,14 +503,9 @@ package body Rules.Expressions is
         and then Expression_Kind (Called) /= An_Attribute_Reference
         and then Is_Part_Of_Inherited (Corresponding_Name_Definition (Called))
       then
-         Reset (Iter, Key_Inherited_Function_Call);
-         while not Is_Exhausted (Iter) loop
-            Do_Category_Report ((1 => Call),
-                                Categories_Context (Value (Iter)),
-                                E_Inherited_Function_Call,
+         Do_Category_Report (E_Inherited_Function_Call,
+                               (1 => Call),
                                 Get_Location (Call));
-            Next (Iter);
-         end loop;
       end if;
 
       case Operator_Kind (Called) is
@@ -592,6 +656,9 @@ package body Rules.Expressions is
 
          when An_Xor_Operator =>
             Do_Operator_Report (Call, E_Xor, E_Xor_Array, E_Xor_Binary, E_Xor_Boolean);
+
+         when A_Not_Operator =>
+            Do_Report (E_Not, Get_Location (Call));
 
          when others =>
             -- Including Not_An_Operator
@@ -933,9 +1000,9 @@ package body Rules.Expressions is
          when A_Type_Conversion =>
             -- E_Parameter_View_Conversion is handled by Process_Call
             if Rule_Used (E_Type_Conversion) then
-               Do_Conversion_Report (Converted_Or_Qualified_Expression (Expression),
-                                     Expression,
-                                     E_Type_Conversion);
+               Do_Category_Report (E_Type_Conversion,
+                                     (Converted_Or_Qualified_Expression (Expression), Expression),
+                                     Get_Location (Expression));
             end if;
 
             if Rule_Used (E_Underived_Conversion) then
@@ -949,9 +1016,9 @@ package body Rules.Expressions is
                     or else not Is_Equal (Ultimate_Type_Declaration (Source_Type),
                                           Ultimate_Type_Declaration (Target_Type))
                   then
-                     Do_Conversion_Report (Converted_Or_Qualified_Expression (Expression),
-                                           Expression,
-                                           E_Underived_Conversion);
+                     Do_Category_Report (E_Underived_Conversion,
+                                           (Converted_Or_Qualified_Expression (Expression), Expression),
+                                           Get_Location (Expression));
                   end if;
                end;
             end if;
@@ -971,9 +1038,9 @@ package body Rules.Expressions is
                     and then Is_Equal (Source_Descr.Ultimate_Type, Target_Descr.Ultimate_Type)
                     and then Source_Descr.Derivation_Depth > Target_Descr.Derivation_Depth
                   then
-                     Do_Conversion_Report (Converted_Or_Qualified_Expression (Expression),
-                                           Expression,
-                                           E_Upward_Conversion);
+                     Do_Category_Report (E_Upward_Conversion,
+                                           (Converted_Or_Qualified_Expression (Expression), Expression),
+                                           Get_Location (Expression));
                   end if;
                end;
             end if;
@@ -993,9 +1060,9 @@ package body Rules.Expressions is
                     and then Is_Equal (Source_Descr.Ultimate_Type, Target_Descr.Ultimate_Type)
                     and then Source_Descr.Derivation_Depth < Target_Descr.Derivation_Depth
                   then
-                     Do_Conversion_Report (Converted_Or_Qualified_Expression (Expression),
-                                           Expression,
-                                           E_Downward_Conversion);
+                     Do_Category_Report (E_Downward_Conversion,
+                                           (Converted_Or_Qualified_Expression (Expression), Expression),
+                                           Get_Location (Expression));
                   end if;
                end;
             end if;
@@ -1027,7 +1094,6 @@ package body Rules.Expressions is
       end case;
    end Process_Expression;
 
-
    ------------------
    -- Process_Call --
    ------------------
@@ -1038,7 +1104,6 @@ package body Rules.Expressions is
       type Callable_Kind is (Regular, Operator, Attribute);
       Called      : Asis.Element;
       Called_Kind : Callable_Kind;
-      Iter        : Context_Iterator := Categories_Iterator.Create;
    begin
       if not (   Rule_Used (E_Complex_Parameter)
               or Rule_Used (E_Parameter_View_Conversion)
@@ -1079,7 +1144,7 @@ package body Rules.Expressions is
          if not (Rule_Used (E_Complex_Parameter) or Rule_Used (E_Parameter_View_Conversion)) then
             return;
          end if;
-   end if;
+      end if;
 
       case Expression_Kind (Called) is
          when An_Operator_Symbol =>
@@ -1095,14 +1160,9 @@ package body Rules.Expressions is
                   if Rule_Used (E_Parameter_View_Conversion)
                     and then Expression_Kind (Expression) = A_Type_Conversion
                   then
-                     Reset (Iter, Key_Parameter_View_Conversion);
-                     while not Is_Exhausted (Iter) loop
-                        Do_Category_Report ((Converted_Or_Qualified_Expression (Expression), Expression),
-                                            Categories_Context (Value (Iter)),
-                                            E_Parameter_View_Conversion,
-                                            Get_Location (Expression));
-                        Next (Iter);
-                     end loop;
+                     Do_Category_Report (E_Parameter_View_Conversion,
+                                         (Converted_Or_Qualified_Expression (Expression), Expression),
+                                         Get_Location (Expression));
                   end if;
                end;
             end if;
@@ -1144,14 +1204,9 @@ package body Rules.Expressions is
                                   Get_Location (Expression),
                                   "type conversion used in dispatching call");
                   elsif Mode_Kind (Enclosing_Element (Formal)) in An_Out_Mode .. An_In_Out_Mode then
-                     Reset (Iter, Key_Parameter_View_Conversion);
-                     while not Is_Exhausted (Iter) loop
-                        Do_Category_Report ((Converted_Or_Qualified_Expression (Expression), Expression),
-                                            Categories_Context (Value (Iter)),
-                                            E_Parameter_View_Conversion,
-                                            Get_Location (Expression));
-                        Next (Iter);
-                     end loop;
+                     Do_Category_Report (E_Parameter_View_Conversion,
+                                         (Converted_Or_Qualified_Expression (Expression), Expression),
+                                         Get_Location (Expression));
                   end if;
                end if;
             end loop;
@@ -1196,4 +1251,6 @@ begin  -- Rules.Expressions
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
 
+   Framework.Variables.Register (Called_Info'Access,
+                                 Variable_Name => Rule_Id & ".CALLED_INFO");
 end Rules.Expressions;

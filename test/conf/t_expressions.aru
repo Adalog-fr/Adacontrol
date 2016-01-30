@@ -1,6 +1,7 @@
+set expressions.called_info detailed;
                     check  expressions (slice);
                     search expressions (real_equality);
-Operators         : check  expressions (and, or, xor);
+Operators         : check  expressions (and, or, xor, not);
 Array             : check  expressions (and_array, or_array, xor_array);
 Boolean           : check  expressions (and_boolean, or_boolean, xor_boolean, and_then, or_else);
 Binary            : check  expressions (and_binary, or_binary, xor_binary);
@@ -35,3 +36,7 @@ Expl_Deref        : search expressions (Explicit_Dereference);
 Ada_2012          : search expressions (if, if_elsif, if_no_else, case, for_all, for_some);
 In_operators      : check  expressions (in, not_in);
 Static_Member     : check  expressions (static_membership);
+Function_Call     : check  expressions (function_call);
+Dynamic           : check  expressions (dynamic_function_call);
+Dispatching       : check  expressions (dispatching_function_call, redispatching_function_call);
+Int_Func_Call     : check  expressions (range function_call);

@@ -54,10 +54,10 @@ begin
    P3 (I1);
    P3 (Integer (I1));   -- parameter_view_conversion, range <> type_conversion, type conversion
 
-   String'Read (Stream (Standard_Input), S1);          -- complex_parameter (x2)
-   String'Read (Stream (Standard_Input), String (S1)); -- complex_parameter (x2), parameter_view_conversion, <> array type_conversion, type_conversion
+   String'Read (Stream (Standard_Input), S1);          -- complex_parameter (x2), Function_Call (x2)
+   String'Read (Stream (Standard_Input), String (S1)); -- complex_parameter (x2), Function_Call (x2), parameter_view_conversion, <> array type_conversion, type_conversion
 
-   T1 := Tag1 (T2);            -- type_conversion, tagged upward_conversion
-   T1 := Tag1 (T3);            -- type_conversion, tagged upward_conversion
-   T3 := Tag3(Tag1'Class(T3)); -- type_conversion x2, tagged_downward_conversion, tagged upward_conversion
+   T1 := Tag1 (T2);            -- type_conversion, <> tagged upward_conversion
+   T1 := Tag1 (T3);            -- type_conversion, <> tagged upward_conversion
+   T3 := Tag3(Tag1'Class(T3)); -- type_conversion x2, <> tagged_downward_conversion, <> tagged upward_conversion
 end Test_Conversions;

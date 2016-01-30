@@ -43,8 +43,8 @@ begin
    V_As.all (1) := 'a';          -- Explicit dereference
    V_As     (1..2) := "ab";      -- Implicit dereference, slice, universal_range
    V_As.all (1..2) := "ab";      -- Explicit dereference, slice, universal_range
-   V_Ar.    I := V_Af (1);       -- Implicit dereference x2
-   V_Ar.all.I := V_Af.all (1);   -- Explicit dereference x2
+   V_Ar.    I := V_Af (1);       -- Implicit dereference x2, range Function_Call, Function_Call, Dynamic_Function_Call
+   V_Ar.all.I := V_Af.all (1);   -- Explicit dereference x2, range Function_Call, Function_Call, Dynamic_Function_Call
    V_Ap     (V_As);              -- Implicit dereference
    V_Ap.all (V_As);              -- Explicit dereference
 
@@ -53,5 +53,5 @@ begin
    I := V_As    'Component_Size; -- Implicit dereference
    I := V_As.all'Component_Size; -- Explicit dereference
 
-   I := Ptr.F;                   -- Implicit dereference
+   I := Ptr.F;                   -- Implicit dereference,, range Function_Call, Function_Call
 end Test_Dereference;
