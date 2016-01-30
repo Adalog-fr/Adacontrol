@@ -53,5 +53,8 @@ package Framework.Variables.Shared_Types is
    type Verbosity is (Compact, Detailed);
    package Verbosity_Type is new Discrete_Type (Verbosity);
 
+   type Extra_Infos is (None, Compact, Detailed, Root_Detailed);
+   package Extra_Infos_Type is new Discrete_Type (Extra_Infos);
+
    package Natural_Type is new Integer_Type (Natural);
 end Framework.Variables.Shared_Types;
