@@ -62,7 +62,7 @@ with
 procedure Adactl is
    use Ada.Characters.Handling, Ada.Calendar;
    use Asis.Implementation;
-   use Utilities, Adactl_Options, Framework.Variables.Shared_Types;
+   use Utilities, Adactl_Options, Framework.Variables.Shared_Types, Units_List;
 
    -- Return codes:
    OK            : constant Ada.Command_Line.Exit_Status :=  0;
@@ -72,27 +72,36 @@ procedure Adactl is
 
    Start_Time : constant Time := Clock;
 
+  -- Indices of Recursion_Table: (Recursive_Option, Spec_Option)
+   Recursion_Table : constant array (Switch, Switch) of Recursion_Mode
+                     := (Off => (Off => None, On => None),
+                         On  => (Off => Full, On => Spec_Closure));
+
    use Framework.Language;
 begin
+
+   --
+   -- Init
+   --
    Thick_Queries.Set_Error_Procedure (Utilities.Failure'Access);
    Framework.Rules_Manager.Initialize;
    Framework.Variables.Initialize;
 
    Analyse_Options;
 
-   if Action not in No_Asis_Actions then
-      --
-      -- Init
-      --
+   if Action in Need_Asis_Actions then
       User_Log ("Loading units, please wait...");
       Asis.Implementation.Initialize (Initialize_String);
       Asis.Ada_Environments.Associate (Framework.Adactl_Context, "Adactl", Asis_Options);
       Asis.Ada_Environments.Open (Framework.Adactl_Context);
-      Units_List.Register (Unit_Spec  => Ada_Units_List,
-                           Recursive  => Recursive_Option = On,
+      Units_List.Register (Units_Spec  => Ada_Units_List,
+                           Recursion  => Recursion_Table (Recursive_Option, Spec_Option),
                            Add_Stubs  => False);
    end if;
 
+   --
+   -- Execute action
+   --
    case Action is
       when Help =>
          Execute (Command_Line_Commands);

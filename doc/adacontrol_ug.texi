@@ -713,6 +713,13 @@ will process @code{my_main} and all units that @code{my_main} depends
 on. If @code{my_main} is the main procedure, this means that the whole
 program will be processed.
 
+If both options ``-r'' and ``-s'' are given, then AdaControl will
+process all units given on the command line, plus (recursively) the
+specifications (but not the bodies) of all units that the given units
+depend on. In short, it will process the minimal transitive closure of
+all compilation units that are necessary to compile the units given on
+the command line.
+
 It is possible to specify more than one unit (not file) to process in
 a parameter by separating the names with ``+''.  Conversely, it is
 possible to specify units that are @i{not} to be processed, separated
@@ -1116,15 +1123,27 @@ adactl -D [-rsvw] [-o <output file>] [-p <project file>]
 In this mode, AdaControl outputs the list of units that would be
 processed. It is especially useful when used with the ``-r'' option
 and given the main unit name, since it will then generate the whole
-list of dependent units (hence the name ``D'').
+dependencies list  (hence the name ``D''), i.e. the list of units that
+are part of the program. However, if -D is used with -s, the list
+includes only transitive dependencies from the specifications of
+required units (but not from their bodies). This is the list of all
+units required to compile the given units.
 
-This list can be directed to a file with the ``-o'' option (if the
+The list can be directed to a file with the ``-o'' option (if the
 file exists, it won't be overwritten unless the ``-w'' option is
 specified).  This file can then be used in an indirect list of
 units. @xref{Input units}. Note that it is more efficient to create
 the list of units once and then use the indirect file than to specify
 all applicable units or use the ``-r'' option each time AdaControl is
 run.
+
+@subsubsection Limitation
+If you use the ``-Drs'' option to generate the minimum set of required
+units to compile the given unit, note that some units may still be
+missing when the compiler requires the presence of a body due to
+inlining of subprograms or generic instantiations. These units depend
+on the compiler and cannot be computed from the text of the program
+alone.
 
 @node Running AdaControl from GPS, Running AdaControl from AdaGide, Other execution modes, Program Usage
 @section Running AdaControl from GPS
@@ -10109,6 +10128,13 @@ to:
 check statements  (dispatching_call, redispatching_call);
 check expressions (dispatching_function_call, redispatching_function_call);
 @end example
+
+@subsection Use of command line options -r and -s
+Previous versions mentionned in the command line syntax that ``-r''
+and ``-s'' could be used together, but the effect of this combination
+was not documented. It has now a documented (and slightly different,
+but more useful) effect. See @ref{Input units} and @ref{Generating a
+units list}.
 
 @section Migrating from 1.16r11
 @subsection Declarations, Entities, Instantiations

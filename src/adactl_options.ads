@@ -38,7 +38,7 @@ package Adactl_Options is
    use Framework.Variables.Shared_Types;
 
    type Action_Kinds is (Help, Check, Process, Interactive_Process, Dependents);
-   subtype No_Asis_Actions is Action_Kinds range Help .. Check;
+   subtype Need_Asis_Actions is Action_Kinds range Process .. Action_Kinds'Last;
 
    Action : Action_Kinds;
 
