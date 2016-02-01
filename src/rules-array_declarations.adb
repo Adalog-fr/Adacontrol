@@ -430,7 +430,7 @@ package body Rules.Array_Declarations is
           Process_First_Last;
        end if;
 
-      if Rule_Used (Length) /= (Control_Kinds => False)
+      if Rule_Used (Length) /= Empty_Control_Kinds_Set
         and then Type_Kind (Definition) /= An_Unconstrained_Array_Definition
       then
          Process_Length;

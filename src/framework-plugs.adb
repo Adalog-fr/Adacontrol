@@ -508,7 +508,7 @@ package body Framework.Plugs is
                         Rules.Derivations. Process_Derivation (Element);
                      when A_Constrained_Array_Definition =>
                         Rules.Array_Declarations. Process_Array_Definition             (Element);
-                        Rules.No_Operator_Usage.  Process_Array_Definition (Element);
+                        Rules.No_Operator_Usage.  Process_Array_Definition             (Element);
                         Rules.Non_Static.         Process_Constrained_Array_Definition (Element);
                         Rules.Type_Usage.         Process_Array_Definition             (Element);
                      when An_Unconstrained_Array_Definition =>

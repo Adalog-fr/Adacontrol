@@ -3,7 +3,7 @@ with "adalog_comps";
 
 project Adactl is
 
-   for Languages use ("Ada", "Adacontrol", "Project File", "Python", "Texinfo");
+   for Languages use ("Ada", "Adacontrol", "Project File");
    for Object_Dir use "adalib";
    for Main use ("adactl.adb", "pfni.adb", "ptree.adb");
 
@@ -23,7 +23,7 @@ project Adactl is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat05");
+      for Default_Switches ("ada") use ("-gnatn", "-gnatQ", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwcfkmruvz", "-gnatyabfhnM120", "-O2", "-gnat12");
       for Driver ("adacontrol") use "";
    end Compiler;
 
@@ -40,4 +40,3 @@ project Adactl is
    end Pretty_Printer;
 
 end Adactl;
-
