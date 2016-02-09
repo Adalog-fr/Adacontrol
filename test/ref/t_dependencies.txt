@@ -3,7 +3,7 @@ t_dependencies.adb:2:6: Error: others: unit depends on X_Dependencies.Child
 t_dependencies.adb:3:1: Error: less than 10: number of withed units < 10 (2)
 t_dependencies.adb:3:1: Error: all direct: direct dependencies > 0 (2)
 t_dependencies.adb:3:1: Error: not between 5 and 10: direct dependencies not in 5..10 (2)
-x_dependencies.ads:1:6: Error: forbidden: unit depends on Text_IO
+x_dependencies.ads:1:6: Error: forbidden: unit depends on TEXT_IO
 x_dependencies.ads:3:6: Error: others: unit depends on Ada.Numerics
 x_dependencies.ads:4:6: Error: others: unit depends on Ada
 x_dependencies.ads:4:11: Error: others: unit depends on Ada

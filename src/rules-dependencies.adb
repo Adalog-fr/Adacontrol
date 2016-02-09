@@ -366,8 +366,8 @@ package body Rules.Dependencies is
                         Report (Rule_Id,
                                 Cont,
                                 Get_Location (Elem),
-                                "unit depends on " & Full_Name_Image (Elem));
-                     end if;
+                                "unit depends on " & Last_Matching_Name (Forbidden_Entities));
+                                end if;
                   end;
                   exit when Expression_Kind (Elem) /= A_Selected_Component;
                   Elem := Prefix (Elem);
