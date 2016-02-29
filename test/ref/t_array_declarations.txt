@@ -1,18 +1,18 @@
 t_array_declarations-indexes.adb:8:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations-indexes.adb:8:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:8:23: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (6)
 t_array_declarations-indexes.adb:8:16: Error: Index_T6: array index is Range
-t_array_declarations-indexes.adb:9:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:9:23: Found: ARRAY_DECLARATIONS: array type dimension is bigger than 4 (5)
 t_array_declarations-indexes.adb:9:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:10:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:10:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:12:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations-indexes.adb:12:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:12:23: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (6)
 t_array_declarations-indexes.adb:12:16: Error: Index_T6: array index is Range
-t_array_declarations-indexes.adb:13:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:13:23: Found: ARRAY_DECLARATIONS: array type dimension is bigger than 4 (5)
 t_array_declarations-indexes.adb:13:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:14:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:14:16: Error: Index_T6: array index is Range
-t_array_declarations-indexes.adb:16:23: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:16:23: Found: ARRAY_DECLARATIONS: array type dimension is bigger than 4 (5)
 t_array_declarations-indexes.adb:16:16: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:17:23: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:17:16: Error: Index_T6: array index is Range
@@ -22,34 +22,36 @@ t_array_declarations-indexes.adb:20:15: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:21:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:21:15: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:23:22: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations-indexes.adb:23:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
-t_array_declarations-indexes.adb:24:22: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:23:22: Error: ARRAY_DECLARATIONS: array subtype dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:24:22: Found: ARRAY_DECLARATIONS: array subtype dimension is bigger than 4 (5)
 t_array_declarations-indexes.adb:25:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:27:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations-indexes.adb:27:16: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-indexes.adb:27:16: Error: ARRAY_DECLARATIONS: array variable dimension is bigger than 5 (6)
 t_array_declarations-indexes.adb:27:9: Error: Index_T6: array index is Range
-t_array_declarations-indexes.adb:28:16: Found: ARRAY_DECLARATIONS: array dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:28:16: Found: ARRAY_DECLARATIONS: array variable dimension is bigger than 4 (5)
 t_array_declarations-indexes.adb:28:9: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:29:16: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-indexes.adb:29:9: Error: Index_T6: array index is Range
 t_array_declarations-indexes.adb:30:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:30:32: Error: ARRAY_DECLARATIONS: array variable dimension is bigger than 5 (9)
 t_array_declarations-indexes.adb:30:9: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-indexes.adb:30:9: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-indexes.adb:30:9: Error: Index_TTT2: array indices are Range, Range, <>
 t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-indexes.adb:31:16: Error: ARRAY_DECLARATIONS: array dimension is smaller than 1 (0)
-t_array_declarations-indexes.adb:31:24: Found: ARRAY_DECLARATIONS: array dimension is smaller than 2 (1)
-t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (9)
+t_array_declarations-indexes.adb:31:16: Error: ARRAY_DECLARATIONS: array variable dimension is smaller than 1 (0)
+t_array_declarations-indexes.adb:31:24: Found: ARRAY_DECLARATIONS: array variable dimension is smaller than 2 (1)
+t_array_declarations-indexes.adb:31:32: Error: ARRAY_DECLARATIONS: array variable dimension is bigger than 5 (9)
 t_array_declarations-indexes.adb:31:9: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-indexes.adb:31:9: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-indexes.adb:31:9: Error: Index_TTT2: array indices are Range, Range, <>
-t_array_declarations-indexes.adb:33:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1000)
-t_array_declarations-indexes.adb:33:16: Error: Index_T6: array index is Range
-t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (1001)
-t_array_declarations-indexes.adb:34:23: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (1001)
-t_array_declarations-indexes.adb:34:16: Error: Index_T6: array index is Range
+t_array_declarations-indexes.adb:32:9: Found: ARRAY_DECLARATIONS: array variable dimension is bigger than 4 (6)
+t_array_declarations-indexes.adb:33:9: Found: ARRAY_DECLARATIONS: array variable dimension is bigger than 4 (5)
+t_array_declarations-indexes.adb:35:23: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (1000)
+t_array_declarations-indexes.adb:35:16: Error: Index_T6: array index is Range
+t_array_declarations-indexes.adb:36:23: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (1001)
+t_array_declarations-indexes.adb:36:23: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (1001)
+t_array_declarations-indexes.adb:36:16: Error: Index_T6: array index is Range
 t_array_declarations-dimensions.adb:3:15: Error: Index_T6: array index is Range
 t_array_declarations-dimensions.adb:4:15: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
 t_array_declarations-dimensions.adb:5:39: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (-1)
@@ -114,60 +116,60 @@ t_array_declarations-component.adb:70:37: Error: compo_float: array component is
 t_array_declarations-index_types.adb:10:15: Error: Index_T5: array index is ()
 t_array_declarations-index_types.adb:10:15: Error: Index_T1: array index is T_Array_Declarations.Index_Types.Enum
 t_array_declarations-index_types.adb:11:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (5)
-t_array_declarations-index_types.adb:11:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (6)
+t_array_declarations-index_types.adb:11:22: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (6)
 t_array_declarations-index_types.adb:11:15: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:11:15: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
 t_array_declarations-index_types.adb:12:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:12:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:12:22: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
 t_array_declarations-index_types.adb:12:15: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:12:15: Error: Index_T4: array index is T_Array_Declarations.Index_Types.Sub_Int
 t_array_declarations-index_types.adb:12:15: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
-t_array_declarations-index_types.adb:13:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (256)
+t_array_declarations-index_types.adb:13:22: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (256)
 t_array_declarations-index_types.adb:13:15: Error: Index_T7: array index is Mod
 t_array_declarations-index_types.adb:13:15: Error: Index_T3: array index is T_Array_Declarations.Index_Types.Uns
 t_array_declarations-index_types.adb:14:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:14:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:14:22: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
 t_array_declarations-index_types.adb:14:15: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:15:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:15:22: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:15:22: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
 t_array_declarations-index_types.adb:15:15: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:15:15: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
-t_array_declarations-index_types.adb:17:15: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:17:15: Error: ARRAY_DECLARATIONS: array variable dimension is bigger than 5 (10)
 t_array_declarations-index_types.adb:17:8: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:17:8: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
 t_array_declarations-index_types.adb:18:8: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:18:8: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
-t_array_declarations-index_types.adb:19:15: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:19:15: Error: ARRAY_DECLARATIONS: array variable dimension is bigger than 5 (10)
 t_array_declarations-index_types.adb:19:8: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:19:8: Error: Index_T2: array index is T_Array_Declarations.Index_Types.Int
-t_array_declarations-index_types.adb:20:16: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:20:16: Error: ARRAY_DECLARATIONS: array variable dimension is bigger than 5 (10)
 t_array_declarations-index_types.adb:20:9: Error: Index_T6: array index is Range
 t_array_declarations-index_types.adb:21:16: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-index_types.adb:21:9: Error: Index_T5: array index is ()
 t_array_declarations-index_types.adb:21:9: Error: Index_T1: array index is T_Array_Declarations.Index_Types.Enum
 t_array_declarations-index_types.adb:23:29: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:23:29: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:23:29: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
 t_array_declarations-index_types.adb:23:16: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
 t_array_declarations-index_types.adb:23:16: Error: Index_TT1: array indices are T_Array_Declarations.Index_Types.Enum, Range
 t_array_declarations-index_types.adb:24:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
-t_array_declarations-index_types.adb:24:29: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:24:29: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (10)
 t_array_declarations-index_types.adb:24:16: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
 t_array_declarations-index_types.adb:24:16: Error: Index_TT1: array indices are T_Array_Declarations.Index_Types.Enum, Range
 t_array_declarations-index_types.adb:25:23: Found: ARRAY_DECLARATIONS: lower bound of array is not 1 (0)
 t_array_declarations-index_types.adb:25:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:25:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:25:33: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
 t_array_declarations-index_types.adb:25:16: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (2)
 t_array_declarations-index_types.adb:25:16: Error: Index_TT1: array indices are T_Array_Declarations.Index_Types.Enum, Range
 t_array_declarations-index_types.adb:27:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:27:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
-t_array_declarations-index_types.adb:27:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (256)
+t_array_declarations-index_types.adb:27:33: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:27:42: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (256)
 t_array_declarations-index_types.adb:27:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-index_types.adb:27:17: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-index_types.adb:27:17: Error: Index_TTT1: array indices are <>, Range, T_Array_Declarations.Index_Types.Uns
 t_array_declarations-index_types.adb:28:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:28:24: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
-t_array_declarations-index_types.adb:28:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
-t_array_declarations-index_types.adb:28:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (256)
+t_array_declarations-index_types.adb:28:24: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:28:33: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:28:42: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (256)
 t_array_declarations-index_types.adb:28:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-index_types.adb:28:17: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-index_types.adb:28:17: Error: Index_TTT3: array indices are T_Array_Declarations.Index_Types.Int, Range, <>
@@ -175,17 +177,17 @@ t_array_declarations-index_types.adb:28:17: Error: Index_TTT2: array indices are
 t_array_declarations-index_types.adb:28:17: Error: Index_TTT1: array indices are <>, Range, T_Array_Declarations.Index_Types.Uns
 t_array_declarations-index_types.adb:29:24: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
 t_array_declarations-index_types.adb:29:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:29:24: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
-t_array_declarations-index_types.adb:29:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
-t_array_declarations-index_types.adb:29:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (256)
+t_array_declarations-index_types.adb:29:24: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:29:33: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:29:42: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (256)
 t_array_declarations-index_types.adb:29:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-index_types.adb:29:17: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-index_types.adb:29:17: Error: Index_TTT2: array indices are Range, Range, <>
 t_array_declarations-index_types.adb:29:17: Error: Index_TTT1: array indices are <>, Range, T_Array_Declarations.Index_Types.Uns
 t_array_declarations-index_types.adb:30:33: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (2)
-t_array_declarations-index_types.adb:30:24: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
-t_array_declarations-index_types.adb:30:33: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (7)
-t_array_declarations-index_types.adb:30:42: Error: ARRAY_DECLARATIONS: array dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:30:24: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (10)
+t_array_declarations-index_types.adb:30:33: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (7)
+t_array_declarations-index_types.adb:30:42: Error: ARRAY_DECLARATIONS: array type dimension is bigger than 5 (10)
 t_array_declarations-index_types.adb:30:17: Found: ARRAY_DECLARATIONS: array has more than 1 dimensions (3)
 t_array_declarations-index_types.adb:30:17: Error: Index_TTT4: array indices are <>, <>, <>
 t_array_declarations-index_types.adb:30:17: Error: Index_TTT3: array indices are T_Array_Declarations.Index_Types.Int, Range, <>

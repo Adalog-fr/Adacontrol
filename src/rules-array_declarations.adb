@@ -66,6 +66,7 @@ package body Rules.Array_Declarations is
    Labels : array (Dim_Subrules, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Values : array (Dim_Subrules, Control_Kinds) of Language.Shared_Keys.Bounds_Values
      := (others => (others => (Min => 0, Max => Thick_Queries.Biggest_Natural'Last)));
+   Length_Is_All : Control_Kinds_Set := Empty_Control_Kinds_Set;
 
    type Index_Context (Nb_Dims : Asis.ASIS_Positive) is new Basic_Rule_Context with
       record
@@ -106,7 +107,8 @@ package body Rules.Array_Declarations is
       User_Message ("Rule: "& Rule_Id);
       User_Message ("Controls various parameters related to array types or objects declarations");
       User_Message;
-      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):",
+                                             Footer => "(optional modifier for length: all)");
       User_Message;
       User_Message ("For First, Last, Length, Dimensions:");
       User_Message ("Parameter(2..3): <bound> <value>");
@@ -159,7 +161,12 @@ package body Rules.Array_Declarations is
          Parameter_Error (Rule_Id, "parameters required");
       end if;
 
+      Length_Is_All (Ctl_Kind) := Get_Modifier ("ALL");
       Subrule := Get_Flag_Parameter (Allow_Any => False);
+      if Length_Is_All (Ctl_Kind) and Subrule /= Length then
+         Parameter_Error (Rule_Id, """all"" allowed only for subrule ""length""");
+      end if;
+
       if Subrule in Dim_Subrules and Rule_Used (Subrule) (Ctl_Kind) then
          Parameter_Error (Rule_Id, "rule already specified for " & Control_Kinds'Wide_Image (Ctl_Kind));
       end if;
@@ -227,7 +234,8 @@ package body Rules.Array_Declarations is
    begin
       case Action is
          when Clear =>
-            Rule_Used := Not_Used;
+            Rule_Used     := Not_Used;
+            Length_Is_All := Empty_Control_Kinds_Set;
             Clear (Compo_Contexts);
             Clear (Index_Contexts);
          when Suspend =>
@@ -238,6 +246,145 @@ package body Rules.Array_Declarations is
       end case;
    end Command;
 
+   ------------------------
+   -- Get_Bound_Location --
+   ------------------------
+
+   function Get_Bound_Location (Definition : Asis.Definition; Dim : Asis.List_Index) return Location is
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries, Utilities;
+   begin
+      if Definition_Kind (Definition) = A_Constraint then
+         case Discrete_Range_Kind (Discrete_Ranges (Definition) (Dim)) is
+            when A_Discrete_Subtype_Indication =>
+               return Get_Location
+                 (Asis.Definitions.Subtype_Mark            --## rule line off Avoid_Query
+                    (Discrete_Ranges (Definition) (Dim)));  --   we don't want the selector
+            when A_Discrete_Range_Attribute_Reference =>
+               return Get_Location (Range_Attribute (Discrete_Ranges (Definition) (Dim)));
+            when A_Discrete_Simple_Expression_Range =>
+               return Get_Location (Lower_Bound (Discrete_Ranges (Definition) (Dim)));
+            when Not_A_Discrete_Range =>
+               Failure ("Get_Bound_Location: not a discrete range");
+         end case;
+      else
+         -- Array
+         if Definition_Kind (Definition) = A_Subtype_Indication then
+            -- Better let message appear with the subtype
+            return Get_Location (Definition);
+         end if;
+
+         case Type_Kind (Definition) is
+            when A_Constrained_Array_Definition =>
+               return Get_Location (Discrete_Subtype_Definitions (Definition) (Dim));
+            when An_Unconstrained_Array_Definition =>
+               return Get_Location (Index_Subtype_Definitions (Definition) (Dim));
+            when others =>
+               Failure ("Get_Bound_Location: not an array definition");
+         end case;
+      end if;
+   end Get_Bound_Location;
+
+
+   --------------------
+   -- Process_Length --
+   --------------------
+
+   procedure Process_Length (Definition : Asis.Definition; Active_Kinds : Control_Kinds_Set) is
+      use Ada.Strings.Wide_Unbounded;
+      use Framework.Reports, Thick_Queries;
+      Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Definition);
+
+      function Declaration_Name return Wide_String is
+         use Asis, Asis.Elements;
+         use Utilities;
+         Decl : Asis.Declaration := Enclosing_Element (Definition);
+      begin
+         while Element_Kind (Decl) /= A_Declaration and Element_Kind (Decl) /= A_Statement Loop
+            Decl := Enclosing_Element (Decl);
+         end loop;
+         case Declaration_Kind (Decl) is
+            when A_Type_Declaration =>
+               return "type";
+            when A_Subtype_Declaration =>
+               return "subtype";
+            when A_Constant_Declaration =>
+               return "constant";
+            when A_Variable_Declaration =>
+               return "variable";
+            when A_Component_Declaration =>
+               return "component";
+            when Not_A_Declaration =>
+               -- A statement: allocator...
+               return "variable";
+            when others =>
+               Utilities.Trace ("Definition", Definition);
+               Failure ("Process_Length: unexpected declaration", Decl);
+         end case;
+      end Declaration_Name;
+
+   begin  -- Process_Length
+      for L in Lengths'Range loop
+         if Lengths (L) /= Not_Static then
+            -- Max
+            if Active_Kinds (Check) and then Lengths (L) > Values (Length, Check).Max then
+               Report (Rule_Id,
+                       To_Wide_String (Labels (Length, Check)),
+                       Check,
+                       Get_Bound_Location (Definition, L),
+                       "array " & Declaration_Name & " dimension is bigger than "
+                       & Biggest_Int_Img (Values (Length, Check).Max)
+                       & " (" & Biggest_Int_Img (Lengths (L)) & ')');
+
+            elsif Active_Kinds (Search) and then Lengths (L) > Values (Length, Search).Max then
+               Report (Rule_Id,
+                       To_Wide_String (Labels (Length, Search)),
+                       Search,
+                       Get_Bound_Location (Definition, L),
+                       "array " & Declaration_Name & " dimension is bigger than "
+                       & Biggest_Int_Img (Values (Length, Search).Max)
+                       & " (" & Biggest_Int_Img (Lengths (L)) & ')');
+            end if;
+
+            if Active_Kinds (Count) and then Lengths (L) > Values (Length, Count).Max then
+               Report (Rule_Id,
+                       To_Wide_String (Labels (Length, Count)),
+                       Count,
+                       Get_Bound_Location (Definition, L),
+                       "");
+            end if;
+
+            -- Min
+            if Active_Kinds (Check) and then Lengths (L) < Values (Length, Check).Min then
+               Report (Rule_Id,
+                       To_Wide_String (Labels (Length, Check)),
+                       Check,
+                       Get_Bound_Location (Definition, L),
+                       "array " & Declaration_Name & " dimension is smaller than "
+                       & Biggest_Int_Img (Values (Length, Check).Min)
+                       & " (" & Biggest_Int_Img (Lengths (L)) & ')');
+
+            elsif Active_Kinds (Search) and then Lengths (L) < Values (Length, Search).Min then
+               Report (Rule_Id,
+                       To_Wide_String (Labels (Length, Search)),
+                       Search,
+                       Get_Bound_Location (Definition, L),
+                       "array " & Declaration_Name & " dimension is smaller than "
+                       & Biggest_Int_Img (Values (Length, Search).Min)
+                       & " (" & Biggest_Int_Img (Lengths (L)) & ')');
+            end if;
+
+            if Active_Kinds (Count) and then Lengths (L) < Values (Length, Count).Min then
+               Report (Rule_Id,
+                       To_Wide_String (Labels (Length, Count)),
+                       Count,
+                       Get_Bound_Location (Definition, L),
+                       "");
+            end if;
+         end if;
+      end loop;
+   end Process_Length;
+
    ------------------------------
    -- Process_Index_Constraint --
    ------------------------------
@@ -246,36 +393,6 @@ package body Rules.Array_Declarations is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Elements;
       use Framework.Reports, Thick_Queries;
-
-      function Get_Bound_Location (Dim : Asis.List_Index) return Location is
-         use Asis.Definitions;
-         use Utilities;
-      begin
-         if Definition_Kind (Definition) = A_Constraint then
-            case Discrete_Range_Kind (Discrete_Ranges (Definition)(Dim)) is
-               when A_Discrete_Subtype_Indication =>
-                  return Get_Location
-                    (Asis.Definitions.Subtype_Mark            --## rule line off Avoid_Query
-                       (Discrete_Ranges (Definition)(Dim)));  --   we don't want the selector
-               when A_Discrete_Range_Attribute_Reference =>
-                  return Get_Location (Range_Attribute (Discrete_Ranges (Definition)(Dim)));
-               when A_Discrete_Simple_Expression_Range =>
-                  return Get_Location (Lower_Bound (Discrete_Ranges (Definition)(Dim)));
-               when Not_A_Discrete_Range =>
-                  Failure ("Get_Bound_Location: not a discrete range");
-            end case;
-         else
-            -- Array
-            case Type_Kind (Definition) is
-            when A_Constrained_Array_Definition =>
-               return Get_Location (Discrete_Subtype_Definitions (Definition)(Dim));
-            when An_Unconstrained_Array_Definition =>
-               return Get_Location (Index_Subtype_Definitions (Definition)(Dim));
-            when others =>
-               Failure ("Get_Bound_Location: not an array definition");
-            end case;
-         end if;
-      end Get_Bound_Location;
 
       procedure Process_First_Last is
          Bounds : constant Asis.Element_List := Discrete_Constraining_Bounds (Definition);
@@ -302,7 +419,7 @@ package body Rules.Array_Declarations is
                         Report (Rule_Id,
                                 To_Wide_String (Labels (Sr, Check)),
                                 Check,
-                                Get_Bound_Location ((B + 1) / 2),
+                                Get_Bound_Location (Definition, (B + 1) / 2),
                                 Bound_Msg (Sr) & " bound of array is "
                                 & Bound_Image (Values (Sr, Check))
                                 & " and "
@@ -312,7 +429,7 @@ package body Rules.Array_Declarations is
                         Report (Rule_Id,
                                 To_Wide_String (Labels (Sr, Search)),
                                 Search,
-                                Get_Bound_Location ((B + 1) / 2),
+                                Get_Bound_Location (Definition, (B + 1) / 2),
                                 Bound_Msg (Sr) & " bound of array is "
                                 & Bound_Image (Values (Sr, Search))
                                 & " (" & Biggest_Int_Img (Val) & ')');
@@ -324,7 +441,7 @@ package body Rules.Array_Declarations is
                      Report (Rule_Id,
                              To_Wide_String (Labels (Sr, Check)),
                              Check,
-                             Get_Bound_Location ((B + 1) / 2),
+                             Get_Bound_Location (Definition, (B + 1) / 2),
                              Bound_Msg (Sr) & " bound of array is "
                              & Bound_Image (Values (Sr, Check))
                              & " (" & Biggest_Int_Img (Val) & ')');
@@ -335,7 +452,7 @@ package body Rules.Array_Declarations is
                      Report (Rule_Id,
                              To_Wide_String (Labels (Sr, Search)),
                              Search,
-                             Get_Bound_Location ((B + 1) / 2),
+                             Get_Bound_Location (Definition, (B + 1) / 2),
                              Bound_Msg (Sr) & " bound of array is "
                              & Bound_Image (Values (Sr, Search))
                              & " (" & Biggest_Int_Img (Val) & ')');
@@ -347,7 +464,7 @@ package body Rules.Array_Declarations is
                      Report (Rule_Id,
                              To_Wide_String (Labels (Sr, Count)),
                              Count,
-                             Get_Bound_Location ((B + 1) / 2),
+                             Get_Bound_Location (Definition, (B + 1) / 2),
                              "");
                   end if;
                end if;
@@ -361,65 +478,6 @@ package body Rules.Array_Declarations is
          end loop;
       end Process_First_Last;
 
-      procedure Process_Length is
-         Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Definition);
-      begin
-         for L in Lengths'Range loop
-            if Lengths (L) /= Not_Static then
-               -- Max
-               if Rule_Used (Length) (Check) and then Lengths (L) > Values (Length, Check).Max then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Length, Check)),
-                          Check,
-                          Get_Bound_Location (L),
-                          "array dimension is bigger than " & Biggest_Int_Img (Values (Length, Check).Max)
-                          & " (" & Biggest_Int_Img (Lengths (L)) & ')');
-
-               elsif Rule_Used (Length) (Search) and then Lengths (L) > Values (Length, Search).Max then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Length, Search)),
-                          Search,
-                          Get_Bound_Location (L),
-                          "array dimension is bigger than " & Biggest_Int_Img (Values (Length, Search).Max)
-                          & " (" & Biggest_Int_Img (Lengths (L)) & ')');
-               end if;
-
-               if Rule_Used (Length) (Count) and then Lengths (L) > Values (Length, Count).Max then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Length, Count)),
-                          Count,
-                          Get_Bound_Location (L),
-                          "");
-               end if;
-
-               -- Min
-               if Rule_Used (Length) (Check) and then Lengths (L) < Values (Length, Check).Min then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Length, Check)),
-                          Check,
-                          Get_Bound_Location (L),
-                          "array dimension is smaller than " & Biggest_Int_Img (Values (Length, Check).Min)
-                          & " (" & Biggest_Int_Img (Lengths (L)) & ')');
-
-               elsif Rule_Used (Length) (Search) and then Lengths (L) < Values (Length, Search).Min then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Length, Search)),
-                          Search,
-                          Get_Bound_Location (L),
-                          "array dimension is smaller than " & Biggest_Int_Img (Values (Length, Search).Min)
-                          & " (" & Biggest_Int_Img (Lengths (L)) & ')');
-               end if;
-
-               if Rule_Used (Length) (Count) and then Lengths (L) < Values (Length, Count).Min then
-                  Report (Rule_Id,
-                          To_Wide_String (Labels (Length, Count)),
-                          Count,
-                          Get_Bound_Location (L),
-                          "");
-               end if;
-            end if;
-         end loop;
-      end Process_Length;
    begin  -- Process_Index_Constraint
       if Rule_Used = Not_Used then
          return;
@@ -433,7 +491,7 @@ package body Rules.Array_Declarations is
       if Rule_Used (Length) /= Empty_Control_Kinds_Set
         and then Type_Kind (Definition) /= An_Unconstrained_Array_Definition
       then
-         Process_Length;
+         Process_Length (Definition, Rule_Used (Length));
       end if;
    end Process_Index_Constraint;
 
@@ -687,6 +745,46 @@ package body Rules.Array_Declarations is
          Process_Component;
       end if;
    end Process_Array_Definition;
+
+
+   --------------------------------
+   -- Process_Object_Declaration --
+   --------------------------------
+
+   procedure Process_Object_Declaration (Declaration : Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
+   begin
+      if Rule_Used (Length) = Empty_Control_Kinds_Set then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if Length_Is_All = Empty_Control_Kinds_Set then
+         return;
+      end if;
+
+      declare
+         Obj_Def : constant Asis.Definition := Object_Declaration_View (Declaration);
+      begin
+         if not Is_Array_Subtype (Obj_Def) then
+            return;
+         end if;
+         if Definition_Kind (Obj_Def) /= A_Subtype_Indication or else not Is_Nil (Subtype_Constraint (Obj_Def))  then
+            -- will be handled by Process_Array_Definition or Process_Index_Constraint
+            return;
+         end if;
+
+         if Type_Kind (Type_Declaration_View (Corresponding_Name_Declaration (Subtype_Simple_Name (Obj_Def)))) =
+           An_Unconstrained_Array_Definition
+         then
+            -- Unconstrained type, size comes from initialization => dynamic
+            return;
+         end if;
+
+         Process_Length (Obj_Def, Rule_Used (Length) and Length_Is_All);
+      end;
+   end Process_Object_Declaration;
 
 begin  -- Rules.Array_Declarations
    Rules_Manager.Register (Rule_Id,

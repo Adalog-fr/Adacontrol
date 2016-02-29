@@ -28,7 +28,9 @@ procedure Indexes is
    V1 : array (1 .. 5) of Integer;                  -- search Length max, Index_T6
    V2 : array (2 .. 5) of Integer;                  -- check First, Index_T6
    V3 : array (0 .. 1, 1 .. 4, 2 .. 10) of Integer; -- search First, check First, check Length max, search dimensions, Index_TTT2, Index_TTT4
-   V4 : array (1 .. 0, 1 .. 1, 2 .. 10) of Integer; -- check Lenght min, search Length min, check First, check Length max, search dimensions, Index_TTT2, Index_TTT4
+   V4 : array (1 .. 0, 1 .. 1, 2 .. 10) of Integer; -- check Length min, search Length min, check First, check Length max, search dimensions, Index_TTT2, Index_TTT4
+   V5 : C10;                                        -- search length
+   V6 : C11;                                        -- search length
 
    type C40 is array (1 .. 1000) of Integer;        -- check Length max, Index_T6
    type C41 is array (1 .. 1001) of Integer;        -- check Last max, check Length max, Index_T6

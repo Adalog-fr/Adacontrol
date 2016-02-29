@@ -36,7 +36,8 @@ package Rules.Array_Declarations is
 
    Rule_Id : constant Wide_String := "ARRAY_DECLARATIONS";
 
-   procedure Process_Array_Definition (Definition : Asis.Definition);
-   procedure Process_Index_Constraint (Definition : Asis.Definition);
+   procedure Process_Array_Definition   (Definition : Asis.Definition);
+   procedure Process_Index_Constraint   (Definition : Asis.Definition);
+   procedure Process_Object_Declaration (Declaration : Asis.Declaration);
 
 end Rules.Array_Declarations;

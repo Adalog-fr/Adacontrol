@@ -2767,7 +2767,7 @@ component type of the array.
 <control_kind> array_declarations (first,      <value> | <bounds>);
 <control_kind> array_declarations (last,       <value> | <bounds>);
 <control_kind> array_declarations (dimensions, <value> | <bounds>);
-<control_kind> array_declarations (length,     <bounds>);
+<control_kind> array_declarations ([all] length,     <bounds>);
 <control_kind> array_declarations (component,  <type> @{,<repr_cond>@});
 <control_kind> array_declarations (index,      <type> | <> @{,<type> | <>@});
 <bounds>    ::= min|max <value> [, min|max <value> ]
@@ -2777,6 +2777,12 @@ component type of the array.
 <repr_cond> ::= [not] pack | size | component_size
 @end example
 @subsection Action
+This rule controls properties of the index or component of an array
+type. The checks are therefore performed on array definitions, i.e. on
+array (sub)type declarations and single array declarations. However,
+the ``length'' subrule can be checked on any array variable, see
+below.
+
 The first parameter is a subrule keyword:
 @itemize
 @item
@@ -2822,6 +2828,18 @@ elements is smaller than the given ``min'' value or greater than the
 given ``max'' value (except for unconstrained array types). At least
 one of ``min'' or ``max'' must be specified, but it is not required to
 specify both.
+
+If the ``all'' modifier is specified, all object declarations of an
+array type are controlled, even if they do not contain any special
+constraint.  This is useful if you want to assess all variables that
+contain more than a certain number of elements. For example:
+@example
+   type Tab is array (Min .. Max) of Compo;  -- Always checked
+   subtype Str is String (Min .. Max);       -- Always checked
+   V1 : String (Min .. Max);                 -- Always checked
+   V2 : Str;                                 -- Checked only with "all"
+@end example
+
 @item
 ``Component'' controls arrays whose component type is the indicated
 <entity>, or whose component type belongs to the indicated
