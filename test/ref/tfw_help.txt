@@ -18,6 +18,7 @@ Controls various parameters related to array types or objects declarations
 
 Parameter(1): first     | last | length | dimensions | index |
               component
+              (optional modifier for length: all)
 
 For First, Last, Length, Dimensions:
 Parameter(2..3): <bound> <value>
@@ -698,17 +699,18 @@ Parameter(s): any_statement            | abort                   |
               named_exit               | no_else                 |
               null                     | procedure_call          |
               procedure_return         | raise                   |
-              redispatching_call       | raise_locally_handled   |
+              raise_foreign            | raise_locally_handled   |
               raise_nonpublic          | raise_standard          |
-              reraise                  | requeue                 |
-              selective_accept         | simple_block            |
-              simple_loop              | terminate               |
-              timed_entry_call         | unconditional_exit      |
-              unnamed_block            | unnamed_exit            |
-              unnamed_loop_exited      | unnamed_for_loop        |
-              unnamed_multiple_loop    | unnamed_simple_block    |
-              unnamed_simple_loop      | unnamed_while_loop      |
-              untyped_for              | while_loop
+              reraise                  | redispatching_call      |
+              requeue                  | selective_accept        |
+              simple_block             | simple_loop             |
+              terminate                | timed_entry_call        |
+              unconditional_exit       | unnamed_block           |
+              unnamed_exit             | unnamed_loop_exited     |
+              unnamed_for_loop         | unnamed_multiple_loop   |
+              unnamed_simple_block     | unnamed_simple_loop     |
+              unnamed_while_loop       | untyped_for             |
+              while_loop
 
 Variables:
 Statements.Called_Info: (None, Compact, Detailed, Root_Detailed) = None

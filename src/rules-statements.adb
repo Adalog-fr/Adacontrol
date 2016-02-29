@@ -89,13 +89,13 @@ package body Rules.Statements is
 
                      Stmt_Procedure_Call,          Stmt_Procedure_Return,
 
-                     Stmt_Raise,                   Stmt_Redispatching_Call,
+                     Stmt_Raise,
 
                      -- all "filtered_raise"
-                     Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,         Stmt_Raise_Standard,
-                     Stmt_Reraise,
+                     Stmt_Raise_Foreign,           Stmt_Raise_Locally_Handled,  Stmt_Raise_Nonpublic,
+                     Stmt_Raise_Standard,          Stmt_Reraise,
 
-                     Stmt_Requeue,
+                     Stmt_Redispatching_Call,     Stmt_Requeue,
 
                      Stmt_Selective_Accept,       Stmt_Simple_Block,            Stmt_Simple_Loop,
 
@@ -108,7 +108,7 @@ package body Rules.Statements is
 
                      Stmt_While_Loop);
 
-   subtype Filtered_Raise_Subrules is Subrules range Stmt_Raise .. Stmt_Reraise;
+   subtype Filtered_Raise_Subrules is Subrules range Stmt_Raise_Foreign .. Stmt_Reraise;
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
    use Subrules_Flags_Utilities;
 
@@ -257,12 +257,45 @@ package body Rules.Statements is
          -- process filtered (i.e. non trivial) raises.
          -- common to a real raise and to a call to Raise_Exception
          use Asis.Compilation_Units;
+         use Scope_Manager;
+
+         function Is_Parent_Scope (To_Check : Asis.Declaration; Starting_From : Asis.Element) return Boolean is
+         -- Check if To_Check is an enclosing scope of Starting_From, or of the specification of some unit that
+         -- encloses Starting_From
+            Current : Asis.Element := Starting_From;
+         begin
+            while not Is_Nil (Current) loop
+               if Is_Equal (Current, To_Check) then
+                  return True;
+               elsif Is_Subunit (Current) then
+                  Current := Corresponding_Body_Stub (Current);
+                  if Is_Equal (Corresponding_Declaration (Current), To_Check) then
+                     return True;
+                  end if;
+               else
+                  case Declaration_Kind (Current) is
+                     when A_Package_Body_Declaration
+                        | A_Task_Body_Declaration
+                        | A_Protected_Body_Declaration
+                        =>
+                        if Is_Equal (Corresponding_Declaration (Current), To_Check) then
+                           return True;
+                        end if;
+                     when others =>
+                        null;
+                  end case;
+               end if;
+
+               Current := Enclosing_Element (Current);
+            end loop;
+            return False;
+         end Is_Parent_Scope;
 
          Handler         : Asis.Exception_Handler;
          Decl_Place      : Asis.Declaration;
          Is_Standard_Exc : Boolean := False;
       begin
-         if Rule_Used (Stmt_Raise_Standard) or Rule_Used (Stmt_Raise_Nonpublic) then
+         if Rule_Used (Stmt_Raise_Standard) or Rule_Used (Stmt_Raise_Foreign) or Rule_Used (Stmt_Raise_Nonpublic) then
             Is_Standard_Exc := To_Upper (Unit_Full_Name (Definition_Compilation_Unit (Exc))) = "STANDARD";
          end if;
 
@@ -270,22 +303,25 @@ package body Rules.Statements is
             Do_Report (Stmt_Raise_Standard);
          end if;
 
-         if Rule_Used (Stmt_Raise_Nonpublic) and not Is_Standard_Exc then
+         if (Rule_Used (Stmt_Raise_Foreign) or Rule_Used (Stmt_Raise_Nonpublic)) and not Is_Standard_Exc then
             Decl_Place := Enclosing_Element (Corresponding_Name_Declaration (Exc));
             -- Report if it is in the visible part of the package spec which is the current
             -- compilation unit
             -- NB: Corresponding_Declaration of a proper body returns Nil_Element, therefore
             --     this case is automatically eliminated
             if (    Declaration_Kind (Decl_Place) /= A_Package_Declaration
-                and Declaration_Kind (Decl_Place) /= A_Generic_Package_Declaration)
-              or else not Is_Equal (Decl_Place,
-                Corresponding_Declaration
-                  (Unit_Declaration
-                     (Enclosing_Compilation_Unit (Element))))
-              or else Is_Part_Of (Corresponding_Name_Declaration (Exc),
+                and Declaration_Kind (Decl_Place) /= A_Generic_Package_Declaration)   -- Exception not from package spec
+              or else Is_Part_Of (Corresponding_Name_Declaration (Exc),               -- Exception from private part
                                   Private_Part_Declarative_Items (Decl_Place))
             then
                Do_Report (Stmt_Raise_Nonpublic);
+            end if;
+
+            if    not Is_Parent_Scope (To_Check => Decl_Place, Starting_From => Stmt)
+              and not Is_Ancestor (Outer => Enclosing_Compilation_Unit (Decl_Place), -- Exception not from Ancestor
+                                   Inner => Corresponding_Declaration (Enclosing_Compilation_Unit (Stmt)))
+            then
+               Do_Report (Stmt_Raise_Foreign);
             end if;
          end if;
 

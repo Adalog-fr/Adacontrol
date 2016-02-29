@@ -39,7 +39,7 @@ procedure Test_Raise is
 begin
    raise E;                       -- raise, Raise_nonpublic
 
-   raise Pack2.Exported;          -- raise, raise_nonpublic
+   raise Pack2.Exported;          -- raise, raise_foreign
    raise Constraint_Error;        -- raise, raise_standard, locally handled (in proc)
    raise Program_Error;           -- raise, raise_standard
 

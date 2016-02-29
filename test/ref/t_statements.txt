@@ -1,7 +1,6 @@
 t_statements-test_raise-pack1.adb:4:4: Found: Sequential_Stmts: use of statement "raise"
 t_statements-test_raise-pack1.adb:4:4: Found: Sequential_Stmts: use of statement "raise_standard"
 t_statements-test_raise-pack1.adb:5:4: Found: Sequential_Stmts: use of statement "raise"
-t_statements-test_raise-pack1.adb:5:4: Found: Sequential_Stmts: use of statement "raise_nonpublic"
 t_statements-test_raise.adb:20:7: Found: Sequential_Stmts: use of statement "raise"
 t_statements-test_raise.adb:20:7: Found: Sequential_Stmts: use of statement "raise_standard"
 t_statements-test_raise.adb:21:7: Found: Sequential_Stmts: use of statement "raise"
@@ -25,7 +24,7 @@ t_statements-test_raise.adb:35:10: Found: Sequential_Stmts: use of statement "re
 t_statements-test_raise.adb:40:4: Found: Sequential_Stmts: use of statement "raise"
 t_statements-test_raise.adb:40:4: Found: Sequential_Stmts: use of statement "raise_nonpublic"
 t_statements-test_raise.adb:42:4: Found: Sequential_Stmts: use of statement "raise"
-t_statements-test_raise.adb:42:4: Found: Sequential_Stmts: use of statement "raise_nonpublic"
+t_statements-test_raise.adb:42:4: Found: Sequential_Stmts: use of statement "raise_foreign"
 t_statements-test_raise.adb:43:4: Found: Sequential_Stmts: use of statement "raise"
 t_statements-test_raise.adb:43:4: Found: Sequential_Stmts: use of statement "raise_standard"
 t_statements-test_raise.adb:43:4: Found: Sequential_Stmts: use of statement "raise_locally_handled", handler at t_statements-test_raise.adb:77:4

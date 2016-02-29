@@ -26,6 +26,7 @@ Representation_Clauses:
 Statements
    procedure_call, dynamic_procedure_call
    (does not control dispatching function calls anymore)
+   raise_nonpublic: split in two: raise_nonpublic and raise_foreign.
 
 =============
 == V1.17b4 ==

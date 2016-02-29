@@ -8113,14 +8113,16 @@ been inherited by a derived type and not redefined.
 handlers that reraise the same exception, and calls to the
 @code{Ada.Exceptions.Reraise_Occurrence} procedure.
 @item
-@code{raise_standard} controls @code{@b{raise}} statements that raise one
-of the predefined exceptions (those declared in package
+@code{raise_standard} controls @code{@b{raise}} statements that raise
+one of the predefined exceptions (those declared in package
 @code{Standard}). @code{raise_nonpublic} controls statements that
 raise exceptions that are neither predefined nor defined in the
-visible part of a package which is the enclosing library unit of the
-statement.  @code{raise_locally_handled} controls statements that
-raise an exception which is handled by a handler in the same
-subprogram body as the statement.
+visible part of a package. @code{raise_foreign} controls statements
+that raise exceptions that are neither predefined nor declared in the
+same program unit (or an ancestor of the unit) as the statement that
+raises the exception.  @code{raise_locally_handled} controls
+statements that raise an exception which is handled by a handler in
+the same subprogram body as the statement.
 
 Note that for these subrules, the exception can be raised either by a
 @code{@b{raise}} statement, or by a call to
@@ -10128,6 +10130,13 @@ to:
 check statements  (dispatching_call, redispatching_call);
 check expressions (dispatching_function_call, redispatching_function_call);
 @end example
+
+The subrule @code{raise_nonpublic} does not control any more the
+raising of exceptions declared in visible parts of packages other than
+the one that contains the @code{@b{raise}} statement; these are now
+controlled by the subrule @code{raise_foreign}. It also now accepts
+(i.e. does not control) exceptions declared in the visible part of an
+ancestor of the package that contains @code{@b{raise}} statement.
 
 @subsection Use of command line options -r and -s
 Previous versions mentionned in the command line syntax that ``-r''
