@@ -37,7 +37,7 @@ package Rules.Statements is
 
    Rule_Id : constant Wide_String := "STATEMENTS";
 
-   procedure Process_Statement         (Element       : in Asis.Statement);
+   procedure Process_Statement         (Stmt          : in Asis.Statement);
    procedure Process_Others            (Definition    : in Asis.Definition);
    procedure Process_Function_Body     (Function_Body : in Asis.Declaration);
 

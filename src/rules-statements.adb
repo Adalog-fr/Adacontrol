@@ -190,62 +190,62 @@ package body Rules.Statements is
    -- Process_Statement --
    -----------------------
 
-   procedure Process_Statement (Element : in Asis.Statement) is
+   procedure Process_Statement (Stmt : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Utilities;
 
-      procedure Do_Report (Stmt : in Subrules; Loc : Location := Get_Location (Element)) is
+      procedure Do_Report (Subrule : in Subrules; Loc : Location := Get_Location (Stmt)) is
          use Framework.Reports;
       begin
-         if not Rule_Used (Stmt) then
+         if not Rule_Used (Subrule) then
             return;
          end if;
 
          Report (Rule_Id,
-                 Usage (Stmt),
+                 Usage (Subrule),
                  Loc,
-                 "use of statement """ & Image (Stmt, Lower_Case) & '"');
+                 "use of statement """ & Image (Subrule, Lower_Case) & '"');
       end Do_Report;
 
-      procedure Do_Report (Stmt : in Subrules; Extra_Info : Wide_String) is
+      procedure Do_Report (Subrule : in Subrules; Extra_Info : Wide_String) is
          use Framework.Reports;
       begin
-         if not Rule_Used (Stmt) then
+         if not Rule_Used (Subrule) then
             return;
          end if;
 
          Report (Rule_Id,
-                 Usage (Stmt),
-                 Get_Location (Element),
-                 "use of statement """ & Image (Stmt, Lower_Case) & """, " & Extra_Info);
+                 Usage (Subrule),
+                 Get_Location (Stmt),
+                 "use of statement """ & Image (Subrule, Lower_Case) & """, " & Extra_Info);
       end Do_Report;
 
-      procedure Do_Call_Report (Stmt : in Subrules) is
+      procedure Do_Call_Report (Subrule : in Subrules) is
       begin
-         if not Rule_Used (Stmt) then
+         if not Rule_Used (Subrule) then
             return;
          end if;
 
          if Called_Info.Value = None then
-            Do_Report (Stmt);
+            Do_Report (Subrule);
          else
             declare
-               Called : constant Asis.Expression := Called_Simple_Name (Element);
+               Called : constant Asis.Expression := Called_Simple_Name (Stmt);
             begin
                if Is_Nil (Called) then
-                  Do_Report (Stmt, "Dynamic call");
+                  Do_Report (Subrule, "Dynamic call");
                else
                   case Called_Info.Value is
                      when None =>
                         Failure (Rule_Id & ": impossible value None");
                      when Compact =>
-                        Do_Report (Stmt,
+                        Do_Report (Subrule,
                                    Adjust_Image (Full_Name_Image (Called, With_Profile => False)));
                      when Detailed =>
-                        Do_Report (Stmt,
+                        Do_Report (Subrule,
                                    Adjust_Image (Full_Name_Image (Called, With_Profile => True)));
                      when Root_Detailed =>
-                        Do_Report (Stmt,
+                        Do_Report (Subrule,
                                    Adjust_Image (Full_Name_Image (Ultimate_Name (Called), With_Profile => True)));
                   end case;
                end if;
@@ -290,7 +290,7 @@ package body Rules.Statements is
          end if;
 
          if Rule_Used (Stmt_Raise_Locally_Handled) then
-            Handler := Corresponding_Static_Exception_Handler (Exc, Element, Include_Others => True);
+            Handler := Corresponding_Static_Exception_Handler (Exc, Stmt, Include_Others => True);
             if not Is_Nil (Handler) then
                Do_Report (Stmt_Raise_Locally_Handled, "handler at " & Image (Get_Location (Handler)));
             end if;
@@ -305,11 +305,11 @@ package body Rules.Statements is
 
       Do_Report (Stmt_Any_Statement);
 
-      if not Is_Nil (Label_Names (Element)) then
+      if not Is_Nil (Label_Names (Stmt)) then
          Do_Report (Stmt_Labelled);
       end if;
 
-      case Statement_Kind (Element) is
+      case Statement_Kind (Stmt) is
          when Not_A_Statement =>
             Failure ("Not a statement");
 
@@ -328,15 +328,15 @@ package body Rules.Statements is
          when A_Block_Statement =>
             Do_Report (Stmt_Block);
 
-            if Is_Nil (Statement_Identifier (Element)) then
+            if Is_Nil (Statement_Identifier (Stmt)) then
                Do_Report (Stmt_Unnamed_Block);
             end if;
 
-            if Is_Declare_Block (Element) then
+            if Is_Declare_Block (Stmt) then
                Do_Report (Stmt_Declare_Block);
                if Rule_Used (Stmt_Effective_Declare_Block) then
                   declare
-                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Element,
+                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Stmt,
                                                                                              Include_Pragmas => False);
                   begin
                      for D in Decls'Range loop
@@ -349,22 +349,22 @@ package body Rules.Statements is
                end if;
                if Rule_Used (Stmt_Simple_Block) or Rule_Used (Stmt_Unnamed_Simple_Block) then
                   declare
-                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Element,
+                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Stmt,
                                                                                              Include_Pragmas => True);
                   begin
                      if Is_Nil (Decls) then
                         Do_Report (Stmt_Simple_Block);
 
-                        if Is_Nil (Statement_Identifier (Element)) then
+                        if Is_Nil (Statement_Identifier (Stmt)) then
                            Do_Report (Stmt_Unnamed_Simple_Block);
                         end if;
                      end if;
                   end;
                end if;
-            elsif Block_Exception_Handlers (Element) = Nil_Element_List then
+            elsif Block_Exception_Handlers (Stmt) = Nil_Element_List then
                Do_Report (Stmt_Simple_Block);
 
-               if Is_Nil (Statement_Identifier (Element)) then
+               if Is_Nil (Statement_Identifier (Stmt)) then
                   Do_Report (Stmt_Unnamed_Simple_Block);
                end if;
            end if;
@@ -391,7 +391,7 @@ package body Rules.Statements is
             Do_Report (Stmt_Exit);
 
             declare
-               Exited_Loop : constant Asis.Statement := Corresponding_Loop_Exited (Element);
+               Exited_Loop : constant Asis.Statement := Corresponding_Loop_Exited (Stmt);
             begin
                case Statement_Kind (Exited_Loop) is
                   when A_For_Loop_Statement =>
@@ -404,7 +404,7 @@ package body Rules.Statements is
                      Failure ("Statements: exit not from loop", Exited_Loop);
                end case;
 
-               if Is_Nil (Exit_Condition (Element)) then
+               if Is_Nil (Exit_Condition (Stmt)) then
                   Do_Report (Stmt_Unconditional_Exit);
                end if;
 
@@ -412,7 +412,7 @@ package body Rules.Statements is
                   Do_Report (Stmt_Unnamed_Loop_Exited);
                end if;
 
-               if Is_Nil (Exit_Loop_Name (Element)) then
+               if Is_Nil (Exit_Loop_Name (Stmt)) then
                   if not Is_Nil (Statement_Identifier (Exited_Loop)) then
                      Do_Report (Stmt_Unnamed_Exit);
                   end if;
@@ -420,13 +420,13 @@ package body Rules.Statements is
                   Do_Report (Stmt_Named_Exit);
                end if;
 
-               if Expression_Kind (Exit_Loop_Name (Element)) = A_Selected_Component then
+               if Expression_Kind (Exit_Loop_Name (Stmt)) = A_Selected_Component then
                   Do_Report (Stmt_Exit_Expanded_Name);
                end if;
 
                if Rule_Used (Stmt_Exit_Outer_Loop) then
                   declare
-                     Enclosing_Loop : Asis.Statement := Enclosing_Element (Element);
+                     Enclosing_Loop : Asis.Statement := Enclosing_Element (Stmt);
                   begin
                      while Statement_Kind (Enclosing_Loop) not in A_Loop_Statement .. A_For_Loop_Statement loop
                         Enclosing_Loop := Enclosing_Element (Enclosing_Loop);
@@ -449,7 +449,7 @@ package body Rules.Statements is
             -- Extended returns apply only to functions, and Function_Return is checked from Process_Function_Body
 
             declare
-               Dirty : constant Asis.Statement := First_Exiting_Statement (Extended_Return_Statements (Element),
+               Dirty : constant Asis.Statement := First_Exiting_Statement (Extended_Return_Statements (Stmt),
                                                                            Include_Returns => False);
             begin
                if not Is_Nil (Dirty) then
@@ -459,7 +459,7 @@ package body Rules.Statements is
 
          when A_For_Loop_Statement =>
             declare
-               Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Element);
+               Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Stmt);
             begin
                Do_Report (Stmt_For_Loop);
 
@@ -480,7 +480,7 @@ package body Rules.Statements is
                      Failure ("Process_Statement: unknown ""for"" iterator", Loop_Spec);
                end case;
 
-               if Is_Nil (Statement_Identifier (Element)) then
+               if Is_Nil (Statement_Identifier (Stmt)) then
                   Do_Report (Stmt_Unnamed_For_Loop);
                end if;
             end;
@@ -491,7 +491,7 @@ package body Rules.Statements is
          when An_If_Statement =>
             Do_Report (Stmt_If);
             declare
-               Paths : constant Asis.Path_List := Statement_Paths (Element);
+               Paths : constant Asis.Path_List := Statement_Paths (Stmt);
             begin
                if Path_Kind (Paths (Paths'Last)) /= An_Else_Path then
                   Do_Report (Stmt_No_Else);
@@ -504,7 +504,7 @@ package body Rules.Statements is
          when A_Loop_Statement =>
             Do_Report (Stmt_Simple_Loop);
 
-            if Is_Nil (Statement_Identifier (Element)) then
+            if Is_Nil (Statement_Identifier (Stmt)) then
                Do_Report (Stmt_Unnamed_Simple_Loop);
             end if;
 
@@ -514,12 +514,12 @@ package body Rules.Statements is
          when A_Procedure_Call_Statement =>
             Do_Call_Report (Stmt_Procedure_Call);
 
-            if Is_Dispatching_Call (Element) then
+            if Is_Dispatching_Call (Stmt) then
                Do_Report (Stmt_Dispatching_Call);
 
                if Rule_Used (Stmt_Redispatching_Call) then
                   declare
-                     Name : Asis.Defining_Name := Enclosing_Program_Unit (Element);
+                     Name : Asis.Defining_Name := Enclosing_Program_Unit (Stmt);
                   begin
                      while not Is_Nil (Name) loop
                         if Is_Dispatching_Operation (Corresponding_Declaration (Enclosing_Element (Name))) then
@@ -531,13 +531,13 @@ package body Rules.Statements is
                end if;
             end if;
 
-            if Is_Nil (Called_Simple_Name (Element)) then
+            if Is_Nil (Called_Simple_Name (Stmt)) then
                Do_Report (Stmt_Dynamic_Procedure_Call);
             end if;
 
             if Rule_Used (Stmt_Inherited_Procedure_Call) then
                declare
-                  Called : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Element));
+                  Called : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Stmt));
                begin
                   if not Is_Nil (Called)          -- Dynamic call (explicit or implicit dereference)
                     and then Expression_Kind (Called) /= An_Attribute_Reference
@@ -550,7 +550,7 @@ package body Rules.Statements is
 
             if (Rule_Used and Usage_Flags'(Filtered_Raise_Subrules => True, others => False)) /= No_Rule then
                declare
-                  Called : constant Asis.Expression := Called_Simple_Name (Element);
+                  Called : constant Asis.Expression := Called_Simple_Name (Stmt);
                begin
                   if not Is_Nil (Called) then  -- is nil if called from access to SP
                      declare
@@ -565,7 +565,7 @@ package body Rules.Statements is
                               Exc_Param : constant Asis.Expression := Ultimate_Expression
                                                                        (Actual_Parameter
                                                                         (Call_Statement_Parameters
-                                                                         (Element, Normalized => True) (1)));
+                                                                         (Stmt, Normalized => True) (1)));
                            begin
                               if Expression_Kind (Exc_Param) = An_Attribute_Reference
                                 and then Attribute_Kind (Exc_Param) = An_Identity_Attribute
@@ -582,12 +582,12 @@ package body Rules.Statements is
          when A_Raise_Statement =>
             Do_Report (Stmt_Raise);
 
-            if Is_Nil (Raised_Exception (Element)) then
+            if Is_Nil (Raised_Exception (Stmt)) then
                if Rule_Used (Stmt_Reraise) then
                   Do_Report (Stmt_Reraise);
                end if;
             else
-               Check_Filtered_Raise (Simple_Name (Raised_Exception (Element)));
+               Check_Filtered_Raise (Simple_Name (Raised_Exception (Stmt)));
             end if;
 
          when A_Requeue_Statement | A_Requeue_Statement_With_Abort =>
@@ -598,7 +598,7 @@ package body Rules.Statements is
                Do_Report (Stmt_Loop_Return);
             end if;
             case Declaration_Kind (Enclosing_Element
-                                   (Enclosing_Program_Unit (Element, Including_Accept => True)))
+                                   (Enclosing_Program_Unit (Stmt, Including_Accept => True)))
             is
                when A_Procedure_Body_Declaration =>
                   Do_Report (Stmt_Procedure_Return);
@@ -625,7 +625,7 @@ package body Rules.Statements is
          when A_While_Loop_Statement =>
             Do_Report (Stmt_While_Loop);
 
-            if Is_Nil (Statement_Identifier (Element)) then
+            if Is_Nil (Statement_Identifier (Stmt)) then
                Do_Report (Stmt_Unnamed_While_Loop);
             end if;
       end case;
