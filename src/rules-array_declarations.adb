@@ -308,9 +308,9 @@ package body Rules.Array_Declarations is
                return "type";
             when A_Subtype_Declaration =>
                return "subtype";
-            when A_Constant_Declaration =>
+            when A_Constant_Declaration | A_Return_Constant_Specification =>
                return "constant";
-            when A_Variable_Declaration =>
+            when A_Variable_Declaration | A_Return_Variable_Specification =>
                return "variable";
             when A_Component_Declaration =>
                return "component";
