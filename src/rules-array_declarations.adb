@@ -140,6 +140,10 @@ package body Rules.Array_Declarations is
       function Build_Index_List return Entity_Specification_List is
          Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
       begin
+         if Entity_Specification_Kind (Entity) = Equal then
+            Parameter_Error (Rule_Id, """="" not allowed for index");
+         end if;
+
          case Categories'(Value (Entity)) is
             when Cat_Any =>
                null;
