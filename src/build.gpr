@@ -1,4 +1,5 @@
 with "asis";
+with "gnatcoll";
 project Build is
    type Fixes is ("1", "none");
    Gnat_Fix : Fixes := external ("GNAT_FIX", "none");

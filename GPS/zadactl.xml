@@ -117,8 +117,6 @@
            label="Rules file" switch="-f" separator="&#32;" as-file="true" />
     <field line="1" column="1"
            label="Units file" switch="-@" separator="&#32;" as-file="true" />
-    <field line="1" column="1"
-           label=".adp project file" switch="-p" separator="&#32;" as-file="true" />
 
     <title line="1" column="2" column-span="0"></title>
 
@@ -209,4 +207,3 @@
 </documentation_file>
 
 </AdaControl>
-

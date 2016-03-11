@@ -4,6 +4,9 @@
 
 General:
 --------
+-p option accepts a .gpr file as well as a .adp file (i.e. you can use
+Gnat project files directly).
+
 Combination of options -rs now corresponds to the minimal transitive
 closure of units needed to compile the provided units.
 

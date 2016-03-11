@@ -911,7 +911,7 @@ Options:
    -j        invert local deactivations
    -l rules  process with these rules
    -o file   specify an output file
-   -p file   specify an emacs ada-mode project file (.adp)
+   -p file   specify a project file (.gpr or .adp)
    -r        recursive
    -s        process specifications only
    -S        statistics level (0 .. 3)

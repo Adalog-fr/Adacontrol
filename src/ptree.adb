@@ -404,6 +404,12 @@ exception
             Ada.Wide_Text_IO.Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       end case;
 
+   when Occur : Implementation_Error =>
+      Ada.Wide_Text_IO.Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
+
+   when ASIS.Exceptions.ASIS_Inappropriate_Compilation_Unit =>
+      Ada.Wide_Text_IO.Put_Line ("Unit " & To_Wide_String (Unit_Name) & " not found in context");
+
    when Occur : Options_Error =>
       Ada.Wide_Text_IO.Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       Print_Help;

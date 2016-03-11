@@ -76,6 +76,7 @@ def units_file_defined ():
    else:
       return "false"
 
+
 ################################################################
 # Rules
 #
@@ -85,15 +86,14 @@ def rules_file_defined ():
    else:
       return "false"
 
+
 ################################################################
 # Project
 #
 def create_adp ():
    """Create adp file from project
    """
-   name = get_file ("-p")
-   if not name:
-      name= GPS.Project.file(GPS.Project.root()).name()[:-4]+".adp"
+   name = GPS.Project.file(GPS.Project.root()).name()[:-4]+".adp"
    value = GPS.MDI.input_dialog ("Create .adp file",  "File=" + name)
    if value != [] and value [0] != "":
       name = value [0]
@@ -105,6 +105,7 @@ def create_adp ():
             f.write ("obj_dir=" + J + "\n")
       f.close()
       GPS.MDI.dialog ("Project file " + name + " created")
+
 
 ################################################################
 # Run AdaControl
@@ -273,6 +274,9 @@ def options (rules, files):
 
    result = "-v"
 
+   # always set project
+   result = result + ' -p "' + GPS.Project.root().file().name() + '"'
+
    # set files
    if rules != "check" and files == "":
       tmp = GPS.Preference ("button-target").get();
@@ -333,7 +337,6 @@ def options (rules, files):
    # set other_params
    gps         = True
    outfile     = False
-   p_option    = False
    output_name = ""
    ASIS_option = ""
 
@@ -349,8 +352,6 @@ def options (rules, files):
          output_name  = O
          next_is_ofile = False
       elif next_is_pfile:
-         if rules != "check":
-            result = result + ' ' + O
          next_is_pfile = False
       elif next_is_ASIS:
          if rules != "check":
@@ -381,10 +382,8 @@ def options (rules, files):
       elif O == "-o":
          next_is_ofile = True
       elif O == "-p":
-         p_option      = True
+         # compatibility: ignore -p option and following parameter
          next_is_pfile = True
-         if rules != "check":
-            result = result + ' ' + O
       elif O[0:2] == "-S" and O[2:] != "":
          # Bug in GPS: Combo does not add separator
          result = result + ' ' + "-S " + O[2:]
@@ -418,15 +417,8 @@ def options (rules, files):
       output_name = ""
 
 
-   if ASIS_option or not p_option:
-      result = result  + " -- "
-      if ASIS_option:
-         result = result + ASIS_option
-
-      if not p_option:
-         for I in GPS.Project.dependencies (GPS.Project.root(), recursive=True) :
-            for J in GPS.Project.source_dirs(I) :
-               result = result + " -I\"" + J.replace("\\", "/") + "\""
+   if ASIS_option:
+      result = result  + " -- " + ASIS_option
 
    return result
 

@@ -464,6 +464,8 @@ exception
    when Occur : Options_Error =>
       Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       Print_Help;
+   when Occur : Implementation_Error =>
+      User_Message (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
    when Occur : ASIS_Failed =>
       case Asis.Implementation.Status is
          when Asis.Errors.Use_Error =>

@@ -388,6 +388,8 @@ that the compiler must also be available on the machine in order to
 run AdaControl (all ASIS application need the compiler).
 @item
 ASIS for GNAT
+@item
+The GNATColl component
 @end itemize
 
 Make sure to have the same version of GNAT and ASIS. The version used
@@ -841,30 +843,22 @@ AdaControl stops immediately.
 
 @node Project files, Local disabling control, Output limits, Command line parameters and options
 @subsection Project files
-An emacs project file (the file with a ``.adp'' extension used by the
-Ada mode of Emacs) can be specified with the `` -p''
-option. AdaControl will automatically consider all the directories
-mentioned in ``src_dir'' lines from the project file.
+Starting with version 1.18, AdaControl supports GNAT project files
+(``.gpr''). The ``-p'' option is used to provide the name of a project
+file; Ada units to analyze will be searched in all ``source_dirs''
+specified in the project file or one of the projects it depends on
+(directly or indirectly).
 
 Ex:
 @example
-adactl -f my_rules.aru -p proj.adp proc.adb
+adactl -f my_rules.aru -p proj.gpr proc.adb
 @end example
 
-Note that AdaControl does not accept ``.gpr'' project files, because
-ASIS does not currently accept the ``-P'' option like other GNAT
-commands do. However, when run from GPS, the interface will
-automatically use the source directories from the current (root)
-project (unless you have explicitely set a ``.adp'' file in the
-switches @ref{AdaControl switches}).
-
-If you have a project that uses ``.gpr'' project files and you want to
-run AdaControl from the command line (not from GPS), you can generate
-a ``.adp'' project file from a ``.gpr'' project file from within GPS,
-by using the ``Tools/AdaControl/Generate .adp project''
-menu. @xref{Running AdaControl from GPS}. Alternatively, it is also
-possible to use GPS project files by generating the tree files
-manually. @pxref{Generating tree files manually} for details.
+Alternatively, an old emacs project file (the file with a ``.adp''
+extension used by the Ada mode of Emacs and older versions of
+AdaControl) can also be specified with the `` -p'' option. AdaControl
+will consider all the directories mentioned in ``src_dir'' lines from
+the project file.
 
 @node  Local disabling control, Verbose and debug mode, Project files, Command line parameters and options
 @subsection Local disabling control
@@ -944,7 +938,7 @@ case: if you are running AdaControl from the command line (not from
 GPS), and if the units that you are processing reference other units
 whose source is not in the same directory, AdaControl needs to know
 how to access these units (as GNAT would). This can be done either by
-using an Emacs project file with the ``-p'' option (see @ref{Project
+using a project file with the ``-p'' option (see @ref{Project
 files}), by putting the appropriate directories into the
 ADA_INCLUDE_PATH environment variable, or by passing ``-I'' options to
 ASIS.
@@ -1232,10 +1226,9 @@ files) names from the current root project. This file is appropriate
 as an indirect file for the ``... from list'' commands.
 @item
 ``Create .adp project'' creates an Emacs-style project file from the
-current GPS project, which can be used with the ``-p'' option if you
-want to run AdaControl from the command line. This file has the same
-name as the current GPS project, with a ``.adp''
-extension. @xref{Project files}.
+current GPS project. This is of little interest now that AdaControl
+accepts GPS project files directly, and is still provided for
+compatibility with older versions of AdaControl. @xref{Project files}.
 @item
 ``Delete Tree Files'' removes existing tree files from the current
 directory.  This is convenient when AdaControl complains that the tree
@@ -1315,13 +1308,6 @@ required for all ``control (rules file)'' commands.
 ``Units file''. This is the name of a file that contains the list of
 units to be controlled.  This file is required for all ``control from
 list'' commands.
-@item
-``.adp project file''. This is the name of an emacs project file
-(.adp). If this name is  not empty, AdaControl will use it instead of
-providing all libraries as ``-I'' options on the command line. This
-may be necessary if you have many libraries and the command line that
-launches AdaControl becomes too long. Note that this file can be
-created using the ``AdaControl/Create .adp project'' menu.
 @end itemize
 
 @subsubsection Processing
@@ -1574,10 +1560,10 @@ the names. The ``-q'' (quiet) option suppresses this.
 If the ``-s'' option is given (or the unit is a file name with a
 ``.ads'' extension), the specification of the unit is processed,
 otherwise the body is processed. The ``-p'' option specifies the name
-of an Emacs project file, and the ``-d'' option is the debug mode, as
-for AdaControl itself. ASIS options can be passed, like for
-AdaControl, after a ``-@w{}-'' (but -FS is the default). @xref{ASIS
-options}.
+of a project file (``.gpr'' or ``.adp''), and the ``-d'' option is the
+debug mode, as for AdaControl itself. ASIS options can be passed, like
+for AdaControl, after a ``-@w{}-'' (but -FS is the
+default). @xref{ASIS options}.
 
 As a side usage of @code{pfni}, if you are calling a subprogram that
 has several overloadings and you are not sure which one is called, use
@@ -1702,13 +1688,15 @@ compilation units.  Some reasons why you might want to generate the
 tree files manually are:
 @itemize @bullet
 @item
-Your project uses GNAT project files, but you don't want to run
-AdaControl from GPS;
-@item
 Your project has several source directories (ASIS had problems with
 ADA_INCLUDE_PATH, until releases dated later than Sept. 1st,
-2006). Note that an alternative solution is to specify source
-directories with the -I option;
+2006). Note that an alternative solution is to provide a project file
+with the -p option, or to specify source directories with the -I
+option;
+@item
+Your project uses some compilation options that cannot be set
+otherwise (AdaControl just uses the ``source_dirs'' from GPR projects,
+not other options)
 @item
 It is faster to generate tree files once than to use ``compile on the
 fly'' mode.
@@ -1793,7 +1781,7 @@ in GNAT dated later than Sept. 1st, 2006. If this happens, either
 provide your source directories as ``-I'' options (@pxref{ASIS
 options}), or generate the tree files manually (@pxref{Generating tree
 files manually}). Note that this problem does not happen if you are
-using Emacs project files (@pxref{Project files}), nor if you are
+using a project file (@pxref{Project files}), nor if you are
 running AdaControl from GPS.
 
 @subsection AdaControl or ASIS failure

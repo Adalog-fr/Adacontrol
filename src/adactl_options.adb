@@ -134,7 +134,7 @@ package body Adactl_Options is
       User_Message ("   -j        invert local deactivations");
       User_Message ("   -l rules  process with these rules");
       User_Message ("   -o file   specify an output file");
-      User_Message ("   -p file   specify an emacs ada-mode project file (.adp)");
+      User_Message ("   -p file   specify a project file (.gpr or .adp)");
       User_Message ("   -r        recursive");
       User_Message ("   -s        process specifications only");
       User_Message ("   -S        statistics level (0 .. "
@@ -433,10 +433,8 @@ package body Adactl_Options is
                                 To_Wide_String (Tail_Value)
                                   & To_Wide_String (Extra_Pathes));
    exception
-      when Occur : Analyzer.Options_Error =>
+      when Occur : Analyzer.Options_Error | Implementation_Error =>
          Option_Error (Occur);
-      when Name_Error =>
-        Option_Error ("Project file """ & Project_File & """ not found");
   end Asis_Options;
 
    --------------------
