@@ -462,7 +462,7 @@ begin  -- PFNI
    Implementation.Finalize;
 exception
    when Occur : Options_Error =>
-      Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
+      User_Message (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       Print_Help;
    when Occur : Implementation_Error =>
       User_Message (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
@@ -499,5 +499,11 @@ exception
          Stack_Traceback (Occur);
          raise;
       end if;
-
+   when Occur: others =>
+      User_Message ("Unexpected exception " & To_Wide_String (Ada.Exceptions.Exception_Name (Occur)));
+      User_Message (To_Wide_String (Ada.Exceptions.Exception_Information (Occur)));
+      if Debug_Option then
+         Stack_Traceback (Occur);
+         raise;
+      end if;
 end Pfni;
