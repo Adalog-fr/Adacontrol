@@ -255,8 +255,8 @@ package body Rules.Array_Declarations is
    ------------------------
 
    function Get_Bound_Location (Definition : Asis.Definition; Dim : Asis.List_Index) return Location is
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-      use Thick_Queries, Utilities;
+      use Asis, Asis.Definitions, Asis.Elements;
+      use Utilities;
    begin
       if Definition_Kind (Definition) = A_Constraint then
          case Discrete_Range_Kind (Discrete_Ranges (Definition) (Dim)) is
@@ -304,7 +304,7 @@ package body Rules.Array_Declarations is
          use Utilities;
          Decl : Asis.Declaration := Enclosing_Element (Definition);
       begin
-         while Element_Kind (Decl) /= A_Declaration and Element_Kind (Decl) /= A_Statement Loop
+         while Element_Kind (Decl) /= A_Declaration and Element_Kind (Decl) /= A_Statement loop
             Decl := Enclosing_Element (Decl);
          end loop;
          case Declaration_Kind (Decl) is
@@ -322,7 +322,6 @@ package body Rules.Array_Declarations is
                -- A statement: allocator...
                return "variable";
             when others =>
-               Utilities.Trace ("Definition", Definition);
                Failure ("Process_Length: unexpected declaration", Decl);
          end case;
       end Declaration_Name;
@@ -394,11 +393,11 @@ package body Rules.Array_Declarations is
    ------------------------------
 
    procedure Process_Index_Constraint (Definition : Asis.Definition) is
-      use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Elements;
-      use Framework.Reports, Thick_Queries;
 
       procedure Process_First_Last is
+         use Ada.Strings.Wide_Unbounded;
+         use Framework.Reports, Thick_Queries;
          Bounds : constant Asis.Element_List := Discrete_Constraining_Bounds (Definition);
          Val    : Extended_Biggest_Int;
 

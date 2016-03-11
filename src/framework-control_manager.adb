@@ -372,7 +372,7 @@ package body Framework.Control_Manager is
          when All_Id =>
             Add_To_Map (Into.Simple_Names);
          when others =>
-            Failure ("Associate : bad kind");
+            Failure ("Associate : bad kind " & Entity_Specification_Kinds'Wide_Image (Specification.Kind));
       end case;
    end Associate;
 

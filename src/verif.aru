@@ -33,6 +33,7 @@ No_Debug         : check entities (debug, debug.timing, tracer, tracer.timing);
 No_TBSL          : search comments (pattern, "TBSL");
 No_Unimplemented : check entities (Utilities.Unimplemented);
 search uncheckable (false_negative, missing_unit);
+"Use Std interrupt": check dependencies (with, framework.interrupt_dbg);
 
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.

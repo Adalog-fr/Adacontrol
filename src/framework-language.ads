@@ -191,7 +191,7 @@ package Framework.Language is
    end Flag_Utilities;
 
    -- Procedure to be called by rules if there is something wrong with the
-   -- parameters
+   -- parameters. If no position specified, uses position of Current_Token
    procedure Parameter_Error (Rule : Wide_String; Message : Wide_String);
    procedure Parameter_Error (Rule : Wide_String; Message : Wide_String; Position : Location);
    pragma No_Return (Parameter_Error);

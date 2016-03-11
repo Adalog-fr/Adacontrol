@@ -29,12 +29,8 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Ada 2005
--- Since we compile in Ada95 mode, this is allowed but would issue a warning
-pragma Warnings (Off);
 with
    Ada.Environment_Variables;
-pragma Warnings (On);
 
 -- Ada
 with
@@ -42,7 +38,6 @@ with
   Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Unbounded,
-  Ada.Wide_Text_IO,
   Ada.Exceptions;
 
 -- Adalog
@@ -423,7 +418,7 @@ package body Adactl_Options is
    ------------------
 
    function Asis_Options return Wide_String is
-      use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded, Ada.Wide_Text_IO;
+      use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
       use Implementation_Options, Analyzer;
 
       Project_File : constant String := Value (Option            => 'p',

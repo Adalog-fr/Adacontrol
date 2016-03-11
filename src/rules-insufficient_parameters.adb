@@ -48,7 +48,7 @@ with
 
 package body Rules.Insufficient_Parameters is
 -- TBSL: merge this rule with Positional_Associations?
--- Parameters are different, is with one extendable to all associations (currently only calls)?
+-- Parameters are different, is this one extendable to all associations (currently only calls)?
    use Framework, Framework.Control_Manager;
 
    Rule_Used : Control_Kinds_Set := (others => False);

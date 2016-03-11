@@ -257,7 +257,6 @@ package body Rules.Statements is
          -- process filtered (i.e. non trivial) raises.
          -- common to a real raise and to a call to Raise_Exception
          use Asis.Compilation_Units;
-         use Scope_Manager;
 
          function Is_Parent_Scope (To_Check : Asis.Declaration; Starting_From : Asis.Element) return Boolean is
          -- Check if To_Check is an enclosing scope of Starting_From, or of the specification of some unit that
@@ -294,7 +293,7 @@ package body Rules.Statements is
          Handler         : Asis.Exception_Handler;
          Decl_Place      : Asis.Declaration;
          Is_Standard_Exc : Boolean := False;
-      begin
+      begin   -- Check_Filtered_Raise
          if Rule_Used (Stmt_Raise_Standard) or Rule_Used (Stmt_Raise_Foreign) or Rule_Used (Stmt_Raise_Nonpublic) then
             Is_Standard_Exc := To_Upper (Unit_Full_Name (Definition_Compilation_Unit (Exc))) = "STANDARD";
          end if;

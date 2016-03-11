@@ -866,7 +866,7 @@ The ``-i'' option tells AdaControl to ignore disabling markers in Ada
 source code (@pxref{Disabling controls}); i.e. all controls will be
 performed, regardless of the presence of disabling markers. This is
 equivalent to the command ``@code{set ignore ON;}''. Note that if you
-you have many messages, setting this option can speed-up AdaControl
+have many messages, setting this option can speed-up AdaControl
 considerably.  It is therefore advisable to always set this option
 when you know that there is no disabling marker in your source code.
 
@@ -918,10 +918,11 @@ counted. @xref{Control kinds and report messages}.
 @node Exit on error, ASIS options, Treatment of warnings, Command line parameters and options
 @subsection Exit on error
 If an internal error is encountered during the processing of a unit,
-AdaControl will continue to process other units. However, if the
-``-x'' option is given, AdaControl will stop on the first error
-encountered. This option is mainly useful if you want to debug
-AdaControl itself (or your own rules). @xref{In case of trouble}.
+AdaControl will do its best effort to recover and to continue to
+process other units. However, if the ``-x'' option is given,
+AdaControl will stop on the first error encountered. This option is
+mainly useful if you want to debug AdaControl itself (or your own
+rules). @xref{In case of trouble}.
 
 Ex:
 @example
@@ -1405,11 +1406,11 @@ recompilation for the next build of the project.
 (from the ``Help/AdaControl/Help on rule'' menu) is displayed. If you
 select ``Pop-up'', a summary of the rule's purpose and syntax is
 displayed in a pop-up. If you select ``User Guide'', the user guide
-opens in a browser at the page that explains the rule. (Caveat: due to
-a problem in GPS under Windows, the ``User Guide'' option may not work
-at all, or the browser will not find the right anchor; hopefully, this
-will be fixed in an upcomming release of GPS. No such problem under
-Linux).
+opens in a browser at the page that explains the rule. (@b{Caveat}:
+due to a problem in GPS under Windows, the ``User Guide'' option may
+not work at all, or the browser will not find the right anchor;
+hopefully, this will be fixed in an upcomming release of GPS. No such
+problem under Linux).
 @item
 ``Use separate categories''. If this box is checked, there will be one
 category (i.e. tree in the locations window) for each rule type or
@@ -1446,9 +1447,11 @@ limit. @xref{Output limits}.
 
 @node AdaControl language, AdaControl help, AdaControl preferences, Running AdaControl from GPS
 @subsection AdaControl language
-If you check ``AdaControl'' in the ``Languages'' tab, GPS
-will recognize files with extension @code{.aru} as AdaControl rules
-files, and provide appropriate colorization.
+If you check ``AdaControl'' in the ``Languages'' tab of the project
+properties, GPS will recognize files with extension @code{.aru} as
+AdaControl rules files, and provide appropriate colorization. Remember
+to check also the corresponding ``no compiler'' checkbox to avoid
+spurious messages from GPS.
 
 @node AdaControl help, Caveat, AdaControl language, Running AdaControl from GPS
 @subsection AdaControl help
@@ -1704,8 +1707,9 @@ fly'' mode.
 
 To generate tree files manually, simply recompile your project with
 the ``-gnatct'' option.  This option can be passed to @code{gnatmake}
-normally. Of course, you will need all other options needed by your
-project (like the ``-P'' option if you are using GNAT project files).
+or  @code{gprbuild} normally. Of course, you will need all other
+options needed by your project (like the ``-P'' option if you are
+using GNAT project files).
 
 Tree files may be copied into a different directory if you don't want
 your current directory to be cluttered by them. In this case, use the
@@ -1811,11 +1815,11 @@ problem. @xref{Inhibit command}.
 
 If you encounter a problem while using AdaControl, you are very
 welcome to report it through our
-@url{https://sourceforge.net/apps/mantisbt/adacontrol/my_view_page.php,Mantis bug
-tracking system} (under Windows, you can click on ``Report problem''
-in the AdaControl Start menu). Please include the exact control and
-the unit that caused the problem, as well as the captured output of
-the program (with ``-dx'' option).
+@url{https://sourceforge.net/p/adacontrol/tickets/,bug tracking
+system} (under Windows, you can click on ``Report problem'' in the
+AdaControl Start menu). Please include the exact control and the unit
+that caused the problem, as well as the captured output of the program
+(with ``-dx'' option).
 
 @node Command language reference, Rules reference, Program Usage, Top
 @chapter Command language reference
