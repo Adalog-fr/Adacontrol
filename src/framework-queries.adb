@@ -119,13 +119,7 @@ package body Framework.Queries is
                end if;
 
                -- Go to the full declaration if necessary (incomplete and private)
-               if Declaration_Kind (E) in
-                 An_Incomplete_Type_Declaration .. A_Private_Extension_Declaration
-               then
-                  E := Corresponding_Type_Declaration (E);
-               end if;
-
-               E := Corresponding_First_Subtype (E);
+               E := Corresponding_First_Subtype (Corresponding_Full_Type_Declaration (E));
             end;
          elsif Element_Kind (E) = An_Association
            or Declaration_Kind (E) in A_Renaming_Declaration

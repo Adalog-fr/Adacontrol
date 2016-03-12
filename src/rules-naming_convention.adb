@@ -732,7 +732,7 @@ package body Rules.Naming_Convention is
 
                begin
                   if Decl_Kind in A_Full_Type_Declaration
-                    and then Declaration_Kind (Corresponding_Type_Declaration (Decl))
+                    and then Declaration_Kind (Corresponding_Type_Partial_View (Decl))
                               in A_Private_Type_Declaration .. A_Private_Extension_Declaration
                   then
                      -- This declaration is a full declaration of a private type.
@@ -974,7 +974,7 @@ package body Rules.Naming_Convention is
 
                            Accessed := Corresponding_Name_Declaration (Accessed);
                            if Declaration_Kind (Accessed) = An_Incomplete_Type_Declaration then
-                              Accessed := Corresponding_Type_Declaration (Accessed);
+                              Accessed := Corresponding_Full_Type_Declaration (Accessed);
                               if Is_Nil (Accessed) then
                                  -- The full declaration of the accessed type is not in the context.
                                  -- We cannot know the real nature of the accessed type.

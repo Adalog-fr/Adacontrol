@@ -324,7 +324,7 @@ package body Rules.Reduceable_Scope is
                     =>
                   -- Do not consider the declaration if it is a completion
                   -- since in this case, we use the defining name from the completed declaration.
-                  if Is_Nil (Corresponding_Type_Declaration (Decl)) then
+                  if Is_Nil (Corresponding_Type_Partial_View (Decl)) then
                      return Check_Type;
                   else
                      return Check_Not_Checkable;

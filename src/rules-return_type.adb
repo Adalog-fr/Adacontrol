@@ -432,11 +432,12 @@ package body Rules.Return_Type is
                return;
 
             when An_Incomplete_Type_Declaration
-              | A_Private_Type_Declaration
-              | A_Private_Extension_Declaration
-              =>
+               | A_Tagged_Incomplete_Type_Declaration
+               | A_Private_Type_Declaration
+               | A_Private_Extension_Declaration
+               =>
                -- Retrieve full type declaration
-               Result_Type_Declaration := Corresponding_Type_Declaration (Result_Type_Declaration);
+               Result_Type_Declaration := Corresponding_Full_Type_Declaration (Result_Type_Declaration);
 
             when An_Ordinary_Type_Declaration =>
                declare

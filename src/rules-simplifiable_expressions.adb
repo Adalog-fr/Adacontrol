@@ -587,12 +587,7 @@ package body Rules.Simplifiable_Expressions is
                if Declaration_Kind (Decl) = A_Subtype_Declaration then
                   Decl := Corresponding_First_Subtype (Decl);
                end if;
-
-               if Declaration_Kind (Decl) = A_Private_Type_Declaration
-                 or Declaration_Kind (Decl) = An_Incomplete_Type_Declaration
-               then
-                  Decl := Corresponding_Type_Declaration (Decl);
-               end if;
+               Decl := Corresponding_Full_Type_Declaration (Decl);
 
                case Declaration_Kind (Decl) is
                   when An_Ordinary_Type_Declaration
@@ -902,10 +897,7 @@ package body Rules.Simplifiable_Expressions is
          -- certainly not suspicious
          return;
       end if;
-      if Declaration_Kind (Source) = An_Incomplete_Type_Declaration then
-         -- Use full declaration instead
-         Source := Corresponding_Type_Declaration (Source);
-      end if;
+      Source := Corresponding_Full_Type_Declaration (Source);
 
       Target := Converted_Or_Qualified_Subtype_Mark (Expr);
       case Expression_Kind (Target) is

@@ -230,7 +230,7 @@ package body Rules.Improper_Initialization is
                     (Ultimate_Type_Declaration
                      (Corresponding_Name_Declaration (Temp)));
          when A_Private_Type_Definition =>
-            return Non_Array_Component_Declaration (Corresponding_Type_Declaration
+            return Non_Array_Component_Declaration (Corresponding_Full_Type_Declaration
                                                     (Enclosing_Element (Definition)));
          when others =>
             -- Including Not_An_Element, case of a task type of the form "task T;"

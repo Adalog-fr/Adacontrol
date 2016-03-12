@@ -272,14 +272,9 @@ package body Rules.Allocators is
                if Attribute_Kind (Designated_Name) = A_Base_Attribute then
                   return;
                end if;
-               Def := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Designated_Name)));
-               case Declaration_Kind (Def) is
-                  when A_Private_Type_Declaration | An_Incomplete_Type_Declaration =>
-                     Def := Corresponding_Type_Declaration (Def);
-                  when others =>
-                     null;
-               end case;
-               Def := Type_Declaration_View (Def);
+               Def := Type_Declaration_View (Corresponding_Full_Type_Declaration
+                                             (Corresponding_Name_Declaration
+                                              (Simple_Name (Strip_Attributes (Designated_Name)))));
                if         Type_Kind (Def)        /= An_Unconstrained_Array_Definition
                  and then Formal_Type_Kind (Def) /= A_Formal_Unconstrained_Array_Definition
                  and then not Subtype_Match (Designated_Name, Allocated_Subtype)
