@@ -1,9 +1,12 @@
 =============
-== V1.17b5 ==
+== V1.18b1 ==
 =============
 
 General:
 --------
+Bug fixes:
+   #0000044
+
 -p option accepts a .gpr file as well as a .adp file (i.e. you can use
 Gnat project files directly).
 
@@ -17,7 +20,8 @@ Derivations
 Changes to existing rules:
 --------------------------
 Declarations:
-   Subrule Synonym_Renaming
+   Subrules relay_function, relay_procedure, relay_package,
+   Synonym_Renaming
 
 Expressions
    Subrules not, function_call, dynamic_function_call
@@ -30,20 +34,6 @@ Statements
    procedure_call, dynamic_procedure_call
    (does not control dispatching function calls anymore)
    raise_nonpublic: split in two: raise_nonpublic and raise_foreign.
-
-=============
-== V1.17b4 ==
-=============
-
-General:
---------
-Bug fixes:
-   #0000044
-
-Changes to existing rules:
---------------------------
-Declarations:
-   Subrules relay_function, relay_procedure, relay_package
 
 =============
 == V1.17r3 ==
