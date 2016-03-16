@@ -7,7 +7,7 @@ import GPS
 
 
 # Builds the options string
-def options ():
+def options():
     result = " -q "
     result = result \
         + GPS.current_context().file().name() \
