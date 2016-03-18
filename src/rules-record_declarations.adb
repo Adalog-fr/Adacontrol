@@ -445,7 +445,8 @@ package body Rules.Record_Declarations is
          end if;
 
          -- Relief! The component has an explicit type
-         Compo_Type := Corresponding_Name_Declaration (Subtype_Simple_Name (Temp));
+         -- The only possible attribute is 'Base, we can ignore it (no 'Class for components)
+         Compo_Type := Corresponding_Name_Declaration (Strip_Attributes (Subtype_Simple_Name (Temp)));
 
          Is_Packed := False;
          declare
