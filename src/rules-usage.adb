@@ -1019,8 +1019,10 @@ package body Rules.Usage is
                -- anonymous access component => access type => initialized
                return True;
             end if;
+            -- Get rid of 'Base if necessary (cannot be 'Class)
             Current_Definition := Type_Declaration_View (Corresponding_Name_Declaration
-                                                         (Subtype_Simple_Name (Current_Definition)));
+                                                         (Strip_Attributes
+                                                          (Subtype_Simple_Name (Current_Definition))));
             exit when Type_Kind (Current_Definition)
                       not in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition
               and then Formal_Type_Kind (Current_Definition)

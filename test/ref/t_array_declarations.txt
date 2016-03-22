@@ -71,48 +71,51 @@ t_array_declarations-dimensions.adb:11:22: Error: ARRAY_DECLARATIONS: upper boun
 t_array_declarations-dimensions.adb:11:59: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:11:78: Error: ARRAY_DECLARATIONS: upper bound of array is more than 1000 (2147483647)
 t_array_declarations-dimensions.adb:11:15: Error: ARRAY_DECLARATIONS: array has more than 3 dimensions (4)
-t_array_declarations-component.adb:3:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:3:33: Error: compo_ident: array component is "Standard.Character"
-t_array_declarations-component.adb:3:33: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
-t_array_declarations-component.adb:4:8: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:4:24: Error: compo_ident: array component is "Standard.Character"
-t_array_declarations-component.adb:4:24: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
-t_array_declarations-component.adb:6:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:6:33: Error: compo_ident: array component is "Standard.Character"
-t_array_declarations-component.adb:6:33: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
-t_array_declarations-component.adb:8:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:8:33: Error: compo_array: array component is "array"
-t_array_declarations-component.adb:11:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:11:31: Error: compo_array: array component is "array"
-t_array_declarations-component.adb:18:9: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:18:27: Error: compo_task: array component is "task"
-t_array_declarations-component.adb:29:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:29:31: Error: compo_protected: array component is "protected"
-t_array_declarations-component.adb:44:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:44:33: Error: compo_private: array component is "private"
+t_array_declarations-component.adb:3:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:3:34: Error: compo_ident: array component is "Standard.Character"
+t_array_declarations-component.adb:3:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:4:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:4:34: Error: compo_ident_base: array component is "Standard.Character'Base"
+t_array_declarations-component.adb:4:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:5:9: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:5:27: Error: compo_ident: array component is "Standard.Character"
+t_array_declarations-component.adb:5:27: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:7:15: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:7:33: Error: compo_ident: array component is "Standard.Character"
+t_array_declarations-component.adb:7:33: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:9:15: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:9:33: Error: compo_array: array component is "array"
+t_array_declarations-component.adb:12:15: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:12:33: Error: compo_array: array component is "array"
+t_array_declarations-component.adb:19:9: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:19:27: Error: compo_task: array component is "task"
+t_array_declarations-component.adb:30:15: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:30:31: Error: compo_protected: array component is "protected"
 t_array_declarations-component.adb:45:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:45:33: Error: compo_record: array component is "record"
+t_array_declarations-component.adb:45:33: Error: compo_private: array component is "private"
 t_array_declarations-component.adb:46:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:46:33: Error: compo_access: array component is "access"
-t_array_declarations-component.adb:50:15: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:50:33: Error: compo_tagged: array component is "tagged"
-t_array_declarations-component.adb:51:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:51:34: Error: compo_tagged: array component is "tagged"
-t_array_declarations-component.adb:53:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:53:34: Error: compo_delta: array component is "delta"
-t_array_declarations-component.adb:56:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:56:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:46:33: Error: compo_record: array component is "record"
+t_array_declarations-component.adb:47:15: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:47:33: Error: compo_access: array component is "access"
+t_array_declarations-component.adb:51:15: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:51:33: Error: compo_tagged: array component is "tagged"
+t_array_declarations-component.adb:52:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:52:34: Error: compo_tagged: array component is "tagged"
+t_array_declarations-component.adb:54:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:54:34: Error: compo_delta: array component is "delta"
 t_array_declarations-component.adb:57:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:57:34: Error: compo_enum_p_ns: component is "()" of array with pack not size 
-t_array_declarations-component.adb:59:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:59:34: Error: compo_enum_np_s: component is "()" of array with not pack size 
-t_array_declarations-component.adb:61:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:61:34: Error: compo_enum_p_s: component is "()" of array with pack size 
-t_array_declarations-component.adb:64:16: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:64:34: Error: compo_enum_cs: component is "()" of array with component_size 
-t_array_declarations-component.adb:64:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
-t_array_declarations-component.adb:70:19: Error: Index_T6: array index is Range
-t_array_declarations-component.adb:70:37: Error: compo_float: array component is "digits"
+t_array_declarations-component.adb:57:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:58:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:58:34: Error: compo_enum_p_ns: component is "()" of array with pack not size 
+t_array_declarations-component.adb:60:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:60:34: Error: compo_enum_np_s: component is "()" of array with not pack size 
+t_array_declarations-component.adb:62:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:62:34: Error: compo_enum_p_s: component is "()" of array with pack size 
+t_array_declarations-component.adb:65:16: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:65:34: Error: compo_enum_cs: component is "()" of array with component_size 
+t_array_declarations-component.adb:65:34: Error: compo_enum_np_ns: component is "()" of array with not pack not size 
+t_array_declarations-component.adb:71:19: Error: Index_T6: array index is Range
+t_array_declarations-component.adb:71:37: Error: compo_float: array component is "digits"
 t_array_declarations-index_types.adb:10:15: Error: Index_T5: array index is ()
 t_array_declarations-index_types.adb:10:15: Error: Index_T1: array index is T_Array_Declarations.Index_Types.Enum
 t_array_declarations-index_types.adb:11:22: Error: ARRAY_DECLARATIONS: lower bound of array is not in -10 .. 0 and not 1 (5)
@@ -194,6 +197,6 @@ t_array_declarations-index_types.adb:30:17: Error: Index_TTT3: array indices are
 t_array_declarations-index_types.adb:30:17: Error: Index_TTT2: array indices are Range, Range, <>
 
 Counts summary:
-1 or 4 dims: 50
-Not_2: 61
+1 or 4 dims: 51
+Not_2: 62
 Too_Long: 30

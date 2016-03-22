@@ -16,6 +16,7 @@ Too_Long: count  array_declarations (    length, max 5);
 
 -- Component
 compo_ident:      check array_declarations (component, standard.character);
+compo_ident_base: check array_declarations (component, standard.character'base);
 compo_array:      check array_declarations (component, Array);
 compo_tagged:     check array_declarations (component, tagged);
 compo_access:     check array_declarations (component, ACCESS);

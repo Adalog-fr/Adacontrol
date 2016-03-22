@@ -140,7 +140,7 @@ procedure T_declarations is       -- library procedure
    type Acc_Rec3 is access Rec4;                              -- access_def_discriminated_type, access_type
 
    type Arr1 is array (1 .. 10) of Character;                 -- constrained_array_type, array, anonymous_subtype_declaration
-   type Arr2 is array (Positive range <>) of Integer;         -- unconstrained_array_type, array
+   type Arr2 is array (Positive range <>) of Integer'Base;    -- unconstrained_array_type, array
    type Arr3 is new Arr2 (1..10);                             -- derived_type, anonymous_subtype_declaration x2
    subtype Subarr21 is Arr2;                                  -- subtype, unconstrained_subtype
    subtype Subarr22 is Arr2 (1 .. 3);                         -- subtype, anonymous_subtype_declaration
@@ -245,6 +245,11 @@ procedure T_declarations is       -- library procedure
    package Pack3 renames Pack2;                          -- renaming, not_operator_renaming, non_identical_renaming, synonym_renaming
    generic package Generic_Elementary_Functions          -- renaming, Not_Operator_Renaming, library_unit_renaming
       renames Ada.Numerics.Generic_Elementary_Functions;
+
+   function "+" (L : Arr2) return Arr2 is                -- operator #00046
+   begin
+      return L;
+   end "+";
 
    function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names
    begin

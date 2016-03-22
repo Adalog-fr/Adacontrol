@@ -638,14 +638,16 @@ package body Rules.Array_Declarations is
             Reset (Iterator, Framework.Value (Image (An_Access_Type)));
             Compo_Report (Iterator, Lower_Case);
          else
-            declare
-               Comp_Decl  : constant Asis.Declaration := Corresponding_Name_Declaration
-                                                          (Subtype_Simple_Name (Array_Comp));
-            begin
-               -- Exact subtype
-               Reset (Iterator, Subtype_Simple_Name (Array_Comp), Extend_To => All_Extensions);
-               Compo_Report (Iterator, Title_Case);
+            -- Exact subtype
+            Reset (Iterator, Subtype_Simple_Name (Array_Comp), Extend_To => All_Extensions);
+            Compo_Report (Iterator, Title_Case);
 
+            declare
+               -- We can now get rid of 'Base if any (cannot be 'Class)
+               Comp_Decl  : constant Asis.Declaration := Corresponding_Name_Declaration
+                                                          (Strip_Attributes
+                                                           (Subtype_Simple_Name (Array_Comp)));
+            begin
                -- First subtype (aka type), if different
                First_St := Corresponding_First_Subtype (Comp_Decl);
                if not Is_Equal (First_St, Comp_Decl) then

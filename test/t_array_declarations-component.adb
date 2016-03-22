@@ -1,21 +1,22 @@
 separate (T_Array_Declarations)
 procedure Component is
-   type T1 is array (1 .. 4) of Character;  -- Index_T6, Standard.Character, () with not pack not size
-   V1: array (1..4) of Character;           -- Index_T6, Standard.Character, () with not pack not size
+   type T1  is array (1 .. 4) of Character;      -- Index_T6, Standard.Character, () with not pack not size
+   type T1a is array (1 .. 4) of Character'Base; -- Index_T6, Standard.Character'Base,  () with not pack not size
+   V1 : array (1 .. 4) of Character;             -- Index_T6, Standard.Character, () with not pack not size
    subtype UC is Character range 'A'..'Z';
-   type T2 is array (1 .. 4) of UC;         -- Index_T6, Standard.Character, () with not pack not size
+   type T2 is array (1 .. 4) of UC;              -- Index_T6, Standard.Character, () with not pack not size
 
-   type T3 is array (1 .. 4) of T2;         -- Index_T6, Array
+   type T3 is array (1 .. 4) of T2;              -- Index_T6, Array
 
    type Der is new T3;
-   type T4 is array (1..4) of Der;          -- Index_T6, Array
+   type T4 is array (1 .. 4) of Der;             -- Index_T6, Array
 
    task type TT;
    task body TT is
    begin
       null;
    end TT;
-   V2 : array (1 .. 4) of TT;               -- Index_T6, Task
+   V2 : array (1 .. 4) of TT;                    -- Index_T6, Task
 
    protected type Prot is
       procedure Proc;
