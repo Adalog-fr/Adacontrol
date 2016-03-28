@@ -126,9 +126,10 @@ package body Rules.Declarations is
       D_Single_Protected,                  D_Single_Task,                       D_Subtype,
       D_Synonym_Renaming,
 
-      D_Tagged_Private_Type,               D_Tagged_Type,                       D_Tagged_Variable,
-      D_Task,                              D_Task_Discriminant,                 D_Task_Entry,
-      D_Task_Type,                         D_Task_Variable,                     D_Type,
+      D_Tagged_Incomplete_Type,            D_Tagged_Private_Type,               D_Tagged_Type,
+      D_Tagged_Variable,                   D_Task,                              D_Task_Discriminant,
+      D_Task_Entry,                        D_Task_Type,                         D_Task_Variable,
+      D_Type,
 
       D_Unconstrained_Array_Constant,      D_Unconstrained_Array_Type,          D_Unconstrained_Array_Variable,
       D_Unconstrained_Subtype,             D_Uninitialized_Protected_Component, D_Uninitialized_Record_Component,
@@ -751,6 +752,10 @@ package body Rules.Declarations is
 
          when An_Incomplete_Type_Declaration =>
             Do_Report (D_Incomplete_Type, Element);
+            Check_Discriminant (Element);
+
+         when A_Tagged_Incomplete_Type_Declaration =>
+            Do_Report (D_Tagged_Incomplete_Type, Element);
             Check_Discriminant (Element);
 
          when A_Subtype_Declaration =>

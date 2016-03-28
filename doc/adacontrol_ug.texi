@@ -3494,16 +3494,16 @@ those occurring at specified locations.
    signed_type                       | single_array                      |
    single_protected                  | single_task                       |
    subtype                           | synonym_renaming                  |
-   tagged_private_type               | tagged_type                       |
-   tagged_variable                   | task                              |
-   task_discriminant                 | task_entry                        |
-   task_type                         | task_variable                     |
-   type                              | unconstrained_array_constant      |
-   unconstrained_array_type          | unconstrained_array_variable      |
-   unconstrained_subtype             | uninitialized_protected_component |
-   uninitialized_record_component    | uninitialized_variable            |
-   unknown_discriminant              | variable                          |
-   variant_part
+   tagged_incomplete_type            | tagged_private_type               |
+   tagged_type                       | tagged_variable                   |
+   task                              | task_discriminant                 |
+   task_entry                        | task_type                         |
+   task_variable                     | type                              |
+   unconstrained_array_constant      | unconstrained_array_type          |
+   unconstrained_array_variable      | unconstrained_subtype             |
+   uninitialized_protected_component | uninitialized_record_component    |
+   uninitialized_variable            | unknown_discriminant              |
+   variable                          | variant_part
 @end example
 
 @subsection Action
@@ -3712,7 +3712,9 @@ parameters. Note that to avoid unnecessary messages, if a subprogram
 has an explicit specification, the message is given on the
 specification and not repeated on the body.
 @item
-@code{incomplete_type} controls incomplete type declaration.
+@code{incomplete_type} controls (regular) incomplete type
+declarations, while @code{tagged_incomplete_type} controls tagged
+incomplete type declarations (Ada 2005).
 @item
 @code{initialized_variable} controls variable declarations that
 include an initialization expression, unless they are of a class-wide

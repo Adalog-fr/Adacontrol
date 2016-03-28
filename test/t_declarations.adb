@@ -110,6 +110,7 @@ procedure T_declarations is       -- library procedure
    I,J,K : aliased Integer;               -- variable x3, aliased_variable x3, scalar_variable x3, uninitialized_variable x3, multiple_names
    C : aliased constant Character := ' '; -- constant, aliased_constant
 
+   type Rec1 is tagged;                                   -- tagged_incomplete_type
    type Rec1 is tagged null record;                       -- null_tagged_type, tagged_type, record_type
    type Rec2 (X : Integer) is tagged limited null record; -- null_tagged_type, tagged_type, record_type, discriminant
    type Rec3 is null record;                              -- null_ordinary_record_type, ordinary_record_type, record_type
