@@ -46,6 +46,11 @@ procedure Tfw_2005 is
    procedure GP;
    procedure GP is begin null; end GP;
 
+   package New_Types is
+      type T is tagged;            -- incomplete tagged
+      type T_Access is access all T;
+      type T is tagged null record;
+   end New_Types;
 begin
    X := F;
    Tab(1) := X;

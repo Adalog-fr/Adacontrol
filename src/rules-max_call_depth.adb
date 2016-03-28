@@ -409,6 +409,7 @@ package body Rules.Max_Call_Depth is
                   end if;
                   Control := Abandon_Children;
                when An_Incomplete_Type_Declaration
+                  | A_Tagged_Incomplete_Type_Declaration
                   | A_Deferred_Constant_Declaration
                   | An_Integer_Number_Declaration
                   | A_Real_Number_Declaration

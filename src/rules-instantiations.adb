@@ -263,14 +263,7 @@ package body Rules.Instantiations is
       -- (+ first named subtype if it is a subtype)
       Declaration := Corresponding_Name_Declaration (Simple_Name (Name));
       case Declaration_Kind (Declaration) is
-         when An_Ordinary_Type_Declaration
-            | A_Task_Type_Declaration
-            | A_Protected_Type_Declaration
-            | A_Private_Type_Declaration
-            | A_Private_Extension_Declaration
-            | A_Formal_Type_Declaration
-            | An_Incomplete_Type_Declaration
-              =>
+         when A_Type_Declaration =>
             null;
          when A_Subtype_Declaration =>
             if Matches (Specification, First_Subtype_Name (Name)) then

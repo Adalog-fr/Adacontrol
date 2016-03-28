@@ -313,6 +313,7 @@ package body Rules.Reduceable_Scope is
                   -- the name from the body
                   return Check_Not_Checkable;
                when An_Incomplete_Type_Declaration   -------------- Types
+                  | A_Tagged_Incomplete_Type_Declaration
                   | A_Private_Type_Declaration
                   | A_Private_Extension_Declaration
                   | A_Subtype_Declaration

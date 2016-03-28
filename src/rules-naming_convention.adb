@@ -894,7 +894,7 @@ package body Rules.Naming_Convention is
                         end if;
                      end if;
 
-                  when An_Incomplete_Type_Declaration =>
+                  when An_Incomplete_Type_Declaration | A_Tagged_Incomplete_Type_Declaration =>
                      -- The name will be checked on the corresponding full type declaration
                      return;
 
@@ -973,7 +973,9 @@ package body Rules.Naming_Convention is
                            -- Here, we should have a plain (sub)type identifier
 
                            Accessed := Corresponding_Name_Declaration (Accessed);
-                           if Declaration_Kind (Accessed) = An_Incomplete_Type_Declaration then
+                           if Declaration_Kind (Accessed)
+                              in An_Incomplete_Type_Declaration .. A_Tagged_Incomplete_Type_Declaration
+                           then
                               Accessed := Corresponding_Full_Type_Declaration (Accessed);
                               if Is_Nil (Accessed) then
                                  -- The full declaration of the accessed type is not in the context.
@@ -1068,7 +1070,7 @@ package body Rules.Naming_Convention is
                      Assert (Is_Class_Wide_Subtype (Decl), "Unexpected subtype declaration");
                      Check (Name_Str, (K_All, K_Type, K_Class_Type));
 
-                  when An_Incomplete_Type_Declaration =>
+                  when An_Incomplete_Type_Declaration | A_Tagged_Incomplete_Type_Declaration =>
                      Failure ("Unexpected incomplete declaration", Decl);
 
                   when A_Private_Type_Declaration =>
