@@ -780,6 +780,7 @@ package body Rules.Array_Declarations is
             return;
          end if;
 
+         -- No 'BASE to fear below, it's not applicable to array types
          if Type_Kind (Type_Declaration_View (Corresponding_Name_Declaration (Subtype_Simple_Name (Obj_Def)))) =
            An_Unconstrained_Array_Definition
          then

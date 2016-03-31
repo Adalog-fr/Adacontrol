@@ -244,9 +244,9 @@ package body Rules.Allocators is
                elsif Formal_Type_Kind (Allocator_Subtype) = A_Formal_Derived_Type_Definition then
                   -- There can be no constraint at that level, go to the parent type
                   Allocator_Subtype := Type_Declaration_View (Corresponding_Name_Declaration
-                    (Simple_Name
-                       (Strip_Attributes
-                          (Subtype_Simple_Name (Allocator_Subtype)))));
+                                                              (Simple_Name
+                                                               (Strip_Attributes
+                                                                (Subtype_Simple_Name (Allocator_Subtype)))));
                elsif Definition_Kind (Allocator_Subtype) = An_Access_Definition then
                   Designated_Subtype := Simple_Name (Anonymous_Access_To_Object_Subtype_Mark
                                                      (Allocator_Subtype));

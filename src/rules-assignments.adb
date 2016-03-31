@@ -264,6 +264,8 @@ package body Rules.Assignments is
 
 
       function Total_Fields (Struct : Asis.Element) return Extended_Biggest_Natural is
+      -- Total number of components of a record or array definition.
+      -- By extension: works also on an expresion of a record type.
          use Utilities;
          use Asis.Declarations, Asis.Definitions;
 
@@ -379,7 +381,7 @@ package body Rules.Assignments is
                      return Result;
                   end;
 
-               when A_Subtype_Indication =>
+               when A_Subtype_Indication =>  -- No 'Base for record and array types
                   Def := Type_Declaration_View (Corresponding_Name_Declaration (Subtype_Simple_Name (Def)));
 
                when A_Private_Type_Definition

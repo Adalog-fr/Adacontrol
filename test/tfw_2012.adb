@@ -35,6 +35,15 @@ procedure Tfw_2012 is
    package String_Vectors is new Ada.Containers.Indefinite_Vectors (Positive, String);
    use String_Vectors;
    Vect : Vector;
+
+   package New_Types is
+      type T;
+      type Acc_T is access T;
+
+      type T is private;     -- Incomplete completed by private
+   private
+      type T is new Integer;
+   end New_Types;
 begin
    for C of S loop                                                 -- for .. of
       C := ' ';

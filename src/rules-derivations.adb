@@ -60,7 +60,7 @@ package body Rules.Derivations is
    --       formal derived types, formal interfaces
    --       separate case of interfaces?
    --       subtypes?
-   --       future subrules: Max_Depth, Max_Parents
+   --       future subrules: Max_Depth
 
    type Subrules is (SR_From, SR_Max_Parents);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
