@@ -13,7 +13,7 @@ procedure Test_Parentheses is
    type D_Rec (Discr : Boolean) is null record;
    R2 : D_Rec (True);                                   -- OK
    R3 : D_Rec ((False));                                -- Should Trigger
---GNAT bug: rejected R4 : D_Rec (for Some C of S1 => C = 'A');            -- OK
+   R4 : D_Rec (for Some C of S1 => C = 'A');            -- OK
    R5 : D_Rec ((for Some C of S1 => C = 'A'));          -- Should Trigger
    R6 : D_Rec (Discr => (for Some C of S1 => C = 'A')); -- OK
 
@@ -42,7 +42,7 @@ procedure Test_Parentheses is
    procedure Inst1 is new Gen (True);                                 -- OK
    procedure Inst2 is new Gen ((True));                              -- Should Trigger
    procedure Inst3 is new Gen (B => (True));                         -- Should Trigger
---GNAT bug: rejected   procedure Inst4 is new Gen (if True then True else False);        -- OK
+   procedure Inst4 is new Gen (if True then True else False);        -- OK
    procedure Inst5 is new Gen ((if True then True else False));      -- Should Trigger
    procedure Inst6 is new Gen (B => (if True then True else False)); -- OK
 begin
@@ -54,9 +54,9 @@ begin
    B2 := (for all C of S1 => C = 'A');    -- OK
    B3 := (for Some C of S1 => C = 'A');   -- OK
 
-   if (B) then     -- Should Trigger
+   if (B) then                               -- Should Trigger
       null;
-   elsif (B) then  -- Should Trigger
+   elsif (B) then                            -- Should Trigger
       null;
    elsif (if True then True else False) then --OK
       null;
@@ -76,13 +76,18 @@ begin
          null;
    end case;
 
-   P ((1));                          -- Should Trigger
-   P ((((1))));                      -- Should Trigger  x3
-   P ((if True then 1 else 0));      -- Should Trigger
-   P (X => (if True then 1 else 0)); -- OK
-   P ((if True then 1 else 0), 1);   -- OK
---GNAT bug: A4G adds parentheses   P (if True then 1 else 0);        -- OK
-   P (1);                            -- OK
+   P ((1));                                 -- Should Trigger
+   P ((((1))));                             -- Should Trigger  x3
+   P ((if True then 1 else 2));             -- Should Trigger
+   P (X => (if True then 3 else 4));        -- OK
+   P ((if True then 5 else 6), 1);          -- OK
+   P (if True then 7 else 8);               -- OK
+   P (1);                                   -- OK
+   B := not (if B then B else not B);       -- OK
+   B := not ((if B then B else not B));     -- Should Trigger
+   B := "not" (if B then B else not B);     -- OK
+   B := "not" ( (if B then B else not B) ); -- Should Trigger
+
 
    -- Arithmetic
    I := 1 + (2*3);       -- Should Trigger

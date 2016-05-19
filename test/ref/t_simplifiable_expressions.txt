@@ -57,39 +57,42 @@ t_simplifiable_expressions-test_parentheses.adb:80:7: Error: SIMPLIFIABLE_EXPRES
 t_simplifiable_expressions-test_parentheses.adb:80:8: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:80:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:81:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:88:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:89:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:91:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:92:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:93:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:94:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:95:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:102:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:104:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:109:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:110:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:112:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:113:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:87:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:87:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:89:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:93:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:94:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:96:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:97:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:98:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:99:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:100:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:107:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:109:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:114:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:117:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:117:33: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:118:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:118:43: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:120:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:120:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:120:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:120:52: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:123:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:115:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:117:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:118:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:119:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:122:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:122:33: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:123:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:124:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:124:22: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:126:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:126:15: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:129:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:129:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:131:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:132:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-t_simplifiable_expressions-test_parentheses.adb:135:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:123:43: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:125:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:125:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:125:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:125:52: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:128:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:128:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:129:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:129:22: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:131:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:131:15: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:134:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:134:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:136:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:137:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:140:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_conversion.adb:9:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:10:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:12:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
@@ -100,4 +103,4 @@ t_simplifiable_expressions-test_conversion.adb:19:9: Found: SIMPLIFIABLE_EXPRESS
 t_simplifiable_expressions-test_conversion.adb:25:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 100
+SIMPLIFIABLE_EXPRESSIONS: 103

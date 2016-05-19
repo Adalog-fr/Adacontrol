@@ -755,14 +755,21 @@ package body Rules.Simplifiable_Expressions is
                      then
                         Do_Report;
                      end if;
-
                   when A_Record_Component_Association
                      | An_Array_Component_Association
                      =>
                      null;
-                  when A_Parameter_Association
-                     | A_Generic_Association
-                       =>
+                  when A_Parameter_Association =>
+                     if Is_Nil (Formal_Parameter (Enclosing))
+                       and then Actual_Parameters (Enclosing_Element (Enclosing))'Length = 1 -- One positional parameter
+                     then
+                        if Expression_Kind (Enclosing_Element (Enclosing)) /= A_Function_Call
+                          or else Is_Prefix_Call (Enclosing_Element (Enclosing))   -- not (if C then A else B)
+                        then
+                           Do_Report;
+                        end if;
+                     end if;
+                  when A_Generic_Association =>
                      if Is_Nil (Formal_Parameter (Enclosing))
                        and then Actual_Parameters (Enclosing_Element (Enclosing))'Length = 1
                      then
