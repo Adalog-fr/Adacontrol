@@ -274,9 +274,9 @@ verifying the million+ lines of code that does Air Traffic Flow
 Management over Europe. Because it was felt that such a tool would
 benefit the community at-large, and that further improvements made by
 the community would benefit Eurocontrol, it was decided to release
-AdaControl as free software. Later, Eurocontrol, Belgocontrol, Ansaldo
-(formerly CSEE-Transport), and SAGEM-DS sponsored the development of
-more rules.
+AdaControl as free software. Later, Eurocontrol, Belgocontrol, Alstom,
+Ansaldo (formerly CSEE-Transport), and SAGEM-DS sponsored the
+development of more rules.
 
 The requirements for AdaControl were written by Philippe Waroquiers
 (Eurocontrol-Brussels), who also conducted extensive testing of
@@ -331,14 +331,13 @@ to remove some rules from AdaControl to increase its
 speed. @xref{Customizing AdaControl}.
 
 @menu
-* Building AdaControl from source::
-* Installing AdaControl::
-* Installing support for GPS::
+* Building and installing AdaControl from source::
+* Installing an executable distribution::
 * Installing support for AdaGide::
 @end menu
 
-@node Building AdaControl from source, Installing AdaControl, Installation, Installation
-@section Building AdaControl from source
+@node  Building and installing AdaControl from source, Installing an executable distribution, Installation, Installation
+@section Building and installing AdaControl from source
 This section is only for the source distribution of AdaControl. If you
 downloaded an executable distribution (and are using the latest
 version of GNAT GPL), you may skip to the next section.
@@ -396,16 +395,17 @@ Make sure to have the same version of GNAT and ASIS. The version used
 for running AdaControl must be the same as the one used to compile
 AdaControl itself.
 
-@subsection Build with installer (Windows)
+@subsection Build and install with installer (Windows)
 Run the installer (@code{adactl_src-setup.exe}). This will
 automatically build and install AdaControl, no other installation is
 necessary.
 
-@anchor{Build with project file}
-@subsection Build with project file
-Simply go to the @code{src} directory and type:
+@anchor{Build and install with project file}
+@subsection Build and install with project file
+Simply go to the root directory of the distribution and type:
 @example
-gnatmake -Pbuild.gpr
+gprbuild build.gpr
+gprinstall build.gpr
 @end example
 You're done!
 
@@ -413,49 +413,55 @@ Caveat (@i{old gnat only}): Due to a bug in some versions, if you are using GNAT
 6.1.2 and above, you must set the variable GNAT_FIX to 1; i.e. invoke
 the command as:
 @example
+gprbuild -Pbuild.gpr -XGNAT_FIX=1
+@end example
+or if gprbuild is not available for your distribution:
+@example
 gnatmake -Pbuild.gpr -XGNAT_FIX=1
 @end example
 
-@subsection Build with Makefile
-The previous method may fail if Asis is not installed in an usual
-place. As an alternative method, it is possible to build AdaControl
-with a regular Makefile.
+@subsection Build and install with Makefile
+It is also possible to build and install AdaControl with a regular
+Makefile, although it does little more than run the previous
+commands. This is mainly useful if you want to embed AdaControl into
+some distribution that uses Makefiles, or if you want to change the
+default compilation options (see comments in Makefile for details).
 
-The file @code{Makefile} (in directory @code{src}) should be modified
-to match the  commands and paths of the target system. The following
-variables are to be set:
-@itemize
-@item
-ASIS_TOP
-@item
-ASIS_INCLUDE
-@item
-ASIS_OBJ
-@item
-ASIS_LIB
-@item
-RM
-@item
-EXT
-@end itemize
-How to set these variables properly is documented in @code{Makefile}.
-See also the compilation options in this file; a change is needed if
-you are using GNATPro 6.1.2 and above.
-
-Then, run the make command:
+Go to the root directory of the distribution and type:
 @example
-$ cd src
-$ make build
+make build
+make install
 @end example
 
 It is also possible to delete object files and do other actions with
 this  ``Makefile'', run the following command to get more information:
 @example
-$ make help
+make help
 @end example
 
 NOTE: Building AdaControl needs the ``make'' command provide with GNAT; it
 works both with WIN32 shell and UNIX shell.
+
+@subsection Manual installation
+Automatic install will place AdaControl's files in standard locations,
+in your Gnat installation tree. You can skip this section unless you
+want different locations (for example, if GPS is not installed in the
+Gnat tree).
+
+All you need to run AdaControl is the executable named  @code{adactl}
+under Linux or @code{adactl.exe} under Windows. In addition,
+@code{pfni} (or @code{pfni.exe} under Windows) is a convenient
+utility, required by the GPS support. @xref{pfni}. Copy these
+executables (found in the root directory of the distribution) to any
+convenient directory on your path.
+
+To also add AdaControl support to GPS, copy the file
+@code{GPS/adacontrol.xml} into the @code{<GNAT_dir>/share/gprconfig}
+directory; copy all other files from the @code{GPS} directory into the
+@code{<GPS_dir>/share/gps/plug-ins} directory. Copy also HTML files
+from the @code{doc} directory into the
+@code{<GPS_dir>/share/doc/gps/html} to access AdaControl's guides from
+the "Help" menu of GPS.
 
 @subsection Build with a compiler other than GNAT
 It should be possible to compile AdaControl with other compilers than
@@ -485,8 +491,8 @@ systems.  However, it is possible to run the tests on a WIN32 system
 by using an UNIX-like shell for WIN32, such as those provided by
 CYGWIN or MSYS. To run the tests, enter the following commands:
 @example
-$ cd test
-$ ./run.sh
+cd test
+./run.sh
 @end example
 
 All tests must report PASSED. If they don't, it may be due to one of
@@ -502,13 +508,13 @@ always use the most recent version of GNAT.
 @item
 You run an old-gnat version of AdaControl with GNATPro (6.1.2 and
 above) and you forgot to specify the ``-XGNAT_FIX=1''
-option. @xref{Build with project file}.
+option. @xref{Build and install with project file}.
 @item
 It may happen that the test @code{tfw_help} reports ``FAILED'' because
-it includes a check on the version of AdaControl, and the version string
-refers to Gnat-GPL2015. The only difference (you can see it by typing
-``d'' when prompted for checking the differences) should be the name
-of the compiler.
+it includes a check on the version of AdaControl, and the version
+string refers to a different version of Gnat. The only difference (you
+can see it by typing ``d'' when prompted for checking the differences)
+should be the name of the compiler.
 @end itemize
 
 @anchor{Customizing AdaControl}
@@ -551,45 +557,29 @@ incorporate all good suggestions, but we can't of course commit to any
 dead-line in that case.
 @end enumerate
 
-@node Installing AdaControl, Installing support for GPS, Building AdaControl from source, Installation
-@section Installing AdaControl
-All you need to run AdaControl is the executable named  @code{adactl}
-under Linux or @code{adactl.exe} under Windows. In addition,
-@code{pfni} (or @code{pfni.exe} under Windows) is a convenient
-utility, required by the GPS support. @xref{pfni}.
-
+@node Installing an executable distribution, Installing support for AdaGide, Building and installing AdaControl from source, Installation
+@section Installing an executable distribution
 If you downloaded the Windows installer executable version of
 AdaControl, simply run @code{adactl_exe-setup.exe}. This will install
 all the files in the recommended locations (as has been done with the
 Windows installer source version), including GPS support if you have
 GPS installed and/or AdaGide support if you have AdaGide installed.
 
-If you built AdaControl from source without an installer, the
-executables are in the @code{src} directory of the distribution. If
-you downloaded an executable distribution, they are in the root
-directory of the distribution. Copy the executables to any convenient
-directory on your path; a good place, for example, is in the
-@code{bin} directory of your GNAT installation.
+Otherwise, go to the root directory of the installation and type:
+@example
+gprinstall build.gpr
+@end example
 
-@node Installing support for GPS, Installing support for AdaGide, Installing AdaControl, Installation
-@section Installing support for GPS
-Integration of AdaControl into GPS with all functionalities requires
-GPS version 4.2 or above (delivered since GNAT/GPL2008).
+This will install the executables and the GPS support in the standard
+locations (the Gnat directory). However, if you are using AdaGide, the
+support will have to be installed manually as explained below.
 
-To add AdaControl support to GPS, copy the file
-@code{GPS/adacontrol.xml} into the @code{<GNAT_dir>/share/gprconfig}
-directory; copy all other files from the @code{GPS} directory into the
-@code{<GPS_dir>/share/gps/plug-ins} directory. Copy also HTML files
-from the @code{doc} directory into the
-@code{<GPS_dir>/share/doc/gps/html} to access AdaControl's guides from
-the "Help" menu of GPS.
-
-@node Installing support for AdaGide,  , Installing support for GPS, Installation
+@node Installing support for AdaGide,  , Installing an executable distribution, Installation
 @section Installing support for AdaGide
 To add AdaControl support to AdaGide, copy the file
-@code{AdaControl.tdf} from the @code{AdaGide} directory into AdaGide's
-root directory. Note that AdaControl support requires AdaGide version
-7.42 or above.
+@code{AdaControl.tdf} from the @code{AdaGide} directory of the
+distribution into AdaGide's root directory. Note that AdaControl
+support requires AdaGide version 7.42 or above.
 
 @node Program Usage, Command language reference, Installation, Top
 @chapter Program Usage
@@ -1142,9 +1132,6 @@ alone.
 
 @node Running AdaControl from GPS, Running AdaControl from AdaGide, Other execution modes, Program Usage
 @section Running AdaControl from GPS
-If you want to use AdaControl from GPS, make sure you have copied the
-necessary files into the required places. @xref{Installing AdaControl}.
-
 AdaControl integrates nicely into GPS, making it even easier to
 use. It can  be launched from menu commands, and parameters can be set
 like any other GPS project parameters.  When run from within GPS,
@@ -1473,11 +1460,11 @@ GPS may crash when the output of a command is too big (i.e. hundreds
 of messages with AdaControl).  If this happens, use the
 ``preferences'' menu to limit the number of messages.
 
-@node Running AdaControl from AdaGide, Helpful utilities, Running AdaControl from GPS, Program Usage
+@node  Running AdaControl from AdaGide, Helpful utilities, Running AdaControl from GPS, Program Usage
 @section Running AdaControl from AdaGide
 If you want to use AdaControl from AdaGide, make sure you have copied
-the necessary file into the required place. @xref{Installing
-AdaControl}. Note that AdaGide does not have all the parameterization
+the necessary file into the required place. @xref{Installing support
+for AdaGide}. Note that AdaGide does not have all the parameterization
 facilities of sophisticated environments like GPS, but all AdaControl
 options, like the name of  the rules file or the output format, can
 easily be changed by editing the tool description file
@@ -2256,7 +2243,7 @@ Syntax:
 @example
 Clear all | <rule name>@{,<rule name>@} ;
 @end example
-The command clears all controls given for the indicated rules, of for
+The command clears all controls given for the indicated rules, or for
 all rules if the @code{all} keyword is given. Rule variables
 (@pxref{Set command}) associated to cleared rules are returned to
 their default values. For example, the following program:
@@ -5679,7 +5666,7 @@ Taking an access value on a global entity is never a risk, but every
 use of access values designating local entities has a potential of a
 failing dynamic accessibility check or even of a dangling
 pointer. This rule is helpful in finding the places that need careful
-inspection - of for disallowing taking accesses on anything but global
+inspection - or for disallowing taking accesses on anything but global
 entities.
 
 @node Local_Hiding, Max_Blank_Lines, Local_Access, Rules reference

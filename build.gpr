@@ -1,0 +1,43 @@
+with "asis";
+with "gnatcoll";
+project Build is
+   type Fixes is ("1", "none");
+   Gnat_Fix : Fixes := external ("GNAT_FIX", "none");
+
+   for Languages use ("Ada");
+   for Source_Dirs use ("src/");
+   for Object_Dir use "src/";
+   for Exec_Dir use ".";
+   for Main use ("adactl", "ptree", "pfni");
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
+
+   Std_Options := ("-O2", "-gnatws", "-gnat05", "-gnato", "-gnatf", "-g");
+   package Compiler is
+      case Gnat_Fix is
+      when "1" =>
+         for Default_Switches ("ada") use Std_Options & "-fno-tree-vrp";
+      when others =>
+         for Default_Switches ("ada") use Std_Options;
+      end case;
+   end Compiler;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-m", "-k", "-g");
+   end Builder;
+
+   package Install is
+      for mode use "usage";
+      for install_name use "AdaControl";
+      for artifacts ("share/gps/plug-ins") use ("GPS/*");
+      for artifacts ("share/gprconfig") use ("GPS/adacontrol.xml");
+      for artifacts ("share/doc/gps/html") use ("doc/*.html");
+   end Install;
+end Build;
+
