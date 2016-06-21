@@ -83,6 +83,37 @@ function T_Abnormal_Function_Return return Integer is
       end if;
    end F3_OK;
 
+   function F4_Loops return Integer is
+      Z : Integer := 10;
+   begin
+      if True then
+         for I in 1 .. 10 loop                -- Sequence of statements
+            null;
+         end loop;
+      elsif True then
+         while Z > 3 loop                     -- Sequence of statements
+            return 1;
+         end loop;
+      elsif True then
+         <<L1>>                               -- Sequence of statements
+         loop
+            null;
+            goto L1;
+         end loop;
+      elsif True then
+         loop                                 -- OK
+            <<L2>>
+            null;
+            goto L2;
+         end loop;
+      else
+         loop                                 -- OK
+            return 1;
+         end loop;
+      end if;
+   end F4_Loops;
+
+
 begin
    begin
       begin

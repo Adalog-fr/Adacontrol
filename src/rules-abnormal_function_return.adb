@@ -175,6 +175,18 @@ package body Rules.Abnormal_Function_Return is
                   end loop;
                end;
 
+            when A_Loop_Statement =>
+               -- Non exiting loops (i.e. plain loops without transfer outside) that possibly contain
+               -- return statements are OK (without any return, they are infinite)
+               if not Is_Nil (First_Exiting_Statement (Loop_Statements (Stmt),
+                              Include_Returns => False))
+               then
+                  Report (Rule_Id,
+                          Rule_Context,
+                          Get_Location (Stmt),
+                          "Sequence of statements not terminated by ""return"" or ""raise""");
+               end if;
+
             when others =>
                Report (Rule_Id,
                        Rule_Context,

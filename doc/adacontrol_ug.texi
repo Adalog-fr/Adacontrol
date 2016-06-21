@@ -2576,6 +2576,10 @@ where the last statement of every  path is one of these;
 @item
 a @code{@b{case}} statement where the last statement of every  path is
 one of these.
+@item
+a plain @code{@b{loop}} statement (not @code{@b{for}} or
+@code{@b{while}}) without any @code{@b{exit}} or  @code{@b{goto}}
+statement transfering control outside of the loop.
 @end itemize
 
 This is a sufficient (but of course not necessary) condition to ensure

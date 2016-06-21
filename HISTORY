@@ -6,6 +6,10 @@ General:
 --------
 More bug fixes related to tagged incomplete and T'Base
 
+Changes to existing rules:
+--------------------------
+Abnormal_Function_Return: allow final non-exiting loop #000049
+
 =============
 == V1.18b3 ==
 =============
