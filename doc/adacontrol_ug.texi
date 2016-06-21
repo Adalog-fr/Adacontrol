@@ -1667,7 +1667,18 @@ tree file
 Note that ``-FT'' is the only allowed mode, and @i{must} be specified,
 with the ``-C1'' and ``-CN'' options.
 
-The default combination used by AdaControl is ``-CA -FM''.
+The default combination used by AdaControl is ``-CA -FM''. A
+consequence of this is that the context is established by first
+loading all available tree files before starting the analysis, even
+those that are not necessary. Since tree files are often big and long
+to load, if you want to check a single unit and have remaining trees
+from a previous run, it is often more efficient to delete all ``.adt''
+files first.
+
+More generally, given the current speed of CPUs and the not-so-fast
+access time of disks, it may happen that recomputing the trees instead
+of loading them from disk might be faster. Only experiencing will tell
+you the best procedure to follow.
 
 @node Generating tree files manually, Choosing an appropriate combination of options, Tree files and the ASIS context, Optimizing Adacontrol
 @subsection Generating tree files manually
@@ -4390,9 +4401,9 @@ instantiation of @code{Float_IO}. The third one will report only
 on uses of instances of @code{Ada.Unchecked_Conversion}.
 
 @subsection Tips
-This rule is not intended to replace cross-references, but can
-be quite handy to check, for example, that a program does not contain
-any more calls to debugging procedures before fielding it.
+This rule is safer than cross-references if you want to check where
+certain entities are used, since it follows renamings but does not
+report on homonyms of the intended entity.
 
 This rule can also be used to check for all occurrences of certain
 attributes with the ``@code{all <Attribute>}'' syntax. For example,
