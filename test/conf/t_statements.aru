@@ -34,7 +34,10 @@ Sequential_Stmts: search statements (accept_return,
                                      unnamed_exit,
                                      unnamed_loop_exited,
                                      unnamed_multiple_loop,
-                                     untyped_for);
+                                     untyped_for,
+                                     untyped_for_in,
+                                     untyped_for_of
+                                     );
 
 Tasking_Stmts:    check  statements (abort,
                                      accept,

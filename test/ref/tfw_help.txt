@@ -710,6 +710,7 @@ Parameter(s): any_statement            | abort                   |
               unnamed_for_loop         | unnamed_multiple_loop   |
               unnamed_simple_block     | unnamed_simple_loop     |
               unnamed_while_loop       | untyped_for             |
+              untyped_for_in           | untyped_for_of          |
               while_loop
 
 Variables:

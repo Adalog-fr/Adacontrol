@@ -104,7 +104,7 @@ package body Rules.Statements is
                      Stmt_Unconditional_Exit,     Stmt_Unnamed_Block,           Stmt_Unnamed_Exit,
                      Stmt_Unnamed_Loop_Exited,    Stmt_Unnamed_For_Loop,        Stmt_Unnamed_Multiple_Loop,
                      Stmt_Unnamed_Simple_Block,   Stmt_Unnamed_Simple_Loop,     Stmt_Unnamed_While_Loop,
-                     Stmt_Untyped_For,
+                     Stmt_Untyped_For,            Stmt_Untyped_For_In,          Stmt_Untyped_For_Of,
 
                      Stmt_While_Loop);
 
@@ -506,11 +506,17 @@ package body Rules.Statements is
                                              (Loop_Spec)) = A_Discrete_Simple_Expression_Range
                      then
                         Do_Report (Stmt_Untyped_For);
+                        Do_Report (Stmt_Untyped_For_In);
                      end if;
                   when An_Element_Iterator_Specification =>
                      Do_Report (Stmt_For_Of_Loop);
+                     if Is_Nil (Declarations.Subtype_Indication (Loop_Spec)) then
+                        Do_Report (Stmt_Untyped_For);
+                        Do_Report (Stmt_Untyped_For_Of);
+                     end if;
                   when  A_Generalized_Iterator_Specification =>
                      Do_Report (Stmt_For_Iterator_Loop);
+                     -- No Untyped_For here, a subtype indication is not allowed by the syntax
                   when others =>
                      Failure ("Process_Statement: unknown ""for"" iterator", Loop_Spec);
                end case;

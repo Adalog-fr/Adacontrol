@@ -203,7 +203,7 @@ B2:begin                   -- Block
 
    while Bool  loop null; end loop;  -- While_Loop, Unnamed_While_Loop, Null
 
-   for I in 1..10 loop null; end loop;               -- For_Loop, For_In_Loop, Unnamed_For_Loop, Untyped_For, Null
+   for I in 1..10 loop null; end loop;               -- For_Loop, For_In_Loop, Unnamed_For_Loop, Untyped_For, Untyped_For_In, Null
    for I in Integer range 1..10 loop null; end loop; -- For_Loop, For_In_Loop, Unnamed_For_Loop, Null
 
    --
@@ -257,12 +257,12 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
    declare                               -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
       S : String (1 .. 10);
    begin
-      for C of S loop                    -- For_Loop, For_Of_Loop, Unnamed_For_Loop
-         null;                           -- Null
+      for C of S loop                          -- For_Loop, For_Of_Loop, Unnamed_For_Loop, Untyped_For, Untyped_For_Of
+         null;                                 -- Null
       end loop;
 
-      L6 : for C of S (2..8) loop        -- For_Loop, For_Of_Loop
-         null;                           -- Null
+      L6 : for C : Character of S (2..8) loop  -- For_Loop, For_Of_Loop
+         null;                                 -- Null
       end loop L6;
    end;
 
@@ -375,7 +375,7 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
                   null;                           -- Null
                end;
                exit when True;                    -- Exit, Exit_Plain_Loop, unnamed exit
-               XL1: for I in 1..10 loop           -- For_Loop, For_In_Loop, untyped for
+               XL1: for I in 1..10 loop           -- For_Loop, For_In_Loop, Untyped_For, Untyped_For_In
                   exit Outer;                     -- multiple_exits, Exit, Exit_Plain_Loop, unconditional_exit, Named_Exit
                   while X /= 0 loop               -- While_Loop, Unnamed_While_Loop, Unnamed_Multiple_Loop
                      exit when X = 2;             -- Exit, Exit_while_loop, Unnamed_Loop_Exited

@@ -7999,6 +7999,7 @@ This rule controls usage of certain Ada statements.
    unnamed_for_loop       | unnamed_multiple_loop    |
    unnamed_simple_block   | unnamed_simple_loop      |
    unnamed_while_loop     | untyped_for              |
+   untyped_for_in         | untyped_for_of           |
    while_loop
 @end example
 
@@ -8158,9 +8159,13 @@ named.
 not nested in another loop, are allowed not to be named).  The kind of
 loop (plain, @code{@b{for}}, @code{@b{while}}) is not considered.
 @item
-@code{untyped_for} controls @code{@b{for}} loops that use a range
-without an explicitely named type (i.e. @code{@b{for} I @b{in} 1..10
-@b{loop}}). Using a @code{'Range} attribute is OK.
+@code{untyped_for_in} controls regular @code{@b{for} .. @b{in}} loops
+that use a range without an explicitely named type (i.e. @code{@b{for}
+I @b{in} 1..10 @b{loop}}). Using a @code{'Range} attribute is
+OK. @code{untyped_for_of} controls @code{@b{for} .. @b{of}} loops that
+have no subtype indication. @code{untyped_for} controls both. Note
+that generalized iterators are @i{not} controlled, since the syntax
+does not allow the specification of an explicit subtype for them.
 @item
 @code{while_loop} controls all @code{@b{while}} loops.
 @end itemize

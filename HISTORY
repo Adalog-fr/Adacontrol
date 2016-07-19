@@ -8,7 +8,11 @@ More bug fixes related to tagged incomplete and T'Base
 
 Changes to existing rules:
 --------------------------
-Abnormal_Function_Return: allow final non-exiting loop #000049
+Abnormal_Function_Return
+   allow final non-exiting loop #000049
+
+Statements
+   Subrules Untyped_For_In, Untyped_For_Of
 
 =============
 == V1.18b3 ==
