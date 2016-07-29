@@ -3249,6 +3249,14 @@ generic formal type, it is not possible to control some of the
 features statically. Such cases are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
+If the subtype of the selecting expression of the @code{@b{case}}
+statement, or a subtype in one of its a choice lists, has applicable
+static predicates, AdaControl is not able to control the features that
+depend on the number of values of the subtype. Such cases are detected
+by the rule ``uncheckable''. @xref{Uncheckable}. We hope to be able to
+remove this limitation in the future, but the problem is quite
+difficult...
+
 @node  Characters, Comments, Case_Statement, Rules reference
 @section Characters
 This rule makes sure that the program text does not use

@@ -1,9 +1,13 @@
 t_uncheckable-allocators.adb:9:14: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
 t_uncheckable-allocators.adb:12:17: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
 t_uncheckable-allocators.adb:13:21: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
-t_uncheckable-case_statement.adb:15:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:19:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:24:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:16:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:20:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:25:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:38:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (values) Expression is of a subtype with static predicate
+t_uncheckable-case_statement.adb:38:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Expression is of a subtype with static predicate
+t_uncheckable-case_statement.adb:45:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Use of subtype with static predicate
+t_uncheckable-case_statement.adb:45:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (range_span) Range is of a subtype with static predicate
 t_uncheckable-declarations.adb:4:21: Error: Uncheckable: in rule DECLARATIONS: Possible false negative: unable to evaluate mod expression
 t_uncheckable-directly_accessed_globals.adb:19:15: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false negative: Name is dynamic renaming
 t_uncheckable-directly_accessed_globals.adb:25:30: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false positive: variable "K" used as parameter of dispatching call, treated as in-out

@@ -6,6 +6,8 @@ Uncheckable: check uncheckable;
 
 check allocators (inconsistent);
 check case_statement (others_span, min 5);
+check case_statement (values, min 5);
+check case_statement (range_span, min 3);
 check declarations (binary_modular_type);
 check directly_accessed_globals;
 check duplicate_initialization_calls (all out_proc);

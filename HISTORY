@@ -11,6 +11,10 @@ Changes to existing rules:
 Abnormal_Function_Return
    allow final non-exiting loop #000049
 
+Case_Statements
+   Do not crash on case statements involving subtypes with static
+   predicates (currently uncheckable)
+
 Statements
    Subrules Untyped_For_In, Untyped_For_Of
 

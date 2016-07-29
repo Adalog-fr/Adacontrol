@@ -1,3 +1,4 @@
+pragma Ada_2012;
 separate (T_Uncheckable)
 procedure Case_Statement is
       generic
@@ -27,6 +28,22 @@ procedure Case_Statement is
             when others => null;
          end case;
       end G_Inner;
+   type T1 is range 1..10 with Static_Predicate => T1 not in 2 | 4 | 6;
+   V1 : T1 := 1;
+
+   type T2 is range 1..10;
+   subtype S2 is T2 with  Static_Predicate => S2 not in 2 | 4 | 6;
+   V2 : T2 := 1;
 begin
-   null;
+   case V1 is                                        -- Uncheckable x2
+      when 1 | 3 | 5 => null;
+      when 7 ..10    => null;
+      when others    => null;
+   end case;
+
+   case V2 is
+      when S2        => null;                        -- Uncheckable x2
+      when 2 | 4 | 6 => null;
+      when others    => null;
+   end case;
 end Case_Statement;

@@ -212,6 +212,16 @@ package body Rules.Case_Statement is
             begin
                for PE in Path_Elements'Range loop
                   if Definition_Kind (Path_Elements (PE)) = A_Discrete_Range then
+                     if Discrete_Range_Kind (Path_Elements (PE)) = A_Discrete_Subtype_Indication
+                       and then not Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (Path_Elements (PE))))
+                     then
+                        -- A subtype with static predicate used for a choice: we don't know (yet) how to evaluate this
+                        Uncheckable (Rule_Id,
+                                     False_Negative,
+                                     Get_Location (Path_Elements (PE)),
+                                     "(others_span) Use of subtype with static predicate");
+                        raise Non_Evaluable;
+                     end if;
                      Temp := Discrete_Constraining_Lengths (Path_Elements (PE))(1);
                      if Temp = Not_Static then
                         -- it IS static, but the evaluator cannot evaluate it...
@@ -219,7 +229,7 @@ package body Rules.Case_Statement is
                         Uncheckable (Rule_Id,
                                      False_Negative,
                                      Get_Location (Path_Elements (PE)),
-                                     "Could not evaluate bounds of expression");
+                                     "(others_span) Could not evaluate bounds of expression");
                         raise Non_Evaluable;
                      end if;
                      Count := Count + Temp;
@@ -249,8 +259,16 @@ package body Rules.Case_Statement is
             return;
          end if;
 
+         if not Is_Nil (Corresponding_Static_Predicates (Case_Expression (Statement))) then
+            Uncheckable (Rule_Id,
+                         False_Negative,
+                         Get_Location (Case_Expression (Statement)),
+                         "(others_span) Expression is of a subtype with static predicate");
+            return;
+         end if;
+
          Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
-                                                        (Case_Expression (Statement)))(1);
+                                                        (Case_Expression (Statement))) (1);
          if Subtype_Span = Not_Static then
             Subtype_Span := Discrete_Constraining_Lengths (Corresponding_First_Subtype
                                                            (A4G_Bugs.Corresponding_Expression_Type
@@ -262,7 +280,7 @@ package body Rules.Case_Statement is
                Uncheckable (Rule_Id,
                             False_Negative,
                             Get_Location (Case_Expression (Statement)),
-                            "Could not evaluate bounds of expression");
+                            "(others_span) Could not evaluate bounds of expression");
                return;
             end if;
          end if;
@@ -282,13 +300,21 @@ package body Rules.Case_Statement is
       -- of the case selector
       --
       procedure Process_Max_Values is
-         Subtype_Span : constant Extended_Biggest_Int := Discrete_Constraining_Lengths
-                                                          (A4G_Bugs.Corresponding_Expression_Type
-                                                           (Case_Expression (Statement))) (1);
+         Subtype_Span : Extended_Biggest_Int;
          Case_Paths   : constant Path_List := Statement_Paths (Statement);
          Has_Others   : constant Boolean   := Definition_Kind (Case_Statement_Alternative_Choices
                                                                (Case_Paths (Case_Paths'Last)) (1)) = An_Others_Choice;
       begin
+         if not Is_Nil (Corresponding_Static_Predicates (Case_Expression (Statement))) then
+            Uncheckable (Rule_Id,
+                         False_Negative,
+                         Get_Location (Case_Expression (Statement)),
+                         "(values) Expression is of a subtype with static predicate");
+            return;
+         end if;
+
+         Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
+                                                        (Case_Expression (Statement))) (1);
          if Subtype_Span = Not_Static then
             return;
          end if;
@@ -362,22 +388,32 @@ package body Rules.Case_Statement is
                  =>
                null;
             when A_Discrete_Range =>
-               Nb_Val := Discrete_Constraining_Lengths (Choices (C))(1);
-               if Nb_Val = Not_Static then
-                  -- This was supposed to be static, but for some reason we can't evaluate it
-                  -- Maybe it is a generic formal type
-                  -- Give up
+               if Discrete_Range_Kind (Choices (C)) /= A_Discrete_Subtype_Indication
+                 or else Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (Choices (C))))
+               then
+                  -- Normal case
+                  Nb_Val := Discrete_Constraining_Lengths (Choices (C)) (1);
+                  if Nb_Val = Not_Static then
+                     -- This was supposed to be static, but for some reason we can't evaluate it
+                     -- Maybe it is a generic formal type
+                     -- Give up
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (Choices (C)),
+                                  "(range_span) Could not evaluate discrete range");
+                     return;
+                  end if;
+
+                  Check_Report (Range_Span,
+                                Value   => Nb_Val,
+                                Message => "values in choice range",
+                                Elem    => Choices (C));
+               else
                   Uncheckable (Rule_Id,
                                False_Negative,
                                Get_Location (Choices(C)),
-                               "Could not evaluate discrete range");
-                  return;
+                               "(range_span) Range is of a subtype with static predicate");
                end if;
-
-               Check_Report (Range_Span,
-                             Value => Nb_Val,
-                             Message => "values in choice range",
-                             Elem    => Choices (C));
 
             when others =>
                Failure ("Wrong definition in case path");
