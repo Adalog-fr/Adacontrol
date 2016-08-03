@@ -122,6 +122,13 @@ package body Rules.Generic_Aliasing is
             if SR = Sr_All then
                if Rule_Used = Empty_Set then
                   Rule_Used := All_Set (Detail);
+                  for R in Subrules loop
+                     for D in Rule_Detail loop
+                        if Rule_Used (R) (D) then
+                           Contexts  (R, D) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+                        end if;
+                     end loop;
+                  end loop;
                else
                   Parameter_Error (Rule_Id, "subrule already specified");
                end if;
@@ -143,6 +150,11 @@ package body Rules.Generic_Aliasing is
          -- Default to "certain all"
          if Rule_Used = Empty_Set then
             Rule_Used := All_Set (Certain);
+            for R in Subrules loop
+               if Rule_Used (R) (Certain) then
+                  Contexts  (R, Certain) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               end if;
+            end loop;
          else
             Parameter_Error (Rule_Id, "subrule already specified");
          end if;
