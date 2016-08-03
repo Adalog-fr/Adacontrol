@@ -75,13 +75,25 @@ print_time () {
 #
 # Initialization
 #
+for E in "../src/adactl.exe" "../src/adactl" "../adactl.exe" "../adactl" $(which adactl); do
+   if [ -e $E ] ; then
+       EXECUTABLE=$E
+       break
+   fi
+done
+
+if [ -z $EXECUTABLE ] ; then
+    echo "No AdaControl executable found"
+    exit
+fi
+
 if [ "${1:-}" = -q ]; then
    SILENT=1
    shift
-   ADACTL="../src/adactl -F gnat_short $*"
+   ADACTL="$EXECUTABLE -F gnat_short $*"
 else
    SILENT=0
-   ADACTL="../src/adactl -v -F gnat_short $*"
+   ADACTL="$EXECUTABLE -v -F gnat_short $*"
 fi;
 
 
@@ -94,8 +106,9 @@ fi
 put_line_line
 put_title_line
 put_title_line "`${ADACTL} -h version 2>&1 | tr -d \\\\r`"
+put_title_line "($EXECUTABLE)"
 put_title_line
-put_title_line VALIDATION
+put_title_line "VALIDATION"
 put_title_line
 put_title_line "$(date)"
 put_title_line
