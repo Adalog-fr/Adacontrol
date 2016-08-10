@@ -41,6 +41,7 @@ package Framework.Rules_Manager is
    type Command_Procedure  is access procedure (Action : Rule_Action);
    type Prepare_Procedure  is access procedure;
    type Finalize_Procedure is access procedure;
+   type Reset_Procedure    is access procedure;
 
    type Extended_Rule_Kind is (Semantic, Textual, Semantic_Textual);
    subtype Rule_Kind is Extended_Rule_Kind range Semantic .. Textual;
@@ -50,7 +51,8 @@ package Framework.Rules_Manager is
                        Add_Control_CB : Add_Control_Procedure;
                        Command_CB     : Command_Procedure;
                        Prepare_CB     : Prepare_Procedure  := null;
-                       Finalize_CB    : Finalize_Procedure := null);
+                       Finalize_CB    : Finalize_Procedure := null;
+                       Reset_CB       : Reset_Procedure    := null);
 
    No_Rule : constant Wide_String := "";
    procedure Enter (Rule : Wide_String);
@@ -85,6 +87,10 @@ package Framework.Rules_Manager is
    procedure Finalize_All;
    -- Calls the Finalize procedure for each rule, which is intended to do some actions
    -- at the end of each "Go" command
+
+   procedure Reset_All;
+   -- Calls the Reset procedure for each rule, which is intended to do clean-up actions
+   -- when a failure in some rule leads to a unit being completely abandonned
 
    procedure Add_Control (Ctl_Label : in Wide_String;
                           Ctl_Kind  : in Control_Kinds;

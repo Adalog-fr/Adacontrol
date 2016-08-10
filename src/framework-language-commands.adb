@@ -146,6 +146,7 @@ package body Framework.Language.Commands is
          begin
             Ruler.Reset;
             Scope_Manager.Reset (Deactivate => False);
+            Rules_Manager.Reset_All;
          exception
             when Other_Occur : others =>
                -- Sounds really bad here... warn, but preserve the original exception

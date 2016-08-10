@@ -156,6 +156,20 @@ package body Rules.Max_Nesting is
    end Command;
 
 
+   -----------
+   -- Reset --
+   -----------
+
+   procedure Reset is
+   -- Must reset global counters to 0, otherwise they will be left for next unit
+   -- at the nesting level we were on when something bad happened
+   begin
+      Not_Counted    := 0;
+      Generic_Count  := 0;
+      Separate_Count := 0;
+      Task_Count     := 0;
+   end Reset;
+
    ---------------
    -- Do_Report --
    ---------------
@@ -344,5 +358,6 @@ begin  -- Rules.Max_Nesting
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
-                                     Command_CB     => Command'Access);
+                                     Command_CB     => Command'Access,
+                                     Reset_CB       => Reset'Access);
 end Rules.Max_Nesting;

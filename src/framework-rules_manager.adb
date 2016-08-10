@@ -84,6 +84,7 @@ package body Framework.Rules_Manager is
       Command      : Command_Procedure;
       Prepare      : Prepare_Procedure;
       Finalize     : Finalize_Procedure;
+      Reset        : Reset_Procedure;
       Used         : Boolean;
       Total_Time   : Duration;
    end record;
@@ -116,7 +117,8 @@ package body Framework.Rules_Manager is
                        Add_Control_CB : Add_Control_Procedure;
                        Command_CB     : Command_Procedure;
                        Prepare_CB     : Prepare_Procedure  := null;
-                       Finalize_CB    : Finalize_Procedure := null)
+                       Finalize_CB    : Finalize_Procedure := null;
+                       Reset_CB       : Reset_Procedure    := null)
    is
       use Utilities;
    begin
@@ -131,7 +133,7 @@ package body Framework.Rules_Manager is
       Rule_List.Add (Rule_Map,
                      To_Unbounded_Wide_String (To_Upper (Rule)),
                      (R_Kind,
-                      Help_CB, Add_Control_CB, Command_CB, Prepare_CB, Finalize_CB,
+                      Help_CB, Add_Control_CB, Command_CB, Prepare_CB, Finalize_CB, Reset_CB,
                       Used  => False,
                       Total_Time => 0.0));
       Nb_Rules := Nb_Rules + 1;
@@ -332,6 +334,24 @@ package body Framework.Rules_Manager is
    begin  -- Finalize_All
       Iterate_On_Finalize (Rule_Map);
    end Finalize_All;
+
+   ---------------
+   -- Reset_All --
+   ---------------
+
+   procedure Reset_All is
+      procedure Reset_One (Key : in Unbounded_Wide_String; Info : in out Rule_Info) is
+         pragma Unreferenced (Key);
+      begin
+         if Info.Reset /= null then
+            Info.Reset.all;
+         end if;
+      end Reset_One;
+      procedure Iterate_On_Reset is new Rule_List.Iterate (Reset_One);
+
+   begin  -- Reset_All
+      Iterate_On_Reset (Rule_Map);
+   end Reset_All;
 
    -----------------
    -- Command_All --
