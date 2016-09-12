@@ -162,6 +162,7 @@ functionnalities.
 * The package Framework.Reports::
 * The package Framework.Language::
 * The package Framework.Scope_Manager::
+* The package Framework.Variables::
 * The package Framework.Plugs::
 * The package Rules::
 * The package Utilities::
@@ -325,7 +326,7 @@ most of the time), you @i{must} put a @code{pragma Elaborate
 result in circular elaboration problems; (@code{pragma Elaborate_All},
 as implicitely provided by GNAT, does @i{not} work).
 
-@node The package Framework.Scope_Manager, The package Framework.Plugs, The package Framework.Language, The framework and utilities packages
+@node The package Framework.Scope_Manager, The package Framework.Variables, The package Framework.Language, The framework and utilities packages
 @section The package Framework.Scope_Manager
 The package @code{Framework.Scope_Manager} provides facilities for
 rules that need to follow scoping rules (i.e. which identifiers are
@@ -345,7 +346,46 @@ upon entering.
 
 See the package specification for more details.
 
-@node  The package Framework.Plugs, The package Rules, The package Framework.Scope_Manager, The framework and utilities packages
+@node The package Framework.Variables, The package Framework.Plugs, The package Framework.Scope_Manager, The framework and utilities packages
+@section The package Framework.Variables
+This package manages rule variables (the ones that can be set with
+the @code{set} command of the language).
+
+A rule may use any number of rule variables for adjusting its
+behaviour. A rule variable holds a value, and various subprograms are
+provided for setting and getting the associated value.
+
+Rule variables are extensions of
+@code{Framework.Variables.Object}. Typically, they extend this type
+with a value that can be of any type. Abstract subprograms that need
+to be overriden include @code{Set} and @code{Value_Image} for setting
+and getting a value from/to a string and @code{All_Values} to give
+possible values for help messages.
+
+Generic packages are provided to make it easier to define variable
+types associated to enumerated types and integer types. In addition,
+the package @code{Framework.Variables.Shared_Types} provides variable
+types for commonly used associated types.
+
+When a rule needs a rule variable, it declares an object of the
+appropriate type, and registers it to the framework by calling
+@code{Framework.Variables.Register}, passing a pointer to the object
+and the name used to refer to it. This name must be given in upper
+case, and start with the rule's name, like
+``@code{EXPRESSIONS.CALLED_INFO}'' for example. Of course, it is
+better to use @code{Rule_Id} for building the name, like in:
+@example
+Framework.Variables.Register (Called_Info'Access,
+                              Variable_Name => Rule_Id & ".CALLED_INFO");
+
+@end example
+This call is typically put in the initalization part of the rule's
+package, after the registration of the rule itself.
+
+The rule @code{Expressions} (in file @code{rules-expressions.adb}
+includes a typical usage of a rule variable.
+
+@node  The package Framework.Plugs, The package Rules, The package Framework.Variables, The framework and utilities packages
 @section The package Framework.Plugs
 Procedures in the package @code{Framework.Plugs} are called during the
 traversal of the Ada source code. Unlike the rest of the framework,
