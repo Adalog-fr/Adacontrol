@@ -29,6 +29,7 @@ procedure T_Unsafe_Paired_Calls is
       P;
       null;
       V;
+      return;
    exception
       when others =>
          V;
@@ -51,6 +52,7 @@ procedure T_Unsafe_Paired_Calls is
          P;
          null;
          V;
+         null;
       exception
          when others =>
             V;
@@ -76,16 +78,19 @@ begin
    --
 
    -- Check blocks, more complicated cases
-   begin             -- OK
-      P;
-      null;
-      V;
-   exception
-      when Constraint_Error =>
+   loop
+      begin             -- OK
+         P;
+         null;
          V;
-      when others =>
-         V;
-   end;
+      exception
+         when Constraint_Error =>
+            V;
+            exit;
+         when others =>
+            V;
+      end;
+   end loop;
 
    begin             -- OK (renaming)
       PP;
@@ -295,7 +300,7 @@ begin
       V (R2.F);        -- Error: not same parameter
    exception
       when others => -- Error: not same parameter
-         V (R1.F);
+         V (R2.F);
    end;
 
    begin

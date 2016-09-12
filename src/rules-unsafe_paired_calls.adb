@@ -48,6 +48,13 @@ with
 package body Rules.Unsafe_Paired_Calls is
    use Framework, Framework.Control_Manager;
 
+   -- Algorithm:
+   --
+   -- We check procedure calls. We first identify if the call is an opening call, a closing call, or anything else
+   -- Most of the verifications are performed for opening calls (procedure Check_First). The closing call check
+   -- (procedure Check_Last) is however necessary for the case of a closing call without corresponding opening
+   -- call.
+
    Rules_Used : Control_Index := 0;
    Save_Used  : Control_Index;
 
@@ -443,6 +450,23 @@ package body Rules.Unsafe_Paired_Calls is
          end case;
       end Is_Same_Lock;
 
+      function Effective_Last_Statement (Stats : Asis.Statement_List) return Asis.Statement is
+         -- Returns the last statement of Stats that is not an exit, return, or null statement
+      begin
+         for S in reverse Stats'Range loop
+            case Statement_Kind (Stats (S)) is
+               when A_Return_Statement | An_Exit_Statement | A_Null_Statement =>
+                  null;
+               when others =>
+                  return Stats (S);
+            end case;
+         end loop;
+
+         -- Statement list contains only return, exit and null statements...
+         -- we shouldn't be here!
+         Failure ("Call not found in statements list", Call);
+      end Effective_Last_Statement;
+
       procedure Check_First (Called_Context : SP_Context;
                              Stats          : Asis.Statement_List;
                              Handlers       : Asis.Exception_Handler_List)
@@ -478,7 +502,16 @@ package body Rules.Unsafe_Paired_Calls is
          Active_Procs.Push (Call);
 
          -- Last statement must be corresponding call
-         Check_Other_SP_Call (Called_Context, Call, Stats (Stats'Last), "end");
+         if Is_Equal (Effective_Last_Statement (Stats), Call) then
+            -- Special case to avoid confusion between opening and closing call when the opening call
+            -- is the only statement in the sequence (except for the allowed termination statements)
+            Report (Rule_Id,
+                    Called_Context,
+                    Get_Location (Call),
+                    "construct must end with operation matching " & Call_Image (Call));
+         end if;
+
+         Check_Other_SP_Call (Called_Context, Call, Effective_Last_Statement (Stats), "end");
 
          -- Construct must have exception handlers
          if Is_Nil (Handlers) then
@@ -534,13 +567,13 @@ package body Rules.Unsafe_Paired_Calls is
 
       procedure Check_Last (Called_Context : SP_Context; Stats : Asis.Statement_List) is
       begin
-          -- This call must be the last statement
-         if not Is_Equal (Call, Stats (Stats'Last)) then
+         -- This call must be the last statement, not counting final null, return and exit statements
+         if not Is_Equal (Call, Effective_Last_Statement (Stats)) then
             Report (Rule_Id,
                     Called_Context,
                     Get_Location (Call),
                     "call to " & Full_Name_Image (Called_Name (Call))
-                      & " is not the last of a sequence of statements");
+                    & " is not the last of a sequence of statements");
             return;
          end if;
 

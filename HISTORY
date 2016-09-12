@@ -2,6 +2,11 @@
 == V1.18b6 ==
 =============
 
+Changes to existing rules:
+--------------------------
+Unsafe_Paired_Calls:
+   allow simple statements after closing subprogram
+
 =============
 == V1.18b5 ==
 =============

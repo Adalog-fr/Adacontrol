@@ -8990,7 +8990,8 @@ A call to the first procedure is the first statement of a
 handled sequence of statements;
 @item
 A call to the second procedure is the last statement of the same
-handled sequence of statements;
+handled sequence of statements, except for possible exit, return, or
+null statements following it.
 @item
 Corresponding calls of a pair use the appropriate value for the
 ``lock'' parameter (if any), as explained above.
