@@ -1669,6 +1669,8 @@ package body Rules.Declarations is
             Check_Handlers (Accept_Body_Exception_Handlers (Element));
          when A_Block_Statement =>
             Check_Handlers (Block_Exception_Handlers (Element));
+         when An_Extended_Return_Statement =>
+            Check_Handlers (Extended_Return_Exception_Handlers (Element));
          when others =>
             Failure ("Bad statement", Element);
       end case;

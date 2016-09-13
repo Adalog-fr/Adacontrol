@@ -254,7 +254,12 @@ procedure T_declarations is       -- library procedure
 
    function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names
    begin
-      return 1;
+      return I : Integer := 1 do
+         I := I + 1;
+      exception                                          -- handlers
+         when others =>
+            null;
+      end return;
    exception                                             -- handlers
       when others =>
          null;

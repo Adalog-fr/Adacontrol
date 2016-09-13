@@ -637,6 +637,7 @@ package body Framework.Plugs is
                   Rules.Style.                Process_Compound_Statement  (Element);
 
                when An_Extended_Return_Statement =>
+                  Rules.Declarations.            Process_Statement (Element);
                   Rules.Improper_Initialization. Process_Structure (Element);
 
                when A_Selective_Accept_Statement

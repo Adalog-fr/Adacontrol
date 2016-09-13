@@ -630,6 +630,10 @@ package body Rules.Unsafe_Paired_Calls is
                            Check_First (SP_Context (Called_Context),
                                         Block_Statements (Enclosing),
                                         Block_Exception_Handlers (Enclosing));
+                        when An_Extended_Return_Statement =>
+                           Check_First (SP_Context (Called_Context),
+                                        Extended_Return_Statements (Enclosing),
+                                        Extended_Return_Exception_Handlers (Enclosing));
                         when An_Accept_Statement =>
                            Check_First (SP_Context (Called_Context),
                                         Accept_Body_Statements (Enclosing),

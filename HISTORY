@@ -6,6 +6,10 @@ Changes to existing rules:
 --------------------------
 Unsafe_Paired_Calls:
    allow simple statements after closing subprogram
+   consider handled sequences of statements from extended return statements
+
+Declarations
+   consider handled sequences of statements from extended return statements
 
 =============
 == V1.18b5 ==
