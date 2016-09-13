@@ -21,6 +21,7 @@ procedure T_Uncheckable is
    procedure Record_Declarations             is separate;
    procedure Representation_Clauses          is separate;
    procedure Style                           is separate;
+   procedure Unsafe_Paired_Calls             is separate;
    procedure Unsafe_Unchecked_Conversion     is separate;
    procedure Usage                           is separate;
 begin

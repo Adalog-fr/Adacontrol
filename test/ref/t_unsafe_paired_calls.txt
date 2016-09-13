@@ -1,9 +1,9 @@
 t_unsafe_paired_calls.adb:38:4: Error: No_Parameter: construct must have exception handlers
 t_unsafe_paired_calls.adb:60:7: Error: No_Parameter: construct must have exception handlers
-t_unsafe_paired_calls.adb:118:7: Error: No_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P
+t_unsafe_paired_calls.adb:118:7: Error: No_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P
 t_unsafe_paired_calls.adb:117:4: Error: No_Parameter: construct must have exception handlers
-t_unsafe_paired_calls.adb:124:7: Error: No_Parameter: construct must start with operation matching T_Unsafe_Paired_Calls.V
-t_unsafe_paired_calls.adb:128:7: Error: No_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P
+t_unsafe_paired_calls.adb:124:7: Error: No_Parameter: construct must start with call matching T_Unsafe_Paired_Calls.V
+t_unsafe_paired_calls.adb:128:7: Error: No_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P
 t_unsafe_paired_calls.adb:132:7: Error: No_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P
 t_unsafe_paired_calls.adb:138:7: Error: No_Parameter: call to T_Unsafe_Paired_Calls.P is not the first of a sequence of statements
 t_unsafe_paired_calls.adb:139:7: Error: No_Parameter: call to T_Unsafe_Paired_Calls.V is not the last of a sequence of statements
@@ -17,9 +17,9 @@ t_unsafe_paired_calls.adb:185:10: Error: No_Parameter: nested call to T_Unsafe_P
 t_unsafe_paired_calls.adb:219:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P (different or non static lock value)
 t_unsafe_paired_calls.adb:223:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P (different or non static lock value)
 t_unsafe_paired_calls.adb:221:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P (different or non static lock value)
-t_unsafe_paired_calls.adb:228:7: Error: In_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:228:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value 1
 t_unsafe_paired_calls.adb:232:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock value 1
-t_unsafe_paired_calls.adb:230:7: Error: No_Parameter: construct must end with operation matching T_Unsafe_Paired_Calls.P with lock value 1
+t_unsafe_paired_calls.adb:230:7: Error: No_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value 1
 t_unsafe_paired_calls.adb:237:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value 1
 t_unsafe_paired_calls.adb:241:7: Error: In_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock value 1
 t_unsafe_paired_calls.adb:239:7: Error: In_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock value 1
@@ -32,5 +32,5 @@ t_unsafe_paired_calls.adb:302:7: Error: InOut_Parameter: handler must have a cal
 t_unsafe_paired_calls.adb:300:7: Error: InOut_Parameter: construct must end with call matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.R1.F
 t_unsafe_paired_calls.adb:311:7: Error: InOut_Parameter: handler must have a call to subprogram matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1
 t_unsafe_paired_calls.adb:333:10: Error: InOut_Parameter: nested call to T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.S1
-t_unsafe_paired_calls.adb:361:7: Found: Multiple: construct must end with operation matching T_Unsafe_Paired_Calls.MultP2
-t_unsafe_paired_calls.adb:362:7: Found: Multiple: construct must end with operation matching T_Unsafe_Paired_Calls.MultP2
+t_unsafe_paired_calls.adb:361:7: Found: Multiple: construct must end with call matching T_Unsafe_Paired_Calls.MultP2
+t_unsafe_paired_calls.adb:362:7: Found: Multiple: construct must end with call matching T_Unsafe_Paired_Calls.MultP2
