@@ -55,6 +55,7 @@ t_uncheckable-unsafe_paired_calls.adb:16:4: Error: Uncheckable: in rule UNSAFE_P
 t_uncheckable-unsafe_paired_calls.adb:16:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_paired_calls.adb:21:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_paired_calls.adb:23:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:16:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: Uncheckable: in rule UNSAFE_UNCHECKED_CONVERSION: Possible false positive: unable to evaluate size clause value for T2
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Target
 t_uncheckable-usage.adb:20:31: Error: Uncheckable: in rule USAGE: Possible false negative: Name is dynamic renaming

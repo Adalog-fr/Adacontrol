@@ -8983,18 +8983,41 @@ discrete types) or to the same constant  (for access types).
 As usual, the whole syntax for entities is allowed for
 <entity>. @xref{Specifying an Ada entity name}.
 
+An @i{opening block} is either a call to the first procedure given to
+the rule, or an if statement whose condition is a simple reference to
+a boolean constant (that needs not be static) and whose if path or
+else path is itself an opening block, possibly followed by @b{exit},
+@b{return}, and @b{null} statements (and no others).
+
+Similarly, a @i{closing block} is either a call to the second
+procedure given to the rule, or an if statement whose condition is a
+simple reference to a boolean constant (that needs not be static) and
+whose if path or else path is itself a closing block, possibly
+followed by @b{exit}, @b{return}, and @b{null} statements (and no
+others).
+
+An opening and a closing block match if: 
+@itemize @bullet
+@item
+corresponding calls to the
+procedures of a pair use the appropriate value for the ``lock''
+parameter (if any), as explained above
+@item
+if statements have their conditions refer to the
+same constant, and their if and else paths contain matching blocks.
+@end itemize
+
 The "safe" coding pattern is defined as follows:
 @itemize @bullet
 @item
-A call to the first procedure is the first statement of a
+An opening block is the first statement of a
 handled sequence of statements;
 @item
-A call to the second procedure is the last statement of the same
-handled sequence of statements, except for possible exit, return, or
-null statements following it.
+A closing block is the last statement of the same handled sequence of
+statements, except for possible @b{exit}, @b{return}, and @b{null}
+statements following it.
 @item
-Corresponding calls of a pair use the appropriate value for the
-``lock'' parameter (if any), as explained above.
+The opening and closing blocks match.
 @item
 There is no other call to either operation in the statements of the
 handled sequence of statements, except in nested blocks or accept
@@ -9005,8 +9028,8 @@ There is an exception handler for "others" in the
 handled sequence of statements.
 @item
 Every exception handler of the handled sequence of statements includes
-a single call to the second operation, using the appropriate value or
-variable for the lock parameter.
+a single closing block matching the opening block at the top of the
+sequence of statements.
 @end itemize
 
 Typically, the ``safe'' pattern corresponds to the following structures:
@@ -9047,12 +9070,51 @@ Typically, the ``safe'' pattern corresponds to the following structures:
       V (Lock_Ptr);
       -- handle exception
 @b{end};
+
+-- Conditional blocks
+@b{declare}
+   Lockable : @b{constant} Boolean := ...;
+   Lock1    : @b{constant} Boolean := ...;
+@b{begin}
+   @b{if} Lockable @b{then}
+      @b{if} Lock1 @b{then}
+         Lock (V1);
+      @b{else} 
+         Lock (V2);
+      @b{end} @b{if};
+   @b{end} @b{if};
+   -- Do something
+   @b{if} Lockable @b{then}
+      @b{if} Lock1 @b{then} 
+         Unlock (V1); 
+         @b{return}; 
+      @b{else}
+         Unlock (V2); 
+         @b{exit}; 
+      @b{end} @b{if}; 
+   @b{end} @b{if};
+@b{end};
 @end example
 
 Ex:
 @example
 check unsafe_paired_calls (Semaphore.P, Semaphore.V, Semaphore.Lock_Access);
 @end example
+
+@subsection Variable
+The rule provides a variable that allows to control whether opening
+and closing blocks can contain @b{if} statements, or just calls to the
+procedures.
+
+@need 800
+@multitable @columnfractions .25 .10 .10 .55
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Conditionals_Allowed @tab off/on @tab on @tab if ``off'', only calls
+to the procedures passed to the rule are allowed; if ``on'', the calls
+can be nested in if statements as described above.
+@end multitable
 
 @subsection Tips
 If the <Lock type> parameter is provided, both procedures must have a

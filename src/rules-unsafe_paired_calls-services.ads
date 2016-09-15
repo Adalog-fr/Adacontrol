@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Unsafe_Paired_Calls - Package specification               --
+--  Rules.Unsafe_Paired_Calls.Signatures - Package specification    --
 --                                                                  --
 --  This module is  (c) BelgoControl and Adalog  2004-2005. The Ada --
 --  Controller  is  free software;  you can redistribute  it and/or --
@@ -28,25 +28,39 @@
 --  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
--- Asis
+-- ASIS
 with
    Asis;
 
--- AdaControl
-private with
-   Framework.Variables.Shared_Types;
+private package Rules.Unsafe_Paired_Calls.Services is
 
-package Rules.Unsafe_Paired_Calls is
+   function Effective_Last_Statement (Stats : Asis.Statement_List) return Asis.Statement;
+   -- Returns the last statement of Stats that is not an exit, return, or null statement
 
-   Rule_Id : constant Wide_String := "UNSAFE_PAIRED_CALLS";
 
-   procedure Process_Call (Call : in Asis.Element);
+   ------------------ Signature of a lock call possibly nested
+   type Nesting_Signature is new Asis.Element_List;
+   -- Describes the nesting of if statements down to the initial call
+   -- A list containing:
+   --   For an if: the if_statement (can provide the condition_expression)
+   --   For a path: the path
+   --   For a call: the call
+   -- The call is always the last element of the list
 
-private
-   -- Declarations for child units
+   Invalid_Nesting : constant Nesting_Signature := Nesting_Signature (Asis.Nil_Element_List);
+   -- Returned by Signature if for some reason the structure does not obey the required model, including:
+   -- An if statement is not the only statement of its path, except for terminating return, exit, null
+   -- A condition_expression is not a simple boolean constant
+   -- Another kind of statement is encountered
 
-   -- Rule variables
-   use Framework.Variables.Shared_Types;
-   Conditionals_Allowed : aliased Framework.Variables.Shared_Types.Switch_Type.Object := (Value => On);
+   function Signature (Stmt : Asis.Statement) return Nesting_Signature;
+   -- Computes the signature by going up enclosing elements from Stmt
+   -- Stops when anything else than if's (and corresponding paths) is encountered,
+   -- or when an if has a condition which is not a simple reference to a boolean constant
 
-end Rules.Unsafe_Paired_Calls;
+   function Matching_Call (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
+   -- Returns the matching call burried into nested if statements, if the structure matches Signature,
+   -- including that every condition expression of if statements matches the one from the signature
+   -- Returns Nil_Element otherwise
+
+end Rules.Unsafe_Paired_Calls.Services;

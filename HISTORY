@@ -7,6 +7,8 @@ Changes to existing rules:
 Unsafe_Paired_Calls:
    allow simple statements after closing subprogram
    consider handled sequences of statements from extended return statements
+   allow opening/closing procedure in matching simple nested if statements
+   better error messages
 
 Declarations
    consider handled sequences of statements from extended return statements
