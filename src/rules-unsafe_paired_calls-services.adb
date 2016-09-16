@@ -43,9 +43,6 @@ with
 package body Rules.Unsafe_Paired_Calls.Services is
 
    Nil_Signature : constant Nesting_Signature := Nesting_Signature (Asis.Nil_Element_List);
-   -- This one really means: empty list, not necessarily an invalid signature
-   -- A Nil_Signature means "invalid" only when returned to the user
-
 
    ------------------------------------
    -- Effective_Last_Statement_Index --
@@ -118,8 +115,6 @@ package body Rules.Unsafe_Paired_Calls.Services is
    function Signature (Stmt : Asis.Statement) return Nesting_Signature is
       use Asis.Elements;
 
-      Invalid_Construct : exception;
-
       function Enclosing_Signature (Elem : Asis.Element) return Nesting_Signature is
          use Asis, Asis.Statements;
       begin
@@ -128,13 +123,13 @@ package body Rules.Unsafe_Paired_Calls.Services is
                case Statement_Kind (Elem) is
                   when An_If_Statement =>
                      if Conditionals_Allowed.Value = Off then
-                        raise Invalid_Construct;
+                        raise Invalid_Nesting with "nested calls not allowed";
                      end if;
                      declare
                         Expr : constant Asis.Expression := Condition_Expression (Statement_Paths (Elem) (1));
                      begin
                         if not Is_Boolean_Constant (Expr) then
-                           raise Invalid_Construct;
+                           raise Invalid_Nesting with "if condition is not a boolean constant";
                         end if;
                         return Enclosing_Signature (Enclosing_Element (Elem)) & Elem & Expr;
                      end;
@@ -150,12 +145,12 @@ package body Rules.Unsafe_Paired_Calls.Services is
                         Stats : constant Asis.Statement_List := Thick_Queries.Statements (Elem);
                      begin
                         if Effective_Last_Statement_Index (Stats) /= Stats'First then
-                           raise Invalid_Construct;
+                           raise Invalid_Nesting with "path contains disallowed statements";
                         end if;
                      end;
                      return Enclosing_Signature (Enclosing_Element (Elem)) & Elem;
                   when others =>
-                     raise Invalid_Construct;
+                     raise Invalid_Nesting with "call in disallowed structured statement";
                end case;
 
             when others =>
@@ -165,9 +160,6 @@ package body Rules.Unsafe_Paired_Calls.Services is
 
    begin   -- Signature
       return Enclosing_Signature (Enclosing_Element (Stmt)) & Stmt;
-   exception
-      when Invalid_Construct =>
-         return Invalid_Nesting;
    end Signature;
 
    -------------------

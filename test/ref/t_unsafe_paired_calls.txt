@@ -8,8 +8,8 @@ t_unsafe_paired_calls-simple.adb:110:7: Error: No_Parameter: handler must have a
 t_unsafe_paired_calls-simple.adb:116:7: Error: No_Parameter: opening call to T_Unsafe_Paired_Calls.P is not the first statement
 t_unsafe_paired_calls-simple.adb:125:4: Error: No_Parameter: construct must have exception handlers
 t_unsafe_paired_calls-simple.adb:117:7: Error: No_Parameter: closing call to T_Unsafe_Paired_Calls.V is not the last statement
-t_unsafe_paired_calls-simple.adb:120:13: Error: No_Parameter: opening call to T_Unsafe_Paired_Calls.P is not in valid nested if
-t_unsafe_paired_calls-simple.adb:122:13: Error: No_Parameter: call to T_Unsafe_Paired_Calls.V is not in valid nested if
+t_unsafe_paired_calls-simple.adb:120:13: Error: No_Parameter: Invalid placement of opening call to T_Unsafe_Paired_Calls.P: call in disallowed structured statement
+t_unsafe_paired_calls-simple.adb:122:13: Error: No_Parameter: Invalid placement of closing call to T_Unsafe_Paired_Calls.V: call in disallowed structured statement
 t_unsafe_paired_calls-simple.adb:131:4: Error: No_Parameter: construct must have exception handlers
 t_unsafe_paired_calls-simple.adb:137:4: Error: No_Parameter: construct must have a "when others" exception handler
 t_unsafe_paired_calls-simple.adb:140:7: Error: No_Parameter: handler must have a closing call matching T_Unsafe_Paired_Calls.P
@@ -45,11 +45,11 @@ t_unsafe_paired_calls-simple.adb:344:4: Found: Multiple: sequence must end with 
 t_unsafe_paired_calls-simple.adb:343:7: Found: Multiple: call does not match opening call T_Unsafe_Paired_Calls.MultP2
 t_unsafe_paired_calls-nesting.adb:39:4: Error: No_Parameter: sequence must end with closing call matching T_Unsafe_Paired_Calls.P
 t_unsafe_paired_calls-nesting.adb:40:7: Error: No_Parameter: handler must have a closing call matching T_Unsafe_Paired_Calls.P
-t_unsafe_paired_calls-nesting.adb:33:10: Error: No_Parameter: opening call to T_Unsafe_Paired_Calls.P is not in valid nested if
+t_unsafe_paired_calls-nesting.adb:33:10: Error: No_Parameter: Invalid placement of opening call to T_Unsafe_Paired_Calls.P: call in disallowed structured statement
 t_unsafe_paired_calls-nesting.adb:37:10: Error: No_Parameter: closing call to T_Unsafe_Paired_Calls.V has no matching opening call at start of sequence
 t_unsafe_paired_calls-nesting.adb:41:10: Error: No_Parameter: closing call to T_Unsafe_Paired_Calls.V has no matching opening call at start of sequence
-t_unsafe_paired_calls-nesting.adb:47:10: Error: No_Parameter: opening call to T_Unsafe_Paired_Calls.P is not in valid nested if
-t_unsafe_paired_calls-nesting.adb:51:10: Error: No_Parameter: call to T_Unsafe_Paired_Calls.V is not in valid nested if
+t_unsafe_paired_calls-nesting.adb:47:10: Error: No_Parameter: Invalid placement of opening call to T_Unsafe_Paired_Calls.P: if condition is not a boolean constant
+t_unsafe_paired_calls-nesting.adb:51:10: Error: No_Parameter: Invalid placement of closing call to T_Unsafe_Paired_Calls.V: if condition is not a boolean constant
 t_unsafe_paired_calls-nesting.adb:55:10: Error: No_Parameter: closing call to T_Unsafe_Paired_Calls.V has no matching opening call at start of sequence
 t_unsafe_paired_calls-nesting.adb:68:7: Error: No_Parameter: handler must have only one closing call matching T_Unsafe_Paired_Calls.P
 t_unsafe_paired_calls-nesting.adb:138:7: Error: InOut_Parameter: sequence must end with closing call matching T_Unsafe_Paired_Calls.P with lock variable T_Unsafe_Paired_Calls.Nesting.S1

@@ -47,11 +47,12 @@ private package Rules.Unsafe_Paired_Calls.Services is
    --   For a call: the call
    -- The call is always the last element of the list
 
-   Invalid_Nesting : constant Nesting_Signature := Nesting_Signature (Asis.Nil_Element_List);
-   -- Returned by Signature if for some reason the structure does not obey the required model, including:
+   Invalid_Nesting : exception;
+   -- Raised by Signature if for some reason the structure does not obey the required model, including:
    -- An if statement is not the only statement of its path, except for terminating return, exit, null
    -- A condition_expression is not a simple boolean constant
    -- Another kind of statement is encountered
+   -- The associated Exception_Message provides more information
 
    function Signature (Stmt : Asis.Statement) return Nesting_Signature;
    -- Computes the signature by going up enclosing elements from Stmt

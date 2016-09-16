@@ -30,6 +30,8 @@
 
 -- Ada
 with
+  Ada.Characters.Handling,
+  Ada.Exceptions,
   Ada.Strings.Wide_Fixed;
 
 -- ASIS
@@ -107,6 +109,7 @@ package body Rules.Unsafe_Paired_Calls is
       User_Message ("Parameter(1): First subprogram");
       User_Message ("Parameter(2): Second subprogram");
       User_Message ("Parameter(3): (optional) type of lock parameter");
+      User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Conditionals_Allowed");
    end Help;
 
@@ -351,7 +354,7 @@ package body Rules.Unsafe_Paired_Calls is
                                     Other_Call     : Asis.Statement;
                                     Other_Context  : SP_Context) return Boolean
       is
-      -- Returns True if Lock.Kind is none, or the if Lock parameters are the same
+      -- Returns True if Lock.Kind is none, or if the Lock parameters are the same
       begin
          if Other_Context.Lock.Kind /= Called_Context.Lock.Kind then
             return False;
@@ -379,6 +382,7 @@ package body Rules.Unsafe_Paired_Calls is
       function Is_Same_Opening_Locking (Called_Context : SP_Context;
                                         Other_Call     : Asis.Statement) return Boolean
       is
+      -- Returns True if Call and Other_Call refer to the same subprograms, with matching lock parameters
          use Asis.Expressions;
 
          Other_Context : Root_Context'Class := Call_Context (Other_Call);
@@ -401,8 +405,8 @@ package body Rules.Unsafe_Paired_Calls is
       function Is_Matching_Locking (Called_Context : SP_Context;
                                     Other_Call     : Asis.Statement) return Boolean
       is
+      -- Returns True if Call and Other_Call are matching opening/closing calls (in any order).
          Other_Context : Root_Context'Class := Call_Context (Other_Call);
-         -- Whether Call and Other_Call are matching opening/closing calls (in any order).
       begin
          if Other_Context = No_Matching_Context then
             return False;
@@ -428,17 +432,9 @@ package body Rules.Unsafe_Paired_Calls is
       -- Check_Opening_Call --
       ------------------------
 
-      procedure Check_Opening_Call (Called_Context : SP_Context) is
-         Called_Sig : constant Nesting_Signature := Signature (Call);
+      procedure Check_Opening_Call (Called_Context : SP_Context; Called_Sig : Nesting_Signature) is
          Enclosing  : Asis.Element;
       begin
-         if Called_Sig = Invalid_Nesting then
-            Report (Rule_Id,
-                    Called_Context,
-                    Get_Location (Call),
-                    "opening call to " & Full_Name_Image (Called_Name (Call)) & " is not in valid nested if");
-            return;
-         end if;
          Enclosing := Enclosing_Element (Called_Sig (Called_Sig'First));
 
          -- Check that the call (or top if) is in an handled sequence of statements
@@ -539,17 +535,9 @@ package body Rules.Unsafe_Paired_Calls is
          end;
       end Check_Opening_Call;
 
-      procedure Check_Closing_Call (Called_Context : SP_Context) is
-         Called_Sig : constant Nesting_Signature := Signature (Call);
+      procedure Check_Closing_Call (Called_Context : SP_Context; Called_Sig : Nesting_Signature) is
          Enclosing  : Asis.Element;
       begin
-         if Called_Sig = Invalid_Nesting then
-            Report (Rule_Id,
-                    Called_Context,
-                    Get_Location (Call),
-                    "call to " & Full_Name_Image (Called_Name (Call)) & " is not in valid nested if");
-            return;
-         end if;
          Enclosing := Enclosing_Element (Called_Sig (Called_Sig'First));
 
          declare
@@ -601,6 +589,7 @@ package body Rules.Unsafe_Paired_Calls is
          end;
       end Check_Closing_Call;
 
+      use Ada.Characters.Handling, Ada.Exceptions;
    begin   -- Process_Call
       if Rules_Used = 0 then
          return;
@@ -622,10 +611,27 @@ package body Rules.Unsafe_Paired_Calls is
 
          case SP_Context (Called_Context).Role is
             when Opening =>
-               Check_Opening_Call (SP_Context (Called_Context));
-
+               begin
+                  Check_Opening_Call (SP_Context (Called_Context), Signature (Call));
+               exception
+                  when Occur: Invalid_Nesting =>
+                     Report (Rule_Id,
+                             Called_Context,
+                             Get_Location (Call),
+                             "Invalid placement of opening call to " & Full_Name_Image (Called_Name (Call))
+                             & ": " & To_Wide_String (Exception_Message (Occur)));
+               end;
             when Closing =>
-               Check_Closing_Call (SP_Context (Called_Context));
+               begin
+                  Check_Closing_Call (SP_Context (Called_Context), Signature (Call));
+               exception
+                  when Occur: Invalid_Nesting =>
+                     Report (Rule_Id,
+                             Called_Context,
+                             Get_Location (Call),
+                             "Invalid placement of closing call to " & Full_Name_Image (Called_Name (Call))
+                             & ": " & To_Wide_String (Exception_Message (Occur)));
+               end;
          end case;
       end;
    end Process_Call;

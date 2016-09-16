@@ -834,6 +834,8 @@ Controls calls like P/V operations that are not safely paired
 Parameter(1): First subprogram
 Parameter(2): Second subprogram
 Parameter(3): (optional) type of lock parameter
+Variables:
+Unsafe_Paired_Calls.Conditionals_Allowed: (Off, On) = On
 ----
 Rule: UNSAFE_UNCHECKED_CONVERSION
 Control unsafe usage of Unchecked_Conversion
