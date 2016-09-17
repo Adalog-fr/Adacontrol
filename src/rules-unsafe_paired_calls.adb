@@ -567,7 +567,7 @@ package body Rules.Unsafe_Paired_Calls is
             else
                Other_Call := Matching_Call (Stats (Stats'First), Called_Sig);
             end if;
-            if Is_Nil (Other_Call) then
+            if Is_Nil (Other_Call) or else Call_Context (Other_Call) = No_Matching_Context then
                Report (Rule_Id,
                        Called_Context,
                        Get_Location (Call),
