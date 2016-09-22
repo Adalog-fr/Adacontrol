@@ -269,10 +269,14 @@ package body Framework.Queries is
    function System_Value (Name : Wide_String) return Asis.Declaration is
       use Asis.Compilation_Units, Asis.Elements;
       use Element_Map, Framework, Utilities;
+      System_Unit : Asis.Compilation_Unit;
    begin
       if Is_Empty (System_Symbol_Map) then
-         Initialize_Table (System_Symbol_Map,
-                           Unit_Declaration (Library_Unit_Declaration ("SYSTEM", Adactl_Context)));
+         System_Unit := Library_Unit_Declaration ("SYSTEM", Adactl_Context);
+         if Is_Nil (System_Unit) then
+            Failure ("Unable to access System for " & Name);
+         end if;
+         Initialize_Table (System_Symbol_Map, Unit_Declaration (System_Unit));
       end if;
 
       return Fetch (System_Symbol_Map, To_Unbounded_Wide_String (Name));
@@ -286,16 +290,10 @@ package body Framework.Queries is
    ------------------
 
    function System_Value (Name : Wide_String) return Thick_Queries.Extended_Biggest_Int is
-      use Asis.Compilation_Units, Asis.Declarations, Asis.Elements;
-      use Element_Map, Framework, Thick_Queries, Utilities;
+      use Asis.Declarations;
+      use Element_Map, Thick_Queries, Utilities;
    begin
-      if Is_Empty (System_Symbol_Map) then
-         Initialize_Table (System_Symbol_Map,
-                           Unit_Declaration (Library_Unit_Declaration ("SYSTEM", Adactl_Context)));
-      end if;
-
-      return Discrete_Static_Expression_Value
-               (Initialization_Expression (Fetch (System_Symbol_Map, To_Unbounded_Wide_String (Name))));
+      return Discrete_Static_Expression_Value (Initialization_Expression (System_Value (Name)));
    exception
       when Not_Present =>
          -- There seems to be a bug/feature in recent versions of Gnat that the System we get
