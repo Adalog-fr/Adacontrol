@@ -5,6 +5,7 @@
 
 #
 import GPS
+import gps_utils
 import os
 import glob
 import re
@@ -492,31 +493,43 @@ def run(rules, files):
 #
 # GUI
 #
-def Help_On_Rule(self):
+def Help_On_Rule(name):
     """provide help in order to use AdaControl
     """
     if GPS.Preference("help-format").get() == "Pop-up":
-        proc = GPS.Process(command_name() + " -h " + self.name)
+        proc = GPS.Process(command_name() + " -h " + name)
         GPS.MDI.dialog(proc.get_result())
     else:
         # for mysterious reasons, Texinfo replaces "_" in anchors by "_005f"
         GPS.HTML.browse(
             "adacontrol_ug.html",
-            anchor=self.name.replace("_", "_005f"),
+            anchor=name.replace("_", "_005f"),
             navigation=False)
+
+
+def Help_On_Rule_Old(self):
+    """Old version: called with menu entry
+    """
+    Help_On_Rule(self.name)
 
 
 def Add_Rule_Menu(self, matched, unmatched):
     """Add a new entry to the "Help on rule" menu
     """
+    global gps_version
 
     # '_' is interpreted as a special mark in menus, double it
-    entry = GPS.Menu.create(
-        "Help/AdaControl/Help on rule/" + matched.replace("_", "__"),
-        Help_On_Rule,
-        ref="About",
-        add_before=True)
-    entry.name = matched
+    if gps_version < '17.0':
+        entry = GPS.Menu.create("Help/AdaControl/Help on rule/" + matched.replace("_", "__"),
+                                Help_On_Rule_Old,
+                                ref="About",
+                                add_before=True)
+        entry.name = matched
+    else:
+        @gps_utils.interactive(name='Show rule %s' % matched,
+                               menu="Help/AdaControl/Help on rule/" + matched.replace("_", "__"))
+        def Help_Rule_Entry():
+            Help_On_Rule(matched)
 
 
 def about():
@@ -546,6 +559,12 @@ def del_tree(confirm):
 def on_pref_changed(H):
     """Hook on preference changes
     """
+    global gps_version
+
+    # Menu.rename disappeared after GPL2016
+    if gps_version > '16.0':
+        return
+
     if GPS.Preference("delete-ali").get():
         DelTree_Menu.rename("Delete Tree and .ali Files")
     else:
@@ -561,12 +580,22 @@ def on_GPS_start(H):
     """
     global adactl_cats, previous_command, previous_locfile, DelTree_Menu,\
         long_mess_str, long_mess_pat, short_mess_pat, rule_statistics_pat,\
-        message_statistics_pat
+        message_statistics_pat, gps_version
 
     # Global variables initialization
     adactl_cats = sets.Set()
     previous_command = ""
     previous_locfile = ""
+
+    # Normalize version numbers to allow for correct ordering of (string) comparison
+    # 6.1.1 => 06.1.1
+    # 2016  => 16.0
+    # 17.0w => 17.0w
+    gps_version = GPS.version()
+    if gps_version.find('.') == -1:
+        gps_version = gps_version[-2:] + '.0'
+    elif gps_version.find('.') == 1:
+        gps_version = '0' + gps_version
 
     # 1    2     3      456        7                           8
     long_mess_str = r"^(.+):(\d+):(\d+): (((Found:)|(Error:|Parameter:|Syntax:))( .*?):.*)$"
@@ -735,10 +764,9 @@ def on_GPS_start(H):
      <menu action="Create_adp">
         <title>Create .adp project</title>
      </menu>
-
-     <menu action="Del_Tree">
-        <title>Delete Tree Files</title>
-     </menu>
+   <menu action="Del_Tree">
+      <title>Delete Tree Files</title>
+   </menu>
 
    </submenu>
    """)
@@ -746,16 +774,8 @@ def on_GPS_start(H):
     # We must define the buttons here in order to compute the place of the
     # icons from the GPS directory, but we cannot call GPS.Button(), because it
     # does not allow the declaration of an icon (hence we use parse_xml).
-
-    if len(GPS.version()) == 4:
-        # Starting with 2016, version() is no more a sequence number but the issue year
-        # buttons have iconname attribute TBSL
-        GPS.parse_xml("""
-        <button action='Check_Unknown_File' iconname='adactl-file' />
-        <button action='Check_Unknown_Ask'  iconname='adactl-ask'  />
-      """)
-    elif GPS.version() < "6.1.1":
-        # Old GPS: Buttons have title and pixmap
+    if gps_version < "06.1.1":
+        # Old GPS: Buttons have title and pixmap ('twas simple at that time!)
         GPS.parse_xml("""
       <button action='Check_Unknown_File'>
          <title>Launch AdaControl (rules file)</title>
@@ -766,8 +786,8 @@ def on_GPS_start(H):
          <pixmap>{base_dir}share/gps/plug-ins/adactl-ask.gif</pixmap>
       </button>
       """ .format(base_dir=GPS.get_system_dir()))
-    else:
-        # GPS 6.1.2 up to 6.2.1: Buttons use stock
+    elif gps_version <= "06.2.1" :
+        # GPS 06.1.2 up to 06.2.1: Buttons use stock
         GPS.parse_xml('''
       <stock>
          <icon id="adactl-file"
@@ -783,13 +803,19 @@ def on_GPS_start(H):
       <button action='Check_Unknown_File' stock="adactl-file" />
       <button action='Check_Unknown_Ask'  stock="adactl-ask" />
       """)
+    else:
+        # Starting with GPL 2016: buttons have iconname attribute
+        GPS.parse_xml("""
+        <button action='Check_Unknown_File' iconname='adactl-file' />
+        <button action='Check_Unknown_Ask'  iconname='adactl-ask'  />
+      """)
 
     # Create the Help/Adacontrol/Help rule menu
     GPS.Process(command_name() + " -h list", ".+", Add_Rule_Menu)
 
     # Create hook on preference changes, and keep the "Delete Tree" menu in it
     GPS.Hook("preferences_changed").add(on_pref_changed)
-    DelTree_Menu = GPS.Menu.get("AdaControl/Delete Tree Files")
+    DelTree_Menu = GPS.Menu.get("/AdaControl/Delete Tree Files")
     on_pref_changed(GPS.Hook("preferences_changed"))
 
 

@@ -10,14 +10,6 @@ project Build is
    for Exec_Dir use ".";
    for Main use ("adactl", "ptree", "pfni");
 
-   package Linker is
-      for Default_Switches ("ada") use ("-g");
-   end Linker;
-
-   package Binder is
-      for Default_Switches ("ada") use ("-E");
-   end Binder;
-
    Std_Options := ("-O2", "-gnatws", "-gnat05", "-gnato", "-gnatf", "-g");
    package Compiler is
       case Gnat_Fix is
@@ -27,6 +19,14 @@ project Build is
          for Default_Switches ("ada") use Std_Options;
       end case;
    end Compiler;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-E");
+   end Binder;
 
    package Builder is
       for Default_Switches ("ada") use ("-m", "-k", "-g");

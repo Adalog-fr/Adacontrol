@@ -1100,7 +1100,9 @@ contains errors.
 @node Generating a units list,  , Checking commands syntax, Other execution modes
 @subsection Generating a units list
 The ``-D'' options produces a list of units that can be reused as an
-indirect file in later runs.  Syntax:
+indirect file in later runs.
+
+Syntax:
 @example
 adactl -D [-rsvw] [-o <output file>] [-p <project file>]
           @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
