@@ -646,8 +646,10 @@ package body Rules.Max_Call_Depth is
                Result := (Formal, 0);
                exit;
             when Not_A_Declaration =>
-               -- this should happen only when the body is given by a pragma import
-               Assert (Element_Kind (Called_Body) = A_Pragma, "Entity_Call_Depth: not a declaration or pragma");
+               -- this should happen only when the body is given by a pragma (or aspect) import
+               Assert (Element_Kind (Called_Body) = A_Pragma or Definition_Kind (Called_Body) = An_Aspect_Specification,
+                       "Entity_Call_Depth: not a declaration or pragma",
+                       Called_Body);
                Result := (Unavailable, 0);
                exit;
             when others =>

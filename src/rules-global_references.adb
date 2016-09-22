@@ -531,7 +531,8 @@ package body Rules.Global_References is
    begin
       if Is_Nil (Body_Decl) -- Predefined operations, dispatching call, f.e. ...
         or else Is_Banned (Body_Decl, Rule_Id)
-        or else Element_Kind (Body_Decl) = A_Pragma -- case of pragma Import
+        or else Element_Kind (Body_Decl) = A_Pragma                     -- case of pragma Import
+        or else Definition_Kind (Body_Decl) = An_Aspect_Specification   -- or aspect Import
       then
          return;
       end if;
