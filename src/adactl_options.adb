@@ -420,15 +420,11 @@ package body Adactl_Options is
    function Asis_Options return Wide_String is
       use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
       use Implementation_Options, Analyzer;
-
-      Project_File : constant String := Value (Option            => 'p',
-                                               Explicit_Required => True);
    begin
-      return Parameters_String (Project_File,
-                                To_Wide_String (Tail_Value)
-                                  & To_Wide_String (Extra_Pathes));
+      return Parameters_String (Project_File  => Value (Option => 'p', Explicit_Required => True),
+                                Other_Options => To_Wide_String (Tail_Value) & To_Wide_String (Extra_Pathes));
    exception
-      when Occur : Analyzer.Options_Error | Implementation_Error =>
+      when Occur : Analyzer.Options_Error | Implementation_Options.Implementation_Error =>
          Option_Error (Occur);
   end Asis_Options;
 
