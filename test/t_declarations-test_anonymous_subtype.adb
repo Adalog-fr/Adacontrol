@@ -39,7 +39,7 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
          F : access Integer;                                      -- Uninitialized_Record_Component, Anonymous_access_component
       end record;
 
-   procedure AA_P (X : access Integer) is                         -- Nested_Procedure, Local_Procedure, Anonymous_access_parameter
+   procedure AA_P (X : access Integer) is                         -- Nested_Procedure, Local_Procedure, Anonymous_access_parameter, no_spec_procedure
    begin
       null;                                                       -- null_procedure_body, Null_Procedure
    end AA_P;

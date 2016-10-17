@@ -3,6 +3,11 @@
 =============
 Bug fix
 
+Changes to existing rules:
+--------------------------
+Declarations:
+   Subrules no_spec_function and no_spec_procedure
+
 =============
 == V1.18b6 ==
 =============

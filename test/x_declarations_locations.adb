@@ -1,12 +1,12 @@
 package body X_Declarations_Locations is
 
-   procedure In_Own is -- own, nested
+   procedure In_Own is -- own, nested, no_spec_procedure
    begin
       null;            -- null_procedure_body, null_procedure
    end;
 
    procedure In_Visible is
-      procedure In_Local is -- local, nested
+      procedure In_Local is -- local, nested, no_spec_procedure
       begin
          null;              -- null_procedure_body, null_procedure
       end;

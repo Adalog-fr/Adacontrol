@@ -3,8 +3,9 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_IO, Ada.Finalization;
 with X_Declarations.Child;
 with X_Declarations_Locations;
-procedure T_declarations is       -- library procedure
-   procedure Test_Anonymous_Subtype is separate;   -- separate
+procedure T_declarations is     -- library procedure, no_spec_procedure
+   procedure Test_Anonymous_Subtype is separate;   -- separate, no_spec_procedure
+   procedure Test_Self_SP;                         -- not_library_procedure, local_procedure
    procedure Test_Self_SP           is separate;   -- separate
 
    type I1 is range 1 .. 10;      -- signed_type, integer_type
@@ -24,7 +25,7 @@ procedure T_declarations is       -- library procedure
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
    end T1;
    task body T1 is
-      procedure P is              -- task_body procedure, not library procedure, local procedure
+      procedure P is              -- task_body procedure, not library procedure, local procedure, no_spec_procedure
       begin
          null;                    -- null_procedure_body, null_procedure
       end;
@@ -217,10 +218,10 @@ procedure T_declarations is       -- library procedure
       begin
          null;                                           -- null_procedure_body, Null_Procedure
       end Proc1;
-      procedure Proc2 is                                 -- Own procedure, not library procedure, local procedure
+      procedure Proc2 is                                 -- Own procedure, not library procedure, local procedure, no_spec_procedure
       begin
          declare
-            procedure Proc3 is                           -- Not Library Procedure, Local Procedure, Block Procedure
+            procedure Proc3 is                           -- Not Library Procedure, Local Procedure, Block Procedure, no_spec_procedure
             begin
                null;                                     -- null_procedure_body, Null Procedure
             end Proc3;
@@ -229,7 +230,7 @@ procedure T_declarations is       -- library procedure
          end;
       end Proc2;
       procedure P_As_Body renames Test_Self_SP;          -- renaming_as_body, renaming, not_operator_renaming, non_identical_renaming
-      function F_Hidden return Integer is
+      function F_Hidden return Integer is                -- No_Spec_Function
       begin
          return 0;
       end F_Hidden;
@@ -247,12 +248,12 @@ procedure T_declarations is       -- library procedure
    generic package Generic_Elementary_Functions          -- renaming, Not_Operator_Renaming, library_unit_renaming
       renames Ada.Numerics.Generic_Elementary_Functions;
 
-   function "+" (L : Arr2) return Arr2 is                -- operator #00046
+   function "+" (L : Arr2) return Arr2 is                -- operator #00046, no_spec_function
    begin
       return L;
    end "+";
 
-   function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names
+   function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names, no_spec_function
    begin
       return I : Integer := 1 do
          I := I + 1;
@@ -289,7 +290,7 @@ procedure T_declarations is       -- library procedure
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
-      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, not library procedure, local procedure, null_procedure_body, null_procedure
+      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, not library procedure, local procedure, null_procedure_body, null_procedure, no_spec_function
       type Acc_T1 is access T1;                                               -- access_formal_type, access_type
       type Acc_T2 is access T2;                                               -- access_unknown_discriminated_type, access_formal_type, access_type;
    begin
@@ -305,7 +306,7 @@ procedure T_declarations is       -- library procedure
    function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming
    function "/" (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
 
-   procedure Predefined_Operator is separate;                           -- separate
+   procedure Predefined_Operator is separate;                           -- separate, no_spec_function
 
    Renf1 : Integer renames Succ (1);                                    -- renaming, not_operator_renaming, non_identical_renaming, function_call_renaming
    Renf2 : Integer renames "+"(1,2);                                    -- renaming, not_operator_renaming, non_identical_renaming, function_call_renaming
@@ -329,7 +330,7 @@ procedure T_declarations is       -- library procedure
    end Al5;
 
    procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, not librar_procedure, local_procedure
-   function "=" (L : Rec1; R : Rec1) return Boolean is                  -- operator, predefined_operator, equality_operator
+   function "=" (L : Rec1; R : Rec1) return Boolean is                  -- operator, predefined_operator, equality_operator, no_spec_function
    begin
       return False;
    end "=";

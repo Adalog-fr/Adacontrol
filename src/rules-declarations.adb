@@ -102,11 +102,12 @@ package body Rules.Declarations is
       D_Modular_Type,                      D_Multiple_Names,                    D_Multiple_Protected_Entries,
 
       D_Name_Defaulted_Formal_Function,    D_Name_Defaulted_Formal_Procedure,   D_Named_Number,
-      D_Non_Binary_Modular_Type,           D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,
-      D_Non_Joint_CE_NE_Handler,           D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,
-      D_Not_Operator_Renaming,             D_Null_Defaulted_Formal_Procedure,   D_Null_Extension,
-      D_Null_Ordinary_Record_Type,         D_Null_Procedure,                    D_Null_Procedure_Body,
-      D_Null_Procedure_Declaration,        D_Null_Tagged_Type,
+      D_No_Spec_Function,                  D_No_Spec_Procedure,                 D_Non_Binary_Modular_Type,
+      D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,            D_Non_Joint_CE_NE_Handler,
+      D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,                D_Not_Operator_Renaming,
+      D_Null_Defaulted_Formal_Procedure,   D_Null_Extension,                    D_Null_Ordinary_Record_Type,
+      D_Null_Procedure,                    D_Null_Procedure_Body,               D_Null_Procedure_Declaration,
+      D_Null_Tagged_Type,
 
       D_Operator,                          D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
       D_Ordinary_Fixed_Type_No_Small,      D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
@@ -1085,6 +1086,9 @@ package body Rules.Declarations is
             if Is_Nil (Corresponding_Declaration (Element)) then
                -- If there is no explicit spec, process as a spec.
                Do_Report (D_Procedure, Element);
+               if not Is_Subunit (Element) then   -- No_Spec_Procedure checked on stub
+                  Do_Report (D_No_Spec_Procedure, Element);
+               end if;
             end if;
 
             declare
@@ -1151,6 +1155,9 @@ package body Rules.Declarations is
                   end if;
                end if;
                Do_Report (D_Function, Element);
+               if not Is_Subunit (Element) then   -- No_Spec_Function checked on stub
+                  Do_Report (D_No_Spec_Function, Element);
+               end if;
             end if;
 
             declare
@@ -1254,7 +1261,22 @@ package body Rules.Declarations is
          when A_Procedure_Instantiation =>
             Do_Report ((D_Instantiation, D_Procedure_Instantiation), Element);
 
-         when A_Body_Stub =>
+         when A_Function_Body_Stub =>
+            Do_Report (D_Separate, Element);
+            if Is_Nil (Corresponding_Declaration (Element)) then
+               Do_Report (D_No_Spec_Function, Element);
+            end if;
+
+         when A_Procedure_Body_Stub =>
+            Do_Report (D_Separate, Element);
+            if Is_Nil (Corresponding_Declaration (Element)) then
+               Do_Report (D_No_Spec_Procedure, Element);
+            end if;
+
+         when A_Package_Body_Stub
+            | A_Task_Body_Stub
+            | A_Protected_Body_Stub
+            =>
             Do_Report (D_Separate, Element);
 
          when A_Function_Renaming_Declaration

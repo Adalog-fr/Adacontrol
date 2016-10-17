@@ -154,7 +154,8 @@ Parameter(s): {<location>} <decl>
         limited_private_type              | modular_type                      |
         multiple_names                    | multiple_protected_entries        |
         name_defaulted_formal_function    | name_defaulted_formal_procedure   |
-        named_number                      | non_binary_modular_type           |
+        named_number                      | no_spec_function                  |
+        no_spec_procedure                 | non_binary_modular_type           |
         non_identical_operator_renaming   | non_identical_renaming            |
         non_joint_ce_ne_handler           | non_limited_private_type          |
         non_ravenscar_task                | not_operator_renaming             |
