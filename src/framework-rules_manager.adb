@@ -39,13 +39,15 @@ with
 -- ASIS
 with
   Asis.Declarations,
-  Asis.Elements;
+  Asis.Elements,
+  Asis.Expressions;
 
 -- Adalog
 with
+  Binary_Map,
   String_Matching,
-  Utilities,
-  Binary_Map;
+  Thick_Queries,
+  Utilities;
 pragma Elaborate_All (Utilities);
 pragma Elaborate_All (Binary_Map);
 
@@ -562,13 +564,41 @@ package body Framework.Rules_Manager is
    ---------------
 
    function Is_Banned (Element : in Asis.Element; For_Rule : in Wide_String) return Boolean is
-      use Asis.Declarations, Asis.Elements;
-      use Framework.Control_Manager;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Framework.Control_Manager, Thick_Queries, Utilities;
+      Good_Elem : Asis.Element;
       Iter : Context_Iterator := Inhibited_Iterator.Create;
    begin
-      Reset (Iter, Names (Unit_Declaration (Enclosing_Compilation_Unit (Element)))(1));
+      case Element_Kind (Element) is
+         when A_Declaration | A_Defining_Name =>
+            Good_Elem := Element;
+         when An_Expression =>
+            case Expression_Kind (Element) is
+               when An_Identifier | An_Enumeration_Literal | A_Character_Literal =>
+                  Good_Elem := Corresponding_Name_Declaration (Element);
+               when A_Selected_Component =>
+                  Good_Elem := Corresponding_Name_Declaration (Selector (Element));
+               when others =>
+                  Failure ("Is_Banned: unexpected expression", Element);
+            end case;
+         when A_Pragma =>
+            if Pragma_Kind (Element) = An_Import_Pragma then
+               -- anyway, we won't analyse this...
+               return False;
+            else
+               Failure ("Is_Banned: unexpected pragma", Element);
+            end if;
+         when others =>
+            Failure ("Is_Banned: unexpected element", Element);
+      end case;
+
+      Reset (Iter, Names (Unit_Declaration (Enclosing_Compilation_Unit (Good_Elem)))(1));
       if Is_Exhausted (Iter) then
-         return False;
+         if Is_Part_Of_Instance (Good_Elem) then
+            return Is_Banned (Generic_Unit_Name (First_Enclosing_Instantiation (Good_Elem)), For_Rule);
+         else
+            return False;
+         end if;
       end if;
 
       if Inhibited_Rule (Value (Iter)).Rule_Name = "ALL" then
@@ -586,7 +616,11 @@ package body Framework.Rules_Manager is
          end loop;
       end;
 
-      return False;
+      if Is_Part_Of_Instance (Good_Elem) then
+         return Is_Banned (Generic_Unit_Name (First_Enclosing_Instantiation (Good_Elem)), For_Rule);
+      else
+         return False;
+      end if;
    end Is_Banned;
 
    ----------------

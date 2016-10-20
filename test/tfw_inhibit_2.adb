@@ -1,3 +1,4 @@
+-- Test case: inhibited for entities, not pragma
 with Ada.Text_Io;
 pragma Elaborate_All (Ada.Text_Io);
 

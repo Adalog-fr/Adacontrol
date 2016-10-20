@@ -111,5 +111,12 @@ package Framework.Rules_Manager is
    function Is_Banned (Element : in Asis.Element; For_Rule : in Wide_String) return Boolean;
    -- Returns True if Element is declared within a banned unit for rule For_Rule.
    -- A banned unit is one which is the target of an inhibit all command.
+   --  Appropriate Element_Kinds:
+   --    A_Declaration
+   --    A_Defining_Name
+   --    An_Expression
+   -- Appropriate Expression_Kinds:
+   --    An_Identifier
+   --    A_Selected_Component (checks the selector)
 
 end Framework.Rules_Manager;

@@ -142,9 +142,11 @@ ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r \
         | sed "s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
 
+# This one requires precompilation, or some trees will be missing
+gcc -c -gnatct xfw_inhibit.adb tfw_inhibit_?.ad[sb]
 test_case=tfw_inhibit
 nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}_1.adb ${test_case}_2.adb ${test_case}_3.adb \
+${ADACTL} -w -f conf/${test_case}.aru ${test_case}_*.ad[sb] \
 	| tr -d \\r >res/${test_case}.txt
 
 test_case=tfw_naming

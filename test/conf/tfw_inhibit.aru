@@ -2,6 +2,8 @@
 
 inhibit pragmas (tfw_inhibit_3);
 inhibit entities(tfw_inhibit_2, all tfw_inhibit_3);
+inhibit max_call_depth (all xfw_inhibit); -- a generic unit, applies to instance t_inhibit_4, t_inhibit_5
 
 check pragmas (elaborate_all);
 check entities (ada.text_IO);
+check max_call_depth (finite);
