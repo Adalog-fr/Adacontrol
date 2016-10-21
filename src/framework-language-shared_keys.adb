@@ -364,8 +364,7 @@ package body Framework.Language.Shared_Keys is
                                return Categories
    is
       use Thick_Queries;
-      Cat : constant Categories
-        := Match_Table (Type_Category (Elem, Follow_Derived, Privacy, Separate_Extension));
+      Cat : constant Categories := Match_Table (Type_Category (Elem, Follow_Derived, Privacy, Separate_Extension));
    begin
       if From_Cats (Cat) then
          return Cat;

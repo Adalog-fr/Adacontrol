@@ -152,7 +152,7 @@ package Framework.Language.Shared_Keys is
    -- Appropriate Element_Kinds for Elem:
    -- Same as Matches above
    --
-   -- Return the category of Elem it is in From_Cats, Cat_Any otherwise
+   -- Return the category of Elem if it is in From_Cats, Cat_Any otherwise
 
    function Image (Item : Thick_Queries.Type_Categories) return Wide_String;
    -- Image of a type category, in upper case

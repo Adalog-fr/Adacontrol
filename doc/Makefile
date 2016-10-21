@@ -10,6 +10,6 @@ $(HTML): %.html: %.texi
 $(INFO): %.info: %.texi
 	texi2any --output=$@ --info --no-split $<
 $(PDF): %.pdf: %.texi
-	texi2any --output=$@ --pdf --no-iftex --Xopt --quiet $<
+	texi2any --output=$@ --pdf --no-iftex --Xopt --quiet --Xopt --build=clean $<
 $(TXT): %.txt: %.texi
 	texi2any --output=$@ --plaintext $<

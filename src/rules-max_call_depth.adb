@@ -593,7 +593,7 @@ package body Rules.Max_Call_Depth is
                | A_Generic_Function_Declaration
                | A_Procedure_Instantiation
                | A_Function_Instantiation
-                 =>
+               =>
                Called_Body := Corresponding_Body (Called_Body);
                if Is_Nil (Called_Body) then
                   Result := (Unavailable, 0);

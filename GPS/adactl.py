@@ -474,7 +474,7 @@ def run(rules, files):
         print command_line
     proc = GPS.Process(command=command_line,
                        task_manager=True,
-                       regexp=".+",
+                       regexp="^.+$",
                        on_match=process_line,
                        progress_regexp="^\((\d+)/(\d+)\)",
                        progress_current=1,

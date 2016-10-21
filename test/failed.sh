@@ -6,14 +6,22 @@ if [ "${OSTYPE:-}" = "linux-gnu" ] ; then
     WINMERGE='/usr/bin/meld'
     EMACS=emacs
 else
-    WINMERGE='/cygdrive/c/Program Files/KDiff3/kdiff3.exe'
+    #WINMERGE='/cygdrive/c/Program Files/KDiff3/kdiff3.exe'
+    WINMERGE='c:/Program Files (x86)/Meld/Meld.exe'
     EMACS=emacs.bat
 fi
 
+if [ \( ! -d res \) -o \( ! -d ref \) ] ; then
+    echo "Missing res or ref directory";
+    exit
+fi
+
 (cd res
-    for test_case in `find . -name "*.txt" -printf "%P "`; do
-	diff=`diff ${test_case} ../ref/${test_case} || true`
-	if [ -n "$diff" ]; then
+    found=0
+    for test_case in *.txt; do
+	diff=`diff ${test_case} ../ref/${test_case}`
+	if [ "$diff" != "" ]; then
+            found=1
 	    while true ; do
 		echo -n "$test_case: [Diff, Edit, Interactive, save Patch, Validate, Nothing, Quit]? "
 		read REP
@@ -39,4 +47,8 @@ fi
 	    done
 	fi;
     done
+    if [ $found -eq 0 ] ; then
+        echo "*** PASSED"
+    fi
 )
+

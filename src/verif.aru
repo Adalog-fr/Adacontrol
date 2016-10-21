@@ -33,7 +33,6 @@ No_Debug         : check entities (debug, debug.timing, tracer, tracer.timing);
 No_TBSL          : search comments (pattern, "TBSL");
 No_Unimplemented : check entities (Utilities.Unimplemented);
 search uncheckable (false_negative, missing_unit);
-"Use Std interrupt": check dependencies (with, framework.interrupt_dbg);
 
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.
@@ -61,8 +60,9 @@ check naming_convention (Type,     not "^t_");
 check naming_convention (Regular_Constant, not "^c_");
 check naming_convention (Named_Number,     not "^c_");
 -- Title case convention, but we allow several upper case letters at the beginning:
-check naming_convention (All, case_sensitive "^[A-Z0-9]*[a-z0-9]*(_[A-Z0-9]*[a-z0-9]*)*$");
+check naming_convention (All, case_sensitive "^[A-Z]+[a-z0-9]*(_[A-Z0-9]+[a-z0-9]*)*$");
 
 -- Replacement subprograms
-Use_Trim_All:     check entities (Ada.Strings.Wide_String.Trim);
-Use_Img_Function: check entities (standard.integer'wide_image, thick_queries.biggest_int'wide_image);
+Use_Trim_All:        check entities (Ada.Strings.Wide_String.Trim);
+Use_Img_Function:    check entities (standard.integer'wide_image, thick_queries.biggest_int'wide_image);
+"Use Std interrupt": check dependencies (with, framework.interrupt_dbg);
