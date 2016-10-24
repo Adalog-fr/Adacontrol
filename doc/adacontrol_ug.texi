@@ -4140,19 +4140,20 @@ This rule controls various properties of the declaration of derived types.
 
 @subsection Action
 The ``from'' subrule controls derivations according to the parent
-type.
+type and progenitors.
 
 If <entity> is a type name, it controls types that are derived
-(directly or indirectly) from the given type, or one of its subtypes;
-however, if it is a @i{subtype} name, only types that are derived
-(directly or indirectly) from the given subtype are controlled. If
-<entity> is the name of a compilation unit, it controls types that are
-derived (directly or indirectly) from a type (or subtype) declared
-inside the given unit.  As usual, the whole syntax for entities is
-allowed for <entity>. @xref{Specifying an Ada entity name}.
+(directly or indirectly) from the given type (including interfaces),
+or one of its subtypes; however, if it is a @i{subtype} name, only
+types that are derived (directly or indirectly) from the given subtype
+are controlled. If <entity> is the name of a compilation unit, it
+controls types that are derived (directly or indirectly) from a type
+(or subtype) declared inside the given unit.  As usual, the whole
+syntax for entities is allowed for <entity>. @xref{Specifying an Ada
+entity name}.
 
-If <category> is given, it controls derived types that belong to the
-corresponding category. The meaning of <category> is:
+If <category> is given, it controls derived types whose parent type 
+belongs to the corresponding category. The meaning of <category> is:
 @itemize @bullet
 @item
 ``()'': The parent is of an enumerated type.
@@ -4184,8 +4185,9 @@ extensions).
 ``task'': The parent is of a task type.
 @end itemize
 
-It may be the case that several controls apply to a given derived type. In this case, the message
-corresponds to the most specific control, according to the following priority order:
+It may be the case that several controls apply to a given parent
+type. In this case, only one message is issued, that corresponds to
+the most specific control according to the following priority order:
 @enumerate
 @item
 Specific subtype
@@ -4193,17 +4195,16 @@ Specific subtype
 Specific type
 @item
 Type or subtype from a compilation unit
-@item
-Category
 @end enumerate
+If a category also applies to the parent type, a separate message is
+always issued.
 
 Ex:
 @example
 check derivations (from, Standard.Integer);  -- Types derived from Integer
-search derivations (from, range);            -- Types derived from an integer type, except
-                                             -- Standard.Integer (caught above)
 search derivations (from, standard);         -- Types derived from a type in Standard, except
                                              -- Standard.Integer (caught above)
+search derivations (from, range);            -- Types derived from an integer type
 @end example
 
 The ``max_parents'' subrule controls the maximum number of parents in
@@ -4223,10 +4224,6 @@ the one for check.
 check derivations (max_parents, 5);   -- error if more than 5 parents
 search derivations (max_parents, 3);  -- warning if more than 3 parents
 @end example
-
-@subsection Limitations
-Currently, the ``from'' subrule controls only parent types, progenitors are ignored. This limitation will be
-removed in future versions.
 
 @node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Derivations, Rules reference
 @section Directly_Accessed_Globals

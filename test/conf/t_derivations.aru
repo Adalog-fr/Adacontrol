@@ -1,9 +1,13 @@
-"from Integer": check Derivations (from, standard.integer);
-check derivations (From, T_derivations.From.T3);
-check derivations (From, T_derivations.From.T4);
-search derivations (from, range, ());
+"from Integer":  check  Derivations (from, standard.integer);
+                 check  derivations (From, T_derivations.From.T3);
+                 check  derivations (From, T_derivations.From.T4);
+                 search derivations (from, range, ());
 "from Standard": search derivations (from, Standard);
-check derivations (from,T_derivations.From.S3);
+                 check  derivations (from, T_derivations.From.S3);
+                 check  derivations (from, T_derivations.From.I1);
+                 check  derivations (from, T_derivations.From.I2);
+                 check  derivations (from, T_derivations.From.Ilim);
+                 search derivations (from, task, protected);
 
-check derivations (max_parents, 2);
+check  derivations (max_parents, 2);
 search derivations (max_parents, 1);

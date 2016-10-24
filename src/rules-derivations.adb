@@ -54,13 +54,12 @@ package body Rules.Derivations is
 
    -- Algorithm
    --
-   -- From: we simply walk up the chain of derivations until we encounter something that's not a derived type.
+   -- From: we simply walk up the chain of derivations and progenitors, checking the parent type,
+   -- until we encounter something that's not a derived type.
    --
-   -- TBSL: interfaces. Progenitors are ignored. Task and protected progenitors
-   --       formal derived types, formal interfaces
-   --       separate case of interfaces?
-   --       subtypes?
-   --       future subrules: Max_Depth
+   -- Max_Parent: count the progenitors, +1 for derived types (but not task, protected, and interfaces)
+   --
+   -- Future subrules: Max_Depth
 
    type Subrules is (SR_From, SR_Max_Parents);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
@@ -183,108 +182,131 @@ package body Rules.Derivations is
       Balance (Searched_Parents);
    end Prepare;
 
-   ----------------
-   -- Check_From --
-   ----------------
+   -----------------------------
+   -- Derivation_Subtype_Name --
+   -----------------------------
 
-   ----------------
-   -- Check_From --
-   ----------------
+   function Derivation_Subtype_Name (Def : Asis.Definition) return Asis.Expression is
+      use Asis, Asis.Definitions, Asis.Elements;
+      use Thick_Queries, Utilities;
+   begin
+      case Definition_Kind (Def) is
+         when A_Type_Definition =>
+            return Subtype_Simple_Name (Parent_Subtype_Indication (Def));
+         when A_Formal_Type_Definition
+            | A_Subtype_Indication
+            =>
+            return Subtype_Simple_Name (Def);
+         when others =>
+            Failure ("Derivation_Subtype_Name: bad definition_kind", Def);
+      end case;
+   end Derivation_Subtype_Name;
 
-   procedure Check_From (Element : Asis.Definition) is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Language.Shared_Keys, Framework.Reports, Thick_Queries;
+   ---------------------
+   -- Check_From_Type --
+   ---------------------
 
-      function Derivation_Subtype_Name (Def : Asis.Definition) return Asis.Expression is
-         use Asis.Definitions, Utilities;
-      begin
-         case Definition_Kind (Def) is
-            when A_Type_Definition =>
-               return Subtype_Simple_Name (Parent_Subtype_Indication (Def));
-            when A_Formal_Type_Definition
-               | A_Subtype_Indication
-               =>
-               return Subtype_Simple_Name (Def);
-            when others =>
-               Failure ("Derivation_Subtype_Name: bad definition_kind", Def);
-         end case;
-      end Derivation_Subtype_Name;
+   procedure Check_From_Type (Type_Name : Asis.Name; Loc : Location) is
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
 
-      --------------------
-      -- Found_Ancestor --
-      --------------------
+      Type_Decl          : Asis.Definition;
+      Type_Def : Asis.Definition;
 
-      function Found_Ancestor (Elem : Asis.Element; Message : Wide_String) return Boolean is
-         Context : constant Root_Context'Class := Matching_Context (Searched_Parents, Elem);
-      begin
-         if Context /= No_Matching_Context then
-            Report (Rule_Id,
-                    Context,
-                    Get_Location (Element),
-                    Message & ' ' & Last_Matching_Name (Searched_Parents));
-            return True;
-         end if;
+      procedure Check_Name (The_Name : Asis.Name) is
 
-         return False;
-      end Found_Ancestor;
+         Parent_Decl : Asis.Declaration;
+         Reported       : Boolean;
 
-      Current          : Asis.Definition := Element;
-      Current_Type_Def : Asis.Definition;
-      Parent_Name      : Asis.Name;
-      Parent_Decl      : Asis.Declaration;
-
-   begin  -- Check_From
-      loop
-         Parent_Name := Derivation_Subtype_Name (Current);
-
+         procedure Do_Report (Elem : Asis.Element; Message : Wide_String; Found : out Boolean) is
+            use Reports;
+            Context : constant Root_Context'Class := Matching_Context (Searched_Parents, Elem);
+         begin
+            Found := Context /= No_Matching_Context;
+            if Found then
+               Report (Rule_Id,
+                       Context,
+                       Loc,
+                       Message & ' ' & Last_Matching_Name (Searched_Parents));
+            end if;
+         end Do_Report;
+      begin  -- Check_Name
          -- Check parent type
-         if Found_Ancestor (Parent_Name, "Type derived from") then
+         Do_Report (The_Name, "Type derived from", Reported);
+         if Reported then
             return;
          end if;
 
-         Parent_Decl := Corresponding_Name_Declaration (Strip_Attributes (Parent_Name));
+         Parent_Decl := Corresponding_Name_Declaration (Strip_Attributes (The_Name));
 
          -- If it is a subtype, check corresponding type
          if Declaration_Kind (Parent_Decl) not in A_Type_Declaration then
-            if Found_Ancestor (Names (Corresponding_First_Subtype (Parent_Decl)) (1), "Type derived from") then
+            Do_Report (Names (Corresponding_First_Subtype (Parent_Decl)) (1), "Type derived from", Reported);
+            if Reported then
                return;
             end if;
          end if;
 
          -- Check enclosing unit of parent type
-         if Found_Ancestor (Names (Unit_Declaration (Enclosing_Compilation_Unit (Parent_Decl))) (1),
-                            "Type derived from type in unit")
-         then
+         pragma Warnings (Off, Reported); -- GNAT complains that Found is not checked
+         Do_Report (Names (Unit_Declaration (Enclosing_Compilation_Unit (Parent_Decl))) (1),
+                    "Type derived from type in unit",
+                    Reported);
+         if Reported then
             return;
          end if;
 
-         -- Move to upper parent
-         Current          := Corresponding_Name_Declaration (Strip_Attributes (Parent_Name));
-         Current_Type_Def := Type_Declaration_View (Corresponding_First_Subtype (Current));
-         exit when Type_Kind (Current_Type_Def)
-                   not in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
-           and then Formal_Type_Kind (Current_Type_Def) /= A_Formal_Derived_Type_Definition;
+      end Check_Name;
 
-         Current := Type_Declaration_View (Current);
-      end loop;
+   begin  -- Check_From_Type
+      Check_Name (Type_Name);
 
-      declare
-         use Categories_Utilities;
-         Context : constant Root_Context'Class
-           := Control_Manager.Association (Searched_Parents,
-                                           Image (Matching_Category (Element,
-                                                                     From_Cats      => Full_Set,
-                                                                     Follow_Derived => True,
-                                                                     Privacy        => Follow_Private)));
-      begin
-         if Context /= No_Matching_Context then
-            Report (Rule_Id,
-                    Context,
-                    Get_Location (Element),
-                    "Type derived from category " & Last_Matching_Name (Searched_Parents));
-         end if;
-      end;
-   end Check_From;
+      -- Move to upper parent
+      Type_Decl := Corresponding_Name_Declaration (Strip_Attributes (Type_Name));
+      Type_Def  := Type_Declaration_View (Corresponding_First_Subtype (Type_Decl));
+      if        Type_Kind (Type_Def)       in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
+        or else Formal_Type_Kind (Type_Def) = A_Formal_Derived_Type_Definition
+      then
+         Check_From_Type (Derivation_Subtype_Name (Type_Declaration_View (Type_Decl)), Loc);
+      end if;
+
+      if        Type_Kind (Type_Def)        = A_Derived_Record_Extension_Definition
+        or else Type_Kind (Type_Def)        = An_Interface_Type_Definition
+        or else Formal_Type_Kind (Type_Def) = A_Formal_Derived_Type_Definition
+      then
+         declare
+            Progenitors : constant Asis.Expression_List := Definition_Interface_List (Type_Def);
+         begin
+            for P in Progenitors'Range loop
+               Check_From_Type (Simple_Name (Progenitors (P)), Loc);
+            end loop;
+         end;
+      end if;
+   end Check_From_Type;
+
+
+   -------------------------
+   -- Check_From_Category --
+   -------------------------
+
+   procedure Check_From_Category (Type_Name : Asis.Name; Loc : Location) is
+      use Language.Shared_Keys, Language.Shared_Keys.Categories_Utilities, Reports, Thick_Queries;
+
+      Context : constant Root_Context'Class
+        := Control_Manager.Association (Searched_Parents,
+                                        Image (Matching_Category (Type_Name,
+                                                                  From_Cats      => Full_Set,
+                                                                  Follow_Derived => True,
+                                                                  Privacy        => Follow_Private)));
+   begin
+      if Context /= No_Matching_Context then
+         Report (Rule_Id,
+                 Context,
+                 Loc,
+                 "Type derived from category " & Last_Matching_Name (Searched_Parents));
+      end if;
+   end Check_From_Category;
+
 
    -----------------------
    -- Check_Max_Parents --
@@ -326,7 +348,7 @@ package body Rules.Derivations is
 
    procedure Process_Derivation (Element :  Asis.Definition) is
       use Asis, Asis.Definitions, Asis.Elements;
-      use type Thick_Queries.Biggest_Int;
+      use Thick_Queries;
    begin
       if Rule_Used = No_Rule then
          return;
@@ -336,26 +358,38 @@ package body Rules.Derivations is
       if Rule_Used (SR_From) then
          -- Interfaces have progenitors, but no parent...
          if Type_Kind (Element) /= An_Interface_Type_Definition then
-            Check_From (Element);
+            Check_From_Type     (Derivation_Subtype_Name (Element), Get_Location (Element));
+            Check_From_Category (Derivation_Subtype_Name (Element), Get_Location (Element));
+         end if;
+
+         -- Untagged derived types have a parent, but no progenitors...
+         if Type_Kind (Element) /= A_Derived_Type_Definition then
+            declare
+               Progenitors : constant Asis.Expression_List := Definition_Interface_List (Element);
+            begin
+               for P in Progenitors'Range loop
+                  Check_From_Type (Simple_Name (Progenitors (P)), Get_Location (Element));
+               end loop;
+            end;
          end if;
       end if;
 
       if Rule_Used (SR_Max_Parents) then
          -- Filter those who can have progenitors
          case Type_Kind (Element) is
-            when A_Derived_Record_Extension_Definition
-               | An_Interface_Type_Definition
-                 =>
+            when A_Derived_Record_Extension_Definition =>
                Check_Max_Parents (Element, Definition_Interface_List (Element)'Length + 1);
+            when An_Interface_Type_Definition =>
+               Check_Max_Parents (Element, Definition_Interface_List (Element)'Length);
             when others =>
                null;
          end case;
 
          case Formal_Type_Kind (Element) is
-            when A_Formal_Derived_Type_Definition
-               | A_Formal_Interface_Type_Definition
-               =>
+            when A_Formal_Derived_Type_Definition =>
                Check_Max_Parents (Element, Definition_Interface_List (Element)'Length + 1);
+            when A_Formal_Interface_Type_Definition =>
+               Check_Max_Parents (Element, Definition_Interface_List (Element)'Length);
             when others =>
                null;
          end case;
@@ -368,15 +402,27 @@ package body Rules.Derivations is
 
    procedure Process_Synchronized (Sync : Asis.Declaration) is
       use Asis.Declarations;
+      use Thick_Queries;
    begin
       if Rule_Used = No_Rule then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Rule_Used (SR_Max_Parents) then
-         Check_Max_Parents (Sync, Declaration_Interface_List (Sync)'Length);
-      end if;
+      -- Since the category check is only for the parent type, it does not apply to synchronized types.
+      declare
+         Progenitors : constant Asis.Expression_List := Declaration_Interface_List (Sync);
+      begin
+         if Rule_Used (SR_From) then
+            for P in Progenitors'Range loop
+               Check_From_Type (Simple_Name (Progenitors (P)), Get_Location (Sync));
+            end loop;
+         end if;
+
+         if Rule_Used (SR_Max_Parents) then
+            Check_Max_Parents (Sync, Progenitors'Length);
+         end if;
+      end;
    end Process_Synchronized;
 
 begin  -- Rules.Derivations

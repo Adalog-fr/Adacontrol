@@ -19,7 +19,7 @@ procedure Max_Parents is
    task S1 is new LI1 with end S1;               -- OK
    task body S1 is begin null; end;
 
-   task type S2 is new LI1 and LI2 with          -- More than 1 parent
+   task type S2 is new LI1 and LI2 with          -- More than 1 parent; From: category TASK
       entry E;
    end S2;
    task body S2 is begin accept E; end S2;
