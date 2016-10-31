@@ -581,7 +581,15 @@ package body Rules.Max_Call_Depth is
       Called_Body := Decl;
 
       loop
-         if Is_Banned (Called_Body, Rule_Id) then
+         if Is_Nil (Called_Body) then
+            -- body not in context
+            Result := (Unavailable, 0);
+            exit;
+         elsif Element_Kind (Called_Body) = A_Pragma or Definition_Kind (Called_Body) = An_Aspect_Specification then
+            -- body given by a pragma (or aspect) import
+            Result := (Unavailable, 0);
+            exit;
+         elsif Is_Banned (Called_Body, Rule_Id) then
             Result := (Banned, 0);
             exit;
          end if;
@@ -595,31 +603,25 @@ package body Rules.Max_Call_Depth is
                | A_Function_Instantiation
                =>
                Called_Body := Corresponding_Body (Called_Body);
-               if Is_Nil (Called_Body) then
-                  Result := (Unavailable, 0);
-                  exit;
-               end if;
+
             when A_Null_Procedure_Declaration =>
                Result := (Regular, 0);
                exit;
+
             when An_Expression_Function_Declaration =>   -- Ada 2012
                -- Like Analyze_Body, on the result expression
                Add (Call_Depths, Called_Name, (Recursive, Infinite));
                Result := (Regular, 0);
                Traverse (Result_Expression (Called_Body), Control, Result);
                exit;
+
             when An_Entry_Declaration  =>
                if Is_Task_Entry (Called_Body) then
                   -- A task entry => not followed
                   Result := (Regular, 0);
                   exit;
                end if;
-
                Called_Body := Corresponding_Body (Called_Body);
-               if Is_Nil (Called_Body) then
-                  Result := (Unavailable, 0);
-                  exit;
-               end if;
 
             when A_Procedure_Body_Declaration
               | A_Function_Body_Declaration
@@ -628,30 +630,23 @@ package body Rules.Max_Call_Depth is
                -- A real body (at last!)
                Analyze_Body;
                exit;
+
             when A_Procedure_Body_Stub
-              | A_Function_Body_Stub
-                 =>
+               | A_Function_Body_Stub
+               =>
                Called_Body := Corresponding_Subunit (Called_Body);
-               if Is_Nil (Called_Body) then
-                  Result := (Unavailable, 0);
-                  exit;
-               end if;
+
             when A_Procedure_Renaming_Declaration
-              | A_Function_Renaming_Declaration
-                 =>
+               | A_Function_Renaming_Declaration
+               =>
                Failure ("renaming declaration in Entity_Call_Depth", Called_Body);
+
             when A_Formal_Function_Declaration
                | A_Formal_Procedure_Declaration
                  =>
                Result := (Formal, 0);
                exit;
-            when Not_A_Declaration =>
-               -- this should happen only when the body is given by a pragma (or aspect) import
-               Assert (Element_Kind (Called_Body) = A_Pragma or Definition_Kind (Called_Body) = An_Aspect_Specification,
-                       "Entity_Call_Depth: not a declaration or pragma",
-                       Called_Body);
-               Result := (Unavailable, 0);
-               exit;
+
             when others =>
                Failure ("not a callable entity declaration", Called_Body);
          end case;
