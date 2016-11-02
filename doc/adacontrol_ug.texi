@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.18b7
+@settitle AdaControl User Guide V1.18r8
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -39,7 +39,7 @@ how to add new kinds of rules to AdaControl.
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2015 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2016 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
 2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog.
@@ -62,7 +62,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2015
+This document is Copyright @copyright{} 2005-2016
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -321,7 +321,7 @@ Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International C
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with GNAT version GPL 2015, as distributed
+AdaControl will work only with GNAT version GPL 2016, as distributed
 by AdaCore. If you are using any other version,  please use the source
 distribution of AdaControl and compile it as indicated below.
 
@@ -1022,7 +1022,8 @@ happens.
 Syntax:
 @example
 adactl -h [<keyword> | <rule name> | variables ["<pattern>"] ...]
-<keyword> ::= all | commands | license | list | options | rules | version
+<keyword> ::= all     | commands | license | list | 
+              options | rules    | version
 @end example
 
 The ``-h'' option without parameter displays a help message about usage of the
@@ -1874,9 +1875,10 @@ controls. A control defines how a rule is applied to Ada units. The
 syntax of a control command is as follows:
 @example
 <control_command> ::= [<label> ":"] <control> @{"," <control>@} ";"
-<control>   ::= <ctrl_kind> <Rule_Name> [<parameters>]
-<parameters ::= "(" [<modifiers>] <value> @{"," [<modifiers>] <value>@} ")"
-<ctrl_kind> ::= "check"|"search"|"count"
+<control>    ::= <ctrl_kind> <Rule_Name> [<parameters>]
+<parameters> ::= "(" [<modifiers>] <value> 
+                @{"," [<modifiers>] <value>@} ")"
+<ctrl_kind>  ::= "check"|"search"|"count"
 @end example
 
 If present, the label gives a name to the control(s); it will be
@@ -2241,7 +2243,8 @@ Syntax:
 @example
 Help [<help_item> @{,<help_item>@}]
 <Help_Item> ::=<keyword> | <rule name> | variables ["<pattern>"]
-<keyword>   ::= all | commands | license | list | options | rules | version
+<keyword>   ::= all   | commands | license | list | options |
+                rules | version
 @end example
 Without any argument, this command prints a summary of all commands
 and rule names. If given one or more keywords or rule names, it prints the
@@ -2760,12 +2763,13 @@ the possible size. It can also control various aspects of the
 component type of the array.
 @subsection Syntax
 @example
-<control_kind> array_declarations (first,      <value> | <bounds>);
-<control_kind> array_declarations (last,       <value> | <bounds>);
-<control_kind> array_declarations (dimensions, <value> | <bounds>);
-<control_kind> array_declarations ([all] length,     <bounds>);
-<control_kind> array_declarations (component,  <type> @{,<repr_cond>@});
-<control_kind> array_declarations (index,      <type> | <> @{,<type> | <>@});
+<control_kind> array_declarations (first,        <value> | <bounds>);
+<control_kind> array_declarations (last,         <value> | <bounds>);
+<control_kind> array_declarations (dimensions,   <value> | <bounds>);
+<control_kind> array_declarations ([all] length, <bounds>);
+<control_kind> array_declarations (component,    <type> @{,<repr_cond>@});
+<control_kind> array_declarations (index,        <type> | <> 
+                                               @{,<type> | <>@});
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <type>      ::= <entity>|<category>
 <category > ::= () | access    | array | delta  | digits | mod | private
@@ -2831,10 +2835,10 @@ an explicit range constraint.  This is useful if you want to assess
 all variables that contain more than a certain number of elements. For
 example:
 @example
-   type Tab is array (Min .. Max) of Compo;  -- Always checked
-   subtype Str is String (Min .. Max);       -- Always checked
-   V1 : String (Min .. Max);                 -- Always checked
-   V2 : Str;                                 -- Checked only with "all"
+   type Tab is array (Min..Max) of Compo; -- Always checked
+   subtype Str is String (Min..Max);      -- Always checked
+   V1 : String (Min..Max);                -- Always checked
+   V2 : Str;                              -- Checked only with "all"
 @end example
 
 @item
@@ -3096,12 +3100,13 @@ barrier expressions.
 @subsection Syntax
 @example
 <control_kind> Barrier_Expressions ([<allowable> @{, <allowable>@}]);
-<allowable>    ::= <entity> | <keyword>
-<keyword> ::= allocation          | any_component   | any_variable        |
-              arithmetic_operator | array_aggregate | comparison_operator |
-              conversion          | dereference     | indexing            |
-              function_attribute  | local_function  | logical_operator    |
-              record_aggregate    | value_attribute
+<allowable> ::= <entity> | <keyword>
+<keyword> ::= 
+   allocation          | any_component   | any_variable        |
+   arithmetic_operator | array_aggregate | comparison_operator |
+   conversion          | dereference     | indexing            |
+   function_attribute  | local_function  | logical_operator    |
+   record_aggregate    | value_attribute
 @end example
 @subsection Action
 Without parameters, the only elements allowed in barriers are
@@ -3191,7 +3196,8 @@ complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
 <control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
-<subrule> ::= others_span | paths | range_span | values | values_if_others
+<subrule> ::= others_span      | paths | range_span | values | 
+              values_if_others
 <bound>   ::= min | max <value>
 @end example
 
@@ -3435,89 +3441,90 @@ those occurring at specified locations.
 <location_kw> ::= all | block   | library | local      | nested |
                   own | private | public  | in_generic | task_body
 <declaration_kw> ::=
-   any_declaration                   | abstract_function                 |
-   abstract_operator                 | abstract_procedure                |
-   abstract_type                     | access_all_type                   |
-   access_constant_type              | access_constrained_array_type     |
-   access_def_discriminated_type     | access_formal_Type                |
-   access_language_type              | access_nondef_discriminated_type  |
-   access_protected_type             | access_subprogram_type            |
-   access_task_type                  | access_unconstrained_array_type   |
-   access_unknown_discriminated_type | access_type                       |
-   aliased_array_component           | aliased_constant                  |
-   aliased_protected_component       | aliased_record_component          |
-   aliased_variable                  | anonymous_access_component        |
-   anonymous_access_constant         | anonymous_access_discriminant     |
-   anonymous_access_parameter        | anonymous_access_variable         |
-   anonymous_subtype_allocator       | anonymous_subtype_case            |
-   anonymous_subtype_declaration     | anonymous_subtype_for             |
-   anonymous_subtype_indexing        | array                             |
-   array_type                        | binary_modular_type               |
-   box_defaulted_formal_function     | box_defaulted_formal_procedure    |
-   character_literal                 | child_unit                        |
-   class_wide_constant               | class_wide_variable               |
-   constant                          | constrained_array_constant        |
-   constrained_array_type            | constrained_array_variable        |
-   controlled_type                   | decimal_fixed_type                |
-   defaulted_discriminant            | defaulted_generic_parameter       |
-   defaulted_parameter               | deferred_constant                 |
-   derived_type                      | discriminant                      |
-   empty_private_part                | empty_visible_part                |
-   enumeration_type                  | entry                             |
-   equality_operator                 | exception                         |
-   expression_function               | extension                         |
-   fixed_type                        | float_type                        |
-   formal_function                   | formal_package                    |
-   formal_procedure                  | formal_type                       |
-   function                          | function_call_renaming            |
-   function_instantiation            | generic                           |
-   generic_function                  | generic_package                   |
-   generic_procedure                 | handlers                          |
-   incomplete_type                   | in_out_generic_parameter          |
-   in_out_parameter                  | initialized_protected_component   |
-   initialized_record_component      | initialized_variable              |
-   instantiation                     | integer_type                      |
-   interface_type                    | library_unit_renaming             |
-   limited_private_type              | modular_type                      |
-   multiple_names                    | multiple_protected_entries        |
-   name_defaulted_formal_function    | name_defaulted_formal_procedure   |
-   named_number                      | no_spec_function                  |
-   no_spec_procedure                 | non_binary_modular_type           |
-   non_identical_operator_renaming   | non_identical_renaming            |
-   non_joint_ce_ne_handler           | non_limited_private_type          |
-   non_ravenscar_task                | not_operator_renaming             |
-   null_defaulted_formal_procedure   | null_extension                    |
-   null_ordinary_record_type         | null_procedure                    |
-   null_procedure_body               | null_procedure_declaration        |
-   null_tagged_type                  | operator                          |
-   operator_renaming                 | ordinary_fixed_type               |
-   ordinary_fixed_type_no_small      | ordinary_fixed_type_with_small    |
-   ordinary_record_type              | ordinary_record_variable          |
-   out_parameter                     | package                           |
-   package_instantiation             | package_statements                |
-   predefined_operator               | private_extension                 |
-   procedure                         | procedure_instantiation           |
-   protected                         | protected_discriminant            |
-   protected_entry                   | protected_type                    |
-   protected_variable                | record_type                       |
-   relay_function                    | relay_package                     |
-   relay_procedure                   | renaming                          |
-   renaming_as_body                  | renaming_as_declaration           |
-   scalar_variable                   | self_calling_function             |
-   self_calling_procedure            | separate                          |
-   signed_type                       | single_array                      |
-   single_protected                  | single_task                       |
-   subtype                           | synonym_renaming                  |
-   tagged_incomplete_type            | tagged_private_type               |
-   tagged_type                       | tagged_variable                   |
-   task                              | task_discriminant                 |
-   task_entry                        | task_type                         |
-   task_variable                     | type                              |
-   unconstrained_array_constant      | unconstrained_array_type          |
-   unconstrained_array_variable      | unconstrained_subtype             |
-   uninitialized_protected_component | uninitialized_record_component    |
-   uninitialized_variable            | unknown_discriminant              |
-   variable                          | variant_part
+  any_declaration                  | 
+  abstract_function                | abstract_operator                 | 
+  abstract_procedure               | abstract_type                     | 
+  access_all_type                  | access_constant_type              | 
+  access_constrained_array_type    | access_def_discriminated_type     | 
+  access_formal_Type               | access_language_type              | 
+  access_nondef_discriminated_type | access_protected_type             | 
+  access_subprogram_type           | access_task_type                  | 
+  access_unconstrained_array_type  | access_unknown_discriminated_type | 
+  access_type                      | aliased_array_component           | 
+  aliased_constant                 | aliased_protected_component       | 
+  aliased_record_component         | aliased_variable                  | 
+  anonymous_access_component       | anonymous_access_constant         | 
+  anonymous_access_discriminant    | anonymous_access_parameter        | 
+  anonymous_access_variable        | anonymous_subtype_allocator       | 
+  anonymous_subtype_case           | anonymous_subtype_declaration     | 
+  anonymous_subtype_for            | anonymous_subtype_indexing        | 
+  array                            | array_type                        | 
+  binary_modular_type              | box_defaulted_formal_function     | 
+  box_defaulted_formal_procedure   | character_literal                 | 
+  child_unit                       | class_wide_constant               | 
+  class_wide_variable              | constant                          | 
+  constrained_array_constant       | constrained_array_type            | 
+  constrained_array_variable       | controlled_type                   | 
+  decimal_fixed_type               | defaulted_discriminant            | 
+  defaulted_generic_parameter      | defaulted_parameter               | 
+  deferred_constant                | derived_type                      | 
+  discriminant                     | empty_private_part                | 
+  empty_visible_part               | enumeration_type                  | 
+  entry                            | equality_operator                 | 
+  exception                        | expression_function               | 
+  extension                        | fixed_type                        | 
+  float_type                       | formal_function                   | 
+  formal_package                   | formal_procedure                  | 
+  formal_type                      | function                          | 
+  function_call_renaming           | function_instantiation            | 
+  generic                          | generic_function                  |
+  generic_package                  | generic_procedure                 |
+  handlers                         | incomplete_type                   |
+  in_out_generic_parameter         | in_out_parameter                  |
+  initialized_protected_component  | initialized_record_component      |
+  initialized_variable             | instantiation                     |
+  integer_type                     | interface_type                    |
+  library_unit_renaming            | limited_private_type              |
+  modular_type                     | multiple_names                    |
+  multiple_protected_entries       | name_defaulted_formal_function    |
+  name_defaulted_formal_procedure  | named_number                      |
+  no_spec_function                 | no_spec_procedure                 |
+  non_binary_modular_type          | non_identical_operator_renaming   |
+  non_identical_renaming           | non_joint_ce_ne_handler           |
+  non_limited_private_type         | non_ravenscar_task                |
+  not_operator_renaming            | null_defaulted_formal_procedure   |
+  null_extension                   | null_ordinary_record_type         |
+  null_procedure                   | null_procedure_body               |
+  null_procedure_declaration       | null_tagged_type                  |
+  operator                         | operator_renaming                 |
+  ordinary_fixed_type              | ordinary_fixed_type_no_small      |
+  ordinary_fixed_type_with_small   | ordinary_record_type              |
+  ordinary_record_variable         | out_parameter                     |
+  package                          | package_instantiation             |
+  package_statements               | predefined_operator               |
+  private_extension                | procedure                         |
+  procedure_instantiation          | protected                         |
+  protected_discriminant           | protected_entry                   |
+  protected_type                   | protected_variable                |
+  record_type                      | relay_function                    |
+  relay_package                    | relay_procedure                   |
+  renaming                         | renaming_as_body                  |
+  renaming_as_declaration          | scalar_variable                   |
+  self_calling_function            | self_calling_procedure            |
+  separate                         | signed_type                       |
+  single_array                     | single_protected                  |
+  single_task                      | subtype                           |
+  synonym_renaming                 | tagged_incomplete_type            |
+  tagged_private_type              | tagged_type                       |
+  tagged_variable                  | task                              |
+  task_discriminant                | task_entry                        |
+  task_type                        | task_variable                     |
+  type                             | unconstrained_array_constant      |
+  unconstrained_array_type         | unconstrained_array_variable      |
+  unconstrained_subtype            | uninitialized_protected_component |
+  uninitialized_record_component   | uninitialized_variable            |
+  unknown_discriminant             | variable                          |
+  variant_part
 @end example
 
 @subsection Action
@@ -4140,10 +4147,11 @@ This rule controls various properties of the declaration of derived types.
 
 @subsection Syntax
 @example
-<control_kind> derivations (from, <entity>|<category> @{, <entity>|<category>@})
+<control_kind> derivations (from, <entity>|<category>
+                               @{, <entity>|<category>@})
 <control_kind> derivations (max_parents, <value>)
-<category>     ::= ()      | access    | array | delta  | digits | mod  |
-                   private | protected | range | record | tagged | task
+<category> ::= ()      | access    | array | delta  | digits | mod  |
+               private | protected | range | record | tagged | task
 @end example
 
 @subsection Action
@@ -4209,10 +4217,15 @@ always issued.
 
 Ex:
 @example
-check derivations (from, Standard.Integer);  -- Types derived from Integer
-search derivations (from, standard);         -- Types derived from a type in Standard, except
-                                             -- Standard.Integer (caught above)
-search derivations (from, range);            -- Types derived from an integer type
+check derivations (from, Standard.Integer); 
+ -- Types derived from Integer
+
+search derivations (from, standard);         
+-- Types derived from a type in Standard, except Standard.Integer
+-- (caught above)
+
+search derivations (from, range);            
+-- Types derived from an integer type
 @end example
 
 The ``max_parents'' subrule controls the maximum number of parents in
@@ -5462,7 +5475,7 @@ places.
 <formal_spec>  ::= <entity> | <category> | <> | =
 <location_kw>  ::= all | block   | library | local      | nested |
                    own | private | public  | in_generic | task_body
-<category>     ::= ()      | access    | array | delta  | digits | mod  |
+<category>     ::= ()      | access    | array | delta  | digits | mod |
                    private | protected | range | record | tagged | task
 @end example
 
@@ -5594,7 +5607,7 @@ example:
 -- Not two instantiations of Gen with the same first parameter:
 check instantations (Gen, =);
 
--- Not two instantiations of Gen with the same first and third parameter:
+-- Not two instantiations of Gen with same first and third parameters:
 check instantiations (Gen, =, <>, =);
 
 -- Not two instantiations of Gen with the same first parameter if the
@@ -6528,7 +6541,8 @@ operators, which indicates that they might be replaceable with other
 kinds of types.
 @subsection Syntax
 @example
-<control_kind> no_operator_usage [([<category>] <parameter> [,<parameter>])];
+<control_kind> no_operator_usage [([<category>] <parameter> 
+                                              [,<parameter>])];
 <category>  ::= range | mod
 <parameter> ::= [<filter>] <observed>
 <filter>    ::= not | ignore | report
@@ -6913,7 +6927,8 @@ for all callable entities (i.e. functions, procedures and entries).
 
 @subsection Syntax
 @example
-<control_kind> parameter_declarations (<subrule> [,<bounds>] @{,<callable>@});
+<control_kind> parameter_declarations (<subrule> [,<bounds>]
+                                                 @{,<callable>@});
 <subrule>  ::= all_parameters       | in_parameters         |
                defaulted_parameters | out_parameters        |
                in_out_parameters    | access_parameters     |
@@ -7024,9 +7039,9 @@ named associations) in all kinds of associations.
 <control_kind> positional_associations [(<subrule>, <max_allowed>
                                          [, <category> @{, <entity>@}])];
 <subrule>  ::= all | all_positional | same_type
-<category> ::=  [not_operator] call | pragma          | discriminant     |
-                instantiation       | array_aggregate | record_aggregate |
-                enumeration_representation
+<category> ::= [not_operator] call | discriminant     | pragma        | 
+               array_aggregate     | record_aggregate | instantiation | 
+               enumeration_representation
 @end example
 
 @subsection Action
@@ -7089,7 +7104,8 @@ check positional_associations(all, 0, record_aggregate);
  -- All positional associations with more than 3 elements:
 search positional_associations (all, 3);
 
--- Positional associations in calls with more than 3 params of the same type
+-- Positional associations in calls 
+-- with more than 3 params of the same type
 search positional_associations (same_type, 3, call);
 
 -- Positional associations in calls with more than 2 elements (except
@@ -7225,11 +7241,13 @@ This rule controls various aspects of the components of records.
 
 @subsection Syntax
 @example
-<control_kind> record_declarations (component, <compo_kind> @{,<repr_cond>@});
+<control_kind> record_declarations (component, <compo_kind> 
+                                            @{,<repr_cond>@});
 <compo_kind> ::= <entity>|<category>
-<category>   ::= () | access    | array | delta  | digits | mod | private |
-                      protected | range | record | tagged | task
-<repr_cond>  ::= [not] in_variant | aligned | initialized | packed | sized
+<category>   ::= ()      | access    | array | delta  | digits | mod | 
+                 private | protected | range | record | tagged | task
+<repr_cond>  ::= [not] in_variant | aligned | initialized | packed | 
+                 sized
 @end example
 
 @subsection Action
@@ -7313,9 +7331,9 @@ Ex:
 -- All record components of a discrete type should be initialized:
 check record_declarations (component, (), not initialized);
 
--- The size of all components of type Hardware_Types.Squeezed must
+-- The size of all components of type HW_Types.Squeezed must
 -- have a component clause:
-check record_declarations (component, Hardware_Types.Squeezed, not sized);
+check record_declarations (component, HW_Types.Squeezed, not sized);
 
 -- Find unaligned components of a packed array type:
 check record_declarations (component, array, packed, not aligned);
@@ -7415,9 +7433,9 @@ This rule controls usage of representation clause.
 <control_kind> representation_clauses [(<subrule> @{, <subrule>@})];
 <subrule> ::= @{<category>@} <repr_kw> | [global] [object] <attribute>
 <repr_kw> ::=
-   at                    | at_mod                | enumeration         |
-   fractional_size       | incomplete_layout     | layout              |
-   non_aligned_component | non_contiguous_layout | non_power2_size     |
+   at                    | at_mod                | enumeration     |
+   fractional_size       | incomplete_layout     | layout          |
+   non_aligned_component | non_contiguous_layout | non_power2_size |
    no_bit_order_layout   | overlay
 <category> ::=
    ()     | range     | mod    | delta | digits  | array | record   |
@@ -7883,8 +7901,9 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= block  | dead | handler        | if          | if_for_case |
-              if_not | loop | loop_for_while | nested_path | null
+<subrule> ::= block       | dead   | handler | if             | 
+              if_for_case | if_not | loop    | loop_for_while | 
+              nested_path | null
 @end example
 @subsection Action
 Without parameter, all kinds of simplifiable statements are
@@ -7911,22 +7930,22 @@ reported if there is also a non trivial handler for @code{@b{others}}.
 These examples show the situation:
 @example
 @b{exception}
-   @b{when} Constraint_Error =>  -- Reported (no when others)
-      @b{raise};
+  @b{when} Constraint_Error => --Reported (no when others)
+    @b{raise};
 @b{end};
 
 @b{exception}
-   @b{when} Constraint_Error =>  -- Reported (trivial when others)
-      @b{raise};
-   @b{when} @b{others} =>        -- Reported
-      @b{raise};
+  @b{when} Constraint_Error => --Reported (trivial when others)
+    @b{raise};
+  @b{when} @b{others} =>            --Reported
+    @b{raise};
 @b{end};
 
 @b{exception}
-   @b{when} Constraint_Error =>  -- Not reported (non trivial when others)
-      @b{raise};
-   @b{when} @b{others} =>
-      Put_Line ("Error");
+  @b{when} Constraint_Error =>  --Not reported (non trivial when others)
+    @b{raise};
+  @b{when} @b{others} =>
+    Put_Line ("Error");
 @b{end};
 @end example
 @item
@@ -8658,7 +8677,7 @@ attribute specified.
 
 Ex:
 @example
--- Don't use the 'Pos attribute for enumerated types with a representation
+-- Don't use 'Pos attribute on enumerated types with a representation
 check type_usage ('Pos, (), representation);
 
 -- Don't use modular type for array indexes
@@ -8753,28 +8772,28 @@ elements declared in them.
 <control_kind> unit_pattern (Tagged_Type_Hierarchy);
 <control_kind> unit_pattern (Context_Clauses_Order @{, <clause_list>@});
 <control_kind> unit_pattern (Declarations_Order, <target>,
-                             @{, <declaration_list>@});
+                             @{, <decl_list>@});
 
 <clause_list>      ::= <clause> @{| <clause>@}
 <clause>           ::= with | use | use_type | pragma
 <target>           ::= package_public | package_private | package_body |
                        subprogram
-<declaration_list> ::= <declaration> @{| <declaration>@}
-<declaration>      ::= use                   | use_type                 |
-                       use_all_type          | number                   |
-                       constant              | variable                 |
-                       private_type          | full_type                |
-                       subtype               | subprogram_spec          |
-                       package_spec          | generic_subprogram_spec  |
-                       generic_package_spec  | task_spec                |
-                       protected_spec        | subprogram_body          |
-                       package_body          | generic_subprogram_body  |
-                       generic_package_body  | task_body                |
-                       protected_body        | object_renaming          |
-                       subprogram_renaming   | package_renaming         |
-                       exception_renaming    | subprogram_instantiation |
-                       package_instantiation | exception                |
-                       others
+<decl_list>   ::= <declaration> @{| <declaration>@}
+<declaration> ::= use                   | use_type                 |
+                  use_all_type          | number                   |
+                  constant              | variable                 |
+                  private_type          | full_type                |
+                  subtype               | subprogram_spec          |
+                  package_spec          | generic_subprogram_spec  |
+                  generic_package_spec  | task_spec                |
+                  protected_spec        | subprogram_body          |
+                  package_body          | generic_subprogram_body  |
+                  generic_package_body  | task_body                |
+                  protected_body        | object_renaming          |
+                  subprogram_renaming   | package_renaming         |
+                  exception_renaming    | subprogram_instantiation |
+                  package_instantiation | exception                |
+                  others
 @end example
 
 @subsection Action
@@ -9195,7 +9214,7 @@ Typically, the ``safe'' pattern corresponds to the following structures:
 
 Ex:
 @example
-check unsafe_paired_calls (Semaphore.P, Semaphore.V, Semaphore.Lock_Access);
+check unsafe_paired_calls (Sema.P, Sema.V, Sema.Lock_Access);
 @end example
 
 @subsection Variable
@@ -10339,7 +10358,8 @@ check statements (dispatching_call, redispatching_call);
 to:
 @example
 check statements  (dispatching_call, redispatching_call);
-check expressions (dispatching_function_call, redispatching_function_call);
+check expressions (dispatching_function_call, 
+                   redispatching_function_call);
 @end example
 
 The subrule @code{raise_nonpublic} does not control any more the

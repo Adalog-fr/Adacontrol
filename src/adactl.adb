@@ -94,7 +94,7 @@ begin
       Asis.Implementation.Initialize (Initialize_String);
       Asis.Ada_Environments.Associate (Framework.Adactl_Context, "Adactl", Asis_Options);
       Asis.Ada_Environments.Open (Framework.Adactl_Context);
-      Units_List.Register (Units_Spec  => Ada_Units_List,
+      Units_List.Register (Units_Spec => Ada_Units_List,
                            Recursion  => Recursion_Table (Recursive_Option, Spec_Option),
                            Add_Stubs  => False);
    end if;

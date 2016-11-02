@@ -34,7 +34,7 @@ with
    Framework.Specific_Plugs;
 function Adactl_Version return Wide_String is
 
-   Version : constant Wide_String := "1.18b7";
+   Version : constant Wide_String := "1.18r8";
 
 begin
    -- Gnat warns that the following condition is always false/true, but

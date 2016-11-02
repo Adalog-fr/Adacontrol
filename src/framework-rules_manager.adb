@@ -585,9 +585,8 @@ package body Framework.Rules_Manager is
             if Pragma_Kind (Element) = An_Import_Pragma then
                -- anyway, we won't analyse this...
                return False;
-            else
-               Failure ("Is_Banned: unexpected pragma", Element);
             end if;
+            Failure ("Is_Banned: unexpected pragma", Element);
          when others =>
             Failure ("Is_Banned: unexpected element", Element);
       end case;

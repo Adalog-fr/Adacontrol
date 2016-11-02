@@ -1,95 +1,20 @@
 =============
-== V1.18b7 ==
-=============
-Bug fix
-
-Changes to existing rules:
---------------------------
-Declarations:
-   Subrules no_spec_function and no_spec_procedure
-
-Derivations:
-   From supports progenitors
-
-=============
-== V1.18b6 ==
-=============
-
-Changes to existing rules:
---------------------------
-Unsafe_Paired_Calls:
-   allow simple statements after closing subprogram
-   consider handled sequences of statements from extended return statements
-   allow opening/closing procedure in matching simple nested if statements
-   better error messages
-
-Declarations
-   consider handled sequences of statements from extended return statements
-
-=============
-== V1.18b5 ==
-=============
-
-=============
-== V1.18b4 ==
+== V1.18r8 ==
 =============
 
 General:
 --------
 Bug fixes:
-   #0000050
+   #0000044, #0000045, #0000046, #000047, #000049, #0000050
    More bug fixes related to tagged incomplete and T'Base.
 
-
-Changes to existing rules:
---------------------------
-Abnormal_Function_Return
-   allow final non-exiting loop #000049
-
-Case_Statements
-   Do not crash on case statements involving subtypes with static
-   predicates (currently uncheckable)
-
-Statements
-   Subrules Untyped_For_In, Untyped_For_Of
-
-=============
-== V1.18b3 ==
-=============
-
-General:
---------
-Bug fixes:
-   #0000046, #000047
-
-Changes to existing rules:
---------------------------
-Declarations
-   Subrule tagged_incomplete_type
-
-=============
-== V1.18b2 ==
-=============
-
-General:
---------
-Bug fixes:
-   #0000045
-
-=============
-== V1.18b1 ==
-=============
-
-General:
---------
-Bug fixes:
-   #0000044
-
--p option accepts a .gpr file as well as a .adp file (i.e. you can use
-Gnat project files directly).
+-p option accepts a .gpr file as well as a .adp file (i.e. it is
+possible to use Gnat project files directly).
 
 Combination of options -rs now corresponds to the minimal transitive
 closure of units needed to compile the provided units.
+
+Inhibiting a rule on a generic also makes instances inhibited.
 
 New rule:
 ---------
@@ -97,21 +22,43 @@ Derivations
 
 Changes to existing rules:
 --------------------------
+Abnormal_Function_Return
+   allow final non-exiting loop (#000049)
+
+Case_Statements
+   Do not crash on case statements involving subtypes with static
+   predicates (currently uncheckable)
+
 Declarations:
-   Subrules relay_function, relay_procedure, relay_package,
-   Synonym_Renaming
+   Subrules no_spec_function, no_spec_procedure, relay_function,
+   relay_procedure, relay_package, tagged_incomplete_type,
+   synonym_renaming.
+   Consider handled sequences of statements from extended return statements
 
 Expressions
    Subrules not, function_call, dynamic_function_call
    dispatching_function_call, redispatching_function_call
 
+   Add rule variable Called_Info to select amount of information displayed
+   by *_function_call subrules
+
 Representation_Clauses:
    Subrule non_power2_size
 
 Statements
-   procedure_call, dynamic_procedure_call
-   (does not control dispatching function calls anymore)
+   Subrules untyped_for_in, untyped_for_of, procedure_call,
+   dynamic_procedure_call (does not control dispatching /function/ calls
+   anymore) 
    raise_nonpublic: split in two: raise_nonpublic and raise_foreign.
+
+   Add rule variable Called_Info to select amount of information displayed
+   by procedure_call and entry_call subrules
+
+Unsafe_Paired_Calls:
+   allow simple statements after closing subprogram.
+   consider handled sequences of statements from extended return statements.
+   allow opening/closing procedure in matching simple nested if statements.
+   better error messages.
 
 =============
 == V1.17r3 ==
@@ -180,7 +127,7 @@ Now up to date with the description (some changes mentionned under
 1.16r10 didn't actually make it to the released sources).
 
 Bug fixes:
-   Mantis:  0000038
+   #0000038
 
 ==============
 == V1.16r10 ==
