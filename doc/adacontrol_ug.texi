@@ -3911,9 +3911,9 @@ type was not permitted until Ada 2005.
 @item
 @b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
 @item
-Limited_Initialization 
-@tab off@*on 
-@tab off 
+Limited_Initialization
+@tab off@*on
+@tab off
 @tab
 @table @asis
 @item off
@@ -4160,7 +4160,7 @@ controls types that are derived (directly or indirectly) from a type
 syntax for entities is allowed for <entity>. @xref{Specifying an Ada
 entity name}.
 
-If <category> is given, it controls derived types whose parent type 
+If <category> is given, it controls derived types whose parent type
 belongs to the corresponding category. The meaning of <category> is:
 @itemize @bullet
 @item
@@ -4869,7 +4869,10 @@ For all @code{*_function_call} subrules, if a category is specified,
 only calls whose result type belongs to the category are controlled.
 Derived types are followed, i.e. the ``real'' category from the
 original type is used for the matching; as a consequence, the ``new''
-category cannot be specified for this subrule.
+category cannot be specified for this subrule. In addition, the amount
+of information displayed can be selected with the rule variable
+``called_info'' (see below).
+
 @item
 @code{mixed_operators} controls expressions that involve several
 different operators, without parentheses. In a sense, it extends the
@@ -4946,6 +4949,35 @@ search expressions (array underived_conversion);
 -- Some think that downward conversions of tagged types are evil:
 check expressions (tagged downward_conversion);
 @end example
+
+@subsection Variable
+The rule provides a variable that allows to specify the amount of information
+displayed with the various *_function_calls subrules.
+
+@need 800
+@multitable @columnfractions .12 .18 .10 .60
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Called_Info
+@tab none@*compact@*detailed@*root_detailed
+@tab none
+@tab
+
+@table @asis
+@item``none''
+No extra information.
+@item ``compact''
+display the name of the called function.
+@item ``detailed''
+display the name of the called function with overloading
+information.
+@item ``root_detailed''
+display the name of the root called function (i.e. the
+original function if the called function is a renaming) with overloading
+information.
+@end table
+@end multitable
 
 @subsection Tips
 The @code{real_equality} subrule does not control calls to an equality
@@ -8221,6 +8253,35 @@ check  statements (goto, abort);
 check  statements (case_others_null, exception_others_null);
 @end example
 
+@subsection Variable
+The rule provides a variable that allows to specify the amount of information
+displayed with the ``procedure_call'' and ``entry_call'' subrules.
+
+@need 800
+@multitable @columnfractions .12 .18 .10 .60
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Called_Info
+@tab none@*compact@*detailed@*root_detailed
+@tab none
+@tab
+
+@table @asis
+@item``none''
+No extra information.
+@item ``compact''
+display the name of the called procedure or entry.
+@item ``detailed''
+display the name of the called procedure or entry with overloading
+information.
+@item ``root_detailed''
+display the name of the root called procedure or entry (i.e. the
+original procedure if the called procedure is a renaming) with overloading
+information.
+@end table
+@end multitable
+
 @subsection Tips
 It may seem strange to control things like @code{@b{if}} or
 @code{@b{case}} statements, since no coding standard would prohibit
@@ -9032,7 +9093,7 @@ whose if path or else path is itself a closing block, possibly
 followed by @b{exit}, @b{return}, and @b{null} statements (and no
 others).
 
-An opening and a closing block match if: 
+An opening and a closing block match if:
 @itemize @bullet
 @item
 corresponding calls to the
@@ -9115,19 +9176,19 @@ Typically, the ``safe'' pattern corresponds to the following structures:
    @b{if} Lockable @b{then}
       @b{if} Lock1 @b{then}
          Lock (V1);
-      @b{else} 
+      @b{else}
          Lock (V2);
       @b{end} @b{if};
    @b{end} @b{if};
    -- Do something
    @b{if} Lockable @b{then}
-      @b{if} Lock1 @b{then} 
-         Unlock (V1); 
-         @b{return}; 
+      @b{if} Lock1 @b{then}
+         Unlock (V1);
+         @b{return};
       @b{else}
-         Unlock (V2); 
-         @b{exit}; 
-      @b{end} @b{if}; 
+         Unlock (V2);
+         @b{exit};
+      @b{end} @b{if};
    @b{end} @b{if};
 @b{end};
 @end example
