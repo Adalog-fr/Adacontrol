@@ -1,4 +1,12 @@
 =============
+== V1.18r9 ==
+=============
+
+Minor release, changed source distribution to allow building
+AdaControl without dependency on gnatcoll,  hence without support for
+.gpr files.
+
+=============
 == V1.18r8 ==
 =============
 

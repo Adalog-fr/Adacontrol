@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.18r8
+@settitle AdaControl User Guide V1.18r9
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -388,12 +388,26 @@ run AdaControl (all ASIS application need the compiler).
 @item
 ASIS for GNAT
 @item
-The GNATColl component
+The GNATColl component (if support of .gpr files is desired)
 @end itemize
 
 Make sure to have the same version of GNAT and ASIS. The version used
 for running AdaControl must be the same as the one used to compile
 AdaControl itself.
+
+As mentionned above, support of Gnat .gpr projects requires the
+GNATColl component from AdaCore. If for some reason you don't want to
+include this component, it is possible to build AdaControl without
+this support. To do so, go to the @code{src} directory and:
+@itemize @bullet
+@item
+rename @code{implementation_options-i_options_from_gpr_project.adb} to
+@code{implementation_options-i_options_from_gpr_project_gpr.adb}
+@item
+rename
+@code{implementation_options-i_options_from_gpr_project_nogpr.adb} to
+@code{implementation_options-i_options_from_gpr_project.adb}
+@end itemize
 
 @subsection Build and install with installer (Windows)
 Run the installer (@code{adactl_src-setup.exe}). This will
