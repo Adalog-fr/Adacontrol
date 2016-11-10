@@ -109,6 +109,15 @@ package body Framework is
       return Result;
    end Matches;
 
+   ---------
+   -- "+" --
+   ---------
+
+   function "+" (Left : Location; Right : Asis.Text.Character_Position) return Location is
+   begin
+      return (Left.File_Name, Left.First_Line, Left.First_Column + Right);
+   end "+";
+
    ---------------------
    -- Create_Location --
    ---------------------

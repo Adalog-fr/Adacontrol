@@ -75,6 +75,8 @@ package Framework is
 
    type Location is private;
    Null_Location : constant Location;
+   function "+" (Left : Location; Right : Asis.Text.Character_Position) return Location;
+   -- Moves location by Right characters to the right
 
    type Search_Start is (From_Head, From_Tail);
 
