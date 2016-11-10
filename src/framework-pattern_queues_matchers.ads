@@ -21,11 +21,6 @@
 --  General  Public  License.   This  exception  does  not  however --
 --  invalidate any  other reasons why the executable  file might be --
 --  covered by the GNU Public License.                              --
---                                                                  --
---  This  software is  distributed  in  the hope  that  it will  be --
---  useful,  but WITHOUT  ANY  WARRANTY; without  even the  implied --
---  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
---  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
 -- AdaControl
@@ -37,4 +32,3 @@ package Framework.Pattern_Queues_Matchers is
 
    function Match_Any (Source : Wide_String; Patterns : Queue) return Boolean;
 end Framework.Pattern_Queues_Matchers;
-

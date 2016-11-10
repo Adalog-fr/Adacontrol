@@ -2,10 +2,10 @@
 --  Framework.Ruler - Package specification                         --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005. The Ada --
---  Controller  is  free software;  you can redistribute  it and/or --
---  modify  it under  terms of  the GNU  General Public  License as --
---  published by the Free Software Foundation; either version 2, or --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005.         --
+--  The Ada Controller is  free software; you can  redistribute  it --
+--  and/or modify it under  terms of the GNU General Public License --
+--  as published by the Free Software Foundation; either version 2, --
 --  (at your  option) any later version.  This  unit is distributed --
 --  in the hope  that it will be useful,  but WITHOUT ANY WARRANTY; --
 --  without even the implied warranty of MERCHANTABILITY or FITNESS --
@@ -22,11 +22,6 @@
 --  General  Public  License.   This  exception  does  not  however --
 --  invalidate any  other reasons why the executable  file might be --
 --  covered by the GNU Public License.                              --
---                                                                  --
---  This  software is  distributed  in  the hope  that  it will  be --
---  useful,  but WITHOUT  ANY  WARRANTY; without  even the  implied --
---  warranty  of  MERCHANTABILITY   or  FITNESS  FOR  A  PARTICULAR --
---  PURPOSE.                                                        --
 ----------------------------------------------------------------------
 
 private package Framework.Ruler is
