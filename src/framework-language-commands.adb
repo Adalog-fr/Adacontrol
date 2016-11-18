@@ -47,6 +47,7 @@ with
   Adactl_Version,
   Adactl_Options,
   Framework.Control_Manager,
+  Framework.Fixes,
   Framework.Interrupt,
   Framework.Language.Scanner,
   Framework.Reports,
@@ -422,18 +423,36 @@ package body Framework.Language.Commands is
    end Set_Output_Command;
 
    -----------------------
+   -- Set_Patch_Command --
+   -----------------------
+
+   procedure Set_Patch_Command (Patch_File : Wide_String) is
+      use Adactl_Options, Ada.Wide_Text_IO;
+   begin
+      if Action = Check or Rule_Error_Occurred then
+         return;
+      end if;
+
+     Fixes.Set_Patch_File (Patch_File);
+
+   exception
+      when Name_Error =>
+         Parameter_Error ("set patch", "unable to create patch file " & Patch_File);
+   end Set_Patch_Command;
+
+   -----------------------
    -- Set_Trace_Command --
    -----------------------
 
    procedure Set_Trace_Command (Trace_File : Wide_String) is
       use Adactl_Options;
-  begin
+   begin
       if Action = Check or Rule_Error_Occurred then
          return;
       end if;
 
-     Utilities.Set_Trace (Trace_File);
-  end Set_Trace_Command;
+      Utilities.Set_Trace (Trace_File);
+   end Set_Trace_Command;
 
    --------------------
    -- Source_Command --

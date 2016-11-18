@@ -111,11 +111,13 @@ package Framework is
    -- Matching must be given in upper-case
 
    function Get_Next_Word_Location (E        : in Asis.Element;
-                                    Matching : Wide_String := "";
-                                    Starting : Search_Start := From_Tail)
+                                    Matching : in Wide_String  := "";
+                                    Starting : in Search_Start := From_Tail;
+                                    Skipping : in Natural      := 0)
                                     return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
-   -- follows the beginning of E (if Starting = From_Head) or the end of E (if Starting = From_Tail).
+   -- follows the beginning of E (if Starting = From_Head) or the end of E (if Starting = From_Tail),
+   -- after skipping Skipping words.
    -- If Matching is specified, returns the location of the first word identical to Matching
    -- Matching must be given in upper-case
 

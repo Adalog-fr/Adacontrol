@@ -43,6 +43,7 @@ with
 
 -- Adactl
 with
+  Framework.Fixes,
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
@@ -678,28 +679,39 @@ package body Rules.Simplifiable_Expressions is
 
       procedure Do_Report is
          use Framework.Reports;
-         Message : constant Wide_String := "Unnecessary parentheses in expression";
+         Message   : constant Wide_String := "Unnecessary parentheses in expression";
+         Start_Loc : constant Location := Get_Location (Expr);
+         End_Loc   : constant Location := Get_End_Location (Expr);
+         Reported  : Boolean := False;
       begin
          if Ctl_Contexts (Check)(K_Parentheses).Used then
             Report (Rule_Id,
                     To_Wide_String (Ctl_Contexts (Check)(K_Parentheses).Label),
                     Check,
-                    Get_Location (Expr),
+                    Start_Loc,
                     Message);
+            Reported := True;
          elsif Ctl_Contexts (Search)(K_Parentheses).Used then
             Report (Rule_Id,
                     To_Wide_String (Ctl_Contexts (Search)(K_Parentheses).Label),
                     Search,
-                    Get_Location (Expr),
+                    Start_Loc,
                     Message);
+            Reported := True;
          end if;
 
          if Ctl_Contexts (Count)(K_Parentheses).Used then
             Report (Rule_Id,
                     To_Wide_String (Ctl_Contexts (Count)(K_Parentheses).Label),
                     Count,
-                    Get_Location (Expr),
+                    Start_Loc,
                     Message);
+            Reported := True;
+         end if;
+
+         if Reported then
+            Fixes.Delete (Start_Loc, Start_Loc + 1);
+            Fixes.Delete (End_Loc,   End_Loc   + 1);
          end if;
       end Do_Report;
 
@@ -711,6 +723,7 @@ package body Rules.Simplifiable_Expressions is
             A_Plus_Operator          .. A_Unary_Minus_Operator           => Adding,
             A_Multiply_Operator      .. A_Rem_Operator                   => Multiplying,
             An_Exponentiate_Operator .. A_Not_Operator                   => Highest);
+      subtype A_Structured_Expression is Expression_Kinds range A_Case_Expression .. A_For_Some_Quantified_Expression;
 
       Enclosing : Asis.Element;
       Enclosed  : Asis.Element;
@@ -721,20 +734,10 @@ package body Rules.Simplifiable_Expressions is
       Rules_Manager.Enter (Rule_Id);
 
       Enclosing := Enclosing_Element (Expr);
-      if Declaration_Kind (Enclosing) = An_Expression_Function_Declaration then
-         -- Special case: the parentheses around the expression of an expression function
-         -- Always required
-         return;
-      end if;
-
       Enclosed := Expression_Parenthesized (Expr);
 
       case Expression_Kind (Enclosed) is
-         when An_If_Expression                  -- Things that generally require parentheses
-            | A_Case_Expression
-            | A_For_All_Quantified_Expression
-            | A_For_Some_Quantified_Expression
-            =>
+         when A_Structured_Expression =>                  -- Things that generally require parentheses
             -- Parentheses are not required if Expr is part of a positional association and there is
             -- only one association in the association list (which rules out aggregates associations)
             if Element_Kind (Enclosing) = An_Association then
@@ -771,14 +774,29 @@ package body Rules.Simplifiable_Expressions is
                         Do_Report;
                      end if;
                end case;
-            elsif Expression_Kind (Enclosing) = A_Parenthesized_Expression then
-               Do_Report;
+--              elsif Expression_Kind (Enclosing) = A_Parenthesized_Expression then
+--                 Do_Report;
             end if;
 
+         when A_Parenthesized_Expression =>
+            Do_Report;
+
          when others =>                         -- Normal expressions
-            if Element_Kind (Enclosing) = An_Association then
-               Enclosing := Enclosing_Element (Enclosing);
-            end if;
+            -- Get up to the real enclosing expression
+            loop
+               case Element_Kind (Enclosing) is
+                  when An_Association =>
+                     Enclosing := Enclosing_Element (Enclosing);
+                  when An_Expression =>
+                     if Expression_Kind (Enclosing) = A_Parenthesized_Expression then
+                        Enclosing := Enclosing_Element (Enclosing);
+                     else
+                        exit;
+                     end if;
+                  when others =>
+                     exit;
+               end case;
+            end loop;
 
             case Expression_Kind (Enclosing) is
                when A_Function_Call =>
@@ -788,13 +806,14 @@ package body Rules.Simplifiable_Expressions is
                      case Expression_Kind (Enclosed) is
                         when A_Function_Call =>
                            if Is_Prefix_Call (Enclosed)
-                             or else  Priority (Operator_Kind (Prefix (Enclosing)))
-                                    < Priority (Operator_Kind (Prefix (Enclosed)))
+                              or else  Priority (Operator_Kind (Prefix (Enclosing)))
+                                     < Priority (Operator_Kind (Prefix (Enclosed)))
                            then
                               Do_Report;
                            end if;
                         when An_And_Then_Short_Circuit
                            | An_Or_Else_Short_Circuit
+                           | A_Structured_Expression
                            =>
                            null;
                         when An_In_Membership_Test
@@ -844,7 +863,12 @@ package body Rules.Simplifiable_Expressions is
                   end case;
 
                when others =>  -- Including Not_An_Expression
-                  Do_Report;
+                  if Declaration_Kind (Enclosing) /= An_Expression_Function_Declaration then
+                     -- Special case: the parentheses around the expression of an expression function
+                     -- Always required
+                     Do_Report;
+                  end if;
+
             end case;
       end case;
 
@@ -863,6 +887,8 @@ package body Rules.Simplifiable_Expressions is
 
       procedure Do_Report is
          use Framework.Reports;
+         Inner_Expr : Asis.Expression;
+         Encl_Expr  : Asis.Expression;
       begin
          if Ctl_Contexts (Check) (K_Conversion).Used then
             Report (Rule_Id,
@@ -885,6 +911,25 @@ package body Rules.Simplifiable_Expressions is
                     Count,
                     Get_Location (Expr),
                     "");
+         end if;
+
+         -- Normally, the fix removes the whole conversion.
+         -- However, if the inner expression is an infixed operator and the conversion appears as an
+         -- operand of an infixed operator, we mus keep the parentheses, in order not to mess up
+         -- associativity in cases like "integer (I+3) * 2".
+         Inner_Expr := Converted_Or_Qualified_Expression (Expr);
+         Encl_Expr  := Enclosing_Element (Expr);
+         if Element_Kind (Encl_Expr) = An_Association then
+            Encl_Expr := Enclosing_Element (Encl_Expr);
+            if         Expression_Kind (Encl_Expr)  = A_Function_Call and then not Is_Prefix_Call (Encl_Expr)
+              and then Expression_Kind (Inner_Expr) = A_Function_Call and then not Is_Prefix_Call (Inner_Expr)
+            then
+               Fixes.Delete (Converted_Or_Qualified_Subtype_Mark (Expr));
+            else
+               Fixes.Replace (Expr, By => Inner_Expr);
+            end if;
+         else
+            Fixes.Replace (Expr, By => Inner_Expr);
          end if;
       end Do_Report;
    begin   -- Process_Conversion

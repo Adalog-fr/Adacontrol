@@ -267,8 +267,9 @@ package body Framework is
    ----------------------------
 
    function Get_Next_Word_Location (E        : in Asis.Element;
-                                    Matching : Wide_String := "";
-                                    Starting : Search_Start := From_Tail)
+                                    Matching : in Wide_String  := "";
+                                    Starting : in Search_Start := From_Tail;
+                                    Skipping : in Natural      := 0)
                                     return Location
    is
       use Asis.Text;
@@ -276,6 +277,7 @@ package body Framework is
       L          : Line_Number;
       Word_Start : Character_Position;
       Result     : Location;
+      To_Skip    : Natural := Skipping;
 
       function Find_Word_Start (Line : in Wide_String) return Character_Position is
          use Ada.Strings.Wide_Maps;
@@ -289,8 +291,12 @@ package body Framework is
                while  Stop < Line'Last and then Is_In (Line (Stop + 1), Identifier_Chars) loop
                   Stop := Stop + 1;
                end loop;
-               if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
-                  return Character_Position (Start);
+               if To_Skip = 0 then
+                  if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
+                     return Character_Position (Start);
+                  end if;
+               else
+                  To_Skip := To_Skip - 1;
                end if;
                Start := Stop + 1;
             else
@@ -314,7 +320,7 @@ package body Framework is
       begin
          case Starting is
             when From_Head =>
-               Word_Start := Find_Word_Start (The_Line (Positive (E_Span.First_Column) + 1 .. The_Line'Last));
+               Word_Start := Find_Word_Start (The_Line (Positive (E_Span.First_Column) .. The_Line'Last));
             when From_Tail =>
                Word_Start := Find_Word_Start (The_Line (Positive (E_Span.Last_Column) + 1 .. The_Line'Last));
          end case;

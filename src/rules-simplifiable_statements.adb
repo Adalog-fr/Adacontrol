@@ -37,7 +37,8 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+     Framework.Fixes,
+     Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Simplifiable_Statements is
@@ -406,6 +407,7 @@ package body Rules.Simplifiable_Statements is
               Usage (Stmt_Handler),
               Get_Location (Handler),
               "useless exception handler");
+      Fixes.Delete (Handler);
    end Process_Exception_Handler;
 
    --------------------------
@@ -431,6 +433,7 @@ package body Rules.Simplifiable_Statements is
                     Usage (Stmt_If),
                     Get_Location (Paths (Paths'Last)),
                     "empty else path");
+            Fixes.Delete (Paths (Paths'Last));
          end if;
 
          if Paths'Length = 2 then
@@ -516,7 +519,30 @@ package body Rules.Simplifiable_Statements is
 
       -- Stmt_Dead
       if Rule_Used (Stmt_Dead) then
-         for P in Paths'Range loop
+         -- Special case for "if" path: if followed by "elsif", change it to "if". If followed by "else", replace
+         -- by the content of the "else" path. And if none of these, remove the whole if statement
+         if Static_Expression_Value_Image (Condition_Expression (Paths (Paths'First))) = "0"  -- "0" => False
+         then
+            Report (Rule_Id,
+                    Usage (Stmt_Dead),
+                    Get_Location (Paths (1)),
+                    "condition is always false");
+            if Paths'Length = 1 then -- no else or elsif
+               Fixes.Delete (Stmt);
+            else
+               case Path_Kind (Paths (2)) is
+                  when An_Elsif_Path =>
+                     Fixes.Delete (Paths (1));
+                     Fixes.Replace (Get_Location (Paths(2)), Length => 3, By => ""); -- 3 characters: "els"
+                  when An_Else_Path =>
+                     Fixes.Replace (Stmt, Sequence_Of_Statements (Paths (2), Include_Pragmas => True));
+                  when others =>
+                     Utilities.Failure ("Process_If_Statement: Incorrect path", Paths (2));
+               end case;
+            end if;
+         end if;
+
+         for P in List_Index range Paths'First + 1 .. Paths'Last loop
             if Path_Kind (Paths (P)) /= An_Else_Path
               and then Static_Expression_Value_Image (Condition_Expression (Paths (P))) = "0"  -- "0" => False
             then
@@ -524,6 +550,7 @@ package body Rules.Simplifiable_Statements is
                        Usage (Stmt_Dead),
                        Get_Location (Paths (P)),
                        "condition is always false");
+               Fixes.Delete (Paths (P));
             end if;
          end loop;
       end if;
@@ -595,6 +622,7 @@ package body Rules.Simplifiable_Statements is
                              Usage (Stmt_Dead),
                              Get_Location (Case_Paths (CP)),
                              "choices cover no value");
+                     Framework.Fixes.Delete (Case_Paths (Cp));
                   end if;
                end;
             end loop;
@@ -626,6 +654,7 @@ package body Rules.Simplifiable_Statements is
                           Usage (Stmt_Block),
                           Get_Location (Stmt),
                           "unnecessary block statement");
+                  Fixes.Replace (Stmt, By => Thick_Queries.Statements (Stmt, Include_Pragmas => True));
                end if;
             end if;
 
@@ -658,6 +687,7 @@ package body Rules.Simplifiable_Statements is
                                 Usage (Stmt_Null),
                                 Get_Location (Stmt),
                                 "unnecessary null statement");
+                        Fixes.Delete (Stmt);
                      end if;
                   end;
                end if;
@@ -691,38 +721,41 @@ package body Rules.Simplifiable_Statements is
                              Usage (Stmt_Dead),
                              Get_Location (Stmt),
                              "for loop is never executed");
+                     Fixes.Delete (Stmt);
                   end if;
                end;
             end if;
 
          when A_While_Loop_Statement =>
-               if Rule_Used (Stmt_Loop) or Rule_Used (Stmt_Dead) then
-                  declare
-                     Expr   : constant Asis.Expression       := While_Condition (Stmt);
-                     E_Kind : constant Asis.Expression_Kinds := Expression_Kind (Expr);
-                  begin
-                     -- For stmt_loop, signal an explicit "while True"
-                     if Rule_Used (Stmt_Loop)
-                       and then (E_Kind = An_Enumeration_Literal or E_Kind = A_Selected_Component)
-                       and then To_Upper (Full_Name_Image (Expr)) = "STANDARD.TRUE"
-                     then
-                        Report (Rule_Id,
-                                Usage (Stmt_Loop),
-                                Get_Location (Stmt),
-                                "while loop has True condition");
-                     end if;
+            if Rule_Used (Stmt_Loop) or Rule_Used (Stmt_Dead) then
+               declare
+                  Expr   : constant Asis.Expression       := While_Condition (Stmt);
+                  E_Kind : constant Asis.Expression_Kinds := Expression_Kind (Expr);
+               begin
+                  -- For stmt_loop, signal an explicit "while True"
+                  if Rule_Used (Stmt_Loop)
+                    and then (E_Kind = An_Enumeration_Literal or E_Kind = A_Selected_Component)
+                    and then To_Upper (Full_Name_Image (Expr)) = "STANDARD.TRUE"
+                  then
+                     Report (Rule_Id,
+                             Usage (Stmt_Loop),
+                             Get_Location (Stmt),
+                             "while loop has True condition");
+                     Fixes.Delete (From => Get_Location (Stmt), To => Get_Next_Word_Location (Expr));
+                  end if;
 
-                     -- For stmt_dead, signal any expression statically false
-                     if Rule_Used (Stmt_Dead)
-                       and then Static_Expression_Value_Image (Expr) = "0"  -- "0" => False
-                     then
-                        Report (Rule_Id,
-                                Usage (Stmt_Dead),
-                                Get_Location (Stmt),
-                                "while loop is never executed");
-                     end if;
-                  end;
-               end if;
+                  -- For stmt_dead, signal any expression statically false
+                  if Rule_Used (Stmt_Dead)
+                    and then Static_Expression_Value_Image (Expr) = "0"  -- "0" => False
+                  then
+                     Report (Rule_Id,
+                             Usage (Stmt_Dead),
+                             Get_Location (Stmt),
+                             "while loop is never executed");
+                     Fixes.Delete (Stmt);
+                  end if;
+               end;
+            end if;
          when others =>
             null;
       end case;
@@ -730,12 +763,18 @@ package body Rules.Simplifiable_Statements is
       if Rule_Used (Stmt_Dead) and then Is_Breaking_Statement (Stmt) then
          declare
             Enclosing_Sts : constant Statement_List := Thick_Queries.Statements (Enclosing_Element (Stmt));
+            S_Inx         : List_Index;
          begin
             if not Is_Equal (Stmt, Enclosing_Sts (Enclosing_Sts'Last)) then
                Report (Rule_Id,
                        Usage (Stmt_Dead),
                        Get_Location (Stmt),
                        "unreachable code after this statement");
+               S_Inx := Enclosing_Sts'Last;
+               while not Is_Equal (Stmt, Enclosing_Sts (S_Inx)) loop
+                  S_Inx := S_Inx - 1;
+               end loop;
+               Fixes.Delete (Enclosing_Sts (S_Inx + 1 .. Enclosing_Sts'Last));
             end if;
          end;
       end if;

@@ -1,0 +1,447 @@
+@search t_style.adb:1:10: Found: Casing: Wrong casing of "Text_io", should be "Text_IO" or "Text_Io"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style.adb" 1,10 1,16
+Text_IO
+@search t_style-no_default_in.adb:3:31: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 3,31 3,30
+in 
+@search t_style-no_default_in.adb:13:28: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 13,28 13,27
+in 
+@search t_style-no_default_in.adb:15:44: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 15,44 15,43
+in 
+@search t_style-no_default_in.adb:26:13: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 26,13 26,12
+in 
+@search t_style-no_default_in.adb:27:29: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 27,29 27,28
+in 
+@search t_style-no_default_in.adb:30:29: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 30,29 30,28
+in 
+@search t_style-no_default_in.adb:33:26: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 33,26 33,25
+in 
+@search t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_default_in.adb" 37,29 37,28
+in 
+@search t_style-casing.adb:2:6: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 2,6 2,19
+X_Style_Casing
+@search t_style-casing.adb:2:21: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 2,21 2,27
+Child_1
+@search t_style-casing.adb:2:29: Found: Casing: Wrong casing of "CHILD_2", should be "Child_2"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 2,29 2,35
+Child_2
+@search t_style-casing.adb:7:11: Found: Casing: Wrong casing of "Page", should be "PAGE"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 7,11 7,14
+PAGE
+@search t_style-casing.adb:10:19: Found: Casing: Wrong casing of "FOO", should be "Foo"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 10,19 10,21
+Foo
+@search t_style-casing.adb:11:50: Found: Casing: Wrong casing of "FOO", should be "Foo"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 11,50 11,52
+Foo
+@search t_style-casing.adb:12:13: Found: Casing: Wrong casing of "foo", should be "Foo"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 12,13 12,15
+Foo
+@search t_style-casing.adb:15:8: Found: Casing: Wrong casing of "foo", should be "Foo"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 15,8 15,10
+Foo
+@search t_style-casing.adb:14:14: Found: Casing: Wrong casing of "i", should be "I"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 14,14 14,14
+I
+@search t_style-casing.adb:18:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 18,13 18,17
+"and"
+@search t_style-casing.adb:21:8: Found: Casing: Wrong casing of ""AND"", should be ""and""
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 21,8 21,12
+"and"
+@search t_style-casing.adb:25:11: Found: Casing: Wrong casing of "SIZE", should be "Size"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 25,11 25,14
+Size
+@search t_style-casing.adb:25:26: Found: Casing: Wrong casing of "Word_SIZE", should be "Word_Size"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 25,26 25,34
+Word_Size
+@search t_style-casing.adb:26:26: Found: Casing: Wrong casing of "AA", should be "Aa"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 26,26 26,27
+Aa
+@search t_style-casing.adb:26:32: Found: Casing: Wrong casing of "BB", should be "Bb"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 26,32 26,33
+Bb
+@search t_style-casing.adb:30:11: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 30,11 30,19
+Pre'Class
+@search t_style-casing.adb:38:33: Found: Casing: Wrong casing of exponent, should be 'E'
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 38,33 38,33
+E
+@search t_style-casing.adb:39:25: Found: Casing: Wrong casing of exponent, should be 'E'
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 39,25 39,25
+E
+@search t_style-casing.adb:41:33: Found: Casing: Wrong casing of extended digit(s), should be 1AB.0C
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 41,33 41,38
+1AB.0C
+@search t_style-casing.adb:42:26: Found: Casing: Wrong casing of extended digit(s), should be 1ABC
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 42,26 42,29
+1ABC
+@search t_style-casing.adb:46:34: Found: Casing: Wrong casing of "image", should be "Image"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 46,34 46,38
+Image
+@search t_style-casing.adb:46:41: Found: Casing: Wrong casing of "INT", should be "Int"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 46,41 46,43
+Int
+@search t_style-casing.adb:47:4: Found: Casing: Wrong casing of "INT", should be "Int"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 47,4 47,6
+Int
+@search t_style-casing.adb:47:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 47,11 47,13
+Foo
+@search t_style-casing.adb:47:16: Found: Casing: Wrong casing of "INt", should be "Int"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 47,16 47,18
+Int
+@search t_style-casing.adb:48:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_IO" or "Text_Io"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 48,8 48,14
+Text_IO
+@search t_style-casing.adb:48:41: Found: Casing: Wrong casing of "InT", should be "Int"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 48,41 48,43
+Int
+@check t_style-casing.adb:51:12: Error: Multiple_Keyword: "loop" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 51,12
+   
+@search t_style-casing.adb:54:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 54,22 54,24
+Dim
+@check t_style-casing.adb:57:7: Error: Exposed: character literal 'a' not in allowed construct
+@search t_style-casing.adb:64:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 64,9 64,13
+"and"
+@search t_style-casing.adb:51:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 51,12 51,15
+loop
+@search t_style-casing.adb:52:7: Found: Casing: Wrong casing of "Null", should be "null"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 52,7 52,10
+null
+@search t_style-casing.adb:53:4: Found: Casing: Wrong casing of "END", should be "end"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 53,4 53,6
+end
+@search t_style-casing.adb:53:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 53,8 53,11
+loop
+@search t_style-casing.adb:58:6: Found: Casing: Wrong casing of "NULL", should be "null"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 58,6 58,9
+null
+@search t_style-casing.adb:59:4: Found: Casing: Wrong casing of "eND", should be "end"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 59,4 59,6
+end
+@search t_style-casing.adb:59:8: Found: Casing: Wrong casing of "If", should be "if"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 59,8 59,9
+if
+@search t_style-casing.adb:62:11: Found: Casing: Wrong casing of "AND", should be "and"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-casing.adb" 62,11 62,13
+and
+@check t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 8,7 8,6
+ P
+@search t_style-no_closing_name.adb:10:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 12,7 12,6
+ Pack
+@search t_style-no_closing_name.adb:14:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 17,7 17,6
+ Pack
+@search t_style-no_closing_name.adb:19:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 22,7 22,6
+ Gen
+@search t_style-no_closing_name.adb:24:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 25,7 25,6
+ T1
+@search t_style-no_closing_name.adb:26:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 29,7 29,6
+ T1
+@search t_style-no_closing_name.adb:37:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 38,7 38,6
+ T3
+@search t_style-no_closing_name.adb:39:4: Found: No_Closing_Name: name not repeated at the end
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-no_closing_name.adb" 42,7 42,6
+ T3
+@check t_style-renamed_entity.adb:23:7: Error: Renamed_Entity: I has been renamed at t_style-renamed_entity.adb:20:7
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-renamed_entity.adb" 23,7 23,7
+I
+@check t_style-renamed_entity.adb:24:7: Error: Renamed_Entity: Pack has been renamed at t_style-renamed_entity.adb:19:7
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-renamed_entity.adb" 24,7 24,10
+Pack
+@check t_style-renamed_entity.adb:24:17: Error: Renamed_Entity: F has been renamed at t_style-renamed_entity.adb:18:7
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-renamed_entity.adb" 24,17 24,17
+F
+@check t_style-literals.adb:6:31: Error: Literals: number representation does not follow convention
+@check t_style-literals.adb:8:31: Error: Literals: number representation does not follow convention
+@check t_style-literals.adb:12:31: Error: Literals: number representation does not follow convention
+@check t_style-literals.adb:18:31: Error: Literals: number representation does not follow convention
+@check t_style-literals.adb:22:31: Error: Literals: number representation does not follow convention
+@check t_style-literals.adb:30:32: Error: Not_Base_7: based representation not allowed
+@check t_style-literals.adb:31:31: Error: Not_Base_13: based representation not allowed
+@check t_style-literals.adb:38:31: Error: Base_16_Literals: number representation does not follow convention
+@check t_style-literals.adb:40:32: Error: Not_Base_7: based representation not allowed
+@check t_style-literals.adb:43:31: Error: Base_16_Literals: number representation does not follow convention
+@check t_style-exposed_literal.adb:34:29: Error: Exposed: real literal 3.0 not in allowed construct
+@check t_style-exposed_literal.adb:41:33: Error: Exposed: real literal 3.0 not in allowed construct
+@check t_style-exposed_literal.adb:47:9: Error: Exposed: integer literal 2 not in allowed construct
+@check t_style-exposed_literal.adb:53:21: Error: Exposed: real literal 2.0 not in allowed construct
+@check t_style-exposed_literal.adb:54:22: Error: Exposed: real literal -2.0 not in allowed construct
+@check t_style-exposed_literal.adb:61:12: Error: Exposed: string literal "12345" not in allowed construct
+@check t_style-exposed_literal.adb:62:14: Error: Exposed: string literal "12345" not in allowed construct
+@check t_style-exposed_literal.adb:63:12: Error: Exposed: character literal 'A' not in allowed construct
+@check t_style-exposed_literal.adb:66:11: Error: Exposed: integer literal 5 not in allowed construct
+@check t_style-exposed_literal.adb:72:9: Error: Exposed: integer literal 2 not in allowed construct
+@check t_style-exposed_literal.adb:73:10: Error: Exposed: integer literal 9_223_372_036_854_775_807 not in allowed construct
+@check t_style-exposed_literal.adb:74:10: Error: Exposed: integer literal -9_223_372_036_854_775_808 not in allowed construct
+@check t_style-exposed_literal.adb:77:18: Error: Exposed: integer literal 10 not in allowed construct
+@check t_style-multiple_elements.adb:4:15: Error: Multiple_Pragma: pragma does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 4,15
+
+@check t_style-multiple_elements.adb:4:43: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 4,43
+               
+@check t_style-multiple_elements.adb:5:18: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 5,14
+ 
+@check t_style-multiple_elements.adb:6:23: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 6,19
+ 
+@check t_style-multiple_elements.adb:8:69: Error: Multiple_Clause: use clause does not start line and Ada.Strings.Unbounded is not part of the preceding with clause
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 8,46
+ 
+@check t_style-multiple_elements.adb:8:92: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 8,46
+ 
+@check t_style-multiple_elements.adb:9:90: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 9,90
+                                              
+@check t_style-multiple_elements.adb:13:26: Error: Multiple_Decl: declaration does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 13,26
+   
+@check t_style-multiple_elements.adb:15:12: Error: Multiple_Decl: declaration does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 15,12
+     
+@check t_style-multiple_elements.adb:17:21: Error: Multiple_Clause: clause does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 17,21
+   
+@check t_style-multiple_elements.adb:20:23: Error: Multiple_Pragma: pragma does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 20,23
+   
+@check t_style-multiple_elements.adb:24:19: Error: Multiple_Keyword: "begin" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 24,19
+   
+@check t_style-multiple_elements.adb:25:13: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 25,13
+   
+@check t_style-multiple_elements.adb:28:7: Error: Multiple_Keyword: "is" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 28,7
+   
+@check t_style-multiple_elements.adb:28:10: Error: Multiple_Keyword: "begin" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 28,10
+   
+@check t_style-multiple_elements.adb:30:4: Error: Multiple_Keyword: closing keywords of declaration split
+@check t_style-multiple_elements.adb:47:19: Error: Multiple_Handler: "exception" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 47,19
+   
+@check t_style-multiple_elements.adb:49:16: Error: Multiple_Handler: "when" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 49,16
+         
+@check t_style-multiple_elements.adb:50:17: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 50,17
+   
+@check t_style-multiple_elements.adb:50:17: Error: Multiple_Keyword: closing keywords of declaration split
+@check t_style-multiple_elements.adb:37:18: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 37,18
+      
+@check t_style-multiple_elements.adb:42:7: Error: Multiple_Keyword: closing keywords of statement split
+@check t_style-multiple_elements.adb:45:21: Error: Multiple_Keyword: "do" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 45,21
+      
+@check t_style-multiple_elements.adb:48:32: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 48,32
+      
+@check t_style-multiple_elements.adb:53:20: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 53,20
+   
+@check t_style-multiple_elements.adb:54:41: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 54,41
+   
+@check t_style-multiple_elements.adb:54:4: Error: Compound: Statement has less than 3 lines
+@check t_style-multiple_elements.adb:54:26: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 54,26
+   
+@check t_style-multiple_elements.adb:58:17: Error: Multiple_Keyword: "when" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 58,17
+   
+@check t_style-multiple_elements.adb:58:38: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 58,38
+   
+@check t_style-multiple_elements.adb:56:22: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 56,22
+      
+@check t_style-multiple_elements.adb:58:32: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 58,32
+         
+@check t_style-multiple_elements.adb:60:12: Error: Multiple_Keyword: "then" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 60,12
+   
+@check t_style-multiple_elements.adb:62:13: Error: Multiple_Keyword: "elsif/else" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 62,13
+   
+@check t_style-multiple_elements.adb:63:27: Error: Multiple_Keyword: "then" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 63,27
+   
+@check t_style-multiple_elements.adb:67:13: Error: Multiple_Keyword: "elsif/else" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 67,13
+   
+@check t_style-multiple_elements.adb:68:19: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 68,19
+   
+@check t_style-multiple_elements.adb:68:19: Error: Multiple_Keyword: closing keywords of statement split
+@check t_style-multiple_elements.adb:73:9: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 73,9
+   
+@check t_style-multiple_elements.adb:71:10: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 71,10
+   
+@check t_style-multiple_elements.adb:75:35: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 75,35
+   
+@check t_style-multiple_elements.adb:75:4: Error: Compound: Statement has less than 3 lines
+@check t_style-multiple_elements.adb:75:10: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 75,10
+   
+@check t_style-multiple_elements.adb:75:18: Error: Multiple_Keyword: "begin" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 75,18
+   
+@check t_style-multiple_elements.adb:75:30: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 75,30
+   
+@check t_style-multiple_elements.adb:75:10: Error: Compound: Statement has less than 3 lines
+@check t_style-multiple_elements.adb:75:24: Error: Multiple_Stmts: statement does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-multiple_elements.adb" 75,24
+   
+@search t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-parameter_order.adb" 4,24 4,23
+in 
+@search t_style-parameter_order.adb:14:24: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-parameter_order.adb" 14,24 14,23
+in 
+@check t_style-parameter_order.adb:25:18: Error: order_regular: subprogram parameter out of order
+@check t_style-parameter_order.adb:39:18: Error: order_regular: subprogram parameter out of order
+@check t_style-parameter_order.adb:68:7: Error: order_generic: generic formal parameter out of order
+@check t_style-parameter_order.adb:69:7: Error: order_generic: generic formal parameter out of order
+@check t_style-parameter_order.adb:70:7: Error: order_generic: generic formal parameter out of order
+@search t_style-parameter_order.adb:71:45: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-parameter_order.adb" 71,45 71,44
+in 
+@check t_style-parameter_order.adb:71:41: Error: order_regular: subprogram parameter out of order
+@search t_style-parameter_order.adb:72:45: Found: No_Default_In: default IN mode used for parameter
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style-parameter_order.adb" 72,45 72,44
+in 
+@check t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+@check t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
+@check t_style.adb:37:15: Error: Multiple_Keyword: "when" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style.adb" 37,15
+   
+@check t_style.adb:38:16: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style.adb" 38,16
+   
+@check t_style.adb:37:4: Error: Compound: Statement has less than 4 lines
+@check t_style.adb:41:13: Error: Multiple_Keyword: "end" does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_style.adb" 41,13
+   
+@check t_style.adb:40:4: Error: Compound: Statement has less than 3 lines
+@search x_style_casing.ads:3:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing.ads" 3,5 3,18
+X_Style_Casing
+@search x_style_casing.adb:1:14: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing.adb" 1,14 1,27
+X_Style_Casing
+@search x_style_casing.adb:6:8: Found: Casing: Wrong casing of "PROC", should be "Proc"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing.adb" 6,8 6,11
+Proc
+@search x_style_casing-child_1.ads:1:9: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.ads" 1,9 1,22
+X_Style_Casing
+@search x_style_casing-child_1.ads:3:20: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.ads" 3,20 3,26
+Child_1
+@search x_style_casing-child_1.adb:1:29: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 1,29 1,35
+Child_1
+@search x_style_casing-child_1.adb:36:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 36,5 36,18
+X_Style_Casing
+@search x_style_casing-child_1.adb:8:11: Found: Casing: Wrong casing of "BlOck1", should be "BLock1" or "Block1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 8,11 8,16
+BLock1
+@search x_style_casing-child_1.adb:12:16: Found: Casing: Wrong casing of "LOop1", should be "LoOp1" or "Loop1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 12,16 12,20
+LoOp1
+@check x_style_casing-child_1.adb:10:29: Error: Exposed: integer literal 10 not in allowed construct
+@search x_style_casing-child_1.adb:17:8: Found: Casing: Wrong casing of "TTt", should be "TTT" or "Ttt"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 17,8 17,10
+TTT
+@search x_style_casing-child_1.adb:19:14: Found: Casing: Wrong casing of "TtT", should be "TTT" or "Ttt"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 19,14 19,16
+TTT
+@search x_style_casing-child_1.adb:24:8: Found: Casing: Wrong casing of "TTt", should be "TTT" or "Ttt"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 24,8 24,10
+TTT
+@search x_style_casing-child_1.adb:21:14: Found: Casing: Wrong casing of "ENTER", should be "Enter"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 21,14 21,18
+Enter
+@search x_style_casing-child_1.adb:23:11: Found: Casing: Wrong casing of "ENTER", should be "Enter"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 23,11 23,15
+Enter
+@search x_style_casing-child_1.adb:28:8: Found: Casing: Wrong casing of "PtP", should be "PTP" or "Ptp"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 28,8 28,10
+PTP
+@search x_style_casing-child_1.adb:30:19: Found: Casing: Wrong casing of "PtP", should be "PTP" or "Ptp"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 30,19 30,21
+PTP
+@search x_style_casing-child_1.adb:35:8: Found: Casing: Wrong casing of "PTp", should be "PTP" or "Ptp"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 35,8 35,10
+PTP
+@search x_style_casing-child_1.adb:31:13: Found: Casing: Wrong casing of "ENT", should be "Ent"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 31,13 31,15
+Ent
+@search x_style_casing-child_1.adb:34:11: Found: Casing: Wrong casing of "ENT", should be "Ent"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1.adb" 34,11 34,13
+Ent
+@search x_style_casing-child_1-child_2.ads:1:9: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.ads" 1,9 1,22
+X_Style_Casing
+@search x_style_casing-child_1-child_2.ads:1:24: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.ads" 1,24 1,30
+Child_1
+@search x_style_casing-child_1-child_2.ads:3:28: Found: Casing: Wrong casing of "child_2", should be "Child_2"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.ads" 3,28 3,34
+Child_2
+@search x_style_casing-child_1-child_2.ads:3:20: Found: Casing: Wrong casing of "child_1", should be "Child_1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.ads" 3,20 3,26
+Child_1
+@search x_style_casing-child_1-child_2.ads:3:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.ads" 3,5 3,18
+X_Style_Casing
+@search x_style_casing-child_1-child_2.adb:1:37: Found: Casing: Wrong casing of "CHILD_2", should be "Child_2"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.adb" 1,37 1,43
+Child_2
+@search x_style_casing-child_1-child_2.adb:8:20: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.adb" 8,20 8,26
+Child_1
+@search x_style_casing-child_1-child_2.adb:8:5: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.adb" 8,5 8,18
+X_Style_Casing
+@search x_style_casing-child_1-child_2.adb:3:14: Found: Casing: Wrong casing of "p2", should be "P2"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.adb" 3,14 3,15
+P2
+@search x_style_casing-child_1-child_2.adb:6:8: Found: Casing: Wrong casing of "p2", should be "P2"
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style_casing-child_1-child_2.adb" 6,8 6,9
+P2
+@check x_style2.ads:1:15: Error: Multiple_Decl: declaration does not start line
+@insert "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_style2.ads" 1,15
+

@@ -40,6 +40,7 @@ with
 
 -- AdaCtl
 with
+  Framework.Fixes,
   Framework.Reports;
 
 package body Rules.Style.Keyword is
@@ -300,13 +301,16 @@ package body Rules.Style.Keyword is
 
       procedure Do_Report (Kw_Start, Kw_Stop : Positive) is
          use Framework, Framework.Reports;
-
+         KW_Loc : constant Location := Create_Location (Get_File_Name (Loc),
+                                                        Get_First_Line (Loc),
+                                                        Asis.Text.Character_Position (Kw_Start));
       begin  -- Do_Report
          Report (Rule_Id,
                  Corresponding_Context (St_Casing_Keyword),
-                 Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Asis.Text.Character_Position (Kw_Start)),
+                 KW_Loc,
                  "Wrong casing of """ & Line (Kw_Start .. Kw_Stop)
-                 & """, should be " & Should_Be (Line (Kw_Start .. Kw_Stop), Expected));
+                 & """, should be " & Should_Be (Line (Kw_Start .. Kw_Stop), Expected, For_Fix => False));
+         Fixes.Replace (KW_Loc, Kw_Stop-Kw_Start+1, Should_Be (Line (Kw_Start .. Kw_Stop), Expected, For_Fix =>  True));
       end Do_Report;
 
    begin  -- Process_Line

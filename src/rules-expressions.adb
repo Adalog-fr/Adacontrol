@@ -40,6 +40,7 @@ with
 -- AdaControl
 with
   Framework.Control_Manager.Generic_Context_Iterator,
+  Framework.Fixes,
   Framework.Language,
   Framework.Language.Shared_Keys,
   Framework.Variables.Shared_Types;
@@ -48,6 +49,7 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys,
        Framework.Variables, Framework.Variables.Shared_Types;
+   use all type Fixes.Insert_Place;
 
    type Subrules is (E_And,                              E_And_Array,              E_And_Binary,
                      E_And_Boolean,                      E_And_Then,               E_Array_Aggregate,
@@ -344,6 +346,13 @@ package body Rules.Expressions is
    -- Do_Mixed_Report --
    ---------------------
 
+   -- Fixes:
+   -- We delay the insertion of parentheses, since in mixed expressions several parentheses may need
+   -- to be inserted at the same place. This would create conflicts when fixing, but making only one fix
+   -- would result in code that does not compile any more. Hence, we merge all inserts up to the level
+   -- where the operator is not within another operator call.
+   Mixed_Fixes : Fixes.Incremental_Fix;
+
    procedure Do_Mixed_Report (Call : Asis.Expression; Parameter : Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports;
@@ -358,6 +367,8 @@ package body Rules.Expressions is
                        Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
                        Get_Location (Prefix (Parameter)),
                        "Unparenthesized mixed operators in expression");
+               Fixes.Insert (Mixed_Fixes, "(", Before, Parameter);
+               Fixes.Insert (Mixed_Fixes, ")", After,  Parameter);
             end if;
          when An_And_Then_Short_Circuit | An_Or_Else_Short_Circuit =>
             if Expression_Kind (Call) /= Expression_Kind (Parameter) then
@@ -365,6 +376,8 @@ package body Rules.Expressions is
                        Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
                        Get_Location (Short_Circuit_Operation_Left_Expression (Parameter)),
                        "Unparenthesized mixed operators in expression");
+               Fixes.Insert (Mixed_Fixes, "(", Before, Parameter);
+               Fixes.Insert (Mixed_Fixes, ")", After,  Parameter);
             end if;
          when An_In_Membership_Test | A_Not_In_Membership_Test =>
             if Expression_Kind (Call) /= Expression_Kind (Parameter) then
@@ -372,6 +385,8 @@ package body Rules.Expressions is
                        Control_Manager.Association (Usage, Image (E_Mixed_Operators)),
                        Get_Location (Membership_Test_Expression (Parameter)),
                        "Unparenthesized mixed operators in expression");
+               Fixes.Insert (Mixed_Fixes, "(", Before, Parameter);
+               Fixes.Insert (Mixed_Fixes, ")", After,  Parameter);
             end if;
          when others =>
             null;
@@ -1238,6 +1253,26 @@ package body Rules.Expressions is
          Do_Report (E_Universal_Range, Get_Location (Def));
       end if;
    end Process_Range;
+
+   -----------------------
+   -- Post_Process_Call --
+   -----------------------
+
+   procedure Post_Process_Call (Call : in Asis.Element) is
+      use Asis, Asis.Elements;
+   begin
+      if not Rule_Used (E_Mixed_Operators) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      case Element_Kind (Enclosing_Element (Call)) is
+         when An_Expression | An_Association =>
+            null;
+         when others =>
+            Fixes.Flush (Mixed_Fixes);
+      end case;
+   end Post_Process_Call;
 
 begin  -- Rules.Expressions
    Framework.Rules_Manager.Register (Rule_Id,

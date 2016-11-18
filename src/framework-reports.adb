@@ -40,6 +40,7 @@ with
 
 -- Adactl
 with
+  Framework.Fixes,
   Framework.Variables.Shared_Types,
   Implementation_Options,
   Adactl_Options;
@@ -261,7 +262,7 @@ package body Framework.Reports is
          Sep_Pos : Natural := Index (To, "_");
       begin
          if Sep_Pos = 0 then
-            Sep_Pos            := To'Last + 1;
+            Sep_Pos    := To'Last + 1;
             Short_Name := False;
          elsif To_Upper (To (Sep_Pos .. To'Last)) = "_SHORT" then
             Short_Name := True;
@@ -425,6 +426,20 @@ package body Framework.Reports is
             when None =>
                null;
          end case;
+
+         if Loc = Null_Location then
+            Fixes.Message (Ctl_Kind,
+                           ""
+                           & Title & ": "
+                           & Label & ": "
+                           & Msg);
+         else
+            Fixes.Message (Ctl_Kind,
+                           Image (Loc) & ": "
+                           & Title & ": "
+                           & Label & ": "
+                           & Msg);
+         end if;
       end Issue_Message;
 
       use Ada.Exceptions;

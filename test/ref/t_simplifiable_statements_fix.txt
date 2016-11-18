@@ -1,0 +1,79 @@
+@check t_simplifiable_statements-test_block.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_block.adb" 5,4 7,7
+I := 1;
+@check t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_block.adb" 9,4 12,7
+I := 1;
+@check t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_handler.adb" 11,7 12,15
+@check t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_handler.adb" 24,7 25,15
+@check t_simplifiable_statements-test_handler.adb:29:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_handler.adb" 29,7 30,15
+@check t_simplifiable_statements-test_if.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if.adb" 8,4 9,11
+@check t_simplifiable_statements-test_if.adb:16:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if.adb" 16,4 17,11
+@check t_simplifiable_statements-test_if.adb:12:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+@check t_simplifiable_statements-test_if.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: content of else path can be moved outside "if" statement
+@check t_simplifiable_statements-test_if.adb:38:13: Error: SIMPLIFIABLE_STATEMENTS: content of then path can be moved outside "if" statement
+@check t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+@check t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+@check t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+@check t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if_not.adb" 7,4 8,11
+@check t_simplifiable_statements-test_if_not.adb:5:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+@check t_simplifiable_statements-test_if_not.adb:13:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if_not.adb" 13,4 14,11
+@check t_simplifiable_statements-test_if_not.adb:11:9: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+@check t_simplifiable_statements-test_if_not.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if_not.adb" 19,4 20,11
+@check t_simplifiable_statements-test_if_not.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if_not.adb" 25,4 26,11
+@check t_simplifiable_statements-test_if_not.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_if_not.adb" 33,4 34,11
+@check t_simplifiable_statements-test_if_not.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+@check t_simplifiable_statements-test_if_not.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+@check t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_loop.adb" 5,4 5,14
+@check t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_loop.adb" 8,4 10,12
+@check t_simplifiable_statements-test_loop.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+@check t_simplifiable_statements-test_null.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_null.adb" 8,4 9,11
+@check t_simplifiable_statements-test_null.adb:6:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_null.adb" 6,7 6,11
+@check t_simplifiable_statements-test_null.adb:14:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_null.adb" 14,7 14,11
+@check t_simplifiable_statements-test_null.adb:18:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_null.adb" 18,7 18,11
+@check t_simplifiable_statements-test_null.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_null.adb" 24,7 24,11
+@check t_simplifiable_statements-test_null.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_null.adb" 28,7 28,11
+@check t_simplifiable_statements-test_dead.adb:10:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 10,4 11,11
+@check t_simplifiable_statements-test_dead.adb:14:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 15,7 15,13
+@check t_simplifiable_statements-test_dead.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 17,4 19,13
+@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 20,4 20,6
+
+@check t_simplifiable_statements-test_dead.adb:25:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 25,7 26,14
+@check t_simplifiable_statements-test_dead.adb:27:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 27,7 28,16
+@check t_simplifiable_statements-test_dead.adb:29:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 29,7 30,16
+@check t_simplifiable_statements-test_dead.adb:40:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 41,7 44,11
+@check t_simplifiable_statements-test_dead.adb:42:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 43,7 44,11
+@check t_simplifiable_statements-test_dead.adb:46:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 46,4 48,12
+@check t_simplifiable_statements-test_dead.adb:50:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 50,4 52,12
+@check t_simplifiable_statements-test_dead.adb:60:1: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 61,7 64,13
+@check t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_statements-test_dead.adb" 62,7 64,13

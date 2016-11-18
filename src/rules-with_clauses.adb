@@ -39,12 +39,14 @@ with
 
 -- AdaControl
 with
+  Framework.Fixes,
   Framework.Language,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.With_Clauses is
    use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
+   use all type Fixes.Insert_Place;
 
    -- Algorithm
    --
@@ -83,10 +85,12 @@ package body Rules.With_Clauses is
    type Usage is (Never_Used, Used_In_Separate, Used);
    type With_Info (U_Length, O_Length : Positive) is
       record
-         Unit_Name     : Wide_String (1 .. U_Length);
-         Original_Name : Wide_String (1 .. O_Length);
+         With_Clause   : Asis.Clause;
+         Position      : Asis.List_Index;               -- Index of name in the with clause
+         Loc           : Location;                      -- Location of name
+         Unit_Name     : Wide_String (1 .. U_Length);   -- Ultimate name of unit
+         Original_Name : Wide_String (1 .. O_Length);   -- Full name of unit from the with clause
          Is_Private    : Boolean;
-         Unit_Loc      : Location;
          Status        : Usage;
       end record;
    function Equivalent_Info (Left, Right : With_Info) return Boolean is
@@ -301,7 +305,8 @@ package body Rules.With_Clauses is
                                 Ctl_Contexts (Reduceable),
                                 Get_Location (Names (I)),
                                 "With clause for " & Extended_Name_Image (Names (I))
-                                & " redundant with clause at " & Image (Withed_Units.Current_Data.Unit_Loc));
+                                & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
+                        Fixes.List_Remove (I, From => Element);
                         Status := Redundant;
                         exit;
                      end if;
@@ -315,10 +320,12 @@ package body Rules.With_Clauses is
                   declare
                      O_Name : constant Wide_String := Full_Name_Image (Names (I));
                   begin
-                     Withed_Units.Push ((U_Length      => U_Name'Length,
+                     Withed_Units.Push ((With_Clause   => Element,
+                                         Position      => I,
+                                         Loc           => Get_Location (Names (I)),
+                                         U_Length      => U_Name'Length,
                                          O_Length      => O_Name'Length,
                                          Unit_Name     => U_Name,
-                                         Unit_Loc      => Get_Location (Names (I)),
                                          Original_Name => O_Name,
                                          Is_Private    => Has_Private (Element),
                                          Status        => Never_Used));
@@ -378,37 +385,46 @@ package body Rules.With_Clauses is
             --
             -- This function filters the names of the special generics that appear to be
             -- children of Ada.Text_IO, and reestablishes the truth.
-            Magic : constant Wide_String := "ADA.TEXT_IO.";
 
+            function Is_Magic_Unit_Of (IO_Unit : Wide_String) return Boolean is
             -- Lower bound of Name *is* 1, since it is obtained from Full_Name_Image:
-            pragma Warnings (Off, "index for ""Name"" may assume lower bound of 1");
-         begin
-            if Name'Length <= Magic'Length
-              or else Name (1 .. Magic'Length) /= Magic
-            then
+               pragma Warnings (Off, "index for ""Name"" may assume lower bound of 1");
+            begin
+               if Name'Length <= IO_Unit'Length+1
+                 or else Name (1 .. IO_Unit'Length) /= IO_Unit
+                 or else Name (IO_Unit'Length+1) /= '.'
+               then
+                  return False;
+               end if;
+
+               declare
+                  Rest : Wide_String renames Name (IO_Unit'Length + 2 .. Name'Last);
+               begin
+                  return    Rest = "ENUMERATION_IO"
+                    or else Rest = "INTEGER_IO"
+                    or else Rest = "MODULAR_IO"
+                    or else Rest = "FLOAT_IO"
+                    or else Rest = "FIXED_IO"
+                    or else Rest = "DECIMAL_IO";
+               end;
+               pragma Warnings (On, "index for ""Name"" may assume lower bound of 1");
+            end Is_Magic_Unit_Of;
+
+         begin  -- Defeat_Gnat_Trick
+            if Is_Magic_Unit_Of ("ADA.TEXT_IO") then
+               return "ADA.TEXT_IO";
+            elsif Is_Magic_Unit_Of ("ADA.WIDE_TEXT_IO") then
+                  return "ADA.WIDE_TEXT_IO";
+            elsif Is_Magic_Unit_Of ("ADA.WIDE_WIDE_TEXT_IO") then
+               return "ADA.WIDE_WIDE_TEXT_IO";
+            else
                return Name;
             end if;
-
-            declare
-               Rest : Wide_String renames Name (Magic'Length + 1 .. Name'Last);
-            begin
-               if        Rest = "ENUMERATION_IO"
-                 or else Rest = "INTEGER_IO"
-                 or else Rest = "MODULAR_IO"
-                 or else Rest = "FLOAT_IO"
-                 or else Rest = "FIXED_IO"
-                 or else Rest = "DECIMAL_IO"
-               then
-                  return "ADA.TEXT_IO";
-               end if;
-            end;
-
-            return Name;
-            pragma Warnings (On, "index for ""Name"" may assume lower bound of 1");
          end Defeat_Gnat_Trick;
 
-         U_Name : constant Wide_String := Defeat_Gnat_Trick (To_Upper (Full_Name_Image
-                                                             (Names (Unit_Declaration (Elem_Def_Unit)) (1))));
+         U_Name : constant Wide_String := Defeat_Gnat_Trick (To_Upper
+                                                             (Full_Name_Image
+                                                              (Names (Unit_Declaration (Elem_Def_Unit)) (1))));
       begin
          Withed_Units.Reset (Unit_Scopes);
          while Withed_Units.Data_Available loop
@@ -425,7 +441,7 @@ package body Rules.With_Clauses is
                               if Rule_Used (Reduceable) then
                                  Report (Rule_Id,
                                          Ctl_Contexts (Reduceable),
-                                         Info.Unit_Loc,
+                                         Info.Loc,
                                          "With clause for "
                                            & Info.Original_Name
                                            & " can be moved to body"
@@ -438,7 +454,11 @@ package body Rules.With_Clauses is
                                          Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
                                          "With clause for "
                                            & Info.Original_Name
-                                           & " inherited from " & Image (Info.Unit_Loc));
+                                           & " inherited from " & Image (Info.Loc));
+                                 Fixes.Insert ("with " & Info.Original_Name & ';',
+                                               Before,
+                                               Unit_Declaration (Enclosing_Compilation_Unit (Element)),
+                                               Full_Line => True);
                               end if;
                            when Same_Unit =>
                               if Rule_Used (Reduceable)
@@ -448,10 +468,11 @@ package body Rules.With_Clauses is
                               then
                                  Report (Rule_Id,
                                          Ctl_Contexts (Reduceable),
-                                         Info.Unit_Loc,
+                                         Info.Loc,
                                          "With clause for "
                                            & Info.Original_Name
-                                           & " can be changed to private with");
+                                         & " can be changed to private with");
+                                 Fixes.Insert ("private ", Before, Info.With_Clause);
                               end if;
                         end case;
                         Info.Status := Used;
@@ -487,7 +508,11 @@ package body Rules.With_Clauses is
                                 Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
                                 "With clause for "
                                   & Info.Original_Name
-                                  & " inherited from " & Image (Info.Unit_Loc));
+                                  & " inherited from " & Image (Info.Loc));
+                        Fixes.Insert ("with " & Info.Original_Name & ';',
+                                      Before,
+                                      Unit_Declaration (Enclosing_Compilation_Unit (Element)),
+                                      Full_Line => True);
                      end if;
                      Info.Status := Used_In_Separate;
                      Withed_Units.Update_Current (Info);
@@ -556,18 +581,20 @@ package body Rules.With_Clauses is
                      when Never_Used =>
                         Report (Rule_Id,
                                 Ctl_Contexts (Reduceable),
-                                Info.Unit_Loc,
+                                Info.Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
                                   & Choose (Is_Spec or Withed_Units.Current_Origin = Specification,
                                             """ (possible use in child units)",
                                             """")
                                );
+                        Fixes.List_Remove (Info.Position, From => Info.With_Clause);
                      when Used_In_Separate =>
                         Report (Rule_Id,
                                 Ctl_Contexts (Reduceable),
-                                Info.Unit_Loc,
+                                Info.Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
-                                  & """ (used in separate unit(s))");
+                                & """ (used in separate unit(s))");
+                        Fixes.List_Remove (Info.Position, From => Info.With_Clause);
                      when Used =>
                         null;
                   end case;

@@ -27,7 +27,7 @@
 -- Ada
 with
   Ada.Characters.Handling,
-  Ada.Characters.Latin_1,
+  Ada.Characters.Wide_Latin_1,
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Fixed;
 
@@ -41,16 +41,16 @@ with
 
 -- AdaControl
 with
+  Framework.Fixes,
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Characters is
    use Ada.Strings.Wide_Maps, Framework, Framework.Control_Manager;
 
-   Tab_Chars  : constant  Wide_Character_Set := To_Set (Ada.Characters.Handling.To_Wide_String
-                                                          (Ada.Characters.Latin_1.HT
-                                                         & Ada.Characters.Latin_1.VT
-                                                         & Ada.Characters.Latin_1.FF));
+   Tab_Chars  : constant  Wide_Character_Set := To_Set (Wide_String'(Ada.Characters.Wide_Latin_1.HT,
+                                                                     Ada.Characters.Wide_Latin_1.VT,
+                                                                     Ada.Characters.Wide_Latin_1.FF));
    Separators : constant Wide_Character_Set := Tab_Chars or To_Set (' ');
 
    type Subrule is (Control, Not_Iso_646, Trailing_Space, Wide);
@@ -131,6 +131,8 @@ package body Rules.Characters is
 
       procedure Check_Control is
          use Ada.Strings.Wide_Fixed;
+         use Utilities;
+
          Pos_Tab      : Natural;
          First_Before : Natural;
          Last_Before  : Natural;
@@ -174,15 +176,26 @@ package body Rules.Characters is
             elsif Last_Before >= Line'First and First_After > Line'Last then
                Report (Rule_Id,
                        Contexts (Control),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Pos_Tab)),
+                       Loc + (Pos_Tab - 1),
                        "Control character found after """  & Line (First_Before .. Last_Before) & '"');
             else
                Report (Rule_Id,
                        Contexts (Control),
-                       Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Pos_Tab)),
+                       Loc + (Pos_Tab - 1),
                        "Control character found between """  & Line (First_Before .. Last_Before)
                        & """ and """ & Line (First_After .. Last_After) & '"');
             end if;
+
+            case Line (Pos_Tab) is
+               when Ada.Characters.Wide_Latin_1.HT =>
+                   -- Replace by spaces up to multiple of 4
+                  Fixes.Replace (From => Loc + (Pos_Tab - 1), Length => 1, By => (4 - Pos_Tab rem 4) * " ");
+               when Ada.Characters.Wide_Latin_1.VT | Ada.Characters.Wide_Latin_1.FF =>
+                   -- Replace by single space
+                  Fixes.Replace (From => Loc + (Pos_Tab - 1), Length => 1, By => " ");
+               when others =>
+                  Failure ("Check_Control: character code " & Integer_Img (Wide_Character'Pos (Line (Pos_Tab))));
+            end case;
          end if;
       end Check_Control;
 
@@ -204,8 +217,9 @@ package body Rules.Characters is
             end loop;
             Report (Rule_Id,
                     Contexts (Trailing_Space),
-                    Create_Location (Get_File_Name (Loc), Get_First_Line (Loc), Character_Position (Last_Separator)),
+                    Loc + (Last_Separator - 1),
                     Integer_Img (Line'Last - Last_Separator + 1) & " trailing space(s)");
+            Fixes.Delete (From => Loc + (Last_Separator - 1), To => Loc + Line'Last);
          end if;
       end Check_Trailing;
 

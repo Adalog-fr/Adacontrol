@@ -78,6 +78,7 @@ procedure Adactl is
                          On  => (Off => Full, On => Spec_Closure));
 
    use Framework.Language;
+
 begin
 
    --
@@ -135,7 +136,7 @@ begin
 
    if Action /= Help then
       -- Close output file if any
-      Execute ("set output console;");
+      Execute ("set output console; set patch;");
 
       --
       -- Clean up ASIS

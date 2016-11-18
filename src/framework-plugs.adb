@@ -757,6 +757,17 @@ package body Framework.Plugs is
                   null;
             end case;
 
+         when An_Expression =>
+            case Expression_Kind (Element) is
+               when A_Function_Call
+                  | An_And_Then_Short_Circuit | An_Or_Else_Short_Circuit
+                  | An_In_Membership_Test     | A_Not_In_Membership_Test
+                  =>
+                  Rules.Expressions. Post_Process_Call (Element);
+               when others =>
+                  null;
+            end case;
+
          when A_Statement =>
             case Statement_Kind (Element) is
                when A_Loop_Statement

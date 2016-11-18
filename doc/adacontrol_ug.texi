@@ -89,6 +89,10 @@ features, or simply to search for the occurrences of particular
 constructs; its scope is therefore not limited to enforcing
 programming rules, although it is of course one of its main goals.
 
+AdaContol can also generate a file containing suggested fixes to a
+number of violations; its companion program @code{adaclt_fix} can
+automatically perform these fixes.
+
 AdaControl is a commercial product of
 @url{http://www.adalog.fr/adalog2.htm,Adalog} with professional grade
 support available. Getting support is highly recommended for
@@ -618,7 +622,8 @@ The syntax for invoking AdaControl in regular mode is:
 @example
 adactl [-deEirsTuvwx]
        [-p <project file>]     [-f [<rules file>]]  [-l <rules list>]
-       [-o <output file>]      [-t <trace file>]    [-F <format>]
+       [-o <output file>]      [-t <trace file>]    [-P <fixes file>]
+       [-F <format>]
        [-S <statistics level>] [-m <warning limit>] [-M <message limit>]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
@@ -654,6 +659,7 @@ force Ada-95 the same way by using @code{@b{pragma} Ada_95} instead.
 * Command line parameters and options::
 * Return codes::
 * Environment variable and default settings::
+* Automatic fixing::
 * Interactive mode::
 * Other execution modes::
 * Running AdaControl from GPS::
@@ -793,8 +799,8 @@ behind something that generates commands; if you want to type commands
 directly to AdaControl, the interactive mode is more
 appropriate. @xref{Interactive mode}.
 
-Alternatively, AdaControl will consider a rules file set as default in a .gpr 
-project file, unless an explicit ``-f'' option is given. 
+Alternatively, AdaControl will consider a rules file set as default in a .gpr
+project file, unless an explicit ``-f'' option is given.
 
 Ex:
 @example
@@ -803,7 +809,7 @@ adactl -f my_rules.aru proc.adb
 
 Note that the ``-l'' and ``-f'' options are @i{not} exclusive: if both
 are specified, the commands to be performed include those in the file
-(first) and then those given on the command line. 
+(first) and then those given on the command line.
 
 This applies also when there is no ``-f'' option, but a .gpr file is
 given which includes a default rules file. If you need a project file,
@@ -996,7 +1002,7 @@ specification of units.
 10: There was an internal failure of AdaControl.
 @end itemize
 
-@node Environment variable and default settings, Interactive mode, Return codes, Program Usage
+@node Environment variable and default settings, , Return codes, Program Usage
 @section Environment variable and default settings
 If the environment variable ``ADACTLINI'' is set, its content is taken
 as a set of commands (separated by semi-colons) that are executed
@@ -1008,7 +1014,102 @@ For example, you can set ADACTLINI to ``set format Gnat_Short'' if you
 prefer having you messages in short format rather than the (default)
 long format.
 
-@node Interactive mode, Other execution modes, Environment variable and default settings, Program Usage
+@node Automatic fixing, Interactive mode, Environment variable and default settings, Program Usage
+@section Automatic fixing
+The ``-P'' option, followed by a file name, directs AdaControl to
+produce an intermediate file (the ``fix file'') containing directives
+to fix the source that violated some rule.  If the fix file already
+exists, it is overwritten.
+
+This file can then be processed by the @code{adactl_fix} utility. The
+syntax is:
+@example
+adactl_fix [-v] [-o <output-prefix>] <fix_file>...
+adactl_fix -h
+@end example
+With the ``-h'' option, @code{adactl_fix} prints a brief help message
+and exits, ignoring all other options and parameters.
+
+Otherwise, adactl_fix reads the indicated <fix_file>s (more than one
+can be provided) and performs the corresponding fixes. The modified
+files are printed on the standard output, which can be redirected to a
+file for later splitting at an appropriate place by
+@code{gnatchop}. Alternatively, if the ``-o'' option is given, each
+modified file is output to a file whose name is obtained by prefixing
+the <output-prefix> of the "-o" option to the original name of the
+corresponding source file. The <output-prefix> can be any string, and
+is not analyzed by Adactl_Fix. A prefix like "result/" will result in
+all the output going to the directory "result", with the same name as
+the original. Alternatively, a prefix like "new-" will result in all
+output files being in the same directory, with a "new-" prepended to
+the name. Adactl_Fix will overwrite any existing file with the same
+name.
+
+@subsection Rule fixes
+Not all rule provide automatic fixing, either because the rule is just
+intended to report on the presence of some construct, or because the
+fix needs manual inspection. When a rule does provide for automatic
+fixing, there is a ``Fixes'' section in its description that explains
+what can (or cannot) be fixed by the rule.
+
+
+@subsection Conflicts
+It is possible that several fixes modify the same place, or
+overlapping places. If one of the fixes is the deletion of a zone of
+text that fully covers the other one, then the deletion is kept and
+the  other one discarded. Otherwise, the first fix is kept and the
+other one ignored; a message at the end of the run tells the user that
+some fixes were not performed, and that AdaControl should be run
+again.
+
+When this happens, it is possible (although we expect it to be
+infrequent) that the modified code does not compile anymore and that
+some easy manual adjustments be necessary.
+
+It is expected that this algorithm for resolving conflicts be improved
+in the future.  Suggestions and examples welcome!
+
+@subsection How to proceed
+Automatic fixing is a powerful feature of AdaControl, but like any
+tool that transforms the source it requires some care. Using automatic
+fixes makes sense when there are many violations, and those violations
+would be easy and tedious to fix by hand. A typical use case is when
+you apply new rules to an existing software, and discover that the
+casing rules have not been obeyed: fixing the casing of thousands of
+identifiers is a long and uninteresting job...  Therefore, the
+automatic fixing tool has been designed under the assumption that it
+will be used ``one-shot'', not as day-to-day use.
+
+The automatic fixing should therefore be used as follows:
+@itemize bullet
+@item
+Use backups, your CMS, etc. to save the initial state and to be able
+to compare the original and fixed versions.
+@item
+Always run AdaControl on the whole program; some rules need a complete
+analysis to be reliable. For example, a (visible) variable is known
+to be unused only if all possible users have been analyzed.
+@item
+Prefer running AdaControl on a single rule, fix the resulting errors,
+then run it again on a different rule. This should minimize the number
+of conflicts.
+@item
+In case of conflicts, Adactl_Fix warns you that some fixes were not
+applied; recompile your program to check that the partial fixes did
+not introduce syntax errors, and fix if necessary. Then run AdaControl
+and Adactl_Fix again, until all fixes are applied.
+@end itemize
+
+@subsection A word of caution
+Attention of users designing safety critical applications (DOD-178B/C
+level A, EN-50128 SIL4) is drawn to the fact that the automatic fixing
+is relevant to TQL1-4, instead of TQL5 as AdaControl normally is.
+
+AdaControl has not been subject to the formal verifications required by
+TQL1-4 tools; therefore it is up to the user to check that the applied
+fixes maintain the integrity of the software.
+
+@node Interactive mode, Other execution modes, Automatic fixing, Program Usage
 @section Interactive mode
 The ``-I'' option tells AdaControl to operate interactively. In this
 mode, commands  specified with ``-l'' or ``-f'' options are first
@@ -1056,7 +1157,7 @@ happens.
 Syntax:
 @example
 adactl -h [<keyword> | <rule name> | variables ["<pattern>"] ...]
-<keyword> ::= all     | commands | license | list | 
+<keyword> ::= all     | commands | license | list |
               options | rules    | version
 @end example
 
@@ -1910,7 +2011,7 @@ syntax of a control command is as follows:
 @example
 <control_command> ::= [<label> ":"] <control> @{"," <control>@} ";"
 <control>    ::= <ctrl_kind> <Rule_Name> [<parameters>]
-<parameters> ::= "(" [<modifiers>] <value> 
+<parameters> ::= "(" [<modifiers>] <value>
                 @{"," [<modifiers>] <value>@} ")"
 <ctrl_kind>  ::= "check"|"search"|"count"
 @end example
@@ -2802,7 +2903,7 @@ component type of the array.
 <control_kind> array_declarations (dimensions,   <value> | <bounds>);
 <control_kind> array_declarations ([all] length, <bounds>);
 <control_kind> array_declarations (component,    <type> @{,<repr_cond>@});
-<control_kind> array_declarations (index,        <type> | <> 
+<control_kind> array_declarations (index,        <type> | <>
                                                @{,<type> | <>@});
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <type>      ::= <entity>|<category>
@@ -3038,8 +3139,8 @@ assignment.
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
 <target>   ::= <entity> | <category>
-<category> ::= ()       | access | array   | delta     | digits    | 
-               function | mod    | private | procedure | protected | 
+<category> ::= ()       | access | array   | delta     | digits    |
+               function | mod    | private | procedure | protected |
                range    | record | tagged  | task
 <filter>   ::= given <min_val> | missing <max_val> | ratio <min_val> |
                total <max_val>
@@ -3181,7 +3282,7 @@ remaining duplication of access values after they have been
 Unchecked_Deallocated through one of the variables. The
 ``not controlled'' modifier is intended to avoid too many false
 positives when you use controlled types to manage pointers. It may also
-be useful to check all access duplications, but consider that those that 
+be useful to check all access duplications, but consider that those that
 are part of a controlled type deserve only a warning:
 @example
 check  assignments (not controlled access_duplication);
@@ -3221,7 +3322,7 @@ barrier expressions.
 @example
 <control_kind> Barrier_Expressions ([<allowable> @{, <allowable>@}]);
 <allowable> ::= <entity> | <keyword>
-<keyword> ::= 
+<keyword> ::=
    allocation          | any_component   | any_variable        |
    arithmetic_operator | array_aggregate | comparison_operator |
    conversion          | dereference     | indexing            |
@@ -3316,7 +3417,7 @@ complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
 <control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
-<subrule> ::= others_span      | paths | range_span | values | 
+<subrule> ::= others_span      | paths | range_span | values |
               values_if_others
 <bound>   ::= min | max <value>
 @end example
@@ -3421,6 +3522,16 @@ Ex:
 check characters (control, trailing_space);
 search characters (not_iso_646);
 @end example
+
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``control'': HT characters are replaced by spaces, up to the next position wich
+is a multiple of 4;  VT and FF characters are replaced by a single space.
+@item
+``trailing_space'': extra space characters are removed.
+@end itemize
 
 @subsection Limitations
 With the ``wide'' subrule, the error message may seem to not always
@@ -3542,6 +3653,14 @@ check comments (unnamed_begin, program_unit procedure);
 check comments (unnamed_begin, program_unit function);
 @end example
 
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``Unnamed_Begin'': a comment with the name of the entity is added to the @code{@b{begin}} if it has no comment, or
+replaces an existing comment.
+@end itemize
+
 @subsection Tips
 Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
@@ -3549,7 +3668,9 @@ the comment, or both.
 
 For ``unnamed_begin'', the <condition> defines cases where the comment
 is optional; however if a comment is present in an optional case, it
-has to be the name of the corresponding unit.
+has to be the name of the corresponding unit. The fix replaces an
+existing comment, on the ground that it is likely that the wrong
+comment is actually the old name of an entity that has been renamed.
 
 @subsection Limitations
 This rule does not support wide characters outside the basic Latin-1 set.
@@ -3565,42 +3686,42 @@ those occurring at specified locations.
 <location_kw> ::= all | block   | library | local      | nested |
                   own | private | public  | in_generic | task_body
 <declaration_kw> ::=
-  any_declaration                  | 
-  abstract_function                | abstract_operator                 | 
-  abstract_procedure               | abstract_type                     | 
-  access_all_type                  | access_constant_type              | 
-  access_constrained_array_type    | access_def_discriminated_type     | 
-  access_formal_Type               | access_language_type              | 
-  access_nondef_discriminated_type | access_protected_type             | 
-  access_subprogram_type           | access_task_type                  | 
-  access_unconstrained_array_type  | access_unknown_discriminated_type | 
-  access_type                      | aliased_array_component           | 
-  aliased_constant                 | aliased_protected_component       | 
-  aliased_record_component         | aliased_variable                  | 
-  anonymous_access_component       | anonymous_access_constant         | 
-  anonymous_access_discriminant    | anonymous_access_parameter        | 
-  anonymous_access_variable        | anonymous_subtype_allocator       | 
-  anonymous_subtype_case           | anonymous_subtype_declaration     | 
-  anonymous_subtype_for            | anonymous_subtype_indexing        | 
-  array                            | array_type                        | 
-  binary_modular_type              | box_defaulted_formal_function     | 
-  box_defaulted_formal_procedure   | character_literal                 | 
-  child_unit                       | class_wide_constant               | 
-  class_wide_variable              | constant                          | 
-  constrained_array_constant       | constrained_array_type            | 
-  constrained_array_variable       | controlled_type                   | 
-  decimal_fixed_type               | defaulted_discriminant            | 
-  defaulted_generic_parameter      | defaulted_parameter               | 
-  deferred_constant                | derived_type                      | 
-  discriminant                     | empty_private_part                | 
-  empty_visible_part               | enumeration_type                  | 
-  entry                            | equality_operator                 | 
-  exception                        | expression_function               | 
-  extension                        | fixed_type                        | 
-  float_type                       | formal_function                   | 
-  formal_package                   | formal_procedure                  | 
-  formal_type                      | function                          | 
-  function_call_renaming           | function_instantiation            | 
+  any_declaration                  |
+  abstract_function                | abstract_operator                 |
+  abstract_procedure               | abstract_type                     |
+  access_all_type                  | access_constant_type              |
+  access_constrained_array_type    | access_def_discriminated_type     |
+  access_formal_Type               | access_language_type              |
+  access_nondef_discriminated_type | access_protected_type             |
+  access_subprogram_type           | access_task_type                  |
+  access_unconstrained_array_type  | access_unknown_discriminated_type |
+  access_type                      | aliased_array_component           |
+  aliased_constant                 | aliased_protected_component       |
+  aliased_record_component         | aliased_variable                  |
+  anonymous_access_component       | anonymous_access_constant         |
+  anonymous_access_discriminant    | anonymous_access_parameter        |
+  anonymous_access_variable        | anonymous_subtype_allocator       |
+  anonymous_subtype_case           | anonymous_subtype_declaration     |
+  anonymous_subtype_for            | anonymous_subtype_indexing        |
+  array                            | array_type                        |
+  binary_modular_type              | box_defaulted_formal_function     |
+  box_defaulted_formal_procedure   | character_literal                 |
+  child_unit                       | class_wide_constant               |
+  class_wide_variable              | constant                          |
+  constrained_array_constant       | constrained_array_type            |
+  constrained_array_variable       | controlled_type                   |
+  decimal_fixed_type               | defaulted_discriminant            |
+  defaulted_generic_parameter      | defaulted_parameter               |
+  deferred_constant                | derived_type                      |
+  discriminant                     | empty_private_part                |
+  empty_visible_part               | enumeration_type                  |
+  entry                            | equality_operator                 |
+  exception                        | expression_function               |
+  extension                        | fixed_type                        |
+  float_type                       | formal_function                   |
+  formal_package                   | formal_procedure                  |
+  formal_type                      | function                          |
+  function_call_renaming           | function_instantiation            |
   generic                          | generic_function                  |
   generic_package                  | generic_procedure                 |
   handlers                         | incomplete_type                   |
@@ -4341,14 +4462,14 @@ always issued.
 
 Ex:
 @example
-check derivations (from, Standard.Integer); 
+check derivations (from, Standard.Integer);
  -- Types derived from Integer
 
-search derivations (from, standard);         
+search derivations (from, standard);
 -- Types derived from a type in Standard, except Standard.Integer
 -- (caught above)
 
-search derivations (from, range);            
+search derivations (from, range);
 -- Types derived from an integer type
 @end example
 
@@ -5086,6 +5207,13 @@ search expressions (array underived_conversion);
 -- Some think that downward conversions of tagged types are evil:
 check expressions (tagged downward_conversion);
 @end example
+
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``Mixed_Operators'': Parentheses are inserted appropriately.
+@end itemize
 
 @subsection Variable
 The rule provides a variable that allows to specify the amount of information
@@ -5999,6 +6127,9 @@ search max_blank_lines (2);
 check max_blank_lines (5);
 @end example
 
+@subsection Fixes
+This rule generates fixes: Extra blank lines are removed.
+
 @node Max_Call_Depth, Max_Line_Length, Max_Blank_Lines, Rules reference
 @section Max_Call_Depth
 This rule controls the maximum depth of subprograms (or entry) calls.
@@ -6665,7 +6796,7 @@ operators, which indicates that they might be replaceable with other
 kinds of types.
 @subsection Syntax
 @example
-<control_kind> no_operator_usage [([<category>] <parameter> 
+<control_kind> no_operator_usage [([<category>] <parameter>
                                               [,<parameter>])];
 <category>  ::= range | mod
 <parameter> ::= [<filter>] <observed>
@@ -7163,8 +7294,8 @@ named associations) in all kinds of associations.
 <control_kind> positional_associations [(<subrule>, <max_allowed>
                                          [, <category> @{, <entity>@}])];
 <subrule>  ::= all | all_positional | same_type
-<category> ::= [not_operator] call | discriminant     | pragma        | 
-               array_aggregate     | record_aggregate | instantiation | 
+<category> ::= [not_operator] call | discriminant     | pragma        |
+               array_aggregate     | record_aggregate | instantiation |
                enumeration_representation
 @end example
 
@@ -7228,7 +7359,7 @@ check positional_associations(all, 0, record_aggregate);
  -- All positional associations with more than 3 elements:
 search positional_associations (all, 3);
 
--- Positional associations in calls 
+-- Positional associations in calls
 -- with more than 3 params of the same type
 search positional_associations (same_type, 3, call);
 
@@ -7365,12 +7496,12 @@ This rule controls various aspects of the components of records.
 
 @subsection Syntax
 @example
-<control_kind> record_declarations (component, <compo_kind> 
+<control_kind> record_declarations (component, <compo_kind>
                                             @{,<repr_cond>@});
 <compo_kind> ::= <entity>|<category>
-<category>   ::= ()      | access    | array | delta  | digits | mod | 
+<category>   ::= ()      | access    | array | delta  | digits | mod |
                  private | protected | range | record | tagged | task
-<repr_cond>  ::= [not] in_variant | aligned | initialized | packed | 
+<repr_cond>  ::= [not] in_variant | aligned | initialized | packed |
                  sized
 @end example
 
@@ -7989,6 +8120,15 @@ search simplifiable_expressions (parentheses);
 check  simplifiable_expressions (range, logical);
 @end example
 
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``Conversions'': The unnecessary conversion (or qualification) is removed.
+@item
+``Parentheses'': The unnecessary parentheses are removed.
+@end itemize
+
 @subsection Tips
 There are cases where parentheses may seem unnecessary, but are
 (purposedly) not reported by this rule. Consider for example:
@@ -8025,8 +8165,8 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= block       | dead   | handler | if             | 
-              if_for_case | if_not | loop    | loop_for_while | 
+<subrule> ::= block       | dead   | handler | if             |
+              if_for_case | if_not | loop    | loop_for_while |
               nested_path | null
 @end example
 @subsection Action
@@ -8169,6 +8309,24 @@ Ex:
 check simplifiable_statements (block, null);
 search simplifiable_statements (if);
 @end example
+
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``Block'': The unnecessary enclosing block structure is removed.
+@item
+``Dead'': The dead code is removed.
+@item
+``If'': The empty ``else'' part is removed.
+@item
+``Handler'': The useless handler is removed.
+@item
+``Loop'': a `` @code{@b{while}} True @code{@b{loop}}'' is changed to a
+plain @code{@b{loop}}
+@item
+``Null'': The useless @code{@b{null}} statement is removed.
+@end itemize
 
 @subsection Tips
 The ``dead'' subrule does not signal a @code{@b{when} @b{others}} branch
@@ -8540,7 +8698,7 @@ values are regular expressions. @xref{Syntax of regular
 expressions}. Commonly allowed values are 0 and 1 for integer
 literals, 1.0 and 0.0 for real literals and "^$" (the empty string)
 for string literals. At most 20 values of each kind may be
-specified. 
+specified.
 
 In addition, one or several <place> keyword can be used to specify
 constructs where any literal is allowed: ``declaration'' stands for
@@ -8671,6 +8829,34 @@ style (literal, 10, 3);
 style (exposed_literal, integer, 0, 1)
 style (exposed_literal, real, 0.0, 1.0);
 @end example
+
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``Casing_Aspect'': The casing of the aspect name is adjusted.
+@item
+``Casing_Attribute'': The casing of the attribute is adjusted.
+@item
+''Casing_Exponent'': The casing of the exponent is adjusted.
+@item
+``Casing_Identifier'': The casing of the identifier is adjusted.
+@item
+``Casing_Keyword'': The casing of the keyword is adjusted.
+@item
+``Casing_Number'': The casing of letters in the based number is adjusted.
+@item
+``Casing_Pragma'': The casing of the pragma name is adjusted.
+@item
+``Default_In'': The missing ``@code{@b{in}}'' is added.
+@item
+``Multiple_Elements'': Line breaks are inserted before the second
+element on the same line.
+@item
+``No_Closing_Name'': The name of the construct is added after ``@code{@b{end}}''.
+@item
+``Renamed_Entity'': The original name is replaced by the renaming name.
+@end itemize
 
 @subsection Tips
 For the ``Casing_Identifier'' subrule, if the value is ``original'',
@@ -10510,7 +10696,7 @@ check statements (dispatching_call, redispatching_call);
 to:
 @example
 check statements  (dispatching_call, redispatching_call);
-check expressions (dispatching_function_call, 
+check expressions (dispatching_function_call,
                    redispatching_function_call);
 @end example
 

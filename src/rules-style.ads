@@ -79,6 +79,9 @@ private
                                    return Framework.Control_Manager.Root_Context'Class;
    function Should_Be (Source   : Wide_String;
                        Expected : Casing_Set;
-                       Original : Wide_String := "")
+                       Original : Wide_String := "";
+                       For_Fix  : Boolean)
                        return Wide_String;
+   -- if For_Fix is True, return a single possible value, without quotes.
+   -- if For_Fix is Fales, return all allowed value, within quotes, separated by " or "
 end Rules.Style;

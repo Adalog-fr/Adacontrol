@@ -926,6 +926,7 @@ Options:
    -l rules  process with these rules
    -o file   specify an output file
    -p file   specify a project file (.gpr or .adp)
+   -P file   specify a patch file for fixing source
    -r        recursive
    -s        process specifications only
    -S        statistics level (0 .. 3)

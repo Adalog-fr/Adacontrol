@@ -34,4 +34,7 @@ package Rules.Expressions is
    procedure Process_Expression (Expression : in Asis.Expression);
    procedure Process_Call       (Call       : in Asis.Element);
    procedure Process_Range      (Def        : in Asis.Definition);
+
+   procedure Post_Process_Call (Call : in Asis.Element); -- Currently only functions (and short circuits, memberships)
+
 end Rules.Expressions;

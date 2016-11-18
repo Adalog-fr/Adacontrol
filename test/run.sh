@@ -258,8 +258,8 @@ nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
     test_case=`echo $i | cut -f 1 -d "."`
-    ${ADACTL} -ruw -f conf/${test_case}.aru $test_case \
-	| tr -d \\r >res/${test_case}.txt
+    ${ADACTL} -ruw -f conf/${test_case}.aru ${test_case} -o res/${test_case}.txt -P res/${test_case}_fix.txt
+    dos2unix -q res/${test_case}.txt res/${test_case}_fix.txt
 done
 
 #
@@ -290,13 +290,18 @@ for test_case in $list; do
     diff=`diff --strip-trailing-cr res/${test_case} ref/${test_case} 2>&1 || true`
     if [ -z "$diff" ]; then
 	nb_passed=$((nb_passed+1))
-	if [ $SILENT -eq 0 ]; then
-	    printf "=> %-60s%-13s <=\n" ${test_case} "       PASSED"
-	fi
+        message="       PASSED"
     else
 	nb_failed=$((nb_failed+1))
-	printf "=> %-60s%-13s <=\n" ${test_case} "FAILED       "
+	message="FAILED       "
     fi;
+    if [ $SILENT -eq 0 ]; then
+        if [[ ${test_case} =~ _fix.txt$ ]] ; then
+	    printf "=> %-60s%-13s <=\n" "  Fix" "$message"
+        else
+	    printf "=> %-60s%-13s <=\n" ${test_case} "$message"
+        fi
+    fi
 done
 
 put_line_line

@@ -39,6 +39,7 @@ with
 
 -- AdaControl
 with
+  Framework.Fixes,
   Framework.Language,
   Framework.Queries;
 pragma Elaborate (Framework.Language);
@@ -55,7 +56,8 @@ package body Rules.Unnecessary_Use_Clause is
    -- if yes => use clause within scope of use clause.
    --
    -- When we encounter an identifier, we take the Full_Name_Image of the package that
-   -- encloses *immediately* its declaration (see below for a proof of why it works).
+   -- encloses *immediately* its declaration (see below in Process_Identifier for a proof
+   -- of why it works).
    -- If it matches a package in store, that package is used, and marked depending on
    -- the kind of usage (from operator, from qualified name, or plain identifier).
    --
@@ -76,11 +78,12 @@ package body Rules.Unnecessary_Use_Clause is
    Ctl_Contexts  : array (Subrules) of Basic_Rule_Context;
 
    type User_Kind is (Nothing, Qualified_Name, Operator, Identifier);
-   type Package_Info (Length_1, Length_2 : Positive) is
+   type Package_Info (Name_Length : Positive) is
       record
-         Elem            : Asis.Element;
-         Name            : Wide_String (1..Length_1);
-         Original_Name   : Wide_String (1..Length_2);
+         Use_Clause      : Asis.Element;
+         Position        : Asis.List_Index;
+         Name            : Wide_String (1..Name_Length);  -- Full name image of ultimate identifier
+         Original_Name   : Asis.Element;
          User            : User_Kind;
       end record;
    package Used_Packages is new Scope_Manager.Scoped_Store (Package_Info);
@@ -160,19 +163,7 @@ package body Rules.Unnecessary_Use_Clause is
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
       use Asis.Clauses;
-
-      function Build_Info (Name_Elem : Asis.Element) return Package_Info is
-         use Thick_Queries;
-         Name_String     : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Name_Elem)));
-         Original_String : constant Wide_String := Extended_Name_Image (Name_Elem);
-      begin
-         return (Length_1      => Name_String'Length,
-                 Length_2      => Original_String'Length,
-                 Elem          => Clause,
-                 Name          => Name_String,
-                 Original_Name => Original_String,
-                 User          => Nothing);
-      end Build_Info;
+      use Thick_Queries;
 
    begin  -- Process_Use_Clause
       if Rule_Used = Not_Used then
@@ -187,19 +178,19 @@ package body Rules.Unnecessary_Use_Clause is
          for I in Names'Range loop
             declare
                use Scope_Manager, Framework.Reports;
-               Info : constant Package_Info := Build_Info (Names (I));
+               Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names(I))));
             begin
                -- Check if already there
                Used_Packages.Reset (All_Scopes);
                while Used_Packages.Data_Available loop
-                  if Used_Packages.Current_Data.Name = Info.Name then
+                  if Used_Packages.Current_Data.Name = Name_String then
                      if Rule_Used (Nested) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Nested),
-                                Get_Location (Info.Elem),
-                                "use clause for " & Info.Original_Name
+                                Get_Location (Clause),
+                                "use clause for " & Extended_Name_Image (Names (I))
                                 & " in scope of use clause for same package at "
-                                & Image (Get_Location (Used_Packages.Current_Data.Elem)));
+                                & Image (Get_Location (Used_Packages.Current_Data.Use_Clause)));
                      end if;
                   end if;
 
@@ -207,7 +198,12 @@ package body Rules.Unnecessary_Use_Clause is
                end loop;
 
                -- Add it in any case
-               Used_Packages.Push (Info);
+               Used_Packages.Push ((Name_Length   => Name_String'Length,
+                                    Use_Clause    => Clause,
+                                    Position      => I,
+                                    Name          => Name_String,
+                                    Original_Name => Names (I),
+                                    User          => Nothing));
             end;
          end loop;
       end;
@@ -239,11 +235,10 @@ package body Rules.Unnecessary_Use_Clause is
 
    procedure Process_Identifier (Name : in Asis.Name) is
       use Asis, Asis.Elements;
-      use Framework.Reports, Framework.Queries;
+      use Framework.Reports, Framework.Queries, Thick_Queries;
 
       function Is_Name_Prefixed_With (Pack_Name : Wide_String) return Boolean is
          use Asis.Expressions;
-         use Thick_Queries;
 
          Name_Enclosing : constant Asis.Element := Enclosing_Element (Name);
       begin
@@ -287,8 +282,10 @@ package body Rules.Unnecessary_Use_Clause is
                      if Rule_Used (Movable) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Movable),
-                                Get_Location (Info.Elem),
-                                "use clause for "  & Info.Original_Name & " can be moved to body");
+                                Get_Location (Info.Use_Clause),
+                                "use clause for "
+                                & Extended_Name_Image (Info.Original_Name)
+                                & " can be moved to body");
                      end if;
                   end if;
                   if Is_Name_Prefixed_With (Info.Name) then
@@ -347,7 +344,7 @@ package body Rules.Unnecessary_Use_Clause is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      use Framework.Reports, Scope_Manager;
+      use Framework.Reports, Scope_Manager, Thick_Queries;
       use Asis, Asis.Elements, Asis.Declarations;
 
       Is_Package_Spec : Boolean := False;
@@ -411,28 +408,32 @@ package body Rules.Unnecessary_Use_Clause is
                      if Rule_Used (Unused) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Unused),
-                                Get_Location (Info.Elem),
-                                "unused use clause for " & Info.Original_Name
+                                Get_Location (Info.Use_Clause),
+                                "unused use clause for " & Extended_Name_Image (Info.Original_Name)
                                 & Choose (Child_Warning,
                                           " (possible usage in child units)",
                                           ""));
+                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
                      end if;
                   when Qualified_Name =>
                      if Rule_Used (Qualified) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Qualified),
-                                Get_Location (Info.Elem),
-                                "all uses of " & Info.Original_Name & " are qualified"
+                                Get_Location (Info.Use_Clause),
+                                "all uses of " & Extended_Name_Image (Info.Original_Name) & " are qualified"
                                  & Choose (Child_Warning,
                                            " (possible usage in child units)",
                                            ""));
+                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
                      end if;
                   when Operator =>
                      if Rule_Used (Operator) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Operator),
-                                Get_Location (Info.Elem),
-                                "use clause for "  & Info.Original_Name & " only used for operators"
+                                Get_Location (Info.Use_Clause),
+                                "use clause for "
+                                & Extended_Name_Image (Info.Original_Name)
+                                & " only used for operators"
                                 & Choose (Child_Warning,
                                           " (possible usage in child units)",
                                           ""));

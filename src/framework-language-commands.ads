@@ -32,6 +32,7 @@ private package Framework.Language.Commands is
    -- Unit names to be parsed using normal parameter parsing procedures
    procedure Message_Command    (Message     : in Wide_String; With_Pause : Boolean);
    procedure Set_Output_Command (Output_File : in Wide_String; Force_Overwrite : Boolean);
+   procedure Set_Patch_Command (Patch_File : Wide_String);
    procedure Set_Trace_Command  (Trace_File  : in Wide_String);
    procedure Source_Command     (Name        : in Wide_String; Success : out Boolean);
 

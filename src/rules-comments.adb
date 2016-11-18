@@ -47,6 +47,7 @@ with
 
 -- AdaControl
 with
+  Framework.Fixes,
   Framework.Language,
   Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
@@ -319,7 +320,7 @@ package body Rules.Comments is
 
       -- Find start of comment, note if there is anything but spaces before it
       Inx := Line'First;
-      while Inx <= Line'Last loop  -- Can't use a "for" because we skip characters
+      while Inx <= Line'Last loop  -- Can't use a "for" loop because we skip characters
          if In_String then
             if Line (Inx) = '"' then
                In_String := False;
@@ -563,6 +564,7 @@ package body Rules.Comments is
                           Unnamed_Contexts (Un),
                           Begin_Loc,
                           """begin"" has no unit name comment for " & Defining_Name_Image (Names (Unit) (1)));
+                  Fixes.Insert ("  -- " & Defining_Name_Image (Names (Unit) (1)), From => Begin_Loc + 5);
                end if;
             else
                Name_Inx := Index (Begin_Text (Comment_Pos .. Begin_Text'Last), " ", Going => Backward);
@@ -576,6 +578,9 @@ package body Rules.Comments is
                           Unnamed_Contexts (Un),
                           Begin_Loc,
                           """begin"" comment does not name " & Defining_Name_Image (Names (Unit) (1)));
+                  Fixes.Replace (From   => Create_Location (Get_File_Name (Begin_Loc), Begin_Line, Name_Inx),
+                                 Length => Begin_Text'Last - Name_Inx + 1,
+                                 By     => Defining_Name_Image (Names (Unit) (1)));
                end if;
             end if;
          end;

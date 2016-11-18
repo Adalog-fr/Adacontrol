@@ -52,7 +52,7 @@ package body Adactl_Options is
 
    package Analyzer is
       new Options_Analyzer (Binary_Options => "CDdeEhiIjrsTuvwx",
-                            Valued_Options => "fFlomMpSt",
+                            Valued_Options => "fFlomMpPSt",
                             Tail_Separator => "--");
 
    Unit_List    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
@@ -129,6 +129,7 @@ package body Adactl_Options is
       User_Message ("   -l rules  process with these rules");
       User_Message ("   -o file   specify an output file");
       User_Message ("   -p file   specify a project file (.gpr or .adp)");
+      User_Message ("   -P file   specify a patch file for fixing source");
       User_Message ("   -r        recursive");
       User_Message ("   -s        process specifications only");
       User_Message ("   -S        statistics level (0 .. "
@@ -356,6 +357,7 @@ package body Adactl_Options is
       Value_To_Command ('m', "set max_errors",   Required => False);
       Value_To_Command ('M', "set max_messages", Required => False);
       Value_To_Command ('o', "set output");
+      Value_To_Command ('P', "set patch");
       Value_To_Command ('S', "set statistics");
       Value_To_Command ('t', "set trace");
       Flag_To_Command  ('T', "timing");

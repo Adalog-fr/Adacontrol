@@ -50,6 +50,7 @@ with
 
 -- Adactl
 with
+  Framework.Fixes,
   Framework.Language,
   Framework.Ordering_Machine,
   Rules.Style.Keyword;
@@ -58,6 +59,7 @@ pragma Elaborate (Framework.Ordering_Machine);
 
 package body Rules.Style is
    use Framework, Framework.Control_Manager, Utilities;
+   use all type Framework.Fixes.Insert_Place;
    use type Thick_Queries.Biggest_Int;
 
    -- See declaration of Style_Names in the private part of the specification
@@ -698,7 +700,8 @@ package body Rules.Style is
 
    function Should_Be (Source   : Wide_String;
                        Expected : Casing_Set;
-                       Original : Wide_String := "") return Wide_String
+                       Original : Wide_String := "";
+                       For_Fix  : Boolean) return Wide_String
    is
       use Ada.Strings.Wide_Unbounded;
 
@@ -715,18 +718,30 @@ package body Rules.Style is
          Append (Result, '"' & Name & '"');
       end Append_Result;
    begin   --  Should_Be
-      for E in Expected'Range loop
+      for E in reverse Expected'Range loop  -- reverse to favour Ca_Original over the other ones
          if Expected (E) then
             case E is
                when Ca_Original =>
                   if Original /= (Original'Range => ' ') then  -- works with ""
+                     if For_Fix then
+                        return Original;
+                     end if;
                      Append_Result (Original, Force => True);
                   end if;
                when Ca_Uppercase =>
+                  if For_Fix then
+                     return To_Upper (Source);
+                  end if;
                   Append_Result (To_Upper (Source));
                when Ca_Lowercase =>
+                  if For_Fix then
+                     return To_Lower (Source);
+                  end if;
                   Append_Result (To_Lower (Source));
                when Ca_Titlecase =>
+                  if For_Fix then
+                     return To_Title (Source);
+                  end if;
                   Append_Result (To_Title (Source));
             end case;
          end if;
@@ -753,7 +768,7 @@ package body Rules.Style is
       Source_Image   : constant Wide_String := Extended_Name_Image (Source_Element);
       Original_Image : Wide_String (Source_Image'Range) := (others => ' ');
       -- Note that the source name and the original name always have the same length!
-      Def_Name              : Asis.Defining_Name;
+      Def_Name       : Asis.Defining_Name;
    begin
       for Name in Casing_Names loop
          if Casing_Policy (Casing) (Name) then
@@ -800,11 +815,35 @@ package body Rules.Style is
          end if;
       end loop;
 
-      Report (Rule_Id,
-              Corresponding_Context (Casing),
-              Get_Location (Source_Element),
-              "Wrong casing of """ & Source_Image
-              & """, should be " & Should_Be (Source_Image,  Casing_Policy (Casing), Original_Image));
+      if Element_Kind (Source_Element) = A_Pragma then
+         -- The pragma name cannot be accessed as an element, hence special handling
+         declare
+            Pragma_Image : constant Asis.Program_Text := Pragma_Name_Image (Source_Element);
+            Pragma_Loc   : constant Location := Get_Next_Word_Location (Source_Element,
+                                                                        Starting => From_Head,
+                                                                        Skipping => 1);
+         begin
+            Report (Rule_Id,
+                    Corresponding_Context (Casing),
+                    Pragma_Loc,
+                    "Wrong casing of """ & Pragma_Image
+                    & """, should be "
+                    & Should_Be (Pragma_Image, Casing_Policy (Casing), For_Fix => False));
+            Fixes.Replace (Pragma_Loc,
+                           Pragma_Image'Length,
+                           By => Should_Be (Pragma_Image, Casing_Policy (Casing), For_Fix => True));
+         end;
+      else
+         Report (Rule_Id,
+                 Corresponding_Context (Casing),
+                 Get_Location (Source_Element),
+                 "Wrong casing of """ & Source_Image
+                 & """, should be "
+                 & Should_Be (Source_Image,  Casing_Policy (Casing), Original_Image, For_Fix => False));
+
+         Fixes.Replace (Source_Element,
+                        Should_Be (Source_Image, Casing_Policy (Casing), Original_Image, For_Fix => True));
+      end if;
    end Check_Casing;
 
    -----------------------
@@ -867,6 +906,9 @@ package body Rules.Style is
                     Get_Location (Construct),
                     "name not repeated at the end");
          end if;
+
+         Fixes.Insert (' ' & Defining_Name_Image (Names (Construct) (1)),
+                      From => Get_Previous_Word_Location (Construct, Matching => "END", Starting => From_Tail) + 3);
       end if;
 
    end Process_Construct;
@@ -900,6 +942,7 @@ package body Rules.Style is
                  Corresponding_Context (St_Renamed_Entity),
                  Get_Location (Identifier),
                  Defining_Name_Image (Def) & " has been renamed at " & Image (Ren.Ren_Location));
+         Fixes.Replace (Identifier, By => Defining_Name_Image (Ren.Renamed_Def));
       end Check_Renamed;
 
       procedure Check_End_Casing (Casing : Subrules) is
@@ -1145,6 +1188,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Default_In),
                           Get_Location (Declaration_Subtype_Mark (Formals (I))),
                           "default IN mode used for parameter");
+                  Fixes.Insert ("in ", Before, Declaration_Subtype_Mark (Formals (I)));
                end if;
             end loop;
          end if;
@@ -1417,8 +1461,8 @@ package body Rules.Style is
             else
                -- Check that the number representation is as specified by the convention
                Block_Size := Literal_Context (Context).Block_Size;
-               if not Check_Separators (Wide_String_Reverse (The_Integer_Part), Block_Size) or else
-                 not Check_Separators (The_Decimal_Part, Block_Size)
+               if        not Check_Separators (Wide_String_Reverse (The_Integer_Part), Block_Size)
+                 or else not Check_Separators (The_Decimal_Part, Block_Size)
                then
                   Report (Rule_Id,
                           Context,
@@ -1450,11 +1494,13 @@ package body Rules.Style is
                     Corresponding_Context (St_Casing_Exponent),
                     Get_Location (Expression) + Exp_Delimiter - 1,
                     "Wrong casing of exponent, should be 'E'");
+            Fixes.Replace (From => Get_Location (Expression) + Exp_Delimiter - 1, Length => 1, By => "E");
          elsif Name (Exp_Delimiter) = 'E' and Casing_Policy (St_Casing_Exponent) (Ca_Lowercase) then
             Report (Rule_Id,
                     Corresponding_Context (St_Casing_Exponent),
                     Get_Location (Expression) + Exp_Delimiter - 1,
                     "Wrong casing of exponent, should be 'e'");
+            Fixes.Replace (From => Get_Location (Expression) + Exp_Delimiter - 1, Length => 1, By => "e");
          end if;
       end Process_Exponent;
 
@@ -1481,6 +1527,9 @@ package body Rules.Style is
                        Get_Location (Expression) + Base_Delimiter_1,
                        "Wrong casing of extended digit(s), should be "
                        & To_Upper (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
+               Fixes.Replace (From   => Get_Location (Expression) + Base_Delimiter_1,
+                              Length => Base_Delimiter_2 - Base_Delimiter_1 - 1,
+                              By     => To_Upper (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
                return;
             elsif Name (N) in 'A' .. 'F' and Casing_Policy (St_Casing_Number) (Ca_Lowercase) then
                Report (Rule_Id,
@@ -1488,6 +1537,9 @@ package body Rules.Style is
                        Get_Location (Expression) + Base_Delimiter_1,
                          "Wrong casing of extended digit(s), should be "
                          & To_Lower (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
+               Fixes.Replace (From   => Get_Location (Expression) + Base_Delimiter_1 + 1,
+                              Length => Base_Delimiter_2 - Base_Delimiter_1 + 1,
+                              By     => To_Lower (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
                return;
             end if;
          end loop;
@@ -1902,7 +1954,7 @@ package body Rules.Style is
          -- Special processing for use clauses in context clauses.
          -- Accept it if the preceding clause is a with clause,
          -- and every name in this use clause is also given in the with clause
-         use Asis.Clauses, Asis.Expressions;
+         use Asis.Clauses, Asis.Expressions, Asis.Text;
 
          All_Clauses : constant Context_Clause_List
            := Context_Clause_Elements (Compilation_Unit => Enclosing_Compilation_Unit (Use_Clause),
@@ -1925,6 +1977,8 @@ package body Rules.Style is
                     Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
                     Get_Location (Use_Clause),
                     "use clause does not start line and does not come after matching with clause");
+            Fixes.Break (Get_Location (Use_Clause),
+                         Indent_New => Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
             return;
          end if;
 
@@ -1966,26 +2020,34 @@ package body Rules.Style is
                           "use clause does not start line and "
                           & Extended_Name_Image (Use_Names (U))
                           & " is not part of the preceding with clause");
+                  Fixes.Break (Get_Location (Use_Clause),
+                               Indent_New => Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
                end if;
             end loop;
          end;
       end Check_Special_Use_Clause;
 
-      function Has_Non_Spaces_Ahead (Loc : Location) return Boolean is
+      function Indentation (Loc : Location) return Text.Character_Position is
+      -- number of spaces at  begininng of first line of Loc
+      -- return 0 for empty lines or lines containing only spaces
          use Asis.Text;
 
-         First_Line               : constant Line_Number        := Get_First_Line (Loc);
-         First_Column             : constant Character_Position := Get_First_Column (Loc);
-         Element_Lines            : constant Line_List (1..1)   := Lines (Element, First_Line, First_Line);
-         Element_First_Line_Image : constant Wide_String        := Line_Image (Element_Lines (Element_Lines'First));
+         First_Line               : constant Line_Number      := Get_First_Line (Loc);
+         Element_Lines            : constant Line_List (1..1) := Lines (Element, First_Line, First_Line);
+         Element_First_Line_Image : constant Wide_String      := Line_Image (Element_Lines (Element_Lines'First));
       begin
-         for I in Positive range 1 .. Integer (First_Column) - 1 loop   --## Rule line off Simplifiable_expressions
-                                                                        --   Gela-ASIS compatibility
+         for I in Element_First_Line_Image'Range loop   --## Rule line off Simplifiable_expressions
+                                                        --   Gela-ASIS compatibility
             if Element_First_Line_Image (I) > ' ' then
-               return True;
+               return I-1;
             end if;
          end loop;
-         return False;
+         return 0;
+      end Indentation;
+
+      function Has_Non_Spaces_Ahead (Loc : Location) return Boolean is
+      begin
+         return Indentation (Loc) < Get_First_Column (Loc) - 1;
       end Has_Non_Spaces_Ahead;
 
       function Actual_Stmt_Start_Loc (Stmt : Asis.Statement) return Location is
@@ -2071,6 +2133,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
                           Loc,
                           "clause does not start line");
+                  Fixes.Break (Place => Loc, Indent_New => Indentation (Loc));
                end if;
 
             when A_Declaration =>
@@ -2096,6 +2159,7 @@ package body Rules.Style is
                         Corresponding_Context (St_Multiple_Elements, Image (Mu_Declaration, Lower_Case)),
                         Loc,
                         "declaration does not start line");
+                     Fixes.Break (Place => Loc, Indent_New => Indentation (Loc));
                end case;
 
             when A_Statement =>
@@ -2103,12 +2167,14 @@ package body Rules.Style is
                        Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
                        Loc,
                        "statement does not start line");
+               Fixes.Break (Place => Loc, Indent_New => Indentation (Loc));
 
             when A_Pragma =>
                Report (Rule_Id,
                        Corresponding_Context (St_Multiple_Elements, Image (Mu_Pragma, Lower_Case)),
                        Loc,
                        "pragma does not start line");
+               Fixes.Break (Place => Loc, Indent_New => Indentation (Loc));
 
             when others =>
                Failure (Rule_Id & ": inappropriate element kind");
@@ -2131,6 +2197,7 @@ package body Rules.Style is
                        Corresponding_Context (St_Multiple_Elements, Image (Mu_Is, Lower_Case)),
                        Loc,
                        """is"" does not start line");
+               Fixes.Break (Loc, Indentation (Get_Location (Element)));
             end if;
 
             declare
@@ -2143,6 +2210,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Begin, Lower_Case)),
                              Loc,
                              """begin"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                   Loc := Get_Next_Word_Location (Stmts, Starting => From_Tail);
 
@@ -2157,6 +2225,7 @@ package body Rules.Style is
                                    Corresponding_Context (St_Multiple_Elements, Image (Mu_Handler, Lower_Case)),
                                    Loc,
                                    """exception"" does not start line");
+                           Fixes.Break (Loc, Indentation (Get_Location (Element)));
                         end if;
 
                         for H in Handlers'Range loop
@@ -2166,6 +2235,7 @@ package body Rules.Style is
                                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Handler, Lower_Case)),
                                       Loc,
                                       """when"" does not start line");
+                              Fixes.Break (Loc, Indentation (Loc));     -- Not obvious where to pick indentation from
                            end if;
                         end loop;
 
@@ -2181,6 +2251,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                              Loc,
                              """end"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                   Check_Split_End (Loc);
                end if;
@@ -2204,6 +2275,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Multiple_Elements, Image (Mu_Then, Lower_Case)),
                           Loc,
                           """then"" does not start line");
+                  Fixes.Break (Loc, Indentation (Get_Location (Element)));
                end if;
 
                for P in List_Index range 2 .. Paths'Last loop
@@ -2213,6 +2285,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Else, Lower_Case)),
                              Loc,
                              """elsif/else"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                   Loc := Get_Previous_Word_Location (Thick_Queries.Statements (Paths (P), Include_Pragmas => True),
                                                      Starting => From_Head);
@@ -2223,6 +2296,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Then, Lower_Case)),
                              Loc,
                              """then"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                end loop;
 
@@ -2240,6 +2314,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Multiple_Elements, Image (Mu_Is, Lower_Case)),
                           Loc,
                           """is"" does not start line");
+                  Fixes.Break (Loc, Indentation (Get_Location (Element)));
                end if;
 
                for P in Paths'Range loop
@@ -2249,6 +2324,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_When, Lower_Case)),
                              Loc,
                              """when"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                end loop;
             end;
@@ -2268,6 +2344,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Multiple_Elements, Image (Mu_Loop, Lower_Case)),
                           Loc,
                           """loop"" does not start line");
+                  Fixes.Break (Loc, Indentation (Get_Location (Element)));
                end if;
             end;
 
@@ -2286,6 +2363,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Do, Lower_Case)),
                              Loc,
                              """do"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                end if;
             end;
@@ -2301,6 +2379,7 @@ package body Rules.Style is
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Begin, Lower_Case)),
                              Loc,
                           """begin"" does not start line");
+                     Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
                end;
             end if;
@@ -2328,6 +2407,7 @@ package body Rules.Style is
                        Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                        Loc,
                        """end"" does not start line");
+               Fixes.Break (Loc, Indentation (Get_Location (Element)));
             end if;
             Check_Split_End (Loc);
 
@@ -2341,6 +2421,7 @@ package body Rules.Style is
                           Corresponding_Context (St_Multiple_Elements, Image (Mu_End, Lower_Case)),
                           Loc,
                           """end"" does not start line");
+                  Fixes.Break (Loc, Indentation (Get_Location (Element)));
                end if;
                Check_Split_End (Loc);
             end if;

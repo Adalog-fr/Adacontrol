@@ -34,6 +34,7 @@ with
 
 -- Adactl
 with
+  Framework.Fixes,
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;
@@ -139,12 +140,13 @@ package body Rules.Max_Blank_Lines is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Trim_All (Line) /= "" then
+      if Trim_All (Line) /= "" then     -- Line is not blank
          if Fail_Loc /= Null_Location then
             Report (Rule_Id, To_Wide_String (Ctl_Labels (Fail_Type)), Fail_Type, Fail_Loc,
                     "Too many consecutive blank lines ("
                     & ASIS_Integer_Img (Blank_Lines_Count)
                     & ')');
+            Fixes.Delete (From => Fail_Loc, To => Loc);  -- Reminder: To not included
             Fail_Loc := Null_Location;
          end if;
          Blank_Lines_Count := 0;
