@@ -192,6 +192,16 @@ package body Framework.Language.Scanner is
       procedure Get_Name (Extended : Boolean) is
          use Ada.Characters.Handling;
       begin
+         if Extended and Cur_Char = ';' then
+            -- Empty string
+            The_Token := (Kind        => Name,
+                          Position    => (Current_File, First_Line, First_Column),
+                          Name_Length => 0,
+                          Name_Text   => (others => ' '),
+                          Key         => Not_A_Key);
+            return;
+         end if;
+
          The_Token := (Kind        => Name,
                        Position    => (Current_File, First_Line, First_Column),
                        Name_Length => 1,
