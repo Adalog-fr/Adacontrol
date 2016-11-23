@@ -296,13 +296,16 @@ The functionalities provided here allow to insert, delete, or replace
 elements of the source text. See the specification for details.
 
 If your rule knows how to fix a violation, just call the corresponding
-subprograms from this package. Note that it is better to delete some
-text than to replace it if possible, because the fixing tool
-(@code{adactl_fix}) handles conflicts between deletions better than
-conflicts between insertions/replacements. For example, to remove
-unnecessary parentheses, the rule
-@code{Simplifiable_Expressions(Parentheses)} removes the opening and
-closing parentheses, rather than replace the
+subprograms from this package. Always call the fixes subprograms @i{after} the
+corresponding report subprograms, because it's the report subprogram that
+determines if the rule is enabled or disabled.
+
+Note that it is better to delete some text than to replace it if
+possible, because the fixing tool (@code{adactl_fix}) handles
+conflicts between deletions better than conflicts between
+insertions/replacements. For example, to remove unnecessary
+parentheses, the rule @code{Simplifiable_Expressions(Parentheses)}
+removes the opening and closing parentheses, rather than replace the
 @code{A_Parenthesized_Expression} with its content (the
 @code{Expression_Parenthesized}).
 

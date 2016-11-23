@@ -1,0 +1,729 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rules>
+<rule>
+<key>Abnormal_Function_Return</key>
+<name>Abnormal_Function_Return</name>
+<description>
+This rule controls functions that may not terminate normally, i.e. where
+<code>Program_Error</code> could be raised due to reaching the end of the
+function without encountering a <code><strong>return</strong></code> statement.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Allocators</key>
+<name>Allocators</name>
+<description>
+This rule controls the use of allocators (i.e. dynamic memory allocation).
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Array_Declarations</key>
+<name>Array_Declarations</name>
+<description>
+This rule controls properties of arrays, by enforcing a consistent
+value or range of values for the lower or upper bound, or by limiting
+the possible size. It can also control various aspects of the
+component type of the array.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Aspects</key>
+<name>Aspects</name>
+<description>
+This rule controls aspect specifications (new feature in Ada 2012), either
+all of them or specific ones.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Assignments</key>
+<name>Assignments</name>
+<description>
+This rule controls various issues related to the assignment
+statement: assignments that involve array sliding, redundant
+assignments to the same variable, or groups of assignments that are
+replaceable by aggregate assignment.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Barrier_Expressions</key>
+<name>Barrier_Expressions</name>
+<description>
+Although the language allows any expression as the barrier of a
+protected entry, it is generally better to use only ``simple''
+expressions. This rule controls the kind of constructs allowed in
+barrier expressions.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Case_Statement</key>
+<name>Case_Statement</name>
+<description>
+This rule controls various metrics related to the <code><strong>case</strong></code>
+statement.  It is intended for cases where it is desired to limit the
+complexity of <code><strong>case</strong></code> statements.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Characters</key>
+<name>Characters</name>
+<description>
+This rule makes sure that the program text does not use
+``undesirable'' characters.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Comments</key>
+<name>Comments</name>
+<description>
+This rule controls comments that must, or must not, appear in certain cases.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Declarations</key>
+<name>Declarations</name>
+<description>
+This rule controls usage of various kinds of declarations, possibly only
+those occurring at specified locations.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Default_Parameter</key>
+<name>Default_Parameter</name>
+<description>
+This rule checks usage (or non-usage) of defaulted parameters.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Dependencies</key>
+<name>Dependencies</name>
+<description>
+This rule controls dependencies of units (i.e. <code><strong>with</strong></code>
+clauses, parents, child units...), either according to a set of
+allowed/forbidden units, or by count.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Derivations</key>
+<name>Derivations</name>
+<description>
+This rule controls various properties of the declaration of derived types.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Directly_Accessed_Globals</key>
+<name>Directly_Accessed_Globals</name>
+<description>
+This rule checks that global variables in package bodies are accessed
+only through dedicated subprograms. Especially, it can be used to
+prevent race conditions in multi-tasking programs.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Duplicate_Initialization_Calls</key>
+<name>Duplicate_Initialization_Calls</name>
+<description>
+This rule checks that some procedures (notably initialization
+procedures) are not called several times in identical conditions.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Entities</key>
+<name>Entities</name>
+<description>
+This rule is used to control usage of Ada entities, i.e. any declared
+element (type, variables, packages, etc).
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Entity_Inside_Exception</key>
+<name>Entity_Inside_Exception</name>
+<description>
+This rule controls entities that appear within exception handlers.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Exception_Propagation</key>
+<name>Exception_Propagation</name>
+<description>
+This rule controls that certain program units are guaranteed to never
+propagate exceptions, or that local exceptions cannot propagate out of
+their scope.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Expressions</key>
+<name>Expressions</name>
+<description>
+This rule controls usage of various kinds of expressions.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Generic_Aliasing</key>
+<name>Generic_Aliasing</name>
+<description>
+This rule controls instantiations where the same actual is given to
+more than one formal.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Global_References</key>
+<name>Global_References</name>
+<description>
+This rule controls accesses to global elements that may be subject to
+race conditions, or otherwise shared.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Header_Comments</key>
+<name>Header_Comments</name>
+<description>
+This rule controls that every compilation unit starts with a
+standardized comment.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Improper_Initialization</key>
+<name>Improper_Initialization</name>
+<description>
+This rule enforces a coding pattern that ensures that variables and
+<code><strong>out</strong></code> parameters are properly initialized befor use.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Instantiations</key>
+<name>Instantiations</name>
+<description>
+This rule controls all instantiations of a generic, or only
+instantiations that are made with specific values of the
+parameters. Control can be restricted to instantiations in specified
+places.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Insufficient_Parameters</key>
+<name>Insufficient_Parameters</name>
+<description>
+This rule controls calls to subprograms and entries where the values
+of parameters does not provide sufficient information to the reader to
+correctly identify the parameter's purpose.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Local_Access</key>
+<name>Local_Access</name>
+<description>
+This rule controls the taking of access values (through the  <code>'Access</code>,
+ <code>'Unchecked_Access</code>, or the  GNAT specific  <code>'Unrestricted_Access</code>
+attributes) of local (i.e. non global) entities.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Local_Hiding</key>
+<name>Local_Hiding</name>
+<description>
+This rule controls declarations that hide an outer declaration with
+the same name.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Max_Blank_Lines</key>
+<name>Max_Blank_Lines</name>
+<description>
+This rule controls excessive spacing in the program text.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Max_Call_Depth</key>
+<name>Max_Call_Depth</name>
+<description>
+This rule controls the maximum depth of subprograms (or entry) calls.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Max_Line_Length</key>
+<name>Max_Line_Length</name>
+<description>
+This rule controls that no line exceeds a given length.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Max_Nesting</key>
+<name>Max_Nesting</name>
+<description>
+This rule controls excessive nesting of declarations.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Max_Size</key>
+<name>Max_Size</name>
+<description>
+This rule controls the maximum size, in source lines of code, of
+various statements and declarations.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Max_Statement_Nesting</key>
+<name>Max_Statement_Nesting</name>
+<description>
+This rule controls the nesting of compound statements.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Movable_Accept_Statements</key>
+<name>Movable_Accept_Statements</name>
+<description>
+This rule controls statements that are inside accept statements and
+could safely be moved outside.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Naming_Convention</key>
+<name>Naming_Convention</name>
+<description>
+This rule controls the form of identifiers to make sure that they
+follow the project's naming conventions. Different naming conventions
+can be specified, depending on the kind of Ada entity that the name is
+refering to.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>No_Operator_Usage</key>
+<name>No_Operator_Usage</name>
+<description>
+This rule controls integer types that do not use any arithmetic
+operators, which indicates that they might be replaceable with other
+kinds of types.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Non_Static</key>
+<name>Non_Static</name>
+<description>
+This rule controls that expressions used in certain contexts are
+static.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Not_Elaboration_Calls</key>
+<name>Not_Elaboration_Calls</name>
+<description>
+This rule controls that certain subprograms (or allocators) are called
+only during program initialization.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Not_Selected_Name</key>
+<name>Not_Selected_Name</name>
+<description>
+This rule controls that certain entities are always refered to using
+selected notation, even in the presence of <code><strong>use</strong></code> clauses.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Object_Declarations</key>
+<name>Object_Declarations</name>
+<description>
+This rule controls various aspects of object (constants and variables)
+declarations.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Parameter_Aliasing</key>
+<name>Parameter_Aliasing</name>
+<description>
+This rule controls aliased use of variables in subprogram
+calls.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Parameter_Declarations</key>
+<name>Parameter_Declarations</name>
+<description>
+This rule controls various characteristics of the declaration of parameters
+for all callable entities (i.e. functions, procedures and entries).
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Positional_Associations</key>
+<name>Positional_Associations</name>
+<description>
+This rule controls the use of positional associations (as opposed to
+named associations) in all kinds of associations.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Potentially_Blocking_Operations</key>
+<name>Potentially_Blocking_Operations</name>
+<description>
+This rule controls usage of potentially blocking operations (as
+defined in LRM 9.5.1 (8..16)) from within protected operations.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Pragmas</key>
+<name>Pragmas</name>
+<description>
+This rule controls usage of one or several specific pragmas.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Record_Declarations</key>
+<name>Record_Declarations</name>
+<description>
+This rule controls various aspects of the components of records.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Reduceable_Scope</key>
+<name>Reduceable_Scope</name>
+<description>
+This rule controls declarations that could be moved to some inner
+scope.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Representation_Clauses</key>
+<name>Representation_Clauses</name>
+<description>
+This rule controls usage of representation clause.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Return_Type</key>
+<name>Return_Type</name>
+<description>
+This rule controls that certain form of types are not used for
+function results.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Side_Effect_Parameters</key>
+<name>Side_Effect_Parameters</name>
+<description>
+This rule controls calls that may depend on the order of evaluation of
+parameters.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Silent_Exceptions</key>
+<name>Silent_Exceptions</name>
+<description>
+This rule controls exception handlers that can cause exceptions to
+silently disappear.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Simplifiable_Expressions</key>
+<name>Simplifiable_Expressions</name>
+<description>
+This rule controls expressions that can be simplified in various ways.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Simplifiable_Statements</key>
+<name>Simplifiable_Statements</name>
+<description>
+This rule controls statements that can be removed or simplified in
+various ways without changing the meaning of the program.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Statements</key>
+<name>Statements</name>
+<description>
+This rule controls usage of certain Ada statements.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Style</key>
+<name>Style</name>
+<description>
+This rules controls usage of various ``general'' Ada coding style.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Terminating_Tasks</key>
+<name>Terminating_Tasks</name>
+<description>
+This rule controls tasks that can terminate.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Type_Initial_Values</key>
+<name>Type_Initial_Values</name>
+<description>
+This rule controls that a special constant is declared together with
+each type, for example to serve as a default initial value.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Type_Usage</key>
+<name>Type_Usage</name>
+<description>
+This rule controls usage of indicated types, either individually
+or by category.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Uncheckable</key>
+<name>Uncheckable</name>
+<description>
+This rules controls cases where it is not possible to guarantee the
+accuracy of checks performed by AdaControl, and where manual
+inspection may be required.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Unit_Pattern</key>
+<name>Unit_Pattern</name>
+<description>
+This rule controls various usage patterns of program units and
+elements declared in them.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Units</key>
+<name>Units</name>
+<description>
+This rule controls that all necessary units, and only those, are
+processed by AdaControl.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Unnecessary_Use_Clause</key>
+<name>Unnecessary_Use_Clause</name>
+<description>
+This rule controls <code><strong>use</strong></code> clauses that do not serve any
+purpose.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Unsafe_Elaboration</key>
+<name>Unsafe_Elaboration</name>
+<description>
+This rule controls (generic) packages that may be subject to
+elaboration order dependencies.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Unsafe_Paired_Calls</key>
+<name>Unsafe_Paired_Calls</name>
+<description>
+This rule controls usage of calls to operations that are normally
+paired (like P/V operations) and do not follow a "safe" coding
+pattern.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Unsafe_Unchecked_Conversion</key>
+<name>Unsafe_Unchecked_Conversion</name>
+<description>
+This rule controls unchecked conversions between types which are not
+statically known to have identical sizes.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Usage</key>
+<name>Usage</name>
+<description>
+This rule controls how certain entitities (variables, constants,
+types, procedures, functions, exceptions, tasks, protected objects,
+and generics) are used.
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>Use_Clauses</key>
+<name>Use_Clauses</name>
+<description>
+This rule controls usage of <code><strong>use</strong></code> clauses.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+<rule>
+<key>With_Clauses</key>
+<name>With_Clauses</name>
+<description>
+This rule controls <code><strong>with</strong></code> clauses that should be removed or
+moved to a better place.
+
+</description>
+<tag>adacontrol</tag>
+</rule>
+
+</rules>

@@ -343,6 +343,7 @@ speed. @xref{Customizing AdaControl}.
 * Building and installing AdaControl from source::
 * Installing an executable distribution::
 * Installing support for AdaGide::
+* Installing support for GNATDashboard integration::
 @end menu
 
 @node  Building and installing AdaControl from source, Installing an executable distribution, Installation, Installation
@@ -601,12 +602,26 @@ If you want to uninstall AdaControl, just use:
 gprinstall --uninstall adacontrol
 @end example
 
-@node Installing support for AdaGide,  , Installing an executable distribution, Installation
+@node Installing support for AdaGide, , Installing an executable distribution, Installation
 @section Installing support for AdaGide
 To add AdaControl support to AdaGide, copy the file
 @code{AdaControl.tdf} from the @code{AdaGide} directory of the
 distribution into AdaGide's root directory. Note that AdaControl
 support requires AdaGide version 7.42 or above.
+
+@node Installing support for GNATDashboard integration,  , Installing support for AdaGide, Installation
+@section Installing support for GNATDashboard integration
+Integration into GNATDashboard is provided in a separate package that
+you can download from the same source that you obtained AdaControl
+from. It is provided as a .zip file that contains two files:
+@code{sonar-ada-plugin-18.0w-SNAPSHOT.jar} and @code{adacontrol.py}.
+
+Of course, the prerequisite is that you have a working installation of
+GNATDashboard, including SonarQube and its sonnar-scanner
+utility. Copy the first (@code{.jar}) file into the
+@code{<sonarqube-dir>/extensions/plugins/} directory. Copy the second
+(@code{.py}) file into the @code{<gnat-dir>/share/gnathub/extras/}
+directory.
 
 @node Program Usage, Command language reference, Installation, Top
 @chapter Program Usage
@@ -664,6 +679,7 @@ force Ada-95 the same way by using @code{@b{pragma} Ada_95} instead.
 * Other execution modes::
 * Running AdaControl from GPS::
 * Running AdaControl from AdaGide::
+* Integrating AdaControl into GNATDashboard::
 * Helpful utilities::
 * Optimizing Adacontrol::
 * In case of trouble::
@@ -1635,7 +1651,7 @@ GPS may crash when the output of a command is too big (i.e. hundreds
 of messages with AdaControl).  If this happens, use the
 ``preferences'' menu to limit the number of messages.
 
-@node  Running AdaControl from AdaGide, Helpful utilities, Running AdaControl from GPS, Program Usage
+@node  Running AdaControl from AdaGide, , Running AdaControl from GPS, Program Usage
 @section Running AdaControl from AdaGide
 If you want to use AdaControl from AdaGide, make sure you have copied
 the necessary file into the required place. @xref{Installing support
@@ -1664,7 +1680,26 @@ current directory.  This is convenient when AdaControl complains that
 the tree files are not up-to-date.
 @end itemize
 
-@node Helpful utilities, Optimizing Adacontrol, Running AdaControl from AdaGide, Program Usage
+@node Integrating AdaControl into GNATDashboard, Helpful utilities, Running AdaControl from AdaGide, Program Usage
+@section Integrating AdaControl into GNATDashboard
+Once GNATDashboard support is installed, AdaControl is usable like any
+other tool that comes with GNATDashboard. The name of the plug-in is
+``adacontrol''.  It can be given either on the command line of
+@code{gnathub} or in the ``Plugins'' attribute of the ``Dashboard''
+package of a project file.
+
+Extra options for AdaControl can be given using the
+``--targs:adacontrol'' option of gnathub. However, the simplest way to
+give fundamental options is to give a units file and the rules file in
+the project file: in the absence of explicit parameters on the command
+line, these will be taken by default.
+
+AdaControl installs a non-default profile called ``AdaControl way''
+that contains all AdaControl rules. Use it to activate the rules you
+need. You can also make it inherit from ``GNATdashboard way'' if you
+want to use AdaControl with other GNAT tools.
+
+@node Helpful utilities, Optimizing Adacontrol, Integrating AdaControl into GNATDashboard, Program Usage
 @section Helpful utilities
 This section describe utilities that are handy to use in conjunction
 with AdaControl.
@@ -2458,6 +2493,7 @@ set Check_Key|Search_Key "<value>"
 set Max_Errors [<value>];
 set Max_Messages [<value>];
 set Output|New_Output <output file>;
+set Patch [<fixes file>]
 set Statistics <level>;
 set Tag1|Tag2 "<value>";
 set Trace <trace file>;
@@ -2500,8 +2536,21 @@ file is overwritten only the first time it is mentionned in an
 ``output'' command. This means that you can switch forth and back
 between two output files, all results from the same run will be
 kept. Note however that for this to work, you need to specify the
-output file exactly the same way: if you specify it once as
+output files exactly the same way: if you specify it once as
 ``result.txt'', and then as ``./result.txt'', the second one will
+overwrite the first one.
+
+The ``set patch'' command defines the name of a fixes file and
+activates the generation of fixes. If the command is given without
+<fixes file>, it suspends the generation of fixes.
+
+The ``set patch'' command always overwrites if the fixes file exists;
+However, the file is overwritten only the first time it is mentionned
+in a ``set patch'' command. This means that you can switch forth and
+back between two fixes files, all results from the same run will be
+kept. Note however that for this to work, you need to specify the
+fixes files exactly the same way: if you specify it once as
+``fixes.txt'', and then as ``./fixes.txt'', the second one will
 overwrite the first one.
 
 The ``set statistics'' command sets the statistics level, like the

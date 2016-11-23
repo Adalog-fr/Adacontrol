@@ -5,10 +5,10 @@ project Adactl is
 
    for Languages use ("Ada", "Adacontrol", "Project File", "Python");
    for Object_Dir use "adalib";
-   for Main use ("adactl.adb", "pfni.adb", "ptree.adb", "adactl_fix.adb");
+   for Main use ("adactl.adb", "pfni.adb", "ptree.adb", "adactl_fix.adb",  "gen_adactl.adb");
 
    for Exec_Dir use "src";
-   for Source_Dirs use ("src", "doc", "GPS", "rules", "test", "test/conf");
+   for Source_Dirs use ("src", "doc", "GPS", "GNATHub", "rules", "test", "test/conf");
 
    package Ide is
       for Vcs_Kind use "Git";
@@ -39,4 +39,10 @@ project Adactl is
       for Default_Switches ("ada") use ("-A1", "-A2", "-A3", "-A4", "-M120");
    end Pretty_Printer;
 
+   package Dashboard is
+      for Project_Name use "AdaControl";
+      for Project_Version use "1.19b7";
+      for Project_Key use "adactl";
+      for Source_Encoding use "UTF-8";
+   end Dashboard;
 end Adactl;

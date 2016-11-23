@@ -16,6 +16,8 @@ import traceback
 #
 # General utilities
 #
+
+
 def get_file(option):
     """Get the file corresponding to the given option
     """
@@ -418,15 +420,18 @@ def options(rules, files):
     gps = True
     outfile = False
     output_name = ""
+    fix_name = ""
     ASIS_option = ""
 
     opt_list = GPS.Project.root().get_tool_switches_as_list("AdaControl")
     skip_next = False
     next_is_ofile = False
     next_is_pfile = False
+    next_is_fixfile = False
     next_is_ASIS = False
     next_is_format = False
     for O in opt_list:
+        print O
         if len(O) == 0:
             pass
         elif next_is_ofile:
@@ -434,6 +439,9 @@ def options(rules, files):
             next_is_ofile = False
         elif next_is_pfile:
             next_is_pfile = False
+        elif next_is_fixfile:
+            fix_name = O
+            next_is_fixfile = False
         elif next_is_ASIS:
             if rules != "check":
                 ASIS_option = O
@@ -474,6 +482,9 @@ def options(rules, files):
         elif O == "-p":
             # compatibility: ignore -p option and following parameter
             next_is_pfile = True
+        elif O == "-P":
+            print "-P"
+            next_is_fixfile = True
         elif O[0:2] == "-S" and O[2:] != "":
             # Bug in GPS: Combo does not add separator
             result = result + ' ' + "-S " + O[2:]
@@ -506,6 +517,9 @@ def options(rules, files):
     else:
         # file is specified but not used
         output_name = ""
+
+    if fix_name != "":
+        result = result + " -P " + fix_name
 
     if ASIS_option:
         result = result + " -- " + ASIS_option
@@ -862,7 +876,8 @@ def on_GPS_start(H):
          <pixmap>{base_dir}share/gps/plug-ins/adactl-ask.gif</pixmap>
       </button>
       """ .format(base_dir=GPS.get_system_dir()))
-    elif gps_version <= "06.2.1" :
+
+    elif gps_version <= "06.2.1":
         # GPS 06.1.2 up to 06.2.1: Buttons use stock
         GPS.parse_xml('''
       <stock>
