@@ -32,7 +32,7 @@ project Adactl is
    end Binder;
 
    package Linker is
-      for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
+      for Default_Switches ("ada") use ("-g");
    end Linker;
 
    package Pretty_Printer is
