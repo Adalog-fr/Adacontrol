@@ -6,7 +6,7 @@ check style (casing_identifier, original, titlecase);
 check style (casing_attribute, titlecase);
 check style (negative_condition);
 check style (compound_statement);
-check style (multiple_elements);
+Multiple_Elements: check style (multiple_elements);  -- Label to ease making exceptions
 check style (casing_keyword, lowercase);
 check max_nesting (7);
 check parameter_aliasing (certain);
