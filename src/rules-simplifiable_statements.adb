@@ -536,10 +536,9 @@ package body Rules.Simplifiable_Statements is
             end if;
 
          when An_If_Statement =>
-            if Rule_Used (Stmt_If)
-              or Rule_Used (Stmt_Nested_Path)
-              or Rule_Used (Stmt_If_Not)
-              or Rule_Used (Stmt_If_For_Case)
+            if (Rule_Used and Usage_Flags'(Stmt_If          | Stmt_Nested_Path | Stmt_If_Not |
+                                           Stmt_If_For_Case | Stmt_Dead => True,
+                                           others                       => False)) /= Not_Used
             then
                Process_If_Statement (Stmt);
             end if;
