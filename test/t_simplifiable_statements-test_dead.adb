@@ -3,6 +3,7 @@ separate (T_Simplifiable_Statements)
 procedure Test_Dead is
    I : Integer;
    C : constant Integer := 1;
+   subtype ST is Integer range 5..4;
 begin
    if I = 1 then
       null;
@@ -19,6 +20,19 @@ begin
    elsif I = 1 then
       I := 2;
    end if;
+
+   case I is
+      when 1 .. 0 =>          -- choices cover no value
+         null;
+      when C + 5 .. C + 3 =>  -- choices cover no value
+         I := 1;
+      when ST =>              -- choices cover no value
+         I := 2;
+      when 8 .. 7 | 2 =>
+         I := 3;
+      when others =>
+         I := 0;
+   end case;
 
    while I = 1 loop
       I := 0;

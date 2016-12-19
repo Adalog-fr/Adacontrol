@@ -7934,8 +7934,9 @@ known to be never executed. This includes statements that follow a
 or an @code{@b{exit}} statement that is either unconditional or whose
 condition is statically known to be true. It includes also
 @code{@b{while}} statements and @code{@b{if}} statements (including
-@code{@b{elsif}} paths) whose condition is statically false, and
-@code{@b{for}} loops whose range is statically empty.
+@code{@b{elsif}} paths) whose condition is statically false, branches
+of @code{@b{case}} statements whose choices are all statically null
+ranges, and @code{@b{for}} loops whose range is statically empty.
 @item
 @code{handler} controls ``trivial'' exception handlers, i.e. handlers
 whose sequence of statements includes only a single @code{@b{raise}}
@@ -8060,7 +8061,14 @@ search simplifiable_statements (if);
 @end example
 
 @subsection Tips
-@code{loop} may seem a strange thing to check, since no Ada
+The ``dead'' subrule does not signal a @code{@b{when} @b{others}} branch
+of a @code{@b{case}} statement
+that covers no value at all; this can be checked with:
+@example
+check case_statement (others_span, min 1);
+@end example
+
+@code{@b{loop}} may seem a strange thing to check, since no Ada
 programmer is supposed to write this. However, experience shows that
 it is a good indicator of code written by people who did not get
 proper Ada training. Such code is certainly worth a peer review...

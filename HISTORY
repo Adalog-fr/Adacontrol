@@ -2,6 +2,11 @@
 == V1.19b1 ==
 =============
 
+Changes to existing rules:
+--------------------------
+Simplifiable_Statements:
+   Controls dead code due to case paths with null ranges
+
 =============
 == V1.18r9 ==
 =============

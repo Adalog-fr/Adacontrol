@@ -507,6 +507,78 @@ package body Rules.Simplifiable_Statements is
       end if;
    end Process_If_Statement;
 
+   ----------------------------
+   -- Process_Case_Statement --
+   ----------------------------
+
+   procedure Process_Case_Statement (Stmt  : in Asis.Statement) is
+      use Asis, Asis.Elements, Asis.Statements;
+      use Framework.Reports;
+      use Utilities, Thick_Queries;
+   begin
+      -- Stmt_Dead
+      if Rule_Used (Stmt_Dead) then -- always True (for the moment)
+         declare
+            Case_Paths   : constant Path_List := Statement_Paths (Stmt);
+         begin
+            for CP in Case_Paths'Range loop
+               declare
+                  Path_Elements : constant Element_List := Case_Statement_Alternative_Choices (Case_Paths (CP));
+                  Temp          : Extended_Biggest_Natural;
+                  Count         : Extended_Biggest_Natural := 0;
+               begin
+                  Count_Values :
+                  for PE in Path_Elements'Range loop
+                     if Definition_Kind (Path_Elements (PE)) = A_Discrete_Range then
+                        if Discrete_Range_Kind (Path_Elements (PE)) = A_Discrete_Subtype_Indication
+                          and then not Is_Nil (Corresponding_Static_Predicates
+                                               (Subtype_Simple_Name (Path_Elements (PE))))
+                        then
+                           -- Subtype with static predicate used for a choice: we don't know (yet) how to evaluate this
+                           Uncheckable (Rule_Id,
+                                        False_Negative,
+                                        Get_Location (Path_Elements (PE)),
+                                        "(Dead) Use of subtype with static predicate");
+                           Count := 1; -- or whatever /= 0
+                           exit Count_Values;
+                        end if;
+                        Temp := Discrete_Constraining_Lengths (Path_Elements (PE)) (1);
+                        if Temp = Not_Static then
+                           -- it IS static, but the evaluator cannot evaluate it...
+                           -- unless it is of a generic formal type
+                           Uncheckable (Rule_Id,
+                                        False_Negative,
+                                        Get_Location (Path_Elements (PE)),
+                                        "(Dead) Could not evaluate bounds of expression");
+                           Count := 1; -- or whatever /= 0
+                           exit Count_Values;
+                        end if;
+                        Count := Count + Temp;
+
+                     elsif Definition_Kind (Path_Elements (PE)) = An_Others_Choice then
+                        -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
+                        Count := 1; -- or whatever /= 0
+                        exit Count_Values;
+
+                     elsif Element_Kind (Path_Elements (PE)) = An_Expression then
+                        Count := 1;
+                        exit Count_Values;
+
+                     else
+                        Failure ("Unexpected path kind:", Path_Elements (PE));
+                     end if;
+                  end loop Count_Values;
+                  if Count = 0 then
+                     Report (Rule_Id,
+                             Usage (Stmt_Dead),
+                             Get_Location (Case_Paths (CP)),
+                             "choices cover no value");
+                  end if;
+               end;
+            end loop;
+         end;
+      end if;
+   end Process_Case_Statement;
 
    -----------------------
    -- Process_Statement --
@@ -541,6 +613,11 @@ package body Rules.Simplifiable_Statements is
                                            others                       => False)) /= Not_Used
             then
                Process_If_Statement (Stmt);
+            end if;
+
+         when A_Case_Statement =>
+            if Rule_Used (Stmt_Dead) then
+               Process_Case_Statement (Stmt);
             end if;
 
          when A_Null_Statement =>

@@ -29,12 +29,15 @@ t_simplifiable_statements-test_null.adb:14:7: Error: SIMPLIFIABLE_STATEMENTS: un
 t_simplifiable_statements-test_null.adb:18:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
 t_simplifiable_statements-test_null.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
 t_simplifiable_statements-test_null.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
-t_simplifiable_statements-test_dead.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:13:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:16:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:26:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:32:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
-t_simplifiable_statements-test_dead.adb:36:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
-t_simplifiable_statements-test_dead.adb:46:1: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:47:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:10:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:14:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:25:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:27:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:29:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:40:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:42:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:46:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_dead.adb:50:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:60:1: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
