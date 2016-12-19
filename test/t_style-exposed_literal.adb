@@ -44,10 +44,16 @@ procedure Exposed_Literal is
 begin
    I := 0;                                               -- OK
    I := 2;                                               -- Exposed_Literal (integer)
-   F := 1.0;                                             -- OK
-   F := -1.0;                                            -- OK
-   F := 2.0;                                             -- Exposed_Literal (real)
-   F := -2.0;                                            -- Exposed_Literal (real)
+
+   declare
+      F1 : Float := 1.0;                                 -- OK
+      F2 : Float := -1.0;                                -- OK
+      F3 : Float := 2.0;                                 -- Exposed_Literal (real)
+      F4 : Float := -2.0;                                -- Exposed_Literal (real)
+   begin
+      F := 2.0;                                          -- OK (Statement)
+   end;
+
    S := "rosen";                                         -- OK
    if S = "" then                                        -- OK
       S := "12345";                                      -- Exposed_Literal (string)

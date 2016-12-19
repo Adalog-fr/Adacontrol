@@ -113,6 +113,7 @@ package body Rules.Style is
    type Place_Names is (Pl_Other,
                         Pl_Declaration,
                         Pl_Constant, Pl_Number,      Pl_Var_Init, Pl_Type,
+                        Pl_Statement,
                         Pl_Pragma,   Pl_Repr_Clause, Pl_Index,    Pl_Exponent);
    -- Pl_Other used internally when not in one of the other Places, not accessible to user. Must stay first.
    subtype Other_Declarations is Place_Names range Pl_Constant .. Pl_Type;
@@ -1438,15 +1439,17 @@ package body Rules.Style is
          begin
             loop
                case Element_Kind (E) is
-                  when An_Expression | An_Association =>
+                  when An_Expression =>
                      Top_Expr := E;
+                     E := Enclosing_Element (E);
+                  when An_Association | A_Definition =>
+                     E := Enclosing_Element (E);
+                  when A_Path =>
+                     exit when Path_Kind (E) not in An_Expression_Path;
                      E := Enclosing_Element (E);
                   when others =>
                      exit;
                end case;
-            end loop;
-            while Element_Kind (E) = A_Definition loop
-               E := Enclosing_Element (E);
             end loop;
 
             case Element_Kind (E) is
@@ -1466,6 +1469,10 @@ package body Rules.Style is
                           A_Subtype_Declaration
                           =>
                         return Pl_Type;
+                     when A_Loop_Parameter_Specification =>
+                        -- Although this one is formally a declaration, casual (non lawyer) people expect it
+                        -- to be part of a (loop) statement
+                        return Pl_Statement;
                      when others =>
                         return Pl_Declaration;
                   end case;
@@ -1476,8 +1483,16 @@ package body Rules.Style is
                      when others =>
                         return Pl_Declaration;   -- For the sake of the casual user, consider a clause a declaration
                   end case;
+               when A_Path =>
+                  if Path_Kind (E) in A_Statement_Path then
+                     return Pl_Statement;
+                  end if;
+                  -- Expression paths should have been caught above...
+                  Failure ("Exposed_Literal: bad path", E);
                when A_Pragma =>
                   return Pl_Pragma;
+               when A_Statement =>
+                  return Pl_Statement;
                when others =>
                   return Pl_Other;
             end case;

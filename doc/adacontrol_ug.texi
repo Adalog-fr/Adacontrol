@@ -8378,8 +8378,9 @@ This rules controls usage of various ``general'' Ada coding style.
 <type_kw>     ::= integer | real | character | string
 <value_place> ::= <value> | <place>
 <value>       ::= [max] <integer number> | <real number> | "<pattern>"
-<place>       ::= constant    | exponent | index | number | pragma |
-                  repr_clause | var_init | type
+<place>       ::= declaration | statement   |
+                  constant    | exponent    | index     | number | 
+                  pragma      | repr_clause | var_init  | type
 @end example
 
 @subsection Action
@@ -8421,15 +8422,16 @@ literals, 1.0 and 0.0 for real literals and "^$" (the empty string)
 for string literals. At most 20 values of each kind may be
 specified. In addition, one or several <place> keyword can be used to
 specify constructs where any literal is allowed: ``declaration''
-stands for any declaration, ``constant'' for constant declarations,
-``exponent'' for the right parameter of an exponentiation
-(i.e. @code{"**"}) function call, ``index'' for array indexing,
-``number'' for named number declarations, ``pragma'' for pragma
-arguments, ``repr_clause'' for representation clauses, ``type'' for
-type (and subtype) declarations, and  ``var_init'' for the
-initialization expression of variable declarations. If no <place> is
-given, it is taken as @code{number, constant}, i.e. any literal is
-allowed in named numbers and constant declarations.
+stands for any declaration, ``statement'' for any statement,
+``constant'' for constant declarations, ``exponent'' for the right
+parameter of an exponentiation (i.e. @code{"**"}) function call,
+``index'' for array indexing, ``number'' for named number
+declarations, ``pragma'' for pragma arguments, ``repr_clause'' for
+representation clauses, ``type'' for type (and subtype) declarations,
+and  ``var_init'' for the initialization expression of variable
+declarations. If no <place> is given, it is taken as @code{number,
+constant}, i.e. any literal is allowed in named numbers and constant
+declarations.
 @item
 ``multiple_elements'' controls clauses, declarations, statements, and
 handlers that do not start on a line of their own (i.e. when there are

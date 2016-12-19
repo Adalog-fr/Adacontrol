@@ -7,6 +7,9 @@ Changes to existing rules:
 Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
 
+Style (Exposed_Literal)
+   Added place Statement
+
 =============
 == V1.18r9 ==
 =============

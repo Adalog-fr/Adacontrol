@@ -733,9 +733,9 @@ Parameter(2..): uppercase | lowercase | titlecase | original
 
 For exposed_literal:
 Parameter(2): integer | real | character | string
-Parameter(3..): [max] <value> | declaration | constant | number      |
-                var_init      | type        | pragma   | repr_clause |
-                index         | exponent
+Parameter(3..): [max] <value> | declaration | constant  | number |
+                var_init      | type        | statement | pragma |
+                repr_clause   | index       | exponent
                 (optional)
 
 For multiple_elements:
