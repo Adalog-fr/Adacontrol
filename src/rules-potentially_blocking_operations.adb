@@ -450,8 +450,7 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Variable_Declaration =>
                   Def := Object_Declaration_View (Element);
                   if Definition_Kind (Def) = A_Subtype_Indication then
-                     if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
-                                                        (Subtype_Simple_Name (Def)),
+                     if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration (Subtype_Simple_Name (Def)),
                                                         A_Task_Type_Declaration)
                      then
                         Set_State (True, "task declaration");

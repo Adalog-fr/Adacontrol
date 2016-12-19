@@ -454,15 +454,6 @@ package body Rules.Declarations is
          end case;
       end Is_Null_Record;
 
-      function Is_Controlled (The_Subtype : Asis.Declaration) return Boolean is
-         Ultimate_Ancestor : constant Wide_String := To_Upper (Full_Name_Image
-                                                               (Names (Ultimate_Type_Declaration (The_Subtype))(1)));
-      begin
-         return Ultimate_Ancestor = "ADA.FINALIZATION.CONTROLLED"
-           or else Ultimate_Ancestor = "ADA.FINALIZATION.LIMITED_CONTROLLED";
-      end Is_Controlled;
-
-
    begin   -- Process_Declaration
       if Rule_Used = (Subrules => False) then
          return;
