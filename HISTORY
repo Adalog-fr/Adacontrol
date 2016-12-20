@@ -2,6 +2,10 @@
 == V1.19b1 ==
 =============
 
+General:
+--------
+Consider a rule file given in a .gpr file if no "-f" option
+
 Changes to existing rules:
 --------------------------
 Simplifiable_Statements:

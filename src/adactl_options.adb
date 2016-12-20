@@ -30,6 +30,7 @@ with
 -- Ada
 with
   Ada.Characters.Handling,
+  Ada.Directories,
   Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Unbounded,
@@ -39,7 +40,8 @@ with
 with
   Options_Analyzer,
   Utilities,
-  Implementation_Options;
+  Implementation_Options,
+  Implementation_Options.Project_File;
 
 -- Adactl
 with
@@ -241,6 +243,8 @@ package body Adactl_Options is
       use Ada.Characters.Handling, Ada.Environment_Variables, Ada.Strings.Wide_Unbounded;
       use Utilities, Analyzer;
 
+      Rules_Specified : Boolean := False;
+
       procedure Flag_To_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
       begin
          if Is_Present (Option) then
@@ -356,7 +360,44 @@ package body Adactl_Options is
       Flag_To_Command  ('v', "verbose");
 
       -- add commands from file
-      Value_To_Command ('f', "source");
+      if Is_Present (Option => 'f') then
+         Value_To_Command ('f', "source");
+         Rules_Specified := True;
+
+      elsif Action /= Dependents
+        and then Is_Present (Option => 'p')
+        and then Implementation_Options.Project_File.Is_Appropriate (Value (Option => 'p', Explicit_Required => True))
+      then
+         declare
+            use Implementation_Options.Project_File, Ada.Directories;
+            Project_File : constant String := Value (Option => 'p', Explicit_Required => True);
+            Rule_File    : constant String := Tool_Switch (Project_File, "adacontrol", After => "-f");
+
+            function Is_Relative_Name (Name : String) return Boolean is
+            -- to be replaced by Ada.Directories.Hierarchical_File_Names.Is_Relative_Name when available
+            begin
+               return  (Name (Name'First) /= '/' and Name (Name'First) /= '\')
+                 and then (Name'Length < 3
+                           or else Name (Name'First + 1) /= ':'
+                           or else (Name (Name'First + 2) /= '/' or Name (Name'First + 2) = '\'));
+            end Is_Relative_Name;
+         begin
+            if Rule_File /= "" then
+               if Is_Relative_Name (Rule_File) then
+                  Append (Options_Commands,
+                          "source "
+                          & To_Wide_String (Compose (Compose (Containing_Directory (Project_File),
+                                                              Containing_Directory (Rule_File)),
+                                                     Simple_Name (Rule_File))
+                          & ';')
+                         );
+               else
+                  Append (Options_Commands, "source " & To_Wide_String (Rule_File) & ';');
+               end if;
+               Rules_Specified := True;
+            end if;
+         end;
+      end if;
 
       -- add commands from command line
       -- Must stay after file, to allow changing parameters defined in file
@@ -369,6 +410,7 @@ package body Adactl_Options is
             -- As a courtesy, provide the missing final ';'
             Append (Options_Commands, ';');
          end if;
+         Rules_Specified := True;
       end if;
 
       --
@@ -384,10 +426,7 @@ package body Adactl_Options is
          elsif Is_Present (Option => 'I') then
             Option_Error ("-D and -I options cannot be specified together");
          end if;
-      elsif Action /= Interactive_Process
-        and not Is_Present (Option => 'l')
-        and not Is_Present (Option => 'f')
-      then
+      elsif Action /= Interactive_Process and not Rules_Specified then
          Option_Error("No rules specified");
       end if;
 
@@ -416,7 +455,7 @@ package body Adactl_Options is
       use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
       use Implementation_Options, Analyzer;
    begin
-      return Parameters_String (Project_File  => Value (Option => 'p', Explicit_Required => True),
+      return Parameters_String (Project_Name  => Value (Option => 'p', Explicit_Required => True),
                                 Other_Options => To_Wide_String (Tail_Value) & To_Wide_String (Extra_Pathes));
    exception
       when Occur : Analyzer.Options_Error | Implementation_Options.Implementation_Error =>

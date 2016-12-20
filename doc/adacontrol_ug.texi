@@ -784,6 +784,9 @@ behind something that generates commands; if you want to type commands
 directly to AdaControl, the interactive mode is more
 appropriate. @xref{Interactive mode}.
 
+Alternatively, AdaControl will consider a rules file set as default in a .gpr 
+project file, unless an explicit ``-f'' option is given. 
+
 Ex:
 @example
 adactl -f my_rules.aru proc.adb
@@ -851,12 +854,15 @@ Starting with version 1.18, AdaControl supports GNAT project files
 (``.gpr''). The ``-p'' option is used to provide the name of a project
 file; Ada units to analyze will be searched in all ``source_dirs''
 specified in the project file or one of the projects it depends on
-(directly or indirectly).
+(directly or indirectly). In addition, if the project file specifies a
+rules file for AdaControl, this file will be considered, unless there
+is also an explicit ``-f'' option.
 
 Ex:
 @example
 adactl -f my_rules.aru -p proj.gpr proc.adb
 @end example
+
 
 Alternatively, an old emacs project file (the file with a ``.adp''
 extension used by the Ada mode of Emacs and older versions of
