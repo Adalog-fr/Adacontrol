@@ -35,6 +35,7 @@ with
 with
   Binary_Map,
   Linear_Queue,
+  Units_List,
   Utilities;
 
 -- Adactl
@@ -902,12 +903,14 @@ package body Framework.Reports is
          Report_All_Stats (Stats_Counters (Control_Kinds'First));
       end if;
 
-      if Stats_Level.Value >= General then
-         New_Line;
-         Put ("Issued messages: Errors = " & Integer_Img (Nb_Errors));
-         Put (", Warnings = " & Integer_Img (Nb_Warnings));
-         New_Line;
-      end if;
+      New_Line;
+      Put ("Units processed: " & Integer_Img (Units_List.Length));
+      New_Line;
+      Put ("Lines processed: " & Integer_Img (Total_Lines));
+      New_Line;
+      Put ("Issued messages: Errors = " & Integer_Img (Nb_Errors));
+      Put (", Warnings = " & Integer_Img (Nb_Warnings));
+      New_Line;
    end Report_Stats;
 
 begin  -- Framework.Reports

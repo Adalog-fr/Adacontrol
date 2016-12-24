@@ -204,8 +204,8 @@ package body Framework.Ruler is
    procedure Semantic_Traverse_Elements is new Asis.Iterator.Traverse_Element (Info, Pre_Procedure, Post_Procedure);
 
    procedure Semantic_Traverse (Unit : Asis.Compilation_Unit) is
-      use Asis, Asis.Elements;
-      use Framework.Queries;
+      use Asis, Asis.Elements, Asis.Text;
+      use Framework, Framework.Queries;
 
       The_Control : Traverse_Control := Continue;
       The_Info    : Info := (Pragma_Or_Attribute_Level => 0);
@@ -216,6 +216,8 @@ package body Framework.Ruler is
                                                                                 Include_Pragmas  => True) ;
       My_Declaration : constant Declaration := Unit_Declaration (Unit);
    begin
+      Reports.Total_Lines := Reports.Total_Lines + Last_Line_Number (My_Declaration);
+
       Init_Standard (Unit);
       Enter_Unit (Unit);
 
@@ -615,6 +617,10 @@ package body Framework.Ruler is
                                                 The_Span => Compilation_Span (Element_From_Unit));
       File_Name : constant Wide_String := Get_File_Name (Get_Location (Element_From_Unit));
    begin
+      if not Has_Active_Rules (Semantic) then
+         Reports.Total_Lines := Reports.Total_Lines + Unit_Lines'Length;
+      end if;
+
       Framework.Plugs.         Text_Enter_Unit (Unit);
       Framework.Specific_Plugs.Text_Enter_Unit (Unit);
       for I in Unit_Lines'Range loop
@@ -658,7 +664,7 @@ package body Framework.Ruler is
                                   & "Controlling separate "
                                   & Stub_Name);
 
-                        Textual_Traverse  (Enclosing_Compilation_Unit (Proper_Body));
+                        Textual_Traverse  (Stub_Unit);
 
                         User_Log (3 * Stub_Nesting * ' ' & "returning");
                         Process_Inhibition (Stub_Unit, Resume);

@@ -2028,7 +2028,7 @@ is as follows:
 @item
 0: No statistics are output (default)
 @item
-1: A count of error and warning messages is output
+1: A count of units, (raw) lines, error and warning messages is output
 @item
 2: The rule name and label (if any) of any control @i{not} triggered are
 output

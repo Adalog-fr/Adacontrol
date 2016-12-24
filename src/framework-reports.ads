@@ -89,7 +89,12 @@ package Framework.Reports is
    Full       : constant Stats_Levels := 3;
    package Stats_Levels_Type is new Framework.Variables.Integer_Type (Stats_Levels);
 
-   Just_Created  : Boolean := False;
+   Just_Created : Boolean := False;
+   Total_Lines  : Natural := 0;
+   -- Lines are counted by Semantic_Traverse during the first run only (to avoid counting many times, and since
+   -- units can't change between runs, it's sufficient). If there are no semantic rules, they are counted by
+   -- Textual_Traverse. Note that stubs are also traversed by Semantic_Traverse and/or Textual_Traverse, so there
+   -- is no need to special-case them.
 
    function Nb_Errors   return Natural;
    function Nb_Warnings return Natural;
