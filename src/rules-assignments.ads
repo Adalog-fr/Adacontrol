@@ -32,7 +32,8 @@ package Rules.Assignments is
 
    Rule_Id : constant Wide_String := "ASSIGNMENTS";
 
-   procedure Process_Statement_Container (Element   : in Asis.Element);
-   procedure Process_Assignment          (Statement : in Asis.Statement);
+   procedure Process_Assignment          (Statement   : in Asis.Statement);
+   procedure Process_Object_Declaration  (Declaration : in Asis.Declaration);
+   procedure Process_Statement_Container (Element     : in Asis.Element);
 
 end Rules.Assignments;

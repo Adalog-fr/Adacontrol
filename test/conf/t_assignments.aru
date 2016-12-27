@@ -4,3 +4,5 @@ Repeated:       check  assignments (repeated);
 Fully_Assigned: count  assignments (groupable, missing 0);
 Small_Rec:      check  assignments (groupable, total 2);
 Sliding:        check  assignments (sliding);
+Acc_Dup:        check  assignments (not controlled access_duplication);
+Dup_Controlled: Search assignments (    controlled access_duplication);

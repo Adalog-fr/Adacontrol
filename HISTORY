@@ -9,11 +9,15 @@ If statistics level is > 0, a count of units and raw lines is output
 
 Changes to existing rules:
 --------------------------
+Assignments:
+   add subrule access_duplication
+   sliding subrule controls initializations as well as assignments
+
 Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
 
 Style (Exposed_Literal)
-   Added place Statement
+   Add place Statement
 
 =============
 == V1.18r9 ==

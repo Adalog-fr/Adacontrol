@@ -44,12 +44,13 @@ Parameter(s): <Aspect_Mark> | all
              (optional, default = all)
 ----
 Rule: ASSIGNMENTS
-Control various issues in relation to assignments: obvious array slidings,
+Control various issues in relation to assignments:
+obvious array slidings, duplication of access value,
 repeated assignments in a sequence to a same variable, or sequences of assignments
 to components of a structured variable that could be replaced by an aggregate
 
-Parameter(1): sliding | repeated | groupable
-
+Parameter(1): [uncontrolled]  sliding  | access_duplication |
+                              repeated | groupable
 For groupable:
 Parameter(2..): <criterion> <value>
 <criterion>: given | missing | ratio | total

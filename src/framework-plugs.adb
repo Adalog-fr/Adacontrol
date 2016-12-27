@@ -284,6 +284,7 @@ package body Framework.Plugs is
 
                when A_Variable_Declaration =>
                   Rules.Array_Declarations.        Process_Object_Declaration   (Element);
+                  Rules.Assignments.               Process_Object_Declaration   (Element);
                   Rules.Directly_Accessed_Globals. Process_Variable_Declaration (Element);
                   Rules.Non_Static.                Process_Object_Declaration   (Element);
                   Rules.Object_Declarations.       Process_Declaration          (Element);
@@ -291,6 +292,7 @@ package body Framework.Plugs is
 
                when A_Constant_Declaration =>
                   Rules.Array_Declarations.  Process_Object_Declaration   (Element);
+                  Rules.Assignments.         Process_Object_Declaration   (Element);
                   Rules.Type_Initial_Values. Process_Constant_Declaration (Element);
                   Rules.Non_Static.          Process_Object_Declaration   (Element);
                   Rules.Object_Declarations. Process_Declaration          (Element);

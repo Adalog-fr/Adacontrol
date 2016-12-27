@@ -34,6 +34,7 @@ with
   Asis.Definitions,
   Asis.Elements,
   Asis.Expressions,
+  Asis.Iterator,
   Asis.Statements;
 
 -- Adalog
@@ -56,6 +57,12 @@ package body Rules.Assignments is
    --
    -- Subrule Sliding:
    -- Easy
+   --
+   -- Subrule Access_Duplication:
+   -- Traverse the assignment expression recursively, skipping anything that is not part of the value
+   -- (like aggregate choices, subprogram parameters, prefixes of qualified expressions), for access variables.
+   -- Note that functions could return the value of one of their parameters, hence their duplication status is
+   -- "possible"
    --
    -- Subrules repeated and groupable:
    -- Since this rule is about sequences of assignments, it is plugged on any construct
@@ -93,7 +100,7 @@ package body Rules.Assignments is
    -- At the end of a sequence of assignments, all LHS in the map are traversed, and
    -- messages are issued according to the values assigned/total subcomponents.
 
-   type Subrules is (Sliding, Repeated, Groupable);
+   type Subrules is (Sliding, Access_Duplication, Repeated, Groupable);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio, Crit_Total);
@@ -106,6 +113,12 @@ package body Rules.Assignments is
 
    -- Data for subrule Sliding:
    Sliding_Context : Basic_Rule_Context;
+
+   -- Data for subrule Access_Duplication:
+   Access_Duplication_Context : array (Boolean) of Basic_Rule_Context;
+   Access_Duplication_Used    : array (Boolean) of Boolean := (others => False);
+   -- False: context/used for uncontrolled
+   -- True : context/used for controlled
 
    -- Data for subrule Repeated:
    Repeated_Context : Basic_Rule_Context;
@@ -148,12 +161,12 @@ package body Rules.Assignments is
       use Utilities, Criteria_Utilities, Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control various issues in relation to assignments: obvious array slidings,");
+      User_Message ("Control various issues in relation to assignments:");
+      User_Message ("obvious array slidings, duplication of access value,");
       User_Message ("repeated assignments in a sequence to a same variable, or sequences of assignments");
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
       User_Message;
-      Help_On_Flags ("Parameter(1):");
-      User_Message;
+      Help_On_Flags ("Parameter(1): [uncontrolled] ");
       User_Message ("For groupable:");
       User_Message ("Parameter(2..): <criterion> <value>");
       Help_On_Modifiers (Header => "<criterion>:");
@@ -165,19 +178,28 @@ package body Rules.Assignments is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities, Framework.Language, Thick_Queries;
-      Given   : Biggest_Natural := 0;
-      Missing : Biggest_Natural := Biggest_Natural'Last;
-      Ratio   : Percentage      := 0;
-      Total   : Biggest_Natural := 0;
-      Crit    : Criteria;
-      Subrule : Subrules;
+      use Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities, Framework.Language, Thick_Queries, Utilities;
+      Given          : Biggest_Natural := 0;
+      Missing        : Biggest_Natural := Biggest_Natural'Last;
+      Ratio          : Percentage      := 0;
+      Total          : Biggest_Natural := 0;
+      Crit           : Criteria;
+      Subrule        : Subrules;
+      Has_Not        : Boolean;
+      Has_Controlled : Boolean;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "subrule expected");
       end if;
 
-      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      Has_Not        := Get_Modifier ("NOT");
+      Has_Controlled := Get_Modifier ("CONTROLLED");
+      Subrule        := Get_Flag_Parameter (Allow_Any => False);
+      if Subrule /= Access_Duplication and (Has_Not or Has_Controlled) then
+         Parameter_Error (Rule_Id, """[not] controlled"" modifier applies only to Access_Duplication");
+      elsif Has_Not and not Has_Controlled then
+         Parameter_Error (Rule_Id, "missing ""Controlled"" modifier for Access_Duplication");
+      end if;
       case Subrule is
          when Sliding =>
             if Parameter_Exists then
@@ -189,6 +211,27 @@ package body Rules.Assignments is
             end if;
 
             Sliding_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+
+         when Access_Duplication =>
+            if Parameter_Exists then
+               Parameter_Error (Rule_Id, "No parameter for subrule ""access_duplication""");
+            end if;
+
+            if Rule_Used (Access_Duplication) and not Has_Controlled then
+               Parameter_Error (Rule_Id, "subrule ""access_duplication"" already specified");
+            elsif Access_Duplication_Used (not Has_Not) then
+               Parameter_Error (Rule_Id, "subrule ""access_duplication"" already specified for"
+                                         & Choose (Has_Not, "not ", "")
+                                         & """controlled""");
+            end if;
+
+            if Has_Controlled then
+               Access_Duplication_Context (not Has_Not) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Access_Duplication_Used    (not Has_Not) := True;
+            else
+               Access_Duplication_Context := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+               Access_Duplication_Used    := (others => True);
+            end if;
 
          when Repeated =>
             if Parameter_Exists then
@@ -243,6 +286,438 @@ package body Rules.Assignments is
    end Command;
 
 
+   ---------------------
+   -- Process_Sliding --
+   ---------------------
+
+   procedure Process_Sliding (LHS : Asis.Element; RHS : Asis.Expression) is
+      use Framework.Reports, Thick_Queries, Utilities;
+   begin
+      if Type_Category (LHS) /= An_Array_Type then
+         return;
+      end if;
+
+      declare
+         LH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (LHS);
+         RH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (RHS);
+         Inx       : Asis.List_Index;
+      begin
+         if LH_Bounds = Nil_Extended_Biggest_Int_List or RH_Bounds = Nil_Extended_Biggest_Int_List then
+            -- Bounds cannot be determined (dynamic or determined by context)
+            return;
+         end if;
+         for Dim in Asis.List_Index range 1 .. LH_Bounds'Last / 2 loop
+            Inx := 2 * Dim - 1;
+            if         LH_Bounds (Inx) /= Not_Static
+              and then RH_Bounds (Inx) /= Not_Static
+              and then LH_Bounds (Inx) /= RH_Bounds (Inx)
+            then
+               if LH_Bounds'Length = 2 then
+                  Report (Rule_Id,
+                          Sliding_Context,
+                          Get_Location (RHS),
+                          "Lower bound ("
+                          & Biggest_Int_Img (RH_Bounds (Inx))
+                          & ") does not match assigned variable ("
+                          & Biggest_Int_Img (LH_Bounds (Inx))
+                          & ')'
+                         );
+               else
+                  Report (Rule_Id,
+                          Sliding_Context,
+                          Get_Location (RHS),
+                          "Lower bound of dimension " & ASIS_Integer_Img (Dim) & " ("
+                          & Biggest_Int_Img (RH_Bounds (Inx))
+                          & ") does not match assigned variable ("
+                          & Biggest_Int_Img (LH_Bounds (Inx))
+                          & ')'
+                         );
+               end if;
+            end if;
+         end loop;
+      end;
+   end Process_Sliding;
+
+
+   --------------------------------
+   -- Process_Access_Duplication --
+   --------------------------------
+
+   procedure Process_Access_Duplication (Expr : in Asis.Expression) is
+      use Thick_Queries, Utilities;
+      use Asis, Asis.Iterator;
+      type Duplication_State is (Possible, Certain);
+      Ignored         : Traverse_Control := Continue;
+      Controlled_Expr : Boolean          := Is_Controlled (Expr);
+
+      function Contains_Access_Type (Def : Asis.Definition) return Boolean is
+         -- Pre: Def is a type definition
+         use  Asis.Definitions, Asis.Elements, Asis.Expressions;
+         Good_Def : Asis.Definition := Def;
+      begin
+         if Is_Nil (Good_Def) then
+            -- some predefined or universal stuff...
+            return False;
+         end if;
+
+         -- The essential analysis is done by Contains_Type_Declaration_Kind, but it needs a type declaration
+         -- Get rid of anonymous types, and other annoying cases, until we get a good type
+         loop
+            case Definition_Kind (Good_Def) is
+               when A_Type_Definition =>
+                  case Type_Kind (Good_Def) is
+                     when An_Unconstrained_Array_Definition | A_Constrained_Array_Definition =>
+                        Good_Def := Array_Component_Definition (Good_Def);
+                     when others =>
+                        return Contains_Type_Declaration_Kind (Enclosing_Element (Good_Def),
+                                                               An_Ordinary_Type_Declaration,
+                                                               An_Access_Type_Definition);
+                  end case;
+               when An_Access_Definition =>
+                  return True;
+               when A_Private_Type_Definition =>
+                  return Contains_Type_Declaration_Kind (Enclosing_Element (Good_Def),
+                                                         An_Ordinary_Type_Declaration,
+                                                         An_Access_Type_Definition);
+               when A_Component_Definition =>
+                  return Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
+                                                         (Strip_Attributes
+                                                          (Subtype_Simple_Name
+                                                           (Component_Definition_View (Good_Def)))),
+                                                         An_Ordinary_Type_Declaration,
+                                                         An_Access_Type_Definition);
+               when A_Formal_Type_Definition =>
+                  return Contains_Type_Declaration_Kind (Enclosing_Element (Good_Def),
+                                                         An_Ordinary_Type_Declaration,
+                                                         An_Access_Type_Definition);
+               when others =>
+                  Failure ("Contains_Access_Type: bad definition", Good_Def);
+            end case;
+         end loop;
+      end Contains_Access_Type;
+
+      procedure Do_Report (Element : Asis.Element; State : Duplication_State; Controlled : Boolean) is
+         use Reports;
+      begin
+         if not Access_Duplication_Used (Controlled) then
+            return;
+         end if;
+
+         case State is
+            when Possible =>
+               Report (Rule_Id,
+                       Access_Duplication_Context (Controlled),
+                       Get_Location (Element),
+                       "Possible duplication of " & Choose (Controlled, "", "un") & "controlled access value");
+            when Certain =>
+               Report (Rule_Id,
+                       Access_Duplication_Context (Controlled),
+                       Get_Location (Element),
+                       "Duplication of " & Choose (Controlled, "", "un") & "controlled access value");
+         end case;
+      end Do_Report;
+
+      procedure Pre_Operation  (Element       :        Asis.Element;
+                                Control       : in out Traverse_Control;
+                                In_Controlled : in out Boolean);
+      procedure Post_Operation (Element       :        Asis.Element;
+                                Control       : in out Traverse_Control;
+                                In_Controlled : in out Boolean) is null;
+      procedure Traverse is new Traverse_Element (Boolean, Pre_Operation, Post_Operation);
+      -- In_Controlled is True while traversing subcomponents of a controlled aggregate
+
+      procedure Pre_Operation (Element       :        Asis.Element;
+                               Control       : in out Traverse_Control;
+                               In_Controlled : in out Boolean)
+      is
+         procedure Traverse_Instead (Element : Asis.Element) is             --## rule line off Local_Hiding
+            Local_Controlled : Boolean := In_Controlled;
+            -- We need a local variable because the traversal can change it
+         begin
+            Traverse (Element, Control, Local_Controlled);
+            if Control /= Terminate_Immediately then
+               Control := Abandon_Children;
+            end if;
+         end Traverse_Instead;
+
+         use Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      begin  -- Pre_Operation
+         case Expression_Kind (Element) is
+            when Not_An_Expression =>
+               Failure ("Process_Access_Duplication: not an expression", Element);
+
+            when A_Box_Expression =>
+               -- This cannot come from a record aggregate, since we traverse these as normalized associations
+               -- For array aggregates, aspect Default_Component_Value (or Default_Value of the component) are
+               -- defined only for scalar types => not access or composite.
+               -- Therefore, this can make an access duplication only if the component type contains a record with
+               -- a component of a type that has a default value that makes an access duplication...
+               -- Too hard to check for the moment, mark this (unlikely) case as "possible" if the component type
+               -- contains a record.
+               --
+               -- The box expression is in an association in an aggregate
+               declare
+                  Compo_Type : constant Asis.Declaration := Corresponding_Name_Declaration
+                                                             (Subtype_Simple_Name
+                                                              (Component_Definition_View
+                                                               (Array_Component_Definition
+                                                                (Thick_Queries.Corresponding_Expression_Type_Definition
+                                                                 (Enclosing_Element (Enclosing_Element (Element)))))));
+               begin
+                  if        Contains_Type_Declaration_Kind (Compo_Type,
+                                                            An_Ordinary_Type_Declaration,
+                                                            A_Record_Type_Definition)
+                    or else Contains_Type_Declaration_Kind (Compo_Type,
+                                                            An_Ordinary_Type_Declaration,
+                                                            A_Tagged_Record_Type_Definition)
+                  then
+                     Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
+                  end if;
+               end;
+            when An_Integer_Literal
+               | A_Real_Literal
+               | A_String_Literal
+               | An_Operator_Symbol
+               | A_Character_Literal
+               | An_Enumeration_Literal
+               | A_Raise_Expression
+               =>
+               -- Final, nothing special
+               null;
+
+            when An_Identifier =>
+               if  Contains_Access_Type (Thick_Queries.Corresponding_Expression_Type_Definition (Element)) then
+                  Do_Report (Element, Certain, In_Controlled or else Is_Controlled (Element));
+               end if;
+
+            when An_Explicit_Dereference =>
+               -- Since we never traverse prefixes of qualified names, this is a plain X.all
+               Control := Abandon_Children;
+               declare
+                  Target_Type : constant Asis.Declaration := Access_Target_Type
+                                                              (Thick_Queries.Corresponding_Expression_Type_Definition
+                                                               (Prefix (Element)));
+               begin
+                  if Contains_Access_Type (Type_Declaration_View (Target_Type)) then
+                     Do_Report (Element, Certain, Is_Controlled (Target_Type));
+                  end if;
+               end;
+
+            when A_Function_Call =>
+               Control := Abandon_Children;
+               declare
+                  Result_Type : constant Definition := Thick_Queries.Corresponding_Expression_Type_Definition (Element);
+               begin
+                  if Contains_Access_Type (Result_Type) then
+                     Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Result_Type));
+                  end if;
+               end;
+
+            when An_Indexed_Component | A_Slice =>
+               -- Since we check for composite structures containing access types,
+               -- it equivalent to check the whole array (and it saves traversing the indexes)
+               Traverse_Instead (Prefix (Element));
+
+            when A_Selected_Component =>
+               -- traverse selector only
+               Traverse_Instead (Selector (Element));
+
+            when An_Attribute_Reference =>
+               -- The only potentially interesting one is '(Unchecked_)Access, however it would be
+               -- treated like an allocator, which is ignored
+               Control := Abandon_Children;
+
+            when A_Parenthesized_Expression =>
+               -- let recurse normally
+               null;
+
+            when A_Type_Conversion | A_Qualified_Expression =>
+               -- Don't traverse the type name
+               Traverse_Instead (Converted_Or_Qualified_Expression (Element));
+
+            when A_Record_Aggregate | An_Extension_Aggregate =>
+               -- Traverse components only (not choices)
+               declare
+                  Controlled_Rec : Boolean := In_Controlled;
+               begin
+                  if Expression_Kind (Element) = An_Extension_Aggregate then
+                     -- fixed part of extension aggregates
+                     Traverse (Extension_Aggregate_Expression (Element), Control, Controlled_Rec);
+                     if Control = Terminate_Immediately then
+                        return;
+                     end if;
+                     -- Traverse may have destroyed Controlled_Rec + an extension of a controlled type is controlled
+                     Controlled_Rec := In_Controlled or else Is_Controlled (Extension_Aggregate_Expression (Element));
+                  end if;
+
+                  declare
+                     Assocs  : constant Association_List := Record_Component_Associations (Element, Normalized => True);
+                     Compo   : Asis.Expression;
+                     Temp_CR : Boolean;
+                  begin
+                     for A in Assocs'Range loop
+                        Compo := Component_Expression (Assocs (A));
+                        if Is_Nil (Compo) then
+                           -- Compo is nil for the normalized form of a box expression with no default
+                           -- Do like A_Box_Expression above
+                           -- The aggregate could have "others => <>" covering different types, but since we
+                           -- use a normalized association, ASIS will sort this up for us. Retrieve the component's
+                           -- type starting from the choices. We know there is only one choice per association.
+                           declare
+                              Compo_Type : constant Asis.Declaration := Corresponding_Name_Declaration
+                                                                         (Subtype_Simple_Name
+                                                                          (Component_Definition_View
+                                                                           (Object_Declaration_View
+                                                                            (Enclosing_Element
+                                                                             (Record_Component_Choices (Assocs (A)) (1)
+                                                                            )))));
+                           begin
+                              if        Contains_Type_Declaration_Kind (Compo_Type,
+                                                                        An_Ordinary_Type_Declaration,
+                                                                        A_Record_Type_Definition)
+                                or else Contains_Type_Declaration_Kind (Compo_Type,
+                                                                        An_Ordinary_Type_Declaration,
+                                                                        A_Tagged_Record_Type_Definition)
+                              then
+                                 Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
+                              end if;
+                           end;
+                        else
+                           Temp_CR := Controlled_Rec;
+                           Traverse (Compo, Control, Temp_CR);
+                           if Control = Terminate_Immediately then
+                              return;
+                           end if;
+                        end if;
+                     end loop;
+                     Control := Abandon_Children;
+                  end;
+               end;
+
+            when A_Positional_Array_Aggregate | A_Named_Array_Aggregate =>
+               -- Traverse components only (not choices)
+               -- No need to check controlledness, arrays can't be controlled
+               declare
+                  procedure Traverse_Components (Aggr : Asis.Expression) is
+                     Assocs           : constant Asis.Association_List := Array_Component_Associations (Aggr);
+                  begin
+                     for A in Assocs'Range loop
+                        declare
+                           Compo            : constant Asis.Expression := Component_Expression (Assocs (A));
+                           Controlled_Comps : Boolean := In_Controlled;
+                        begin
+                           if Expression_Kind (Compo) in A_Positional_Array_Aggregate .. A_Named_Array_Aggregate then
+                              -- Multidimensional array or array of array: traverse only components
+                              Traverse_Components (Compo);
+                           else
+                              Traverse (Compo, Control, Controlled_Comps);
+                           end if;
+                           if Control = Terminate_Immediately then
+                              return;
+                           end if;
+                        end;
+                     end loop;
+                  end Traverse_Components;
+               begin
+                  Traverse_Components (Element);
+                  if Control = Terminate_Immediately then
+                     return;
+                  end if;
+                  Control := Abandon_Children;
+               end;
+
+            when An_And_Then_Short_Circuit
+               | An_Or_Else_Short_Circuit
+               | An_In_Membership_Test
+               | A_Not_In_Membership_Test
+               | A_For_All_Quantified_Expression
+               | A_For_Some_Quantified_Expression
+               =>
+               -- These always return Boolean
+               Control := Abandon_Children;
+
+            when A_Null_Literal
+               | An_Allocation_From_Subtype
+               =>
+               -- Purposedly ignored
+               Control := Abandon_Children;
+
+            when An_Allocation_From_Qualified_Expression =>
+               -- There might be duplication if the initial value contains access types
+               Traverse_Instead (Allocator_Qualified_Expression (Element));
+
+            when A_Case_Expression | An_If_Expression =>
+               -- Recurse through data only (not choices)
+               declare
+                  Paths : constant Asis.Element_List := Expression_Paths (Element);
+                  Controlled_Path : Boolean;
+               begin
+                  for P in Paths'Range loop
+                     Controlled_Path := In_Controlled;
+                     Traverse (Dependent_Expression (Paths (P)), Control, Controlled_Path);
+                     if Control = Terminate_Immediately then
+                        return;
+                     end if;
+                  end loop;
+                  Control := Abandon_Children;
+               end;
+         end case;
+      end Pre_Operation;
+
+   begin   -- Process_Access_Duplication
+      Traverse (Expr, Ignored, Controlled_Expr);
+   end Process_Access_Duplication;
+
+   ------------------------
+   -- Process_Assignment --
+   ------------------------
+
+   procedure Process_Assignment (Statement : in Asis.Statement) is
+      use Asis.Statements;
+   begin   -- Process_Assignment
+      if not Rule_Used (Sliding) and not Rule_Used (Access_Duplication) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if Rule_Used (Sliding) then
+         Process_Sliding (LHS => Assignment_Variable_Name (Statement),
+                          RHS => Assignment_Expression (Statement));
+      end if;
+
+      if Rule_Used (Access_Duplication) then
+         Process_Access_Duplication (Assignment_Expression (Statement));
+      end if;
+   end Process_Assignment;
+
+   --------------------------------
+   -- Process_Object_Declaration --
+   --------------------------------
+
+   procedure Process_Object_Declaration  (Declaration : in Asis.Declaration) is
+      use Asis.Declarations, Asis.Elements;
+   begin
+      if not Rule_Used (Sliding) and not Rule_Used (Access_Duplication) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Init_Expr : constant Asis.Expression := Initialization_Expression (Declaration);
+      begin
+         if not Is_Nil (Init_Expr) then
+            if Rule_Used (Sliding) then
+               Process_Sliding (LHS => Names (Declaration) (1),  -- Even if there are several names
+                                RHS => Init_Expr);
+            end if;
+
+            if Rule_Used (Access_Duplication) then
+               Process_Access_Duplication (Init_Expr);
+            end if;
+         end if;
+      end;
+   end Process_Object_Declaration;
+
    ----------------------------------
    -- Process_Statement_Container  --
    ----------------------------------
@@ -255,7 +730,7 @@ package body Rules.Assignments is
       Dynamic_LHS : exception;
       -- Raised when the LHS is not statically determinable, the whole assignment
       -- is abandonned.
-      Reason  : Unbounded_Wide_String;
+      Reason      : Unbounded_Wide_String;
 
 
       function Total_Fields (Struct : Asis.Element) return Extended_Biggest_Natural is
@@ -497,7 +972,7 @@ package body Rules.Assignments is
             case Expression_Kind (Target) is
                when A_Selected_Component =>
                   if Declaration_Kind (Corresponding_Name_Declaration (Selector (Target)))
-                    in A_Discriminant_Specification .. A_Component_Declaration
+                  in A_Discriminant_Specification .. A_Component_Declaration
                   then
                      Parent := Prefix (Target);
                      if Is_Access_Expression (Parent) then
@@ -548,7 +1023,7 @@ package body Rules.Assignments is
                   Target := Converted_Or_Qualified_Expression (Target);
                when An_Explicit_Dereference
                   | A_Function_Call
-                    =>
+                  =>
                   raise Dynamic_LHS;
                when others =>
                   if Declaration_Kind (Corresponding_Name_Declaration (Target))
@@ -703,66 +1178,6 @@ package body Rules.Assignments is
          end if;
       end;
    end Process_Statement_Container;
-
-
-   ------------------------
-   -- Process_Assignment --
-   ------------------------
-
-   procedure Process_Assignment (Statement : in Asis.Statement) is
-      use Asis, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
-   begin
-      if not Rule_Used (Sliding) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      declare
-         LHS : constant Asis.Expression := Assignment_Variable_Name (Statement);
-         RHS : constant Asis.Expression := Assignment_Expression (Statement);
-      begin
-         if Type_Category (LHS) /= An_Array_Type then
-            return;
-         end if;
-
-         declare
-            LH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (LHS);
-            RH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (RHS);
-            Inx       : Asis.List_Index;
-         begin
-            for Dim in Asis.List_Index range 1 .. LH_Bounds'Last / 2 loop
-               Inx := 2 * Dim - 1;
-               if         LH_Bounds (Inx) /= Not_Static
-                 and then RH_Bounds (Inx) /= Not_Static
-                 and then LH_Bounds (Inx) /= RH_Bounds (Inx)
-               then
-                  if LH_Bounds'Length = 2 then
-                     Report (Rule_Id,
-                             Sliding_Context,
-                             Get_Location (RHS),
-                             "Lower bound ("
-                             & Biggest_Int_Img (RH_Bounds (Inx))
-                             & ") does not match assigned variable ("
-                             & Biggest_Int_Img (LH_Bounds (Inx))
-                             & ')'
-                            );
-                  else
-                     Report (Rule_Id,
-                             Sliding_Context,
-                             Get_Location (RHS),
-                             "Lower bound of dimension " & ASIS_Integer_Img (Dim) & " ("
-                             & Biggest_Int_Img (RH_Bounds (Inx))
-                             & ") does not match assigned variable ("
-                             & Biggest_Int_Img (LH_Bounds (Inx))
-                             & ')'
-                            );
-                  end if;
-               end if;
-            end loop;
-         end;
-      end;
-   end Process_Assignment;
 
 begin  -- Rules.Assignments
    Framework.Rules_Manager.Register (Rule_Id,

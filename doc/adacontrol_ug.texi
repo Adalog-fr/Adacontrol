@@ -3002,14 +3002,16 @@ DBC: check aspects (Pre, Post, Pre'Class, Post'Class);
 
 @node  Assignments, Barrier_Expressions, Aspects, Rules reference
 @section Assignments
-This rule controls various issues related to the assignment
-statement: assignments that involve array sliding, redundant
-assignments to the same variable, or groups of assignments that are
-replaceable by aggregate assignment.
+This rule controls various issues related to the assignment statement:
+assignments that involve array sliding, assignments that cause
+duplication of access values, redundant assignments to the same
+variable, or groups of assignments that are replaceable by aggregate
+assignment.
 
 @subsection Syntax
 @example
 <control_kind> assignments (sliding);
+<control_kind> assignments ([[not] controlled] access_duplication);
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
 <filter> ::= given <min_val> | missing <max_val> | ratio <min_val> |
@@ -3021,6 +3023,22 @@ The first form (keyword ``sliding'') controls array assignments where
 the target variable has a different lower bound than the assigned
 expression; this is allowed by the language only in so-called
 ``sliding'' contexts.
+
+The second form (keyword ``access_duplication'') controls assignments
+where the content of an object of an access type is stored (directly,
+or as a subcomponent) into another object. The @code{@b{null}} value
+and allocators (@code{@b{new}}) are @i{not} controlled. In other
+words, this rule spots places where you start having more than one way
+to access a variable. If the modifier ``controlled'' is given, only
+access types that are subcomponents (directly or indirectly) of a
+controlled type are controlled, while if ``not controlled'' is given,
+only those that are not subcomponents of a controlled type are
+controlled. No modifier is equivalent to giving both ``controlled''
+and ``not controlled''.  This subrule can be given at most twice, once
+for ``controlled'' and once for ``not controlled''.
+
+Note that the two rules above are checked for initialization of
+variables and constants, as well as in regular assignments.
 
 Other subrules control properties of groups of assignment statements. A
 group is made of consecutive assignments, without any other
@@ -3083,10 +3101,22 @@ search assignments (groupable, given 3, missing 2);
 search assignments (groupable, ratio 80);
 @end example
 
-@subsection Tip
+@subsection Tips
 The ``sliding'' subrule is not intended to prevent all cases of
 slidings (the dynamic ones are uncheckable), it is rather an
 indication of ``obvious'' cases that could be avoided.
+
+The ``access_duplication'' subrule is especially handy to track
+remaining duplication of access values after they have been
+Unchecked_Deallocated through one of the variables. The
+``not controlled'' modifier is intended to avoid too many false
+positives when you use controlled types to manage pointers. It may also
+be useful to check all access duplications, but consider that those that 
+are part of a controlled type deserve only a warning:
+@example
+check  assignments (not controlled access_duplication);
+search assignments (    controlled access_duplication);
+@end example
 
 Note that for the ``groupable'' subrule, it is possible to give 1 for
 the ``given'' criterion; in this case, any assignment to parts of a

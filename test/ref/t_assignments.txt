@@ -42,6 +42,34 @@ t_assignments-groupable_repeated.adb:174:7: Error: Groupable2: too many assignme
 t_assignments-groupable_repeated.adb:174:7: Error: Small_Rec: too many assignments to components of T_Assignments.Groupable_Repeated._Anonymous_.V2, total: 2 (<=2)
 t_assignments-groupable_repeated.adb:191:13: Error: Repeated: variable already assigned in same group at t_assignments-groupable_repeated.adb:190:13
 t_assignments-groupable_repeated.adb:194:13: Found: Groupable1: too many assignments to components of T_Assignments.Groupable_Repeated._Anonymous_.Prot.F3, given: 2 (>=2), missing: 1 (<=1)
+t_assignments-access_duplication.adb:8:16: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:13:24: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:32:18: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:72:68: Found: Dup_Controlled: Duplication of controlled access value
+t_assignments-access_duplication.adb:73:27: Found: Dup_Controlled: Duplication of controlled access value
+t_assignments-access_duplication.adb:79:10: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:80:18: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:82:14: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:83:14: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:89:10: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:90:21: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:91:17: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:92:17: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:98:15: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:99:26: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:100:11: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:101:11: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:103:22: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:108:13: Error: Acc_Dup: Possible duplication of uncontrolled access value
+t_assignments-access_duplication.adb:109:13: Error: Acc_Dup: Possible duplication of uncontrolled access value
+t_assignments-access_duplication.adb:117:20: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:123:29: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:126:11: Error: Acc_Dup: Possible duplication of uncontrolled access value
+t_assignments-access_duplication.adb:127:22: Error: Acc_Dup: Possible duplication of uncontrolled access value
+t_assignments-access_duplication.adb:130:11: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:131:16: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:132:11: Error: Acc_Dup: Duplication of uncontrolled access value
+t_assignments-access_duplication.adb:135:13: Found: Dup_Controlled: Duplication of controlled access value
 
 Counts summary:
 Fully_Assigned: 8
