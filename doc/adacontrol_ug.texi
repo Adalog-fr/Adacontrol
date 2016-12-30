@@ -351,30 +351,29 @@ GnatPRO 7.2.0 and GnatGPL-2013 (and higher). We refer to these
 versions as the ``new Gnat'', and we encourage all users to use the
 latest versions.
 
-Some user may however need to use an older version of Gnat. We provide
+Some users may however need to use an older version of Gnat. We provide
 also a version of AdaControl that is compatible with versions GnatPRO
 7.0.x and GnatGPL-2011 and older (before some incompatible -but
 necessary- changes in ASIS happened). We refer to these versions as
 the ``old Gnat''.
 
-The release whose distribution files start with ``adactl'' is for the
-new Gnat, and the one whose distribution files start with
-``adactl-old'' is for the old-gnat.  Both versions provide the same
-features, except that controls related to Ada-2012 (or that depend on
-new features of ASIS) are not available in the old-gnat
-version. Moreover, the old-gnat version is now frozen, and will not
-receive any new features or improvements in the future, unless
+The old gnat version is now frozen; it does not provide controls
+related to Ada-2012 (or that depend on new features of ASIS) and will
+not receive any new features or improvements in the future, unless
 requested by a supported customer (such requests will be honoured as
-part of the support contract). See @ref{Support} for
-information on becoming a supported user.
+part of the support contract). See @ref{Support} for information on
+becoming a supported user. This version can be obtained (in source
+only) from the Git repository of AdaControl on SourceForge
+(@url{http://adacontrol.sourceforge.net}), branch ``master-old_gnat''.
 
-Note that intermediate releases of Gnat (GnatPRO-7.1.x, GnatGPL-2012)
-are not fully compatible with either of these distribution. Depending
+Intermediate releases of Gnat (GnatPRO-7.1.x, GnatGPL-2012)
+are not fully compatible with either of these distributions. Depending
 on exact version, problems may range from compilation errors to
 incorrect results in some rare (Ada 2012) cases. Compatible sources
 can be obtained from the Git repository of AdaControl on SourceForge
-(@url{http://adacontrol.sourceforge.net}). We will be happy to help
-our supported customers who must use one of these versions.
+(@url{http://adacontrol.sourceforge.net}), branch ``GPL2012''. We will
+be happy to help our supported customers who must use one of these
+versions.
 
 @subsection Prerequisites
 The following software must be installed in order to compile

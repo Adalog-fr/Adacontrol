@@ -287,6 +287,7 @@ for test_case in $list; do
 done
 
 put_line_line
+put_title_line "`${ADACTL} -h version 2>&1 | tr -d \\\\r`"
 put_title_line "Passed= $nb_passed, Failed= $nb_failed"
 put_line_line
 

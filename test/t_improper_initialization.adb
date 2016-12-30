@@ -370,14 +370,14 @@ B2 :
             when 1 =>
                V := 1;
                if X = 1 then
-                  goto Ailleurs;
+                  goto Elsewhere;
                end if;
             when others =>
                V := 0;
          end case;
       end if;
 
-   <<Ailleurs>>
+   <<Elsewhere>>
       X := 0;
    end;
 
