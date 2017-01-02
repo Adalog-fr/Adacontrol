@@ -397,16 +397,11 @@ AdaControl itself.
 As mentionned above, support of Gnat .gpr projects requires the
 GNATColl component from AdaCore. If for some reason you don't want to
 include this component, it is possible to build AdaControl without
-this support. To do so, go to the @code{src} directory and:
-@itemize @bullet
-@item
-rename @code{implementation_options-i_options_from_gpr_project.adb} to
-@code{implementation_options-i_options_from_gpr_project_gpr.adb}
-@item
-rename
-@code{implementation_options-i_options_from_gpr_project_nogpr.adb} to
-@code{implementation_options-i_options_from_gpr_project.adb}
-@end itemize
+this support. To do so, go to the @code{src} directory and modify the
+file @code{implementation_options-project_file.ads} as indicated. If
+you don't have GNATColl installed at all, you need also to remove the
+line that says ``@code{with gnatcoll;}'' from the file
+@code{build.gpr}.
 
 @subsection Build and install with installer (Windows)
 Run the installer (@code{adactl_src-setup.exe}). This will
