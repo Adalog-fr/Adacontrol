@@ -4,7 +4,7 @@
 
 General:
 --------
-Consider a rule file given in a .gpr file if no "-f" option
+Consider a rule file given in a .gpr file if no "-f" option.
 If statistics level is > 0, a count of units and raw lines is output
 
 Changes to existing rules:

@@ -465,7 +465,9 @@ package body Framework.Language is
                            Success : Boolean;
                         begin
                            Next_Token;
-                           if (Source (1) = '/' or Source (1) = '\')
+                           if Source = "" then
+                              Success := True;
+                           elsif (Source (1) = '/' or Source (1) = '\')
                              or else (Source'Length >= 3
                                       and then Source (2) = ':'
                                       and then (Source (3) = '/' or Source (3) = '\'))

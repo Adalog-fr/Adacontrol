@@ -602,7 +602,7 @@ any order.
 The syntax for invoking AdaControl in regular mode is:
 @example
 adactl [-deEirsTuvwx]
-       [-p <project file>]     [-f <rules file>]    [-l <rules list>]
+       [-p <project file>]     [-f [<rules file>]]  [-l <rules list>]
        [-o <output file>]      [-t <trace file>]    [-F <format>]
        [-S <statistics level>] [-m <warning limit>] [-M <message limit>]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
@@ -788,7 +788,12 @@ adactl -f my_rules.aru proc.adb
 
 Note that the ``-l'' and ``-f'' options are @i{not} exclusive: if both
 are specified, the commands to be performed include those in the file
-(first) and then those given on the command line.
+(first) and then those given on the command line. 
+
+This applies also when there is no ``-f'' option, but a .gpr file is
+given which includes a default rules file. If you need a project file,
+and don't want its default rules file to be considered, use ``-f''
+without a <rules file>.
 
 @node Output file, Output format, Commands, Command line parameters and options
 @subsection Output file

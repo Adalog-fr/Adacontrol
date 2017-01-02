@@ -361,8 +361,8 @@ package body Adactl_Options is
 
       -- add commands from file
       if Is_Present (Option => 'f') then
-         Value_To_Command ('f', "source");
-         Rules_Specified := True;
+         Value_To_Command ('f', "source", Required => False);
+         Rules_Specified := Value ('f', Explicit_Required => False, Default => "") /= "";
 
       elsif Action /= Dependents
         and then Is_Present (Option => 'p')
