@@ -65,6 +65,10 @@ package body Adactl_Options is
    -- Option_Error --
    ------------------
 
+   procedure Option_Error (Message : String);
+   procedure Option_Error (Occur : Ada.Exceptions.Exception_Occurrence);
+   pragma No_Return (Option_Error);
+
    procedure Option_Error (Message : String) is
       use Ada.Exceptions;
    begin
@@ -76,8 +80,6 @@ package body Adactl_Options is
    begin
       Option_Error (Exception_Message (Occur));
    end Option_Error;
-
-   pragma No_Return (Option_Error);
 
    ---------------------
    -- Help_On_Options --
