@@ -4,6 +4,7 @@ check allocators (standard.string);
 specific_task : check allocators (T_Allocators.T1);
 Other_tasks   : check allocators (task);
 specific_prot : check allocators (T_Allocators.P1);
+all_enum      : check allocators (());
 all_prot      : check allocators (protected);
 all_arrays    : check allocators (array, not standard.wide_wide_string);
 all_records   : check allocators (record);

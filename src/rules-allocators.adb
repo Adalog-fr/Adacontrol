@@ -86,55 +86,53 @@ package body Rules.Allocators is
       Filter      : Filter_Kinds;
       No_Positive : Boolean := True;
    begin
-      if Parameter_Exists then
-         while Parameter_Exists loop
-            if Get_Modifier ("INCONSISTENT") then
-               Filter      := Inconsistent;
-               Entity      := Get_Entity_Parameter (Ghost => "ALL");
-               No_Positive := False;
-            elsif Get_Modifier ("ANONYMOUS") then
-               Filter      := Anonymous;
-               Entity      := Get_Entity_Parameter (Ghost => "ALL");
-               No_Positive := False;
-            elsif Get_Modifier ("NOT") then
-               Filter := Never;
-               Entity := Get_Entity_Parameter;
+      while Parameter_Exists loop
+         if Get_Modifier ("INCONSISTENT") then
+            Filter      := Inconsistent;
+            Entity      := Get_Entity_Parameter (Allow_Extended => Regular_OK, Ghost => "ALL");
+            No_Positive := False;
+         elsif Get_Modifier ("ANONYMOUS") then
+            Filter      := Anonymous;
+            Entity      := Get_Entity_Parameter (Allow_Extended => Regular_OK, Ghost => "ALL");
+            No_Positive := False;
+         elsif Get_Modifier ("NOT") then
+            Filter := Never;
+            Entity := Get_Entity_Parameter (Allow_Extended => Regular_OK);
+         else
+            Filter      := Always;
+            Entity      := Get_Entity_Parameter (Allow_Extended => Regular_OK, Ghost => "ALL");
+            No_Positive := False;
+         end if;
+
+         declare
+            Context       : Root_Context'Class := Association (Entities, Entity);
+            Active_Filter : Filter_Set := (others => False);
+            Contexts      : Context_Set;
+         begin
+            if Context = No_Matching_Context then
+               Active_Filter (Filter) := True;
+               Contexts      (Filter) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Associate (Entities,
+                          Entity,
+                          Rule_Context'(Active_Filter => Active_Filter, Contexts => Contexts));
             else
-               Filter      := Always;
-               Entity      := Get_Entity_Parameter (Ghost => "ALL");
-               No_Positive := False;
-            end if;
-
-            declare
-               Context       : Root_Context'Class := Association (Entities, Entity);
-               Active_Filter : Filter_Set := (others => False);
-               Contexts      : Context_Set;
-            begin
-               if Context = No_Matching_Context then
-                  Active_Filter (Filter) := True;
-                  Contexts      (Filter) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-                  Associate (Entities,
-                             Entity,
-                             Rule_Context'(Active_Filter => Active_Filter, Contexts => Contexts));
-               else
-                  if Rule_Context (Context).Active_Filter (Filter) then
-                     if Filter = Always then
-                        Parameter_Error (Rule_Id, "type or keyword already given: " & Image (Entity));
-                     else
-                        Parameter_Error (Rule_Id, "type or keyword already given with "
-                                                  & Filter_Kinds'Wide_Image (Filter)
-                                                  & ": "
-                                                  & Image (Entity));
-                     end if;
+               if Rule_Context (Context).Active_Filter (Filter) then
+                  if Filter = Always then
+                     Parameter_Error (Rule_Id, "type or keyword already given: " & Image (Entity));
+                  else
+                     Parameter_Error (Rule_Id, "type or keyword already given with "
+                                      & Filter_Kinds'Wide_Image (Filter)
+                                      & ": "
+                                      & Image (Entity));
                   end if;
-
-                  Rule_Context (Context).Active_Filter (Filter) := True;
-                  Rule_Context (Context).Contexts      (Filter) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-                  Update (Entities, Context);
                end if;
-            end;
-         end loop;
-      end if;
+
+               Rule_Context (Context).Active_Filter (Filter) := True;
+               Rule_Context (Context).Contexts      (Filter) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Update (Entities, Context);
+            end if;
+         end;
+      end loop;
 
       if No_Positive then -- Including no parameter at all
          Entity := Value ("ALL");
@@ -144,7 +142,7 @@ package body Rules.Allocators is
                                   Contexts      => (others => Basic.New_Context (Ctl_Kind, Ctl_Label))));
       end if;
 
-      Rule_Used  := True;
+      Rule_Used := True;
    end Add_Control;
 
    -------------

@@ -2,6 +2,9 @@ pragma Ada_2005;
 procedure T_allocators is
    procedure Anonymous is separate;
 
+   type Enum is (One, Two, Three);
+   type Acc_Enum is access Enum;
+
    type Acc1   is access Integer;
    type Acc1c1 is access Positive;
    type Acc1c2 is access Integer range 1..10;
@@ -79,6 +82,7 @@ procedure T_allocators is
    package Inst is new Gen;
    type Acc_Gen_T is access Inst.Gen_T;
 
+   VE  : Acc_Enum;
    V1  : Acc1;
    V1_2: Acc1c2;
    V2  : Acc2;
@@ -100,6 +104,7 @@ procedure T_allocators is
    V18 : Acc_Rec;
    V19 : access Wide_Wide_String;
 begin
+   VE := new Enum;                             -- All_Enum
    V1 := new Integer;                          -- ALL
    V1 := new Integer'(1);                      -- ALL
    V1 := new Standard.Integer'Base'(1);        -- Inconsistent
