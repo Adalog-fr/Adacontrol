@@ -166,7 +166,7 @@ package body Rules.Assignments is
       User_Message ("repeated assignments in a sequence to a same variable, or sequences of assignments");
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
       User_Message;
-      Help_On_Flags ("Parameter(1): [uncontrolled] ");
+      Help_On_Flags ("Parameter(1): [[not] controlled] ");
       User_Message ("For groupable:");
       User_Message ("Parameter(2..): <criterion> <value>");
       Help_On_Modifiers (Header => "<criterion>:");
