@@ -972,7 +972,7 @@ package body Framework.Language is
    -- Get_Entity_Parameter --
    --------------------------
 
-   function Get_Entity_Parameter (Allow_Extended : Boolean := False;
+   function Get_Entity_Parameter (Allow_Extended : Entity_Specification_Kinds_Set := Nothing_OK;
                                   Ghost          : Wide_String := "") return Entity_Specification
    is
       Result : constant Entity_Specification := Get_Entity_Modifier (Allow_Extended, Ghost);
@@ -985,7 +985,7 @@ package body Framework.Language is
    -- Get_Entity_Modifier --
    -------------------------
 
-   function Get_Entity_Modifier (Allow_Extended : Boolean := False;
+   function Get_Entity_Modifier (Allow_Extended : Entity_Specification_Kinds_Set := Nothing_OK;
                                  Ghost          : Wide_String := "") return Entity_Specification
    is
       -- Information set by the parsing functions:
@@ -1189,7 +1189,7 @@ package body Framework.Language is
 
       case Current_Token.Kind is
          when Left_Angle =>
-            if not Allow_Extended then
+            if not Allow_Extended (Box) then
                Syntax_Error ("Entity name expected", Current_Token.Position);
             end if;
 
@@ -1202,7 +1202,7 @@ package body Framework.Language is
             return (Kind => Box);
 
          when Equal =>
-            if not Allow_Extended then
+            if not Allow_Extended (Equal) then
                Syntax_Error ("Entity name expected", Current_Token.Position);
             end if;
 
@@ -1210,7 +1210,7 @@ package body Framework.Language is
             return (Kind => Equal);
 
          when Left_Parenthesis =>
-            if not Allow_Extended then
+            if not Allow_Extended (Regular_Id) then
                Syntax_Error ("Entity name expected", Current_Token.Position);
             end if;
 

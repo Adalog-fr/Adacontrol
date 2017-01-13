@@ -113,7 +113,7 @@ package body Rules.Derivations is
          when SR_From =>
             loop
                declare
-                  Entity : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+                  Entity : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Regular_OK);
                begin
                   Associate (Searched_Parents,
                              Entity,

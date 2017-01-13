@@ -114,7 +114,7 @@ package body Rules.Type_Usage is
                   Parameter_Error (Rule_Id, "type category expected");
                end if;
 
-               Param := Get_Entity_Parameter (Allow_Extended => True);
+               Param := Get_Entity_Parameter (Allow_Extended => Regular_OK);
                if Categories'(Value (Param)) = Cat_Any then
                   Parameter_Error (Rule_Id, "incorrect type category");
                end if;
@@ -135,7 +135,7 @@ package body Rules.Type_Usage is
                Parameter_Error (Rule_Id, "type category expected");
             end if;
 
-            Param := Get_Entity_Parameter (Allow_Extended => True);
+            Param := Get_Entity_Parameter (Allow_Extended => Regular_OK);
 
             begin
                Associate (Index_Contexts,

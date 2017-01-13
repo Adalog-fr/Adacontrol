@@ -86,10 +86,13 @@ package Framework.Language is
    function Get_String_Parameter  return Wide_String;
    -- The parameter must be a quoted string. The delimiter quotes are not returned, and any
    -- enclosed doubled quotes are reduced to a single one.
-   function Get_Entity_Parameter (Allow_Extended : Boolean := False;
+   function Get_Entity_Parameter (Allow_Extended : Entity_Specification_Kinds_Set := Nothing_OK;
                                   Ghost          : Wide_String := "") return Entity_Specification;
-   -- If Allow_Extended is True, allow entities of the form =, <>, and ()
-   -- If no entity is found and Ghost /= "", returns Value (Ghost)
+   -- Allow_Extended (Equal)   allows entities of the form =
+   -- Allow_Extended (Box)     allows entities of the form <>
+   -- Allow_Extended (Regular) allows entities of the form ()
+   -- If no entity is found:
+   --    if Ghost = "", syntax error, otherwise returns Value (Ghost)
 
    function Get_File_Parameter    return Wide_String;
    -- If the parameter is not an absolute file name, it is made relative to the
@@ -105,7 +108,7 @@ package Framework.Language is
    -- An empty string is allowed for either of them, meaning there is no
    -- corresponding keyword
 
-   function Get_Entity_Modifier (Allow_Extended : Boolean := False;
+   function Get_Entity_Modifier (Allow_Extended : Entity_Specification_Kinds_Set := Nothing_OK;
                                  Ghost          : Wide_String := "") return Entity_Specification;
    -- Like Get_Entity_Parameter, but treats the entity specification as a modifier (i.e. does not call
    -- Next_Parameter)

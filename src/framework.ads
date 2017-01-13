@@ -165,8 +165,15 @@ package Framework is
    -- the specification of an Ada entity in the command language
 
    type Entity_Specification is private;
-   type Entity_Specification_Kinds is (Box, Equal, Regular_Id, All_Id);
    type Entity_Specification_List is array (Asis.List_Index range <>) of Entity_Specification;
+
+   type Entity_Specification_Kinds is (Box, Equal, Regular_Id, All_Id);
+   type Entity_Specification_Kinds_Set is array (Entity_Specification_Kinds) of Boolean;
+   Nothing_OK : constant Entity_Specification_Kinds_Set := (                    others => False);
+   Box_OK     : constant Entity_Specification_Kinds_Set := (Box        => True, others => False);
+   Equal_OK   : constant Entity_Specification_Kinds_Set := (Equal      => True, others => False);
+   Regular_OK : constant Entity_Specification_Kinds_Set := (Regular_Id => True, others => False);
+   All_OK     : constant Entity_Specification_Kinds_Set := (others     => True                 );
 
    function Entity_Specification_Kind (Entity : in Entity_Specification) return Entity_Specification_Kinds;
 

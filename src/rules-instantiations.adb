@@ -139,7 +139,7 @@ package body Rules.Instantiations is
          end if;
 
          declare
-            Spec : Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+            Spec : Entity_Specification := Get_Entity_Parameter (Allow_Extended => All_OK);
             Rest : constant Instantiation_Context := Build_Context (Places);
          begin
             if Spec = Value ("()") then

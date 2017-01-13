@@ -115,7 +115,7 @@ package body Rules.Record_Declarations is
       case Subrule is
          when Component =>
             declare
-               Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+               Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Regular_OK);
 
                In_Variant  : Repr_Condition := None;
                Packing     : Repr_Condition := None;

@@ -133,12 +133,8 @@ package body Rules.Array_Declarations is
       Subrule : Subrules;
 
       function Build_Index_List return Entity_Specification_List is
-         Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+         Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Box_OK or Regular_OK);
       begin
-         if Entity_Specification_Kind (Entity) = Equal then
-            Parameter_Error (Rule_Id, """="" not allowed for index");
-         end if;
-
          case Categories'(Value (Entity)) is
             when Cat_Any =>
                null;
@@ -206,7 +202,7 @@ package body Rules.Array_Declarations is
 
          when Component =>
             declare
-               Entity      : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => True);
+               Entity      : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Regular_OK);
                The_Aspects : constant Aspects_Set := Get_Aspects_Parameter (Rule_Id,
                                                                             Expected => (Representation => Absent,
                                                                                          others         => Present));
