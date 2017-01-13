@@ -337,7 +337,7 @@ def options(rules, files):
             res = run("check", previous_command)
             if res != 0:
                 raise ValueError
-            result = result + " -l \"" + \
+            result = result + " -f -l \"" + \
                 re.sub('"', '~', previous_command) + "\""
         else:
             raise ValueError
