@@ -249,7 +249,9 @@ package body Rules.Local_Access is
                      return;
                   end if;
 
-               when A_Procedure_Declaration =>
+               when A_Procedure_Declaration
+                  | A_Null_Procedure_Declaration
+                  =>
                   if Definition_Kind (Enclosing_Element (Corresponding_Name_Declaration (Good_Prefix)))
                     = A_Protected_Definition
                   then
