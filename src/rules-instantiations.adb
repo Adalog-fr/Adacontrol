@@ -115,8 +115,8 @@ package body Rules.Instantiations is
       User_Message ("Parameter(1): {<location>} <Generic name>");
       User_Message ("Parameter(2..): <Entity name> | <category> | <> | = (optional)");
       Help_On_Scope_Places (Header => "<location>:");
-      User_Message ("<category>: ()      | access   | array | delta  | digits | mod |");
-      User_Message ("            private |protected | range | record | tagged | task");
+      User_Message ("<category>: ()      | access    | array | delta  | digits | mod |");
+      User_Message ("            private | protected | range | record | tagged | task");
    end Help;
 
 

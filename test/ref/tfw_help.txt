@@ -367,8 +367,8 @@ Parameter(2..): <Entity name> | <category> | <> | = (optional)
 <location>: [not] all       | block   | library | local      |
                   own       | private | public  | in_generic |
                   task_body
-<category>: ()      | access   | array | delta  | digits | mod |
-            private |protected | range | record | tagged | task
+<category>: ()      | access    | array | delta  | digits | mod |
+            private | protected | range | record | tagged | task
 ----
 Rule: INSUFFICIENT_PARAMETERS
 Control calls where absence of named notation can lead to confusion
