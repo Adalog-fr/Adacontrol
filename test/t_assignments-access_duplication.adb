@@ -4,11 +4,17 @@ separate (t_assignments)
 procedure Access_Duplication is
    --## Rule off repeated ## We make many crazy consecutive assignments in this test...
    type Acc is access Integer;
+   subtype Sub_Acc is Acc;
+   type Acc_Enum is access Boolean;
+   type Acc_Float is access Float;
+   type Acc_Proc is access procedure;
+   type Acc_Func is access function return Integer;
+
    V1 : Acc;
-   V2 : Acc := V1;                       -- Uncontrolled duplication
+   V2 : Sub_Acc := V1;                   -- Uncontrolled duplication
    V3 : access Acc;
 
-   type Arr1 is array (1 .. 10) of Acc;
+   type Arr1 is array (1 .. 10) of Sub_Acc;
    A1 : Arr1;
    A2 : Arr1 := (Arr1'(A1));             -- Uncontrolled duplication
 
@@ -71,6 +77,25 @@ procedure Access_Duplication is
       end record;
    Ctrl1 : Contrld_Acc := (Ada.Finalization.Controlled with Ptr => V1);  -- Controlled duplication
    Ctrl2 : Contrld_Acc := Ctrl1;                                         -- Controlled duplication
+
+   type Incl_Ctld is
+      record
+         F : Contrld_Acc;
+      end record;
+   IC1 : Incl_Ctld;
+   IC2 : Incl_Ctld := IC1;                                               -- Controlled duplication
+
+   -- Exceptions
+   Acc_Enum1 : Acc_Enum;
+   Acc_Enum2 : Acc_Enum := Acc_Enum1;                                    -- OK (has not)
+   Acc_Float1 : Acc_Float;
+   Acc_Float2 : Acc_Float := Acc_Float1;                                 -- OK (has not)
+
+   procedure Proc is null;
+   Acc_Sp1 : Acc_Proc := Proc'Access;
+   Acc_Sp2 : Acc_Proc := Acc_Sp1;                                        -- Uncontrolled duplication
+   Acc_Sp3 : Acc_Func := F1'Access;
+   Acc_Sp4 : Acc_Func := Acc_Sp3;                                        -- OK (has not)
 begin
    -- Simple case
    V1 := null;
@@ -133,4 +158,11 @@ begin
 
    -- Controlled types
    Ctrl1 := Ctrl2;                       -- Controlled duplication
+   IC1   := IC2;                         -- Controlled duplication
+
+   -- Exceptions
+   Acc_Enum2  := Acc_Enum1;              -- OK (has not)
+   Acc_Float2 := Acc_Float1;             -- OK (has not)
+   Acc_Sp1    := Acc_Sp2;                -- Uncontrolled duplication
+   Acc_Sp3    := Acc_Sp4;                -- OK (has not)
 end access_duplication;

@@ -3010,11 +3010,16 @@ assignment.
 @subsection Syntax
 @example
 <control_kind> assignments (sliding);
-<control_kind> assignments ([[not] controlled] access_duplication);
+<control_kind> assignments ([[not] controlled] access_duplication
+                            @{, [not] <target>@});
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
-<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> |
-             total <max_val>
+<target>   ::= <entity> | <category>
+<category> ::= ()       | access | array   | delta     | digits    | 
+               function | mod    | private | procedure | protected | 
+               range    | record | tagged  | task
+<filter>   ::= given <min_val> | missing <max_val> | ratio <min_val> |
+               total <max_val>
 @end example
 
 @subsection Action
@@ -3031,9 +3036,52 @@ words, this rule spots places where you start having more than one way
 to access a variable. If the modifier ``controlled'' is given, only
 access types that are subcomponents (directly or indirectly) of a
 controlled type are controlled, while if ``not controlled'' is given,
-only those that are not subcomponents of a controlled type are
+only those that are @i{not} subcomponents of a controlled type are
 controlled. No modifier is equivalent to giving both ``controlled''
-and ``not controlled''.  This subrule can be given at most twice, once
+and ``not controlled''. If one or several <target> without @code{not}
+are given, the control applies only to access types whose target type
+matches the given <entity>, or belongs to the given <category>. As
+usual, the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}. The meaning of <category> is:
+@itemize @bullet
+@item
+``()'': The target is of an enumerated type.
+@item
+``access'':  The target is of an access type.
+@item
+``array'': The target is of an array type.
+@item
+``delta'': The target is of a fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': The target is of a floating point type.
+@item
+``function'': The target is a function.
+@item
+``mod'': The target is of a modular type.
+@item
+``private'': The target is of a private type (including private
+extensions).
+@item
+``procedure'': The target is a procedure.
+@item
+``protected'': The target is of a protected type.
+@item
+``range'': The target is of a signed integer type.
+@item
+``record'': The target is of an (untagged) record type.
+@item
+``tagged'': The target is of a tagged type (including type
+extensions).
+@item
+``task'': The target is of a task type.
+@end itemize
+
+If the <target> is preceded by @code{not}, it means that the corresponding
+<entity> or <category> is not controlled.
+
+This subrule can be given at most twice for each <target>, once
 for ``controlled'' and once for ``not controlled''.
 
 Note that the two rules above are checked for initialization of
@@ -3043,12 +3091,12 @@ Other subrules control properties of groups of assignment statements. A
 group is made of consecutive assignments, without any other
 intervening kind of statements (except null statements).
 
-The second form (keyword ``repeated'') controls when a same variable
+The third form (keyword ``repeated'') controls when a same variable
 (or a same subcomponent of a structured variable) is assigned several
 times in the same group of assignments. This form of the rule can be
 given only once.
 
-The third form (keyword ``groupable'') controls assignments to
+The fourth form (keyword ``groupable'') controls assignments to
 different subcomponents of a same structured variable; such
 assignments are often replaceable by a global assignment of an
 aggregate to the variable. One or several <filter> parameters

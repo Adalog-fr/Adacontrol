@@ -1,8 +1,12 @@
 Groupable1:     search assignments (groupable, given 2, missing 1);
 Groupable2:     check  assignments (groupable, ratio 75);
-Repeated:       check  assignments (repeated);
 Fully_Assigned: count  assignments (groupable, missing 0);
 Small_Rec:      check  assignments (groupable, total 2);
+
+Repeated:       check  assignments (repeated);
+
 Sliding:        check  assignments (sliding);
-Acc_Dup:        check  assignments (not controlled access_duplication);
+
+Acc_Dup:        check  assignments (not controlled access_duplication, not function, not (), not standard.float);
 Dup_Controlled: Search assignments (    controlled access_duplication);
+Proc_Dup:       check  assignments (access_duplication, procedure);

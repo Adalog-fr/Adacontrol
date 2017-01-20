@@ -51,6 +51,12 @@ to components of a structured variable that could be replaced by an aggregate
 
 Parameter(1): [[not] controlled]  sliding  | access_duplication |
                                   repeated | groupable
+
+For access_duplication:
+Parameter(2..): [not] <Entity name> | <category>
+<category>: ()      | access    | array     | delta | digits | function | mod |
+            private | procedure | protected | range | record | tagged   | task
+
 For groupable:
 Parameter(2..): <criterion> <value>
 <criterion>: given | missing | ratio | total

@@ -46,7 +46,8 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Assignments is
@@ -63,6 +64,12 @@ package body Rules.Assignments is
    -- (like aggregate choices, subprogram parameters, prefixes of qualified expressions), for access variables.
    -- Note that functions could return the value of one of their parameters, hence their duplication status is
    -- "possible"
+   -- Each reference to a variable (including dereferences) is checked for subcomponents containing access types,
+   -- thanks to an instance of Traverse_Data_Structure. Note that we must find ALL references, since filters may
+   -- target various types.
+   -- The issue of whether a type is in a controlled structure is not easy. Here, we note in the state associated to
+   -- the traversal the nesting depth of the first encountered controlled type. This is done in the pre_procedure, and
+   -- undone (when we go through the same level) in the post_procedure.
    --
    -- Subrules repeated and groupable:
    -- Since this rule is about sequences of assignments, it is plugged on any construct
@@ -111,21 +118,30 @@ package body Rules.Assignments is
    Rule_Used : Usage_Flags := Not_Used;
    Save_Used : Usage_Flags;
 
+
    -- Data for subrule Sliding:
    Sliding_Context : Basic_Rule_Context;
 
+
    -- Data for subrule Access_Duplication:
-   Access_Duplication_Context : array (Boolean) of Basic_Rule_Context;
-   Access_Duplication_Used    : array (Boolean) of Boolean := (others => False);
-   -- False: context/used for uncontrolled
-   -- True : context/used for controlled
+   type Filter_Kind is (Include, Exclude);
+   type Duplication_Context is new Basic_Rule_Context with
+      record
+         Filter  : Filter_Kind;
+      end record;
+
+   Entities : array (Boolean) of Context_Store;
+   -- True : context for controlled
+   -- False: context for not controlled
+
 
    -- Data for subrule Repeated:
    Repeated_Context : Basic_Rule_Context;
 
+
    -- Data for subrule Groupable
    subtype Percentage is Asis.ASIS_Natural range 0 .. 100;
-   type Rule_Context is new Basic_Rule_Context with
+   type Groupable_Context is new Basic_Rule_Context with
       record
          Given   : Thick_Queries.Biggest_Natural;
          Missing : Thick_Queries.Biggest_Natural;
@@ -133,7 +149,7 @@ package body Rules.Assignments is
          Total   : Thick_Queries.Biggest_Natural;
       end record;
 
-   package Context_Queue is new Linear_Queue (Rule_Context);
+   package Context_Queue is new Linear_Queue (Groupable_Context);
    Groupable_Contexts : Context_Queue.Queue;
 
    type Coverage_Kind is (Full, Component);
@@ -167,6 +183,12 @@ package body Rules.Assignments is
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
       User_Message;
       Help_On_Flags ("Parameter(1): [[not] controlled] ");
+      User_Message;
+      User_Message ("For access_duplication:");
+      User_Message ("Parameter(2..): [not] <Entity name> | <category>");
+      User_Message ("<category>: ()      | access    | array     | delta | digits | function | mod |");
+      User_Message ("            private | procedure | protected | range | record | tagged   | task");
+      User_Message;
       User_Message ("For groupable:");
       User_Message ("Parameter(2..): <criterion> <value>");
       Help_On_Modifiers (Header => "<criterion>:");
@@ -178,7 +200,7 @@ package body Rules.Assignments is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities, Framework.Language, Thick_Queries, Utilities;
+      use Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities, Framework.Language, Thick_Queries;
       Given          : Biggest_Natural := 0;
       Missing        : Biggest_Natural := Biggest_Natural'Last;
       Ratio          : Percentage      := 0;
@@ -187,6 +209,9 @@ package body Rules.Assignments is
       Subrule        : Subrules;
       Has_Not        : Boolean;
       Has_Controlled : Boolean;
+      Filter         : Filter_Kind;
+      Entity         : Entity_Specification;
+      All_Exclude    : Boolean := True;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "subrule expected");
@@ -214,23 +239,41 @@ package body Rules.Assignments is
 
          when Access_Duplication =>
             if Parameter_Exists then
-               Parameter_Error (Rule_Id, "No parameter for subrule ""access_duplication""");
-            end if;
+               while Parameter_Exists loop
+                  if Get_Modifier ("NOT") then
+                     Filter := Exclude;
+                  else
+                     Filter      := Include;
+                     All_Exclude := False;
+                  end if;
+                  Entity := Get_Entity_Parameter (Allow_Extended => Regular_OK);
 
-            if Rule_Used (Access_Duplication) and not Has_Controlled then
-               Parameter_Error (Rule_Id, "subrule ""access_duplication"" already specified");
-            elsif Access_Duplication_Used (not Has_Not) then
-               Parameter_Error (Rule_Id, "subrule ""access_duplication"" already specified for"
-                                         & Choose (Has_Not, "not ", "")
-                                         & """controlled""");
-            end if;
-
-            if Has_Controlled then
-               Access_Duplication_Context (not Has_Not) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-               Access_Duplication_Used    (not Has_Not) := True;
+                  begin
+                     if not Has_Controlled or else not Has_Not then
+                        Associate (Entities (True),
+                                   Entity,
+                                   Duplication_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Filter));
+                     end if;
+                     if not Has_Controlled or else Has_Not then
+                        Associate (Entities (False),
+                                   Entity,
+                                   Duplication_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Filter));
+                     end if;
+                  exception
+                     when Already_In_Store =>
+                        Parameter_Error (Rule_Id,
+                                         "subrule ""access_duplication"" already specified with these parameters");
+                  end;
+               end loop;
+               if All_Exclude then
+                  Associate (Entities (not Has_Not),
+                             Value ("ALL"),
+                             Duplication_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Include));
+               end if;
             else
-               Access_Duplication_Context := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
-               Access_Duplication_Used    := (others => True);
+               Associate (Entities (not Has_Not),
+                          Value ("ALL"),
+                          Duplication_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Include));
             end if;
 
          when Repeated =>
@@ -398,24 +441,195 @@ package body Rules.Assignments is
 
       procedure Do_Report (Element : Asis.Element; State : Duplication_State; Controlled : Boolean) is
          use Reports;
-      begin
-         if not Access_Duplication_Used (Controlled) then
+
+         function Corresponding_Context return Root_Context'Class is
+         begin
+            return Control_Manager.Association (Entities (Controlled), Value ("ALL"));
+         end Corresponding_Context;
+
+         Cont : constant Root_Context'Class := Corresponding_Context;
+      begin   -- Do_Report
+         if Cont = No_Matching_Context then
             return;
          end if;
 
          case State is
             when Possible =>
                Report (Rule_Id,
-                       Access_Duplication_Context (Controlled),
+                       Cont,
                        Get_Location (Element),
-                       "Possible duplication of " & Choose (Controlled, "", "un") & "controlled access value");
+                       "Possible duplication of " & Choose (Controlled, "", "not ") & "controlled access value");
             when Certain =>
                Report (Rule_Id,
-                       Access_Duplication_Context (Controlled),
+                       Cont,
                        Get_Location (Element),
-                       "Duplication of " & Choose (Controlled, "", "un") & "controlled access value");
+                       "Duplication of " & Choose (Controlled, "", "not ") & "controlled access value");
          end case;
       end Do_Report;
+
+      type Report_State is
+         record
+            In_Controlled     : Boolean;
+            First_Inner_Ctrld : Asis.ASIS_Natural;
+            Duplication_Root  : Asis.Element;
+         end record;
+      procedure Pre_Operation (Def     : in     Asis.Definition;
+                               Control : in out Asis.Traverse_Control;
+                               State   : in out Report_State;
+                               Depth   : in     Asis.Asis_Positive)
+      is
+         use Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+         Good_Def    : Asis.Definition := Def;
+         Target_Type : Asis.Declaration;
+
+         function Is_In_Controlled return Boolean is
+         begin
+            return State.In_Controlled or State.First_Inner_Ctrld /= 0;
+         end Is_In_Controlled;
+
+         procedure Do_Report (Cont : Root_Context'Class) is
+            use Framework.Reports;
+         begin
+            Report (Rule_Id,
+                    Cont,
+                    Get_Location (State.Duplication_Root),
+                    "Duplication of " & Choose (Is_In_Controlled, "", "not ") & "controlled access"
+                    & " defined at " & Image (Get_Location (Good_Def)));
+         end Do_Report;
+      begin  -- Pre_Operation
+         if State.First_Inner_Ctrld = 0 and then Is_Controlled (Good_Def) then
+            State.First_Inner_Ctrld := Depth;
+         end if;
+
+         if not Is_Access_Subtype (Good_Def) then
+            return;
+         end if;
+
+         if Definition_Kind (Good_Def) = A_Subtype_Indication then
+            -- Get rid of subtypes
+            Good_Def := Type_Declaration_View (Corresponding_First_Subtype
+                                               (Corresponding_Name_Declaration
+                                                (Strip_Attributes
+                                                 (Subtype_Simple_Name (Good_Def)))));
+         end if;
+
+         if Type_Kind (Good_Def) = A_Derived_Type_Definition then
+            -- get rid of derived types
+            Good_Def := Type_Declaration_View (Corresponding_Root_Type (Good_Def));
+         end if;
+
+         if        Access_Type_Kind (Good_Def)       = An_Access_To_Procedure
+           or else Access_Type_Kind (Good_Def)       = An_Access_To_Protected_Procedure
+           or else Access_Definition_Kind (Good_Def) = An_Anonymous_Access_To_Procedure
+           or else Access_Definition_Kind (Good_Def) = An_Anonymous_Access_To_Protected_Procedure
+         then
+            -- access to procedure
+            declare
+               Cont : constant Root_Context'Class := Control_Manager.Association (Entities (Is_In_Controlled),
+                                                                                  "PROCEDURE");
+            begin
+               if Cont /= No_Matching_Context then
+                  if Duplication_Context (Cont).Filter = Include then
+                     Do_Report (Cont);
+                  end if;
+                  Control := Abandon_Children;
+                  return;
+               end if;
+            end;
+         elsif     Access_Type_Kind (Good_Def)       = An_Access_To_Function
+           or else Access_Type_Kind (Good_Def)       = An_Access_To_Protected_Function
+           or else Access_Definition_Kind (Good_Def) = An_Anonymous_Access_To_Function
+           or else Access_Definition_Kind (Good_Def) = An_Anonymous_Access_To_Protected_Function
+         then
+            -- access to function
+            declare
+               Cont : constant Root_Context'Class := Control_Manager.Association (Entities (Is_In_Controlled),
+                                                                                  "FUNCTION");
+            begin
+               if Cont /= No_Matching_Context then
+                  if Duplication_Context (Cont).Filter = Include then
+                     Do_Report (Cont);
+                  end if;
+                  Control := Abandon_Children;
+                  return;
+               end if;
+            end;
+         else
+            -- A regular access to object
+            Target_Type := Access_Target_Type (Good_Def);
+
+            -- search type itself
+            declare
+               Cont : constant Root_Context'Class := Matching_Context (Entities (Is_In_Controlled),
+                                                                       Names (Target_Type)(1),
+                                                                       Extend_To => All_Extensions);
+            begin
+               if Cont /= No_Matching_Context then
+                  if Duplication_Context (Cont).Filter = Include then
+                     Do_Report (Cont);
+                  end if;
+                  Control := Abandon_Children;
+                  return;
+               end if;
+            end;
+
+            -- search category
+            declare
+               use Framework.Language.Shared_Keys,
+                   Framework.Language.Shared_Keys.Categories_Utilities;
+               Cont : constant Root_Context'Class := Control_Manager.Association
+                 (Entities (Is_In_Controlled),
+                  Image (Matching_Category
+                    (Target_Type,
+                       From_Cats      => Full_Set,
+                       Follow_Derived => True,
+                       Privacy        => Follow_Private)));
+            begin
+               if Cont /= No_Matching_Context then
+                  if Duplication_Context (Cont).Filter = Include then
+                     Do_Report (Cont);
+                  end if;
+                  Control := Abandon_Children;
+                  return;
+               end if;
+            end;
+         end if;
+
+         -- For all cases, if nothing else matched, search "ALL"
+         declare
+            Cont : constant Root_Context'Class := Control_Manager.Association (Entities (Is_In_Controlled),
+                                                                               "ALL");
+         begin
+            if Cont /= No_Matching_Context then
+               Do_Report (Cont);
+               return;
+            end if;
+         end;
+      end Pre_Operation;
+
+      procedure Post_Operation (Def     : in     Asis.Definition;
+                                Control : in out Asis.Traverse_Control;
+                                State   : in out Report_State;
+                                Depth   : in     Asis.Asis_Positive)
+      is
+         pragma Unreferenced (Def, Control);
+      begin
+         if State.First_Inner_Ctrld = Depth then
+            State.First_Inner_Ctrld := 0;
+         end if;
+      end Post_Operation;
+
+      procedure Check_Included_Types is new Traverse_Data_Structure (Report_State, Pre_Operation, Post_Operation);
+
+      procedure Check_Type_Def (In_Controlled : in Boolean;
+                                Expr_Elem     : in Asis.Expression;
+                                Type_Def      : in Asis.Definition)
+      is
+         State   : Report_State := (In_Controlled, 0, Expr_Elem);
+         Control : Asis.Traverse_Control := Continue;
+      begin
+         Check_Included_Types (Type_Def, Control, State);
+      end Check_Type_Def;
 
       procedure Pre_Operation  (Element       :        Asis.Element;
                                 Control       : in out Traverse_Control;
@@ -486,22 +700,18 @@ package body Rules.Assignments is
                null;
 
             when An_Identifier =>
-               if  Contains_Access_Type (Thick_Queries.Corresponding_Expression_Type_Definition (Element)) then
-                  Do_Report (Element, Certain, In_Controlled or else Is_Controlled (Element));
-               end if;
+               Check_Type_Def (In_Controlled,
+                               Element,
+                               Thick_Queries.Corresponding_Expression_Type_Definition (Element));
 
             when An_Explicit_Dereference =>
-               -- Since we never traverse prefixes of qualified names, this is a plain X.all
+               -- Since we never traverse prefixes of qualified names, this is a plain X.all (not X.all.Comp)
                Control := Abandon_Children;
-               declare
-                  Target_Type : constant Asis.Declaration := Access_Target_Type
-                                                              (Thick_Queries.Corresponding_Expression_Type_Definition
-                                                               (Prefix (Element)));
-               begin
-                  if Contains_Access_Type (Type_Declaration_View (Target_Type)) then
-                     Do_Report (Element, Certain, Is_Controlled (Target_Type));
-                  end if;
-               end;
+               Check_Type_Def (In_Controlled,
+                               Element,
+                               Type_Declaration_View
+                                (Access_Target_Type
+                                 (Thick_Queries.Corresponding_Expression_Type_Definition (Prefix (Element)))));
 
             when A_Function_Call =>
                Control := Abandon_Children;
@@ -872,7 +1082,7 @@ package body Rules.Assignments is
       end Total_Fields;
 
       function Exceeds_Thresholds (Value         : LHS_Descriptor;
-                                   Limits        : Rule_Context;
+                                   Limits        : Groupable_Context;
                                    With_Messages : Boolean := False) return Boolean
 
       is
@@ -1101,7 +1311,7 @@ package body Rules.Assignments is
       procedure Report_One (Key : Unbounded_Wide_String; Value : in out LHS_Descriptor) is
          use Context_Queue, Framework.Reports, Utilities;
          Current : Cursor;
-         Context : Rule_Context;
+         Context : Groupable_Context;
       begin
          if Value.Coverage = Full   --A global assignment
            or else Value.Subcomp_Total = 0  --A null record
