@@ -393,52 +393,6 @@ package body Rules.Assignments is
       Ignored         : Traverse_Control := Continue;
       Controlled_Expr : Boolean          := Is_Controlled (Expr);
 
-      function Contains_Access_Type (Def : Asis.Definition) return Boolean is
-         -- Pre: Def is a type definition
-         use  Asis.Definitions, Asis.Elements, Asis.Expressions;
-         Good_Def : Asis.Definition := Def;
-      begin
-         if Is_Nil (Good_Def) then
-            -- some predefined or universal stuff...
-            return False;
-         end if;
-
-         -- The essential analysis is done by Contains_Type_Declaration_Kind, but it needs a type declaration
-         -- Get rid of anonymous types, and other annoying cases, until we get a good type
-         loop
-            case Definition_Kind (Good_Def) is
-               when A_Type_Definition =>
-                  case Type_Kind (Good_Def) is
-                     when An_Unconstrained_Array_Definition | A_Constrained_Array_Definition =>
-                        Good_Def := Array_Component_Definition (Good_Def);
-                     when others =>
-                        return Contains_Type_Declaration_Kind (Enclosing_Element (Good_Def),
-                                                               An_Ordinary_Type_Declaration,
-                                                               An_Access_Type_Definition);
-                  end case;
-               when An_Access_Definition =>
-                  return True;
-               when A_Private_Type_Definition =>
-                  return Contains_Type_Declaration_Kind (Enclosing_Element (Good_Def),
-                                                         An_Ordinary_Type_Declaration,
-                                                         An_Access_Type_Definition);
-               when A_Component_Definition =>
-                  return Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
-                                                         (Strip_Attributes
-                                                          (Subtype_Simple_Name
-                                                           (Component_Definition_View (Good_Def)))),
-                                                         An_Ordinary_Type_Declaration,
-                                                         An_Access_Type_Definition);
-               when A_Formal_Type_Definition =>
-                  return Contains_Type_Declaration_Kind (Enclosing_Element (Good_Def),
-                                                         An_Ordinary_Type_Declaration,
-                                                         An_Access_Type_Definition);
-               when others =>
-                  Failure ("Contains_Access_Type: bad definition", Good_Def);
-            end case;
-         end loop;
-      end Contains_Access_Type;
-
       procedure Do_Report (Element : Asis.Element; State : Duplication_State; Controlled : Boolean) is
          use Reports;
 
@@ -490,11 +444,22 @@ package body Rules.Assignments is
          procedure Do_Report (Cont : Root_Context'Class) is
             use Framework.Reports;
          begin
-            Report (Rule_Id,
-                    Cont,
-                    Get_Location (State.Duplication_Root),
-                    "Duplication of " & Choose (Is_In_Controlled, "", "not ") & "controlled access"
-                    & " defined at " & Image (Get_Location (Good_Def)));
+            if Is_Part_Of_Instance (Good_Def) then
+               Report (Rule_Id,
+                       Cont,
+                       Get_Location (State.Duplication_Root),
+                       "Duplication of " & Choose (Is_In_Controlled, "", "not ") & "controlled access"
+                       & " defined at " & Image (Get_Location
+                                                 (Corresponding_Generic_Element
+                                                  (Names (Enclosing_Element (Good_Def)) (1))))
+                       &  " instantiated at " & Image (Get_Location (Ultimate_Enclosing_Instantiation (Good_Def))));
+            else
+               Report (Rule_Id,
+                       Cont,
+                       Get_Location (State.Duplication_Root),
+                       "Duplication of " & Choose (Is_In_Controlled, "", "not ") & "controlled access"
+                       & " defined at " & Image (Get_Location (Good_Def)));
+            end if;
          end Do_Report;
       begin  -- Pre_Operation
          if State.First_Inner_Ctrld = 0 and then Is_Controlled (Good_Def) then
@@ -671,21 +636,32 @@ package body Rules.Assignments is
                --
                -- The box expression is in an association in an aggregate
                declare
-                  Compo_Type : constant Asis.Declaration := Corresponding_Name_Declaration
-                                                             (Subtype_Simple_Name
-                                                              (Component_Definition_View
-                                                               (Array_Component_Definition
-                                                                (Thick_Queries.Corresponding_Expression_Type_Definition
-                                                                 (Enclosing_Element (Enclosing_Element (Element)))))));
+                  Compo_Def  : Asis.Definition := Enclosing_Element (Enclosing_Element (Element));
+                  Compo_Type : Asis.Declaration;
                begin
-                  if        Contains_Type_Declaration_Kind (Compo_Type,
-                                                            An_Ordinary_Type_Declaration,
-                                                            A_Record_Type_Definition)
-                    or else Contains_Type_Declaration_Kind (Compo_Type,
-                                                            An_Ordinary_Type_Declaration,
-                                                            A_Tagged_Record_Type_Definition)
-                  then
-                     Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
+                  -- We must skip subaggregates of multimensional array aggregates, since they have not type definition
+                  -- of their own. The only way we found to differentiate these from -say- an array of arrays is
+                  -- that their Corresponding_Expression_Type_Definition returns Nil_Element. If anyone knows a
+                  -- better solution...
+                  while Is_Nil (Thick_Queries.Corresponding_Expression_Type_Definition (Compo_Def)) loop
+                     Compo_Def := Enclosing_Element (Enclosing_Element (Compo_Def));
+                  end loop;
+                  Compo_Def := Component_Definition_View (Array_Component_Definition
+                                                          (Thick_Queries.Corresponding_Expression_Type_Definition
+                                                           (Compo_Def)));
+                  if Definition_Kind (Compo_Def) = An_Access_Definition then
+                     Check_Type_Def (In_Controlled, Element, Compo_Def);
+                  else -- necessarily a component_definition
+                     Compo_Type := Corresponding_Name_Declaration (Subtype_Simple_Name (Compo_Def));
+                     if        Contains_Type_Declaration_Kind (Compo_Type,
+                                                               An_Ordinary_Type_Declaration,
+                                                               A_Record_Type_Definition)
+                       or else Contains_Type_Declaration_Kind (Compo_Type,
+                                                               An_Ordinary_Type_Declaration,
+                                                               A_Tagged_Record_Type_Definition)
+                     then
+                        Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
+                     end if;
                   end if;
                end;
             when An_Integer_Literal
@@ -711,14 +687,19 @@ package body Rules.Assignments is
                                Element,
                                Type_Declaration_View
                                 (Access_Target_Type
-                                 (Thick_Queries.Corresponding_Expression_Type_Definition (Prefix (Element)))));
+                                 (Ultimate_Expression_Type
+                                  (Simple_Name (Prefix (Element))))));
 
             when A_Function_Call =>
                Control := Abandon_Children;
                declare
                   Result_Type : constant Definition := Thick_Queries.Corresponding_Expression_Type_Definition (Element);
                begin
-                  if Contains_Access_Type (Result_Type) then
+                  if not Is_Nil (Result_Type)  -- Predefined, universal stuff...
+                    and then Contains_Type_Declaration_Kind (Result_Type,
+                                                             An_Ordinary_Type_Declaration,
+                                                             An_Access_Type_Definition)
+                  then
                      Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Result_Type));
                   end if;
                end;
@@ -773,21 +754,37 @@ package body Rules.Assignments is
                            -- The aggregate could have "others => <>" covering different types, but since we
                            -- use a normalized association, ASIS will sort this up for us. Retrieve the component's
                            -- type starting from the choices. We know there is only one choice per association.
+                           -- Reminder: since it is a normalized association, the choices are the defining names
+                           --           of the components
                            declare
-                              Compo_Type : constant Asis.Declaration := Corresponding_Name_Declaration
-                                                                         (Subtype_Simple_Name
-                                                                          (Component_Definition_View
-                                                                           (Object_Declaration_View
-                                                                            (Enclosing_Element
-                                                                             (Record_Component_Choices (Assocs (A)) (1)
-                                                                            )))));
+                              Compo_Def  : Asis.Definition ;
+                              Compo_Type : Asis.Declaration;
                            begin
-                              if        Contains_Type_Declaration_Kind (Compo_Type,
-                                                                        An_Ordinary_Type_Declaration,
-                                                                        A_Record_Type_Definition)
-                                or else Contains_Type_Declaration_Kind (Compo_Type,
-                                                                        An_Ordinary_Type_Declaration,
-                                                                        A_Tagged_Record_Type_Definition)
+                              Compo_Def := Object_Declaration_View (Enclosing_Element
+                                                                    (Record_Component_Choices (Assocs (A)) (1)));
+                              if Definition_Kind (Compo_Def) = A_Component_Definition then
+                                 Compo_Def := Component_Definition_View (Compo_Def);
+                                 if Definition_Kind (Compo_Def) = An_Access_Definition then
+                                    Check_Type_Def (In_Controlled, Element, Compo_Def);
+                                    Compo_Type := Nil_Element;
+                                 else
+                                    Compo_Type := Corresponding_Name_Declaration (Strip_Attributes
+                                                                                  (Subtype_Simple_Name
+                                                                                   (Compo_Def)));
+                                 end if;
+                              else
+                                 -- The component was a discriminant, Compo_Def is the discriminant's type name
+                                 Compo_Type := Corresponding_Name_Declaration
+                                                   (Strip_Attributes (Simple_Name (Compo_Def)));
+                              end if;
+
+                              if not Is_Nil (Compo_Type)
+                                and then (       Contains_Type_Declaration_Kind (Compo_Type,
+                                                                                 An_Ordinary_Type_Declaration,
+                                                                                 A_Record_Type_Definition)
+                                          or else Contains_Type_Declaration_Kind (Compo_Type,
+                                                                                  An_Ordinary_Type_Declaration,
+                                                                                  A_Tagged_Record_Type_Definition))
                               then
                                  Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
                               end if;

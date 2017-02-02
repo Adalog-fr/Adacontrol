@@ -59,15 +59,19 @@ procedure Access_Duplication is
 
    generic
       type Form_Acc is access Integer;
+      type Target is private;
    package Gen is
+      type Gen_Acc is access Target;
       GV1 : Form_Acc;
       type New_FA is new Form_Acc;
       GV2 : Form_Acc;
       GV3 : Form_Acc;
    end Gen;
-   package Inst is new Gen (Acc);
+   package Inst is new Gen (Acc, Integer);
    use Inst;
-   IV1 : New_FA;
+   IV1  : New_FA;
+   IV21 : Gen_Acc;
+   IV22 : Gen_Acc;
 
    Cond : Boolean;
 
@@ -152,9 +156,10 @@ begin
    A21 := (others => <>);                -- Possible uncontrolled duplication
 
    -- Generics
-   V1  := GV2;                           -- Uncontrolled duplication
-   V1  := Acc (IV1);                     -- Uncontrolled duplication
-   GV3 := GV2;                           -- Uncontrolled duplication
+   V1   := GV2;                           -- Uncontrolled duplication
+   V1   := Acc (IV1);                     -- Uncontrolled duplication
+   GV3  := GV2;                           -- Uncontrolled duplication
+   IV22 := IV21;                          -- Uncontrolled duplication
 
    -- Controlled types
    Ctrl1 := Ctrl2;                       -- Controlled duplication
