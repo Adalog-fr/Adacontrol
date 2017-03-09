@@ -16,6 +16,11 @@
 @vskip 0pt plus 1filll
 @end titlepage
 
+@dircategory GNU Ada tools
+@direntry
+* AdaControl User's Guide: (adacontrol_ug). Using AdaControl.
+@end direntry
+
 @ifnottex
 @node Top, Introduction, (dir), (dir)
 @top AdaControl User Guide
@@ -9649,8 +9654,8 @@ check use_clauses (global);
 check use_clauses (local, Ada.Text_IO, Ada.Wide_Text_IO);
 
 -- No use type in context clauses, count types that are "use type"'d
-check (type_global);
-count (type);
+check use_clauses (type_global);
+count use_clauses (type);
 @end example
 
 @node With_Clauses,  , Use_Clauses, Rules reference

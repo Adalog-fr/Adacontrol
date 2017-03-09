@@ -12,6 +12,11 @@
 @vskip 0pt plus 1filll
 @end titlepage
 
+@dircategory GNU Ada tools
+@direntry
+* AdaControl Programmer's Manual: (adacontrol_pm).  Writing new rules.
+@end direntry
+
 @ifnottex
 @node Top, General, (dir), (dir)
 @top AdaControl Programmer Manual

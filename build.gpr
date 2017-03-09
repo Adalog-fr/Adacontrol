@@ -8,11 +8,13 @@ project Build is
    for Main use ("adactl", "ptree", "pfni");
 
    Std_Options := ("-O2", "-gnatws", "-gnat12", "-gnato", "-gnatf", "-g");
+   Std_Options := Std_Options & External_As_List ("ADAFLAGS", " ");
    package Compiler is
       for Default_Switches ("ada") use Std_Options;
    end Compiler;
 
    package Linker is
+      for Leading_Switches ("ada") use External_As_List ("LDFLAGS", " ");
       for Default_Switches ("ada") use ("-g");
    end Linker;
 
