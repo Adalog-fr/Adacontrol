@@ -168,7 +168,9 @@ package body Rules.Local_Hiding is
          Rule_Used    (Strict) := True;
          Rule_Context (Strict) := Basic.New_Context (Ctl_Kind, Ctl_Label);
          Include_Op   (Strict) := True;
+         Include_Enum (Strict) := True;
          Exclude_Renaming      := False;
+         Ignore_Families       := True;
       end if;
    end Add_Control;
 
