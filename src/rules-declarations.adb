@@ -1651,6 +1651,11 @@ package body Rules.Declarations is
                when A_Component_Definition =>
                   Do_Report (D_Anonymous_Access_Component, Enclosing_Element (Encl));
                   -- Enclosing_Element because we want the declaration
+               when A_Type_Definition =>
+                  -- the access definition is burried into some other type definition
+                  -- like in "access function return access integer"
+                  -- but we are interested only in the topmost declaration
+                  null;
                when others =>
                   Failure ("Declarations: unexpected definition for an access definition", Encl);
             end case;
