@@ -8,11 +8,12 @@ t_comments-test_terminating.adb:4:40: Error: Terminating: Not an allowed termina
 t_comments-test_terminating.adb:11:17: Error: Terminating: Not an allowed terminating comment
 t_comments-test_terminating.adb:14:18: Error: Terminating: Not an allowed terminating comment
 t_comments-test_terminating.adb:17:14: Error: Terminating: Not an allowed terminating comment
-t_comments-test_unnamed_begin.adb:47:1: Found: Begin: "begin" has no unit name comment for Test_Unnamed_Begin
-t_comments-test_unnamed_begin.adb:36:4: Found: Begin: "begin" has no unit name comment for Pack1
+t_comments-test_unnamed_begin.adb:52:1: Found: Begin: "begin" has no unit name comment for Test_Unnamed_Begin
+t_comments-test_unnamed_begin.adb:41:4: Found: Begin: "begin" has no unit name comment for Pack1
 t_comments-test_unnamed_begin.adb:15:7: Found: Begin: "begin" comment does not name P3
 t_comments-test_unnamed_begin.adb:26:7: Found: Begin: "begin" has no unit name comment for F2
+t_comments-test_unnamed_begin.adb:37:7: Found: Begin: "begin" comment does not name F4
 t_comments-test_unnamed_begin.adb:4:42: Error: Terminating: Not an allowed terminating comment
 
 Counts summary:
-Not_Col_4: 20
+Not_Col_4: 21

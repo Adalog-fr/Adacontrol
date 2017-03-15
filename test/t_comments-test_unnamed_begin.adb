@@ -33,6 +33,11 @@ procedure Test_Unnamed_Begin is
          return Result;
       end F3;
 
+      function F4 return Integer is
+      begin    -- FF
+         return 0;
+      end F4;
+
    begin
       null;
    end Pack1;

@@ -3529,6 +3529,10 @@ Remember that a Regexp matches if the pattern matches any part of the
 identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
 the comment, or both.
 
+For ``unnamed_begin'', the <condition> defines cases where the comment
+is optional; however if a comment is present in an optional case, it
+has to be the name of the corresponding unit.
+
 @subsection Limitations
 This rule does not support wide characters outside the basic Latin-1 set.
 

@@ -449,6 +449,48 @@ package body Rules.Comments is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
       use Reports, Thick_Queries, Utilities;
 
+      function Is_Comment_Optional (Un : Units) return Boolean is
+      begin
+         case Unnamed_Contexts (Un).Condition is
+            when Always =>
+               return False;
+            when Declaration =>
+               return Declarative_Items (Unit) = Nil_Element_List;
+            when Program_Unit =>
+               declare
+                  Decls      : constant Asis.Declaration_List := Declarative_Items (Unit);
+               begin
+                  for D in Decls'Range loop
+                     case Declaration_Kind (Decls (D)) is
+                        when A_Procedure_Declaration
+                           | A_Null_Procedure_Declaration
+                           | A_Generic_Procedure_Declaration
+                           | A_Procedure_Body_Declaration
+
+                           | A_Function_Declaration
+                           | An_Expression_Function_Declaration   -- Ada 2012
+                           | A_Generic_Function_Declaration
+                           | A_Function_Body_Declaration
+
+                           | An_Entry_Body_Declaration
+
+                           | A_Package_Declaration
+                           | A_Generic_Package_Declaration
+                           | A_Package_Body_Declaration
+
+                           | A_Task_Body_Declaration
+                           | A_Protected_Body_Declaration
+                           =>
+                           return False;
+                        when others =>
+                           null;
+                     end case;
+                  end loop;
+                  return True;
+               end;
+         end case;
+      end Is_Comment_Optional;
+
       Un : Units;
    begin
       if not Rule_Used (Unnamed_Begin) then
@@ -474,51 +516,6 @@ package body Rules.Comments is
       if not Units_Used (Un) then
          return;
       end if;
-
-      case Unnamed_Contexts (Un).Condition is
-         when Always =>
-            null;
-         when Declaration =>
-            if Declarative_Items (Unit) = Nil_Element_List then
-               return;
-            end if;
-         when Program_Unit =>
-            declare
-               Decls      : constant Asis.Declaration_List := Declarative_Items (Unit);
-               Unit_Found : Boolean := False;
-            begin
-               for D in Decls'Range loop
-                  case Declaration_Kind (Decls (D)) is
-                     when A_Procedure_Declaration
-                        | A_Null_Procedure_Declaration
-                        | A_Generic_Procedure_Declaration
-                        | A_Procedure_Body_Declaration
-
-                        | A_Function_Declaration
-                        | An_Expression_Function_Declaration   -- Ada 2012
-                        | A_Generic_Function_Declaration
-                        | A_Function_Body_Declaration
-
-                        | An_Entry_Body_Declaration
-
-                        | A_Package_Declaration
-                        | A_Generic_Package_Declaration
-                        | A_Package_Body_Declaration
-
-                        | A_Task_Body_Declaration
-                        | A_Protected_Body_Declaration
-                          =>
-                        Unit_Found := True;
-                        exit;
-                     when others =>
-                        null;
-                  end case;
-               end loop;
-               if not Unit_Found then
-                  return;
-               end if;
-            end;
-      end case;
 
       declare
          Stmts : constant Statement_List := Statements (Unit);
@@ -558,10 +555,12 @@ package body Rules.Comments is
             end loop;
 
             if Comment_Pos = 0 then
-               Report (Rule_Id,
-                       Unnamed_Contexts (Un),
-                       Begin_Loc,
-                       """begin"" has no unit name comment for " & Defining_Name_Image (Names (Unit) (1)));
+               if not Is_Comment_Optional (Un) then
+                  Report (Rule_Id,
+                          Unnamed_Contexts (Un),
+                          Begin_Loc,
+                          """begin"" has no unit name comment for " & Defining_Name_Image (Names (Unit) (1)));
+               end if;
             else
                Name_Inx := Index (Begin_Text (Comment_Pos .. Begin_Text'Last), " ", Going => Backward);
                if Name_Inx = 0 then
