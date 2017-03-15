@@ -358,7 +358,7 @@ def options(rules, files):
                 raise ValueError
             result = result + " -f " + win.name()
         else:
-            result = result + " -l \"" + re.sub('"', '~', files) + "\""
+            result = result + " -f -l \"" + re.sub('"', '~', files) + "\""
 
     # set other_params
     gps = True
