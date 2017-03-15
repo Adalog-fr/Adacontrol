@@ -328,10 +328,11 @@ package body Rules.Parameter_Declarations is
 
       case Declaration_Kind (Good_Decl) is
          when A_Procedure_Body_Declaration
+            | A_Null_Procedure_Declaration
             | A_Function_Body_Declaration
             | A_Procedure_Body_Stub
             | A_Function_Body_Stub
-              =>
+            =>
             if Is_Subunit (Good_Decl) or not Is_Nil (Corresponding_Declaration (Good_Decl)) then
                -- The check is performed on the specification or the stub, no need to repeat here
                return;

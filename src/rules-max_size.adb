@@ -265,6 +265,8 @@ package body Rules.Max_Size is
                   Do_Report (SR_Package_Body, Element);
                when A_Procedure_Body_Declaration =>
                   Do_Report (SR_Procedure_Body, Element);
+               when A_Null_Procedure_Declaration =>
+                  null;  -- Minimal value...
                when A_Function_Body_Declaration =>
                   Do_Report (SR_Function_Body, Element);
                when A_Task_Type_Declaration | A_Single_Task_Declaration =>

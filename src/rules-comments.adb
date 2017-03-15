@@ -501,6 +501,9 @@ package body Rules.Comments is
       case Declaration_Kind (Unit) is
          when A_Procedure_Body_Declaration =>
             Un := U_Procedure;
+         when A_Null_Procedure_Declaration =>
+            -- there is no begin... not applicable
+            return;
          when A_Function_Body_Declaration =>
             Un := U_Function;
          when An_Entry_Body_Declaration =>

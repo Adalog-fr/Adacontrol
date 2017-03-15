@@ -318,7 +318,9 @@ package body Framework.Plugs is
                   Rules.Unit_Pattern.             Process_Program_Unit         (Element);
                   Rules.Usage.                    Process_Declaration          (Element);
 
-               when A_Procedure_Body_Declaration =>
+               when A_Procedure_Body_Declaration
+                  | A_Null_Procedure_Declaration
+                  =>
                   Rules.Comments.                Process_Program_Unit   (Element);
                   Rules.Exception_Propagation.   Process_SP_Declaration (Element);
                   Rules.Global_References.       Process_Body           (Element);

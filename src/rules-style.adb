@@ -805,6 +805,9 @@ package body Rules.Style is
       Rules_Manager.Enter (Rule_Id);
 
       case Declaration_Kind (Construct) is
+         when A_Null_Procedure_Declaration =>
+            -- Syntax does not allow a closing name
+            return;
          when A_Task_Type_Declaration =>
             if Is_Nil (Type_Declaration_View (Construct)) then
                -- No task definition => no closing name possible

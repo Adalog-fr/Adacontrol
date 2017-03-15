@@ -617,6 +617,8 @@ package body Rules.Unit_Pattern is
             | An_Entry_Body_Declaration
             =>
             Check (Subprogram, Body_Declarative_Items (Unit, Include_Pragmas => True));
+         when A_Null_Procedure_Declaration =>
+            null;    -- Nothing to check here
          when A_Package_Body_Declaration =>
             Check (Package_Body, Body_Declarative_Items (Unit, Include_Pragmas => True));
          when others =>
