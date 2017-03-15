@@ -9,13 +9,13 @@ procedure Tfw_2005 is
    Tab : array (1..10) of access Integer;    -- Anonymous array of anonymous access type
    type Rec is
       record
-	 F : access Integer'Base'Base;       -- Component of anonymous access type, several 'Base
+         F : access Integer'Base'Base;       -- Component of anonymous access type, several 'Base
                                              -- Several 'Base were already allowed before 2005 (sigh)
       end record;
 
    type Rec2 is
       record
-	 Next : access Rec2;                 -- Self references through anonymous access type
+         Next : access Rec2;                 -- Self references through anonymous access type
       end record;
 
    procedure P (F : access function return Integer) is -- Parameter of anonymous access to SP type
@@ -32,15 +32,14 @@ procedure Tfw_2005 is
       return X : access Integer;             -- Extended return statement without body
    end F;
 
-   --  For the moment, this little gem crashes Gnat...
-   --  function G return access function return access procedure -- Return type of anonymous access to function type
-   --  is
-   --  begin
-   --     return null;
-   --  end G;
+   function G return access function return access procedure -- Return type of anonymous access to function type
+   is
+   begin
+      return null;
+   end G;
 
    generic
---      X : in     access Integer;   -- Generic anonymous access in (not accepted by Gnat)
+      X : in     access Integer;   -- Generic anonymous access in (not accepted by Gnat)
       Y :        access Integer;   -- Generic anonymous access in
       Z : in out access Integer;   -- Generic anonymous access in out
    procedure GP;
@@ -51,6 +50,8 @@ procedure Tfw_2005 is
       type T_Access is access all T;
       type T is tagged null record;
    end New_Types;
+
+   procedure Null_Proc is null;
 begin
    X := F;
    Tab(1) := X;

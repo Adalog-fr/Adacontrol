@@ -11,7 +11,7 @@ procedure Tfw_2012 is
    I : Integer;
    J : Integer := (if I = 0 then 1 else 2);                        -- if expression
 
--- K : Integer := (case I = J is when False => 1, when True => 2); -- case expression
+   K : Integer := (case I = J is when False => 1, when True => 2); -- case expression
 
    function Is_Nul return Boolean is (I=0);                        -- expression function
 
@@ -44,12 +44,15 @@ procedure Tfw_2012 is
    private
       type T is new Integer;
    end New_Types;
+
+   procedure Null_Proc;
+   procedure Null_Proc is null;  -- null procedure as completion
 begin
    for C of S loop                                                 -- for .. of
       C := ' ';
    end  loop;
 
-   -- TBSL does not compile: Vect (1) := "ABCD";                                             -- User defined indexing
+   Vect (1) := "ABCD";                                             -- User defined indexing
 
    if I in 1 | 2 | Sub | 1..10 then                                -- multiple membership test
       null;
