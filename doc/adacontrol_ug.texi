@@ -290,8 +290,8 @@ by Arnaud Lecanu and Jean-Pierre Rosen (Adalog). Rules, improvements,
 etc. were contributed by Pierre-Louis Escouflaire (Adalog), Alain
 Fontaine (ABF consulting), Richard Toy (Eurocontrol-Maastricht), and
 Isidro Ilasa Veloso (GMV). AdaGide support and improvement of icons
-were contributed by Gautier de Montmollin. Emmanuel Masker (Alstom)
-and Yannick Duchene contributed to GPS integration.
+were contributed by Gautier de Montmollin. Emmanuel Masker (Alstom),
+Yannick Duchene and Pascal Pignard contributed to GPS integration.
 
 See file @code{HISTORY} for a description of the various versions of
 AdaControl, including enhancements of the current version over the
