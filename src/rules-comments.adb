@@ -492,7 +492,7 @@ package body Rules.Comments is
       end Is_Comment_Optional;
 
       Un : Units;
-   begin
+   begin   -- Process_Program_Unit
       if not Rule_Used (Unnamed_Begin) then
          return;
       end if;

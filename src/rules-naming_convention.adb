@@ -86,7 +86,7 @@ package body Rules.Naming_Convention is
    --   - Root_Found: At least one of the filters is a "root" filter
    --
    -- Note that the matching process is stopped as soon as a certain error is diagnosed, or a certain
-   -- OK is diagnosed (the latter can happen early only when a "root" filter is encountered. This is
+   -- OK is diagnosed (the latter can happen early only when a "root" filter is encountered). This is
    -- done by raising an exception, since it can happen deep in the call tree.
    --
    -- This algorithm is what seems to give the most "natural" behaviour, but we may have to refine it

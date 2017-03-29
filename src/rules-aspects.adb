@@ -169,7 +169,7 @@ package body Rules.Aspects is
 
    procedure Process_Declaration (Declaration : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Definitions;
-   begin   -- Process_Identifier
+   begin   -- Process_Declaration
       if not Rule_Used then
          return;
       end if;
