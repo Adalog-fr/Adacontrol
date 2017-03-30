@@ -422,6 +422,11 @@ gprinstall build.gpr
 @end example
 You're done!
 
+If you want to uninstall AdaControl, just use:
+@example
+gprinstall --uninstall adacontrol
+@end example
+
 Caveat (@i{old gnat only}): Due to a bug in some versions, if you are using GNATPro
 6.1.2 and above, you must set the variable GNAT_FIX to 1; i.e. invoke
 the command as:
@@ -462,7 +467,7 @@ want different locations (for example, if GPS is not installed in the
 Gnat tree).
 
 All you need to run AdaControl is the executable named  @code{adactl}
-under Linux or @code{adactl.exe} under Windows. In addition,
+under Linux and MacOS or @code{adactl.exe} under Windows. In addition,
 @code{pfni} (or @code{pfni.exe} under Windows) is a convenient
 utility, required by the GPS support. @xref{pfni}. Copy these
 executables (found in the root directory of the distribution) to any
@@ -580,12 +585,17 @@ GPS installed and/or AdaGide support if you have AdaGide installed.
 
 Otherwise, go to the root directory of the installation and type:
 @example
-gprinstall build.gpr
+gprinstall inst.gpr
 @end example
 
 This will install the executables and the GPS support in the standard
 locations (the Gnat directory). However, if you are using AdaGide, the
 support will have to be installed manually as explained below.
+
+If you want to uninstall AdaControl, just use:
+@example
+gprinstall --uninstall adacontrol
+@end example
 
 @node Installing support for AdaGide,  , Installing an executable distribution, Installation
 @section Installing support for AdaGide

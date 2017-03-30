@@ -1,0 +1,14 @@
+project Inst is
+   for Languages use ("Ada");
+   for Source_Dirs use ("fake/");
+   for Main use ("adactl", "ptree", "pfni");
+
+   package Install is
+      for mode use "usage";
+      for install_name use "adacontrol";
+      for artifacts ("share/gps/plug-ins") use ("GPS/*");
+      for artifacts ("share/gprconfig") use ("GPS/adacontrol.xml");
+      for artifacts ("share/doc/gps/html") use ("doc/*.html");
+   end Install;
+end Inst;
+
