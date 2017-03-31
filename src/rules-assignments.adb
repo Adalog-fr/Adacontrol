@@ -2,7 +2,7 @@
 --  Rules.Assignments - Package body                                --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005.         --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2005.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -389,37 +389,23 @@ package body Rules.Assignments is
    procedure Process_Access_Duplication (Expr : in Asis.Expression) is
       use Thick_Queries, Utilities;
       use Asis, Asis.Iterator;
-      type Duplication_State is (Possible, Certain);
       Ignored         : Traverse_Control := Continue;
       Controlled_Expr : Boolean          := Is_Controlled (Expr);
 
-      procedure Do_Report (Element : Asis.Element; State : Duplication_State; Controlled : Boolean) is
+      procedure Report_Possible (Element : Asis.Element; Controlled : Boolean) is
          use Reports;
 
-         function Corresponding_Context return Root_Context'Class is
-         begin
-            return Control_Manager.Association (Entities (Controlled), Value ("ALL"));
-         end Corresponding_Context;
-
-         Cont : constant Root_Context'Class := Corresponding_Context;
-      begin   -- Do_Report
+         Cont : constant Root_Context'Class := Control_Manager.Association (Entities (Controlled), Value ("ALL"));
+      begin   -- Report_Possible
          if Cont = No_Matching_Context then
             return;
          end if;
 
-         case State is
-            when Possible =>
-               Report (Rule_Id,
-                       Cont,
-                       Get_Location (Element),
-                       "Possible duplication of " & Choose (Controlled, "", "not ") & "controlled access value");
-            when Certain =>
-               Report (Rule_Id,
-                       Cont,
-                       Get_Location (Element),
-                       "Duplication of " & Choose (Controlled, "", "not ") & "controlled access value");
-         end case;
-      end Do_Report;
+         Report (Rule_Id,
+                 Cont,
+                 Get_Location (Element),
+                 "Possible duplication of " & Choose (Controlled, "", "not ") & "controlled access value");
+      end Report_Possible;
 
       type Report_State is
          record
@@ -639,7 +625,7 @@ package body Rules.Assignments is
                   Compo_Def  : Asis.Definition := Enclosing_Element (Enclosing_Element (Element));
                   Compo_Type : Asis.Declaration;
                begin
-                  -- We must skip subaggregates of multimensional array aggregates, since they have not type definition
+                  -- We must skip subaggregates of multimensional array aggregates, since they have no type definition
                   -- of their own. The only way we found to differentiate these from -say- an array of arrays is
                   -- that their Corresponding_Expression_Type_Definition returns Nil_Element. If anyone knows a
                   -- better solution...
@@ -660,7 +646,7 @@ package body Rules.Assignments is
                                                                An_Ordinary_Type_Declaration,
                                                                A_Tagged_Record_Type_Definition)
                      then
-                        Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
+                        Report_Possible (Element, In_Controlled or else Is_Controlled (Compo_Type));
                      end if;
                   end if;
                end;
@@ -700,7 +686,7 @@ package body Rules.Assignments is
                                                              An_Ordinary_Type_Declaration,
                                                              An_Access_Type_Definition)
                   then
-                     Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Result_Type));
+                     Report_Possible (Element, In_Controlled or else Is_Controlled (Result_Type));
                   end if;
                end;
 
@@ -786,7 +772,7 @@ package body Rules.Assignments is
                                                                                   An_Ordinary_Type_Declaration,
                                                                                   A_Tagged_Record_Type_Definition))
                               then
-                                 Do_Report (Element, Possible, In_Controlled or else Is_Controlled (Compo_Type));
+                                 Report_Possible (Element, In_Controlled or else Is_Controlled (Compo_Type));
                               end if;
                            end;
                         else
