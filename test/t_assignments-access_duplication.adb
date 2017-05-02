@@ -89,7 +89,35 @@ procedure Access_Duplication is
    IC1 : Incl_Ctld;
    IC2 : Incl_Ctld := IC1;                                               -- Controlled duplication
 
-   -- Exceptions
+   -- Tagged types
+   package T_Tagged is
+      type Tag1 is tagged
+         record
+            F : Acc;
+         end record;
+
+      type Tag2 is tagged private;
+      type Tag3 is tagged private;
+      type Tag4 is tagged private;
+   private
+      type Tag0 is tagged null record;
+      type Tag2 is new Tag1 with null record;
+      type Tag3 is tagged
+         record
+            F : Acc;
+         end record;
+      type Tag4 is new Tag0 with
+         record
+            F : Acc;
+         end record;
+   end T_Tagged;
+
+   Tag11, Tag12 : T_Tagged.Tag1;
+   Tag21, Tag22 : T_Tagged.Tag1;
+   Tag31, Tag32 : T_Tagged.Tag1;
+   Tag41, Tag42 : T_Tagged.Tag1;
+
+      -- Exceptions
    Acc_Enum1 : Acc_Enum;
    Acc_Enum2 : Acc_Enum := Acc_Enum1;                                    -- OK (has not)
    Acc_Float1 : Acc_Float;
@@ -164,6 +192,12 @@ begin
    -- Controlled types
    Ctrl1 := Ctrl2;                       -- Controlled duplication
    IC1   := IC2;                         -- Controlled duplication
+
+   -- Tagged types
+   Tag11 := Tag12;                       -- Uncontrolled_Duplication
+   Tag21 := Tag22;                       -- Uncontrolled_Duplication
+   Tag31 := Tag32;                       -- Uncontrolled_Duplication
+   Tag41 := Tag42;                       -- Uncontrolled_Duplication
 
    -- Exceptions
    Acc_Enum2  := Acc_Enum1;              -- OK (has not)
