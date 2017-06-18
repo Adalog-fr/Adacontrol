@@ -618,22 +618,48 @@ package body Rules.Silent_Exceptions is
                Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
 
                Result := Result and Expression_Usage (For_Loop_Parameter_Specification (Stmts (I)));
-               case Discrete_Constraining_Lengths (Specification_Subtype_Definition
-                                                   (For_Loop_Parameter_Specification (Stmts (I))))(1)
-               is
-                  when 1 .. Biggest_Int'Last =>
-                     -- Always executed
-                     Result := Result and Statement_List_Usage (Loop_Statements (Stmts (I)));
-                  when 0 =>
-                     -- Never executed
-                     null;
-                  when Not_Static =>
-                     -- Consider we have a parallel branch which is (others => No_Path) for the case
-                     -- where the loop is not executed
-                     Result := Result
-                               and (Statement_List_Usage (Loop_Statements (Stmts (I))) or (others => No_Path));
-               end case;
-               Result := Result or Active_Loops (Loops_Depth).Exit_Result;
+
+               declare
+                  Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Stmts (I));
+                  Nb_Values : Extended_Biggest_Natural;
+               begin
+                  case Declaration_Kind (Loop_Spec) is
+                     when A_Loop_Parameter_Specification =>
+                        Nb_Values := Discrete_Constraining_Lengths (Specification_Subtype_Definition
+                                                                    (For_Loop_Parameter_Specification (Stmts (I)))) (1);
+                     when An_Element_Iterator_Specification =>
+                        declare
+                           Lengths : constant Extended_Biggest_Natural_List
+                             := Discrete_Constraining_Lengths (Iteration_Scheme_Name
+                                                               (For_Loop_Parameter_Specification (Stmts (I))));
+                        begin
+                           -- A for .. of iterator can iterate over all dimensions of a multidimensional array
+                           Nb_Values := 1;
+                           for L in Lengths'Range loop
+                              Nb_Values := Nb_Values * Lengths (L);
+                           end loop;
+                        end;
+                     when  A_Generalized_Iterator_Specification =>
+                        Nb_Values := Not_Static; -- could be pretty much anything...
+                     when others =>
+                        Failure ("Statement_List_Usage: unknown ""for"" iterator", Loop_Spec);
+                  end case;
+
+                  case Nb_Values is
+                     when 1 .. Biggest_Int'Last =>
+                        -- Always executed
+                        Result := Result and Statement_List_Usage (Loop_Statements (Stmts (I)));
+                     when 0 =>
+                        -- Never executed
+                        null;
+                     when Not_Static =>
+                        -- Consider we have a parallel branch which is (others => No_Path) for the case
+                        -- where the loop is not executed
+                        Result := Result
+                                  and (Statement_List_Usage (Loop_Statements (Stmts (I))) or (others => No_Path));
+                  end case;
+                  Result := Result or Active_Loops (Loops_Depth).Exit_Result;
+               end;
 
                Loops_Depth := Loops_Depth - 1;
 

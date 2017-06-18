@@ -1,7 +1,8 @@
-pragma Ada_2005;
+pragma Ada_2012;
 with Ada.Text_Io; use Ada.Text_Io;
 with Ada.Exceptions;
 procedure T_silent_exceptions is
+   Static_Str : String (1..10);
 
    procedure P is
       use Ada.Exceptions;
@@ -80,7 +81,7 @@ begin
 
      when Data_Error => -- OK (static loop)
          Put_Line ("Data_error");
-         for I in 1 .. 10 loop
+         for C of Static_Str loop
             P;
          end loop;
 
