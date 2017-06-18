@@ -65,9 +65,9 @@ procedure T_Barrier_Expressions is
    protected type Check is
       entry Simple_Boolean;
       entry Errors;
-   private
       function Local (I : in Integer) return Boolean;
 
+   private
       B1, B2, B3 : Boolean := False;
       I, J, K : Integer := 0;
       F : Float          := 0.0;
