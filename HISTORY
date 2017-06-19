@@ -1,11 +1,12 @@
 =============
-== V1.19b3 ==
+== V1.19b4 ==
 =============
 
 General:
 --------
 Consider a rule file given in a .gpr file if no "-f" option.
 If statistics level is > 0, a count of units and raw lines is output
+Bug fixes
 
 Changes to existing rules:
 --------------------------
