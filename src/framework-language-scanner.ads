@@ -25,7 +25,7 @@
 ----------------------------------------------------------------------
 
 --  Ada
-private with
+with
   Ada.Strings.Wide_Unbounded;
 -- Adalog
 with
@@ -74,8 +74,7 @@ private package Framework.Language.Scanner is
             when Float_Value =>
                Fvalue      : Float;
             when String_Value =>
-               String_Length : Natural;
-               String_Text   : Wide_String (1..Max_ID_Length);
+               String_Text   : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
             when others =>
                null;
          end case;

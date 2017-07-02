@@ -235,8 +235,7 @@ package body Framework.Language.Scanner is
       begin
          The_Token := (Kind          => String_Value,
                        Position      => (Current_File, First_Line, First_Column),
-                       String_Length => 0,
-                       String_Text   => (others => ' '));
+                       String_Text   => Null_Unbounded_Wide_String);
          Next_Char;
          loop
             if At_Eol then
@@ -247,11 +246,7 @@ package body Framework.Language.Scanner is
                exit when At_Eol or Cur_Char /= Quote_Char;
             end if;
 
-            if The_Token.String_Length = The_Token.String_Text'Last then
-               Syntax_Error ("String too long", The_Token.Position);
-            end if;
-            The_Token.String_Length := The_Token.String_Length + 1;
-            The_Token.String_Text (The_Token.String_Length) := Cur_Char;
+            Append (The_Token.String_Text, Cur_Char);
             Next_Char;
          end loop;
       end Get_String;
@@ -595,6 +590,7 @@ package body Framework.Language.Scanner is
 
    function Image (T : Token; Quote_String : Boolean := False) return Wide_String is
       use Thick_Queries;
+
       function Double_Quotes (S : Wide_String) return Wide_String is
       begin
          for I in S'Range loop
@@ -623,9 +619,9 @@ package body Framework.Language.Scanner is
             end;
          when String_Value =>
             if Quote_String then
-               return '"' & Double_Quotes (T.String_Text (1 .. T.String_Length)) & '"';
+               return '"' & Double_Quotes (To_Wide_String (T.String_Text)) & '"';
             else
-               return T.String_Text (1 .. T.String_Length);
+               return To_Wide_String (T.String_Text);
             end if;
          when Bad_Integer | Bad_Float | Bad_Token =>
             return "#####";
