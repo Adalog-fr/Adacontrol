@@ -1,5 +1,6 @@
+pragma Ada_2012;
 separate (T_Simplifiable_Statements)
-procedure Test_If is
+function Test_If return Integer is
    I, J : Integer;
 begin
    if I = 0 then
@@ -19,7 +20,7 @@ begin
    if I < 0 then
       B1: begin
          I := 0;
-         return;
+         return 1;
       end B1;
    else                    -- Movable else
       I := 1;
@@ -27,7 +28,7 @@ begin
 
    if I < 0 then
       I := 0;
-      return;
+      return 1;
    elsif I = J then
       I := 3;
    else
@@ -49,5 +50,14 @@ begin
       raise Constraint_Error;
    else
       raise Storage_Error;
+   end if;
+
+   if I = 0 then   -- OK, same breaking statement
+      return 1;
+   else
+      return X : Integer := 2
+      do
+         X := X + 1;
+      end return;
    end if;
 end Test_If;

@@ -3,11 +3,11 @@ t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: un
 t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
 t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
 t_simplifiable_statements-test_handler.adb:29:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
-t_simplifiable_statements-test_if.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
-t_simplifiable_statements-test_if.adb:15:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
-t_simplifiable_statements-test_if.adb:11:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
-t_simplifiable_statements-test_if.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: content of else path can be moved outside "if" statement
-t_simplifiable_statements-test_if.adb:37:13: Error: SIMPLIFIABLE_STATEMENTS: content of then path can be moved outside "if" statement
+t_simplifiable_statements-test_if.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if.adb:16:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if.adb:12:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: content of else path can be moved outside "if" statement
+t_simplifiable_statements-test_if.adb:38:13: Error: SIMPLIFIABLE_STATEMENTS: content of then path can be moved outside "if" statement
 t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement

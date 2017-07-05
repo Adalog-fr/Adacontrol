@@ -155,6 +155,28 @@ package body Rules.Simplifiable_Statements is
       end case;
    end Is_Breaking_Statement;
 
+   -----------------------------
+   -- Same_Breaking_Statement --
+   -----------------------------
+
+   function Same_Breaking_Statement (Left, Right : Asis.Statement) return Boolean is
+      use Asis, Asis.Elements;
+      L_Kind : constant Asis.Statement_Kinds := Statement_Kind (Left);
+      R_Kind : constant Asis.Statement_Kinds := Statement_Kind (Right);
+   begin
+      if L_Kind = R_Kind then
+         return True;
+      end if;
+
+      if (L_Kind = A_Return_Statement           and R_Kind = An_Extended_Return_Statement)
+        or else
+         (L_Kind = An_Extended_Return_Statement and R_Kind = A_Return_Statement)
+      then
+         return True;
+      end if;
+
+      return False;
+   end Same_Breaking_Statement;
 
    ---------------------
    -- Check_Condition --
@@ -417,14 +439,14 @@ package body Rules.Simplifiable_Statements is
                Then_Last_Stmt := Last_Effective_Statement (Sequence_Of_Statements (Paths (Paths'First)));
                Else_Last_Stmt := Last_Effective_Statement (Sequence_Of_Statements (Paths (Paths'Last )));
                if Is_Breaking_Statement (Then_Last_Stmt)
-                 and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
+                 and then not Same_Breaking_Statement (Then_Last_Stmt, Else_Last_Stmt)
                then
                   Report (Rule_Id,
                           Usage (Stmt_Nested_Path),
                           Get_Location (Paths (Paths'Last)),
                           "content of else path can be moved outside ""if"" statement");
                elsif Is_Breaking_Statement (Else_Last_Stmt)
-                 and then Statement_Kind (Then_Last_Stmt) /= Statement_Kind (Else_Last_Stmt)
+                 and then not Same_Breaking_Statement (Then_Last_Stmt, Else_Last_Stmt)
                then
                   -- Prettier to put message in front of "then" than in front of "if"
                   Report (Rule_Id,
