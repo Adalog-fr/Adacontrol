@@ -899,6 +899,24 @@ package body Framework.Ruler is
                      State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
                      Semantic_Traverse_Elements (Attribute_Designator_Identifier (Element), Control, State);
                      State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
+                     case Attribute_Kind (Element) is
+                        when A_First_Attribute
+                           | A_Last_Attribute
+                           | A_Length_Attribute
+                           | A_Range_Attribute
+                           | An_Implementation_Defined_Attribute
+                           | An_Unknown_Attribute
+                           =>
+                           declare
+                              Expressions : constant Asis.Expression_List := Attribute_Designator_Expressions (Element);
+                           begin
+                              for E in Expressions'Range loop
+                                 Semantic_Traverse_Elements (Expressions (E), Control, State);
+                              end loop;
+                           end;
+                        when others =>
+                           null;
+                     end case;
                      if Control /= Terminate_Immediately then
                         Control := Abandon_Children;
                      end if;
