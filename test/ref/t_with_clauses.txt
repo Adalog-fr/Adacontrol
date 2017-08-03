@@ -2,7 +2,7 @@ t_with_clauses-plain.adb:2:6: Error: WITH_CLAUSES: With clause for Ada.Text_IO r
 t_with_clauses-plain-sep.adb:3:1: Found: WITH_CLAUSES: With clause for Ada.Calendar inherited from t_with_clauses-plain.adb:3:6
 t_with_clauses-plain.adb:5:3: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1.Child1"
 t_with_clauses-plain.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar" (used in separate unit(s))
-t_with_clauses-tgen.adb:2:6: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1"
+t_with_clauses-tgen.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1"
 x_with_clauses_1.ads:5:6: Error: WITH_CLAUSES: With clause for Ada.Characters.Handling redundant with clause at x_with_clauses_1.ads:4:6
 x_with_clauses_1.ads:6:6: Error: WITH_CLAUSES: With clause for Ada.Exceptions can be changed to private with
 x_with_clauses_1.adb:1:6: Error: WITH_CLAUSES: With clause for Ada.Wide_Text_IO redundant with clause at x_with_clauses_1.ads:10:6

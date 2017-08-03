@@ -263,7 +263,6 @@ package body Framework.Plugs is
             end case;
 
          when A_Declaration =>
-            Rules.Aspects.               Process_Declaration (Element);
             Rules.Declarations.          Process_Declaration (Element);
             Rules.Exception_Propagation. Process_Declaration (Element);
             Rules.Style.                 Process_Element     (Element);
@@ -562,6 +561,9 @@ package body Framework.Plugs is
 
                when An_Access_Definition =>
                   Rules.Declarations.Process_Access_Definition (Element);
+
+               when An_Aspect_Specification =>
+                  Rules.Aspects.Process_Aspect (Element);
 
                when others =>
                   null;

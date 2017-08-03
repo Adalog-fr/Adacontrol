@@ -164,11 +164,11 @@ package body Framework.Ruler is
       Scope_Manager.           Exit_Scope (Element);  -- Must stay last
    end Exit_Scope;
 
-   ---------------------
-   -- True_Identifier --
-   ---------------------
+   ------------------------
+   -- Is_True_Identifier --
+   ------------------------
 
-   procedure True_Identifier (Element : in Asis.Expression; State : in Info) is
+   Function Is_True_Identifier (Element : in Asis.Expression; State : in Info) return Boolean is
       use Asis.Exceptions, Asis.Expressions;
       pragma Warnings (Off, "*Junk*"); -- Junk is never read, just set to test the exception
       Junk : Asis.Definition;
@@ -183,12 +183,12 @@ package body Framework.Ruler is
          exception
             when ASIS_Inappropriate_Element =>
                -- Not a true identifier!
-               return;
+               return False;
          end;
       end if;
-      Framework.Plugs.         True_Identifier (Element);
-      Framework.Specific_Plugs.True_Identifier (Element);
-   end True_Identifier;
+
+      return True;
+   end Is_True_Identifier;
 
    -----------------------
    -- Semantic_Traverse --
@@ -540,6 +540,26 @@ package body Framework.Ruler is
          end case;
       end if;
 
+      -- Aspects: for everybody
+      declare
+         Aspects : constant Asis.Definition_List := Aspect_Specifications (Decl);
+      begin
+         for A in Aspects'Range loop
+            Semantic_Traverse_Elements (Aspects (A), Control, State);
+            case Control is
+               when Continue =>
+                  null;
+               when Terminate_Immediately =>
+                  return;
+               when Abandon_Children =>
+                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-8");
+               when Abandon_Siblings =>
+                  Control := Continue;
+                  return;
+            end case;
+         end loop;
+      end;
+
       -- Declarative part : for everybody
       declare
          Decls : constant Asis.Declaration_List := Declarative_Items (Decl, Include_Pragmas => True);
@@ -801,8 +821,19 @@ package body Framework.Ruler is
                   Control := Abandon_Children;
 
                when An_Aspect_Specification =>
-                  -- 2012, ignored for the moment
-                  Control := Abandon_Children;
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
+
+                  -- Traverse manually, because we want to inhibit True_Identifier for
+                  -- the aspect mark; note that some identifiers of the aspect definition
+                  -- may not be true identifiers (Convention => C)
+                  State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
+                  Semantic_Traverse_Elements (Aspect_Mark (Element), Control, State);
+                  Semantic_Traverse_Elements (Aspect_Definition (Element), Control, State);
+                  State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
+                  if Control /= Terminate_Immediately then
+                     Control := Abandon_Children;
+                  end if;
 
                when others =>
                   Framework.Plugs.         Pre_Procedure (Element);
@@ -857,24 +888,30 @@ package body Framework.Ruler is
          when An_Expression =>
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>
-                  Framework.Plugs.         Pre_Procedure (Element);
-                  Framework.Specific_Plugs.Pre_Procedure (Element);
+                  -- don't consider attributes like Pre'Class as "true" attributes
+                  if Is_True_Identifier (Prefix (Element), State) then
+                     Framework.Plugs.         Pre_Procedure (Element);
+                     Framework.Specific_Plugs.Pre_Procedure (Element);
 
-                  -- Traverse manually, because we want to inhibit True_Identifier for
-                  -- the attribute designator, not for the prefix
-                  Semantic_Traverse_Elements (Prefix (Element), Control, State);
-                  State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
-                  Semantic_Traverse_Elements (Attribute_Designator_Identifier (Element), Control, State);
-                  State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
-                  if Control /= Terminate_Immediately then
-                     Control := Abandon_Children;
+                     -- Traverse manually, because we want to inhibit True_Identifier for
+                     -- the attribute designator, not for the prefix
+                     Semantic_Traverse_Elements (Prefix (Element), Control, State);
+                     State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
+                     Semantic_Traverse_Elements (Attribute_Designator_Identifier (Element), Control, State);
+                     State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
+                     if Control /= Terminate_Immediately then
+                        Control := Abandon_Children;
+                     end if;
                   end if;
 
                when An_Identifier
                  | An_Operator_Symbol
                  | An_Enumeration_Literal
-                 =>
-                  True_Identifier (Element, State);
+                  =>
+                  if Is_True_Identifier (Element, State) then
+                     Framework.Plugs.         True_Identifier (Element);
+                     Framework.Specific_Plugs.True_Identifier (Element);
+                  end if;
 
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);

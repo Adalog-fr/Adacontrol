@@ -163,11 +163,11 @@ package body Rules.Aspects is
    end Do_Report;
 
 
-   -------------------------
-   -- Process_Declaration --
-   -------------------------
+   --------------------
+   -- Process_Aspect --
+   --------------------
 
-   procedure Process_Declaration (Declaration : in Asis.Declaration) is
+   procedure Process_Aspect (The_Aspect : in Asis.Definition) is
       use Asis, Asis.Declarations, Asis.Definitions;
    begin   -- Process_Declaration
       if not Rule_Used then
@@ -175,19 +175,8 @@ package body Rules.Aspects is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         All_Aspects : constant Asis.Element_List := Aspect_Specifications (Declaration);
-      begin
-         for A in All_Aspects'Range loop
-            Do_Report (Aspect_Mark (All_Aspects (A)));
-         end loop;
-      end;
-
-   exception
-      when Asis.Exceptions.ASIS_Inappropriate_Element =>
-         -- Early versions of Gnat for Ada 2012 did not accept some declarations.
-         null;
-   end Process_Declaration;
+      Do_Report (Aspect_Mark (The_Aspect));
+   end Process_Aspect;
 
 begin  -- Rules.Aspects
    Framework.Rules_Manager.Register (Rule_Id,

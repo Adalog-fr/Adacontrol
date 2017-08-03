@@ -31,6 +31,6 @@ package Rules.Aspects is
 
    Rule_Id : constant Wide_String := "ASPECTS";
 
-   procedure Process_Declaration (Declaration : in Asis.Declaration);
+   procedure Process_Aspect (The_Aspect : in Asis.Definition);
 
 end Rules.Aspects;
