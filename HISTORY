@@ -7,6 +7,7 @@ General:
 Consider a rule file given in a .gpr file if no "-f" option.
 If statistics level is > 0, a count of units and raw lines is output
 Bug fixes
+Full handling of aspects and elements defined in aspects
 
 Changes to existing rules:
 --------------------------
@@ -19,6 +20,7 @@ Simplifiable_Statements:
 
 Style (Exposed_Literal)
    Add place Statement
+   New subrule casing_aspect
 
 =============
 == V1.18r9 ==

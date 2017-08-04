@@ -35,6 +35,7 @@ with
   Asis.Compilation_Units,
   Asis.Elements,
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Expressions,
   Asis.Statements,
   Asis.Text;
@@ -59,7 +60,7 @@ package body Rules.Style is
    use type Thick_Queries.Biggest_Int;
 
    -- See declaration of Style_Names in the private part of the specification
-   subtype Casing_Styles is Subrules range St_Casing_Attribute .. St_Casing_Pragma;
+   subtype Casing_Styles is Subrules range St_Casing_Aspect .. St_Casing_Pragma;
    type Usage_Flags is array (Subrules) of Boolean;
 
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
@@ -523,6 +524,10 @@ package body Rules.Style is
       else
          -- No parameter => all style checks
          Rule_Used := (others => True);
+
+         -- Casing_Aspect
+         Associate (Contexts, Value (Image (St_Casing_Aspect)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Casing_Policy (St_Casing_Aspect) := (Ca_Titlecase => True, others => False);
 
          -- Casing_Attribute
          Associate (Contexts, Value (Image (St_Casing_Attribute)), Basic.New_Context (Ctl_Kind, Ctl_Label));
@@ -2228,6 +2233,21 @@ package body Rules.Style is
             null;
       end case;
    end Process_Element;
+
+   --------------------
+   -- Process_Aspect --
+   --------------------
+
+   procedure Process_Aspect (Aspect : Asis.Definition) is
+      use Asis.Definitions;
+   begin
+      if not Rule_Used (St_Casing_Aspect) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Check_Casing (St_Casing_Aspect, Aspect_Mark (Aspect));
+   end Process_Aspect;
 
    -----------------------
    -- Process_Attribute --

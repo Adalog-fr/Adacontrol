@@ -564,6 +564,7 @@ package body Framework.Plugs is
 
                when An_Aspect_Specification =>
                   Rules.Aspects.Process_Aspect (Element);
+                  Rules.Style.  Process_Aspect (Element);
 
                when others =>
                   null;

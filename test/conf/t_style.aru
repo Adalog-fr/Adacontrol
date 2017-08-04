@@ -1,6 +1,7 @@
 No_Closing_Name    : check  style (no_closing_name, 5);
 No_Closing_Name    : search style (no_closing_name);
 Casing             : search style (casing_identifier, Titlecase, original);
+Casing             : search style (casing_aspect,     Titlecase);
 Casing             : search style (casing_attribute,  Titlecase);
 Casing             : search style (casing_pragma,     uppercase);
 Casing             : search style (casing_keyword,    LOWERCASE);

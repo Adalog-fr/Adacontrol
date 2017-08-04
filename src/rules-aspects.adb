@@ -25,10 +25,8 @@
 
 -- ASIS
 with
-   Asis.Declarations,
    Asis.Definitions,
    Asis.Elements,
-   Asis.Exceptions,
    Asis.Expressions;
 
 -- Adalog
@@ -168,8 +166,8 @@ package body Rules.Aspects is
    --------------------
 
    procedure Process_Aspect (The_Aspect : in Asis.Definition) is
-      use Asis, Asis.Declarations, Asis.Definitions;
-   begin   -- Process_Declaration
+      use Asis.Definitions;
+   begin   -- Process_Aspect
       if not Rule_Used then
          return;
       end if;

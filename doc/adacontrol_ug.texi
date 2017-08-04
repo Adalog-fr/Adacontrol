@@ -8455,6 +8455,7 @@ This rules controls usage of various ``general'' Ada coding style.
 @subsection Syntax
 @example
 <control_kind> style;
+<control_kind> style (casing_aspect,     <casing_kw> @{,<casing_kw>@});
 <control_kind> style (casing_attribute,  <casing_kw> @{,<casing_kw>@});
 <control_kind> style (casing_identifier, <casing_kw> @{,<casing_kw>@});
 <control_kind> style (casing_keyword,    <casing_kw> @{,<casing_kw>@});
@@ -8490,11 +8491,12 @@ The first parameter specifies which style aspect is to be checked:
 
 @itemize @bullet
 @item
-``casing_attribute'', ``casing_keyword'', ``casing_identifier'', and
-``casing_pragma'' control that attributes (respectively keywords,
-identifiers, or pragmas) use the appropriate casing. ``original''
-(which is allowed only for identifiers) means that identifiers must
-use the same casing as in their declaration.
+``casing_aspect'', ``casing_attribute'', ``casing_keyword'',
+``casing_identifier'', and ``casing_pragma'' control that aspect names
+(respectively attributes, keywords, identifiers, or pragmas) use the
+appropriate casing. ``original'' (which is allowed only for
+identifiers) means that identifiers must use the same casing as in
+their declaration.
 
 If more than one <casing_kw> is given, it means that any of them is
 allowed.

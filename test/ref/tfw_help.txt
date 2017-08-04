@@ -727,13 +727,14 @@ Statements.Called_Info: (None, Compact, Detailed, Root_Detailed) = None
 Rule: STYLE
 Control various Ada style issues
 
-Parameter(1): casing_attribute       | casing_identifier |
-              casing_keyword         | casing_pragma     |
-              compound_statement     | default_in        |
-              exposed_literal        | multiple_elements |
-              negative_condition     | no_closing_name   |
-              numeric_literal        | parameter_order   |
-              formal_parameter_order | renamed_entity
+Parameter(1): casing_aspect     | casing_attribute       |
+              casing_identifier | casing_keyword         |
+              casing_pragma     | compound_statement     |
+              default_in        | exposed_literal        |
+              multiple_elements | negative_condition     |
+              no_closing_name   | numeric_literal        |
+              parameter_order   | formal_parameter_order |
+              renamed_entity
 
 For casing_*:
 Parameter(2..): uppercase | lowercase | titlecase | original

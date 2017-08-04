@@ -168,7 +168,7 @@ package body Framework.Ruler is
    -- Is_True_Identifier --
    ------------------------
 
-   Function Is_True_Identifier (Element : in Asis.Expression; State : in Info) return Boolean is
+   function Is_True_Identifier (Element : in Asis.Expression; State : in Info) return Boolean is
       use Asis.Exceptions, Asis.Expressions;
       pragma Warnings (Off, "*Junk*"); -- Junk is never read, just set to test the exception
       Junk : Asis.Definition;
