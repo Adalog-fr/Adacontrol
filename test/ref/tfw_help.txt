@@ -40,7 +40,7 @@ Parameter(3..): [not] pack | size | component_size (optional)
 Rule: ASPECTS
 Control occurrences of aspect specifications
 
-Parameter(s): <Aspect_Mark> | all
+Parameter(s): <Aspect_Mark> | implicit_true | all
              (optional, default = all)
 ----
 Rule: ASSIGNMENTS

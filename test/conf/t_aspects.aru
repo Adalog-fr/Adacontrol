@@ -1,2 +1,3 @@
-search aspects;
-DBC: check aspects (Pre, Post, Pre'Class, Post'Class);
+DBC_Aspects:      check aspects (Pre, Post, Pre'Class, Post'Class);
+Implicit_Aspects: check aspects (Implicit_True);
+Other_Aspects:    search aspects (ALL);

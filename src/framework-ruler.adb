@@ -829,7 +829,9 @@ package body Framework.Ruler is
                   -- may not be true identifiers (Convention => C)
                   State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + 1;
                   Semantic_Traverse_Elements (Aspect_Mark (Element), Control, State);
-                  Semantic_Traverse_Elements (Aspect_Definition (Element), Control, State);
+                  if not Is_Nil (Aspect_Definition (Element)) then -- can be Nil for aspect such as "with Pack;"
+                     Semantic_Traverse_Elements (Aspect_Definition (Element), Control, State);
+                  end if;
                   State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level - 1;
                   if Control /= Terminate_Immediately then
                      Control := Abandon_Children;

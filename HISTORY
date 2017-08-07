@@ -11,6 +11,9 @@ Full handling of aspects and elements defined in aspects
 
 Changes to existing rules:
 --------------------------
+Aspects:
+   new subrule implicit_true
+
 Assignments:
    add subrule access_duplication
    sliding subrule controls initializations as well as assignments

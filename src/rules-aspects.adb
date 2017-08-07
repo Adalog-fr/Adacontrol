@@ -64,7 +64,7 @@ package body Rules.Aspects is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of aspect specifications");
       User_Message;
-      User_Message ("Parameter(s): <Aspect_Mark> | all");
+      User_Message ("Parameter(s): <Aspect_Mark> | implicit_true | all");
       User_Message ("             (optional, default = all)");
    end Help;
 
@@ -166,7 +166,8 @@ package body Rules.Aspects is
    --------------------
 
    procedure Process_Aspect (The_Aspect : in Asis.Definition) is
-      use Asis.Definitions;
+      use Asis.Elements, Asis.Definitions;
+      use Framework.Reports;
    begin   -- Process_Aspect
       if not Rule_Used then
          return;
@@ -174,6 +175,20 @@ package body Rules.Aspects is
       Rules_Manager.Enter (Rule_Id);
 
       Do_Report (Aspect_Mark (The_Aspect));
+
+      if Is_Nil (Aspect_Definition (The_Aspect)) then
+         declare
+            Current_Context : constant Root_Context'Class := Control_Manager.Association (Searched_Entities,
+                                                                                          Value ("implicit_true"));
+         begin
+            if Current_Context /= No_Matching_Context then
+               Report (Rule_Id,
+                       Current_Context,
+                       Get_Location (The_Aspect),
+                       "use of aspect with implicit ""True"" association");
+            end if;
+         end;
+      end if;
    end Process_Aspect;
 
 begin  -- Rules.Aspects

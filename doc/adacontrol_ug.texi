@@ -2998,20 +2998,28 @@ irrespectively of the number of indices of the array, use the rule
 @node Aspects, Assignments, Array_Declarations, Rules reference
 @section Aspects
 This rule controls aspect specifications (new feature in Ada 2012), either
-all of them or specific ones.
+all of them, specific ones, or those whose value is implicitely @code{True}.
 @subsection Syntax
 @example
-<control_kind> aspects [(all | <aspect mark> @{, <aspect mark>@})];
+<control_kind> aspects [(<aspect key> @{, <aspect key>@})];
+<aspect_key> ::= all | implicit_true | <aspect mark>
 @end example
+
 @subsection Action
-Without parameters (or if ``all'' is given), controls all aspect
-specifications. Otherwise, controls only the aspect specifications
-corresponding to the given aspect marks.
+Without parameters, controls all aspect specifications. Otherwise,
+controls only the aspect specifications corresponding to the given
+aspect marks. If ``all'' is given together with explicit aspect marks,
+it controls aspects not given explicitely.
+
+If ``implicit_true'' is given, it controls aspect specifications
+without an association (i.e. boolean aspects given without an explicit
+association that take implicitely the value @code{True}).
 
 Ex:
 @example
 search aspects;
 DBC: check aspects (Pre, Post, Pre'Class, Post'Class);
+Explicit_Required: check aspects (implicit_true);
 @end example
 
 @node  Assignments, Barrier_Expressions, Aspects, Rules reference
