@@ -21,9 +21,9 @@ Assignments:
 Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
 
-Style (Exposed_Literal)
-   Add place Statement
+Style
    New subrule casing_aspect
+   Exposed_Literal: Add places Aggr_Index, Attr_Index, Statement
 
 =============
 == V1.18r9 ==

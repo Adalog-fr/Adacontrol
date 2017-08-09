@@ -8489,9 +8489,10 @@ This rules controls usage of various ``general'' Ada coding style.
 <type_kw>     ::= integer | real | character | string
 <value_place> ::= <value> | <place>
 <value>       ::= [max] <integer number> | <real number> | "<pattern>"
-<place>       ::= declaration | statement   |
-                  constant    | exponent    | index     | number | 
-                  pragma      | repr_clause | var_init  | type
+<place>       ::= declaration | statement  |
+                  aggr_index  | attr_index | constant | exponent    |
+                  index       | number     | pragma   | repr_clause |
+                  var_init    | type
 @end example
 
 @subsection Action
@@ -8532,9 +8533,13 @@ values are regular expressions. @xref{Syntax of regular
 expressions}. Commonly allowed values are 0 and 1 for integer
 literals, 1.0 and 0.0 for real literals and "^$" (the empty string)
 for string literals. At most 20 values of each kind may be
-specified. In addition, one or several <place> keyword can be used to
-specify constructs where any literal is allowed: ``declaration''
-stands for any declaration, ``statement'' for any statement,
+specified. 
+
+In addition, one or several <place> keyword can be used to specify
+constructs where any literal is allowed: ``declaration'' stands for
+any declaration, ``statement'' for any statement, ``aggr_index'' for
+index values in a (named) array aggregate, ``attr_index'' for the
+index expression of attributes like @code{'First} or @code{'Length},
 ``constant'' for constant declarations, ``exponent'' for the right
 parameter of an exponentiation (i.e. @code{"**"}) function call,
 ``index'' for array indexing, ``number'' for named number

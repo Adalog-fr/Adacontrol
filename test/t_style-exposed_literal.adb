@@ -25,6 +25,7 @@ procedure Exposed_Literal is
 
    type T is range 1 .. 10;                              -- OK
    subtype Sub is T range 1 .. 5;                        -- OK
+   type Arr is array (T, T) of Sub;
 
    V : Long_Long_Integer := +9_223_372_036_854_775_807;  -- OK
 
@@ -44,6 +45,7 @@ procedure Exposed_Literal is
 begin
    I := 0;                                               -- OK
    I := 2;                                               -- Exposed_Literal (integer)
+   I := Arr'Length (2);                                   -- OK
 
    declare
       F1 : Float := 1.0;                                 -- OK
@@ -64,6 +66,7 @@ begin
    S (I + 5) := S (1);                                   -- Exposed_Literal (integer)
    S (I + 6) := S (1);                                   -- OK
    S (I + 7) := S (1);                                   -- OK
+   S         := (1 => C, 2 .. 3 => CC, 4 | 5 => C);      -- OK
    I := I**2;                                            -- OK
    I := I**(2);                                          -- OK
    I := 2**I;                                            -- Exposed_Literal (integer)

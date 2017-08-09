@@ -20,7 +20,7 @@ Multiple_Handler   : check  style (multiple_elements, handler);
 Multiple_Keyword   : check  style (multiple_elements, keywords);
 Exposed            : check  style (exposed_literal, string, "^$", "^r.*n$", pragma, constant, number);
 Exposed            : check  style (exposed_literal, integer, constant, number, var_init, type,
-                                                             repr_clause, index, exponent,
+                                                             repr_clause, index, aggr_index, attr_index, exponent,
                                                              max 1, 6, 7);
 Exposed            : check  style (exposed_literal, real, 1.0, 0.0, -1.0, number, constant, statement);
 Exposed            : check  style (exposed_literal, character, declaration);

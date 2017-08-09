@@ -115,7 +115,7 @@ package body Rules.Style is
                         Pl_Declaration,
                         Pl_Constant, Pl_Number,      Pl_Var_Init, Pl_Type,
                         Pl_Statement,
-                        Pl_Pragma,   Pl_Repr_Clause, Pl_Index,    Pl_Exponent);
+                        Pl_Pragma,   Pl_Repr_Clause, Pl_Index,    Pl_Aggr_Index, Pl_Attr_Index, Pl_Exponent);
    -- Pl_Other used internally when not in one of the other Places, not accessible to user. Must stay first.
    subtype Other_Declarations is Place_Names range Pl_Constant .. Pl_Type;
 
@@ -1526,13 +1526,30 @@ package body Rules.Style is
                end if;
 
                -- Find immediately enclosing expression, but get rid of spurious parentheses
+               -- If the literal is part of a range, go up one more level (ranges cannot be parenthesized)
                Enclosing := Enclosing_Element (Expression);
                while Expression_Kind (Enclosing) = A_Parenthesized_Expression loop
                   Enclosing := Enclosing_Element (Enclosing);
                end loop;
+               if Definition_Kind (Enclosing) in A_Discrete_Range then
+                  Enclosing := Enclosing_Element (Enclosing);
+               end if;
 
                if Permitted_Places (Lit_Integer) (Pl_Index)
                  and then Expression_Kind (Enclosing) = An_Indexed_Component
+               then
+                  return;
+               end if;
+
+               if Permitted_Places (Lit_Integer) (Pl_Aggr_Index)
+                 and then Association_Kind (Enclosing) = An_Array_Component_Association
+                 and then Is_Part_Of (Expression, Array_Component_Choices (Enclosing))
+               then
+                  return;
+               end if;
+
+               if Permitted_Places (Lit_Integer) (Pl_Attr_Index)
+                 and then Expression_Kind (Enclosing) = An_Attribute_Reference
                then
                   return;
                end if;
