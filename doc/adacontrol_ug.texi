@@ -8656,10 +8656,11 @@ parameter values that correspond to the most commonly used cases,
 i.e. it is equivalent to the following:
 @example
 style (no_closing_name);
+style (casing_aspect, titlecase);
 style (casing_attribute, titlecase);
 style (casing_exponent, uppercase);
-style (casing_keyword, lowercase);
 style (casing_identifier, original);
+style (casing_keyword, lowercase);
 style (casing_number, uppercase);
 style (casing_pragma, titlecase);
 style (default_in);
