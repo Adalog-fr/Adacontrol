@@ -77,6 +77,8 @@ package Framework is
    Null_Location : constant Location;
    function "+" (Left : Location; Right : Asis.Text.Character_Position) return Location;
    -- Moves location by Right characters to the right
+   function "-" (Left : Location; Right : Asis.Text.Character_Position) return Location;
+   -- Moves location by Right characters to the left
 
    type Search_Start is (From_Head, From_Tail);
 

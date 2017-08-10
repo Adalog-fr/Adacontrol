@@ -118,6 +118,15 @@ package body Framework is
       return (Left.File_Name, Left.First_Line, Left.First_Column + Right);
    end "+";
 
+   ---------
+   -- "-" --
+   ---------
+
+   function "-" (Left : Location; Right : Asis.Text.Character_Position) return Location is
+   begin
+      return (Left.File_Name, Left.First_Line, Left.First_Column - Right);
+   end "-";
+
    ---------------------
    -- Create_Location --
    ---------------------
