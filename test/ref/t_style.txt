@@ -24,25 +24,28 @@ t_style-casing.adb:26:26: Found: Casing: Wrong casing of "AA", should be "Aa"
 t_style-casing.adb:26:32: Found: Casing: Wrong casing of "BB", should be "Bb"
 t_style-casing.adb:30:11: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
 t_style-casing.adb:38:33: Found: Casing: Incorrect casing of exponent, should be 'E'
-t_style-casing.adb:42:34: Found: Casing: Wrong casing of "image", should be "Image"
-t_style-casing.adb:42:41: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:43:4: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:43:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
-t_style-casing.adb:43:16: Found: Casing: Wrong casing of "INt", should be "Int"
-t_style-casing.adb:44:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_Io" or "Text_IO"
-t_style-casing.adb:44:41: Found: Casing: Wrong casing of "InT", should be "Int"
-t_style-casing.adb:47:12: Error: Multiple_Keyword: "loop" does not start line
-t_style-casing.adb:50:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
-t_style-casing.adb:53:7: Error: Exposed: character literal 'a' not in allowed construct
-t_style-casing.adb:60:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
-t_style-casing.adb:47:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:48:7: Found: Casing: Wrong casing of "Null", should be "null"
-t_style-casing.adb:49:4: Found: Casing: Wrong casing of "END", should be "end"
-t_style-casing.adb:49:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:54:6: Found: Casing: Wrong casing of "NULL", should be "null"
-t_style-casing.adb:55:4: Found: Casing: Wrong casing of "eND", should be "end"
-t_style-casing.adb:55:8: Found: Casing: Wrong casing of "If", should be "if"
-t_style-casing.adb:58:11: Found: Casing: Wrong casing of "AND", should be "and"
+t_style-casing.adb:39:25: Found: Casing: Incorrect casing of exponent, should be 'E'
+t_style-casing.adb:41:33: Found: Casing: Incorrect casing of extended digit(s), should be 1AB.0C
+t_style-casing.adb:42:26: Found: Casing: Incorrect casing of extended digit(s), should be 1ABC
+t_style-casing.adb:46:34: Found: Casing: Wrong casing of "image", should be "Image"
+t_style-casing.adb:46:41: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:47:4: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:47:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+t_style-casing.adb:47:16: Found: Casing: Wrong casing of "INt", should be "Int"
+t_style-casing.adb:48:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_Io" or "Text_IO"
+t_style-casing.adb:48:41: Found: Casing: Wrong casing of "InT", should be "Int"
+t_style-casing.adb:51:12: Error: Multiple_Keyword: "loop" does not start line
+t_style-casing.adb:54:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
+t_style-casing.adb:57:7: Error: Exposed: character literal 'a' not in allowed construct
+t_style-casing.adb:64:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
+t_style-casing.adb:51:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:52:7: Found: Casing: Wrong casing of "Null", should be "null"
+t_style-casing.adb:53:4: Found: Casing: Wrong casing of "END", should be "end"
+t_style-casing.adb:53:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:58:6: Found: Casing: Wrong casing of "NULL", should be "null"
+t_style-casing.adb:59:4: Found: Casing: Wrong casing of "eND", should be "end"
+t_style-casing.adb:59:8: Found: Casing: Wrong casing of "If", should be "if"
+t_style-casing.adb:62:11: Found: Casing: Wrong casing of "AND", should be "and"
 t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:10:4: Found: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:14:4: Found: No_Closing_Name: name not repeated at the end

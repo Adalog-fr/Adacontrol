@@ -62,6 +62,7 @@ package body Rules.Style is
    -- See declaration of Style_Names in the private part of the specification
    subtype Casing_Styles is Subrules range St_Casing_Aspect .. St_Casing_Pragma;
    type Usage_Flags is array (Subrules) of Boolean;
+   No_Subrule : constant Usage_Flags := (others => False);
 
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
                                                                              Prefix => "St_" );
@@ -222,7 +223,7 @@ package body Rules.Style is
    -- General parameters
    --
 
-   Rule_Used : Usage_Flags := (others => False);
+   Rule_Used : Usage_Flags := No_Subrule;
    Save_Used : Usage_Flags;
 
    Contexts : Context_Store;
@@ -305,8 +306,10 @@ package body Rules.Style is
                      if Casing_Policy (Subrule) (Ca_Original) and Subrule /= St_Casing_Identifier then
                         Parameter_Error (Rule_Id, """Original"" allowed only for identifiers");
                      end if;
-                     if Subrule = St_Casing_Exponent and Casing_Policy(Subrule) (Ca_Titlecase) then
-                        Parameter_Error (Rule_Id, """Titlecase"" not allowed only for exponents");
+                     if (Subrule = St_Casing_Exponent or Subrule = St_Casing_Number)
+                       and Casing_Policy (Subrule) (Ca_Titlecase)
+                     then
+                        Parameter_Error (Rule_Id, """Titlecase"" not allowed for exponents and numbers");
                      end if;
                      exit when not Parameter_Exists;
                   end loop;
@@ -540,13 +543,17 @@ package body Rules.Style is
          Associate (Contexts, Value (Image (St_Casing_Exponent)), Basic.New_Context (Ctl_Kind, Ctl_Label));
          Casing_Policy (St_Casing_Exponent) := (Ca_Uppercase => True, others => False);
 
+         -- Casing_Identifier
+         Associate (Contexts, Value (Image (St_Casing_Identifier)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Casing_Policy (St_Casing_Identifier) := (Ca_Original => True, others => False);
+
          -- Casing_Keyword
          Associate (Contexts, Value (Image (St_Casing_Keyword)), Basic.New_Context (Ctl_Kind, Ctl_Label));
          Casing_Policy (St_Casing_Keyword) := (Ca_Lowercase => True, others => False);
 
-         -- Casing_Identifier
-         Associate (Contexts, Value (Image (St_Casing_Identifier)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Identifier) := (Ca_Original => True, others => False);
+         -- Casing_Number
+         Associate (Contexts, Value (Image (St_Casing_Number)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Casing_Policy (St_Casing_Number) := (Ca_Uppercase => True, others => False);
 
          -- Casing_Pragma
          Associate (Contexts, Value (Image (St_Casing_Pragma)), Basic.New_Context (Ctl_Kind, Ctl_Label));
@@ -1450,6 +1457,41 @@ package body Rules.Style is
          end if;
       end Process_Exponent;
 
+      procedure Process_Number_Casing is
+         use Framework.Reports;
+
+         Name : constant Wide_String := Value_Image (Expression);
+
+         Base_Delimiter_1 : Character_Position;
+         Base_Delimiter_2 : Character_Position;
+         Dot_Delimiter    : Character_Position;
+         Exp_Delimiter    : Character_Position;
+      begin
+         Number_Decomposition (Name, Base_Delimiter_1, Base_Delimiter_2, Dot_Delimiter, Exp_Delimiter);
+
+         if Base_Delimiter_1 not in Name'Range then -- not a based number, certainly no letters!
+            return;
+         end if;
+
+         for N in Positive range Positive (Base_Delimiter_1) + 1 .. Positive (Base_Delimiter_2) - 1 loop
+            if Name (N) in 'a'..'f' and Casing_Policy (St_Casing_Number) (Ca_Uppercase) then
+               Report (Rule_Id,
+                       Corresponding_Context (St_Casing_Number),
+                       Get_Location (Expression) + Base_Delimiter_1,
+                       "Incorrect casing of extended digit(s), should be "
+                       & To_Upper (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
+               return;
+            elsif Name (N) in 'A' .. 'F' and Casing_Policy (St_Casing_Number) (Ca_Lowercase) then
+               Report (Rule_Id,
+                       Corresponding_Context (St_Casing_Exponent),
+                       Get_Location (Expression) + Base_Delimiter_1,
+                         "Incorrect casing of extended digit(s), should be "
+                         & To_Lower (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
+               return;
+            end if;
+         end loop;
+      end Process_Number_Casing;
+
       procedure Process_Exposed_Literal is
          use Framework.Reports, Literal_Flag_Utilities, Thick_Queries;
          use Asis, Asis.Elements;
@@ -1758,7 +1800,10 @@ package body Rules.Style is
 
       use Asis, Asis.Elements;
    begin  -- Process_Literal
-      if not (Rule_Used (St_Numeric_Literal) or Rule_Used (St_Exposed_Literal) or Rule_Used (St_Casing_Exponent)) then
+      if (Rule_Used and Usage_Flags'(  St_Numeric_Literal | St_Exposed_Literal
+                                     | St_Casing_Exponent | St_Casing_Number => True,
+                                     others                                  => False)) = No_Subrule
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -1770,9 +1815,15 @@ package body Rules.Style is
       end if;
 
       if Rule_Used (St_Casing_Exponent)
-        and then Expression_Kind (Expression) = A_Real_Literal
+        and then Expression_Kind (Expression) in An_Integer_Literal .. A_Real_Literal
       then
          Process_Exponent;
+      end if;
+
+      if Rule_Used (St_Casing_Number)
+        and then Expression_Kind (Expression) in An_Integer_Literal .. A_Real_Literal
+      then
+         Process_Number_Casing;
       end if;
 
       if Rule_Used (St_Exposed_Literal) then

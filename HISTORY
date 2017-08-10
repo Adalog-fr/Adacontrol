@@ -22,7 +22,7 @@ Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
 
 Style
-   New subrules casing_aspect, casing_exponent
+   New subrules casing_aspect, casing_exponent, casing_number
    Exposed_Literal: Add places Aggr_Index, Attr_Index, Statement
 
 =============

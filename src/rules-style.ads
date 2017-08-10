@@ -58,7 +58,8 @@ private
    -- "casing" subrules must stay together
    -- "parameter_order" subrules must stay together
    type Subrules is (St_Casing_Aspect,      St_Casing_Attribute,       St_Casing_Exponent,  -- casing subrules
-                     St_Casing_Identifier,  St_Casing_Keyword,         St_Casing_Pragma,
+                     St_Casing_Identifier,  St_Casing_Keyword,         St_Casing_Number,
+                     St_Casing_Pragma,
 
                      St_Compound_Statement, St_Default_In,             St_Exposed_Literal,
                      St_Multiple_Elements,  St_Negative_Condition,     St_No_Closing_Name,

@@ -7,9 +7,9 @@ procedure Literals is
 
    I4   : constant Integer := 1_2_3_4_5_6;                  -- Numeric_Literal
 
-   IE1  : constant Integer := 1e9;
-   IE2  : constant Integer := 1_000e6;
-   IE3  : constant Integer := 1_0000e5;                     -- Numeric_Literal
+   IE1  : constant Integer := 1E9;
+   IE2  : constant Integer := 1_000E6;
+   IE3  : constant Integer := 1_0000E5;                     -- Numeric_Literal
 
 
    -- Real literals

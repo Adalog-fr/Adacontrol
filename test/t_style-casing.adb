@@ -36,6 +36,10 @@ procedure Casing is
    Dim   : constant := 1;
    Expo1 : constant := 1.0E10;
    Expo2 : constant Float := 1.0e10;            -- Casing_Exponent
+   Expo3 : constant := 1e5;                     -- Casing_Exponent
+   Base1 : constant := 16#1AB#;
+   Base2 : constant Float := 16#1ab.0c#E2;      -- Casing_Number
+   Base3 : Integer := 14#1AbC#;                 -- Casing_Number
 
 begin
    Int := 1;

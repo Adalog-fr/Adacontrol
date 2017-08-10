@@ -8468,6 +8468,7 @@ This rules controls usage of various ``general'' Ada coding style.
 <control_kind> style (casing_exponent,   <casing_kw> @{,<casing_kw>@});
 <control_kind> style (casing_identifier, <casing_kw> @{,<casing_kw>@});
 <control_kind> style (casing_keyword,    <casing_kw> @{,<casing_kw>@});
+<control_kind> style (casing_number,     <casing_kw> @{,<casing_kw>@});
 <control_kind> style (casing_pragma,     <casing_kw> @{,<casing_kw>@});
 <control_kind> style (compound_statement);
 <control_kind> style (default_in);
@@ -8509,7 +8510,9 @@ identifiers) means that identifiers must use the same casing as in
 their declaration.
 
 ``casing_exponent'' controls the case of the 'E' in a numeric literal
-using exponent notation (only ``Lowercase'' and ``Uppercase'' allowed).
+using exponent notation, and ``casing_number'' controls the case of
+extended digits used in based numbers when the base is above 10 (only
+``Lowercase'' and ``Uppercase'' allowed for these).
 
 If more than one <casing_kw> is given, it means that any of them is
 allowed.
@@ -8657,6 +8660,7 @@ style (casing_attribute, titlecase);
 style (casing_exponent, uppercase);
 style (casing_keyword, lowercase);
 style (casing_identifier, original);
+style (casing_number, uppercase);
 style (casing_pragma, titlecase);
 style (default_in);
 style (negative_condition)

@@ -5,6 +5,7 @@ Casing             : search style (casing_aspect,     Titlecase);
 Casing             : search style (casing_attribute,  Titlecase);
 Casing             : search style (casing_exponent,   UPPERCASE);
 Casing             : search style (casing_keyword,    LOWERCASE);
+Casing             : search style (casing_number,     UpperCase);
 Casing             : search style (casing_pragma,     uppercase);
 No_Default_In      : search style (default_in);
 Negative_Condition : check  style (negative_condition);
