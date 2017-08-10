@@ -305,6 +305,9 @@ package body Rules.Style is
                      if Casing_Policy (Subrule) (Ca_Original) and Subrule /= St_Casing_Identifier then
                         Parameter_Error (Rule_Id, """Original"" allowed only for identifiers");
                      end if;
+                     if Subrule = St_Casing_Exponent and Casing_Policy(Subrule) (Ca_Titlecase) then
+                        Parameter_Error (Rule_Id, """Titlecase"" not allowed only for exponents");
+                     end if;
                      exit when not Parameter_Exists;
                   end loop;
                else
@@ -532,6 +535,10 @@ package body Rules.Style is
          -- Casing_Attribute
          Associate (Contexts, Value (Image (St_Casing_Attribute)), Basic.New_Context (Ctl_Kind, Ctl_Label));
          Casing_Policy (St_Casing_Attribute) := (Ca_Titlecase => True, others => False);
+
+         -- Casing_Exponent
+         Associate (Contexts, Value (Image (St_Casing_Exponent)), Basic.New_Context (Ctl_Kind, Ctl_Label));
+         Casing_Policy (St_Casing_Exponent) := (Ca_Uppercase => True, others => False);
 
          -- Casing_Keyword
          Associate (Contexts, Value (Image (St_Casing_Keyword)), Basic.New_Context (Ctl_Kind, Ctl_Label));
@@ -1277,14 +1284,14 @@ package body Rules.Style is
    ---------------------
 
    procedure Process_Literal (Expression : in Asis.Expression) is
-      use Asis.Expressions;
+      use Asis.Expressions, Asis.Text;
 
       -- Retrieve indices of main number formatters
       procedure Number_Decomposition (Name             : in     Wide_String;
-                                      Base_Delimiter_1 :    out Natural;
-                                      Base_Delimiter_2 :    out Natural;
-                                      Dot_Delimiter    :    out Natural;
-                                      Exp_Delimiter    :    out Natural)
+                                      Base_Delimiter_1 :    out Character_Position;
+                                      Base_Delimiter_2 :    out Character_Position;
+                                      Dot_Delimiter    :    out Character_Position;
+                                      Exp_Delimiter    :    out Character_Position)
       is
          Is_Based_Literal     : Boolean := False;
          Within_Based_Literal : Boolean := False;
@@ -1299,26 +1306,26 @@ package body Rules.Style is
          for Idx in Name'Range loop
             if Name (Idx) = '#' then
                if Is_Based_Literal then
-                  Base_Delimiter_2 := Idx;
+                  Base_Delimiter_2 := Character_Position (Idx);
                else
-                  Base_Delimiter_1 := Idx;
+                  Base_Delimiter_1 := Character_Position (Idx);
                   Is_Based_Literal := True;
                end if;
                Within_Based_Literal := not Within_Based_Literal;
             elsif Name (Idx) = '.' then
                Is_Real_Literal := True;
-               Dot_Delimiter   := Idx;
+               Dot_Delimiter   := Character_Position (Idx);
             elsif (Name (Idx) = 'e' or else Name (Idx) = 'E') and then not Within_Based_Literal then
                Is_Exponentiated := True;
-               Exp_Delimiter    := Idx;
+               Exp_Delimiter    := Character_Position (Idx);
             end if;
          end loop;
          -- Adjust values according to the kind of literal
          if not Is_Exponentiated then
-            Exp_Delimiter := Name'Last + 1;
+            Exp_Delimiter := Character_Position (Name'Last) + 1;
          end if;
          if not Is_Based_Literal then
-            Base_Delimiter_1 := Name'First - 1;
+            Base_Delimiter_1 := Character_Position (Name'First) - 1;
             Base_Delimiter_2 := Exp_Delimiter;
          end if;
          if not Is_Real_Literal then
@@ -1414,9 +1421,38 @@ package body Rules.Style is
          end;
       end Process_Number_Separator;
 
+      procedure Process_Exponent is
+         use Framework.Reports;
+
+         Name : constant Wide_String := Value_Image (Expression);
+
+         Base_Delimiter_1 : Character_Position;
+         Base_Delimiter_2 : Character_Position;
+         Dot_Delimiter    : Character_Position;
+         Exp_Delimiter    : Character_Position;
+      begin
+         Number_Decomposition (Name, Base_Delimiter_1, Base_Delimiter_2, Dot_Delimiter, Exp_Delimiter);
+
+         if Exp_Delimiter not in Name'Range then -- no exponent
+            return;
+         end if;
+
+         if Name (Exp_Delimiter) = 'e' and Casing_Policy (St_Casing_Exponent) (Ca_Uppercase) then
+            Report (Rule_Id,
+                    Corresponding_Context (St_Casing_Exponent),
+                    Get_Location (Expression) + Exp_Delimiter - 1,
+                    "Incorrect casing of exponent, should be 'E'");
+         elsif Name (Exp_Delimiter) = 'E' and Casing_Policy (St_Casing_Exponent) (Ca_Lowercase) then
+            Report (Rule_Id,
+                    Corresponding_Context (St_Casing_Exponent),
+                    Get_Location (Expression),
+                    "Incorrect casing of exponent, should be 'e'");
+         end if;
+      end Process_Exponent;
+
       procedure Process_Exposed_Literal is
          use Framework.Reports, Literal_Flag_Utilities, Thick_Queries;
-         use Asis, Asis.Elements, Asis.Text;
+         use Asis, Asis.Elements;
 
          function Normalize (S : Wide_String) return Wide_String is
             -- Get rid of initial spaces and surrounding quotes, change double double-quotes to single ones
@@ -1722,7 +1758,7 @@ package body Rules.Style is
 
       use Asis, Asis.Elements;
    begin  -- Process_Literal
-      if not (Rule_Used (St_Numeric_Literal) or Rule_Used (St_Exposed_Literal)) then
+      if not (Rule_Used (St_Numeric_Literal) or Rule_Used (St_Exposed_Literal) or Rule_Used (St_Casing_Exponent)) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -1731,6 +1767,12 @@ package body Rules.Style is
         and then Expression_Kind (Expression) in An_Integer_Literal .. A_Real_Literal
       then
          Process_Number_Separator;
+      end if;
+
+      if Rule_Used (St_Casing_Exponent)
+        and then Expression_Kind (Expression) = A_Real_Literal
+      then
+         Process_Exponent;
       end if;
 
       if Rule_Used (St_Exposed_Literal) then

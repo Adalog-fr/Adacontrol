@@ -33,7 +33,10 @@ procedure Casing is
       null;
    end Prim;
 
-   Dim : constant := 1;
+   Dim   : constant := 1;
+   Expo1 : constant := 1.0E10;
+   Expo2 : constant Float := 1.0e10;            -- Casing_Exponent
+
 begin
    Int := 1;
    Ada.Text_IO.Put_Line (Integer'image (INT));  -- Casing_Identifier, Casing_Attribute

@@ -17,8 +17,8 @@ procedure Literals is
    R2   : constant Float   := 3.141_592;
    R3   : constant Float   := 1.61_80_33;                   -- Numeric_Literal
 
-   RE1  : constant Float   := 1.0e-9;
-   RE2  : constant Float   := 0.314_159e1;
+   RE1  : constant Float   := 1.0E-9;
+   RE2  : constant Float   := 0.314_159E1;
    RE3  : constant Float   := 16_18.03_39E-3;               -- Numeric_Literal
 
 

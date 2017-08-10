@@ -57,11 +57,16 @@ private
    -- Subrules for the rule
    -- "casing" subrules must stay together
    -- "parameter_order" subrules must stay together
-   type Subrules is (St_Casing_Aspect,          St_Casing_Attribute,       St_Casing_Identifier,
-                     St_Casing_Keyword,         St_Casing_Pragma,          St_Compound_Statement,
-                     St_Default_In,             St_Exposed_Literal,        St_Multiple_Elements,
-                     St_Negative_Condition,     St_No_Closing_Name,        St_Numeric_Literal,
-                     St_Parameter_Order,        St_Formal_Parameter_Order, St_Renamed_Entity);
+   type Subrules is (St_Casing_Aspect,      St_Casing_Attribute,       St_Casing_Exponent,  -- casing subrules
+                     St_Casing_Identifier,  St_Casing_Keyword,         St_Casing_Pragma,
+
+                     St_Compound_Statement, St_Default_In,             St_Exposed_Literal,
+                     St_Multiple_Elements,  St_Negative_Condition,     St_No_Closing_Name,
+                     St_Numeric_Literal,
+
+                     St_Parameter_Order,    St_Formal_Parameter_Order,                      -- parameter_order subrules
+
+                     St_Renamed_Entity);
    subtype St_Orders is Subrules range St_Parameter_Order .. St_Formal_Parameter_Order;
 
    type Casing_Names is (Ca_Uppercase, Ca_Lowercase, Ca_Titlecase, Ca_Original);
