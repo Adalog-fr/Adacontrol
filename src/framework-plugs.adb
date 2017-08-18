@@ -720,9 +720,10 @@ package body Framework.Plugs is
             Rules.Positional_Associations. Process_Association (Element);
 
          when A_Pragma =>
-            Rules.Object_Declarations. Process_Pragma (Element);
-            Rules.Pragmas.             Process_Pragma (Element);
-            Rules.Style.               Process_Pragma (Element);
+            Rules.Object_Declarations. Process_Pragma  (Element);
+            Rules.Pragmas.             Process_Pragma  (Element);
+            Rules.Style.               Process_Element (Element);
+            Rules.Style.               Process_Pragma  (Element);
 
          when others =>
             null;

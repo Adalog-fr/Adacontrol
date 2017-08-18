@@ -24,6 +24,7 @@ Simplifiable_Statements:
 Style
    New subrules casing_aspect, casing_exponent, casing_number
    Exposed_Literal: Add places Aggr_Index, Attr_Index, Statement
+   Multiple_Elements considers pragmas as well.
 
 =============
 == V1.18r9 ==

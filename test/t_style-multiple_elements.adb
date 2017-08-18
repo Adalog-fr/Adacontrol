@@ -1,7 +1,7 @@
 pragma ADA_2005;
 with X_Style1, X_Style2;
 with Text_IO; use Text_IO;
-with Text_IO; pragma ELABORATE (Text_IO); use Text_IO; -- Multiple_Clause
+with Text_IO; pragma ELABORATE (Text_IO); use Text_IO; -- Multiple_Clause, Multiple_Pragma
 with System; use Text_IO;                              -- Multiple_Clause
 with Ada.Text_IO; use Text_IO;                         -- Multiple_Clause
 with Ada.Strings.Unbounded;
@@ -17,6 +17,7 @@ procedure Multiple_Elements is
    use Ada.Text_IO; use Ada.Strings.Wide_Unbounded; -- Multiple_Clause
    type Enum is (Enum_1, Enum_2, Enum3);            -- OK
 
+   pragma LIST (Off); pragma LIST (On);             -- Multiple_Pragma
 
    E : Enum := Enum'First;
 

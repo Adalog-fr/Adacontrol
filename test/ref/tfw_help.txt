@@ -749,11 +749,11 @@ Parameter(3..): [max] <value> | declaration | constant   | number     |
                 (optional)
 
 For multiple_elements:
-Parameter(2..): [flexible] clause   | declaration | statement |
-                           handler  | begin       | end       |
-                           then     | when        | else      |
-                           is       | loop        | do        |
-                           keywords
+Parameter(2..): [flexible] clause    | pragma   | declaration |
+                           statement | handler  | begin       |
+                           end       | then     | when        |
+                           else      | is       | loop        |
+                           do        | keywords
                            (default = all)
 
 For no_closing_name:

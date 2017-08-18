@@ -80,6 +80,7 @@ t_style-exposed_literal.adb:72:9: Error: Exposed: integer literal 2 not in allow
 t_style-exposed_literal.adb:73:10: Error: Exposed: integer literal 9_223_372_036_854_775_807 not in allowed construct
 t_style-exposed_literal.adb:74:10: Error: Exposed: integer literal -9_223_372_036_854_775_808 not in allowed construct
 t_style-exposed_literal.adb:77:18: Error: Exposed: integer literal 10 not in allowed construct
+t_style-multiple_elements.adb:4:15: Error: Multiple_Pragma: pragma does not start line
 t_style-multiple_elements.adb:4:43: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
 t_style-multiple_elements.adb:5:18: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
 t_style-multiple_elements.adb:6:23: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
@@ -89,42 +90,43 @@ t_style-multiple_elements.adb:9:90: Error: Multiple_Clause: use clause does not 
 t_style-multiple_elements.adb:13:26: Error: Multiple_Decl: declaration does not start line
 t_style-multiple_elements.adb:15:12: Error: Multiple_Decl: declaration does not start line
 t_style-multiple_elements.adb:17:21: Error: Multiple_Clause: clause does not start line
-t_style-multiple_elements.adb:23:19: Error: Multiple_Keyword: "begin" does not start line
-t_style-multiple_elements.adb:24:13: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:27:7: Error: Multiple_Keyword: "is" does not start line
-t_style-multiple_elements.adb:27:10: Error: Multiple_Keyword: "begin" does not start line
-t_style-multiple_elements.adb:29:4: Error: Multiple_Keyword: closing keywords of declaration split
-t_style-multiple_elements.adb:46:19: Error: Multiple_Handler: "exception" does not start line
-t_style-multiple_elements.adb:48:16: Error: Multiple_Handler: "when" does not start line
-t_style-multiple_elements.adb:49:17: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:49:17: Error: Multiple_Keyword: closing keywords of declaration split
-t_style-multiple_elements.adb:36:18: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:41:7: Error: Multiple_Keyword: closing keywords of statement split
-t_style-multiple_elements.adb:44:21: Error: Multiple_Keyword: "do" does not start line
-t_style-multiple_elements.adb:47:32: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:52:20: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:53:41: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:53:4: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:53:26: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:57:17: Error: Multiple_Keyword: "when" does not start line
-t_style-multiple_elements.adb:57:38: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:55:22: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:57:32: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:59:12: Error: Multiple_Keyword: "then" does not start line
-t_style-multiple_elements.adb:61:13: Error: Multiple_Keyword: "elsif/else" does not start line
-t_style-multiple_elements.adb:62:27: Error: Multiple_Keyword: "then" does not start line
-t_style-multiple_elements.adb:66:13: Error: Multiple_Keyword: "elsif/else" does not start line
-t_style-multiple_elements.adb:67:19: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:67:19: Error: Multiple_Keyword: closing keywords of statement split
-t_style-multiple_elements.adb:72:9: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:70:10: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:74:35: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:74:4: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:74:10: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:74:18: Error: Multiple_Keyword: "begin" does not start line
-t_style-multiple_elements.adb:74:30: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:74:10: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:74:24: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:20:23: Error: Multiple_Pragma: pragma does not start line
+t_style-multiple_elements.adb:24:19: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:25:13: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:28:7: Error: Multiple_Keyword: "is" does not start line
+t_style-multiple_elements.adb:28:10: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:30:4: Error: Multiple_Keyword: closing keywords of declaration split
+t_style-multiple_elements.adb:47:19: Error: Multiple_Handler: "exception" does not start line
+t_style-multiple_elements.adb:49:16: Error: Multiple_Handler: "when" does not start line
+t_style-multiple_elements.adb:50:17: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:50:17: Error: Multiple_Keyword: closing keywords of declaration split
+t_style-multiple_elements.adb:37:18: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:42:7: Error: Multiple_Keyword: closing keywords of statement split
+t_style-multiple_elements.adb:45:21: Error: Multiple_Keyword: "do" does not start line
+t_style-multiple_elements.adb:48:32: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:53:20: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:54:41: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:54:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:54:26: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:58:17: Error: Multiple_Keyword: "when" does not start line
+t_style-multiple_elements.adb:58:38: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:56:22: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:58:32: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:60:12: Error: Multiple_Keyword: "then" does not start line
+t_style-multiple_elements.adb:62:13: Error: Multiple_Keyword: "elsif/else" does not start line
+t_style-multiple_elements.adb:63:27: Error: Multiple_Keyword: "then" does not start line
+t_style-multiple_elements.adb:67:13: Error: Multiple_Keyword: "elsif/else" does not start line
+t_style-multiple_elements.adb:68:19: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:68:19: Error: Multiple_Keyword: closing keywords of statement split
+t_style-multiple_elements.adb:73:9: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:71:10: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:75:35: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:75:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:75:10: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:75:18: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:75:30: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:75:10: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:75:24: Error: Multiple_Stmts: statement does not start line
 t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter
 t_style-parameter_order.adb:14:24: Found: No_Default_In: default IN mode used for parameter
 t_style-parameter_order.adb:25:18: Error: order_regular: subprogram parameter out of order

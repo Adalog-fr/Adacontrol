@@ -161,10 +161,10 @@ package body Rules.Style is
    --                      *****************
    --
 
-   type Multiple_Names is (Mu_Clause, Mu_Declaration, Mu_Statement, Mu_Handler,           -- Construct must start line
-                           Mu_Begin,  Mu_End,         Mu_Then,      Mu_When,    Mu_Else,  -- Keyword must start line
-                           Mu_Is,     Mu_Loop,        Mu_Do,                              -- Keyword must start line or
-                                                                                          -- be on same line
+   type Multiple_Names is (Mu_Clause, Mu_Pragma, Mu_Declaration, Mu_Statement, Mu_Handler, -- Construct must start line
+                           Mu_Begin,  Mu_End,    Mu_Then,        Mu_When,      Mu_Else,    -- Keyword must start line
+                           Mu_Is,     Mu_Loop,   Mu_Do,                                    -- Keyword must start line
+                                                                                           -- or be on same line
                            Mu_Keywords);  -- Special value, equivalent to all keywords
    subtype Multiple_Keywords is Multiple_Names range Mu_Begin .. Mu_Do;
    package Multiple_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags  => Multiple_Names,
@@ -2103,6 +2103,12 @@ package body Rules.Style is
                        Corresponding_Context (St_Multiple_Elements, Image (Mu_Statement, Lower_Case)),
                        Loc,
                        "statement does not start line");
+
+            when A_Pragma =>
+               Report (Rule_Id,
+                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Pragma, Lower_Case)),
+                       Loc,
+                       "pragma does not start line");
 
             when others =>
                Failure (Rule_Id & ": inappropriate element kind");
