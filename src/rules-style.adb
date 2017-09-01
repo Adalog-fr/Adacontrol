@@ -1448,12 +1448,12 @@ package body Rules.Style is
             Report (Rule_Id,
                     Corresponding_Context (St_Casing_Exponent),
                     Get_Location (Expression) + Exp_Delimiter - 1,
-                    "Incorrect casing of exponent, should be 'E'");
+                    "Wrong casing of exponent, should be 'E'");
          elsif Name (Exp_Delimiter) = 'E' and Casing_Policy (St_Casing_Exponent) (Ca_Lowercase) then
             Report (Rule_Id,
                     Corresponding_Context (St_Casing_Exponent),
-                    Get_Location (Expression),
-                    "Incorrect casing of exponent, should be 'e'");
+                    Get_Location (Expression) + Exp_Delimiter - 1,
+                    "Wrong casing of exponent, should be 'e'");
          end if;
       end Process_Exponent;
 
@@ -1478,14 +1478,14 @@ package body Rules.Style is
                Report (Rule_Id,
                        Corresponding_Context (St_Casing_Number),
                        Get_Location (Expression) + Base_Delimiter_1,
-                       "Incorrect casing of extended digit(s), should be "
+                       "Wrong casing of extended digit(s), should be "
                        & To_Upper (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
                return;
             elsif Name (N) in 'A' .. 'F' and Casing_Policy (St_Casing_Number) (Ca_Lowercase) then
                Report (Rule_Id,
                        Corresponding_Context (St_Casing_Exponent),
                        Get_Location (Expression) + Base_Delimiter_1,
-                         "Incorrect casing of extended digit(s), should be "
+                         "Wrong casing of extended digit(s), should be "
                          & To_Lower (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
                return;
             end if;

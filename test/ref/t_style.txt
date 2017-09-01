@@ -23,10 +23,10 @@ t_style-casing.adb:25:26: Found: Casing: Wrong casing of "Word_SIZE", should be 
 t_style-casing.adb:26:26: Found: Casing: Wrong casing of "AA", should be "Aa"
 t_style-casing.adb:26:32: Found: Casing: Wrong casing of "BB", should be "Bb"
 t_style-casing.adb:30:11: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
-t_style-casing.adb:38:33: Found: Casing: Incorrect casing of exponent, should be 'E'
-t_style-casing.adb:39:25: Found: Casing: Incorrect casing of exponent, should be 'E'
-t_style-casing.adb:41:33: Found: Casing: Incorrect casing of extended digit(s), should be 1AB.0C
-t_style-casing.adb:42:26: Found: Casing: Incorrect casing of extended digit(s), should be 1ABC
+t_style-casing.adb:38:33: Found: Casing: Wrong casing of exponent, should be 'E'
+t_style-casing.adb:39:25: Found: Casing: Wrong casing of exponent, should be 'E'
+t_style-casing.adb:41:33: Found: Casing: Wrong casing of extended digit(s), should be 1AB.0C
+t_style-casing.adb:42:26: Found: Casing: Wrong casing of extended digit(s), should be 1ABC
 t_style-casing.adb:46:34: Found: Casing: Wrong casing of "image", should be "Image"
 t_style-casing.adb:46:41: Found: Casing: Wrong casing of "INT", should be "Int"
 t_style-casing.adb:47:4: Found: Casing: Wrong casing of "INT", should be "Int"
