@@ -23,6 +23,9 @@ Assignments:
    add subrule access_duplication
    sliding subrule controls initializations as well as assignments
 
+Parameter_Aliasing
+   Handle functions with [in] out parameters
+
 Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
 

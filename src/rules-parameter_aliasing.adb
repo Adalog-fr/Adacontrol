@@ -213,7 +213,7 @@ package body Rules.Parameter_Aliasing is
       end if;
 
       declare
-         Actuals : constant Asis.Association_List := Call_Statement_Parameters (Call);
+         Actuals : constant Asis.Association_List := Actual_Parameters (Call);
          To_Check_Parameters : Parameters_Table (Actuals'Range);
 
          function Association_Image (Position : List_Index) return Wide_String is
@@ -239,6 +239,11 @@ package body Rules.Parameter_Aliasing is
       begin
          if Actuals'Length <= 1 then
             -- 0 or 1 parameter => no possible aliasing
+            return;
+         end if;
+
+         if Expression_Kind (Call) = A_Function_Call and then Is_Nil (Corresponding_Called_Function (Call)) then
+            -- A predefined operator... Anyway, all parameters are "in"
             return;
          end if;
 

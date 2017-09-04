@@ -6963,9 +6963,9 @@ calls.
 @end example
 
 @subsection Action
-This rule identifies calls where the same variable is given as an
-actual to more than one @code{@b{out}} or @code{@b{in out}} parameter,
-like in the following example:
+This rule identifies calls (including function calls) where the same
+variable is given as an actual to more than one @code{@b{out}} or
+@code{@b{in out}} parameter, like in the following example:
 @example
 @b{procedure} Proc (X, Y : @b{out} Integer);
    ...

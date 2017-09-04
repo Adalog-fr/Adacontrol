@@ -1,3 +1,4 @@
+pragma Ada_2012;
 procedure T_parameter_aliasing is
    package Wrapper is
       type By_Copy is private;     -- A by copy type that is not subject to Ada 2012 aliasing checks
@@ -16,6 +17,9 @@ procedure T_parameter_aliasing is
    procedure Proc_CC3 (                   Y : in     By_Copy; Z : in By_Copy; X : out By_Copy) is begin null; end;
    procedure Proc_RR3 (                   Y : in     By_Ref;  Z : in By_Ref;  X : out By_Ref)  is begin null; end;
    procedure Proc_SC  (X : out BC_String; Y : out    By_Copy) is begin null; end;
+
+   function  Func_CC  (X : out By_Copy;   Y : in out By_Copy) return Integer is begin return 1; end;
+   Result : Integer;
 
    function "+" (C : By_Copy; I : Integer) return By_Copy is
    begin
@@ -52,6 +56,10 @@ Simple_Cases :
 
       Proc_CC (I, Alias1);                    -- Aliasing
       Proc_CC (Pack1.X, Pack2.X);             -- Aliasing
+
+      Result := Func_CC (I, I);                         -- Aliasing
+      Result := Func_CC (X => Simple_Cases.I, Y => I);  -- Aliasing
+      Result := Func_CC (I, J);                         -- OK
    end Simple_Cases;
 
 Selectors:

@@ -693,6 +693,7 @@ package body Framework.Plugs is
                   Rules.Insufficient_Parameters.  Process_Call                  (Element);
                   Rules.Max_Call_Depth.           Process_Call                  (Element);
                   Rules.Not_Elaboration_Calls.    Process_Call                  (Element);
+                  Rules.Parameter_Aliasing.       Process_Call                  (Element);
                   Rules.Side_Effect_Parameters.   Process_Call_Or_Instantiation (Element);
                   Rules.Simplifiable_Expressions. Process_Call                  (Element);
 
