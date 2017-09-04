@@ -3,7 +3,7 @@ with "adalog_comps";
 
 project Adactl is
 
-   for Languages use ("Ada", "Adacontrol", "Project File");
+   for Languages use ("Ada", "Adacontrol", "Project File", "Python");
    for Object_Dir use "adalib";
    for Main use ("adactl.adb", "pfni.adb", "ptree.adb");
 

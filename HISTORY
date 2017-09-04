@@ -5,9 +5,14 @@
 General:
 --------
 Consider a rule file given in a .gpr file if no "-f" option.
+
 If statistics level is > 0, a count of units and raw lines is output
-Bug fixes
+
 Full handling of aspects and elements defined in aspects
+ 
+Improvements to GPS integration
+
+Bug fixes
 
 Changes to existing rules:
 --------------------------

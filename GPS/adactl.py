@@ -156,7 +156,7 @@ def parse(output):
     """Sort and parse the result of running Adacontrol
     """
     global adactl_cats, long_mess_str, long_mess_pat, short_mess_pat, \
-        rule_statistics_pat, message_statistics_pat
+        rule_statistics_pat, message_statistics_pat, errors_style, warnings_style
 
     def sloc_cmp(l, r):
         """Compare two source references (file:line:col)
@@ -194,60 +194,66 @@ def parse(output):
     sep = ';'
     for Mess in list:
         pos += 1
-        if long_mess_pat.match(Mess):
-            # Regular AdaCtl message
+
+        # Regular AdaCtl message
+        match = long_mess_pat.match(Mess)
+        if match:
             if GPS.Preference("separate-rules").get():
-                category = long_mess_pat.sub(r"\8", Mess)
+                category = match.group(8)
             adactl_cats.add(category)
-            GPS.Locations.parse(Mess,
-                                category,
-                                long_mess_str,
-                                1, 2, 3, 4, 6, -1,
-                                "Builder results",
-                                "Style errors",
-                                "Builder warnings")
-        elif short_mess_pat.match(Mess):
-            # AdaCtl message without location, or just a column location
-            # (syntax error in interactive command)
+            mess = GPS.Message(category,
+                               file=GPS.File(match.group(1)),
+                               line=int(match.group(2)),
+                               column=int(match.group(3)),
+                               text=match.group(4))
+            if match.group(6) == "Found:":
+                mess.set_style(warnings_style)
+            else:
+                mess.set_style(errors_style)
+            continue
+
+        # AdaCtl message without location, or just a column location
+        # (syntax error in interactive command)
+        match = short_mess_pat.match(Mess)
+        if match:
             if GPS.Preference("separate-rules").get():
-                category = short_mess_pat.sub(r"\3", Mess)
+                category = match.group(3)
             adactl_cats.add(category)
-            message = short_mess_pat.sub(
-                r"\2", Mess) + short_mess_pat.sub(r"\3", Mess)
+            message = match.group(2) + match.group(3)
             try:
-                GPS.Locations.add(category, GPS.File("none"), 1, 1, message)
+                mess = GPS.Message(category, GPS.File("none"), 1, 1, message)
             except:
                 # Always an exception, since file "none" does not exist
                 # (presumably)
                 pass
-        elif rule_statistics_pat.match(Mess):
-            # Rule statistics summary
+            continue
+
+        # Rule statistics summary
+        match = rule_statistics_pat.match(Mess)
+        if match:
             adactl_cats.add("Statistics")
             try:
-                GPS.Locations.add("Statistics",
-                                  GPS.File(
-                                      rule_statistics_pat.sub(
-                                          r"\1", Mess)), 1, 1,
-                                  rule_statistics_pat.sub(r"\2", Mess))
+                mess = GPS.Message("Statistics", GPS.File(match.group(1)), 1, 1, match.group(2))
             except:
                 # Always an exception, since file does not exist
                 pass
-        elif message_statistics_pat.match(Mess):
-            # Message statistics summary
+            continue
+
+        # Message statistics summary
+        match = message_statistics_pat.match(Mess)
+        if match:
             adactl_cats.add("Statistics")
             try:
-                GPS.Locations.add(
-                    "Statistics",
-                    GPS.File(message_statistics_pat.sub(r"\1", Mess)), 1, 1,
-                    message_statistics_pat.sub(r"\2", Mess))
+                mess = GPS.Message("Statistics", GPS.File(match.group(1)), 1, 1, match.group(2))
             except:
                 # Always an exception, since file does not exist
                 pass
-        else:
-            # Assume it is a compilation message
-            if Mess not in list[max(0, pos - 5):pos - 1]:
-                GPS.Locations.parse(Mess, "Compilation")
-                adactl_cats.add("Compilation")
+            continue
+
+        # Assume it is a compilation message
+        if Mess not in list[max(0, pos - 5):pos - 1]:
+            adactl_cats.add("Compilation")
+            GPS.Locations.parse(Mess, "Compilation")
 
 
 def load_result(file=""):
@@ -318,6 +324,9 @@ def options(rules, files):
         try:
             win = GPS.current_context().file()
         except:
+            GPS.MDI.dialog("no active window")
+            raise ValueError
+        if win == None :
             GPS.MDI.dialog("no active window")
             raise ValueError
         if win.language() != "ada":
@@ -583,12 +592,17 @@ def on_GPS_start(H):
     """
     global adactl_cats, previous_command, previous_locfile, DelTree_Menu,\
         long_mess_str, long_mess_pat, short_mess_pat, rule_statistics_pat,\
-        message_statistics_pat, gps_version
+        message_statistics_pat, gps_version, errors_style, warnings_style
 
     # Global variables initialization
     adactl_cats = sets.Set()
     previous_command = ""
     previous_locfile = ""
+
+    styles_dict = {s.get_name(): s for s in GPS.Style.list()}
+    errors_style = styles_dict['Builder results']
+    warnings_style = styles_dict['Builder warnings']
+
 
     # Normalize version numbers to allow for correct ordering of (string) comparison
     # 6.1.1 => 06.1.1
@@ -600,15 +614,13 @@ def on_GPS_start(H):
     elif gps_version.find('.') == 1:
         gps_version = '0' + gps_version
 
-    # 1    2     3      456        7                           8
+    #                  1    2     3      456        7                           8
     long_mess_str = r"^(.+):(\d+):(\d+): (((Found:)|(Error:|Parameter:|Syntax:))( .*?):.*)$"
     long_mess_pat = re.compile(long_mess_str)
-    # 1       2                                  3
-    short_mess_pat = re.compile(
-        r"^(\d+: )?(Found:|Error:|Parameter:|Syntax:) (.*)$")
-    # 1     23                                     4
-    rule_statistics_pat = re.compile(
-        r"^(.*): ((Check: \d+, Search: \d+, Count: \d+)|(not triggered))$")
+    #                              1       2                                  3
+    short_mess_pat = re.compile(r"^(\d+: )?(Found:|Error:|Parameter:|Syntax:) (.*)$")
+    #                                   1     23                                     4
+    rule_statistics_pat = re.compile(r"^(.*): ((Check: \d+, Search: \d+, Count: \d+)|(not triggered))$")
     #                                      1                  2
     message_statistics_pat = re.compile(r"^(Issued messages:) (.*)$")
 
