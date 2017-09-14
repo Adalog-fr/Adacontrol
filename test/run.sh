@@ -1,10 +1,12 @@
-#!/bin/sh
+!/bin/sh
 # Usage:
 # ./run.sh [-q] [<adactl options>]
+# ./run.sh -h 
 # If -q is given as the first parameter:
 #   run in "quiet" mode: just print PASSED if there are no errors
 #   names of failing tests are still reported in case of errors
 # Other options are passed to AdaControl (notably -d)
+# -h : print help and exit
 
 #
 # functions
@@ -87,14 +89,23 @@ if [ -z $EXECUTABLE ] ; then
     exit
 fi
 
-if [ "${1:-}" = -q ]; then
-   SILENT=1
-   shift
-   ADACTL="$EXECUTABLE -F gnat_short $*"
-else
-   SILENT=0
-   ADACTL="$EXECUTABLE -v -F gnat_short $*"
-fi;
+case "${1:-}" in
+    -q)
+        SILENT=1
+        shift
+        ADACTL="$EXECUTABLE -F gnat_short $*"
+        ;;
+    -h)
+        echo "Usage:"
+        echo "   ./run.sh [-q] [<adactl options>]"
+        echo "   ./run.sh -h"
+        exit
+        ;;
+    *)
+        SILENT=0
+        ADACTL="$EXECUTABLE -v -F gnat_short $*"
+        ;;
+esac
 
 
 if [ -d res ]; then
@@ -242,7 +253,7 @@ fi
 #
 put_line "--- Rules tests"
 
-list=`find ./ -name "t_*.adb" ! -name "*-*" -printf "%P "`
+list=`find ./ -maxdepth 1 -name "t_*.adb" ! -name "*-*" -printf "%P "`
 nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
