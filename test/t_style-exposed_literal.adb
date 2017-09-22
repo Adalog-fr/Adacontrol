@@ -1,3 +1,4 @@
+with System;
 separate (T_Style)
 procedure Exposed_Literal is
    II : constant Integer   := 4;                         -- OK
@@ -28,6 +29,8 @@ procedure Exposed_Literal is
    type Arr is array (T, T) of Sub;
 
    V : Long_Long_Integer := +9_223_372_036_854_775_807;  -- OK
+   type Big_Mod is mod System.Max_Binary_Modulus;
+   BM : constant Big_Mod := 16#FFFF_FFFF_FFFF_FFFF#;     -- OK
 
    pragma JUNK ("ABCD");                                 -- OK
    Char_Var  : Character := 'A';                         -- OK

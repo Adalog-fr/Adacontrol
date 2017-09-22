@@ -27,7 +27,8 @@
 -- Ada
 with
    Ada.Strings.Wide_Fixed,
-   Ada.Strings.Wide_Unbounded;
+   Ada.Strings.Wide_Unbounded,
+   System;
 
 -- ASIS
 with
@@ -1655,28 +1656,27 @@ package body Rules.Style is
                end if;
 
                declare
-                  I : Extended_Biggest_Int;
+                  type Truly_Biggest_Int is mod System.Max_Binary_Modulus;
+                  -- We need this special type here instead of Biggest_Int, because
+                  -- it cannot be non-static (it is a literal), and the user may well spell-out the full value
+                  -- of System.Max_Binary_Modulus. However, if it is above Sytem.Max_Int, it is necessarily not
+                  -- allowed, since Integer_Max_Value is bounded by System.Max_Int.
+                  -- NB: if this code appears to be contrieved, consider checking the case of a modular value of
+                  --     System.Max_Binary_Modulus without raising Constraint_Error...
+                  I : Truly_Biggest_Int;
                   Value_Str : constant Wide_String := Value_Image (Expression);
-                  -- As a special exception, we use Extended_Biggest_Int instead of Biggest_Int here, because
-                  -- it cannot be non-static (it is a litteral), and the user may well spell-out the full value
-                  -- of System.Max_Int
                begin
-                  if Negative then
-                     I := Extended_Biggest_Int'Wide_Value ("-" & Value_Str);
-                  else
-                     I := Extended_Biggest_Int'Wide_Value (Value_Str);
-                  end if;
-
+                  I := Truly_Biggest_Int'Wide_Value (Value_Str);
                   if Integer_Max_Value /= Uninitialized
-                    and then I /= Biggest_Int'First     -- To avoid Constraint_Error in abs below
-                    and then abs I <= Integer_Max_Value
+                    and then I <= Truly_Biggest_Int (Integer_Max_Value)
                   then
                      -- OK just return
                      return;
                   end if;
 
                   for K in Permitted_Consts_Count range 1 .. Integer_Count loop
-                     if Integer_Permitted_Values (K) = I then
+                     if (Integer_Permitted_Values (K) < 0) = Negative                          -- Both have same sign
+                        and then Truly_Biggest_Int (abs Integer_Permitted_Values (K)) = I then -- and same abs value
                         -- OK just return
                         return;
                      end if;
