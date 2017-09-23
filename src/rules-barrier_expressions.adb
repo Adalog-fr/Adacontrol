@@ -255,7 +255,24 @@ package body Rules.Barrier_Expressions is
                                             Control_Manager.Association (Contexts, Image (K_Any_Component)),
                                             Used_Names(N));
                               end if;
-                        end if;
+                           end if;
+                        when A_Discriminant_Specification =>
+                           -- Handle like a component (see comment above)
+                           if Declaration_Kind (Enclosing_Element (Enclosing_Element (Name_Decl)))
+                             = A_Protected_Type_Declaration
+                           then
+                              -- A field of the protected element, boolean fields always allowed
+                              if To_Upper (Full_Name_Image
+                                           (Strip_Attributes -- In case someone tries to fool us with Boolean'Base...)
+                                            (Simple_Name
+                                             (Object_Declaration_View (Name_Decl)))))
+                                /= "STANDARD.BOOLEAN"
+                              then
+                                 Do_Report ("non-boolean protected discriminant",
+                                            Control_Manager.Association (Contexts, Image (K_Any_Component)),
+                                            Used_Names (N));
+                              end if;
+                           end if;
                         when A_Constant_Declaration
                            | A_Number_Declaration
                              =>

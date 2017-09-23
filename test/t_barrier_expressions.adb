@@ -62,24 +62,24 @@ procedure T_Barrier_Expressions is
       end E;
    end Other_Prot;
 
-   protected type Check is
+   protected type Check (Discr : Standard.Integer'Base) is
       entry Simple_Boolean;
       entry Errors;
       function Local (I : in Integer) return Boolean;
 
    private
       B1, B2, B3 : Boolean := False;
-      I, J, K : Integer := 0;
-      F : Float          := 0.0;
-      C : Character      := ' ';
-      S : String (Index) := (others => ' ');
-      P : Pointer        := null;
-      E : Enumeration    := Enum1;
+      I, J, K : Integer    := 0;
+      F : Float            := 0.0;
+      C : Character        := ' ';
+      S : String (Index)   := (others => ' ');
+      P : Pointer          := null;
+      E : Enumeration      := Enum1;
       R : Record_Type;
       ER : Extended_Record_Type;
    end Check;
 
-   External : Check;
+   External : Check (1);
 
    protected body Check is
       entry Simple_Boolean when B1 is                  -- Always OK
@@ -99,6 +99,8 @@ procedure T_Barrier_Expressions is
           I = Integer (30.0)                          -- any_component, comparison_operator, conversion
         or                                            -- logical_operator
           I = Integer'(10)                            -- any_component, comparison_operator, conversion
+        or                                            -- logical_operator
+          Discr = 10                                  -- any_component, comparison_operator
         or                                            -- logical_operator
           P = new Integer'(10)                        -- any_component, comparison_operator, allocation, conversion
         or                                            -- logical_operator
