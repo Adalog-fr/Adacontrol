@@ -5,7 +5,7 @@ project Build is
    for Source_Dirs use ("src/");
    for Object_Dir use "src/";
    for Exec_Dir use ".";
-   for Main use ("adactl", "ptree", "pfni");
+   for Main use ("adactl", "ptree", "pfni", "adactl_fix");
 
    Std_Options := ("-O2", "-gnatws", "-gnat12", "-gnato", "-gnatf", "-g");
    Std_Options := Std_Options & External_As_List ("ADAFLAGS", " ");

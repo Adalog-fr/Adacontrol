@@ -1,22 +1,22 @@
-@check t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io in scope of use clause for same package at t_unnecessary_use_clause.adb:8:4
-@check t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Strings.Fixed in scope of use clause for same package at t_unnecessary_use_clause.adb:14:4
-@check t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
-@check t_unnecessary_use_clause.adb:56:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Pack5
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 56,7 56,16
-@check t_unnecessary_use_clause.adb:61:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 61,7 61,22
-@check t_unnecessary_use_clause.adb:50:4: Error: UNNECESSARY_USE_CLAUSE: all uses of Pack4 are qualified
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 50,4 50,13
-@check t_unnecessary_use_clause.adb:44:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Pack3 only used for operators
-@check t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings.Fixed
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 16,4 16,25
-@check t_unnecessary_use_clause.adb:8:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Text_IO
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 8,4 8,15
-@check t_unnecessary_use_clause.adb:2:14: Error: UNNECESSARY_USE_CLAUSE: unused use clause for System
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 2,14 2,24
-@check t_unnecessary_use_clause.ads:3:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Command_Line (possible usage in child units)
-@delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.ads" 3,8 3,25
-@check x_unnecessary_use_clause.ads:2:1: Error: UNNECESSARY_USE_CLAUSE: use clause for Text_IO can be moved to body
-@check x_unnecessary_use_clause.ads:2:1: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.numerics
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_unnecessary_use_clause.ads" 2,35 2,48
+!check t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io in scope of use clause for same package at t_unnecessary_use_clause.adb:8:4
+!check t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Strings.Fixed in scope of use clause for same package at t_unnecessary_use_clause.adb:14:4
+!check t_unnecessary_use_clause.adb:10:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
+!check t_unnecessary_use_clause.adb:56:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Pack5
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 56,7 56,16
+!check t_unnecessary_use_clause.adb:61:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 61,7 61,22
+!check t_unnecessary_use_clause.adb:50:4: Error: UNNECESSARY_USE_CLAUSE: all uses of Pack4 are qualified
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 50,4 50,13
+!check t_unnecessary_use_clause.adb:44:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Pack3 only used for operators
+!check t_unnecessary_use_clause.adb:16:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings.Fixed
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 16,4 16,25
+!check t_unnecessary_use_clause.adb:8:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Text_IO
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 8,4 8,15
+!check t_unnecessary_use_clause.adb:2:14: Error: UNNECESSARY_USE_CLAUSE: unused use clause for System
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.adb" 2,14 2,24
+!check t_unnecessary_use_clause.ads:3:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Command_Line (possible usage in child units)
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_unnecessary_use_clause.ads" 3,8 3,25
+!check x_unnecessary_use_clause.ads:2:1: Error: UNNECESSARY_USE_CLAUSE: use clause for Text_IO can be moved to body
+!check x_unnecessary_use_clause.ads:2:1: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.numerics
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\x_unnecessary_use_clause.ads" 2,35 2,48
 

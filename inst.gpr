@@ -1,7 +1,7 @@
 project Inst is
    for Languages use ("Ada");
    for Source_Dirs use ("fake/");
-   for Main use ("adactl", "ptree", "pfni");
+   for Main use ("adactl", "ptree", "pfni", "adactl_fix");
 
    package Install is
       for mode use "usage";

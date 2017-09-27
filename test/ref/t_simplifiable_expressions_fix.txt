@@ -1,227 +1,218 @@
-@check t_simplifiable_expressions-test_range.adb:34:57: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:35:57: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:39:32: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:40:32: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:56:20: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:58:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:72:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:76:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:79:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:100:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:103:13: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:109:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:113:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
-@check t_simplifiable_expressions-test_range.adb:117:14: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
-@check t_simplifiable_expressions-test_range.adb:122:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
-@check t_simplifiable_expressions-test_range.adb:124:11: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
-@check t_simplifiable_expressions-test_range.adb:127:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:129:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:132:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:133:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:137:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
-@check t_simplifiable_expressions-test_range.adb:140:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
-@check t_simplifiable_expressions-test_range.adb:142:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
-@search t_simplifiable_expressions-test_logical.adb:10:19: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:11:28: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:13:35: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:23:7: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@check t_simplifiable_expressions-test_logical.adb:23:26: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
-@check t_simplifiable_expressions-test_logical.adb:23:30: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_logical.adb" 23,30 23,35
-True
-@search t_simplifiable_expressions-test_logical.adb:25:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:26:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:27:10: Found: False: Simplify expression '<expr> /= False' to just '<expr>'
-@check t_simplifiable_expressions-test_logical.adb:29:10: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
-@check t_simplifiable_expressions-test_logical.adb:31:10: Error: Range_Or_True: Simplify expression '<expr> /= True' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:33:10: Found: False: Simplify expression 'False = <expr>' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:34:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:35:10: Found: False: Simplify expression 'False /= <expr>' to just '<expr>'
-@check t_simplifiable_expressions-test_logical.adb:37:10: Error: Range_Or_True: Simplify expression 'True = <expr>' to just '<expr>'
-@check t_simplifiable_expressions-test_logical.adb:39:10: Error: Range_Or_True: Simplify expression 'True /= <expr>' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:43:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:43:24: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
-@search t_simplifiable_expressions-test_logical.adb:47:7: Found: SIMPLIFIABLE_EXPRESSIONS: "not" on comparison
-@check t_simplifiable_expressions-test_parentheses.adb:15:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 15,16 15,22
-False
-@check t_simplifiable_expressions-test_parentheses.adb:17:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 17,16 17,44
-for Some C of S1 => C = 'A'
-@check t_simplifiable_expressions-test_parentheses.adb:21:20: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 21,20 21,22
-1
-@check t_simplifiable_expressions-test_parentheses.adb:32:35: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 32,35 32,37
-1
-@check t_simplifiable_expressions-test_parentheses.adb:34:35: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 34,35 34,62
-for all C of S1 => C = 'A'
-@check t_simplifiable_expressions-test_parentheses.adb:43:32: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 43,32 43,37
-True
-@check t_simplifiable_expressions-test_parentheses.adb:44:37: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 44,37 44,42
-True
-@check t_simplifiable_expressions-test_parentheses.adb:46:32: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 46,32 46,61
-if True then True else False
-@check t_simplifiable_expressions-test_parentheses.adb:51:10: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 51,10 51,12
-1
-@check t_simplifiable_expressions-test_parentheses.adb:57:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 57,7 57,9
-B
-@check t_simplifiable_expressions-test_parentheses.adb:59:10: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 59,10 59,12
-B
-@check t_simplifiable_expressions-test_parentheses.adb:70:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 70,9 70,11
-B
-@check t_simplifiable_expressions-test_parentheses.adb:79:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 79,7 79,9
-1
-@check t_simplifiable_expressions-test_parentheses.adb:80:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,7 80,13
-((1))
-@check t_simplifiable_expressions-test_parentheses.adb:80:8: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,8 80,12
-(1)
-@check t_simplifiable_expressions-test_parentheses.adb:80:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,9 80,11
-1
-@check t_simplifiable_expressions-test_parentheses.adb:81:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 81,7 81,29
-if True then 1 else 2
-@check t_simplifiable_expressions-test_parentheses.adb:87:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 87,13 87,38
-(if B then B else not B)
-@check t_simplifiable_expressions-test_parentheses.adb:87:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 87,14 87,37
-if B then B else not B
-@check t_simplifiable_expressions-test_parentheses.adb:89:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 89,17 89,40
-if B then B else not B
-@check t_simplifiable_expressions-test_parentheses.adb:93:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 93,13 93,17
-2*3
-@check t_simplifiable_expressions-test_parentheses.adb:94:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 94,9 94,11
-1
-@check t_simplifiable_expressions-test_parentheses.adb:96:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 96,13 96,23
-"+"(2, 3)
-@check t_simplifiable_expressions-test_parentheses.adb:97:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 97,16 97,20
-2+3
-@check t_simplifiable_expressions-test_parentheses.adb:98:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 98,17 98,19
-I
-@check t_simplifiable_expressions-test_parentheses.adb:99:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 99,13 99,19
-abs I
-@check t_simplifiable_expressions-test_parentheses.adb:100:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 100,14 100,16
-3
-@check t_simplifiable_expressions-test_parentheses.adb:107:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 107,13 107,15
-B
-@check t_simplifiable_expressions-test_parentheses.adb:109:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 109,9 109,15
-not B
-@check t_simplifiable_expressions-test_parentheses.adb:114:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 114,24 114,45
-I = 2 and then I = 3
-@check t_simplifiable_expressions-test_parentheses.adb:115:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 115,24 115,30
-I = 2
-@check t_simplifiable_expressions-test_parentheses.adb:117:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 117,9 117,15
-I = 1
-@check t_simplifiable_expressions-test_parentheses.adb:118:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 118,24 118,26
-B
-@check t_simplifiable_expressions-test_parentheses.adb:119:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 119,24 119,36
-"or" (B, B)
-@check t_simplifiable_expressions-test_parentheses.adb:122:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 122,11 122,15
-'a'
-@check t_simplifiable_expressions-test_parentheses.adb:122:33: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 122,33 122,37
-' '
-@check t_simplifiable_expressions-test_parentheses.adb:123:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 123,16 123,20
-'a'
-@check t_simplifiable_expressions-test_parentheses.adb:123:43: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 123,43 123,47
-' '
-@check t_simplifiable_expressions-test_parentheses.adb:125:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,11 125,39
-(if B1 then ('a') else 'b')
-@check t_simplifiable_expressions-test_parentheses.adb:125:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,12 125,38
-if B1 then ('a') else 'b'
-@check t_simplifiable_expressions-test_parentheses.adb:125:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,24 125,28
-'a'
-@check t_simplifiable_expressions-test_parentheses.adb:125:52: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,52 125,56
-' '
-@check t_simplifiable_expressions-test_parentheses.adb:128:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 128,11 128,13
-1
-@check t_simplifiable_expressions-test_parentheses.adb:128:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 128,16 128,21
-True
-@check t_simplifiable_expressions-test_parentheses.adb:129:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 129,11 129,13
-1
-@check t_simplifiable_expressions-test_parentheses.adb:129:22: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 129,22 129,27
-True
-@check t_simplifiable_expressions-test_parentheses.adb:131:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 131,14 131,43
-(for all C of S1 => C = 'A')
-@check t_simplifiable_expressions-test_parentheses.adb:131:15: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 131,15 131,42
-for all C of S1 => C = 'A'
-@check t_simplifiable_expressions-test_parentheses.adb:134:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 134,9 134,22
-I in 1 .. 10
-@check t_simplifiable_expressions-test_parentheses.adb:134:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 134,27 134,44
-J not in 1 .. 10
-@check t_simplifiable_expressions-test_parentheses.adb:136:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 136,9 136,11
-B
-@check t_simplifiable_expressions-test_parentheses.adb:137:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 137,9 137,13
-I+1
-@check t_simplifiable_expressions-test_parentheses.adb:140:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 140,14 140,34
-B in False .. False
-@search t_simplifiable_expressions-test_conversion.adb:9:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 9,9 9,19
+!check t_simplifiable_expressions-test_range.adb:34:57: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:35:57: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:39:32: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:40:32: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:56:20: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:58:16: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:72:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:76:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:79:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:100:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:103:13: Error: Range_Or_True: (T)'RANGE replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:109:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:113:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+!check t_simplifiable_expressions-test_range.adb:117:14: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+!check t_simplifiable_expressions-test_range.adb:122:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+!check t_simplifiable_expressions-test_range.adb:124:11: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+!check t_simplifiable_expressions-test_range.adb:127:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:129:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:132:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:133:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:137:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (sub)type(T)
+!check t_simplifiable_expressions-test_range.adb:140:9: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+!check t_simplifiable_expressions-test_range.adb:142:13: Error: Range_Or_True: (T)'First .. (T)'Last replaceable with (T)'Range
+!search t_simplifiable_expressions-test_logical.adb:10:19: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:11:28: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:13:35: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:23:7: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!check t_simplifiable_expressions-test_logical.adb:23:26: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
+!check t_simplifiable_expressions-test_logical.adb:23:30: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_logical.adb" 23,30 23,30
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_logical.adb" 23,35 23,35
+!search t_simplifiable_expressions-test_logical.adb:25:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:26:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:27:10: Found: False: Simplify expression '<expr> /= False' to just '<expr>'
+!check t_simplifiable_expressions-test_logical.adb:29:10: Error: Range_Or_True: Simplify expression '<expr> = True' to just '<expr>'
+!check t_simplifiable_expressions-test_logical.adb:31:10: Error: Range_Or_True: Simplify expression '<expr> /= True' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:33:10: Found: False: Simplify expression 'False = <expr>' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:34:12: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:35:10: Found: False: Simplify expression 'False /= <expr>' to just '<expr>'
+!check t_simplifiable_expressions-test_logical.adb:37:10: Error: Range_Or_True: Simplify expression 'True = <expr>' to just '<expr>'
+!check t_simplifiable_expressions-test_logical.adb:39:10: Error: Range_Or_True: Simplify expression 'True /= <expr>' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:43:10: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:43:24: Found: False: Simplify expression '<expr> = False' to 'not <expr>'
+!search t_simplifiable_expressions-test_logical.adb:47:7: Found: SIMPLIFIABLE_EXPRESSIONS: "not" on comparison
+!check t_simplifiable_expressions-test_parentheses.adb:15:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 15,16 15,16
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 15,22 15,22
+!check t_simplifiable_expressions-test_parentheses.adb:17:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 17,16 17,16
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 17,44 17,44
+!check t_simplifiable_expressions-test_parentheses.adb:21:20: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 21,20 21,20
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 21,22 21,22
+!check t_simplifiable_expressions-test_parentheses.adb:32:34: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 32,34 32,34
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 32,38 32,38
+!check t_simplifiable_expressions-test_parentheses.adb:34:34: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 34,34 34,34
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 34,63 34,63
+!check t_simplifiable_expressions-test_parentheses.adb:43:32: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 43,32 43,32
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 43,37 43,37
+!check t_simplifiable_expressions-test_parentheses.adb:44:37: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 44,37 44,37
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 44,42 44,42
+!check t_simplifiable_expressions-test_parentheses.adb:46:32: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 46,32 46,32
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 46,61 46,61
+!check t_simplifiable_expressions-test_parentheses.adb:51:10: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 51,10 51,10
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 51,12 51,12
+!check t_simplifiable_expressions-test_parentheses.adb:57:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 57,7 57,7
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 57,9 57,9
+!check t_simplifiable_expressions-test_parentheses.adb:59:10: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 59,10 59,10
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 59,12 59,12
+!check t_simplifiable_expressions-test_parentheses.adb:70:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 70,9 70,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 70,11 70,11
+!check t_simplifiable_expressions-test_parentheses.adb:79:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 79,7 79,7
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 79,9 79,9
+!check t_simplifiable_expressions-test_parentheses.adb:80:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,7 80,7
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,13 80,13
+!check t_simplifiable_expressions-test_parentheses.adb:80:8: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,8 80,8
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,12 80,12
+!check t_simplifiable_expressions-test_parentheses.adb:80:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,9 80,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 80,11 80,11
+!check t_simplifiable_expressions-test_parentheses.adb:81:7: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 81,7 81,7
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 81,29 81,29
+!check t_simplifiable_expressions-test_parentheses.adb:87:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 87,13 87,13
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 87,38 87,38
+!check t_simplifiable_expressions-test_parentheses.adb:89:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 89,17 89,17
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 89,40 89,40
+!check t_simplifiable_expressions-test_parentheses.adb:93:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 93,13 93,13
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 93,17 93,17
+!check t_simplifiable_expressions-test_parentheses.adb:94:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 94,9 94,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 94,11 94,11
+!check t_simplifiable_expressions-test_parentheses.adb:96:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 96,13 96,13
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 96,23 96,23
+!check t_simplifiable_expressions-test_parentheses.adb:97:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 97,16 97,16
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 97,20 97,20
+!check t_simplifiable_expressions-test_parentheses.adb:98:17: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 98,17 98,17
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 98,19 98,19
+!check t_simplifiable_expressions-test_parentheses.adb:99:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 99,13 99,13
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 99,19 99,19
+!check t_simplifiable_expressions-test_parentheses.adb:100:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 100,14 100,14
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 100,16 100,16
+!check t_simplifiable_expressions-test_parentheses.adb:107:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 107,13 107,13
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 107,15 107,15
+!check t_simplifiable_expressions-test_parentheses.adb:109:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 109,9 109,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 109,15 109,15
+!check t_simplifiable_expressions-test_parentheses.adb:114:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 114,24 114,24
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 114,45 114,45
+!check t_simplifiable_expressions-test_parentheses.adb:115:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 115,24 115,24
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 115,30 115,30
+!check t_simplifiable_expressions-test_parentheses.adb:117:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 117,9 117,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 117,15 117,15
+!check t_simplifiable_expressions-test_parentheses.adb:118:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 118,24 118,24
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 118,26 118,26
+!check t_simplifiable_expressions-test_parentheses.adb:119:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 119,24 119,24
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 119,36 119,36
+!check t_simplifiable_expressions-test_parentheses.adb:122:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 122,11 122,11
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 122,15 122,15
+!check t_simplifiable_expressions-test_parentheses.adb:122:33: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 122,33 122,33
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 122,37 122,37
+!check t_simplifiable_expressions-test_parentheses.adb:123:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 123,16 123,16
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 123,20 123,20
+!check t_simplifiable_expressions-test_parentheses.adb:123:43: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 123,43 123,43
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 123,47 123,47
+!check t_simplifiable_expressions-test_parentheses.adb:125:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,11 125,11
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,39 125,39
+!check t_simplifiable_expressions-test_parentheses.adb:125:24: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,24 125,24
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,28 125,28
+!check t_simplifiable_expressions-test_parentheses.adb:125:52: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,52 125,52
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 125,56 125,56
+!check t_simplifiable_expressions-test_parentheses.adb:128:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 128,11 128,11
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 128,13 128,13
+!check t_simplifiable_expressions-test_parentheses.adb:128:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 128,16 128,16
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 128,21 128,21
+!check t_simplifiable_expressions-test_parentheses.adb:129:11: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 129,11 129,11
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 129,13 129,13
+!check t_simplifiable_expressions-test_parentheses.adb:129:22: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 129,22 129,22
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 129,27 129,27
+!check t_simplifiable_expressions-test_parentheses.adb:131:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 131,14 131,14
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 131,43 131,43
+!check t_simplifiable_expressions-test_parentheses.adb:134:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 134,9 134,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 134,22 134,22
+!check t_simplifiable_expressions-test_parentheses.adb:134:27: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 134,27 134,27
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 134,44 134,44
+!check t_simplifiable_expressions-test_parentheses.adb:136:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 136,9 136,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 136,11 136,11
+!check t_simplifiable_expressions-test_parentheses.adb:137:9: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 137,9 137,9
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 137,13 137,13
+!check t_simplifiable_expressions-test_parentheses.adb:140:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 140,14 140,14
+!delete "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_parentheses.adb" 140,34 140,34
+!search t_simplifiable_expressions-test_conversion.adb:9:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 9,9 9,19
 Y
-@search t_simplifiable_expressions-test_conversion.adb:10:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 10,9 10,20
+!search t_simplifiable_expressions-test_conversion.adb:10:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 10,9 10,20
 Y
-@search t_simplifiable_expressions-test_conversion.adb:12:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 12,9 12,23
+!search t_simplifiable_expressions-test_conversion.adb:12:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 12,9 12,23
 Y - 1
-@search t_simplifiable_expressions-test_conversion.adb:16:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 16,9 16,19
+!search t_simplifiable_expressions-test_conversion.adb:16:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 16,9 16,19
 1
-@search t_simplifiable_expressions-test_conversion.adb:17:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 17,9 17,19
+!search t_simplifiable_expressions-test_conversion.adb:17:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 17,9 17,19
 C
-@search t_simplifiable_expressions-test_conversion.adb:18:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 18,9 18,30
+!search t_simplifiable_expressions-test_conversion.adb:18:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 18,9 18,30
 Integer'Size
-@search t_simplifiable_expressions-test_conversion.adb:19:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 19,9 19,34
+!search t_simplifiable_expressions-test_conversion.adb:19:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 19,9 19,34
 Integer'Size / 8
-@search t_simplifiable_expressions-test_conversion.adb:25:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
-@replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 25,9 25,27
+!search t_simplifiable_expressions-test_conversion.adb:25:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+!replace "C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_simplifiable_expressions-test_conversion.adb" 25,9 25,27
 D + 10.0

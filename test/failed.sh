@@ -6,7 +6,6 @@ if [ "${OSTYPE:-}" = "linux-gnu" ] ; then
     WINMERGE='/usr/bin/meld'
     EMACS=emacs
 else
-    #WINMERGE='/cygdrive/c/Program Files/KDiff3/kdiff3.exe'
     WINMERGE='c:/Program Files (x86)/Meld/Meld.exe'
     EMACS=emacs.bat
 fi
@@ -18,7 +17,7 @@ fi
 
 (cd res
     found=0
-    for test_case in *.txt; do
+    for test_case in *.txt *.ad[sb] ; do
 	diff=`diff ${test_case} ../ref/${test_case}`
 	if [ "$diff" != "" ]; then
             found=1

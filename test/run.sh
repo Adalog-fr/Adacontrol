@@ -1,4 +1,4 @@
-!/bin/sh
+#!/bin/sh
 # Usage:
 # ./run.sh [-q] [<adactl options>]
 # ./run.sh -h 
@@ -9,66 +9,9 @@
 # -h : print help and exit
 
 #
-# functions
+# include functions
 #
-put () {
-    if [ $SILENT -eq 1 ]; then return; fi
-
-    local msg="$1"
-    local pad="${2:-}"
-    local ali="${3:-}"
-
-    if [ "$ali" = "center" ]; then
-	lef=$(((${pad}-${#msg})/2))
-	printf "%${lef}s%s" "" "${msg}"
-	rig=$((${pad}-${#msg}-${lef}))
-	printf "%${rig}s" ""
-    elif [ "$ali" = "right" ]; then
-	printf "%-${pad}s" "${msg}"
-    else
-	printf "%${pad}s" "${msg}"
-    fi
-}
-
-put_line () {
-    if [ $SILENT -eq 1 ]; then return; fi
-
-    put "$1" "${2:-}" "${3:-}"
-    printf "\n"
-}
-
-put_title_line () {
-    if [ $SILENT -eq 1 ]; then return; fi
-
-    put "--"
-    put "${1:-}" 75 center
-    put_line "--"
-}
-
-put_line_line () {
-    if [ $SILENT -eq 1 ]; then return; fi
-
-    put      "----------------------------------------"
-    put_line "---------------------------------------"
-}
-
-print_time () {
-    t=$2
-    if [ $t -ge 3600 ]; then
-	h=`expr $t / 3600`"h "
-	t=`expr $t % 3600`
-    else
-	h=""
-    fi
-    if [ $t -ge 60 ]; then
-	m=`expr $t / 60`"mn "
-	t=`expr $t % 60`
-    else
-	m=""
-    fi
-    s=$t"s."
-    put_line  "$1 ${h}${m}${s}"
-}
+. run_funcs.sh
 
 ########################################################
 # Actual beginning
@@ -108,11 +51,8 @@ case "${1:-}" in
 esac
 
 
-if [ -d res ]; then
-    rm -f res/*
-else
-    mkdir res
-fi
+mkdir -p res ref fixed/res fixed/ref
+rm -f res/* fixed/res/*.ad[sb]
 
 put_line_line
 put_title_line
@@ -221,7 +161,7 @@ done
 put "--- Stress test... "
 test_case=tfw_stress
 nb_fw=$((nb_fw+1))
-list=`find ./ '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
+list=`find ./ -maxdepth 1 '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
 export ADACTLINI="set timing global;"
 result=0
 find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_short -wd -f - $list \
