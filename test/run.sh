@@ -83,8 +83,8 @@ ${ADACTL} -h "^Simplifiable_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
 ${ADACTL} -h "variables ^tag_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
-# Remove line with version number to avoid false failures when using a different version
-sed -i "/with ASIS/d" res/${test_case}.txt
+# Remove line with version number to avoid false failures when using a different GNAT version
+sed -i "/with ASIS/s/with ASIS.*$//" res/${test_case}.txt
 
 # This one has full path names in the result file, the result depends on the directory 
 # where it's run from...
