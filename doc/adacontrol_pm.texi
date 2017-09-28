@@ -165,10 +165,11 @@ functionnalities.
 * The package Framework::
 * The package Framework.Rules_Manager::
 * The package Framework.Reports::
+* The package Framework.Fixes::
 * The package Framework.Language::
-* The package Framework.Scope_Manager::
 * The package Framework.Variables::
 * The package Framework.Plugs::
+* The package Scope_Manager::
 * The package Rules::
 * The package Utilities::
 * The packages Thick_Queries and Framework.Queries::
@@ -235,7 +236,7 @@ line, help command will work, etc.
 The procedure  @code{Enter} is used to let the system know which rule is
 currently active.
 
-@node The package Framework.Reports, The package Framework.Language, The package Framework.Rules_Manager, The framework and utilities packages
+@node The package Framework.Reports, The package Framework.Fixes, The package Framework.Rules_Manager, The framework and utilities packages
 @section The package Framework.Reports
 The package @code{Framework.Reports} is used to report error or found
 messages when a rule matches. It deals automatically with things like
@@ -286,7 +287,26 @@ that could be an error. It is important to call this procedure for any
 non-checkable construct, since it is what allows the rule
 ``Uncheckable'' to work.
 
-@node The package Framework.Language, The package Framework.Scope_Manager, The package Framework.Reports, The framework and utilities packages
+@node The package Framework.Fixes, The package Framework.Language, The package Framework.Reports, The framework and utilities packages
+@section The package Framework.Fixes
+The package @code{Framework.Fixes} provides functionalities for generating fixes
+to the source code.
+
+The functionalities provided here allow to insert, delete, or replace
+elements of the source text. See the specification for details.
+
+If your rule knows how to fix a violation, just call the corresponding
+subprograms from this package. Note that it is better to delete some
+text than to replace it if possible, because the fixing tool
+(@code{adactl_fix}) handles conflicts between deletions better than
+conflicts between insertions/replacements. For example, to remove
+unnecessary parentheses, the rule
+@code{Simplifiable_Expressions(Parentheses)} removes the opening and
+closing parentheses, rather than replace the
+@code{A_Parenthesized_Expression} with its content (the
+@code{Expression_Parenthesized}).
+
+@node The package Framework.Language, The package Framework.Variables, The package Framework.Fixes, The framework and utilities packages
 @section The package Framework.Language
 The package @code{Framework.Language} provides functionalities
 for parsing parameters, as well as the rest of the command language;
@@ -331,27 +351,7 @@ most of the time), you @i{must} put a @code{pragma Elaborate
 result in circular elaboration problems; (@code{pragma Elaborate_All},
 as implicitely provided by GNAT, does @i{not} work).
 
-@node The package Framework.Scope_Manager, The package Framework.Variables, The package Framework.Language, The framework and utilities packages
-@section The package Framework.Scope_Manager
-The package @code{Framework.Scope_Manager} provides facilities for
-rules that need to follow scoping rules (i.e. which identifiers are
-visible at a given place). It provides subprograms to query currently
-active scopes, and a generic package that allows associating any kind
-of information to a scope. Scopes are automatically managed: the
-information will disappear when the corresponding scope is exited,
-except for information associated to package specifications that will
-be restored when the corresponding body is entered.
-
-The scope manager follows strictly the visibility rules for child
-units: when entering a public child unit, the scope from the visible
-part of the parent is restored, and when entering the private part of
-the child, the scope of the private part of the parent is restored. In
-the case of a private child, the full scope of the parent is restored
-upon entering.
-
-See the package specification for more details.
-
-@node The package Framework.Variables, The package Framework.Plugs, The package Framework.Scope_Manager, The framework and utilities packages
+@node The package Framework.Variables, The package Framework.Plugs, The package Framework.Language, The framework and utilities packages
 @section The package Framework.Variables
 This package manages rule variables (the ones that can be set with
 the @code{set} command of the language).
@@ -389,7 +389,7 @@ package, after the registration of the rule itself.
 The rule @code{Expressions} (in file @code{rules-expressions.adb}
 includes a typical usage of a rule variable.
 
-@node  The package Framework.Plugs, The package Rules, The package Framework.Variables, The framework and utilities packages
+@node  The package Framework.Plugs, The package Scope_Manager, The package Framework.Variables, The framework and utilities packages
 @section The package Framework.Plugs
 Procedures in the package @code{Framework.Plugs} are called during the
 traversal of the Ada source code. Unlike the rest of the framework,
@@ -399,7 +399,31 @@ necessary to @i{plug} the corresponding calls in this package. This is
 described in details in @ref{Plugging-in a new rule into the
 framework}.
 
-@node The package Rules, The package Utilities, The package Framework.Plugs, The framework and utilities packages
+@node The package Scope_Manager, The package Rules, The package Framework.Plugs, The framework and utilities packages
+@section The package Scope_Manager
+The package @code{Scope_Manager} provides facilities for rules that
+need to follow scoping rules (i.e. which identifiers are visible at a
+given place). It provides subprograms to query currently active
+scopes, and a generic package that allows associating any kind of
+information to a scope. Scopes are automatically managed: the
+information will disappear when the corresponding scope is exited,
+except for information associated to package specifications that will
+be restored when the corresponding body is entered.
+
+The scope manager follows strictly the visibility rules for child
+units: when entering a public child unit, the scope from the visible
+part of the parent is restored, and when entering the private part of
+the child, the scope of the private part of the parent is restored. In
+the case of a private child, the full scope of the parent is restored
+upon entering.
+
+See the package specification for more details.
+
+Note: this package used to be a child of @code{Framework} in previous
+versions of AdaControl. This has been changed to be an autonomous
+package to make it reusable by other programs.
+
+@node The package Rules, The package Utilities, The package Scope_Manager, The framework and utilities packages
 @section The package Rules
 The package @code{Rules} is (almost) empty. It's  purpose is to serve as the
 parent package of all rules.

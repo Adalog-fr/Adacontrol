@@ -11,15 +11,18 @@ if [ "$1" = "-h" ] ; then
     exit
 fi
 
-list=`find fixed/res -maxdepth 1 -name "${1:-*.ad[sb]}" -printf "%f "`
+list=`find fixed/res -maxdepth 1 -name "${1:-*}.ad[sb]" -printf "%f "`
+nb_fix=$(echo $list | wc -w)
+current=0
 for f in $list ; do
     while true ; do
-	echo -n "$f: [Diff, Interactive, Nothing, Quit]? "
+        current=$((current+1))
+	echo -n "$current/$nb_fix $f: [Diff, Interactive, Nothing, Quit]? "
 	read REP
 	case $REP in
 	    d | D )
                 echo "           <... ref, >... res"
-		diff ../ref/${test_case} ${test_case}  2>/dev/null
+		diff "$f" "fixed/res/$f"  2>/dev/null
                 break;;
 	    i | I )
                 "$MERGE" "$f" "fixed/res/$f"
