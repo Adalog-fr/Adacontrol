@@ -582,6 +582,15 @@ package body Framework.Rules_Manager is
                return False;
             end if;
             Failure ("Is_Banned: unexpected pragma", Element);
+         when A_Definition =>
+            case Definition_Kind (Element) is
+               when An_Aspect_Specification =>
+                  -- The only aspect that can appear as a body is "Import"
+                  -- Same as pragma Import
+                  return False;
+               when others =>
+                  Failure ("Is_Banned: unexpected definition");
+            end case;
          when others =>
             Failure ("Is_Banned: unexpected element", Element);
       end case;
