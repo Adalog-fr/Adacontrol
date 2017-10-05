@@ -50,6 +50,7 @@ package body Framework.Fixes is
    Comments_Only  : Boolean := True;
 
    Patch_File : Ada.Wide_Text_IO.File_Type;
+   Patch_Name : Unbounded_Wide_String;
    Seen_Files : Framework.String_Set.Set;
 
    Marker : constant Wide_Character := '!';
@@ -136,20 +137,20 @@ package body Framework.Fixes is
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Marker);
-      Put (Patch_File, "replace ");
       Put (Patch_File, Quote (From_File));
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.First_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.First_Column);
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
+      Put (Patch_File, "Replace:");
       Put (Patch_File, Extent.Last_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.Last_Column);
       New_Line (Patch_File);
 
       while Text_Generator.Has_More_Text loop
+         Put (Patch_File, Marker);
          Put_Line (Patch_File, Text_Generator.Next_Line);
       end loop;
    end Gen_Replace;
@@ -160,29 +161,43 @@ package body Framework.Fixes is
 
    -- Like previous procedure, using provided text
    procedure Gen_Replace (Extent : Span ; From_File : Wide_String; By : Wide_String) is
-      use Ada.Wide_Text_IO, Coord_IO;
+      use Ada.Strings.Wide_Fixed, Ada.Wide_Text_IO, Coord_IO;
       use Utilities;
+      Start : Natural := By'First;
+      Stop  : Natural;
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Marker);
-      Put (Patch_File, "replace ");
       Put (Patch_File, Quote (From_File));
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.First_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.First_Column);
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
+      Put (Patch_File, "Replace:");
       Put (Patch_File, Extent.Last_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.Last_Column);
       New_Line (Patch_File);
 
-      Put (Patch_File, By);
-      if By'Length < Delimiter_Image'Length
-        or else By (By'Last - Delimiter_Image'Length + 1 .. By'Last) /= Delimiter_Image
-      then
+      if By = "" then
+         Put (Patch_File, Marker);
          New_Line (Patch_File);
+         return;
+      end if;
+
+      while Start <= By'Last loop
+         Stop := Index (By, Pattern => Delimiter_Image, From => Start);
+         exit when Stop = 0;
+
+         Put (Patch_File, Marker);
+         Put (Patch_File, By (Start .. Stop - 1));
+         New_Line (Patch_File);
+         Start := Stop + Delimiter_Image'Length;
+      end loop;
+      if Start <= By'Last then   -- By was not terminated by Delimiter_Image
+         Put (Patch_File, Marker);
+         Put_Line (Patch_File, By (Start .. By'Last));
       end if;
    end Gen_Replace;
 
@@ -200,19 +215,20 @@ package body Framework.Fixes is
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Marker);
-      if End_Break then
-         Put (Patch_File, "inserteb ");
-      else
-         Put (Patch_File, "insert ");
-      end if;
       Put (Patch_File, Quote (From_File));
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
       Put (Patch_File, Pos.First_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Pos.First_Column);
+      Put (Patch_File, ':');
+      if End_Break then
+         Put (Patch_File, "Insert_Break");
+      else
+         Put (Patch_File, "Insert");
+      end if;
       New_Line (Patch_File);
 
+      Put (Patch_File, Marker);
       Put_Line (Patch_File, Text);
    end Gen_Insert;
 
@@ -229,16 +245,15 @@ package body Framework.Fixes is
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Marker);
-      Put (Patch_File, "delete ");
       Put (Patch_File, Quote (From_File));
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.First_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.First_Column);
-      Put (Patch_File, ' ');
+      Put (Patch_File, ':');
+      Put (Patch_File, "Delete:");
       Put (Patch_File, Extent.Last_Line);
-      Put (Patch_File, ',');
+      Put (Patch_File, ':');
       Put (Patch_File, Extent.Last_Column);
       New_Line (Patch_File);
    end Gen_Delete;
@@ -268,6 +283,7 @@ package body Framework.Fixes is
       if Is_Open (Patch_File) then
          if Comments_Only then
             Delete (Patch_File);
+            Delete (Seen_Files, To_Wide_String (Patch_Name));
          else
             Close (Patch_File);
          end if;
@@ -285,6 +301,7 @@ package body Framework.Fixes is
          Close (Patch_File);
          if Is_Present (Seen_Files, File_Name) then
             Open (Patch_File, Append_File, To_String (File_Name));
+            Comments_Only := False; -- File not previously deleted => we had non-comments fixes
          else
             Create (Patch_File, Out_File, To_String (File_Name));
          end if;
@@ -292,10 +309,12 @@ package body Framework.Fixes is
          when Name_Error =>
             -- File does not exist
             Create (Patch_File, Out_File, To_String (File_Name));
+            Comments_Only := True;
       end;
 
       Generate_Fixes := True;
       Add (Seen_Files, File_Name);
+      Patch_Name := To_Unbounded_Wide_String (File_Name);
    end Set_Patch_File;
 
 
@@ -313,24 +332,14 @@ package body Framework.Fixes is
    -- Message --
    -------------
 
-   procedure Message (Control : Control_Kinds; Text : Wide_String) is
+   procedure Message (Text : Wide_String) is
       use Ada.Wide_Text_IO;
    begin
       if not Generate_Fixes then
          return;
       end if;
 
-      Put (Patch_File, Marker);
-      case Control is
-         when Check =>
-            Put (Patch_File, "check ");
-         when Search =>
-            Put (Patch_File, "search ");
-         when Count =>
-            Utilities.Failure ("Fixes.Message: control=count");
-      end case;
-      Put (Patch_File, Text);
-      New_Line (Patch_File);
+      Put_Line (Patch_File, Text);
    end Message;
 
    -------------

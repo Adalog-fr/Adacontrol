@@ -42,7 +42,7 @@ package Framework.Fixes is
    function "and" (Left : Wide_String; Right : Wide_String) return Wide_String;
    -- Returns the concatenation of the Left and Right, separated by an indication of a line break
 
-   procedure Message (Control : Control_Kinds; Text : Wide_String);
+   procedure Message (Text : Wide_String);
 
    procedure Replace (Original : Asis.Element;                     By : Wide_String);
    procedure Replace (Original : Asis.Element;                     By : Asis.Element);

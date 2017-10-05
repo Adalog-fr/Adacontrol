@@ -614,8 +614,8 @@ def on_GPS_start(H):
     elif gps_version.find('.') == 1:
         gps_version = '0' + gps_version
 
-    #                  1    2     3      456        7                           8
-    long_mess_str = r"^(.+):(\d+):(\d+): (((Found:)|(Error:|Parameter:|Syntax:))( .*?):.*)$"
+    #                    1    2     3      456        7                           8
+    long_mess_str = r"^!?(.+):(\d+):(\d+): (((Found:)|(Error:|Parameter:|Syntax:))( .*?):.*)$"
     long_mess_pat = re.compile(long_mess_str)
     #                              1       2                                  3
     short_mess_pat = re.compile(r"^(\d+: )?(Found:|Error:|Parameter:|Syntax:) (.*)$")

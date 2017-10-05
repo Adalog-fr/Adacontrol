@@ -38,7 +38,7 @@ procedure Adactl_Fix is
    use Ada.Strings.Unbounded;
    use Ada.Text_IO;
 
-   Version : constant String    := "Adactl_Fix V0.1";
+   Version : constant String    := "Adactl_Fix V1.0a2";
    Marker  : constant Character := '!';
 
    --------------------------------------------
@@ -81,7 +81,9 @@ procedure Adactl_Fix is
    package String_Vector is new Ada.Containers.Vectors (Positive, Unbounded_String);
    use String_Vector;
 
-   type Fix_Kind is (Insert, Insert_Break, Replace, Delete, No_Fix);
+   type Fix_Kind is (Insert, Insert_Break, Replace, Delete, Not_A_Fix);
+   subtype Insert_Kinds  is Fix_Kind range Insert .. Insert_Break;
+   subtype Range_Fixes   is Fix_Kind range Replace .. Delete;
    subtype True_Fix_Kind is Fix_Kind range Insert .. Delete;
    type Fix_Descriptor (Kind : True_Fix_Kind := Insert) is
       record
@@ -149,13 +151,14 @@ procedure Adactl_Fix is
    ----------
 
    function Find (Char : Character; From : Positive; Into : String) return Positive is
-      -- Raises Constraint_Error if not found
-      Inx : Positive := From;
+      -- Return Into'Last + 1 if not found
    begin
-      while Into (Inx) /= Char loop
-         Inx := Inx + 1;
+      for Inx in Positive range From .. Into'Last loop
+         if Into (Inx) = Char then
+            return Inx;
+         end if;
       end loop;
-      return Inx;
+      return Into'Last + 1;
    end Find;
 
    -------------
@@ -211,74 +214,87 @@ procedure Adactl_Fix is
       In_Replacement : Boolean := False;
       Kind           : Fix_Kind;
 
-      procedure Fix_File_Error;
+      procedure Fix_File_Error (Err_Col : Positive; Err_Message : String := "");
       pragma No_Return (Fix_File_Error);
-      procedure Fix_File_Error is
+      procedure Fix_File_Error (Err_Col : Positive; Err_Message : String := "") is
       begin
-         raise Incorrect_Fix_File
-           with Name (Fix_File) & ':'
-           & Ada.Text_IO.Count'Image (Line (Fix_File)) & ':'
-           & Ada.Text_IO.Count'Image (Col (Fix_File));
+         if Err_Message /= "" then
+            Message ("*** " & Err_Message);
+         end if;
+
+         raise Incorrect_Fix_File with Name (Fix_File) & ':'
+                                     & Ada.Text_IO.Count'Image (Line (Fix_File)) & ':'
+                                     & Positive'Image (Err_Col);
       end Fix_File_Error;
 
-      type Format_Kind is (Short, Long);
-      function Parse (Source : String; Format : Format_Kind) return Position is
-         -- Expected syntax: <file name> <Start line>,<Start col>[ <End line>,<End col>]
-         Result : Position;
-         Start  : Positive;
-         Stop   : Positive;
+      procedure Parse (Source : in String; Pos : out Position; Kind : out Fix_Kind) is
+         -- Expected syntax: <file name>:<Start line>:<Start col>:<Fix kind>[:<End line>:<End col>]
+         Start : Positive;
+         Stop  : Positive;
 
       begin
          --## rule off ASSIGNMENTS ## Must fill elements of record one by one, cannot use aggregate
-         Start := Source'First;
-         Stop  := Find (' ', From => Start + 1, Into => Source);
-         Result.File_Name := To_Unbounded_String (Source (Start + 1 .. Stop - 2));
-         -- TBSL: handle quotes better
-
+         if Source (Source'First) = '"' then
+            Start := Source'First + 1;
+            Stop  := Find ('"', From => Start, Into => Source);
+            if Source (Stop + 1) /= ':' then
+               Fix_File_Error(Stop+1, "':' expected");
+            end if;
+            Pos.File_Name := To_Unbounded_String (Source (Start .. Stop - 1));
+            Stop := Stop + 1;
+            -- TBSL: handle quotes better
+         else
+            Start := Source'First;
+            Stop  := Find (':', From => Start, Into => Source);
+            if Stop = Start + 1 then
+               -- Assume the ':' is from a drive letter
+               Stop  := Find (':', From => Start + 2, Into => Source);
+            end if;
+            Pos.File_Name := To_Unbounded_String (Source (Start .. Stop - 1));
+         end if;
 
          Start := Stop + 1;
-         Stop  := Find (',', From => Start + 1, Into => Source);
-         Result.Start_Pos.Line := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
+         Stop  := Find (':', From => Start + 1, Into => Source);
+         Pos.Start_Pos.Line := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
 
-         case Format is
-            when Short =>
-               Start := Stop + 1;
-               Stop  := Source'Last + 1;
-               Result.Start_Pos.Col := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
-               Result.End_Pos       := Result.Start_Pos;
-            when Long =>
-               Start := Stop + 1;
-               Stop  := Find (' ', From => Start + 1, Into => Source);
-               Result.Start_Pos.Col := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
+         Start := Stop + 1;
+         Stop  := Find (':', From => Start + 1, Into => Source);
+         Pos.Start_Pos.Col := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
 
-               Start := Stop + 1;
-               Stop  := Find (',', From => Start + 1, Into => Source);
-               Result.End_Pos.Line := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
+         Start := Stop + 1;
+         Stop  := Find (':', From => Start + 1, Into => Source);
+         begin
+            Kind := Fix_Kind'Value (Source (Start .. Stop - 1));
+         exception
+            when Constraint_Error =>
+               Kind := Not_A_Fix;
+         end;
 
-               Start := Stop + 1;
-               Stop  := Source'Last + 1;
-               Result.End_Pos.Col := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
-         end case;
-         return Result;
+         if Kind in Range_Fixes then
+            Start := Stop + 1;
+            Stop  := Find (':', From => Start + 1, Into => Source);
+            Pos.End_Pos.Line := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
+
+            Start := Stop + 1;
+            Stop  := Source'Last + 1;
+            Pos.End_Pos.Col := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
+         else
+            Pos.End_Pos := Pos.Start_Pos;
+         end if;
          --## rule on ASSIGNMENTS
       exception
-         when Constraint_Error =>
-            Fix_File_Error;
+         when Occur : Constraint_Error =>
+            Message ("*** " & Ada.Exceptions.Exception_Information (Occur));
+            Fix_File_Error (Start, "incorrect value");
       end Parse;
 
       procedure Add_Fix (Loc : Position; Fix : Fix_Descriptor) is
       -- Add fix to Kept_Fixes, unless there is an overlap.
-      -- TBSL:
       -- In case of overlap, keep the existing one, unless:
-      --   - one is fully inside the other one: keep the inner one
+      --   - TBSL one is fully inside the other one: keep the inner one
+      --   - Exactly one is an insertion whose position is equal to the end of the previous one
+      --     or the start of the next one: keep both
       --   - one is a deletion that fully includes the other one: keep the deletion
-      -- Keep the other one in Ignored_Fixes
-
-      -- For the moment
-      -- If the new fix overlaps an existing fix, put it in Ignored_Fixes
-
-      -- Note that fixes are added to Ignored_Fixes using Include, therefore overriding any
-      -- fix with exactly the same position. We don't care, since AdaControl will be run again...
 
          Previous_Curs : constant Fix_Maps.Cursor := Kept_Fixes.Floor (Loc);
          Previous_Pos  : Position;
@@ -291,7 +307,16 @@ procedure Adactl_Fix is
             Previous_Pos := Key (Previous_Curs);
             if Previous_Pos.File_Name = Loc.File_Name then
                Previous_Fix := Element (Previous_Curs);
-               if Previous_Pos.End_Pos >= Loc.End_Pos and then Previous_Fix.Kind = Delete then
+               if Fix.Kind in Insert_Kinds and Previous_Fix.Kind in Insert_Kinds
+                 and Loc.Start_Pos = Previous_Pos.Start_Pos
+               then
+                  -- Two inserts at the same position, ignore this one
+                  Conflicts_Found := True;
+                  return;
+               elsif Previous_Fix.Kind in Insert_Kinds and Loc.Start_Pos = Previous_Pos.Start_Pos then
+                  -- Only one is insert => OK
+                  null;
+               elsif Previous_Pos.End_Pos >= Loc.End_Pos and then Previous_Fix.Kind = Delete then
                   -- Already have a Delete that covers this fix => Ignore this fix
                   return;
                elsif Previous_Pos.End_Pos >= Loc.Start_Pos then
@@ -304,7 +329,10 @@ procedure Adactl_Fix is
 
          if Next_Curs /= Fix_Maps.No_Element then
             Next_Pos := Key (Next_Curs);
-            if Next_Pos.File_Name = Loc.File_Name then
+            if Fix.Kind in Insert_Kinds and Loc.Start_Pos = Next_Pos.Start_Pos then
+               -- Only one is insert => OK
+               null;
+            elsif Next_Pos.File_Name = Loc.File_Name then
                if Loc.End_Pos >= Next_Pos.End_Pos and then Fix.Kind = Delete then
                   -- This is a Delete fix that covers a previous fix => remove previous
                   Kept_Fixes.Delete (Loc);
@@ -334,41 +362,28 @@ procedure Adactl_Fix is
       loop    -- Exit on End_Error
          declare
             Line : constant String := Get_Line (Fix_File);
-            Stop : Positive;
          begin
-            if Line /= "" and then Line (Line'First) = Marker then
+            if Line (Line'First) /= Marker then   -- Line is never empty, it contains at least the marker
                if In_Replacement then
                   Add_Fix (Fix_Pos, Create (Kind, Repl_Start, Replacements.Last_Index));
                   In_Replacement := False;
                end if;
 
-               Stop := Find (' ', From => 2, Into => Line) - 1;
-               if Line (2 .. Stop) = "replace" then
-                  Kind    := Replace;
-                  Fix_Pos := Parse (Line (10 .. Line'Last), Format => Long);
-               elsif Line (2 .. Stop) = "delete" then
-                  Kind := Delete;
-                  Fix_Pos := Parse (Line (9 .. Line'Last), Format => Long);
-
-                  -- Add fix immediately, since there are no replacement lines to wait for
-                  Add_Fix (Fix_Pos, Create (Kind));
-               elsif Line (2 .. Stop) = "insert" then
-                  Kind    := Insert;
-                  Fix_Pos := Parse (Line (9 .. Line'Last), Format => Short);
-               elsif Line (2 .. Stop) = "inserteb" then
-                  Kind    := Insert_Break;
-                  Fix_Pos := Parse (Line (11 .. Line'Last), Format => Short);
-               else
-                  Kind := No_Fix;
-               end if;
-               if Kind not in No_Fix | Delete then
-                  In_Replacement := True;
-                  Repl_Start     := Replacements.Last_Index + 1;
-               end if;
+               Parse (Line, Fix_Pos, Kind);
+               case Kind is
+                  when Not_A_Fix =>
+                     null;
+                  when Delete =>
+                     -- Add fix immediately, since there are no replacement lines to wait for
+                     Add_Fix (Fix_Pos, Create (Kind));
+                  when others =>
+                     In_Replacement := True;
+                     Repl_Start     := Replacements.Last_Index + 1;
+               end case;
             elsif In_Replacement then
-               Replacements.Append (To_Unbounded_String (Line));
+               Replacements.Append (To_Unbounded_String (Line (Line'First + 1 .. Line'Last)));
             else
-               Fix_File_Error;
+               Fix_File_Error (1, "Unexpected line format");
             end if;
          end;
       end loop;
@@ -378,10 +393,13 @@ procedure Adactl_Fix is
             Add_Fix (Fix_Pos, Create (Kind, Repl_Start, Replacements.Last_Index));
          end if;
          Close (Fix_File);
-      when others =>
-         Message ("*** " & Name (Fix_File) & ':'
-                  & Ada.Text_IO.Count'Image (Line (Fix_File)) & ':'
-                  & Ada.Text_IO.Count'Image (Col (Fix_File)));
+      when Occur : others =>
+         if Is_Open (Fix_File) then
+            Message ("*** " & Fix_Name & ':'
+                     & Ada.Text_IO.Count'Image (Line (Fix_File)) & ':'
+                     & Ada.Text_IO.Count'Image (Col (Fix_File)));
+         end if;
+         Message ("    " & Ada.Exceptions.Exception_Information (Occur));
 
          if Is_Open (Fix_File) then
             Close (Fix_File);

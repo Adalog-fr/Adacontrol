@@ -428,14 +428,12 @@ package body Framework.Reports is
          end case;
 
          if Loc = Null_Location then
-            Fixes.Message (Ctl_Kind,
-                           ""
+            Fixes.Message (""
                            & Title & ": "
                            & Label & ": "
                            & Msg);
          else
-            Fixes.Message (Ctl_Kind,
-                           Image (Loc) & ": "
+            Fixes.Message (Image (Loc) & ": "
                            & Title & ": "
                            & Label & ": "
                            & Msg);

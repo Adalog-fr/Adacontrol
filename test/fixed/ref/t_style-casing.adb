@@ -49,7 +49,7 @@ begin
    for I in S
      '
      Range 
-   LOOP                                 -- Casing_Keyword, Multiple_Stmts
+   loop                                 -- Casing_Keyword, Multiple_Stmts
       null;                                     -- Casing_Keyword
    end loop;                                    -- Casing_Keyword x2
    for I in S'Range (Dim) loop                  -- Casing_Identifier
