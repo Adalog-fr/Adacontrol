@@ -81,6 +81,21 @@ package body Adactl_Options is
       Option_Error (Exception_Message (Occur));
    end Option_Error;
 
+
+   ----------------------
+   -- Is_Relative_Name --
+   ----------------------
+
+   function Is_Relative_Name (Name : String) return Boolean is
+   -- TBSL: to be replaced by Ada.Directories.Hierarchical_File_Names.Is_Relative_Name when available
+   begin
+      return  (Name (Name'First) /= '/' and Name (Name'First) /= '\')
+        and then (Name'Length < 3
+                  or else Name (Name'First + 1) /= ':'
+                  or else (Name (Name'First + 2) /= '/' or Name (Name'First + 2) = '\'));
+   end Is_Relative_Name;
+
+
    ---------------------
    -- Help_On_Options --
    ---------------------
@@ -376,15 +391,6 @@ package body Adactl_Options is
             use Implementation_Options.Project_File, Ada.Directories;
             Project_File : constant String := Value (Option => 'p', Explicit_Required => True);
             Rule_File    : constant String := Tool_Switch (Project_File, "adacontrol", After => "-f");
-
-            function Is_Relative_Name (Name : String) return Boolean is
-            -- to be replaced by Ada.Directories.Hierarchical_File_Names.Is_Relative_Name when available
-            begin
-               return  (Name (Name'First) /= '/' and Name (Name'First) /= '\')
-                 and then (Name'Length < 3
-                           or else Name (Name'First + 1) /= ':'
-                           or else (Name (Name'First + 2) /= '/' or Name (Name'First + 2) = '\'));
-            end Is_Relative_Name;
          begin
             if Rule_File /= "" then
                if Is_Relative_Name (Rule_File) then
@@ -420,10 +426,6 @@ package body Adactl_Options is
       --
       -- Check options
       --
-      if Action /= Check and Parameter_Count = 0 then
-         Option_Error ("At least one unit/file required");
-      end if;
-
       if Action = Dependents then
          if Is_Present (Option => 'l') or Is_Present (Option => 'f') then
             Option_Error ("No rule can be specified with -D option");
@@ -438,9 +440,37 @@ package body Adactl_Options is
       -- Add units
       --
       if Action /= Check then
-         for I in Natural range 1 .. Parameter_Count loop
-            Add_Unit (To_Wide_String (Parameter (I)));
-         end loop;
+         if Parameter_Count = 0 then
+            if Is_Present (Option => 'p')
+              and then Implementation_Options.Project_File.Is_Appropriate (Value (Option            => 'p',
+                                                                                  Explicit_Required => True))
+            then
+               declare
+                  use Implementation_Options.Project_File, Ada.Directories;
+                  Project_File  : constant String := Value (Option => 'p', Explicit_Required => True);
+                  Indirect_File : constant String := Tool_Switch (Project_File, "adacontrol", After => "-@");
+               begin
+                  if Indirect_File = "" then
+                     Option_Error ("No unit/file specified and no indirect file in project");
+                  else
+                     if Is_Relative_Name (Indirect_File) then
+                        Add_Unit ('@' & To_Wide_String (Compose (Compose (Containing_Directory (Project_File),
+                                                                          Containing_Directory (Indirect_File)),
+                                                                Simple_Name (Indirect_File))));
+                     else
+                        Add_Unit ('@' & To_Wide_String (Indirect_File));
+                     end if;
+                  end if;
+               end;
+            else
+               Option_Error ("At least one unit/file required");
+            end if;
+         else
+            for I in Natural range 1 .. Parameter_Count loop
+               Add_Unit (To_Wide_String (Parameter (I)));
+            end loop;
+         end if;
+
          if not Body_Found then
             Spec_Option := On;
          end if;

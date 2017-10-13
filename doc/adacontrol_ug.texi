@@ -751,7 +751,7 @@ avoid processing reusable components, that are not part of a
 project. For example, if you want to run AdaControl on itself, you
 should use the following command:
 @example
-adactl -f my_rules_file.aru -r adactl-asis-a4g
+adactl -f my_rules_file.aru -r adactl-asis-a4g-gnatcoll
 @end example
 This applies the rules from the file @code{my_rules_files.aru} to
 AdaControl itself, but not to units that are part of ASIS (units
@@ -774,6 +774,10 @@ Ex:
 @example
 adactl -f my_rules.aru @@unit_file.txt
 @end example
+
+If no input units are specified on the command line, but a project
+file is given which specifies a units file, the units from the units
+file are processed. @xref{Project files}.
 
 @node Commands, Output file, Input units, Command line parameters and options
 @subsection Commands
@@ -876,7 +880,9 @@ file; Ada units to analyze will be searched in all ``source_dirs''
 specified in the project file or one of the projects it depends on
 (directly or indirectly). In addition, if the project file specifies a
 rules file for AdaControl, this file will be considered, unless there
-is also an explicit ``-f'' option.
+is also an explicit ``-f'' option. Similarly, if the project file
+specifies a units file and no units are given on the command line, the
+units from the file are processed.
 
 Ex:
 @example
