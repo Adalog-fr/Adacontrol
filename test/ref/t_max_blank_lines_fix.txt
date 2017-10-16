@@ -1,4 +1,6 @@
 t_max_blank_lines.adb:6:1: Found: MAX_BLANK_LINES: Too many consecutive blank lines (2)
-"C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_max_blank_lines.adb":6:1:Delete:7:0
+t_max_blank_lines.adb:6:1: Delete:7:0
 t_max_blank_lines.adb:10:1: Error: Too_Many: Too many consecutive blank lines (3)
-"C:\donnees\profess\ada\programmes\semtools\adacontrol\wks\test\t_max_blank_lines.adb":10:1:Delete:11:0
+t_max_blank_lines.adb:10:1: Delete:11:0
+t_max_blank_lines.adb:14:1: Error: Too_Many: Too many consecutive blank lines (4)
+t_max_blank_lines.adb:14:1: Delete:16:0

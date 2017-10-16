@@ -26,6 +26,8 @@ doc/*_ug.txt
 src/adactl
 src/pfni
 src/ptree
+src/gen_adactl
+src/adactl_fix
 
 test/res/
 test/fixed/res

@@ -31,13 +31,7 @@ with
 
 -- ASIS
 with
-   Asis.Clauses,
-   Asis.Compilation_Units,
-   Asis.Elements;
-
--- Adalog
-with
-   Utilities;
+   Asis.Clauses;
 
 -- AdaControl
 with
@@ -131,22 +125,17 @@ package body Framework.Fixes is
 
    -- Replace text covered by Extent (which can be empty for simple insertions, or cover
    -- several lines) by text fetched from Text_Generator
-   procedure Gen_Replace (Extent : Span; From_File : Wide_String) is
+   procedure Gen_Replace (From, To : Location) is
       use Ada.Wide_Text_IO, Coord_IO;
-      use Utilities;
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Quote (From_File));
+      Put (Patch_File, Image (From));
       Put (Patch_File, ':');
-      Put (Patch_File, Extent.First_Line);
+      Put (Patch_File, " Replace:");
+      Put (Patch_File, To.First_Line);
       Put (Patch_File, ':');
-      Put (Patch_File, Extent.First_Column);
-      Put (Patch_File, ':');
-      Put (Patch_File, "Replace:");
-      Put (Patch_File, Extent.Last_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, Extent.Last_Column);
+      Put (Patch_File, To.First_Column);
       New_Line (Patch_File);
 
       while Text_Generator.Has_More_Text loop
@@ -160,24 +149,19 @@ package body Framework.Fixes is
    -----------------
 
    -- Like previous procedure, using provided text
-   procedure Gen_Replace (Extent : Span ; From_File : Wide_String; By : Wide_String) is
+   procedure Gen_Replace (From, To : Location; By : Wide_String) is
       use Ada.Strings.Wide_Fixed, Ada.Wide_Text_IO, Coord_IO;
-      use Utilities;
       Start : Natural := By'First;
       Stop  : Natural;
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Quote (From_File));
+      Put (Patch_File, Image (From));
       Put (Patch_File, ':');
-      Put (Patch_File, Extent.First_Line);
+      Put (Patch_File, " Replace:");
+      Put (Patch_File, To.First_Line);
       Put (Patch_File, ':');
-      Put (Patch_File, Extent.First_Column);
-      Put (Patch_File, ':');
-      Put (Patch_File, "Replace:");
-      Put (Patch_File, Extent.Last_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, Extent.Last_Column);
+      Put (Patch_File, To.First_Column);
       New_Line (Patch_File);
 
       if By = "" then
@@ -208,28 +192,34 @@ package body Framework.Fixes is
    -- Breaks the current line at Pos, inserting Text in front of the new line
    -- (before the text that follows Pos)
    -- If End_Break, also add line break after Text.
-   procedure Gen_Insert (Pos : Span; From_File : Wide_String; Text : Wide_String; End_Break : Boolean := False) is
+   type Break_Addition is (None, Before, After, Both);
+   procedure Gen_Insert (Pos : Location; Text : Wide_String; Add_Break : Break_Addition := None) is
       -- Breaks line
       use Ada.Wide_Text_IO, Coord_IO;
-      use Utilities;
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Quote (From_File));
+      Put (Patch_File, Image (Pos));
       Put (Patch_File, ':');
-      Put (Patch_File, Pos.First_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, Pos.First_Column);
-      Put (Patch_File, ':');
-      if End_Break then
-         Put (Patch_File, "Insert_Break");
-      else
-         Put (Patch_File, "Insert");
-      end if;
+      Put (Patch_File, " Insert");
       New_Line (Patch_File);
 
+      case Add_Break is
+         when Before | Both =>
+            Put (Patch_File, Marker);
+            New_Line (Patch_File);
+         when None | After =>
+            null;
+      end case;
       Put (Patch_File, Marker);
       Put_Line (Patch_File, Text);
+      case Add_Break is
+         when After | Both =>
+            Put (Patch_File, Marker);
+            New_Line (Patch_File);
+         when None | Before =>
+            null;
+      end case;
    end Gen_Insert;
 
    ----------------
@@ -239,34 +229,19 @@ package body Framework.Fixes is
    -- Delete the corresponding Span
    -- Formally equivalent to a Gen_Replace with "", but it is easier for optimizations of conflicts in the fixer
    -- to know that it is a deletion
-   procedure Gen_Delete (Extent : Span ; From_File : Wide_String) is
+   procedure Gen_Delete (From, To : Location) is
       use Ada.Wide_Text_IO, Coord_IO;
-      use Utilities;
    begin
       Comments_Only := False;
 
-      Put (Patch_File, Quote (From_File));
+      Put (Patch_File, Image (From));
       Put (Patch_File, ':');
-      Put (Patch_File, Extent.First_Line);
+      Put (Patch_File, " Delete:");
+      Put (Patch_File, To.First_Line);
       Put (Patch_File, ':');
-      Put (Patch_File, Extent.First_Column);
-      Put (Patch_File, ':');
-      Put (Patch_File, "Delete:");
-      Put (Patch_File, Extent.Last_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, Extent.Last_Column);
+      Put (Patch_File, To.First_Column);
       New_Line (Patch_File);
    end Gen_Delete;
-
-   ----------------------
-   -- Source_File_Name --
-   ----------------------
-
-   function Source_File_Name (Elem : Asis.Element) return Wide_String is
-      use Asis.Compilation_Units, Asis.Elements;
-   begin
-      return Text_Name (Enclosing_Compilation_Unit (Elem));
-   end Source_File_Name;
 
    -------------------------------------------------------------------------------------------
    --  Exported services
@@ -353,7 +328,7 @@ package body Framework.Fixes is
          return;
       end if;
 
-      Gen_Replace (Element_Span (Original), Source_File_Name (Original), By);
+      Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original), By => By);
    end Replace;
 
    -------------
@@ -367,7 +342,7 @@ package body Framework.Fixes is
       end if;
 
       Text_Generator.Init (Element_Span (By), Original);
-      Gen_Replace (Element_Span (Original), Source_File_Name (Original));
+      Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original));
    end Replace;
 
    -------------
@@ -385,7 +360,7 @@ package body Framework.Fixes is
                             Last_Line      => Element_Span (By (By'Last)).Last_Line,
                             Last_Column    => Element_Span (By (By'Last)).Last_Column),
                            Base_Element => Original);
-      Gen_Replace (Element_Span (Original), Source_File_Name (Original));
+      Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original));
    end Replace;
 
    -------------
@@ -398,12 +373,7 @@ package body Framework.Fixes is
          return;
       end if;
 
-      Gen_Replace ((First_Line   => From.First_Line,
-                    First_Column => From.First_Column,
-                    Last_Line    => From.First_Line,
-                    Last_Column  => From.First_Column + Length - 1),
-                   Get_File_Name (From),
-                   By);
+      Gen_Replace (From, From + Length - 1, By);
    end Replace;
 
    ------------
@@ -423,27 +393,18 @@ package body Framework.Fixes is
             Place_Span.First_Column := 1;
             case Place is
                when Before =>
-                  Gen_Insert (Place_Span, Source_File_Name (Elem), Text, End_Break => True);
+                  Gen_Insert (Get_Location (Elem), Text, Add_Break => Both);
                when After =>
-                  Place_Span.First_Line := Place_Span.First_Line + 1;
-                  Gen_Insert (Place_Span, Source_File_Name (Elem), Text, End_Break => True);
+                  Gen_Insert (Get_Location (Elem) + 1, Text, Add_Break => Both);
             end case;
          else
             case Place is
                when Before =>
-                  Gen_Replace ((First_Line   => Place_Span.First_Line,
-                                First_Column => Place_Span.First_Column,
-                                Last_Line    => Place_Span.First_Line,
-                                Last_Column  => Place_Span.First_Column - 1),
-                               Source_File_Name (Elem),
-                               Text);
+                  Gen_Insert (Get_Location (Elem), Text, Add_Break => None);
                when After =>
-                  Gen_Replace ((First_Line   => Place_Span.Last_Line,
-                                First_Column => Place_Span.Last_Column + 1,
-                                Last_Line    => Place_Span.Last_Line,
-                                Last_Column  => Place_Span.Last_Column),
-                               Source_File_Name (Elem),
-                               Text);
+                  Place_Span.First_Line   := Place_Span.Last_Line;
+                  Place_Span.First_Column := Place_Span.Last_Column+1;
+                  Gen_Insert (Get_End_Location (Elem) + 1, Text, Add_Break => None);
             end case;
          end if;
       end;
@@ -459,12 +420,7 @@ package body Framework.Fixes is
          return;
       end if;
 
-      Gen_Replace ((First_Line   => From.First_Line,
-                    First_Column => From.First_Column,
-                    Last_Line    => From.First_Line,
-                    Last_Column  => From.First_Column - 1),
-                   Get_File_Name (From),
-                   Text);
+      Gen_Insert (From, Text, Add_Break => None);
    end Insert;
 
    -----------
@@ -478,10 +434,7 @@ package body Framework.Fixes is
          return;
       end if;
 
-      Gen_Insert ((First_Line   | Last_Line   => Place.First_Line,
-                   First_Column | Last_Column => Place.First_Column),
-                  Get_File_Name (Place),
-                  Indent_New * ' ');
+      Gen_Insert (Place, Indent_New * ' ', Add_Break => Before);
    end Break;
 
    ------------
@@ -494,7 +447,8 @@ package body Framework.Fixes is
          return;
       end if;
 
-      Gen_Delete (Element_Span (Elem), Source_File_Name (Elem));
+      Gen_Delete (From => Get_Location     (Elem),
+                  To   => Get_End_Location (Elem));
    end Delete;
 
    ------------
@@ -507,16 +461,8 @@ package body Framework.Fixes is
          return;
       end if;
 
-      declare
-         Head_Span : constant Span := Element_Span (Elems (Elems'First));
-         Tail_Span : constant Span := Element_Span (Elems (Elems'Last));
-      begin
-         Gen_Delete ((First_Line   => Head_Span.First_Line,
-                      First_Column => Head_Span.First_Column,
-                      Last_Line    => Tail_Span.Last_Line,
-                      Last_Column  => Tail_Span.Last_Column),
-                     Source_File_Name (Elems (Elems'First)));
-      end;
+      Gen_Delete (From => Get_Location     (Elems (Elems'First)),
+                  To   => Get_End_Location (Elems (Elems'Last)));
    end Delete;
 
    ------------
@@ -529,11 +475,7 @@ package body Framework.Fixes is
          return;
       end if;
 
-      Gen_Delete ((First_Line   => From.First_Line,
-                   First_Column => From.First_Column,
-                   Last_Line    => To.First_Line,
-                   Last_Column  => To.First_Column - 1),
-                   Get_File_Name (From));
+      Gen_Delete (From, To - 1);
    end Delete;
 
    -----------------
@@ -541,7 +483,7 @@ package body Framework.Fixes is
    -----------------
 
    procedure List_Remove (Inx : Asis.List_Index; From : Asis.Element) is
-      use Asis.Clauses, Asis.Compilation_Units, Asis.Elements;
+      use Asis.Clauses;
    begin
       if not (Generate_Fixes and Report_Enabled) then
          return;
@@ -550,7 +492,6 @@ package body Framework.Fixes is
       --  TBSL more clever removal if all elems removed
       declare
          Elements : constant Asis.Element_List := Clause_Names (From);
-         S1, S2   : Span;
       begin
          if Elements'Length = 1 then
             -- Remove the whole clause
@@ -558,11 +499,8 @@ package body Framework.Fixes is
          elsif Inx /= Elements'Last then
             Delete (Get_Location (Elements (Inx)), Get_Location (Elements (Inx + 1)));
          else
-            S1 := Element_Span (Elements (Inx - 1));
-            S2 := Element_Span (From);  -- Last character of span of From is ';'
-            Gen_Replace ((S1.Last_Line, S1.Last_Column + 1, S2.Last_Line, S2.Last_Column - 1),
-                         Text_Name (Enclosing_Compilation_Unit (From)),
-                         "");
+            -- Last character of span of From is ';'
+            Delete (From => Get_End_Location (Elements (Inx - 1)) +1, To => Get_End_Location (From));
          end if;
       end;
    end List_Remove;
@@ -573,7 +511,6 @@ package body Framework.Fixes is
 
    procedure Insert (Fix : in out Incremental_Fix; Text : Wide_String; Place : Insert_Place; Elem : Asis.Element) is
       use Fix_List;
-      use Asis.Elements;
 
       Curs         : Cursor := First (Fix);
       Current      : Delayed_Fix;

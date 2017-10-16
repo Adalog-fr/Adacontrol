@@ -44,6 +44,9 @@ package Framework.Fixes is
 
    procedure Message (Text : Wide_String);
 
+   -- This package provides the facilities for generating fixes.
+   -- Since a fix corresponds to a message, these services must be called after the corresponding call to Report
+
    procedure Replace (Original : Asis.Element;                     By : Wide_String);
    procedure Replace (Original : Asis.Element;                     By : Asis.Element);
    procedure Replace (Original : Asis.Element;                     By : Asis.Element_List);

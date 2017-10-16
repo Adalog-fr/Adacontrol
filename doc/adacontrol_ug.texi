@@ -659,7 +659,7 @@ force Ada-95 the same way by using @code{@b{pragma} Ada_95} instead.
 * Command line parameters and options::
 * Return codes::
 * Environment variable and default settings::
-* Automatic fixing::
+* Fixing violations::
 * Interactive mode::
 * Other execution modes::
 * Running AdaControl from GPS::
@@ -889,7 +889,6 @@ Ex:
 adactl -f my_rules.aru -p proj.gpr proc.adb
 @end example
 
-
 Alternatively, an old emacs project file (the file with a ``.adp''
 extension used by the Ada mode of Emacs and older versions of
 AdaControl) can also be specified with the `` -p'' option. AdaControl
@@ -1008,7 +1007,7 @@ specification of units.
 10: There was an internal failure of AdaControl.
 @end itemize
 
-@node Environment variable and default settings, , Return codes, Program Usage
+@node Environment variable and default settings, Fixing violations, Return codes, Program Usage
 @section Environment variable and default settings
 If the environment variable ``ADACTLINI'' is set, its content is taken
 as a set of commands (separated by semi-colons) that are executed
@@ -1020,14 +1019,15 @@ For example, you can set ADACTLINI to ``set format Gnat_Short'' if you
 prefer having you messages in short format rather than the (default)
 long format.
 
-@node Automatic fixing, Interactive mode, Environment variable and default settings, Program Usage
-@section Automatic fixing
+@node  Fixing violations, Interactive mode, Environment variable and default settings, Program Usage
+@section Fixing violations
 The ``-P'' option, followed by a file name, directs AdaControl to
 produce an intermediate file (the ``fix file'') containing directives
-to fix the source that violated some rule.  If the fix file already
+to fix the source that violated some rule. If the fix file already
 exists, it is overwritten.
 
-This file can then be processed by the @code{adactl_fix} utility. The
+@subsection Automatic fixing
+The fix file can be processed by the @code{adactl_fix} utility. The
 syntax is:
 @example
 adactl_fix [-v] [-o <output-prefix>] <fix_file>...
@@ -1051,6 +1051,12 @@ output files being in the same directory, with a "new-" prepended to
 the name. Adactl_Fix will overwrite any existing file with the same
 name.
 
+@subsection Interactive fixing
+If the <fix_file> is loaded as a result file into GPS, messages for
+which there is a known fix will appear as usual, but with the ``Fix''
+symbol (the little wrench icon) in the left margin. Clicking on the
+icon will perform the fix and remove the corresponding message.
+
 @subsection Rule fixes
 Not all rule provide automatic fixing, either because the rule is just
 intended to report on the presence of some construct, or because the
@@ -1058,15 +1064,14 @@ fix needs manual inspection. When a rule does provide for automatic
 fixing, there is a ``Fixes'' section in its description that explains
 what can (or cannot) be fixed by the rule.
 
-
 @subsection Conflicts
 It is possible that several fixes modify the same place, or
-overlapping places. If one of the fixes is the deletion of a zone of
-text that fully covers the other one, then the deletion is kept and
-the  other one discarded. Otherwise, the first fix is kept and the
-other one ignored; a message at the end of the run tells the user that
-some fixes were not performed, and that AdaControl should be run
-again.
+overlapping places. When using automatic fixing, if one of the fixes
+is the deletion of a zone of text that fully covers the other one,
+then the deletion is kept and the  other one discarded. Otherwise, the
+first fix is kept and the other one is ignored; a message at the end
+of the run tells the user that some fixes were not performed, and that
+AdaControl should be run again.
 
 When this happens, it is possible (although we expect it to be
 infrequent) that the modified code does not compile anymore and that
@@ -1075,16 +1080,20 @@ some easy manual adjustments be necessary.
 It is expected that this algorithm for resolving conflicts be improved
 in the future.  Suggestions and examples welcome!
 
+When using interactive fixing, all fixes are kept; just click on the
+various ``fix'' icons, and check that the code is transformed
+appropriately.
+
 @subsection How to proceed
 Automatic fixing is a powerful feature of AdaControl, but like any
-tool that transforms the source it requires some care. Using automatic
-fixes makes sense when there are many violations, and those violations
-would be easy and tedious to fix by hand. A typical use case is when
-you apply new rules to an existing software, and discover that the
-casing rules have not been obeyed: fixing the casing of thousands of
-identifiers is a long and uninteresting job...  Therefore, the
-automatic fixing tool has been designed under the assumption that it
-will be used ``one-shot'', not as day-to-day use.
+tool that transforms the source it requires some care. Automatic
+fixing makes sense when there are many violations, and these
+violations would be easy but tedious to fix by hand. A typical use
+case is when you apply new rules to an existing software, and discover
+that the casing rules have not been obeyed: fixing the casing of
+thousands of identifiers is a long and uninteresting job...
+Therefore, the automatic fixing tool has been designed under the
+assumption that it will be used ``one-shot'', not as day-to-day use.
 
 The automatic fixing should therefore be used as follows:
 @itemize bullet
@@ -1106,6 +1115,28 @@ not introduce syntax errors, and fix if necessary. Then run AdaControl
 and Adactl_Fix again, until all fixes are applied.
 @end itemize
 
+On the other hand, interactive fixing is fully under user control. It
+is possible to check (and possibly undo) any modification. But of
+course, since it is a manual operation, it becomes tedious when there
+are many changes to perform.
+
+As a rule of thumb, perform automatic fixing, one rule at a time, for
+the controls that often result in a big number of violations, and
+where the fix is both obvious and riskless (typically: incorrect
+casing of identifiers or keywords). Use interactive fixing for more
+subtile controls where it is more appropriate to check the result of
+the substitution.
+
+And remember that fixing a violation can create another violation!
+Typically, if the fix adds some text (like changing a positional
+association to a named one), it can then exceed the maximum allowed
+line length. Hence fixing a violation is necessarily an iterative
+process.
+
+And of course, the best advice is: fix violations as early as
+possible.  Run AdaControl each time you modify a module. This is the
+best way to save the effort!
+
 @subsection A word of caution
 Attention of users designing safety critical applications (DOD-178B/C
 level A, EN-50128 SIL4) is drawn to the fact that the automatic fixing
@@ -1115,7 +1146,7 @@ AdaControl has not been subject to the formal verifications required by
 TQL1-4 tools; therefore it is up to the user to check that the applied
 fixes maintain the integrity of the software.
 
-@node Interactive mode, Other execution modes, Automatic fixing, Program Usage
+@node Interactive mode, Other execution modes, Fixing violations, Program Usage
 @section Interactive mode
 The ``-I'' option tells AdaControl to operate interactively. In this
 mode, commands  specified with ``-l'' or ``-f'' options are first

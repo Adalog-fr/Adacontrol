@@ -10,7 +10,8 @@ import os
 import glob
 import re
 import sets
-
+import sys
+import traceback
 
 #
 # General utilities
@@ -151,44 +152,36 @@ def command_name():
                                                       "Ide",
                                                       "adacontrol") or "adactl"
 
+#
+# Management of fixes
+#
+class Fix:
+    def apply(self):
+        start_loc = self.fix_start.location()
+        end_loc = self.fix_end.location()
+        if self.key == "Delete":
+            start_loc.buffer().delete(start_loc, end_loc)
+        elif self.key in ["Replace", "Insert"]:
+            if self.key == "Replace":
+                start_loc.buffer().delete(start_loc, end_loc)
+
+            # There is at least one line of data, otherwise use Delete
+            start_loc.buffer().insert(start_loc, self.fix_data[0])
+            for line in self.fix_data[1:]:
+                end_loc.buffer().insert(end_loc, "\n" + line)
+
+def fixer(self):
+    for fix in self.fix_list:
+        fix.apply()
+    self.remove()
 
 def parse(output):
     """Sort and parse the result of running Adacontrol
     """
-    global adactl_cats, long_mess_str, long_mess_pat, short_mess_pat, \
+    global adactl_cats, long_mess_pat, short_mess_pat, fix_mess_pat, \
         rule_statistics_pat, message_statistics_pat, errors_style, warnings_style
 
-    def sloc_cmp(l, r):
-        """Compare two source references (file:line:col)
-           If the references are the same, keep the original order
-           (for the case of error messages that span several lines)
-        """
-        ls = l.split(':')
-        rs = r.split(':')
-        if len(ls[0]) == 1:
-            # Presumably, we have a "C:"...
-            Offset = 1
-        else:
-            Offset = 0
-
-        if len(ls) < 5 + Offset and len(rs) < 3 + Offset:
-            # No reference =>Keep order
-            return -1
-        if len(ls) < 5 + Offset:
-            # Reference only in r: put references ahead
-            return 1
-        if len(rs) < 5 + Offset:
-            # Reference only in l: put references ahead
-            return -1
-
-        if ls[0 + Offset] != rs[0 + Offset]:
-            return cmp(ls[0 + Offset], rs[0 + Offset])
-        if ls[1 + Offset] != rs[1 + Offset]:
-            return cmp(int(ls[1 + Offset]), int(rs[1 + Offset]))
-        return cmp(int(ls[2 + Offset]), int(rs[2 + Offset]))
-
     list = output.splitlines()
-    list.sort(sloc_cmp)
     pos = 0
     category = "Adacontrol"
     sep = ';'
@@ -199,17 +192,63 @@ def parse(output):
         match = long_mess_pat.match(Mess)
         if match:
             if GPS.Preference("separate-rules").get():
-                category = match.group(8)
+                category = match.group('rule')
             adactl_cats.add(category)
             mess = GPS.Message(category,
-                               file=GPS.File(match.group(1)),
-                               line=int(match.group(2)),
-                               column=int(match.group(3)),
-                               text=match.group(4))
-            if match.group(6) == "Found:":
+                               file=GPS.File(match.group('file')),
+                               line=int(match.group('line')),
+                               column=int(match.group('col')),
+                               text=match.group('message'))
+            key = match.group('key')
+            if key == "Found":
                 mess.set_style(warnings_style)
             else:
                 mess.set_style(errors_style)
+            prev_mess = mess
+            prev_mess.fix_list = []
+            continue
+
+        # Fix message
+        match = fix_mess_pat.match(Mess)
+        if match:
+            key = match.group('key')
+            buf = GPS.EditorBuffer.get(GPS.File(match.group('file')))
+            loc = GPS.EditorLocation(buf,
+                                     int(match.group('startline')),
+                                     int(match.group('startcol')))
+            fix = Fix()
+            fix.key = key
+            fix.fix_start = loc.create_mark(left_gravity=False)
+            fix.fix_data = []
+            if key == "Delete":
+                col = int(match.group('endcol'))
+                # col=0 means that the preceding end of line mark is to be deleted
+                if col == 0:
+                    loc = GPS.EditorLocation(buf,
+                                             int(match.group('endline'))-1,
+                                             1)
+                    loc = loc.end_of_line()
+                else:
+                    loc = GPS.EditorLocation(buf,
+                                             int(match.group('endline')),
+                                             col)
+                fix.fix_end = loc.create_mark(left_gravity=True)
+                prev_mess.set_subprogram(fixer, 'gps-codefix', "Delete it")
+            elif key == "Replace":
+                loc = GPS.EditorLocation(buf,
+                                         int(match.group('endline')),
+                                         int(match.group('endcol')))
+                fix.fix_end = loc.create_mark(left_gravity=True)
+                prev_mess.set_subprogram(fixer, 'gps-codefix', "Replace it")
+            elif key == "Insert":
+                fix.fix_end = fix.fix_start
+                prev_mess.set_subprogram(fixer, 'gps-codefix', "Insert it")
+            prev_mess.fix_list.append(fix)
+            continue
+
+        # Fix data
+        if Mess[0] == '!':
+            prev_mess.fix_list[-1].fix_data.append(Mess[1:])
             continue
 
         # AdaCtl message without location, or just a column location
@@ -217,9 +256,9 @@ def parse(output):
         match = short_mess_pat.match(Mess)
         if match:
             if GPS.Preference("separate-rules").get():
-                category = match.group(3)
+                category = match.group('category')
             adactl_cats.add(category)
-            message = match.group(2) + match.group(3)
+            message = match.group('message')
             try:
                 mess = GPS.Message(category, GPS.File("none"), 1, 1, message)
             except:
@@ -233,7 +272,7 @@ def parse(output):
         if match:
             adactl_cats.add("Statistics")
             try:
-                mess = GPS.Message("Statistics", GPS.File(match.group(1)), 1, 1, match.group(2))
+                mess = GPS.Message("Statistics", GPS.File(match.group('rule')), 1, 1, match.group('counts'))
             except:
                 # Always an exception, since file does not exist
                 pass
@@ -244,7 +283,7 @@ def parse(output):
         if match:
             adactl_cats.add("Statistics")
             try:
-                mess = GPS.Message("Statistics", GPS.File(match.group(1)), 1, 1, match.group(2))
+                mess = GPS.Message("Statistics", GPS.File(match.group('title')), 1, 1, match.group('counts'))
             except:
                 # Always an exception, since file does not exist
                 pass
@@ -288,6 +327,8 @@ def load_result(file=""):
     except:
         GPS.MDI.dialog(
             "File " + previous_locfile + " is not a valid result file")
+        print (sys.exc_info())
+        traceback.print_tb (sys.exc_info()[2])
         return
     GPS.MDI.get("Locations").raise_window()
 
@@ -591,7 +632,7 @@ def on_GPS_start(H):
        variables for example)
     """
     global adactl_cats, previous_command, previous_locfile, DelTree_Menu,\
-        long_mess_str, long_mess_pat, short_mess_pat, rule_statistics_pat,\
+        long_mess_pat, short_mess_pat, rule_statistics_pat, fix_mess_pat,\
         message_statistics_pat, gps_version, errors_style, warnings_style
 
     # Global variables initialization
@@ -614,15 +655,22 @@ def on_GPS_start(H):
     elif gps_version.find('.') == 1:
         gps_version = '0' + gps_version
 
-    #                    1    2     3      456        7                           8
-    long_mess_str = r"^!?(.+):(\d+):(\d+): (((Found:)|(Error:|Parameter:|Syntax:))( .*?):.*)$"
-    long_mess_pat = re.compile(long_mess_str)
-    #                              1       2                                  3
-    short_mess_pat = re.compile(r"^(\d+: )?(Found:|Error:|Parameter:|Syntax:) (.*)$")
-    #                                   1     23                                     4
-    rule_statistics_pat = re.compile(r"^(.*): ((Check: \d+, Search: \d+, Count: \d+)|(not triggered))$")
-    #                                      1                  2
-    message_statistics_pat = re.compile(r"^(Issued messages:) (.*)$")
+    # Message recognition patterns
+    long_mess_pat = re.compile(r'(?P<file>.+?):'
+                               r'(?P<line>\d+):'
+                               r'(?P<col>\d+): '
+                               r'(?P<message>(?P<key>Found|Error|Parameter|Syntax): (?P<rule>.*?):.*)$')
+
+    short_mess_pat = re.compile(r"^(?P<category>.+):(?: )?(?P<message>(?P<key>Found|Error|Parameter|Syntax): (.*))$")
+
+    fix_mess_pat = re.compile(r'"?(?P<file>.+?)"?:'
+                              r'(?P<startline>\d+):'
+                              r'(?P<startcol>\d+): '
+                              r'(?P<key>Delete|Insert|Replace)(:(?P<endline>\d+):(?P<endcol>\d+))?$')
+
+    rule_statistics_pat = re.compile(r"^(?P<rule>.*): (?P<counts>(Check: \d+, Search: \d+, Count: \d+)|(not triggered))$")
+
+    message_statistics_pat = re.compile(r"^(?P<title>Issued messages:) (?P<counts>.*)$")
 
     # Actions and submenus are now parsed from Python because otherwise
     # filters involving Python actions do not work anymore

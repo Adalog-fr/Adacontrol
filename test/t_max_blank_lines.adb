@@ -8,6 +8,11 @@ procedure T_Max_Blank_Lines is
 
 
 
+   -- 4 blank lines
+
+
+
+
 begin
    null;
 end T_Max_Blank_Lines;

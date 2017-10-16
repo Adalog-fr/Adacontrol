@@ -81,14 +81,13 @@ procedure Adactl_Fix is
    package String_Vector is new Ada.Containers.Vectors (Positive, Unbounded_String);
    use String_Vector;
 
-   type Fix_Kind is (Insert, Insert_Break, Replace, Delete, Not_A_Fix);
-   subtype Insert_Kinds  is Fix_Kind range Insert .. Insert_Break;
+   type Fix_Kind is (Insert, Replace, Delete, Not_A_Fix);
    subtype Range_Fixes   is Fix_Kind range Replace .. Delete;
    subtype True_Fix_Kind is Fix_Kind range Insert .. Delete;
    type Fix_Descriptor (Kind : True_Fix_Kind := Insert) is
       record
          case Kind is
-            when Insert | Insert_Break | Replace =>
+            when Insert | Replace =>
                First : Positive;
                Last  : Positive;
             when others =>
@@ -137,8 +136,6 @@ procedure Adactl_Fix is
       case Kind is
          when Insert =>
             return (Insert, First, Last);
-         when Insert_Break =>
-            return (Insert_Break, First, Last);
          when Replace =>
             return (Replace, First, Last);
          when Delete =>
@@ -307,13 +304,13 @@ procedure Adactl_Fix is
             Previous_Pos := Key (Previous_Curs);
             if Previous_Pos.File_Name = Loc.File_Name then
                Previous_Fix := Element (Previous_Curs);
-               if Fix.Kind in Insert_Kinds and Previous_Fix.Kind in Insert_Kinds
+               if Fix.Kind = Insert and Previous_Fix.Kind = Insert
                  and Loc.Start_Pos = Previous_Pos.Start_Pos
                then
                   -- Two inserts at the same position, ignore this one
                   Conflicts_Found := True;
                   return;
-               elsif Previous_Fix.Kind in Insert_Kinds and Loc.Start_Pos = Previous_Pos.Start_Pos then
+               elsif Previous_Fix.Kind = Insert and Loc.Start_Pos = Previous_Pos.Start_Pos then
                   -- Only one is insert => OK
                   null;
                elsif Previous_Pos.End_Pos >= Loc.End_Pos and then Previous_Fix.Kind = Delete then
@@ -329,7 +326,7 @@ procedure Adactl_Fix is
 
          if Next_Curs /= Fix_Maps.No_Element then
             Next_Pos := Key (Next_Curs);
-            if Fix.Kind in Insert_Kinds and Loc.Start_Pos = Next_Pos.Start_Pos then
+            if Fix.Kind = Insert and Loc.Start_Pos = Next_Pos.Start_Pos then
                -- Only one is insert => OK
                null;
             elsif Next_Pos.File_Name = Loc.File_Name then
@@ -555,15 +552,10 @@ begin   --Adactl_Fix
          Fix : constant Fix_Descriptor := Element (Current_Fix);
       begin
          case Fix.Kind is
-            when Insert | Insert_Break =>
-               Break;
-            when Replace | Delete =>
-               null;
-         end case;
-
-         case Fix.Kind is
-            when Insert | Insert_Break | Replace =>
-               for Line in Positive range Fix.First .. Fix.Last loop
+            when Insert | Replace =>
+               Print (To_String (Replacements (Fix.First)));
+               for Line in Positive range Fix.First + 1 .. Fix.Last loop
+                  Break;
                   Print (To_String (Replacements (Line)));
                end loop;
             when Delete =>
@@ -571,8 +563,6 @@ begin   --Adactl_Fix
          end case;
 
          case Fix.Kind is
-            when Insert_Break =>
-                 Break;
             when Insert =>
                null;
             when Replace | Delete =>
