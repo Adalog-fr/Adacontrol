@@ -40,7 +40,6 @@ with
 
 -- Adactl
 with
-  Framework.Fixes,
   Framework.Variables.Shared_Types,
   Implementation_Options,
   Adactl_Options;
@@ -271,6 +270,7 @@ package body Framework.Reports is
          end if;
 
          Variable.Value := Output_Format'Wide_Value (To (To'First .. Sep_Pos - 1)); -- May raise C_E
+         Generate_Fixes := Variable.Value = Fixer;
       end Set;
 
       function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String is
@@ -315,7 +315,7 @@ package body Framework.Reports is
    function "and" (Left, Right : Wide_String) return Wide_String is
    begin
       case Format_Option.Value is
-         when Gnat | Source=>
+         when Gnat | Fixer | Source=>
             return Left & ": " & Right;
          when CSV | CSVX | None =>
             return Left & CSV_Separator (Format_Option.Value) & Right;
@@ -377,7 +377,7 @@ package body Framework.Reports is
          end if;
 
          case Format_Option.Value is
-            when Gnat =>
+            when Gnat | Fixer =>
                if Loc /= Null_Location then
                   Put (Image (Loc));
                   Put (": ");
@@ -426,18 +426,6 @@ package body Framework.Reports is
             when None =>
                null;
          end case;
-
-         if Loc = Null_Location then
-            Fixes.Message (""
-                           & Title & ": "
-                           & Label & ": "
-                           & Msg);
-         else
-            Fixes.Message (Image (Loc) & ": "
-                           & Title & ": "
-                           & Label & ": "
-                           & Msg);
-         end if;
       end Issue_Message;
 
       use Ada.Exceptions;
@@ -762,7 +750,7 @@ package body Framework.Reports is
             return;
          when CSV | CSVX =>
             Raw_Report ("Rule" and "Counts");
-         when Source | Gnat =>
+         when Source | Gnat | Fixer =>
             New_Line;
             Raw_Report ("Counts summary:");
       end case;
@@ -859,7 +847,7 @@ package body Framework.Reports is
 
          if Triggered_Count = 0 or else Stats_Level.Value = Full then
             case Format_Option.Value is
-               when Gnat | Source =>
+               when Gnat | Source | Fixer =>
                   Put (Wide_Key);
                   Put (": ");
                   if Triggered_Count = 0 then
@@ -916,7 +904,7 @@ package body Framework.Reports is
             Put_Line ("Rules usage statistics:");
          end if;
          case Format_Option.Value is
-            when Gnat | Source =>
+            when Gnat | Source | Fixer =>
                null;
             when CSV | CSVX  | None=>
                Put_Line ("Rule" and "Label" and "Check" and "Search" and "Count");

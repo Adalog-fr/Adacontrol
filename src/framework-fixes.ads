@@ -37,12 +37,6 @@ private with
    Linear_Queue;
 
 package Framework.Fixes is
-   procedure Set_Patch_File (File_Name : Wide_String);
-
-   function "and" (Left : Wide_String; Right : Wide_String) return Wide_String;
-   -- Returns the concatenation of the Left and Right, separated by an indication of a line break
-
-   procedure Message (Text : Wide_String);
 
    -- This package provides the facilities for generating fixes.
    -- Since a fix corresponds to a message, these services must be called after the corresponding call to Report

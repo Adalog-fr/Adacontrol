@@ -25,7 +25,6 @@
 
 -- Ada
 with
-   Ada.Characters.Handling,
    Ada.Strings.Wide_Fixed,
    Ada.Wide_Text_IO;
 
@@ -35,19 +34,13 @@ with
 
 -- AdaControl
 with
-   Framework.String_Set;
+   Framework.Reports,
+   Utilities;
 
 package body Framework.Fixes is
    use Asis.Text;
 
-   Generate_Fixes : Boolean := False;
-   Comments_Only  : Boolean;
-
-   Patch_File : Ada.Wide_Text_IO.File_Type;
-   Patch_Name : Unbounded_Wide_String;
-   Seen_Files : Framework.String_Set.Set;
-
-   Marker : constant Wide_Character := '!';
+   Marker : constant Wide_String := "!";
 
    package Coord_IO is new Ada.Wide_Text_IO.Integer_IO (Asis.ASIS_Natural);
 
@@ -126,21 +119,15 @@ package body Framework.Fixes is
    -- Replace text covered by Extent (which can be empty for simple insertions, or cover
    -- several lines) by text fetched from Text_Generator
    procedure Gen_Replace (From, To : Location) is
-      use Ada.Wide_Text_IO, Coord_IO;
+      use Reports, Utilities;
    begin
-      Comments_Only := False;
-
-      Put (Patch_File, Image (From));
-      Put (Patch_File, ':');
-      Put (Patch_File, " Replace:");
-      Put (Patch_File, To.First_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, To.First_Column);
-      New_Line (Patch_File);
+      Raw_Report (Image (From)
+                  & ':'
+                  & " Replace:"
+                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img(To.First_Column));
 
       while Text_Generator.Has_More_Text loop
-         Put (Patch_File, Marker);
-         Put_Line (Patch_File, Text_Generator.Next_Line);
+         Raw_Report (Marker & Text_Generator.Next_Line);
       end loop;
    end Gen_Replace;
 
@@ -150,23 +137,18 @@ package body Framework.Fixes is
 
    -- Like previous procedure, using provided text
    procedure Gen_Replace (From, To : Location; By : Wide_String) is
-      use Ada.Strings.Wide_Fixed, Ada.Wide_Text_IO, Coord_IO;
+      use Ada.Strings.Wide_Fixed;
+      use Reports, Utilities;
       Start : Natural := By'First;
       Stop  : Natural;
    begin
-      Comments_Only := False;
-
-      Put (Patch_File, Image (From));
-      Put (Patch_File, ':');
-      Put (Patch_File, " Replace:");
-      Put (Patch_File, To.First_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, To.First_Column);
-      New_Line (Patch_File);
+      Raw_Report (Image (From)
+                  & ':'
+                  & " Replace:"
+                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
 
       if By = "" then
-         Put (Patch_File, Marker);
-         New_Line (Patch_File);
+         Raw_Report (Marker);
          return;
       end if;
 
@@ -174,14 +156,11 @@ package body Framework.Fixes is
          Stop := Index (By, Pattern => Delimiter_Image, From => Start);
          exit when Stop = 0;
 
-         Put (Patch_File, Marker);
-         Put (Patch_File, By (Start .. Stop - 1));
-         New_Line (Patch_File);
+         Raw_Report (Marker & By (Start .. Stop - 1));
          Start := Stop + Delimiter_Image'Length;
       end loop;
       if Start <= By'Last then   -- By was not terminated by Delimiter_Image
-         Put (Patch_File, Marker);
-         Put_Line (Patch_File, By (Start .. By'Last));
+         Raw_Report (Marker & By (Start .. By'Last));
       end if;
    end Gen_Replace;
 
@@ -195,28 +174,22 @@ package body Framework.Fixes is
    type Break_Addition is (None, Before, After, Both);
    procedure Gen_Insert (Pos : Location; Text : Wide_String; Add_Break : Break_Addition := None) is
       -- Breaks line
-      use Ada.Wide_Text_IO, Coord_IO;
+      use Reports;
    begin
-      Comments_Only := False;
-
-      Put (Patch_File, Image (Pos));
-      Put (Patch_File, ':');
-      Put (Patch_File, " Insert");
-      New_Line (Patch_File);
+      Raw_Report (Image (Pos)
+                  & ':'
+                  & " Insert");
 
       case Add_Break is
          when Before | Both =>
-            Put (Patch_File, Marker);
-            New_Line (Patch_File);
+            Raw_Report (Marker);
          when None | After =>
             null;
       end case;
-      Put (Patch_File, Marker);
-      Put_Line (Patch_File, Text);
+      Raw_Report (Marker & Text);
       case Add_Break is
          when After | Both =>
-            Put (Patch_File, Marker);
-            New_Line (Patch_File);
+            Raw_Report (Marker);
          when None | Before =>
             null;
       end case;
@@ -230,93 +203,17 @@ package body Framework.Fixes is
    -- Formally equivalent to a Gen_Replace with "", but it is easier for optimizations of conflicts in the fixer
    -- to know that it is a deletion
    procedure Gen_Delete (From, To : Location) is
-      use Ada.Wide_Text_IO, Coord_IO;
+      use Reports, Utilities;
    begin
-      Comments_Only := False;
-
-      Put (Patch_File, Image (From));
-      Put (Patch_File, ':');
-      Put (Patch_File, " Delete:");
-      Put (Patch_File, To.First_Line);
-      Put (Patch_File, ':');
-      Put (Patch_File, To.First_Column);
-      New_Line (Patch_File);
+      Raw_Report (Image (From)
+                  & ':'
+                  & " Delete:"
+                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
    end Gen_Delete;
 
    -------------------------------------------------------------------------------------------
    --  Exported services
    -------------------------------------------------------------------------------------------
-
-   --------------------
-   -- Set_Patch_File --
-   --------------------
-
-   procedure Set_Patch_File (File_Name : Wide_String) is
-      use Ada.Characters.Handling, Ada.Wide_Text_IO;
-      use Framework.String_Set;
-   begin
-      if Is_Open (Patch_File) then
-         if Comments_Only then
-            Delete (Patch_File);
-            Delete (Seen_Files, To_Wide_String (Patch_Name));
-         else
-            Close (Patch_File);
-         end if;
-      end if;
-
-      if File_Name = "" then
-         Generate_Fixes := False;
-         return;
-      end if;
-
-      begin
-         Open (Patch_File, In_File, To_String (File_Name));
-
-         -- File exists
-         Close (Patch_File);
-         if Is_Present (Seen_Files, File_Name) then
-            Open (Patch_File, Append_File, To_String (File_Name));
-            Comments_Only := False; -- File not previously deleted => we had non-comments fixes
-         else
-            Create (Patch_File, Out_File, To_String (File_Name));
-            Comments_Only := True;
-         end if;
-      exception
-         when Name_Error =>
-            -- File does not exist
-            Create (Patch_File, Out_File, To_String (File_Name));
-            Comments_Only := True;
-      end;
-
-      Generate_Fixes := True;
-      Add (Seen_Files, File_Name);
-      Patch_Name := To_Unbounded_Wide_String (File_Name);
-   end Set_Patch_File;
-
-
-   -----------
-   -- "and" --
-   -----------
-
-   function "and" (Left : Wide_String; Right : Wide_String) return Wide_String is
-   begin
-      return Left & Delimiter_Image & Right;
-   end "and";
-
-
-   -------------
-   -- Message --
-   -------------
-
-   procedure Message (Text : Wide_String) is
-      use Ada.Wide_Text_IO;
-   begin
-      if not (Generate_Fixes and Report_Enabled) then
-         return;
-      end if;
-
-      Put_Line (Patch_File, Text);
-   end Message;
 
    -------------
    -- Replace --

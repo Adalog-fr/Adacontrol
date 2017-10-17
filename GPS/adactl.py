@@ -188,6 +188,9 @@ def parse(output):
     for Mess in list:
         pos += 1
 
+        if Mess == "":
+            continue
+
         # Regular AdaCtl message
         match = long_mess_pat.match(Mess)
         if match:
@@ -422,6 +425,7 @@ def options(rules, files):
     next_is_ofile = False
     next_is_pfile = False
     next_is_ASIS = False
+    next_is_format = False
     for O in opt_list:
         if len(O) == 0:
             pass
@@ -433,6 +437,9 @@ def options(rules, files):
         elif next_is_ASIS:
             if rules != "check":
                 ASIS_option = O
+        elif next_is_format:
+            result = result + " -F " + O
+            next_is_format = False
         elif skip_next:
             skip_next = False
         elif O[0] == "@":
@@ -450,11 +457,17 @@ def options(rules, files):
             outfile = True
         elif O == "-f":
             skip_next = True
-        elif O == "-F" and gps:
-            skip_next = True
+        elif O == "-F":
+            if gps:
+                result = result + " -F fixer_short"
+                skip_next = True
+            else:
+                next_is_format = True
         elif O[0:2] == "-F":
             # Bug in GPS: Combo does not add separator
-            if not gps:
+            if gps:
+                result = result + " -F fixer_short"
+            else:
                 result = result + ' ' + "-F " + O[2:]
         elif O == "-o":
             next_is_ofile = True

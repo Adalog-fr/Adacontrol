@@ -1729,8 +1729,9 @@ package body Rules.Style is
                   end if;
 
                   for K in Permitted_Consts_Count range 1 .. Integer_Count loop
-                     if (Integer_Permitted_Values (K) < 0) = Negative                          -- Both have same sign
-                        and then Truly_Biggest_Int (abs Integer_Permitted_Values (K)) = I then -- and same abs value
+                     if (Integer_Permitted_Values (K) < 0) = Negative                      -- Both have same sign
+                        and then Truly_Biggest_Int (abs Integer_Permitted_Values (K)) = I  -- and same abs value
+                     then
                         -- OK just return
                         return;
                      end if;

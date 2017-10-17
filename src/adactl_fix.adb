@@ -231,31 +231,32 @@ procedure Adactl_Fix is
 
       begin
          --## rule off ASSIGNMENTS ## Must fill elements of record one by one, cannot use aggregate
-         if Source (Source'First) = '"' then
-            Start := Source'First + 1;
-            Stop  := Find ('"', From => Start, Into => Source);
-            if Source (Stop + 1) /= ':' then
-               Fix_File_Error(Stop+1, "':' expected");
-            end if;
-            Pos.File_Name := To_Unbounded_String (Source (Start .. Stop - 1));
-            Stop := Stop + 1;
-            -- TBSL: handle quotes better
-         else
-            Start := Source'First;
-            Stop  := Find (':', From => Start, Into => Source);
-            if Stop = Start + 1 then
-               -- Assume the ':' is from a drive letter
-               Stop  := Find (':', From => Start + 2, Into => Source);
-            end if;
-            Pos.File_Name := To_Unbounded_String (Source (Start .. Stop - 1));
+         Start := Source'First;
+         Stop  := Find (':', From => Start, Into => Source);
+         if Stop = Start + 1 then
+            -- Assume the ':' is from a drive letter
+            Stop  := Find (':', From => Start + 2, Into => Source);
          end if;
+         if Stop > Source'Last then
+            Kind := Not_A_Fix;
+            return;
+         end if;
+         Pos.File_Name := To_Unbounded_String (Source (Start .. Stop - 1));
 
          Start := Stop + 1;
          Stop  := Find (':', From => Start + 1, Into => Source);
+         if Stop > Source'Last then
+            Kind := Not_A_Fix;
+            return;
+         end if;
          Pos.Start_Pos.Line := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
 
          Start := Stop + 1;
          Stop  := Find (':', From => Start + 1, Into => Source);
+         if Stop > Source'Last then
+            Kind := Not_A_Fix;
+            return;
+         end if;
          Pos.Start_Pos.Col := Ada.Text_IO.Count'Value (Source (Start .. Stop - 1));
 
          Start := Stop + 1;
@@ -265,7 +266,10 @@ procedure Adactl_Fix is
          exception
             when Constraint_Error =>
                Kind := Not_A_Fix;
+               return;
          end;
+
+         -- If we are here, we can assume the line is really a fix message
 
          if Kind in Range_Fixes then
             Start := Stop + 1;
@@ -360,7 +364,18 @@ procedure Adactl_Fix is
          declare
             Line : constant String := Get_Line (Fix_File);
          begin
-            if Line (Line'First) /= Marker then   -- Line is never empty, it contains at least the marker
+            if Line = "" then
+               if In_Replacement then
+                  Add_Fix (Fix_Pos, Create (Kind, Repl_Start, Replacements.Last_Index));
+                  In_Replacement := False;
+               end if;
+            elsif Line (Line'First) = Marker then
+               if In_Replacement then
+                  Replacements.Append (To_Unbounded_String (Line (Line'First + 1 .. Line'Last)));
+               else
+                  Fix_File_Error (1, "Unexpected line format");
+               end if;
+            else
                if In_Replacement then
                   Add_Fix (Fix_Pos, Create (Kind, Repl_Start, Replacements.Last_Index));
                   In_Replacement := False;
@@ -373,14 +388,10 @@ procedure Adactl_Fix is
                   when Delete =>
                      -- Add fix immediately, since there are no replacement lines to wait for
                      Add_Fix (Fix_Pos, Create (Kind));
-                  when others =>
+                  when Insert | Replace =>
                      In_Replacement := True;
                      Repl_Start     := Replacements.Last_Index + 1;
                end case;
-            elsif In_Replacement then
-               Replacements.Append (To_Unbounded_String (Line (Line'First + 1 .. Line'Last)));
-            else
-               Fix_File_Error (1, "Unexpected line format");
             end if;
          end;
       end loop;
@@ -536,6 +547,10 @@ begin   --Adactl_Fix
    for P in Natural range 1 .. Options.Parameter_Count loop
       Read_Fix_File (Options.Parameter (P));
    end loop;
+   if First (Kept_Fixes) = Fix_Maps.No_Element then
+      -- no file contained fixes
+      return;
+   end if;
 
    Previous_Pos := (Key (First (Kept_Fixes)).File_Name, (0, 0), (0,0));
    Open_Files (To_String (Previous_Pos.File_Name));

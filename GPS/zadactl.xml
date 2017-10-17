@@ -161,6 +161,8 @@
            label="File name" switch="-o" separator="&#32;" as-file="true" />
     <combo line="3" column="1" label="File format" switch="-F" noswitch="0"
            tip="Define the output format when destination is file">
+      <combo-entry label="Fixer, short file names"  value="fixer_short" />
+      <combo-entry label="Fixer, long file names"   value="fixer" />
       <combo-entry label="Gnat, short file names"   value="gnat_short" />
       <combo-entry label="Gnat, long file names"    value="gnat" />
       <combo-entry label="CSV, short file names"    value="csv_short" />

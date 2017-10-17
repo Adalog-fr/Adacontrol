@@ -14,7 +14,7 @@ project Adactl is
       for Vcs_Kind use "Git";
       for Vcs_Repository_Root use "wks";
 
-      for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-Fgnat_short", "-S", "1", "@units.txt", "-f",
+      for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-Ffixer_short", "-S", "1", "@units.txt", "-f",
                                                "src/verif.aru", "-@", "src/units.txt");
    end Ide;
 

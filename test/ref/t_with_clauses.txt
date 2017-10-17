@@ -1,17 +1,38 @@
 t_with_clauses-plain.adb:2:6: Error: WITH_CLAUSES: With clause for Ada.Text_IO redundant with clause at t_with_clauses-plain.adb:1:6
+t_with_clauses-plain.adb:2:1: Delete:2:17
 t_with_clauses-plain-sep.adb:3:1: Found: WITH_CLAUSES: With clause for Ada.Calendar inherited from t_with_clauses-plain.adb:3:6
+t_with_clauses-plain-sep.adb:3:1: Insert
+!
+!with Ada.Calendar;
+!
 t_with_clauses-plain.adb:5:3: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1.Child1"
+t_with_clauses-plain.adb:5:3: Delete:6:2
 t_with_clauses-plain.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar" (used in separate unit(s))
+t_with_clauses-plain.adb:3:1: Delete:3:18
 t_with_clauses-tgen.adb:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "X_With_Clauses_1"
+t_with_clauses-tgen.adb:3:1: Delete:3:22
 x_with_clauses_1.ads:5:6: Error: WITH_CLAUSES: With clause for Ada.Characters.Handling redundant with clause at x_with_clauses_1.ads:4:6
+x_with_clauses_1.ads:5:1: Delete:5:29
 x_with_clauses_1.ads:6:6: Error: WITH_CLAUSES: With clause for Ada.Exceptions can be changed to private with
+x_with_clauses_1.ads:6:1: Insert
+!private 
 x_with_clauses_1.adb:1:6: Error: WITH_CLAUSES: With clause for Ada.Wide_Text_IO redundant with clause at x_with_clauses_1.ads:10:6
+x_with_clauses_1.adb:1:1: Delete:1:22
 x_with_clauses_1.adb:4:6: Error: WITH_CLAUSES: With clause for Ada.Calendar redundant with clause at x_with_clauses_1.adb:2:6
+x_with_clauses_1.adb:4:1: Delete:4:18
 x_with_clauses_1.ads:9:14: Error: WITH_CLAUSES: With clause for Interfaces.C can be moved to body (remove private)
 x_with_clauses_1.ads:2:6: Error: WITH_CLAUSES: With clause for X_With_Clauses_2 can be moved to body
 x_with_clauses_1.ads:10:6: Error: WITH_CLAUSES: With clause for Ada.Wide_Text_IO can be moved to body
 x_with_clauses_1.adb:6:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Directories"
+x_with_clauses_1.adb:6:1: Delete:6:21
 x_with_clauses_1.adb:5:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Numerics"
+x_with_clauses_1.adb:5:1: Delete:5:18
 x_with_clauses_1.ads:11:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Directories" (possible use in child units)
+x_with_clauses_1.ads:11:1: Delete:11:21
 x_with_clauses_1.ads:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Strings" (possible use in child units)
+x_with_clauses_1.ads:3:1: Delete:3:17
 x_with_clauses_1-child2.adb:1:1: Found: WITH_CLAUSES: With clause for X_With_Clauses_2 inherited from x_with_clauses_1.ads:2:6
+x_with_clauses_1-child2.adb:1:1: Insert
+!
+!with X_With_Clauses_2;
+!

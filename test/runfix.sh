@@ -68,7 +68,7 @@ put_line_line
 # Tests
 #
 
-list=`find res/ -maxdepth 1 -name "t_*_fix.txt" -printf "%f "`
+list=`find res/ -maxdepth 1 -name "t_*.txt" -printf "%f "`
 nb_fixes=0
 run_start=`date +%s`
 for i in $list; do

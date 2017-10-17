@@ -256,6 +256,14 @@ t_expressions-test_membership.adb:21:9: Error: Boolean: use of expression "or_bo
 t_expressions-test_membership.adb:20:14: Error: In_operators: use of expression "in"
 t_expressions-test_membership.adb:20:17: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:21:16: Error: In_operators: use of expression "not_in"
+t_expressions-test_membership.adb:21:25: Insert
+!)
+t_expressions-test_membership.adb:21:12: Insert
+!(
+t_expressions-test_membership.adb:20:18: Insert
+!)
+t_expressions-test_membership.adb:20:12: Insert
+!(
 t_expressions-test_membership.adb:36:9: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:36:6: Error: Operators: use of expression "or"
 t_expressions-test_membership.adb:36:6: Error: Boolean: use of expression "or_boolean"
@@ -268,6 +276,18 @@ t_expressions-test_membership.adb:34:14: Error: Static_Member: use of expression
 t_expressions-test_membership.adb:35:11: Error: In_operators: use of expression "in"
 t_expressions-test_membership.adb:35:14: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:36:11: Error: In_operators: use of expression "not_in"
+t_expressions-test_membership.adb:35:16: Insert
+!)
+t_expressions-test_membership.adb:35:9: Insert
+!(
+t_expressions-test_membership.adb:34:15: Insert
+!)
+t_expressions-test_membership.adb:34:9: Insert
+!(
+t_expressions-test_membership.adb:36:20: Insert
+!)
+t_expressions-test_membership.adb:36:9: Insert
+!(
 t_expressions-test_membership.adb:45:9: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:45:6: Error: Operators: use of expression "or"
 t_expressions-test_membership.adb:45:6: Error: Boolean: use of expression "or_boolean"
@@ -290,6 +310,26 @@ t_expressions-test_membership.adb:43:21: Error: Static_Member: use of expression
 t_expressions-test_membership.adb:44:18: Error: In_operators: use of expression "in"
 t_expressions-test_membership.adb:44:21: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:45:12: Error: In_operators: use of expression "in"
+t_expressions-test_membership.adb:42:23: Insert
+!)
+t_expressions-test_membership.adb:42:9: Insert
+!(
+t_expressions-test_membership.adb:41:16: Insert
+!)
+t_expressions-test_membership.adb:41:9: Insert
+!(
+t_expressions-test_membership.adb:43:23: Insert
+!)
+t_expressions-test_membership.adb:43:9: Insert
+!(
+t_expressions-test_membership.adb:44:23: Insert
+!)
+t_expressions-test_membership.adb:44:9: Insert
+!(
+t_expressions-test_membership.adb:45:17: Insert
+!)
+t_expressions-test_membership.adb:45:9: Insert
+!(
 t_expressions-test_membership.adb:53:9: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:53:6: Error: Operators: use of expression "or"
 t_expressions-test_membership.adb:53:6: Error: Boolean: use of expression "or_boolean"
@@ -306,6 +346,22 @@ t_expressions-test_membership.adb:52:12: Error: In_operators: use of expression 
 t_expressions-test_membership.adb:52:15: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:53:14: Error: In_operators: use of expression "not_in"
 t_expressions-test_membership.adb:53:21: Error: Static_Member: use of expression "static_membership"
+t_expressions-test_membership.adb:51:17: Insert
+!)
+t_expressions-test_membership.adb:51:9: Insert
+!(
+t_expressions-test_membership.adb:50:20: Insert
+!)
+t_expressions-test_membership.adb:50:9: Insert
+!(
+t_expressions-test_membership.adb:52:17: Insert
+!)
+t_expressions-test_membership.adb:52:9: Insert
+!(
+t_expressions-test_membership.adb:53:23: Insert
+!)
+t_expressions-test_membership.adb:53:9: Insert
+!(
 t_expressions-test_membership.adb:58:9: Error: In_operators: use of expression "in"
 t_expressions-test_membership.adb:58:12: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:62:7: Error: Mixed: Unparenthesized mixed operators in expression
@@ -315,6 +371,14 @@ t_expressions-test_membership.adb:63:6: Error: Boolean: use of expression "or_bo
 t_expressions-test_membership.adb:62:11: Error: In_operators: use of expression "in"
 t_expressions-test_membership.adb:62:14: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:63:13: Error: In_operators: use of expression "in"
+t_expressions-test_membership.adb:63:26: Insert
+!)
+t_expressions-test_membership.adb:63:9: Insert
+!(
+t_expressions-test_membership.adb:62:24: Insert
+!)
+t_expressions-test_membership.adb:62:7: Insert
+!(
 t_expressions-test_membership.adb:68:7: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:69:9: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_membership.adb:69:6: Error: Operators: use of expression "or"
@@ -322,26 +386,76 @@ t_expressions-test_membership.adb:69:6: Error: Boolean: use of expression "or_bo
 t_expressions-test_membership.adb:68:11: Error: In_operators: use of expression "in"
 t_expressions-test_membership.adb:68:14: Error: Static_Member: use of expression "static_membership"
 t_expressions-test_membership.adb:69:13: Error: In_operators: use of expression "not_in"
+t_expressions-test_membership.adb:69:30: Insert
+!)
+t_expressions-test_membership.adb:69:9: Insert
+!(
+t_expressions-test_membership.adb:68:24: Insert
+!)
+t_expressions-test_membership.adb:68:7: Insert
+!(
 t_expressions-test_mixed.adb:8:15: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:8:11: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:8:14: Insert
+!)
+t_expressions-test_mixed.adb:8:18: Insert
+!)
+t_expressions-test_mixed.adb:8:9: Insert
+!((
 t_expressions-test_mixed.adb:9:17: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:9:20: Insert
+!)
+t_expressions-test_mixed.adb:9:9: Insert
+!(
 t_expressions-test_mixed.adb:10:9: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:10:11: Insert
+!)
+t_expressions-test_mixed.adb:10:9: Insert
+!(
 t_expressions-test_mixed.adb:11:15: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:11:18: Insert
+!)
+t_expressions-test_mixed.adb:11:13: Insert
+!(
 t_expressions-test_mixed.adb:12:10: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:12:17: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:12:13: Error: Operators: use of expression "or"
 t_expressions-test_mixed.adb:12:13: Error: Boolean: use of expression "or_boolean"
+t_expressions-test_mixed.adb:12:19: Insert
+!)
+t_expressions-test_mixed.adb:12:16: Insert
+!(
+t_expressions-test_mixed.adb:12:12: Insert
+!)
+t_expressions-test_mixed.adb:12:9: Insert
+!(
 t_expressions-test_mixed.adb:13:13: Error: Boolean: use of expression "and_then"
 t_expressions-test_mixed.adb:13:10: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:13:23: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:13:25: Insert
+!)
+t_expressions-test_mixed.adb:13:22: Insert
+!(
+t_expressions-test_mixed.adb:13:12: Insert
+!)
+t_expressions-test_mixed.adb:13:9: Insert
+!(
 t_expressions-test_mixed.adb:14:14: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:14:11: Error: Operators: use of expression "or"
 t_expressions-test_mixed.adb:14:11: Error: Boolean: use of expression "or_boolean"
 t_expressions-test_mixed.adb:14:16: Error: In_operators: use of expression "in"
+t_expressions-test_mixed.adb:14:24: Insert
+!)
+t_expressions-test_mixed.adb:14:14: Insert
+!(
 t_expressions-test_mixed.adb:15:21: Error: Boolean: use of expression "or_else"
 t_expressions-test_mixed.adb:15:29: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:15:11: Error: Boolean: use of expression "or_else"
 t_expressions-test_mixed.adb:15:31: Error: In_operators: use of expression "not_in"
+t_expressions-test_mixed.adb:15:43: Insert
+!)
+t_expressions-test_mixed.adb:15:29: Insert
+!(
 t_expressions-test_others.adb:17:9: Found: Aggregate: use of expression "array_aggregate"
 t_expressions-test_others.adb:17:15: Error: Others: use of expression "array_others"
 t_expressions-test_others.adb:17:15: Error: Others_Special: use of expression "array_positional_others"
@@ -391,6 +505,10 @@ t_expressions-test_real_equality.adb:27:14: Found: Conversions: use of expressio
 t_expressions-test_real_equality.adb:32:14: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:37:14: Found: Conversions: use of expression "type_conversion"
 t_expressions-test_real_equality.adb:47:14: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_real_equality.adb:47:25: Insert
+!)
+t_expressions-test_real_equality.adb:47:14: Insert
+!(
 t_expressions-test_real_equality.adb:57:11: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:59:14: Found: EXPRESSIONS: equality or inequality with Floating Point
 t_expressions-test_real_equality.adb:61:14: Found: EXPRESSIONS: equality or inequality with Floating Point

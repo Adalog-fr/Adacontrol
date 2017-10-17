@@ -36,7 +36,7 @@ case "${1:-}" in
     -q)
         SILENT=1
         shift
-        ADACTL="$EXECUTABLE -F gnat_short $*"
+        ADACTL="$EXECUTABLE -F fixer_short $*"
         ;;
     -h)
         echo "Usage:"
@@ -46,7 +46,7 @@ case "${1:-}" in
         ;;
     *)
         SILENT=0
-        ADACTL="$EXECUTABLE -v -F gnat_short $*"
+        ADACTL="$EXECUTABLE -v -F fixer_short $*"
         ;;
 esac
 
@@ -198,8 +198,8 @@ nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
     test_case=`echo $i | cut -f 1 -d "."`
-    ${ADACTL} -ruw -f conf/${test_case}.aru ${test_case} -o res/${test_case}.txt -P res/${test_case}_fix.txt
-    dos2unix -q res/${test_case}.txt res/${test_case}_fix.txt
+    ${ADACTL} -ruw -f conf/${test_case}.aru ${test_case} -o res/${test_case}.txt
+    dos2unix -q res/${test_case}.txt
 done
 
 #
@@ -236,11 +236,7 @@ for test_case in $list; do
 	message="FAILED       "
     fi;
     if [ $SILENT -eq 0 ]; then
-        if [[ ${test_case} =~ _fix.txt$ ]] ; then
-	    printf "=> %-60s%-13s <=\n" "  Fix" "$message"
-        else
-	    printf "=> %-60s%-13s <=\n" ${test_case} "$message"
-        fi
+	printf "=> %-60s%-13s <=\n" ${test_case} "$message"
     fi
 done
 

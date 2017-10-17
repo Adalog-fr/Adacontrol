@@ -381,20 +381,6 @@ package body Framework.Language is
                                  Set_Output_Command (Output, Force_Overwrite => Option = "NEW_OUTPUT");
                               end;
 
-                           elsif Option = "PATCH" then
-                              Next_Token (Force_String => True);
-                              if Current_Token.Kind /= Name then
-                                 Syntax_Error ("File name expected", Current_Token.Position);
-                              end if;
-                              declare
-                                 Patch : constant Wide_String := Image (Current_Token);
-                              begin
-                                 Next_Token;
-                                 Close_Command;
-
-                                 Set_Patch_Command (Patch);
-                              end;
-
                            elsif Option = "TRACE" then
                               Next_Token (Force_String => True);
                               if Current_Token.Kind /= Name then

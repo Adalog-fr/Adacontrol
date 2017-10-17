@@ -1,9 +1,19 @@
 t_characters.adb:6:1: Error: CHARACTERS: Control character found
+t_characters.adb:6:1: Replace:6:1
+!   
 t_characters.adb:6:1: Error: CHARACTERS: 1 trailing space(s)
+t_characters.adb:6:1: Delete:6:1
 t_characters.adb:8:1: Error: CHARACTERS: Control character found before "X"
+t_characters.adb:8:1: Replace:8:1
+!   
 t_characters.adb:10:16: Error: CHARACTERS: Control character found after "Integer;"
+t_characters.adb:10:16: Replace:10:16
+!    
 t_characters.adb:10:16: Error: CHARACTERS: 1 trailing space(s)
+t_characters.adb:10:16: Delete:10:16
 t_characters.adb:12:7: Error: CHARACTERS: Control character found between ":" and "Integer;"
+t_characters.adb:12:7: Replace:12:7
+! 
 t_characters.adb:14:29: Error: CHARACTERS: character not in Iso_646
 t_characters.adb:14:31: Error: CHARACTERS: character not in Iso_646
 t_characters.adb:14:33: Error: CHARACTERS: character not in Iso_646
@@ -12,4 +22,6 @@ t_characters.adb:16:34: Error: CHARACTERS: wide character
 t_characters.adb:16:36: Error: CHARACTERS: character not in Iso_646
 t_characters.adb:16:36: Error: CHARACTERS: wide character
 t_characters.adb:19:9: Error: CHARACTERS: 3 trailing space(s)
+t_characters.adb:19:9: Delete:19:11
 t_characters.adb:21:1: Error: CHARACTERS: 4 trailing space(s)
+t_characters.adb:21:1: Delete:21:4

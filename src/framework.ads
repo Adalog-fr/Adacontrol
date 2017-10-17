@@ -141,7 +141,9 @@ package Framework is
    function Get_First_Column (L : in Location) return Asis.Text.Character_Position;
    -- Returns location first column
 
-   Short_Name : Boolean := False;
+   Short_Name     : Boolean := False;
+   Generate_Fixes : Boolean := False;
+
    function Image (L          : in Location;
                    Separator  : in Wide_Character := ':';
                    Quoted     : in Boolean        := False)

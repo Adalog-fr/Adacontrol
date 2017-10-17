@@ -136,7 +136,7 @@ begin
 
    if Action /= Help then
       -- Close output file if any
-      Execute ("set output console; set patch;");
+      Execute ("set output console;");
 
       --
       -- Clean up ASIS
