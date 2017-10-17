@@ -214,6 +214,7 @@ package body Rules.Style is
    type Renaming_Data is
       record
          Ren_Location : Location;
+         Renaming_Def : Asis.Defining_Name;
          Renamed_Def  : Asis.Defining_Name;
       end record;
    function Is_Same_Def (L, R : Renaming_Data) return Boolean;
@@ -932,7 +933,8 @@ package body Rules.Style is
             return;
          end if;
 
-         Renamed_Entities.Reset ((Null_Location, Def), All_Scopes);
+         -- Comparison only on Renamed_Definition:
+         Renamed_Entities.Reset ((Null_Location, Nil_Element, Def), All_Scopes);
          if not Renamed_Entities.Data_Available then
             return;
          end if;
@@ -942,7 +944,7 @@ package body Rules.Style is
                  Corresponding_Context (St_Renamed_Entity),
                  Get_Location (Identifier),
                  Defining_Name_Image (Def) & " has been renamed at " & Image (Ren.Ren_Location));
-         Fixes.Replace (Identifier, By => Defining_Name_Image (Ren.Renamed_Def));
+         Fixes.Replace (Identifier, By => Defining_Name_Image (Ren.Renaming_Def));
       end Check_Renamed;
 
       procedure Check_End_Casing (Casing : Subrules) is
@@ -1932,7 +1934,7 @@ package body Rules.Style is
             end if;
 
             -- Here we have a good one
-            Renamed_Entities.Push ((Get_Location (Ren), Def));
+            Renamed_Entities.Push ((Get_Location (Ren), Names (Ren)(1), Def));
 
          when An_Attribute_Reference =>
             Uncheckable (Rule_Id, False_Negative, Get_Location (Target), "renaming of attribute");

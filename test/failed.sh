@@ -17,6 +17,7 @@ fi
 
 (cd res
     found=0
+    shopt -s nullglob
     for test_case in *.txt *.ad[sb] ; do
 	diff=`diff ${test_case} ../ref/${test_case}`
 	if [ "$diff" != "" ]; then

@@ -7405,6 +7405,10 @@ search positional_associations (same_type, 3, call);
 search positional_associations(all, 2, call, all put);
 @end example
 
+@subsection Fixes
+This rule generates fixes: in calls and instantiations, names are added
+to transform positional associations into named associations.
+
 @subsection Tips
 There are two kinds of calls where the rule does not complain about
 usage of positional association: infix operator calls (since requiring

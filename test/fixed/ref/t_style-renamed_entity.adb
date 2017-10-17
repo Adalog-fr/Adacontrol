@@ -20,8 +20,8 @@ begin
       RenI : Integer renames I;
       J : Integer;
    begin
-      I := 1;                -- Renamed_Entity
-      Pack.V := F;           -- Renamed_Entity (x2)
+      RenI := 1;                -- Renamed_Entity
+      RenPack.V := RenF;           -- Renamed_Entity (x2)
 
       RenI := 1;             -- OK
       RenPack.V := RenF;     -- OK

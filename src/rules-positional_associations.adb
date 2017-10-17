@@ -38,6 +38,7 @@ with
 
 -- Adactl
 with
+  Framework.Fixes,
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
@@ -317,7 +318,8 @@ package body Rules.Positional_Associations is
             end if;
 
             declare
-               Ctx : constant Association_Context := Contexts (Subrule, Na, Kind);
+               Ctx  : constant Association_Context := Contexts (Subrule, Na, Kind);
+               Name : Asis.Defining_Name;
             begin
                if not (Is_Operator and Ctx.Except_Operator)
                  and then Positional_Count (Association_Expr, Subrule) > Ctx.Allowed_Number
@@ -349,6 +351,14 @@ package body Rules.Positional_Associations is
                                 & " with more than " & ASIS_Integer_Img (Ctx.Allowed_Number)
                                 & " element(s) of the same type");
                   end case;
+                  if Kind /= Count and (Na = Na_Call or Na = Na_Instantiation) then
+                     Name := Formal_Name (Association);
+                     if not Is_Nil (Name) then
+                        -- Name is nil for predefined operators used in prefixed calls
+                        Fixes.Insert (Text => Defining_Name_Image (Name) & " => ",
+                                      From => Get_Location (Association));
+                     end if;
+                  end if;
                   Reported := True;
                end if;
             end;
