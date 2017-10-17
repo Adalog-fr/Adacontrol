@@ -859,10 +859,11 @@ itself are output to the standard error file.
 @node  Output format, Output limits, Output file, Command line parameters and options
 @subsection Output format
 The ``-F'' option selects the output format. It must be followed by
-``Gnat'', ``Gnat_Short'', ``CSV'', ``CSV_Short'', ``Source'',
-``Source_Short'', or ``None'' (case insensitive).  By default, the output
-is in ``Gnat'' format. See @ref{Control kinds and report messages} for
-details.
+``Gnat'', ``Gnat_Short'', ``Fixer'', ``Fixer_Short'', ``CSV'',
+``CSV_Short'', ``Source'', ``Source_Short'', or ``None'' (case
+insensitive).  By default, the output is in ``Gnat'' format, unless
+AdaControl is run from GPS which forces ``Fixer_Short''. See
+@ref{Control kinds and report messages} for details.
 
 The ``-S'' option selects which statistics are output after each
 run. It must be followed by a value in the range 0..3. See
@@ -1037,22 +1038,22 @@ long format.
 
 @node  Fixing violations, Interactive mode, Environment variable and default settings, Program Usage
 @section Fixing violations
-The ``-P'' option, followed by a file name, directs AdaControl to
-produce an intermediate file (the ``fix file'') containing directives
-to fix the source that violated some rule. If the fix file already
-exists, it is overwritten.
+If the output format is ``Fixer'' (or ``Fixer_Short''), AdaControl
+generates in the output file (in addition to the regular messages)
+special directives to fix the source that violated some
+rule. @xref{Output format}
 
 @subsection Automatic fixing
-The fix file can be processed by the @code{adactl_fix} utility. The
-syntax is:
+The output file containing such directives can be processed by the
+@code{adactl_fix} utility. The syntax is:
 @example
-adactl_fix [-v] [-o <output-prefix>] <fix_file>...
+adactl_fix [-v] [-o <output-prefix>] <file>...
 adactl_fix -h
 @end example
 With the ``-h'' option, @code{adactl_fix} prints a brief help message
 and exits, ignoring all other options and parameters.
 
-Otherwise, adactl_fix reads the indicated <fix_file>s (more than one
+Otherwise, adactl_fix reads the indicated <file>s (more than one
 can be provided) and performs the corresponding fixes. The modified
 files are printed on the standard output, which can be redirected to a
 file for later splitting at an appropriate place by
@@ -1068,10 +1069,11 @@ the name. Adactl_Fix will overwrite any existing file with the same
 name.
 
 @subsection Interactive fixing
-If the <fix_file> is loaded as a result file into GPS, messages for
-which there is a known fix will appear as usual, but with the ``Fix''
-symbol (the little wrench icon) in the left margin. Clicking on the
-icon will perform the fix and remove the corresponding message.
+If the output file is loaded into GPS (automatically, or as a result
+file), messages for which there is a known fix will appear as usual,
+but with the ``Fix'' symbol (the little wrench icon) in the left
+margin. Clicking on the icon will perform the fix and remove the
+corresponding message.
 
 @subsection Rule fixes
 Not all rule provide automatic fixing, either because the rule is just
@@ -2168,12 +2170,15 @@ The formatting of the report message depends on the format option,
 which can be selected with the ``-F'' command-line option or the ``set
 format'' command.
 
-If the format is ``Gnat'' (the default) or ``Gnat_Short'', items are
-separated by ':'; this is the same format as the one used by GNAT
-error messages. Editors (like Emacs or GPS) that recognize this format
-allow you to go directly to the place of the message by clicking on
-it.  In order to avoid too long messages, only the label appears,
-unless there is none, in which case it is replaced with the rule name.
+If the format is ``Gnat'' (the default), ``Gnat_Short'', ``Fixer'', or
+``Fixer_Short'', items are separated by ':'; this is the same format
+as the one used by GNAT error messages. Editors (like Emacs or GPS)
+that recognize this format allow you to go directly to the place of
+the message by clicking on it.  In order to avoid too long messages,
+only the label appears, unless there is none, in which case it is
+replaced with the rule name. The ``Fixer'' variants use the same
+format as the ``Gnat'' variants, but add extra messages to allow
+automatic fixing. See @ref{Fixing violations} for details.
 
 If the format is ``CSV'' or ``CSV_Short'', items are separated by ','
 and surrounded by double quotes. This is the ``Comma Separated
