@@ -47,7 +47,7 @@ package body Framework.Fixes is
    use Asis.Text;
 
    Generate_Fixes : Boolean := False;
-   Comments_Only  : Boolean := True;
+   Comments_Only  : Boolean;
 
    Patch_File : Ada.Wide_Text_IO.File_Type;
    Patch_Name : Unbounded_Wide_String;
@@ -304,6 +304,7 @@ package body Framework.Fixes is
             Comments_Only := False; -- File not previously deleted => we had non-comments fixes
          else
             Create (Patch_File, Out_File, To_String (File_Name));
+            Comments_Only := True;
          end if;
       exception
          when Name_Error =>
@@ -335,7 +336,7 @@ package body Framework.Fixes is
    procedure Message (Text : Wide_String) is
       use Ada.Wide_Text_IO;
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -348,7 +349,7 @@ package body Framework.Fixes is
 
    procedure Replace (Original : Asis.Element; By : Wide_String) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -361,7 +362,7 @@ package body Framework.Fixes is
 
    procedure Replace (Original : Asis.Element; By : Asis.Element) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -375,7 +376,7 @@ package body Framework.Fixes is
 
    procedure Replace (Original : Asis.Element; By : Asis.Element_List) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -393,7 +394,7 @@ package body Framework.Fixes is
 
    procedure Replace (From : Location; Length : Positive; By : Wide_String) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -411,7 +412,7 @@ package body Framework.Fixes is
 
    procedure Insert (Text : Wide_String;  Place : Insert_Place;  Elem : Asis.Element; Full_Line : Boolean := False) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -454,7 +455,7 @@ package body Framework.Fixes is
 
    procedure Insert (Text : Wide_String; From  : Location) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -473,7 +474,7 @@ package body Framework.Fixes is
    procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position) is
       use Ada.Strings.Wide_Fixed;
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -489,7 +490,7 @@ package body Framework.Fixes is
 
    procedure Delete (Elem  : Asis.Element) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -502,7 +503,7 @@ package body Framework.Fixes is
 
    procedure Delete (Elems : Asis.Element_List) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -524,7 +525,7 @@ package body Framework.Fixes is
 
    procedure Delete (From  : Location; To : Location) is
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -542,7 +543,7 @@ package body Framework.Fixes is
    procedure List_Remove (Inx : Asis.List_Index; From : Asis.Element) is
       use Asis.Clauses, Asis.Compilation_Units, Asis.Elements;
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -581,7 +582,7 @@ package body Framework.Fixes is
       Line         : Line_Number_Positive;
       Col          : Character_Position_Positive;
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 
@@ -625,7 +626,7 @@ package body Framework.Fixes is
       Curs    : Cursor := First (Fix);
       Current : Delayed_Fix;
    begin
-      if not Generate_Fixes then
+      if not (Generate_Fixes and Report_Enabled) then
          return;
       end if;
 

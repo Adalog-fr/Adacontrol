@@ -223,4 +223,9 @@ private
          end case;
       end record;
 
+   --
+   -- State of Enabling/Disabling messages
+   --
+   Report_Enabled : Boolean;
+
 end Framework;

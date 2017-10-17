@@ -443,9 +443,9 @@ package body Framework.Reports is
       use Ada.Exceptions;
       use Counters, False_Positive_Map;
       use type Asis.ASIS_Integer;
-      Active : Boolean := True;
 
    begin  -- Report
+      Report_Enabled := True;
       if Error_Count = Max_Errors.Value or Error_Count + Warning_Count = Max_Messages.Value then
          -- This can happen for finalization messages after the run has been previously cancelled
          -- due to too many errors/messages
@@ -496,13 +496,21 @@ package body Framework.Reports is
             for I in Asis.Text.Line_Number range 1 .. Get_First_Line (Loc) - 1 loop
                Get_Line (Source_File, Line, Line_Last);
                if Ignore_Option.Value /= On then
-                  Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => False, Active => Active);
+                  Update (Rule_Id,
+                          Ctl_Label,
+                          Line (Line'First .. Line_Last),
+                          Single_Line => False,
+                          Active      => Report_Enabled);
                end if;
             end loop;
 
             Get_Line (Source_File, Line, Line_Last);
             if Ignore_Option.Value /= On then
-               Update (Rule_Id, Ctl_Label, Line (Line'First .. Line_Last), Single_Line => True, Active => Active);
+               Update (Rule_Id,
+                       Ctl_Label,
+                       Line (Line'First .. Line_Last),
+                       Single_Line => True,
+                       Active      => Report_Enabled);
             end if;
 
             Close (Source_File);
@@ -523,7 +531,7 @@ package body Framework.Reports is
 
       -- Here, Line is the good source line
 
-      if Active xor Ignore_Option.Value = Inverted then
+      if Report_Enabled xor Ignore_Option.Value = Inverted then
          case Ctl_Kind is
             when Check =>
                Error_Count := Error_Count + 1;
