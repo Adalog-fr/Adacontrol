@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ GNATdashboard
+  ~ Copyright (C) 2016, AdaCore
+  ~
+  ~ This is free software;  you can redistribute it  and/or modify it  under
+  ~ terms of the  GNU General Public License as published  by the Free Soft-
+  ~ ware  Foundation;  either version 3,  or (at your option) any later ver-
+  ~ sion.  This software is distributed in the hope  that it will be useful,
+  ~ but WITHOUT ANY WARRANTY;  without even the implied warranty of MERCHAN-
+  ~ TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+  ~ License for  more details.  You should have  received  a copy of the GNU
+  ~ General  Public  License  distributed  with  this  software;   see  file
+  ~ COPYING3.  If not, go to http://www.gnu.org/licenses for a complete copy
+  ~ of the license.
+  -->
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fr.adacontrol</groupId>
+    <version>1.0a</version>
+    <artifactId>adacontrol-plugin</artifactId>
+    <packaging>sonar-plugin</packaging>
+
+    <name>GNATdashboard :: AdaControl Plugin</name>
+    <description>AdaControl Plugin for SonarQube 5.6.6 to 6.x.y with GNATDashboard</description>
+    <inceptionYear>2017</inceptionYear>
+
+    <properties>
+        <version.sonar>5.6.6</version.sonar>
+        <version.lombok>1.16.10</version.lombok>
+        <version.slf4j>1.6.2</version.slf4j>
+        <sonar.pluginClass>org.sonar.plugins.ada.AdacontrolPlugin</sonar.pluginClass>
+    </properties>
+
+    <dependencies>
+        <!-- Sonar Plugin -->
+        <dependency>
+            <groupId>org.sonarsource.sonarqube</groupId>
+            <artifactId>sonar-plugin-api</artifactId>
+            <scope>provided</scope>
+            <version>${version.sonar}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${version.lombok}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+          <version>${version.slf4j}</version>
+          <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+                <artifactId>sonar-packaging-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <pluginName>${sonar.pluginName}</pluginName>
+                    <pluginClass>${sonar.pluginClass}</pluginClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

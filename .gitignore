@@ -23,6 +23,9 @@ doc/*_ug.html
 doc/*_ug.pdf
 doc/*_ug.txt
 
+GNATHub/adacontrol-plugin/target
+GNATHub/adacontrol-plugin/src/main/resources/*.xml
+
 src/adactl
 src/pfni
 src/ptree
