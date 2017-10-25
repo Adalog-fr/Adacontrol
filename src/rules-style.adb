@@ -50,7 +50,7 @@ with
 
 -- Adactl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language,
   Framework.Ordering_Machine,
   Rules.Style.Keyword;
@@ -59,7 +59,7 @@ pragma Elaborate (Framework.Ordering_Machine);
 
 package body Rules.Style is
    use Framework, Framework.Control_Manager, Utilities;
-   use all type Framework.Fixes.Insert_Place;
+   use all type Framework.Reports.Fixes.Insert_Place;
    use type Thick_Queries.Biggest_Int;
 
    -- See declaration of Style_Names in the private part of the specification

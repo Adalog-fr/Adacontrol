@@ -47,7 +47,7 @@ with
 
 -- AdaControl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language,
   Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);

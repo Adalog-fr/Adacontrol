@@ -78,7 +78,10 @@ package Framework.Reports is
    procedure Raw_Report (Message : Wide_String);
    -- Just output the string without formating
 
-   type Output_Format is (Source, Gnat, Fixer, CSV, CSVX, None);
+   function Generate_Fixes return Boolean;
+   -- Are fixes to be generated, depending on option, kind and possible inhibition of previous message...
+
+   type Output_Format is (Source, Gnat, CSV, CSVX, None);
    -- None must stay last
    function Current_Format return Output_Format;
 

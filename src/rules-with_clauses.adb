@@ -39,14 +39,14 @@ with
 
 -- AdaControl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.With_Clauses is
    use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
-   use all type Fixes.Insert_Place;
+   use all type Reports.Fixes.Insert_Place;
 
    -- Algorithm
    --

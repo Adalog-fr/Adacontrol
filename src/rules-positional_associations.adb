@@ -38,7 +38,7 @@ with
 
 -- Adactl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language;
 pragma Elaborate (Framework.Language);
 

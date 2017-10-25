@@ -40,7 +40,7 @@ with
 -- AdaControl
 with
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language,
   Framework.Language.Shared_Keys,
   Framework.Variables.Shared_Types;
@@ -49,7 +49,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys,
        Framework.Variables, Framework.Variables.Shared_Types;
-   use all type Fixes.Insert_Place;
+
+   use all type Reports.Fixes.Insert_Place;
 
    type Subrules is (E_And,                              E_And_Array,              E_And_Binary,
                      E_And_Boolean,                      E_And_Then,               E_Array_Aggregate,
@@ -351,7 +352,7 @@ package body Rules.Expressions is
    -- to be inserted at the same place. This would create conflicts when fixing, but making only one fix
    -- would result in code that does not compile any more. Hence, we merge all inserts up to the level
    -- where the operator is not within another operator call.
-   Mixed_Fixes : Fixes.Incremental_Fix;
+   Mixed_Fixes : Reports.Fixes.Incremental_Fix;
 
    procedure Do_Mixed_Report (Call : Asis.Expression; Parameter : Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
@@ -1270,7 +1271,7 @@ package body Rules.Expressions is
          when An_Expression | An_Association =>
             null;
          when others =>
-            Fixes.Flush (Mixed_Fixes);
+            Reports.Fixes.Flush (Mixed_Fixes);
       end case;
    end Post_Process_Call;
 

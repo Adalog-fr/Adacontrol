@@ -54,7 +54,10 @@ package Framework is
    pragma Pack (Control_Index_Set);
    Empty_Control_Index_Set : constant Control_Index_Set := (others => False);
 
-   type Control_Kinds is (Check, Search, Count);
+   type Extended_Control_Kinds is (None, Check, Search, Count);
+   subtype Control_Kinds is Extended_Control_Kinds range Check .. Count;
+   subtype Fixes_Kinds   is Extended_Control_Kinds range None .. Search;
+
    type Control_Kinds_Set is array (Control_Kinds) of Boolean;
    pragma Pack (Control_Kinds_Set);
    Empty_Control_Kinds_Set : constant Control_Kinds_Set := (others => False);
@@ -141,8 +144,7 @@ package Framework is
    function Get_First_Column (L : in Location) return Asis.Text.Character_Position;
    -- Returns location first column
 
-   Short_Name     : Boolean := False;
-   Generate_Fixes : Boolean := False;
+   Short_Name : Boolean := False;
 
    function Image (L          : in Location;
                    Separator  : in Wide_Character := ':';
@@ -224,10 +226,5 @@ private
                Specification : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          end case;
       end record;
-
-   --
-   -- State of Enabling/Disabling messages
-   --
-   Report_Enabled : Boolean;
 
 end Framework;

@@ -36,7 +36,7 @@ case "${1:-}" in
     -q)
         SILENT=1
         shift
-        ADACTL="$EXECUTABLE -F fixer_short $*"
+        ADACTL="$EXECUTABLE -F gnat_short -G search $*"
         ;;
     -h)
         echo "Usage:"
@@ -46,7 +46,7 @@ case "${1:-}" in
         ;;
     *)
         SILENT=0
-        ADACTL="$EXECUTABLE -v -F fixer_short $*"
+        ADACTL="$EXECUTABLE -v -F gnat_short -G search $*"
         ;;
 esac
 

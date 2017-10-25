@@ -117,8 +117,6 @@
            label="Rules file" switch="-f" separator="&#32;" as-file="true" />
     <field line="1" column="1"
            label="Units file" switch="-@" separator="&#32;" as-file="true" />
-    <field line="1" column="1"
-           label="Fixes file" switch="-P" separator="&#32;" as-file="true" />
 
     <title line="1" column="2" column-span="0"></title>
 
@@ -149,7 +147,7 @@
       <combo-entry label="Report untriggered rules"  value="2" />
       <combo-entry label="Full rules statistics"     value="3" />
     </combo>
-    <radio line="3" column="1">
+    <radio line="3" column="1" label="Output">
       <radio-entry label="Send results to GPS"
                    tip="Send the output to the locations window in GPS"/>
       <radio-entry label="Send results to File"
@@ -161,10 +159,8 @@
     </radio>
     <field line="3" column="1"
            label="Result file name" switch="-o" separator="&#32;" as-file="true" />
-    <combo line="3" column="1" label="File format" switch="-F" noswitch="0"
+    <combo line="3" column="1" label="File format" switch="-F" separator="&#32;"
            tip="Define the output format when destination is file">
-      <combo-entry label="Fixer, short file names"  value="fixer_short" />
-      <combo-entry label="Fixer, long file names"   value="fixer" />
       <combo-entry label="Gnat, short file names"   value="gnat_short" />
       <combo-entry label="Gnat, long file names"    value="gnat" />
       <combo-entry label="CSV, short file names"    value="csv_short" />
@@ -173,6 +169,12 @@
       <combo-entry label="CSVX, long file names"    value="csvx" />
       <combo-entry label="Source, short file names" value="source_short" />
       <combo-entry label="Source, long file names"  value="source" />
+    </combo>
+    <combo line="3" column="1" label="Generate fixes for" switch="-G" noswitch="none" separator="&#32;"
+           tip="Level of messages for which fixes directives are to be generated">
+      <combo-entry label="None" value="none" />
+      <combo-entry label="Check" value="check" />
+      <combo-entry label="Check and Search" value="search" />
     </combo>
 
     <title line="3" column="2" column-span="0"></title>

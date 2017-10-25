@@ -40,7 +40,7 @@ with
 
 -- AdaCtl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Reports;
 
 package body Rules.Style.Keyword is

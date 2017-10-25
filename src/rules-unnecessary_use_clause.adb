@@ -39,7 +39,7 @@ with
 
 -- AdaControl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language,
   Framework.Queries;
 pragma Elaborate (Framework.Language);

@@ -34,7 +34,7 @@ with
 
 -- Adactl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language,
   Framework.Rules_Manager,
   Framework.Reports;

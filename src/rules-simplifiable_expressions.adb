@@ -43,7 +43,7 @@ with
 
 -- Adactl
 with
-  Framework.Fixes,
+  Framework.Reports.Fixes,
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
@@ -788,11 +788,8 @@ package body Rules.Simplifiable_Expressions is
                   when An_Association =>
                      Enclosing := Enclosing_Element (Enclosing);
                   when An_Expression =>
-                     if Expression_Kind (Enclosing) = A_Parenthesized_Expression then
-                        Enclosing := Enclosing_Element (Enclosing);
-                     else
-                        exit;
-                     end if;
+                     exit when Expression_Kind (Enclosing) /= A_Parenthesized_Expression;
+                     Enclosing := Enclosing_Element (Enclosing);
                   when others =>
                      exit;
                end case;

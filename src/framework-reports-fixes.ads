@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Framework.Fixes - Package specification                         --
+--  Framework.Reports.Fixes - Package specification                 --
 --                                                                  --
 --  This software is (c) Adalog 2004-2016.                          --
 --  The Ada Controller is  free software; you can  redistribute  it --
@@ -36,10 +36,11 @@ with
 private with
    Linear_Queue;
 
-package Framework.Fixes is
+package Framework.Reports.Fixes is
 
    -- This package provides the facilities for generating fixes.
    -- Since a fix corresponds to a message, these services must be called after the corresponding call to Report
+   -- for Check or Search, but not after a call to Report for Count
 
    procedure Replace (Original : Asis.Element;                     By : Wide_String);
    procedure Replace (Original : Asis.Element;                     By : Asis.Element);
@@ -83,4 +84,4 @@ private
 
    package Fix_List is new Linear_Queue (Delayed_Fix);
    type Incremental_Fix is new Fix_List.Queue;
-end Framework.Fixes;
+end Framework.Reports.Fixes;

@@ -60,11 +60,14 @@ package body Framework.Reports is
    --
    -- User settable variables
    --
+   package Fixes_Level_Type is new Framework.Variables.Discrete_Type (Fixes_Kinds);
+
    Active_Warning_Option   : aliased Switch_Type.Object       := (Value => On);
    Warning_As_Error_Option : aliased Switch_Type.Object       := (Value => Off);
    Max_Errors              : aliased Natural_Type.Object      := (Value => Natural'Last);
    Max_Messages            : aliased Natural_Type.Object      := (Value => Natural'Last);
    Stats_Level             : aliased Stats_Levels_Type.Object := (Value => No_Stats);
+   Fix_Level               : aliased Fixes_Level_Type.Object  := (Value => None);
 
    Check_Message           : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("Error"));
    Search_Message          : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("Found"));
@@ -108,6 +111,10 @@ package body Framework.Reports is
    -- of Uncheckable, which does not follow the normal naming scheme of rules.
    -- Therefore, a default value must still be provided when fetching from those maps.
 
+
+   -- State of Enabling/Disabling messages
+   Report_Enabled : Boolean;
+   Last_Control   : Control_Kinds;
 
    -----------
    -- Reset --
@@ -270,7 +277,6 @@ package body Framework.Reports is
          end if;
 
          Variable.Value := Output_Format'Wide_Value (To (To'First .. Sep_Pos - 1)); -- May raise C_E
-         Generate_Fixes := Variable.Value = Fixer;
       end Set;
 
       function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String is
@@ -315,7 +321,7 @@ package body Framework.Reports is
    function "and" (Left, Right : Wide_String) return Wide_String is
    begin
       case Format_Option.Value is
-         when Gnat | Fixer | Source=>
+         when Gnat | Source=>
             return Left & ": " & Right;
          when CSV | CSVX | None =>
             return Left & CSV_Separator (Format_Option.Value) & Right;
@@ -331,6 +337,15 @@ package body Framework.Reports is
    begin
       Put_Line (Message);
    end Raw_Report;
+
+   --------------------
+   -- Generate_Fixes --
+   --------------------
+
+   function Generate_Fixes return Boolean is
+   begin
+      return Report_Enabled and Last_Control <= Fix_Level.Value;
+   end Generate_Fixes;
 
    ------------
    -- Report --
@@ -377,7 +392,7 @@ package body Framework.Reports is
          end if;
 
          case Format_Option.Value is
-            when Gnat | Fixer =>
+            when Gnat =>
                if Loc /= Null_Location then
                   Put (Image (Loc));
                   Put (": ");
@@ -524,7 +539,8 @@ package body Framework.Reports is
             when Check =>
                Error_Count := Error_Count + 1;
 
-               Issue_Message (To_Wide_String(Check_Message.Value));
+               Issue_Message (To_Wide_String (Check_Message.Value));
+               Last_Control := Check;
             when Search =>
                if Warning_As_Error_Option.Value = On then
                   Error_Count := Error_Count + 1;
@@ -534,6 +550,7 @@ package body Framework.Reports is
 
                if Warning_As_Error_Option.Value = On or else Active_Warning_Option.Value = On then
                   Issue_Message (To_Wide_String (Search_Message.Value));
+                  Last_Control := Search;
                end if;
             when Count =>
                Add (Rule_Counter,
@@ -578,12 +595,8 @@ package body Framework.Reports is
       declare
          Basic_Context : Basic_Rule_Context renames Basic_Rule_Context (Context);
       begin
-         Report (Rule_Id,
-                 To_Wide_String (Basic_Context.Ctl_Label),
-                 Basic_Context.Ctl_Kind,
-                 Loc,
-                 Msg);
-
+         -- The call to Count must be /before/ the call to check/search for the case where
+         -- the call to Report is followed by fixes
          if Basic_Context.With_Count then
             Report (Rule_Id,
                     To_Wide_String (Basic_Context.Count_Label),
@@ -591,6 +604,13 @@ package body Framework.Reports is
                     Loc,
                     Msg);
          end if;
+
+         Report (Rule_Id,
+                 To_Wide_String (Basic_Context.Ctl_Label),
+                 Basic_Context.Ctl_Kind,
+                 Loc,
+                 Msg);
+
       end;
    end Report;
 
@@ -750,7 +770,7 @@ package body Framework.Reports is
             return;
          when CSV | CSVX =>
             Raw_Report ("Rule" and "Counts");
-         when Source | Gnat | Fixer =>
+         when Source | Gnat =>
             New_Line;
             Raw_Report ("Counts summary:");
       end case;
@@ -847,7 +867,7 @@ package body Framework.Reports is
 
          if Triggered_Count = 0 or else Stats_Level.Value = Full then
             case Format_Option.Value is
-               when Gnat | Source | Fixer =>
+               when Gnat | Source =>
                   Put (Wide_Key);
                   Put (": ");
                   if Triggered_Count = 0 then
@@ -904,7 +924,7 @@ package body Framework.Reports is
             Put_Line ("Rules usage statistics:");
          end if;
          case Format_Option.Value is
-            when Gnat | Source | Fixer =>
+            when Gnat | Source =>
                null;
             when CSV | CSVX  | None=>
                Put_Line ("Rule" and "Label" and "Check" and "Search" and "Count");
@@ -928,6 +948,7 @@ begin  -- Framework.Reports
    Register (Max_Errors'Access,              Variable_Name => "MAX_ERRORS");
    Register (Max_Messages'Access,            Variable_Name => "MAX_MESSAGES");
    Register (Stats_Level'Access,             Variable_Name => "STATISTICS");
+   Register (Fix_Level'Access,               Variable_Name => "FIXES_GEN");
    Register (Check_Message'Access,           Variable_Name => "CHECK_KEY");
    Register (Search_Message'Access,          Variable_Name => "SEARCH_KEY");
    Register (Adactl_Tag1'Access,             Variable_Name => "TAG1");

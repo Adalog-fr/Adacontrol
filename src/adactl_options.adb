@@ -51,8 +51,8 @@ package body Adactl_Options is
    use Framework.Variables;
 
    package Analyzer is
-      new Options_Analyzer (Binary_Options => "CDdeEhiIjrsTuvwx",
-                            Valued_Options => "fFlomMpPSt",
+      new Options_Analyzer (Binary_Options => "CdDeEhiIjrsTuvwx",
+                            Valued_Options => "fFGlomMpSt",
                             Tail_Separator => "--");
 
    Unit_List    : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
@@ -105,8 +105,9 @@ package body Adactl_Options is
    begin
       User_Message ("Usage: adactl [-deEirsTuvwx]");
       User_Message ("              [-p <project file>]     [-f <rules file>]    [-l < rules list > ]");
-      User_Message ("              [-o < output file > ]   [-t <trace file>]    [-F <format>]");
+      User_Message ("              [-o <output file> ]     [-t <trace file>]    [-F <format>]");
       User_Message ("              [-S <statistics level>] [-m <warning limit>] [-M <message limit>]");
+      User_Message ("              [-G <level> ");
       User_Message ("              <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]");
       User_Message ("       adactl -h [<help item>...]");
       User_Message ("       adactl -I [-deEirsTuvwx]");
@@ -139,15 +140,15 @@ package body Adactl_Options is
       User_Message ("   -E        print only errors (Check)");
       User_Message ("   -f file   use a file for the specification of rules");
       User_Message ("   -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)");
+      User_Message ("   -G level  level to generate fixes for (NONE, SEARCH, CHECK)");
       User_Message ("   -i        ignore local deactivations");
       User_Message ("   -j        invert local deactivations");
       User_Message ("   -l rules  process with these rules");
       User_Message ("   -o file   specify an output file");
       User_Message ("   -p file   specify a project file (.gpr or .adp)");
-      User_Message ("   -P file   specify a patch file for fixing source");
       User_Message ("   -r        recursive");
       User_Message ("   -s        process specifications only");
-      User_Message ("   -S        statistics level (0 .. "
+      User_Message ("   -S level  statistics level (0 .. "
                       & Integer_Img (Stats_Levels'Pos (Stats_Levels'Last))
                       & ')');
       User_Message ("   -t file   specify a trace file");
@@ -364,6 +365,7 @@ package body Adactl_Options is
       Flag_To_Command  ('e', "warning_as_error");
       Flag_To_Command  ('E', "warning", Inverted => True);
       Value_To_Command ('F', "set format");
+      Value_To_Command ('G', "set fixes_gen");
       if Is_Present (Option => 'j') then
          Append (Options_Commands, "set ignore inverted;"); -- -i ignored if -j given
       else
@@ -372,7 +374,6 @@ package body Adactl_Options is
       Value_To_Command ('m', "set max_errors",   Required => False);
       Value_To_Command ('M', "set max_messages", Required => False);
       Value_To_Command ('o', "set output");
-      Value_To_Command ('P', "set patch");
       Value_To_Command ('S', "set statistics");
       Value_To_Command ('t', "set trace");
       Flag_To_Command  ('T', "timing");

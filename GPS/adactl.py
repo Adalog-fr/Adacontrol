@@ -172,10 +172,15 @@ class Fix:
             for line in self.fix_data[1:]:
                 end_loc.buffer().insert(end_loc, "\n" + line)
 
+
 def fixer(self):
     for fix in self.fix_list:
         fix.apply()
-    self.remove()
+    self.set_subprogram(no_action, '', '')
+
+def no_action(self):
+    pass
+
 
 def parse(output):
     """Sort and parse the result of running Adacontrol
@@ -419,19 +424,18 @@ def options(rules, files):
     # set other_params
     gps = True
     outfile = False
+    fixes = False
     output_name = ""
-    fix_name = ""
     ASIS_option = ""
 
     opt_list = GPS.Project.root().get_tool_switches_as_list("AdaControl")
     skip_next = False
     next_is_ofile = False
     next_is_pfile = False
-    next_is_fixfile = False
     next_is_ASIS = False
     next_is_format = False
+    next_is_fixes = False
     for O in opt_list:
-        print O
         if len(O) == 0:
             pass
         elif next_is_ofile:
@@ -439,15 +443,15 @@ def options(rules, files):
             next_is_ofile = False
         elif next_is_pfile:
             next_is_pfile = False
-        elif next_is_fixfile:
-            fix_name = O
-            next_is_fixfile = False
         elif next_is_ASIS:
             if rules != "check":
                 ASIS_option = O
         elif next_is_format:
             result = result + " -F " + O
             next_is_format = False
+        elif next_is_fixes:
+            result = result + " -G " + O
+            next_is_fixes = False
         elif skip_next:
             skip_next = False
         elif O[0] == "@":
@@ -466,17 +470,20 @@ def options(rules, files):
         elif O == "-f":
             skip_next = True
         elif O == "-F":
-            if gps:
-                result = result + " -F fixer_short"
-                skip_next = True
-            else:
-                next_is_format = True
+            next_is_format = True
         elif O[0:2] == "-F":
             # Bug in GPS: Combo does not add separator
             if gps:
-                result = result + " -F fixer_short"
+                result = result + " -F gnat_short"
             else:
                 result = result + ' ' + "-F " + O[2:]
+        elif O == "-G":
+            fixes = True
+            next_is_fixes = True
+        elif O[0:2] == "-G":
+            # Bug in GPS: Combo does not add separator
+            fixes = True
+            result = result + ' ' + "-G " + O[2:]
         elif O == "-o":
             next_is_ofile = True
         elif O == "-p":
@@ -518,8 +525,8 @@ def options(rules, files):
         # file is specified but not used
         output_name = ""
 
-    if fix_name != "":
-        result = result + " -P " + fix_name
+    if gps and not fixes:
+        result = result + " -G check"
 
     if ASIS_option:
         result = result + " -- " + ASIS_option

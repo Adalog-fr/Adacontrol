@@ -888,8 +888,9 @@ With_Clauses.Check_Private_With: (Off, On) = On
 With_Clauses.Ignore_Use_Clause: (Off, On) = On
 Usage: adactl [-deEirsTuvwx]
               [-p <project file>]     [-f <rules file>]    [-l < rules list > ]
-              [-o < output file > ]   [-t <trace file>]    [-F <format>]
+              [-o <output file> ]     [-t <trace file>]    [-F <format>]
               [-S <statistics level>] [-m <warning limit>] [-M <message limit>]
+              [-G <level> 
               <unit>[+|-<unit>]|[@]<file> ... [-- <ASIS options>]
        adactl -h [<help item>...]
        adactl -I [-deEirsTuvwx]
@@ -921,15 +922,15 @@ Options:
    -E        print only errors (Check)
    -f file   use a file for the specification of rules
    -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)
+   -G level  level to generate fixes for (NONE, SEARCH, CHECK)
    -i        ignore local deactivations
    -j        invert local deactivations
    -l rules  process with these rules
    -o file   specify an output file
    -p file   specify a project file (.gpr or .adp)
-   -P file   specify a patch file for fixing source
    -r        recursive
    -s        process specifications only
-   -S        statistics level (0 .. 3)
+   -S level  statistics level (0 .. 3)
    -t file   specify a trace file
    -T        Report execution time of rules
    -u        treat all parameters as Ada units

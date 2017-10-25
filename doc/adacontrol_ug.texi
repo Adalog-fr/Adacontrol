@@ -89,9 +89,10 @@ features, or simply to search for the occurrences of particular
 constructs; its scope is therefore not limited to enforcing
 programming rules, although it is of course one of its main goals.
 
-AdaContol can also generate a file containing suggested fixes to a
-number of violations; its companion program @code{adaclt_fix} can
-automatically perform these fixes.
+AdaContol can also generate commands for suggested fixes to a number
+of violations; its companion program @code{adaclt_fix} can perform
+these fixes automatically, or they can be fixed interactively from
+GPS.
 
 AdaControl is a commercial product of
 @url{http://www.adalog.fr/adalog2.htm,Adalog} with professional grade
@@ -602,7 +603,7 @@ If you want to uninstall AdaControl, just use:
 gprinstall --uninstall adacontrol
 @end example
 
-@node Installing support for AdaGide, , Installing an executable distribution, Installation
+@node Installing support for AdaGide, Installing support for GNATDashboard integration, Installing an executable distribution, Installation
 @section Installing support for AdaGide
 To add AdaControl support to AdaGide, copy the file
 @code{AdaControl.tdf} from the @code{AdaGide} directory of the
@@ -637,8 +638,8 @@ The syntax for invoking AdaControl in regular mode is:
 @example
 adactl [-deEirsTuvwx]
        [-p <project file>]     [-f [<rules file>]]  [-l <rules list>]
-       [-o <output file>]      [-t <trace file>]    [-P <fixes file>]
-       [-F <format>]
+       [-o <output file>]      [-t <trace file>]    
+       [-F <format>]           [-G <fix level>]
        [-S <statistics level>] [-m <warning limit>] [-M <message limit>]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
@@ -859,11 +860,9 @@ itself are output to the standard error file.
 @node  Output format, Output limits, Output file, Command line parameters and options
 @subsection Output format
 The ``-F'' option selects the output format. It must be followed by
-``Gnat'', ``Gnat_Short'', ``Fixer'', ``Fixer_Short'', ``CSV'',
-``CSV_Short'', ``Source'', ``Source_Short'', or ``None'' (case
-insensitive).  By default, the output is in ``Gnat'' format, unless
-AdaControl is run from GPS which forces ``Fixer_Short''. See
-@ref{Control kinds and report messages} for details.
+``Gnat'', ``Gnat_Short'', ``CSV'', ``CSV_Short'', ``Source'',
+``Source_Short'', or ``None'' (case insensitive).  By default, the
+output is in ``Gnat'' format.
 
 The ``-S'' option selects which statistics are output after each
 run. It must be followed by a value in the range 0..3. See
@@ -872,6 +871,13 @@ statistics levels.
 
 The ``-T'' option prints a summary of timing at the end of each run. This
 indicates how long (in real-time seconds) was spent in processing each rule.
+
+The ``-G'' option controls the generation, in the output file, of
+commands for fixing violations. It must be followed by ``none'' (the
+default), where no fixes information is generated, ``check'', where
+fixes information is generated only for messages that use ``check'',
+or ``search'' where fixes information is generated for all messages
+(i.e. ``search'' messages and above).
 
 Ex:
 @example
@@ -1038,13 +1044,28 @@ long format.
 
 @node  Fixing violations, Interactive mode, Environment variable and default settings, Program Usage
 @section Fixing violations
-If the output format is ``Fixer'' (or ``Fixer_Short''), AdaControl
+If the ``-G'' option is given with ``check'' or ``search'', AdaControl
 generates in the output file (in addition to the regular messages)
 special directives to fix the source that violated some
-rule. @xref{Output format}
+rule. @xref{Output format}.
+
+Not all rule provide automatic fixing, either because the rule is just
+intended to report on the presence of some construct, or because the
+fix needs manual inspection. When a rule does provide for automatic
+fixing, there is a ``Fixes'' section in its description that explains
+what can (or cannot) be fixed by the rule.
+
+@subsection Interactive fixing
+If the output file is loaded into GPS (automatically, or as a result
+file), messages for which there is a known fix will appear as usual,
+but with the ``Fix'' symbol (the little wrench icon) in the left
+margin. Clicking on the icon will perform the fix and remove the
+corresponding icon (just like fixable compilation errors).
+
+Note that by default, the generation of fixes is enabled under GPS.
 
 @subsection Automatic fixing
-The output file containing such directives can be processed by the
+An output file containing the directives can be processed by the
 @code{adactl_fix} utility. The syntax is:
 @example
 adactl_fix [-v] [-o <output-prefix>] <file>...
@@ -1053,10 +1074,10 @@ adactl_fix -h
 With the ``-h'' option, @code{adactl_fix} prints a brief help message
 and exits, ignoring all other options and parameters.
 
-Otherwise, adactl_fix reads the indicated <file>s (more than one
-can be provided) and performs the corresponding fixes. The modified
-files are printed on the standard output, which can be redirected to a
-file for later splitting at an appropriate place by
+Otherwise, @code{adactl_fix} reads the indicated <file>s (more than
+one can be provided) and performs the corresponding fixes. The
+modified files are printed on the standard output, which can be
+redirected to a file for later splitting at an appropriate place with
 @code{gnatchop}. Alternatively, if the ``-o'' option is given, each
 modified file is output to a file whose name is obtained by prefixing
 the <output-prefix> of the "-o" option to the original name of the
@@ -1068,21 +1089,7 @@ output files being in the same directory, with a "new-" prepended to
 the name. Adactl_Fix will overwrite any existing file with the same
 name.
 
-@subsection Interactive fixing
-If the output file is loaded into GPS (automatically, or as a result
-file), messages for which there is a known fix will appear as usual,
-but with the ``Fix'' symbol (the little wrench icon) in the left
-margin. Clicking on the icon will perform the fix and remove the
-corresponding message.
-
-@subsection Rule fixes
-Not all rule provide automatic fixing, either because the rule is just
-intended to report on the presence of some construct, or because the
-fix needs manual inspection. When a rule does provide for automatic
-fixing, there is a ``Fixes'' section in its description that explains
-what can (or cannot) be fixed by the rule.
-
-@subsection Conflicts
+@subsubsection Conflicts
 It is possible that several fixes modify the same place, or
 overlapping places. When using automatic fixing, if one of the fixes
 is the deletion of a zone of text that fully covers the other one,
@@ -1145,11 +1152,10 @@ casing of identifiers or keywords). Use interactive fixing for more
 subtile controls where it is more appropriate to check the result of
 the substitution.
 
-And remember that fixing a violation can create another violation!
-Typically, if the fix adds some text (like changing a positional
-association to a named one), it can then exceed the maximum allowed
-line length. Hence fixing a violation is necessarily an iterative
-process.
+Caveat: fixing a violation can create another violation!  Typically,
+if the fix adds some text (like changing a positional association to a
+named one), it can then exceed the maximum allowed line length. Hence
+fixing violations is necessarily an iterative process.
 
 And of course, the best advice is: fix violations as early as
 possible.  Run AdaControl each time you modify a module. This is the
@@ -1653,7 +1659,7 @@ GPS may crash when the output of a command is too big (i.e. hundreds
 of messages with AdaControl).  If this happens, use the
 ``preferences'' menu to limit the number of messages.
 
-@node  Running AdaControl from AdaGide, , Running AdaControl from GPS, Program Usage
+@node  Running AdaControl from AdaGide, Integrating AdaControl into GNATDashboard, Running AdaControl from GPS, Program Usage
 @section Running AdaControl from AdaGide
 If you want to use AdaControl from AdaGide, make sure you have copied
 the necessary file into the required place. @xref{Installing support
@@ -2170,15 +2176,13 @@ The formatting of the report message depends on the format option,
 which can be selected with the ``-F'' command-line option or the ``set
 format'' command.
 
-If the format is ``Gnat'' (the default), ``Gnat_Short'', ``Fixer'', or
-``Fixer_Short'', items are separated by ':'; this is the same format
-as the one used by GNAT error messages. Editors (like Emacs or GPS)
-that recognize this format allow you to go directly to the place of
-the message by clicking on it.  In order to avoid too long messages,
-only the label appears, unless there is none, in which case it is
-replaced with the rule name. The ``Fixer'' variants use the same
-format as the ``Gnat'' variants, but add extra messages to allow
-automatic fixing. See @ref{Fixing violations} for details.
+If the format is ``Gnat'' (the default) or ``Gnat_Short'', items are
+separated by ':'; this is the same format as the one used by GNAT
+error messages. Editors (like Emacs or GPS) that recognize this format
+allow you to go directly to the place of the message by clicking on
+it.  In order to avoid too long messages, only the label appears,
+unless there is none, in which case it is replaced with the rule
+name.
 
 If the format is ``CSV'' or ``CSV_Short'', items are separated by ','
 and surrounded by double quotes. This is the ``Comma Separated
@@ -2498,7 +2502,7 @@ set Check_Key|Search_Key "<value>"
 set Max_Errors [<value>];
 set Max_Messages [<value>];
 set Output|New_Output <output file>;
-set Patch [<fixes file>]
+set Fixes_Gen Check|Search|None
 set Statistics <level>;
 set Tag1|Tag2 "<value>";
 set Trace <trace file>;
@@ -2531,6 +2535,10 @@ The ``set output'' and ``set new_output'' commands redirect the output
 of subsequent controls to the indicated file. If the string
 @code{console} (case irrelevant) is given as the <output file>, output
 is redirected to the console.
+
+The ``set fixes_gen'' command controls the generation of fixes
+indications, like the ``-G'' option; see @ref{Output format} for
+details.
 
 The ``set new_output'' always create a new file (or overwrites an
 existing file with the same name).

@@ -37,7 +37,7 @@ with
 
 -- AdaControl
 with
-     Framework.Fixes,
+     Framework.Reports.Fixes,
      Framework.Language;
 pragma Elaborate (Framework.Language);
 
@@ -622,7 +622,7 @@ package body Rules.Simplifiable_Statements is
                              Usage (Stmt_Dead),
                              Get_Location (Case_Paths (CP)),
                              "choices cover no value");
-                     Framework.Fixes.Delete (Case_Paths (Cp));
+                     Framework.Reports.Fixes.Delete (Case_Paths (Cp));
                   end if;
                end;
             end loop;
