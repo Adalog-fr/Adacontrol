@@ -421,7 +421,8 @@ package body Framework.Language is
                                        Syntax_Error ("Unknown variable " & Option & '.' & Variable,
                                                      Current_Token.Position);
                                     when Constraint_Error =>
-                                       Syntax_Error ("Illegal value for " & Option & '.' & Variable,
+                                       Syntax_Error ("Illegal value for " & Option & '.' & Variable & ": "
+                                                     & Image (Current_Token),
                                                      Current_Token.Position);
                                  end;
                               else
@@ -439,7 +440,7 @@ package body Framework.Language is
                                        Syntax_Error ("Unknown variable " & Option,
                                                      Current_Token.Position);
                                     when Constraint_Error =>
-                                       Syntax_Error ("Illegal value for " & Option,
+                                       Syntax_Error ("Illegal value for " & Option & ": " & Image (Current_Token),
                                                      Current_Token.Position);
                                  end;
                               end if;

@@ -309,7 +309,7 @@ package body Rules.Default_Parameter is
          if Usage (Positional).Active then
             if Is_Positional then
                Report (Rule_Id,
-                       Usage (Used),
+                       Usage (Positional),
                        Get_Location (Element),
                        "use of defaulted formal """ & Defining_Name_Image (Formal) & """ with positional association");
             end if;
