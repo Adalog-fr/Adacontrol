@@ -1,5 +1,5 @@
 =============
-== V1.19b7 ==
+== V1.19b8 ==
 =============
 
 General:
@@ -15,10 +15,12 @@ Full handling of aspects and elements defined in aspects
  
 Improvements to GPS integration
 
-Bug fixes
-
 Generate fixes file; new utility Adactl_fix to fix violations
 automatically
+
+Integration with GnatHub and SonarQube
+
+Bug fixes
 
 Changes to existing rules:
 --------------------------
