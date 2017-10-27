@@ -5,6 +5,9 @@ begin
    while True loop -- loop
       null;
    end loop;
+   while 1=1 loop -- loop
+      null;
+   end loop;
    while False loop -- never executed
       null;
    end loop;

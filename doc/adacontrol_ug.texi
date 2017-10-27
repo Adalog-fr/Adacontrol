@@ -8344,6 +8344,13 @@ condition is given in negative form (i.e. it is a @code{@b{not}}, or a
 thus less error-prone) by interverting the @code{@b{if}} and
 @code{@b{else}} paths.
 @item
+@code{loop} controls @code{while} loop statements where the condition
+is statically known to be @code{True}, and can thus be changed to simple loops.
+@item
+@code{loop_for_while} controls simple loop statements whose first
+statement is an @code{@b{exit}} (for the same loop), and which can
+therefore be turned into a @code{while} loop.
+@item
 @code{nested_path} controls paths from @code{@b{if}} statements that
 can be moved outside. This happens if the @code{@b{if}} has only
 @code{@b{then}} and @code{@b{else}} paths, and either of them ends
@@ -8391,13 +8398,6 @@ would break the symetry of the statement:
 @code{null} controls @code{@b{null}} statements that serve no purpose
 and can be removed.  Note that if a @code{@b{null}} statement carries
 a label, it is not considered  simplifiable.
-@item
-@code{loop} controls @code{while} loop statements where the condition
-is a plain @code{True}, and can thus be changed to simple loops.
-@item
-@code{loop_for_while} controls simple loop statements whose first
-statement is an @code{@b{exit}} (for the same loop), and which can
-therefore be turned into a @code{while} loop.
 @end itemize
 
 This rule can be given at most once for each subrule.
@@ -8420,7 +8420,7 @@ The following subrules generate fixes:
 @item
 ``Handler'': The useless handler is removed.
 @item
-``Loop'': a `` @code{@b{while}} True @code{@b{loop}}'' is changed to a
+``Loop'': the `` @code{@b{while}} <cond> @code{@b{loop}}'' is changed to a
 plain @code{@b{loop}}
 @item
 ``Null'': The useless @code{@b{null}} statement is removed.

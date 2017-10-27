@@ -636,7 +636,7 @@ package body Rules.Simplifiable_Statements is
 
    procedure Process_Statement (Stmt : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Reports, Thick_Queries;
    begin
       if Rule_Used = Not_Used then
          return;
@@ -729,13 +729,11 @@ package body Rules.Simplifiable_Statements is
          when A_While_Loop_Statement =>
             if Rule_Used (Stmt_Loop) or Rule_Used (Stmt_Dead) then
                declare
-                  Expr   : constant Asis.Expression       := While_Condition (Stmt);
-                  E_Kind : constant Asis.Expression_Kinds := Expression_Kind (Expr);
+                  Expr : constant Asis.Expression := While_Condition (Stmt);
                begin
-                  -- For stmt_loop, signal an explicit "while True"
+                  -- For stmt_loop, signal an explicit "while True" (or statically known True)
                   if Rule_Used (Stmt_Loop)
-                    and then (E_Kind = An_Enumeration_Literal or E_Kind = A_Selected_Component)
-                    and then To_Upper (Full_Name_Image (Expr)) = "STANDARD.TRUE"
+                    and then Discrete_Static_Expression_Value (Expr) = Boolean'Pos (True)
                   then
                      Report (Rule_Id,
                              Usage (Stmt_Loop),
@@ -746,7 +744,7 @@ package body Rules.Simplifiable_Statements is
 
                   -- For stmt_dead, signal any expression statically false
                   if Rule_Used (Stmt_Dead)
-                    and then Static_Expression_Value_Image (Expr) = "0"  -- "0" => False
+                    and then Discrete_Static_Expression_Value (Expr) = Boolean'Pos (False)
                   then
                      Report (Rule_Id,
                              Usage (Stmt_Dead),

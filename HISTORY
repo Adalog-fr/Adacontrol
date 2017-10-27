@@ -36,6 +36,8 @@ Parameter_Aliasing
 
 Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
+   Loop: consider while loop whose condition is statically True, not
+         only a plain "True"
 
 Style
    New subrules casing_aspect, casing_exponent, casing_number
