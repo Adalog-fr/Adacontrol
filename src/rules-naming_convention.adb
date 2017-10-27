@@ -53,6 +53,7 @@ with
   Framework.Language.Shared_Keys,
   Framework.Pattern_Queues,
   Framework.Pattern_Queues_Matchers,
+  Framework.Reports.Fixes,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
@@ -505,6 +506,7 @@ package body Rules.Naming_Convention is
                           & Filter_Image (Cont)
                           & """: """
                           & Defining_Name_Image (Name) & '"');
+                  Reports.Fixes.Refactor (Name);
                   raise No_More_Checks;
                end if;
 
@@ -626,6 +628,7 @@ package body Rules.Naming_Convention is
                        & Filter_Image (Naming_Context (Value (Last_Position)))
                        & """: """
                        & Defining_Name_Image (Name) & '"');
+               Reports.Fixes.Refactor (Name);
                if Root_Found then
                   raise No_More_Checks;
                end if;

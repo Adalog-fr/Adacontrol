@@ -90,7 +90,7 @@ constructs; its scope is therefore not limited to enforcing
 programming rules, although it is of course one of its main goals.
 
 AdaContol can also generate commands for suggested fixes to a number
-of violations; its companion program @code{adaclt_fix} can perform
+of violations; its companion program @code{adactl_fix} can perform
 these fixes automatically, or they can be fixed interactively from
 GPS.
 
@@ -877,7 +877,8 @@ commands for fixing violations. It must be followed by ``none'' (the
 default), where no fixes information is generated, ``check'', where
 fixes information is generated only for messages that use ``check'',
 or ``search'' where fixes information is generated for all messages
-(i.e. ``search'' messages and above).
+(i.e. ``search'' messages and above). Fixes information is never
+generated for ``count''.
 
 Ex:
 @example
@@ -2551,19 +2552,6 @@ between two output files, all results from the same run will be
 kept. Note however that for this to work, you need to specify the
 output files exactly the same way: if you specify it once as
 ``result.txt'', and then as ``./result.txt'', the second one will
-overwrite the first one.
-
-The ``set patch'' command defines the name of a fixes file and
-activates the generation of fixes. If the command is given without
-<fixes file>, it suspends the generation of fixes.
-
-The ``set patch'' command always overwrites if the fixes file exists;
-However, the file is overwritten only the first time it is mentionned
-in a ``set patch'' command. This means that you can switch forth and
-back between two fixes files, all results from the same run will be
-kept. Note however that for this to work, you need to specify the
-fixes files exactly the same way: if you specify it once as
-``fixes.txt'', and then as ``./fixes.txt'', the second one will
 overwrite the first one.
 
 The ``set statistics'' command sets the statistics level, like the
@@ -6805,6 +6793,13 @@ check naming_convention
 -- All global variables must start with "G_"
 check naming_convention (global variable, "G_");
 @end example
+
+@subsection Fixes
+This rule generate fixes to help in refactoring the improper name. The
+fix is ignored by @code{adactl_fix}, since automatic fixing is not
+possible. Under GPS (interactive fixing) the ``fix'' icon launches the
+``rename entity'' dialog, allowing to give a proper name to the
+entity, and changing all occurrences.
 
 @subsection Variable
 The rule provides a variable that allows to specify the default

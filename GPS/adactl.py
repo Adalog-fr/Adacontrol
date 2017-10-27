@@ -171,6 +171,9 @@ class Fix:
             start_loc.buffer().insert(start_loc, self.fix_data[0])
             for line in self.fix_data[1:]:
                 end_loc.buffer().insert(end_loc, "\n" + line)
+        elif self.key == "Refactor":
+            GPS.EditorView(start_loc.buffer()).goto(start_loc)
+            GPS.Action("rename entity").execute_if_possible()
 
 
 def fixer(self):
@@ -250,6 +253,12 @@ def parse(output):
                                          int(match.group('endcol')))
                 fix.fix_end = loc.create_mark(left_gravity=True)
                 prev_mess.set_subprogram(fixer, 'gps-codefix', "Replace it")
+            elif key == "Refactor":
+                loc = GPS.EditorLocation(buf,
+                                         int(match.group('endline')),
+                                         int(match.group('endcol')))
+                fix.fix_end = loc.create_mark(left_gravity=True)
+                prev_mess.set_subprogram(fixer, 'gps-codefix', "Refactor it")
             elif key == "Insert":
                 fix.fix_end = fix.fix_start
                 prev_mess.set_subprogram(fixer, 'gps-codefix', "Insert it")
@@ -700,7 +709,7 @@ def on_GPS_start(H):
     fix_mess_pat = re.compile(r'"?(?P<file>.+?)"?:'
                               r'(?P<startline>\d+):'
                               r'(?P<startcol>\d+): '
-                              r'(?P<key>Delete|Insert|Replace)(:(?P<endline>\d+):(?P<endcol>\d+))?$')
+                              r'(?P<key>Delete|Insert|Replace|Refactor)(:(?P<endline>\d+):(?P<endcol>\d+))?$')
 
     rule_statistics_pat = re.compile(r"^(?P<rule>.*): (?P<counts>(Check: \d+, Search: \d+, Count: \d+)|(not triggered))$")
 

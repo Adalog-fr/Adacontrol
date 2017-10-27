@@ -42,6 +42,8 @@ package Framework.Reports.Fixes is
    -- Since a fix corresponds to a message, these services must be called after the corresponding call to Report
    -- for Check or Search, but not after a call to Report for Count
 
+   procedure Refactor (Original : Asis.Element);
+
    procedure Replace (Original : Asis.Element;                     By : Wide_String);
    procedure Replace (Original : Asis.Element;                     By : Asis.Element);
    procedure Replace (Original : Asis.Element;                     By : Asis.Element_List);

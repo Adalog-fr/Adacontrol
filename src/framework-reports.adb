@@ -45,7 +45,7 @@ with
   Adactl_Options;
 
 package body Framework.Reports is
-   use Framework.Variables, Framework.Variables.Shared_Types, Stats_Levels_Type;
+   use Framework.Variables, Framework.Variables.Shared_Types;
 
    package Output_Format_Type is
       type Object is new Variables.Object with
@@ -445,7 +445,6 @@ package body Framework.Reports is
 
       use Ada.Exceptions;
       use Counters, False_Positive_Map;
-      use type Asis.ASIS_Integer;
 
    begin  -- Report
       Report_Enabled := True;

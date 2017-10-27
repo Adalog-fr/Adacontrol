@@ -111,6 +111,19 @@ package body Framework.Reports.Fixes is
       end Next_Line;
    end Text_Generator;
 
+   ------------------
+   -- Gen_Refactor --
+   ------------------
+
+   procedure Gen_Refactor (From, To : Location) is
+      use Utilities;
+   begin
+      Raw_Report (Image (From)
+                  & ':'
+                  & " Refactor:"
+                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
+   end Gen_Refactor;
+
    -----------------
    -- Gen_Replace --
    -----------------
@@ -213,6 +226,15 @@ package body Framework.Reports.Fixes is
    -------------------------------------------------------------------------------------------
    --  Exported services
    -------------------------------------------------------------------------------------------
+
+   procedure Refactor (Original : Asis.Element) is
+   begin
+      if not Generate_Fixes then
+         return;
+      end if;
+
+      Gen_Refactor (From => Get_Location (Original), To => Get_End_Location (Original));
+   end Refactor;
 
    -------------
    -- Replace --
@@ -484,6 +506,6 @@ package body Framework.Reports.Fixes is
       Clear (Fix);
    end Flush;
 
-begin  -- Framework.Fixes
+begin  -- Framework.Reports.Fixes
    Coord_IO.Default_Width := 1;
 end Framework.Reports.Fixes;

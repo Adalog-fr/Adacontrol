@@ -1,173 +1,346 @@
 t_naming_convention.ads:2:4: Error: Global_Only: Name does not follow naming rule for "global all": "L_X1"
+t_naming_convention.ads:2:4: Refactor:2:7
 t_naming_convention.ads:8:7: Error: Global_Only: Name does not follow naming rule for "global all": "L_X2"
+t_naming_convention.ads:8:7: Refactor:8:10
 t_naming_convention-t_cat.adb:9:20: Error: Enum_Var: Name does not follow naming rule for "() procedure_formal_out": "Vvv1"
+t_naming_convention-t_cat.adb:9:20: Refactor:9:23
 t_naming_convention-t_cat.adb:11:20: Error: Int_Var: Name does not follow naming rule for "range procedure_formal_out": "Vvv2"
+t_naming_convention-t_cat.adb:11:20: Refactor:11:23
 t_naming_convention-t_cat.adb:13:20: Error: Int_Var: Name does not follow naming rule for "mod procedure_formal_out": "Vvv3"
+t_naming_convention-t_cat.adb:13:20: Refactor:13:23
 t_naming_convention.adb:6:4: Error: Stat_Const: Name does not follow naming rule for "regular_static_constant": "My_Const"
+t_naming_convention.adb:6:4: Refactor:6:11
 t_naming_convention.adb:6:4: Error: Const1: Name does not follow naming rule for "constant": "My_Const"
+t_naming_convention.adb:6:4: Refactor:6:11
 t_naming_convention.adb:7:4: Error: Const1: Name does not follow naming rule for "constant": "My_Number"
+t_naming_convention.adb:7:4: Refactor:7:12
 t_naming_convention.adb:12:4: Error: Too_short: Name does not follow naming rule for "all": "Xxx"
+t_naming_convention.adb:12:4: Refactor:12:6
 t_naming_convention.adb:20:4: Error: Title_Case: Name does not follow naming rule for "variable": "z"
+t_naming_convention.adb:20:4: Refactor:20:4
 t_naming_convention.adb:20:4: Error: Too_short: Name does not follow naming rule for "all": "z"
+t_naming_convention.adb:20:4: Refactor:20:4
 t_naming_convention.adb:21:4: Error: Title_Case: Name does not follow naming rule for "variable": "W_z"
+t_naming_convention.adb:21:4: Refactor:21:6
 t_naming_convention.adb:21:4: Error: Too_short: Name does not follow naming rule for "all": "W_z"
+t_naming_convention.adb:21:4: Refactor:21:6
 t_naming_convention.adb:22:4: Error: Title_Case: Name does not follow naming rule for "variable": "WW"
+t_naming_convention.adb:22:4: Refactor:22:5
 t_naming_convention.adb:22:4: Error: Too_short: Name does not follow naming rule for "all": "WW"
+t_naming_convention.adb:22:4: Refactor:22:5
 t_naming_convention.adb:23:4: Error: Title_Case: Name does not follow naming rule for "variable": "W_WW"
+t_naming_convention.adb:23:4: Refactor:23:7
 t_naming_convention.adb:27:4: Error: Bool_Var: Name does not follow naming rule for "Standard.Boolean variable": "IsIncorrect"
+t_naming_convention.adb:27:4: Refactor:27:14
 t_naming_convention.adb:28:4: Error: Not_Bool: Name does not follow naming rule for "variable": "Is_Incorrect"
+t_naming_convention.adb:28:4: Refactor:28:15
 t_naming_convention.adb:29:4: Error: Not_Bool: Name does not follow naming rule for "variable": "Has_Bad"
+t_naming_convention.adb:29:4: Refactor:29:10
 t_naming_convention.adb:32:9: Error: Enum_T: Name does not follow naming rule for "enumeration_type": "T_Enum_Bad"
+t_naming_convention.adb:32:9: Refactor:32:18
 t_naming_convention.adb:32:24: Error: Enums: Name does not follow naming rule for "enumeration": "A"
+t_naming_convention.adb:32:24: Refactor:32:24
 t_naming_convention.adb:32:27: Error: Enums: Name does not follow naming rule for "enumeration": "B"
+t_naming_convention.adb:32:27: Refactor:32:27
 t_naming_convention.adb:32:30: Error: Enums: Name does not follow naming rule for "enumeration": "C"
+t_naming_convention.adb:32:30: Refactor:32:30
 t_naming_convention.adb:33:9: Error: Tagged: Name does not follow naming rule for "tagged_type": "T_Tagged_Bad"
+t_naming_convention.adb:33:9: Refactor:33:20
 t_naming_convention.adb:35:12: Error: Class: Name does not follow naming rule for "class_type": "T_Class_Bad"
+t_naming_convention.adb:35:12: Refactor:35:22
 t_naming_convention.adb:38:9: Error: Types: Name does not follow naming rule for "type": "Int_Type"
+t_naming_convention.adb:38:9: Refactor:38:16
 t_naming_convention.adb:41:4: Error: Standard: Name does not follow naming rule for "all": "Integer"
+t_naming_convention.adb:41:4: Refactor:41:10
 t_naming_convention.adb:43:9: Error: Modular: Name does not follow naming rule for "modular_integer_type": "Mod_Bad"
+t_naming_convention.adb:43:9: Refactor:43:15
 t_naming_convention.adb:43:9: Error: Types: Name does not follow naming rule for "type": "Mod_Bad"
+t_naming_convention.adb:43:9: Refactor:43:15
 t_naming_convention.adb:48:7: Error: Discr: Name does not follow naming rule for "discriminant": "Bad_2"
+t_naming_convention.adb:48:7: Refactor:48:11
 t_naming_convention.adb:51:9: Error: Rec_F: Name does not follow naming rule for "record_field": "Field"
+t_naming_convention.adb:51:9: Refactor:51:13
 t_naming_convention.adb:55:15: Error: Rec_F: Name does not follow naming rule for "record_field": "True_F1"
+t_naming_convention.adb:55:15: Refactor:55:21
 t_naming_convention.adb:60:21: Error: Rec_F: Name does not follow naming rule for "record_field": "True_F2"
+t_naming_convention.adb:60:21: Refactor:60:27
 t_naming_convention.adb:70:10: Error: Rec_F: Name does not follow naming rule for "record_field": "Field"
+t_naming_convention.adb:70:10: Refactor:70:14
 t_naming_convention.adb:75:9: Error: Interface: Name does not follow naming rule for "interface_type": "T_Bad_Interf"
+t_naming_convention.adb:75:9: Refactor:75:20
 t_naming_convention.adb:78:14: Error: Procs: Name does not follow naming rule for "procedure": "Bad1_Gen"
+t_naming_convention.adb:78:14: Refactor:78:21
 t_naming_convention.adb:78:24: Error: Const1: Name does not follow naming rule for "constant": "BadParam"
+t_naming_convention.adb:78:24: Refactor:78:31
 t_naming_convention.adb:85:14: Error: Procs: Name does not follow naming rule for "procedure": "Bad2_Gen"
+t_naming_convention.adb:85:14: Refactor:85:21
 t_naming_convention.adb:85:25: Error: Const1: Name does not follow naming rule for "constant": "BadParam"
+t_naming_convention.adb:85:25: Refactor:85:32
 t_naming_convention.adb:91:13: Error: Non_Wide_F: Name does not follow naming rule for "function": "Wide_Body"
+t_naming_convention.adb:91:13: Refactor:91:21
 t_naming_convention.adb:96:13: Error: Non_Wide_F: Name does not follow naming rule for "function": "Wide_Wide_Body"
+t_naming_convention.adb:96:13: Refactor:96:26
 t_naming_convention.adb:101:13: Error: Wide_F: Name does not follow naming rule for "Standard.Wide_String function": "Wide_Wide_Image"
+t_naming_convention.adb:101:13: Refactor:101:27
 t_naming_convention.adb:118:13: Error: Non_Wide_F: Name does not follow naming rule for "function": "Wide_Conv"
+t_naming_convention.adb:118:13: Refactor:118:21
 t_naming_convention.adb:124:12: Error: Private: Name does not follow naming rule for "private_type": "Bad_Priv_T"
+t_naming_convention.adb:124:12: Refactor:124:21
 t_naming_convention.adb:127:12: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "T_Access_Priv_Reg"
+t_naming_convention.adb:127:12: Refactor:127:28
 t_naming_convention.adb:135:12: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "T_access_Incomplete_Reg"
+t_naming_convention.adb:135:12: Refactor:135:34
 t_naming_convention.adb:140:12: Error: Modular: Name does not follow naming rule for "modular_integer_type": "T_Incomplete"
+t_naming_convention.adb:140:12: Refactor:140:23
 t_naming_convention.adb:146:14: Error: Generics3: Name does not follow naming rule for "generic_procedure": "Gen_Proc"
+t_naming_convention.adb:146:14: Refactor:146:21
 t_naming_convention.adb:146:14: Error: Generics1: Name does not follow naming rule for "generic": "Gen_Proc"
+t_naming_convention.adb:146:14: Refactor:146:21
 t_naming_convention.adb:159:14: Error: Procs: Name does not follow naming rule for "procedure": "New_Gen"
+t_naming_convention.adb:159:14: Refactor:159:20
 t_naming_convention.adb:162:22: Error: Generics3: Name does not follow naming rule for "generic_procedure": "Ren_Gen_Proc"
+t_naming_convention.adb:162:22: Refactor:162:33
 t_naming_convention.adb:162:22: Error: Generics1: Name does not follow naming rule for "generic": "Ren_Gen_Proc"
+t_naming_convention.adb:162:22: Refactor:162:33
 t_naming_convention.adb:164:14: Error: Procs: Name does not follow naming rule for "procedure": "Ren_Bad1_Gen"
+t_naming_convention.adb:164:14: Refactor:164:25
 t_naming_convention.adb:164:28: Error: Const1: Name does not follow naming rule for "constant": "OtherName"
+t_naming_convention.adb:164:28: Refactor:164:36
 t_naming_convention.adb:165:14: Error: Procs: Name does not follow naming rule for "procedure": "Ren_Bad2_Gen"
+t_naming_convention.adb:165:14: Refactor:165:25
 t_naming_convention.adb:165:28: Error: Const1: Name does not follow naming rule for "constant": "OtherName"
+t_naming_convention.adb:165:28: Refactor:165:36
 t_naming_convention.adb:177:13: Error: Generics2: Name does not follow naming rule for "generic_sp": "proc_Func_GEN"
+t_naming_convention.adb:177:13: Refactor:177:25
 t_naming_convention.adb:185:17: Error: Protect: Name does not follow naming rule for "protected_procedure": "P"
+t_naming_convention.adb:185:17: Refactor:185:17
 t_naming_convention.adb:185:17: Error: Too_short: Name does not follow naming rule for "all": "P"
+t_naming_convention.adb:185:17: Refactor:185:17
 t_naming_convention.adb:186:17: Error: Protect: Name does not follow naming rule for "protected_procedure": "P_Gen"
+t_naming_convention.adb:186:17: Refactor:186:21
 t_naming_convention.adb:186:17: Error: Procs: Name does not follow naming rule for "procedure": "P_Gen"
+t_naming_convention.adb:186:17: Refactor:186:21
 t_naming_convention.adb:189:7: Error: Protec_F: Name does not follow naming rule for "protected_field": "Field"
+t_naming_convention.adb:189:7: Refactor:189:11
 t_naming_convention.adb:199:13: Error: Task_E: Name does not follow naming rule for "task_entry": "E"
+t_naming_convention.adb:199:13: Refactor:199:13
 t_naming_convention.adb:199:13: Error: Too_short: Name does not follow naming rule for "all": "E"
+t_naming_convention.adb:199:13: Refactor:199:13
 t_naming_convention.adb:207:9: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "Acc_1"
+t_naming_convention.adb:207:9: Refactor:207:13
 t_naming_convention.adb:207:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_1"
+t_naming_convention.adb:207:9: Refactor:207:13
 t_naming_convention.adb:207:9: Error: Types: Name does not follow naming rule for "type": "Acc_1"
+t_naming_convention.adb:207:9: Refactor:207:13
 t_naming_convention.adb:209:9: Error: Access_T: Name does not follow naming rule for "access_to_tagged_type": "Acc_2"
+t_naming_convention.adb:209:9: Refactor:209:13
 t_naming_convention.adb:209:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_2"
+t_naming_convention.adb:209:9: Refactor:209:13
 t_naming_convention.adb:209:9: Error: Types: Name does not follow naming rule for "type": "Acc_2"
+t_naming_convention.adb:209:9: Refactor:209:13
 t_naming_convention.adb:211:9: Error: Access_C: Name does not follow naming rule for "access_to_class_type": "Acc_3"
+t_naming_convention.adb:211:9: Refactor:211:13
 t_naming_convention.adb:211:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_3"
+t_naming_convention.adb:211:9: Refactor:211:13
 t_naming_convention.adb:211:9: Error: Types: Name does not follow naming rule for "type": "Acc_3"
+t_naming_convention.adb:211:9: Refactor:211:13
 t_naming_convention.adb:213:9: Error: Access_C: Name does not follow naming rule for "access_to_class_type": "Acc_4"
+t_naming_convention.adb:213:9: Refactor:213:13
 t_naming_convention.adb:213:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_4"
+t_naming_convention.adb:213:9: Refactor:213:13
 t_naming_convention.adb:213:9: Error: Types: Name does not follow naming rule for "type": "Acc_4"
+t_naming_convention.adb:213:9: Refactor:213:13
 t_naming_convention.adb:215:9: Error: Access_SP: Name does not follow naming rule for "access_to_sp_type": "Acc_5"
+t_naming_convention.adb:215:9: Refactor:215:13
 t_naming_convention.adb:215:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_5"
+t_naming_convention.adb:215:9: Refactor:215:13
 t_naming_convention.adb:215:9: Error: Types: Name does not follow naming rule for "type": "Acc_5"
+t_naming_convention.adb:215:9: Refactor:215:13
 t_naming_convention.adb:217:9: Error: access_Ta: Name does not follow naming rule for "access_to_task_type": "Acc_6"
+t_naming_convention.adb:217:9: Refactor:217:13
 t_naming_convention.adb:217:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_6"
+t_naming_convention.adb:217:9: Refactor:217:13
 t_naming_convention.adb:217:9: Error: Types: Name does not follow naming rule for "type": "Acc_6"
+t_naming_convention.adb:217:9: Refactor:217:13
 t_naming_convention.adb:219:9: Error: access_Ta: Name does not follow naming rule for "access_to_task_type": "Acc_7"
+t_naming_convention.adb:219:9: Refactor:219:13
 t_naming_convention.adb:219:9: Error: Access: Name does not follow naming rule for "access_type": "Acc_7"
+t_naming_convention.adb:219:9: Refactor:219:13
 t_naming_convention.adb:219:9: Error: Types: Name does not follow naming rule for "type": "Acc_7"
+t_naming_convention.adb:219:9: Refactor:219:13
 t_naming_convention.adb:224:4: Error: Enums: Name does not follow naming rule for "enumeration": "Bad_Enum_Ren_A"
+t_naming_convention.adb:224:4: Refactor:224:17
 t_naming_convention.adb:228:4: Error: Too_short: Name does not follow naming rule for "all": "Var"
+t_naming_convention.adb:228:4: Refactor:228:6
 t_naming_convention.adb:230:4: Error: Stat_Const: Name does not follow naming rule for "regular_static_constant": "Const"
+t_naming_convention.adb:230:4: Refactor:230:8
 t_naming_convention.adb:230:4: Error: Const1: Name does not follow naming rule for "constant": "Const"
+t_naming_convention.adb:230:4: Refactor:230:8
 t_naming_convention.adb:234:4: Error: Too_short: Name does not follow naming rule for "all": "R1"
+t_naming_convention.adb:234:4: Refactor:234:5
 t_naming_convention.adb:236:4: Error: Too_short: Name does not follow naming rule for "all": "R2"
+t_naming_convention.adb:236:4: Refactor:236:5
 t_naming_convention.adb:238:4: Error: Const1: Name does not follow naming rule for "constant": "Ren3"
+t_naming_convention.adb:238:4: Refactor:238:7
 t_naming_convention.adb:241:4: Error: Const1: Name does not follow naming rule for "constant": "Ren5_Static"
+t_naming_convention.adb:241:4: Refactor:241:14
 t_naming_convention.adb:243:4: Error: Const1: Name does not follow naming rule for "constant": "Ren6"
+t_naming_convention.adb:243:4: Refactor:243:7
 t_naming_convention.adb:249:9: Error: Too_short: Name does not follow naming rule for "all": "T_1"
+t_naming_convention.adb:249:9: Refactor:249:11
 t_naming_convention.adb:250:9: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "T_2"
+t_naming_convention.adb:250:9: Refactor:250:11
 t_naming_convention.adb:250:9: Error: Access: Name does not follow naming rule for "access_type": "T_2"
+t_naming_convention.adb:250:9: Refactor:250:11
 t_naming_convention.adb:250:9: Error: Too_short: Name does not follow naming rule for "all": "T_2"
+t_naming_convention.adb:250:9: Refactor:250:11
 t_naming_convention.adb:251:9: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "T_3"
+t_naming_convention.adb:251:9: Refactor:251:11
 t_naming_convention.adb:251:9: Error: Access: Name does not follow naming rule for "access_type": "T_3"
+t_naming_convention.adb:251:9: Refactor:251:11
 t_naming_convention.adb:251:9: Error: Too_short: Name does not follow naming rule for "all": "T_3"
+t_naming_convention.adb:251:9: Refactor:251:11
 t_naming_convention.adb:256:4: Error: Rec_F: Name does not follow naming rule for "record_field": "C1"
+t_naming_convention.adb:256:4: Refactor:256:5
 t_naming_convention.adb:256:4: Error: Too_short: Name does not follow naming rule for "all": "C1"
+t_naming_convention.adb:256:4: Refactor:256:5
 t_naming_convention.adb:258:4: Error: Rec_F: Name does not follow naming rule for "record_field": "C2"
+t_naming_convention.adb:258:4: Refactor:258:5
 t_naming_convention.adb:258:4: Error: Too_short: Name does not follow naming rule for "all": "C2"
+t_naming_convention.adb:258:4: Refactor:258:5
 t_naming_convention.adb:260:4: Error: Rec_F: Name does not follow naming rule for "record_field": "C3"
+t_naming_convention.adb:260:4: Refactor:260:5
 t_naming_convention.adb:260:4: Error: Too_short: Name does not follow naming rule for "all": "C3"
+t_naming_convention.adb:260:4: Refactor:260:5
 t_naming_convention.adb:263:4: Error: Exc_Ren: Name does not follow naming rule for "exception_renaming": "CE"
+t_naming_convention.adb:263:4: Refactor:263:5
 t_naming_convention.adb:267:12: Error: Tasks: Name does not follow naming rule for "task_type": "ST1"
+t_naming_convention.adb:267:12: Refactor:267:14
 t_naming_convention.adb:267:12: Error: Too_short: Name does not follow naming rule for "all": "ST1"
+t_naming_convention.adb:267:12: Refactor:267:14
 t_naming_convention.adb:269:12: Error: Modular: Name does not follow naming rule for "modular_integer_type": "ST2"
+t_naming_convention.adb:269:12: Refactor:269:14
 t_naming_convention.adb:269:12: Error: Types: Name does not follow naming rule for "type": "ST2"
+t_naming_convention.adb:269:12: Refactor:269:14
 t_naming_convention.adb:269:12: Error: Too_short: Name does not follow naming rule for "all": "ST2"
+t_naming_convention.adb:269:12: Refactor:269:14
 t_naming_convention.adb:272:9: Error: Tasks: Name does not follow naming rule for "task_type": "DT1"
+t_naming_convention.adb:272:9: Refactor:272:11
 t_naming_convention.adb:272:9: Error: Too_short: Name does not follow naming rule for "all": "DT1"
+t_naming_convention.adb:272:9: Refactor:272:11
 t_naming_convention.adb:274:9: Error: Modular: Name does not follow naming rule for "modular_integer_type": "Dt2"
+t_naming_convention.adb:274:9: Refactor:274:11
 t_naming_convention.adb:274:9: Error: Types: Name does not follow naming rule for "type": "Dt2"
+t_naming_convention.adb:274:9: Refactor:274:11
 t_naming_convention.adb:274:9: Error: Too_short: Name does not follow naming rule for "all": "Dt2"
+t_naming_convention.adb:274:9: Refactor:274:11
 t_naming_convention.adb:276:12: Error: Modular: Name does not follow naming rule for "modular_integer_type": "Dt3"
+t_naming_convention.adb:276:12: Refactor:276:14
 t_naming_convention.adb:276:12: Error: Types: Name does not follow naming rule for "type": "Dt3"
+t_naming_convention.adb:276:12: Refactor:276:14
 t_naming_convention.adb:276:12: Error: Too_short: Name does not follow naming rule for "all": "Dt3"
+t_naming_convention.adb:276:12: Refactor:276:14
 t_naming_convention.adb:281:12: Error: Types: Name does not follow naming rule for "type": "F1"
+t_naming_convention.adb:281:12: Refactor:281:13
 t_naming_convention.adb:281:12: Error: Too_short: Name does not follow naming rule for "all": "F1"
+t_naming_convention.adb:281:12: Refactor:281:13
 t_naming_convention.adb:282:12: Error: Types: Name does not follow naming rule for "type": "F2"
+t_naming_convention.adb:282:12: Refactor:282:13
 t_naming_convention.adb:282:12: Error: Too_short: Name does not follow naming rule for "all": "F2"
+t_naming_convention.adb:282:12: Refactor:282:13
 t_naming_convention.adb:283:12: Error: Types: Name does not follow naming rule for "type": "F3"
+t_naming_convention.adb:283:12: Refactor:283:13
 t_naming_convention.adb:283:12: Error: Too_short: Name does not follow naming rule for "all": "F3"
+t_naming_convention.adb:283:12: Refactor:283:13
 t_naming_convention.adb:284:12: Error: Types: Name does not follow naming rule for "type": "F4"
+t_naming_convention.adb:284:12: Refactor:284:13
 t_naming_convention.adb:284:12: Error: Too_short: Name does not follow naming rule for "all": "F4"
+t_naming_convention.adb:284:12: Refactor:284:13
 t_naming_convention.adb:285:12: Error: Generics1: Name does not follow naming rule for "generic": "Gen_Pack"
+t_naming_convention.adb:285:12: Refactor:285:19
 t_naming_convention.adb:286:12: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "A1"
+t_naming_convention.adb:286:12: Refactor:286:13
 t_naming_convention.adb:286:12: Error: Access: Name does not follow naming rule for "access_type": "A1"
+t_naming_convention.adb:286:12: Refactor:286:13
 t_naming_convention.adb:286:12: Error: Types: Name does not follow naming rule for "type": "A1"
+t_naming_convention.adb:286:12: Refactor:286:13
 t_naming_convention.adb:286:12: Error: Too_short: Name does not follow naming rule for "all": "A1"
+t_naming_convention.adb:286:12: Refactor:286:13
 t_naming_convention.adb:288:12: Error: Access_T: Name does not follow naming rule for "access_to_tagged_type": "A2"
+t_naming_convention.adb:288:12: Refactor:288:13
 t_naming_convention.adb:288:12: Error: Access: Name does not follow naming rule for "access_type": "A2"
+t_naming_convention.adb:288:12: Refactor:288:13
 t_naming_convention.adb:288:12: Error: Types: Name does not follow naming rule for "type": "A2"
+t_naming_convention.adb:288:12: Refactor:288:13
 t_naming_convention.adb:288:12: Error: Too_short: Name does not follow naming rule for "all": "A2"
+t_naming_convention.adb:288:12: Refactor:288:13
 t_naming_convention.adb:290:12: Error: Access_R: Name does not follow naming rule for "access_to_regular_type": "A3"
+t_naming_convention.adb:290:12: Refactor:290:13
 t_naming_convention.adb:290:12: Error: Access: Name does not follow naming rule for "access_type": "A3"
+t_naming_convention.adb:290:12: Refactor:290:13
 t_naming_convention.adb:290:12: Error: Types: Name does not follow naming rule for "type": "A3"
+t_naming_convention.adb:290:12: Refactor:290:13
 t_naming_convention.adb:290:12: Error: Too_short: Name does not follow naming rule for "all": "A3"
+t_naming_convention.adb:290:12: Refactor:290:13
 t_naming_convention.adb:292:12: Error: Access_T: Name does not follow naming rule for "access_to_tagged_type": "A4"
+t_naming_convention.adb:292:12: Refactor:292:13
 t_naming_convention.adb:292:12: Error: Access: Name does not follow naming rule for "access_type": "A4"
+t_naming_convention.adb:292:12: Refactor:292:13
 t_naming_convention.adb:292:12: Error: Types: Name does not follow naming rule for "type": "A4"
+t_naming_convention.adb:292:12: Refactor:292:13
 t_naming_convention.adb:292:12: Error: Too_short: Name does not follow naming rule for "all": "A4"
+t_naming_convention.adb:292:12: Refactor:292:13
 t_naming_convention.adb:297:14: Error: Too_short: Name does not follow naming rule for "all": "Sep"
+t_naming_convention.adb:297:14: Refactor:297:16
 t_naming_convention-sep.adb:2:11: Error: Too_short: Name does not follow naming rule for "all": "Sep"
+t_naming_convention-sep.adb:2:11: Refactor:2:13
 t_naming_convention-sep.adb:3:9: Error: Types: Name does not follow naming rule for "type": "Local_Int"
+t_naming_convention-sep.adb:3:9: Refactor:3:17
 t_naming_convention.adb:308:10: Error: Local_Only: Name does not follow naming rule for "local all": "G_X3"
+t_naming_convention.adb:308:10: Refactor:308:13
 t_naming_convention.adb:315:9: Error: Tagged: Name does not follow naming rule for "tagged_type": "T1"
+t_naming_convention.adb:315:9: Refactor:315:10
 t_naming_convention.adb:315:9: Error: Types: Name does not follow naming rule for "type": "T1"
+t_naming_convention.adb:315:9: Refactor:315:10
 t_naming_convention.adb:315:9: Error: Too_short: Name does not follow naming rule for "all": "T1"
+t_naming_convention.adb:315:9: Refactor:315:10
 t_naming_convention.adb:318:12: Error: Private: Name does not follow naming rule for "private_type": "T2"
+t_naming_convention.adb:318:12: Refactor:318:13
 t_naming_convention.adb:318:12: Error: Types: Name does not follow naming rule for "type": "T2"
+t_naming_convention.adb:318:12: Refactor:318:13
 t_naming_convention.adb:318:12: Error: Too_short: Name does not follow naming rule for "all": "T2"
+t_naming_convention.adb:318:12: Refactor:318:13
 t_naming_convention.adb:323:9: Error: Private: Name does not follow naming rule for "private_type": "D1"
+t_naming_convention.adb:323:9: Refactor:323:10
 t_naming_convention.adb:323:9: Error: Types: Name does not follow naming rule for "type": "D1"
+t_naming_convention.adb:323:9: Refactor:323:10
 t_naming_convention.adb:323:9: Error: Too_short: Name does not follow naming rule for "all": "D1"
+t_naming_convention.adb:323:9: Refactor:323:10
 t_naming_convention.adb:325:3: Error: Rec_F: Name does not follow naming rule for "record_field": "F"
+t_naming_convention.adb:325:3: Refactor:325:3
 t_naming_convention.adb:325:3: Error: Too_short: Name does not follow naming rule for "all": "F"
+t_naming_convention.adb:325:3: Refactor:325:3
 t_naming_convention.adb:328:9: Error: Private: Name does not follow naming rule for "private_type": "D2"
+t_naming_convention.adb:328:9: Refactor:328:10
 t_naming_convention.adb:328:9: Error: Types: Name does not follow naming rule for "type": "D2"
+t_naming_convention.adb:328:9: Refactor:328:10
 t_naming_convention.adb:328:9: Error: Too_short: Name does not follow naming rule for "all": "D2"
+t_naming_convention.adb:328:9: Refactor:328:10
 t_naming_convention.adb:333:4: Error: Too_short: Name does not follow naming rule for "all": "X"
+t_naming_convention.adb:333:4: Refactor:333:4
 t_naming_convention.adb:334:4: Error: Rec_F: Name does not follow naming rule for "record_field": "Y"
+t_naming_convention.adb:334:4: Refactor:334:4
 t_naming_convention.adb:334:4: Error: Too_short: Name does not follow naming rule for "all": "Y"
+t_naming_convention.adb:334:4: Refactor:334:4
 t_naming_convention.adb:339:3: Error: Too_short: Name does not follow naming rule for "all": "B1"
+t_naming_convention.adb:339:3: Refactor:339:4
 t_naming_convention.adb:340:1: Error: Stmt: Name does not follow naming rule for "stmt_name": "Block"
+t_naming_convention.adb:340:1: Refactor:340:5
 t_naming_convention.adb:345:6: Error: Label: Name does not follow naming rule for "label": "La_Bel"
+t_naming_convention.adb:345:6: Refactor:345:11
 t_naming_convention.adb:346:3: Error: Loop: Name does not follow naming rule for "loop_name": "L"
+t_naming_convention.adb:346:3: Refactor:346:3
 t_naming_convention.adb:346:3: Error: Too_short: Name does not follow naming rule for "all": "L"
+t_naming_convention.adb:346:3: Refactor:346:3
 t_naming_convention.adb:346:11: Error: Const1: Name does not follow naming rule for "constant": "I"
+t_naming_convention.adb:346:11: Refactor:346:11

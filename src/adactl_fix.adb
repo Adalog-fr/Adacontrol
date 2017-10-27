@@ -81,7 +81,7 @@ procedure Adactl_Fix is
    package String_Vector is new Ada.Containers.Vectors (Positive, Unbounded_String);
    use String_Vector;
 
-   type Fix_Kind is (Insert, Replace, Delete, Not_A_Fix);
+   type Fix_Kind is (Insert, Replace, Refactor, Delete, Not_A_Fix);
    subtype Range_Fixes   is Fix_Kind range Replace .. Delete;
    subtype True_Fix_Kind is Fix_Kind range Insert .. Delete;
    type Fix_Descriptor (Kind : True_Fix_Kind := Insert) is
@@ -90,7 +90,7 @@ procedure Adactl_Fix is
             when Insert | Replace =>
                First : Positive;
                Last  : Positive;
-            when others =>
+            when Refactor | Delete =>
                null;
          end case;
       end record;
@@ -138,6 +138,8 @@ procedure Adactl_Fix is
             return (Insert, First, Last);
          when Replace =>
             return (Replace, First, Last);
+         when Refactor =>
+            return (Kind => Refactor);
          when Delete =>
             return (Kind => Delete);
       end case;
@@ -385,7 +387,7 @@ procedure Adactl_Fix is
                case Kind is
                   when Not_A_Fix =>
                      null;
-                  when Delete =>
+                  when Delete | Refactor =>
                      -- Add fix immediately, since there are no replacement lines to wait for
                      Add_Fix (Fix_Pos, Create (Kind));
                   when Insert | Replace =>
@@ -573,12 +575,12 @@ begin   --Adactl_Fix
                   Break;
                   Print (To_String (Replacements (Line)));
                end loop;
-            when Delete =>
+            when Delete | Refactor =>
                null;
          end case;
 
          case Fix.Kind is
-            when Insert =>
+            when Insert | Refactor =>
                null;
             when Replace | Delete =>
                Skip_To (Fix_Pos.End_Pos);
