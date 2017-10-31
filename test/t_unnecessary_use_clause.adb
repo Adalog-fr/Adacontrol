@@ -3,6 +3,7 @@ with System; use System;   -- Unused (case of declaration outside unit)
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with T_unnecessary_use_clause.Gen;
+with T_Unnecessary_Use_Clause.Child;
 package body T_unnecessary_use_clause is
    use Ada;            -- OK, used next line
    use Text_IO;        -- Unused

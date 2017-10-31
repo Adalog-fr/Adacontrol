@@ -44,6 +44,9 @@ Style
    Exposed_Literal: Add places Aggr_Index, Attr_Index, Statement
    Multiple_Elements considers pragmas as well.
 
+Unnecessary_Use_Clause
+   Subrule "nested" also controls use clauses for parent package
+
 =============
 == V1.18r9 ==
 =============

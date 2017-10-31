@@ -27,6 +27,7 @@
 -- Asis
 with
   Asis.Clauses,
+  Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
   Asis.Expressions;
@@ -162,8 +163,8 @@ package body Rules.Unnecessary_Use_Clause is
    ------------------------
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
-      use Asis.Clauses;
-      use Thick_Queries;
+      use Asis.Clauses, Asis.Compilation_Units, Asis.Elements;
+      use Framework.Reports, Scope_Manager, Thick_Queries;
 
    begin  -- Process_Use_Clause
       if Rule_Used = Not_Used then
@@ -173,38 +174,51 @@ package body Rules.Unnecessary_Use_Clause is
 
       declare
          Names : constant Asis.Name_List := Clause_Names (Clause);
+         This_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Clause);
       begin
-         --
          for I in Names'Range loop
-            declare
-               use Scope_Manager, Framework.Reports;
-               Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names(I))));
-            begin
-               -- Check if already there
-               Used_Packages.Reset (All_Scopes);
-               while Used_Packages.Data_Available loop
-                  if Used_Packages.Current_Data.Name = Name_String then
-                     if Rule_Used (Nested) then
-                        Report (Rule_Id,
-                                Ctl_Contexts (Nested),
-                                Get_Location (Clause),
-                                "use clause for " & Extended_Name_Image (Names (I))
-                                & " in scope of use clause for same package at "
-                                & Image (Get_Location (Used_Packages.Current_Data.Use_Clause)));
+            -- Check if ancestor
+            if Is_Ancestor (Definition_Compilation_Unit (Names (I)), This_Unit, Strict => True) then
+               if Rule_Used (Nested) then
+                  Report (Rule_Id,
+                          Ctl_Contexts (Nested),
+                          Get_Location (Clause),
+                          "use clause for " & Extended_Name_Image (Names (I))
+                          & " in descendant unit "
+                          & Unit_Full_Name (This_Unit));
+                  Fixes.List_Remove (I, From => Clause);
+               end if;
+            else
+               declare
+                  Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names (I))));
+               begin
+                  -- Check if already there
+                  Used_Packages.Reset (All_Scopes);
+                  while Used_Packages.Data_Available loop
+                     if Used_Packages.Current_Data.Name = Name_String then
+                        if Rule_Used (Nested) then
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Nested),
+                                   Get_Location (Clause),
+                                   "use clause for " & Extended_Name_Image (Names (I))
+                                   & " in scope of use clause for same package at "
+                                   & Image (Get_Location (Used_Packages.Current_Data.Use_Clause)));
+                           Fixes.List_Remove (I, From => Clause);
+                        end if;
                      end if;
-                  end if;
 
-                  Used_Packages.Next;
-               end loop;
+                     Used_Packages.Next;
+                  end loop;
 
-               -- Add it in any case
-               Used_Packages.Push ((Name_Length   => Name_String'Length,
-                                    Use_Clause    => Clause,
-                                    Position      => I,
-                                    Name          => Name_String,
-                                    Original_Name => Names (I),
-                                    User          => Nothing));
-            end;
+                  -- Add it in any case
+                  Used_Packages.Push ((Name_Length   => Name_String'Length,
+                                       Use_Clause    => Clause,
+                                       Position      => I,
+                                       Name          => Name_String,
+                                       Original_Name => Names (I),
+                                       User          => Nothing));
+               end;
+            end if;
          end loop;
       end;
    end Process_Use_Clause;
