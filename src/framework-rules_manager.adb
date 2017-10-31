@@ -536,7 +536,7 @@ package body Framework.Rules_Manager is
 
    procedure Process_Inhibition (Unit : Asis.Compilation_Unit; State : Framework.Rules_Manager.Rule_Action) is
       use Asis.Declarations, Asis.Elements;
-      use Framework, Framework.Control_Manager;
+      use Framework.Control_Manager;
 
       Iter : Context_Iterator := Inhibited_Iterator.Create;
    begin

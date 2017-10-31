@@ -205,7 +205,7 @@ package body Framework.Ruler is
 
    procedure Semantic_Traverse (Unit : Asis.Compilation_Unit) is
       use Asis, Asis.Elements, Asis.Text;
-      use Framework, Framework.Queries;
+      use Framework.Queries;
 
       The_Control : Traverse_Control := Continue;
       The_Info    : Info := (Pragma_Or_Attribute_Level => 0);
@@ -631,7 +631,7 @@ package body Framework.Ruler is
 
    procedure Textual_Traverse (Unit : Asis.Compilation_Unit) is
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Text;
-      use Ada.Strings.Wide_Fixed, Framework, Rules_Manager, Utilities;
+      use Ada.Strings.Wide_Fixed, Rules_Manager, Utilities;
       Element_From_Unit : constant Asis.Element := Unit_Declaration (Unit);
       Unit_Lines : constant Line_List := Lines (Element  => Element_From_Unit,
                                                 The_Span => Compilation_Span (Element_From_Unit));
@@ -707,7 +707,6 @@ package body Framework.Ruler is
    is
       use Ada.Characters.Handling, Ada.Exceptions;
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-      use Utilities;
 
       -- Declarations to be added in ASIS 2012:
       subtype A_Statement_Path   is Path_Kinds range An_If_Path .. A_Then_Abort_Path;

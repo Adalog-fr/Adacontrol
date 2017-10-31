@@ -263,7 +263,7 @@ package body Framework.Queries is
 
    function System_Value (Name : Wide_String) return Asis.Declaration is
       use Asis.Compilation_Units, Asis.Elements;
-      use Element_Map, Framework, Utilities;
+      use Element_Map, Utilities;
       System_Unit : Asis.Compilation_Unit;
    begin
       if Is_Empty (System_Symbol_Map) then

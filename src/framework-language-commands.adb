@@ -330,7 +330,7 @@ package body Framework.Language.Commands is
    ---------------------
 
    procedure Inhibit_Command (Rule_Name : in Wide_String) is
-      use Framework, Framework.Control_Manager, Framework.Language, Framework.Rules_Manager;
+      use Framework.Control_Manager, Framework.Rules_Manager;
    begin
       if not Parameter_Exists then
          Parameter_Error ("Inhibit", "Missing unit names");

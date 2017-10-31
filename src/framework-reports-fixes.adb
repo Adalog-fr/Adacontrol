@@ -131,7 +131,7 @@ package body Framework.Reports.Fixes is
    -- Replace text covered by Extent (which can be empty for simple insertions, or cover
    -- several lines) by text fetched from Text_Generator
    procedure Gen_Replace (From, To : Location) is
-      use Reports, Utilities;
+      use Utilities;
    begin
       Raw_Report (Image (From)
                   & ':'
@@ -150,7 +150,7 @@ package body Framework.Reports.Fixes is
    -- Like previous procedure, using provided text
    procedure Gen_Replace (From, To : Location; By : Wide_String) is
       use Ada.Strings.Wide_Fixed;
-      use Reports, Utilities;
+      use Utilities;
       Start : Natural := By'First;
       Stop  : Natural;
    begin
@@ -186,7 +186,6 @@ package body Framework.Reports.Fixes is
    type Break_Addition is (None, Before, After, Both);
    procedure Gen_Insert (Pos : Location; Text : Wide_String; Add_Break : Break_Addition := None) is
       -- Breaks line
-      use Reports;
    begin
       Raw_Report (Image (Pos)
                   & ':'
@@ -215,7 +214,7 @@ package body Framework.Reports.Fixes is
    -- Formally equivalent to a Gen_Replace with "", but it is easier for optimizations of conflicts in the fixer
    -- to know that it is a deletion
    procedure Gen_Delete (From, To : Location) is
-      use Reports, Utilities;
+      use Utilities;
    begin
       Raw_Report (Image (From)
                   & ':'
@@ -241,7 +240,6 @@ package body Framework.Reports.Fixes is
    -------------
 
    procedure Replace (Original : Asis.Element; By : Wide_String) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -255,7 +253,6 @@ package body Framework.Reports.Fixes is
    -------------
 
    procedure Replace (Original : Asis.Element; By : Asis.Element) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -270,7 +267,6 @@ package body Framework.Reports.Fixes is
    -------------
 
    procedure Replace (Original : Asis.Element; By : Asis.Element_List) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -289,7 +285,6 @@ package body Framework.Reports.Fixes is
    -------------
 
    procedure Replace (From : Location; Length : Positive; By : Wide_String) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -303,7 +298,6 @@ package body Framework.Reports.Fixes is
    ------------
 
    procedure Insert (Text : Wide_String;  Place : Insert_Place;  Elem : Asis.Element; Full_Line : Boolean := False) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -338,7 +332,6 @@ package body Framework.Reports.Fixes is
    ------------
 
    procedure Insert (Text : Wide_String; From  : Location) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -353,7 +346,6 @@ package body Framework.Reports.Fixes is
 
    procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position) is
       use Ada.Strings.Wide_Fixed;
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -367,7 +359,6 @@ package body Framework.Reports.Fixes is
    ------------
 
    procedure Delete (Elem  : Asis.Element) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -382,7 +373,6 @@ package body Framework.Reports.Fixes is
    ------------
 
    procedure Delete (Elems : Asis.Element_List) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -397,7 +387,6 @@ package body Framework.Reports.Fixes is
    ------------
 
    procedure Delete (From  : Location; To : Location) is
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -412,7 +401,6 @@ package body Framework.Reports.Fixes is
 
    procedure List_Remove (Inx : Asis.List_Index; From : Asis.Element) is
       use Asis.Clauses;
-      use Framework.Reports;
    begin
       if not Generate_Fixes then
          return;
@@ -440,7 +428,6 @@ package body Framework.Reports.Fixes is
 
    procedure Insert (Fix : in out Incremental_Fix; Text : Wide_String; Place : Insert_Place; Elem : Asis.Element) is
       use Fix_List;
-      use Framework.Reports;
 
       Curs         : Cursor := First (Fix);
       Current      : Delayed_Fix;
@@ -489,7 +476,6 @@ package body Framework.Reports.Fixes is
 
    procedure Flush  (Fix : in out Incremental_Fix) is
       use Fix_List;
-      use Framework.Reports;
 
       Curs    : Cursor := First (Fix);
       Current : Delayed_Fix;
