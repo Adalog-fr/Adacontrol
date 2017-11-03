@@ -6,8 +6,8 @@ General:
 --------
 Consider a rule file given in a .gpr file if no "-f" option.
 
-Use the units file given in a .gpr file if no units given on the
-command line.
+Use the units file or the mains given in a .gpr file if no units given
+on the command line.
 
 If statistics level is > 0, a count of units and raw lines is output
 

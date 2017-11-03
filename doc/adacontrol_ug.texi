@@ -794,7 +794,10 @@ adactl -f my_rules.aru @@unit_file.txt
 
 If no input units are specified on the command line, but a project
 file is given which specifies a units file, the units from the units
-file are processed. @xref{Project files}.
+file are processed. If the project file has no units file, but one or
+several main files are given, the main files are processed (in
+recursive mode if the recursive option is also given in the project
+file). @xref{Project files}.
 
 @node Commands, Output file, Input units, Command line parameters and options
 @subsection Commands
@@ -904,9 +907,16 @@ file; Ada units to analyze will be searched in all ``source_dirs''
 specified in the project file or one of the projects it depends on
 (directly or indirectly). In addition, if the project file specifies a
 rules file for AdaControl, this file will be considered, unless there
-is also an explicit ``-f'' option. Similarly, if the project file
-specifies a units file and no units are given on the command line, the
-units from the file are processed.
+is also an explicit ``-f'' option. 
+
+Similarly, if no units are given on the command line, AdaControl
+processes the units from the units file of the project file if any, or
+the main files from the project file. In the later case, the units are
+processed recursively if the project file specifies the recursive
+option.
+
+In short, if you specify AdaControl parameters in the project file,
+you only  need to pass the ``-p'' option to it.
 
 Ex:
 @example

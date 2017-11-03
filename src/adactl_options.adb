@@ -452,7 +452,19 @@ package body Adactl_Options is
                   Indirect_File : constant String := Tool_Switch (Project_File, "adacontrol", After => "-@");
                begin
                   if Indirect_File = "" then
-                     Option_Error ("No unit/file specified and no indirect file in project");
+                     declare
+                        Mains : constant Names_List := Main_Files (Project_File);
+                     begin
+                        if Mains'Length = 0 then
+                           Option_Error ("No unit/file specified and no indirect file or mains in project");
+                        end if;
+                        for I in Mains'Range loop
+                           Add_Unit (To_Wide_String (Mains (I)));
+                        end loop;
+                        if Tool_Switch_Present (Project_File, "adacontrol", Switch => "-r") then
+                           Recursive_Option := On;
+                        end if;
+                     end;
                   else
                      if Is_Relative_Name (Indirect_File) then
                         Add_Unit ('@' & To_Wide_String (Compose (Compose (Containing_Directory (Project_File),
