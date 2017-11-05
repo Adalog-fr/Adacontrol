@@ -378,7 +378,7 @@ package body Rules.No_Operator_Usage is
                  and then Type_Kind (Type_Declaration_View (Decl)) = A_Root_Type_Definition)
       then
          -- Expression is universal or equivalent => give up
-         -- TBSL we could try harder to get the type from the RHS list, but constructs such as
+         -- We could try harder to get the type from the RHS list, but constructs such as
          -- "5 in T'Range" are unlikely
          return;
       end if;

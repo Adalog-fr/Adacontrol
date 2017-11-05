@@ -839,7 +839,6 @@ package body Framework.Reports is
 
    begin  -- Clear
       Check_Delete (Rule_Counter);
-      -- TBSL: delete entries whose name is a label associated to the rule
 
       for R in Control_Kinds loop
          Check_Delete (Stats_Counters (R));

@@ -123,7 +123,6 @@ package body Rules.Unit_Pattern is
 
    type Unit_Parts is (Package_Public, Package_Private, Package_Body, Subprogram);
    -- More expected later.
-   -- TBSL: see if this can be merged with Shared_Keys.Scope_Places
    package Parts_Flags_Utilities is new Framework.Language.Flag_Utilities (Unit_Parts);
 
    type Declaration_Ordering_Context is new Basic_Rule_Context with

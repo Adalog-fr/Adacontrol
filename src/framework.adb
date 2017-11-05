@@ -307,7 +307,6 @@ package body Framework is
          return 0;
       end Find_Word_Start;
 
-      use type Character_Position;
    begin  -- Get_Next_Word_Location
       case Starting is
          when From_Head =>

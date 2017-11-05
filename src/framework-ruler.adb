@@ -965,8 +965,8 @@ package body Framework.Ruler is
                           & To_Wide_String (Exception_Name (Occur))
                           & " in Pre_Procedure at "
                           & Safe_Image (Get_Location (Element)),
-            Element,
-            With_Source => True);
+                          Element,
+                          With_Source => True);
          raise;
    end Pre_Procedure;
 
