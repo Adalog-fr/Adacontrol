@@ -47,6 +47,9 @@ Style
 Unnecessary_Use_Clause
    Subrule "nested" also controls use clauses for parent package
 
+With_Clauses
+   Subrule "reduceable" also controls with clauses for parent package
+
 =============
 == V1.18r9 ==
 =============

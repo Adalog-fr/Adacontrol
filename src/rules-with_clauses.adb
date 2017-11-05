@@ -273,7 +273,8 @@ package body Rules.With_Clauses is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Names : constant Asis.Name_List := Clause_Names (Element);
+         Names     : constant Asis.Name_List := Clause_Names (Element);
+         This_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Element);
       begin
          if Rule_Used (Multiple_Names) and Names'Length > 1 then
             Report (Rule_Id,
@@ -292,29 +293,39 @@ package body Rules.With_Clauses is
                type With_Status is (OK, Redundant, Required_For_Use);
                Status : With_Status := OK;
             begin
-               -- Check if already there
-               Withed_Units.Reset (Unit_Scopes);
-               while Withed_Units.Data_Available loop
-                  if U_Name = Withed_Units.Current_Data.Unit_Name then
-                     -- Redundant, unless in a body, the other with is from the spec,
-                     -- and some context use clause mentions this package
-                     if Withed_Units.Current_Origin /= Specification
-                       or else not Required_For_Other_Context_Clauses (Names (I))
-                     then
-                        Report (Rule_Id,
-                                Ctl_Contexts (Reduceable),
-                                Get_Location (Names (I)),
-                                "With clause for " & Extended_Name_Image (Names (I))
-                                & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
-                        Fixes.List_Remove (I, From => Element);
-                        Status := Redundant;
-                        exit;
-                     end if;
+               -- Check if for ancestor unit
+               if Is_Ancestor (Definition_Compilation_Unit (Names (I)), This_Unit, Strict => True) then
+                  Report (Rule_Id,
+                          Ctl_Contexts (Reduceable),
+                          Get_Location (Names (I)),
+                          "With clause for ancestor unit " & Extended_Name_Image (Names (I)));
+                  Fixes.List_Remove (I, From => Element);
+                  Status := Redundant;
+               else
+                  -- Check if already there
+                  Withed_Units.Reset (Unit_Scopes);
+                  while Withed_Units.Data_Available loop
+                     if U_Name = Withed_Units.Current_Data.Unit_Name then
+                        -- Redundant, unless in a body, the other with is from the spec,
+                        -- and some context use clause mentions this package
+                        if Withed_Units.Current_Origin /= Specification
+                          or else not Required_For_Other_Context_Clauses (Names (I))
+                        then
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Reduceable),
+                                   Get_Location (Names (I)),
+                                   "With clause for " & Extended_Name_Image (Names (I))
+                                   & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
+                           Fixes.List_Remove (I, From => Element);
+                           Status := Redundant;
+                           exit;
+                        end if;
 
-                     Status := Required_For_Use;
-                  end if;
-                  Withed_Units.Next;
-               end loop;
+                        Status := Required_For_Use;
+                     end if;
+                     Withed_Units.Next;
+                  end loop;
+               end if;
 
                if Status /= Redundant then
                   declare

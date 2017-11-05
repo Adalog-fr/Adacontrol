@@ -10021,7 +10021,8 @@ for the same unit. This includes the case where the same
 corresponding body, and the case of renamings of a same unit
 (i.e. @code{Text_IO} and @code{Ada.Text_IO}). Note that giving a
 @code{@b{with}} clause in a unit, and repeating it in a child unit (or
-subunit) is @i{not} considered redundant.
+subunit) is @i{not} considered redundant. This also includes the case
+of a @code{@b{with}} clause for an ancestor of the current unit.
 @item
 Unused @code{@b{with}} clauses, i.e. when nothing from the withed unit
 is referenced in the corresponding unit. The rule signals when a withed
@@ -10043,8 +10044,8 @@ better practice to ensure that every compilation unit withes directly
 the units it needs.
 @end itemize
 
-Each of the keywords can be given at most once. If no keyword is
-given, both @code{reduceable} and @code{inherited} are assumed.
+Each of the subrules can be given at most once. If no keyword is
+given, all subrules are activated.
 
 Ex:
 @example

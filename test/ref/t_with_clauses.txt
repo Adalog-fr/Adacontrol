@@ -31,8 +31,10 @@ x_with_clauses_1.ads:11:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada
 x_with_clauses_1.ads:11:1: Delete:11:21
 x_with_clauses_1.ads:3:6: Error: WITH_CLAUSES: Unnecessary with clause for "Ada.Strings" (possible use in child units)
 x_with_clauses_1.ads:3:1: Delete:3:17
-x_with_clauses_1-child2.adb:1:1: Found: WITH_CLAUSES: With clause for X_With_Clauses_2 inherited from x_with_clauses_1.ads:2:6
-x_with_clauses_1-child2.adb:1:1: Insert
+x_with_clauses_1-child2.adb:1:6: Error: WITH_CLAUSES: With clause for ancestor unit X_With_Clauses_1
+x_with_clauses_1-child2.adb:1:1: Delete:1:22
+x_with_clauses_1-child2.adb:2:1: Found: WITH_CLAUSES: With clause for X_With_Clauses_2 inherited from x_with_clauses_1.ads:2:6
+x_with_clauses_1-child2.adb:2:1: Insert
 !
 !with X_With_Clauses_2;
 !

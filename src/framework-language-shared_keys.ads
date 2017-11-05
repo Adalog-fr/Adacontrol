@@ -30,7 +30,7 @@ with
 
 -- Adacontrol
 with
-   Framework.Language;
+   Framework.Language;    --## rule line off WITH_CLAUSES ## see below
 pragma Elaborate (Framework.Language);
 -- We must "with" our parent, because the pragma Elaborate is required
 -- here, as for any unit that instantiates a generic from Framework.Language
