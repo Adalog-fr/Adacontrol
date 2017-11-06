@@ -530,8 +530,11 @@ package body Rules.Comments is
          declare
             Begin_Loc  : constant Location     := Get_Previous_Word_Location (Stmts, "BEGIN");
             Begin_Line : constant Line_Number  := Get_First_Line (Begin_Loc);
-            Begin_Text : constant Program_Text := To_Upper (Line_Image
-                                                            (Lines (Unit, Begin_Line, Begin_Line) (Begin_Line)));
+            Begin_Text : constant Program_Text := To_Upper (Trim
+                                                            (Line_Image
+                                                               (Lines (Unit, Begin_Line, Begin_Line) (Begin_Line)),
+                                                            Side => Right));
+            -- Ignore trailing spaces to avoid problems in the replacement of the comment
             Comment_Pos : Natural := 0;
             Name_Inx    : Natural;
             In_String   : Boolean := False;
@@ -558,7 +561,9 @@ package body Rules.Comments is
                end if;
             end loop;
 
-            if Comment_Pos = 0 then
+            if Comment_Pos = 0
+              or else Begin_Text (Comment_Pos + 2 .. Begin_Text'Last) = (Comment_Pos + 2 .. Begin_Text'Last => ' ')
+            then
                if not Is_Comment_Optional (Un) then
                   Report (Rule_Id,
                           Unnamed_Contexts (Un),
