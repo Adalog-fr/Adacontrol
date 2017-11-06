@@ -95,12 +95,19 @@ package body Framework.Ruler is
       Framework.Plugs.         Enter_Unit (Unit);
       Framework.Specific_Plugs.Enter_Unit (Unit);
    exception
-      when Occur: others =>
-         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
-                          & To_Wide_String (Exception_Name (Occur))
-                          & " in Enter_Unit for "
-                          & Unit_Full_Name (Unit)
-                          & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
+      when Occur : others =>
+         begin
+            Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                             & To_Wide_String (Exception_Name (Occur))
+                             & " in Enter_Unit for "
+                             & Unit_Full_Name (Unit)
+                             & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) & ')');
+         exception
+            when Occur : others =>
+               -- If we are not even able to call Unit_Full_Name (presumably), trace and ignore the exception
+               -- in order to propagate the original exception (more interesting)
+               Utilities.Trace ("Exception in handler for enter_unit", Occur); --## rule line off No_Trace
+         end;
          raise;
    end Enter_Unit;
 
@@ -118,12 +125,19 @@ package body Framework.Ruler is
       Framework.Specific_Plugs.Exit_Unit (Unit);
       Scope_Manager.           Exit_Unit (Unit);
    exception
-      when Occur: others =>
-         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
-                          & To_Wide_String (Exception_Name (Occur))
-                          & " in Exit_Unit for "   --## rule line off No_Trace
-                          & Unit_Full_Name (Unit)
-                          & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) &')');
+      when Occur : others =>
+         begin
+            Utilities.Trace ("Exception "                                    --## rule line off No_Trace
+                             & To_Wide_String (Exception_Name (Occur))
+                             & " in Exit_Unit for "   --## rule line off No_Trace
+                             & Unit_Full_Name (Unit)
+                             & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) & ')');
+         exception
+            when Occur : others =>
+               -- If we are not even able to call Unit_Full_Name (presumably), trace and ignore the exception
+               -- in order to propagate the original exception (more interesting)
+               Utilities.Trace ("Exception in handler for exit_unit", Occur); --## rule line off No_Trace
+         end;
          raise;
    end Exit_Unit;
 
@@ -1153,7 +1167,14 @@ package body Framework.Ruler is
       exception
          when others =>
             -- Do not call exit_unit to not make things worse...
-            Process_Inhibition (My_Unit, Resume);
+            begin
+               Process_Inhibition (My_Unit, Resume);
+            exception
+               when Occur: others =>
+                  -- If we are not even able to call Process_Inhibition, trace and ignore the exception
+                  -- in order to propagate the original exception (more interesting)
+                  Utilities.Trace ("Exception in handler for Do_Process", Occur);    --## rule line off No_Trace
+            end;
             raise;
       end Do_Process;
 
