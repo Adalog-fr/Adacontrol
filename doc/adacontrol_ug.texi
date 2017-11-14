@@ -7038,10 +7038,19 @@ calls to the indicated callable entities, or allocators if ``new'' is
 given, that are performed at any time except during the elaboration of
 library packages.
 
+If <entity> is the name of a generic procedure or function, then calls
+to all instances are controlled.
+
 Ex:
 @example
 search not_elaboration_calls (Data.Initialize, new);
 @end example
+
+@subsection Tips
+Note that renamings are followed: if <entity> has been renamed, it
+will be found under all its various names; on the other hand, if <entity>
+is the name of a renaming declaration, the rule will only apply to
+this name, not to the entity that has been renamed.
 
 @subsection Limitations
 Due to an (allowed by ASIS standard) limitation of ASIS-for-Gnat, the

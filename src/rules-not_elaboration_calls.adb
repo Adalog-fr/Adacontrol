@@ -159,7 +159,8 @@ package body Rules.Not_Elaboration_Calls is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check (Matching_Context (Subprograms, Called_Simple_Name (Call)), Get_Location (Call));
+      Check (Matching_Context (Subprograms, Called_Simple_Name (Call), Extend_To => All_Extensions),
+             Get_Location (Call));
    end Process_Call;
 
    -----------------------

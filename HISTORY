@@ -31,6 +31,9 @@ Assignments:
    add subrule access_duplication
    sliding subrule controls initializations as well as assignments
 
+Not_Elaboration_Calls:
+   Follow renamings, allow names of generics (apply to all instances)
+
 Parameter_Aliasing
    Handle functions with [in] out parameters
 

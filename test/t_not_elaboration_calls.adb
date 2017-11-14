@@ -14,8 +14,10 @@ package body T_not_elaboration_calls is
          begin
             null;
          end Dispatch;
+         procedure Print (S: String) renames Put_Line;
       begin
          Put_Line ("Hello"); -- Not elaboration
+         Print    ("Hello"); -- Not elaboration
          Ptr := new Integer; -- Not elaboration
       end Inner_P;
       use Inner_P;
