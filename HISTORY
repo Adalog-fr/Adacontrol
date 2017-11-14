@@ -20,6 +20,8 @@ automatically
 
 Integration with GnatHub and SonarQube
 
+Display units and lines counts in GPS statistics category
+
 Bug fixes
 
 Changes to existing rules:

@@ -713,7 +713,7 @@ def on_GPS_start(H):
 
     rule_statistics_pat = re.compile(r"^(?P<rule>.*): (?P<counts>(Check: \d+, Search: \d+, Count: \d+)|(not triggered))$")
 
-    message_statistics_pat = re.compile(r"^(?P<title>Issued messages:) (?P<counts>.*)$")
+    message_statistics_pat = re.compile(r"^(?P<title>(Issued messages|Units processed|Lines processed):) (?P<counts>.*)$")
 
     # Actions and submenus are now parsed from Python because otherwise
     # filters involving Python actions do not work anymore
