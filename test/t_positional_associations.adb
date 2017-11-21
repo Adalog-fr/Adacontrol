@@ -1,3 +1,4 @@
+pragma Ada_2005;
 procedure T_Positional_Associations is
    type Arecord is
       record
@@ -98,13 +99,26 @@ procedure T_Positional_Associations is
    type Enum2 is (A, B);
    for Enum2 use (1, 2);                              -- all_positional x2
 
+   package Object is
+      type Instance is tagged null record;
+      procedure Method (Self : in out Instance; P1 : Integer := 1);
+   end Object;
+   package body Object is
+      procedure Method (Self : in out Instance; P1 : Integer := 1) is
+      begin
+         null;
+      end Method;
+   end Object;
+   use Object;
+   Obj : Object.Instance;
+
 begin
    Variable := Nothing (X => 1);
    Variable := Nothing (1);                           -- OK, count 1
    Nproc ( Y => Variable, Z => 1);
    Nproc (0, 1);                                      -- All x2, Same_Type x2, All_Positional x2, count 2
    Nproc (0, Z => 1);                                 -- All, count 1
-   Nproc (0, 1, 1.0);                                 -- OK for All (exception to the rule), All_Positional x3, Same_Type x2, count 2
+   Nproc (0, 1, 1.0);                                 -- OK for All (exception to the rule), All_Positional x3, Same_Type x2, count 3
    RecordI := (A => 1, B => 0, C => 1);
    RecordI := (1, 0, 1);                              -- All x3
    RecordIT := Trecord'(D => 1);
@@ -119,4 +133,7 @@ begin
 
    Tab (1) := Tab (1) + 1;                            -- OK
    Tab (1) := "+" (Tab (1), 1);                       -- OK for all (because not_operator), All_Positional x2, Same_Type x2, count 2
+
+   Method (Obj, 1);                                   -- All x2, All_Positional x2, count 2
+   Obj.Method (1);                                    -- OK (prefix op not counted), count 1
 end T_Positional_Associations;

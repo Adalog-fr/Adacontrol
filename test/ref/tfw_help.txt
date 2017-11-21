@@ -590,6 +590,9 @@ Parameter (3): [not_operator] pragma                     | call            |
                               (default = all)
 Parameter (4..): <entities>
                 (entities not required to follow the rule)
+
+Variables:
+Positional_Associations.Count_Prefix_Operand: (Off, On) = On
 ----
 Rule: POTENTIALLY_BLOCKING_OPERATIONS
 Control calls to potentially blocking operations from protected operations

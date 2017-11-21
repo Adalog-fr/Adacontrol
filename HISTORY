@@ -39,6 +39,10 @@ Not_Elaboration_Calls:
 Parameter_Aliasing
    Handle functions with [in] out parameters
 
+Positional_Associations 
+   Add a rule variable to control whether a prefix parameter in a call
+   is counted or not
+
 Simplifiable_Statements:
    Controls dead code due to case paths with null ranges
    Loop: consider while loop whose condition is statically True, not

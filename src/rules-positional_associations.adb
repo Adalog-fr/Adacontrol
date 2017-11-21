@@ -39,11 +39,13 @@ with
 -- Adactl
 with
   Framework.Reports.Fixes,
-  Framework.Language;
+  Framework.Language,
+  Framework.Variables,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Positional_Associations is
-   use Framework, Framework.Control_Manager, Utilities;
+   use Framework, Framework.Control_Manager, Framework.Variables, Framework.Variables.Shared_Types, Utilities;
    use type Thick_Queries.Biggest_Int;
 
    type Subrules is (Sr_All, Sr_All_Positional, Sr_Same_Type);
@@ -79,6 +81,9 @@ package body Rules.Positional_Associations is
    Rule_Used : Usage_Flags := Nothing_Used;
    Save_Used : Usage_Flags;
 
+   -- Rule variables
+   Count_Prefix_Operand : aliased Switch_Type.Object := (Value => On);
+
    ----------
    -- Help --
    ----------
@@ -94,6 +99,9 @@ package body Rules.Positional_Associations is
          Footer =>  "(default = all)");
       User_Message ("Parameter (4..): <entities>");
       User_Message ("                (entities not required to follow the rule)");
+      User_Message;
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Count_Prefix_Operand");
    end Help;
 
    -----------------
@@ -219,7 +227,8 @@ package body Rules.Positional_Associations is
                                    Ident            : Asis.Element;
                                    Association_Expr : Asis.Expression;
                                    All_Associations : Association_List;
-                                   Is_Operator      : Boolean := False)
+                                   Is_Operator      : Boolean := False;
+                                   Is_Prefixed      : Boolean := False)
       is
 
          function Positional_Count (Expr : Asis.Expression; Subrule : Subrules) return Asis.ASIS_Natural is
@@ -298,6 +307,11 @@ package body Rules.Positional_Associations is
                   end case;
                end loop;
             end if;
+
+            if Count_Prefix_Operand.Value = Off and then Is_Prefixed then
+               Count := Count - 1;
+            end if;
+
             return Count;
          end Positional_Count;
 
@@ -366,6 +380,12 @@ package body Rules.Positional_Associations is
 
          Reported : Boolean;
       begin   -- Check_Association
+         if Is_Prefixed and then Is_Equal (Enclosing_Element (Association_Expr), All_Associations (1)) then
+            -- We have prefixed notation, and this is the first parameter (i.e. the one use as prefix)
+            -- => ignore
+            return;
+         end if;
+
          for Sr in Subrules loop
             Check_Report (Sr, Check, Reported);
             if not Reported then
@@ -427,7 +447,8 @@ package body Rules.Positional_Associations is
                                      Called_Simple_Name (Encl),
                                      Actual_Parameter (Association),
                                      Function_Call_Parameters (Encl),
-                                     Operator_Kind (Simple_Name (Prefix (Encl))) /= Not_An_Operator);
+                                     Is_Operator => Operator_Kind (Simple_Name (Prefix (Encl))) /= Not_An_Operator,
+                                     Is_Prefixed => Is_Prefix_Notation (Encl));
                end if;
             elsif Statement_Kind (Encl) = A_Procedure_Call_Statement then
                Called := Called_Simple_Name (Encl);
@@ -435,7 +456,8 @@ package body Rules.Positional_Associations is
                   Check_Association (Na_Call,
                                      Called,
                                      Actual_Parameter (Association),
-                                     Call_Statement_Parameters (Encl));
+                                     Call_Statement_Parameters (Encl),
+                                     Is_Prefixed => Is_Prefix_Notation (Encl));
                end if;
             else
                -- Entries, cannot be attributes...
@@ -463,4 +485,6 @@ begin  -- Rules.Positional_Associations
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+   Framework.Variables.Register (Count_Prefix_Operand'Access,
+                                 Variable_Name => Rule_Id & ".COUNT_PREFIX_OPERAND");
 end Rules.Positional_Associations;

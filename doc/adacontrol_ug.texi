@@ -7484,6 +7484,29 @@ search positional_associations (same_type, 3, call);
 search positional_associations(all, 2, call, all put);
 @end example
 
+@subsection Variable
+The rule provides a variable to define how to count parameters in the
+case of calls that use the prefix notation (i.e. the ``object.method''
+syntax).
+
+@need 1800
+@multitable @columnfractions .25 .10 .10 .55
+@item
+@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
+@item
+Count_Prefix_Operand
+@tab off@*on
+@tab on
+@tab
+@table @asis
+@item off
+The parameter given as prefix is not counted as a positional parameter.
+@item on
+The parameter given as prefix is counted as a positional parameter,
+just like if the prefix notation had not been used.
+@end table
+@end multitable
+
 @subsection Fixes
 This rule generates fixes: in calls and instantiations, names are added
 to transform positional associations into named associations.

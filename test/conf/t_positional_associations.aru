@@ -1,7 +1,9 @@
+set positional_associations.count_prefix_operand off;
+
 "All":
    check  positional_associations (All, 1, Pragma),
    check  positional_associations (All, 1, Discriminant),
-   check  positional_associations (All, 1, not_operator Call, 
+   check  positional_associations (All, 1, not_operator Call,
                                            T_Positional_Associations{}.Nproc{Standard.Integer;Standard.Integer;Standard.Float}),
    check  positional_associations (All, 1, Instantiation),
    check  positional_associations (All, 1, Array_Aggregate),
