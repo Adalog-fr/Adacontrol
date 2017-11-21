@@ -97,9 +97,6 @@ package body Rules.Naming_Convention is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   -- Rule variables
-   Default_Case_Sensitivity : aliased Switch_Type.Object := (Value => Off);
-
    -- Here are all keywords for classifying naming conventions
    -- To add a new one, just add it to the type Keys, and insert it at the appropriate places
    -- in the calls to Check in the Process_XXX procedures.
@@ -242,6 +239,9 @@ package body Rules.Naming_Convention is
                                                                       Cat_New | Cat_Extension => False,
                                                                       others                  => True);
    No_More_Checks : exception;
+
+   -- Rule variables
+   Default_Case_Sensitivity : aliased Switch_Type.Object := (Value => Off);
 
    -----------
    -- Clear --

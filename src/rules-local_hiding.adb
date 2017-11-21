@@ -87,7 +87,6 @@ package body Rules.Local_Hiding is
    Ignore_Families    : Boolean;     -- Simple boolean since not allowed for Overloading
    Exclude_Renaming   : Boolean;     -- Simple boolean since not allowed for Overloading
    Allowed_Patterns   : array (Subrules) of Framework.Pattern_Queues.Queue;
-   Overloading_Report : aliased Verbosity_Type.Object := (Value => Detailed);
 
    type Identifier_Data (Length : Positive) is
       record
@@ -99,6 +98,9 @@ package body Rules.Local_Hiding is
          Family         : Declaration_Families;
       end record;
    package Visible_Identifiers is new Scope_Manager.Scoped_Store (Identifier_Data);
+
+   -- Rule variables
+   Overloading_Report : aliased Verbosity_Type.Object := (Value => Detailed);
 
    ----------
    -- Help --
@@ -113,6 +115,7 @@ package body Rules.Local_Hiding is
       Help_On_Flags ("Parameter(1): <exceptions> ", Footer => "(default = strict)");
       User_Message  ("Parameter(2..): ""<Allowed Pattern>""");
       Help_On_Modifiers ("<exceptions>:");
+      User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Overloading_Report");
    end Help;

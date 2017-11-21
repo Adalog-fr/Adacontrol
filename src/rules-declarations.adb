@@ -148,6 +148,8 @@ package body Rules.Declarations is
    Save_Used : Usage_Flags;
    Usage     : Context_Store;
    package Usage_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
+
+   -- Rule variables
    Limited_Initialization : aliased Switch_Type.Object := (Value => Off);
 
    ----------
@@ -164,6 +166,7 @@ package body Rules.Declarations is
       User_Message ("Parameter(s): {<location>} <decl>");
       Help_On_Scope_Places (Header => "<location>:");
       Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl>:");
+      User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Limited_Initialization");
 

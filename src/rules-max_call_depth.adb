@@ -87,9 +87,6 @@ package body Rules.Max_Call_Depth is
    Save_Used  : Boolean;
    Ctl_Labels : array (Control_Kinds) of Unbounded_Wide_String;
 
-   -- Rule variables
-   Count_Expr_Fun_Calls : aliased Switch_Type.Object := (Value => On);
-
    Infinite : constant Asis.ASIS_Natural := Asis.ASIS_Natural'Last;
    Unused   : constant Asis.ASIS_Integer := Asis.ASIS_Integer'Val(-1);
    Depths   : array (Control_Kinds) of Asis.ASIS_Integer := (others => Unused);
@@ -118,6 +115,9 @@ package body Rules.Max_Call_Depth is
 
    Forced_Entities : Control_Manager.Context_Store;
 
+   -- Rule variables
+   Count_Expr_Fun_Calls : aliased Switch_Type.Object := (Value => On);
+
    ----------
    -- Help --
    ----------
@@ -130,6 +130,9 @@ package body Rules.Max_Call_Depth is
       User_Message;
       User_Message ("Parameter (1): <Allowed depth> | finite");
       User_Message ("Parameter (2..): <Forced entity>");
+      User_Message;
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Count_Expr_Fun_Calls");
    end Help;
 
    -----------------

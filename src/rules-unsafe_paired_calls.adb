@@ -104,6 +104,7 @@ package body Rules.Unsafe_Paired_Calls is
       User_Message ("Parameter(1): First subprogram");
       User_Message ("Parameter(2): Second subprogram");
       User_Message ("Parameter(3): (optional) type of lock parameter");
+      User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Conditionals_Allowed");
    end Help;

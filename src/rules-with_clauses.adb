@@ -68,10 +68,6 @@ package body Rules.With_Clauses is
    -- unit). Therefore, an identifier in a use clause should be compared against the original name, not the ultimate
    -- name.
 
-   -- Rule variables
-   Check_Private_With : aliased Switch_Type.Object := (Value => On);
-   Ignore_Use_Clause  : aliased Switch_Type.Object := (Value => On);
-
    type Subrules is (Multiple_Names, Reduceable, Inherited);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
@@ -98,6 +94,10 @@ package body Rules.With_Clauses is
       return Left.Unit_Name = Right.Unit_Name;
    end Equivalent_Info;
    package Withed_Units is new Scope_Manager.Scoped_Store (With_Info, Equivalent_Info);
+
+   -- Rule variables
+   Check_Private_With : aliased Switch_Type.Object := (Value => On);
+   Ignore_Use_Clause  : aliased Switch_Type.Object := (Value => On);
 
    ----------
    -- Help --

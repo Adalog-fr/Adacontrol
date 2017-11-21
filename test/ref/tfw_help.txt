@@ -198,6 +198,7 @@ Parameter(s): {<location>} <decl>
         uninitialized_protected_component | uninitialized_record_component    |
         uninitialized_variable            | unknown_discriminant              |
         variable                          | variant_part
+
 Variables:
 Declarations.Limited_Initialization: (Off, On) = Off
 ----
@@ -391,6 +392,7 @@ Parameter(1): <exceptions>  strict | overloading
 Parameter(2..): "<Allowed Pattern>"
 <exceptions>: not_operator           | not_enumeration        |
               not_identical_renaming | not_different_families
+
 Variables:
 Local_Hiding.Overloading_Report: (Compact, Detailed) = Detailed
 ----
@@ -404,6 +406,9 @@ Control maximum call depth
 
 Parameter (1): <Allowed depth> | finite
 Parameter (2..): <Forced entity>
+
+Variables:
+Max_Call_Depth.Count_Expr_Fun_Calls: (Off, On) = On
 ----
 Rule: MAX_LINE_LENGTH
 Control that no source line is longer than the indicated maximum
@@ -845,6 +850,7 @@ Controls calls like P/V operations that are not safely paired
 Parameter(1): First subprogram
 Parameter(2): Second subprogram
 Parameter(3): (optional) type of lock parameter
+
 Variables:
 Unsafe_Paired_Calls.Conditionals_Allowed: (Off, On) = On
 ----
