@@ -783,12 +783,23 @@ parameter consisting of an ``@@'' followed by the name of a file. This
 file must contain a list of unit names (not files), one on each
 line. Only the first ``word'' of the line is considered,
 i.e. everything after the first blank is ignored. This can be useful
-to annotate unit names.  All units whose names are given in the file
-will be processed. If a name in the file starts with ``@@'', it will
-also be treated as an indirect file (i.e. the same process will be
-invoked recursively). If a line in the file starts with ``#'' or
-``-@w{}-'', it is ignored. This can be useful to temporarily disable
-the processing of some files or to add comments.
+to annotate unit names. All units whose names are given in the file
+will be processed. In addition, some lines have a special meaning:
+@itemize @bullet
+@item
+If a line in the file starts with ``#'' or ``-@w{}-'', it is
+ignored. This can be useful to temporarily disable the processing of
+some files or to add comments.
+@item
+If a name in the file starts with ``-'', it indicates the name of a
+unit that is @i{not} to be processed. This is useful if the indirect
+file is used with the ``-r'' (recursive) option to prevent some units
+that would be found by the recursive search to be included in the
+analysis.
+@item
+If a name in the file starts with ``@@'', it will also be treated as
+an indirect file (i.e. the same process will be invoked recursively). 
+@end itemize
 
 Ex:
 @example
