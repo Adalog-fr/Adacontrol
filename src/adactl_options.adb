@@ -88,11 +88,14 @@ package body Adactl_Options is
 
    function Is_Relative_Name (Name : String) return Boolean is
    -- TBSL: to be replaced by Ada.Directories.Hierarchical_File_Names.Is_Relative_Name when available
+      Start : Positive;
    begin
-      return  (Name (Name'First) /= '/' and Name (Name'First) /= '\')
-        and then (Name'Length < 3
-                  or else Name (Name'First + 1) /= ':'
-                  or else (Name (Name'First + 2) /= '/' or Name (Name'First + 2) = '\'));
+      if Name'Length >= 3 and then Name (Name'First + 1) = ':' then
+         Start := Name'First + 2;
+      else
+         Start := Name'First;
+      end if;
+      return Name (Start) /= '/' and Name (Start) /= '\';
    end Is_Relative_Name;
 
 
@@ -395,13 +398,15 @@ package body Adactl_Options is
          begin
             if Rule_File /= "" then
                if Is_Relative_Name (Rule_File) then
+                  -- Note: it is not possible to compose two Directories, since the 2nd parameter
+                  --       to compose needs to be a simple name. But we know that just concatenating
+                  --       '/' works on every OS...
                   Append (Options_Commands,
                           "source "
-                          & To_Wide_String (Compose (Compose (Containing_Directory (Project_File),
-                                                              Containing_Directory (Rule_File)),
-                                                     Simple_Name (Rule_File))
-                          & ';')
-                         );
+                          & To_Wide_String (Compose (Containing_Directory (Project_File)
+                                                     & '/' & Containing_Directory (Rule_File),
+                                                     Simple_Name (Rule_File)))
+                          & ';');
                else
                   Append (Options_Commands, "source " & To_Wide_String (Rule_File) & ';');
                end if;
