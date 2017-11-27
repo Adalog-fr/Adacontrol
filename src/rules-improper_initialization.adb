@@ -761,35 +761,51 @@ package body Rules.Improper_Initialization is
                      -- Call is through implicit or explicit dereference
                      Check_Object_Use (Called, Object_Map);
                   end if;
-               end;
 
-               -- Check for out parameters in procedure and entry calls
-               declare
-                  Actuals : constant Asis.Association_List
-                    := Call_Statement_Parameters (Statement_List (Stmt_Index));
-                  Formal  : Asis.Defining_Name;
-               begin
-                  for Actual_Index in Actuals'Range loop
-                     Formal := Formal_Name (Statement_List (Stmt_Index), Actual_Index);
-                     -- Formal is nil for calls to a dispatching operation
-                     -- We don't know the mode => pretend we do nothing
-                     -- (consistent with the fact that dispatching calls are ignored)
-                     if Is_Nil (Formal) then
-                        Uncheckable (Rule_Id,
-                                     False_Positive,
-                                     Get_Location (Statement_List (Stmt_Index)),
-                                     "Dispatching_Call");
-                     else
-                        case Mode_Kind (Enclosing_Element (Formal)) is
-                           when Not_A_Mode =>
-                              Failure (Rule_Id & ": Not_A_Mode");
-                           when An_Out_Mode =>
-                              Process_Target (Actual_Parameter (Actuals (Actual_Index)));
-                           when others =>
-                              Check_Object_Use (Actuals (Actual_Index), Object_Map);
-                        end case;
-                     end if;
-                  end loop;
+                  -- Check for out parameters in procedure and entry calls
+                  declare
+                     Actuals : constant Asis.Association_List
+                       := Call_Statement_Parameters (Statement_List (Stmt_Index));
+                     Formal  : Asis.Defining_Name;
+                  begin
+                     for Actual_Index in Actuals'Range loop
+                        Formal := Formal_Name (Statement_List (Stmt_Index), Actual_Index);
+                        -- Formal is nil for calls to a dispatching operation and for calls to attribute procedures
+                        -- For attributes, only T'Read and T'Input have an out parameter (the second one).
+                        -- For dispatching operations, we don't know the mode => pretend we do nothing
+                        -- (consistent with the fact that dispatching calls are ignored)
+                        if Is_Nil (Formal) then
+                           if Expression_Kind (Called) = An_Attribute_Reference then
+                              case Attribute_Kind (Called) is
+                                 when A_Read_Attribute | An_Input_Attribute =>
+                                    if Actual_Index = 2 then
+                                       Process_Target (Actual_Parameter (Actuals (Actual_Index)));
+                                    else
+                                       Check_Object_Use (Actuals (Actual_Index), Object_Map);
+                                    end if;
+                                 when A_Write_Attribute | An_Output_Attribute =>
+                                    Check_Object_Use (Actuals (Actual_Index), Object_Map);
+                                 when others =>
+                                    Failure ("Not a procedure call attribute", Called);
+                              end case;
+                           else
+                              Uncheckable (Rule_Id,
+                                           False_Positive,
+                                           Get_Location (Statement_List (Stmt_Index)),
+                                           "Dispatching_Call");
+                           end if;
+                        else -- Normal case
+                           case Mode_Kind (Enclosing_Element (Formal)) is
+                              when Not_A_Mode =>
+                                 Failure (Rule_Id & ": Not_A_Mode");
+                              when An_Out_Mode =>
+                                 Process_Target (Actual_Parameter (Actuals (Actual_Index)));
+                              when others =>
+                                 Check_Object_Use (Actuals (Actual_Index), Object_Map);
+                           end case;
+                        end if;
+                     end loop;
+                  end;
                end;
 
             when An_If_Statement

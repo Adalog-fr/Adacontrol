@@ -1,5 +1,6 @@
 with System;
 with Ada.Exceptions;
+with Ada.Text_IO.Text_Streams;
 procedure T_Improper_Initialization is
 
    procedure Init (I : out Integer) is
@@ -402,5 +403,19 @@ B2 :
       end Pack;
    begin
       A := 1;
+   end;
+
+   -----------------------------------
+   -- Checking attribute procedures --
+   -----------------------------------
+   declare
+      use Ada.Text_IO, Ada.Text_IO.Text_Streams;
+      F : File_Type;
+      V1, V2 : Integer;                -- used before initialization V2
+   begin
+      Integer'Read  (Stream (F), V1);  -- OK
+
+      Integer'Write (Stream (F), V2);  -- use of uninitialized V2
+      Integer'Read  (Stream (F), V2);
    end;
 end T_Improper_Initialization;
