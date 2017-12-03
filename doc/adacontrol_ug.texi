@@ -1087,6 +1087,11 @@ but with the ``Fix'' symbol (the little wrench icon) in the left
 margin. Clicking on the icon will perform the fix and remove the
 corresponding icon (just like fixable compilation errors).
 
+Alternatively, there is an ``Apply all fixes'' entry in the AdaControl
+menu. This will apply all fixes, just as if you clicked on every
+``Fix'' symbol. Note that the ``Undo'' command can be used to revert
+the effect of this command!
+
 Note that by default, the generation of fixes is enabled under GPS.
 
 @subsection Automatic fixing
@@ -1146,7 +1151,7 @@ Therefore, the automatic fixing tool has been designed under the
 assumption that it will be used ``one-shot'', not as day-to-day use.
 
 The automatic fixing should therefore be used as follows:
-@itemize bullet
+@itemize @bullet
 @item
 Use backups, your CMS, etc. to save the initial state and to be able
 to compare the original and fixed versions.

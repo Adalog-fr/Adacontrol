@@ -177,13 +177,25 @@ class Fix:
 
 
 def fixer(self):
+    """ Method of a message called when clicking the wrench
+    """
     for fix in self.fix_list:
         fix.apply()
     self.set_subprogram(no_action, '', '')
 
 def no_action(self):
+    """ placeholder when the fix has been performed
+    """
     pass
 
+def apply_fixes ():
+    """ Automatically perform all possible fixes
+    """
+    global adactl_cats
+
+    for cat in adactl_cats:
+        for mess in GPS.Message.list (category=cat):
+            mess.execute_action()
 
 def parse(output):
     """Sort and parse the result of running Adacontrol
@@ -772,6 +784,10 @@ def on_GPS_start(H):
      <shell lang="Python" show-command="false" output="">adactl.run("check", "")</shell>
    </action>
 
+   <action name="Apply_Fixes">
+     <shell lang="Python" show-command="false" output="">adactl.apply_fixes()</shell>
+   </action>
+
    <action name="Get_Units" show-command="false" output="none">
      <filter shell_cmd="adactl.units_file_defined()" shell_lang="python" />
      <shell lang="python">adactl.open_file(adactl.get_units_file())</shell>
@@ -841,6 +857,12 @@ def on_GPS_start(H):
 
      <menu action="Check_Units_Ask">
         <title>Control Units from List (interactive)</title>
+     </menu>
+
+     <menu />
+
+     <menu action="Apply_Fixes">
+        <title>Apply all fixes</title>
      </menu>
 
      <menu />
