@@ -294,6 +294,7 @@ procedure Adactl_Fix is
       --   - Exactly one is an insertion whose position is equal to the end of the previous one
       --     or the start of the next one: keep both
       --   - one is a deletion that fully includes the other one: keep the deletion
+      -- Note: Refactor is ignored
 
          Previous_Curs : constant Fix_Maps.Cursor := Kept_Fixes.Floor (Loc);
          Previous_Pos  : Position;
@@ -383,9 +384,11 @@ procedure Adactl_Fix is
                case Kind is
                   when Not_A_Fix =>
                      null;
-                  when Delete | Refactor =>
+                  when Delete =>
                      -- Add fix immediately, since there are no replacement lines to wait for
                      Add_Fix (Fix_Pos, Create (Kind));
+                  when Refactor =>
+                     null;
                   when Insert | Replace =>
                      In_Replacement := True;
                      Repl_Start     := Replacements.Last_Index + 1;
