@@ -9,7 +9,8 @@ begin
    declare      -- Simplifiable block
    begin
       I := 1;
-   end;
+   end          -- (with a strange semicolon)
+   ;
 
    L : begin
       I := 1;

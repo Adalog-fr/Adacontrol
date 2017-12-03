@@ -654,7 +654,14 @@ package body Rules.Simplifiable_Statements is
                           Usage (Stmt_Block),
                           Get_Location (Stmt),
                           "unnecessary block statement");
-                  Fixes.Replace (Stmt, By => Thick_Queries.Statements (Stmt, Include_Pragmas => True));
+                  declare
+                     Content : constant Asis.Statement_List := Thick_Queries.Statements (Stmt, Include_Pragmas => True);
+                  begin
+                     Fixes.Delete (From => Get_Location (Stmt),
+                                   To   => Get_Location (Content (Content'First)));
+                     Fixes.Delete (From => Get_End_Location (Content(Content'Last))+1,
+                                   To   => Get_End_Location (Stmt) + 1);
+                  end;
                end if;
             end if;
 

@@ -1,9 +1,9 @@
 t_simplifiable_statements-test_block.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
-t_simplifiable_statements-test_block.adb:5:4: Replace:7:7
-!I := 1;
+t_simplifiable_statements-test_block.adb:5:4: Delete:6:6
+t_simplifiable_statements-test_block.adb:6:14: Delete:7:7
 t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
-t_simplifiable_statements-test_block.adb:9:4: Replace:12:7
-!I := 1;
+t_simplifiable_statements-test_block.adb:9:4: Delete:11:6
+t_simplifiable_statements-test_block.adb:11:14: Delete:13:4
 t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
 t_simplifiable_statements-test_handler.adb:11:7: Delete:12:15
 t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
