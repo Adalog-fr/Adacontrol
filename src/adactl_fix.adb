@@ -397,6 +397,9 @@ procedure Adactl_Fix is
          end;
       end loop;
    exception
+      when Name_Error =>
+         Message ("*** " & Fix_Name & ": File not found");
+
       when End_Error =>
          if In_Replacement then
             Add_Fix (Fix_Pos, Create (Kind, Repl_Start, Replacements.Last_Index));
