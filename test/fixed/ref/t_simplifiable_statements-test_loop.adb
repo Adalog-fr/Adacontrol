@@ -5,6 +5,9 @@ begin
    loop -- loop
       null;
    end loop;
+   loop -- loop
+      null;
+   end loop;
    
    while I < 2 loop
       I := I + 1;
