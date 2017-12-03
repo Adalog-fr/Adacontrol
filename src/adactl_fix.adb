@@ -227,7 +227,9 @@ procedure Adactl_Fix is
       end Fix_File_Error;
 
       procedure Parse (Source : in String; Pos : out Position; Kind : out Fix_Kind) is
-         -- Expected syntax: <file name>:<Start line>:<Start col>:<Fix kind>[:<End line>:<End col>]
+      -- Expected syntax for a fix: <file name>:<Start line>:<Start col>:<Fix kind>[:<End line>:<End col>]
+      -- Any line not matching this syntax returns Kind => Not_A_Fix
+      --  (often diagnosed through the raising of Constraint_Error)
          Start : Positive;
          Stop  : Positive;
 
@@ -263,13 +265,7 @@ procedure Adactl_Fix is
 
          Start := Stop + 1;
          Stop  := Find (':', From => Start + 1, Into => Source);
-         begin
-            Kind := Fix_Kind'Value (Source (Start .. Stop - 1));
-         exception
-            when Constraint_Error =>
-               Kind := Not_A_Fix;
-               return;
-         end;
+         Kind := Fix_Kind'Value (Source (Start .. Stop - 1));
 
          -- If we are here, we can assume the line is really a fix message
 
@@ -286,9 +282,9 @@ procedure Adactl_Fix is
          end if;
          --## rule on ASSIGNMENTS
       exception
-         when Occur : Constraint_Error =>
-            Message ("*** " & Ada.Exceptions.Exception_Information (Occur));
-            Fix_File_Error (Start, "incorrect value");
+         when Constraint_Error =>
+            Kind := Not_A_Fix;
+            return;
       end Parse;
 
       procedure Add_Fix (Loc : Position; Fix : Fix_Descriptor) is
@@ -542,7 +538,7 @@ begin   --Adactl_Fix
 
    if Help_Option then
       Message (Version);
-      Message ("usage: adactl_fix [-hv] <fix-file> ... [-o <output-prefix>]");
+      Message ("usage: adactl_fix [-dhv] <fix-file> ... [-o <output-prefix>]");
       return;
    end if;
 
