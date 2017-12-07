@@ -95,18 +95,18 @@ package body Framework.Ruler is
       Framework.Plugs.         Enter_Unit (Unit);
       Framework.Specific_Plugs.Enter_Unit (Unit);
    exception
-      when Occur : others =>
+      when Occur1 : others =>
          begin
             Utilities.Trace ("Exception "                                  --## rule line off No_Trace
-                             & To_Wide_String (Exception_Name (Occur))
+                             & To_Wide_String (Exception_Name (Occur1))
                              & " in Enter_Unit for "
                              & Unit_Full_Name (Unit)
                              & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) & ')');
          exception
-            when Occur : others =>
+            when Occur2 : others =>
                -- If we are not even able to call Unit_Full_Name (presumably), trace and ignore the exception
                -- in order to propagate the original exception (more interesting)
-               Utilities.Trace ("Exception in handler for enter_unit", Occur); --## rule line off No_Trace
+               Utilities.Trace ("Exception in handler for enter_unit", Occur2); --## rule line off No_Trace
          end;
          raise;
    end Enter_Unit;
@@ -125,18 +125,18 @@ package body Framework.Ruler is
       Framework.Specific_Plugs.Exit_Unit (Unit);
       Scope_Manager.           Exit_Unit (Unit);
    exception
-      when Occur : others =>
+      when Occur1 : others =>
          begin
             Utilities.Trace ("Exception "                                    --## rule line off No_Trace
-                             & To_Wide_String (Exception_Name (Occur))
+                             & To_Wide_String (Exception_Name (Occur1))
                              & " in Exit_Unit for "   --## rule line off No_Trace
                              & Unit_Full_Name (Unit)
                              & " (" & Unit_Kinds'Wide_Image (Unit_Kind (Unit)) & ')');
          exception
-            when Occur : others =>
+            when Occur2 : others =>
                -- If we are not even able to call Unit_Full_Name (presumably), trace and ignore the exception
                -- in order to propagate the original exception (more interesting)
-               Utilities.Trace ("Exception in handler for exit_unit", Occur); --## rule line off No_Trace
+               Utilities.Trace ("Exception in handler for exit_unit", Occur2); --## rule line off No_Trace
          end;
          raise;
    end Exit_Unit;

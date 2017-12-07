@@ -7,7 +7,10 @@ General:
 Consider a rule file given in a .gpr file if no "-f" option.
 
 Use the units file or the mains given in a .gpr file if no units given
-on the command line.
+on the command line. Consider "recursive" option give in .gpr file.
+
+Allow lines starting with "-" in units file for units not to be
+processed.
 
 If statistics level is > 0, a count of units and raw lines is output
 
@@ -15,8 +18,8 @@ Full handling of aspects and elements defined in aspects
  
 Improvements to GPS integration
 
-Generate fixes file; new utility Adactl_fix to fix violations
-automatically
+Generate fixes directives in report; new utility Adactl_fix to fix
+violations automatically. Interactive and full fixes from GPS.
 
 Integration with GnatHub and SonarQube
 
@@ -1627,7 +1630,8 @@ Changed the processing of strings ("...") in the scanner.
 == V1.3r2 ==
 ============
 
-Changed the name from AdaRC to AdaControl to avoid conflicts with RainCode's tool.
+Changed the name from AdaRC to AdaControl to avoid conflicts with
+RainCode's tool.
 
 ============
 == V1.3r1 ==

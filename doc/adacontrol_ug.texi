@@ -154,7 +154,7 @@ Ensure that no protected operation calls a potentially blocking operation
 @end itemize
 and much, much more... See @ref{Rules reference} for the complete
 reference for all possible controls. The @code{rules} directory
-contains a set of rule files; especially, the file @code{verif.aru}
+contains a set of command files; especially, the file @code{verif.aru}
 contains some commonly accepted rules. It is a good starting point for
 devising your own set of rules.
 
@@ -618,7 +618,7 @@ support requires AdaGide version 7.42 or above.
 Integration into GNATDashboard is provided in a separate package that
 you can download from the same source that you obtained AdaControl
 from. It is provided as a .zip file that contains two files:
-@code{sonar-ada-plugin-18.0w-SNAPSHOT.jar} and @code{adacontrol.py}.
+@code{adacontrol-plugin-1.0a.jar} and @code{adacontrol.py}.
 
 Of course, the prerequisite is that you have a working installation of
 GNATDashboard, including SonarQube and its sonnar-scanner
@@ -640,21 +640,19 @@ any order.
 The syntax for invoking AdaControl in regular mode is:
 @example
 adactl [-deEirsTuvwx]
-       [-p <project file>]     [-f [<rules file>]]  [-l <rules list>]
-       [-o <output file>]      [-t <trace file>]    
-       [-F <format>]           [-G <fix level>]
-       [-S <statistics level>] [-m <warning limit>] [-M <message limit>]
+       [-p <project file>]  [-f [<command file>]]  [-l <commands>]
+       [-F <format>]        [-o <output file>]     [-t <trace file>]
+       [-G <fix level>]     [-S <statistics level>]
+       [-m <warning limit>] [-M <message limit>]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
 
-AdaControl can process Ada-2012 as well as Ada-95 programs, even if
-there are currently few Ada-2012 related controls - but we hope to
-improve that situation in the near future.
-
-If you are using Ada-2005 (or Ada-2012) features, make sure that GNAT
-is set up for Ada-2005/2012 (this is the default for GNAT-GPL). Due to
-technical reasons, the -gnat05 option cannot be passed to the compiler
-in ``compile on the fly'' mode, but you can do any of the following:
+AdaControl can process all versions of Ada, up to Ada-2012. If you are
+using Ada-2005 (or Ada-2012) features, make sure that GNAT is set up
+for Ada-2005/2012 (this is the default for GNAT-GPL). Due to technical
+reasons, the -gnat05 or -gnat12 option cannot be passed to the
+compiler in ``compile on the fly'' mode, but you can do any of the
+following:
 @itemize
 @item
 have a ``gnat.adc'' file in the current directory that contains a
@@ -798,7 +796,7 @@ that would be found by the recursive search to be included in the
 analysis.
 @item
 If a name in the file starts with ``@@'', it will also be treated as
-an indirect file (i.e. the same process will be invoked recursively). 
+an indirect file (i.e. the same process will be invoked recursively).
 @end itemize
 
 Ex:
@@ -837,7 +835,7 @@ behind something that generates commands; if you want to type commands
 directly to AdaControl, the interactive mode is more
 appropriate. @xref{Interactive mode}.
 
-Alternatively, AdaControl will consider a rules file set as default in a .gpr
+Alternatively, AdaControl will consider a command file set as default in a .gpr
 project file, unless an explicit ``-f'' option is given.
 
 Ex:
@@ -850,9 +848,9 @@ are specified, the commands to be performed include those in the file
 (first) and then those given on the command line.
 
 This applies also when there is no ``-f'' option, but a .gpr file is
-given which includes a default rules file. If you need a project file,
-and don't want its default rules file to be considered, use ``-f''
-without a <rules file>.
+given which includes a default command file. If you need a project file,
+and don't want its default command file to be considered, use ``-f''
+without a <command file>.
 
 @node Output file, Output format, Commands, Command line parameters and options
 @subsection Output file
@@ -920,8 +918,8 @@ Starting with version 1.18, AdaControl supports GNAT project files
 file; Ada units to analyze will be searched in all ``source_dirs''
 specified in the project file or one of the projects it depends on
 (directly or indirectly). In addition, if the project file specifies a
-rules file for AdaControl, this file will be considered, unless there
-is also an explicit ``-f'' option. 
+command file for AdaControl, this file will be considered, unless there
+is also an explicit ``-f'' option.
 
 Similarly, if no units are given on the command line, AdaControl
 processes the units from the units file of the project file if any, or
@@ -1306,7 +1304,7 @@ executing any control.
 
 Syntax:
 @example
-adactl -C [-dv] [-f <rules file>] [-l <rules list>]
+adactl -C [-dv] [-f <command file>] [-l <rules list>]
 @end example
 
 In this mode, AdaControl simply checks the syntax of the commands
@@ -1318,10 +1316,10 @@ AdaControl will exit with a return code of 0 if the syntax is correct,
 and 2 if any errors are found. A confirming message that no errors
 were found is output if the ``-v'' option is given.
 
-This option is especially useful when you have modified a rules file,
+This option is especially useful when you have modified a command file,
 before trying it on many units. The way AdaControl works, it must open
 the ASIS context (a lengthy operation) @i{before} analyzing the
-rules. This option can therefore save a lot of time if the rules file
+rules. This option can therefore save a lot of time if the command file
 contains errors.
 
 @node Generating a units list,  , Checking commands syntax, Other execution modes
@@ -1390,7 +1388,7 @@ appear under the ``Counts summary'' category, and statistics under the
 
 @node The AdaControl menu and buttons, Contextual menu, Running AdaControl from GPS, Running AdaControl from GPS
 @subsection The AdaControl menu and buttons
-GPS now features an ``AdaControl'' menu, with several submenus:
+AdaControl adds an ``AdaControl'' menu to GPS, with several submenus:
 @itemize @bullet
 @item
 ``Control Current File (rules file)'' runs AdaControl on the currently
@@ -1427,6 +1425,10 @@ given in a indirect file, with a rule asked interactively from a
 pop-up. This menu is greyed-out if no indirect file is defined. The
 name of the indirect file can be set from the ``Library'' tab from the
 ``Project/Edit Project Properties'' menu.
+@item
+``Apply all fixes'' applies all automatic fixes resulting from the
+latest run, like if you had clicked on every ``fix'' icon reported by
+AdaControl.
 @item
 ``Check Rules File'' checks the syntax of the current rules file. This
 menu is deactivated if the current window does not contain an
@@ -1479,7 +1481,7 @@ previously entered command(s) is used as a default.
 You can enter any command from AdaControl's language in the dialog;
 you can even enter several commands separated by ``;''.
 @item
-Especially, if you want to run AdaControl with a rules file that is
+Especially, if you want to run AdaControl with a command file that is
 not the one defined by the switches, you can use one of the
 ``interactive'' commands, and give ``source <file name>'' as the
 command.
@@ -1588,6 +1590,13 @@ GPS'', the result file is always overriden without asking.
 ``File format''. This is a pull-down menu that allows you to select
 the desired format when output is directed to a file (``-F'' option).
 @xref{Control kinds and report messages}.
+@item
+``Generate fixes for''. This is a pull-down menu that allows you to
+select whether you want fixes generated only for errors (``Check'') or
+also for warnings (``Check and Search'').  If you select ``None'', no
+fixes are generated (although this is not very interesting, unless you
+want the output of AdaControl to be directed to a file for later
+processing by a tool that does not know about fixes).
 @end itemize
 
 @subsubsection ASIS
@@ -1665,7 +1674,7 @@ limit. @xref{Output limits}.
 @subsection AdaControl language
 If you check ``AdaControl'' in the ``Languages'' tab of the project
 properties, GPS will recognize files with extension @code{.aru} as
-AdaControl rules files, and provide appropriate colorization. Remember
+AdaControl command files, and provide appropriate colorization. Remember
 to check also the corresponding ``no compiler'' checkbox to avoid
 spurious messages from GPS.
 
@@ -1695,7 +1704,7 @@ If you want to use AdaControl from AdaGide, make sure you have copied
 the necessary file into the required place. @xref{Installing support
 for AdaGide}. Note that AdaGide does not have all the parameterization
 facilities of sophisticated environments like GPS, but all AdaControl
-options, like the name of  the rules file or the output format, can
+options, like the name of  the command file or the output format, can
 easily be changed by editing the tool description file
 @code{AdaControl.tdf}.
 
@@ -1728,7 +1737,7 @@ package of a project file.
 
 Extra options for AdaControl can be given using the
 ``--targs:adacontrol'' option of gnathub. However, the simplest way to
-give fundamental options is to give a units file and the rules file in
+give fundamental options is to give a units file and the command file in
 the project file: in the absence of explicit parameters on the command
 line, these will be taken by default.
 
@@ -1744,11 +1753,12 @@ with AdaControl.
 
 @menu
 * pfni::
+* adactl_fix::
 * makepat.sed::
 * unrepr.sed::
 @end menu
 
-@node pfni, makepat.sed, Helpful utilities, Helpful utilities
+@node pfni, , Helpful utilities, Helpful utilities
 @subsection pfni
 The convention used to refer to entities (as described in
 @ref{Specifying an Ada entity name}) is very powerful, but it may be
@@ -1808,7 +1818,12 @@ has several overloadings and you are not sure which one is called, use
 @code{pfni} with the ``-o'' option on that line: the program will tell
 you the full name and profile of the called subprogram.
 
-@node makepat.sed, unrepr.sed, pfni, Helpful utilities
+@node adactl_fix, makepat.sed, pfni, Helpful utilities
+@subsection adactl_fix
+@code{adactl_fix} is a utility that applies automatically the fixes
+generated by AdaControl. See @ref{Fixing violations} for details.
+
+@node makepat.sed, unrepr.sed, adactl_fix, Helpful utilities
 @subsection makepat.sed
 This file (provided in the ``src'' directory) is a sed script that
 transforms a text file into a set of correponding regular expressions.
@@ -2110,7 +2125,7 @@ not conveniently allow brackets for regular expressions, like those
 used by some rules. @xref{Syntax of regular expressions}.
 
 If a syntax error is encountered in a command, an appropriate error
-message is output, and analysis of the rules file continues in order
+message is output, and analysis of the command file continues in order
 to output all errors, but no analysis of user code will be performed.
 
 @node Controls, Other commands, General, Command language reference
@@ -2315,7 +2330,7 @@ Most rules can be used in more than one control (with different
 parameters). There is no difference between a single or a multiple
 configuration rule use: outputs, efficiency, etc. are the same.
 
-The following rules files produce an identical configuration:
+The following command files produce an identical configuration:
 @example
 Search Pragmas (Pure, Elaborate_All);
 @end example
@@ -2451,7 +2466,7 @@ will first output all usages of @code{Pack1}, then all usages of both
 controls.
 
 If not in interactive mode, a ``go'' command is automatically added at
-the end, therefore it is not required in rules files.
+the end, therefore it is not required in command files.
 
 @node Quit command, Message command, Go command, Other commands
 @subsection Quit command
@@ -4499,8 +4514,8 @@ special needs annexes. The @code{rules} directory of Adacontrol
 contains files with ``Dependencies'' rules that forbid the use of
 various predefined Ada units. Comment out the lines for the units that
 you want to allow.  You can then simply ``source'' these files from
-your own rule file (or copy the content) if you want to disallow these
-units. @xref{Rules files provided with AdaControl}.
+your own command file (or copy the content) if you want to disallow these
+units. @xref{command files provided with AdaControl}.
 
 @node Derivations, Directly_Accessed_Globals, Dependencies, Rules reference
 @section Derivations
@@ -4823,8 +4838,8 @@ special needs annexes packages. The @code{rules} directory of
 Adacontrol contains files with ``Dependencies'' and ``Entities'' rules
 that forbid the use of various predefined Ada elements. Comment out
 the lines for the elements that you want to allow.  You can then
-simply ``source'' these files from your own rule file (or copy the
-content) if you want to disallow these elements. @xref{Rules files
+simply ``source'' these files from your own command file (or copy the
+content) if you want to disallow these elements. @xref{command files
 provided with AdaControl}.
 
 @subsection Limitation
@@ -6906,7 +6921,7 @@ Rule2 : check naming_convention (constant, "^const_");
 The rule will trigger if a constant is declared that does not start
 with either ``c_'' or ``const_''. But here, we have two different
 rule labels. The message will refer to the first label encountered in the
-rule file; this is the label that must be mentionned in a disabling
+command file; this is the label that must be mentionned in a disabling
 comment, unless you simply disable ``naming_convention''.
 
 @subsection Limitations
@@ -9756,7 +9771,7 @@ check unsafe_paired_calls (IT_Driver.Mask_Interrupt,
                            IT_Driver.General_Reset);
 @end example
 
-Normally, the legality of a rule is checked when the rules file is
+Normally, the legality of a rule is checked when the command file is
 parsed, and execution does not start if there is any error. However,
 the legality of the provided type can be checked only during the
 analysis. If the type is incorrect for some reason, a proper error
@@ -10161,12 +10176,12 @@ corresponding controls can be written.
 
 @menu
 * Migrating from Gnatcheck::
-* Rules files provided with AdaControl::
+* command files provided with AdaControl::
 * Automatically checkable rules::
 * Rules that need manual inspection::
 @end menu
 
-@node  Migrating from Gnatcheck, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules, Examples of using AdaControl for common programming rules
+@node  Migrating from Gnatcheck, command files provided with AdaControl, Examples of using AdaControl for common programming rules, Examples of using AdaControl for common programming rules
 @section Migrating from Gnatcheck
 The file @code{gnatcheck.aru} in directory @code{rules} gives the
 AdaControl equivalents of rules checked by Gnatcheck. This version of
@@ -10182,8 +10197,8 @@ follows as strictly as possible the rules as defined by Gnatcheck, but
 if you are migrating from Gnatcheck to AdaControl, you may want to use
 the more powerful forms provided  by AdaControl.
 
-@node Rules files provided with AdaControl, Automatically checkable rules, Migrating from Gnatcheck, Examples of using AdaControl for common programming rules
-@section Rules files provided with AdaControl
+@node command files provided with AdaControl, Automatically checkable rules, Migrating from Gnatcheck, Examples of using AdaControl for common programming rules
+@section Command files provided with AdaControl
 The @code{rules} directory provides also rules files that can be
 sourced to enforce some commonly encountered general rules.
 
@@ -10226,14 +10241,17 @@ currently controlled, but many are, and we expect later releases of
 AdaControl to increase the number of controlled features. In some
 cases (like ``Detect_Blocking''),  AdaControl does a better job than
 the profile, since it can detect statically situations that the
-profile only requires to be detected at run-time. The rule file is
+profile only requires to be detected at run-time. The command file is
 also slightly more restrictive than the profile; for example, the
 restriction ``no_task_allocation'' only disallows task allocators,
-while this rule file controls the declaration of access types on tasks.
+while this command file controls the declaration of access types on tasks.
 
 @rule{NASA coding guidelines shall be enforced}
 
-Use file @code{nasa.aru}. This file is an example of how to convert guidelines (available from @url{http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf}) into an AdaControl rules file.
+Use file @code{nasa.aru}. This file is an example of how to convert
+guidelines (available from
+@url{http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf}) into an
+AdaControl command file.
 
 @rule{Ada 83 unit names shall not be used (i.e. use @code{Ada.Text_IO}, not @code{Text_IO})}
 
@@ -10253,7 +10271,7 @@ measurement method. The corresponding file is @code{SQALE.aru}.
 For information about the SQALE method, please refer to J-P Rosen's paper at
 @url{http://www.adalog.fr/publicat/sqale.pdf}
 
-@node Automatically checkable rules, Rules that need manual inspection, Rules files provided with AdaControl, Examples of using AdaControl for common programming rules
+@node Automatically checkable rules, Rules that need manual inspection, command files provided with AdaControl, Examples of using AdaControl for common programming rules
 @section Automatically checkable rules
 Below are examples of rules that can be directly checked by AdaControl.
 
@@ -10839,7 +10857,7 @@ matches any string of character and ``?'' matches a single character.
 @node  Non upward-compatible changes,  , Syntax of regular expressions, Top
 @appendix Non upward-compatible changes
 This chapter is intended to users of a previous version of AdaControl,
-who want to migrate rule files to the latest version. Although we
+who want to migrate command files to the latest version. Although we
 understand the burden of non upward-compatible changes, we consider
 that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
@@ -11234,7 +11252,7 @@ The message is now syntactically a string, and must always be enclosed
 in double quotes (quotes were optional in previous versions).
 
 @subsection ``source'' command
-If a ``source'' command is given in a rules file, and the sourced file
+If a ``source'' command is given in a command file, and the sourced file
 is given with a relative path, it is interpreted relatively to the
 sourcing file (it was interpreted relatively to the current directory
 previously). This should make ``chained'' sourcing easier, since the

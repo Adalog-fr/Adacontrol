@@ -43,7 +43,7 @@ AdaControl for industrial projects, or if you want it to be customized
 or extended to match your own needs, please contact Adalog at
 @uref{mailto::info@@adalog.fr,,info@@adalog.fr}.
 
-AdaControl is Copyright @copyright{} 2005-2016 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2017 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
 2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog. AdaControl is
@@ -66,7 +66,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2016
+This document is Copyright @copyright{} 2005-2017
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -288,9 +288,9 @@ non-checkable construct, since it is what allows the rule
 ``Uncheckable'' to work.
 
 @node The package Framework.Fixes, The package Framework.Language, The package Framework.Reports, The framework and utilities packages
-@section The package Framework.Fixes
-The package @code{Framework.Fixes} provides functionalities for generating fixes
-to the source code.
+@section The package Framework.Reports.Fixes
+The package @code{Framework.Reports.Fixes} provides functionalities
+for generating fixes to the source code.
 
 The functionalities provided here allow to insert, delete, or replace
 elements of the source text. See the specification for details.
