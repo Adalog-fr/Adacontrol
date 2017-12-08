@@ -1301,7 +1301,7 @@ package body Rules.Naming_Convention is
                            Check (Name_Str,
                                   (K_All, K_Variable, K_Field, K_Protected_Field),
                                   Object_Type => Component_Definition_View (Object_Declaration_View (Decl)));
-                        when A_Record_Definition | A_Private_Extension_Definition  =>
+                        when A_Record_Definition | A_Private_Extension_Definition | A_Null_Record_Definition =>
                            Check (Name_Str,
                                   (K_All, K_Variable, K_Field, K_Record_Field),
                                   Object_Type => Component_Definition_View (Object_Declaration_View (Decl)));
