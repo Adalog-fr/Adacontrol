@@ -301,6 +301,10 @@ package body Adactl_Options is
       -- Help
       --
       if Is_Present (Option => 'h') then
+         -- Options that make sense even with "help"
+         Exit_Option.Value      := Is_Present (Option => 'x');
+         Utilities.Debug_Option := Is_Present (Option => 'd');
+
          Action := Help;
 
          if Parameter_Count = 0 then
@@ -308,14 +312,27 @@ package body Adactl_Options is
                                                           & "message """";"
                                                           & "help VERSION, LICENSE;");
          else
-            for I in Natural range 1.. Parameter_Count loop
-               Options_Commands := Options_Commands & "help " & To_Wide_String (Parameter (I)) & ';';
-            end loop;
+            -- Beware that "help variables" may be followed by an optional pattern
+            -- There is a small ambiguity here; we consider that if a parameter follows "variables", it is a
+            --    pattern, not a rule name.
+            -- Due to this special case, we can't use a regular "for" loop
+            declare
+               I : Positive := 1;
+            begin
+               loop
+                  Append (Options_Commands, "help " & To_Wide_String (Parameter (I)));
+                  if I /= Parameter_Count
+                    and then To_Upper (Parameter (I)) = "VARIABLES"
+                  then
+                     Append (Options_Commands, ' ' & To_Wide_String (Parameter (I + 1)));
+                     I := I + 1;
+                  end if;
+                  Append (Options_Commands, ';');
+                  exit when I = Parameter_Count;
+                  I := I + 1;
+               end loop;
+            end;
          end if;
-
-         -- Options that make sense even with "help"
-         Exit_Option.Value      := Is_Present (Option => 'x');
-         Utilities.Debug_Option := Is_Present ('d');
          return;
 
       elsif Is_Present (Option => 'C') then  -- Must be first for -C to override any other option (except help)
