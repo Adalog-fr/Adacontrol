@@ -14,6 +14,8 @@ LARGS =
 
 .PHONY : *
 
+executables := adactl adactl_fix ptree pfni
+
 help :
 	@echo "---------------------------------------------------------------"
 	@echo "--                                                           --"
@@ -21,29 +23,21 @@ help :
 	@echo "--                                                           --"
 	@echo "--    <entry> ::= help       -- print this message           --"
 	@echo "--              | build      -- build all executables        --"
-	@echo "--              | adactl     -- build adactl                 --"
-	@echo "--              | ptree      -- build ptree                  --"
-	@echo "--              | pfni       -- build pfni                   --"
+	@$(foreach e,$(executables),printf --\
+	      "--              | %-11s-- build %-23s--\n" $(e) $(e);)
 	@echo "--              | install    -- install everything           --"
 	@echo "--              | clean      -- delete object files          --"
 	@echo "--              | veryclean  -- clean + delete executable    --"
 	@echo "--                                                           --"
 	@echo "---------------------------------------------------------------"
 
+build : $(executables);
 
-build : adactl ptree pfni;
-
-adactl :
-	gprbuild build.gpr adactl ${GARGS} -cargs ${CARGS} -bargs ${BARGS} -largs ${LARGS}
-
-ptree :
-	gprbuild build.gpr ptree  ${GARGS} -cargs ${CARGS} -bargs ${BARGS} -largs ${LARGS}
-
-pfni :
-	gprbuild build.gpr pfni   ${GARGS} -cargs ${CARGS} -bargs ${BARGS} -largs ${LARGS}
+$(executables) :
+	gprbuild build.gpr $@ ${GARGS} -cargs ${CARGS} -bargs ${BARGS} -largs ${LARGS}
 
 install :
-	gprinstall build.gpr -f
+	gprinstall build.gpr -f -p
 
 clean :
 	gprclean -c build.gpr

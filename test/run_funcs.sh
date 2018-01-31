@@ -1,5 +1,9 @@
 # functions used by run*.sh scripts
 
+# Parameters:
+# $1: Message
+# $2 (opt): size for padding 
+# $3 (opt): right | center | left (default)
 put () {
     if [ $SILENT -eq 1 ]; then return; fi
 
@@ -19,6 +23,8 @@ put () {
     fi
 }
 
+# Parameters:
+# see put ()
 put_line () {
     if [ $SILENT -eq 1 ]; then return; fi
 
@@ -26,6 +32,8 @@ put_line () {
     printf "\n"
 }
 
+# Parameters:
+# $1: Message
 put_title_line () {
     if [ $SILENT -eq 1 ]; then return; fi
 
@@ -34,6 +42,8 @@ put_title_line () {
     put_line "--"
 }
 
+# Parameters:
+# none
 put_line_line () {
     if [ $SILENT -eq 1 ]; then return; fi
 
@@ -41,6 +51,9 @@ put_line_line () {
     put_line "---------------------------------------"
 }
 
+# Parameters:
+# $1 : Message
+# $2 : Time
 print_time () {
     t=$2
     if [ $t -ge 3600 ]; then

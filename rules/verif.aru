@@ -13,6 +13,8 @@ check parameter_aliasing (certain);
 check simplifiable_expressions;
 check simplifiable_statements;
 check with_clauses (reduceable);
+check abnormal_function_return;
+check characters (control, trailing_space);
 
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);

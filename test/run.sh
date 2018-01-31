@@ -1,17 +1,20 @@
 #!/bin/sh
+# Run AdaControl's test suite
+#
 # Usage:
 # ./run.sh [-q] [<adactl options>]
 # ./run.sh -h 
-# If -q is given as the first parameter:
+# -h:
+#   print help and exit
+# -q:
 #   run in "quiet" mode: just print PASSED if there are no errors
 #   names of failing tests are still reported in case of errors
 # Other options are passed to AdaControl (notably -d)
-# -h : print help and exit
 
 #
 # include functions
 #
-. run_funcs.sh
+. ./run_funcs.sh
 
 ########################################################
 # Actual beginning
@@ -32,6 +35,9 @@ if [ -z $EXECUTABLE ] ; then
     exit
 fi
 
+# We set -e to stop immediatly in case of a problem with the script
+# Note that it forces adding a " || True" to commands where the expected status is not 0
+set -e
 case "${1:-}" in
     -q)
         SILENT=1
@@ -168,7 +174,7 @@ find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_s
    1> res/${test_case}.txt 2>&1 \
    || result=$?
 export ADACTLINI=
-# if -x option, return code is always 1
+# if adactl is run with -x option, return code is always 1
 # replace by 10 if there is a crash
 if grep -q "=============" res/${test_case}.txt; then
    result=10
@@ -198,7 +204,8 @@ nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
     test_case=`echo $i | cut -f 1 -d "."`
-    ${ADACTL} -ruw -f conf/${test_case}.aru ${test_case} -o res/${test_case}.txt
+    status=0
+    ${ADACTL} -ruw -f conf/${test_case}.aru ${test_case} -o res/${test_case}.txt || true
     dos2unix -q res/${test_case}.txt
 done
 

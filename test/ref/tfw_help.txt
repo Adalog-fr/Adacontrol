@@ -881,8 +881,8 @@ Rule: USE_CLAUSES
 Control occurrences of use clauses or use type clauses that mention
 any package/type other than the ones passed as parameters (if any)
 
-Parameter(1):  local       | global | type | type_local |
-               type_global
+Parameter(1):  package    | local       | global | type |
+               type_local | type_global
                (optional)
 Parameter(2..): <Allowed package/type name>
 ----
@@ -983,7 +983,7 @@ Rules:
    Unsafe_Unchecked_Conversion     Usage                           
    Use_Clauses                     With_Clauses                    
 
-ADACTL v. 1.19b9 
+ADACTL v. 1.19r10 
 ----
 Copyright (C) 2004-2017 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.

@@ -1,14 +1,28 @@
 #!/bin/sh
+# Checks differences between ./ref/ and ./res/ directories, and offers to view differences if any
+# Note that this script can be called with -e set, hence the various  " || true"
+# 
 
+###################################################
+# Set according to preferences
+
+# Name of patch file if you respond "p":
 PATCHFILE=testpatch.diff
 
-if [ "${OSTYPE:-}" = "linux-gnu" ] ; then
-    WINMERGE='/usr/bin/meld'
-    EMACS=emacs
-else
-    WINMERGE='c:/Program Files (x86)/Meld/Meld.exe'
-    EMACS=emacs.bat
-fi
+# Utilities according to your OS
+case $(uname) in
+    *win*|*Win*|*WIN*)  # Windows, Cygwin...
+	MERGER='c:/Program Files (x86)/Meld/Meld.exe'
+	EDITOR=emacs.bat
+	;;
+    *)                  # Assume *nix
+	MERGER='/usr/bin/meld'
+	EDITOR=emacs
+	;;
+esac
+
+# Nothing to set below this line
+###################################################
 
 if [ \( ! -d res \) -o \( ! -d ref \) ] ; then
     echo "Missing res or ref directory";
@@ -17,9 +31,9 @@ fi
 
 (cd res
     found=0
-    shopt -s nullglob
-    for test_case in *.txt *.ad[sb] ; do
-	diff=`diff ${test_case} ../ref/${test_case}`
+    list=`find ./ -maxdepth 1 \( -name "*.txt" -or -name "*.ad[sb]" \) -printf "%P "`
+    for test_case in $list ; do
+	diff=`diff ${test_case} ../ref/${test_case}` || true
 	if [ "$diff" != "" ]; then
             found=1
 	    while true ; do
@@ -28,16 +42,16 @@ fi
 		case $REP in
 	            d | D )
                         echo "           <... ref, >... res"
-			diff ../ref/${test_case} ${test_case}  2>/dev/null;;
+			diff ../ref/${test_case} ${test_case} 2>/dev/null || true ;;
                     e | E )
-			${EMACS} ${test_case};;
+			${EDITOR} ${test_case} || true ;;
 	            i | I )
-			"$WINMERGE" ../ref/${test_case} ${test_case} 2>/dev/null;;
+			"$MERGER" ../ref/${test_case} ${test_case} 2>/dev/null || true ;;
 		    p | P )
-			diff --unified ../ref/${test_case} ${test_case}  >>../${PATCHFILE} 2>/dev/null;
+			diff --unified ../ref/${test_case} ${test_case}  >>../${PATCHFILE} 2>/dev/null || true ;
 			echo "Patch appended to $PATCHFILE";;
 	            v | V )
-			cp  ${test_case} ../ref/${test_case}
+			cp  ${test_case} ../ref/${test_case} || true 
 			break;;
 		    n | N )
 			break;;

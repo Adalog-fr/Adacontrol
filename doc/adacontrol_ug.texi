@@ -427,9 +427,14 @@ necessary.
 Simply go to the root directory of the distribution and type:
 @example
 gprbuild build.gpr
-gprinstall build.gpr
+gprinstall -p build.gpr
 @end example
 You're done!
+
+NOTE: the ``-p'' option of gprinstall creates possibly missing
+directories. If you are installing over a previous version of
+AdaControl, you may want to add the ``-f'' option to allow the
+replacement of existing files.
 
 If you want to uninstall AdaControl, just use:
 @example
@@ -477,10 +482,13 @@ Gnat tree).
 
 All you need to run AdaControl is the executable named  @code{adactl}
 under Linux and MacOS or @code{adactl.exe} under Windows. In addition,
-@code{pfni} (or @code{pfni.exe} under Windows) is a convenient
-utility, required by the GPS support. @xref{pfni}. Copy these
-executables (found in the root directory of the distribution) to any
-convenient directory on your path.
+the @code{adactl_fix} (or @code{adactl_fix.exe} under Windows) utility
+is necessary if you want to use the automatic fixing
+capability. @xref{Automatic fixing}. Similarly, @code{pfni} (or @code{pfni.exe}
+under Windows) is a convenient utility, required by the GPS
+support. @xref{pfni}. Copy these executables (found in the root
+directory of the distribution) to any convenient directory on your
+path.
 
 To also add AdaControl support to GPS, copy the file
 @code{GPS/adacontrol.xml} into the @code{<GNAT_dir>/share/gprconfig}
@@ -594,12 +602,14 @@ GPS installed and/or AdaGide support if you have AdaGide installed.
 
 Otherwise, go to the root directory of the installation and type:
 @example
-gprinstall inst.gpr
+gprinstall -p inst.gpr
 @end example
 
 This will install the executables and the GPS support in the standard
-locations (the Gnat directory). However, if you are using AdaGide, the
-support will have to be installed manually as explained below.
+locations (the Gnat directory). Add the ``-f'' option to gprinstall if
+you are installing over a previous installation of
+AdaControl. However, if you are using AdaGide, the support will have
+to be installed manually as explained below.
 
 If you want to uninstall AdaControl, just use:
 @example
@@ -1092,6 +1102,7 @@ the effect of this command!
 
 Note that by default, the generation of fixes is enabled under GPS.
 
+@anchor{Automatic fixing}
 @subsection Automatic fixing
 An output file containing the directives can be processed by the
 @code{adactl_fix} utility. The syntax is:
@@ -2700,6 +2711,9 @@ you'll fix the unit in the near future!);
 @item
 The unit is known to obey the rule, execution of the rule is
 time-consuming, and you want to save some processing time;
+@item
+The unit is a ``stub'' necessary to obtain a clean compile, but not
+subject to obeying the coding standard;
 @item
 The unit is known to raise an ASIS bug, and until you upgrade to the
 appropriate version of GNAT, you don't want to be bothered by the
@@ -5243,7 +5257,7 @@ explicitely given for a @code{'First}, @code{'Last}, @code{'Range} or
 multi-dimensional array, or conversely, when an explicit dimension is
 given, but the attribute applies to a one-dimensional array.
 @item
-@code{function_call} controls all calls to functions, incuding user
+@code{function_call} controls all calls to functions, including user
 defined operators, but not predefined operators (including the latter
 would generate too much noise). @code{dispatching_function_call} does
 the same, but only for dispatching calls while

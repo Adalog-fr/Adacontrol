@@ -1,4 +1,10 @@
 #!/bin/sh
+# Compare the fixed files as produced by runfix.sh with the original ones
+# Allows to launch a diff tool to view the patches
+#
+# usage: 
+#   ./showfix [<pattern>]
+#   ./showfix -h
 
 if [ "${OSTYPE:-}" = "linux-gnu" ] ; then
     MERGE='/usr/bin/meld'
