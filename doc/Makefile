@@ -6,7 +6,7 @@ PDF  := $(subst .texi,.pdf, $(TEXI))
 TXT  := $(subst .texi,.txt, $(TEXI))
 docs: $(HTML) $(INFO) $(PDF) $(TXT)
 $(HTML): %.html: %.texi
-	texi2any --output=$@ --html --no-split $<
+	texi2any --output=$@ --html --no-split --css-include=adalog_doc.css $<
 $(INFO): %.info: %.texi
 	texi2any --output=$@ --info --no-split $<
 $(PDF): %.pdf: %.texi
