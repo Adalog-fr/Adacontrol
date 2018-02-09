@@ -983,9 +983,9 @@ Rules:
    Unsafe_Unchecked_Conversion     Usage                           
    Use_Clauses                     With_Clauses                    
 
-ADACTL v. 1.19r10 
+ADACTL v. 1.20b1 
 ----
-Copyright (C) 2004-2017 Eurocontrol/Adalog and others.
+Copyright (C) 2004-2018 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
 Commercial support is available, see http://www.adalog.fr/en/adacontrol.html
 Rule: SIMPLIFIABLE_EXPRESSIONS
