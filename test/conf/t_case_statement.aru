@@ -11,6 +11,10 @@ Min_Paths:         check  case_statement (paths, min 3);
 Min_Paths:         search case_statement (paths, min 4);
 Number_small_case: count  case_statement (paths, min 4);
 
-Range_Span:      check  case_statement (range_span, max 5);
-Range_Span:      search case_statement (range_span, max 4);
+Range_Span:      check  case_statement (range_span, max 5),
+                 search case_statement (range_span, max 4);
 Number_Big_Span: count  case_statement (range_span, max 50);
+
+Enum_Range_Span: check case_statement  (enumeration_range_span, max 4);
+                 search case_statement (enumeration_range_span, max 3);
+

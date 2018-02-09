@@ -73,7 +73,8 @@ Parameter(s): <entity>            | allocation          | any_component   |
 Rule: CASE_STATEMENT
 Controls various sizes related to the case statement
 
-Parameter(1)   : others_span | paths            | range_span |
+Parameter(1)   : others_span | paths                  |
+                 range_span  | enumeration_range_span |
                  values      | values_if_others
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)

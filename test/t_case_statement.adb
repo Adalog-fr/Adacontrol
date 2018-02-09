@@ -54,13 +54,13 @@ begin
       Mixed_Enumeration_Case : Mixed_Enumeration_Type := 'A';
    begin
       case Mixed_Enumeration_Case is                    -- Max Values search, Min_Paths search, count
-         when 'A' .. 'E' => null;                       -- Range_Span found
-         when Mixed_Enumeration_Non_Characters => null; -- Range_Span found
+         when 'A' .. 'E' => null;                       -- Enumeration_Range_Span check
+         when Mixed_Enumeration_Non_Characters => null; -- Enumeration_Range_Span check
          when others => null;                           -- Min_Others covers 0, check, count
       end case;
 
       case Mixed_Enumeration_Case is                  -- Max Values search, Min_Paths check, count
-         when Mixed_Enumeration_Both_Types => null;
+         when Mixed_Enumeration_Both_Types => null;   -- Enumeration_Range_Span found
          when others => null;                         -- Min_Others covers 6, search
       end case;
    end;

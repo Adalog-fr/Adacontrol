@@ -3562,8 +3562,8 @@ complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
 <control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
-<subrule> ::= others_span      | paths | range_span | values |
-              values_if_others
+<subrule> ::= enumeration_range_spane | others_span | paths | range_span | 
+              values                  | values_if_others
 <bound>   ::= min | max <value>
 @end example
 
@@ -3581,7 +3581,10 @@ value to infinity. The parameters controlled by each subrule are:
 ``paths'' controls the number of paths (i.e. @code{@b{when}} branches).
 @item
 ``range_span'' controls the number of values covered by ranges used as
-choices.
+choices. ``enumeration_range_span'' does the same, but only for values
+of an enumeration type. If ``range_span'' is specified but not
+``enumeration_range_span'', enumeration types are controlled using the
+``range_span'' values.
 @item
 ``values'' controls the number of values covered by the subtype
 of the @code{@b{case}} selector.

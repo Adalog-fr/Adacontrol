@@ -33,9 +33,9 @@ package Rules.Case_Statement is
    Rule_Id : constant Wide_String := "CASE_STATEMENT";
 
    procedure Process_Case_Statement (Statement : Asis.Statement);
-   -- Statement_Kind (Statement)= A_Case_Statement
+   -- with Pre => Statement_Kind (Statement)= A_Case_Statement
 
    procedure Process_Path (Path : Asis.Path);
-   -- Path_Kind (Path) = A_Case_Path
+   -- with Pre => Path_Kind (Path) = A_Case_Path
 
 end Rules.Case_Statement;

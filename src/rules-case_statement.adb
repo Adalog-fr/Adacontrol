@@ -49,7 +49,7 @@ package body Rules.Case_Statement is
 
    use Asis, Framework, Thick_Queries;
 
-   type Subrules is (Others_Span, Paths, Range_Span, Values, Values_If_Others);
+   type Subrules is (Others_Span, Paths, Range_Span, Enumeration_Range_Span, Values, Values_If_Others);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Usage is array (Subrules) of Control_Kinds_Set;
@@ -348,12 +348,12 @@ package body Rules.Case_Statement is
       if   Rule_Used (Values)           /= (Control_Kinds => False)
         or Rule_Used (Values_If_Others) /= (Control_Kinds => False)
       then
-          Process_Max_Values;
-       end if;
+         Process_Max_Values;
+      end if;
 
-       if Rule_Used (Paths) /= (Control_Kinds => False) then
+      if Rule_Used (Paths) /= (Control_Kinds => False) then
          Process_Min_Paths;
-       end if;
+      end if;
 
       if Rule_Used (Others_Span) /= (Control_Kinds => False) then
          Process_Min_Others_Range;
@@ -370,8 +370,22 @@ package body Rules.Case_Statement is
 
       Choices : constant Asis.Element_List := Case_Statement_Alternative_Choices (Path);
       Nb_Val  : Extended_Biggest_Natural;
+      Is_Enum : constant Boolean := Type_Category (Case_Expression (Enclosing_Element (Path)),
+                                                   Follow_Derived => True,
+                                                   Privacy        => Follow_User_Private) = An_Enumeration_Type;
+      Good_Rule : Subrules;
    begin
-      if Rule_Used (Range_Span) = (Control_Kinds => False) then
+      if Is_Enum then
+         if Rule_Used (Enumeration_Range_Span) /= (Control_Kinds => False) then
+            Good_Rule := Enumeration_Range_Span;
+         elsif Rule_Used (Range_Span) /= (Control_Kinds => False) then
+            Good_Rule := Range_Span;
+         else
+            return;
+         end if;
+      elsif Rule_Used (Range_Span) /= (Control_Kinds => False) then
+         Good_Rule := Range_Span;
+      else
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -399,7 +413,7 @@ package body Rules.Case_Statement is
                      return;
                   end if;
 
-                  Check_Report (Range_Span,
+                  Check_Report (Good_Rule,
                                 Value   => Nb_Val,
                                 Message => "values in choice range",
                                 Elem    => Choices (C));
