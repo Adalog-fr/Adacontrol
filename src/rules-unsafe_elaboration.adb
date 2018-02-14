@@ -43,7 +43,6 @@ with
   Framework.Symbol_Table;
 
 package body Rules.Unsafe_Elaboration is
-   use Asis.Iterator;
    use Framework, Framework.Control_Manager;
 
    -- Algorithm:

@@ -111,8 +111,6 @@ procedure Ptree is
 
    procedure Parse_Parameter (S : Wide_String)is
       use Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded, Ada.Strings.Wide_Maps;
-      use Ada.Characters.Handling;
-      use Utilities;
       use Asis.Text;
 
       Unit_First : Natural;
@@ -121,6 +119,7 @@ procedure Ptree is
       Pos_Dash   : Natural;
 
       function Make_Unit_Name (Name : Wide_String) return Wide_String is
+         use Utilities;
          Pos_Dot : constant Natural := Index (Name, ".", Going => Backward);
       begin
          if Pos_Dot = 0 or Pos_Dot /= Name'Last - 3 then
@@ -137,7 +136,7 @@ procedure Ptree is
          end if;
       end Make_Unit_Name;
 
-   begin
+   begin  -- Parse_Parameter
       Unit_First := Index (S, Set => To_Set ("/\"), Going => Backward);
       if Unit_First = 0 then
          -- There is no directory separator
@@ -230,10 +229,6 @@ procedure Ptree is
             Put (')');
          when An_Exception_Handler =>
             null;
-         when others =>
-            -- Corresponds to GNAT extensions: An_Expression_Path
-            -- Does not exist any more in recent versions
-            Put (" (non-standard)");
       end case;
    end Put_Kind;
 
@@ -273,7 +268,7 @@ procedure Ptree is
          return;
       end if;
 
-      for I in 1..State-1 loop
+      for I in Info range 1..State-1 loop
          Put ("| ");
       end loop;
 
@@ -284,12 +279,12 @@ procedure Ptree is
          Source : constant Wide_String := Element_Image (Element);
          Start  : Natural := 1;
          Stop   : Natural;
-         First_Line : Boolean := True;
+         Is_First_Line : Boolean := True;
       begin
          loop
             Stop := Index (Source(Start..Source'Last), Sep);
-            if not First_Line then
-               for I in 1..State loop
+            if not Is_First_Line then
+               for I in Info range 1..State loop
                   Put ("| ");
                end loop;
             end if;
@@ -299,7 +294,7 @@ procedure Ptree is
                Set_Col (Col_Base + (Col - Col_Base + Col_Step) / Col_Step * Col_Step);
             end if;
             if Stop = 0 then
-               if First_Line then
+               if Is_First_Line then
                   Put (Trim (Source (Start..Source'Last), Both));
                   Put_Span (The_Span);
                   Put_Kind (Element);
@@ -309,17 +304,18 @@ procedure Ptree is
 
                New_Line;
                exit;
-            else
-               if First_Line then
-                  Put (Trim (Source (Start..Stop-1), Both));
-                  Put_Span (The_Span);
-                  Put_Kind (Element);
-               else
-                  Put (Source (Start..Stop-1));
-               end if;
-               Start := Stop + Sep'Length;
             end if;
-            First_Line := False;
+
+            if Is_First_Line then
+               Put (Trim (Source (Start .. Stop - 1), Both));
+               Put_Span (The_Span);
+               Put_Kind (Element);
+            else
+               Put (Source (Start .. Stop - 1));
+            end if;
+            Start := Stop + Sep'Length;
+
+            Is_First_Line := False;
 
             New_Line;
          end loop;
@@ -344,9 +340,9 @@ procedure Ptree is
    The_Control    : Traverse_Control := Continue;
    The_Info       : Info := 0;
 
-   use Ada.Wide_Text_IO, Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
+   use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
    use Implementation_Options, Utilities;
-begin
+begin  -- Ptree
    if Is_Present (Option => 'h') then
       Print_Help;
       return;
@@ -407,7 +403,7 @@ exception
    when Occur : Implementation_Error =>
       Ada.Wide_Text_IO.Put_Line (To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
 
-   when ASIS.Exceptions.ASIS_Inappropriate_Compilation_Unit =>
+   when Asis.Exceptions.ASIS_Inappropriate_Compilation_Unit =>
       Ada.Wide_Text_IO.Put_Line ("Unit " & To_Wide_String (Unit_Name) & " not found in context");
 
    when Occur : Options_Error =>

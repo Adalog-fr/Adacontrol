@@ -315,7 +315,6 @@ procedure Pfni is
                             State   : in out Info)
    is
       pragma Unreferenced (State);
-      use Asis.Text;
       Good_Name : Asis.Expression;
    begin
       case Element_Kind (Element) is
@@ -469,15 +468,15 @@ exception
    when Occur : ASIS_Failed =>
       case Asis.Implementation.Status is
          when Asis.Errors.Use_Error =>
+            -- tell the truth if we are debugging
             if Debug_Option then
-               -- tell the truth if we are debugging
                Asis_Exception_Messages;
                Stack_Traceback (Occur);
                raise;
-            else
-               -- Presumably, due to inconsistent tree...
-               User_Message ("Inconsistent tree, please remove *.adt files");
             end if;
+
+            -- Presumably, due to inconsistent tree...
+            User_Message ("Inconsistent tree, please remove *.adt files");
          when others =>
             Asis_Exception_Messages;
             if Debug_Option then

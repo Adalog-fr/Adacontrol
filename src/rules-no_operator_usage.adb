@@ -96,7 +96,7 @@ package body Rules.No_Operator_Usage is
    ----------
 
    procedure Help is
-      use Utilities, Observed_Flag_Utilities, Categories_Utilities;
+      use Utilities, Observed_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control integer types where no arithmetic operators are used");
@@ -113,7 +113,6 @@ package body Rules.No_Operator_Usage is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Asis;
       use Framework.Language, Observed_Flag_Utilities, Filters_Modifiers_Utilities, Categories_Utilities;
       Cat     : Categories := Cat_Any;
       Filter  : Filters;
@@ -391,7 +390,7 @@ package body Rules.No_Operator_Usage is
    ------------------------------
 
    procedure Process_Array_Definition (Definition : in Asis.Definition) is
-      use Asis, Asis.Declarations, Asis.Elements;
+      use Asis.Declarations, Asis.Elements;
       use Thick_Queries;
    begin
       if Rule_Used = 0 then
