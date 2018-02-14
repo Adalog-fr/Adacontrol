@@ -8563,20 +8563,21 @@ This rule controls usage of certain Ada statements.
    labelled               | loop_return              |
    multiple_exits         | named_exit               |
    no_else                | null                     |
-   procedure_call         | procedure_return         |
-   raise                  | raise_locally_handled    |
-   raise_nonpublic        | raise_standard           |
-   redispatching_call     | reraise                  |
-   requeue                | selective_accept         |
-   simple_block           | simple_loop              |
-   terminate              | timed_entry_call         |
-   unconditional_exit     | unnamed_block            |
-   unnamed_exit           | unnamed_loop_exited      |
-   unnamed_for_loop       | unnamed_multiple_loop    |
-   unnamed_simple_block   | unnamed_simple_loop      |
-   unnamed_while_loop     | untyped_for              |
-   untyped_for_in         | untyped_for_of           |
-   while_loop
+   null_case_path         | null_if_path             |
+   null_loop_body         | procedure_call           |
+   procedure_return       | raise                    |
+   raise_locally_handled  | raise_nonpublic          |
+   raise_standard         | redispatching_call       |
+   reraise                | requeue                  |
+   selective_accept       | simple_block             |
+   simple_loop            | terminate                |
+   timed_entry_call       | unconditional_exit       |
+   unnamed_block          | unnamed_exit             |
+   unnamed_loop_exited    | unnamed_for_loop         |
+   unnamed_multiple_loop  | unnamed_simple_block     |
+   unnamed_simple_loop    | unnamed_while_loop       |
+   untyped_for            | untyped_for_in           |
+   untyped_for_of         | while_loop
 @end example
 
 @subsection Action
@@ -8687,7 +8688,11 @@ name.
 @code{no_else} controls @code{@b{if}} statements that have no @code{@b{else}}
 path.
 @item
-@code{null} controls all @code{@b{null}} statements.
+@code{null} controls all @code{@b{null}}
+statements. @code{null_if_path}, @code{null_case_path} and
+@code{null_loop_body} control paths (branches) of @code{@b{if}} or
+@code{@b{case}} statements, or bodies of @code{@b{loop}} statements
+(respectively) that contain only @code{@b{null}} statements.
 @item
 @code{procedure_call} controls all calls to
 procedures. @code{dispatching_call} does the same, but only for

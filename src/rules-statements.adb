@@ -81,6 +81,7 @@ package body Rules.Statements is
                      Stmt_Multiple_Exits,
 
                      Stmt_Named_Exit,              Stmt_No_Else,                Stmt_Null,
+                     Stmt_Null_Case_Path,          Stmt_Null_If_Path,           Stmt_Null_Loop_Body,
 
                      Stmt_Procedure_Call,          Stmt_Procedure_Return,
 
@@ -401,6 +402,17 @@ package body Rules.Statements is
 
          when A_Case_Statement =>
             Do_Report (Stmt_Case);
+            if Rule_Used (Stmt_Null_Case_Path) then
+               declare
+                  Paths : constant Asis.Path_List := Statement_Paths (Stmt);
+               begin
+                  for P in Paths'Range loop
+                     if Are_Null_Statements (Sequence_Of_Statements (Paths (P))) then
+                        Do_Report (Stmt_Null_Case_Path, Loc => Get_Location (Paths (P)));
+                     end if;
+                  end loop;
+               end;
+            end if;
 
          when A_Code_Statement =>
             Do_Report (Stmt_Code);
@@ -519,6 +531,10 @@ package body Rules.Statements is
                if Is_Nil (Statement_Identifier (Stmt)) then
                   Do_Report (Stmt_Unnamed_For_Loop);
                end if;
+
+               if Are_Null_Statements (Loop_Statements (Stmt)) then
+                  Do_Report (Stmt_Null_Loop_Body);
+               end if;
             end;
 
          when A_Goto_Statement =>
@@ -535,6 +551,13 @@ package body Rules.Statements is
                if Paths'Length >= 2 and then Path_Kind (Paths (2)) = An_Elsif_Path then
                   Do_Report (Stmt_If_Elsif);
                end if;
+               if Rule_Used (Stmt_Null_If_Path) then
+                  for P in Paths'Range loop
+                     if Are_Null_Statements (Sequence_Of_Statements (Paths (P))) then
+                        Do_Report (Stmt_Null_If_Path, Loc => Get_Location (Paths (P)));
+                     end if;
+                  end loop;
+               end if;
             end;
 
          when A_Loop_Statement =>
@@ -542,6 +565,10 @@ package body Rules.Statements is
 
             if Is_Nil (Statement_Identifier (Stmt)) then
                Do_Report (Stmt_Unnamed_Simple_Loop);
+            end if;
+
+            if Are_Null_Statements (Loop_Statements (Stmt)) then
+               Do_Report (Stmt_Null_Loop_Body);
             end if;
 
          when A_Null_Statement =>
@@ -664,6 +691,11 @@ package body Rules.Statements is
             if Is_Nil (Statement_Identifier (Stmt)) then
                Do_Report (Stmt_Unnamed_While_Loop);
             end if;
+
+            if Are_Null_Statements (Loop_Statements (Stmt)) then
+               Do_Report (Stmt_Null_Loop_Body);
+            end if;
+
       end case;
    end Process_Statement;
 

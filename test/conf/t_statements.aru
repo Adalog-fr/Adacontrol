@@ -70,6 +70,10 @@ Loop_Stmts:       check  statements (exit,
                                      unnamed_while_loop,
                                      while_loop);
 
+null_stmts:        check statements (null_case_path,
+                                     null_if_path,
+                                     null_loop_body);
+
 If_Count   : count statements (if);
 Case_Count : count statements (case);
 All_Stmts  : count statements (any_statement);

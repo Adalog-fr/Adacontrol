@@ -714,21 +714,22 @@ Parameter(s): any_statement            | abort                   |
               inherited_procedure_call | labelled                |
               loop_return              | multiple_exits          |
               named_exit               | no_else                 |
-              null                     | procedure_call          |
-              procedure_return         | raise                   |
-              raise_foreign            | raise_locally_handled   |
-              raise_nonpublic          | raise_standard          |
-              reraise                  | redispatching_call      |
-              requeue                  | selective_accept        |
-              simple_block             | simple_loop             |
-              terminate                | timed_entry_call        |
-              unconditional_exit       | unnamed_block           |
-              unnamed_exit             | unnamed_loop_exited     |
-              unnamed_for_loop         | unnamed_multiple_loop   |
-              unnamed_simple_block     | unnamed_simple_loop     |
-              unnamed_while_loop       | untyped_for             |
-              untyped_for_in           | untyped_for_of          |
-              while_loop
+              null                     | null_case_path          |
+              null_if_path             | null_loop_body          |
+              procedure_call           | procedure_return        |
+              raise                    | raise_foreign           |
+              raise_locally_handled    | raise_nonpublic         |
+              raise_standard           | reraise                 |
+              redispatching_call       | requeue                 |
+              selective_accept         | simple_block            |
+              simple_loop              | terminate               |
+              timed_entry_call         | unconditional_exit      |
+              unnamed_block            | unnamed_exit            |
+              unnamed_loop_exited      | unnamed_for_loop        |
+              unnamed_multiple_loop    | unnamed_simple_block    |
+              unnamed_simple_loop      | unnamed_while_loop      |
+              untyped_for              | untyped_for_in          |
+              untyped_for_of           | while_loop
 
 Variables:
 Statements.Called_Info: (None, Compact, Detailed, Root_Detailed) = None
