@@ -974,13 +974,20 @@ package body Framework.Ruler is
          raise;
       when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
-      when Occur: others =>
-         Utilities.Trace ("Exception "                                  --## rule line off No_Trace
-                          & To_Wide_String (Exception_Name (Occur))
-                          & " in Pre_Procedure at "
-                          & Safe_Image (Get_Location (Element)),
-                          Element,
-                          With_Source => True);
+      when Occur : others =>
+         begin
+            Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                             & To_Wide_String (Exception_Name (Occur))
+                             & " in Pre_Procedure at "
+                             & Safe_Image (Get_Location (Element)),
+                             Element,
+                             With_Source => True);
+         exception
+            when others =>
+               -- If things are so bad that we can't print the trace, ignore this one so as to get
+               -- the stack trace from the original exception
+               null;
+         end;
          raise;
    end Pre_Procedure;
 
