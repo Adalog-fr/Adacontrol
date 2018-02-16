@@ -36,6 +36,12 @@ def open_file(name):
     GPS.MDI.get_by_child(ed.current_view()).raise_window()
 
 
+def protect (mess):
+    """ protects a message by changing "<" and ">" to "&lt" and "&gt"
+        This is requirede when the message is passed to Pango
+    """
+    return mess.replace ("<", "&lt;").replace (">", "&gt;")
+
 #
 # Units
 #
@@ -200,7 +206,7 @@ def apply_fixes ():
 def parse(output):
     """Sort and parse the result of running Adacontrol
     """
-    global adactl_cats, long_mess_pat, short_mess_pat, fix_mess_pat, \
+    global adactl_cats, long_mess_pat, syntax_mess_pat, short_mess_pat, fix_mess_pat, \
         rule_statistics_pat, message_statistics_pat, errors_style, warnings_style
 
     list = output.splitlines()
@@ -223,7 +229,7 @@ def parse(output):
                                file=GPS.File(match.group('file')),
                                line=int(match.group('line')),
                                column=int(match.group('col')),
-                               text=match.group('message'))
+                               text=protect (match.group('message')))
             key = match.group('key')
             if key == "Found":
                 mess.set_style(warnings_style)
@@ -282,6 +288,20 @@ def parse(output):
             prev_mess.fix_list[-1].fix_data.append(Mess[1:])
             continue
 
+        # Rules file check message
+        match = syntax_mess_pat.match (Mess);
+        if match:
+            adactl_cats.add(category)
+            mess = GPS.Message(category,
+                               file=GPS.File(match.group('file')),
+                               line=int(match.group('line')),
+                               column=int(match.group('col')),
+                               text=protect (match.group('message')))
+            mess.set_style(errors_style)
+            prev_mess = mess
+            prev_mess.fix_list = []
+            continue
+
         # AdaCtl message without location, or just a column location
         # (syntax error in interactive command)
         match = short_mess_pat.match(Mess)
@@ -289,7 +309,7 @@ def parse(output):
             if GPS.Preference("separate-rules").get():
                 category = match.group('category')
             adactl_cats.add(category)
-            message = match.group('message')
+            message = protect (match.group('message'))
             try:
                 mess = GPS.Message(category, GPS.File("none"), 1, 1, message)
             except:
@@ -377,8 +397,9 @@ def options(rules, files):
 
     result = "-v"
 
-    # always set project
-    result = result + ' -p "' + GPS.Project.root().file().name() + '"'
+    # always set project except for checking rules file
+    if rules != "check":
+        result = result + ' -p "' + GPS.Project.root().file().name() + '"'
 
     # set files
     if rules != "check" and files == "":
@@ -456,6 +477,7 @@ def options(rules, files):
     next_is_ASIS = False
     next_is_format = False
     next_is_fixes = False
+    next_is_stats = False
     for O in opt_list:
         if len(O) == 0:
             pass
@@ -471,8 +493,13 @@ def options(rules, files):
             result = result + " -F " + O
             next_is_format = False
         elif next_is_fixes:
-            result = result + " -G " + O
+            if rules != "check":
+                result = result + " -G " + O
             next_is_fixes = False
+        elif next_is_stats:
+            if rules != "check":
+                result = result + " -S " + O
+            next_is_stats = False
         elif skip_next:
             skip_next = False
         elif O[0] == "@":
@@ -504,7 +531,8 @@ def options(rules, files):
         elif O[0:2] == "-G":
             # Bug in GPS: Combo does not add separator
             fixes = True
-            result = result + ' ' + "-G " + O[2:]
+            if rules != "check":
+                result = result + ' ' + "-G " + O[2:]
         elif O == "-o":
             next_is_ofile = True
         elif O == "-p":
@@ -513,9 +541,12 @@ def options(rules, files):
         elif O == "-P":
             print "-P"
             next_is_fixfile = True
+        elif O == "-S":
+            next_is_stats = True
         elif O[0:2] == "-S" and O[2:] != "":
             # Bug in GPS: Combo does not add separator
-            result = result + ' ' + "-S " + O[2:]
+            if rules != "check":
+                result = result + ' ' + "-S " + O[2:]
         else:
             result = result + ' ' + O
 
@@ -546,11 +577,12 @@ def options(rules, files):
         # file is specified but not used
         output_name = ""
 
-    if gps and not fixes:
-        result = result + " -G check"
+    if rules != "check":
+        if gps and not fixes:
+            result = result + " -G check"
 
-    if ASIS_option:
-        result = result + " -- " + ASIS_option
+        if ASIS_option:
+            result = result + " -- " + ASIS_option
 
     return result
 
@@ -687,8 +719,8 @@ def on_GPS_start(H):
        variables for example)
     """
     global adactl_cats, previous_command, previous_locfile, DelTree_Menu,\
-        long_mess_pat, short_mess_pat, rule_statistics_pat, fix_mess_pat,\
-        message_statistics_pat, gps_version, errors_style, warnings_style
+        long_mess_pat, syntax_mess_pat, short_mess_pat, rule_statistics_pat,\
+        fix_mess_pat, message_statistics_pat, gps_version, errors_style, warnings_style
 
     # Global variables initialization
     adactl_cats = sets.Set()
@@ -714,7 +746,12 @@ def on_GPS_start(H):
     long_mess_pat = re.compile(r'(?P<file>.+?):'
                                r'(?P<line>\d+):'
                                r'(?P<col>\d+): '
-                               r'(?P<message>(?P<key>Found|Error|Parameter|Syntax): (?P<rule>.*?):.*)$')
+                               r'(?P<message>(?P<key>Found|Error|Parameter): (?P<rule>.*?):.*)$')
+
+    syntax_mess_pat = re.compile(r'(?P<file>.+?):'
+                                 r'(?P<line>\d+):'
+                                 r'(?P<col>\d+): '
+                                 r'(?P<message>Syntax: .*)$')
 
     short_mess_pat = re.compile(r"^(?P<category>.+):(?: )?(?P<message>(?P<key>Found|Error|Parameter|Syntax): (.*))$")
 

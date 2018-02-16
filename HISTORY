@@ -2,6 +2,10 @@
 == V1.20b1 ==
 =============
 
+General:
+--------
+Misc. improvements to GPS integration
+
 Changes to existing rules:
 --------------------------
 case_statement:
