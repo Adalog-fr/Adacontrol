@@ -32,8 +32,7 @@ with
 
 -- Adacontrol
 with
-  Scope_Manager,
-  Framework.Language.Scanner;
+  Scope_Manager;
 
 package body Framework.Language.Shared_Keys is
 
@@ -128,8 +127,8 @@ package body Framework.Language.Shared_Keys is
    -- Get_Places_Set_Modifiers --
    ------------------------------
 
-   function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return  Places_Set is
-      use Scope_Places_Utilities, Framework.Language.Scanner;
+   function Get_Places_Set_Modifiers (Rule_Id : Wide_String; Allow_All : Boolean := True) return  Places_Set is
+      use Scope_Places_Utilities;
       Result   : Places_Set := No_Places;
       Loc      : Scope_Places;
       Found    : Boolean;
@@ -140,7 +139,7 @@ package body Framework.Language.Shared_Keys is
          Get_Modifier (Loc, Found, Expected => (S_All => Allow_All, others => True));
          exit when not Found;
          if Loc = S_All and not Presence then
-            Syntax_Error ("""all"" cannot be specified with ""not""", Current_Token.Position);
+            Parameter_Error (Rule_Id, """all"" cannot be specified with ""not""");
          end if;
          Result.Specified (Loc) := True;
          Result.Presence  (Loc) := Presence;
@@ -149,7 +148,7 @@ package body Framework.Language.Shared_Keys is
       if Result = No_Places then
          return Everywhere;
       elsif Result.Specified (S_All) and Result.Specified /= Empty_Set then
-         Syntax_Error ("""all"" cannot be specified with other locations", Current_Token.Position);
+         Parameter_Error (Rule_Id, """all"" cannot be specified with other locations");
       else
          return Result;
       end if;

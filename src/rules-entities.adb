@@ -86,7 +86,7 @@ package body Rules.Entities is
 
       while Parameter_Exists loop
          declare
-            Places        : constant Places_Set           := Get_Places_Set_Modifiers (Allow_All => False);
+            Places        : constant Places_Set           := Get_Places_Set_Modifiers (Rule_Id, Allow_All => False);
             Instance_Only : constant Boolean              := Get_Modifier ("INSTANCE");
             Entity        : constant Entity_Specification := Get_Entity_Parameter;
          begin

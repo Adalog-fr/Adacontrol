@@ -47,7 +47,7 @@ package Framework.Language.Shared_Keys is
    type Places_Set is private;
    Everywhere : constant Places_Set;
    No_Places  : constant Places_Set;
-   function Get_Places_Set_Modifiers (Allow_All : Boolean := True) return Places_Set;
+   function Get_Places_Set_Modifiers (Rule_Id : Wide_String; Allow_All : Boolean := True) return Places_Set;
    function Is_Applicable (Expected_Places : Places_Set) return Boolean;
    -- Checks if Current_Scope matches all Scope_Places in Expected_Places
 

@@ -187,7 +187,7 @@ package body Rules.Declarations is
       end if;
 
       while Parameter_Exists loop
-         Loc  := Get_Places_Set_Modifiers;
+         Loc  := Get_Places_Set_Modifiers (Rule_Id);
          Subrule := Get_Flag_Parameter (Allow_Any => False);
 
          Rule_Used (Subrule) := True;

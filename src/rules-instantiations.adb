@@ -169,7 +169,7 @@ package body Rules.Instantiations is
       end if;
 
       declare
-         Places         : constant Places_Set           := Get_Places_Set_Modifiers;
+         Places         : constant Places_Set           := Get_Places_Set_Modifiers (Rule_Id);
          Generic_Name   : constant Entity_Specification := Get_Entity_Parameter;
       begin
          Associate (Rule_Uses,
