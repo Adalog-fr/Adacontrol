@@ -3562,7 +3562,7 @@ complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
 <control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
-<subrule> ::= enumeration_range_spane | others_span | paths | range_span | 
+<subrule> ::= enumeration_range_spane | others_span | paths | range_span |
               values                  | values_if_others
 <bound>   ::= min | max <value>
 @end example
@@ -3831,8 +3831,8 @@ those occurring at specified locations.
 @example
 <control_kind> declarations (<subrule> @{, <subrule>@});
 <subrule>     ::= @{[not] <location_kw>@} <declaration_kw>
-<location_kw> ::= all | block   | library | local      | nested |
-                  own | private | public  | in_generic | task_body
+<location_kw> ::= all     | block   | library    | local     | own |
+                  private | public  | in_generic | task_body
 <declaration_kw> ::=
   any_declaration                  |
   abstract_function                | abstract_operator                 |
@@ -4085,7 +4085,8 @@ if any), even if it contains pragmas.
 @item
 @code{exception} controls exception declarations.
 @item
-@code{expression_function} controls declaration of expression functions
+@code{expression_function} controls declaration of expression functions, while
+@code{function} controls all ``regular'' function declarations.
 @item
 @code{extension} controls type extensions, i.e. derivations from a tagged type
 with a @code{@b{with record}} extension part.
@@ -4334,6 +4335,10 @@ check declarations (record_type, tagged_type);
 @end example
 tagged types will be reported both as ``record_type'' and
 ``tagged_type''.
+
+Note that ``function'' does not control expression functions; specify
+``expression_function'' also if you want both controlled at the same
+time.
 
 There is no subrule for checking functions whose result type is from
 an anonymous access type; these are controlled by the rule
