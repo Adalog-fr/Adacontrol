@@ -2,78 +2,50 @@
 -- For rules where Gnatcheck requires a parameter, the AdaControl rule is given for
 -- the default value, or with an example value.
 --
+-- These rules are as close as possible to the ones defined by gnatcheck; given the extra
+-- possibilities of AdaControl, this may not always be the most appropriate control...
 -- Small differences are indicated by a comment that starts with "Difference:"
 --
+-- To make comparisons easier, they are given in the order of the chapter 8 of the Gnatcheck Reference Manual
 
-Abstract_Type_Declarations:
-   check declarations (abstract_type);
 
-Annotated_Comments: -- example for "CMarker"
-   check comments (Pattern, "^C[ \t]*Marker");
+-- 8.1 Style related rules
+-- 8.1.1 Tasking
+Multiple_Entries_In_Protected_Definitions:
+   check declarations (multiple_protected_entries);
 
-Anonymous_Arrays:
-   check declarations (single_array);
+Volatile_Objects_Without_Address_Clauses:
+   check object_declarations (volatile_no_address);
 
-Anonymous_Subtypes:
-   check declarations (anonymous_subtype_allocator,   anonymous_subtype_case,
-                       anonymous_subtype_declaration, anonymous_subtype_for,
-                       anonymous_subtype_indexing);
 
-Blocks:
-   check statements (block);
+-- 8.1.2. Object Orientation
+-- TBSL Constructors
 
-Boolean_Relational_Operators:
-   check entities (standard."=" {standard.Boolean; standard.boolean return standard.boolean},
-                   standard."/="{standard.Boolean; standard.boolean return standard.boolean},
-                   standard."<" {standard.Boolean; standard.boolean return standard.boolean},
-                   standard."<="{standard.Boolean; standard.boolean return standard.boolean},
-                   standard.">" {standard.Boolean; standard.boolean return standard.boolean},
-                   standard.">="{standard.Boolean; standard.boolean return standard.boolean}
-                  );
+-- TBSL Deep_Inheritance_Hierarchies
 
-Controlled_Type_Declarations:
-   check declarations (controlled_type);
+-- TBSL Direct_Calls_To_Primitives
 
-Declarations_In_Blocks:
-   check statements (effective_declare_block);
+Downward_View_Conversions:
+   check expressions (downward_conversion);
 
-"Deeply_Nested_Generics:2":
-   check max_nesting (generic, 2);
+-- TBSL No_Inherited_Classwide_Pre
 
-Default_Parameters:
-   check declarations (defaulted_parameter);
+-- TBSL Specific_Pre_Post
 
-Discriminated_Records:
-   check declarations (discriminant);
-   -- Difference: includes also task and protected discriminants
+-- TBSL Specific_Parent_Type_Invariant
 
-Enumeration_Ranges_In_CASE_Statements:
-   check case_statement (range_span, max 0);
-   -- Difference: includes also integer ranges, does not include null ranges
+-- TBSL Specific_Type_Invariants
 
-Exceptions_As_Control_Flow:
-   check statements (raise_locally_handled);
-   -- Difference: AdaControl handles correctly package bodies, tasks, and accepts
+"Too_Many_Parents:5":
+   check derivations (Max_Parents, 5);
 
-Exits_From_Conditional_Loops:
-   check statements (exit_for_loop, exit_while_loop);
-   -- Difference: AdaControl checks only exits that refer to the given kind of loop
-   -- check statements (exit_outer_loop) can be used to check for exit of several levels of loops
+-- TBSL Too_Many_Primitives
 
-EXIT_Statements_With_No_Loop_Name:
-   check statements (unnamed_exit);
-   -- Difference: applies only to named loops
+Visible_Components:
+   check declarations (public record_type, public extension);
 
-Expanded_Loop_Exit_Names:
-   check statements (exit_expanded_name);
 
-Explicit_Full_Discrete_Ranges:
-   check simplifiable_expressions (range);
-
-Float_Equality_Checks:
-   check expressions (real_equality);
-   -- Difference: applies also to fixed points
-
+-- 8.1.3. Portability
 "Forbidden_Attributes:all":
    check entities (all 'all);
 --"Forbidden_Attributes:gnat":
@@ -89,6 +61,237 @@ Float_Equality_Checks:
 "Forbidden_Pragmas:elaborate":  -- Example of a specific pragma
    check pragmas (Elaborate);
 
+Implicit_SMALL_For_Fixed_Point_Types:
+   check declarations (ordinary_fixed_type_no_small);
+
+-- TBSL No_Scalar_Storage_Order_Specified
+
+Predefined_Numeric_Types:
+   check entities (Standard.Short_Short_Integer, Standard.Short_Integer, Standard.Integer,
+                   Standard.Long_Integer, Standard.Long_Long_Integer,
+                   Standard.Natural, Standard.Positive,
+                   Standard.Short_Float, Standard.Float, Standard.Long_Float, Standard.Long_Long_Float,
+                   Standard.Duration);
+
+Printable_ASCII:
+   check characters (control, not_iso_646);
+
+Separate_Numeric_Error_Handlers:
+   check declarations (non_joint_CE_NE_handler);
+
+
+-- 8.1.4. Program Structure
+"Deep_Library_Hierarchy:5":
+   check dependencies (parent, max 5);
+
+"Deeply_Nested_Generics:2":
+   check max_nesting (generic, 2);
+
+Local_Packages:
+   check declarations (private package),
+   check declarations (public package);
+
+Non_Visible_Exceptions:
+   check exception_propagation (local_exception);
+
+Raising_External_Exceptions:
+   check statements (raise_nonpublic);
+
+-- 8.1.5. Programming Practice
+Anonymous_Arrays:
+   check declarations (single_array);
+
+Binary_Case_Statements:
+   check case_statement (paths, min 3);
+   -- Difference: this rule checks also case statements with 1 branch - which seems desirable
+
+Default_Values_For_Record_Components:
+   check declarations (initialized_record_component);
+
+Deriving_From_Predefined_Type:
+   check Derivations (from, Standard.Boolean,
+
+                            Standard.Integer,
+                            Standard.Short_Short_Integer, Standard.Short_Integer,
+                            Standard.Long_Long_Integer, Standard.Long_Integer,
+
+                            Standard.Float,
+                            Standard.Short_Float, Standard.Long_Float, Standard.Long_Long_Float,
+
+                            Standard.Character, Standard.Wide_Character, Standard.Wide_Wide_Character,
+                            Standard.String,    Standard.Wide_String   , Standard.Wide_Wide_String,
+
+                            Standard.Duration);
+
+Enumeration_Ranges_In_CASE_Statements:
+   check case_statement (enumeration_range_span, max 0);
+
+Enumeration_Representation_Clauses:
+   check Representation_Clauses (Enumeration);
+
+Exceptions_As_Control_Flow:
+   check statements (raise_locally_handled);
+   -- Difference: AdaControl handles correctly package bodies, tasks, and accepts
+
+Exits_From_Conditional_Loops:
+   check statements (exit_for_loop, exit_while_loop);
+   -- Difference: AdaControl checks only exits that refer to the given kind of loop
+   -- check statements (exit_outer_loop) can be used to check for exit of several levels of loops
+
+EXIT_Statements_With_No_Loop_Name:
+   check statements (unnamed_exit);
+   -- Difference: applies only to named loops
+
+Global_Variables:
+   check declarations (library public variable, library private variable);
+   -- To get the equivalent of the Only_Public option, don't specify "library private variable"
+   -- Difference: in this case, global variables of private child units are controlled.
+
+GOTO_Statements:
+   check statements(goto);
+
+Improper_Returns:
+   check statements (procedure_return, function_return);
+   -- Difference: AdaControl allows one return in each exception handler
+
+"Maximum_Parameters:10":
+   check parameter_declarations (all_parameters, max 10);
+
+Nested_Subprograms:
+   check declarations (local procedure, local function, local expression_function);
+   -- Difference: nested null procedures are controlled
+
+Non_Short_Circuit_Operators:
+   check expressions (and_boolean, or_boolean);
+
+Null_Paths:
+   check statements (null_case_path, null_if_path, null_loop_body);
+
+Objects_Of_Anonymous_Types:
+   check declarations (not local single_array,
+                       not local anonymous_access_constant,
+                       not local anonymous_access_variable);
+
+OTHERS_In_Aggregates:
+   check expressions (array_partial_others, record_partial_others);
+   -- Difference: does not special case when others refer to all-but-one component
+
+OTHERS_In_CASE_Statements:
+   check statements (case_others);
+
+OTHERS_In_Exception_Handlers:
+   check statements (exception_others);
+
+Overly_Nested_Control_Structures:
+   check max_statement_nesting (all, 4);
+
+-- TBSL POS_On_Enumeration_Types
+
+Positional_Actuals_For_Defaulted_Generic_Parameters:
+   check default_parameter (instantiations, all, positional);
+
+Positional_Actuals_For_Defaulted_Parameters:
+   check default_parameter (calls, all, positional);
+
+Positional_Components:
+   check positional_associations(all, 0, array_aggregate),
+   check positional_associations(all, 0, record_aggregate);
+
+Positional_Generic_Parameters:
+   check positional_associations(all, 0, instantiation);
+
+Positional_Parameters:
+   check positional_associations(all, 1, call);
+
+Recursive_Subprograms:
+   check Max_Call_Depth (Finite);
+
+Unchecked_Address_Conversions:
+   check instantiations (ada.unchecked_conversion, system.address, access),
+   check instantiations (unchecked_conversion,     system.address, access);
+
+-- TBSL Unchecked_Conversions_As_Actuals
+
+Unconditional_Exits:
+   check statements (unconditional_exit);
+
+Uninitialized_Global_Variables:
+   check declarations (not local uninitialized_variable);
+
+Unnamed_Blocks_And_Loops:
+   check statements (unnamed_block, unnamed_for_loop, unnamed_simple_loop, unnamed_while_loop);
+
+USE_PACKAGE_Clauses:
+   check use_clauses;
+
+
+-- 8.1.6. Readability
+-- Identifier_Casing
+-- Identifier_Prefixes
+-- Identifier_Suffixes
+-- There is no simple one-to-one mapping here between GNBATCheck and AdaControl rules.
+-- The same effect can be obtained by one or several of the following rules:
+-- - Style (Casing)
+-- - Naming_Convention
+
+-- TBSL Misnamed_Controlling_Parameters
+
+Name_Clashes:
+   check naming_convention (all, not "example");
+   -- replace "example" by the prohibited identifiers
+
+Uncommented_BEGIN_In_Package_Bodies:
+   check comments (unnamed_begin, declaration package);
+   -- difference: we do not require the begin to be alone on its line
+   -- (better checked by other rules)
+
+
+-- 8.1.7. Source Code Presentation (no gnatcheck rule)
+
+-- 8.2. Feature Usage Rules
+Abstract_Type_Declarations:
+   check declarations (abstract_type);
+
+Anonymous_Subtypes:
+   check declarations (anonymous_subtype_allocator,   anonymous_subtype_case,
+                       anonymous_subtype_declaration, anonymous_subtype_for,
+                       anonymous_subtype_indexing);
+
+Blocks:
+   check statements (block);
+
+-- TBSL Complex_Inlined_Subprograms
+
+Conditional_Expressions:
+   check expressions (if, case);
+   -- Difference: no option to ignore in pre/post conditions
+
+Controlled_Type_Declarations:
+   check declarations (controlled_type);
+
+Declarations_In_Blocks:
+   check statements (effective_declare_block);
+
+--  TBSL Deeply_Nested_Inlining
+
+Default_Parameters:
+   check declarations (defaulted_parameter);
+
+Discriminated_Records:
+   check declarations (discriminant);
+   -- Difference: includes also task and protected discriminants
+
+Explicit_Full_Discrete_Ranges:
+   check simplifiable_expressions (range);
+
+Expression_Functions:
+   check declarations (not local expression_function);
+
+-- Fixed_Equality_Checks
+Float_Equality_Checks:
+   check expressions (real_equality);
+   -- Difference: applies also to fixed points
+
 Function_Style_Procedures:
    check parameter_declarations (single_out_parameter, procedure);
    -- Difference: applies also to limited out parameters and null procedures
@@ -96,52 +299,85 @@ Function_Style_Procedures:
 Generics_In_Subprograms:
    check declarations (local generic);
 
-GOTO_Statements:
-   check statements(goto);
-
 Implicit_IN_Mode_Parameters:
    check style (default_in);
-
-Implicit_SMALL_For_Fixed_Point_Types:
-   check declarations (ordinary_fixed_type_no_small);
 
 Improperly_Located_Instantiations:
    check declarations (public  instantiation),
    check declarations (private instantiation),
    check declarations (local   instantiation);
 
-Improper_Returns:
-   check statements (procedure_return, function_return);
-   -- Difference: AdaControl allows one return in each exception handler
-
 Library_Level_Subprograms:
    check declarations (library procedure, library function);
 
-Local_Packages:
-   check declarations (private package),
-   check declarations (public package);
-
-"Metrics_LSLOC:1000":
-   check max_size (unit, 1000);
-
-Misnamed_Identifiers:
-   check naming_convention (type, "_T$"),
-   check naming_convention (root access_type, "_A$"),
-   check naming_convention (regular_constant, "_C$"),
-   check naming_convention (package_renaming, "_R$");
-
-Multiple_Entries_In_Protected_Definitions:
-   check declarations (multiple_protected_entries);
-
-Name_Clashes:
-   check naming_convention (all, not "example");
-   -- replace "example" by the prohibited identifiers
+Membership_Tests:
+   check expressions (in, not_in);
+   -- Difference: no option to ignore in pre/post conditions
 
 Non_Qualified_Aggregates:
    check expressions (unqualified_aggregate);
 
-Non_Short_Circuit_Operators:
-   check expressions (and, or);
+-- TBSL Numeric_Indexing
+
+"Numeric_Literals:10":
+   check style (exposed_literal, integer, max 10, number, constant),
+   check style (exposed_literal, real, number, constant);
+   -- For "statements_only", replace "number, constant" with "declaration" above
+
+Parameters_Out_Of_Order:
+   check style (parameter_order, in | access, in_out, out, defaulted_in);
+
+-- TBSL Predicate_Testing
+
+Representation_Specifications:
+   check Representation_Clauses;
+   -- Difference: does not check repr. spec. given as aspects
+
+Quantified_Expressions:
+   check expressions (for_all, for_some);
+   -- Difference: no option to ignore in pre/post conditions
+
+Raising_Predefined_Exceptions:
+   check statements (raise_standard);
+
+Subprogram_Access:
+   check declarations (access_subprogram_type);
+
+"Too_Many_Dependencies:10":
+   check dependencies (raw, max 10);
+
+Unassigned_OUT_Parameters:
+   check improper_initialization (out_parameter);
+   -- Difference: this rule may require a stricter pattern than gnatcheck
+
+Unconstrained_Array_Returns:
+   check return_type (unconstrained_array);
+
+
+--8.3. Metrics-Related Rules
+-- TBSL Metrics_Essential_Complexity
+
+-- TBSL Metrics_Cyclomatic_Complexity
+
+"Metrics_LSLOC:1000":
+   check max_size (unit, 1000);
+
+
+-- 8.4. SPARK Ada Rules
+Annotated_Comments: -- example for "CMarker"
+   check comments (Pattern, "^C[ \t]*Marker");
+
+Boolean_Relational_Operators:
+   check entities (standard."=" {standard.Boolean; standard.boolean return standard.boolean},
+                   standard."/="{standard.Boolean; standard.boolean return standard.boolean},
+                   standard."<" {standard.Boolean; standard.boolean return standard.boolean},
+                   standard."<="{standard.Boolean; standard.boolean return standard.boolean},
+                   standard.">" {standard.Boolean; standard.boolean return standard.boolean},
+                   standard.">="{standard.Boolean; standard.boolean return standard.boolean}
+                  );
+
+Expanded_Loop_Exit_Names:
+   check statements (exit_expanded_name);
 
 Non_SPARK_Attributes: check entities (all 'Access,
                                       all 'Address,
@@ -184,24 +420,6 @@ Non_SPARK_Attributes: check entities (all 'Access,
 Non_Tagged_Derived_Types:
    check declarations (derived_type);
 
-Non_Visible_Exceptions:
-   check exception_propagation (local_exception);
-
-"Numeric_Literals:10":
-   check style (exposed_literal, integer, max 10, number, constant),
-   check style (exposed_literal, real, number, constant);
-   -- For "statements_only", replace "number, constant" with "declaration" above
-
-OTHERS_In_Aggregates:
-   check expressions (array_partial_others, record_partial_others);
-   -- Difference: does not special case when others refer to all-but-one component
-
-OTHERS_In_CASE_Statements:
-   check statements (case_others);
-
-OTHERS_In_Exception_Handlers:
-   check statements (exception_others);
-
 Outer_Loop_Exits:
    check statements (exit_outer_loop);
 
@@ -209,79 +427,9 @@ Overloaded_Operators:
    check declarations (operator);
    -- Difference: controls all operators; gnatcheck says operator overloading
 
-Overly_Nested_Control_Structures:
-   check max_statement_nesting (all, 4);
-
-Parameters_Out_Of_Order:
-   check style (parameter_order, in | access, in_out, out, defaulted_in);
-
-Positional_Actuals_For_Defaulted_Generic_Parameters:
-   check default_parameter (instantiations, all, positional);
-
-Positional_Actuals_For_Defaulted_Parameters:
-   check default_parameter (calls, all, positional);
-
-Positional_Components:
-   check positional_associations(all, 0, array_aggregate),
-   check positional_associations(all, 0, record_aggregate);
-
-Positional_Generic_Parameters:
-   check positional_associations(all, 0, instantiation);
-
-Positional_Parameters:
-   check positional_associations(all, 1, call);
-
-Predefined_Numeric_Types:
-   check entities (Standard.Short_Short_Integer, Standard.Short_Integer, Standard.Integer,
-                   Standard.Long_Integer, Standard.Long_Long_Integer,
-                   Standard.Natural, Standard.Positive,
-                   Standard.Short_Float, Standard.Float, Standard.Long_Float, Standard.Long_Long_Float,
-                   Standard.Duration);
-
-Raising_External_Exceptions:
-   check statements (raise_nonpublic);
-
-Raising_Predefined_Exceptions:
-   check statements (raise_standard);
-
-Recursive_Subprograms:
-   check Max_Call_Depth (Finite);
-
-Separate_Numeric_Error_Handlers:
-   check declarations (non_joint_CE_NE_handler);
-
 Slices:
    check expressions (slice);
-
-"Too_Many_Parents:5":
-   check derivations (Max_Parents, 5);
-
-Unassigned_OUT_Parameters:
-   check improper_initialization (out_parameter);
-   -- Difference: this rule may require a stricter pattern than gnatcheck
-
-Uncommented_BEGIN_In_Package_Bodies:
-   check comments (unnamed_begin, declaration package);
-   -- difference: we do not require the begin to be alone on its line
-   -- (better checked by other rules)
-
-Unconditional_Exits:
-   check statements (unconditional_exit);
-
-Unconstrained_Array_Returns:
-   check return_type (unconstrained_array);
 
 Universal_Ranges:
    check expressions (universal_range);
 
-Unnamed_Blocks_And_Loops:
-   check statements (unnamed_block, unnamed_for_loop, unnamed_simple_loop, unnamed_while_loop);
-
-USE_PACKAGE_Clauses:
-   check use_clauses;
-
-Visible_Components:
-   check declarations (public record_type, public extension);
-
-Volatile_Objects_Without_Address_Clauses:
-   check object_declarations (volatile_no_address);
