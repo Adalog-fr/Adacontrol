@@ -4308,22 +4308,16 @@ limited types for the subrule
 type was not permitted until Ada 2005.
 
 @need 800
-@multitable @columnfractions .25 .10 .10 .55
-@item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Limited_Initialization
-@tab off@*on
-@tab off
-@tab
-@table @asis
-@item off
-uninitialized variables of a limited type are never reported.
-@item on
-uninitialized variables of a limited type are are reported like
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Limited_Initialization
+@tab off (default)
+@tab Uninitialized variables of a limited type are never reported.
+@item 
+@tab on
+@tab Uninitialized variables of a limited type are are reported like
 non-limited variables, unless they are of a task or protected type,
 since no initialization would be allowed in that case.
-@end table
 @end multitable
 
 @subsection Tips
@@ -5373,28 +5367,23 @@ The rule provides a variable that allows to specify the amount of information
 displayed with the various *_function_calls subrules.
 
 @need 800
-@multitable @columnfractions .12 .18 .10 .60
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect} 
+@item Called_Info
+@tab none (default)
+@tab No extra information.
+@item 
+@tab compact
+@tab display the name of the called function.
 @item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Called_Info
-@tab none@*compact@*detailed@*root_detailed
-@tab none
-@tab
-
-@table @asis
-@item``none''
-No extra information.
-@item ``compact''
-display the name of the called function.
-@item ``detailed''
-display the name of the called function with overloading
+@tab detailed
+@tab display the name of the called function with overloading
 information.
-@item ``root_detailed''
-display the name of the root called function (i.e. the
+@item
+@tab root_detailed
+@tab display the name of the root called function (i.e. the
 original function if the called function is a renaming) with overloading
 information.
-@end table
 @end multitable
 
 @subsection Tips
@@ -6216,26 +6205,19 @@ Overloading: search local_hiding (not_operator overloading);
 @end example
 
 @subsection Variable
-The rule provides a variable that allows to adjust the verbosity
-of messages for the subrule ``overloading''.
-
+The rule provides a variable that allows to adjust the verbosity of
+messages for the subrule ``overloading'' when it encounters a
+construct that overloads several other constructs.
 @need 800
-@multitable @columnfractions .23 .15 .12 .50
-@item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Overloading_Report
-@tab compact@*detailed
-@tab detailed
-@tab  when the ``overloading'' subrule encounters a construct that
-overloads several other constructs:
-@table @asis
-@item detailed
-issue a message for each overloaded construct
-@item compact
-issue a single message mentionning how many constructs are overloaded,
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Overloading_Report
+@tab compact
+@tab Issue a single message mentionning how many constructs are overloaded,
 and a pointer to the last one.
-@end table
+@item 
+@tab detailed (default)
+@tab Issue a message for each overloaded construct.
 @end multitable
 
 @subsection Tips
@@ -6331,21 +6313,15 @@ The rule provides a variable that allows to specify how to handle
 expression functions (Ada 2012).
 
 @need 800
-@multitable @columnfractions .25 .10 .10 .55
-@item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Count_Expr_Fun_Calls
-@tab on@*off
-@tab on
-@tab
-@table @asis
-@item on
-calls to expression functions are counted like regular calls
-@item off
-calls to expression functions are assumed to be inlined and do not add
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Count_Expr_Fun_Calls
+@tab off
+@tab Calls to expression functions are assumed to be inlined and do not add
+@item 
+@tab on (default)
+@tab Calls to expression functions are counted like regular calls.
 an extra depth level.
-@end table
 @end multitable
 
 @subsection Tip
@@ -6872,20 +6848,14 @@ The rule provides a variable that allows to specify the default
 casing.
 
 @need 800
-@multitable @columnfractions .25 .10 .10 .55
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Default_Case_Sensitivity
+@tab off (default)
+@tab controls that do not explicitely specify case sensitivity are not case sensitive.
 @item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Default_Case_Sensitivity
-@tab on@*off
-@tab off
-@tab
-@table @asis
-@item on
-controls that do not explicitely specify case sensitivity are case sensitive.
-@item off
-controls that do not explicitely specify case sensitivity are not case sensitive.
-@end table
+@tab on
+@tab controls that do not explicitely specify case sensitivity are case sensitive.
 @end multitable
 
 @subsection Tips
@@ -7543,21 +7513,15 @@ case of calls that use the prefix notation (i.e. the ``object.method''
 syntax).
 
 @need 1800
-@multitable @columnfractions .25 .10 .10 .55
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Count_Prefix_Operand
+@tab off
+@tab The parameter given as prefix is not counted as a positional parameter.
 @item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Count_Prefix_Operand
-@tab off@*on
-@tab on
-@tab
-@table @asis
-@item off
-The parameter given as prefix is not counted as a positional parameter.
-@item on
-The parameter given as prefix is counted as a positional parameter,
+@tab on (default)
+@tab The parameter given as prefix is counted as a positional parameter,
 just like if the prefix notation had not been used.
-@end table
 @end multitable
 
 @subsection Fixes
@@ -8768,28 +8732,23 @@ The rule provides a variable that allows to specify the amount of information
 displayed with the ``procedure_call'' and ``entry_call'' subrules.
 
 @need 800
-@multitable @columnfractions .12 .18 .10 .60
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Called_Info
+@tab none (default)
+@tab No extra information.
 @item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Called_Info
-@tab none@*compact@*detailed@*root_detailed
-@tab none
-@tab
-
-@table @asis
-@item``none''
-No extra information.
-@item ``compact''
-display the name of the called procedure or entry.
-@item ``detailed''
-display the name of the called procedure or entry with overloading
+@tab compact
+@tab Display the name of the called procedure or entry.
+@item 
+@tab detailed
+@tab Display the name of the called procedure or entry with overloading
 information.
-@item ``root_detailed''
-display the name of the root called procedure or entry (i.e. the
+@item
+@tab root_detailed
+@tab Display the name of the root called procedure or entry (i.e. the
 original procedure if the called procedure is a renaming) with overloading
 information.
-@end table
 @end multitable
 
 @subsection Tips
@@ -9763,21 +9722,15 @@ and closing blocks can contain @b{if} statements, or just calls to the
 procedures.
 
 @need 800
-@multitable @columnfractions .25 .10 .10 .55
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Conditionals_Allowed
+@tab off
+@tab Only direct calls to the indicated procedures are allowed as opening
+and closing blocks.
 @item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Conditionals_Allowed
-@tab off@*on
-@tab on
-@tab
-@table @asis
-@item off
-only direct calls to the indicated procedures are allowed as opening
-and closing blocks
-@item on
-calls can be nested in if statements as described above.
-@end table
+@tab on (default)
+@tab Calls can be nested in if statements as described above.
 @end multitable
 
 @subsection Tips
@@ -10147,35 +10100,24 @@ search with_clauses (inherited);
 @end example
 
 @subsection Variables
-@multitable @columnfractions .25 .10 .10 .55
-@item
-@b{Variable} @tab @b{Values} @tab @b{Default} @tab @b{Effect}
-@item
-Check_Private_With
-@tab off@*on
-@tab on
-@tab
-@table @asis
-@item on
-issues a message when a @code{@b{with}} can be
-replaced with a @code{@b{private}} @code{@b{with}}.
-@item off
-do not issue a message when a @code{@b{with}} can be replaced with a
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Check_Private_With
+@tab off
+@tab Do not issue a message when a @code{@b{with}} can be replaced with a
 @code{@b{private}} @code{@b{with}} (useful in Ada 95 mode).
-@end table
 @item
-Ignore_Use_Clause
-@tab off/on
-@tab on
-@tab
-@table @asis
-@item on
-package names appearing in use clauses are not considered as a usage
-of the package.
-@item off
-names appearing in use clauses are treated like any other identifier
+@tab on (default)
+@tab Issues a message when a @code{@b{with}} can be
+replaced with a @code{@b{private}} @code{@b{with}}.
+@item Ignore_Use_Clause
+@tab off
+@tab Names appearing in use clauses are treated like any other identifier
 (see tip below).
-@end table
+@item 
+@tab on (default)
+@tab Package names appearing in use clauses are not considered as a usage
+of the package.
 @end multitable
 
 @subsection Tips
