@@ -6,10 +6,10 @@ procedure Max_Parents is
    type Tag1 is tagged null record;
 
    type T1 is new I1                 with null record;
-   type T2 is new Tag1               with null record;
-   type T3 is new Tag1 and I1        with null record;   -- More than 1 parent
+   type T2 is new Tag1               with null record;   -- From: category TAGGED
+   type T3 is new Tag1 and I1        with null record;   -- More than 1 parent; From: category TAGGED
    type T4 is new I1   and I2        with null record;   -- More than 1 parent
-   type T5 is new Tag1 and I1 and I2 with null record;   -- More than 2 parents
+   type T5 is new Tag1 and I1 and I2 with null record;   -- More than 2 parents; From: category TAGGED
 
    -- Synchronized
    type LI1 is limited interface;

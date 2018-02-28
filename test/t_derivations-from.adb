@@ -9,8 +9,8 @@ procedure From is
       record
          F : Float;
       end record;
-   type T4 is new T3 with null record;    -- From: T3
-   type T5 is new T4                      -- From: T4, T3
+   type T4 is new T3 with null record;    -- From: T3, category TAGGED
+   type T5 is new T4                      -- From: T4, T3, category TAGGED
      with record
       I : Integer;
    end record;
@@ -25,12 +25,26 @@ procedure From is
    generic
       type F1 is new Integer;             -- From: Standard.Integer, category RANGE
       type F2 is new T2;                  -- From: Standard.Integer, category RANGE
-      type F3 is new T5 with private;     -- From: T4, T3
+      type F3 is new T5 with private;     -- From: T4, T3, category TAGGED
    procedure P;
    procedure P is
       type DF1 is new F1;                 -- From: Standard.Integer, category RANGE
       type DF2 is new F2;                 -- From: Standard.Integer, category RANGE
    begin null; end P;
+
+   package Pack is
+      type Priv1 is private;
+      type Priv2 is tagged private;
+      type Priv3 is new T3 with private;         -- From: T3, category TAGGED
+   private
+      type Priv1 is new Integer;                 -- From: Standard.Integer, category RANGE
+      type Priv2 is tagged null record;
+      type Priv3 is new T3 with null record;     -- From: T3, category TAGGED
+   end Pack;
+
+   type T11 is new Pack.Priv1;                   -- From: T3
+   type T12 is new Pack.Priv2 with null record;  -- From: category TAGGED
+   type T13 is new Pack.Priv3 with null record;  -- From: Category TAGGED
 
    -- Check subtypes
    subtype S1 is Integer range 1 .. 10;
@@ -46,10 +60,10 @@ procedure From is
    type II1 is new I1 and I2 with null record;    -- From: I1, I2; Max_Parents: more than 1
    type II2 is interface and I1 and I2;           -- From: I1, I2; Max_Parents: more than 1
 
-   type MI1 is new T5  and I1  with null record;  -- From: T4, T3, I1;     Max_Parents: more than 1
-   type MI2 is new MI1 and I2  with null record;  -- From: T4, T3, I1, I2; Max_Parents: more than 1
+   type MI1 is new T5  and I1  with null record;  -- From: T4, T3, I1, category TAGGED;     Max_Parents: more than 1
+   type MI2 is new MI1 and I2  with null record;  -- From: T4, T3, I1, I2, category TAGGED; Max_Parents: more than 1
    type MI3 is new MI1         with null record;  -- From: T4, T3, I1
-   type MI4 is new MI2 and II2 with null record;  -- From: T4, T3, I1, I2; Max_Parents: more than 1
+   type MI4 is new MI2 and II2 with null record;  -- From: T4, T3, I1, I2, category TAGGED; Max_Parents: more than 1
 
    -- Check tasks and POs
    task type Task1 is

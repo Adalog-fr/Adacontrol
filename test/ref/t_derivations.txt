@@ -3,8 +3,10 @@ t_derivations-from.adb:5:15: Found: DERIVATIONS: Type derived from category RANG
 t_derivations-from.adb:6:15: Error: from Integer: Type derived from STANDARD.INTEGER
 t_derivations-from.adb:6:15: Found: DERIVATIONS: Type derived from category RANGE
 t_derivations-from.adb:12:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:12:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-from.adb:13:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
 t_derivations-from.adb:13:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:13:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-from.adb:19:15: Found: DERIVATIONS: Type derived from category RANGE
 t_derivations-from.adb:21:15: Found: DERIVATIONS: Type derived from category ()
 t_derivations-from.adb:23:16: Found: from Standard: Type derived from type in unit STANDARD
@@ -14,52 +16,67 @@ t_derivations-from.adb:27:18: Error: from Integer: Type derived from STANDARD.IN
 t_derivations-from.adb:27:18: Found: DERIVATIONS: Type derived from category RANGE
 t_derivations-from.adb:28:18: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
 t_derivations-from.adb:28:18: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:28:18: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-from.adb:31:19: Error: from Integer: Type derived from STANDARD.INTEGER
 t_derivations-from.adb:31:19: Found: DERIVATIONS: Type derived from category RANGE
 t_derivations-from.adb:32:19: Error: from Integer: Type derived from STANDARD.INTEGER
 t_derivations-from.adb:32:19: Found: DERIVATIONS: Type derived from category RANGE
-t_derivations-from.adb:37:15: Error: from Integer: Type derived from STANDARD.INTEGER
-t_derivations-from.adb:37:15: Found: DERIVATIONS: Type derived from category RANGE
-t_derivations-from.adb:39:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.S3
-t_derivations-from.adb:39:15: Error: from Integer: Type derived from STANDARD.INTEGER
-t_derivations-from.adb:39:15: Found: DERIVATIONS: Type derived from category RANGE
-t_derivations-from.adb:40:15: Error: from Integer: Type derived from STANDARD.INTEGER
-t_derivations-from.adb:40:15: Found: DERIVATIONS: Type derived from category RANGE
-t_derivations-from.adb:41:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.S3
-t_derivations-from.adb:41:15: Error: from Integer: Type derived from STANDARD.INTEGER
-t_derivations-from.adb:41:15: Found: DERIVATIONS: Type derived from category RANGE
-t_derivations-from.adb:46:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:46:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
-t_derivations-from.adb:46:16: Found: DERIVATIONS: More than 1 parents (2)
-t_derivations-from.adb:47:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:47:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
-t_derivations-from.adb:47:16: Found: DERIVATIONS: More than 1 parents (2)
-t_derivations-from.adb:49:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
-t_derivations-from.adb:49:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
-t_derivations-from.adb:49:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:49:16: Found: DERIVATIONS: More than 1 parents (2)
-t_derivations-from.adb:50:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
-t_derivations-from.adb:50:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
-t_derivations-from.adb:50:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:50:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
-t_derivations-from.adb:50:16: Found: DERIVATIONS: More than 1 parents (2)
-t_derivations-from.adb:51:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
-t_derivations-from.adb:51:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
-t_derivations-from.adb:51:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:52:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
-t_derivations-from.adb:52:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
-t_derivations-from.adb:52:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:52:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
-t_derivations-from.adb:52:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
-t_derivations-from.adb:52:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
-t_derivations-from.adb:52:16: Found: DERIVATIONS: More than 1 parents (2)
-t_derivations-from.adb:58:20: Found: DERIVATIONS: Type derived from category TASK
-t_derivations-from.adb:62:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
-t_derivations-from.adb:62:4: Found: DERIVATIONS: More than 1 parents (2)
-t_derivations-from.adb:72:18: Found: DERIVATIONS: Type derived from category PROTECTED
-t_derivations-from.adb:74:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
+t_derivations-from.adb:38:21: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:38:21: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:40:21: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:40:21: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-from.adb:42:21: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:42:21: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:47:16: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:51:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:51:15: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-from.adb:53:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.S3
+t_derivations-from.adb:53:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:53:15: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-from.adb:54:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:54:15: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-from.adb:55:15: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.S3
+t_derivations-from.adb:55:15: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-from.adb:55:15: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-from.adb:60:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:60:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
+t_derivations-from.adb:60:16: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-from.adb:61:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:61:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
+t_derivations-from.adb:61:16: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-from.adb:63:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
+t_derivations-from.adb:63:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:63:16: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:63:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:63:16: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-from.adb:64:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
+t_derivations-from.adb:64:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:64:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:64:16: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:64:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
+t_derivations-from.adb:64:16: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-from.adb:65:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
+t_derivations-from.adb:65:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:65:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:65:16: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:66:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T4
+t_derivations-from.adb:66:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.T3
+t_derivations-from.adb:66:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:66:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
+t_derivations-from.adb:66:16: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-from.adb:66:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:66:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
+t_derivations-from.adb:66:16: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-from.adb:72:20: Found: DERIVATIONS: Type derived from category TASK
+t_derivations-from.adb:76:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
+t_derivations-from.adb:76:4: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-from.adb:86:18: Found: DERIVATIONS: Type derived from category PROTECTED
+t_derivations-from.adb:88:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
+t_derivations-max_parents.adb:9:15: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_parents.adb:10:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_parents.adb:10:15: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-max_parents.adb:11:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_parents.adb:12:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_parents.adb:12:15: Error: DERIVATIONS: More than 2 parents (3)
 t_derivations-max_parents.adb:22:4: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-max_parents.adb:27:4: Error: DERIVATIONS: More than 2 parents (3)

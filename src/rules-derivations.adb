@@ -188,12 +188,15 @@ package body Rules.Derivations is
       case Definition_Kind (Def) is
          when A_Type_Definition =>
             return Subtype_Simple_Name (Parent_Subtype_Indication (Def));
+         when A_Private_Extension_Definition =>
+            return Subtype_Simple_Name (Ancestor_Subtype_Indication (Def));
          when A_Formal_Type_Definition
             | A_Subtype_Indication
             =>
             return Subtype_Simple_Name (Def);
          when others =>
-            Failure ("Derivation_Subtype_Name: bad definition_kind", Def);
+            Failure ("Derivation_Subtype_Name: bad definition_kind ("
+                     & Definition_Kinds'Wide_Image (Definition_Kind (Def)) & ')');
       end case;
    end Derivation_Subtype_Name;
 

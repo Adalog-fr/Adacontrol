@@ -8,6 +8,7 @@
                  check  derivations (from, T_derivations.From.I2);
                  check  derivations (from, T_derivations.From.Ilim);
                  search derivations (from, task, protected);
+                 search derivations (from, tagged);
 
 check  derivations (max_parents, 2);
 search derivations (max_parents, 1);

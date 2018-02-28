@@ -275,7 +275,7 @@ package body Framework.Plugs is
 
                when A_Private_Type_Declaration
                   | A_Private_Extension_Declaration
-                    =>
+                  =>
                   Rules.Type_Initial_Values. Process_Type_Declaration (Element);
 
                when A_Subtype_Declaration =>
@@ -518,6 +518,9 @@ package body Framework.Plugs is
                      when others =>
                         null;
                   end case;
+
+               when A_Private_Extension_Definition =>
+                  Rules.Derivations.Process_Derivation (Element);
 
                when A_Formal_Type_Definition =>
                   case Formal_Type_Kind (Element) is

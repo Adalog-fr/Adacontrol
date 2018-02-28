@@ -11,6 +11,9 @@ Changes to existing rules:
 case_statement:
    add subrule enumeration_range_span
 
+derivations:
+   fix missing case of private extensions
+
 statements
    add subrules null_case_path, null_if_path, null_loop_body
 
