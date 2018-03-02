@@ -246,7 +246,7 @@ package body Rules.Assignments is
                      Filter      := Include;
                      All_Exclude := False;
                   end if;
-                  Entity := Get_Entity_Parameter (Allow_Extended => Regular_OK);
+                  Entity := Get_Entity_Parameter (Allow_Extended => Parens_OK);
 
                   begin
                      if not Has_Controlled or else not Has_Not then

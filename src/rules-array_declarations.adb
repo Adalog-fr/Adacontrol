@@ -133,7 +133,7 @@ package body Rules.Array_Declarations is
       Subrule : Subrules;
 
       function Build_Index_List return Entity_Specification_List is
-         Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Box_OK or Regular_OK);
+         Entity  : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Box_OK or Parens_OK);
       begin
          case Categories'(Value (Entity)) is
             when Cat_Any =>
@@ -202,7 +202,7 @@ package body Rules.Array_Declarations is
 
          when Component =>
             declare
-               Entity      : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Regular_OK);
+               Entity      : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Parens_OK);
                The_Aspects : constant Aspects_Set := Get_Aspects_Parameter (Rule_Id,
                                                                             Expected => (Representation => Absent,
                                                                                          others         => Present));

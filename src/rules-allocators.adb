@@ -89,18 +89,18 @@ package body Rules.Allocators is
       while Parameter_Exists loop
          if Get_Modifier ("INCONSISTENT") then
             Filter      := Inconsistent;
-            Entity      := Get_Entity_Parameter (Allow_Extended => Regular_OK, Ghost => "ALL");
+            Entity      := Get_Entity_Parameter (Allow_Extended => Parens_OK, Ghost => "ALL");
             No_Positive := False;
          elsif Get_Modifier ("ANONYMOUS") then
             Filter      := Anonymous;
-            Entity      := Get_Entity_Parameter (Allow_Extended => Regular_OK, Ghost => "ALL");
+            Entity      := Get_Entity_Parameter (Allow_Extended => Parens_OK, Ghost => "ALL");
             No_Positive := False;
          elsif Get_Modifier ("NOT") then
             Filter := Never;
-            Entity := Get_Entity_Parameter (Allow_Extended => Regular_OK);
+            Entity := Get_Entity_Parameter (Allow_Extended => Parens_OK);
          else
             Filter      := Always;
-            Entity      := Get_Entity_Parameter (Allow_Extended => Regular_OK, Ghost => "ALL");
+            Entity      := Get_Entity_Parameter (Allow_Extended => Parens_OK, Ghost => "ALL");
             No_Positive := False;
          end if;
 

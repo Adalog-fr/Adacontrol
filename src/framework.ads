@@ -182,7 +182,7 @@ package Framework is
    Nothing_OK : constant Entity_Specification_Kinds_Set := (                    others => False);
    Box_OK     : constant Entity_Specification_Kinds_Set := (Box        => True, others => False);
    Equal_OK   : constant Entity_Specification_Kinds_Set := (Equal      => True, others => False);
-   Regular_OK : constant Entity_Specification_Kinds_Set := (Regular_Id => True, others => False);
+   Parens_OK  : constant Entity_Specification_Kinds_Set := (Regular_Id => True, others => False);
    All_OK     : constant Entity_Specification_Kinds_Set := (others     => True                 );
 
    function Entity_Specification_Kind (Entity : in Entity_Specification) return Entity_Specification_Kinds;
