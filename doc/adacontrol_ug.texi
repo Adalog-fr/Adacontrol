@@ -3236,17 +3236,19 @@ assignment.
 @end example
 
 @subsection Action
-The first subrule (``sliding'') controls array assignments
-where the target variable has a different lower bound than the
-assigned expression; this is allowed by the language only in so-called
-``sliding'' contexts.
-
-The second subrule (``access_duplication'') controls assignments
-where the content of an object of an access type is stored (directly,
-or as a subcomponent) into another object. The @code{@b{null}} value
-and allocators (@code{@b{new}}) are @i{not} controlled. In other
-words, this rule spots places where you start having more than one way
-to access a variable. 
+The first parameter is a subrule keyword:
+@itemize
+@item
+``sliding'' controls array assignments where the target variable has a
+different lower bound than the assigned expression; this is allowed by
+the language only in so-called ``sliding'' contexts.
+@item
+``access_duplication'' controls assignments where the content of an
+object of an access type is stored (directly, or as a subcomponent)
+into another object. The @code{@b{null}} value and allocators
+(@code{@b{new}}) are @i{not} controlled. In other words, this rule
+spots places where you start having more than one way to access a
+variable. 
 
 If the modifier ``controlled'' is given, only access types that are
 subcomponents (directly or indirectly) of a controlled type are
@@ -3262,7 +3264,7 @@ applies only to access types whose target type matches the given
 for entities is allowed for <entity>. @xref{Specifying an Ada entity
 name}.  
 
-This rule traverses derivations, but not privacy (the category
+This subrule traverses derivations, but not privacy (the category
 ``private'' can be given, to check access types whose target is of a
 private type). @xref{Definition of type categories}. In
 addition, ``function'' and ``procedure'' can be given to specify
@@ -3270,24 +3272,24 @@ access types that designate functions or procedures.
 
 This subrule can be given at most twice for each <target>, once
 for ``controlled'' and once for ``not controlled''.
-
+@end itemize
 Note that the two subrules above are checked for initialization of
 variables and constants, as well as for regular assignments.
 
 Other subrules control properties of groups of assignment
 statements. A group is made of consecutive assignments, without any
 other intervening kind of statements (except null statements).
-
-The third subrule (``repeated'') controls when a same variable (or a
-same subcomponent of a structured variable) is assigned several times
-in the same group of assignments. This form of the rule can be given
-only once.
-
-The fourth subrule (``groupable'') controls assignments to different
-subcomponents of a same structured variable; such assignments are
-often replaceable by a global assignment of an aggregate to the
-variable. One or several <filter> parameters indicate under which
-conditions a group is reported:
+@itemize
+@item
+``repeated'' controls when a same variable (or a same subcomponent of
+a structured variable) is assigned several times in the same group of
+assignments. This form of the rule can be given only once.
+@item
+``groupable'' controls assignments to different subcomponents of a
+same structured variable; such assignments are often replaceable by a
+global assignment of an aggregate to the variable. One or several
+<filter> parameters indicate under which conditions a group is
+reported:
 @itemize @bullet
 @item
 ``given'': <min_val> (an integer value) indicates the minimum number
@@ -3323,6 +3325,7 @@ For other structured objects, a subcomponent is counted as assigned if
 it has been assigned in full, or if it @i{should} have been assigned
 in full (in other words: if the rule is triggered on those
 subcomponents as well) - recursively, of course.
+@end itemize
 
 Ex:
 @example
@@ -3486,11 +3489,7 @@ complexity of @code{@b{case}} statements.
 @end example
 
 @subsection Action
-The first parameter is a subrule keyword. The second (and optionnally
-third) parameter give the minimum and/or maximum allowed values
-(i.e. the rule will control values outside the indicated interval). If
-not specified, the minimum value is defaulted to 0 and the maximum
-value to infinity. The parameters controlled by each subrule are:
+The first parameter is a subrule keyword:
 @itemize
 @item
 ``others_span'' controls the number of values covered by
@@ -3511,6 +3510,10 @@ of the @code{@b{case}} selector.
 @code{@b{case}} statements with a @code{@b{when}} @code{@b{others}}
 alternative.
 @end itemize
+The second (and optionnally third) parameter give the minimum and/or
+maximum allowed values (i.e. the rule will control values outside the
+indicated interval). If not specified, the minimum value is defaulted
+to 0 and the maximum value to infinity.
 
 This rule can be specified at most once for each subrule and for each
 of ``check'', ``search'' and ``count''. It is thus possible for each
@@ -3631,8 +3634,7 @@ This rule controls comments that must, or must not, appear in certain cases.
 @end example
 
 @subsection Action
-The first parameter is a subrule name which detemines what is being
-controlled.
+The first parameter is a subrule keyword:
 @itemize @bullet
 @item
 ``pattern'' controls comments that match one of the given patterns
@@ -4365,31 +4367,33 @@ allowed/forbidden units, or by count.
 @end example
 
 @subsection Action
-The kind of action depends on the specified subrule.
-
-The ``others'' subrule controls semantic dependencies to units other
-than those indicated. This subrule can be specified only once, and at
+The first parameter is a subrule keyword:
+@itemize
+@item
+``others'' controls semantic dependencies to units other than those
+indicated. This subrule can be specified only once, and at least one
+unit must be given.
+@item
+``with'' controls with clauses that reference the indicated units. At
 least one unit must be given.
-
-The ``with'' subrule controls with clauses that reference the
-indicated units. At least one unit must be given.
-
+@end itemize
 Note that for these two rules, renamings are followed: if you give the
 basic name of a unit, it will be identified even if used with other
 names. Similarly, if you give the name of a generic, all of its
 instantiations will also be controlled.
-
+@itemize
+@item
 ``public_child'' and ``private_child'' control units that depend on
 their own public (respectively private) child units. Since these
 subrules have no parameters, they can be given only once.
-
+@end itemize
 Other subrules control that the number of various dependencies is
 whithin a specified range.  The second (and optionnally third)
 parameter give the minimum and/or maximum allowed values (i.e. the
 rule will control values outside the indicated interval). If not
 specified, the minimum value is defaulted to 0 and the maximum value
 to infinity.
-@itemize @bullet
+@itemize
 @item
 ``raw'' controls the number of units textually given in
 @code{@b{with}} clauses. Redundant @code{@b{with}} clauses are
@@ -4465,9 +4469,12 @@ This rule controls various properties of the declaration of derived types.
 @end example
 
 @subsection Action
-The ``from'' subrule controls the declaration of derived types where
-the parent type or any progenitor matches the <entity> or belongs to
-the indicated <category>.
+The first parameter is a subrule keyword:
+@itemize
+@item
+``from'' controls the declaration of derived types where the parent
+type or any progenitor matches the <entity> or belongs to the
+indicated <category>.
 
 If <entity> is a type name, it controls types that are derived
 (directly or indirectly) from the given type (including interfaces),
@@ -4511,9 +4518,9 @@ search derivations (from, standard);
 search derivations (from, range, mod);
 -- Types derived from an integer type (signed or modular)
 @end example
-
-The ``max_parents'' subrule controls the maximum number of parents in
-a derivation. The parents are the direct ancestor in a derived type
+@item
+``max_parents'' controls the maximum number of parents in a
+derivation. The parents are the direct ancestor in a derived type
 definition, plus all of the progenitors (the interfaces that are
 implemented by the type). <value> is the maximum number of @i{allowed}
 parents, i.e. the rule is triggered if the number of parents is
@@ -4524,6 +4531,7 @@ count. This way, it is possible to have a number of parents
 considered a warning (search), and one considered an error (check). Of
 course, this makes sense only if the number for search is less than
 the one for check.
+@end itemize
 
 @example
 check derivations (max_parents, 5);   -- error if more than 5 parents
@@ -5281,9 +5289,9 @@ more than one formal.
 @subsection Syntax
 @example
 <control_kind> generic_aliasing [(<subrule> @{, <subrule>@})];
-<subrule>   ::= [<condition>] <entity>
+<subrule>   ::= [<condition>] <target>
 <condition> ::= unlikely | possible | certain
-<entity>    ::= all | variable | type | subprogram | package
+<target>    ::= all | variable | type | subprogram | package
 @end example
 
 @subsection Action
@@ -5293,7 +5301,7 @@ parameters). Such aliasing of variables is dangerous, since it can
 induce subtile bugs. Other elements are less dangerous, although often
 questionable (depending on the generic).
 
-The <entity> parameter indicates for which elements aliasing is
+The <target> parameter indicates for which elements aliasing is
 controlled; ``all'' stands for all kinds of elements.
 
 There are many cases where aliasing cannot be determined
@@ -5317,7 +5325,7 @@ specified only for variables and subprograms.
 
 Without any parameter, the rule is the same as ``certain all''. The
 rule can be specified only once for each combination of <condition>
-and <entity>.
+and <target>.
 
 Ex:
 @example
@@ -5356,19 +5364,27 @@ are used to refer to all functions, procedures, tasks, and protected
 entities, respectively.
 
 The <subrule> determines the kind of references that are
-controlled. If it is @code{all}, all references to global elements
-from the indicated entities are reported. If <subrule> is @code{read}
-or @code{written}, only read (respectively write) accesses are
-reported. If <subrule> is @code{multiple}, only global elements that
+controlled:
+@itemize
+@item
+``all'': all references to global elements
+from the indicated entities are reported. 
+@item
+``read'' or ``written'': only read (respectively write) accesses are
+reported. 
+@item
+``multiple'': only global elements that
 are accessed by more than one of the indicated entities (i.e. shared
 elements) are reported. Note however that if a reference is found from
 a task type or protected type, it is always reported, since there are
-potentially several objects of the same type. If <subrule> is
-@code{multiple_non_atomic}, references reported are the same as with
-@code{multiple}, except that global variables that are @code{atomic}
+potentially several objects of the same type.
+@item
+``multiple_non_atomic'': references reported are the same as with
+``multiple", except that global variables that are @code{atomic}
 or @code{atomic_components} and written from at most one of the
 indicated entities are not reported. Note that this latter case
 corresponds to a safe reader/writer use of atomic variables.
+@end itemize
 
 This rule follows the call graph, and therefore finds references from
 subprogram and protected calls made (directly or indirectly) from the
@@ -5455,23 +5471,24 @@ standardized comment.
 <control_kind> header_comments (model, "<file name>");
 @end example
 @subsection Action
-If the keyword ``minimum'' is given as first parameter, this rule
-controls that every compilation unit starts with at least the number
+The first parameter is a subrule keyword:
+@itemize
+@item
+``minimum'': controls that every compilation unit starts with at least the number
 of comment lines indicated by the second parameter. If several forms
 of headers are possible, checking that the headers follow the
 project's standard requires manual inspection, but this rule is useful
 to control that unit headers have not been inadvertantly forgotten.
-
-If the keyword ``model'' is given as first parameter, the second
-parameter is a string, interpreted as a file name. If the file name is
-not an absolute path, it is interpreted as relative to the directory
-of the file that contains the rule, or to the current directory if the
-rule is given on the command line.  Each line of the indicated file is
-a regular expression, and the rule controls that the corresponding
-line of the source file matches the expression. @xref{Syntax of
-regular expressions}. In addition, it is possible to specify a repetition
-for a line. If the first character of a line is a @code{'@{'}, the line
-must have the following syntax:
+@item
+``model'': the second parameter is a string, interpreted as a file
+name. If the file name is not an absolute path, it is interpreted as
+relative to the directory of the file that contains the rule, or to
+the current directory if the rule is given on the command line.  Each
+line of the indicated file is a regular expression, and the rule
+controls that the corresponding line of the source file matches the
+expression. @xref{Syntax of regular expressions}. In addition, it is
+possible to specify a repetition for a line. If the first character of
+a line is a @code{'@{'}, the line must have the following syntax:
 @example
 @{<min>,[<max>]@}
 @end example
@@ -5493,6 +5510,7 @@ Note that the repetition lines all start with a special character
 which is not allowed at the start of a regular expression; there is
 therefore no ambiguity. Everything after the special character (or the
 closing @code{'@}'}) is ignored, and can be used to provide comments.
+@end itemize
 
 This rule can be given at most once with ``minimum'' for each of
 ``check'', ``search'', and ``count''. The rule can be given only once
@@ -5990,13 +6008,21 @@ the same name.
 @end example
 
 @subsection Action
-If ``strict'' is given (or if there is no subrule), the rule controls
+The first parameter is a subrule keyword:
+@itemize
+@item
+``strict'': controls
 strict hiding (an inner subprogram that overloads an outer one is not
-considered hiding). If ``overloading'' is given, only subprograms that
+considered hiding).
+@item
+``overloading'': only subprograms that
 overload another subprogram in the same scope or in an outer scope are
 controlled. Note that following the normal Ada model, the declarations
 of enumeration literals are considered functions (and thus
 controlled).
+@end itemize
+
+Without parameters, the rule defaults to ``strict''.
 
 Modifiers are used to exclude some controls (i.e. to allow the corresponding hiding):
 @itemize @bullet
@@ -6219,27 +6245,28 @@ This rule controls excessive nesting of declarations.
 @end example
 
 @subsection Action
-If ``all'' (or no subrule) is given as the first parameter, this rule
-controls the nesting of declarative constructs (like subprograms,
+The first parameter is a subrule keyword:
+@itemize
+@item
+``all'': controls the nesting of declarative constructs (like subprograms,
 packages, generics, block statements@dots{}) that exceed a given
 depth. Nesting of statements (@code{@b{loop}}, @code{@b{case}}) is not
 considered.
+@item
+``generic'': controls the nesting of generics, ignoring all
+non-generic units.
+@item
+``separate'': controls the nesting of separate bodies.
+@item
+``task'': controls the nesting of tasks (task types and single task
+objects), ignoring all non-task units.
+@end itemize
 
-If ``generic'' is given as the first parameter, this rule controls the
-nesting of generics, ignoring all non-generic units.
-
-If ``separate'' is given as the first parameter, this rule controls the
-nesting of separate bodies.
-
-If ``task'' is given as the first parameter, this rule controls the
-nesting of tasks (task types and single task objects), ignoring all
-non-task units.
-
-This rule can be given once for each subrule and each of check,
-search, and count. This way, it is possible to have a level considered
-a warning (search), and one considered an error (check). Of course,
-this makes sense only if the level for search is less than the one for
-check.
+Without parameters, the rule defaults to ``all''.  This rule can be
+given once for each subrule and each of check, search, and count. This
+way, it is possible to have a level considered a warning (search), and
+one considered an error (check). Of course, this makes sense only if
+the level for search is less than the one for check.
 
 Note that the value given is the maximum @i{allowed} nesting; f.e. if the
 value given for ``generic'' is 1, it means that a generic inside a
@@ -6271,29 +6298,31 @@ various statements and declarations.
               unit
 @end example
 @subsection Action
-The first parameter is a subrule keyword that determines which
-elements are controlled:
+The first parameter is a subrule keyword:
 @itemize @bullet
 @item
-``accept'' controls accept statements.
+``accept'': controls accept statements.
 @item
-``block'' controls all block statements, while ``simple_block''
-controls only blocks without a @code{@b{declare}} part, and
-``unnamed_block'' controls only blocks without a name.
+``block'': controls all block statements
 @item
-``loop'' controls all loop statement, while ``unnamed_loop'' controls
-only loops without a name.
+``simple_block'': controls only blocks without a @code{@b{declare}} part
 @item
-``if_branch'' and ``case_branch'' control the length of each
+``unnamed_block'': controls only blocks without a name.
+@item
+``loop'': controls all loop statement
+@item
+``unnamed_loop'': controls only loops without a name.
+@item
+``if_branch'', ``case_branch'': controls the length of each
 alternative of an @code{@b{if}} (respectively @code{@b{case}})
 statement.
 @item
 ``package_spec'', ``package_body'', ``procedure_body'',
 ``function_body'', ``protected_spec'', ``protected_body'',
-``entry_body'', ``task_spec'', and ``task_body'' control the length of
+``entry_body'', ``task_spec'', ``task_body'': controls the length of
 the declaration of the corresponding element.
 @item
-``unit'' controls the whole length of compilation units.
+``unit'': controls the whole length of compilation units.
 @end itemize
 
 For each kind of element, the indicated value is the maximum allowed
@@ -6331,18 +6360,26 @@ This rule controls the nesting of compound statements.
 <control_kind> max_statement_nesting (<subrule>, <max allowed depth>);
 <subrule> ::= block | case | if | loop | all
 @end example
+
 @subsection Action
-If one of ``block'', ``case'', ``if'', or ``loop'' is specified, it
+The first parameter is a subrule keyword:
+@itemize
+@item
+``block'', ``case'', ``if'', or ``loop'':
 controls the nesting of statements of the same kind, i.e. an
 @code{@b{if}} within a @code{@b{loop}} within an @code{@b{if}} counts
-only 2 for the ``if'' keyword. If ``all'' is specified, all kinds of
-compound statements are counted together, i.e. an @code{@b{if}} within
-a @code{@b{loop}} within an @code{@b{if}} counts for 3. This rule can
-be given once for each of check, search, and count, and for each of
-the subrules. This way, it is possible to have a level considered a
-warning (search), and one considered an error(check). Of course, this
-makes sense only if the level for search is less than the one for
-check.
+only 2 for the ``if'' keyword.
+@item
+``all'': controls the global nesting of all compound statements,
+i.e. an @code{@b{if}} within a @code{@b{loop}} within an @code{@b{if}}
+counts for 3.
+@end itemize
+
+This rule can be given once for each of check, search, and count, and
+for each of the subrules. This way, it is possible to have a level
+considered a warning (search), and one considered an error(check). Of
+course, this makes sense only if the level for search is less than the
+one for check.
 
 Ex:
 @example
@@ -6810,8 +6847,9 @@ static.
 @end example
 
 @subsection Action
-The <subrule> defines the elements that are required to be static:
-@itemize @bullet
+The parameters are subrule keywords that
+define the elements that are required to be static:
+@itemize
 @item
 ``constant_initialization'': expressions used as initial value in
 constant declarations.
@@ -6960,8 +6998,8 @@ declarations.
 @end example
 
 @subsection Action
-The action depends on the subrule.
-@itemize @bullet
+The first parameter is a subrule keyword:
+@itemize
 @item
 ``min_integer_span'': controls that every object of an integer type
 has a subtype that covers at least the indicated number of
@@ -7764,26 +7802,27 @@ function results.
 
 @subsection Action
 This rule controls functions whose return type belongs to one of the
-indicated type kinds:
-@itemize @bullet
+type kinds given as <subrule>:
+@itemize
 @item
-@code{class_wide} controls all class-wide types, while
-@code{limited_class_wide} controls only limited class-wide types.
+``class_wide'': controls all class-wide types
 @item
-@code{constrained_array} controls constrained array types
+``limited_class_wide'': controls only limited class-wide types.
 @item
-@code{unconstrained_discriminated} controls types with discriminants
+``constrained_array: controls constrained array types
+@item
+``unconstrained_discriminated:'' controls types with discriminants
 (but not constrained subtypes of such types)
 @item
-@code{unconstrained_array} controls unconstrained array types
+``unconstrained_array'' controls unconstrained array types
 @item
-@code{task} controls task types, or composite types that include tasks
+``task'' controls task types, or composite types that include tasks
 as subcomponents.
 @item
-@code{protected} controls protected types, or composite types that include protected
-objects as subcomponents.
+``protected'' controls protected types, or composite types that
+include protected objects as subcomponents.
 @item
-@code{anonymous_access} controls anonymous access types.
+``anonymous_access'': controls anonymous access types.
 @end itemize
 
 If no subrule is specified, all type kinds are controlled. Note that
@@ -7998,34 +8037,34 @@ This rule controls expressions that can be simplified in various ways.
 @end example
 
 @subsection Action
-Without parameters, all kinds of simplifiable expressions are
-controlled; otherwise, the controlled expressions depend on the
-subrule:
-@itemize @bullet
+The parameters are subrule keywords:
+@itemize
 @item
-``conversion'' controls type conversions where the expression is of a
+``conversion'': controls type conversions where the expression is of a
 universal type (a litteral or named number), or where the target
 subtype is either the same as the expression's subtype, or the first
 named subtype of the expression.
 @item
-``logical_true'' controls redundant boolean expressions of the form
+``logical_true'': controls redundant boolean expressions of the form
 @code{<expr> = True} (or @code{/=}), and ``logical_false'' does the
 same for comparisons with @code{false}.
 @item
-``logical_not'' controls @code{@b{not}} operators whose argument is a
+``logical_not'': controls @code{@b{not}} operators whose argument is a
 comparison (which could be inverted).
 @item
- ``logical'' is the same as specifying ``logical_true'',
+ ``logical'': is the same as specifying ``logical_true'',
 ``logical_false'' and ``logical_not''.
 @item
-``parentheses'' controls unnecessary parentheses like those
+``parentheses'': controls unnecessary parentheses like those
 surrounding the expression of an assignment, an ``if'' or a ``case''
 statement, or those that are not required by operators precedence
 rules.
 @item
-``range'' controls expressions of the form @code{T'First .. T'Last}
+``range'': controls expressions of the form @code{T'First .. T'Last}
 that should be @code{T'range} (or even simply @code{T}).
 @end itemize
+Without parameters, all kinds of simplifiable expressions are
+controlled.
 
 This rule can be given at most once for each subrule.
 
@@ -8085,15 +8124,13 @@ various ways without changing the meaning of the program.
               nested_path | null
 @end example
 @subsection Action
-Without parameter, all kinds of simplifiable statements are
-controlled; otherwise, the controlled statements depend on the
-subrule:
+The parameters are subrule keywords:
 @itemize @bullet
 @item
-@code{block} controls block statements that have no labels, no
+``block'': controls block statements that have no labels, no
 declarations, and no exception handlers.
 @item
-@code{dead} controls dead code, i.e. statements that are statically
+``dead'': controls dead code, i.e. statements that are statically
 known to be never executed. This includes statements that follow a
 @code{@b{return}}, @code{@b{requeue}}, or @code{@b{goto}} statement,
 or an @code{@b{exit}} statement that is either unconditional or whose
@@ -8103,7 +8140,7 @@ condition is statically known to be true. It includes also
 of @code{@b{case}} statements whose choices are all statically null
 ranges, and @code{@b{for}} loops whose range is statically empty.
 @item
-@code{handler} controls ``trivial'' exception handlers, i.e. handlers
+``handler'': controls ``trivial'' exception handlers, i.e. handlers
 whose sequence of statements includes only a single @code{@b{raise}}
 statement without an exception name. However, a handler is not
 reported if there is also a non trivial handler for @code{@b{others}}.
@@ -8129,11 +8166,11 @@ These examples show the situation:
 @b{end};
 @end example
 @item
-@code{if} controls @code{@b{if}} statements with an @code{@b{else}}
+``if'': controls @code{@b{if}} statements with an @code{@b{else}}
 path that contains only @code{@b{null}} statements (and can thus be
 removed).
 @item
-@code{if_for_case} controls usage of @code{@b{if}} statements that
+``if_for_case'': controls usage of @code{@b{if}} statements that
 could be replaced by @code{@b{case}} statements. An  @code{@b{if}}
 statement is assumed to be replaceable if it has at least one
 @code{@b{elsif}} and all conditions are comparisons (or membership
@@ -8154,21 +8191,21 @@ constructs like:
    @b{end} @b{if};
 @end example
 @item
-@code{if_not} controls @code{@b{if}} statements with an
+``if_not'': controls @code{@b{if}} statements with an
 @code{@b{else}} path and no @code{@b{elsif}} path, and where the
 condition is given in negative form (i.e. it is a @code{@b{not}}, or a
 @code{"/="} comparison). Such statements could be made positive (and
 thus less error-prone) by interverting the @code{@b{if}} and
 @code{@b{else}} paths.
 @item
-@code{loop} controls @code{while} loop statements where the condition
+``loop'': controls @code{while} loop statements where the condition
 is statically known to be @code{True}, and can thus be changed to simple loops.
 @item
-@code{loop_for_while} controls simple loop statements whose first
+``loop_for_while'': controls simple loop statements whose first
 statement is an @code{@b{exit}} (for the same loop), and which can
 therefore be turned into a @code{while} loop.
 @item
-@code{nested_path} controls paths from @code{@b{if}} statements that
+``nested_path'': controls paths from @code{@b{if}} statements that
 can be moved outside. This happens if the @code{@b{if}} has only
 @code{@b{then}} and @code{@b{else}} paths, and either of them ends
 with a ``breaking'' statement (@code{@b{raise}}, @code{@b{return}},
@@ -8212,10 +8249,13 @@ would break the symetry of the statement:
 @b{end} @b{if};
 @end example
 @item
-@code{null} controls @code{@b{null}} statements that serve no purpose
+``null'': controls @code{@b{null}} statements that serve no purpose
 and can be removed.  Note that if a @code{@b{null}} statement carries
 a label, it is not considered  simplifiable.
 @end itemize
+
+Without parameter, all kinds of simplifiable statements are
+controlled.
 
 This rule can be given at most once for each subrule.
 
@@ -8571,12 +8611,11 @@ This rules controls usage of various ``general'' Ada coding style.
 @end example
 
 @subsection Action
-The first parameter specifies which style aspect is to be checked:
-
-@itemize @bullet
+The first parameter is a subrule keyword:
+@itemize
 @item
 ``casing_aspect'', ``casing_attribute'', ``casing_keyword'',
-``casing_identifier'', and ``casing_pragma'' control that aspect names
+``casing_identifier'', ``casing_pragma'': controls that aspect names
 (respectively attributes, keywords, identifiers, or pragmas) use the
 appropriate casing. ``original'' (which is allowed only for
 identifiers) means that identifiers must use the same casing as in
@@ -8590,7 +8629,7 @@ extended digits used in based numbers when the base is above 10 (only
 If more than one <casing_kw> is given, it means that any of them is
 allowed.
 @item
-``compound_statement'' controls that compound statements span at least
+``compound_statement'': controls that compound statements span at least
 a minimum number of lines: 3 for @code{@b{if}} statements,
 @code{@b{loop}} statements, block statements, and @code{@b{accept}}
 statements with a body; 4 for @code{@b{case}} statements, selective
@@ -8598,12 +8637,12 @@ statements with a body; 4 for @code{@b{case}} statements, selective
 for conditional entry call statements and asynchronous select
 statements.
 @item
-``default_in'' controls subprograms, entries and generics declarations
+``default_in'': controls subprograms, entries and generics declarations
 that omit an explicit @code{in} mode for a parameter. Access
 parameters are not reported, since an an explicit @code{in} is not
 allowed in that case.
 @item
-``exposed_literal'' controls the usage of literals (aka ``magic
+``exposed_literal'': controls the usage of literals (aka ``magic
 values''), that appear outside of allowed places. The second parameter
 tells to which kind of literals the rule applies. The (optional)
 indicated values that follow are allowed at any place; for integers, a
@@ -8630,7 +8669,7 @@ declarations. If no <place> is given, it is taken as @code{number,
 constant}, i.e. any literal is allowed in named numbers and constant
 declarations.
 @item
-``multiple_elements'' controls clauses, pragmas, declarations,
+``multiple_elements'': controls clauses, pragmas, declarations,
 statements, and handlers that do not start on a line of their own
 (i.e. when there are more than one of these on the same
 line). Similarly, @code{@b{begin}}, @code{@b{end}}, @code{@b{then}}
@@ -8649,12 +8688,12 @@ front of ``clause'' (not allowed otherwise), it allows a
 clause, provided all packages named in the @code{@b{use}} clause are
 also named in the preceding @code{@b{with}} clause.
 @item
-``negative_condition'' controls ``if'' statements with an ``else''
+``negative_condition'': controls ``if'' statements with an ``else''
 part and no ``elsif'', where the condition starts with a
 @code{@b{not}}, and should therefore preferably be expressed
 positively.
 @item
-``no_closing_name'' controls declarations, like package or subprograms,
+``no_closing_name'': controls declarations, like package or subprograms,
 that allow (but do not require) repeating the name at the end of the
 declaration, and where the closing name is omitted (which is
 considered bad style in general). However, it can be acceptable to
@@ -8668,7 +8707,7 @@ makes sense only if the length for search is less than the one for
 check. If no length is specified, all occurrences of missing closing
 names are signaled.
 @item
-``numeric_literal'' controls the presentation of numeric literals, depending
+``numeric_literal'': controls the presentation of numeric literals, depending
 on the base (wich, as required by Ada rules, must be in the range
 2..16). If ``not <base>'' is specified as the second parameter, the
 given base may not be used for based literals. Otherwise, there must
@@ -8677,7 +8716,7 @@ for that base, i.e. there must be an underscore character to separate
 digits every <block_size> position. Typically, <block_size> is 3 for
 base 10, 4 for base 2, etc.
 @item
-``parameter_order'' and ``formal_parameter_order'' control the order
+``parameter_order'', ``formal_parameter_order'': controls the order
 of the declarations of parameters or generic formal parameters,
 respectively. Each parameter of the rule consists in one or several of
 the ``mode'' keywords, and describes, in order, which kind of
@@ -8690,7 +8729,7 @@ or ``access'' first, then ``in_out'', then ``out'', then
 then ``in'' ``defaulted_in'' and ``access'', then ``in_out'', then
 ``procedure'' and ``function'', then ``package''.
 @item
-``renamed_entity'' controls occurrences of identifiers within the scope
+``renamed_entity'': controls occurrences of identifiers within the scope
 of a renaming declaration for them; i.e. it enforces that when an entity
 has been renamed, the original name should not be used anymore.
 @end itemize
@@ -8934,10 +8973,14 @@ inspection may be required.
 @end example
 
 @subsection Action
-If the keyword ``missing_unit'' is given, this rule controls missing
-units,  i.e. units given on the command line that are not found (and
-therefore not controlled) will result in an usual error message.
+The parameters are subrule keywords:
+@itemize
+@item
+``missing_unit'': controls missing units,  i.e. units given on the
+command line that are not found (and therefore not processed)
 
+Although not analyzed, an usual error message will be output for such units.
+@end itemize
 Otherwise, this rule controls constructs that are not static
 and prevent other rules from being fully reliable. This rule is
 special, since it really affects the way other rules behave when they
@@ -8947,13 +8990,17 @@ of the rule that triggered the message; if no label is given, the
 message will include the name of the rule that detected the
 uncheckable construct, not ``uncheckable'' itself.
 
-If the keyword ``false_negative'' is given, the rule will control
+@itemize
+@item
+``false_negative'': controls
 constructs that could result in false negatives, i.e. possible
-violations that would go undected, while if the keyword
-``false_positive'' is given, it will control constructs that could
+violations that would go undected.
+@item
+``false_positive'': controls constructs that could
 result in false positives, i.e. error messages when the rule is not
-really violated. If no keyword is given, both occurrences are
-controlled.
+really violated. 
+@end itemize
+If no keyword is given, all subrules are activated.
 
 As far as statistics are concerned (see @ref{Control kinds and report
 messages}), ``uncheckable'' messages from rules are counted under the
@@ -8962,7 +9009,7 @@ be also a count of all ``uncheckable'' messages under the rule
 ``UNCHECKABLE'', and also subtotals corresponding to the number of
 ``uncheckables'' for each rule.
 
-This rule can be given only once for each of value of the parameters.
+This rule can be given only once for each subrule.
 
 Ex:
 @example
@@ -9024,18 +9071,18 @@ elements declared in them.
 @end example
 
 @subsection Action
-The checked pattern depends on the given subrule:
+The first parameter is a subrule keyword:
 @itemize @bullet
 @item
-``single_tagged_type'' controls that at most one tagged type is
+``single_tagged_type'': controls that at most one tagged type is
 declared in any package.
 @item
-``tagged_type_hierarchy'' controls that tagged types follow packages
+``tagged_type_hierarchy'': controls that tagged types follow packages
 hierarchy, i.e. that the parent of a type extension (derivation of a tagged
 type) is declared in the parent unit of the one that declared the
 derivation.
 @item
-``context_clauses_order'' controls the order of context clauses (and
+``context_clauses_order'': controls the order of context clauses (and
 pragmas) given on top of the unit. Each parameter of the rule consists
 in one or several of the <clause> keywords, and describes, in order,
 which kind of clause is allowed. Note that ``use_type'' covers only
@@ -9044,7 +9091,7 @@ to include the Ada 2012 @code{@b{use all type}} clause as well. Note
 that all <clause>s not specified explicitely have no place, and thus
 are not allowed at all.
 @item
-``declarations_order'' controls the order of declarations (and use clauses)
+``declarations_order'': controls the order of declarations (and use clauses)
 given in various parts, depending on the second parameter:
 @itemize
 @item
@@ -9120,12 +9167,16 @@ processed by AdaControl.
 @end example
 
 @subsection Action
-If the keyword @code{unreferenced} is given, the rule controls
-compilation units that are part of the set of analyzed units, but
-withed by no other unit. If the keyword @code{unchecked} is given, the
-rule controls compilation units that are withed by other unit(s), but
-not part of the set of controlled units (except standard units).
-
+The parameters are subrule keywords:
+@itemize
+@item
+``unreferenced'': controls compilation units that are part of the
+set of analyzed units, but withed by no other unit. 
+@item
+``unchecked'': controls compilation units that are withed by other
+unit(s), but not part of the set of controlled units (except standard
+units).
+@end itemize
 This rule can only be given once for each of the subrules.
 
 Ex:
@@ -9739,19 +9790,27 @@ The rule controls every  @code{@b{use}} or @code{@b{use type}} clause,
 therefore possible to allow @code{@b{use}} or  @code{@b{use type}}
 clauses just for certain packages/types.
 
-If the keyword ``package'' is given (or no keyword at all), all
-package @code{@b{use}} clauses are controlled. If the keyword
-``global'' is given, only @code{@b{use}} clauses that appear in
-context clauses (i.e. together with the @code{@b{with}} clauses) are
-controlled; if the keyword ``local'' is given, only @code{@b{use}}
-clauses that appear as declarations are controlled.
-
-If the keyword ``type'' is given, all @code{@b{use type}} clauses are
-controlled. If the keyword ``type_global'' is given, only @code{@b{use
+The first parameter is a subrule keyword:
+@itemize
+@item
+``package'': controls all
+package @code{@b{use}} clauses.
+@item
+``global'': controls only @code{@b{use}} clauses that appear in
+context clauses (i.e. together with the @code{@b{with}} clauses)
+@item
+``local'' : controls only @code{@b{use}} clauses that appear as
+declarations.
+@item
+``type'': controls all @code{@b{use type}} clauses
+@item
+``type_global'': controls only @code{@b{use
 type}} clauses that appear in context clauses (i.e. together with the
-@code{@b{with}} clauses) are controlled; if the keyword ``type_local''
-is given, only @code{@b{use type}} clauses that appear as declarations
-are controlled.
+@code{@b{with}} clauses)
+@item
+``type_local'': controls only @code{@b{use type}} clauses that appear as declarations.
+@end itemize
+Without parameter, the rule defaults to ``package''.
 
 This rule can be given at most once for each of check, search and
 count. This way, it is possible to have a level considered a warning
@@ -9780,9 +9839,8 @@ moved to a better place.
 @end example
 
 @subsection Action
-The parameters are subrule keywords that determine which kind of
-control is performed:
-@itemize @bullet
+The parameters are subrule keywords:
+@itemize
 @item
 @code{multiple_names} controls any @code{@b{with}} clause that
 mentions more than one unit name.
