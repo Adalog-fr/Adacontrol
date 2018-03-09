@@ -2,13 +2,15 @@
 # Run AdaControl's test suite
 #
 # Usage:
-# ./run.sh [-q] [<adactl options>]
+# ./run.sh [-q] [-s] [<adactl options>]
 # ./run.sh -h 
 # -h:
 #   print help and exit
 # -q:
 #   run in "quiet" mode: just print PASSED if there are no errors
 #   names of failing tests are still reported in case of errors
+# -s:
+#   speed up test: do not run framework and stress tests
 # Other options are passed to AdaControl (notably -d)
 
 #
@@ -38,24 +40,34 @@ fi
 # We set -e to stop immediatly in case of a problem with the script
 # Note that it forces adding a " || True" to commands where the expected status is not 0
 set -e
-case "${1:-}" in
-    -q)
-        SILENT=1
-        shift
-        ADACTL="$EXECUTABLE -F gnat_short -G search $*"
-        ;;
-    -h)
-        echo "Usage:"
-        echo "   ./run.sh [-q] [<adactl options>]"
-        echo "   ./run.sh -h"
-        exit
-        ;;
-    *)
-        SILENT=0
-        ADACTL="$EXECUTABLE -v -F gnat_short -G search $*"
-        ;;
-esac
+SILENT=0
+SPEEDUP=0
+EXTRA_OPTS="-v"
 
+while true ; do
+    case "${1:-}" in
+        -h)
+            echo "Usage:"
+            echo "   ./run.sh [-q] [<adactl options>]"
+            echo "   ./run.sh -h"
+            exit
+            ;;
+        -q)
+            SILENT=1
+            EXTRA_OPTS=""
+            shift
+            ;;
+        -s)
+            SPEEDUP=1
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+ADACTL="$EXECUTABLE $EXTRA_OPTS -F gnat_short -G search $*"
 
 mkdir -p res ref fixed/res fixed/ref
 rm -f res/* fixed/res/*.ad[sb]
@@ -78,119 +90,121 @@ put_line_line
 run_start=`date +%s`
 nb_fw=0
 
-put_line "--- General framework tests"
-test_case=tfw_help
-nb_fw=$((nb_fw+1))
-${ADACTL} -h all 2>&1 \
+if [ $SPEEDUP == 0 ] ; then
+    put_line "--- General framework tests"
+    test_case=tfw_help
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -h all 2>&1 \
 	| tr -d \\r >res/${test_case}.txt
-${ADACTL} -h 2>&1 \
+    ${ADACTL} -h 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
-${ADACTL} -h "^Simplifiable_*" 2>&1 \
+    ${ADACTL} -h "^Simplifiable_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
-${ADACTL} -h "variables ^tag_*" 2>&1 \
+    ${ADACTL} -h "variables ^tag_*" 2>&1 \
 	| tr -d \\r >>res/${test_case}.txt
-# Remove line with version number to avoid false failures when using a different GNAT version
-sed -i "/with ASIS/s/with ASIS.*$//" res/${test_case}.txt
+    # Remove line with version number to avoid false failures when using a different GNAT version
+    sed -i "/with ASIS/s/with ASIS.*$//" res/${test_case}.txt
 
-# This one has full path names in the result file, the result depends on the directory 
-# where it's run from...
-# translate \ to / to make independant from OS, keep only the "test/" part of the path
-test_case=tfw_formats
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+    # This one has full path names in the result file, the result depends on the directory 
+    # where it's run from...
+    # translate \ to / to make independant from OS, keep only the "test/" part of the path
+    test_case=tfw_formats
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r \
         | sed "s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
 
-# This one requires precompilation, or some trees will be missing
-gcc -c -gnatct xfw_inhibit.adb tfw_inhibit_?.ad[sb]
-test_case=tfw_inhibit
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}_*.ad[sb] \
+    # This one requires precompilation, or some trees will be missing
+    gcc -c -gnatct xfw_inhibit.adb tfw_inhibit_?.ad[sb]
+    test_case=tfw_inhibit
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}_*.ad[sb] \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_naming
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
+    test_case=tfw_naming
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_rule_off
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+    test_case=tfw_rule_off
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_rule_off_ignored
-nb_fw=$((nb_fw+1))
-${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
+    test_case=tfw_rule_off_ignored
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_rule_off_inverted
-nb_fw=$((nb_fw+1))
-${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
+    test_case=tfw_rule_off_inverted
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -wi -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_rule_off_tags
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+    test_case=tfw_rule_off_tags
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
-test_case=tfw_set
-nb_fw=$((nb_fw+1))
-${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+    test_case=tfw_set
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
-put_line "--- Syntax check test"
-test_case=tfw_check
-nb_fw=$((nb_fw+1))
-# This test requires -v in all cases
-${ADACTL} -Cv -f conf/x_errors.aru 2>&1 \
+    put_line "--- Syntax check test"
+    test_case=tfw_check
+    nb_fw=$((nb_fw+1))
+    # This test requires -v in all cases
+    ${ADACTL} -Cv -f conf/x_errors.aru 2>&1 \
 	| tr -d \\r >res/${test_case}.txt
-for I in `find ../rules -name "*.aru" | sort -df `; do
-   echo -n "$I: " >>res/${test_case}.txt
-   ${ADACTL} -Cv -f $I 2>&1 \
-	| tr -d \\r >>res/${test_case}.txt
-done
-for I in `find conf -name "t_*.aru" -o -name "ts_*.aru" | sort -df `; do
-   echo -n "$I: " >>res/${test_case}.txt
-   ${ADACTL} -Cv -f $I 2>&1 \
-	| tr -d \\r >>res/${test_case}.txt
-done
+    for I in `find ../rules -name "*.aru" | sort -df `; do
+        echo -n "$I: " >>res/${test_case}.txt
+        ${ADACTL} -Cv -f $I 2>&1 \
+	    | tr -d \\r >>res/${test_case}.txt
+    done
+    for I in `find conf -name "t_*.aru" -o -name "ts_*.aru" | sort -df `; do
+        echo -n "$I: " >>res/${test_case}.txt
+        ${ADACTL} -Cv -f $I 2>&1 \
+	    | tr -d \\r >>res/${test_case}.txt
+    done
 
-#
-# Stress test
-# Run all rules over all rules test files.
-# We are not interested in the actual output (would be too difficult to analyse),
-# just to see if it crashes.
-# Result file will contain the context if there is a crash, or just "PASSED" if OK.
-# We use this test to make some timing statistics; we run therefore with the -i 
-# option, otherwise the time spent in Report would hide the true time of rules.
-#
-put "--- Stress test... "
-test_case=tfw_stress
-nb_fw=$((nb_fw+1))
-list=`find ./ -maxdepth 1 '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
-export ADACTLINI="set timing global;"
-result=0
-find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_short -wd -f - $list \
-   1> res/${test_case}.txt 2>&1 \
-   || result=$?
-export ADACTLINI=
-# if adactl is run with -x option, return code is always 1
-# replace by 10 if there is a crash
-if grep -q "=============" res/${test_case}.txt; then
-   result=10
-fi
+    #
+    # Stress test
+    # Run all rules over all rules test files.
+    # We are not interested in the actual output (would be too difficult to analyse),
+    # just to see if it crashes.
+    # Result file will contain the context if there is a crash, or just "PASSED" if OK.
+    # We use this test to make some timing statistics; we run therefore with the -i 
+    # option, otherwise the time spent in Report would hide the true time of rules.
+    #
+    put "--- Stress test... "
+    test_case=tfw_stress
+    nb_fw=$((nb_fw+1))
+    list=`find ./ -maxdepth 1 '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
+    export ADACTLINI="set timing global;"
+    result=0
+    find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_short -wd -f - $list \
+        1> res/${test_case}.txt 2>&1 \
+        || result=$?
+    export ADACTLINI=
+    # if adactl is run with -x option, return code is always 1
+    # replace by 10 if there is a crash
+    if grep -q "=============" res/${test_case}.txt; then
+        result=10
+    fi
 
-# Create timing file
-echo "Rule;Time;Percent" >res/rules_timing.csv
-grep -E "^[A-Za-z_]+: [0-9.]+" res/${test_case}.txt | sed "s/: /;/;s/ (\([0-9]*.[0-9]*\).*$/;\1/" >>res/rules_timing.csv
-###########################################################################
-# Put "PASSED" as the result if OK
-if [ $result -le 1 ]; then
-   put_line "PASSED"
-   rm -f res/${test_case}.txt
-   echo "PASSED" | tr -d \\r >res/${test_case}.txt
-else
-   put_line "FAILED ($result)"
+    # Create timing file
+    echo "Rule;Time;Percent" >res/rules_timing.csv
+    grep -E "^[A-Za-z_]+: [0-9.]+" res/${test_case}.txt | sed "s/: /;/;s/ (\([0-9]*.[0-9]*\).*$/;\1/" >>res/rules_timing.csv
+    ###########################################################################
+    # Put "PASSED" as the result if OK
+    if [ $result -le 1 ]; then
+        put_line "PASSED"
+        rm -f res/${test_case}.txt
+        echo "PASSED" | tr -d \\r >res/${test_case}.txt
+    else
+        put_line "FAILED ($result)"
+    fi
 fi
 
 #
@@ -200,6 +214,7 @@ fi
 put_line "--- Rules tests"
 
 list=`find ./ -maxdepth 1 -name "t_*.adb" ! -name "*-*" -printf "%P "`
+#list=t_record_declarations.adb
 nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
@@ -226,7 +241,11 @@ ${ADACTL} -uw -f conf/${test_case}.aru $test_case+x_units_2 \
 #
 
 run_stop=`date +%s`
-list=`find ref -name "*.txt" -printf "%P "`
+if  [ $SPEEDUP == 1 ] ; then
+    list=`find ref -name "t_*.txt" -printf "%P "`
+else
+    list=`find ref \( -name "t_*.txt" -o -name "tfw_*.txt" -o -name "ts_*.txt" \) -printf "%P "`
+fi
 
 nb_passed=0
 nb_failed=0
