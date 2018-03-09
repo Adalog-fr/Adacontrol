@@ -10,8 +10,9 @@ to the indicated categories, or just those whose indicated
 subtype is inconsistent with the access type declaration
 
 Parameter(s): [anonymous | inconsisent | not] [<category>|<entity>]
-<category>  : ()  | access    | array | delta  | digits |
-              mod | protected | range | record | tagged | task
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 ----
 Rule: ARRAY_DECLARATIONS
 Controls various parameters related to array types or objects declarations
@@ -23,19 +24,20 @@ Parameter(1): first     | last | length | dimensions | index |
 For First, Last, Length, Dimensions:
 Parameter(2..3): <bound> <value>
                 (at least one parameter required)
+<bound>: min | max
 For first, last, and dimensions, alternatively:
 Parameter(2): <value>
 
 For index:
-Parameter(2..)  : <entity>|<category>
+Parameter(2..) : <entity>|<category>
+<category>: () | range | mod
 
 For component:
 Parameter(2)  : <entity>|<category>
 Parameter(3..): [not] pack | size | component_size (optional)
-
-   <bound>: min | max
-<category>: ()      | access    | array | delta  | digits | mod |
-            private | protected | range | record | tagged | task
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 ----
 Rule: ASPECTS
 Control occurrences of aspect specifications
@@ -53,9 +55,10 @@ Parameter(1): [[not] controlled]  sliding  | access_duplication |
                                   repeated | groupable
 
 For access_duplication:
-Parameter(2..): [not] <Entity name> | <category>
-<category>: ()      | access    | array     | delta | digits | function | mod |
-            private | procedure | protected | range | record | tagged   | task
+Parameter(2..): [not] <Entity name> | <category> | procedure | function
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 
 For groupable:
 Parameter(2..): <criterion> <value>
@@ -234,8 +237,9 @@ Controls ancestors of a derived type
 Parameter(1): From | Max_Parents
 for From subrule:
 Parameter(2..): <Entity name> | <category>
-<category>: ()      | access   | array | delta  | digits | mod |
-            private |protected | range | record | tagged | task
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 for Max_Parents subrule:
 Parameter(2)  : <value>
 ----
@@ -314,9 +318,9 @@ For all *_conversion subrules:
 
 For all *_function_call and prefixed_operator subrules:
     [<result_category>] <subrule>
-Categories: <>     | ()      | range  | mod       | delta  |
-            digits | array   | record | tagged    | access |
-            new    | private | task   | protected
+<category>: <>      | ()    | range     | mod    | delta  |
+            digits  | array | record    | tagged | access |
+            private | task  | protected
 
 Variables:
 Expressions.Called_Info: (None, Compact, Detailed, Root_Detailed) = None
@@ -365,12 +369,13 @@ or those made with the indicated actual parameters.
 Optionally, control is restricted to instantiations appearing at indicated locations
 
 Parameter(1): {<location>} <Generic name>
-Parameter(2..): <Entity name> | <category> | <> | = (optional)
+Parameter(2..): <Entity name> | <category> | = (optional)
 <location>: [not] all       | block   | library | local      |
                   own       | private | public  | in_generic |
                   task_body
-<category>: ()      | access    | array | delta  | digits | mod |
-            private | protected | range | record | tagged | task
+<category>: <>     | ()      | range  | mod       | delta  |
+            digits | array   | record | tagged    | access |
+            new    | private | task   | protected
 ----
 Rule: INSUFFICIENT_PARAMETERS
 Control calls where absence of named notation can lead to confusion
@@ -501,9 +506,9 @@ Parameter(1): [root] [others] {<location>} [<type_spec>]
 Parameter(2..): [case_sensitive|case_insensitive] [not] "<name pattern>"
 <location> : global | local | unit
 <type_spec>: <entity> | {<category>}
-<category> : ()    | range     | mod    | delta  | digits  |
-             array | record    | tagged | access | private |
-             task  | protected
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 
 Variables:
 Naming_Convention.Default_Case_Sensitivity: (Off, On) = Off
@@ -531,9 +536,9 @@ Parameter(2..): <Entity name>
 Rule: NO_OPERATOR_USAGE
 Control integer types where no arithmetic operators are used
 
-Parameter(1): [<target>] [<filter>] <observed> (optional)
+Parameter(1): [<category>] [<filter>] <observed> (optional)
 Parameter(2..): [<filter>] <observed>
-<target>:  range | mod
+<category>: range | mod
 <filter>:  not | ignore | report
 <observed>:  relational | logical | indexing
 ----
@@ -612,8 +617,9 @@ Parameter(1): component
 
 For component:
 Parameter(2): <entity>|<category>
-<category>  : ()      | access    | array | delta  | digits | mod |
-              private | protected | range | record | tagged | task
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
 Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)
 ----
 Rule: REDUCEABLE_SCOPE
@@ -629,22 +635,22 @@ Parameter(s): {<restriction>} all        | variable | constant |
 Rule: REPRESENTATION_CLAUSES
 Control occurrences of representation clauses
 
-Parameter(s): [<categories>] [global] [object] <specifiable attribute> |
-                             at                                        |
-                             at_mod                                    |
-                             enumeration                               |
-                             fractional_size                           |
-                             incomplete_layout                         |
-                             layout                                    |
-                             non_aligned_component                     |
-                             non_contiguous_layout                     |
-                             non_power2_size                           |
-                             no_bit_order_layout                       |
-                             overlay
-                             (optional)
-Categories: <>     | ()    | range   | mod    | delta     |
-            digits | array | record  | tagged | extension |
-            access | new   | private | task   | protected
+Parameter(s): [<category>] [global] [object] <specifiable attribute> |
+                           at                                        |
+                           at_mod                                    |
+                           enumeration                               |
+                           fractional_size                           |
+                           incomplete_layout                         |
+                           layout                                    |
+                           non_aligned_component                     |
+                           non_contiguous_layout                     |
+                           non_power2_size                           |
+                           no_bit_order_layout                       |
+                           overlay
+                           (optional)
+<category>: ()    | range   | mod    | delta     | digits |
+            array | record  | tagged | extension | access |
+            new   | private | task   | protected
 ----
 Rule: RETURN_TYPE
 Control various forms of the type returned by functions
@@ -793,10 +799,22 @@ Rule: TYPE_USAGE
 Controls usage of types at various places
 
 Parameter(1): <attribute> | index
+
+For <attribute>:
+Parameter(2): <category>
+Parameter(3..): [not]  representation | pack | size |
+                       component_size
+                       (optional)
+<category>: ()    | range     | mod    | delta  | digits  |
+            array | record    | tagged | access | private |
+            task  | protected
+
+For index:
 Parameter(2): <entity>|<category>
 Parameter(3..): [not]  representation | pack | size |
                        component_size
                        (optional)
+<category>: () | range | mod
 ----
 Rule: UNCHECKABLE
 Control occurrences of uncheckable constructs in other rules

@@ -39,6 +39,20 @@ procedure T_instantiations is
 
    function To_Mod is new Ada.Unchecked_Conversion (Integer, Float); -- T7, local_instantiation
 
+   package Pack is
+      type Priv is private;
+      type Extend is new Tagged_T with private;
+   private
+      type Priv is new Integer;
+      type Extend is new Tagged_T with null record;
+   end Pack;
+
+   function Cheater1 is new Ada.Unchecked_Conversion (Pack.Priv,   Integer);  -- T9, local_instantiation
+   function Cheater2 is new Ada.Unchecked_Conversion (Pack.Extend, Tagged_T); -- T9, local_instantiation
+
+   type Derived is new Duration;
+   function Duration_To_Integer is new Ada.Unchecked_Conversion (Derived, Integer);  -- T10
+
    generic
       type T1 is private;
       type T2 is private;

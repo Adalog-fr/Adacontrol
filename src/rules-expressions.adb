@@ -45,6 +45,7 @@ with
   Framework.Language.Shared_Keys,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys,
@@ -108,7 +109,7 @@ package body Rules.Expressions is
 
    package Categories_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Usage);
 
-   Expected_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Extension => False, others => True);
+   Expected_Categories : constant Categories_Utilities.Modifier_Set := Basic_Set + Cat_Any + Cat_Private;
 
    -- Rule variables
    Called_Info : aliased Extra_Infos_Type.Object := (Value => None);
@@ -119,7 +120,7 @@ package body Rules.Expressions is
    ----------
 
    procedure Help is
-      use Utilities, Framework.Language.Shared_Keys.Categories_Utilities;
+      use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of Ada expressions");
@@ -131,7 +132,7 @@ package body Rules.Expressions is
       User_Message;
       User_Message ("For all *_function_call and prefixed_operator subrules:");
       User_Message ("    [<result_category>] <subrule>");
-      Help_On_Modifiers (Header => "Categories:", Expected => Expected_Categories);
+      Help_On_Categories (Expected => Expected_Categories);
       User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Called_Info");
@@ -153,12 +154,6 @@ package body Rules.Expressions is
          declare
             Cat_List : constant Modifier_List := Get_Modifier_List (Expected_Categories);
          begin
-            for C in Cat_List'Range loop
-               if Cat_List (C) = Cat_New then
-                  Parameter_Error (Rule_Id, "Category ""new"" not allowed here");
-               end if;
-            end loop;
-
             Subrule := Get_Flag_Parameter (Allow_Any => False);
 
             case Subrule is
@@ -169,14 +164,18 @@ package body Rules.Expressions is
                   | E_Prefixed_Operator
                   | E_Redispatching_Function_Call
                   =>
-                  if Cat_List'Length > 1 then
-                     Parameter_Error (Rule_Id, "At most one category allowed");
+                  if Cat_List'Length = 1 then
+                     if not Expected_Categories (Cat_List (1)) then
+                        Parameter_Error (Rule_Id, "Category not allowed: " & Image (Cat_List (1)));
+                     end if;
+                  elsif Cat_List'Length > 1 then
+                     Parameter_Error (Rule_Id, "At most one category allowed for subrule " & Image (Subrule));
                   end if;
                   Associate (Usage,
                              Value (Image (Subrule)),
                              Categories_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
-                                                 Nb_Categories => Cat_List'Length,
-                                                 Cats          => Cat_List),
+                               Nb_Categories => Cat_List'Length,
+                               Cats          => Cat_List),
                              Additive => True);
 
                when E_Type_Conversion
@@ -187,6 +186,11 @@ package body Rules.Expressions is
                     =>
                   case Cat_List'Length is
                      when 0 | 2 =>
+                        for C in Cat_List'Range loop
+                           if not Expected_Categories (Cat_List (C)) then
+                              Parameter_Error (Rule_Id, "Category not allowed: " & Image (Cat_List (C)));
+                           end if;
+                        end loop;
                         Associate (Usage,
                                    Value (Image (Subrule)),
                                    Categories_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
@@ -201,7 +205,7 @@ package body Rules.Expressions is
                                                        Cats          => Cat_Any & Cat_List),
                                    Additive => True);
                      when others =>
-                        Parameter_Error (Rule_Id, "At most two categories allowed");
+                        Parameter_Error (Rule_Id, "At most two categories allowed for subrule " & Image (Subrule));
                   end case;
                when others =>
                   if Rule_Used (Subrule) then
@@ -209,7 +213,7 @@ package body Rules.Expressions is
                   end if;
 
                   if Cat_List /= Empty_List then
-                     Parameter_Error (Rule_Id, "No categories allowed for this subrule");
+                     Parameter_Error (Rule_Id, "No categories allowed for subrule " & Image (Subrule));
                   end if;
                   Associate (Usage, Value (Image (Subrule)), Basic.New_Context (Ctl_Kind, Ctl_Label));
             end case;
@@ -290,7 +294,12 @@ package body Rules.Expressions is
             All_Matches : Boolean := True;
          begin
             for E in Cont.Cats'Range loop
-               if not Matches (Expr_List (E), Cont.Cats (E), Follow_Derived => True) then
+               if not Matches (Expr_List (E),
+                               Cont.Cats (E),
+                               Follow_Derived     => True,
+                               Privacy            => Thick_Queries.Stop_At_Private,
+                               Separate_Extension => False)
+               then
                   All_Matches := False;
                   exit;
                end if;

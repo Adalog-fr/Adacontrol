@@ -43,9 +43,10 @@ with
   Framework.Rules_Manager,
   Framework.Reports;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Derivations is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    -- Algorithm
    --
@@ -73,6 +74,8 @@ package body Rules.Derivations is
    Rule_Used : Subrules_Set := No_Rule;
    Save_Used : Subrules_Set;
 
+   From_Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
+
    ----------
    -- Help --
    ----------
@@ -86,8 +89,7 @@ package body Rules.Derivations is
       User_Message ("Parameter(1): From | Max_Parents");
       User_Message ("for From subrule:");
       User_Message ("Parameter(2..): <Entity name> | <category>");
-      User_Message ("<category>: ()      | access   | array | delta  | digits | mod |");
-      User_Message ("            private |protected | range | record | tagged | task");
+      Help_On_Categories (Expected => From_Expected_Categories);
       User_Message ("for Max_Parents subrule:");
       User_Message ("Parameter(2)  : <value>");
    end Help;
@@ -115,6 +117,7 @@ package body Rules.Derivations is
                declare
                   Entity : constant Entity_Specification := Get_Entity_Parameter (Allow_Extended => Parens_OK);
                begin
+                  Check_Category (Rule_Id, Entity, From_Expected_Categories);
                   Associate (Searched_Parents,
                              Entity,
                              Value_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label)
@@ -288,14 +291,15 @@ package body Rules.Derivations is
    -------------------------
 
    procedure Check_From_Category (Type_Name : Asis.Name; Loc : Location) is
-      use Language.Shared_Keys, Language.Shared_Keys.Categories_Utilities, Reports, Thick_Queries;
+      use Language.Shared_Keys.Categories_Utilities, Reports, Thick_Queries;
 
       Context : constant Root_Context'Class
         := Control_Manager.Association (Searched_Parents,
                                         Image (Matching_Category (Type_Name,
-                                                                  From_Cats      => Full_Set,
-                                                                  Follow_Derived => True,
-                                                                  Privacy        => Follow_Private)));
+                                                                  From_Cats          => Full_Set,
+                                                                  Follow_Derived     => True,
+                                                                  Privacy            => Stop_At_Private,
+                                                                  Separate_Extension => False)));
    begin
       if Context /= No_Matching_Context then
          Report (Rule_Id,

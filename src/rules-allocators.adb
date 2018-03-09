@@ -38,9 +38,10 @@ with
 
 -- AdaControl
 with
-  Framework.Language.Shared_Keys;
+   Framework.Language.Shared_Keys;
+pragma Elaborate (Framework.Language.Shared_Keys);
 package body Rules.Allocators is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -56,6 +57,8 @@ package body Rules.Allocators is
          Contexts      : Context_Set;
       end record;
 
+   Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
+
    ----------
    -- Help --
    ----------
@@ -70,8 +73,7 @@ package body Rules.Allocators is
       User_Message ("subtype is inconsistent with the access type declaration");
       User_Message;
       User_Message ("Parameter(s): [anonymous | inconsisent | not] [<category>|<entity>]");
-      User_Message ("<category>  : ()  | access    | array | delta  | digits |");
-      User_Message ("              mod | protected | range | record | tagged | task");
+      Help_On_Categories (Expected => Expected_Categories);
    end Help;
 
    -----------------
@@ -103,6 +105,7 @@ package body Rules.Allocators is
             Entity      := Get_Entity_Parameter (Allow_Extended => Parens_OK, Ghost => "ALL");
             No_Positive := False;
          end if;
+         Check_Category (Rule_Id, Entity, Expected_Categories);
 
          declare
             Context       : Root_Context'Class := Association (Entities, Entity);
@@ -178,7 +181,7 @@ package body Rules.Allocators is
    -----------------------
 
    procedure Process_Allocator (Allocator : in Asis.Expression) is
-      use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
+      use Utilities, Thick_Queries;
       use Asis, Asis.Expressions, Asis.Elements;
 
       Found             : Boolean := False;
@@ -378,9 +381,10 @@ package body Rules.Allocators is
       -- Entity not found, check category
       if not Found and Expression_Kind (E) /= An_Attribute_Reference then
          Check (Control_Manager.Association (Entities, Image (Matching_Category (E,
-                                                                                 From_Cats      => Full_Set,
-                                                                                 Follow_Derived => True,
-                                                                                 Privacy        => Follow_Private))));
+                                                                                 From_Cats          => Full_Set,
+                                                                                 Follow_Derived     => True,
+                                                                                 Privacy            => Follow_Private,
+                                                                                 Separate_Extension => False))));
       end if;
 
       -- Category not found, check all

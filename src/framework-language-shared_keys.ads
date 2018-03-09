@@ -36,6 +36,11 @@ pragma Elaborate (Framework.Language);
 -- here, as for any unit that instantiates a generic from Framework.Language
 package Framework.Language.Shared_Keys is
 
+   -- WARNING !!
+   -- If you call one of the operations provided here (and especially "+") immediately inside
+   -- a library package, you must put a "pragma Elaborate (Framework.Language.Shared_Keys);",
+   -- or circularity will result.
+
    -----------------------------------------------------------------------------------
    -- Scope_Places
    -----------------------------------------------------------------------------------
@@ -95,16 +100,12 @@ package Framework.Language.Shared_Keys is
                        Cat_Enum,  Cat_Range,   Cat_Mod,    Cat_Delta,     Cat_Digits,
                        Cat_Array, Cat_Record,  Cat_Tagged, Cat_Extension, Cat_Access,
                        Cat_New,   Cat_Private, Cat_Task,   Cat_Protected);
+   subtype Discrete_Categories is Categories range Cat_Enum  .. Cat_Mod;
+   subtype Integer_Categories  is Categories range Cat_Range .. Cat_Mod;
    package Categories_Utilities is new Modifier_Utilities (Categories,
                                                            Prefix   => "CAT_",
                                                            Box_Pos  => 0,
                                                            Pars_Pos => 1);
-   subtype Categories_Set is Categories_Utilities.Modifier_Set;
-
-   subtype Discrete_Categories is Categories range Cat_Enum  .. Cat_Mod;
-   subtype Integer_Categories  is Categories range Cat_Range .. Cat_Mod;
-   Discrete_Set : constant Categories_Set := (Discrete_Categories => True, others => False);
-   Integer_Set  : constant Categories_Set := (Integer_Categories  => True, others => False);
 
    function Value (Spec : Wide_String)          return Categories;
    function Value (Spec : Entity_Specification) return Categories;
@@ -112,11 +113,22 @@ package Framework.Language.Shared_Keys is
    -- return that category.
    -- Return Cat_Any otherwise.
 
+   subtype Categories_Set is Categories_Utilities.Modifier_Set;
+   Discrete_Set : constant Categories_Set := (Discrete_Categories => True, others => False);
+   Integer_Set  : constant Categories_Set := (Integer_Categories  => True, others => False);
+   Basic_Set    : constant Categories_Set := (Cat_Any | Cat_Extension | Cat_New | Cat_Private => False, others => True);
+
+   function "+" (Left : Categories_Set; Right : Categories) return Categories_Set;
+   procedure Help_On_Categories (Header      : Wide_String    := "<category>:";
+                                 Expected    : Categories_Set := Categories_Utilities.Full_Set);
+   procedure Check_Category (Rule_Id : Wide_String; Spec : Entity_Specification; Expected : Categories_Set);
+   -- Raises Parameter_Error if Spec is a category and not in Expected
+
    function Matches (Elem               : in Asis.Element;
                      Cat                : in Categories;
-                     Follow_Derived     : in Boolean := False;
-                     Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
-                     Separate_Extension : in Boolean := False)
+                     Follow_Derived     : in Boolean;
+                     Privacy            : in Thick_Queries.Privacy_Policy;
+                     Separate_Extension : in Boolean)
                      return Boolean;
    -- See Thick_Queries.Type_Category for details of parameters Follow_Derived, Privacy, and Separate_Extension
    --
@@ -140,9 +152,9 @@ package Framework.Language.Shared_Keys is
 
    function Matching_Category (Elem               : in Asis.Element;
                                From_Cats          : in Categories_Utilities.Unconstrained_Modifier_Set;
-                               Follow_Derived     : in Boolean := False;
-                               Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
-                               Separate_Extension : in Boolean := False)
+                               Follow_Derived     : in Boolean;
+                               Privacy            : in Thick_Queries.Privacy_Policy;
+                               Separate_Extension : in Boolean)
                                return Categories;
    -- Appropriate Element_Kinds for Elem:
    -- Same as Matches above

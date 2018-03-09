@@ -46,9 +46,10 @@ with
   Framework.Language.Shared_Keys,
   Framework.Queries;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Record_Declarations is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    Storage_Unit : Thick_Queries.Biggest_Int;
 
@@ -74,6 +75,7 @@ package body Rules.Record_Declarations is
    Compo_Contexts : Context_Store;
    package Compo_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Compo_Contexts);
 
+   Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
 
    ----------
    -- Help --
@@ -89,8 +91,7 @@ package body Rules.Record_Declarations is
       User_Message;
       User_Message ("For component:");
       User_Message ("Parameter(2): <entity>|<category>");
-      User_Message ("<category>  : ()      | access    | array | delta  | digits | mod |");
-      User_Message ("              private | protected | range | record | tagged | task");
+      Help_On_Categories (Expected => Expected_Categories);
       User_Message ("Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)");
    end Help;
 
@@ -124,6 +125,8 @@ package body Rules.Record_Declarations is
                Aligned     : Repr_Condition := None;
                Temp        : Repr_Condition;
             begin
+               Check_Category (Rule_Id, Entity, Expected_Categories);
+
                while Parameter_Exists loop
                   if Get_Modifier ("NOT") then
                      Temp := Absent;
@@ -220,7 +223,7 @@ package body Rules.Record_Declarations is
 
       procedure Process_Component (Compo : Asis.Expression; In_Variant : Boolean) is
          use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
-         use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
+         use Thick_Queries, Utilities;
 
          Compo_Type : Asis.Declaration;
          First_St   : Asis.Declaration;

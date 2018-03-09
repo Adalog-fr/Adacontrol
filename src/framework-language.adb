@@ -1255,6 +1255,7 @@ package body Framework.Language is
             end if;
 
             Syntax_Error ("Entity specification expected", Current_Token.Position);
+
          when others =>
             Syntax_Error ("Entity specification expected", Current_Token.Position);
       end case;

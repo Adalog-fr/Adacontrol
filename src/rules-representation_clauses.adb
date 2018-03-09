@@ -50,9 +50,10 @@ with
   Framework.Queries,
   Framework.String_Set;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Representation_Clauses is
-   use Framework, Utilities;
+   use Framework, Framework.Language.Shared_Keys, Utilities;
 
    Storage_Unit : Thick_Queries.Biggest_Int;
 
@@ -82,6 +83,8 @@ package body Rules.Representation_Clauses is
    Key       : array (Subrules range Subrules'Succ (Sr_Attribute) .. Subrules'Last) of Entity_Specification;
    Key_All   : constant Entity_Specification := Value ("all");
 
+   Expected_Categories : constant Categories_Set := Basic_Set + Cat_New + Cat_Private + Cat_Extension;
+
    ----------------
    -- Proper_Key --
    ----------------
@@ -107,17 +110,15 @@ package body Rules.Representation_Clauses is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control occurrences of representation clauses");
       User_Message;
-      Help_On_Flags (Header      => "Parameter(s): [<categories>]",
+      Help_On_Flags (Header      => "Parameter(s): [<category>]",
                      Footer      => "(optional)",
                      Extra_Value => "[global] [object] <specifiable attribute>");
-      Help_On_Modifiers (Header => "Categories:");
+      Help_On_Categories (Expected => Expected_Categories);
    end Help;
 
    -----------------
    -- Add_Control --
    -----------------
-
-   Expected_Categories : constant Modifier_Set := (Framework.Language.Shared_Keys.Cat_Any => False, others => True);
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Control_Manager, Framework.Language;
@@ -129,7 +130,14 @@ package body Rules.Representation_Clauses is
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            Cats := Get_Modifier_Set (Expected => Expected_Categories);
+            Cats := Get_Modifier_Set;
+            -- The error message is more accurate if we allow any category to Get_Modifier_Set
+            -- and then check explicitely
+            for C in Categories loop
+               if Cats (C) and not Expected_Categories (C) then
+                  Parameter_Error (Rule_Id, "Category not allowed: " & Image (C));
+               end if;
+            end loop;
 
             Subrule := Get_Flag_Parameter (Allow_Any => True);
             if Subrule = Sr_Attribute then
@@ -214,7 +222,7 @@ package body Rules.Representation_Clauses is
                            Message  : Wide_String;
                            Loc      : Location := Get_Location (Rep_Clause))
       is
-         use Framework.Control_Manager, Framework.Language.Shared_Keys;
+         use Framework.Control_Manager;
          Key_Map   : Entity_Specification;
          Iter      : Context_Iterator := Repr_Context_Init.Create;
          Cont      : Repr_Context;
@@ -272,7 +280,11 @@ package body Rules.Representation_Clauses is
                                               & Choose (Is_Object and Cont.Obj_Only,    "object ", "")
                                               & Message);
                else
-                  Cat := Matching_Category (Clause_Name_Declaration, Cont.Cats, Separate_Extension => True);
+                  Cat := Matching_Category (Clause_Name_Declaration,
+                                            Cont.Cats,
+                                            Follow_Derived     => False,
+                                            Privacy            => Stop_At_Private,
+                                            Separate_Extension => True);
                   if Cat /= Cat_Any then
                      Report (Rule_Id, Cont, Loc,   Choose (Is_Global and Cont.Global_Only, "global ", "")
                                                  & Choose (Is_Object and Cont.Obj_Only,    "object ", "")

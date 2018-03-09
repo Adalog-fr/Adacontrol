@@ -6,6 +6,10 @@ General:
 --------
 Misc. improvements to GPS integration
 
+Categories:
+-----------
+Unify handling of categories, factorize descriptions in User's Guide.
+
 Changes to existing rules:
 --------------------------
 case_statement:

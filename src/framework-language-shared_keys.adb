@@ -308,6 +308,50 @@ package body Framework.Language.Shared_Keys is
          return Cat_Any;
    end Value;
 
+   ---------
+   -- "+" --
+   ---------
+
+   function "+" (Left : Categories_Set; Right : Categories) return Categories_Set is
+      Result : Categories_Set := Left;
+   begin
+      Result (Right) := True;
+      return Result;
+   end "+";
+
+
+   ------------------------
+   -- Help_On_Categories --
+   ------------------------
+
+   procedure Help_On_Categories (Header   : Wide_String    := "<category>:";
+                                 Expected : Categories_Set := Categories_Utilities.Full_Set)
+   is
+   begin
+      Categories_Utilities.Help_On_Modifiers (Header, Expected => Expected);
+   end Help_On_Categories;
+
+
+   --------------------
+   -- Check_Category --
+   --------------------
+
+   procedure Check_Category (Rule_Id : Wide_String; Spec : Entity_Specification; Expected : Categories_Set) is
+      use Categories_Utilities;
+      Cat : constant Categories := Value (Spec);
+   begin
+      if Cat = Cat_Any then
+         -- either Spec is not a category, or it is really Cat_Any, but then it has to be expected since this one
+         -- is caught by the parser otherwise.
+         return;
+      end if;
+
+      if not Expected (Cat) then
+         Parameter_Error (Rule_Id, "Category not allowed: " & Image (Cat));
+      end if;
+   end Check_Category;
+
+
    -------------
    -- Matches --
    -------------
@@ -332,9 +376,9 @@ package body Framework.Language.Shared_Keys is
 
    function Matches (Elem               : in Asis.Element;
                      Cat                : in Categories;
-                     Follow_Derived     : in Boolean := False;
-                     Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
-                     Separate_Extension : in Boolean := False)
+                     Follow_Derived     : in Boolean;
+                     Privacy            : in Thick_Queries.Privacy_Policy;
+                     Separate_Extension : in Boolean)
                      return Boolean
    is
       use Thick_Queries;
@@ -352,9 +396,9 @@ package body Framework.Language.Shared_Keys is
 
    function Matching_Category (Elem               : in Asis.Element;
                                From_Cats          : in Categories_Utilities.Unconstrained_Modifier_Set;
-                               Follow_Derived     : in Boolean := False;
-                               Privacy            : in Thick_Queries.Privacy_Policy := Thick_Queries.Stop_At_Private;
-                               Separate_Extension : in Boolean := False)
+                               Follow_Derived     : in Boolean;
+                               Privacy            : in Thick_Queries.Privacy_Policy;
+                               Separate_Extension : in Boolean)
                                return Categories
    is
       use Thick_Queries;

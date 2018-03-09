@@ -26,10 +26,13 @@ procedure From is
       type F1 is new Integer;             -- From: Standard.Integer, category RANGE
       type F2 is new T2;                  -- From: Standard.Integer, category RANGE
       type F3 is new T5 with private;     -- From: T4, T3, category TAGGED
+      type F4 is private;
    procedure P;
+
    procedure P is
       type DF1 is new F1;                 -- From: Standard.Integer, category RANGE
       type DF2 is new F2;                 -- From: Standard.Integer, category RANGE
+      type DF4 is new F4;                 -- From: category PRIVATE
    begin null; end P;
 
    package Pack is
@@ -42,9 +45,9 @@ procedure From is
       type Priv3 is new T3 with null record;     -- From: T3, category TAGGED
    end Pack;
 
-   type T11 is new Pack.Priv1;                   -- From: T3
+   type T11 is new Pack.Priv1;                   -- From: category PRIVATE
    type T12 is new Pack.Priv2 with null record;  -- From: category TAGGED
-   type T13 is new Pack.Priv3 with null record;  -- From: Category TAGGED
+   type T13 is new Pack.Priv3 with null record;  -- From: Category PRIVATE
 
    -- Check subtypes
    subtype S1 is Integer range 1 .. 10;
@@ -62,8 +65,8 @@ procedure From is
 
    type MI1 is new T5  and I1  with null record;  -- From: T4, T3, I1, category TAGGED;     Max_Parents: more than 1
    type MI2 is new MI1 and I2  with null record;  -- From: T4, T3, I1, I2, category TAGGED; Max_Parents: more than 1
-   type MI3 is new MI1         with null record;  -- From: T4, T3, I1
-   type MI4 is new MI2 and II2 with null record;  -- From: T4, T3, I1, I2, category TAGGED; Max_Parents: more than 1
+   type MI3 is new MI1         with null record;  -- From: T4, T3, I1, category TAGGED
+   type MI4 is new MI2 and II2 with null record;  -- From: T4, T3, I1x2, I2x2, category TAGGED; Max_Parents: more than 1
 
    -- Check tasks and POs
    task type Task1 is

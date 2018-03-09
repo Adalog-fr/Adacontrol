@@ -45,9 +45,10 @@ with
   Framework.Language.Shared_Keys,
   Framework.Queries;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Array_Declarations is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    type Subrules is (First, Last, Length, Dimensions, Index, Component);
    subtype Dim_Subrules is Subrules range First .. Dimensions;
@@ -77,6 +78,8 @@ package body Rules.Array_Declarations is
    Compo_Contexts : Context_Store;
    package Compo_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Compo_Contexts);
 
+   Component_Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
+   Index_Expected_Categories     : constant Categories_Set := Discrete_Set;
 
    ----------------
    -- List_Image --
@@ -97,7 +100,7 @@ package body Rules.Array_Declarations is
    ----------
 
    procedure Help is
-      use Framework.Language.Shared_Keys, Utilities;
+      use Utilities;
    begin
       User_Message ("Rule: "& Rule_Id);
       User_Message ("Controls various parameters related to array types or objects declarations");
@@ -108,19 +111,18 @@ package body Rules.Array_Declarations is
       User_Message ("For First, Last, Length, Dimensions:");
       User_Message ("Parameter(2..3): <bound> <value>");
       User_Message ("                (at least one parameter required)");
+      Help_On_Bounds (Header => "<bound>:");
       User_Message ("For first, last, and dimensions, alternatively:");
       User_Message ("Parameter(2): <value>");
       User_Message;
       User_Message ("For index:");
-      User_Message ("Parameter(2..)  : <entity>|<category>");
+      User_Message ("Parameter(2..) : <entity>|<category>");
+      Help_On_Categories (Expected => Index_Expected_Categories);
       User_Message;
       User_Message ("For component:");
       User_Message ("Parameter(2)  : <entity>|<category>");
       User_Message ("Parameter(3..): [not] pack | size | component_size (optional)");
-      User_Message;
-      Help_On_Bounds (Header => "   <bound>:");
-      User_Message ("<category>: ()      | access    | array | delta  | digits | mod |");
-      User_Message ("            private | protected | range | record | tagged | task");
+      Help_On_Categories (Expected => Component_Expected_Categories);
    end Help;
 
    -----------------
@@ -128,7 +130,7 @@ package body Rules.Array_Declarations is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Framework.Language.Shared_Keys, Subrules_Flag_Utilities, Thick_Queries, Utilities;
+      use Framework.Language, Subrules_Flag_Utilities, Thick_Queries, Utilities;
       use Ada.Strings.Wide_Unbounded;
       Subrule : Subrules;
 
@@ -188,6 +190,9 @@ package body Rules.Array_Declarations is
             declare
                Index_List : constant Entity_Specification_List := Build_Index_List;
             begin
+               for I in Index_List'Range loop
+                  Check_Category (Rule_Id, Index_List (I), Index_Expected_Categories);
+               end loop;
                Associate (Index_Contexts,
                           Value (Integer_Img (Index_List'Length)),
                           Index_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with
@@ -207,6 +212,7 @@ package body Rules.Array_Declarations is
                                                                             Expected => (Representation => Absent,
                                                                                          others         => Present));
             begin
+               Check_Category (Rule_Id, Entity, Component_Expected_Categories);
                Associate (Compo_Contexts,
                           Entity,
                           Compo_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with The_Aspects),
@@ -399,7 +405,6 @@ package body Rules.Array_Declarations is
          Bound_Msg : constant array (Subrules range First .. Last) of Wide_String (1 .. 5)
            := ("lower", "upper");
 
-         use Framework.Language.Shared_Keys;
       begin  -- Process_First_Last
          for B in Bounds'Range loop
             if Sr_Used (Sr) then
@@ -497,7 +502,7 @@ package body Rules.Array_Declarations is
 
       procedure Process_Index is
          use Asis.Declarations, Asis.Elements;
-         use Framework.Language.Shared_Keys, Framework.Queries, Framework.Reports;
+         use Framework.Queries, Framework.Reports;
          use Thick_Queries, Utilities;
 
          Index_Subtypes : Asis.Element_List := Index_Subtypes_Names (Definition);
@@ -526,7 +531,9 @@ package body Rules.Array_Declarations is
                         if Cat = Cat_Any
                           or else not Matches (Enclosing_Element (Index_Subtypes (E)),
                                                Cat,
-                                               Follow_Derived => True)
+                                               Follow_Derived     => True,
+                                               Privacy            => Stop_At_Private,
+                                               Separate_Extension => False)
                         then
                            -- No category match
                            All_Dims_Match := False;
@@ -556,7 +563,7 @@ package body Rules.Array_Declarations is
 
       procedure Process_Component is
          use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-         use Framework.Language.Shared_Keys, Thick_Queries, Utilities;
+         use Thick_Queries, Utilities;
          Array_Comp : constant Asis.Expression := Component_Definition_View
                                                    (Array_Component_Definition (Definition));
          First_St   : Asis.Declaration;

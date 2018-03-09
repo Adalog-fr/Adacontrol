@@ -90,6 +90,7 @@ package body Rules.No_Operator_Usage is
       end record;
    package Type_Usage is new Framework.Symbol_Table.Data_Access (Type_Info);
 
+   Expected_Categories : constant Categories_Set := Integer_Set;
 
    ----------
    -- Help --
@@ -101,9 +102,9 @@ package body Rules.No_Operator_Usage is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control integer types where no arithmetic operators are used");
       User_Message;
-      User_Message ("Parameter(1): [<target>] [<filter>] <observed> (optional)");
+      User_Message ("Parameter(1): [<category>] [<filter>] <observed> (optional)");
       User_Message ("Parameter(2..): [<filter>] <observed>");
-      Categories_Utilities.       Help_On_Modifiers ("<target>: ", Expected => Integer_Set);
+      Help_On_Categories (Expected => Expected_Categories);
       Filters_Modifiers_Utilities.Help_On_Modifiers ("<filter>: ", Extra_Value => "");
       Help_On_Flags ("<observed>: ");
    end Help;
@@ -121,7 +122,11 @@ package body Rules.No_Operator_Usage is
       Given   : array (Observed) of Boolean := (others => False);
    begin
       if Parameter_Exists then
-         Cat := Get_Modifier (Required => False, Expected => Integer_Set);  -- Returns Cat_Any by default
+         -- The error message is more accurate if we allow any category to Get_Modifier and then check explicitely
+         Cat := Get_Modifier (Required => False);  -- Returns Cat_Any by default
+         if Cat /= Cat_Any and then Cat not in Integer_Categories then
+            Parameter_Error (Rule_Id, "Only ""mod"" and ""range"" allowed as categories");
+         end if;
          while Parameter_Exists loop
             Filter  := Get_Modifier (Required => False);
             Subrule := Get_Flag_Parameter (Allow_Any => False);

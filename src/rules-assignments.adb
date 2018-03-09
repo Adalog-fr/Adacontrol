@@ -49,10 +49,11 @@ with
   Framework.Language,
   Framework.Language.Shared_Keys;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Assignments is
    use Ada.Strings.Wide_Unbounded;
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    -- Algorithm:
    --
@@ -168,6 +169,7 @@ package body Rules.Assignments is
       end record;
    package LHS_Map is new Binary_Map (Unbounded_Wide_String, LHS_Descriptor);
 
+   Duplication_Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
 
    ----------
    -- Help --
@@ -185,9 +187,8 @@ package body Rules.Assignments is
       Help_On_Flags ("Parameter(1): [[not] controlled] ");
       User_Message;
       User_Message ("For access_duplication:");
-      User_Message ("Parameter(2..): [not] <Entity name> | <category>");
-      User_Message ("<category>: ()      | access    | array     | delta | digits | function | mod |");
-      User_Message ("            private | procedure | protected | range | record | tagged   | task");
+      User_Message ("Parameter(2..): [not] <Entity name> | <category> | procedure | function");
+      Help_On_Categories (Expected => Duplication_Expected_Categories);
       User_Message;
       User_Message ("For groupable:");
       User_Message ("Parameter(2..): <criterion> <value>");
@@ -247,6 +248,7 @@ package body Rules.Assignments is
                      All_Exclude := False;
                   end if;
                   Entity := Get_Entity_Parameter (Allow_Extended => Parens_OK);
+                  Check_Category (Rule_Id, Entity, Duplication_Expected_Categories);
 
                   begin
                      if not Has_Controlled or else not Has_Not then
@@ -526,15 +528,14 @@ package body Rules.Assignments is
 
             -- search category
             declare
-               use Framework.Language.Shared_Keys,
-                   Framework.Language.Shared_Keys.Categories_Utilities;
-               Cont : constant Root_Context'Class := Control_Manager.Association
-                 (Entities (Is_In_Controlled),
-                  Image (Matching_Category
-                    (Target_Type,
-                       From_Cats      => Full_Set,
-                       Follow_Derived => True,
-                       Privacy        => Follow_Private)));
+               use Framework.Language.Shared_Keys.Categories_Utilities;
+               Cont : constant Root_Context'Class
+                 := Control_Manager.Association (Entities (Is_In_Controlled),
+                                                 Image (Matching_Category (Target_Type,
+                                                                           From_Cats          => Full_Set,
+                                                                           Follow_Derived     => True,
+                                                                           Privacy            => Follow_Private,
+                                                                           Separate_Extension => False)));
             begin
                if Cont /= No_Matching_Context then
                   if Duplication_Context (Cont).Filter = Include then

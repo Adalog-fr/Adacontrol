@@ -48,9 +48,10 @@ with
   Framework.Rules_Manager,
   Framework.Reports;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Type_Usage is
-   use Framework;
+   use Framework, Framework.Language.Shared_Keys;
 
    type Subrules is (Sr_Attribute, Sr_Index);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
@@ -69,20 +70,30 @@ package body Rules.Type_Usage is
    package Attribute_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Attribute_Contexts);
    package Index_Iterator     is new Framework.Control_Manager.Generic_Context_Iterator (Index_Contexts);
 
+   Attr_Expected_Categories  : constant Categories_Set := Basic_Set + Cat_Private;
+   Index_Expected_Categories : constant Categories_Set := Discrete_Set;
 
    ----------
    -- Help --
    ----------
 
    procedure Help is
-      use Framework.Language.Shared_Keys, Utilities;
+      use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Controls usage of types at various places");
       User_Message;
       Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):", Extra_Value => "<attribute>");
+      User_Message;
+      User_Message ("For <attribute>:");
+      User_Message ("Parameter(2): <category>");
+      Aspects_Utilities.Help_On_Flags (Header => "Parameter(3..): [not] ", Footer => "(optional)");
+      Help_On_Categories (Expected => Attr_Expected_Categories);
+      User_Message;
+      User_Message ("For index:");
       User_Message ("Parameter(2): <entity>|<category>");
-      Aspects_Utilities.Help_On_Flags (Header => "Parameter(3..): [not] ", Footer =>"(optional)");
+      Aspects_Utilities.Help_On_Flags (Header => "Parameter(3..): [not] ", Footer => "(optional)");
+      Help_On_Categories (Expected => Index_Expected_Categories);
    end Help;
 
    -----------------
@@ -92,7 +103,7 @@ package body Rules.Type_Usage is
    procedure Add_Control (Ctl_Label : in Wide_String;
                           Ctl_Kind  : in Control_Kinds)
    is
-      use Framework.Control_Manager, Framework.Language, Framework.Language.Shared_Keys, Subrules_Flag_Utilities;
+      use Framework.Control_Manager, Framework.Language, Subrules_Flag_Utilities;
       Subrule : Subrules;
       Param   : Entity_Specification;
    begin
@@ -115,9 +126,7 @@ package body Rules.Type_Usage is
                end if;
 
                Param := Get_Entity_Parameter (Allow_Extended => Parens_OK);
-               if Categories'(Value (Param)) = Cat_Any then
-                  Parameter_Error (Rule_Id, "incorrect type category");
-               end if;
+               Check_Category (Rule_Id, Param, Attr_Expected_Categories);
 
                Associate (Attribute_Contexts,
                           Value (Attr & '_' & Image (Param)),
@@ -136,6 +145,9 @@ package body Rules.Type_Usage is
             end if;
 
             Param := Get_Entity_Parameter (Allow_Extended => Parens_OK);
+            if Value (Param) /= Cat_Any then
+               Check_Category (Rule_Id, Param, Index_Expected_Categories);
+            end if;
 
             begin
                Associate (Index_Contexts,
@@ -179,7 +191,7 @@ package body Rules.Type_Usage is
                         Loc          : in Location)
    is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Control_Manager, Framework.Language.Shared_Keys, Framework.Reports;
+      use Framework.Control_Manager, Framework.Reports;
 
       Extra           : Unbounded_Wide_String;
       Current_Context : Usage_Context;
@@ -240,7 +252,7 @@ package body Rules.Type_Usage is
    ------------------------------
 
    procedure Process_Array_Definition (Definition : Asis.Definition) is
-      use Framework.Control_Manager, Framework.Language.Shared_Keys, Thick_Queries;
+      use Framework.Control_Manager, Thick_Queries;
       use Asis.Declarations, Asis.Elements;
 
       function Get_Index_Location (Inx : Asis.List_Index) return Location is
@@ -335,7 +347,7 @@ package body Rules.Type_Usage is
    -----------------------
 
    procedure Process_Attribute (Attribute : Asis.Expression) is
-      use Framework.Control_Manager, Framework.Language.Shared_Keys, Thick_Queries, Utilities;
+      use Framework.Control_Manager, Thick_Queries, Utilities;
       use Asis, Asis.Elements, Asis.Expressions;
    begin
       if not Rule_Used (Sr_Attribute) then

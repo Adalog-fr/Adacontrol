@@ -174,7 +174,7 @@ procedure Pfni is
       Put_Line ("   -f      full output (each occurrence of names)");
       Put_Line ("   -h      prints this help message");
       Put_Line ("   -o      output overloading information");
-      Put_Line ("   -p file specify an emacs ada-mode project file (.adp)");
+      Put_Line ("   -p file specify a project file (.gpr or .adp)");
       Put_Line ("   -q      don't repeat source line (quiet)");
       Put_Line ("   -s      process specifications only");
    end Print_Help;

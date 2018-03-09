@@ -56,6 +56,7 @@ with
   Framework.Reports.Fixes,
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Naming_Convention is
    use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types, Framework.Language.Shared_Keys;
@@ -235,13 +236,12 @@ package body Rules.Naming_Convention is
 
    Usage : array (Keys) of Boolean := (others => False);
 
-   Active_Categories : constant Categories_Utilities.Modifier_Set := (Cat_Any                 => False,
-                                                                      Cat_New | Cat_Extension => False,
-                                                                      others                  => True);
    No_More_Checks : exception;
 
    -- Rule variables
    Default_Case_Sensitivity : aliased Switch_Type.Object := (Value => Off);
+
+   Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
 
    -----------
    -- Clear --
@@ -269,7 +269,7 @@ package body Rules.Naming_Convention is
       User_Message  ("Parameter(2..): [case_sensitive|case_insensitive] [not] ""<name pattern>""");
       Visibility_Utilities.Help_On_Modifiers  (Header => "<location> :");
       User_Message  ("<type_spec>: <entity> | {<category>}");
-      Categories_Utilities.Help_On_Modifiers (Header => "<category> :", Expected => Active_Categories);
+      Help_On_Categories (Expected => Expected_Categories);
       User_Message;
       User_Message  ("Variables:");
       Help_On_Variable (Rule_Id & ".Default_Case_Sensitivity");
@@ -304,7 +304,7 @@ package body Rules.Naming_Convention is
          Scopes := Visibility_Utilities.Full_Set;
       end if;
 
-      Categories := Get_Modifier_Set (Expected => Active_Categories);
+      Categories := Get_Modifier_Set (Expected => Expected_Categories);
       if Categories = Categories_Utilities.Empty_Set then
          Key := Get_Flag_Parameter (Allow_Any => True);
          if Key = K_Not_A_Key then   -- Presumably an entity
@@ -315,6 +315,11 @@ package body Rules.Naming_Convention is
             Kind := None;
          end if;
       else
+         for C in Categories'Range loop
+            if Categories (C) and not Expected_Categories (C) then
+               Parameter_Error (Rule_Id, "Category not allowed: " & Image (C));
+            end if;
+         end loop;
          Kind := Category;
          Key  := Get_Flag_Parameter (Allow_Any => True);
       end if;

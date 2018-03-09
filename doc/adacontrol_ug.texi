@@ -40,6 +40,7 @@ how to add new kinds of rules to AdaControl.
 * Rules reference::
 * Examples of using AdaControl for common programming rules::
 * Specifying an Ada entity name::
+* Definition of type categories::
 * Syntax of regular expressions::
 * Non upward-compatible changes::
 @end menu
@@ -1769,7 +1770,7 @@ with AdaControl.
 * unrepr.sed::
 @end menu
 
-@node pfni, , Helpful utilities, Helpful utilities
+@node pfni, adactl_fix, Helpful utilities, Helpful utilities
 @subsection pfni
 The convention used to refer to entities (as described in
 @ref{Specifying an Ada entity name}) is very powerful, but it may be
@@ -2898,8 +2899,6 @@ This rule controls the use of allocators (i.e. dynamic memory allocation).
 @example
 <control_kind> allocators [(<target> @{, <target>@})];
 <target>   ::= [anonymous | inconsistent | not] [<category>|<entity>]
-<category> ::= ()  | access    | array | delta  | digits |
-               mod | protected | range | record | tagged | task
 @end example
 
 @subsection Action
@@ -2907,35 +2906,11 @@ If one or several <entity> or <category> are given, only allocators
 whose allocated type matches the <entity>, or whose type belongs to
 the indicated <category>, are controlled; otherwise all allocators are
 controlled. As usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}. The meaning of
-<category> is:
-@itemize @bullet
-@item
-``()'': The allocated value is of an enumerated type.
-@item
-``access'':  The allocated value is of an access type.
-@item
-``array'': The allocated value is of an array type.
-@item
-``delta'': The allocated value is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The allocated value is of a floating point type.
-@item
-``mod'': The allocated value is of a modular type.
-@item
-``protected'': The allocated value is of a protected type.
-@item
-``range'': The allocated value is of a signed integer type.
-@item
-``record'': The allocated value is of an (untagged) record type.
-@item
-``tagged'': The allocated value is of a tagged type (including type
-extensions).
-@item
-``task'': The allocated value is of a task type.
-@end itemize
+<entity>. @xref{Specifying an Ada entity name}. 
+
+This rule traverses derivations and privacy (i.e. it will control
+allocators whose ultimate type belongs to the indicated
+category). @xref{Definition of type categories}.
 
 This rule is especially useful for finding memory leaks, since it
 tells all the places where dynamic allocation occurs.
@@ -3008,10 +2983,6 @@ begin
 
 This allocator will be found for type @code{T}, not for type @code{T'Class}.
 
-For <categories>, note that the rule ``sees through'' derived and
-private types (i.e. it will trigger if the ultimate type belongs to
-the indicated category).
-
 The reason for the ``inconsistent'' modifier is that inconsistent
 allocators may cost a double check. Given:
 @example
@@ -3052,8 +3023,6 @@ component type of the array.
                                                @{,<type> | <>@});
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <type>      ::= <entity>|<category>
-<category > ::= () | access    | array | delta  | digits | mod | private
-                   | protected | range | record | tagged | task
 <repr_cond> ::= [not] pack | size | component_size
 @end example
 @subsection Action
@@ -3127,39 +3096,14 @@ example:
 <category>. If the <entity> is a subtype, only arrays whose components
 are of that subtype are controlled. If the indicated <entity> is a
 type, all arrays whose components are of that type (including
-subtypes) are controlled. The meaning of <category> is:
-@itemize @bullet
-@item
-``()'': The component is of an enumerated type.
-@item
-``access'':  The component is of an access type.
-@item
-``array'': The component is of an array type.
-@item
-``delta'': The component is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The component is of a floating point type.
-@item
-``mod'': The component is of a modular type.
-@item
-``private'': The component is of a private type (including private
-extensions).
-@item
-``protected'': The component is of a protected type.
-@item
-``range'': The component is of a signed integer type.
-@item
-``record'': The component is of an (untagged) record type.
-@item
-``tagged'': The component is of a tagged type (including type
-extensions).
-@item
-``task'': The component is of a task type.
-@end itemize
-If <repr_cond> are specified, the rule controls only arrays to which
-all the corresponding representation items apply:
+subtypes) are controlled. 
+
+This subrule traverses derivations, but not privacy (the category
+``private'' can be given, to check arrays whose components are of a
+private type). @xref{Definition of type categories}.
+
+If one or several <repr_cond> are specified, the rule controls only
+arrays to which all the corresponding representation items apply:
 @itemize @bullet
 @item
 ``pack'': A pragma Pack applies to the array.
@@ -3183,9 +3127,12 @@ applies to the array.
 the <entity> is a subtype, only arrays whose indexes are of that
 subtype are controlled. If the indicated <entity> is a type, all
 arrays whose indexes are of that type (including subtypes) are
-controlled. The meaning of <category> is the same as for
-``component'', but obviously only ``()'', ``range'', and ``mod'' are
-allowed.
+controlled. 
+
+This subrule traverses derivations, but obviously, only ``()'',
+``range'', and ``mod'' categories can be given since other categories
+(including ``private'') cannot be used as indexes. @xref{Definition of
+type categories}.
 
 The number of <entity> given determines the dimensionality of the
 controlled arrays.  If a ``<>'' is given in place of an entity, it
@@ -3283,93 +3230,64 @@ assignment.
                             @{, [not] <target>@});
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
-<target>   ::= <entity> | <category>
-<category> ::= ()       | access | array   | delta     | digits    |
-               function | mod    | private | procedure | protected |
-               range    | record | tagged  | task
-<filter>   ::= given <min_val> | missing <max_val> | ratio <min_val> |
-               total <max_val>
+<target> ::= <entity> | <category> | function | procedure
+<filter> ::= given <min_val> | missing <max_val> | ratio <min_val> |
+             total <max_val>
 @end example
 
 @subsection Action
-The first form (keyword ``sliding'') controls array assignments where
-the target variable has a different lower bound than the assigned
-expression; this is allowed by the language only in so-called
+The first subrule (``sliding'') controls array assignments
+where the target variable has a different lower bound than the
+assigned expression; this is allowed by the language only in so-called
 ``sliding'' contexts.
 
-The second form (keyword ``access_duplication'') controls assignments
+The second subrule (``access_duplication'') controls assignments
 where the content of an object of an access type is stored (directly,
 or as a subcomponent) into another object. The @code{@b{null}} value
 and allocators (@code{@b{new}}) are @i{not} controlled. In other
 words, this rule spots places where you start having more than one way
-to access a variable. If the modifier ``controlled'' is given, only
-access types that are subcomponents (directly or indirectly) of a
-controlled type are controlled, while if ``not controlled'' is given,
-only those that are @i{not} subcomponents of a controlled type are
-controlled. No modifier is equivalent to giving both ``controlled''
-and ``not controlled''. If one or several <target> without @code{not}
-are given, the control applies only to access types whose target type
-matches the given <entity>, or belongs to the given <category>. As
-usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}. The meaning of <category> is:
-@itemize @bullet
-@item
-``()'': The target is of an enumerated type.
-@item
-``access'':  The target is of an access type.
-@item
-``array'': The target is of an array type.
-@item
-``delta'': The target is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The target is of a floating point type.
-@item
-``function'': The target is a function.
-@item
-``mod'': The target is of a modular type.
-@item
-``private'': The target is of a private type (including private
-extensions).
-@item
-``procedure'': The target is a procedure.
-@item
-``protected'': The target is of a protected type.
-@item
-``range'': The target is of a signed integer type.
-@item
-``record'': The target is of an (untagged) record type.
-@item
-``tagged'': The target is of a tagged type (including type
-extensions).
-@item
-``task'': The target is of a task type.
-@end itemize
+to access a variable. 
 
-If the <target> is preceded by @code{not}, it means that the corresponding
-<entity> or <category> is not controlled.
+If the modifier ``controlled'' is given, only access types that are
+subcomponents (directly or indirectly) of a controlled type are
+controlled, while if ``not controlled'' is given, only those that are
+@i{not} subcomponents of a controlled type are controlled. No modifier
+is equivalent to giving both ``controlled'' and ``not controlled''. 
+
+If one or several <target> without @code{not} are given, the control
+applies only to access types whose target type matches the given
+<entity>, or belongs to the given <category>. Conversely, if the
+<target> is preceded by @code{not}, it means that the corresponding
+<entity> or <category> is not controlled.  As usual, the whole syntax
+for entities is allowed for <entity>. @xref{Specifying an Ada entity
+name}.  
+
+This rule traverses derivations, but not privacy (the category
+``private'' can be given, to check access types whose target is of a
+private type). @xref{Definition of type categories}. In
+addition, ``function'' and ``procedure'' can be given to specify
+access types that designate functions or procedures.
 
 This subrule can be given at most twice for each <target>, once
 for ``controlled'' and once for ``not controlled''.
 
-Note that the two rules above are checked for initialization of
-variables and constants, as well as in regular assignments.
+Note that the two subrules above are checked for initialization of
+variables and constants, as well as for regular assignments.
 
-Other subrules control properties of groups of assignment statements. A
-group is made of consecutive assignments, without any other
-intervening kind of statements (except null statements).
+Other subrules control properties of groups of assignment
+statements. A group is made of consecutive assignments, without any
+other intervening kind of statements (except null statements).
 
-The third form (keyword ``repeated'') controls when a same variable
-(or a same subcomponent of a structured variable) is assigned several
-times in the same group of assignments. This form of the rule can be
-given only once.
+The third subrule (``repeated'') controls when a same variable (or a
+same subcomponent of a structured variable) is assigned several times
+in the same group of assignments. This form of the rule can be given
+only once.
 
-The fourth form (keyword ``groupable'') controls assignments to
-different subcomponents of a same structured variable; such
-assignments are often replaceable by a global assignment of an
-aggregate to the variable. One or several <filter> parameters
-indicate under which conditions a group is reported:
+The fourth subrule (``groupable'') controls assignments to different
+subcomponents of a same structured variable; such assignments are
+often replaceable by a global assignment of an aggregate to the
+variable. One or several <filter> parameters indicate under which
+conditions a group is reported:
 @itemize @bullet
 @item
 ``given'': <min_val> (an integer value) indicates the minimum number
@@ -4547,51 +4465,25 @@ This rule controls various properties of the declaration of derived types.
 @end example
 
 @subsection Action
-The ``from'' subrule controls derivations according to the parent
-type and progenitors.
+The ``from'' subrule controls the declaration of derived types where
+the parent type or any progenitor matches the <entity> or belongs to
+the indicated <category>.
 
 If <entity> is a type name, it controls types that are derived
 (directly or indirectly) from the given type (including interfaces),
 or one of its subtypes; however, if it is a @i{subtype} name, only
 types that are derived (directly or indirectly) from the given subtype
 are controlled. If <entity> is the name of a compilation unit, it
-controls types that are derived (directly or indirectly) from a type
+controls types that are derived (directly or indirectly) from any type
 (or subtype) declared inside the given unit.  As usual, the whole
 syntax for entities is allowed for <entity>. @xref{Specifying an Ada
 entity name}.
 
-If <category> is given, it controls derived types whose parent type
-belongs to the corresponding category. The meaning of <category> is:
-@itemize @bullet
-@item
-``()'': The parent is of an enumerated type.
-@item
-``access'':  The parent is of an access type.
-@item
-``array'': The parent is of an array type.
-@item
-``delta'': The parent is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The parent is of a floating point type.
-@item
-``mod'': The parent is of a modular type.
-@item
-``private'': The parent is of a private type (including private
-extensions).
-@item
-``protected'': The parent is of a protected type.
-@item
-``range'': The parent is of a signed integer type.
-@item
-``record'': The parent is of an (untagged) record type.
-@item
-``tagged'': The parent is of a tagged type (including type
-extensions).
-@item
-``task'': The parent is of a task type.
-@end itemize
+If a <category> is given, it controls derived types whose parent type
+belongs to the corresponding category. This rule traverses
+derivations, but not privacy (the category ``private'' can be given,
+to check types derived from a private type). @xref{Definition of type
+categories}.
 
 It may be the case that several controls apply to a given parent
 type. In this case, only one message is issued, that corresponds to
@@ -4616,16 +4508,16 @@ search derivations (from, standard);
 -- Types derived from a type in Standard, except Standard.Integer
 -- (caught above)
 
-search derivations (from, range);
--- Types derived from an integer type
+search derivations (from, range, mod);
+-- Types derived from an integer type (signed or modular)
 @end example
 
 The ``max_parents'' subrule controls the maximum number of parents in
 a derivation. The parents are the direct ancestor in a derived type
 definition, plus all of the progenitors (the interfaces that are
-implemented by the type). <n> is the maximum number of @i{allowed}
+implemented by the type). <value> is the maximum number of @i{allowed}
 parents, i.e. the rule is triggered if the number of parents is
-strictly greater than <n>.
+strictly greater than <value>.
 
 This subrule can be given once for each of check, search, and
 count. This way, it is possible to have a number of parents
@@ -5139,9 +5031,6 @@ This rule controls usage of various kinds of expressions.
    universal_range            | unqualified_aggregate            |
    xor                        | xor_array                        |
    xor_binary                 | xor_boolean
-<category> ::=
-   <>     | ()     | range  | mod | delta   | digits | array    |
-   record | tagged | access | new | private | task   | protected
 @end example
 @subsection Action
 This rule controls usage of certain forms of expressions. The rule can
@@ -5150,40 +5039,12 @@ categories can be specified once for each combination of categories
 and expression keyword).
 
 Categories are used by certain subrules to further refine the control.
-They define categories of types to which they apply:
-@itemize @bullet
-@item
-``<>'': Any type
-@item
-``()'': Enumerated types
-@item
-``range'': Signed integer types
-@item
-``mod'': Modular types
-@item
-``delta'': Fixed point types (no possibility to differentiate ordinary
-and decimal fixed point types yet).
-@item
-``digits'': Floating point types
-@item
-``array'': Array types
-@item
-``record'': (untagged) record types
-@item
-``tagged'': Tagged types (including type extensions)
-@item
-``access'': Access types
-@item
-``new'': Derived types
-@item
-``private'': Private types
-@item
-``task'': Task types
-@item
-``protected'': Protected types
-@end itemize
+They define categories of types to which they apply.  All such subrules
+traverses derivations, but not privacy (the category ``private'' can
+be given, to check private types). @xref{Definition of type
+categories}.
 
-The subrule define the kind of expression being controlled:
+The subrules define the kind of expression being controlled:
 @itemize @bullet
 @item
 @code{not}, @code{and}, @code{or}, @code{xor}, @code{and_then},
@@ -5270,13 +5131,11 @@ same, but only for calls through
 pointers. @code{inherited_function_call} controls calls to functions
 that have been inherited by a derived type and not redefined.
 
-For all @code{*_function_call} subrules, if a category is specified,
-only calls whose result type belongs to the category are controlled.
-Derived types are followed, i.e. the ``real'' category from the
-original type is used for the matching; as a consequence, the ``new''
-category cannot be specified for this subrule. In addition, the amount
-of information displayed can be selected with the rule variable
-``called_info'' (see below).
+For all @code{*_function_call} subrules, a <category> (only one) can be
+specified.  In this case, only calls whose result type belongs to the
+<category> are controlled. In addition, the amount of information
+displayed can be selected with the rule variable ``called_info'' (see
+below).
 
 @item
 @code{mixed_operators} controls expressions that involve several
@@ -5288,12 +5147,10 @@ and short circuit forms (@code{@b{and then}}, @code{@b{or else}}) are
 considered operators.
 @item
 @code{prefixed_operator} controls calls to operators that use prefixed
-notation (i.e. @code{"+"(A, B)}). If a category is specified, only
-calls whose result type belongs to the category are controlled.
+notation (i.e. @code{"+"(A, B)}). 
 
-Derived types are followed, i.e. the ``real'' category from the
-original type is used for the matching; as a consequence, the ``new''
-category cannot be specified for this subrule.
+A <category> (only one) can be specified. In this case, only calls
+whose result type belongs to the <category> are controlled.
 @item
 @code{real_equality} controls usage of predefined exact equality or
 inequality (``='' or ``/='') between real (floating point or fixed
@@ -5315,15 +5172,14 @@ converting away from the root or toward the root,
 respectively. @code{parameter_view_conversion} controls conversions
 that appear as @code{@b{out}} or @code{@b{in out}} actual parameters.
 
-One or two categories can be specified; if only one category is
-specified, only conversions whose result type belong to that category
-are controlled. If two categories are specified, only conversions
-whose souce type belongs to the first category and whose target type
-belong to the second category are controlled.
+One or two categories can be specified; if one <category> is
+specified, only conversions whose result type belong to that
+<category> are controlled. If two categories are specified, only
+conversions whose souce type belongs to the first <category> and whose
+target type belongs to the second <category> are controlled. A ``<>''
+can be specified as the target type to check all conversions from a
+given type to any other type.
 
-Derived types are followed, i.e. the ``real'' category from the
-original type is used for the matching; as a consequence, the ``new''
-category cannot be specified for this subrule.
 @item
 @code{universal_range} controls discrete ranges that are a part of an
 index constraint, constrained array definition, or for-loop parameter
@@ -5866,11 +5722,9 @@ places.
 @example
 <control_kind> instantiations (<generic_spec>);
 <generic_spec> ::= @{[not] <location_kw>@} <entity> @{, <formal_spec>@}
-<formal_spec>  ::= <entity> | <category> | <> | =
+<formal_spec>  ::= <entity> | <category> | =
 <location_kw>  ::= all | block   | library | local      | nested |
                    own | private | public  | in_generic | task_body
-<category>     ::= ()      | access    | array | delta  | digits | mod |
-                   private | protected | range | record | tagged | task
 @end example
 
 @subsection Action
@@ -5927,48 +5781,22 @@ No <formal_spec> is given in the rule
 The actual parameters of the instantiation match the corresponding
 <formal_spec>, in order (there can be more actual parameters in the
 instantiation than specified in the rule). An actual parameter matches
-an <entity> at a given place if it is the same entity, or if the
-<entity> designates a (sub)type and  the actual is a subtype of this
-type. As usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}.  In addition, it
-matches if the actual is a type name that belongs to the indicated
-category:
-@itemize @bullet
-@item
-``()'': The parameter is of an enumerated type.
-@item
-``access'':  The parameter is of an access type.
-@item
-``array'': The parameter is of an array type.
-@item
-``delta'': The parameter is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The parameter is of a floating point type.
-@item
-``mod'': The parameter is of a modular type.
-@item
-``private'': The parameter is of a private type (including private
-extensions).
-@item
-``protected'': The parameter is of a protected type.
-@item
-``range'': The parameter is of a signed integer type.
-@item
-``record'': The parameter is of an (untagged) record type.
-@item
-``tagged'': The parameter is of a tagged type (including type
-extensions).
-@item
-``task'': The parameter is of a task type.
-@end itemize
+at a given place if it is the indicated <entity> or if it is a type
+that belongs to the indicated <category>. As usual, the whole syntax
+for entities is allowed for <entity>. @xref{Specifying an Ada entity
+name}. If the <entity> is a subtype, it is matched only by that
+subtype; if the <entity> is a type, it is matched by that type or any
+of its subtypes.
 
-In addition, two special signs can be given instead of an <entity> (or
-<category>): a box (@code{<>}) matches any actual parameter
-(i.e. it stands for any value), and an equal sign (@code{=}) matches
-if there has been already an instantiation with the same value for
-this parameter (i.e. it matches the second time it is encountered).
+This subrule does not traverse derivations and privacy (the categories
+``new'' and ``private'' can be given, to check instantiantions with a
+derived or a private type). A box (@code{<>}) can be given and
+matches any actual parameter (i.e. it stands for any
+value). @xref{Definition of type categories}.
+
+In addition, an equal sign (@code{=}) matches if there has been
+already an instantiation with the same value for this parameter
+(i.e. it matches the second time it is encountered).
 @end enumerate
 
 Formal @code{@b{in}} parameters cannot be matched, since the actual
@@ -5992,6 +5820,10 @@ check instantiations (ada.unchecked_conversion, system.address, range);
 -- Check that Unchecked_Conversion is instantiated only once
 -- for any pair of arguments:
 check instantiations (ada.unchecked_conversion, =, =);
+
+-- No instantiation of Unchecked_Conversion on private types
+-- (Are these guys cheating with privacy?)
+check instantiations (ada.unchecked_conversion, private);
 @end example
 
 @subsection Tips
@@ -6696,40 +6528,13 @@ and ``constant'' families) and functions (in the ``function'' family),
 it is possible to be more specific, depending on the type of the
 object (or the return type of the function), as specified by the
 <type_spec> modifier. The <type_spec> modifier is either a single
-<entity> giving the type of the object or one or more <category>
-keywords. As usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}. The meaning of
-<category> is:
-@itemize @bullet
-@item
-``()'': The object is of an enumerated type.
-@item
-``access'':  The object is of an access type.
-@item
-``array'': The object is of an array type.
-@item
-``delta'': The object is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The object is of a floating point type.
-@item
-``mod'': The object is of a modular type.
-@item
-``private'': The object is of a private type (including private
-extensions).
-@item
-``protected'': The object is of a protected type.
-@item
-``range'': The object is of a signed integer type.
-@item
-``record'': The object is of an (untagged) record type.
-@item
-``tagged'': The object is of a tagged type (including type
-extensions).
-@item
-``task'': The object is of a task type.
-@end itemize
+<entity> giving the type of the object or one or more <category>. As
+usual, the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}. 
+
+The rule traverses derivations, but not privacy (the category
+``private'' can be given, to check objects or functions of a private
+type). @xref{Definition of type categories}.
 
 For a given layer of the hierarchy (i.e. ``variable'',
 ``regular_variable''), only the most specific filter is applicable,
@@ -6928,7 +6733,6 @@ kinds of types.
 @example
 <control_kind> no_operator_usage [([<category>] <parameter>
                                               [,<parameter>])];
-<category>  ::= range | mod
 <parameter> ::= [<filter>] <observed>
 <filter>    ::= not | ignore | report
 <observed>  ::= relational | logical | indexing
@@ -6937,7 +6741,11 @@ kinds of types.
 This rule controls integer types where no arithmetic operator of the
 type is used in the program. If the <category> is @code{range}, the
 control applies only to signed integer types; if it is @code{mod}, it
-applies only to modular integer types; otherwise, it applies to both.
+applies only to modular integer types; without <category>, it applies
+to both.  No other <category> is allowed. The rule traverses
+derivations and privacy (The rule applies also to private types whose
+full declaration is an integer type). @xref{Definition of type
+categories}.
 
 When such a type is found, it migh be interesting to find out other
 usages to determine a possible better kind of type. ``relational''
@@ -6988,9 +6796,6 @@ The rule does not make a distinction between predefined and
 user-defined operators. On the other hand, only calls to operators are
 considered, operators used for example as actual generic parameters in
 instantiations are not considered.
-
-The rule applies also to private types whose full declaration is an
-integer type.
 
 @node Non_Static, Not_Elaboration_Calls, No_Operator_Usage, Rules reference
 @section Non_Static
@@ -7431,11 +7236,11 @@ named associations) in all kinds of associations.
 @subsection Syntax
 @example
 <control_kind> positional_associations [(<subrule>, <max_allowed>
-                                         [, <category> @{, <entity>@}])];
-<subrule>  ::= all | all_positional | same_type
-<category> ::= [not_operator] call | discriminant     | pragma        |
-               array_aggregate     | record_aggregate | instantiation |
-               enumeration_representation
+                                         [, <assoc_kind> @{, <entity>@}])];
+<subrule>    ::= all | all_positional | same_type
+<assoc_kind> ::= [not_operator] call | discriminant     | pragma        |
+                 array_aggregate     | record_aggregate | instantiation |
+                 enumeration_representation
 @end example
 
 @subsection Action
@@ -7454,11 +7259,11 @@ associations.
 of the same type.
 @end itemize
 
-In addition, a <category> can be specified to restrict the rule to
+In addition, an <assoc_kind> can be specified to restrict the rule to
 specific kinds of associations; if not specified, all associations are
-controlled. The categories carry their obvious meaning, with the
-distinction that ``array_aggregate'' applies only to ``true'' array
-aggregates, while ``enumeration_representation'' applies to the
+controlled. The association kinds carry their obvious meaning, with
+the distinction that ``array_aggregate'' applies only to ``true''
+array aggregates, while ``enumeration_representation'' applies to the
 special array aggregate used in enumeration representation
 clauses. Note that the ``same_type'' subrule is not allowed for the
 ``pragma'' category. For ``pragma'', ''call'', and ``instantiation'',
@@ -7476,7 +7281,7 @@ subprograms that are attributes are not reported either, since named
 notation is not allowed for them.
 
 This rule can be specified once for each combination of <subrule>,
-<category>, and <control_kind>.  This way, it is possible to have a
+<assoc_kind>, and <control_kind>.  This way, it is possible to have a
 number of positional associations considered a warning (search),  and
 one considered an error (check). Of course, this makes sense only if
 <max_allowed> for search is greater than the one for check. It is also
@@ -7674,37 +7479,12 @@ The first parameter is a subrule keyword:
 <entity> is a subtype, only record components that are of that subtype
 are controlled. If the indicated <entity> is a type, all record
 components that are of that type (including subtypes) are
-controlled. The meaning of <category> is:
-@itemize @bullet
-@item
-``()'': The component is of an enumerated type.
-@item
-``access'':  The component is of an access type.
-@item
-``array'': The component is of an array type.
-@item
-``delta'': The component is of a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The component is of a floating point type.
-@item
-``mod'': The component is of a modular type.
-@item
-``private'': The component is of a private type (including private
-extensions).
-@item
-``protected'': The component is of a protected type.
-@item
-``range'': The component is of a signed integer type.
-@item
-``record'': The component is of an (untagged) record type.
-@item
-``tagged'': The component is of a tagged type (including type
-extensions).
-@item
-``task'': The component is of a task type.
-@end itemize
+controlled. 
+
+This rule traverses derivations, but not privacy (the category
+``private'' can be given, to check components of a private
+type). @xref{Definition of type categories}.
+
 If <repr_cond> are specified, the rule controls only record components
 to which all the corresponding representation items apply:
 @itemize @bullet
@@ -7864,48 +7644,23 @@ parameter.
 
 If a representation keyword or attribute is preceded by one or several
 categories, the rule controls only the representation items that apply
-to types belonging to the categories (the type of the component for
-the @code{non_aligned_component} subrule):
-@itemize @bullet
-@item
-``()'': Enumerated types
-@item
-``range'': Signed integer types
-@item
-``mod'': Modular types
-@item
-``delta'': Fixed point types (no possibility to differentiate ordinary
-and decimal fixed point types yet).
-@item
-``digits'': Floating point types
-@item
-``array'': Array types
-@item
-``record'': (untagged) record types
-@item
-``tagged'': Root tagged types
-@item
-``extension'': Type extensions (tagged derived types)
-@item
-``access'': Access types
-@item
-``new'': Derived types
-@item
-``private'': Private types
-@item
-``task'': Task types
-@item
-``protected'': Protected types
-@end itemize
+to types that belong to one of the provided categories (the type of
+the component for the @code{non_aligned_component} subrule).
+
+This rule does not traverse derivations and privacy (the category ``new'' can
+be given for  derived types and ``private'' for private types). The
+rule separates extensions, i.e. ``tagged'' applies only to root tagged
+types, and ``extension'' can be used for type
+extensions. @xref{Definition of type categories}.
 
 The meaning of the representation keywords is:
 @itemize @bullet
 @item
-``at'' controls address clauses given in Ada 83 style (``for XXX use
-at'').
+``at'' controls address clauses given in Ada 83 style (``@code{for XXX
+use at AAA;}'').
 @item
-``at_mod'' controls alignment clauses given in Ada 83 style (``for T
-use record at mod XX;'').
+``at_mod'' controls alignment clauses given in Ada 83 style (``@code{for T
+use record at mod AA;}'').
 @item
 ``enumeration'' controls enumeration representation clauses.
 @item
@@ -9111,8 +8866,6 @@ or by category.
 @example
 <control_kind> type_usage (<attribute>, <category> @{, <aspect>@}]);
 <control_kind> type_usage (index, <entity>|<category> @{, <aspect>@}]);
-<category> ::= ()  | access    | array | delta  | digits |
-               mod | protected | range | record | tagged | task
 <aspect>   ::= [not] representation | pack | size | component_size
 @end example
 
@@ -9120,7 +8873,7 @@ or by category.
 If the first parameter is an attribute (a name starting with a simple
 quote), the rule controls all occurrences of the attribute where the
 prefix designates a type belonging to the <category> given as second
-parameter.
+parameter. 
 
 If the first parameter is ``index'', the rule controls all array types
 that have an index of the type given by <entity>, or belonging to the
@@ -9128,38 +8881,14 @@ that have an index of the type given by <entity>, or belonging to the
 entities is allowed for <entity>. @xref{Specifying an Ada entity
 name}.
 
+This rule traverses derivations but not privacy (the category
+``private'' can be given for attributes of a private type). Obviously,
+only categories ``()'', ``range'' and ``mod'' can be given for the
+subrule ``index''. @xref{Definition of type categories}.
+
 For both subrules, if one or several <aspect> are given, only types
 featuring (or not featuring if ``not'' is given) the provided aspects
 are controlled.
-
-The meaning of <category> is:
-@itemize @bullet
-@item
-``()'': The type is an enumerated type.
-@item
-``access'':  The type is an access type.
-@item
-``array'': The type is an array type.
-@item
-``delta'': The type is a fixed point type (it is not currently
-possible to distinguish ordinary fixed point types from decimal fixed
-point types).
-@item
-``digits'': The type is a floating point type.
-@item
-``mod'': The type is a modular type.
-@item
-``protected'': The type is a protected type.
-@item
-``range'': The type is a signed integer type.
-@item
-``record'': The type is an (untagged) record type.
-@item
-``tagged'': The type is a tagged type (including type
-extensions).
-@item
-``task'': The type is a task type.
-@end itemize
 
 The meaning of <aspect> is:
 @itemize @bullet
@@ -10439,7 +10168,7 @@ search Allocators;
 This rule identifies all allocations, and thus can be used to check
 that all allocated elements are properly deallocated.
 
-@node Specifying an Ada entity name, Syntax of regular expressions, Examples of using AdaControl for common programming rules, Top
+@node Specifying an Ada entity name, Definition of type categories, Examples of using AdaControl for common programming rules, Top
 @appendix Specifying an Ada entity name
 
 @menu
@@ -10457,7 +10186,7 @@ that all allocated elements are properly deallocated.
 @node General syntax, Overloaded names, Specifying an Ada entity name, Specifying an Ada entity name
 @section General syntax
 Many rules can take Ada entities as parameters. Each time a rule uses
-the category <entity>, it refers to an Ada entity that can be
+the syntactic term @code{<entity>}, it refers to an Ada entity that can be
 specified with the following syntax:
 @example
 <entity> ::= <full_name> | "all" <simple_name> | "all" <attribute>
@@ -10707,7 +10436,78 @@ check entities (Standard."<"@{Standard.Integer,
 check entities (Standard."<");
 @end example
 
-@node Syntax of regular expressions, Non upward-compatible changes, Specifying an Ada entity name, Top
+@node Definition of type categories, Syntax of regular expressions, Specifying an Ada entity name, Top
+@appendix Definition of type categories
+Many rules can be parameterized with applicable types. A type name can generally be given, but many
+rules also accept type categories. Each time a rule uses the syntactic term @code{<category>}, it
+refers to a type category defined by the following syntax:
+@example
+<category> ::= <>  | ()      | access    | array  | delta  | digits | extension | mod | 
+               new | private | protected | range  | record | tagged | task
+@end example
+
+The category of types are defined as follows:
+@itemize @bullet
+@item
+``<>'': any type.
+@item
+``()'': any enumerated type.
+@item
+``access'': any access type.
+@item
+``array'': any array type.
+@item
+``delta'': any fixed point type (it is not currently
+possible to distinguish ordinary fixed point types from decimal fixed
+point types).
+@item
+``digits'': any floating point type.
+@item
+``extension'': any type extension (tagged derived type)
+@item
+``mod'': any modular type.
+@item
+``new'': any non tagged derived type.
+@item
+``private'': any private type, including private extensions.
+@item
+``protected'': any protected type.
+@item
+``range'': any signed integer type.
+@item
+``record'': any (untagged) record type.
+@item
+``tagged'': any tagged type.
+@item
+``task'': any task type.
+@end itemize
+
+Depending on the rule, some of these categories may not be
+applicable. For example, a type derived from an integer type is both
+a derived type and an integer type, and which category should be prefered depends on
+the purpose of the rule. In the description of the rule, it is said to:
+@itemize @bullet
+@item
+``traverse derivations'' if it needs the real, final category of the
+element, ignoring any intermediate derivations. In this case, the
+keyword ``new'' is not applicable.
+@item
+``traverse privacy'', if it considers the full declaration of a
+private type, ignoring any private view.  In this case, the keyword
+``private'' applies only to the case of generic formal private types,
+since there is no corresponding full type.
+@item
+``separate extension'' if the rule makes the difference between root
+tagged types and type extensions. The keyword ``extension'' is
+applicable only to the rules that separate extension, otherwise type
+extensions fall under the category ``tagged''.
+@end itemize
+
+The ``<>'' category matches any type, and is allowed only by rules
+that need a list of categories, to express that no special category is
+expected at the given location.
+
+@node Syntax of regular expressions, Non upward-compatible changes, Definition of type categories, Top
 @appendix Syntax of regular expressions
 The following syntax gives the complete definition of regular
 expressions, as used by several rules.  It is taken from the

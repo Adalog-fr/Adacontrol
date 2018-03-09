@@ -44,9 +44,10 @@ with
 with
   Framework.Control_Manager.Generic_Context_Iterator,
   Framework.Language.Shared_Keys;
+pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Instantiations is
-   use Asis, Framework, Framework.Control_Manager;
+   use Asis, Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -75,6 +76,8 @@ package body Rules.Instantiations is
 
    Rule_Uses : Context_Store;
    package Rule_Uses_Iterator is new Framework.Control_Manager.Generic_Context_Iterator (Rule_Uses);
+
+   Expected_Categories : constant Categories_Set := Basic_Set + Cat_Any + Cat_New + Cat_Private;
 
    -----------
    -- Image --
@@ -105,7 +108,7 @@ package body Rules.Instantiations is
    ----------
 
    procedure Help is
-      use Framework.Language.Shared_Keys, Utilities;
+      use Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control generic instantiations of specified units, either all of them");
@@ -113,10 +116,9 @@ package body Rules.Instantiations is
       User_Message ("Optionally, control is restricted to instantiations appearing at indicated locations");
       User_Message;
       User_Message ("Parameter(1): {<location>} <Generic name>");
-      User_Message ("Parameter(2..): <Entity name> | <category> | <> | = (optional)");
+      User_Message ("Parameter(2..): <Entity name> | <category> | = (optional)");
       Help_On_Scope_Places (Header => "<location>:");
-      User_Message ("<category>: ()      | access    | array | delta  | digits | mod |");
-      User_Message ("            private | protected | range | record | tagged | task");
+      Help_On_Categories (Expected => Expected_Categories);
    end Help;
 
 
@@ -125,7 +127,7 @@ package body Rules.Instantiations is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Framework.Language.Shared_Keys;
+      use Framework.Language;
 
       function Build_Context (Places : Places_Set) return Instantiation_Context is
          use Instance_Info_List;
@@ -142,6 +144,8 @@ package body Rules.Instantiations is
             Spec : Entity_Specification := Get_Entity_Parameter (Allow_Extended => All_OK);
             Rest : constant Instantiation_Context := Build_Context (Places);
          begin
+            Check_Category (Rule_Id, Spec, Expected => Expected_Categories);
+
             if Spec = Value ("()") then
                Spec := Value ("ENUM");
             end if;
@@ -219,7 +223,7 @@ package body Rules.Instantiations is
                               Name          : in Asis.Expression) return Boolean
    is
       use Asis.Elements, Asis.Expressions;
-      use Framework.Language.Shared_Keys, Utilities, Thick_Queries;
+      use Utilities, Thick_Queries;
 
       Declaration  : Asis.Declaration;
       Is_Attribute : Boolean := False;
@@ -339,7 +343,7 @@ package body Rules.Instantiations is
       end Make_Info;
 
       procedure Process_Context is
-         use Framework.Language.Shared_Keys, Framework.Reports;
+         use Framework.Reports;
          use Utilities;
          Good_Context : Instantiation_Context := Instantiation_Context (Value (Iter));
       begin
