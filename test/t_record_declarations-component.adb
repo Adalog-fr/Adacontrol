@@ -74,9 +74,9 @@ procedure Component is
       end record;
    for Rec3 use
       record
-         F3 at 4 range  1 .. 32;
-         F4 at 4 range 40 .. 48;
-         F5 at 0 range  1 .. 32;
+         F3 at 8 range  1 .. 32;
+         F4 at 8 range 40 .. 48;
+         F5 at 0 range  1 .. 64;
       end record;
 
    generic
