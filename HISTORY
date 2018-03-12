@@ -21,6 +21,9 @@ derivations:
 statements
    add subrules null_case_path, null_if_path, null_loop_body
 
+unnecessary_use_clause
+   recognize case of use clause within its own package
+
 ==============
 == V1.19r10 ==
 ==============

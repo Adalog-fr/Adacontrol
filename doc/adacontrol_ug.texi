@@ -9237,8 +9237,8 @@ type), the @code{@b{use}} clause can be replaced by one or several
 @item
 ``nested'': a @code{@b{use}} clause is given within the scope of an
 enclosing @code{@b{use}} clause for the same package, or in a child
-unit for some ancestor. The message tells the location of the other
-@code{@b{use}} clause or the ancestor.
+unit for some ancestor, or inside its own package. The message tells
+the location of the other @code{@b{use}} clause or the ancestor.
 
 If you also have a message that the outer @code{@b{use}} clause is
 unnecessary, this means that all references to the package appear

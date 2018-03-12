@@ -190,33 +190,50 @@ package body Rules.Unnecessary_Use_Clause is
                end if;
             else
                declare
-                  Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names (I))));
+                  Name_String  : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names (I))));
+                  Enclosing_PU : constant Asis.Defining_Name := Enclosing_Program_Unit (Clause);
                begin
-                  -- Check if already there
-                  Used_Packages.Reset (All_Scopes);
-                  while Used_Packages.Data_Available loop
-                     if Used_Packages.Current_Data.Name = Name_String then
-                        if Rule_Used (Nested) then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Nested),
-                                   Get_Location (Clause),
-                                   "use clause for " & Extended_Name_Image (Names (I))
-                                   & " in scope of use clause for same package at "
-                                   & Image (Get_Location (Used_Packages.Current_Data.Use_Clause)));
-                           Fixes.List_Remove (I, From => Clause);
-                        end if;
+                  -- Checks if use clause inside the named package
+                  -- Enclosing_PU is nil if use clause in context clauses
+                  if not Is_Nil (Enclosing_PU)
+                    and then Starts_With (To_Upper (Full_Name_Image (Enclosing_PU)), Name_String)
+                  then
+                     if Rule_Used (Nested) then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Nested),
+                                Get_Location (Clause),
+                                "use clause for " & Extended_Name_Image (Names (I))
+                                & " inside same package");
+                        Fixes.List_Remove (I, From => Clause);
                      end if;
 
-                     Used_Packages.Next;
-                  end loop;
+                  else
+                     -- Check if already there
+                     Used_Packages.Reset (All_Scopes);
+                     while Used_Packages.Data_Available loop
+                        if Used_Packages.Current_Data.Name = Name_String then
+                           if Rule_Used (Nested) then
+                              Report (Rule_Id,
+                                      Ctl_Contexts (Nested),
+                                      Get_Location (Clause),
+                                      "use clause for " & Extended_Name_Image (Names (I))
+                                      & " in scope of use clause for same package at "
+                                      & Image (Get_Location (Used_Packages.Current_Data.Use_Clause)));
+                              Fixes.List_Remove (I, From => Clause);
+                           end if;
+                        end if;
 
-                  -- Add it in any case
-                  Used_Packages.Push ((Name_Length   => Name_String'Length,
-                                       Use_Clause    => Clause,
-                                       Position      => I,
-                                       Name          => Name_String,
-                                       Original_Name => Names (I),
-                                       User          => Nothing));
+                        Used_Packages.Next;
+                     end loop;
+
+                     -- Add it in any case
+                     Used_Packages.Push ((Name_Length   => Name_String'Length,
+                                          Use_Clause    => Clause,
+                                          Position      => I,
+                                          Name          => Name_String,
+                                          Original_Name => Names (I),
+                                          User          => Nothing));
+                  end if;
                end;
             end if;
          end loop;
