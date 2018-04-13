@@ -32,7 +32,8 @@ with  -- Ada units
      Ada.Text_IO;
 
 with  -- Adalog components
-  Options_Analyzer;
+    Options_Analyzer,
+    Utilities;
 
 procedure Adactl_Fix is
    use Ada.Strings.Unbounded;
@@ -600,7 +601,12 @@ begin   --Adactl_Fix
 exception
    when Parameter_Error =>
       null;   -- Message already printed
-      -- TBSL: set return status to 1
-   when Occur: Incorrect_Fix_File =>
+              -- TBSL: set return status to 1
+   when Occur: Options.Options_Error =>
+      Message ("*** Option error: " & Ada.Exceptions.Exception_Message (Occur));
+   when Occur : Incorrect_Fix_File =>
       Message ("*** Incorrect_Fix_File: " & Ada.Exceptions.Exception_Message (Occur));
+   when Occur : others =>
+      Message ("*** Unexpected exception: " & Ada.Exceptions.Exception_Message (Occur));
+      Utilities.Stack_Traceback (Occur);
 end Adactl_Fix;
