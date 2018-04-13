@@ -1748,10 +1748,10 @@ other tool that comes with GNATDashboard. The name of the plug-in is
 package of a project file.
 
 Extra options for AdaControl can be given using the
-``--targs:adacontrol'' option of gnathub. However, the simplest way to
-give fundamental options is to give a units file and the command file in
-the project file: in the absence of explicit parameters on the command
-line, these will be taken by default.
+@code{--targs:adacontrol} option of gnathub. However, the simplest way
+to give fundamental options is to give a units file and the command
+file in the project file: in the absence of explicit parameters on the
+command line, these will be taken by default.
 
 AdaControl installs a non-default profile called ``AdaControl way''
 that contains all AdaControl rules. Use it to activate the rules you
