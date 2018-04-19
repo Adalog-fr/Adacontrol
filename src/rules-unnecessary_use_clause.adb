@@ -192,23 +192,36 @@ package body Rules.Unnecessary_Use_Clause is
                declare
                   Name_String  : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names (I))));
                   Enclosing_PU : constant Asis.Defining_Name := Enclosing_Program_Unit (Clause);
+                  Reported     : Boolean := False;
                begin
-                  -- Checks if use clause inside the named package
+                  -- Checks if use clause inside the named package (or one of its nested units)
                   -- Enclosing_PU is nil if use clause in context clauses
-                  if not Is_Nil (Enclosing_PU)
-                    and then Starts_With (To_Upper (Full_Name_Image (Enclosing_PU)), Name_String)
-                  then
-                     if Rule_Used (Nested) then
-                        Report (Rule_Id,
-                                Ctl_Contexts (Nested),
-                                Get_Location (Clause),
-                                "use clause for " & Extended_Name_Image (Names (I))
-                                & " inside same package");
-                        Fixes.List_Remove (I, From => Clause);
-                     end if;
+                  if not Is_Nil (Enclosing_PU) and Rule_Used (Nested) then
+                     declare
+                        Enclosing_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_PU));
+                     begin
+                        if Name_String = Enclosing_Name then
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Nested),
+                                   Get_Location (Clause),
+                                   "use clause for " & Extended_Name_Image (Names (I))
+                                   & " inside same package");
+                           Reported := True;
+                           Fixes.List_Remove (I, From => Clause);
+                        elsif Starts_With (Enclosing_Name, Name_String & '.') then
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Nested),
+                                   Get_Location (Clause),
+                                   "use clause for " & Extended_Name_Image (Names (I))
+                                   & " inside nested unit " & Extended_Name_Image (Enclosing_PU));
+                           Reported := True;
+                           Fixes.List_Remove (I, From => Clause);
+                        end if;
+                     end;
+                  end if;
 
-                  else
-                     -- Check if already there
+                  -- Check if already there
+                  if not Reported then
                      Used_Packages.Reset (All_Scopes);
                      while Used_Packages.Data_Available loop
                         if Used_Packages.Current_Data.Name = Name_String then
@@ -225,15 +238,15 @@ package body Rules.Unnecessary_Use_Clause is
 
                         Used_Packages.Next;
                      end loop;
+                  end if;
 
-                     -- Add it in any case
-                     Used_Packages.Push ((Name_Length   => Name_String'Length,
-                                          Use_Clause    => Clause,
-                                          Position      => I,
-                                          Name          => Name_String,
+                  -- Add it in any case
+                  Used_Packages.Push ((Name_Length   => Name_String'Length,
+                                       Use_Clause    => Clause,
+                                       Position      => I,
+                                       Name          => Name_String,
                                           Original_Name => Names (I),
                                           User          => Nothing));
-                  end if;
                end;
             end if;
          end loop;

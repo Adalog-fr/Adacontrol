@@ -14,7 +14,7 @@ package body T_unnecessary_use_clause is
 
    use Ada.Strings.Fixed; -- Used in Sep
    procedure Sep is separate;
-   use Ada.Strings.Fixed; -- Already given
+   use Ada.Strings.Fixed; -- Already given, unused
 
    package body Pack1 is
       procedure Proc is begin null; end;
@@ -29,7 +29,11 @@ package body T_unnecessary_use_clause is
       procedure Proc2;
    end Pack2;
    package body Pack2 is
-      procedure Proc2 is begin null; end;
+      procedure Proc2 is
+        use Pack2;          -- Use inside nested unit, unused
+      begin
+         null;
+      end;
    end Pack2;
 
    use Pack2; --Use needed for formal package below
@@ -58,7 +62,7 @@ package body T_unnecessary_use_clause is
    procedure P (X : Integer);
    pragma Import (C, P); -- Even when completed by import!
 
-   use T_Unnecessary_Use_Clause;  -- Same package
+   use T_Unnecessary_Use_Clause;  -- Same package, unused
 
 begin
    declare
