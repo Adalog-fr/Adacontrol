@@ -41,7 +41,8 @@ with
   Options_Analyzer,
   Utilities,
   Implementation_Options,
-  Implementation_Options.Project_File;
+  Project_File,
+  Project_File.Factory;
 
 -- Adactl
 with
@@ -60,6 +61,8 @@ package body Adactl_Options is
    Body_Found   : Boolean := False;
 
    Options_Commands : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+
+   Project : Project_File.Class_Access;
 
    ------------------
    -- Option_Error --
@@ -266,10 +269,11 @@ package body Adactl_Options is
       use Utilities, Analyzer;
 
       Rules_Specified : Boolean := False;
+      Project_Name : constant String := Value (Option => 'p', Explicit_Required => True);
 
       procedure Flag_To_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
       begin
-         if Is_Present (Option) then
+         if Is_Present (Option) or else Project.Tool_Switch_Present ("adacontrol", '-' & Option) then
             if Inverted then
                Append (Options_Commands, "set " & Param & " off;");
             else
@@ -278,12 +282,20 @@ package body Adactl_Options is
          end if;
       end Flag_To_Command;
 
-      procedure Value_To_Command (Option : Character; Param : Wide_String; Required : Boolean := True) is
+      procedure Value_To_Command (Option : Character;
+                                  Param    : Wide_String;
+                                  Required : Boolean := True;
+                                  Default  : String  := "")
+      is
       begin
          if Is_Present (Option) then
             Append (Options_Commands,
                     Param & ' '
-                    & To_Wide_String (Value (Option, Explicit_Required => Required, Default => "")) & ';');
+                    & To_Wide_String (Value (Option, Explicit_Required => Required, Default => Default)) & ';');
+         elsif Project.Tool_Switch ("adacontrol", '-' & Option) /= "" then
+            Append (Options_Commands,
+                    Param & ' '
+                    & To_Wide_String (Project.Tool_Switch ("adacontrol", '-' & Option)) & ';');
          end if;
       end Value_To_Command;
 
@@ -296,6 +308,7 @@ package body Adactl_Options is
          end if;
       end Is_Present;
 
+      use Project_File;
    begin -- Analyse_Options
       --
       -- Help
@@ -358,6 +371,12 @@ package body Adactl_Options is
       Overwrite_Option  := Is_Present (Option => 'w');
       Exit_Option.Value := Is_Present (Option => 'x');
 
+      begin
+         Project := Project_File.Factory.Corresponding_Project (Project_Name);
+      exception
+         when Occur: Project_Error =>
+            Option_Error (Ada.Exceptions.Exception_Message (Occur));
+      end;
       --
       -- Options that are translated into the command language
       --
@@ -385,7 +404,7 @@ package body Adactl_Options is
       Flag_To_Command  ('e', "warning_as_error");
       Flag_To_Command  ('E', "warning", Inverted => True);
       Value_To_Command ('F', "set format");
-      Value_To_Command ('G', "set fixes_gen");
+      Value_To_Command ('G', "set fixes_gen", Required => False, Default => "NONE");
       if Is_Present (Option => 'j') then
          Append (Options_Commands, "set ignore inverted;"); -- -i ignored if -j given
       else
@@ -393,7 +412,7 @@ package body Adactl_Options is
       end if;
       Value_To_Command ('m', "set max_errors",   Required => False);
       Value_To_Command ('M', "set max_messages", Required => False);
-      Value_To_Command ('o', "set output");
+      Value_To_Command ('o', "set output",       Required => False, Default => "CONSOLE");
       Value_To_Command ('S', "set statistics");
       Value_To_Command ('t', "set trace");
       Flag_To_Command  ('T', "timing");
@@ -404,14 +423,10 @@ package body Adactl_Options is
          Value_To_Command ('f', "source", Required => False);
          Rules_Specified := Value ('f', Explicit_Required => False, Default => "") /= "";
 
-      elsif Action /= Dependents
-        and then Is_Present (Option => 'p')
-        and then Implementation_Options.Project_File.Is_Appropriate (Value (Option => 'p', Explicit_Required => True))
-      then
+      elsif Action /= Dependents then
          declare
-            use Implementation_Options.Project_File, Ada.Directories;
-            Project_File : constant String := Value (Option => 'p', Explicit_Required => True);
-            Rule_File    : constant String := Tool_Switch (Project_File, "adacontrol", After => "-f");
+            use Ada.Directories;
+            Rule_File : constant String := Project.Tool_Switch ("adacontrol", After => "-f");
          begin
             if Rule_File /= "" then
                if Is_Relative_Name (Rule_File) then
@@ -420,7 +435,7 @@ package body Adactl_Options is
                   --       '/' works on every OS...
                   Append (Options_Commands,
                           "source "
-                          & To_Wide_String (Compose (Containing_Directory (Project_File)
+                          & To_Wide_String (Compose (Containing_Directory (Project_Name)
                                                      & '/' & Containing_Directory (Rule_File),
                                                      Simple_Name (Rule_File)))
                           & ';');
@@ -464,18 +479,14 @@ package body Adactl_Options is
       --
       if Action /= Check then
          if Parameter_Count = 0 then
-            if Is_Present (Option => 'p')
-              and then Implementation_Options.Project_File.Is_Appropriate (Value (Option            => 'p',
-                                                                                  Explicit_Required => True))
-            then
+            if Is_Present (Option => 'p') then
                declare
-                  use Implementation_Options.Project_File, Ada.Directories;
-                  Project_File  : constant String := Value (Option => 'p', Explicit_Required => True);
-                  Indirect_File : constant String := Tool_Switch (Project_File, "adacontrol", After => "-@");
+                  use Ada.Directories;
+                  Indirect_File : constant String := Project.Tool_Switch ("adacontrol", After => "-@");
                begin
                   if Indirect_File = "" then
                      declare
-                        Mains : constant Names_List := Main_Files (Project_File);
+                        Mains : constant Names_List := Project.Main_Files;
                      begin
                         if Mains'Length = 0 then
                            Option_Error ("No unit/file specified and no indirect file or mains in project");
@@ -483,13 +494,13 @@ package body Adactl_Options is
                         for I in Mains'Range loop
                            Add_Unit (To_Wide_String (Mains (I)));
                         end loop;
-                        if Tool_Switch_Present (Project_File, "adacontrol", Switch => "-r") then
+                        if Project.Tool_Switch_Present ("adacontrol", Switch => "-r") then
                            Recursive_Option := On;
                         end if;
                      end;
                   else
                      if Is_Relative_Name (Indirect_File) then
-                        Add_Unit ('@' & To_Wide_String (Compose (Compose (Containing_Directory (Project_File),
+                        Add_Unit ('@' & To_Wide_String (Compose (Compose (Containing_Directory (Project_Name),
                                                                           Containing_Directory (Indirect_File)),
                                                                 Simple_Name (Indirect_File))));
                      else
@@ -524,10 +535,10 @@ package body Adactl_Options is
       use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
       use Implementation_Options, Analyzer;
    begin
-      return Parameters_String (Project_Name  => Value (Option => 'p', Explicit_Required => True),
+      return Parameters_String (Project,
                                 Other_Options => To_Wide_String (Tail_Value) & To_Wide_String (Extra_Pathes));
    exception
-      when Occur : Analyzer.Options_Error | Implementation_Options.Implementation_Error =>
+      when Occur : Analyzer.Options_Error | Project_File.Project_Error =>
          Option_Error (Occur);
   end Asis_Options;
 

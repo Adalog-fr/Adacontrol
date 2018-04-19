@@ -54,6 +54,7 @@ with   -- ASIS components
 with   -- Other reusable components
   Implementation_Options,
   Options_Analyzer,
+  Project_File.Factory,
   Utilities;
 
 with   -- What we test
@@ -402,7 +403,7 @@ procedure Pfni is
    end Fix;
 
    use Ada.Characters.Handling, Asis.Exceptions;
-   use Implementation_Options;
+   use Implementation_Options, Project_File;
    use Ada.Strings.Wide_Unbounded;
 begin  -- PFNI
    Thick_Queries.Set_Error_Procedure (Utilities.Failure'Access);
@@ -434,7 +435,8 @@ begin  -- PFNI
    Implementation.Initialize (Initialize_String);
    Ada_Environments.Associate (My_Context,
                                "MARF",
-                               Parameters_String (Value (Option => 'p', Explicit_Required => True),
+                               Parameters_String (Factory.Corresponding_Project (Value (Option => 'p',
+                                                                                        Explicit_Required => True)),
                                                   To_Wide_String (Fix (Tail_Value)) & To_Wide_String (I_Options)));
    Ada_Environments.Open (My_Context);
 

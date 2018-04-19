@@ -92,6 +92,22 @@ nb_fw=0
 
 if [ $SPEEDUP == 0 ] ; then
     put_line "--- General framework tests"
+
+    # This one has full path names in the result file, the result depends on the directory 
+    # where it's run from...
+    # translate \ to / to make independant from OS, keep only the "test/" part of the path
+    test_case=tfw_formats
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+	| tr -d \\r \
+        | sed "s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
+
+    # Check GPR project file. Use the raw executable, since we want to check that
+    # options are taken from the project file
+    test_case=tfw_gpr
+    ${EXECUTABLE} -p ${test_case}.gpr \
+	| tr -d \\r >res/${test_case}.txt
+
     test_case=tfw_help
     nb_fw=$((nb_fw+1))
     ${ADACTL} -h all 2>&1 \
@@ -104,15 +120,6 @@ if [ $SPEEDUP == 0 ] ; then
 	| tr -d \\r >>res/${test_case}.txt
     # Remove line with version number to avoid false failures when using a different GNAT version
     sed -i "/with ASIS/s/with ASIS.*$//" res/${test_case}.txt
-
-    # This one has full path names in the result file, the result depends on the directory 
-    # where it's run from...
-    # translate \ to / to make independant from OS, keep only the "test/" part of the path
-    test_case=tfw_formats
-    nb_fw=$((nb_fw+1))
-    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
-	| tr -d \\r \
-        | sed "s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
 
     # This one requires precompilation, or some trees will be missing
     gcc -c -gnatct xfw_inhibit.adb tfw_inhibit_?.ad[sb]

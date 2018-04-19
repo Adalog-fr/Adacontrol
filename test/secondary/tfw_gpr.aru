@@ -1,0 +1,3 @@
+check style;
+check statements (goto);
+check expressions (and_boolean);

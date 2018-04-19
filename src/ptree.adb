@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------
 -- Program PTREE                                                    --
--- (C) Copyright 2001-2012 ADALOG                                   --
+-- (C) Copyright 2001-2018 ADALOG                                   --
 -- Author: J-P. Rosen                                               --
 --                                                                  --
 -- Prints a graphic representation of an ASIS tree                  --
@@ -55,6 +55,7 @@ with   -- ASIS components
 with   -- Other reusable components
   Implementation_Options,
   Options_Analyzer,
+  Project_File.Factory,
   Utilities;
 
 procedure Ptree is
@@ -341,7 +342,7 @@ procedure Ptree is
    The_Info       : Info := 0;
 
    use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
-   use Implementation_Options, Utilities;
+   use Implementation_Options, Project_File, Utilities;
 begin  -- Ptree
    if Is_Present (Option => 'h') then
       Print_Help;
@@ -364,8 +365,8 @@ begin  -- Ptree
 
    Implementation.Initialize (Initialize_String);
    Ada_Environments.Associate (My_Context, "Ptree",
-                               Parameters_String (Value (Option            => 'p',
-                                                         Explicit_Required => True),
+                               Parameters_String (Factory.Corresponding_Project (Value (Option            => 'p',
+                                                                                        Explicit_Required => True)),
                                                   To_Wide_String (Options.Tail_Value) & To_Wide_String (I_Options)));
    Ada_Environments.Open (My_Context);
 

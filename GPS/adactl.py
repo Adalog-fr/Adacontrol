@@ -574,8 +574,9 @@ def options(rules, files):
         else:
             result = result + " -o " + output_name
     else:
-        # file is specified but not used
+        # file is specified but not used => print messages
         output_name = ""
+        result = result + " -o CONSOLE"
 
     if rules != "check":
         if gps and not fixes:

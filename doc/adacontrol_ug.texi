@@ -652,8 +652,8 @@ The syntax for invoking AdaControl in regular mode is:
 @example
 adactl [-deEirsTuvwx]
        [-p <project file>]  [-f [<command file>]]  [-l <commands>]
-       [-F <format>]        [-o <output file>]     [-t <trace file>]
-       [-G <fix level>]     [-S <statistics level>]
+       [-F <format>]        [-o [<output file>]]   [-t <trace file>]
+       [-G [<fix level>]]   [-S <statistics level>]
        [-m <warning limit>] [-M <message limit>]
        @{<unit>[+|-<unit>]|[@@]<file>@} [-- <ASIS options>]
 @end example
@@ -867,7 +867,9 @@ without a <command file>.
 @subsection Output file
 Messages produced by controls are output to the output file; by
 default, it is the standard output, but it can be changed by
-specifying the ``-o'' option.
+specifying the ``-o'' option. The output can be forced to the standard
+output by giving the ``-o'' option without a file name; this can be useful to
+override a ``-o'' option given in a project file. @xref{Project files}.
 
 Ex:
 @example
@@ -934,9 +936,12 @@ is also an explicit ``-f'' option.
 
 Similarly, if no units are given on the command line, AdaControl
 processes the units from the units file of the project file if any, or
-the main files from the project file. In the later case, the units are
-processed recursively if the project file specifies the recursive
-option.
+the main files from the project file. 
+
+More generally, any option not given on the command line is taken from
+the project file. Especially, units are processed recursively if the
+project file specifies the recursive option, the output is verbose if
+the project file specifies the verbose option, etc.
 
 In short, if you specify AdaControl parameters in the project file,
 you only  need to pass the ``-p'' option to it.
@@ -951,6 +956,12 @@ extension used by the Ada mode of Emacs and older versions of
 AdaControl) can also be specified with the `` -p'' option. AdaControl
 will consider all the directories mentioned in ``src_dir'' lines from
 the project file.
+
+@subsubsection Tip
+If you have specified an output file in the project file, it will be
+used by default (like for any other option) if you run AdaControl from
+the command line; therefore, all messages will go to the output file. If you want to force
+output to the console, use the ``-o'' option without a file name.
 
 @node  Local disabling control, Verbose and debug mode, Project files, Command line parameters and options
 @subsection Local disabling control
@@ -1200,6 +1211,13 @@ fixing violations is necessarily an iterative process.
 And of course, the best advice is: fix violations as early as
 possible.  Run AdaControl each time you modify a module. This is the
 best way to save the effort!
+
+@subsection Tip
+If you have specified a fix level in the project file, it will be used
+by default (like for any other option) if you run AdaControl from the
+command line; therefore, fixes will be generated, which might be
+undesirable for console output. To disable the generation of fixes,
+use the ``-G'' option without value (same as ``-G none'').
 
 @subsection A word of caution
 Attention of users designing safety critical applications (DOD-178B/C

@@ -12,7 +12,7 @@ project Adactl is
    package Ide is
       for Vcs_Kind use "git";
       for Vcs_Repository_Root use "wks";
-      for Default_Switches ("adacontrol") use ("-x", "-d", "-o", "result.txt", "-G", "search", "-S", "1", "-f", "src/verif.aru", "-@", "src/units.txt");
+      for Default_Switches ("adacontrol") use ("-x", "-d", "-G", "search", "-S", "1", "-f", "src/verif.aru", "-@", "src/units.txt", "-o", "result.txt", "-F", "gnat_short");
    end Ide;
 
    package Builder is

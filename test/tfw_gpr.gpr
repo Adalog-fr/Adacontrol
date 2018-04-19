@@ -1,0 +1,13 @@
+-- Objective: check that options unspecified on the command line come from the GPR project file
+-- Source of test located in "secondary" directory
+project Tfw_GPR is
+
+   for Languages use ("Ada", "Adacontrol", "Project File");
+   for Main use ("tfw_gpr.adb");
+   for Source_Dirs use ("secondary");
+
+   package Ide is
+      for Default_Switches ("adacontrol") use ("-v", "-S", "1", "-f", "secondary/tfw_gpr.aru", "-F", "gnat_short");
+   end Ide;
+
+end Tfw_GPR;
