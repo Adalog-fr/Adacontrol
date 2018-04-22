@@ -105,6 +105,7 @@ if [ $SPEEDUP == 0 ] ; then
     # Check GPR project file. Use the raw executable, since we want to check that
     # options are taken from the project file
     test_case=tfw_gpr
+    nb_fw=$((nb_fw+1))
     ${EXECUTABLE} -p ${test_case}.gpr \
 	| tr -d \\r >res/${test_case}.txt
 
@@ -131,6 +132,11 @@ if [ $SPEEDUP == 0 ] ; then
     test_case=tfw_naming
     nb_fw=$((nb_fw+1))
     ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb xfw_naming \
+	| tr -d \\r >res/${test_case}.txt
+
+    test_case=tfw_rule_file_off
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r >res/${test_case}.txt
 
     test_case=tfw_rule_off

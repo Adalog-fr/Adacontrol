@@ -38,6 +38,7 @@ package Framework.Language is
    --              | "inhibit" "all" | <rule_name> "(" [ "all" <unit> {, "all" <unit>} ")"
    --              | "message" <any_string> ["pause"]
    --              | "quit"
+   --              | "rule_file_off" <any_string> "all" | <name> {,<name>}
    --              | "set" "format"                     <format_name>     |
    --                      "check_key"|"search_key"     <any_string>      |
    --                      "max_errors"|"max_messages" [<integer_value>]  |

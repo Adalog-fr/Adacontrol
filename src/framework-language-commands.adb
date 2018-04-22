@@ -90,6 +90,7 @@ package body Framework.Language.Commands is
       User_Message ("   Inhibit <rule name> (<unit>{,<unit>});");
       User_Message ("   Message ""<message>"" [pause];");
       User_Message ("   Quit;");
+      User_Message ("   Rule_file_off ""<pattern>"" all | <rule name> {,<rule name>}");
       User_Message ("   Set check_key|search_key ""<key>""");
       User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short|none ;");
       User_Message ("   Set output <output file>;");

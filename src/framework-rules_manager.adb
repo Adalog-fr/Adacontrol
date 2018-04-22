@@ -50,8 +50,10 @@ pragma Elaborate_All (Binary_Map);
 with
   Framework.Control_Manager,
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Variables,
-  Framework.Reports;
+  Framework.Pattern_Queues,
+  Framework.Pattern_Queues_Matchers,
+  Framework.Reports,
+  Framework.Variables;
 
 package body Framework.Rules_Manager is
    use Framework.Variables;
@@ -84,10 +86,13 @@ package body Framework.Rules_Manager is
       Reset        : Reset_Procedure;
       Used         : Boolean;
       Total_Time   : Duration;
+      Off_Patterns : Pattern_Queues.Queue;
    end record;
 
    package Rule_List is new Binary_Map (Unbounded_Wide_String, Rule_Info);
    Rule_Map : Rule_List.Map;
+
+   All_Off_Patterns : Pattern_Queues.Queue;
 
    Kinds_Count : array (Extended_Rule_Kind) of Rules_Count := (others => 0);
 
@@ -131,8 +136,9 @@ package body Framework.Rules_Manager is
                      To_Unbounded_Wide_String (To_Upper (Rule)),
                      (R_Kind,
                       Help_CB, Add_Control_CB, Command_CB, Prepare_CB, Finalize_CB, Reset_CB,
-                      Used  => False,
-                      Total_Time => 0.0));
+                      Used         => False,
+                      Total_Time   => 0.0,
+                      Off_Patterns => Pattern_Queues.Empty_Queue));
       Nb_Rules := Nb_Rules + 1;
 
       if Rule'Length > Max_Name_Length then
@@ -634,6 +640,45 @@ package body Framework.Rules_Manager is
    begin
       Rule_List.Balance (Rule_Map);
    end Initialize;
+
+   ------------------
+   -- File_Disable --
+   ------------------
+
+   procedure File_Disable (Rule_Id : Wide_String; Pattern : Wide_String) is
+      use Framework.Pattern_Queues, Rule_List, String_Matching, Utilities;
+      Rule_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Rule_Id));
+   begin
+      if To_Wide_String (Rule_Name) = "ALL" then
+         Append (All_Off_Patterns, Compile (Pattern));
+      else
+         declare
+            Info : Rule_Info :=  Fetch (Rule_Map, Rule_Name);
+         begin
+            Append (Info.Off_Patterns, Compile (Pattern));
+            Add (Rule_Map, Rule_Name, Info);
+         end;
+      end if;
+   exception
+      when Pattern_Error =>
+         Error ("Incorrect pattern: " & Pattern);
+      when Not_Present =>
+         Error ("Unknown rule: " & To_Wide_String (Rule_Name));
+   end File_Disable;
+
+   -----------------------------
+   -- Initial_Disabling_State --
+   -----------------------------
+
+   function Initial_Disabling_State (Rule_Id : Wide_String; File : Wide_String) return Boolean is
+      use Framework.Pattern_Queues_Matchers, Utilities;
+      use Rule_List;
+      Info : constant Rule_Info :=  Fetch (Rule_Map, To_Unbounded_Wide_String (To_Upper (Rule_Id)));
+   begin
+      return not Match_Any (File, All_Off_Patterns) and not Match_Any (File, Info.Off_Patterns);
+   end Initial_Disabling_State;
+
+
 begin  -- Framework.Rules_Manager
      Framework.Variables.Register (Timing_Option'Access, Variable_Name => "TIMING");
 end Framework.Rules_Manager;

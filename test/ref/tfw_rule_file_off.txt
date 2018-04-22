@@ -1,0 +1,3 @@
+tfw_rule_file_off.adb:9:8: Error: Rule1: use of element "Standard.Float"
+tfw_rule_file_off.adb:13:8: Error: Rule2: use of element "Standard.Integer"
+tfw_rule_file_off.adb:14:8: Error: Rule1: use of element "Standard.Float"

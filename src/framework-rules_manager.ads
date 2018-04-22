@@ -114,4 +114,13 @@ package Framework.Rules_Manager is
    --    An_Identifier
    --    A_Selected_Component (checks the selector)
 
+   -------------------------------------------------------------------
+   --  Management of file disabling                                 --
+   -------------------------------------------------------------------
+
+   procedure File_Disable (Rule_Id : Wide_String; Pattern : Wide_String);
+   -- Associates Pattern to Rule_Name. Multiple patterns can be associated to the same rule.
+
+   function Initial_Disabling_State (Rule_Id : Wide_String; File : Wide_String) return Boolean;
+   -- Returns True unless File matches one of the patterns associated to Rule_Name
 end Framework.Rules_Manager;

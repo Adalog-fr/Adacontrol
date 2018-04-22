@@ -1,0 +1,6 @@
+Rule1: check entities (Standard.Float);
+Rule2: check entities (standard.integer);
+check declarations (exception);
+
+rule_file_off "file_off.adb$" All;
+rule_file_off "file_off.adb$" Entities;

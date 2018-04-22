@@ -349,6 +349,41 @@ package body Framework.Language is
                            Message_Command (Mess, With_Pause);
                         end;
 
+                     when Key_Rule_File_Off =>
+                        Next_Token;
+
+                        if Current_Token.Kind /= String_Value then
+                           Syntax_Error ("File name pattern expected", Current_Token.Position);
+                        end if;
+
+                        declare
+                           Pattern : constant Wide_String := Image (Current_Token);
+                        begin
+                           Next_Token;
+
+                           if Current_Token.Kind /= Name then
+                              Syntax_Error ("""all"" or Rule name expected", Current_Token.Position);
+                           end if;
+
+                           if Current_Token.Key = Key_All then
+                              Next_Token;
+                              Close_Command;
+                              File_Disable ("ALL", Pattern);
+
+                           else
+                              loop
+                                 File_Disable (Image (Current_Token), Pattern);
+                                 Next_Token;
+                                 exit when Current_Token.Kind /= Comma;
+                                 Next_Token;
+                                 if Current_Token.Kind /= Name then
+                                    Syntax_Error ("Rule name expected", Current_Token.Position);
+                                 end if;
+                              end loop;
+                              Close_Command;
+                           end if;
+                        end;
+
                      when Key_Quit =>
                         Next_Token;
                         Close_Command;

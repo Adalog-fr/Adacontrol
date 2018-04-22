@@ -55,8 +55,9 @@ private package Framework.Language.Scanner is
    type Key_Kind is (Key_Access,    Key_All,    Key_Function,            -- Profile keywords
                      Key_Procedure, Key_Return,
                      Key_Clear,     Key_Help,   Key_Inhibit, Key_Go,     -- Command keywords
-                     Key_Message,   Key_Quit,   Key_Set,     Key_Source,
-                     Key_Check,     Key_Search, Key_Count,               -- Control kind keywords
+                     Key_Message,   Key_Quit,   Key_Rule_File_Off,
+                     Key_Set,       Key_Source, Key_Check,
+                     Key_Search,    Key_Count,                           -- Control kind keywords
                      Not_A_Key);                                         -- not a keyword
    subtype Profile_Keys is Key_Kind range Key_Access .. Key_Return;
    subtype Type_Keys    is Key_Kind range Key_Check  .. Key_Count;

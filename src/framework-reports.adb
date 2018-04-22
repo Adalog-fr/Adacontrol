@@ -41,6 +41,7 @@ with
 -- Adactl
 with
   Framework.Variables.Shared_Types,
+  Framework.Rules_Manager,
   Implementation_Options,
   Adactl_Options;
 
@@ -445,9 +446,7 @@ package body Framework.Reports is
 
       use Ada.Exceptions;
       use Counters, False_Positive_Map;
-
    begin  -- Report
-      Report_Enabled := True;
       if Error_Count = Max_Errors.Value or Error_Count + Warning_Count = Max_Messages.Value then
          -- This can happen for finalization messages after the run has been previously cancelled
          -- due to too many errors/messages
@@ -483,6 +482,7 @@ package body Framework.Reports is
 
       -- Retrieve source line, but only if necessary since it can be quite
       -- a long operation
+      Report_Enabled := Rules_Manager.Initial_Disabling_State (Rule_Id, Get_File_Name (Loc));
       if Format_Option.Value = Source
         or (Format_Option.Value /= None and Ignore_Option.Value /= On)
       then

@@ -2424,6 +2424,10 @@ Proc (I);
 --## rule on rule2
 @end example
 
+The ``Rule_File_Off'' command can be used to start units whose file
+name matches a given pattern in the ``disabled'' state for some or all
+rules. @xref{Rule_File_Off command}.
+
 @subsubsection Line disabling
 A control is disabled only for the line where a marker that applies to
 it appears.
@@ -2471,6 +2475,7 @@ command files as well.
 * Clear command::
 * Set command::
 * Source command::
+* Rule_File_Off command::
 * Inhibit command::
 @end menu
 
@@ -2676,7 +2681,7 @@ their value. The variable name is of the form of a qualified name
 description of the variables (if any) and appropriate values is given
 for each rule.
 
-@node Source command, Inhibit command, Set command, Other commands
+@node Source command, , Set command, Other commands
 @subsection Source command
 This command inputs commands from another file.
 
@@ -2705,7 +2710,47 @@ file>, commands are read from the console until a ``quit'' command is
 given. This command is of course useful only from files, and allows to
 pass temporarily control to the user in interactive mode.
 
-@node Inhibit command,  , Source command, Other commands
+@node Rule_File_Off command, Inhibit command, Source command, Other commands
+@subsection Rule_File_Off command
+This command changes the initial disabled state to ``off'' for files that
+match a given pattern. @xref{Disabling controls}.
+
+Syntax:
+@example
+Rule_file_off "<pattern>" all | <rule name> @{, <rule name>@}
+@end example
+
+Messages from files whose (full path) name matches the given <pattern>
+are initially disabled, like if a ``@code{--##rule off}'' comment had been
+given before the first line of the file. The pattern is given using
+the full Regexp syntax, not the file pattern matching of the
+system. @pxref{Syntax of regular expressions} for details.
+
+If ``all'' is given, messages for all rules are disabled, otherwise
+messages are disabled only for the given rule(s).
+
+Example:
+@example
+-- Disable all messages from units located in the 
+-- "external_components" directory:
+rule_file off "/external_components/" all
+
+-- Disable rules expressions and statements for bodies of unit
+-- Compo and children (in Gnat file notation):
+rule_file_off "compo(-.*)*\.adb$" expressions, statements
+@end example
+
+@subsubsection Tips
+Unlike the regular ``@code{--##rule off}'' comment, it is not possible to
+disable a control according to its label, only rule names can be
+given.
+
+This command works on file names, not on logical Ada units.
+
+Rules can be re-enabled if the file contains a matching ``@code{--##rule on}''
+comment.
+
+@node Inhibit command,  , Rule_File_Off command, Other commands
 @subsection Inhibit command
 This command prevents execution of certain controls on particular units.
 
@@ -2713,6 +2758,7 @@ Syntax:
 @example
 Inhibit <rule name>|all ([all] <unit> @{,[all] <unit>@});
 @end example
+
 Controls refering to the given rule (or all rules if ``all'' is
 specified in place of a rule name) for the indicated unit(s) are not
 performed. In addition, if ``all'' is specified in front of the unit
@@ -2742,6 +2788,13 @@ error messages.
 The ``all'' option for a unit is intended for the last case, to
 prevent ASIS bugs from spoiling any unit that calls something from an
 offending unit.
+
+@subsubsection Tip
+This command prevents the unit from being analyzed, and it is not
+possible to ``uninhibit'' it, unlike the ``Rule_File_Off'' command
+(@pxref {Rule_File_Off command}) that simply turns off messages. Note
+also that the ``Rule_File_Off'' command works on file name patterns
+while the ``inhibit'' command works on Ada units.
 
 @node Example of commands,  , Other commands, Command language reference
 @section Example of commands
