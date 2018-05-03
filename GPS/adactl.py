@@ -539,7 +539,6 @@ def options(rules, files):
             # compatibility: ignore -p option and following parameter
             next_is_pfile = True
         elif O == "-P":
-            print "-P"
             next_is_fixfile = True
         elif O == "-S":
             next_is_stats = True

@@ -98,7 +98,7 @@ package Framework.Rules_Manager is
    procedure Report_Timings (Global_Report : Boolean);
 
    -------------------------------------------------------------------
-   --  Inhibition management                                        --
+   --  Management of inhibition                                     --
    -------------------------------------------------------------------
 
    procedure Inhibit (Rule_Name : Wide_String; Entity : Entity_Specification; Is_All : Boolean);

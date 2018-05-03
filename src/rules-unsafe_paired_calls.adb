@@ -54,7 +54,7 @@ package body Rules.Unsafe_Paired_Calls is
    --    - That the call is the first statement in a sequence
    --    - That there is no call for the same lock in an enclosing scope (opening calls are kept in a scoped store)
    --    - That the current sequence of statements is terminated by a matching closing call
-   --    - That there is an exception parts with a "when others" handler
+   --    - That there is an exception part with a "when others" handler
    --    - That every handler includes exactly one closing call
    -- For closing calls check:
    --    - That the call is the last statemement in a sequence, except for possible return, exit and null

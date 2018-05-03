@@ -48,8 +48,10 @@ while true ; do
     case "${1:-}" in
         -h)
             echo "Usage:"
-            echo "   ./run.sh [-q] [<adactl options>]"
+            echo "   ./run.sh [-q] [-s] [<adactl options>]"
             echo "   ./run.sh -h"
+            echo "   -q: quiet mode, no display"
+            echo "   -s: speedup mode, no framework test"
             exit
             ;;
         -q)
@@ -90,7 +92,7 @@ put_line_line
 run_start=`date +%s`
 nb_fw=0
 
-if [ $SPEEDUP == 0 ] ; then
+if [ $SPEEDUP = 0 ] ; then
     put_line "--- General framework tests"
 
     # This one has full path names in the result file, the result depends on the directory 
@@ -254,7 +256,7 @@ ${ADACTL} -uw -f conf/${test_case}.aru $test_case+x_units_2 \
 #
 
 run_stop=`date +%s`
-if  [ $SPEEDUP == 1 ] ; then
+if  [ $SPEEDUP = 1 ] ; then
     list=`find ref -name "t_*.txt" -printf "%P "`
 else
     list=`find ref \( -name "t_*.txt" -o -name "tfw_*.txt" -o -name "ts_*.txt" \) -printf "%P "`
