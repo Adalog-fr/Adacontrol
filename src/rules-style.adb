@@ -1101,8 +1101,7 @@ package body Rules.Style is
 
    procedure Process_Compound_Statement (Statement : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements, Asis.Text;
-      use Framework.Reports;
-      Elem_Span : Span;
+      use Framework.Reports, Thick_Queries;
       Kind      : Asis.Statement_Kinds;
    begin
       if not Rule_Used (St_Compound_Statement) then
@@ -1117,8 +1116,7 @@ package body Rules.Style is
          return;
       end if;
 
-      Elem_Span := Element_Span (Statement);
-      if Elem_Span.Last_Line - Elem_Span.First_Line + 1 < Min_Stat_Length (Kind) then
+      if Lines_Span_Length (Statement) < Min_Stat_Length (Kind) then
          Report (Rule_Id,
                  Corresponding_Context (St_Compound_Statement),
                  Get_Location (Statement),
