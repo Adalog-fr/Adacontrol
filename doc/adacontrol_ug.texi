@@ -4293,10 +4293,9 @@ check declarations (not library generic);
 @end example
 
 @subsection Variable
-The rule provides a variable that allows to adjust the handling of
-limited types for the subrule
-``uninitialized_variable''. Initialization of  variables of a limited
-type was not permitted until Ada 2005.
+The rule provides a variable to adjust the handling of limited types
+for the subrule ``uninitialized_variable''. Initialization of
+variables of a limited type was not permitted until Ada 2005.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
@@ -5298,7 +5297,7 @@ The following subrules generate fixes:
 @end itemize
 
 @subsection Variable
-The rule provides a variable that allows to specify the amount of information
+The rule provides a variable to specify the amount of information
 displayed with the various *_function_calls subrules.
 
 @need 800
@@ -6134,7 +6133,7 @@ Overloading: search local_hiding (not_operator overloading);
 @end example
 
 @subsection Variable
-The rule provides a variable that allows to adjust the verbosity of
+The rule provides a variable to adjust the verbosity of
 messages for the subrule ``overloading'' when it encounters a
 construct that overloads several other constructs.
 @need 800
@@ -6238,8 +6237,8 @@ check  max_call_depth (finite);
 @end example
 
 @subsection Variable
-The rule provides a variable that allows to specify how to handle
-expression functions (Ada 2012).
+The rule provides a variable to specify how to handle expression
+functions (Ada 2012).
 
 @need 800
 @multitable @columnfractions .25 .20 .55
@@ -6757,8 +6756,7 @@ possible. Under GPS (interactive fixing) the ``fix'' icon launches the
 entity, and changing all occurrences.
 
 @subsection Variable
-The rule provides a variable that allows to specify the default
-casing.
+The rule provides a variable to specify the default casing.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
@@ -8594,8 +8592,9 @@ check  statements (case_others_null, exception_others_null);
 @end example
 
 @subsection Variable
-The rule provides a variable that allows to specify the amount of information
+The rule provides a variable to specify the amount of information
 displayed with the ``procedure_call'' and ``entry_call'' subrules.
+
 
 @need 800
 @multitable @columnfractions .25 .20 .55
@@ -8613,8 +8612,8 @@ information.
 @item
 @tab root_detailed
 @tab Display the name of the root called procedure or entry (i.e. the
-original procedure if the called procedure is a renaming) with overloading
-information.
+original procedure if the called procedure is a renaming) with
+overloading information.
 @end multitable
 
 @subsection Tips
@@ -9568,9 +9567,8 @@ check unsafe_paired_calls (Sema.P, Sema.V, Sema.Lock_Access);
 @end example
 
 @subsection Variable
-The rule provides a variable that allows to control whether opening
-and closing blocks can contain @b{if} statements, or just calls to the
-procedures.
+The rule provides a variable to control whether opening and closing
+blocks can contain @b{if} statements, or just calls to the procedures.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
@@ -9958,6 +9956,12 @@ search with_clauses (inherited);
 @end example
 
 @subsection Variables
+The rule provides a variable to control the handling of
+@code{@b{private}} @code{@b{with}}.
+
+The rule provides a variable to control the handling of package names
+in in @code{@b{use}} clauses.
+
 @multitable @columnfractions .25 .20 .55
 @item @b{Variable} @tab @b{Values} @tab @b{Effect}
 @item Check_Private_With
