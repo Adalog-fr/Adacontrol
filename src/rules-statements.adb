@@ -121,7 +121,8 @@ package body Rules.Statements is
    Top_Loop    : array (Scope_Manager.Scope_Range) of Asis.Statement;
 
    -- Rule variables
-   Called_Info : aliased Extra_Infos_Type.Object := (Value => None);
+   Called_Info       : aliased Extra_Infos_Type.Object := (Value => None);
+   Small_Loop_Length : aliased Natural_Type.Object     := (Value => 0);
 
    ----------
    -- Help --
@@ -137,6 +138,7 @@ package body Rules.Statements is
       User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Called_Info");
+      Help_On_Variable (Rule_Id & ".Small_Loop_Length");
    end Help;
 
    -----------------
@@ -528,7 +530,9 @@ package body Rules.Statements is
                      Failure ("Process_Statement: unknown ""for"" iterator", Loop_Spec);
                end case;
 
-               if Is_Nil (Statement_Identifier (Stmt)) then
+               if Is_Nil (Statement_Identifier (Stmt))
+                 and then Lines_Span_Length (Stmt) > Small_Loop_Length. Value
+               then
                   Do_Report (Stmt_Unnamed_For_Loop);
                end if;
 
@@ -563,7 +567,9 @@ package body Rules.Statements is
          when A_Loop_Statement =>
             Do_Report (Stmt_Simple_Loop);
 
-            if Is_Nil (Statement_Identifier (Stmt)) then
+            if Is_Nil (Statement_Identifier (Stmt))
+              and then Lines_Span_Length (Stmt) > Small_Loop_Length. Value
+            then
                Do_Report (Stmt_Unnamed_Simple_Loop);
             end if;
 
@@ -688,7 +694,9 @@ package body Rules.Statements is
          when A_While_Loop_Statement =>
             Do_Report (Stmt_While_Loop);
 
-            if Is_Nil (Statement_Identifier (Stmt)) then
+            if Is_Nil (Statement_Identifier (Stmt))
+              and then Lines_Span_Length (Stmt) > Small_Loop_Length. Value
+            then
                Do_Report (Stmt_Unnamed_While_Loop);
             end if;
 
@@ -1083,4 +1091,6 @@ begin  -- Rules.Statements
                                      Command_CB     => Command'Access);
    Framework.Variables.Register (Called_Info'Access,
                                  Variable_Name => Rule_Id & ".CALLED_INFO");
+   Framework.Variables.Register (Small_Loop_Length'Access,
+                                 Variable_Name => Rule_Id & ".SMALL_LOOP_LENGTH");
 end Rules.Statements;

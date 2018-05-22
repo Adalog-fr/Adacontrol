@@ -201,10 +201,10 @@ B2:begin                   -- Block
          null;             -- Null
    end B2;
 
-   while Bool  loop null; end loop;  -- While_Loop, Unnamed_While_Loop, Null, Null_Loop_Body
+   while Bool  loop null; end loop;  -- While_Loop, Null, Null_Loop_Body
 
-   for I in 1..10 loop null; end loop;               -- For_Loop, For_In_Loop, Unnamed_For_Loop, Untyped_For, Untyped_For_In, Null, Null_Loop_Body
-   for I in Integer range 1..10 loop null; end loop; -- For_Loop, For_In_Loop, Unnamed_For_Loop, Null, Null_Loop_Body
+   for I in 1..10 loop null; end loop;               -- For_Loop, For_In_Loop, Untyped_For, Untyped_For_In, Null, Null_Loop_Body
+   for I in Integer range 1..10 loop null; end loop; -- For_Loop, For_In_Loop, Null, Null_Loop_Body
 
    --
    -- Check Unnamed_Multiple_Loop

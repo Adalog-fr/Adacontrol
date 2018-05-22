@@ -1,3 +1,4 @@
+set statements.small_loop_length 1;
 Sequential_Stmts: search statements (accept_return,
                                      block,
                                      case_others,

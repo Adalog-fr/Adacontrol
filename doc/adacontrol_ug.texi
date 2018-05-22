@@ -8591,10 +8591,13 @@ check  statements (goto, abort);
 check  statements (case_others_null, exception_others_null);
 @end example
 
-@subsection Variable
+@subsection Variables
 The rule provides a variable to specify the amount of information
 displayed with the ``procedure_call'' and ``entry_call'' subrules.
 
+The rule provides a variable to define the length in lines of ``small
+loops'' that are not  controlled by the @code{unnamed_for_loop},
+@code{unnamed_simple_loop}, and @code{unnamed_while_loop} subrules.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
@@ -8614,6 +8617,11 @@ information.
 @tab Display the name of the root called procedure or entry (i.e. the
 original procedure if the called procedure is a renaming) with
 overloading information.
+@item Small_Loop_Length
+@tab <Integer> (default = 0)
+@tab Loops that span up to the indicated number of lines without being 
+named are not controlled by the @code{unnamed_for_loop},
+@code{unnamed_simple_loop}, and @code{unnamed_while_loop} subrules
 @end multitable
 
 @subsection Tips

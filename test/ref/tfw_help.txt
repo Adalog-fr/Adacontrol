@@ -739,6 +739,7 @@ Parameter(s): any_statement            | abort                   |
 
 Variables:
 Statements.Called_Info: (None, Compact, Detailed, Root_Detailed) = None
+Statements.Small_Loop_Length: 0 .. 2147483647 =  0
 ----
 Rule: STYLE
 Control various Ada style issues

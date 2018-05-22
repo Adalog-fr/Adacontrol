@@ -2,6 +2,12 @@
 == V1.20b2 ==
 =============
 
+Changes to existing rules:
+--------------------------
+statements:
+   do not control unnamed loops whose size is less than indicated
+   by the variable Small_Loop_Length
+
 =============
 == V1.20b1 ==
 =============
