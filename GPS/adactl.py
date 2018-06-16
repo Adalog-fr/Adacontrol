@@ -146,9 +146,10 @@ def pre_clean():
 def post_clean():
     """Clean-up after running AdaControl
     """
-    # Raise "Locations" window
+    # Raise "Locations" window if possible
     loc = GPS.MDI.get("Locations")
-    loc.raise_window()
+    if loc != None:
+        loc.raise_window()
     if GPS.Preference("delete-trees").get():
         del_tree(confirm=False)
 
@@ -594,6 +595,12 @@ def process_line(process, matching, rest):
     result = result + matching
 
 
+def exit_check(process, status, output):
+    if status > 1:
+        print "status:",status
+        print "output:",output
+
+
 def run(rules, files):
     """Run Adacontrol
        rules = "ask" | "file" | "check"
@@ -613,6 +620,7 @@ def run(rules, files):
         print command_line
     proc = GPS.Process(command=command_line,
                        task_manager=True,
+                       on_exit=exit_check,
                        regexp="^.+$",
                        single_line_regexp=True,
                        on_match=process_line,
