@@ -435,7 +435,7 @@ package body Adactl_Options is
                   --       '/' works on every OS...
                   Append (Options_Commands,
                           "source "
-                          & To_Wide_String (Compose (Containing_Directory (Project_Name)
+                          & To_Wide_String (Compose (Containing_Directory (Project.Path)
                                                      & '/' & Containing_Directory (Rule_File),
                                                      Simple_Name (Rule_File)))
                           & ';');
@@ -500,7 +500,7 @@ package body Adactl_Options is
                      end;
                   else
                      if Is_Relative_Name (Indirect_File) then
-                        Add_Unit ('@' & To_Wide_String (Compose (Compose (Containing_Directory (Project_Name),
+                        Add_Unit ('@' & To_Wide_String (Compose (Compose (Containing_Directory (Project.Path),
                                                                           Containing_Directory (Indirect_File)),
                                                                 Simple_Name (Indirect_File))));
                      else
