@@ -928,7 +928,14 @@ AdaControl stops immediately.
 @subsection Project files
 Starting with version 1.18, AdaControl supports GNAT project files
 (``.gpr''). The ``-p'' option is used to provide the name of a project
-file; Ada units to analyze will be searched in all ``source_dirs''
+file. If this name is a relative name, it is searched for in the
+current directory, then on the paths from the file whose name is given
+by the environment variable @code{GPR_PROJECT_PATH_FILE} and then on
+paths indicated by the environment variables @code{GPR_PROJECT_PATH}
+and @code{ADA_PROJECT_PATH}. This is the same algorithm as used by the
+various GNAT tools.
+
+Ada units to analyze will be searched in all ``source_dirs''
 specified in the project file or one of the projects it depends on
 (directly or indirectly). In addition, if the project file specifies a
 command file for AdaControl, this file will be considered, unless there
