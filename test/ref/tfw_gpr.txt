@@ -1,4 +1,4 @@
-gnat.adc:1:8: Error: STYLE: Wrong casing of "ADA_95", should be 
+gnat.adc:1:8: Error: STYLE: Wrong casing of "ADA_95", should be "Ada_95"
 tfw_gpr.adb:1:1: Error: STYLE: name not repeated at the end
 tfw_gpr.adb:4:18: Error: EXPRESSIONS: use of expression "and_boolean"
 tfw_gpr.adb:5:4: Error: STATEMENTS: use of statement "goto"

@@ -561,7 +561,7 @@ package body Rules.Style is
 
          -- Casing_Pragma
          Associate (Contexts, Value (Image (St_Casing_Pragma)), Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Casing_Policy (St_Casing_Identifier) := (Ca_Titlecase => True, others => False);
+         Casing_Policy (St_Casing_Pragma) := (Ca_Titlecase => True, others => False);
 
          -- Compound_Statement
          Associate (Contexts, Value (Image (St_Compound_Statement)), Basic.New_Context (Ctl_Kind, Ctl_Label));
@@ -819,20 +819,19 @@ package body Rules.Style is
       if Element_Kind (Source_Element) = A_Pragma then
          -- The pragma name cannot be accessed as an element, hence special handling
          declare
-            Pragma_Image : constant Asis.Program_Text := Pragma_Name_Image (Source_Element);
-            Pragma_Loc   : constant Location := Get_Next_Word_Location (Source_Element,
-                                                                        Starting => From_Head,
-                                                                        Skipping => 1);
+            Pragma_Loc : constant Location := Get_Next_Word_Location (Source_Element,
+                                                                      Starting => From_Head,
+                                                                      Skipping => 1);
          begin
             Report (Rule_Id,
                     Corresponding_Context (Casing),
                     Pragma_Loc,
-                    "Wrong casing of """ & Pragma_Image
+                    "Wrong casing of """ & Source_Image
                     & """, should be "
-                    & Should_Be (Pragma_Image, Casing_Policy (Casing), For_Fix => False));
+                    & Should_Be (Source_Image, Casing_Policy (Casing), For_Fix => False));
             Fixes.Replace (Pragma_Loc,
-                           Pragma_Image'Length,
-                           By => Should_Be (Pragma_Image, Casing_Policy (Casing), For_Fix => True));
+                           Source_Image'Length,
+                           By => Should_Be (Source_Image, Casing_Policy (Casing), For_Fix => True));
          end;
       else
          Report (Rule_Id,
