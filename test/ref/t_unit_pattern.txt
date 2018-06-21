@@ -13,11 +13,11 @@ t_unit_pattern-test_single_tagged_type.adb:25:7: Error: Single_Tagged_Type: Tagg
 t_unit_pattern-test_single_tagged_type.adb:25:7: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
 t_unit_pattern-test_context_clauses_order.adb:7:1: Found: Clauses_Order: clause (or pragma) out of order ("With" found in state 2)
 t_unit_pattern-test_context_clauses_order.adb:9:1: Found: Clauses_Order: clause (or pragma) out of order ("Use" found in state 3)
-t_unit_pattern-test_declarations_order.adb:26:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Number" found in state 4)
-t_unit_pattern-test_declarations_order.adb:27:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Private_Type" found in state 4)
-t_unit_pattern-test_declarations_order.adb:32:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Subprogram_Body" found in state 6)
-t_unit_pattern-test_declarations_order.adb:34:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Exception" found in state 6)
-t_unit_pattern-test_declarations_order.adb:41:7: Error: Package_Private_Order: Declaration out of order for Package_Private ("Full_Type" found in state 3)
+t_unit_pattern-test_declarations_order.adb:25:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Number" found in state 4)
+t_unit_pattern-test_declarations_order.adb:26:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Private_Type" found in state 4)
+t_unit_pattern-test_declarations_order.adb:31:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Subprogram_Body" found in state 6)
+t_unit_pattern-test_declarations_order.adb:33:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Exception" found in state 6)
+t_unit_pattern-test_declarations_order.adb:40:7: Error: Package_Private_Order: Declaration out of order for Package_Private ("Full_Type" found in state 3)
 x_tagged_type_hierarchy.ads:3:4: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy.ads:2:4
 x_tagged_type_hierarchy.ads:3:4: Error: Tagged_Type_Hierarchy: Type extension not in child unit of its parent's unit
 x_tagged_type_hierarchy-child.ads:3:4: Error: Single_Tagged_Type: Tagged type already declared at x_tagged_type_hierarchy-child.ads:2:4

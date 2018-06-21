@@ -1,4 +1,3 @@
-pragma Ada_05;
 with X_With_Clauses_2;             -- Can be moved to body
 with Ada.Strings;                  -- Unused, could be used by children
 with Ada.Characters.Handling;

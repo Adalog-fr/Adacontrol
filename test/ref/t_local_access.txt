@@ -1,11 +1,11 @@
-t_local_access.adb:24:13: Error: LOCAL_ACCESS: 'Unchecked_Access of possibly local variable
-t_local_access.adb:30:16: Error: LOCAL_ACCESS: 'Unchecked_Access of possibly local variable
-t_local_access.adb:78:26: Error: LOCAL_ACCESS: 'Unchecked_Access of local variable
-t_local_access.adb:88:29: Error: LOCAL_ACCESS: 'Unchecked_Access of local variable
-t_local_access.adb:93:13: Error: LOCAL_ACCESS: 'Unchecked_Access of local variable
-t_local_access.adb:94:13: Error: LOCAL_ACCESS: 'Unchecked_Access of local constant
-t_local_access.adb:95:13: Error: LOCAL_ACCESS: 'Unrestricted_Access of local procedure
-t_local_access.adb:96:13: Error: LOCAL_ACCESS: 'Unrestricted_Access of local function
-t_local_access.adb:50:50: Error: LOCAL_ACCESS: 'Unrestricted_Access of local function
-t_local_access.adb:98:18: Error: LOCAL_ACCESS: 'Unrestricted_Access of local protected_procedure
-t_local_access.adb:99:18: Error: LOCAL_ACCESS: 'Unrestricted_Access of local protected_function
+t_local_access.adb:23:13: Error: LOCAL_ACCESS: 'Unchecked_Access of possibly local variable
+t_local_access.adb:29:16: Error: LOCAL_ACCESS: 'Unchecked_Access of possibly local variable
+t_local_access.adb:77:26: Error: LOCAL_ACCESS: 'Unchecked_Access of local variable
+t_local_access.adb:87:29: Error: LOCAL_ACCESS: 'Unchecked_Access of local variable
+t_local_access.adb:92:13: Error: LOCAL_ACCESS: 'Unchecked_Access of local variable
+t_local_access.adb:93:13: Error: LOCAL_ACCESS: 'Unchecked_Access of local constant
+t_local_access.adb:94:13: Error: LOCAL_ACCESS: 'Unrestricted_Access of local procedure
+t_local_access.adb:95:13: Error: LOCAL_ACCESS: 'Unrestricted_Access of local function
+t_local_access.adb:49:50: Error: LOCAL_ACCESS: 'Unrestricted_Access of local function
+t_local_access.adb:97:18: Error: LOCAL_ACCESS: 'Unrestricted_Access of local protected_procedure
+t_local_access.adb:98:18: Error: LOCAL_ACCESS: 'Unrestricted_Access of local protected_function

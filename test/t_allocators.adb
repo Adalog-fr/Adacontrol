@@ -1,4 +1,3 @@
-pragma Ada_2005;
 procedure T_allocators is
    procedure Anonymous is separate;
 

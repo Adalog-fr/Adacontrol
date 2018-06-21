@@ -1,4 +1,3 @@
-pragma Ada_2012;
 procedure T_parameter_aliasing is
    package Wrapper is
       type By_Copy is private;     -- A by copy type that is not subject to Ada 2012 aliasing checks

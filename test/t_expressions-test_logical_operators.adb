@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Expressions)
 procedure Test_Logical_Operators is
    B1, B2 : Boolean;

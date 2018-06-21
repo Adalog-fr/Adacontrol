@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_derivations)
 procedure From is
    -- Check plain types

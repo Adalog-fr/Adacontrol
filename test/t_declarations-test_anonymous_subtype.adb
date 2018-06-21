@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Declarations)
 procedure Test_Anonymous_Subtype is            -- nested_procedure, local_procedure
    subtype Int is Integer range 1 .. 10;       -- subtype

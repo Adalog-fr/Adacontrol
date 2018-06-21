@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with X_With_Clauses_Gen;
 with X_With_Clauses_1;     -- Unnecessary (not necessary for default of instantiation)
 with X_With_Clauses_2;     -- OK (used for <> default of instantiation)

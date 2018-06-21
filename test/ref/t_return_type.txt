@@ -1,33 +1,16 @@
-t_return_type.adb:26:44: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:35:42: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:42:32: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:51:60: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:67:33: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:25:44: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:34:42: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:41:32: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:50:60: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:66:33: Error: Return_Unknown_Size: function returns unconstrained array type
 t_return_type-empty_string.adb:4:30: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:88:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
-t_return_type.adb:105:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
-t_return_type.adb:115:56: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:134:53: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:155:55: Error: Return_Unknown_Size: function returns class-wide type
-t_return_type.adb:168:55: Error: Return_Unknown_Size: function returns class-wide type
-t_return_type.adb:168:55: Error: Return_Limited_CW: function returns limited class-wide type
-t_return_type.adb:188:40: Error: Return_Task: function returns task type
-t_return_type.adb:212:45: Error: Return_Protected: function returns protected type
-t_return_type.adb:235:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:277:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
-t_return_type.adb:296:51: Error: Return_Task: function returns task type
-t_return_type.adb:296:51: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:309:13: Error: Return_Task: function returns task type
-t_return_type.adb:337:13: Error: Return_Protected: function returns protected type
-t_return_type.adb:337:13: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:352:13: Error: Return_Protected: function returns protected type
-t_return_type.adb:380:4: Error: Return_Task: function returns task type from instantiation
-t_return_type.adb:384:4: Error: Return_Protected: function returns protected type from instantiation
-t_return_type.adb:393:4: Error: Return_Unknown_Size: function returns class-wide type from instantiation
-t_return_type.adb:393:4: Error: Return_Limited_CW: function returns limited class-wide type from instantiation
-t_return_type.adb:393:4: Error: Return_Task: function returns task type from instantiation
-t_return_type.adb:393:4: Error: Return_Protected: function returns protected type from instantiation
-t_return_type.adb:393:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
-t_return_type.adb:446:4: Found: Return_Constrained_Array: function returns constrained array type from instantiation
-t_return_type-anonymous_access.adb:3:39: Error: Return_Anonymous_Access: function returns anonymous access type
-t_return_type-anonymous_access.adb:8:39: Error: Return_Anonymous_Access: function returns anonymous access type
+t_return_type.adb:87:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
+t_return_type.adb:104:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
+t_return_type.adb:114:56: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:133:53: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:154:55: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type.adb:176:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:218:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
+t_return_type.adb:272:4: Found: Return_Constrained_Array: function returns constrained array type from instantiation
+t_return_type-anonymous_access.adb:2:39: Error: Return_Anonymous_Access: function returns anonymous access type
+t_return_type-anonymous_access.adb:7:39: Error: Return_Anonymous_Access: function returns anonymous access type

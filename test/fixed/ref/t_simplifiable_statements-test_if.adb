@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Simplifiable_Statements)
 function Test_If return Integer is
    I, J : Integer;

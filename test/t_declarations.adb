@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_IO, Ada.Finalization;
 with X_Declarations.Child;

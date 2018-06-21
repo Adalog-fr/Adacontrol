@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Uncheckable)
 procedure Case_Statement is
       generic

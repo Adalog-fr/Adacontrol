@@ -1,4 +1,3 @@
-pragma Ada_2005;
 separate (T_Improper_Initialization)
 function Extended_Return return Integer is
    A : Integer := 3;         -- unnecessarily initialized

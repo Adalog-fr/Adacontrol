@@ -1,4 +1,3 @@
-pragma Ada_2005;
 procedure T_Positional_Associations is
    type Arecord is
       record

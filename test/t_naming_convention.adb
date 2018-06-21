@@ -1,4 +1,3 @@
-pragma Ada_2005;
 with Ada.Unchecked_Conversion;
 package body T_naming_convention is
    procedure T_Cat is separate;

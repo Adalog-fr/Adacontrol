@@ -1,13 +1,13 @@
-t_uncheckable-allocators.adb:9:14: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
-t_uncheckable-allocators.adb:12:17: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
-t_uncheckable-allocators.adb:13:21: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
-t_uncheckable-case_statement.adb:16:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:20:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:25:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:38:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (values) Expression is of a subtype with static predicate
-t_uncheckable-case_statement.adb:38:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Expression is of a subtype with static predicate
-t_uncheckable-case_statement.adb:45:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Use of subtype with static predicate
-t_uncheckable-case_statement.adb:45:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (range_span) Range is of a subtype with static predicate
+t_uncheckable-allocators.adb:8:14: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
+t_uncheckable-allocators.adb:11:17: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
+t_uncheckable-allocators.adb:12:21: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
+t_uncheckable-case_statement.adb:15:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:19:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:24:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
+t_uncheckable-case_statement.adb:37:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (values) Expression is of a subtype with static predicate
+t_uncheckable-case_statement.adb:37:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Expression is of a subtype with static predicate
+t_uncheckable-case_statement.adb:44:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Use of subtype with static predicate
+t_uncheckable-case_statement.adb:44:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (range_span) Range is of a subtype with static predicate
 t_uncheckable-declarations.adb:4:21: Error: Uncheckable: in rule DECLARATIONS: Possible false negative: unable to evaluate mod expression
 t_uncheckable-directly_accessed_globals.adb:19:15: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false negative: Name is dynamic renaming
 t_uncheckable-directly_accessed_globals.adb:25:30: Error: Uncheckable: in rule DIRECTLY_ACCESSED_GLOBALS: Possible false positive: variable "K" used as parameter of dispatching call, treated as in-out
@@ -51,11 +51,11 @@ t_uncheckable-representation_clauses.adb:19:10: Error: Uncheckable: in rule REPR
 t_uncheckable-representation_clauses.adb:21:20: Error: Uncheckable: in rule REPRESENTATION_CLAUSES: Possible false negative: unable to evaluate size for fractional_size/non_power2_size subrule
 t_uncheckable-style.adb:3:58: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of attribute
 t_uncheckable-style.adb:4:69: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of predefined operation
-t_uncheckable-unsafe_paired_calls.adb:16:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
-t_uncheckable-unsafe_paired_calls.adb:16:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
-t_uncheckable-unsafe_paired_calls.adb:21:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
-t_uncheckable-unsafe_paired_calls.adb:23:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
-t_uncheckable-unsafe_paired_calls.adb:16:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:15:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:15:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:20:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:22:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:15:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: Uncheckable: in rule UNSAFE_UNCHECKED_CONVERSION: Possible false positive: unable to evaluate size clause value for T2
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Target
 t_uncheckable-usage.adb:20:31: Error: Uncheckable: in rule USAGE: Possible false negative: Name is dynamic renaming
@@ -65,8 +65,8 @@ t_uncheckable-usage.adb:44:11: Error: Uncheckable: in rule USAGE: Possible false
 t_uncheckable-usage.adb:45:11: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
 t_uncheckable-usage.adb:46:7: Error: Uncheckable: in rule USAGE: Possible false negative: possible access through alias
 Error: Uncheckable: missing body for X_UNCHECKABLE_PROC
-t_uncheckable-allocators.adb:9:4: Error: USAGE: (normal) T_Uncheckable.Allocators.VR, variable, not initialized, written, read
-t_uncheckable-allocators.adb:10:4: Error: USAGE: (normal) T_Uncheckable.Allocators.VT, variable, initialized, written, not read
+t_uncheckable-allocators.adb:8:4: Error: USAGE: (normal) T_Uncheckable.Allocators.VR, variable, not initialized, written, read
+t_uncheckable-allocators.adb:9:4: Error: USAGE: (normal) T_Uncheckable.Allocators.VT, variable, initialized, written, not read
 t_uncheckable-usage.adb:6:4: Error: USAGE: (normal) T_Uncheckable.Usage.C, constant, not read (can be removed)
 t_uncheckable-usage.adb:28:7: Error: USAGE: (normal) T_Uncheckable.Usage.Pack.K, variable, not initialized, written, read
 t_uncheckable-usage.adb:9:4: Error: USAGE: (normal) T_Uncheckable.Usage.Ptr, variable, initialized, written, read

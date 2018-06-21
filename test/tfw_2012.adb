@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Containers.Indefinite_Vectors;
 procedure Tfw_2012 is
    -- Only for stress test.

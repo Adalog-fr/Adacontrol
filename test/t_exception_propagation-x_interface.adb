@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Exception_Propagation)
 procedure X_Interface is
    procedure Proc is begin null; end;

@@ -37,6 +37,17 @@ if [ -z $EXECUTABLE ] ; then
     exit
 fi
 
+# Check if Ada95 is supported
+echo "procedure junk is begin null; end;" >junk.adb
+
+gcc -c -gnat95 junk.adb 2>/dev/null
+if [ $? == 0 ] ; then
+    SUPPORT95=1
+else
+    SUPPORT95=0
+fi
+rm -f junk.*
+
 # We set -e to stop immediatly in case of a problem with the script
 # Note that it forces adding a " || True" to commands where the expected status is not 0
 set -e
@@ -79,7 +90,11 @@ put_title_line
 put_title_line "`${ADACTL} -h version 2>&1 | tr -d \\\\r`"
 put_title_line "($EXECUTABLE)"
 put_title_line
-put_title_line "VALIDATION"
+if [ $SUPPORT95 == 1 ] ; then
+    put_title_line "VALIDATION WITH ADA 95 SUPPORT"
+else
+    put_title_line "VALIDATION WITHOUT ADA 95 SUPPORT"
+fi
 put_title_line
 put_title_line "$(date)"
 put_title_line
@@ -196,6 +211,9 @@ if [ $SPEEDUP = 0 ] ; then
     test_case=tfw_stress
     nb_fw=$((nb_fw+1))
     list=`find ./ -maxdepth 1 '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
+    if [ $SUPPORT95 == 1 ] ; then
+        list="$list t95_*.adb"
+    fi
     export ADACTLINI="set timing global;"
     result=0
     find ./conf -name "t_*.aru" -printf "source conf/%P;\n" | ${ADACTL} -i -F csvx_short -wd -f - $list \
@@ -229,7 +247,9 @@ fi
 put_line "--- Rules tests"
 
 list=`find ./ -maxdepth 1 -name "t_*.adb" ! -name "*-*" -printf "%P "`
-#list=t_record_declarations.adb
+if [ $SUPPORT95 == 1 ] ; then
+    list="$list t95_*.adb"
+fi
 nb_rules=0
 for i in $list; do
     nb_rules=$((nb_rules+1))
@@ -261,13 +281,18 @@ if  [ $SPEEDUP = 1 ] ; then
 else
     list=`find ref \( -name "t_*.txt" -o -name "tfw_*.txt" -o -name "ts_*.txt" \) -printf "%P "`
 fi
+if [ $SUPPORT95 == 1 ] ; then
+    cd ref
+    list=`echo $list t95_*.txt`
+    cd ..
+fi
 
 nb_passed=0
 nb_failed=0
 put_line_line
 put_title_line "Test result for $nb_rules rules tests, $nb_fw framework tests"
 put_line_line
-for test_case in $list; do
+for test_case in $list ; do
     diff=`diff --strip-trailing-cr res/${test_case} ref/${test_case} 2>&1 || true`
     if [ -z "$diff" ]; then
 	nb_passed=$((nb_passed+1))

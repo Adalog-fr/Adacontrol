@@ -42,43 +42,43 @@ t_assignments-groupable_repeated.adb:174:7: Error: Groupable2: too many assignme
 t_assignments-groupable_repeated.adb:174:7: Error: Small_Rec: too many assignments to components of T_Assignments.Groupable_Repeated._Anonymous_.V2, total: 2 (<=2)
 t_assignments-groupable_repeated.adb:191:13: Error: Repeated: variable already assigned in same group at t_assignments-groupable_repeated.adb:190:13
 t_assignments-groupable_repeated.adb:194:13: Found: Groupable1: too many assignments to components of T_Assignments.Groupable_Repeated._Anonymous_.Prot.F3, given: 2 (>=2), missing: 1 (<=1)
-t_assignments-access_duplication.adb:14:20: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:19:24: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:38:18: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:82:68: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:83:27: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:90:23: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:128:26: Error: Proc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:10:21
-t_assignments-access_duplication.adb:136:10: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:137:18: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:139:14: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:140:14: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:146:10: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:147:21: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:148:17: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:149:17: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:155:15: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:156:26: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:157:11: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:158:11: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:160:22: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
+t_assignments-access_duplication.adb:13:20: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:18:24: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:37:18: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:81:68: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:82:27: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:89:23: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:127:26: Error: Proc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:9:21
+t_assignments-access_duplication.adb:135:10: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:136:18: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:138:14: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:139:14: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:145:10: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:146:21: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:147:17: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:148:17: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:154:15: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:155:26: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:156:11: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:157:11: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:159:22: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:164:13: Error: Acc_Dup: Possible duplication of not controlled access value
 t_assignments-access_duplication.adb:165:13: Error: Acc_Dup: Possible duplication of not controlled access value
-t_assignments-access_duplication.adb:166:13: Error: Acc_Dup: Possible duplication of not controlled access value
-t_assignments-access_duplication.adb:174:20: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:180:29: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:183:11: Error: Acc_Dup: Possible duplication of not controlled access value
-t_assignments-access_duplication.adb:184:22: Error: Acc_Dup: Possible duplication of not controlled access value
-t_assignments-access_duplication.adb:187:12: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:188:17: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:189:12: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:190:12: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:64:12 instantiated at t_assignments-access_duplication.adb:70:4
-t_assignments-access_duplication.adb:193:13: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:194:13: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:197:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:198:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:199:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:200:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:6:16
-t_assignments-access_duplication.adb:205:18: Error: Proc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:10:21
+t_assignments-access_duplication.adb:173:20: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:179:29: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:182:11: Error: Acc_Dup: Possible duplication of not controlled access value
+t_assignments-access_duplication.adb:183:22: Error: Acc_Dup: Possible duplication of not controlled access value
+t_assignments-access_duplication.adb:186:12: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:187:17: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:188:12: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:189:12: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:63:12 instantiated at t_assignments-access_duplication.adb:69:4
+t_assignments-access_duplication.adb:192:13: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:193:13: Found: Dup_Controlled: Duplication of controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:196:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:197:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:198:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:199:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
+t_assignments-access_duplication.adb:204:18: Error: Proc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:9:21
 
 Counts summary:
 Fully_Assigned: 8

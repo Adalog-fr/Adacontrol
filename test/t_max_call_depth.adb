@@ -1,4 +1,3 @@
-pragma Ada_2012;
 procedure T_Max_Call_Depth is
    procedure Dont_Count is  -- Recursive, but forced
    begin

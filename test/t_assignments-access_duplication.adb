@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Finalization;
 separate (t_assignments)
 procedure Access_Duplication is

@@ -1,4 +1,3 @@
-pragma Ada_2005;
 procedure T_Return_Type.Anonymous_Access is
    function Anonymous_Access_1 return access Integer is     -- Anonymous_access
    begin

@@ -1,4 +1,3 @@
-pragma Ada_05;
 package body Xfw_Naming is
 
    procedure Proc_1 is

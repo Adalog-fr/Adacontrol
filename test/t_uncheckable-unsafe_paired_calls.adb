@@ -1,4 +1,3 @@
-pragma Ada_2005;
 separate (T_Uncheckable)
 procedure unsafe_paired_calls is
    procedure P is null;

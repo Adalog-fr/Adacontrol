@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Expressions)
 procedure Test_2012 is
    Set : constant array (Natural range 1..3) of Boolean := (True, False, True);  -- Array_Aggregate, unqualified_aggregate

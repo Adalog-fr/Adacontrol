@@ -33,14 +33,14 @@ t_improper_initialization.adb:239:37: Error: Parameters: out parameter "AS" used
 t_improper_initialization.adb:239:20: Error: Parameters: out parameter "I" used before initialisation
 t_improper_initialization.adb:238:20: Error: Parameters: out parameter "S" not safely initialized
 t_improper_initialization.adb:240:7: Found: Variables: variable "S2" not safely initialized
-t_improper_initialization-extended_return.adb:4:4: Error: Bad_Init: variable "A" unnecessarily initialized in declaration
-t_improper_initialization-extended_return.adb:5:4: Found: Variables: variable "B" not safely initialized before line 8
-t_improper_initialization-extended_return.adb:14:17: Found: Variables: variable "X" not safely initialized before line 15
-t_improper_initialization-extended_return.adb:21:35: Found: Variables: use of uninitialized variable: C
-t_improper_initialization-extended_return.adb:19:13: Found: Variables: variable "C" used before initialisation
-t_improper_initialization-extended_return.adb:21:20: Error: Bad_Init: variable "X" unnecessarily initialized in declaration
-t_improper_initialization-extended_return.adb:28:13: Found: Variables: variable "D" not safely initialized before line 30
-t_improper_initialization-extended_return.adb:33:23: Found: Variables: variable "X" not safely initialized before line 34
+t_improper_initialization-extended_return.adb:3:4: Error: Bad_Init: variable "A" unnecessarily initialized in declaration
+t_improper_initialization-extended_return.adb:4:4: Found: Variables: variable "B" not safely initialized before line 7
+t_improper_initialization-extended_return.adb:13:17: Found: Variables: variable "X" not safely initialized before line 14
+t_improper_initialization-extended_return.adb:20:35: Found: Variables: use of uninitialized variable: C
+t_improper_initialization-extended_return.adb:18:13: Found: Variables: variable "C" used before initialisation
+t_improper_initialization-extended_return.adb:20:20: Error: Bad_Init: variable "X" unnecessarily initialized in declaration
+t_improper_initialization-extended_return.adb:27:13: Found: Variables: variable "D" not safely initialized before line 29
+t_improper_initialization-extended_return.adb:32:23: Found: Variables: variable "X" not safely initialized before line 33
 t_improper_initialization.adb:273:7: Found: Variables: variable "IV" not safely initialized
 t_improper_initialization.adb:304:67: Found: Variables: use of uninitialized variable: I
 t_improper_initialization.adb:307:41: Found: Variables: use of uninitialized variable: K

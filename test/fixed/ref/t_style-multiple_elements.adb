@@ -1,4 +1,3 @@
-pragma ADA_2005;
 with X_Style1, X_Style2;
 with Text_IO; use Text_IO;
 with Text_IO; 

@@ -1,4 +1,3 @@
-pragma Ada_2005;
 package body T_Local_Access is
    V1 : A_Int;
    V2 : C_Int;

@@ -23,10 +23,10 @@ t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param4: subprog
 t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param4: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:171:4
 t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param2: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:173:4
 t_exception_propagation-x_declaration_parameter.adb:27:4: Error: Param3: subprogram "Proc10" can propagate exceptions, used as call-back at t_exception_propagation-x_declaration_parameter.adb:175:4
-t_exception_propagation-x_interface.adb:7:4: Error: interf: subprogram "Proc_C1" can propagate exceptions, interfaced to C
-t_exception_propagation-x_interface.adb:11:4: Error: interf: subprogram "Proc_C2" can propagate exceptions, interfaced to C
-t_exception_propagation-x_interface.adb:21:4: Error: interf: subprogram "Proc_C3" can propagate exceptions, interfaced to C
-t_exception_propagation-x_interface.adb:33:4: Error: interf: subprogram "F" can propagate exceptions, interfaced to C
+t_exception_propagation-x_interface.adb:6:4: Error: interf: subprogram "Proc_C1" can propagate exceptions, interfaced to C
+t_exception_propagation-x_interface.adb:10:4: Error: interf: subprogram "Proc_C2" can propagate exceptions, interfaced to C
+t_exception_propagation-x_interface.adb:20:4: Error: interf: subprogram "Proc_C3" can propagate exceptions, interfaced to C
+t_exception_propagation-x_interface.adb:32:4: Error: interf: subprogram "F" can propagate exceptions, interfaced to C
 t_exception_propagation-x_task.adb:4:4: Error: task: task "T1" can propagate exceptions
 t_exception_propagation-x_task.adb:19:4: Error: task: task "T3" can propagate exceptions
 t_exception_propagation-x_local_exception.adb:4:4: Found: local: No handler for local exception in enclosing body

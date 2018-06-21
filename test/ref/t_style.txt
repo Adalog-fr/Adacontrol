@@ -25,121 +25,121 @@ t_style-no_default_in.adb:33:26: Insert
 t_style-no_default_in.adb:37:29: Found: No_Default_In: default IN mode used for parameter
 t_style-no_default_in.adb:37:29: Insert
 !in 
-t_style-casing.adb:2:6: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
-t_style-casing.adb:2:6: Replace:2:19
+t_style-casing.adb:1:6: Found: Casing: Wrong casing of "X_STYLE_CASING", should be "X_Style_Casing"
+t_style-casing.adb:1:6: Replace:1:19
 !X_Style_Casing
-t_style-casing.adb:2:21: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
-t_style-casing.adb:2:21: Replace:2:27
+t_style-casing.adb:1:21: Found: Casing: Wrong casing of "CHILD_1", should be "Child_1"
+t_style-casing.adb:1:21: Replace:1:27
 !Child_1
-t_style-casing.adb:2:29: Found: Casing: Wrong casing of "CHILD_2", should be "Child_2"
-t_style-casing.adb:2:29: Replace:2:35
+t_style-casing.adb:1:29: Found: Casing: Wrong casing of "CHILD_2", should be "Child_2"
+t_style-casing.adb:1:29: Replace:1:35
 !Child_2
-t_style-casing.adb:7:11: Found: Casing: Wrong casing of "Page", should be "PAGE"
-t_style-casing.adb:7:11: Replace:7:14
+t_style-casing.adb:6:11: Found: Casing: Wrong casing of "Page", should be "PAGE"
+t_style-casing.adb:6:11: Replace:6:14
 !PAGE
-t_style-casing.adb:10:19: Found: Casing: Wrong casing of "FOO", should be "Foo"
-t_style-casing.adb:10:19: Replace:10:21
+t_style-casing.adb:9:19: Found: Casing: Wrong casing of "FOO", should be "Foo"
+t_style-casing.adb:9:19: Replace:9:21
 !Foo
-t_style-casing.adb:11:50: Found: Casing: Wrong casing of "FOO", should be "Foo"
-t_style-casing.adb:11:50: Replace:11:52
+t_style-casing.adb:10:50: Found: Casing: Wrong casing of "FOO", should be "Foo"
+t_style-casing.adb:10:50: Replace:10:52
 !Foo
-t_style-casing.adb:12:13: Found: Casing: Wrong casing of "foo", should be "Foo"
-t_style-casing.adb:12:13: Replace:12:15
+t_style-casing.adb:11:13: Found: Casing: Wrong casing of "foo", should be "Foo"
+t_style-casing.adb:11:13: Replace:11:15
 !Foo
-t_style-casing.adb:15:8: Found: Casing: Wrong casing of "foo", should be "Foo"
-t_style-casing.adb:15:8: Replace:15:10
+t_style-casing.adb:14:8: Found: Casing: Wrong casing of "foo", should be "Foo"
+t_style-casing.adb:14:8: Replace:14:10
 !Foo
-t_style-casing.adb:14:14: Found: Casing: Wrong casing of "i", should be "I"
-t_style-casing.adb:14:14: Replace:14:14
+t_style-casing.adb:13:14: Found: Casing: Wrong casing of "i", should be "I"
+t_style-casing.adb:13:14: Replace:13:14
 !I
-t_style-casing.adb:18:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
-t_style-casing.adb:18:13: Replace:18:17
+t_style-casing.adb:17:13: Found: Casing: Wrong casing of ""aNd"", should be ""and""
+t_style-casing.adb:17:13: Replace:17:17
 !"and"
-t_style-casing.adb:21:8: Found: Casing: Wrong casing of ""AND"", should be ""and""
-t_style-casing.adb:21:8: Replace:21:12
+t_style-casing.adb:20:8: Found: Casing: Wrong casing of ""AND"", should be ""and""
+t_style-casing.adb:20:8: Replace:20:12
 !"and"
-t_style-casing.adb:25:11: Found: Casing: Wrong casing of "SIZE", should be "Size"
-t_style-casing.adb:25:11: Replace:25:14
+t_style-casing.adb:24:11: Found: Casing: Wrong casing of "SIZE", should be "Size"
+t_style-casing.adb:24:11: Replace:24:14
 !Size
-t_style-casing.adb:25:26: Found: Casing: Wrong casing of "Word_SIZE", should be "Word_Size"
-t_style-casing.adb:25:26: Replace:25:34
+t_style-casing.adb:24:26: Found: Casing: Wrong casing of "Word_SIZE", should be "Word_Size"
+t_style-casing.adb:24:26: Replace:24:34
 !Word_Size
-t_style-casing.adb:26:26: Found: Casing: Wrong casing of "AA", should be "Aa"
-t_style-casing.adb:26:26: Replace:26:27
+t_style-casing.adb:25:26: Found: Casing: Wrong casing of "AA", should be "Aa"
+t_style-casing.adb:25:26: Replace:25:27
 !Aa
-t_style-casing.adb:26:32: Found: Casing: Wrong casing of "BB", should be "Bb"
-t_style-casing.adb:26:32: Replace:26:33
+t_style-casing.adb:25:32: Found: Casing: Wrong casing of "BB", should be "Bb"
+t_style-casing.adb:25:32: Replace:25:33
 !Bb
-t_style-casing.adb:30:11: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
-t_style-casing.adb:30:11: Replace:30:19
+t_style-casing.adb:29:11: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
+t_style-casing.adb:29:11: Replace:29:19
 !Pre'Class
-t_style-casing.adb:38:33: Found: Casing: Wrong casing of exponent, should be 'E'
-t_style-casing.adb:38:33: Replace:38:33
+t_style-casing.adb:37:33: Found: Casing: Wrong casing of exponent, should be 'E'
+t_style-casing.adb:37:33: Replace:37:33
 !E
-t_style-casing.adb:39:25: Found: Casing: Wrong casing of exponent, should be 'E'
-t_style-casing.adb:39:25: Replace:39:25
+t_style-casing.adb:38:25: Found: Casing: Wrong casing of exponent, should be 'E'
+t_style-casing.adb:38:25: Replace:38:25
 !E
-t_style-casing.adb:41:33: Found: Casing: Wrong casing of extended digit(s), should be 1AB.0C
-t_style-casing.adb:41:33: Replace:41:38
+t_style-casing.adb:40:33: Found: Casing: Wrong casing of extended digit(s), should be 1AB.0C
+t_style-casing.adb:40:33: Replace:40:38
 !1AB.0C
-t_style-casing.adb:42:26: Found: Casing: Wrong casing of extended digit(s), should be 1ABC
-t_style-casing.adb:42:26: Replace:42:29
+t_style-casing.adb:41:26: Found: Casing: Wrong casing of extended digit(s), should be 1ABC
+t_style-casing.adb:41:26: Replace:41:29
 !1ABC
-t_style-casing.adb:46:34: Found: Casing: Wrong casing of "image", should be "Image"
-t_style-casing.adb:46:34: Replace:46:38
+t_style-casing.adb:45:34: Found: Casing: Wrong casing of "image", should be "Image"
+t_style-casing.adb:45:34: Replace:45:38
 !Image
-t_style-casing.adb:46:41: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:46:41: Replace:46:43
+t_style-casing.adb:45:41: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:45:41: Replace:45:43
 !Int
-t_style-casing.adb:47:4: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:47:4: Replace:47:6
+t_style-casing.adb:46:4: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:46:4: Replace:46:6
 !Int
-t_style-casing.adb:47:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
-t_style-casing.adb:47:11: Replace:47:13
+t_style-casing.adb:46:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+t_style-casing.adb:46:11: Replace:46:13
 !Foo
-t_style-casing.adb:47:16: Found: Casing: Wrong casing of "INt", should be "Int"
-t_style-casing.adb:47:16: Replace:47:18
+t_style-casing.adb:46:16: Found: Casing: Wrong casing of "INt", should be "Int"
+t_style-casing.adb:46:16: Replace:46:18
 !Int
-t_style-casing.adb:48:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_IO" or "Text_Io"
-t_style-casing.adb:48:8: Replace:48:14
+t_style-casing.adb:47:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_IO" or "Text_Io"
+t_style-casing.adb:47:8: Replace:47:14
 !Text_IO
-t_style-casing.adb:48:41: Found: Casing: Wrong casing of "InT", should be "Int"
-t_style-casing.adb:48:41: Replace:48:43
+t_style-casing.adb:47:41: Found: Casing: Wrong casing of "InT", should be "Int"
+t_style-casing.adb:47:41: Replace:47:43
 !Int
-t_style-casing.adb:51:12: Error: Multiple_Keyword: "loop" does not start line
-t_style-casing.adb:51:12: Insert
+t_style-casing.adb:50:12: Error: Multiple_Keyword: "loop" does not start line
+t_style-casing.adb:50:12: Insert
 !
 !   
-t_style-casing.adb:54:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
-t_style-casing.adb:54:22: Replace:54:24
+t_style-casing.adb:53:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
+t_style-casing.adb:53:22: Replace:53:24
 !Dim
-t_style-casing.adb:57:7: Error: Exposed: character literal 'a' not in allowed construct
-t_style-casing.adb:64:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
-t_style-casing.adb:64:9: Replace:64:13
+t_style-casing.adb:56:7: Error: Exposed: character literal 'a' not in allowed construct
+t_style-casing.adb:63:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
+t_style-casing.adb:63:9: Replace:63:13
 !"and"
-t_style-casing.adb:51:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:51:12: Replace:51:15
+t_style-casing.adb:50:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:50:12: Replace:50:15
 !loop
-t_style-casing.adb:52:7: Found: Casing: Wrong casing of "Null", should be "null"
-t_style-casing.adb:52:7: Replace:52:10
+t_style-casing.adb:51:7: Found: Casing: Wrong casing of "Null", should be "null"
+t_style-casing.adb:51:7: Replace:51:10
 !null
-t_style-casing.adb:53:4: Found: Casing: Wrong casing of "END", should be "end"
-t_style-casing.adb:53:4: Replace:53:6
+t_style-casing.adb:52:4: Found: Casing: Wrong casing of "END", should be "end"
+t_style-casing.adb:52:4: Replace:52:6
 !end
-t_style-casing.adb:53:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:53:8: Replace:53:11
+t_style-casing.adb:52:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:52:8: Replace:52:11
 !loop
-t_style-casing.adb:58:6: Found: Casing: Wrong casing of "NULL", should be "null"
-t_style-casing.adb:58:6: Replace:58:9
+t_style-casing.adb:57:6: Found: Casing: Wrong casing of "NULL", should be "null"
+t_style-casing.adb:57:6: Replace:57:9
 !null
-t_style-casing.adb:59:4: Found: Casing: Wrong casing of "eND", should be "end"
-t_style-casing.adb:59:4: Replace:59:6
+t_style-casing.adb:58:4: Found: Casing: Wrong casing of "eND", should be "end"
+t_style-casing.adb:58:4: Replace:58:6
 !end
-t_style-casing.adb:59:8: Found: Casing: Wrong casing of "If", should be "if"
-t_style-casing.adb:59:8: Replace:59:9
+t_style-casing.adb:58:8: Found: Casing: Wrong casing of "If", should be "if"
+t_style-casing.adb:58:8: Replace:58:9
 !if
-t_style-casing.adb:62:11: Found: Casing: Wrong casing of "AND", should be "and"
-t_style-casing.adb:62:11: Replace:62:13
+t_style-casing.adb:61:11: Found: Casing: Wrong casing of "AND", should be "and"
+t_style-casing.adb:61:11: Replace:61:13
 !and
 t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:8:7: Insert
@@ -197,171 +197,171 @@ t_style-exposed_literal.adb:75:9: Error: Exposed: integer literal 2 not in allow
 t_style-exposed_literal.adb:76:10: Error: Exposed: integer literal 9_223_372_036_854_775_807 not in allowed construct
 t_style-exposed_literal.adb:77:10: Error: Exposed: integer literal -9_223_372_036_854_775_808 not in allowed construct
 t_style-exposed_literal.adb:80:18: Error: Exposed: integer literal 10 not in allowed construct
-t_style-multiple_elements.adb:4:15: Error: Multiple_Pragma: pragma does not start line
-t_style-multiple_elements.adb:4:15: Insert
+t_style-multiple_elements.adb:3:15: Error: Multiple_Pragma: pragma does not start line
+t_style-multiple_elements.adb:3:15: Insert
 !
 !
-t_style-multiple_elements.adb:4:43: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
-t_style-multiple_elements.adb:4:43: Insert
+t_style-multiple_elements.adb:3:43: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
+t_style-multiple_elements.adb:3:43: Insert
 !
 !               
-t_style-multiple_elements.adb:5:18: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
-t_style-multiple_elements.adb:5:14: Insert
+t_style-multiple_elements.adb:4:18: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:4:14: Insert
 !
 ! 
-t_style-multiple_elements.adb:6:23: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
-t_style-multiple_elements.adb:6:19: Insert
+t_style-multiple_elements.adb:5:23: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:5:19: Insert
 !
 ! 
-t_style-multiple_elements.adb:8:69: Error: Multiple_Clause: use clause does not start line and Ada.Strings.Unbounded is not part of the preceding with clause
-t_style-multiple_elements.adb:8:46: Insert
+t_style-multiple_elements.adb:7:69: Error: Multiple_Clause: use clause does not start line and Ada.Strings.Unbounded is not part of the preceding with clause
+t_style-multiple_elements.adb:7:46: Insert
 !
 ! 
-t_style-multiple_elements.adb:8:92: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
-t_style-multiple_elements.adb:8:46: Insert
+t_style-multiple_elements.adb:7:92: Error: Multiple_Clause: use clause does not start line and Text_IO is not part of the preceding with clause
+t_style-multiple_elements.adb:7:46: Insert
 !
 ! 
-t_style-multiple_elements.adb:9:90: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
-t_style-multiple_elements.adb:9:90: Insert
+t_style-multiple_elements.adb:8:90: Error: Multiple_Clause: use clause does not start line and does not come after matching with clause
+t_style-multiple_elements.adb:8:90: Insert
 !
 !                                              
-t_style-multiple_elements.adb:13:26: Error: Multiple_Decl: declaration does not start line
-t_style-multiple_elements.adb:13:26: Insert
+t_style-multiple_elements.adb:12:26: Error: Multiple_Decl: declaration does not start line
+t_style-multiple_elements.adb:12:26: Insert
 !
 !   
-t_style-multiple_elements.adb:15:12: Error: Multiple_Decl: declaration does not start line
-t_style-multiple_elements.adb:15:12: Insert
+t_style-multiple_elements.adb:14:12: Error: Multiple_Decl: declaration does not start line
+t_style-multiple_elements.adb:14:12: Insert
 !
 !     
-t_style-multiple_elements.adb:17:21: Error: Multiple_Clause: clause does not start line
-t_style-multiple_elements.adb:17:21: Insert
+t_style-multiple_elements.adb:16:21: Error: Multiple_Clause: clause does not start line
+t_style-multiple_elements.adb:16:21: Insert
 !
 !   
-t_style-multiple_elements.adb:20:23: Error: Multiple_Pragma: pragma does not start line
-t_style-multiple_elements.adb:20:23: Insert
+t_style-multiple_elements.adb:19:23: Error: Multiple_Pragma: pragma does not start line
+t_style-multiple_elements.adb:19:23: Insert
 !
 !   
-t_style-multiple_elements.adb:24:19: Error: Multiple_Keyword: "begin" does not start line
-t_style-multiple_elements.adb:24:19: Insert
+t_style-multiple_elements.adb:23:19: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:23:19: Insert
 !
 !   
-t_style-multiple_elements.adb:25:13: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:25:13: Insert
+t_style-multiple_elements.adb:24:13: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:24:13: Insert
 !
 !   
-t_style-multiple_elements.adb:28:7: Error: Multiple_Keyword: "is" does not start line
-t_style-multiple_elements.adb:28:7: Insert
+t_style-multiple_elements.adb:27:7: Error: Multiple_Keyword: "is" does not start line
+t_style-multiple_elements.adb:27:7: Insert
 !
 !   
-t_style-multiple_elements.adb:28:10: Error: Multiple_Keyword: "begin" does not start line
-t_style-multiple_elements.adb:28:10: Insert
+t_style-multiple_elements.adb:27:10: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:27:10: Insert
 !
 !   
-t_style-multiple_elements.adb:30:4: Error: Multiple_Keyword: closing keywords of declaration split
-t_style-multiple_elements.adb:47:19: Error: Multiple_Handler: "exception" does not start line
-t_style-multiple_elements.adb:47:19: Insert
+t_style-multiple_elements.adb:29:4: Error: Multiple_Keyword: closing keywords of declaration split
+t_style-multiple_elements.adb:46:19: Error: Multiple_Handler: "exception" does not start line
+t_style-multiple_elements.adb:46:19: Insert
 !
 !   
-t_style-multiple_elements.adb:49:16: Error: Multiple_Handler: "when" does not start line
-t_style-multiple_elements.adb:49:16: Insert
+t_style-multiple_elements.adb:48:16: Error: Multiple_Handler: "when" does not start line
+t_style-multiple_elements.adb:48:16: Insert
 !
 !         
-t_style-multiple_elements.adb:50:17: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:50:17: Insert
+t_style-multiple_elements.adb:49:17: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:49:17: Insert
 !
 !   
-t_style-multiple_elements.adb:50:17: Error: Multiple_Keyword: closing keywords of declaration split
-t_style-multiple_elements.adb:37:18: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:37:18: Insert
+t_style-multiple_elements.adb:49:17: Error: Multiple_Keyword: closing keywords of declaration split
+t_style-multiple_elements.adb:36:18: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:36:18: Insert
 !
 !      
-t_style-multiple_elements.adb:42:7: Error: Multiple_Keyword: closing keywords of statement split
-t_style-multiple_elements.adb:45:21: Error: Multiple_Keyword: "do" does not start line
-t_style-multiple_elements.adb:45:21: Insert
+t_style-multiple_elements.adb:41:7: Error: Multiple_Keyword: closing keywords of statement split
+t_style-multiple_elements.adb:44:21: Error: Multiple_Keyword: "do" does not start line
+t_style-multiple_elements.adb:44:21: Insert
 !
 !      
-t_style-multiple_elements.adb:48:32: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:48:32: Insert
+t_style-multiple_elements.adb:47:32: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:47:32: Insert
 !
 !      
-t_style-multiple_elements.adb:53:20: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:53:20: Insert
+t_style-multiple_elements.adb:52:20: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:52:20: Insert
 !
 !   
-t_style-multiple_elements.adb:54:41: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:54:41: Insert
+t_style-multiple_elements.adb:53:41: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:53:41: Insert
 !
 !   
-t_style-multiple_elements.adb:54:4: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:54:26: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:54:26: Insert
+t_style-multiple_elements.adb:53:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:53:26: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:53:26: Insert
 !
 !   
-t_style-multiple_elements.adb:58:17: Error: Multiple_Keyword: "when" does not start line
-t_style-multiple_elements.adb:58:17: Insert
+t_style-multiple_elements.adb:57:17: Error: Multiple_Keyword: "when" does not start line
+t_style-multiple_elements.adb:57:17: Insert
 !
 !   
-t_style-multiple_elements.adb:58:38: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:58:38: Insert
+t_style-multiple_elements.adb:57:38: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:57:38: Insert
 !
 !   
-t_style-multiple_elements.adb:56:22: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:56:22: Insert
+t_style-multiple_elements.adb:55:22: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:55:22: Insert
 !
 !      
-t_style-multiple_elements.adb:58:32: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:58:32: Insert
+t_style-multiple_elements.adb:57:32: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:57:32: Insert
 !
 !         
-t_style-multiple_elements.adb:60:12: Error: Multiple_Keyword: "then" does not start line
-t_style-multiple_elements.adb:60:12: Insert
+t_style-multiple_elements.adb:59:12: Error: Multiple_Keyword: "then" does not start line
+t_style-multiple_elements.adb:59:12: Insert
 !
 !   
-t_style-multiple_elements.adb:62:13: Error: Multiple_Keyword: "elsif/else" does not start line
-t_style-multiple_elements.adb:62:13: Insert
+t_style-multiple_elements.adb:61:13: Error: Multiple_Keyword: "elsif/else" does not start line
+t_style-multiple_elements.adb:61:13: Insert
 !
 !   
-t_style-multiple_elements.adb:63:27: Error: Multiple_Keyword: "then" does not start line
-t_style-multiple_elements.adb:63:27: Insert
+t_style-multiple_elements.adb:62:27: Error: Multiple_Keyword: "then" does not start line
+t_style-multiple_elements.adb:62:27: Insert
 !
 !   
-t_style-multiple_elements.adb:67:13: Error: Multiple_Keyword: "elsif/else" does not start line
-t_style-multiple_elements.adb:67:13: Insert
+t_style-multiple_elements.adb:66:13: Error: Multiple_Keyword: "elsif/else" does not start line
+t_style-multiple_elements.adb:66:13: Insert
 !
 !   
-t_style-multiple_elements.adb:68:19: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:68:19: Insert
+t_style-multiple_elements.adb:67:19: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:67:19: Insert
 !
 !   
-t_style-multiple_elements.adb:68:19: Error: Multiple_Keyword: closing keywords of statement split
-t_style-multiple_elements.adb:73:9: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:73:9: Insert
+t_style-multiple_elements.adb:67:19: Error: Multiple_Keyword: closing keywords of statement split
+t_style-multiple_elements.adb:72:9: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:72:9: Insert
 !
 !   
-t_style-multiple_elements.adb:71:10: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:71:10: Insert
+t_style-multiple_elements.adb:70:10: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:70:10: Insert
 !
 !   
-t_style-multiple_elements.adb:75:35: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:75:35: Insert
+t_style-multiple_elements.adb:74:35: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:74:35: Insert
 !
 !   
-t_style-multiple_elements.adb:75:4: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:75:10: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:75:10: Insert
+t_style-multiple_elements.adb:74:4: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:74:10: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:74:10: Insert
 !
 !   
-t_style-multiple_elements.adb:75:18: Error: Multiple_Keyword: "begin" does not start line
-t_style-multiple_elements.adb:75:18: Insert
+t_style-multiple_elements.adb:74:18: Error: Multiple_Keyword: "begin" does not start line
+t_style-multiple_elements.adb:74:18: Insert
 !
 !   
-t_style-multiple_elements.adb:75:30: Error: Multiple_Keyword: "end" does not start line
-t_style-multiple_elements.adb:75:30: Insert
+t_style-multiple_elements.adb:74:30: Error: Multiple_Keyword: "end" does not start line
+t_style-multiple_elements.adb:74:30: Insert
 !
 !   
-t_style-multiple_elements.adb:75:10: Error: Compound: Statement has less than 3 lines
-t_style-multiple_elements.adb:75:24: Error: Multiple_Stmts: statement does not start line
-t_style-multiple_elements.adb:75:24: Insert
+t_style-multiple_elements.adb:74:10: Error: Compound: Statement has less than 3 lines
+t_style-multiple_elements.adb:74:24: Error: Multiple_Stmts: statement does not start line
+t_style-multiple_elements.adb:74:24: Insert
 !
 !   
 t_style-parameter_order.adb:4:24: Found: No_Default_In: default IN mode used for parameter

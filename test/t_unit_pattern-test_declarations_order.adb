@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Unit_Pattern)
 procedure Test_Declarations_Order is
 -- All the declarations directly in the procedure are OK

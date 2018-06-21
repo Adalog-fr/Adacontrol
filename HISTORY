@@ -2,6 +2,11 @@
 == V1.20b2 ==
 =============
 
+General:
+--------
+Made Ada2012 default for tests. Adapted to allow tests to run with
+Gnat Community 2018 without Ada95 compatibility mode.
+
 Changes to existing rules:
 --------------------------
 statements:

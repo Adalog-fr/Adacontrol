@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Derivations)
 procedure Max_Parents is
    type I1 is interface;

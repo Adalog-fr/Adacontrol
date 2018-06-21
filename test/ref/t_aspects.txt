@@ -1,7 +1,7 @@
-t_aspects.adb:4:9: Error: DBC_Aspects: use of aspect "Pre"
-t_aspects.adb:5:9: Error: DBC_Aspects: use of aspect "Post"
-t_aspects.adb:6:9: Found: Other_Aspects: use of aspect "convention"
-t_aspects.adb:12:6: Error: DBC_Aspects: use of aspect "Pre'Class"
-t_aspects.adb:13:6: Error: DBC_Aspects: use of aspect "Post'Class"
-t_aspects.adb:17:49: Found: Other_Aspects: use of aspect "Pack"
-t_aspects.adb:17:49: Error: Implicit_Aspects: use of aspect with implicit "True" association
+t_aspects.adb:3:9: Error: DBC_Aspects: use of aspect "Pre"
+t_aspects.adb:4:9: Error: DBC_Aspects: use of aspect "Post"
+t_aspects.adb:5:9: Found: Other_Aspects: use of aspect "convention"
+t_aspects.adb:11:6: Error: DBC_Aspects: use of aspect "Pre'Class"
+t_aspects.adb:12:6: Error: DBC_Aspects: use of aspect "Post'Class"
+t_aspects.adb:16:49: Found: Other_Aspects: use of aspect "Pack"
+t_aspects.adb:16:49: Error: Implicit_Aspects: use of aspect with implicit "True" association

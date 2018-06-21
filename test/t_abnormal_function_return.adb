@@ -1,4 +1,3 @@
-pragma Ada_2005;
 with Ada.Exceptions; use Ada.Exceptions;
 with Text_IO; use Text_IO;
 function T_Abnormal_Function_Return return Integer is

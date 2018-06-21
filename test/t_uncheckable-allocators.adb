@@ -1,4 +1,3 @@
-pragma Ada_05;
 separate (T_Uncheckable)
 procedure Allocators is
    type Rec (D : access Integer) is

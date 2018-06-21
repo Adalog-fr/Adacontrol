@@ -1,4 +1,3 @@
-pragma Ada_2012;
 procedure T_Aspects is
    procedure P
    with Pre  => True,                                     -- DBC_Aspects

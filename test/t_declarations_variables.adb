@@ -1,4 +1,3 @@
-pragma Ada_2012;
 procedure T_Declarations_Variables is
    package Pack is
       type Lim1 is limited private;

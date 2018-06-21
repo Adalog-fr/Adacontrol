@@ -1,4 +1,3 @@
-pragma Ada_2012;
 separate (T_Simplifiable_Expressions)
 procedure Test_Parentheses is
    S1 : String := (1 .. 4 => 'A');  -- OK

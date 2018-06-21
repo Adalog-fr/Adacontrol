@@ -1,5 +1,5 @@
-gnat.adc:1:1: Error: nonstandard: use of non-standard pragma "ADA_95"
-gnat.adc:1:1: Found: all_pragmas: use of pragma "ADA_95"
+gnat.adc:1:1: Error: nonstandard: use of non-standard pragma "ADA_2012"
+gnat.adc:1:1: Found: all_pragmas: use of pragma "ADA_2012"
 t_pragmas.adb:5:1: Error: specific_pragmas: use of pragma "Elaborate_All"
 t_pragmas.adb:5:1: Found: all_pragmas: use of pragma "Elaborate_All"
 t_pragmas.adb:11:1: Error: specific_pragmas: use of pragma "Elaborate_All"

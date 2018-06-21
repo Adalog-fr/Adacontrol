@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Calendar; use Ada.Calendar;
 with Ada.Containers.Vectors;
 procedure T_statements is

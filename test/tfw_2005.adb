@@ -1,4 +1,3 @@
-pragma Ada_2005;
 procedure Tfw_2005 is
    -- Only for stress test.
    -- Does not test anything by itself (hence considered tfw),

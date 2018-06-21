@@ -1,4 +1,3 @@
-pragma Ada_05;
 separate (T_Allocators)
 procedure Anonymous is
    V : access Integer;

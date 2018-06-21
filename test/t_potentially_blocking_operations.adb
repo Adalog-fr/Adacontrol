@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Task_Identification, Ada.Synchronous_Task_Control;
 with Ada.Text_Io, Ada.Sequential_IO;
 procedure T_Potentially_Blocking_Operations is

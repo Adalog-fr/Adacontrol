@@ -1,4 +1,3 @@
-pragma ADA_2012;
 with X_STYLE_CASING.CHILD_1.CHILD_2;                    -- Casing_Identifier x3
 with System;
 separate (T_STYLE)

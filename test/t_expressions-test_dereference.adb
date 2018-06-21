@@ -1,4 +1,3 @@
-pragma Ada_2005;
 separate (T_Expressions)
 procedure Test_Dereference is
    type As is access String;

@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Text_Io; use Ada.Text_Io;
 with Ada.Exceptions;
 procedure T_silent_exceptions is
