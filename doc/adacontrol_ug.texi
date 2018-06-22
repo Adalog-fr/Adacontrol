@@ -890,7 +890,9 @@ itself are output to the standard error file.
 The ``-F'' option selects the output format. It must be followed by
 ``Gnat'', ``Gnat_Short'', ``CSV'', ``CSV_Short'', ``Source'',
 ``Source_Short'', or ``None'' (case insensitive).  By default, the
-output is in ``Gnat'' format.
+output is in ``Gnat'' format, unless an output file is specified with
+a name whose extension is ``.csv'' (in any casing), in which case it
+defaults to ``CSV''.
 
 The ``-S'' option selects which statistics are output after each
 run. It must be followed by a value in the range 0..3. See

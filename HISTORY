@@ -2,6 +2,11 @@
 == V1.20b3 ==
 =============
 
+General:
+--------
+Output format defaults to CSV if an output file is given whose
+extension is ".csv"
+
 =============
 == V1.20b2 ==
 =============

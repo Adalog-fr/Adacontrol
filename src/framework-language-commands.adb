@@ -375,7 +375,7 @@ package body Framework.Language.Commands is
 
    procedure Set_Output_Command (Output_File : Wide_String; Force_Overwrite : Boolean) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.String_Set, Framework.Variables.Shared_Types;
+      use Adactl_Options, Framework.String_Set, Framework.Variables, Framework.Variables.Shared_Types;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;
@@ -416,6 +416,17 @@ package body Framework.Language.Commands is
 
          Add (Seen_Files, Output_File);
          Set_Output (Adactl_Output);
+
+         if Output_File'Length >= 4
+           and then To_Upper (Output_File (Output_File'Last - 3 .. Output_File'Last)) = ".CSV"
+         then
+            -- Change format to CSV (or CSV_SHORT according to current value of Short_Name)
+            if Short_Name then
+               Set_Variable (Variable => "FORMAT", Val => "CSV");
+            else
+               Set_Variable (Variable => "FORMAT", Val => "CSV_SHORT");
+            end if;
+         end if;
       end if;
    exception
       when Name_Error =>
