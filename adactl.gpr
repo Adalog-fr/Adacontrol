@@ -38,7 +38,7 @@ project Adactl is
 
    package Dashboard is
       for Project_Name use "AdaControl";
-      for Project_Version use "1.20b2";
+      for Project_Version use "1.20b3";
       for Project_Key use "adactl";
       for Source_Encoding use "UTF-8";
    end Dashboard;
