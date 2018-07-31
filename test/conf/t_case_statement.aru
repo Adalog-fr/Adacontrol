@@ -1,20 +1,24 @@
-Min_Others_Span:    check  case_statement (others_span, min 1);
-Min_Others_Span:    search case_statement (others_span, min 100);
-Number_Empty_Others: count  case_statement (others_span, min 1);
+Min_Others_Span:          check  case_statement (      others_span, min 1);
+Min_Others_Span:          search case_statement (      others_span, min 100);
+Enum_Number_Empty_Others: count  case_statement (()    others_span, min 1);
+Int_Number_Empty_Others:  count  case_statement (range others_span, min 1);
+Mod_Number_Empty_Others:  count  case_statement (mod   others_span, min 1);
 
-Values:          check  case_statement (values, min 3, max 10);
+Values:          check  case_statement (values,           min 3, max 10);
 Values_Others:   check  case_statement (values_if_others, min 3, max 10);
-Max_Values:      search case_statement (values, max 3);
-Number_big_case: count  case_statement (values, max 100);
+Max_Values:      search case_statement (values,                  max 3);
+Number_big_case: count  case_statement (values,                  max 100);
 
 Min_Paths:         check  case_statement (paths, min 3);
 Min_Paths:         search case_statement (paths, min 4);
 Number_small_case: count  case_statement (paths, min 4);
 
-Range_Span:      check  case_statement (range_span, max 5),
-                 search case_statement (range_span, max 4);
-Number_Big_Span: count  case_statement (range_span, max 50);
+Int_Range_Span:  check  case_statement (range range_span, max 5),
+                 search case_statement (range range_span, max 4);
+Mod_Range_Span:  check  case_statement (mod   range_span, max 5),
+                 search case_statement (mod   range_span, max 4);
+Enum_Range_Span: check case_statement  (()    range_span, max 4),
+                 search case_statement (()    range_span, max 3);
+Number_Big_Span: count  case_statement (      range_span, max 50);
 
-Enum_Range_Span: check case_statement  (enumeration_range_span, max 4);
-                 search case_statement (enumeration_range_span, max 3);
 

@@ -3562,9 +3562,8 @@ statement.  It is intended for cases where it is desired to limit the
 complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
-<control_kind> Case_Statement (<subrule>, <bound> [, <bound>]);
-<subrule> ::= enumeration_range_spane | others_span | paths | range_span |
-              values                  | values_if_others
+<control_kind> Case_Statement ([<category>] <subrule>, <bound> [, <bound>]);
+<subrule> ::= others_span | paths | range_span | values | values_if_others
 <bound>   ::= min | max <value>
 @end example
 
@@ -3578,10 +3577,7 @@ The first parameter is a subrule keyword:
 ``paths'' controls the number of paths (i.e. @code{@b{when}} branches).
 @item
 ``range_span'' controls the number of values covered by ranges used as
-choices. ``enumeration_range_span'' does the same, but only for values
-of an enumeration type. If ``range_span'' is specified but not
-``enumeration_range_span'', enumeration types are controlled using the
-``range_span'' values.
+choices.
 @item
 ``values'' controls the number of values covered by the subtype
 of the @code{@b{case}} selector.
@@ -3590,15 +3586,25 @@ of the @code{@b{case}} selector.
 @code{@b{case}} statements with a @code{@b{when}} @code{@b{others}}
 alternative.
 @end itemize
+If the <subrule> is preceded by a <category>, it applies only to
+@code{@b{case}} statements whose selecting expression belongs to the
+indicated category, otherwise the subrule applies to all
+categories. Obviously, only categories ``()'', ``range'' and ``mod''
+can be given.
+
+This rule traverses derivations; privacy is irrelevant, since the
+selecting expression of a @code{@b{case}} statement has to be visibly
+discrete. @xref{Definition of type categories}.
+
 The second (and optionnally third) parameter give the minimum and/or
 maximum allowed values (i.e. the rule will control values outside the
 indicated interval). If not specified, the minimum value is defaulted
 to 0 and the maximum value to infinity.
 
-This rule can be specified at most once for each subrule and for each
-of ``check'', ``search'' and ``count''. It is thus possible for each
-subrule to have a value considered a warning, and a value considered
-an error.
+This rule can be specified at most once for each subrule/category
+combination and for each of ``check'', ``search'' and ``count''. It is
+thus possible for each subrule/category to have a value considered a
+warning, and a value considered an error.
 
 Ex:
 @example
@@ -3606,7 +3612,9 @@ check  Case_Statement (others_span, min 1);
 search Case_Statement (others_span, min 5);
 
 check  Case_Statement (values, max 10);
-check  Case_Statement (paths, min 3, max 30);
+check  Case_Statement (()    paths, min 3, max 30);
+check  Case_Statement (range paths, min 3, max 100);
+check  Case_Statement (mod   paths, min 3, max 100);
 @end example
 
 @subsection Tips

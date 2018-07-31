@@ -124,7 +124,7 @@ Deriving_From_Predefined_Type:
                             Standard.Duration);
 
 Enumeration_Ranges_In_CASE_Statements:
-   check case_statement (enumeration_range_span, max 0);
+   check case_statement (() range_span, max 0);
 
 Enumeration_Representation_Clauses:
    check Representation_Clauses (Enumeration);
