@@ -4543,8 +4543,6 @@ This rule controls various properties of the declaration of derived types.
 <control_kind> derivations (from, <entity>|<category>
                                @{, <entity>|<category>@})
 <control_kind> derivations (max_parents, <value>)
-<category> ::= ()      | access    | array | delta  | digits | mod  |
-               private | protected | range | record | tagged | task
 @end example
 
 @subsection Action
@@ -6523,8 +6521,6 @@ refering to.
     @{, ...@});
 <location>  ::= global | local | unit
 <type_spec> ::= <entity> | @{<category>@}
-<category>  ::= ()      | access    | array | delta  | digits | mod |
-                private | protected | range | record | tagged | task
 <filter_kind> ::= All |
                     Type |
                        Discrete_Type |
@@ -7580,8 +7576,6 @@ This rule controls various aspects of the components of records.
 <control_kind> record_declarations (component, <compo_kind>
                                             @{,<repr_cond>@});
 <compo_kind> ::= <entity>|<category>
-<category>   ::= ()      | access    | array | delta  | digits | mod |
-                 private | protected | range | record | tagged | task
 <repr_cond>  ::= [not] in_variant | aligned | initialized | packed |
                  sized
 @end example
@@ -7748,9 +7742,6 @@ This rule controls usage of representation clause.
    fractional_size       | incomplete_layout     | layout          |
    non_aligned_component | non_contiguous_layout | non_power2_size |
    no_bit_order_layout   | overlay
-<category> ::=
-   ()     | range     | mod    | delta | digits  | array | record   |
-   tagged | extension | access | new   | private | task  | protected
 @end example
 
 @subsection Action
