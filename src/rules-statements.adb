@@ -72,7 +72,7 @@ package body Rules.Statements is
                      Stmt_For_Loop,                Stmt_For_In_Loop,            Stmt_For_Iterator_Loop,
                      Stmt_For_Of_Loop,             Stmt_Function_Return,
 
-                     Stmt_Goto,
+                     Stmt_Goto,                    Stmt_Goto_Not_Continue,
 
                      Stmt_If,                      Stmt_If_Elsif,               Stmt_Inherited_Procedure_Call,
 
@@ -543,6 +543,22 @@ package body Rules.Statements is
 
          when A_Goto_Statement =>
             Do_Report (Stmt_Goto);
+            if Rule_Used (Stmt_Goto_Not_Continue) then
+               declare
+                  Target_Stmt         : constant Asis.Statement := Corresponding_Destination_Statement (Stmt);
+                  Enclosing_Stmt_List : constant Asis.Statement_List
+                    := Thick_Queries.Statements (Enclosing_Element (Target_Stmt));
+               begin
+                  -- Report, unless the label is on a null statement which is the last statement of a loop
+                  if Statement_Kind (Target_Stmt) /= A_Null_Statement
+                    or else not Is_Equal (Target_Stmt, Enclosing_Stmt_List (Enclosing_Stmt_List'Last))
+                    or else Statement_Kind (Enclosing_Element (Target_Stmt))
+                            not in A_Loop_Statement .. A_For_Loop_Statement
+                  then
+                     Do_Report (Stmt_Goto_Not_Continue);
+                  end if;
+               end;
+            end if;
 
          when An_If_Statement =>
             Do_Report (Stmt_If);

@@ -945,7 +945,7 @@ is also an explicit ``-f'' option.
 
 Similarly, if no units are given on the command line, AdaControl
 processes the units from the units file of the project file if any, or
-the main files from the project file. 
+the main files from the project file.
 
 More generally, any option not given on the command line is taken from
 the project file. Especially, units are processed recursively if the
@@ -2740,7 +2740,7 @@ messages are disabled only for the given rule(s).
 
 Example:
 @example
--- Disable all messages from units located in the 
+-- Disable all messages from units located in the
 -- "external_components" directory:
 rule_file off "/external_components/" all
 
@@ -2986,7 +2986,7 @@ If one or several <entity> or <category> are given, only allocators
 whose allocated type matches the <entity>, or whose type belongs to
 the indicated <category>, are controlled; otherwise all allocators are
 controlled. As usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}. 
+<entity>. @xref{Specifying an Ada entity name}.
 
 This rule traverses derivations and privacy (i.e. it will control
 allocators whose ultimate type belongs to the indicated
@@ -3176,7 +3176,7 @@ example:
 <category>. If the <entity> is a subtype, only arrays whose components
 are of that subtype are controlled. If the indicated <entity> is a
 type, all arrays whose components are of that type (including
-subtypes) are controlled. 
+subtypes) are controlled.
 
 This subrule traverses derivations, but not privacy (the category
 ``private'' can be given, to check arrays whose components are of a
@@ -3207,7 +3207,7 @@ applies to the array.
 the <entity> is a subtype, only arrays whose indexes are of that
 subtype are controlled. If the indicated <entity> is a type, all
 arrays whose indexes are of that type (including subtypes) are
-controlled. 
+controlled.
 
 This subrule traverses derivations, but obviously, only ``()'',
 ``range'', and ``mod'' categories can be given since other categories
@@ -3328,13 +3328,13 @@ object of an access type is stored (directly, or as a subcomponent)
 into another object. The @code{@b{null}} value and allocators
 (@code{@b{new}}) are @i{not} controlled. In other words, this rule
 spots places where you start having more than one way to access a
-variable. 
+variable.
 
 If the modifier ``controlled'' is given, only access types that are
 subcomponents (directly or indirectly) of a controlled type are
 controlled, while if ``not controlled'' is given, only those that are
 @i{not} subcomponents of a controlled type are controlled. No modifier
-is equivalent to giving both ``controlled'' and ``not controlled''. 
+is equivalent to giving both ``controlled'' and ``not controlled''.
 
 If one or several <target> without @code{not} are given, the control
 applies only to access types whose target type matches the given
@@ -3342,7 +3342,7 @@ applies only to access types whose target type matches the given
 <target> is preceded by @code{not}, it means that the corresponding
 <entity> or <category> is not controlled.  As usual, the whole syntax
 for entities is allowed for <entity>. @xref{Specifying an Ada entity
-name}.  
+name}.
 
 This subrule traverses derivations, but not privacy (the category
 ``private'' can be given, to check access types whose target is of a
@@ -4320,7 +4320,7 @@ variables of a limited type was not permitted until Ada 2005.
 @item Limited_Initialization
 @tab off (default)
 @tab Uninitialized variables of a limited type are never reported.
-@item 
+@item
 @tab on
 @tab Uninitialized variables of a limited type are are reported like
 non-limited variables, unless they are of a task or protected type,
@@ -5240,7 +5240,7 @@ and short circuit forms (@code{@b{and then}}, @code{@b{or else}}) are
 considered operators.
 @item
 @code{prefixed_operator} controls calls to operators that use prefixed
-notation (i.e. @code{"+"(A, B)}). 
+notation (i.e. @code{"+"(A, B)}).
 
 A <category> (only one) can be specified. In this case, only calls
 whose result type belongs to the <category> are controlled.
@@ -5317,11 +5317,11 @@ displayed with the various *_function_calls subrules.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect} 
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
 @item Called_Info
 @tab none (default)
 @tab No extra information.
-@item 
+@item
 @tab compact
 @tab display the name of the called function.
 @item
@@ -5453,10 +5453,10 @@ controlled:
 @itemize
 @item
 ``all'': all references to global elements
-from the indicated entities are reported. 
+from the indicated entities are reported.
 @item
 ``read'' or ``written'': only read (respectively write) accesses are
-reported. 
+reported.
 @item
 ``multiple'': only global elements that
 are accessed by more than one of the indicated entities (i.e. shared
@@ -6158,7 +6158,7 @@ construct that overloads several other constructs.
 @tab compact
 @tab Issue a single message mentionning how many constructs are overloaded,
 and a pointer to the last one.
-@item 
+@item
 @tab detailed (default)
 @tab Issue a message for each overloaded construct.
 @end multitable
@@ -6261,7 +6261,7 @@ functions (Ada 2012).
 @item Count_Expr_Fun_Calls
 @tab off
 @tab Calls to expression functions are assumed to be inlined and do not add
-@item 
+@item
 @tab on (default)
 @tab Calls to expression functions are counted like regular calls.
 an extra depth level.
@@ -6650,7 +6650,7 @@ object (or the return type of the function), as specified by the
 <type_spec> modifier. The <type_spec> modifier is either a single
 <entity> giving the type of the object or one or more <category>. As
 usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}. 
+<entity>. @xref{Specifying an Ada entity name}.
 
 The rule traverses derivations, but not privacy (the category
 ``private'' can be given, to check objects or functions of a private
@@ -7597,7 +7597,7 @@ The first parameter is a subrule keyword:
 <entity> is a subtype, only record components that are of that subtype
 are controlled. If the indicated <entity> is a type, all record
 components that are of that type (including subtypes) are
-controlled. 
+controlled.
 
 This rule traverses derivations, but not privacy (the category
 ``private'' can be given, to check components of a private
@@ -8397,9 +8397,10 @@ This rule controls usage of certain Ada statements.
    exit_for_loop          | exit_outer_loop          |
    exit_plain_loop        | exit_while_loop          |
    exited_extended_return | extended_return          |
-   for_in_loop            | for_iterator_loop        |
-   for_of_loop            | function_return          |
-   goto                   | if                       |
+   for_loop               | for_in_loop              |
+   for_iterator_loop      | for_of_loop              |
+   function_return        | goto                     |
+   goto_not_continue      | if                       |
    if_elsif               | inherited_procedure_call |
    labelled               | loop_return              |
    multiple_exits         | named_exit               |
@@ -8515,6 +8516,14 @@ one return statement in the body of functions, and at most one return
 statement in each exception handler of the exception part of
 functions.
 @item
+@code{goto} controls all @code{@b{goto}} statements, while
+@code{goto_not_continue} controls @code{@b{goto}} statements except
+those whose target statement is a @code{@b{null}} statement (including
+the implicit @code{@b{null}} statement of Ada 2012) which is the last
+statement of the body of a @code{@b{loop}} statement (i.e. when the
+@code{@b{goto}} statement is used as a replacement for the
+@code{@b{continue}} statement of other languages).
+@item
 @code{if} controls all @code{@b{if}} statements.
 @item
 @code{if_elsif} controls @code{@b{if}} statements that have at least
@@ -8616,7 +8625,7 @@ loops'' that are not  controlled by the @code{unnamed_for_loop},
 @item
 @tab compact
 @tab Display the name of the called procedure or entry.
-@item 
+@item
 @tab detailed
 @tab Display the name of the called procedure or entry with overloading
 information.
@@ -8627,7 +8636,7 @@ original procedure if the called procedure is a renaming) with
 overloading information.
 @item Small_Loop_Length
 @tab <Integer> (default = 0)
-@tab Loops that span up to the indicated number of lines without being 
+@tab Loops that span up to the indicated number of lines without being
 named are not controlled by the @code{unnamed_for_loop},
 @code{unnamed_simple_loop}, and @code{unnamed_while_loop} subrules
 @end multitable
@@ -8998,7 +9007,7 @@ or by category.
 If the first parameter is an attribute (a name starting with a simple
 quote), the rule controls all occurrences of the attribute where the
 prefix designates a type belonging to the <category> given as second
-parameter. 
+parameter.
 
 If the first parameter is ``index'', the rule controls all array types
 that have an index of the type given by <entity>, or belonging to the
@@ -9084,7 +9093,7 @@ violations that would go undected.
 @item
 ``false_positive'': controls constructs that could
 result in false positives, i.e. error messages when the rule is not
-really violated. 
+really violated.
 @end itemize
 If no keyword is given, all subrules are activated.
 
@@ -9257,7 +9266,7 @@ The parameters are subrule keywords:
 @itemize
 @item
 ``unreferenced'': controls compilation units that are part of the
-set of analyzed units, but withed by no other unit. 
+set of analyzed units, but withed by no other unit.
 @item
 ``unchecked'': controls compilation units that are withed by other
 unit(s), but not part of the set of controlled units (except standard
@@ -9992,7 +10001,7 @@ replaced with a @code{@b{private}} @code{@b{with}}.
 @tab off
 @tab Names appearing in use clauses are treated like any other identifier
 (see tip below).
-@item 
+@item
 @tab on (default)
 @tab Package names appearing in use clauses are not considered as a usage
 of the package.
@@ -10591,7 +10600,7 @@ Many rules can be parameterized with applicable types. A type name can generally
 rules also accept type categories. Each time a rule uses the syntactic term @code{<category>}, it
 refers to a type category defined by the following syntax:
 @example
-<category> ::= <>  | ()      | access    | array  | delta  | digits | extension | mod | 
+<category> ::= <>  | ()      | access    | array  | delta  | digits | extension | mod |
                new | private | protected | range  | record | tagged | task
 @end example
 

@@ -70,7 +70,7 @@ procedure T_statements is
    begin
       if I = 2 then
          return X : Integer do  -- Extended_Return
-            null;               -- OK Function_Return (first return)
+            null;               -- null, OK Function_Return (first return)
          end return;
       else
          return 2;              -- Function_Return
@@ -80,7 +80,7 @@ procedure T_statements is
    function G2 return Integer is
    begin
       if I = 2 then
-         return 2;              -- Null, Function_Return OK (first return)
+         return 2;              -- Function_Return OK (first return)
       else
          return X : Integer do  -- Extended_Return, Function_Return
             null;               -- Null
@@ -128,31 +128,40 @@ procedure T_statements is
             if I = 3 then                -- No_Else
                return;                   -- Exited_Extended_Return OK (not exiting), Function_Return, Loop_Return
             end if;
-            exit For_Exit;                -- Exit, Exit_For_Loop, Unconditional_Exit, Named_Exit
-	 end return;
+            exit For_Exit;               -- Exit, Exit_For_Loop, Unconditional_Exit, Named_Exit
+         end return;
+         goto False_Continue;            -- Goto, Goto_Not_Continue
+         <<False_Continue>>              -- Labelled
+         delay 1.0;                      -- Delay
       end loop For_Exit;
       return X : Integer do              -- Function_Return, Extended_Return, Exited_Extended_Return
-	goto Hell;                       -- Goto
+	goto Hell;                       -- Goto, Goto_Not_Continue
       end return;
   <<Hell>>                               -- Function_Return, Labelled
       return 1;
    end F_Ext_Return;
 
 begin
-   delay 1.0;           -- Delay
-   delay until Clock;   -- Delay_Until
-   goto Next;           -- Goto
-   <<Next>> null;       -- Null, Labelled
-   abort T1;             -- Abort
+   delay 1.0;            -- Delay
+   delay until Clock;    -- Delay_Until
+   goto Next;            -- Goto, Goto_Not_Continue
+   <<Next>> null;        -- Null, Labelled
+   abort T1;              -- Abort
 
-   loop                 -- Simple_Loop, Unnamed_Simple_Loop
-      exit;             -- Exit, Exit_Plain_Loop, Unconditional_Exit, Unnamed_Loop_Exited
+   loop                  -- Simple_Loop, Unnamed_Simple_Loop
+      exit;              -- Exit, Exit_Plain_Loop, Unconditional_Exit, Unnamed_Loop_Exited
+      goto Not_Continue; -- Goto, Goto_Not_Continue
+      <<Not_Continue>>   -- Labelled, goto (OK Goto_Not_Continue)
+      goto Continue;
+      <<Continue>> null; -- Labelled, null
    end loop;
 B:                      -- Simple_Loop
    loop
       exit;                -- exit, exit_plain_loop, unconditional_exit, Unnamed_exit,
       exit B;              -- Multiple_exit, exit, exit_plain_loop, unconditional_exit, named_exit
-      exit T_Statements.B; -- Multiple_exit, exit, Exit_Plain_Loop, unconditional_exit, named_exit, exit_expanded_name
+      exit T_Statements.B; -- Multiple_exit, exit, Exit_Plain_Loop, unconditional_exit, named_exit, exit_expanded_name.
+      goto Reloop;         -- Goto (OK Goto_Not_Continue)
+      <<Reloop>>           -- Ada 2012 implicit null statement
    end loop B;
 
    select               -- Asynchronous select

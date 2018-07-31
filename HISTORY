@@ -12,6 +12,9 @@ Changes to existing rules:
 case_statement:
    add optional categories to each subrule
 
+statements:
+   add subrule goto_not_continue
+
 =============
 == V1.20b2 ==
 =============
