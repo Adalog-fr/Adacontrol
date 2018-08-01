@@ -53,6 +53,7 @@ with   -- ASIS components
   Asis.Text;
 
 with   -- Other reusable components
+  A4G_Bugs,
   Implementation_Options,
   Options_Analyzer,
   Project_File.Factory,
@@ -255,7 +256,7 @@ procedure Ptree is
    is
       pragma Unreferenced (Control);
       use Ada.Wide_Text_IO, Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
-      The_Span : constant Span := Element_Span (Element);
+      The_Span : constant Span := A4G_Bugs.Element_Span (Element);
    begin
       State := State + 1;
 

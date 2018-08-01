@@ -43,6 +43,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Scope_Manager,
   String_Matching,
   Thick_Queries,
@@ -882,7 +883,7 @@ package body Rules.Style is
       end case;
 
       if not Is_Name_Repeated (Construct) then
-         Length := Last_Line_Number (Construct) - First_Line_Number (Construct) + 1;
+         Length := A4G_Bugs.Last_Line_Number (Construct) - A4G_Bugs.First_Line_Number (Construct) + 1;
          if Length > Closing_Name_Context (Corresponding_Context (St_No_Closing_Name,
                                                                   Control_Kinds'Wide_Image (Check))).Length
          then
@@ -1954,7 +1955,7 @@ package body Rules.Style is
          -- Special processing for use clauses in context clauses.
          -- Accept it if the preceding clause is a with clause,
          -- and every name in this use clause is also given in the with clause
-         use Asis.Clauses, Asis.Expressions, Asis.Text;
+         use Asis.Clauses, Asis.Expressions;
 
          All_Clauses : constant Context_Clause_List
            := Context_Clause_Elements (Compilation_Unit => Enclosing_Compilation_Unit (Use_Clause),
@@ -1978,7 +1979,7 @@ package body Rules.Style is
                     Get_Location (Use_Clause),
                     "use clause does not start line and does not come after matching with clause");
             Fixes.Break (Get_Location (Use_Clause),
-                         Indent_New => Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
+                         Indent_New => A4G_Bugs.Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
             return;
          end if;
 
@@ -2021,7 +2022,7 @@ package body Rules.Style is
                           & Extended_Name_Image (Use_Names (U))
                           & " is not part of the preceding with clause");
                   Fixes.Break (Get_Location (Use_Clause),
-                               Indent_New => Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
+                               Indent_New => A4G_Bugs.Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
                end if;
             end loop;
          end;

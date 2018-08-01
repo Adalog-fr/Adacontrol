@@ -52,6 +52,7 @@ with   -- ASIS components
   Asis.Text;
 
 with   -- Other reusable components
+  A4G_Bugs,
   Implementation_Options,
   Options_Analyzer,
   Project_File.Factory,
@@ -192,7 +193,7 @@ procedure Pfni is
       use Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
       use Thick_Queries;
 
-      The_Span : constant Span := Element_Span (The_Name);
+      The_Span : constant Span := A4G_Bugs.Element_Span (The_Name);
    begin
       if The_Span.First_Line not in First_Line .. Last_Line
         or else (First_Column /= 0

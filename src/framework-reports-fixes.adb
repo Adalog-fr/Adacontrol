@@ -32,6 +32,10 @@ with
 with
    Asis.Clauses;
 
+-- Adalog
+with
+   A4G_Bugs;
+
 -- AdaControl
 with
    Utilities;
@@ -258,7 +262,7 @@ package body Framework.Reports.Fixes is
          return;
       end if;
 
-      Text_Generator.Init (Element_Span (By), Original);
+      Text_Generator.Init (A4G_Bugs.Element_Span (By), Original);
       Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original));
    end Replace;
 
@@ -272,10 +276,10 @@ package body Framework.Reports.Fixes is
          return;
       end if;
 
-      Text_Generator.Init ((First_Line     => Element_Span (By (By'First)).First_Line,
-                            First_Column   => Element_Span (By (By'First)).First_Column,
-                            Last_Line      => Element_Span (By (By'Last)).Last_Line,
-                            Last_Column    => Element_Span (By (By'Last)).Last_Column),
+      Text_Generator.Init ((First_Line     => A4G_Bugs.Element_Span (By (By'First)).First_Line,
+                            First_Column   => A4G_Bugs.Element_Span (By (By'First)).First_Column,
+                            Last_Line      => A4G_Bugs.Element_Span (By (By'Last)).Last_Line,
+                            Last_Column    => A4G_Bugs.Element_Span (By (By'Last)).Last_Column),
                            Base_Element => Original);
       Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original));
    end Replace;
@@ -304,7 +308,7 @@ package body Framework.Reports.Fixes is
       end if;
 
       declare
-         Place_Span : Span := Element_Span (Elem);
+         Place_Span : Span := A4G_Bugs.Element_Span (Elem);
       begin
          if Full_Line then
             Place_Span.First_Column := 1;
@@ -373,8 +377,13 @@ package body Framework.Reports.Fixes is
    ------------
 
    procedure Delete (Elems : Asis.Element_List) is
+      use Asis;
    begin
       if not Generate_Fixes then
+         return;
+      end if;
+
+      if Elems = Nil_Element_List then
          return;
       end if;
 
@@ -432,7 +441,7 @@ package body Framework.Reports.Fixes is
       Curs         : Cursor := First (Fix);
       Current      : Delayed_Fix;
       Current_Span : Span;
-      Elem_Span    : constant Span := Element_Span (Elem);
+      Elem_Span    : constant Span := A4G_Bugs.Element_Span (Elem);
       Line         : Line_Number_Positive;
       Col          : Character_Position_Positive;
    begin
@@ -452,7 +461,7 @@ package body Framework.Reports.Fixes is
       -- Linear search, we expect only very short lists
       while Has_Element (Curs) loop
          Current := Fetch (Curs);
-         Current_Span := Element_Span (Current.Elem);
+         Current_Span := A4G_Bugs.Element_Span (Current.Elem);
          if Current.Place = Place
            and Current_Span.First_Line = Line
            and Current_Span.First_Column = Col

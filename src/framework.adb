@@ -37,6 +37,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Units_List,
   Utilities;
 
@@ -146,7 +147,7 @@ package body Framework is
    function Get_Location (E : in Asis.Element) return Location is
       use Asis.Compilation_Units, Asis.Elements, Asis.Text;
 
-      S : constant Span := Element_Span (E);
+      S : constant Span := A4G_Bugs.Element_Span (E);
    begin
       if S = Nil_Span then
          return Null_Location;
@@ -165,7 +166,7 @@ package body Framework is
    function Get_End_Location (E : in Asis.Element) return Location is
       use Asis.Compilation_Units, Asis.Elements, Asis.Text;
 
-      S : constant Span := Element_Span (E);
+      S : constant Span := A4G_Bugs.Element_Span (E);
    begin
       if S = Nil_Span then
          return Null_Location;
@@ -190,7 +191,7 @@ package body Framework is
                                         return Location
    is
       use Asis.Text;
-      E_Span     : constant Span := Element_Span (E);
+      E_Span     : constant Span := A4G_Bugs.Element_Span (E);
       L          : Line_Number;
       Word_Start : Character_Position;
       Result     : Location;
@@ -273,7 +274,7 @@ package body Framework is
                                     return Location
    is
       use Asis.Text;
-      E_Span     : constant Span := Element_Span (E);
+      E_Span     : constant Span := A4G_Bugs.Element_Span (E);
       L          : Line_Number;
       Word_Start : Character_Position;
       Result     : Location;

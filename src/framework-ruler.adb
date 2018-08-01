@@ -44,6 +44,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Units_List,
   Utilities;
@@ -218,7 +219,7 @@ package body Framework.Ruler is
    procedure Semantic_Traverse_Elements is new Asis.Iterator.Traverse_Element (Info, Pre_Procedure, Post_Procedure);
 
    procedure Semantic_Traverse (Unit : Asis.Compilation_Unit) is
-      use Asis, Asis.Elements, Asis.Text;
+      use Asis, Asis.Elements;
       use Framework.Queries;
 
       The_Control : Traverse_Control := Continue;
@@ -230,7 +231,7 @@ package body Framework.Ruler is
                                                                                 Include_Pragmas  => True) ;
       My_Declaration : constant Declaration := Unit_Declaration (Unit);
    begin
-      Reports.Total_Lines := Reports.Total_Lines + Last_Line_Number (My_Declaration);
+      Reports.Total_Lines := Reports.Total_Lines + A4G_Bugs.Last_Line_Number (My_Declaration);
 
       Init_Standard (Unit);
       Enter_Unit (Unit);

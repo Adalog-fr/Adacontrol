@@ -36,6 +36,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Utilities;
 
 -- AdaControl
@@ -156,11 +157,13 @@ package body Rules.Max_Size is
             Stats : constant Asis.Statement_List := Sequence_Of_Statements (Measured_Elem);
          begin
             Loc    := Get_End_Location (Stats (Stats'Last));
-            Length := Last_Line_Number (Stats (Stats'Last)) - First_Line_Number (Stats (Stats'First)) + 1;
+            Length :=   A4G_Bugs.Last_Line_Number  (Stats (Stats'Last))
+                      - A4G_Bugs.First_Line_Number (Stats (Stats'First))
+                      + 1;
          end;
       else
          Loc    := Get_End_Location (Measured_Elem);
-         Length := Last_Line_Number (Measured_Elem) - First_Line_Number (Measured_Elem) + 1;
+         Length := A4G_Bugs.Last_Line_Number (Measured_Elem) - A4G_Bugs.First_Line_Number (Measured_Elem) + 1;
       end if;
 
       if Length > Maximum (Stmt) (Check) then

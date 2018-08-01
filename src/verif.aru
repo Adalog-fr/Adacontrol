@@ -21,7 +21,7 @@ check with_clauses (reduceable);
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);
 search max_nesting (5);
-search local_hiding (not_different_families strict, "^Object$", "^Class$", "^Instance$");
+search local_hiding (not_different_families strict, "^object$", "^class$", "înstance$");
 search comments (unnamed_begin, program_unit all);
 --search usage (procedure, from_spec, not called);
 --search usage (function,  from_spec, not called);
@@ -37,7 +37,10 @@ search uncheckable (false_negative, missing_unit);
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.
 Use_A4G_Bugs: check entities (
-   Asis.Expressions.Corresponding_Expression_Type
+   Asis.Expressions.Corresponding_Expression_Type,
+   Asis.Text.Element_Span,
+   Asis.Text.First_Line_Number,
+   Asis.Text.Last_Line_Number
 );
 
 -- Check prefered operation from Thick_Queries
