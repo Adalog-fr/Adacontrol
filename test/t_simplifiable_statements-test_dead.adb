@@ -16,7 +16,7 @@ begin
    end if;
    if C /= 1 then  -- always false
       I := 0;
-      goto L;
+      goto L1;
    elsif I = 1 then
       I := 2;
    end if;
@@ -57,9 +57,10 @@ begin
       I := 3;
    end loop;
 
-<<L>> goto L;            -- Unreachable
+<<L1>> goto L1;          -- OK (next statement is labelled)
+<<L2>> goto L2;          -- Unreachable
       return;            -- Unreachable
       I := 0;
-
+<<L3>>                   -- no more unreachable from here
       return;
 end Test_Dead;

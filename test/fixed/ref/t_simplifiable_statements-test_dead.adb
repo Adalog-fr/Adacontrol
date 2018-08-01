@@ -44,6 +44,9 @@ begin
       I := 3;
    end loop;
 
-<<L>> goto L;            -- Unreachable
+<<L1>> goto L1;          -- OK (next statement is labelled)
+<<L2>> goto L2;          -- Unreachable
       
+<<L3>>                   -- no more unreachable from here
+      return;
 end Test_Dead;

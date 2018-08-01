@@ -768,18 +768,24 @@ package body Rules.Simplifiable_Statements is
       if Rule_Used (Stmt_Dead) and then Is_Breaking_Statement (Stmt) then
          declare
             Enclosing_Sts : constant Statement_List := Thick_Queries.Statements (Enclosing_Element (Stmt));
-            S_Inx         : List_Index;
+            Stmt_Inx      : constant List_Index := Statement_Index (Stmt, Within => Enclosing_Sts);
+            Deletion_End  : List_Index;
          begin
-            if not Is_Equal (Stmt, Enclosing_Sts (Enclosing_Sts'Last)) then
+            if Stmt_Inx /= Enclosing_Sts'Last
+              and then Label_Names (Enclosing_Sts (Stmt_Inx +1)) = Nil_Element_List
+            then
                Report (Rule_Id,
                        Usage (Stmt_Dead),
                        Get_Location (Stmt),
                        "unreachable code after this statement");
-               S_Inx := Enclosing_Sts'Last;
-               while not Is_Equal (Stmt, Enclosing_Sts (S_Inx)) loop
-                  S_Inx := S_Inx - 1;
+               Deletion_End := Enclosing_Sts'Last;
+               for S in List_Index range Stmt_Inx + 1 .. Enclosing_Sts'Last loop
+                  if Label_Names (Enclosing_Sts (S)) /= Nil_Element_List then
+                     Deletion_End := S - 1;
+                     exit;
+                  end if;
                end loop;
-               Fixes.Delete (Enclosing_Sts (S_Inx + 1 .. Enclosing_Sts'Last));
+               Fixes.Delete (Enclosing_Sts (Stmt_Inx + 1 .. Deletion_End));
             end if;
          end;
       end if;
