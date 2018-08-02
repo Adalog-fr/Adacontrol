@@ -16,4 +16,5 @@ search  Parameter_declarations (access_parameters, max 1);
 search  Parameter_declarations (class_wide_parameters, max 0);
 search  parameter_declarations (tagged_parameters, max 1, dispatching_function);
 
-check parameter_declarations (single_out_parameter);
+check  parameter_declarations (single_out_parameter);
+search parameter_declarations (no_inout single_out_parameter);

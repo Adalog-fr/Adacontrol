@@ -7246,8 +7246,8 @@ for all callable entities (i.e. functions, procedures and entries).
 
 @subsection Syntax
 @example
-<control_kind> parameter_declarations (<subrule> [,<bounds>]
-                                                 @{,<callable>@});
+<control_kind> parameter_declarations ([no_inout] <subrule> [,<bounds>]
+                                                           @{,<callable>@});
 <subrule>  ::= all_parameters       | in_parameters         |
                defaulted_parameters | out_parameters        |
                in_out_parameters    | access_parameters     |
@@ -7262,7 +7262,8 @@ for all callable entities (i.e. functions, procedures and entries).
 
 @subsection Action
 The first parameter is a subrule keyword. ``single_out_parameter'' has
-no parameter; all other subrules require one or two bounds.
+no bounds and is the only subrule that allows ``no_inout''; all
+other subrules require one or two bounds.
 @itemize @bullet
 @item
 ``all_parameters'': Controls callable entities whose number of
@@ -7286,8 +7287,9 @@ a specific tagged type.
 a class-wide type.
 @item
 ``single_out_parameter'': Controls callable entities that have exactly
-one @code{@b{out}} parameter. Procedures with a single  @code{@b{out}}
-parameter might be candidates to becoming functions.
+one @code{@b{out}} parameter. if ``no_inout'' is specified, the rule
+does not report a single @code{@b{out}} parameter if there is also at
+least one @code{@b{in}} @code{@b{out}} parameter.
 @end itemize
 
 If one or more <callable_kind> is specified after the <value>, the
@@ -7332,6 +7334,11 @@ check parameter_declarations (tagged_parameter,
 @end example
 
 @subsection Tips
+Procedures with a single @code{@b{out}} parameter are candidates
+to becoming functions. Whether this applies also to procedures with
+@code{@b{in}} @code{@b{out}} parameters is debatable, now that
+functions can have @code{@b{in}} @code{@b{out}} parameters...
+
 This rule applies to generic subprograms as well as to regular ones.
 On the other hand, it does not apply to generic formal subprograms,
 since instantiations would only be possible with subprograms which

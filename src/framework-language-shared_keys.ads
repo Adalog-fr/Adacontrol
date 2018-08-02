@@ -73,6 +73,8 @@ package Framework.Language.Shared_Keys is
       end record;
    Unlimited_Bounds : constant Bounds_Values := (Min => Thick_Queries.Biggest_Int'First,
                                                  Max => Thick_Queries.Biggest_Int'Last);
+   Empty_Bounds     : constant Bounds_Values := (Min => 0,
+                                                 Max => Thick_Queries.Biggest_Int'First);
    function Get_Bounds_Parameters (Rule_Id      : Wide_String;
                                    Bound_Min    : Thick_Queries.Biggest_Int := 0;
                                    Bound_Max    : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Natural'Last;

@@ -12,6 +12,9 @@ Changes to existing rules:
 case_statement:
    add optional categories to each subrule
 
+parameter_declarations:
+   add modifier no_inout to subrule single_out_parameter
+
 statements:
    add subrule goto_not_continue
 

@@ -65,7 +65,7 @@ package body Rules.Parameter_Declarations is
    Save_Used : Usage;
 
    Ctl_Labels : array (Subrules, Callable_Kinds, Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Ctl_Values : array (Valued_Subrules, Callable_Kinds, Control_Kinds) of Bounds_Values
+   Ctl_Values : array (Subrules, Callable_Kinds, Control_Kinds) of Bounds_Values
      := (others => (others => (others => Unlimited_Bounds)));
 
    ----------
@@ -78,7 +78,7 @@ package body Rules.Parameter_Declarations is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Controls form and metrics of parameters of callable entities");
       User_Message;
-      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1):");
+      Subrules_Flag_Utilities.Help_On_Flags (Header => "Parameter(1): [no_inout]");
       User_Message;
       User_Message ("For all subrules except Single_Out_Parameter:");
       User_Message ("Parameter(2..3): <bound> <value>");
@@ -102,21 +102,32 @@ package body Rules.Parameter_Declarations is
       Subrule  : Subrules;
       Callable : Callable_Kinds;
       Value    : Bounds_Values;
+      No_Inout : Boolean;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "subrule not specified");
       end if;
 
-      Subrule := Get_Flag_Parameter (Allow_Any => False);
+      No_Inout := Get_Modifier ("NO_INOUT");
+      Subrule  := Get_Flag_Parameter (Allow_Any => False);
 
       case Subrule is
          when Valued_Subrules =>
+            if No_Inout then
+               Parameter_Error (Rule_Id, "No_Inout allowed only with Single_Out_Parameter");
+            end if;
             if Parameter_Exists then
                Value := Get_Bounds_Parameters (Rule_Id);
             else
                Parameter_Error (Rule_Id, "missing bounds of allowed value");
             end if;
          when Single_Out_Parameter =>
+            -- Value is the number of allowed inout parameters (0 or infinity)
+            if No_Inout then
+               Value := (1, Thick_Queries.Biggest_Int'Last);
+            else
+               Value := Empty_Bounds;
+            end if;
             if Parameter_Exists and then Is_Integer_Parameter then
                Parameter_Error (Rule_Id, "no value allowed for Single_Out_Parameter");
             end if;
@@ -131,18 +142,14 @@ package body Rules.Parameter_Declarations is
                                          & Control_Kinds'Wide_Image (Ctl_Kind));
             end if;
             Ctl_Labels (Subrule, Callable, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-            if Subrule in Valued_Subrules then
-               Ctl_Values (Subrule, Callable, Ctl_Kind) := Value;
-            end if;
+            Ctl_Values (Subrule, Callable, Ctl_Kind) := Value;
             Rule_Used  (Subrule, Callable)(Ctl_Kind) := True;
          end loop;
       else
          -- no callable kind specified => applies to all
          for C in Callable_Kinds loop
             Ctl_Labels (Subrule, C, Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
-            if Subrule in Valued_Subrules then
-               Ctl_Values (Subrule, C, Ctl_Kind) := Value;
-            end if;
+            Ctl_Values (Subrule, C, Ctl_Kind) := Value;
             if Rule_Used (Subrule, C)(Ctl_Kind) then
                Parameter_Error (Rule_Id, Image (Callable, Lower_Case)
                                          & " already specified for "
@@ -271,7 +278,8 @@ package body Rules.Parameter_Declarations is
                        To_Wide_String (Ctl_Labels (Single_Out_Parameter, Entity, Ctl_Kind)),
                        Ctl_Kind,
                        Loc,
-                       "Single out parameter in " & Image (Entity, Lower_Case));
+                       "Single out parameter in " & Image (Entity, Lower_Case)
+                       & Choose (Value = 0, "", " (with in out parameters)"));
          end case;
       end Do_Report;
 
@@ -500,14 +508,8 @@ package body Rules.Parameter_Declarations is
          --
          -- Single_Out_Parameter
          --
-         if Rule_Used (Single_Out_Parameter, C) (Check) and then Out_Param_Count = 1 then
-            Do_Report (Single_Out_Parameter, Check, C, 1);
-         elsif Rule_Used (Single_Out_Parameter, C) (Search) and then Out_Param_Count = 1 then
-            Do_Report (Single_Out_Parameter, Search, C, 1);
-         end if;
-
-         if Rule_Used (Single_Out_Parameter, C) (Count) and then Out_Param_Count = 1 then
-            Do_Report (Single_Out_Parameter, Count, C, 1);
+         if Out_Param_Count = 1 then
+            Check_Value (Single_Out_Parameter, C, Value => In_Out_Param_Count);
          end if;
 
       end;
