@@ -161,7 +161,7 @@ B:                      -- Simple_Loop
       exit B;              -- Multiple_exit, exit, exit_plain_loop, unconditional_exit, named_exit
       exit T_Statements.B; -- Multiple_exit, exit, Exit_Plain_Loop, unconditional_exit, named_exit, exit_expanded_name.
       goto Reloop;         -- Goto (OK Goto_Not_Continue)
-      <<Reloop>>           -- Ada 2012 implicit null statement
+      <<Reloop>>           -- Labelled
    end loop B;
 
    select               -- Asynchronous select

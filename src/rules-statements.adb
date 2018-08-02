@@ -594,7 +594,9 @@ package body Rules.Statements is
             end if;
 
          when A_Null_Statement =>
-            Do_Report (Stmt_Null);
+            if not Is_Part_Of_Implicit (Stmt) then  -- Do not report floating labels as null statements
+               Do_Report (Stmt_Null);
+            end if;
 
          when A_Procedure_Call_Statement =>
             Do_Call_Report (Stmt_Procedure_Call);

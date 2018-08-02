@@ -39,13 +39,13 @@ procedure Tfw_2012 is
       type T;
       type Acc_T is access T;
 
-      type T is private;     -- Incomplete completed by private
+      type T is private;                                           -- Incomplete completed by private
    private
       type T is new Integer;
    end New_Types;
 
    procedure Null_Proc;
-   procedure Null_Proc is null;  -- null procedure as completion
+   procedure Null_Proc is null;                                    -- null procedure as completion
 begin
    for C of S loop                                                 -- for .. of
       C := ' ';
@@ -55,5 +55,6 @@ begin
 
    if I in 1 | 2 | Sub | 1..10 then                                -- multiple membership test
       null;
+      <<Floating_Label>>                                           -- Label without statement
    end if;
 end Tfw_2012;
