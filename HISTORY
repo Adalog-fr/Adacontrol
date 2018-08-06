@@ -15,6 +15,9 @@ case_statement:
 parameter_declarations:
    add modifier no_inout to subrule single_out_parameter
 
+positional_Associations:
+   add subrule declared
+
 simplifiable_statements:
    add subrule for_for_slice
 

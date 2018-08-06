@@ -7364,7 +7364,7 @@ named associations) in all kinds of associations.
 @example
 <control_kind> positional_associations [(<subrule>, <max_allowed>
                                          [, <assoc_kind> @{, <entity>@}])];
-<subrule>    ::= all | all_positional | same_type
+<subrule>    ::= all | all_positional | declared | same_type
 <assoc_kind> ::= [not_operator] call | discriminant     | pragma        |
                  array_aggregate     | record_aggregate | instantiation |
                  enumeration_representation
@@ -7383,20 +7383,23 @@ is more than <max_allowed> associations (both positional and named).
 associations.
 @item
 ``same_type'': when more than <max_allowed> positional parameters are
-of the same type.
+of the same type. This subrule is not allowed for the
+``pragma'' <assoc_kind>.
+@item
+``declared'': when the declaration of the callable entity or of the
+generic has more than <max_allowed> parameters. This subrule is
+allowed only with the ``call'' and ``instantiation'' <assoc_kind>.
 @end itemize
 
-In addition, an <assoc_kind> can be specified to restrict the rule to
-specific kinds of associations; if not specified, all associations are
+If an <assoc_kind> is specified, it restricts the rule to specific
+kinds of associations; if not specified, all kinds of associations are
 controlled. The association kinds carry their obvious meaning, with
 the distinction that ``array_aggregate'' applies only to ``true''
 array aggregates, while ``enumeration_representation'' applies to the
 special array aggregate used in enumeration representation
-clauses. Note that the ``same_type'' subrule is not allowed for the
-``pragma'' category. For ``pragma'', ''call'', and ``instantiation'',
-entities can also be specified; such entities are exempted from the
-rule (i.e. the rule will not control these entities). See examples
-below.
+clauses. For ``pragma'', ''call'', and ``instantiation'', entities can
+also be specified; such entities are exempted from the rule (i.e. the
+rule will not control these entities). See examples below.
 
 For calls, positional association is @i{not} reported for operators
 that use infix notation (since named notation is not possible); in
@@ -7437,6 +7440,10 @@ search positional_associations (same_type, 3, call);
 -- Positional associations in calls with more than 2 elements (except
 -- calls to any subprogram called Put)
 search positional_associations(all, 2, call, all put);
+
+-- All positional association in calls to subprograms with more 
+-- than 3 parameters
+check positional_associations (declared, 3, call);
 @end example
 
 @subsection Variable

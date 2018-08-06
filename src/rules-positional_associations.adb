@@ -44,20 +44,24 @@ with
   Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
+-----------------------------------
+-- Rules.Positional_Associations --
+-----------------------------------
+
 package body Rules.Positional_Associations is
    use Framework, Framework.Control_Manager, Framework.Variables, Framework.Variables.Shared_Types, Utilities;
-   use type Thick_Queries.Biggest_Int;
 
-   type Subrules is (Sr_All, Sr_All_Positional, Sr_Same_Type);
+   type Subrules is (Sr_All, Sr_All_Positional, Sr_Same_Type, Sr_Declared);
+   -- Sr_Declared must stay last
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Flags => Subrules,
                                                                              Prefix => "Sr_" );
 
-   type Association_Names is (Na_Pragma,           Na_Call,         Na_Enumeration_Representation,
-                              Na_Instantiation,    Na_Discriminant, Na_Array_Aggregate,
+   type Association_Names is (Na_Call,                       Na_Instantiation, Na_Pragma,
+                              Na_Enumeration_Representation, Na_Discriminant,  Na_Array_Aggregate,
                               Na_Record_Aggregate);
-   -- Na_Pragma must stay first. When adding a new value, take
-   -- also care of the following subtype:
-   subtype Exceptionable_Association_Names is Association_Names range Na_Pragma .. Na_Instantiation;
+   -- When adding a new value, consider the right place given the following subtypes:
+   subtype Exceptionable_Association_Names is Association_Names range Na_Call .. Na_Enumeration_Representation;
+   subtype Declared_Association_Names      is Association_Names range Na_Call   .. Na_Instantiation;
 
    package Association_Flag_Utilities is new Framework.Language.Flag_Utilities
      (Flags  => Association_Names,
@@ -121,7 +125,7 @@ package body Rules.Positional_Associations is
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => False);
          case Subrule is
-            when Sr_All | Sr_All_Positional =>
+            when Sr_All | Sr_All_Positional | Sr_Declared =>
                Max := Get_Integer_Parameter (Min => 0);
             when Sr_Same_Type =>
                Max := Get_Integer_Parameter (Min => 1);
@@ -143,6 +147,10 @@ package body Rules.Positional_Associations is
                Parameter_Error (Rule_Id, "Same_Type not allowed for pragmas");
             end if;
 
+            if Subrule = Sr_Declared and Assoc not in Declared_Association_Names then
+               Parameter_Error (Rule_Id, "Declared not allowed for " & Image (Assoc));
+            end if;
+
             Contexts (Subrule, Assoc, Ctl_Kind) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Max, Except_Op);
 
             if Parameter_Exists and Assoc not in Exceptionable_Association_Names then
@@ -155,14 +163,25 @@ package body Rules.Positional_Associations is
             Rule_Used (Subrule) (Assoc) (Ctl_Kind):= True;
 
          else
-            for A in Association_Names loop
-               if Rule_Used (Subrule) (A) (Ctl_Kind) then
-                  Parameter_Error (Rule_Id, "This combination already given");
-               end if;
-               Rule_Used (Subrule) (A) (Ctl_Kind) := True;
-               Contexts  (Subrule,  A,  Ctl_Kind) := (Basic.New_Context (Ctl_Kind, Ctl_Label)
-                                                      with Allowed_Number => Max, Except_Operator => False);
-            end loop;
+            if Subrule = Sr_Declared then
+               for A in Declared_Association_Names loop
+                  if Rule_Used (Subrule) (A) (Ctl_Kind) then
+                     Parameter_Error (Rule_Id, "This combination already given");
+                  end if;
+                  Rule_Used (Subrule) (A) (Ctl_Kind) := True;
+                  Contexts  (Subrule,  A,  Ctl_Kind) := (Basic.New_Context (Ctl_Kind, Ctl_Label)
+                                                         with Allowed_Number => Max, Except_Operator => False);
+               end loop;
+            else
+               for A in Association_Names loop
+                  if Rule_Used (Subrule) (A) (Ctl_Kind) then
+                     Parameter_Error (Rule_Id, "This combination already given");
+                  end if;
+                  Rule_Used (Subrule) (A) (Ctl_Kind) := True;
+                  Contexts  (Subrule,  A,  Ctl_Kind) := (Basic.New_Context (Ctl_Kind, Ctl_Label)
+                                                         with Allowed_Number => Max, Except_Operator => False);
+               end loop;
+            end if;
          end if;
 
       else
@@ -220,15 +239,16 @@ package body Rules.Positional_Associations is
    --------------------------
 
    procedure Process_Association (Association : in Asis.Association) is
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Expressions, Asis.Elements, Asis.Statements;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries;
 
-      procedure Check_Association (Na               : Association_Names;
-                                   Ident            : Asis.Element;
-                                   Association_Expr : Asis.Expression;
-                                   All_Associations : Association_List;
-                                   Is_Operator      : Boolean := False;
-                                   Is_Prefixed      : Boolean := False)
+      procedure Check_Association (Na                  : Association_Names;
+                                   Ident               : Asis.Element;
+                                   Association_Expr    : Asis.Expression;
+                                   Actual_Associations : Association_List;   -- Associations as written
+                                   All_Associations    : Association_List;   -- Normalized association list
+                                   Is_Operator         : Boolean := False;
+                                   Is_Prefixed         : Boolean := False)
       is
 
          function Positional_Count (Expr : Asis.Expression; Subrule : Subrules) return Asis.ASIS_Natural is
@@ -276,37 +296,40 @@ package body Rules.Positional_Associations is
                return 0;
             end if;
 
-            if Subrule = Sr_All then
-               Count := All_Associations'Length;
-            else
-               -- Of course, Expr is part of the association list, therefore it will match itself
-               -- and be counted for 1, as it should be.
-               for A in All_Associations'Range loop
-                  -- No more positional associations once we find a named one:
-                  exit when Association_Choices (All_Associations (A)) /= Nil_Element_List;
-                  case Subrule is
-                     when Sr_All =>
-                        Failure ("Positional_Count: Sr_All");
-                     when Sr_All_Positional =>
-                        Count := Count + 1;
-                     when Sr_Same_Type =>
-                        if Association_Kind (Association) = A_Pragma_Argument_Association then
-                           -- no need to go further, Same_Type not applicable to pragmas
-                           return 0;
-                        elsif Is_Same_Type (Expr_Type,
-                                            Thick_Queries.Corresponding_Expression_Type_Definition
-                                              (Association_Value (All_Associations (A))))
-                        then
+            case Subrule is
+               when Sr_All =>
+                  Count := Actual_Associations'Length;
+               when Sr_Declared =>
+                  Count := All_Associations'Length;
+               when others =>
+                  -- Of course, Expr is part of the association list, therefore it will match itself
+                  -- and be counted for 1, as it should be.
+                  for A in Actual_Associations'Range loop
+                     -- No more positional associations once we find a named one:
+                     exit when Association_Choices (Actual_Associations (A)) /= Nil_Element_List;
+                     case Subrule is
+                        when Sr_All | Sr_Declared =>
+                           Failure ("Positional_Count: " & Subrules'Wide_Image (Subrule));
+                        when Sr_All_Positional =>
                            Count := Count + 1;
-                        elsif Expression_Kind (Strip_Parentheses (Expr)) = A_Character_Literal
-                          and then Is_Character_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition
-                                                         (Association_Value (All_Associations (A))))
-                        then
-                           Count := Count + 1;
-                        end if;
-                  end case;
-               end loop;
-            end if;
+                        when Sr_Same_Type =>
+                           if Association_Kind (Association) = A_Pragma_Argument_Association then
+                              -- no need to go further, Same_Type not applicable to pragmas
+                              return 0;
+                           elsif Is_Same_Type (Expr_Type,
+                                               Thick_Queries.Corresponding_Expression_Type_Definition
+                                                 (Association_Value (Actual_Associations (A))))
+                           then
+                              Count := Count + 1;
+                           elsif Expression_Kind (Strip_Parentheses (Expr)) = A_Character_Literal
+                             and then Is_Character_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition
+                                                            (Association_Value (Actual_Associations (A))))
+                           then
+                              Count := Count + 1;
+                           end if;
+                     end case;
+                  end loop;
+            end case;
 
             if Count_Prefix_Operand.Value = Off and then Is_Prefixed then
                Count := Count - 1;
@@ -364,6 +387,15 @@ package body Rules.Positional_Associations is
                                 "positional association used in " & Image (Na, Lower_Case)
                                 & " with more than " & ASIS_Integer_Img (Ctx.Allowed_Number)
                                 & " element(s) of the same type");
+                     when Sr_Declared =>
+                        Report (Rule_Id,
+                                Ctx,
+                                Get_Location (Association),
+                                "positional association used in " & Image (Na, Lower_Case)
+                                & Choose (Ctx.Allowed_Number = 0,
+                                  "",
+                                  " with more than " & ASIS_Integer_Img (Ctx.Allowed_Number)
+                                  & " declared component(s)/parameters(s)"));
                   end case;
                   if Kind /= Count and (Na = Na_Call or Na = Na_Instantiation) then
                      Name := Formal_Name (Association);
@@ -380,19 +412,27 @@ package body Rules.Positional_Associations is
 
          Reported : Boolean;
       begin   -- Check_Association
-         if Is_Prefixed and then Is_Equal (Enclosing_Element (Association_Expr), All_Associations (1)) then
-            -- We have prefixed notation, and this is the first parameter (i.e. the one use as prefix)
+         if Is_Prefixed and then Is_Equal (Enclosing_Element (Association_Expr), Actual_Associations (1)) then
+            -- We have prefixed notation, and this is the first parameter (i.e. the one used as prefix)
             -- => ignore
             return;
          end if;
 
-         for Sr in Subrules loop
+         for Sr in Subrules range Subrules'First .. Subrules'Pred (Sr_Declared) loop
             Check_Report (Sr, Check, Reported);
             if not Reported then
                Check_Report (Sr, Search, Reported);
             end if;
             Check_Report (Sr, Count, Reported);
          end loop;
+
+         if Na in Declared_Association_Names then
+            Check_Report (Sr_Declared, Check, Reported);
+            if not Reported then
+               Check_Report (Sr_Declared, Search, Reported);
+            end if;
+            Check_Report (Sr_Declared, Count, Reported);
+         end if;
       end Check_Association;
 
       Encl   : Asis.Element;
@@ -416,29 +456,34 @@ package body Rules.Positional_Associations is
             Check_Association (Na_Discriminant,
                                Nil_Element,
                                Discriminant_Expression (Association),
-                               Discriminant_Associations (Encl));
+                               Discriminant_Associations (Encl),
+                               Nil_Element_List);
          when A_Record_Component_Association =>
             Check_Association (Na_Record_Aggregate,
                                Nil_Element,
                                Component_Expression (Association),
-                               Record_Component_Associations (Encl));
+                               Record_Component_Associations (Encl, Normalized => False),
+                               Nil_Element_List);
          when An_Array_Component_Association =>
             if Representation_Clause_Kind (Enclosing_Element (Encl)) = An_Enumeration_Representation_Clause then
                Check_Association (Na_Enumeration_Representation,
                                   Nil_Element,
                                   Component_Expression (Association),
-                                  Array_Component_Associations (Encl));
+                                  Array_Component_Associations (Encl),
+                                  Nil_Element_List);
             else
                Check_Association (Na_Array_Aggregate,
                                   Nil_Element,
                                   Component_Expression (Association),
-                                  Array_Component_Associations (Encl));
+                                  Array_Component_Associations (Encl),
+                                  Nil_Element_List);
             end if;
          when A_Pragma_Argument_Association =>
             Check_Association (Na_Pragma,
                                Encl,
                                Actual_Parameter (Association),
-                               Pragma_Argument_Associations (Encl));
+                               Pragma_Argument_Associations (Encl),
+                               Nil_Element_List);
          when A_Parameter_Association =>
             -- Do not check infix (operators) function calls or attribute functions and procedures
             if Expression_Kind (Encl) = A_Function_Call then
@@ -446,7 +491,8 @@ package body Rules.Positional_Associations is
                   Check_Association (Na_Call,
                                      Called_Simple_Name (Encl),
                                      Actual_Parameter (Association),
-                                     Function_Call_Parameters (Encl),
+                                     Function_Call_Parameters (Encl, Normalized => False),
+                                     Function_Call_Parameters (Encl, Normalized => True),
                                      Is_Operator => Operator_Kind (Simple_Name (Prefix (Encl))) /= Not_An_Operator,
                                      Is_Prefixed => Is_Prefix_Notation (Encl));
                end if;
@@ -456,7 +502,8 @@ package body Rules.Positional_Associations is
                   Check_Association (Na_Call,
                                      Called,
                                      Actual_Parameter (Association),
-                                     Call_Statement_Parameters (Encl),
+                                     Call_Statement_Parameters (Encl, Normalized => False),
+                                     Call_Statement_Parameters (Encl, Normalized => True),
                                      Is_Prefixed => Is_Prefix_Notation (Encl));
                end if;
             else
@@ -469,13 +516,15 @@ package body Rules.Positional_Associations is
                Check_Association (Na_Call,
                                   Called,
                                   Actual_Parameter (Association),
-                                  Call_Statement_Parameters (Encl));
+                                  Call_Statement_Parameters (Encl, Normalized => False),
+                                  Call_Statement_Parameters (Encl, Normalized => True));
             end if;
          when A_Generic_Association =>
                Check_Association (Na_Instantiation,
                                   Generic_Unit_Name (Encl),
                                   Actual_Parameter (Association),
-                                  Generic_Actual_Part (Encl));
+                                  Generic_Actual_Part (Encl, Normalized => False),
+                                  Generic_Actual_Part (Encl, Normalized => True));
       end case;
    end Process_Association;
 

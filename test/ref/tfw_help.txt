@@ -588,11 +588,12 @@ Other parameters: function             | procedure             |
 ----
 Rule: POSITIONAL_ASSOCIATIONS
 Control use of positional_association:
-Parameter (1): all | all_positional | same_type
+Parameter (1): all      | all_positional | same_type |
+               declared
 Parameter (2): <value>
-Parameter (3): [not_operator] pragma                     | call            |
-                              enumeration_representation | instantiation   |
-                              discriminant               | array_aggregate |
+Parameter (3): [not_operator] call             | instantiation              |
+                              pragma           | enumeration_representation |
+                              discriminant     | array_aggregate            |
                               record_aggregate
                               (default = all)
 Parameter (4..): <entities>

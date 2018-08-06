@@ -13,6 +13,10 @@ set positional_associations.count_prefix_operand off;
    search positional_associations (same_type, 1, call);
 "All_Positional":
    search positional_associations (All_Positional, 1, call),
-   check  positional_associations (All_Positional, 1, Enumeration_Representation),
+   check  positional_associations (All_Positional, 1, Enumeration_Representation);
 
-count positional_associations (all, 0, call);
+"Declared":
+   check positional_associations (Declared, 1);
+
+"All_Positional_Calls":
+   count positional_associations (all, 0, call);
