@@ -8203,9 +8203,9 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= block       | dead   | handler | if             |
-              if_for_case | if_not | loop    | loop_for_while |
-              nested_path | null
+<subrule> ::= block          | dead        | for_for_slice | handler |
+              if             | if_for_case | if_not        | loop    | 
+              loop_for_while | nested_path | null
 @end example
 @subsection Action
 The parameters are subrule keywords:
@@ -8223,6 +8223,11 @@ condition is statically known to be true. It includes also
 @code{@b{elsif}} paths) whose condition is statically false, branches
 of @code{@b{case}} statements whose choices are all statically null
 ranges, and @code{@b{for}} loops whose range is statically empty.
+@item
+``for_for_slice'': controls for loops whose body contains only
+assignments between array elements, and where the indexing and the
+value assigned are such that the loop may be replaced by a single
+slice assignment, a full array assignment, or an aggregate assignment.
 @item
 ``handler'': controls ``trivial'' exception handlers, i.e. handlers
 whose sequence of statements includes only a single @code{@b{raise}}

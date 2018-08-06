@@ -44,7 +44,7 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_Statements is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_Handler,        Stmt_If,          Stmt_If_For_Case,
+   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_For_For_Slice,  Stmt_Handler,     Stmt_If, Stmt_If_For_Case,
                      Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
@@ -637,7 +637,124 @@ package body Rules.Simplifiable_Statements is
    procedure Process_Statement (Stmt : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Framework.Reports, Thick_Queries;
-   begin
+
+      procedure Check_Slice is
+      -- Called when Stmt is a (regular) for loop
+      -- Checks if every statement in the body of the loop is an assignment, where the LHS and RHS are
+      --    array indexings, with the loop parameter appearing only as TBSL
+         use Asis.Expressions;
+
+         Loop_Index : constant Asis.Defining_Name := Names (For_Loop_Parameter_Specification (Stmt)) (1);
+
+         type Indexing_Expr_Kind is (Bad, Good, Good_With_Index);
+         function "or" (Left, Right : Indexing_Expr_Kind) return Indexing_Expr_Kind is
+         begin
+            if Left = Bad or Right = Bad then
+               return Bad;
+            elsif Left = Good and Right = Good then
+               return Good;
+            elsif Left = Good_With_Index xor Right = Good_With_Index then
+               return Good_With_Index;
+            else -- Good_With_Index or Good_With_Index
+               return Bad;
+            end if;
+         end "or";
+
+         function Indexing_Kind (Expr : Asis.Expression) return Indexing_Expr_Kind is
+         begin
+            case Expression_Kind (Expr) is
+               when An_Integer_Literal | An_Enumeration_Literal =>
+                  return Good;
+
+               when An_Identifier =>
+                  if Variables_Proximity (Expr, Loop_Index) = Same_Variable then
+                     return Good_With_Index;
+                  else
+                     return Good;
+                  end if;
+
+               when A_Function_Call =>
+                  -- we allow only "+" and "-". TBSL: only predefined ones?
+                  if Expression_Kind (Called_Simple_Name (Expr)) /= An_Operator_Symbol then
+                     return Bad;
+                  end if;
+                  case Operator_Kind (Called_Simple_Name (Expr)) is
+                     when A_Plus_Operator | A_Minus_Operator =>
+                        declare
+                           Params : constant Asis.Expression_List := Function_Call_Parameters (Expr);
+                        begin
+                           return Indexing_Kind (Actual_Parameter (Params (1)))
+                               or Indexing_Kind (Actual_Parameter (Params (2)));
+                        end;
+                     when others =>
+                        return Bad;
+                  end case;
+
+               when A_Parenthesized_Expression =>
+                  return Indexing_Kind (Expression_Parenthesized (Expr));
+
+               when  A_Type_Conversion | A_Qualified_Expression =>
+                  return Indexing_Kind (Converted_Or_Qualified_Expression (Expr));
+
+               when others =>
+                  return Bad;
+            end case;
+         end Indexing_Kind;
+
+         LHS, RHS     : Asis.Expression;
+         Assign_Count : ASIS_Natural := 0;
+      begin    -- Check_Slice
+         for S : Asis.Statement of  Loop_Statements (Stmt) loop
+            case Statement_Kind (S) is
+               when An_Assignment_Statement =>
+                  LHS := Assignment_Variable_Name (S);
+                  RHS := Assignment_Expression    (S);
+                  if        Expression_Kind (LHS) /= An_Indexed_Component
+                    or else (Expression_Kind (RHS) /= An_Indexed_Component and Indexing_Kind (RHS) /= Good)
+                  then
+                     return;
+                  end if;
+
+                  declare
+                     L_Indices : constant Asis.Expression_List := Index_Expressions (LHS);
+                  begin
+                     if L_Indices'Length /= 1
+                       or else Indexing_Kind (L_Indices (L_Indices'First)) /= Good_With_Index
+                     then
+                        return;
+                     end if;
+                  end;
+
+                  if Expression_Kind (RHS) = An_Indexed_Component then
+                     declare
+                        R_Indices : constant Asis.Expression_List := Index_Expressions (RHS);
+                     begin
+                        if R_Indices'Length /= 1
+                          or else Indexing_Kind (R_Indices (R_Indices'First)) /= Good_With_Index
+                        then
+                           return;
+                        end if;
+                     end;
+                  end if;
+
+                  Assign_Count := Assign_Count + 1;
+               when A_Null_Statement =>
+                  null;
+
+               when others =>
+                  return;
+            end case;
+         end loop;
+
+         if Assign_Count > 0 then -- We may have a loop with only null statements
+            Report (Rule_Id,
+                    Usage (Stmt_For_For_Slice),
+                    Get_Location (Stmt),
+                    "For loop can be replaced by array, array slice, or aggregate assignments");
+         end if;
+      end Check_Slice;
+
+   begin   -- Process_Statement
       if Rule_Used = Not_Used then
          return;
       end if;
@@ -731,6 +848,10 @@ package body Rules.Simplifiable_Statements is
                      Fixes.Delete (Stmt);
                   end if;
                end;
+            end if;
+
+            if Rule_Used (Stmt_For_For_Slice) then
+               Check_Slice;
             end if;
 
          when A_While_Loop_Statement =>

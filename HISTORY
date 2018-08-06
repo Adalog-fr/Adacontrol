@@ -15,6 +15,9 @@ case_statement:
 parameter_declarations:
    add modifier no_inout to subrule single_out_parameter
 
+simplifiable_statements:
+   add subrule for_for_slice
+
 statements:
    add subrule goto_not_continue
 

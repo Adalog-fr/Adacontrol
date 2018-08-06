@@ -1,5 +1,6 @@
 procedure T_Simplifiable_Statements is
    procedure Test_Block             is separate;
+   procedure Test_For_For_Slice     is separate;
    procedure Test_Handler           is separate;
    function  Test_If return Integer is separate;
    procedure Test_If_For_Case       is separate;
