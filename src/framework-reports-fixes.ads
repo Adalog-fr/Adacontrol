@@ -44,10 +44,19 @@ package Framework.Reports.Fixes is
 
    procedure Refactor (Original : Asis.Element);
 
-   procedure Replace (Original : Asis.Element;                     By : Wide_String);
-   procedure Replace (Original : Asis.Element;                     By : Asis.Element);
-   procedure Replace (Original : Asis.Element;                     By : Asis.Element_List);
-   procedure Replace (From     : Location;     Length : Positive ; By : Wide_String);
+   procedure Replace (Original : Asis.Element;
+                      By       : Wide_String);
+   procedure Replace (Original   : Asis.Element;
+                      By         : Asis.Element;
+                      Add_Before : Wide_String := "";
+                      Add_After  : Wide_String := "");
+   procedure Replace (Original : Asis.Element;
+                      By         : Asis.Element_List;
+                      Add_Before : Wide_String := "";
+                      Add_After  : Wide_String := "");
+   procedure Replace (From     : Location;
+                      Length   : Positive;
+                      By       : Wide_String);
 
    type Insert_Place is (Before, After);
    procedure Insert (Text : Wide_String; Place : Insert_Place; Elem : Asis.Element; Full_Line : Boolean := False);

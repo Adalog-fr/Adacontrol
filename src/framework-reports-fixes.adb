@@ -34,7 +34,8 @@ with
 
 -- Adalog
 with
-   A4G_Bugs;
+   A4G_Bugs,
+   Thick_Queries;
 
 -- AdaControl
 with
@@ -51,70 +52,6 @@ package body Framework.Reports.Fixes is
    --  Low level production
    -------------------------------------------------------------------------------------------
 
-   --------------------
-   -- Text_Generator --
-   --------------------
-
-   package Text_Generator is
-   -- A generator for the text (possibly encompassing several lines) corresponding to a span
-   -- Next_Line returns only text within Span (unlike functions is Asis.Text, no extra spaces is added before the start)
-   -- If the ending column is beyond the end of the last line, it is extended with spaces.
-      procedure Init (The_Span : Span; Base_Element : Asis.Element);
-
-      function Has_More_Text return Boolean;
-      function Next_Line     return Wide_String;
-   end Text_Generator;
-
-   package body Text_Generator is
-      Active_Span    : Span;
-      Active_Element : Asis.Element;
-
-      procedure Init (The_Span : Span; Base_Element : Asis.Element) is
-      begin
-         Active_Span    := The_Span;
-         Active_Element := Base_Element;
-      end Init;
-
-      function Has_More_Text return Boolean is
-      begin
-         return not Is_Nil (Active_Span) ;
-      end Has_More_Text;
-
-      function Next_Line return Wide_String is
-      begin
-         if not Has_More_Text  then
-            return "";
-         end if;
-
-         declare
-            Result : constant Asis.Program_Text := Line_Image (Lines (Active_Element,
-                                                                      Active_Span.First_Line,
-                                                               Active_Span.First_Line) (Active_Span.First_Line));
-            First  : Character_Position;
-            Last   : Character_Position;
-         begin
-            First := Active_Span.First_Column;
-            if Active_Span.First_Line = Active_Span.Last_Line then
-               Last := Active_Span.Last_Column;
-            else
-               Last := Result'Last;
-            end if;
-
-            Active_Span.First_Line   := Active_Span.First_Line + 1;
-            Active_Span.First_Column := 1;
-            if Active_Span.First_Line > Active_Span.Last_Line then
-               Active_Span := Nil_Span;  -- safety for Is_Nil
-            end if;
-
-            if Last <= Result'Last then
-               return Result (First .. Last);
-            else
-               return Result (First .. Result'Last) & (Result'Last+1 .. Last => ' ');
-            end if;
-         end;
-      end Next_Line;
-   end Text_Generator;
-
    ------------------
    -- Gen_Refactor --
    ------------------
@@ -127,25 +64,6 @@ package body Framework.Reports.Fixes is
                   & " Refactor:"
                   & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
    end Gen_Refactor;
-
-   -----------------
-   -- Gen_Replace --
-   -----------------
-
-   -- Replace text covered by Extent (which can be empty for simple insertions, or cover
-   -- several lines) by text fetched from Text_Generator
-   procedure Gen_Replace (From, To : Location) is
-      use Utilities;
-   begin
-      Raw_Report (Image (From)
-                  & ':'
-                  & " Replace:"
-                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img(To.First_Column));
-
-      while Text_Generator.Has_More_Text loop
-         Raw_Report (Marker & Text_Generator.Next_Line);
-      end loop;
-   end Gen_Replace;
 
    -----------------
    -- Gen_Replace --
@@ -256,32 +174,49 @@ package body Framework.Reports.Fixes is
    -- Replace --
    -------------
 
-   procedure Replace (Original : Asis.Element; By : Asis.Element) is
+   procedure Replace (Original   : Asis.Element;
+                      By         : Asis.Element;
+                      Add_Before : Wide_String := "";
+                      Add_After  : Wide_String := "")
+   is
    begin
       if not Generate_Fixes then
          return;
       end if;
 
-      Text_Generator.Init (A4G_Bugs.Element_Span (By), Original);
-      Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original));
+      declare
+         By_Image : constant Asis.Program_Text := Element_Image (By);
+      begin
+         Replace (Original,
+                  By => Add_Before
+                        & By_Image (A4G_Bugs.Element_Span (By).First_Column .. By_Image'Last)
+                        & Add_After);
+      end;
    end Replace;
 
    -------------
    -- Replace --
    -------------
 
-   procedure Replace (Original : Asis.Element; By : Asis.Element_List) is
+   procedure Replace (Original : Asis.Element;
+                      By         : Asis.Element_List;
+                      Add_Before : Wide_String := "";
+                      Add_After  : Wide_String := "")
+   is
+      use Thick_Queries;
    begin
       if not Generate_Fixes then
          return;
       end if;
 
-      Text_Generator.Init ((First_Line     => A4G_Bugs.Element_Span (By (By'First)).First_Line,
-                            First_Column   => A4G_Bugs.Element_Span (By (By'First)).First_Column,
-                            Last_Line      => A4G_Bugs.Element_Span (By (By'Last)).Last_Line,
-                            Last_Column    => A4G_Bugs.Element_Span (By (By'Last)).Last_Column),
-                           Base_Element => Original);
-      Gen_Replace (From => Get_Location (Original), To => Get_End_Location (Original));
+      declare
+         By_Image : constant Asis.Program_Text := Element_List_Image (By);
+      begin
+         Replace (Original,
+                  By => Add_Before
+                        & By_Image (A4G_Bugs.Element_Span (By (By'First)).First_Column .. By_Image'Last)
+                        & Add_After);
+      end;
    end Replace;
 
    -------------
