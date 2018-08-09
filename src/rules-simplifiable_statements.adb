@@ -28,10 +28,12 @@ with
   Asis.Declarations,
   Asis.Elements,
   Asis.Expressions,
-  Asis.Statements;
+  Asis.Statements,
+  Asis.Text;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -44,8 +46,8 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_Statements is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_For_For_Slice,  Stmt_Handler,     Stmt_If, Stmt_If_For_Case,
-                     Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null);
+   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_For_For_Slice,  Stmt_Handler,     Stmt_If,   Stmt_If_For_Case,
+                     Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null, Stmt_Unnecessary_If);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
    use Subrules_Flags_Utilities;
@@ -423,7 +425,166 @@ package body Rules.Simplifiable_Statements is
       Paths          : constant Asis.Path_List := Statement_Paths (Stmt);
       If_Cond        : Asis.Expression;
       Op             : Asis.Operator_Kinds;
-   begin
+
+      procedure Process_Unnecessary_If is
+         use Utilities;
+         use Asis.Declarations;
+
+         function Negated_Image (Expr : Asis.Expression) return Wide_String is
+         -- Pre: Expr is a boolean expression
+         -- Return the image of the negation of expr, i.e.:
+         --  - if Expr is a call to "not", remove it
+         --  - if Expr is a comparison, replace it by the opposite comparison
+         --  - if Expr is an operator call, return "not (Expr)" (to avoid problems with precedence)
+         --  - otherwise, return "not Expr"
+
+            subtype Comparison_Operators is Operator_Kinds range An_Equal_Operator .. A_Greater_Than_Or_Equal_Operator;
+            Opposite : constant array (Comparison_Operators) of Wide_String (1 .. 2)
+              := (An_Equal_Operator                => "/=",
+                  A_Not_Equal_Operator             => "= ",
+                  A_Less_Than_Operator             => ">=",
+                  A_Less_Than_Or_Equal_Operator    => "> ",
+                  A_Greater_Than_Operator          => "<=",
+                  A_Greater_Than_Or_Equal_Operator => "< ");
+
+            function Format (S : Wide_String) return Wide_String is
+            begin
+               if S (S'Last) = ' ' then
+                  return ' ' & S;
+               else
+                  return ' ' & S & ' ';
+               end if;
+            end Format;
+
+
+            function Stripped_Image (E : Asis.Element) return Wide_String is
+               use Asis.Text;
+               Result : constant Wide_String :=  Element_Image (E);
+            begin
+               return Result (A4G_Bugs.Element_Span (E).First_Column .. Result'Last);
+            end Stripped_Image;
+         begin -- Negated_Image
+            case Expression_Kind (Expr) is
+               when A_Function_Call =>
+                  if Is_Prefix_Call (Expr) then
+                     -- might be complicated, qualified, implicit dereference... don't try to make it pretty
+                     return "not " & Stripped_Image (Expr);
+                  end if;
+
+                  -- Necessarily an operator here (not prefix call)
+                  declare
+                     Params : constant Asis.Association_List := Function_Call_Parameters (Expr);
+                  begin
+                     case Operator_Kind (Prefix (Expr)) is
+                        when A_Not_Operator =>
+                           return Stripped_Image (Strip_Parentheses (Actual_Parameter (Params (1))));
+                        when Comparison_Operators =>
+                           return Stripped_Image (Actual_Parameter (Params (1)))
+                             & Format (Opposite (Operator_Kind (Prefix (Expr))))
+                             & Stripped_Image (Actual_Parameter (Params (2)));
+                        when others =>
+                           return "not (" & Stripped_Image (Expr) & ')';
+                     end case;
+                  end;
+               when others =>
+                  return "not " & Stripped_Image (Expr);
+            end case;
+         end Negated_Image;
+
+         Then_Stmts : constant Asis.Statement_List := Thick_Queries.Statements (Paths (1));
+         Else_Stmts : constant Asis.Statement_List := Thick_Queries.Statements (Paths (2));
+         Then_Expr  : Asis.Expression;
+         Else_Expr  : Asis.Expression;
+         Then_Type  : Asis.Declaration;
+         Else_Type  : Asis.Declaration;
+         Then_Val   : Extended_Biggest_Int;
+         Else_Val   : Extended_Biggest_Int;
+      begin  -- Process_Unnecessary_If
+         -- Only one statement in each path
+         if Then_Stmts'Length /= 1 or Else_Stmts'Length /= 1 then
+            return;
+         end if;
+
+         -- Both are assignments or both are simple return statements, get the expressions
+         case Statement_Kind (Then_Stmts (1)) is
+            when An_Assignment_Statement =>
+               if Statement_Kind (Else_Stmts (1)) /= An_Assignment_Statement then
+                  return;
+               end if;
+               if Variables_Proximity (Assignment_Variable_Name (Then_Stmts (1)),
+                                       Assignment_Variable_Name (Else_Stmts (1))) /= Same_Variable
+               then
+                  return;
+               end if;
+               Then_Expr := Assignment_Expression (Then_Stmts (1));
+               Else_Expr := Assignment_Expression (Else_Stmts (1));
+            when A_Return_Statement =>
+               if Statement_Kind (Else_Stmts (1)) /= A_Return_Statement then
+                  return;
+               end if;
+               Then_Expr := Return_Expression (Then_Stmts (1));
+               if Is_Nil (Then_Expr) then -- return from procedure (the other one is necessarily the same)
+                  return;
+               end if;
+               Else_Expr := Return_Expression (Else_Stmts (1));
+            when others =>
+               return;
+         end case;
+
+         Then_Type := A4G_Bugs.Corresponding_Expression_Type (Then_Expr);
+         Else_Type := A4G_Bugs.Corresponding_Expression_Type (Else_Expr);
+
+         -- Both exprs are of type Standard.Boolean
+         if    Is_Nil (Then_Type) or Is_Part_Of_Implicit (Then_Type)
+            or Is_Nil (Else_Type) or Is_Part_Of_Implicit (Else_Type)
+         then
+            -- Anonymous type, universal type...
+            return;
+         end if;
+         if        To_Upper (Full_Name_Image (Names (Then_Type) (1))) /= "STANDARD.BOOLEAN"
+           or else To_Upper (Full_Name_Image (Names (Else_Type) (1))) /= "STANDARD.BOOLEAN"
+         then
+            return;
+         end if;
+
+         Then_Val := Discrete_Static_Expression_Value (Then_Expr);
+         Else_Val := Discrete_Static_Expression_Value (Else_Expr);
+         if Then_Val = Not_Static or Else_Val = Not_Static then
+            return;
+         end if;
+
+         if Then_Val = Else_Val then
+            -- Strange (copy/paste error?), certainly worth mentionning
+            Report (Rule_Id,
+                    Usage (Stmt_Unnecessary_If),
+                    Get_Location (Stmt),
+                    "Both paths of if statement assign/return the same value");
+            -- Better not fix it, the if-expression could have side effects
+            return;
+         end if;
+
+         if Then_Val = 1 then
+            Report (Rule_Id,
+                    Usage (Stmt_Unnecessary_If),
+                    Get_Location (Stmt),
+                    "If statement can be replaced by direct use of logical expression into assignment/return");
+            Fixes.Delete (From => Get_Location (Stmt), To => Get_Location (Then_Stmts (1)));
+            Fixes.Replace (Then_Expr, Condition_Expression (Paths (1)));
+            Fixes.Delete (From => Get_Location (Paths(2)), To => Get_Next_Word_Location (Stmt, Starting => From_Tail));
+
+         else
+            Report (Rule_Id,
+                    Usage (Stmt_Unnecessary_If),
+                    Get_Location (Stmt),
+                    "If statement can be replaced by inverted use of logical expression into assignment/return");
+            Fixes.Delete (From => Get_Location (Stmt), To => Get_Location (Then_Stmts (1)));
+            Fixes.Replace (Then_Expr, Negated_Image (Condition_Expression (Paths (1))));
+            Fixes.Delete (From => Get_Location (Paths (2)), To => Get_Next_Word_Location (Stmt, Starting => From_Tail));
+         end if;
+
+      end Process_Unnecessary_If;
+
+   begin   -- Process_If_Statement
       -- Stmt_If, Stmt_Nested_Path, Stmt_If_Not
       if (Rule_Used (Stmt_If) or Rule_Used (Stmt_Nested_Path) or Rule_Used (Stmt_If_Not))
         and then Path_Kind (Paths (Paths'Last)) = An_Else_Path
@@ -553,6 +714,14 @@ package body Rules.Simplifiable_Statements is
                Fixes.Delete (Paths (P));
             end if;
          end loop;
+      end if;
+
+      -- Stmt_Unnecessary_If
+      if Rule_Used (Stmt_Unnecessary_If) then
+         -- Must be strictly if... then... else... end if;
+         if Paths'Length = 2  and then Path_Kind (Paths (2)) = An_Else_Path then
+            Process_Unnecessary_If;
+         end if;
       end if;
    end Process_If_Statement;
 
@@ -784,7 +953,8 @@ package body Rules.Simplifiable_Statements is
 
          when An_If_Statement =>
             if (Rule_Used and Usage_Flags'(Stmt_If          | Stmt_Nested_Path | Stmt_If_Not |
-                                           Stmt_If_For_Case | Stmt_Dead => True,
+                                           Stmt_If_For_Case | Stmt_Dead        | Stmt_Unnecessary_If
+                                           => True,
                                            others                       => False)) /= Not_Used
             then
                Process_If_Statement (Stmt);

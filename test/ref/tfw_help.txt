@@ -695,7 +695,7 @@ Control Ada statements that can be made simpler
 Parameter(s): block       | dead | for_for_slice  |
               handler     | if   | if_for_case    |
               if_not      | loop | loop_for_while |
-              nested_path | null
+              nested_path | null | unnecessary_if
 ----
 Rule: STATEMENTS
 Control occurrences of Ada statements
@@ -1030,7 +1030,7 @@ Control Ada statements that can be made simpler
 Parameter(s): block       | dead | for_for_slice  |
               handler     | if   | if_for_case    |
               if_not      | loop | loop_for_while |
-              nested_path | null
+              nested_path | null | unnecessary_if
 Variables: 
 Tag1: String = "##"
 Tag2: String = "##"

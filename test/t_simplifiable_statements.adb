@@ -8,6 +8,7 @@ procedure T_Simplifiable_Statements is
    procedure Test_Loop              is separate;
    procedure Test_Null              is separate;
    procedure Test_Dead              is separate;
+   function Test_Unnecessary_If return Boolean is separate;
 begin
    null;
 end T_Simplifiable_Statements;

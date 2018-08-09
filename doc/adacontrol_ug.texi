@@ -8210,9 +8210,10 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= block          | dead        | for_for_slice | handler |
-              if             | if_for_case | if_not        | loop    | 
-              loop_for_while | nested_path | null
+<subrule> ::= block       | dead | for_for_slice  |
+              handler     | if   | if_for_case    |
+              if_not      | loop | loop_for_while |
+              nested_path | null | unnecessary_if
 @end example
 @subsection Action
 The parameters are subrule keywords:
@@ -8348,6 +8349,28 @@ would break the symetry of the statement:
 ``null'': controls @code{@b{null}} statements that serve no purpose
 and can be removed.  Note that if a @code{@b{null}} statement carries
 a label, it is not considered  simplifiable.
+@item
+``unnecessary_if'': controls @code{@b{if}} statements with no
+@code{@b{elsif}} path whose @code{@b{then}} and @code{@b{else}} paths
+are both assignments to the same variable or @code{@b{return}}
+statements and whose (assigned or returned) value is a plain @code{True}
+in one path and a plain @code{False} in the other path. The
+@code{@b{if}} statement can be removed, and its logical expression
+directly assigned to the variable, or returned (possibly with a
+negation  of the condition). Typically:
+@example
+@b{if} V=1 @b{then}  -- Equivalent to "Flag := V=1;"
+   Flag := True;
+@b{else}
+   Flag := False;
+@b{end} @b{if};
+
+@b{if} V=1 @b{then}  -- Equivalent to "return V /= 1;"
+   @b{return} False;
+@b{else}
+   @b{return} True;
+@b{end} @b{if};
+@end example
 @end itemize
 
 Without parameter, all kinds of simplifiable statements are
@@ -8377,6 +8400,9 @@ The following subrules generate fixes:
 plain @code{@b{loop}}
 @item
 ``Null'': The useless @code{@b{null}} statement is removed.
+@item
+``Unnecessary_If'': The @code{@b{if}} statement is removed and its expression assigned to the 
+variable, or as the return value. Negation of the condition is performed if necessary.
 @end itemize
 
 @subsection Tips
@@ -8387,7 +8413,7 @@ that covers no value at all; this can be checked with:
 check case_statement (others_span, min 1);
 @end example
 
-@code{@b{loop}} may seem a strange thing to check, since no Ada
+``loop'' may seem a strange thing to check, since no Ada
 programmer is supposed to write this. However, experience shows that
 it is a good indicator of code written by people who did not get
 proper Ada training. Such code is certainly worth a peer review...
@@ -10931,7 +10957,7 @@ check style (parameter_association, call, 1);
 @end example
 to:
 @example
-check parameter_associations (all, 1, call);
+check positional_associations (all, 1, call);
 @end example
 
 Note that the new rule distinguishes between regular array aggregates

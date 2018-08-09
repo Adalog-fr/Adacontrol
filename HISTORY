@@ -19,7 +19,7 @@ positional_Associations:
    add subrule declared
 
 simplifiable_statements:
-   add subrule for_for_slice
+   add subrules for_for_slice, unnecessary_if
 
 statements:
    add subrule goto_not_continue
