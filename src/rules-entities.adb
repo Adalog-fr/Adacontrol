@@ -142,6 +142,7 @@ package body Rules.Entities is
                                                                          Entity,
                                                                          Extend_To => (Instance => True,
                                                                                        Renaming => False));
+      -- Renaming => False because renamings have been dealt with by Used_Indentifiers
    begin
       if Current_Context /= No_Matching_Context then
          declare

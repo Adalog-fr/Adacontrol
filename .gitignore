@@ -31,7 +31,7 @@ src/pfni
 src/ptree
 src/gen_adactl
 src/adactl_fix
-src/essai.adb
+src/essai.*
 
 test/res/
 test/fixed/res

@@ -255,7 +255,7 @@ package body Rules.Default_Parameter is
                                          (Ultimate_Name
                                           (Generic_Unit_Name (Element)))));
          else
-            Failure ("Unexpected element in Process for Default_Parameter", Element);
+            Failure ("Default_Parameter: Unexpected element in Get_Formals_List", Element);
          end if;
       end Get_Formals_List;
 

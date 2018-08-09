@@ -105,7 +105,7 @@ package body Framework.Language is
       use Framework.Rules_Manager;
    begin
       if Current_Token.Kind /= Name then
-         Syntax_Error ("Rule identifier expected", Current_Token.Position);
+         Syntax_Error ("Rule identifier expected, found " & Image (Current_Token), Current_Token.Position);
       end if;
 
       declare

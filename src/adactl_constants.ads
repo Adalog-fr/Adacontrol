@@ -65,8 +65,4 @@ package Adactl_Constants is
    Max_Loop_Nesting : constant := 20;
    -- Maximum depth of nested loops
 
-   Max_Scopes : constant := 50;
-   -- Maximum depth of scopes nesting.
-
-
 end Adactl_Constants;

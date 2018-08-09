@@ -135,10 +135,10 @@ package body Rules.Local_Hiding is
          if Rule_Used (Subrule) then
             Parameter_Error (Rule_Id, "subrule already specified");
          end if;
-         Rule_Used        (Subrule) := True;
-         Rule_Context     (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-         Include_Op       (Subrule) := not Modif_Specified (Not_Operator);
-         Include_Enum     (Subrule) := not Modif_Specified (Not_Enumeration);
+         Rule_Used    (Subrule) := True;
+         Rule_Context (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+         Include_Op   (Subrule) := not Modif_Specified (Not_Operator);
+         Include_Enum (Subrule) := not Modif_Specified (Not_Enumeration);
          case Subrule is
             when Overloading =>
                if Modif_Specified (Not_Identical_Renaming) then
