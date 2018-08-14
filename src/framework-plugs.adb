@@ -78,6 +78,7 @@ with
   Rules.Record_Declarations,
   Rules.Reduceable_Scope,
   Rules.Representation_Clauses,
+  Rules.Return_Statements,
   Rules.Return_Type,
   Rules.Side_Effect_Parameters,
   Rules.Silent_Exceptions,
@@ -310,6 +311,7 @@ package body Framework.Plugs is
                   Rules.Improper_Initialization.  Process_Structure            (Element);
                   Rules.Max_Size.                 Process_Element              (Element);
                   Rules.Parameter_Declarations.   Process_Declaration          (Element);
+                  Rules.Return_Statements.        Initialize_Counter           (Element);
                   Rules.Return_Type.              Process_Function_Declaration (Element);
                   Rules.Statements.               Process_Function_Body        (Element);
                   Rules.Style.                    Process_Construct            (Element);
@@ -317,9 +319,20 @@ package body Framework.Plugs is
                   Rules.Unit_Pattern.             Process_Program_Unit         (Element);
                   Rules.Usage.                    Process_Declaration          (Element);
 
-               when A_Procedure_Body_Declaration
-                  | A_Null_Procedure_Declaration
-                  =>
+               when A_Procedure_Body_Declaration =>
+                  Rules.Comments.                Process_Program_Unit   (Element);
+                  Rules.Exception_Propagation.   Process_SP_Declaration (Element);
+                  Rules.Global_References.       Process_Body           (Element);
+                  Rules.Improper_Initialization. Process_Structure      (Element);
+                  Rules.Max_Size.                Process_Element        (Element);
+                  Rules.Parameter_Declarations.  Process_Declaration    (Element);
+                  Rules.Return_Statements.       Initialize_Counter     (Element);
+                  Rules.Style.                   Process_Construct      (Element);
+                  Rules.Style.                   Process_Declaration    (Element);
+                  Rules.Unit_Pattern.            Process_Program_Unit   (Element);
+                  Rules.Usage.                   Process_Declaration    (Element);
+
+               when A_Null_Procedure_Declaration =>
                   Rules.Comments.                Process_Program_Unit   (Element);
                   Rules.Exception_Propagation.   Process_SP_Declaration (Element);
                   Rules.Global_References.       Process_Body           (Element);
@@ -337,6 +350,7 @@ package body Framework.Plugs is
                   Rules.Global_References.       Process_Body              (Element);
                   Rules.Improper_Initialization. Process_Structure         (Element);
                   Rules.Max_Size.                Process_Element           (Element);
+                  Rules.Return_Statements.       Initialize_Counter        (Element);
                   Rules.Style.                   Process_Construct         (Element);
                   Rules.Style.                   Process_Declaration       (Element);
                   Rules.Unit_Pattern.            Process_Program_Unit      (Element);
@@ -624,11 +638,13 @@ package body Framework.Plugs is
                   Rules.Declarations.              Process_Statement           (Element);
                   Rules.Improper_Initialization.   Process_Structure           (Element);
                   Rules.Movable_Accept_Statements. Process_Accept_Statement    (Element);
+                  Rules.Return_Statements.         Initialize_Counter          (Element);
                   Rules.Style.                     Process_Compound_Statement  (Element);
 
                when A_Block_Statement =>
                   Rules.Declarations.            Process_Statement           (Element);
                   Rules.Improper_Initialization. Process_Structure           (Element);
+                  Rules.Return_Statements.       Initialize_Counter          (Element);
                   Rules.Style.                   Process_Compound_Statement  (Element);
 
                when A_Loop_Statement
@@ -641,9 +657,13 @@ package body Framework.Plugs is
                   Rules.Statements.           Pre_Process_Loop            (Element);
                   Rules.Style.                Process_Compound_Statement  (Element);
 
+               when A_Return_Statement =>
+                  Rules.Return_Statements. Process_Return_Statement (Element);
+
                when An_Extended_Return_Statement =>
-                  Rules.Declarations.            Process_Statement (Element);
-                  Rules.Improper_Initialization. Process_Structure (Element);
+                  Rules.Declarations.            Process_Statement        (Element);
+                  Rules.Improper_Initialization. Process_Structure        (Element);
+                  Rules.Return_Statements.       Process_Return_Statement (Element);
 
                when A_Selective_Accept_Statement
                  | A_Timed_Entry_Call_Statement
@@ -752,6 +772,12 @@ package body Framework.Plugs is
 
          when A_Declaration =>
             case Declaration_Kind (Element) is
+               when A_Function_Body_Declaration
+                  | A_Procedure_Body_Declaration
+                  | An_Entry_Body_Declaration
+                  =>
+                  Rules.Return_Statements. Finalize_Counter (Element);
+
                when A_Package_Body_Declaration =>
                   Rules.Directly_Accessed_Globals. Post_Process_Package_Body (Element);
                when A_Renaming_Declaration =>
@@ -778,6 +804,10 @@ package body Framework.Plugs is
                  | A_For_Loop_Statement
                  =>
                   Rules.Statements. Post_Process_Loop (Element);
+               when An_Accept_Statement
+                  | A_Block_Statement
+                  =>
+                  Rules.Return_Statements. Finalize_Counter (Element);
                when others =>
                   null;
             end case;

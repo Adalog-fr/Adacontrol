@@ -1,0 +1,9 @@
+            search return_statements (depth, max 0);
+            check  return_statements (depth, max 1);
+Global_Ret: count  return_statements (depth, min 1);
+
+            check  return_statements (regular_count, max 3);
+            search return_statements (regular_count, max 2);
+
+            check return_statements (handler_count, min 1, max 2, function);
+            check return_statements (handler_count, min 0, max 2, procedure, entry);

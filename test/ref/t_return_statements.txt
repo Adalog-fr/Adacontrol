@@ -1,0 +1,18 @@
+t_return_statements.adb:9:10: Found: RETURN_STATEMENTS: Depth of return statement is not 0 (1)
+t_return_statements.adb:9:10: Found: RETURN_STATEMENTS: number of return statements is not in 0 .. 2 (3)
+t_return_statements.adb:16:13: Error: RETURN_STATEMENTS: number of return statements in handler is not in 1 .. 2 (3)
+t_return_statements.adb:11:10: Error: RETURN_STATEMENTS: number of return statements in handler is not in 1 .. 2 (0)
+t_return_statements.adb:24:10: Error: RETURN_STATEMENTS: number of return statements in handler is not in 1 .. 2 (3)
+t_return_statements.adb:19:7: Error: RETURN_STATEMENTS: number of return statements in handler is not in 1 .. 2 (0)
+t_return_statements.adb:41:13: Error: RETURN_STATEMENTS: number of return statements in handler is not in 0 .. 2 (3)
+t_return_statements.adb:42:13: Error: RETURN_STATEMENTS: number of return statements in handler is not in 0 .. 2 (4)
+t_return_statements.adb:51:7: Found: RETURN_STATEMENTS: Depth of return statement is not 0 (1)
+t_return_statements.adb:51:7: Found: RETURN_STATEMENTS: number of return statements is not in 0 .. 2 (3)
+t_return_statements.adb:56:10: Error: RETURN_STATEMENTS: Depth of return statement is not in 0 .. 1 (2)
+t_return_statements.adb:56:10: Error: RETURN_STATEMENTS: number of return statements is not in 0 .. 3 (4)
+t_return_statements.adb:66:10: Found: RETURN_STATEMENTS: Depth of return statement is not 0 (1)
+t_return_statements.adb:68:10: Found: RETURN_STATEMENTS: Depth of return statement is not 0 (1)
+t_return_statements.adb:68:10: Error: RETURN_STATEMENTS: number of return statements in handler is not in 0 .. 2 (3)
+
+Counts summary:
+Global_Ret: 16

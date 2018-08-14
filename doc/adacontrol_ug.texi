@@ -2690,7 +2690,7 @@ their value. The variable name is of the form of a qualified name
 description of the variables (if any) and appropriate values is given
 for each rule.
 
-@node Source command, , Set command, Other commands
+@node Source command, Rule_File_Off command, Set command, Other commands
 @subsection Source command
 This command inputs commands from another file.
 
@@ -2888,6 +2888,7 @@ is a dispatching call.
 * Record_Declarations::
 * Reduceable_Scope::
 * Representation_Clauses::
+* Return_Statements::
 * Return_Type::
 * Side_Effect_Parameters::
 * Silent_Exceptions::
@@ -7412,7 +7413,7 @@ notation is not allowed for them.
 
 This rule can be specified once for each combination of <subrule>,
 <assoc_kind>, and <control_kind>.  This way, it is possible to have a
-number of positional associations considered a warning (search),  and
+number of positional associations considered a warning (search), and
 one considered an error (check). Of course, this makes sense only if
 <max_allowed> for search is greater than the one for check. It is also
 possible to have different criteria for each category.
@@ -7441,7 +7442,7 @@ search positional_associations (same_type, 3, call);
 -- calls to any subprogram called Put)
 search positional_associations(all, 2, call, all put);
 
--- All positional association in calls to subprograms with more 
+-- All positional association in calls to subprograms with more
 -- than 3 parameters
 check positional_associations (declared, 3, call);
 @end example
@@ -7751,7 +7752,7 @@ a package specification that could be moved to the body. Such clauses
 appear as ``unused'' (but of course, the compiler will complain on the
 body if the clause is removed).
 
-@node Representation_Clauses, Return_Type, Reduceable_Scope, Rules reference
+@node Representation_Clauses, Return_Statements, Reduceable_Scope, Rules reference
 @section Representation_Clauses
 This rule controls usage of representation clause.
 
@@ -7877,7 +7878,84 @@ penalty, since calling an inherited subrograms requires a change of
 representation.  Representation clauses for tagged types are dubious,
 since these types have hidden fields added by the compiler.
 
-@node Return_Type, Side_Effect_Parameters, Representation_Clauses, Rules reference
+@node Return_Statements, Return_Type, Representation_Clauses, Rules reference
+@section Return_Statements
+This rule controls the number of return statements (in regular code
+and in exception handlers) and how deep they are nested in compound
+statements.
+
+@subsection Syntax
+@example
+<control_kind> return_statements
+                  (<subrule>, <value>|<bounds> @{, <callable>@});
+<subrule>  ::= depth | regular_count | handler_count
+<bounds>   ::= min|max <value> [, min|max <value> ]
+<callable> ::= procedure | function | entry
+@end example
+
+@subsection Action
+The rule controls various metrics related to the use of return statements, depending on the subrule:
+@itemize
+@item
+``depth'': controls the depth of nesting of return statements within
+compound statements. A statement that appears directly in the sequence
+of statements of a subprogram has a depth of 0, if it is in an
+@code{@b{if}} statement it has a depth of 1, etc.
+@item
+``regular_count'': controls the number of return statements that
+appear in the regular sequence of statements of a callable  entity.
+@item
+``handler_count'': controls the number of return statements that
+appear in each of the exception handlers of a callable entity.
+@end itemize
+
+For all subrules, the rule is triggered if the measured value is
+stricty less than the value for ``min'' or strictly greater than the
+value for ``max'' (i.e. ``min'' and ``max'' represent the range of
+allowed values). If not given, ``min'' defaults to 0 and ``max'' to
+infinity. If a value is given (without ``min'' or ``max'' keywords),
+it stands for both ``min'' and ``max'' (i.e. it is the only allowed
+value).
+
+If one or several <callable> is given after the bounds, the rule
+applies only to return statements from the corresponding kind of
+callable entity (procedure, function, or in the case of
+@code{@b{entry}}, entry body and accept statements). Otherwise, the
+rule applies to all kinds of callable entities.
+
+This rule can be specified once for each combination of <subrule>,
+<callable>, and <control_kind>.  This way, it is possible to have a
+value considered a warning (search), and one considered an error
+(check).
+
+ Ex:
+@example
+-- warning if 2 return in the body of callables, error if 3 and above:
+check  return_statements (regular_count, max 2);
+search return_statements (regular_count, max 1);
+
+-- every handler in a function must have at least 1 return:
+check return_statements (handler_count, min 1, function);
+
+-- no deep nested (more than 1 level) return statement:
+check return_statement (depth, max 1);
+@end example
+
+@subsection Tips
+@code{@b{return}} statements appear in so-called callable entities
+(procedures, functions, entry bodies and accept statements), but they
+can also appear in blocks nested in one of these. The block itself
+counts as a compound statement for the purpose of the ``depth''
+subrule. For the ``regular_count'' and ``handler_count'' subrules,
+@code{@b{return}} statements from the regular statements of the block
+are counted as belonging to the enclosing callable entity or handler,
+but each exception handler of the block has its own counter of
+@code{@b{return}} statements.
+
+For the simple case of just forbidding several @code{@b{return}}
+statements in a subprogram, see the simpler rule @ref{Statements}.
+
+@node Return_Type, Side_Effect_Parameters, Return_Statements, Rules reference
 @section Return_Type
 This rule controls that certain form of types are not used for
 function results.
@@ -8401,7 +8479,7 @@ plain @code{@b{loop}}
 @item
 ``Null'': The useless @code{@b{null}} statement is removed.
 @item
-``Unnecessary_If'': The @code{@b{if}} statement is removed and its expression assigned to the 
+``Unnecessary_If'': The @code{@b{if}} statement is removed and its expression assigned to the
 variable, or as the return value. Negation of the condition is performed if necessary.
 @end itemize
 
@@ -8708,6 +8786,9 @@ raised by calling the procedures from @code{Ada.Exceptions}.
 
 ``inherited_procedure_call'' controls only @i{procedure} calls. For
 function calls, see rule @ref{Expressions}.
+
+For more sophisticated controls over @code{@b{return}} statements, see the rule
+@ref{Return_Statements}.
 
 @node Style, Terminating_Tasks, Statements, Rules reference
 @section Style

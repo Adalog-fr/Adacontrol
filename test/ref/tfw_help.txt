@@ -654,6 +654,16 @@ Parameter(s): [<category>] [global] [object] <specifiable attribute> |
             array | record  | tagged | extension | access |
             new   | private | task   | protected
 ----
+Rule: RETURN_STATEMENTS
+Control number and depth of return statements
+
+Parameter (1):  depth | regular_count | handler_count
+Parameter (2..3): [<bound>] <value>
+<bound>:  min | max
+         (at least one parameter required)
+Other parameters:  procedure | function | entry
+                   (optional)
+----
 Rule: RETURN_TYPE
 Control various forms of the type returned by functions
 
@@ -996,16 +1006,17 @@ Rules:
    Positional_Associations         Potentially_Blocking_Operations 
    Pragmas                         Record_Declarations             
    Reduceable_Scope                Representation_Clauses          
-   Return_Type                     Side_Effect_Parameters          
-   Silent_Exceptions               Simplifiable_Expressions        
-   Simplifiable_Statements         Statements                      
-   Style                           Terminating_Tasks               
-   Type_Initial_Values             Type_Usage                      
-   Uncheckable                     Units                           
-   Unit_Pattern                    Unnecessary_Use_Clause          
-   Unsafe_Elaboration              Unsafe_Paired_Calls             
-   Unsafe_Unchecked_Conversion     Usage                           
-   Use_Clauses                     With_Clauses                    
+   Return_Statements               Return_Type                     
+   Side_Effect_Parameters          Silent_Exceptions               
+   Simplifiable_Expressions        Simplifiable_Statements         
+   Statements                      Style                           
+   Terminating_Tasks               Type_Initial_Values             
+   Type_Usage                      Uncheckable                     
+   Units                           Unit_Pattern                    
+   Unnecessary_Use_Clause          Unsafe_Elaboration              
+   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
+   Usage                           Use_Clauses                     
+   With_Clauses                    
 
 ADACTL v. 1.20b3 
 ----

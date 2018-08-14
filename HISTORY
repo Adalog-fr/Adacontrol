@@ -7,6 +7,10 @@ General:
 Output format defaults to CSV if an output file is given whose
 extension is ".csv"
 
+New rule:
+---------
+return_statements
+
 Changes to existing rules:
 --------------------------
 case_statement:
