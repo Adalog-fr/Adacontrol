@@ -114,6 +114,11 @@ package Framework.Language is
    -- Like Get_Entity_Parameter, but treats the entity specification as a modifier (i.e. does not call
    -- Next_Parameter)
 
+   function Get_String_Modifier  return Wide_String;
+   -- Like Get_String_Parameter, but treats the string as a modifier (i.e. does not call
+   -- Next_Parameter)
+
+
    --  The following two packages can be instantiated to parse modifiers and "flag"
    --  parameters (keywords). The flags are the 'Image of the values
    --  of the generic formal type, with the initial Prefix removed (if not "").

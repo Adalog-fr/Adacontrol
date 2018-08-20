@@ -986,6 +986,17 @@ package body Framework.Language is
    --------------------------
 
    function Get_String_Parameter return Wide_String is
+      Result : constant Wide_String := Get_String_Modifier;
+   begin
+      Next_Parameter;
+      return Result;
+   end Get_String_Parameter;
+
+   -------------------------
+   -- Get_String_Modifier --
+   -------------------------
+
+   function Get_String_Modifier return Wide_String is
    begin
       if not In_Parameters then
          Failure ("Get_String_Parameter called when not in parameters");
@@ -999,10 +1010,9 @@ package body Framework.Language is
          Result : constant Wide_String := Image (Current_Token);
       begin
          Next_Token;
-         Next_Parameter;
          return Result;
       end;
-   end Get_String_Parameter;
+   end Get_String_Modifier;
 
    --------------------------
    -- Get_Entity_Parameter --
