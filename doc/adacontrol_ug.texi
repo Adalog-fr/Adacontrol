@@ -3839,9 +3839,9 @@ those occurring at specified locations.
 @subsection Syntax
 @example
 <control_kind> declarations (<subrule> @{, <subrule>@});
-<subrule>     ::= @{[not] <location_kw>@} <declaration_kw>
-<location_kw> ::= all     | block   | library    | local     | own |
-                  private | public  | in_generic | task_body
+<subrule>  ::= @{[not] <location>@} [ignore "<pattern>"] <declaration_kw>
+<location> ::= all     | block   | library    | local     | own |
+               private | public  | in_generic | task_body
 <declaration_kw> ::=
   any_declaration                  |
   abstract_function                | abstract_operator                 |
@@ -3936,6 +3936,13 @@ declaration is controlled except at this location. Several
 <location_kw> can be given, in which case the declaration is
 controlled at places where all the keywords apply. If there is no
 <location_kw>, it is assumed to be ``all''.
+
+If ``ignore "<pattern>"'' is specified, declarations whose @i{full}
+name matches the <pattern> are not  controlled. The full name is the
+fully qualified name (including the enclosing packages, etc...). The
+<pattern> is a regular expression.  @xref{Syntax of regular
+expressions}. See example below.
+
 @itemize @bullet
 @item
 @code{all}: puts no special restriction to the location. This keyword
@@ -4308,6 +4315,9 @@ check declarations (public task);
 
 -- Generics allowed only as top-level units
 check declarations (not library generic);
+
+-- No variable in package spec except those declared in package Globals
+check declarations (public ignore "^globals." variable);
 @end example
 
 @subsection Variable

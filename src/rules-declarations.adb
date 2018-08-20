@@ -24,6 +24,10 @@
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+  Ada.Containers.Indefinite_Holders;
+
 -- ASIS
 with
   Asis.Clauses,
@@ -35,6 +39,7 @@ with
 
 -- Adalog
 with
+  String_Matching,
   Thick_Queries,
   Utilities;
 
@@ -137,9 +142,12 @@ package body Rules.Declarations is
 
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "D_");
 
+   package Pattern_Holder is new Ada.Containers.Indefinite_Holders (String_Matching.Compiled_Pattern,
+                                                                    String_Matching."=");
    type Declaration_Context is new Basic_Rule_Context with
       record
          Locations : Framework.Language.Shared_Keys.Places_Set;
+         Ignored   : Pattern_Holder.Holder;
       end record;
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -163,7 +171,7 @@ package body Rules.Declarations is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control occurrences of Ada declarations");
       User_Message;
-      User_Message ("Parameter(s): {<location>} <decl>");
+      User_Message ("Parameter(s): {<location>} [ignore ""<pattern>""] <decl>");
       Help_On_Scope_Places (Header => "<location>:");
       Subrules_Flag_Utilities.Help_On_Flags (Header => "<decl>:");
       User_Message;
@@ -177,10 +185,11 @@ package body Rules.Declarations is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind  : in Control_Kinds) is
-      use Framework.Language, Framework.Language.Shared_Keys;
-      use Subrules_Flag_Utilities;
+      use Framework.Language, Framework.Language.Shared_Keys, String_Matching;
+      use Pattern_Holder, Subrules_Flag_Utilities;
       Subrule : Subrules;
       Loc     : Places_Set;
+      Pat     : Holder;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "at least one parameter required");
@@ -188,12 +197,28 @@ package body Rules.Declarations is
 
       while Parameter_Exists loop
          Loc  := Get_Places_Set_Modifiers (Rule_Id);
+
+         if Get_Modifier ("IGNORE") then
+            if Is_String_Parameter then
+               declare
+                  Pat_String : constant Wide_String := Get_String_Modifier;
+               begin
+                  Pat := To_Holder (Compile (Pat_String, Ignore_Case => True));
+               exception
+                  when Pattern_Error =>
+                     Parameter_Error (Rule_Id, "Incorrect pattern: " & Pat_String);
+               end;
+            else
+               Parameter_Error (Rule_Id, "Pattern string expected");
+            end if;
+         end if;
+
          Subrule := Get_Flag_Parameter (Allow_Any => False);
 
          Rule_Used (Subrule) := True;
          Associate (Usage,
                     Value (Subrules'Wide_Image (Subrule)),
-                    Declaration_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Loc),
+                    Declaration_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Loc, Pat),
                     Additive => True);
       end loop;
    exception
@@ -233,15 +258,36 @@ package body Rules.Declarations is
    -- Do_Report --
    ---------------
 
-   procedure Do_Report (Decl : Subrules; Loc : Location) is
+   procedure Do_Report (Decl : Subrules; Loc : Location; Name : Asis.Name := Asis.Nil_Element) is
       use Framework.Reports, Framework.Language.Shared_Keys;
       use Subrules_Flag_Utilities, Utilities;
 
       Iter : Context_Iterator := Usage_Iterator.Create;
-   begin
+
+      function Is_Applicable (Cont : Declaration_Context) return Boolean is
+         use Asis.Elements;
+         use Pattern_Holder, String_Matching, Thick_Queries;
+      begin
+         if not Is_Applicable (Cont.Locations) then
+            return False;
+         end if;
+
+         if Is_Nil (Name) then
+            -- Things that don't have a name
+            return True;
+         end if;
+
+         if Cont.Ignored = Empty_Holder then
+            return True;
+         end if;
+
+         return not Match (Full_Name_Image (Name), Element (Cont.Ignored));
+      end Is_Applicable;
+
+   begin  -- Do_Report
       Reset (Iter, Value (Subrules'Wide_Image (Decl)));
       while not Is_Exhausted (Iter) loop
-         if Is_Applicable (Declaration_Context (Value (Iter)).Locations) then
+         if Is_Applicable (Declaration_Context (Value (Iter))) then
             Report (Rule_Id,
                     Value (Iter),
                     Loc,
@@ -261,23 +307,26 @@ package body Rules.Declarations is
 
    procedure Do_Report (Decl : Subrules; Elem : Asis.Element) is
       use Asis, Asis.Declarations, Asis.Elements;
-      Decl_Kind : constant Asis.Declaration_Kinds := Declaration_Kind (Elem);
    begin
       -- For an object declaration, report individually for each name
       -- in the object declaration (otherwise, count f. e. would be wrong)
-      if   Decl_Kind in A_Variable_Declaration       .. A_Deferred_Constant_Declaration
-        or Decl_Kind in A_Discriminant_Specification .. A_Component_Declaration
-      then
-         declare
-            Var_Names : constant Name_List := Names (Elem);
-         begin
-            for V in Var_Names'Range loop
-               Do_Report (Decl, Get_Location (Var_Names (V)));
-            end loop;
-         end;
-      else
-         Do_Report (Decl, Get_Location (Elem));
-      end if;
+      case  Declaration_Kind (Elem) is
+         when A_Variable_Declaration       .. A_Deferred_Constant_Declaration
+            | A_Discriminant_Specification .. A_Component_Declaration
+            =>
+            declare
+               Var_Names : constant Name_List := Names (Elem);
+            begin
+               for V in Var_Names'Range loop
+                  Do_Report (Decl, Get_Location (Var_Names (V)), Var_Names (V));
+               end loop;
+            end;
+         when Not_A_Declaration =>
+            -- block statements passed for the location...
+            Do_Report (Decl, Get_Location (Elem), Nil_Element);
+         when others =>
+            Do_Report (Decl, Get_Location (Elem), Names (Elem)(1));
+      end case;
    end Do_Report;
 
 

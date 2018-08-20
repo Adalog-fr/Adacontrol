@@ -116,7 +116,7 @@ Parameter(2..): [<condition>] <unit>
 Rule: DECLARATIONS
 Control occurrences of Ada declarations
 
-Parameter(s): {<location>} <decl>
+Parameter(s): {<location>} [ignore "<pattern>"] <decl>
 <location>: [not] all       | block   | library | local      |
                   own       | private | public  | in_generic |
                   task_body

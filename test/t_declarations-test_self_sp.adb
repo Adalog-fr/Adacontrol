@@ -5,6 +5,11 @@ procedure Test_Self_Sp is                       -- self_calling_procedure, neste
       return F (X);
    end;
 
+   function Ok_Recurs (X : Integer) return Integer is  -- OK (ignored due to pattern)
+   begin
+      return Ok_Recurs (X);
+   end Ok_Recurs;
+
    function G (X : Integer) return Integer is   -- relay_function, no_spec_function
    begin
       return F (X);

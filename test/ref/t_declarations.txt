@@ -129,16 +129,16 @@ t_declarations-test_self_sp.adb:2:1: Error: locations: use of declaration "local
 t_declarations-test_self_sp.adb:2:1: Found: DECLARATIONS: use of declaration "self_calling_procedure"
 t_declarations-test_self_sp.adb:3:4: Error: DECLARATIONS: use of declaration "no_spec_function"
 t_declarations-test_self_sp.adb:3:4: Found: DECLARATIONS: use of declaration "self_calling_function"
-t_declarations-test_self_sp.adb:8:4: Error: DECLARATIONS: use of declaration "no_spec_function"
-t_declarations-test_self_sp.adb:8:4: Found: DECLARATIONS: use of declaration "relay_function"
-t_declarations-test_self_sp.adb:13:4: Error: locations: use of declaration "not library procedure"
-t_declarations-test_self_sp.adb:13:4: Error: locations: use of declaration "local procedure"
-t_declarations-test_self_sp.adb:13:4: Error: DECLARATIONS: use of declaration "no_spec_procedure"
-t_declarations-test_self_sp.adb:13:4: Found: DECLARATIONS: use of declaration "relay_procedure"
-t_declarations-test_self_sp.adb:18:4: Found: DECLARATIONS: use of declaration "not library package"
-t_declarations-test_self_sp.adb:18:4: Found: DECLARATIONS: use of declaration "relay_package"
-t_declarations-test_self_sp.adb:19:7: Found: DECLARATIONS: use of declaration "not library package"
-t_declarations-test_self_sp.adb:19:7: Found: DECLARATIONS: use of declaration "empty_visible_part"
+t_declarations-test_self_sp.adb:13:4: Error: DECLARATIONS: use of declaration "no_spec_function"
+t_declarations-test_self_sp.adb:13:4: Found: DECLARATIONS: use of declaration "relay_function"
+t_declarations-test_self_sp.adb:18:4: Error: locations: use of declaration "not library procedure"
+t_declarations-test_self_sp.adb:18:4: Error: locations: use of declaration "local procedure"
+t_declarations-test_self_sp.adb:18:4: Error: DECLARATIONS: use of declaration "no_spec_procedure"
+t_declarations-test_self_sp.adb:18:4: Found: DECLARATIONS: use of declaration "relay_procedure"
+t_declarations-test_self_sp.adb:23:4: Found: DECLARATIONS: use of declaration "not library package"
+t_declarations-test_self_sp.adb:23:4: Found: DECLARATIONS: use of declaration "relay_package"
+t_declarations-test_self_sp.adb:24:7: Found: DECLARATIONS: use of declaration "not library package"
+t_declarations-test_self_sp.adb:24:7: Found: DECLARATIONS: use of declaration "empty_visible_part"
 t_declarations.adb:10:4: Found: DECLARATIONS: use of declaration "signed_type"
 t_declarations.adb:10:4: Error: DECLARATIONS: use of declaration "integer_type"
 t_declarations.adb:11:4: Error: DECLARATIONS: use of declaration "binary_modular_type"
@@ -718,6 +718,6 @@ x_declarations_locations.adb:39:28: Found: DECLARATIONS: use of declaration "nul
 x_declarations_locations.adb:39:28: Found: DECLARATIONS: use of declaration "null_procedure"
 
 Counts summary:
-All_Decls: 358
+All_Decls: 360
 Nb_array_types: 7
 Nb_entries: 6
