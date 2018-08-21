@@ -890,6 +890,7 @@ Parameter(3): (optional) type of lock parameter
 
 Variables:
 Unsafe_Paired_Calls.Conditionals_Allowed: (Off, On) = On
+Unsafe_Paired_Calls.Name_As_Given: (Off, On) = Off
 ----
 Rule: UNSAFE_UNCHECKED_CONVERSION
 Control unsafe usage of Unchecked_Conversion

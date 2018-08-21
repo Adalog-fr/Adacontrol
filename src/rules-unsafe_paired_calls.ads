@@ -45,5 +45,6 @@ private
    -- Rule variables
    use Framework.Variables.Shared_Types;
    Conditionals_Allowed : aliased Framework.Variables.Shared_Types.Switch_Type.Object := (Value => On);
+   Name_As_Given        : aliased Framework.Variables.Shared_Types.Switch_Type.Object := (Value => Off);
 
 end Rules.Unsafe_Paired_Calls;

@@ -114,6 +114,7 @@ package body Rules.Unsafe_Paired_Calls is
       User_Message;
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Conditionals_Allowed");
+      Help_On_Variable (Rule_Id & ".Name_As_Given");
    end Help;
 
    -----------------
@@ -215,18 +216,31 @@ package body Rules.Unsafe_Paired_Calls is
       Active_Procs.Activate;
    end Prepare;
 
+   --------------
+   -- Key_Name --
+   --------------
+
+   function Key_Name (Call : Asis.Statement) return Asis.Name is
+      use Thick_Queries;
+   begin
+      if Name_As_Given.Value = On then
+         return Called_Simple_Name (Call);
+      else
+         return Ultimate_Name (Called_Simple_Name (Call));
+      end if;
+   end Key_Name;
+
    ------------------
    -- Call_Context --
    ------------------
 
    function Call_Context (Call : Asis.Statement) return Root_Context'Class is
       use Asis.Elements;
-      use Thick_Queries;
    begin
       if Is_Nil (Call) then
          return No_Matching_Context;
       end if;
-      return Matching_Context (Checked_Subprograms, Ultimate_Name (Called_Simple_Name (Call)));
+      return Matching_Context (Checked_Subprograms, Key_Name (Call));
    end Call_Context;
 
    ---------------------------
@@ -427,7 +441,7 @@ package body Rules.Unsafe_Paired_Calls is
 
    procedure Process_Call (Call : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities, Unsafe_Paired_Calls.Services;
+      use Framework.Reports, Thick_Queries, Unsafe_Paired_Calls.Services;
 
       function Is_Same_Opening_Locking (Called_Context : SP_Context;
                                         Other_Call     : Asis.Statement) return Boolean
@@ -441,8 +455,8 @@ package body Rules.Unsafe_Paired_Calls is
             return False;
          end if;
 
-         if not Is_Equal (Corresponding_Name_Definition (Ultimate_Name (Called_Name (Call))),
-                          Corresponding_Name_Definition (Ultimate_Name (Called_Name (Other_Call))))
+         if not Is_Equal (Corresponding_Name_Definition (Key_Name (Call)),
+                          Corresponding_Name_Definition (Key_Name (Other_Call)))
          then
             return False;
          end if;
@@ -638,7 +652,6 @@ package body Rules.Unsafe_Paired_Calls is
             end if;
 
             -- No effective statements after this call
-            Utilities.Trace ("stat", Thick_Queries.Statements (Enclosing_Element (Call)));
             if Element_Kind (Enclosing) /= An_Exception_Handler
               and then not Is_Equal (Call,
                                      Effective_Last_Statement (Thick_Queries.Statements (Enclosing_Element (Call))))
@@ -853,4 +866,5 @@ begin  -- Rules.Unsafe_Paired_Calls
                                      Prepare_CB     => Prepare'Access);
 
    Framework.Variables.Register (Conditionals_Allowed'Access, Rule_Id & ".CONDITIONALS_ALLOWED");
+   Framework.Variables.Register (Name_As_Given'Access,        Rule_Id & ".NAME_AS_GIVEN");
 end Rules.Unsafe_Paired_Calls;

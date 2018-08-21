@@ -9748,6 +9748,12 @@ and closing blocks.
 @item
 @tab on (default)
 @tab Calls can be nested in if statements as described above.
+@item Name_As_Given
+@tab off (default)
+@tab The calls can use any name that refers to the procedures given in the rule (i.e. renamings are followed).
+@item
+@tab on
+@tab The calls must use the name given in the rule (i.e. renamings are not followed).
 @end multitable
 
 @subsection Tips
