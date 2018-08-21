@@ -94,8 +94,8 @@ begin
 
    begin
       P;
-      null;         -- Error: no closing call
-   end;             -- Error: no handler
+      null;          -- Error: no closing call
+   end;              -- Error: no handler
 
    begin
       null;
@@ -106,8 +106,8 @@ begin
       P;
       null;
       Not_A_Lock;
-   exception          -- Error: no matching closing call
-      when others =>  -- Error: no matching closing call
+   exception         -- Error: no matching closing call
+      when others => -- Error: no matching closing call
         Not_A_Lock;
    end;
 
@@ -122,7 +122,7 @@ begin
             V;       -- Error: not valid nested if
       end case;
       null;
-   end;              -- Error: no exception handler
+   end;
 
    begin
       P;
@@ -241,7 +241,7 @@ begin
    begin
       P ('a', 1);
       begin
-         P ('a', 1); --Error (nested, same values)
+         P ('a', 1); -- Error (nested, same values)
          V ('B', 1);
       exception
          when others =>
@@ -293,7 +293,7 @@ begin
          V (S2);       -- Error: wrong values
    end;
 
-   begin             --OK (nested, but different values)
+   begin             -- OK (nested, but different values)
       P (S1);
       begin
          P (S2);
@@ -311,7 +311,7 @@ begin
    begin
       P (S1);
       begin
-         P (S1);     --Error (nested, same values)
+         P (S1);     -- Error (nested, same values)
          V (S1);
       exception
          when others =>

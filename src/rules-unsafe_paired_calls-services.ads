@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Unsafe_Paired_Calls.Signatures - Package specification    --
+--  Rules.Unsafe_Paired_Calls.Services - Package specification      --
 --                                                                  --
 --  This module is (c) Adalog 2004-2016.                            --
 --  The Ada Controller is  free software; you can  redistribute  it --
@@ -29,9 +29,14 @@ with
 
 private package Rules.Unsafe_Paired_Calls.Services is
 
+   ------------------- Ignore statements that cannot raise exceptions at end of sequence
+   function Effective_Last_Statement_Index (Stats : Asis.Statement_List) return Asis.ASIS_Natural;
+   -- Returns the index of the last statement of Stats that is not an exit, return, or null statement
+   -- Returns 0 if not found
+
    function Effective_Last_Statement (Stats : Asis.Statement_List) return Asis.Statement;
    -- Returns the last statement of Stats that is not an exit, return, or null statement
-
+   -- Failure if not found
 
    ------------------ Signature of a lock call possibly nested
    type Nesting_Signature is new Asis.Element_List;
@@ -49,14 +54,23 @@ private package Rules.Unsafe_Paired_Calls.Services is
    -- Another kind of statement is encountered
    -- The associated Exception_Message provides more information
 
-   function Signature (Stmt : Asis.Statement) return Nesting_Signature;
+   function Signature (Stmt : Asis.Statement; With_Check : Boolean) return Nesting_Signature;
    -- Computes the signature by going up enclosing elements from Stmt
    -- Stops when anything else than if's (and corresponding paths) is encountered,
-   -- or when an if has a condition which is not a simple reference to a boolean constant
+   --    or when an if has a condition which is not a simple reference to a boolean constant
+   -- If With_Check is True, raises Invalid_Nesting for an inappropriate construct, otherwise
+   --    returns the signature up to (not including) the inappropriate construct
 
    function Matching_Call (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
-   -- Returns the matching call burried into nested if statements, if the structure matches Signature,
-   -- including that every condition expression of if statements matches the one from the signature
-   -- Returns Nil_Element otherwise
+   -- Returns the call burried into Stat (nested if statements...)
+   -- Checks that Stat contains only (nested) if statements with no elsif paths, that the structure matches Signature,
+   --    (including that every condition expression of if statements matches the one from the signature).
+   -- Does not check that the call is an opening / closing call matching the one from Signature
+   -- Returns Nil_Element if the checks fail.
 
+   function Matching_Block (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
+   -- Check that enclosing elements of Stat match the structure of Signature and return the top of the
+   -- corresponding opening/closing block
+   -- Return Nil_Element if enclosing elements of Stat do not match Signature.
+   -- Precondition: Stat is a procedure (or entry) call (not checked)
 end Rules.Unsafe_Paired_Calls.Services;

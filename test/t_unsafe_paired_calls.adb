@@ -23,8 +23,9 @@ procedure T_Unsafe_Paired_Calls is
    procedure MultP2 is begin null; end;
    procedure MultV2 is begin null; end;
 
-   procedure Simple is separate;
+   procedure Simple  is separate;
    procedure Nesting is separate;
+   procedure Breaks  is separate;
 begin
    null;
 end T_Unsafe_Paired_Calls;

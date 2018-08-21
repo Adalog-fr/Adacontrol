@@ -63,6 +63,24 @@ begin
       null;
       if Cond1 then
          V;
+         Cond3 := True;    -- Error: statements after closing block
+      end if;
+   exception
+      when others =>
+         if Cond1 then
+            V;
+            Cond3 := True; -- OK: statements after closing block in exception handler
+         end if;
+   end;
+
+   -- Statements after closing block
+   begin
+      if Cond1 then
+         P;
+      end if;
+      null;
+      if Cond1 then
+         V;
       end if;
    exception
       when others =>   -- several matches
@@ -83,7 +101,7 @@ begin
                P (S1);
             else
                P ('a', 1);
-               return;           -- OK, extra uneffective statement
+               null;             -- OK, extra uneffective statement
             end if;
             null;                -- OK, extra uneffective statement
          end if;

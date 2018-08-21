@@ -37,6 +37,8 @@ package Rules.Unsafe_Paired_Calls is
 
    procedure Process_Call (Call : in Asis.Element);
 
+   procedure Process_Breaking_Statement (Stmt : Asis.Statement);
+
 private
    -- Declarations for child units
 

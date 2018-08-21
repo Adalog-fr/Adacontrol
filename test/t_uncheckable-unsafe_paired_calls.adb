@@ -14,11 +14,11 @@ procedure unsafe_paired_calls is
 begin
    P (D'Class (O));  -- Dispatching call
    null;
-   V;
+   V (D'Class (O));  -- Dispatching call
 exception
    when Constraint_Error =>
       V (D'Class (O));  -- Dispatching call
    when others =>
       P (D'Class (O));  -- Dispatching call
-      V;
+      V (D'Class (O));  -- Dispatching call
 end unsafe_paired_calls;

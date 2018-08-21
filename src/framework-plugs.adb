@@ -657,13 +657,21 @@ package body Framework.Plugs is
                   Rules.Statements.           Pre_Process_Loop            (Element);
                   Rules.Style.                Process_Compound_Statement  (Element);
 
+               when An_Exit_Statement =>
+                  Rules.Unsafe_Paired_Calls. Process_Breaking_Statement (Element);
+
+               when A_Goto_Statement =>
+                  Rules.Unsafe_Paired_Calls. Process_Breaking_Statement (Element);
+
                when A_Return_Statement =>
                   Rules.Return_Statements. Process_Return_Statement (Element);
+                  Rules.Unsafe_Paired_Calls. Process_Breaking_Statement (Element);
 
                when An_Extended_Return_Statement =>
-                  Rules.Declarations.            Process_Statement        (Element);
-                  Rules.Improper_Initialization. Process_Structure        (Element);
+                  Rules.Declarations.            Process_Statement (Element);
+                  Rules.Improper_Initialization. Process_Structure (Element);
                   Rules.Return_Statements.       Process_Return_Statement (Element);
+                  Rules.Unsafe_Paired_Calls.     Process_Breaking_Statement (Element);
 
                when A_Selective_Accept_Statement
                  | A_Timed_Entry_Call_Statement

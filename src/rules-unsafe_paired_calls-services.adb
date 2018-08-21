@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Unsafe_Paired_Calls.Signatures - Package body             --
+--  Rules.Unsafe_Paired_Calls.Services - Package body               --
 --                                                                  --
 --  This module is (c) Adalog 2004-2016.                            --
 --  The Ada Controller is  free software; you can  redistribute  it --
@@ -32,35 +32,12 @@ with
 
 -- Adalog
 with
-  Thick_Queries,
-  Utilities;
+   Thick_Queries,
+   Utilities;
 
 package body Rules.Unsafe_Paired_Calls.Services is
 
    Nil_Signature : constant Nesting_Signature := Nesting_Signature (Asis.Nil_Element_List);
-
-   ------------------------------------
-   -- Effective_Last_Statement_Index --
-   ------------------------------------
-
-   function Effective_Last_Statement_Index (Stats : Asis.Statement_List) return Asis.List_Index is
-      use Asis, Asis.Elements;
-      use Utilities;
-   begin
-      for S in reverse Stats'Range loop
-         case Statement_Kind (Stats (S)) is
-            when A_Return_Statement | An_Exit_Statement | A_Null_Statement =>
-               null;
-            when others =>
-               return S;
-         end case;
-      end loop;
-
-      -- Statement list contains only return, exit and null statements...
-      -- we shouldn't be here!
-      Failure ("No effective statement in statements list");
-   end Effective_Last_Statement_Index;
-
 
    -------------------------
    -- Is_Boolean_Constant --
@@ -93,13 +70,47 @@ package body Rules.Unsafe_Paired_Calls.Services is
    -- Exported subprograms
    ------------------------------------------------------------------
 
+   ------------------------------------
+   -- Effective_Last_Statement_Index --
+   ------------------------------------
+
+   function Effective_Last_Statement_Index (Stats : Asis.Statement_List) return Asis.ASIS_Natural is
+      use Asis, Asis.Elements;
+   begin
+      for S in reverse Stats'Range loop
+         case Statement_Kind (Stats (S)) is
+            when A_Return_Statement
+               | An_Extended_Return_Statement
+               | A_Goto_Statement
+               | An_Exit_Statement
+               | A_Null_Statement
+               =>
+               null;
+            when others =>
+               return S;
+         end case;
+      end loop;
+
+      -- Statement list contains only return, exit and null statements...
+      return 0;
+   end Effective_Last_Statement_Index;
+
+
    ------------------------------
    -- Effective_Last_Statement --
    ------------------------------
 
    function Effective_Last_Statement (Stats : Asis.Statement_List) return Asis.Statement is
+      use Utilities;
+      Inx : constant Asis.ASIS_Natural := Effective_Last_Statement_Index (Stats);
    begin
-      return Stats (Effective_Last_Statement_Index (Stats));
+      if Inx = 0 then
+         -- Statement list contains only return, exit and null statements...
+         -- we shouldn't be here!
+         Failure ("No effective statement in statements list");
+      end if;
+
+      return Stats (Inx);
    end Effective_Last_Statement;
 
 
@@ -107,26 +118,39 @@ package body Rules.Unsafe_Paired_Calls.Services is
    -- Signature --
    ---------------
 
-   function Signature (Stmt : Asis.Statement) return Nesting_Signature is
-      use Asis.Elements;
+   function Signature (Stmt : Asis.Statement; With_Check : Boolean) return Nesting_Signature is
+      use Asis, Asis.Elements;
 
       function Enclosing_Signature (Elem : Asis.Element) return Nesting_Signature is
-         use Asis, Asis.Statements;
-      begin
+      -- Procedure (or entry) calls are not allowed in an Enclosing_Signature
+         use Asis.Statements;
+
+         function Nil_Or_Raise (Message : String) return Nesting_Signature is
+         begin
+            if With_Check then
+               raise Invalid_Nesting with Message;
+            else
+               return Nil_Signature;
+            end if;
+         end Nil_Or_Raise;
+
+      begin   -- Signature
          case Element_Kind (Elem) is
             when A_Statement =>
                case Statement_Kind (Elem) is
                   when An_If_Statement =>
                      if Conditionals_Allowed.Value = Off then
-                        raise Invalid_Nesting with "nested calls not allowed";
+                        return Nil_Or_Raise ("nested calls not allowed");
                      end if;
+
                      declare
                         Expr : constant Asis.Expression := Condition_Expression (Statement_Paths (Elem) (1));
                      begin
-                        if not Is_Boolean_Constant (Expr) then
-                           raise Invalid_Nesting with "if condition is not a boolean constant";
+                        if Is_Boolean_Constant (Expr) then
+                           return Enclosing_Signature (Enclosing_Element (Elem)) & Elem & Expr;
+                        else
+                           return Nil_Or_Raise ("if condition is not a boolean constant");
                         end if;
-                        return Enclosing_Signature (Enclosing_Element (Elem)) & Elem & Expr;
                      end;
                   when others =>
                      return Nil_Signature;
@@ -135,17 +159,18 @@ package body Rules.Unsafe_Paired_Calls.Services is
             when A_Path =>
                case Path_Kind (Elem) is
                   when An_If_Path | An_Else_Path =>
-                     -- Only one non effective statement allowed, must be the first statement
+                     -- Only one effective statement allowed, must be the first statement
                      declare
                         Stats : constant Asis.Statement_List := Thick_Queries.Statements (Elem);
                      begin
-                        if Effective_Last_Statement_Index (Stats) /= Stats'First then
-                           raise Invalid_Nesting with "path contains disallowed statements";
+                        if Effective_Last_Statement_Index (Stats) = Stats'First then
+                           return Enclosing_Signature (Enclosing_Element (Elem)) & Elem;
+                        else
+                           return Nil_Or_Raise ("path contains disallowed statements");
                         end if;
                      end;
-                     return Enclosing_Signature (Enclosing_Element (Elem)) & Elem;
                   when others =>
-                     raise Invalid_Nesting with "call in disallowed structured statement";
+                     return Nil_Or_Raise ("call in disallowed structured statement");
                end case;
 
             when others =>
@@ -154,6 +179,9 @@ package body Rules.Unsafe_Paired_Calls.Services is
       end Enclosing_Signature;
 
    begin   -- Signature
+      if Statement_Kind (Stmt) not in A_Procedure_Call_Statement | An_Entry_Call_Statement then
+         return Nil_Signature;
+      end if;
       return Enclosing_Signature (Enclosing_Element (Stmt)) & Stmt;
    end Signature;
 
@@ -162,15 +190,16 @@ package body Rules.Unsafe_Paired_Calls.Services is
    -------------------
 
    function Matching_Call (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement is
-   -- A signature contains only statements (if statements, procedure call) or paths (if_path, else_path)
+   -- A signature contains only statements (if statements, procedure call), paths (if_path, else_path),
+   -- or expressions (from paths conditions)
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Utilities;
 
-      Current : Asis.Element := Stat;
+      Current : Asis.Element;
    begin
       case Statement_Kind (Stat) is
          when An_If_Statement | A_Procedure_Call_Statement | An_Entry_Call_Statement =>
-            null;
+            Current := Stat;
          when others =>
             return Nil_Element;
       end case;
@@ -201,11 +230,15 @@ package body Rules.Unsafe_Paired_Calls.Services is
                      if Statement_Kind (Current) /= Statement_Kind (Signature (E)) then
                         return Nil_Element;
                      end if;
+                     return Current;
                   when others =>
-                     Failure ("Bad signature: not a call statement", Signature (E));
+                     Failure ("Bad signature: invalid statement", Signature (E));
                end case;
 
             when A_Path =>
+               if Statement_Kind (Current) /= An_If_Statement then
+                  return Nil_Element;
+               end if;
                declare
                   If_Paths : constant Asis.Path_List := Statement_Paths (Current);
                begin
@@ -230,5 +263,66 @@ package body Rules.Unsafe_Paired_Calls.Services is
 
       return Current;
    end Matching_Call;
+
+   --------------------
+   -- Matching_Block --
+   --------------------
+
+   function Matching_Block (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement is
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use Thick_Queries, Utilities;
+
+      Current  : Asis.Element;
+      Previous : Asis.Element;
+   begin
+      if Signature'Length = 0 then  -- "signature" of a bad block
+         return Nil_Element;
+      end if;
+
+      if Signature'Length = 1 then  -- Must be a simple call
+         return Stat;
+      end if;
+
+      Current := Enclosing_Element (Stat);
+      for E in reverse List_Index range Signature'First .. Signature'Last - 1 loop
+         case Element_Kind (Signature (E)) is
+            when An_Expression =>
+               if Statement_Kind (Current) /= An_If_Statement then
+                  return Nil_Element;
+               end if;
+               declare
+                  Expr : constant Asis.Expression := Condition_Expression (Statement_Paths (Current) (1));
+               begin
+                  if not Is_Boolean_Constant (Expr) then
+                     return Nil_Element;
+                  end if;
+                  if not Is_Equal (Corresponding_Name_Declaration (Ultimate_Name (Signature (E))),
+                                   Corresponding_Name_Declaration (Ultimate_Name (Expr)))
+                  then
+                     return Nil_Element;
+                  end if;
+               end;
+
+            when A_Statement =>
+               -- This is an if statement
+               if Statement_Kind (Current) /= An_If_Statement then
+                  return Nil_Element;
+               end if;
+               Previous := Current;
+               Current  := Enclosing_Element (Current);
+
+            when A_Path =>
+               if Path_Kind (Signature (E)) /= Path_Kind (Current)  then
+                  return Nil_Element;
+               end if;
+               Current := Enclosing_Element (Current);   -- Can't be a path here
+
+            when others =>
+               Failure ("Bad signature: unexpected element", Signature (E));
+         end case;
+      end loop;
+
+      return Previous;
+   end Matching_Block;
 
 end Rules.Unsafe_Paired_Calls.Services;

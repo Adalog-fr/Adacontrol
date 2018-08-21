@@ -9571,9 +9571,9 @@ pattern.
 @end example
 
 @subsection Action
-The following explanations are given in terms of
-``locks'' since this is the primary use of this rule, however the rule
-can be used for any calls that need to be properly paired.
+The following explanations are given in terms of ``locks'' since this
+is the primary use of this rule, however the rule can be used for any
+calls that need to be properly paired.
 
 The rule can deal with three different kinds of locks:
 @itemize @bullet
@@ -9602,15 +9602,14 @@ As usual, the whole syntax for entities is allowed for
 An @i{opening block} is either a call to the first procedure given to
 the rule, or an if statement whose condition is a simple reference to
 a boolean constant (that needs not be static) and whose if path or
-else path is itself an opening block, possibly followed by @b{exit},
-@b{return}, and @b{null} statements (and no others).
+else path is itself an opening block.
 
-Similarly, a @i{closing block} is either a call to the second
-procedure given to the rule, or an if statement whose condition is a
-simple reference to a boolean constant (that needs not be static) and
-whose if path or else path is itself a closing block, possibly
-followed by @b{exit}, @b{return}, and @b{null} statements (and no
-others).
+A @i{closing block} is either a call to the second procedure given to
+the rule, or an if statement whose condition is a simple reference to
+a boolean constant (that needs not be static) and whose if path or
+else path is itself a closing block, possibly followed by
+@code{@b{exit}}, @code{@b{return}}, and @code{@b{null}} statements
+(and no others).
 
 An opening and a closing block match if:
 @itemize @bullet
@@ -9619,7 +9618,7 @@ corresponding calls to the
 procedures of a pair use the appropriate value for the ``lock''
 parameter (if any), as explained above
 @item
-if statements have their conditions refer to the
+@code{@b{if}} statements have their conditions refer to the
 same constant, and their if and else paths contain matching blocks.
 @end itemize
 
@@ -9635,13 +9634,17 @@ statements following it.
 @item
 The opening and closing blocks match.
 @item
+Any ``breaking'' statement (@code{@b{exit}}, @code{@b{return}} or
+@code{@b{goto}} statements) that transfers control out of the handled
+sequence of statements is preceded by a closing block.
+@item
 There is no other call to either operation in the statements of the
 handled sequence of statements, except in nested blocks or accept
 statements; calls in such inner statements shall not reference the
 same values or variables as outer ones.
 @item
-There is an exception handler for "others" in the
-handled sequence of statements.
+There is an exception handler for "others" in the handled sequence of
+statements.
 @item
 Every exception handler of the handled sequence of statements includes
 a single closing block matching the opening block at the top of the
@@ -9654,6 +9657,10 @@ Typically, the ``safe'' pattern corresponds to the following structures:
 @b{begin}
    P;
    -- Do something
+   @b{if} Found @b{then}
+      V;
+      @b{return}
+   @b{end} @b{if}
    V;
 @b{exception}
    @b{when} @b{others} =>

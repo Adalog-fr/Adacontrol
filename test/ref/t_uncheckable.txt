@@ -52,10 +52,10 @@ t_uncheckable-representation_clauses.adb:21:20: Error: Uncheckable: in rule REPR
 t_uncheckable-style.adb:3:58: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of attribute
 t_uncheckable-style.adb:4:69: Error: Uncheckable: in rule STYLE: Possible false negative: renaming of predefined operation
 t_uncheckable-unsafe_paired_calls.adb:15:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
-t_uncheckable-unsafe_paired_calls.adb:15:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:17:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_paired_calls.adb:20:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_paired_calls.adb:22:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
-t_uncheckable-unsafe_paired_calls.adb:15:4: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
+t_uncheckable-unsafe_paired_calls.adb:23:7: Error: Uncheckable: in rule UNSAFE_PAIRED_CALLS: Possible false negative: Dispatching call
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: Uncheckable: in rule UNSAFE_UNCHECKED_CONVERSION: Possible false positive: unable to evaluate size clause value for T2
 t_uncheckable-unsafe_unchecked_conversion.adb:11:51: Error: UNSAFE_UNCHECKED_CONVERSION: no size clause given for Target
 t_uncheckable-usage.adb:20:31: Error: Uncheckable: in rule USAGE: Possible false negative: Name is dynamic renaming
