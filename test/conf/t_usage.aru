@@ -1,13 +1,22 @@
-Written_Visible: check  Usage (variable, from_visible, written);
-Written_Private: check  Usage (variable, from_private, written);
-Constantable:    search Usage (variable, read, not written);
-Removable:       search usage (object,   not read, not written);
-                 check  usage (exception, from_spec);
-                 check  usage (task, from_spec);
+Written_Visible: check  Usage (variable, from_visible, not from_task_guard,               written);
+Written_Private: check  Usage (variable, from_private, not from_task_guard,               written);
+Constantable:    search Usage (variable,                                        read, not written);
+Removable:       search usage (object,                 not from_task_guard, not read, not written);
+
+                 check  usage (exception, from_spec, not from_task_guard);
+                 check  usage (task,      from_spec);
                  check  usage (protected, from_spec);
-type_used:       check  usage (type, used);
+
+type_used:       check  usage (type,     used);
 type_not_used:   check  usage (type, not used);
+
                  count  usage (object, from_spec, initialized);
+
                  search usage (procedure);
-                 search usage (function);
+                 search usage (function, not from_task_guard);
                  search usage (generic);
+
+Guard1: check  usage (object,    from_task_guard, written);
+Guard2: check  usage (object,    from_task_guard, not written, not initialized);
+Guard3: search usage (function,  from_task_guard);
+Guard4: check  usage (exception, from_task_guard);

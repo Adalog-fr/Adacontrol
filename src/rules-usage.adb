@@ -42,6 +42,7 @@ with
 with
   A4G_Bugs,
   Binary_Map,
+  Linear_Queue,
   Thick_Queries,
   Utilities;
 
@@ -76,7 +77,15 @@ package body Rules.Usage is
    -- Protected  : called       <=> read
    -- Generic    : instantiated <=> read
    -- Appropriate renamings are provided for these equivalences
-
+   --
+   -- Special case for From_Task_Guard:
+   -- Usage from the guard itself and the matching accept statement is not reported.
+   -- To that effect, when an identifier is encountered in a A_Select_Path or an An_Or_Path:
+   --    - If it is part of the guard, it is pushed (with the path) on a stack of active select
+   --      statements (since they can be nested). It is marked as From_Task_Guard, but not as read
+   --    - If it is part of the accept statement, the stack is scanned to see if the identifier is used
+   --      in the guard. If yes, it is marked as From_Task_Guard, but not as read/written
+   -- The stack is freed as the post-processing of the path
 
    -- In the following type, K_Declared is not visible to users of the rule, since
    -- an entity is always declared! However, it does not necessarily mean that the
@@ -88,7 +97,10 @@ package body Rules.Usage is
    --      to "check usage (<entity>, not from_visible, not from_spec, ...)" ("and" semantics),
    --      while "check usage (<entity>, from_spec, ...)" is translated to
    --      "check usage (<entity>, from_visible, ...);check usage (<entity>, from_private, ...)" ("or" semantics)
-   type Usage_Kind is (K_Declared, K_From_Visible, K_From_Private, K_Initialized, K_Read, K_Written, K_From_Spec);
+   type Usage_Kind is (K_Declared,
+                       K_From_Visible, K_From_Private, K_From_Task_Guard,
+                       K_Initialized,  K_Read,         K_Written,
+                       K_From_Spec);
    subtype User_Usage_Kind is Usage_Kind range Usage_Kind'Succ (K_Declared) .. Usage_Kind'Last;
    subtype Rule_Usage_Kind is Usage_Kind range Usage_Kind'First             .. Usage_Kind'Pred (K_From_Spec);
    K_Used         : Rule_Usage_Kind renames K_Read;
@@ -127,6 +139,15 @@ package body Rules.Usage is
    Own_Usage       : Usage_Map.Map;
    Cumulated_Usage : Usage_Map.Map; -- For Objects declared in generics
 
+   type Guard_Record is
+      record
+         Guard_Elem : Asis.Name;
+         Guard_Path : Asis.Path;
+      end record;
+
+   package Select_Path_Stack is new Linear_Queue (Guard_Record);
+   Guard_Elements : Select_Path_Stack.Queue;
+
    type Package_Origins is (From_Visible, From_Private, Not_From_Spec);
 
    -- Rule Applicability
@@ -141,12 +162,13 @@ package body Rules.Usage is
    -- Indices of following table correspond to:
    --    True_Entity_Kind, K_From_Visible, K_From_Private, K_Initialized, K_Read, K_Written
    -- in that order
-   Rule_Table : array (True_Entity_Kind, Boolean, Boolean, Boolean, Boolean, Boolean) of Rule_Info
-     := (others => (others => (others => (others => (others => (others =>
+   Rule_Table : array (True_Entity_Kind, Boolean, Boolean, Boolean, Boolean, Boolean, Boolean) of Rule_Info
+     := (others => (others => (others => (others => (others => (others => (others =>
                                             (Used_Controls => (others => False),
                                              Labels        => (others => Null_Unbounded_Wide_String))
-                                                    ))))));
-   All_From_Spec : Boolean := True;
+                                                    )))))));
+   All_From_Spec      : Boolean := True;
+   From_Guard_Checked : Boolean := False;
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -171,7 +193,7 @@ package body Rules.Usage is
       User_Message ("  or        : protected            {, [not] <location> | called}");
       User_Message ("  or        : generic              {, [not] <location> | instantiated}");
       User_Message ("  or        : all                  [, [not] <location>]");
-      User_Message ("location ::= from_visible | from_private | from_spec");
+      User_Message ("location ::= from_visible | from_private | from_spec | from_task_guard");
    end Help;
 
    -----------------
@@ -232,22 +254,33 @@ package body Rules.Usage is
             if Usages (K_From_Visible) not in Condition or else Usages (K_From_Visible) = V then
                for P in Condition loop
                   if Usages (K_From_Private) not in Condition or else Usages (K_From_Private) = P then
-                     for I in Condition loop
-                        if Usages (K_Initialized) not in Condition or else Usages (K_Initialized) = I then
-                           for R in Condition loop
-                              if Usages (K_Read) not in Condition or else Usages (K_Read) = R then
-                                 for W in Condition loop
-                                    if Usages (K_Written) not in Condition or else Usages (K_Written) = W then
-                                       if Rule_Table (Kind, V = Found, P = Found, I = Found, R = Found, W = Found)
-                                            .Used_Controls (Ctl_Kind)
-                                       then
-                                          Parameter_Error (Rule_Id, "This combination of values already specified");
-                                       else
-                                          Rule_Table (Kind, V = Found, P = Found, I = Found, R = Found, W = Found)
-                                            .Used_Controls (Ctl_Kind) := True;
-                                          Rule_Table (Kind, V = Found, P = Found, I = Found, R = Found, W = Found)
-                                            .Labels (Ctl_Kind) := Wide_Label;
-                                       end if;
+                     for T in Condition loop
+                        if Usages (K_From_Task_Guard) not in Condition or else Usages (K_From_Task_Guard) = T then
+                           for I in Condition loop
+                              if Usages (K_Initialized) not in Condition or else Usages (K_Initialized) = I then
+                                 for R in Condition loop
+                                    if Usages (K_Read) not in Condition or else Usages (K_Read) = R then
+                                       for W in Condition loop
+                                          if Usages (K_Written) not in Condition or else Usages (K_Written) = W then
+                                             if Rule_Table (Kind,
+                                                            V = Found, P = Found, T = Found,
+                                                            I = Found, R = Found, W = Found)
+                                               .Used_Controls (Ctl_Kind)
+                                             then
+                                                Parameter_Error (Rule_Id,
+                                                                 "This combination of values already specified");
+                                             else
+                                                Rule_Table (Kind,
+                                                            V = Found, P = Found, T = Found,
+                                                            I = Found, R = Found, W = Found)
+                                                  .Used_Controls (Ctl_Kind) := True;
+                                                Rule_Table (Kind,
+                                                            V = Found, P = Found, T = Found,
+                                                            I = Found, R = Found, W = Found)
+                                                  .Labels (Ctl_Kind) := Wide_Label;
+                                             end if;
+                                          end if;
+                                       end loop;
                                     end if;
                                  end loop;
                               end if;
@@ -288,6 +321,10 @@ package body Rules.Usage is
                if Has_Not then
                   All_From_Spec := False;
                end if;
+            elsif To_Compare = "FROM_TASK_GUARD" then
+               Usage_Param        := K_From_Task_Guard;
+               All_From_Spec      := False;
+               From_Guard_Checked := True;
             else
                case Subrule is
                   when K_All =>
@@ -446,12 +483,14 @@ package body Rules.Usage is
                                 (others =>
                                    (others =>
                                       (others =>
-                                         (others => (Used_Controls => (others => False),
-                                                     Labels        => (others => Null_Unbounded_Wide_String))
-                                   ))))));
+                                         (others =>
+                                            (others => (Used_Controls => (others => False),
+                                                        Labels        => (others => Null_Unbounded_Wide_String))
+                                   )))))));
             Clear (Own_Usage);
             Clear (Cumulated_Usage);
-            All_From_Spec := True;
+            All_From_Spec      := True;
+            From_Guard_Checked := False;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -820,6 +859,7 @@ package body Rules.Usage is
          if Rule_Table (Value.Entity,
                         True_Usage (K_From_Visible),
                         True_Usage (K_From_Private),
+                        True_Usage (K_From_Task_Guard),
                         True_Usage (K_Initialized),
                         True_Usage (K_Read),
                         True_Usage (K_Written)).Used_Controls = (Control_Kinds => False)
@@ -849,17 +889,26 @@ package body Rules.Usage is
             Append (Message, ", visible");
          elsif True_Usage (K_From_Private) then
             Append (Message, ", private");
+         elsif True_Usage (K_From_Task_Guard) then
+            Append (Message, ", in task guard");
          end if;
 
+         -- Build usage message, and possibly give clever advices, unless From_Task_Guard is true,
+         -- since usages from inside the guard and the accept statement are not accounted for.
+         -- But remind the user of this.
          case Value.Entity is
             when K_Constant =>
                Append (Message, ", constant");
                -- no need to tell that a constant is initialized and not written
                Usage_Message (True_Usage (K_Read), "read");
-               if not True_Usage (K_Read)
-                 and Value.Origin /= From_Instance
-               then
-                  Append (Message," (can be removed)");
+               if True_Usage (K_From_Task_Guard) then
+                  Append (Message, " (outside guard and corresponding accept)");
+               else
+                  if not True_Usage (K_Read)
+                    and Value.Origin /= From_Instance
+                  then
+                     Append (Message, " (can be removed)");
+                  end if;
                end if;
 
             when K_Variable =>
@@ -873,22 +922,26 @@ package body Rules.Usage is
                   end if;
                   Usage_Message (True_Usage (K_Read), "read");
 
-                  if not True_Usage (K_Read)
-                    and not True_Usage (K_Written)
-                    and Value.Origin /= From_Instance
-                  then
-                     Append (Message, " (can be removed)");
-                  elsif Pseudo_Const then
-                     Append (Message, " (pseudo constant)");
-                  elsif True_Usage (K_Read)
-                    and not (True_Usage (K_Initialized) or True_Usage (K_Written))
-                  then
-                     Append (Message, " (never given a value)");
-                  elsif not True_Usage (K_Written)
-                    and True_Usage (K_Initialized)
-                    and Value.Origin /= From_Instance
-                  then
-                     Append (Message, " (can be declared constant)");
+                  if True_Usage (K_From_Task_Guard) then
+                     Append (Message, " (outside guard and corresponding accept)");
+                  else
+                     if not True_Usage (K_Read)
+                       and not True_Usage (K_Written)
+                       and Value.Origin /= From_Instance
+                     then
+                        Append (Message, " (can be removed)");
+                     elsif Pseudo_Const then
+                        Append (Message, " (pseudo constant)");
+                     elsif True_Usage (K_Read)
+                       and not (True_Usage (K_Initialized) or True_Usage (K_Written))
+                     then
+                        Append (Message, " (never given a value)");
+                     elsif not True_Usage (K_Written)
+                       and True_Usage (K_Initialized)
+                       and Value.Origin /= From_Instance
+                     then
+                        Append (Message, " (can be declared constant)");
+                     end if;
                   end if;
                end;
 
@@ -905,6 +958,9 @@ package body Rules.Usage is
                Append (Message, ", function");
                Usage_Message (True_Usage (K_Called), "called");
                Usage_Message (True_Usage (K_Accessed), "accessed");
+               if True_Usage (K_From_Task_Guard) then
+                  Append (Message, " (outside guard and corresponding accept)");
+               end if;
 
             when K_Exception =>
                Append (Message, ", exception");
@@ -928,56 +984,62 @@ package body Rules.Usage is
          -- Do actual report
 
          if Rule_Table (Value.Entity,
-                        True_Usage(K_From_Visible),
-                        True_Usage(K_From_Private),
-                        True_Usage(K_Initialized),
-                        True_Usage(K_Read),
-                        True_Usage(K_Written)).Used_Controls (Check)
+                        True_Usage (K_From_Visible),
+                        True_Usage (K_From_Private),
+                        True_Usage (K_From_Task_Guard),
+                        True_Usage (K_Initialized),
+                        True_Usage (K_Read),
+                        True_Usage (K_Written)).Used_Controls (Check)
          then
             Report (Rule_Id,
                     To_Wide_String (Rule_Table (Value.Entity,
                                                 True_Usage (K_From_Visible),
                                                 True_Usage (K_From_Private),
-                                                True_Usage(K_Initialized),
-                                                True_Usage(K_Read),
-                                                True_Usage(K_Written)).Labels (Check)),
+                                                True_Usage (K_From_Task_Guard),
+                                                True_Usage (K_Initialized),
+                                                True_Usage (K_Read),
+                                                True_Usage (K_Written)).Labels (Check)),
                     Check,
                     Value.Decl_Location,
                     To_Wide_String (Message));
 
          elsif Rule_Table (Value.Entity,
-                           True_Usage(K_From_Visible),
-                           True_Usage(K_From_Private),
-                           True_Usage(K_Initialized),
-                           True_Usage(K_Read),
-                           True_Usage(K_Written)).Used_Controls (Search)
+                           True_Usage (K_From_Visible),
+                           True_Usage (K_From_Private),
+                           True_Usage (K_From_Task_Guard),
+                           True_Usage (K_Initialized),
+                           True_Usage (K_Read),
+                           True_Usage (K_Written)).Used_Controls (Search)
          then
             Report (Rule_Id,
                     To_Wide_String (Rule_Table (Value.Entity,
-                                                True_Usage(K_From_Visible),
-                                                True_Usage(K_From_Private),
-                                                True_Usage(K_Initialized),
-                                                True_Usage(K_Read),
-                                                True_Usage(K_Written)).Labels (Search)),
+                                                True_Usage (K_From_Visible),
+                                                True_Usage (K_From_Private),
+                                                True_Usage (K_From_Task_Guard),
+                                                True_Usage (K_Initialized),
+                                                True_Usage (K_Read),
+                                                True_Usage (K_Written)).Labels (Search)),
                     Search,
                     Value.Decl_Location,
                     To_Wide_String (Message));
          end if;
 
          if Rule_Table (Value.Entity,
-                        True_Usage(K_From_Visible),
-                        True_Usage(K_From_Private),
-                        True_Usage(K_Initialized),
-                        True_Usage(K_Read),
-                        True_Usage(K_Written)).Used_Controls (Count)
+                        True_Usage (K_From_Visible),
+                        True_Usage (K_From_Private),
+                        True_Usage (K_From_Task_Guard),
+                        True_Usage (K_Initialized),
+                        True_Usage (K_Read),
+                        True_Usage (K_Written)).Used_Controls (Count)
          then
             Report (Rule_Id,
                     To_Wide_String (Rule_Table (Value.Entity,
-                                                True_Usage(K_From_Visible),
-                                                True_Usage(K_From_Private),
-                                                True_Usage(K_Initialized),
-                                                True_Usage(K_Read),
-                                                True_Usage(K_Written)).Labels (Count)),
+                                                True_Usage (K_From_Visible),
+                                                True_Usage (K_From_Private),
+                                                True_Usage (K_From_Task_Guard),
+                                                True_Usage (K_Initialized),
+                                                True_Usage (K_Read),
+                                                True_Usage (K_Written)).Labels (Count)),
                     Count,
                     Value.Decl_Location,
                     "");
@@ -1174,10 +1236,7 @@ package body Rules.Usage is
 
    procedure Process_Identifier (Name : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
-
-      Good_Name : Asis.Expression;
-      Item      : Asis.Element;
+      use Framework.Reports, Select_Path_Stack, Thick_Queries, Utilities;
 
       procedure Check_Access is
          -- Checks if Name is the prefix of 'Access, 'Uncheked_Access or 'Address
@@ -1213,7 +1272,27 @@ package body Rules.Usage is
          end if;
       end Check_Access;
 
-      E_Kind : Extended_Entity_Kind;
+      function Name_Used_In_Guard (Of_Path : Asis.Path) return Boolean is
+         Curs      : Cursor := First (Guard_Elements);
+         Rec       : Guard_Record;
+         Good_Name : constant Asis.Name := Ultimate_Name (Corresponding_Name_Definition (Name), No_Component => True);
+      begin
+         while Has_Element (Curs) loop
+            Rec := Fetch (Curs);
+            if Is_Equal (Rec.Guard_Elem, Good_Name) and Is_Equal (Rec.Guard_Path, Of_Path) then
+               return True;
+            end if;
+            Curs := Next (Curs);
+         end loop;
+         return False;
+      end Name_Used_In_Guard;
+
+      E_Kind           : Extended_Entity_Kind;
+      Is_Part_Of_Guard : Boolean := False;
+      Path_Guard       : Asis.Path;
+      Good_Name        : Asis.Expression;
+      Item             : Asis.Element;
+
    begin  -- Process_Identifier
       if not Rule_Used then
          return;
@@ -1222,18 +1301,61 @@ package body Rules.Usage is
 
       -- If name is an actual in-out of a generic instantiation, do nothing
       -- (actual usage will be found by analyzing the expanded template)
+      -- By the same token, identify if Name is part of a guard (only if at least one control asked for it)
       Item := Enclosing_Element (Name);
       loop
          case Element_Kind (Item) is
             when An_Expression =>
                Item := Enclosing_Element (Item);
+
             when An_Association =>
                if Association_Kind (Item) = A_Generic_Association
                  and then Mode_Kind (Enclosing_Element (Formal_Name (Item))) = An_In_Out_Mode
                then
                   return;
                end if;
-               exit;
+
+               if not From_Guard_Checked then
+                  exit;
+               end if;
+
+               -- We must to continue to go up until we find a select (or or) path, or anything else
+               Item := Enclosing_Element (Item);
+
+            when A_Path =>
+               -- We can reach this only if From_Guard_Checked is True
+               case Path_Kind (Item) is
+                  when A_Select_Path | An_Or_Path =>
+                     Path_Guard := Guard (Item);
+                     if not Is_Nil (Path_Guard) then
+                        Is_Part_Of_Guard := Is_Part_Of (Name, Inside => Path_Guard);
+                        if Is_Part_Of_Guard then
+                           Good_Name := Ultimate_Name (Corresponding_Name_Definition (Name), No_Component => True);
+                           if not Is_Nil (Good_Name) then  -- Case of predefined operators...
+                              Prepend (Guard_Elements, (Good_Name, Item));
+                           end if;
+                        elsif Name_Used_In_Guard (Of_Path => Item)
+                          and then Is_Part_Of (Name, Inside => Thick_Queries.Statements (Item) (1))
+                                  -- The first statement of the path is the accept statement
+                        then
+                           return;
+                        end if;
+                     end if;
+                     exit;
+                  when An_Expression_Path =>
+                     Item := Enclosing_Element (Item);
+                  when others =>
+                     exit;
+               end case;
+
+            when A_Statement =>
+               if not From_Guard_Checked then
+                  exit;
+               end if;
+
+               -- We must to continue to go up until we find a select (or or) path, or anything else
+               Item := Enclosing_Element (Item);
+
             when others =>
                exit;
          end case;
@@ -1279,11 +1401,17 @@ package body Rules.Usage is
                when Untouched =>
                   Check_Access;
                when Read =>
-                  Update (Good_Name, K_Variable, Value => (K_Read => True, others => False));
+                  Update (Good_Name, K_Variable, Value => (K_Read => not Is_Part_Of_Guard,
+                                                           K_From_Task_Guard => Is_Part_Of_Guard,
+                                                           others            => False));
                when Write =>
-                  Update (Good_Name, K_Variable, Value => (K_Written => True, others => False));
+                  Update (Good_Name, K_Variable, Value => (K_Written => True,
+                                                           K_From_Task_Guard => Is_Part_Of_Guard,
+                                                           others    => False));
                when Read_Write =>
-                  Update (Good_Name, K_Variable, Value => (K_Read | K_Written => True, others => False));
+                  Update (Good_Name, K_Variable, Value => (K_Read | K_Written => not Is_Part_Of_Guard,
+                                                           K_From_Task_Guard  => Is_Part_Of_Guard,
+                                                           others             => False));
                when Unknown =>      -- Consider Unknown as Read-Write, therefore creating false positives
                                     -- That's better than false negatives!
                   Uncheckable (Rule_Id,
@@ -1291,7 +1419,9 @@ package body Rules.Usage is
                                Get_Location (Name),
                                "variable """ & Name_Image (Good_Name)
                                & """ used as parameter of dispatching call, treated as in-out");
-                  Update (Good_Name, K_Variable, Value => (K_Read | K_Written => True, others => False));
+                  Update (Good_Name, K_Variable, Value => (K_Read | K_Written => not Is_Part_Of_Guard,
+                                                           K_From_Task_Guard  => Is_Part_Of_Guard,
+                                                           others             => False));
             end case;
 
          when K_Constant =>
@@ -1301,7 +1431,9 @@ package body Rules.Usage is
                when Read
                   | Unknown   -- For a constant, it is safe to assume that the only possible usage is "read"
                   =>
-                  Update (Good_Name, K_Constant, Value => (K_Read => True, others => False));
+                  Update (Good_Name, K_Constant, Value => (K_Read            => not Is_Part_Of_Guard,
+                                                           K_From_Task_Guard => Is_Part_Of_Guard,
+                                                           others            => False));
                when Write | Read_Write =>
                   Failure ("Usage: write of constant", Name);
             end case;
@@ -1319,15 +1451,20 @@ package body Rules.Usage is
                      case Expression_Kind (Enclosing) is
                         when An_Attribute_Reference =>
                            -- We should check that it is really 'Address or 'Access, but what else could it be?
-                           Update (Good_Name, E_Kind, Value => (K_Accessed => True, others => False));
+                           Update (Good_Name, E_Kind, Value => (K_Accessed        => not Is_Part_Of_Guard,
+                                                                K_From_Task_Guard => Is_Part_Of_Guard,
+                                                                others            => False));
                         when A_Function_Call =>
-                           Update (Good_Name, E_Kind, Value => (K_Called => True, others => False));
+                           Update (Good_Name, E_Kind, Value => (K_Called          => not Is_Part_Of_Guard,
+                                                                K_From_Task_Guard => Is_Part_Of_Guard,
+                                                                others            => False));
                         when others =>
                            null;
                      end case;
                   when A_Statement =>
                      case Statement_Kind (Enclosing) is
                         when A_Procedure_Call_Statement =>
+                           -- Can't be part of a guard....
                            Update (Good_Name, E_Kind, Value => (K_Called => True, others => False));
                         when others =>
                            null;
@@ -1359,13 +1496,21 @@ package body Rules.Usage is
                         if Expression_Kind (Enclosing) /= An_Indexed_Component
                           and then To_Upper (Full_Name_Image (Enclosing)) = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
                         then
+                           -- Can't be in a guard, since it is a parameter to a procedure call here
                            Update (Good_Name, K_Exception, Value => (K_Raised => True, others => False));
                         end if;
                      end if;
                   end if;
 
                elsif Statement_Kind (Enclosing) = A_Raise_Statement then
+                  -- Can't be in a guard here
                   Update (Good_Name, K_Exception, Value => (K_Raised => True, others => False));
+
+               elsif Expression_Kind (Enclosing) = A_Raise_Expression then
+                  -- Can be in a guard here (although pretty weird)
+                  Update (Good_Name, K_Exception, Value => (K_Raised          => not Is_Part_Of_Guard,
+                                                            K_From_Task_Guard => Is_Part_Of_Guard,
+                                                            others            => False));
 
                else
                   -- What else could it be than an exception handler?
@@ -1395,6 +1540,7 @@ package body Rules.Usage is
                         if Expression_Kind (Enclosing) /= An_Indexed_Component
                           and then To_Upper (Full_Name_Image (Enclosing)) = "ADA.TASK_IDENTIFICATION.ABORT_TASK"
                         then
+                           -- Can't be in a guard here
                            Update (Good_Name, K_Task, Value => (K_Aborted => True, others => False));
                         end if;
                      end if;
@@ -1403,8 +1549,10 @@ package body Rules.Usage is
                else
                   case Statement_Kind (Enclosing) is
                      when An_Abort_Statement =>
+                        -- Can't be in a guard here
                         Update (Good_Name, K_Task, Value => (K_Aborted => True, others => False));
                      when An_Entry_Call_Statement =>
+                        -- Can't be in a guard here
                         Update (Good_Name, K_Task, Value => (K_Called => True, others => False));
                      when others =>
                         null;
@@ -1423,9 +1571,12 @@ package body Rules.Usage is
                case Statement_Kind (Enclosing) is
                   when Not_A_Statement =>
                      if Expression_Kind (Enclosing) = A_Function_Call then
-                        Update (Good_Name, K_Protected, Value => (K_Called => True, others => False));
+                        Update (Good_Name, K_Protected, Value => (K_Called          => not Is_Part_Of_Guard,
+                                                                  K_From_Task_Guard => Is_Part_Of_Guard,
+                                                                  others            => False));
                      end if;
                   when An_Entry_Call_Statement | A_Procedure_Call_Statement =>
+                     -- Can't be in a guard here
                      Update (Good_Name, K_Protected, Value => (K_Called => True, others => False));
                   when others =>
                      null;
@@ -1578,6 +1729,24 @@ package body Rules.Usage is
          end if;
       end;
    end Process_Instantiation;
+
+
+   -----------------------
+   -- Post_Process_Path --
+   -----------------------
+
+   procedure Post_Process_Path (Path : Asis.Path) is
+   -- Clean-up Guard_Elements for this path. Since it is managed as a stack, removed elements are at the top
+      use Select_Path_Stack;
+      use Asis.Elements;
+
+      Curs : Cursor := First (Guard_Elements);
+   begin
+      while Has_Element (Curs) and then Is_Equal (Fetch (Curs).Guard_Path, Path) loop
+         Clear (Guard_Elements, 1);
+         Curs := First (Guard_Elements);
+      end loop;
+   end Post_Process_Path;
 
 begin  -- Rules.Usage
    Framework.Rules_Manager.Register (Rule_Id,

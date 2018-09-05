@@ -820,6 +820,13 @@ package body Framework.Plugs is
                   null;
             end case;
 
+         when A_Path =>
+            case Path_Kind (Element) is
+               when A_Select_Path | An_Or_Path =>
+                  Rules.Usage. Post_Process_Path (Element);
+               when others =>
+                  null;
+            end case;
         when others =>
             null;
       end case;

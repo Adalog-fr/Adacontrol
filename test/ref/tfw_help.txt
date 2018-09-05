@@ -910,7 +910,7 @@ Parameter(s): variable | object    {, [not] <location> | initialized | read | wr
   or        : protected            {, [not] <location> | called}
   or        : generic              {, [not] <location> | instantiated}
   or        : all                  [, [not] <location>]
-location ::= from_visible | from_private | from_spec
+location ::= from_visible | from_private | from_spec | from_task_guard
 ----
 Rule: USE_CLAUSES
 Control occurrences of use clauses or use type clauses that mention

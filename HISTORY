@@ -35,6 +35,9 @@ unsafe_paired_calls:
    handle properly breaking statements
    add rule variable to follow (or not) renamings of P/V procedures
 
+usage:
+   new location: from_task_guard
+
 =============
 == V1.20b2 ==
 =============

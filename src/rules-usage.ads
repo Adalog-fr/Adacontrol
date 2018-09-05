@@ -36,4 +36,6 @@ package Rules.Usage is
    procedure Process_Identifier    (Name          : in Asis.Expression);
    procedure Process_Instantiation (Instantiation : in Asis.Declaration);
 
+   procedure Post_Process_Path (Path : Asis.Path);
+
 end Rules.Usage;

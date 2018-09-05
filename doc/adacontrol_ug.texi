@@ -9855,7 +9855,7 @@ and generics) are used.
 <control_kind> usage
    (all @{,[not]  <location>@});
 
-<location> ::= from_visible | from_private | from_spec
+<location> ::= from_visible | from_private | from_spec | from_task_guard
 @end example
 
 @subsection Action
@@ -9871,14 +9871,20 @@ keyword that restrict the kind of usage being controlled.
 ``[not] from_visible'', ``[not] from_private'', and ``[not]
 from_spec'' restrict entities being checked to those that appear (or
 not) in (generic) package specifications, in the visible part, in the
-private part, or in any part, respectively. ``accessed'' (available
-for subprograms only) restricts entities being checked to those that
-appear as the prefix of a @code{'Access} or @code{'Address}
-attribute. Other keywords carry their obvious meaning, and are allowed
-only where appropriate. The rule will output the information only for
-objects that match all the conditions given. A combination of
-parameters can be given only once for each of ``check'', ``search'',
-and ``count''.
+private part, or in any part, respectively. ``[not] from_task_guard''
+restrict entities being checked to those that appear (or not) in the
+expression of a guard in a selective accept statement; moreover, usage
+of the entity in the guard itself and in the corresponding accept statement is
+@i{not} taken into account (i.e. only ``external'' usage is reported).
+
+``accessed'' (available for subprograms only) restricts entities being
+checked to those that appear as the prefix of a @code{'Access} or
+@code{'Address} attribute. Other keywords carry their obvious meaning,
+and are allowed only where appropriate. The rule will output the
+information only for objects that match all the conditions given.
+
+A combination of parameters can be given only once for each of
+``check'', ``search'', and ``count''.
 
 The report includes the kind of unit that declares the entity (normal
 unit, instantiation, or generic unit), the part where it is declared
@@ -9949,6 +9955,10 @@ check usage (protected, not called);
 -- that may be aborted
 count usage (task);
 check usage (task, aborted);
+
+-- Check that variables used in guards are not written from
+-- outside of the corresponding accept statement:
+check usage (variable, from_task_guard, written);
 @end example
 
 @subsection Tips
@@ -9958,6 +9968,10 @@ some useful compiler warnings (like those about variables that should
 be declared constants) are not output for variables declared in
 library packages, and even in some other contexts (at least with
 GNAT). This rule can check these kind of things, project wide.
+
+Variables used in guards should not be subject to race conditions. The
+``From_Task_Guard'' location allows to check usage from unprotected
+places.
 
 Some of these checks make sense only for entities declared in package
 specifications; for example, variables are often discouraged in
