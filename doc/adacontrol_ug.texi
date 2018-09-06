@@ -9835,7 +9835,8 @@ and generics) are used.
 @subsection Syntax
 @example
 <control_kind> usage
-   (variable|object @{,[not] <location> | read | written | initialized@});
+   (variable|object|in_parameter|out_parameter|in_out_parameter
+    @{,[not] <location> | read | written | initialized@});
 <control_kind> usage
    (constant @{,[not]  <location> | read@});
 <control_kind> usage
@@ -9943,6 +9944,9 @@ Constantable    : search usage (variable, not from_spec, read,
 Uninitialized   : check usage  (variable, not from_spec, read,
                                           not initialized, not written);
 Removable       : search usage (object,   not from_spec, not read);
+
+-- Check in out parameters that could be of out mode
+check usage (in_out_parameter, not read);
 
 -- Check exceptions that are never raised
 -- generics that are never instantiated

@@ -901,16 +901,17 @@ Rule: USAGE
 Control usage of various entities
 (possibly restricted to those that match the specified location and properties)
 
-Parameter(s): variable | object    {, [not] <location> | initialized | read | written}
-  or        : constant             {, [not] <location> | read}
-  or        : type                 {, [not] <location> | used}
-  or        : procedure | function {, [not] <location> | called}
-  or        : exception            {, [not] <location> | raised | handled}
-  or        : task                 {, [not] <location> | called | aborted}
-  or        : protected            {, [not] <location> | called}
-  or        : generic              {, [not] <location> | instantiated}
-  or        : all                  [, [not] <location>]
 location ::= from_visible | from_private | from_spec | from_task_guard
+Parameter(s): variable | object | <param> {, [not] <location> | initialized | read | written}
+  or        : constant                    {, [not] <location> | read}
+  or        : type                        {, [not] <location> | used}
+  or        : procedure | function        {, [not] <location> | called}
+  or        : exception                   {, [not] <location> | raised | handled}
+  or        : task                        {, [not] <location> | called | aborted}
+  or        : protected                   {, [not] <location> | called}
+  or        : generic                     {, [not] <location> | instantiated}
+  or        : all                         [, [not] <location>]
+<param> ::= in_parameter | out_parameter | in_out_parameter
 ----
 Rule: USE_CLAUSES
 Control occurrences of use clauses or use type clauses that mention

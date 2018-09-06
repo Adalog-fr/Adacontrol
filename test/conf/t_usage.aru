@@ -7,6 +7,11 @@ Removable:       search usage (object,                 not from_task_guard, not 
                  check  usage (task,      from_spec);
                  check  usage (protected, from_spec);
 
+Change_to_in:    check  usage (in_out_parameter, not from_task_guard,     read, not written);
+Change_to_out:   check  usage (in_out_parameter, not from_task_guard, not read,     written);
+Unused_param:    check  usage (in_parameter,                          not read);
+Read_Out:        check  usage (out_parameter,                             read);
+
 type_used:       check  usage (type,     used);
 type_not_used:   check  usage (type, not used);
 
@@ -16,7 +21,8 @@ type_not_used:   check  usage (type, not used);
                  search usage (function, not from_task_guard);
                  search usage (generic);
 
-Guard1: check  usage (object,    from_task_guard, written);
-Guard2: check  usage (object,    from_task_guard, not written, not initialized);
-Guard3: search usage (function,  from_task_guard);
-Guard4: check  usage (exception, from_task_guard);
+Guard1: check  usage (object,           from_task_guard, written);
+Guard2: check  usage (object,           from_task_guard, not written, not initialized);
+Guard3: search usage (function,         from_task_guard);
+Guard4: check  usage (exception,        from_task_guard);
+Guard5: check  usage (in_out_parameter, from_task_guard);

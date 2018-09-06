@@ -111,9 +111,10 @@ package body Rules.Usage is
    K_Aborted      : Rule_Usage_Kind renames K_Written;
    K_Instantiated : Rule_Usage_Kind renames K_Read;
 
-   type Entity_Kind is (K_Object,    K_All,
-                        K_Variable,  K_Constant, K_Type,      K_Procedure, K_Function,
-                        K_Exception, K_Task,     K_Protected, K_Generic,
+   type Entity_Kind is (K_Object,       K_All,
+                        K_Variable,     K_Constant,      K_Type,             K_Procedure, K_Function,
+                        K_In_Parameter, K_Out_Parameter, K_In_Out_Parameter,
+                        K_Exception,    K_Task,          K_Protected,        K_Generic,
                         K_Other);
    -- K_Object and K_all are there just for the user, not used passed parameter analysis. Must stay first in type.
    -- K_Other is used internally, not visible to the user. Must stay last in type.
@@ -184,16 +185,17 @@ package body Rules.Usage is
       User_Message ("Control usage of various entities");
       User_Message ("(possibly restricted to those that match the specified location and properties)");
       User_Message;
-      User_Message ("Parameter(s): variable | object    {, [not] <location> | initialized | read | written}");
-      User_Message ("  or        : constant             {, [not] <location> | read}");
-      User_Message ("  or        : type                 {, [not] <location> | used}");
-      User_Message ("  or        : procedure | function {, [not] <location> | called}");
-      User_Message ("  or        : exception            {, [not] <location> | raised | handled}");
-      User_Message ("  or        : task                 {, [not] <location> | called | aborted}");
-      User_Message ("  or        : protected            {, [not] <location> | called}");
-      User_Message ("  or        : generic              {, [not] <location> | instantiated}");
-      User_Message ("  or        : all                  [, [not] <location>]");
       User_Message ("location ::= from_visible | from_private | from_spec | from_task_guard");
+      User_Message ("Parameter(s): variable | object | <param> {, [not] <location> | initialized | read | written}");
+      User_Message ("  or        : constant                    {, [not] <location> | read}");
+      User_Message ("  or        : type                        {, [not] <location> | used}");
+      User_Message ("  or        : procedure | function        {, [not] <location> | called}");
+      User_Message ("  or        : exception                   {, [not] <location> | raised | handled}");
+      User_Message ("  or        : task                        {, [not] <location> | called | aborted}");
+      User_Message ("  or        : protected                   {, [not] <location> | called}");
+      User_Message ("  or        : generic                     {, [not] <location> | instantiated}");
+      User_Message ("  or        : all                         [, [not] <location>]");
+      User_Message ("<param> ::= in_parameter | out_parameter | in_out_parameter");
    end Help;
 
    -----------------
@@ -331,7 +333,7 @@ package body Rules.Usage is
                      -- Only From_Spec, From_Visible, From_Private allowed
                      Parameter_Error (Rule_Id, Bad_KW & To_Compare);
 
-                  when K_Variable | K_Object =>
+                  when K_Variable | K_Object | K_In_Parameter | K_Out_Parameter | K_In_Out_Parameter =>
                      if To_Compare = "READ" then
                         Usage_Param := K_Read;
                      elsif To_Compare = "WRITTEN" then
@@ -680,6 +682,18 @@ package body Rules.Usage is
            =>
             return K_Constant;
 
+         when A_Parameter_Specification =>
+            case Mode_Kind (Decl) is
+               when An_In_Mode | A_Default_In_Mode =>
+                  return K_In_Parameter;
+               when An_Out_Mode =>
+                  return K_Out_Parameter;
+               when An_In_Out_Mode =>
+                  return K_In_Out_Parameter;
+               when Not_A_Mode =>
+                  Failure ("Usage: Not_A_Mode in parameter declaration", Decl);
+            end case;
+
          when A_Variable_Declaration =>
             Temp := Object_Declaration_View (Decl);
             if Definition_Kind (Temp) /= A_Subtype_Indication then
@@ -903,12 +917,10 @@ package body Rules.Usage is
                Usage_Message (True_Usage (K_Read), "read");
                if True_Usage (K_From_Task_Guard) then
                   Append (Message, " (outside guard and corresponding accept)");
-               else
-                  if not True_Usage (K_Read)
-                    and Value.Origin /= From_Instance
-                  then
-                     Append (Message, " (can be removed)");
-                  end if;
+               elsif not True_Usage (K_Read)
+                 and Value.Origin /= From_Instance
+               then
+                  Append (Message, " (can be removed)");
                end if;
 
             when K_Variable =>
@@ -924,26 +936,58 @@ package body Rules.Usage is
 
                   if True_Usage (K_From_Task_Guard) then
                      Append (Message, " (outside guard and corresponding accept)");
-                  else
-                     if not True_Usage (K_Read)
-                       and not True_Usage (K_Written)
-                       and Value.Origin /= From_Instance
-                     then
-                        Append (Message, " (can be removed)");
-                     elsif Pseudo_Const then
-                        Append (Message, " (pseudo constant)");
-                     elsif True_Usage (K_Read)
-                       and not (True_Usage (K_Initialized) or True_Usage (K_Written))
-                     then
-                        Append (Message, " (never given a value)");
-                     elsif not True_Usage (K_Written)
-                       and True_Usage (K_Initialized)
-                       and Value.Origin /= From_Instance
-                     then
-                        Append (Message, " (can be declared constant)");
-                     end if;
+                  elsif not True_Usage (K_Read)
+                    and not True_Usage (K_Written)
+                    and Value.Origin /= From_Instance
+                  then
+                     Append (Message, " (can be removed)");
+                  elsif Pseudo_Const then
+                     Append (Message, " (pseudo constant)");
+                  elsif True_Usage (K_Read)
+                    and not (True_Usage (K_Initialized) or True_Usage (K_Written))
+                  then
+                     Append (Message, " (never given a value)");
+                  elsif not True_Usage (K_Written)
+                    and True_Usage (K_Initialized)
+                    and Value.Origin /= From_Instance
+                  then
+                     Append (Message, " (can be declared constant)");
                   end if;
                end;
+
+            when K_In_Parameter =>
+               Append (Message, ", in parameter");
+               Usage_Message (True_Usage (K_Initialized), "initialized");
+               Usage_Message (True_Usage (K_Read), "read");
+               if True_Usage (K_From_Task_Guard) then
+                  Append (Message, " (outside guard and corresponding accept)");
+               elsif not True_Usage (K_Read)
+                 and Value.Origin /= From_Instance
+               then
+                  Append (Message, " (unused)");
+               end if;
+
+            when K_Out_Parameter =>
+               Append (Message, ", out parameter");
+               Usage_Message (True_Usage (K_Written), "written");
+               Usage_Message (True_Usage (K_Read), "read");
+               if True_Usage (K_From_Task_Guard) then
+                  Append (Message, " (outside guard and corresponding accept)");
+               elsif not True_Usage (K_Written) then
+                  Append (Message, " (unset out parameter)");
+               end if;
+
+            when K_In_Out_Parameter =>
+               Append (Message, ", in out parameter");
+               Usage_Message (True_Usage (K_Written), "written");
+               Usage_Message (True_Usage (K_Read), "read");
+               if True_Usage (K_From_Task_Guard) then
+                  Append (Message, " (outside guard and corresponding accept)");
+               elsif not True_Usage (K_Written) then
+                  Append (Message, " (mode can be changed to in)");
+               elsif not True_Usage (K_Read) then
+                  Append (Message, " (mode can be changed to out)");
+               end if;
 
             when K_Type =>
                Append (Message, ", (sub)type");
@@ -1204,6 +1248,22 @@ package body Rules.Usage is
                end loop;
             end;
 
+         when K_In_Parameter =>
+            declare
+               The_Names       : constant Asis.Defining_Name_List := Names (Element);
+               Is_Initialized  : constant Boolean := not Is_Nil (Initialization_Expression (Element));
+            begin
+               for I in The_Names'Range loop
+                  Update (The_Names (I),
+                          E_Kind,
+                          (K_Declared     => True,
+                           K_From_Visible => Origin = From_Visible,
+                           K_From_Private => Origin = From_Private,
+                           K_Initialized  => Is_Initialized,
+                           others         => False));
+               end loop;
+            end;
+
          when K_Type
             | K_Procedure
             | K_Function
@@ -1211,6 +1271,8 @@ package body Rules.Usage is
             | K_Task
             | K_Protected
             | K_Generic
+            | K_Out_Parameter
+            | K_In_Out_Parameter
               =>
             declare
                The_Names : constant Asis.Defining_Name_List := Names (Element);
@@ -1315,11 +1377,39 @@ package body Rules.Usage is
                   return;
                end if;
 
+               -- If this is the identifier left of the arrow in an association, it is not a usage
+               -- except in an array aggregate association where it is a Read!
+               case Association_Kind (Item) is
+                  when A_Pragma_Argument_Association =>
+                     -- Ignore pragmas (even on the RHS of the arrow)
+                     return;
+                  when A_Discriminant_Association =>
+                     for Choice of Discriminant_Selector_Names (Item) loop
+                        if Is_Equal (Name, Choice) then
+                           return;
+                        end if;
+                     end loop;
+                  when A_Record_Component_Association =>
+                     for Choice of Record_Component_Choices (Item) loop
+                        if Is_Equal (Name, Choice) then
+                           return;
+                        end if;
+                     end loop;
+                  when An_Array_Component_Association =>
+                     null;
+                  when A_Parameter_Association | A_Generic_Association =>
+                     if Is_Equal (Name, Formal_Parameter (Item)) then
+                        return;
+                     end if;
+                  when Not_An_Association =>
+                     Failure ("Usage: not an association", Item);
+               end case;
+
                if not From_Guard_Checked then
                   exit;
                end if;
 
-               -- We must to continue to go up until we find a select (or or) path, or anything else
+               -- We must continue to go up until we find a select (or or) path, or anything else
                Item := Enclosing_Element (Item);
 
             when A_Path =>
@@ -1405,7 +1495,7 @@ package body Rules.Usage is
                                                            K_From_Task_Guard => Is_Part_Of_Guard,
                                                            others            => False));
                when Write =>
-                  Update (Good_Name, K_Variable, Value => (K_Written => True,
+                  Update (Good_Name, K_Variable, Value => (K_Written => not Is_Part_Of_Guard,
                                                            K_From_Task_Guard => Is_Part_Of_Guard,
                                                            others    => False));
                when Read_Write =>
@@ -1436,6 +1526,46 @@ package body Rules.Usage is
                                                            others            => False));
                when Write | Read_Write =>
                   Failure ("Usage: write of constant", Name);
+            end case;
+
+         when K_In_Parameter =>
+            case Expression_Usage_Kind (Name) is
+               when Untouched =>
+                  Check_Access;
+               when Read | Unknown => -- Unknown : IN parameter so the only possible usage is "read"
+                  Update (Good_Name, K_In_Parameter, Value => (K_Read            => not Is_Part_Of_Guard,
+                                                               K_From_Task_Guard => Is_Part_Of_Guard,
+                                                               others            => False));
+               when Write | Read_Write =>
+                  Failure ("Usage: write of IN parameter", Name);
+            end case;
+
+         when K_Out_Parameter | K_In_Out_Parameter =>
+            case Expression_Usage_Kind (Name) is
+               when Untouched =>
+                  Check_Access;
+               when Read =>
+                  Update (Good_Name, E_Kind, Value => (K_Read            =>  not Is_Part_Of_Guard,
+                                                       K_From_Task_Guard => Is_Part_Of_Guard,
+                                                       others            => False));
+               when Write =>
+                  Update (Good_Name, E_Kind, Value => (K_Written         =>  not Is_Part_Of_Guard,
+                                                       K_From_Task_Guard => Is_Part_Of_Guard,
+                                                       others            => False));
+               when Read_Write =>
+                  Update (Good_Name, E_Kind, Value => (K_Read | K_Written =>  not Is_Part_Of_Guard,
+                                                       K_From_Task_Guard  => Is_Part_Of_Guard,
+                                                       others             => False));
+               when Unknown =>      -- Consider Unknown as Read-Write, therefore creating false positives
+                  -- That's better than false negatives!
+                  Uncheckable (Rule_Id,
+                               False_Positive,
+                               Get_Location (Name),
+                               "parameter """ & Name_Image (Good_Name)
+                               & """ used as parameter of dispatching call, treated as in-out");
+                  Update (Good_Name, E_Kind, Value => (K_Read | K_Written => not Is_Part_Of_Guard,
+                                                       K_From_Task_Guard  => Is_Part_Of_Guard,
+                                                       others             => False));
             end case;
 
          when K_Procedure | K_Function =>

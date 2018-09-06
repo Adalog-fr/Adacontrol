@@ -269,6 +269,10 @@ package body Framework.Plugs is
             Rules.Style.                 Process_Element     (Element);
 
             case Declaration_Kind (Element) is
+
+               when A_Parameter_Specification =>
+                  Rules.Usage.               Process_Declaration      (Element);
+
                when An_Ordinary_Type_Declaration =>
                   Rules.Unit_Pattern.        Process_Type_Declaration (Element);
                   Rules.Type_Initial_Values. Process_Type_Declaration (Element);

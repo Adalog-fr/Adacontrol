@@ -3,7 +3,8 @@ with Calendar;
 with Ada.Exceptions, Ada.Task_Identification;
 with System;
 procedure T_Usage is
-   procedure Guards is separate;   -- procedure
+   procedure Guards     is separate;   -- procedure
+   procedure Parameters is separate;   -- procedure
 
    type Rec is
       record

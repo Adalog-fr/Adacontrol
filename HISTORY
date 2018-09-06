@@ -36,7 +36,8 @@ unsafe_paired_calls:
    add rule variable to follow (or not) renamings of P/V procedures
 
 usage:
-   new location: from_task_guard
+   add subrules in_parameter, out_parameter, in_out_parameter
+   add location from_task_guard
 
 =============
 == V1.20b2 ==
