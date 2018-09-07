@@ -38,6 +38,7 @@ unsafe_paired_calls:
 usage:
    add subrules in_parameter, out_parameter, in_out_parameter
    add location from_task_guard
+   add fixes generation for subrules variable, in_out_parameter
 
 =============
 == V1.20b2 ==

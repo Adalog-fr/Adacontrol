@@ -9965,6 +9965,22 @@ check usage (task, aborted);
 check usage (variable, from_task_guard, written);
 @end example
 
+@subsection Fixes
+The following subrules generate fixes (unless they are
+``from_task_guard'', since usage of these from within guards and
+accept statement is not taken into account):
+@itemize @bullet
+@item
+``variable'': A @code{@b{constant}} keyword is added to the
+declaration of variables that are initialized, read, but not written. 
+@item
+``in_out_parameter'': The mode is changed to @code{@b{in}} for
+parameters that are not written. The mode is changed to @code{@b{out}}
+for parameters that are not read. This does not apply to parameters
+that are neither read nor written, since they are useless and should
+be removed.
+@end itemize
+
 @subsection Tips
 Constants that are never used, exceptions that are never raised or
 handled, tasks that are never called, etc. are suspicious. Moreover,

@@ -6,6 +6,8 @@ t_usage.adb:25:21: Error: Unused_param: (generic) T_Usage.Gen.Right, visible, in
 t_usage.adb:20:7: Error: Written_Visible: (generic) T_Usage.Gen.Y1, visible, variable, initialized, written, not read
 t_usage.adb:21:7: Error: Written_Visible: (generic) T_Usage.Gen.Y2, visible, variable, not initialized, written, not read
 t_usage.adb:22:7: Found: Constantable: (generic) T_Usage.Gen.Y3, visible, variable, initialized, not written, read (can be declared constant)
+t_usage.adb:22:12: Insert
+!constant 
 t_usage.adb:28:7: Error: Written_Private: (generic) T_Usage.Gen.Y4, private, variable, not initialized, written, not read
 t_usage.adb:23:7: Found: Removable: (generic) T_Usage.Gen.Z, visible, constant, not read (can be removed)
 t_usage.adb:90:12: Found: USAGE: (normal) T_Usage.Gen_Gen, generic, instantiated
@@ -39,8 +41,12 @@ t_usage.adb:81:17: Error: Unused_param: (normal) T_Usage.P.X, in parameter, not 
 t_usage.adb:41:7: Error: Written_Visible: (normal) T_Usage.Pack.A1, visible, variable, not initialized, written, read
 t_usage.adb:41:11: Error: Written_Visible: (normal) T_Usage.Pack.A2, visible, variable, not initialized, written, not read
 t_usage.adb:42:7: Found: Constantable: (normal) T_Usage.Pack.A3, visible, variable, initialized, not written, read (can be declared constant)
+t_usage.adb:42:12: Insert
+!constant 
 t_usage.adb:43:7: Found: Removable: (normal) T_Usage.Pack.A4, visible, variable, not initialized, not written, not read (can be removed)
 t_usage.adb:53:7: Found: Constantable: (normal) T_Usage.Pack.Ac, visible, variable, initialized, not written, read (can be declared constant)
+t_usage.adb:53:12: Insert
+!constant 
 t_usage.adb:67:12: Error: type_not_used: (normal) T_Usage.Pack.Acc_Int, visible, (sub)type, not used
 t_usage.adb:55:12: Error: type_used: (normal) T_Usage.Pack.Arr_Acc, visible, (sub)type, used
 t_usage.adb:56:12: Error: type_used: (normal) T_Usage.Pack.Arr_Arr_Acc, visible, (sub)type, used
@@ -67,10 +73,12 @@ t_usage-parameters.adb:3:14: Found: USAGE: (normal) T_Usage.Parameters.P1, proce
 t_usage-parameters.adb:12:14: Found: USAGE: (normal) T_Usage.Parameters.P2, procedure, called, not accessed
 t_usage-parameters.adb:12:18: Error: Unused_param: (normal) T_Usage.Parameters.P2.I, in parameter, not initialized, not read (unused)
 t_usage-parameters.adb:14:18: Error: Change_to_out: (normal) T_Usage.Parameters.P2.Io, in out parameter, written, not read (mode can be changed to out)
+t_usage-parameters.adb:14:23: Delete:14:25
 t_usage-parameters.adb:13:18: Error: Read_Out: (normal) T_Usage.Parameters.P2.O, out parameter, not written, read (unset out parameter)
 t_usage-parameters.adb:20:14: Found: USAGE: (normal) T_Usage.Parameters.P3, procedure, not called, not accessed
 t_usage-parameters.adb:20:18: Error: Unused_param: (normal) T_Usage.Parameters.P3.I, in parameter, not initialized, not read (unused)
 t_usage-parameters.adb:22:18: Error: Change_to_in: (normal) T_Usage.Parameters.P3.Io, in out parameter, not written, read (mode can be changed to in)
+t_usage-parameters.adb:22:26: Delete:22:29
 t_usage.adb:160:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Empty, variable, read (pseudo constant)
 t_usage.adb:162:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.I, variable, read (pseudo constant)
 t_usage.adb:163:7: Found: Removable: (normal) T_Usage.Pseudo_Const.I2, variable, not read (can be removed)

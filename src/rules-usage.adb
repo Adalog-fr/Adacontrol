@@ -48,7 +48,8 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+   Framework.Language,
+   Framework.Reports.Fixes;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Usage is
@@ -803,6 +804,7 @@ package body Rules.Usage is
          Message      : Unbounded_Wide_String;
          True_Usage   : Usage_Value;
          Generic_Elem : Asis.Expression;
+         Pseudo_Const : Boolean;
 
          procedure Usage_Message (Used : Boolean; Usage_Mess : Wide_String)  is
          begin
@@ -816,8 +818,7 @@ package body Rules.Usage is
          function Is_Pseudo_Const (Entity : Asis.Expression) return Boolean is
          begin
             declare
-               Lengths : constant Extended_Biggest_Natural_List
-                 := Discrete_Constraining_Lengths (Entity);
+               Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Entity);
             begin
                for I in Lengths'Range loop
                   if Lengths (I) = 0 then
@@ -924,36 +925,33 @@ package body Rules.Usage is
                end if;
 
             when K_Variable =>
-               declare
-                  Pseudo_Const : constant Boolean := Is_Pseudo_Const (Value.Declaration);
-               begin
-                  Append (Message, ", variable");
-                  if not Pseudo_Const then
-                     Usage_Message (True_Usage (K_Initialized), "initialized");
-                     Usage_Message (True_Usage (K_Written), "written");
-                  end if;
-                  Usage_Message (True_Usage (K_Read), "read");
+               Pseudo_Const := Is_Pseudo_Const (Value.Declaration);
+               Append (Message, ", variable");
+               if not Pseudo_Const then
+                  Usage_Message (True_Usage (K_Initialized), "initialized");
+                  Usage_Message (True_Usage (K_Written), "written");
+               end if;
+               Usage_Message (True_Usage (K_Read), "read");
 
-                  if True_Usage (K_From_Task_Guard) then
-                     Append (Message, " (outside guard and corresponding accept)");
-                  elsif not True_Usage (K_Read)
-                    and not True_Usage (K_Written)
-                    and Value.Origin /= From_Instance
-                  then
-                     Append (Message, " (can be removed)");
-                  elsif Pseudo_Const then
-                     Append (Message, " (pseudo constant)");
-                  elsif True_Usage (K_Read)
-                    and not (True_Usage (K_Initialized) or True_Usage (K_Written))
-                  then
-                     Append (Message, " (never given a value)");
-                  elsif not True_Usage (K_Written)
-                    and True_Usage (K_Initialized)
-                    and Value.Origin /= From_Instance
-                  then
-                     Append (Message, " (can be declared constant)");
-                  end if;
-               end;
+               if True_Usage (K_From_Task_Guard) then
+                  Append (Message, " (outside guard and corresponding accept)");
+               elsif not True_Usage (K_Read)
+                 and not True_Usage (K_Written)
+                 and Value.Origin /= From_Instance
+               then
+                  Append (Message, " (can be removed)");
+               elsif Pseudo_Const then
+                  Append (Message, " (pseudo constant)");
+               elsif True_Usage (K_Read)
+                 and not (True_Usage (K_Initialized) or True_Usage (K_Written))
+               then
+                  Append (Message, " (never given a value)");
+               elsif not True_Usage (K_Written)
+                 and True_Usage (K_Initialized)
+                 and Value.Origin /= From_Instance
+               then
+                  Append (Message, " (can be declared constant)");
+               end if;
 
             when K_In_Parameter =>
                Append (Message, ", in parameter");
@@ -1067,6 +1065,41 @@ package body Rules.Usage is
                     Value.Decl_Location,
                     To_Wide_String (Message));
          end if;
+
+         -- Generate fixes after Check or Search, but before Count
+         -- Do not generate fixes for From_Task_Guard, since there may be unknown usage from the guard/accept
+         -- and not for instances!
+         if not True_Usage (K_From_Task_Guard) and Value.Origin /= From_Instance then
+            case Value.Entity is
+               when K_Variable =>
+                  if    not True_Usage (K_Written)
+                    and     True_Usage (K_Read)        -- Otherwise it would be removable
+                    and     True_Usage (K_Initialized)
+                    and not Pseudo_Const
+                  then
+                     Fixes.Insert ("constant ", Fixes.Before, Object_Declaration_View
+                                                                (Enclosing_Element (Value.Declaration)));
+                  end if;
+
+               when K_In_Out_Parameter =>
+                  if not True_Usage (K_Read) then
+                     Fixes.Delete (From => Get_Previous_Word_Location (Object_Declaration_View
+                                                                         (Enclosing_Element (Value.Declaration)),
+                                                                       Skipping => 1),
+                                   To   => Get_Previous_Word_Location (Object_Declaration_View
+                                                                         (Enclosing_Element (Value.Declaration))));
+                  elsif not True_Usage (K_Written) then
+                     Fixes.Delete (From => Get_Previous_Word_Location (Object_Declaration_View
+                                                                         (Enclosing_Element (Value.Declaration))),
+                                   To   => Get_Location               (Object_Declaration_View
+                                                                         (Enclosing_Element (Value.Declaration))));
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+         end if;
+
 
          if Rule_Table (Value.Entity,
                         True_Usage (K_From_Visible),
@@ -1384,13 +1417,13 @@ package body Rules.Usage is
                      -- Ignore pragmas (even on the RHS of the arrow)
                      return;
                   when A_Discriminant_Association =>
-                     for Choice of Discriminant_Selector_Names (Item) loop
+                     for Choice :  Asis.Expression of Discriminant_Selector_Names (Item) loop
                         if Is_Equal (Name, Choice) then
                            return;
                         end if;
                      end loop;
                   when A_Record_Component_Association =>
-                     for Choice of Record_Component_Choices (Item) loop
+                     for Choice :  Asis.Expression of Record_Component_Choices (Item) loop
                         if Is_Equal (Name, Choice) then
                            return;
                         end if;
