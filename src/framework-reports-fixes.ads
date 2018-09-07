@@ -43,6 +43,7 @@ package Framework.Reports.Fixes is
    -- for Check or Search, but not after a call to Report for Count
 
    procedure Refactor (Original : Asis.Element);
+   -- Activates the "refactor" menu of GPS. To be used, f.e., when the name of an element is changed
 
    procedure Replace (Original : Asis.Element;
                       By       : Wide_String);
@@ -64,6 +65,7 @@ package Framework.Reports.Fixes is
    -- Insert at From characters (can be outside original line, spaces added as needed)
 
    procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position);
+   -- Inserts a line break
 
    procedure Delete (Elem  : Asis.Element);
    procedure Delete (Elems : Asis.Element_List);

@@ -186,8 +186,9 @@ package body Framework is
      := Ada.Strings.Wide_Maps.To_Set (Ranges => (('a', 'z'), ('A', 'Z'), ('0', '9'), ('_', '_')));
 
    function Get_Previous_Word_Location (E        : in Asis.Element;
-                                        Matching : Wide_String := "";
-                                        Starting : Search_Start := From_Head)
+                                        Matching : in Wide_String  := "";
+                                        Starting : in Search_Start := From_Head;
+                                        Skipping : in Natural      := 0)
                                         return Location
    is
       use Asis.Text;
@@ -195,6 +196,7 @@ package body Framework is
       L          : Line_Number;
       Word_Start : Character_Position;
       Result     : Location;
+      To_Skip    : Natural := Skipping;
 
       function Find_Word_Start (Line : in Wide_String) return Character_Position is
          use Ada.Strings.Wide_Maps;
@@ -208,8 +210,12 @@ package body Framework is
                while  Start > Line'First and then Is_In (Line (Start - 1), Identifier_Chars) loop
                   Start := Start - 1;
                end loop;
-               if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
-                  return Character_Position (Start);
+               if To_Skip = 0 then
+                  if Matching = "" or else To_Upper (Line (Start .. Stop)) = Matching then
+                     return Character_Position (Start);
+                  end if;
+               else
+                  To_Skip := To_Skip - 1;
                end if;
                Stop := Start - 1;
             else

@@ -95,17 +95,19 @@ package Framework is
    -- Returns location of end of an element
 
    function Get_Previous_Word_Location (E        : in Asis.Element;
-                                        Matching : Wide_String := "";
-                                        Starting : Search_Start := From_Head)
+                                        Matching : in Wide_String  := "";
+                                        Starting : in Search_Start := From_Head;
+                                        Skipping : in Natural      := 0)
                                         return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
    -- precedes the beginning of E (if Starting = From_Head) or the end of E (if Starting = From_Tail).
+   -- after skipping Skipping words.
    -- If Matching is specified, returns the location of the first word identical to Matching
    -- Matching must be given in upper-case
 
    function Get_Previous_Word_Location (L        : in Asis.Element_List;
-                                        Matching : Wide_String := "";
-                                        Starting : Search_Start := From_Head)
+                                        Matching : in Wide_String := "";
+                                        Starting : in Search_Start := From_Head)
                                         return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
    -- precedes the beginning of the first element of E (if Starting = From_Head)
@@ -125,8 +127,8 @@ package Framework is
    -- Matching must be given in upper-case
 
    function Get_Next_Word_Location (L        : in Asis.Element_List;
-                                    Matching : Wide_String := "";
-                                    Starting : Search_Start := From_Tail)
+                                    Matching : in Wide_String  := "";
+                                    Starting : in Search_Start := From_Tail)
                                     return Location;
    -- Returns the location of the first "word" (identifier of keyword) that immediately
    -- follows the beginning of the first element of E (if Starting = From_Head)
