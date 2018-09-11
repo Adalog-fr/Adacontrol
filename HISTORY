@@ -19,6 +19,9 @@ case_statement:
 declarations
    add option to ignore declarations whose name matches a pattern
 
+naming_convention
+   patterns and identifiers can be read from a file
+
 parameter_declarations:
    add modifier no_inout to subrule single_out_parameter
 

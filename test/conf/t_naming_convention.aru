@@ -1,6 +1,6 @@
 -- Rules in String_Matching_Gnat syntax:
-Too_short   : check naming_convention (all, "....");
-Standard    : check naming_convention (all, not "integer");
+Too_short   : check naming_convention (all,     file "t_naming_convention_1.pat"); -- "...."
+Standard    : check naming_convention (all, not file "t_naming_convention_2.pat"); -- integer
 Global_Only : check naming_convention (global all, not "^l_");
 Local_Only  : check naming_convention (local  all, not "^g_");
 

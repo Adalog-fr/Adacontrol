@@ -6536,7 +6536,7 @@ refering to.
 @example
 <control_kind> naming_convention
    ([root] [others] @{<location>@} [<type_spec>] <filter_kind>,
-    [case_sensitive|case_insensitive] [not] "<pattern>"
+    [case_sensitive|case_insensitive] [not] "<pattern>"|file "<pattern_file>"
     @{, ...@});
 <location>  ::= global | local | unit
 <type_spec> ::= <entity> | @{<category>@}
@@ -6638,7 +6638,9 @@ refering to.
 The first parameter defines the kind of declaration to which the rule
 is applicable, and other parameters are strings, interpreted as
 regular expressions that define the patterns that must be
-matched (or not). @xref{Syntax of regular expressions}.
+matched (or not). @xref{Syntax of regular expressions}. If the string is
+preceded by the keyword ``file'', it is interpreted as a file name containing
+the patterns. See @ref{Syntax of pattern files} below for details.
 
 If one or more <location> keyword is specified, the pattern applies
 only to identifiers declared at the corresponding place. Otherwise,
@@ -6772,6 +6774,27 @@ check naming_convention
 check naming_convention (global variable, "G_");
 @end example
 
+@anchor{Syntax of pattern files}
+@subsubsection Syntax of pattern files
+A set of patterns corresponding to a given control can be given in a file.
+The syntax is the same as for regular patterns, and the patterns must be given
+as strings (enclosed in double quotes (@code{"})).
+
+As a matter of simplification, if a pattern does not contain any wildcard character,
+it can be given as an identifier (without quotes): in this case, it matches
+only the corresponding identifier as a whole.
+
+Example:
+@example
+   "abc"   -- A pattern string, matches any identifier containing "abc"
+   abc     -- An identifier, matches any identifier which is exactly "abc"
+           -- same as "^abc$"
+@end example
+
+It is possible to put several pattern strings or identifiers on the same line,
+separated by spaces of tabs. The file can contain Ada-like comments (starting with
+`@code{--}'', up to the end of line).
+
 @subsection Fixes
 This rule generate fixes to help in refactoring the improper name. The
 fix is ignored by @code{adactl_fix}, since automatic fixing is not
@@ -6850,6 +6873,12 @@ with either ``c_'' or ``const_''. But here, we have two different
 rule labels. The message will refer to the first label encountered in the
 command file; this is the label that must be mentionned in a disabling
 comment, unless you simply disable ``naming_convention''.
+
+A gnatcheck dictionary file for ``name_clashes'' is compatible and
+corresponds to the following control:
+@example
+check naming_convention (all, not file "gnat_check_dictionary.txt");
+@end example
 
 @subsection Limitations
 This rule does not support wide characters outside the basic Latin-1 set.
@@ -9972,7 +10001,7 @@ accept statement is not taken into account):
 @itemize @bullet
 @item
 ``variable'': A @code{@b{constant}} keyword is added to the
-declaration of variables that are initialized, read, but not written. 
+declaration of variables that are initialized, read, but not written.
 @item
 ``in_out_parameter'': The mode is changed to @code{@b{in}} for
 parameters that are not written. The mode is changed to @code{@b{out}}

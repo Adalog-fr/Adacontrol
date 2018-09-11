@@ -504,7 +504,7 @@ Parameter(1): [root] [others] {<location>} [<type_spec>]
                  function_renaming          | generic_renaming           |
                  generic_package_renaming   | generic_sp_renaming        |
                  generic_procedure_renaming | generic_function_renaming
-Parameter(2..): [case_sensitive|case_insensitive] [not] "<name pattern>"
+Parameter(2..): [case_sensitive|case_insensitive] [not] "<name pattern>"|file "<file name>"
 <location> : global | local | unit
 <type_spec>: <entity> | {<category>}
 <category>: ()    | range     | mod    | delta  | digits  |

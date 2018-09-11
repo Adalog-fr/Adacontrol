@@ -237,8 +237,8 @@ USE_PACKAGE_Clauses:
 -- TBSL Misnamed_Controlling_Parameters
 
 Name_Clashes:
-   check naming_convention (all, not "example");
-   -- replace "example" by the prohibited identifiers
+   check naming_convention (all, not file "clashes.txt");
+   -- replace "clashes.txt" by the name of the file containing prohibited identifiers
 
 Uncommented_BEGIN_In_Package_Bodies:
    check comments (unnamed_begin, declaration package);

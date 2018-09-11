@@ -1,0 +1,6 @@
+Integer
+Natural
+Positive
+Float
+Duration
+Boolean

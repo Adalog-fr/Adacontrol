@@ -27,7 +27,10 @@
 -- Ada
 with
   Ada.Characters.Handling,
-  Ada.Exceptions;
+  Ada.Characters.Latin_1,
+  Ada.Exceptions,
+  Ada.Wide_Characters.Handling,
+  Ada.Wide_Text_IO;
 
 -- ASIS
 with
@@ -41,6 +44,7 @@ with
 -- Adalog
 with
   A4G_Bugs,
+  Implementation_Options,
   Scope_Manager,
   String_Matching,
   Thick_Queries,
@@ -266,7 +270,8 @@ package body Rules.Naming_Convention is
       User_Message;
       User_Message  ("Parameter(1): [root] [others] {<location>} [<type_spec>]");
       Help_On_Flags ("                ", Extra_Value => "");
-      User_Message  ("Parameter(2..): [case_sensitive|case_insensitive] [not] ""<name pattern>""");
+      User_Message  ("Parameter(2..): [case_sensitive|case_insensitive] [not] "
+                     & """<name pattern>""|file ""<file name>""");
       Visibility_Utilities.Help_On_Modifiers  (Header => "<location> :");
       User_Message  ("<type_spec>: <entity> | {<category>}");
       Help_On_Categories (Expected => Expected_Categories);
@@ -284,6 +289,86 @@ package body Rules.Naming_Convention is
       use Visibility_Utilities;
       use Categories_Utilities;
 
+      procedure Append_From_File (Pat : in out Pattern_Queues.Queue; Ignore_Case : Boolean; Name : Wide_String) is
+         use Ada.Wide_Characters.Handling, Ada.Wide_Text_IO;
+         use Pattern_Queues, Utilities;
+
+         Name_File : Ada.Wide_Text_IO.File_Type;
+      begin
+         Open (Name_File,
+               In_File,
+               To_String (Name),
+               Form => Implementation_Options.Form_Parameters);
+
+         On_Lines : loop -- exit on End_Error, works with malformed files
+            declare
+               Line     : constant Wide_String := Get_Line (Name_File);
+               Start    : Natural := Line'First;  -- Points at beginning of identifier
+               Stop     : Natural;                -- Points after identifier
+            begin
+               while Start <= Line'Last  loop
+                  if Is_Space (Line (Start)) or To_Character (Line (Start)) = Ada.Characters.Latin_1.HT then
+                     -- Separator
+                     Start := Start + 1;
+
+                  elsif Start < Line'Last  and then (Line (Start) = '-' and Line (Start + 1) = '-') then
+                     -- Comment
+                     exit;
+
+                  elsif Is_Alphanumeric (Line (Start)) then
+                     -- Simple identifier
+                     Stop := Start + 1;
+                     while Stop <= Line'Last
+                       and then (Is_Letter (Line (Stop)) or Is_Punctuation_Connector (Line (Stop)))
+                     loop
+                        Stop := Stop + 1;
+                     end loop;
+                     Append (Pat, Compile ('^' & Line (Start .. Stop - 1) & '$', Ignore_Case));
+                     Start := Stop;
+
+                  elsif Line (Start) = '"' then
+                     -- Pattern
+                     Start := Start + 1;
+                     Stop  := Start + 1;
+                     while Stop <= Line'Last and then Line (Stop) /= '"' loop
+                        -- No need to handle "" specially, since it is not allowed in an identifier and is not
+                        -- a pattern special character
+                        Stop := Stop + 1;
+                     end loop;
+                     if Stop <= Line'Last then
+                        Append (Pat, Compile (Line (Start .. Stop - 1), Ignore_Case));
+                        Start := Stop + 1;
+                     else
+                        Parameter_Error (Rule_Id, "Missing terminating quote for pattern at "
+                                         & Name
+                                         & ':' & Integer_Img (Integer (Ada.Wide_Text_IO.Line (Name_File)))
+                                         & ':' & Integer_Img (Integer (Col (Name_File))));
+                     end if;
+                  else
+                     Parameter_Error (Rule_Id,
+                                      "Invalid character in name file at "
+                                      & Name
+                                      & ':' & Integer_Img (Integer (Ada.Wide_Text_IO.Line (Name_File)))
+                                      & ':' & Integer_Img (Integer (Col (Name_File))));
+                  end if;
+               end loop;
+            end;
+         end loop On_Lines;
+
+      exception
+         -- Note: there can be no Pattern_Error, since we allow only identifier characters
+         when Name_Error =>
+            Parameter_Error (Rule_Id, "Name file """ & Name & """ not found");
+         when End_Error =>
+            Close (Name_File);
+         when others =>
+            if Is_Open (Name_File) then
+               Close (Name_File);
+               raise;
+            end if;
+      end Append_From_File;
+
+
       Key        : Keys;
       Scopes     : Scope_Set;
       Categories : Categories_Utilities.Modifier_Set;
@@ -291,7 +376,7 @@ package body Rules.Naming_Convention is
       Is_Others  : Boolean;
       Spec       : Entity_Specification;
       Kind       : Usage_Filter_Kind;
-   begin
+   begin   -- Add_Control
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "kind of filter required");
       end if;
@@ -373,18 +458,30 @@ package body Rules.Naming_Convention is
                                                                    False_KW => "CASE_SENSITIVE",
                                                                    Default  => Default_Case_Sensitivity.Value = Off);
                Is_Not      : constant Boolean     := Get_Modifier ("NOT");
-               Pattern     : constant Wide_String := Get_String_Parameter;
+               Is_File     : constant Boolean     := Get_Modifier ("FILE");
             begin
-               if Is_Not then
-                  Append (Cont.Negative_Patterns, Compile (Pattern, Ignore_Case));
+               if Is_File then
+                  if Is_Not then
+                     Append_From_File (Cont.Negative_Patterns, Ignore_Case, Get_File_Parameter);
+                  else
+                     Append_From_File (Cont.Positive_Patterns, Ignore_Case, Get_File_Parameter);
+                  end if;
                else
-                  Append (Cont.Positive_Patterns, Compile (Pattern, Ignore_Case));
+                  declare
+                     Pattern : constant Wide_String := Get_String_Parameter;
+                  begin
+                     if Is_Not then
+                        Append (Cont.Negative_Patterns, Compile (Pattern, Ignore_Case));
+                     else
+                        Append (Cont.Positive_Patterns, Compile (Pattern, Ignore_Case));
+                     end if;
+                  exception
+                     when Occur : Pattern_Error =>
+                        Parameter_Error (Rule_Id,
+                                         "Incorrect pattern: " & Pattern
+                                         & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
+                  end;
                end if;
-            exception
-               when Occur : Pattern_Error =>
-                  Parameter_Error (Rule_Id,
-                                   "Incorrect pattern: " & Pattern
-                                   & " (" & To_Wide_String (Exception_Message (Occur)) & ')');
             end;
          end loop;
 
