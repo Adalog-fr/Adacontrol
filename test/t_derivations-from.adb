@@ -59,7 +59,7 @@ procedure From is
    -- Check interfaces and progenitors
    type I1 is interface;
    type I2 is interface;
-   type II1 is new I1 and I2 with null record;    -- From: I1, I2; Max_Parents: more than 1
+   type II1 is new I1 and I2 with null record;    -- From: I1, I2, category INTERFACE; Max_Parents: more than 1
    type II2 is interface and I1 and I2;           -- From: I1, I2; Max_Parents: more than 1
 
    type MI1 is new T5  and I1  with null record;  -- From: T4, T3, I1, category TAGGED;     Max_Parents: more than 1

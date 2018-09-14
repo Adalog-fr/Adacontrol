@@ -10,9 +10,9 @@ to the indicated categories, or just those whose indicated
 subtype is inconsistent with the access type declaration
 
 Parameter(s): [anonymous | inconsisent | not] [<category>|<entity>]
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 ----
 Rule: ARRAY_DECLARATIONS
 Controls various parameters related to array types or objects declarations
@@ -35,9 +35,9 @@ Parameter(2..) : <entity>|<category>
 For component:
 Parameter(2)  : <entity>|<category>
 Parameter(3..): [not] pack | size | component_size (optional)
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 ----
 Rule: ASPECTS
 Control occurrences of aspect specifications
@@ -56,9 +56,9 @@ Parameter(1): [[not] controlled]  sliding  | access_duplication |
 
 For access_duplication:
 Parameter(2..): [not] <Entity name> | <category> | procedure | function
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 
 For groupable:
 Parameter(2..): <criterion> <value>
@@ -238,9 +238,9 @@ Controls ancestors of a derived type
 Parameter(1): From | Max_Parents
 for From subrule:
 Parameter(2..): <Entity name> | <category>
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 for Max_Parents subrule:
 Parameter(2)  : <value>
 ----
@@ -319,9 +319,9 @@ For all *_conversion subrules:
 
 For all *_function_call and prefixed_operator subrules:
     [<result_category>] <subrule>
-<category>: <>      | ()    | range     | mod    | delta  |
-            digits  | array | record    | tagged | access |
-            private | task  | protected
+<category>: <>     | ()      | range  | mod       | delta     |
+            digits | array   | record | tagged    | interface |
+            access | private | task   | protected
 
 Variables:
 Expressions.Called_Info: (None, Compact, Detailed, Root_Detailed) = None
@@ -374,9 +374,9 @@ Parameter(2..): <Entity name> | <category> | = (optional)
 <location>: [not] all       | block   | library | local      |
                   own       | private | public  | in_generic |
                   task_body
-<category>: <>     | ()      | range  | mod       | delta  |
-            digits | array   | record | tagged    | access |
-            new    | private | task   | protected
+<category>: <>     | ()    | range   | mod    | delta     |
+            digits | array | record  | tagged | interface |
+            access | new   | private | task   | protected
 ----
 Rule: INSUFFICIENT_PARAMETERS
 Control calls where absence of named notation can lead to confusion
@@ -507,9 +507,9 @@ Parameter(1): [root] [others] {<location>} [<type_spec>]
 Parameter(2..): [case_sensitive|case_insensitive] [not] "<name pattern>"|file "<file name>"
 <location> : global | local | unit
 <type_spec>: <entity> | {<category>}
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 
 Variables:
 Naming_Convention.Default_Case_Sensitivity: (Off, On) = Off
@@ -619,9 +619,9 @@ Parameter(1): component
 
 For component:
 Parameter(2): <entity>|<category>
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 Parameter(3..): [not] in_variant | packed | sized | initialized | aligned (optional)
 ----
 Rule: REDUCEABLE_SCOPE
@@ -650,9 +650,9 @@ Parameter(s): [<category>] [global] [object] <specifiable attribute> |
                            no_bit_order_layout                       |
                            overlay
                            (optional)
-<category>: ()    | range   | mod    | delta     | digits |
-            array | record  | tagged | extension | access |
-            new   | private | task   | protected
+<category>: ()     | range  | mod     | delta     | digits    |
+            array  | record | tagged  | extension | interface |
+            access | new    | private | task      | protected
 ----
 Rule: RETURN_STATEMENTS
 Control number and depth of return statements
@@ -819,9 +819,9 @@ Parameter(2): <category>
 Parameter(3..): [not]  representation | pack | size |
                        component_size
                        (optional)
-<category>: ()    | range     | mod    | delta  | digits  |
-            array | record    | tagged | access | private |
-            task  | protected
+<category>: ()      | range  | mod       | delta     | digits |
+            array   | record | tagged    | interface | access |
+            private | task   | protected
 
 For index:
 Parameter(2): <entity>|<category>

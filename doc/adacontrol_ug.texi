@@ -4634,6 +4634,13 @@ check derivations (max_parents, 5);   -- error if more than 5 parents
 search derivations (max_parents, 3);  -- warning if more than 3 parents
 @end example
 
+@subsection Tip
+Since categories are checked only for the @i{parent} type, the control
+``@code{check derivations (from, interface);}'' controls only the case
+where the parent type is an interface. To check all types that
+implement any interface, add the control ``@code{check derivations
+(max_parents, 1);}", since progenitors are necessarily interfaces.
+
 @node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Derivations, Rules reference
 @section Directly_Accessed_Globals
 This rule checks that global variables in package bodies are accessed
@@ -10841,8 +10848,10 @@ Many rules can be parameterized with applicable types. A type name can generally
 rules also accept type categories. Each time a rule uses the syntactic term @code{<category>}, it
 refers to a type category defined by the following syntax:
 @example
-<category> ::= <>  | ()      | access    | array  | delta  | digits | extension | mod |
-               new | private | protected | range  | record | tagged | task
+<category> ::= <>       | ()        | access    | array  | delta  |
+              digits    | extension | interface | mod    | new    |
+              private   | protected | range     | record | tagged |
+              task
 @end example
 
 The category of types are defined as follows:
@@ -10863,6 +10872,8 @@ point types).
 ``digits'': any floating point type.
 @item
 ``extension'': any type extension (tagged derived type)
+@item
+``interface'': any interface type.
 @item
 ``mod'': any modular type.
 @item

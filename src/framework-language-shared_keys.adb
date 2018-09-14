@@ -271,6 +271,8 @@ package body Framework.Language.Shared_Keys is
             return "TAGGED";
          when An_Extended_Tagged_Type =>
             return "EXTENSION";
+         when An_Interface_Type =>
+            return "INTERFACE";
          when An_Access_Type =>
             return "ACCESS";
          when A_Derived_Type =>
@@ -373,6 +375,7 @@ package body Framework.Language.Shared_Keys is
          Thick_Queries.A_Record_Type                => Cat_Record,
          Thick_Queries.A_Tagged_Type                => Cat_Tagged,
          Thick_Queries.An_Extended_Tagged_Type      => Cat_Extension,
+         Thick_Queries.An_Interface_Type            => Cat_Interface,
          Thick_Queries.An_Access_Type               => Cat_Access,
          Thick_Queries.A_Derived_Type               => Cat_New,
          Thick_Queries.A_Private_Type               => Cat_Private,

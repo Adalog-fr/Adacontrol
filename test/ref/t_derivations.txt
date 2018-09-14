@@ -42,6 +42,7 @@ t_derivations-from.adb:57:15: Error: DERIVATIONS: Type derived from T_DERIVATION
 t_derivations-from.adb:57:15: Error: from Integer: Type derived from STANDARD.INTEGER
 t_derivations-from.adb:57:15: Found: DERIVATIONS: Type derived from category RANGE
 t_derivations-from.adb:62:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
+t_derivations-from.adb:62:16: Found: DERIVATIONS: Type derived from category INTERFACE
 t_derivations-from.adb:62:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I2
 t_derivations-from.adb:62:16: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-from.adb:63:16: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.I1
@@ -75,9 +76,11 @@ t_derivations-from.adb:78:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS
 t_derivations-from.adb:78:4: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-from.adb:88:18: Found: DERIVATIONS: Type derived from category PROTECTED
 t_derivations-from.adb:90:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
+t_derivations-max_parents.adb:7:15: Found: DERIVATIONS: Type derived from category INTERFACE
 t_derivations-max_parents.adb:8:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_parents.adb:9:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_parents.adb:9:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_parents.adb:10:15: Found: DERIVATIONS: Type derived from category INTERFACE
 t_derivations-max_parents.adb:10:15: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-max_parents.adb:11:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_parents.adb:11:15: Error: DERIVATIONS: More than 2 parents (3)

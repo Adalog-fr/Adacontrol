@@ -103,9 +103,9 @@ package Framework.Language.Shared_Keys is
    -----------------------------------------------------------------------------------
 
    type Categories is (Cat_Any,
-                       Cat_Enum,  Cat_Range,   Cat_Mod,    Cat_Delta,     Cat_Digits,
-                       Cat_Array, Cat_Record,  Cat_Tagged, Cat_Extension, Cat_Access,
-                       Cat_New,   Cat_Private, Cat_Task,   Cat_Protected);
+                       Cat_Enum,   Cat_Range,   Cat_Mod,     Cat_Delta,     Cat_Digits,
+                       Cat_Array,  Cat_Record,  Cat_Tagged,  Cat_Extension, Cat_Interface,
+                       Cat_Access, Cat_New,     Cat_Private, Cat_Task,      Cat_Protected);
    subtype Discrete_Categories is Categories range Cat_Enum  .. Cat_Mod;
    subtype Integer_Categories  is Categories range Cat_Range .. Cat_Mod;
    package Categories_Utilities is new Modifier_Utilities (Categories,
