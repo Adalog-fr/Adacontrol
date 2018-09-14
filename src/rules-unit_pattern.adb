@@ -633,9 +633,7 @@ package body Rules.Unit_Pattern is
                         when A_Null_Procedure_Declaration         -- Null procedure and expression function
                            | An_Expression_Function_Declaration
                            =>
-                           if Is_Equal (Part_Declarations (D),
-                                        Corresponding_Declaration (Part_Declarations (D)))
-                           then
+                           if Is_Nil (Corresponding_Declaration (Part_Declarations (D))) then
                               New_State := DG_Subprogram_Spec;
                            else
                               New_State := Placed_State (Part_Declarations (D), DG_Subprogram_Body);

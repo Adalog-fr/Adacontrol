@@ -16,7 +16,7 @@ t_unit_pattern-test_context_clauses_order.adb:9:1: Found: Clauses_Order: clause 
 t_unit_pattern-test_declarations_order.adb:126:4: Error: Subprogram_Order: Declaration out of order for Subprogram ("Package_Spec" found in state 5)
 t_unit_pattern-test_declarations_order.adb:25:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Number" found in state 4)
 t_unit_pattern-test_declarations_order.adb:26:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Private_Type" found in state 4)
-t_unit_pattern-test_declarations_order.adb:32:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Subprogram_Body" found in state 6)
+t_unit_pattern-test_declarations_order.adb:32:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Subprogram_Spec" found in state 6)
 t_unit_pattern-test_declarations_order.adb:34:7: Error: Package_Public_Order: Declaration out of order for Package_Public ("Exception" found in state 6)
 t_unit_pattern-test_declarations_order.adb:54:7: Error: Package_Private_Order: Declaration out of order for Package_Private ("Full_Type" found in state 3)
 t_unit_pattern-test_declarations_order.adb:84:10: Error: Package_Body_Order: Declaration out of order for Package_Body ("Own_Subprogram_Body" found in state 2)
