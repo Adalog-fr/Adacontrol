@@ -140,22 +140,28 @@ package Framework.Language is
       Empty_Set : constant Modifier_Set := (others => False);
       Full_Set  : constant Modifier_Set := (others => True);
 
-      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean; Expected : Modifier_Set);
+      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean; Expected : in Modifier_Set);
              -- with Pre => Expected /= Empty_Set;
       -- Gets a modifier from those allowed by Expected (if Found = True), unspecified otherwise
 
       function Get_Modifier (Required : Boolean;
                              Expected : Modifier_Set := Full_Set;
                              Default  : Modifiers    := Modifiers'First) return Modifiers;
-             -- with Pre => Expected /= Empty_Set;
+         -- with Pre => Expected /= Empty_Set;
       -- Gets a modifier from those allowed by Expected
       -- If Required and no modifier given, Syntax_Error
       -- If not Required and no modifier given, returns Default
 
       function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
 
-      function Get_Modifier_Set (No_Parameter : Boolean := False;
-                                 Expected     : Modifier_Set := Full_Set) return Modifier_Set;
+      type Modifier_Getter is access procedure (Modifier : out Modifier_Set;
+                                                Found    : out Boolean;
+                                                Expected : in  Modifier_Set);
+
+      function Get_Modifier_Set (No_Parameter : Boolean         := False;
+                                 Expected     : Modifier_Set    := Full_Set;
+                                 Getter       : Modifier_Getter := null)
+                                 return Modifier_Set;
              -- with Pre => Expected /= Empty_Set;
       -- If No_Parameter, there is no flag after the modifiers, at least one modifier
       -- required.

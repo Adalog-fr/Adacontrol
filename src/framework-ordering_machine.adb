@@ -33,10 +33,6 @@ package body Framework.Ordering_Machine is
    -- Add_State --
    ---------------
 
-   ---------------
-   -- Add_State --
-   ---------------
-
    procedure Add_State (Machine : in out Instance; Allowed : Token_Set) is
       use Framework.Language;
    begin

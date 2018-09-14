@@ -854,22 +854,24 @@ parameter(2..): list of with         | use    | use_type |
 For Declarations_Order:
 parameter(2): package_public | package_private | package_body |
               subprogram
-parameter(3..): list of use                   | use_type                 |
-                        use_all_type          | number                   |
-                        constant              | variable                 |
-                        private_type          | full_type                |
-                        subtype               | subprogram_spec          |
-                        package_spec          | generic_subprogram_spec  |
-                        generic_package_spec  | task_spec                |
-                        protected_spec        | subprogram_body          |
-                        package_body          | generic_subprogram_body  |
-                        generic_package_body  | task_body                |
-                        protected_body        | object_renaming          |
-                        subprogram_renaming   | package_renaming         |
-                        exception_renaming    | subprogram_instantiation |
-                        package_instantiation | exception                |
-                        others
-                        (separated by '|')
+parameter(3..): 
+   list of: {<place>} use                   | use_type                 |
+                      use_all_type          | number                   |
+                      constant              | variable                 |
+                      private_type          | full_type                |
+                      subtype               | subprogram_spec          |
+                      package_spec          | generic_subprogram_spec  |
+                      generic_package_spec  | task_spec                |
+                      protected_spec        | subprogram_body          |
+                      package_body          | generic_subprogram_body  |
+                      generic_package_body  | task_body                |
+                      protected_body        | object_renaming          |
+                      subprogram_renaming   | package_renaming         |
+                      exception_renaming    | subprogram_instantiation |
+                      package_instantiation | exception                |
+                      others
+                      (separated by '|')
+<place>: own | private | public
 ----
 Rule: UNNECESSARY_USE_CLAUSE
 Control use clauses that can be removed, moved, or changed to use type.

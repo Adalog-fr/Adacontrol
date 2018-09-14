@@ -1,6 +1,7 @@
 "Single_Tagged_Type"   : check  unit_pattern (single_tagged_type);
 "Tagged_Type_Hierarchy": check  unit_pattern (tagged_type_hierarchy);
 "Clauses_Order"        : search unit_pattern (context_clauses_order, with, use | use_type | use_all_type, pragma);
+
 "Subprogram_Order"     : check  unit_pattern (declarations_order, subprogram,      number,
                                                                                    full_type | subtype,
                                                                                    subprogram_spec | subprogram_body,
@@ -12,8 +13,19 @@
                                                                                    number,
                                                                                    private_type,
                                                                                    full_type | subtype,
-                                                                                   subprogram_spec,
-                                                                                   package_spec);
+                                                                                   subprogram_spec | generic_subprogram_spec,
+                                                                                   package_spec,
+                                                                                   task_spec);
 "Package_Private_Order" : check unit_pattern (declarations_order, package_private, full_type | subtype,
-                                                                                   constant,
-                                                                                   exception);
+                                                                                   constant | generic_subprogram_spec,
+                                                                                   exception,
+                                                                                   task_spec);
+
+"Package_Body_Order"    : check unit_pattern (declarations_order, package_body,    own            subprogram_body | own            package_body,
+                                                                                   public private subprogram_body | private public package_body,
+                                                                                   private generic_subprogram_body,
+                                                                                   public  generic_subprogram_body,
+                                                                                           task_spec,
+                                                                                   public  task_body,
+                                                                                   private task_body,
+                                                                                   others);

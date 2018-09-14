@@ -56,7 +56,7 @@ package Adactl_Constants is
    -- For rules that need an upper bound to the number of times they can
    -- be specified in a control
 
-   Max_Controls_Set : constant := 32;
+   Max_Controls_Set : constant := 50;
    -- As previous, but for rules that need a set (array of boolean) of controls
 
    Max_Parameters : constant := 30;

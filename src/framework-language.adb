@@ -1356,7 +1356,7 @@ package body Framework.Language is
    package body Modifier_Utilities is
       package Local_Utilities is new Common_Enumerated_Utilities (Modifiers, Prefix, Box_Pos, Pars_Pos);
 
-      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean; Expected : Modifier_Set) is
+      procedure Get_Modifier (Modifier : out Modifiers; Found : out Boolean; Expected : in Modifier_Set) is
       begin
          case Current_Token.Kind is
             when Name =>
@@ -1421,38 +1421,45 @@ package body Framework.Language is
          end if;
       end Get_Modifier;
 
-      function Get_Modifier_Set (No_Parameter : Boolean := False;
-                                 Expected     : Modifier_Set := Full_Set)
+      function Get_Modifier_Set (No_Parameter : Boolean         := False;
+                                 Expected     : Modifier_Set    := Full_Set;
+                                 Getter       : Modifier_Getter := null)
                                  return Modifier_Set
       is
-         Result   : Modifier_Set := Empty_Set;
-         Modifier : Modifiers;
-         Present  : Boolean;
+         Result         : Modifier_Set := Empty_Set;
+         Modifier       : Modifiers;
+         Next_Modifiers : Modifier_Set;
+         Present        : Boolean;
       begin
          if not In_Parameters then
             Failure ("Get_Modifier_Set called when not in parameters");
          end if;
 
-         Get_Modifier (Modifier, Present, Expected);
-         while Present loop
-            Result (Modifier) := True;
+         loop
+            if Getter = null then
+               Get_Modifier (Modifier, Present, Expected);
+               exit when not Present;
+               Result (Modifier) := True;
+            else
+               Getter (Next_Modifiers, Present, Expected);
+               exit when not Present;
+               Result := Result or Next_Modifiers;
+            end if;
+
             if No_Parameter then
                -- separating '|' required
                case Current_Token.Kind is
                   when Vertical_Bar =>
                      Next_Token;
-                     Get_Modifier (Modifier, Present, Expected);
-                     if not Present then
+                     if Current_Token.Kind /= Name then
                         Syntax_Error ("Keyword expected after '|'", Current_Token.Position);
                      end if;
                   when Name =>
                      -- This branch not strictly necessary, but gives a more user-friendly message
                      Syntax_Error ("'|' expected between keywords", Current_Token.Position);
                   when others =>
-                     Present := False;
+                     exit;
                end case;
-            else
-               Get_Modifier (Modifier, Present, Expected);
             end if;
          end loop;
 

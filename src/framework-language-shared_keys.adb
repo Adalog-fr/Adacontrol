@@ -116,10 +116,15 @@ package body Framework.Language.Shared_Keys is
    --------------------------
 
    procedure Help_On_Scope_Places (Header : Wide_String  := "";
-                                   Expected : Scope_Places_Utilities.Modifier_Set  := Scope_Places_Utilities.Full_Set)
+                                   Expected : Scope_Places_Utilities.Modifier_Set  := Scope_Places_Utilities.Full_Set;
+                                   With_Not : Boolean := True)
    is
    begin
-      Scope_Places_Utilities.Help_On_Modifiers (Header => Header & " [not]", Expected => Expected);
+      if With_Not then
+         Scope_Places_Utilities.Help_On_Modifiers (Header => Header & " [not]", Expected => Expected);
+      else
+         Scope_Places_Utilities.Help_On_Modifiers (Header => Header,            Expected => Expected);
+      end if;
    end Help_On_Scope_Places;
 
 

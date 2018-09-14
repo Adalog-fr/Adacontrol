@@ -9308,11 +9308,11 @@ elements declared in them.
 <control_kind> unit_pattern (Declarations_Order, <target>,
                              @{, <decl_list>@});
 
-<clause_list>      ::= <clause> @{| <clause>@}
-<clause>           ::= with | use | use_type | use_all_type | pragma
-<target>           ::= package_public | package_private | package_body |
-                       subprogram
-<decl_list>   ::= <declaration> @{| <declaration>@}
+<clause_list> ::= <clause> @{| <clause>@}
+<clause>      ::= with | use | use_type | use_all_type | pragma
+<target>      ::= package_public | package_private | package_body |
+                  subprogram
+<decl_list>   ::= @{<place>@} <declaration> @{| @{place>@} <declaration>@}
 <declaration> ::= use                   | use_type                 |
                   use_all_type          | number                   |
                   constant              | variable                 |
@@ -9328,6 +9328,7 @@ elements declared in them.
                   exception_renaming    | subprogram_instantiation |
                   package_instantiation | exception                |
                   others
+<place>       ::= own | public | private
 @end example
 
 @subsection Action
@@ -9372,6 +9373,12 @@ explicitely have no place, and thus are not allowed at all, unless
 ``others'' is given as the last parameter, in which case it covers all
 elements not part of any of the preceding parameters. See example
 below.
+
+Body declarations (those whose name ends withe ``_body'') can be
+preceded by one or several <place> keywords, in order to restrict the
+declaration to bodies whose corresponding specification is given in a
+visible part (``public''), in a private part (``private''), or
+anywhere else (``own'').
 @end itemize
 Ex:
 @example
@@ -9395,6 +9402,28 @@ check unit_pattern (declarations_order, package_public,
    full_type | constant | variable,
    subprogram_spec | generic_subprogram_spec | subprogram_instantiation,
    others);
+
+-- In a package body, declare subprogram and package specs after other
+-- declarations, followed by bodies, with bodies of exported
+-- units after bodies of local units (but no use clauses allowed)
+check unit_pattern (declarations_order, package_body,
+   number | constant | variable | full_type | subtype | exception |
+   exception_renaming | object_renaming,
+
+   subprogram_spec | generic_subprogram_spec | subprogram_renaming |
+   package_spec    | generic_package_spec    | package_renaming|
+   task_spec |
+   protected_spec |
+   subprogram_instantiation | package_instantiation,
+
+   own subprogram_body | own package_body |
+   own generic_subprogram_body | own generic_package_body  |
+   own task_body | own protected_body,
+
+   public private subprogram_body | public private package_body |
+   public private generic_subprogram_body |
+   public private generic_package_body |
+   public private task_body | public private protected_body);
 @end example
 
 @subsection Tips

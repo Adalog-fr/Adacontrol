@@ -34,6 +34,10 @@ simplifiable_statements:
 statements:
    add subrule goto_not_continue
 
+unit_pattern
+   subrule declarations_order: add modifiers to specify order of bodies
+      whose spec is given in the public/private/body part.
+
 unsafe_paired_calls:
    handle properly breaking statements
    add rule variable to follow (or not) renamings of P/V procedures

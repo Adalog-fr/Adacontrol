@@ -47,11 +47,14 @@ package Framework.Language.Shared_Keys is
 
    type Scope_Places is (S_All, S_Block,   S_Library, S_Local,
                          S_Own, S_Private, S_Public,  S_In_Generic, S_Task_Body);
+   subtype Visibility_Places is Scope_Places range S_Own .. S_Public;
+
    package Scope_Places_Utilities is new Modifier_Utilities (Scope_Places, "S_");
 
    type Places_Set is private;
    Everywhere : constant Places_Set;
    No_Places  : constant Places_Set;
+
    function Get_Places_Set_Modifiers (Rule_Id : Wide_String; Allow_All : Boolean := True) return Places_Set;
    function Is_Applicable (Expected_Places : Places_Set) return Boolean;
    -- Checks if Current_Scope matches all Scope_Places in Expected_Places
@@ -60,7 +63,8 @@ package Framework.Language.Shared_Keys is
                    Default : Places_Set := No_Places) return Wide_String;
 
    procedure Help_On_Scope_Places (Header   : Wide_String := "";
-                                   Expected : Scope_Places_Utilities.Modifier_Set  := Scope_Places_Utilities.Full_Set);
+                                   Expected : Scope_Places_Utilities.Modifier_Set  := Scope_Places_Utilities.Full_Set;
+                                   With_Not : Boolean := True);
 
    -----------------------------------------------------------------------------------
    -- Min_Max

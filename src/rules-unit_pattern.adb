@@ -40,6 +40,7 @@ with
 -- Adactl
 with
   Framework.Language,
+  Framework.Language.Shared_Keys,
   Framework.Ordering_Machine,
   Framework.Rules_Manager,
   Framework.Reports;
@@ -54,6 +55,13 @@ package body Rules.Unit_Pattern is
    -- Easy for Single_Tagged_Type, Tagged_Type_Hierarchy.
    -- Context_Clauses_Order and Declarations_Order simply need the state machine provided by
    -- Framework.Ordering_Machine.
+   --
+   -- For Declarations_Order, the *_body declarations are further split according to the place where the corresponding
+   -- spec is declared (public, private, own). In order to simplify syntax (for the user), there is a modifier to
+   -- specify the place, but internally each *_body comes in three flavours. The enumerations without the place is
+   -- used only for user syntax, the ones with the place are used internally (and not visible to the user). See the
+   -- declaration of type Declarations_Group.
+
 
    type Subrules is (Single_Tagged_Type, Tagged_Type_Hierarchy, Context_Clauses_Order, Declarations_Order);
    type Subrules_Set is array (Subrules) of Boolean;
@@ -92,31 +100,68 @@ package body Rules.Unit_Pattern is
 
    ---- Declarations for Declarations_Order
    --                    ******************
-   type Declarations_Group is (DG_Use,                      DG_Use_Type,      DG_Use_All_Type,
+   use Framework.Language.Shared_Keys;
+   type Declarations_Group is (DG_Use,                             DG_Use_Type,      DG_Use_All_Type,
 
-                               DG_Number,                   DG_Constant,      DG_Variable,
+                               DG_Number,                          DG_Constant,      DG_Variable,
 
-                               DG_Private_Type,             DG_Full_Type,     DG_Subtype,
+                               DG_Private_Type,                    DG_Full_Type,     DG_Subtype,
 
-                               DG_Subprogram_Spec,          DG_Package_Spec,
-                               DG_Generic_Subprogram_Spec,  DG_Generic_Package_Spec,
-                               DG_Task_Spec,                DG_Protected_Spec,
+                               DG_Subprogram_Spec,                 DG_Package_Spec,
+                               DG_Generic_Subprogram_Spec,         DG_Generic_Package_Spec,
+                               DG_Task_Spec,                       DG_Protected_Spec,
 
-                               DG_Subprogram_Body,          DG_Package_Body,
-                               DG_Generic_Subprogram_Body,  DG_Generic_Package_Body,
-                               DG_Task_Body,                DG_Protected_Body,
+                               DG_Subprogram_Body,                 DG_Package_Body,          -- Body_Declarations_Group
+                               DG_Generic_Subprogram_Body,         DG_Generic_Package_Body,
+                               DG_Task_Body,                       DG_Protected_Body,
 
-                               DG_Object_Renaming,          DG_Subprogram_Renaming,
-                               DG_Package_Renaming,         DG_Exception_Renaming,
+                               DG_Object_Renaming,                 DG_Subprogram_Renaming,
+                               DG_Package_Renaming,                DG_Exception_Renaming,
 
-                               DG_Subprogram_Instantiation, DG_Package_Instantiation,
+                               DG_Subprogram_Instantiation,        DG_Package_Instantiation,
 
                                DG_Exception,
 
-                               DG_Others);
+                               DG_Others,
+
+                               DG_Own_Subprogram_Body,             DG_Own_Package_Body,
+                               DG_Own_Generic_Subprogram_Body,     DG_Own_Generic_Package_Body,
+                               DG_Own_Task_Body,                   DG_Own_Protected_Body,
+
+                               DG_Private_Subprogram_Body,         DG_Private_Package_Body,
+                               DG_Private_Generic_Subprogram_Body, DG_Private_Generic_Package_Body,
+                               DG_Private_Task_Body,               DG_Private_Protected_Body,
+
+                               DG_Public_Subprogram_Body,          DG_Public_Package_Body,
+                               DG_Public_Generic_Subprogram_Body,  DG_Public_Generic_Package_Body,
+                               DG_Public_Task_Body,                DG_Public_Protected_Body
+                              );
+   subtype User_Declarations_Group is Declarations_Group range Declarations_Group'First .. DG_Others;
+   subtype Body_Declarations_Group is Declarations_Group range DG_Subprogram_Body       .. DG_Protected_Body;
+   DG_Placed_Mapping : constant array (Body_Declarations_Group, Visibility_Places) of Declarations_Group
+     := (DG_Subprogram_Body         => (S_Own     => DG_Own_Subprogram_Body,
+                                        S_Private => DG_Private_Subprogram_Body,
+                                        S_Public  => DG_Public_Subprogram_Body),
+         DG_Package_Body            => (S_Own     => DG_Own_Package_Body,
+                                        S_Private => DG_Private_Package_Body,
+                                        S_Public  => DG_Public_Package_Body),
+         DG_Generic_Subprogram_Body => (S_Own     => DG_Own_Generic_Subprogram_Body,
+                                        S_Private => DG_Private_Generic_Subprogram_Body,
+                                        S_Public  => DG_Public_Generic_Subprogram_Body),
+         DG_Generic_Package_Body    => (S_Own     => DG_Own_Generic_Package_Body,
+                                        S_Private => DG_Private_Generic_Package_Body,
+                                        S_Public  => DG_Public_Generic_Package_Body),
+         DG_Task_Body               => (S_Own     => DG_Own_Task_Body,
+                                        S_Private => DG_Private_Task_Body,
+                                        S_Public  => DG_Public_Task_Body),
+         DG_Protected_Body          => (S_Own     => DG_Own_Protected_Body,
+                                        S_Private => DG_Private_Protected_Body,
+                                        S_Public  => DG_Public_Protected_Body));
+
    package Declarations_Group_Utilities is new Framework.Language.Modifier_Utilities
                                                   (Modifiers => Declarations_Group,
                                                    Prefix    => "DG_");
+
    package Declarations_Ordering_Machine is new Framework.Ordering_Machine (Rule_Id,
                                                                             Declarations_Group,
                                                                             Declarations_Group_Utilities.Modifier_Set);
@@ -148,9 +193,53 @@ package body Rules.Unit_Pattern is
       User_Message;
       User_Message ("For Declarations_Order:");
       Parts_Flags_Utilities.Help_On_Flags ("parameter(2):");
-      Declarations_Group_Utilities.Help_On_Modifiers (Header => "parameter(3..): list of",
-                                                      Footer => "(separated by '|')");
+      User_Message ("parameter(3..): ");
+      Declarations_Group_Utilities.Help_On_Modifiers (Header   => "   list of: {<place>}",
+                                                      Footer   => "(separated by '|')",
+                                                      Expected => (User_Declarations_Group => True, others => False));
+      Help_On_Scope_Places (Header   => "<place>:",
+                            Expected => (Visibility_Places => True, others => False),
+                            With_Not => False);
    end Help;
+
+
+   ----------------------------
+   -- Extended_Syntax_Getter --
+   ----------------------------
+
+   -- This is used only by Add_Control, but accessibility rules require it to be global
+   procedure Extended_Syntax_Getter (Modifier : out Declarations_Group_Utilities.Modifier_Set;
+                                     Found    : out Boolean;
+                                     Expected : in  Declarations_Group_Utilities.Modifier_Set)
+   is
+      use Framework.Language, Scope_Places_Utilities, Declarations_Group_Utilities;
+      Visib : Scope_Places_Utilities.Modifier_Set := Get_Modifier_Set (Expected => (Visibility_Places => True,
+                                                                                    others            => False));
+      DG    : Declarations_Group;
+   begin
+      Get_Modifier (DG, Found => Found, Expected => Expected);
+      if not Found then
+         return;
+      end if;
+
+      Modifier := Declarations_Group_Utilities.Empty_Set;
+
+      if DG in Body_Declarations_Group then
+         if Visib = Scope_Places_Utilities.Empty_Set then
+            Visib := (Visibility_Places => True, others => False);
+         end if;
+         for V in Visibility_Places loop
+            Modifier (DG_Placed_Mapping (DG, V)) := Visib (V);
+         end loop;
+
+      else
+         if Visib /= Scope_Places_Utilities.Empty_Set then
+            Parameter_Error (Rule_Id, "places can be specified only for ""body"" declarations");
+         end if;
+         Modifier (DG) := True;
+      end if;
+   end Extended_Syntax_Getter;
+
 
    -----------------
    -- Add_Control --
@@ -161,6 +250,7 @@ package body Rules.Unit_Pattern is
 
       Subrule : Subrules;
       Part    : Unit_Parts;
+
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "This rule requires at least one parameter");
@@ -200,7 +290,10 @@ package body Rules.Unit_Pattern is
                Not_Specified : Modifier_Set := Full_Set;
             begin
                loop
-                  State := Get_Modifier_Set (No_Parameter => True);
+                  State  := Get_Modifier_Set (No_Parameter => True,
+                                              Expected     => (User_Declarations_Group => True, others => False),
+                                              Getter       => Extended_Syntax_Getter'Access);
+
                   if State (DG_Others) then
                      if (State and Modifier_Set'(DG_Others => False, others => True)) /= Empty_Set then
                         Parameter_Error (Rule_Id, """others"" must appear alone in parameter");
@@ -208,7 +301,7 @@ package body Rules.Unit_Pattern is
                      if Parameter_Exists then
                         Parameter_Error (Rule_Id, """others"" must appear as the last parameter");
                      end if;
-                     if Not_Specified /= Declarations_Group_Utilities.Empty_Set then
+                     if Not_Specified /= Empty_Set then
                         Add_State (Machine, Not_Specified);
                      end if;
                   else
@@ -414,17 +507,39 @@ package body Rules.Unit_Pattern is
       use Asis, Asis.Declarations, Asis.Elements;
       use Utilities;
 
-      -----------
-      -- Check --
-      -----------
-
       procedure Check (Part : Unit_Parts; Part_Declarations : Asis.Declaration_List) is
          use Framework.Reports, Declarations_Ordering_Machine, Declarations_Group_Utilities;
          use Thick_Queries;
          Context : Root_Context'Class := Control_Manager.Association (Contexts,
                                                                       Subrules'Wide_Image (Declarations_Order)
                                                                       & Unit_Parts'Wide_Image (Part));
-      begin
+
+         function Placed_State (Body_Decl  : Asis.Declaration;
+                                Body_State : Body_Declarations_Group)
+                                return Declarations_Group
+         is
+         -- Computes the real state, given a (user) body state and the current location
+            Decl      : constant Asis.Declaration := Corresponding_Declaration (Body_Decl);
+            Decl_Unit : Asis.Declaration;
+         begin
+            if Is_Nil (Decl) then
+               -- the (subprogram) body has no explicit specification
+               return DG_Placed_Mapping (Body_State, S_Own);
+            end if;
+
+            Decl_Unit := Enclosing_Element (Enclosing_Program_Unit (Decl));
+            if  not Is_Equal (Decl_Unit, Corresponding_Declaration (Unit)) then
+               return DG_Placed_Mapping (Body_State, S_Own);
+            end if;
+
+            if Is_Part_Of (Decl, Inside => Private_Part_Declarative_Items (Decl_Unit)) then
+               return DG_Placed_Mapping (Body_State, S_Private);
+            else
+               return DG_Placed_Mapping (Body_State, S_Public);
+            end if;
+         end Placed_State;
+
+      begin   -- Check
          if Context = No_Matching_Context then
             return;
          end if;
@@ -523,7 +638,7 @@ package body Rules.Unit_Pattern is
                            then
                               New_State := DG_Subprogram_Spec;
                            else
-                              New_State := DG_Subprogram_Body;
+                              New_State := Placed_State (Part_Declarations (D), DG_Subprogram_Body);
                            end if;
 
                         when A_Procedure_Body_Declaration         -- Bodies
@@ -533,26 +648,27 @@ package body Rules.Unit_Pattern is
                            | An_Entry_Body_Declaration
                            =>
                            if Is_Generic_Unit (Part_Declarations (D)) then
-                              New_State := DG_Generic_Subprogram_Body;
+                              New_State := Placed_State (Part_Declarations (D), DG_Generic_Subprogram_Body);
                            else
-                              New_State := DG_Subprogram_Body;
+                              New_State := Placed_State (Part_Declarations (D), DG_Subprogram_Body);
                            end if;
+
                         when A_Package_Body_Declaration
                            | A_Package_Body_Stub
                            =>
                            if Is_Generic_Unit (Part_Declarations (D)) then
-                              New_State := DG_Generic_Package_Body;
+                              New_State := Placed_State (Part_Declarations (D), DG_Generic_Package_Body);
                            else
-                              New_State := DG_Package_Body;
+                              New_State := Placed_State (Part_Declarations (D), DG_Package_Body);
                            end if;
                         when A_Task_Body_Declaration
                            | A_Task_Body_Stub
                            =>
-                           New_State := DG_Task_Body;
+                           New_State := Placed_State (Part_Declarations (D), DG_Task_Body);
                         when A_Protected_Body_Declaration
                            | A_Protected_Body_Stub
                            =>
-                           New_State := DG_Protected_Body;
+                           New_State := Placed_State (Part_Declarations (D), DG_Protected_Body);
 
                         when An_Object_Renaming_Declaration =>    -- Renamings
                            New_State := DG_Object_Renaming;
