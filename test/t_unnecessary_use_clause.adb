@@ -1,20 +1,20 @@
 with Ada.Text_IO;
-with System; use System;   -- Unused (case of declaration outside unit)
+with System; use System;         -- Unused: (case of declaration outside unit)
 with Ada.Strings;
 with Ada.Strings.Fixed;
 with T_unnecessary_use_clause.Gen;
 with T_Unnecessary_Use_Clause.Child;
 package body T_unnecessary_use_clause is
-   use Ada;                       -- OK, used next line
-   use Text_IO;                   -- Unused
+   use Ada;                      -- OK, used next line
+   use Text_IO;                  -- Only used  for operators (in separate body)
    package Pack1 is
-      use Ada.Text_Io; -- Used in body, in scope of outer clause
+      use Ada.Text_Io;           -- Nested: In scope of outer clause, Movable: can be moved to body
       procedure Proc;
    end Pack1;
 
-   use Ada.Strings.Fixed; -- Used in Sep
+   use Ada.Strings.Fixed;        -- Used in Sep
    procedure Sep is separate;
-   use Ada.Strings.Fixed; -- Already given, unused
+   use Ada.Strings.Fixed;        -- Nested: In scope of outer clause, Unused: unused
 
    package body Pack1 is
       procedure Proc is begin null; end;
@@ -22,7 +22,7 @@ package body T_unnecessary_use_clause is
       Put_Line ("Hello world");
    end Pack1;
 
-   use Pack1;  -- Use needed for instantiation
+   use Pack1;                    -- OK, use needed for instantiation
    package Inst is new Gen;
 
    package Pack2 is
@@ -30,15 +30,15 @@ package body T_unnecessary_use_clause is
    end Pack2;
    package body Pack2 is
       procedure Proc2 is
-        use Pack2;          -- Use inside nested unit, unused
+         use Pack2;              -- Nested: Used inside nested unit, Unused: unused
       begin
          null;
       end;
    end Pack2;
 
-   use Pack2; --Use needed for formal package below
+   use Pack2;                    -- OK, use needed for formal package below
    generic
-     with package Formal is new Gen (Proc2);
+      with package Formal is new Gen (Proc2);
    package Gen2 is
    end Gen2;
 
@@ -46,27 +46,33 @@ package body T_unnecessary_use_clause is
       type Int is new Integer;
    end Pack3;
 
-   use Pack3;
+   use Pack3;                    -- Operator: Only used for operators
    V : Pack3.Int;
 
    package Pack4 is
       X : Integer;
    end Pack4;
-   use Pack4;    -- Only qualified usage
+   use Pack4;                    -- Qualified: Only qualified usage
 
+   -- Check use clause in generic formal part
    package Pack5 is
       type Int is range 1 .. 10;
    end Pack5;
-   generic             -- Check use clause in generic formal part
-      use Pack5;       -- Unnecessary
-   procedure P (X : Integer);
-   pragma Import (C, P); -- Even when completed by import!
 
-   use T_Unnecessary_Use_Clause;  -- Same package, unused
+   generic
+      use Pack5;                 -- Unused: unused
+   procedure P (X : Integer);
+   pragma Import (C, P);         -- Even when completed by import!
+
+   use T_Unnecessary_Use_Clause; -- Nested: Same package, Unused: unused
+
+   package Use_Type is
+   end Use_Type;
+   package body Use_Type is separate;
 
 begin
    declare
-      use Ada.Strings; -- Unused
+      use Ada.Strings;           -- Unused: unused
    begin
       V := V + 1;
       Pack4.X := Pack4.X + 1;

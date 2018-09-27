@@ -874,9 +874,10 @@ parameter(3..):
 <place>: own | private | public
 ----
 Rule: UNNECESSARY_USE_CLAUSE
-Control use clauses that can be removed, moved, or changed to use type.
+Control use clauses that can be removed, moved, or changed to use [all] type.
 
-Parameter(s): unused | qualified | operator | nested | movable
+Parameter(s): unused  | qualified | operator | primitive | nested |
+              movable
 ----
 Rule: UNSAFE_ELABORATION
 Controls elaboration code of (generic) packages that may cause elaboration issues

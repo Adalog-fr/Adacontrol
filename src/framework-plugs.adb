@@ -778,6 +778,8 @@ package body Framework.Plugs is
             case Clause_Kind (Element) is
                when A_Use_Package_Clause =>
                   Rules.Unnecessary_Use_Clause. Process_Use_Clause (Element);
+               when A_Use_Type_Clause | A_Use_All_Type_Clause =>
+                  Rules.Unnecessary_Use_Clause. Process_Use_Clause (Element);
                when others =>
                   null;
             end case;

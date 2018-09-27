@@ -1,3 +1,8 @@
 with Text_IO, Ada.Strings.Unbounded, Ada.Numerics;
 use Text_IO, Ada.Strings.Unbounded; -- use for Text_IO can be moved to body, Numerics not used
-procedure X_Unnecessary_Use_Clause (S : Unbounded_String);
+package  X_Unnecessary_Use_Clause is
+   type Int_1 is range 1 .. 10;
+   function "+" (L, R : Int_1) return Int_1;
+
+   procedure Put_Line (S : Unbounded_String);
+end X_Unnecessary_Use_Clause;

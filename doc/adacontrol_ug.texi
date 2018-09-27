@@ -9492,69 +9492,82 @@ on the main program.
 
 @node Unnecessary_Use_Clause, Unsafe_Elaboration, Units, Rules reference
 @section Unnecessary_Use_Clause
-This rule controls @code{@b{use}} clauses that do not serve any
-purpose.
+This rule controls @code{@b{use}} clauses (all three kinds) that do
+not serve any purpose, could be moved, or reduced to a more specific
+one.
 
 @subsection Syntax
 @example
 <control_kind> unnecessary_use_clause [(<subrule> @{,<subrule>@})];
-<subrule> ::= unused | qualified | operator | nested | movable
+<subrule> ::= unused | qualified | operator | primitive | nested | movable
 @end example
 
 @subsection Action
-The rule controls  @code{@b{use}} clauses that can safely be removed,
-moved, or changed to a @code{@b{use type}} clause. This happens in the
-following cases:
+The rule controls @code{@b{use}} clauses (including @code{@b{use
+type}} and @code{@b{use all type}} clauses) that can safely be removed,
+moved, or changed to a @code{@b{use type}} or  @code{@b{use all type}}
+clause. The subrules define which cases are controlled; if no subrule
+is given, all cases are controlled.
 @itemize
 @item
 ``unused'': a @code{@b{use}} clause is given, but no element from the
-corresponding package is mentionned in its scope. The message starts
-with ``unused:''.
+corresponding package is used within the scope of the
+clause. Similarly, for @code{@b{use type}} and  @code{@b{use all
+type}} clauses, no primitive operator (respectively operation) is used
+within the scope of the clause. The message starts with ``Unused:''.
 
-In this case, the @code{@b{use}} clause can safely be removed.
+In this case, the clause can safely be removed.
 @item
-``qualified'': a @code{@b{use}} clause is given, but all elements from the
-corresponding package are refered to using a qualified name
-(i.e. prefixed by the name of the package). The message starts with
-``all uses qualified:''.
+``qualified'': a @code{@b{use}} clause is given, but all elements from
+the corresponding package are refered to using a qualified name
+(i.e. prefixed by the name of the package).  Similarly, for
+@code{@b{use type}} and  @code{@b{use all type}} clauses, all uses of
+primitive operators (respectively operations) use a qualified
+name. The message starts with ``Qualified:''.
 
 In this case, the @code{@b{use}} clause can safely be removed, but you
 may want to keep it for documentation purposes, since the package is
-actually used within this scope.
+actually used within its scope.
 @item
-``operator'': a @code{@b{use}} clause is given, but the only elements
-that do not use a qualified name are operators. The message starts
-with ``only used for operators:''.
+``operator'': a @code{@b{use}} clause or @code{@b{use all type}}
+clause is given, but the only elements within its scope that do not
+use a qualified name are primitive operators. The message starts with
+``Operator:''.
 
-In this case, and except for some pathological cases (definition of
-operators that are not primitive operations of the corresponding
-type), the @code{@b{use}} clause can be replaced by one or several
-@code{@b{use type}} clause(s).
+In this case, the @code{@b{use}} or @code{@b{use all type}} clause can
+be replaced by one or several @code{@b{use type}} clause(s).
 @item
-``nested'': a @code{@b{use}} clause is given within the scope of an
-enclosing @code{@b{use}} clause for the same package, or in a child
-unit for some ancestor, or inside its own package. The message tells
-the location of the other @code{@b{use}} clause or the ancestor.
+``primitive'': a @code{@b{use}} clause is given, but the only elements
+within its scope that do not use a qualified name are primitive
+operations (including operators, enumeration literals,
+subprograms...). The message starts with ``only used for
+primitives:''. The message starts with ``Primitive:''
 
-If you also have a message that the outer @code{@b{use}} clause is
-unnecessary, this means that all references to the package appear
-inside the inner @code{@b{use}} clauses, and that the outer one can be
-removed. If not, you can either remove the inner @code{@b{use}}
-clauses, or remove the outer one and add more local @code{@b{use}}
-clauses where necessary.
+In this case, the @code{@b{use}} clause can be replaced by one or
+several @code{@b{use all type}} clause(s).
+@item
+``nested'': a @code{@b{use}}, @code{@b{use type}}, or @code{@b{use all
+type}} clause is given within the scope of an enclosing
+@code{@b{use}}, @code{@b{use type}}, or @code{@b{use all type}} clause
+for the same package (or types declared in the same package), or in a
+child unit for some ancestor, or inside its own package. The message
+tells the location of the other @code{@b{use}} clause or the
+ancestor. The message starts with ``Nested:''
+
+In this case, it is possible that some clauses may be removed, but
+which ones depends on the structure of your program - there might even
+be several acceptable combinations.
 @item
 ``movable'': a @code{@b{use}} clause is given in a package
 specification, but all uses are from the corresponding body. The
-message starts with ``use clause can be moved to body:''.
+message starts with ``Movable: ''.
 
-In this case, the @code{@b{use}} clause can safely be moved to the
+In this c ase, the @code{@b{use}} clause can safely be moved to the
 body, unless it appears in a library package, and there are
 unqualified references to its elements from child units.
 @end itemize
 
-If no parameter is given, all cases are controlled, otherwise only
-cases corresponding to the specified keyword(s) are controlled. This
-rule can be given only once for each value of  the parameters.
+This rule can be given only once for each subrule.
 
 Ex:
 @example
@@ -9562,10 +9575,16 @@ remove: search unnecessary_use_clause (unused);
 use_type: check unnecessary_use_clause (operator);
 @end example
 
-@subsection Tip
+@subsection Tips
 This rule checks only usage of @code{@b{use}} clauses. The rule
 ``reduceable_scope'' can be used to check that @code{@b{use}} clauses
 do not span unnecessarily to wide a scope. @xref{Reduceable_Scope}.
+
+A @code{@b{use type}} or  @code{@b{use all type}} clause that mentions
+a type that is not declared in a package specification is always
+useless, since it occurs necessarily within the scope of the type,
+where all its primitive operations are visible.  This is mentionned in
+the message (subrule ``nested'').
 
 @subsection Limitations
 There are some rare cases where the rule may signal that a

@@ -30,7 +30,8 @@ with
   Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Text;
 
 -- Adalog
 with
@@ -49,27 +50,30 @@ package body Rules.Unnecessary_Use_Clause is
    use Framework, Framework.Control_Manager, Utilities;
 
    -- Algorithm:
-   -- We use a Scoped_Store to maintain a list of used packages. For each package, we
-   -- keep the Full_Name_Image of the package, and the original name (for the purpose
-   -- of the message).
+   -- We use a Scoped_Store to maintain a list of active use clauses. In case of multiple elements
+   -- in the clause, there is one entry for each element.
    --
-   -- When we encounter a use clause, we check if the package is already in some scope.
-   -- if yes => use clause within scope of use clause.
+   -- When we encounter a use clause, we check if the clause is already in the scope of
+   -- some other clause for the same package (including f.e. a use type clause in the scope
+   -- of a use clause for the package where the type is declared).
    --
-   -- When we encounter an identifier, we take the Full_Name_Image of the package that
-   -- encloses *immediately* its declaration (see below in Process_Identifier for a proof
-   -- of why it works).
-   -- If it matches a package in store, that package is used, and marked depending on
-   -- the kind of usage (from operator, from qualified name, or plain identifier).
+   -- When we encounter an identifier, we consider only those declared *immediately* within a
+   -- package declaration (see below in Process_Identifier for a proof of why it works).
+   -- We check all enclosing use clauses:
+   --   - for a use package: if it matches the package in store, that package is used, and marked
+   --     depending on the kind of usage (from operator, from primitive operation, from qualified name,
+   --     or plain identifier).
+   --   - for a use [all] type: we do the same, considering the package where the type is declared
+   -- In addition, if the clause is marked "nothing" and its Current_Origin is Specification
+   -- (which implies we are now in the corresponding body), the clause is marked as movable to the
+   -- body. The message will be printed at scope exit, in order to not print it if the clause is unused.
    --
    -- When we exit a scope, any remaining package for that scope which is still marked
    -- as "Nothing" has not been used, otherwise the mark tells the kind of usage that
    -- governs the message.
-   --
-   -- Note that the rule does its best for calls of operators made visible by use clauses,
-   -- but it is very tricky in some cases.
 
-   type Subrules is (Unused, Qualified, Operator, Nested, Movable);
+
+   type Subrules is (Unused, Qualified, Operator, Primitive, Nested, Movable);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
 
    type Subrules_Set is array (Subrules) of Boolean;
@@ -78,16 +82,31 @@ package body Rules.Unnecessary_Use_Clause is
    Save_Used : Subrules_Set;
    Ctl_Contexts  : array (Subrules) of Basic_Rule_Context;
 
-   type User_Kind is (Nothing, Qualified_Name, Operator, Identifier);
-   type Package_Info (Name_Length : Positive) is
+                                       -- Elements used within the scope of a use [[all] type] clause:
+   type User_Kind is (Nothing,         -- No element from package or no primitive of type (clause is useless)
+                      Qualified_Name,  -- Only elements that use a fully qualified notation (clause is useless)
+                      Operator,        -- Only primitive operators, use package and use all type changeable to use type
+                      Primitive,       -- Only primitive operations, use package can changeable to use all type
+                      Identifier);     -- Other elements);
+   type Used_Elem_Info (Name_Length : Positive; Spec_Length : Natural) is
       record
-         Use_Clause      : Asis.Element;
-         Position        : Asis.List_Index;
-         Name            : Wide_String (1..Name_Length);  -- Full name image of ultimate identifier
-         Original_Name   : Asis.Element;
-         User            : User_Kind;
+         Use_Clause      : Asis.Element;                       -- The original use clause
+         Elem            : Asis.Element;                       -- The package or type name inside the use clause
+         Position        : Asis.List_Index;                    -- Index of Elem inside the use clause
+         Name            : Wide_String (1 .. Name_Length);     -- Full name image of ultimate identifier
+         Spec_Name       : Wide_String (1 .. Spec_Length);     -- Full_Name_Image of package where the type is defined
+                                                               -- "" if not defined in a package spec, or use package
+         User            : User_Kind;                          -- How the package/type is used
+         Spec_Unused     : Boolean := False;                   -- True after entering a body if User=Nothing from spec
       end record;
-   package Used_Packages is new Scope_Manager.Scoped_Store (Package_Info);
+
+   -- Spec name is the name of the package specification where the type Elem is declared.
+   -- It is empty if Elem is not a type (use package clause) or if the type is not declared
+   -- immediately within a package spec (use type clause).
+   package Used_Elements is new Scope_Manager.Scoped_Store (Used_Elem_Info);
+
+   -- Useful subtype for case statements dealing only with use clauses:
+   subtype Use_Clause_Kinds is Asis.Clause_Kinds range Asis.A_Use_Package_Clause .. Asis.A_Use_All_Type_Clause;
 
    ----------
    -- Help --
@@ -97,7 +116,7 @@ package body Rules.Unnecessary_Use_Clause is
       use Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control use clauses that can be removed, moved, or changed to use type.");
+      User_Message ("Control use clauses that can be removed, moved, or changed to use [all] type.");
       User_Message;
       Help_On_Flags ("Parameter(s):");
    end Help;
@@ -124,7 +143,7 @@ package body Rules.Unnecessary_Use_Clause is
          Parameter_Error (Rule_Id, "rule already specified");
       else
          Ctl_Contexts := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
-         Rule_Used := (others => True);
+         Rule_Used    := (others => True);
       end if;
    end Add_Control;
 
@@ -154,17 +173,110 @@ package body Rules.Unnecessary_Use_Clause is
    procedure Prepare is
    begin
       if Rule_Used /= (Subrules => False) then
-         Used_Packages.Activate;
+         Used_Elements.Activate;
       end if;
    end Prepare;
+
+   ---------------------
+   -- Clause_And_Name --
+   ---------------------
+
+   function Clause_And_Name (Info : Used_Elem_Info) return Wide_String is
+      use Asis, Asis.Elements;
+      use Thick_Queries;
+   begin
+      case Use_Clause_Kinds (Clause_Kind (Info.Use_Clause)) is
+         when A_Use_Package_Clause =>
+            return """use"" clause for " & Extended_Name_Image (Info.Elem);
+         when A_Use_Type_Clause =>
+            return """use type"" clause for " & Extended_Name_Image (Info.Elem);
+         when A_Use_All_Type_Clause =>
+            return """use all type"" clause for " & Extended_Name_Image (Info.Elem);
+      end case;
+   end Clause_And_Name;
+
+   -------------------------
+   -- Is_Use_Type_Visible --
+   -------------------------
+
+   function Is_Use_Type_Visible (The_Type : Asis.Element; The_Callable : Asis.Element) return Boolean is
+   -- Use [all] type clauses make a little bit more than primitive operations visible, see 8.4(8)
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
+   begin
+      if Attribute_Kind (Simple_Name (The_Type)) = A_Class_Attribute
+        and then Is_Primitive_Of (Prefix (The_Type), The_Callable)
+      then
+         return True;
+      elsif Is_Primitive_Of (The_Type, The_Callable) then
+         return True;
+      end if;
+
+      return False;
+   end Is_Use_Type_Visible;
 
    ------------------------
    -- Process_Use_Clause --
    ------------------------
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
-      use Asis.Clauses, Asis.Compilation_Units, Asis.Elements;
-      use Framework.Reports, Scope_Manager, Thick_Queries;
+      use Asis, Asis.Clauses, Asis.Compilation_Units, Asis.Elements;
+      use Thick_Queries;
+
+      function Build_Info (The_Names : Asis.Element_List; Inx : Asis.List_Index) return Used_Elem_Info is
+         Name_Elem : Asis.Element renames The_Names (Inx);
+      begin
+         case Use_Clause_Kinds (Clause_Kind (Clause)) is
+            when A_Use_Package_Clause =>
+               declare
+                  Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Name_Elem)));
+               begin
+                  return (Name_Length => Name_String'Length,
+                          Spec_Length => 0,
+                          Use_Clause  => Clause,
+                          Elem        => Name_Elem,
+                          Position    => Inx,
+                          Name        => Name_String,
+                          Spec_Name   => "",
+                          User        => Nothing,
+                          Spec_Unused => False);
+               end;
+            when A_Use_Type_Clause | A_Use_All_Type_Clause =>
+               declare
+                  use Asis.Declarations, Asis.Expressions;
+                  Type_Unit : constant Asis.Defining_Name := Enclosing_Program_Unit
+                                                              (Corresponding_First_Subtype
+                                                               (Corresponding_Name_Declaration
+                                                                (Simple_Name
+                                                                 (Strip_Attributes (Name_Elem)))));
+
+                  Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Name_Elem)));
+                  Spec_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Type_Unit)));
+               begin
+                  if Declaration_Kind (Enclosing_Element (Type_Unit)) = A_Package_Declaration then
+                     return (Name_Length => Name_String'Length,
+                             Spec_Length => Spec_String'Length,
+                             Use_Clause  => Clause,
+                             Elem        => Name_Elem,
+                             Position    => Inx,
+                             Name        => Name_String,
+                             Spec_Name   => Spec_String,
+                             User        => Nothing,
+                             Spec_Unused => False);
+                  else  -- We are necessarily in the scope of the type => no need for use [all] type clause
+                     return (Name_Length => Name_String'Length,
+                             Spec_Length => 0,
+                             Use_Clause  => Clause,
+                             Elem        => Name_Elem,
+                             Position    => Inx,
+                             Name        => Name_String,
+                             Spec_Name   => "",
+                             User        => Nothing,
+                             Spec_Unused => False);
+                  end if;
+               end;
+         end case;
+      end Build_Info;
 
    begin  -- Process_Use_Clause
       if Rule_Used = Not_Used then
@@ -173,82 +285,130 @@ package body Rules.Unnecessary_Use_Clause is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Names : constant Asis.Name_List := Clause_Names (Clause);
+         Names     : constant Asis.Name_List        := Clause_Names (Clause);
          This_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Clause);
       begin
          for I in Names'Range loop
-            -- Check if ancestor
-            if Is_Ancestor (Definition_Compilation_Unit (Names (I)), This_Unit, Strict => True) then
-               if Rule_Used (Nested) then
-                  Report (Rule_Id,
-                          Ctl_Contexts (Nested),
-                          Get_Location (Clause),
-                          "use clause for " & Extended_Name_Image (Names (I))
-                          & " in descendant unit "
-                          & Unit_Full_Name (This_Unit));
-                  Fixes.List_Remove (I, From => Clause);
-               end if;
-            else
-               declare
-                  Name_String  : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Names (I))));
-                  Enclosing_PU : constant Asis.Defining_Name := Enclosing_Program_Unit (Clause);
-                  Reported     : Boolean := False;
-               begin
-                  -- Checks if use clause inside the named package (or one of its nested units)
-                  -- Enclosing_PU is nil if use clause in context clauses
-                  if not Is_Nil (Enclosing_PU) and Rule_Used (Nested) then
+            declare
+               use Scope_Manager, Framework.Reports;
+               Info : constant Used_Elem_Info := Build_Info (Names, I);
+            begin
+               if Clause_Kind (Clause) in A_Use_Type_Clause | A_Use_All_Type_Clause
+                 and then Info.Spec_Length = 0
+               then
+                  if Rule_Used (Nested) then
+                     Report (Rule_Id,
+                             Ctl_Contexts (Nested),
+                             Get_Location (Names (I)),
+                             "Nested: " & Clause_And_Name (Info)
+                             & ", type not declared in package specification");
+                     Fixes.List_Remove (I, From => Clause);
+                  end if;
+
+               -- Check if ancestor
+               elsif Is_Ancestor (Definition_Compilation_Unit (Strip_Attributes (Names (I))),
+                                  This_Unit,
+                                  Strict => True)
+               then
+                  if Rule_Used (Nested) then
+                     Report (Rule_Id,
+                             Ctl_Contexts (Nested),
+                             Get_Location (Names (I)),
+                             "Nested: " & "use clause for " & Extended_Name_Image (Names (I))
+                             & " in child unit "            & Unit_Full_Name (This_Unit));
+                     Fixes.List_Remove (I, From => Clause);
+                  end if;
+
+               else
+                  if Rule_Used (Nested) then
                      declare
-                        Enclosing_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_PU));
+                        Enclosing_PU : constant Asis.Defining_Name := Enclosing_Program_Unit (Clause);
+                        Reported     : Boolean := False;
                      begin
-                        if Name_String = Enclosing_Name then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Nested),
-                                   Get_Location (Clause),
-                                   "use clause for " & Extended_Name_Image (Names (I))
-                                   & " inside same package");
-                           Reported := True;
-                           Fixes.List_Remove (I, From => Clause);
-                        elsif Starts_With (Enclosing_Name, Name_String & '.') then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Nested),
-                                   Get_Location (Clause),
-                                   "use clause for " & Extended_Name_Image (Names (I))
-                                   & " inside nested unit " & Extended_Name_Image (Enclosing_PU));
-                           Reported := True;
-                           Fixes.List_Remove (I, From => Clause);
+                        -- Checks if use clause inside the named package (or one of its nested units)
+                        -- Enclosing_PU is nil if use clause in context clauses
+                        if not Is_Nil (Enclosing_PU) then
+                           declare
+                              Enclosing_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_PU));
+                           begin
+                              if Info.Name = Enclosing_Name then
+                                 Report (Rule_Id,
+                                         Ctl_Contexts (Nested),
+                                         Get_Location (Names(I)),
+                                         "Nested: use clause for " & Extended_Name_Image (Names (I))
+                                         & " inside same package");
+                                 Reported := True;
+                                 Fixes.List_Remove (I, From => Clause);
+                              elsif Starts_With (Enclosing_Name, Info.Name & '.') then
+                                 Report (Rule_Id,
+                                         Ctl_Contexts (Nested),
+                                         Get_Location (Names(I)),
+                                         "Nested: use clause for " & Extended_Name_Image (Names (I))
+                                         & " inside nested unit " & Extended_Name_Image (Enclosing_PU));
+                                 Reported := True;
+                                 Fixes.List_Remove (I, From => Clause);
+                              end if;
+                           end;
+                        end if;
+
+                        -- Check if already there
+                        if not Reported then
+                           Used_Elements.Reset (All_Scopes);
+                           while Used_Elements.Data_Available loop
+                              if Used_Elements.Current_Data.Name = Info.Name then
+                                 case Use_Clause_Kinds (Clause_Kind (Clause)) is
+                                    when A_Use_Package_Clause =>
+                                       Report (Rule_Id,
+                                               Ctl_Contexts (Nested),
+                                               Get_Location (Info.Elem),
+                                               "Nested: " & Clause_And_Name (Info)
+                                               & " in scope of use clause for same package at "
+                                               & Image (Get_Location (Used_Elements.Current_Data.Elem)));
+                                       Fixes.List_Remove (I, From => Clause);
+                                    when A_Use_Type_Clause =>
+                                       Report (Rule_Id,
+                                               Ctl_Contexts (Nested),
+                                               Get_Location (Info.Elem),
+                                               "Nested: " & Clause_And_Name (Info)
+                                               & " in scope of use type or use all type clause for same type at "
+                                               & Image (Get_Location (Used_Elements.Current_Data.Elem)));
+                                       Fixes.List_Remove (I, From => Clause);
+                                    when A_Use_All_Type_Clause =>
+                                       -- A use all type clause can make sense in the scope of a use or use type clause
+                                       if Clause_Kind (Used_Elements.Current_Data.Use_Clause) /= A_Use_Type_Clause then
+                                          Report (Rule_Id,
+                                                  Ctl_Contexts (Nested),
+                                                  Get_Location (Info.Elem),
+                                                  "Nested: " & Clause_And_Name (Info)
+                                                  & " in scope of use all type clause for same type at "
+                                                  & Image (Get_Location (Used_Elements.Current_Data.Elem)));
+                                       end if;
+                                       Fixes.List_Remove (I, From => Clause);
+                                 end case;
+
+                              elsif Info.Spec_Length /= 0 and then Used_Elements.Current_Data.Name = Info.Spec_Name then
+                                 Report (Rule_Id,
+                                         Ctl_Contexts (Nested),
+                                         Get_Location (Info.Elem),
+                                         "Nested: " & Clause_And_Name (Info)
+                                         & " in scope of use clause for " & Info.Spec_Name
+                                         & " at " & Image (Get_Location (Used_Elements.Current_Data.Elem)));
+                                 Fixes.List_Remove (I, From => Clause);
+                              end if;
+
+                              Used_Elements.Next;
+                           end loop;
                         end if;
                      end;
                   end if;
 
-                  -- Check if already there
-                  if not Reported then
-                     Used_Packages.Reset (All_Scopes);
-                     while Used_Packages.Data_Available loop
-                        if Used_Packages.Current_Data.Name = Name_String then
-                           if Rule_Used (Nested) then
-                              Report (Rule_Id,
-                                      Ctl_Contexts (Nested),
-                                      Get_Location (Clause),
-                                      "use clause for " & Extended_Name_Image (Names (I))
-                                      & " in scope of use clause for same package at "
-                                      & Image (Get_Location (Used_Packages.Current_Data.Use_Clause)));
-                              Fixes.List_Remove (I, From => Clause);
-                           end if;
-                        end if;
-
-                        Used_Packages.Next;
-                     end loop;
-                  end if;
-
                   -- Add it in any case
-                  Used_Packages.Push ((Name_Length   => Name_String'Length,
-                                       Use_Clause    => Clause,
-                                       Position      => I,
-                                       Name          => Name_String,
-                                          Original_Name => Names (I),
-                                          User          => Nothing));
-               end;
-            end if;
+                  -- Note that we DON'T add it in the other paths of the enclosing if statement, because
+                  -- they are cases where the use clause doesn't add any visibility (elements are directly
+                  -- visible anyway), therefore it is not useful to have further messages.
+                  Used_Elements.Push (Info);
+               end if;
+            end;
          end loop;
       end;
    end Process_Use_Clause;
@@ -263,6 +423,8 @@ package body Rules.Unnecessary_Use_Clause is
    --
    -- Proof:
    -- 1) Use clauses apply only to packages
+   --    Use type and use all type clauses have no effect to types not declared in a package, since those have no
+   --    primitive operations
    -- 2) An entity can be declared inside another entity in a package spec, but
    --    then it is declared:
    --    2.a) in another package: it will be found recursively
@@ -278,12 +440,10 @@ package body Rules.Unnecessary_Use_Clause is
    -- Q.E.D.
 
    procedure Process_Identifier (Name : in Asis.Name) is
-      use Asis, Asis.Elements;
-      use Framework.Reports, Framework.Queries, Thick_Queries;
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Queries, Thick_Queries;
 
       function Is_Name_Prefixed_With (Pack_Name : Wide_String) return Boolean is
-         use Asis.Expressions;
-
          Name_Enclosing : constant Asis.Element := Enclosing_Element (Name);
       begin
          if Expression_Kind (Name_Enclosing) /= A_Selected_Component then
@@ -316,34 +476,78 @@ package body Rules.Unnecessary_Use_Clause is
             return;
          end if;
 
-         Used_Packages.Reset (All_Scopes);
-         while Used_Packages.Data_Available loop
+         Used_Elements.Reset (All_Scopes);
+         while Used_Elements.Data_Available loop
             declare
-               Info : Package_Info := Used_Packages.Current_Data;
+               Info      : Used_Elem_Info       := Used_Elements.Current_Data;
+               Pack_Name : constant Wide_String := (if Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause
+                                                    then Info.Name
+                                                    else Info.Spec_Name);
+               Current_User : User_Kind := Info.User; -- Default: don't change it
             begin
-               if Enclosing_Name = Info.Name then
-                  if Info.User = Nothing and Used_Packages.Current_Origin = Specification then
-                     if Rule_Used (Movable) then
-                        Report (Rule_Id,
-                                Ctl_Contexts (Movable),
-                                Get_Location (Info.Use_Clause),
-                                "use clause for "
-                                & Extended_Name_Image (Info.Original_Name)
-                                & " can be moved to body");
+               if Info.User /= Identifier         -- If already Identifier, no need to check lesser priority uses
+                 and Pack_Name = Enclosing_Name   -- Entity declared in same package
+               then
+                  if Rule_Used (Movable)
+                    and then (Info.User = Nothing and Used_Elements.Current_Origin = Specification)
+                  then
+                     Info.Spec_Unused := True;
+                  end if;
+
+                  if Is_Name_Prefixed_With (Pack_Name) then
+                     case Use_Clause_Kinds (Clause_Kind (Info.Use_Clause)) is
+                        when A_Use_Package_Clause =>
+                           Current_User := Qualified_Name;
+                        when A_Use_Type_Clause =>
+                           if Is_Callable_Construct (Name)
+                             and then Is_Use_Type_Visible (Info.Elem, Name)
+                             and then Expression_Kind (Name) = An_Operator_Symbol
+                           then
+                              Current_User := Qualified_Name;
+                           else
+                              Current_User := Info.User;
+                           end if;
+                        when A_Use_All_Type_Clause =>
+                           if Is_Callable_Construct (Name)
+                             and then Is_Use_Type_Visible (Info.Elem, Name)
+                             and then Expression_Kind (Name) = An_Operator_Symbol
+                           then
+                              Current_User := Qualified_Name;
+                           else
+                              Current_User := Info.User;
+                           end if;
+                     end case;
+
+                  elsif Clause_Kind (Info.Use_Clause) in A_Use_Type_Clause | A_Use_All_Type_Clause then
+                     if Is_Callable_Construct (Name) and then Is_Use_Type_Visible (Info.Elem, Name) then
+                        if Expression_Kind (Name) = An_Operator_Symbol then
+                           Current_User := Operator;
+                        else
+                           Current_User := Primitive;
+                        end if;
+                     end if;
+
+                  else  -- A_Use_Package_Clause
+                     Current_User := Identifier; -- Default if not more specific found
+                     if Is_Callable_Construct (Name) then
+                        -- Check if primitive of some type declared in the package
+                        for T : Asis.Declaration of Corresponding_Primitive_Types (Name) loop
+                           if Is_Equal (Enclosing_Element (T),
+                                        Corresponding_Name_Declaration (Simple_Name (Info.Elem)))
+                           then
+                              if Expression_Kind (Name) = An_Operator_Symbol then
+                                 Current_User := Operator;
+                              else
+                                 Current_User := Primitive;
+                              end if;
+                           end if;
+                        end loop;
                      end if;
                   end if;
-                  if Is_Name_Prefixed_With (Info.Name) then
-                     Info.User := User_Kind'Max (Qualified_Name, Info.User);
-                  elsif Expression_Kind (Name) = An_Operator_Symbol then
-                     Info.User := User_Kind'Max (Operator, Info.User);
-                  else
-                     Info.User := Identifier;
-                  end if;
-                  Used_Packages.Update_Current (Info);
-                  exit;
+                  Info.User := User_Kind'Max (Current_User, Info.User);
+                  Used_Elements.Update_Current (Info);
                end if;
-
-               Used_Packages.Next;
+               Used_Elements.Next;
             end;
          end loop;
       end;
@@ -393,7 +597,8 @@ package body Rules.Unnecessary_Use_Clause is
 
       Is_Package_Spec : Boolean := False;
       Is_Package_Body : Boolean := False;
-   begin
+
+   begin  -- Process_Scope_Exit
       if Rule_Used = Not_Used then
          return;
       end if;
@@ -437,23 +642,31 @@ package body Rules.Unnecessary_Use_Clause is
             null;
       end case;
 
-      Used_Packages.Reset (Current_Scope_Only);
-      while Used_Packages.Data_Available loop
+      Used_Elements.Reset (Current_Scope_Only);
+      while Used_Elements.Data_Available loop
          declare
-            Info          : constant Package_Info := Used_Packages.Current_Data;
+            Info          : constant Used_Elem_Info := Used_Elements.Current_Data;
             Child_Warning : constant Boolean :=  Current_Depth = 1
                                                  and (Is_Package_Spec
                                                       or (Is_Package_Body
-                                                          and Used_Packages.Current_Origin = Specification));
+                                                          and Used_Elements.Current_Origin = Specification));
+            use Asis.Text, Fixes;
          begin
-            if Used_Packages.Current_Origin /= Parent then
+            if Used_Elements.Current_Origin /= Parent then
+               if Info.User /= Nothing and Info.Spec_Unused and Rule_Used (Movable) then
+                  Report (Rule_Id,
+                          Ctl_Contexts (Movable),
+                          Get_Location (Info.Elem),
+                          "Movable: " & Clause_And_Name (Info) & " can be moved to body");
+               end if;
+
                case Info.User is
                   when Nothing =>
                      if Rule_Used (Unused) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Unused),
-                                Get_Location (Info.Use_Clause),
-                                "unused use clause for " & Extended_Name_Image (Info.Original_Name)
+                                Get_Location (Info.Elem),
+                                "Unused: " & Clause_And_Name (Info)
                                 & Choose (Child_Warning,
                                           " (possible usage in child units)",
                                           ""));
@@ -463,24 +676,41 @@ package body Rules.Unnecessary_Use_Clause is
                      if Rule_Used (Qualified) then
                         Report (Rule_Id,
                                 Ctl_Contexts (Qualified),
-                                Get_Location (Info.Use_Clause),
-                                "all uses of " & Extended_Name_Image (Info.Original_Name) & " are qualified"
+                                Get_Location (Info.Elem),
+                                "Qualified: all uses of " & Extended_Name_Image (Info.Elem) & " are qualified"
                                  & Choose (Child_Warning,
                                            " (possible usage in child units)",
                                            ""));
                         Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
                      end if;
                   when Operator =>
-                     if Rule_Used (Operator) then
+                     if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
                         Report (Rule_Id,
                                 Ctl_Contexts (Operator),
-                                Get_Location (Info.Use_Clause),
-                                "use clause for "
-                                & Extended_Name_Image (Info.Original_Name)
-                                & " only used for operators"
+                                Get_Location (Info.Elem),
+                                "Operator: " & Clause_And_Name (Info) & " only used for operators"
                                 & Choose (Child_Warning,
                                           " (possible usage in child units)",
-                                          ""));
+                                  ""));
+                        if Clause_Kind (Info.Use_Clause) = A_Use_All_Type_Clause then
+                           -- Too complicated to fix for a use package clause, several types could be used
+                           -- (and we don't know which ones)
+                           Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
+                           Fixes.Insert (Indentation_Of (Info.Use_Clause) & "use type "
+                                          & Trim_All (Element_Image (Info.Elem)) & ";",
+                                         After, Info.Use_Clause,
+                                         Full_Line => True);
+                        end if;
+                     end if;
+                  when Primitive =>
+                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) /= A_Use_All_Type_Clause then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Operator),
+                                Get_Location (Info.Elem),
+                                "Primitive: " & Clause_And_Name (Info) & " only used for primitive operations"
+                                & Choose (Child_Warning,
+                                  " (possible usage in child units)",
+                                  ""));
                      end if;
                   when Identifier =>
                      null;
@@ -488,7 +718,7 @@ package body Rules.Unnecessary_Use_Clause is
             end if;
          end;
 
-         Used_Packages.Next;
+         Used_Elements.Next;
       end loop;
 
    end Process_Scope_Exit;

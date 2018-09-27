@@ -1,33 +1,80 @@
-t_unnecessary_use_clause.adb:11:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io in scope of use clause for same package at t_unnecessary_use_clause.adb:9:4
+t_unnecessary_use_clause.adb:11:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Ada.Text_Io in scope of use clause for same package at t_unnecessary_use_clause.adb:9:8
 t_unnecessary_use_clause.adb:11:7: Delete:11:22
-t_unnecessary_use_clause.adb:17:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Strings.Fixed in scope of use clause for same package at t_unnecessary_use_clause.adb:15:4
+t_unnecessary_use_clause-sep.adb:2:5: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Numerics.Complex_Types
+t_unnecessary_use_clause-sep.adb:2:1: Delete:2:31
+t_unnecessary_use_clause.adb:17:8: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Ada.Strings.Fixed in scope of use clause for same package at t_unnecessary_use_clause.adb:15:8
 t_unnecessary_use_clause.adb:17:4: Delete:17:25
-t_unnecessary_use_clause.adb:11:7: Error: UNNECESSARY_USE_CLAUSE: use clause for Ada.Text_Io can be moved to body
-t_unnecessary_use_clause.adb:33:9: Error: UNNECESSARY_USE_CLAUSE: use clause for Pack2 inside nested unit Proc2
-t_unnecessary_use_clause.adb:33:9: Delete:33:18
-t_unnecessary_use_clause.adb:33:9: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Pack2
-t_unnecessary_use_clause.adb:33:9: Delete:33:18
-t_unnecessary_use_clause.adb:61:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Pack5
-t_unnecessary_use_clause.adb:61:7: Delete:61:16
-t_unnecessary_use_clause.adb:65:4: Error: UNNECESSARY_USE_CLAUSE: use clause for T_Unnecessary_Use_Clause inside same package
-t_unnecessary_use_clause.adb:65:4: Delete:65:32
-t_unnecessary_use_clause.adb:69:7: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings
-t_unnecessary_use_clause.adb:69:7: Delete:69:22
-t_unnecessary_use_clause.adb:65:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for T_Unnecessary_Use_Clause
-t_unnecessary_use_clause.adb:65:4: Delete:65:32
-t_unnecessary_use_clause.adb:55:4: Error: UNNECESSARY_USE_CLAUSE: all uses of Pack4 are qualified
+t_unnecessary_use_clause.adb:11:11: Error: UNNECESSARY_USE_CLAUSE: Movable: "use" clause for Ada.Text_Io can be moved to body
+t_unnecessary_use_clause.adb:33:14: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for Pack2 inside nested unit Proc2
+t_unnecessary_use_clause.adb:33:10: Delete:33:19
+t_unnecessary_use_clause.adb:33:14: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack2
+t_unnecessary_use_clause.adb:33:10: Delete:33:19
+t_unnecessary_use_clause.adb:63:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack5
+t_unnecessary_use_clause.adb:63:7: Delete:63:16
+t_unnecessary_use_clause.adb:67:8: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for T_Unnecessary_Use_Clause inside same package
+t_unnecessary_use_clause.adb:67:4: Delete:67:32
+t_unnecessary_use_clause-use_type.adb:4:13: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Ada.Text_IO.Count in scope of use clause for ADA.TEXT_IO at t_unnecessary_use_clause.adb:9:8
+t_unnecessary_use_clause-use_type.adb:4:4: Delete:4:30
+t_unnecessary_use_clause-use_type.adb:8:16: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for X_Unnecessary_Use_Clause.Int_1 in scope of use type or use all type clause for same type at t_unnecessary_use_clause-use_type.adb:5:13
+t_unnecessary_use_clause-use_type.adb:8:7: Delete:8:46
+t_unnecessary_use_clause-use_type.adb:11:16: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Local_Int1, type not declared in package specification
+t_unnecessary_use_clause-use_type.adb:11:7: Delete:11:26
+t_unnecessary_use_clause-use_type.adb:14:20: Error: UNNECESSARY_USE_CLAUSE: Nested: "use all type" clause for Local_Int2, type not declared in package specification
+t_unnecessary_use_clause-use_type.adb:14:7: Delete:14:30
+t_unnecessary_use_clause-use_type.adb:27:19: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Local_Sub, type not declared in package specification
+t_unnecessary_use_clause-use_type.adb:27:10: Delete:27:28
+t_unnecessary_use_clause-use_type.adb:39:19: Error: UNNECESSARY_USE_CLAUSE: Movable: "use type" clause for Pack1.Int1 can be moved to body
+t_unnecessary_use_clause-use_type.adb:51:19: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Der2, type not declared in package specification
+t_unnecessary_use_clause-use_type.adb:51:10: Delete:51:23
+t_unnecessary_use_clause-use_type.adb:65:19: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of Pack2.Der1 are qualified
+t_unnecessary_use_clause-use_type.adb:65:10: Delete:65:29
+t_unnecessary_use_clause-use_type.adb:79:19: Error: UNNECESSARY_USE_CLAUSE: Unused: "use type" clause for Pack2.Sub_Der1
+t_unnecessary_use_clause-use_type.adb:79:10: Delete:79:33
+t_unnecessary_use_clause-use_type.adb:89:14: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 only used for primitive operations
+t_unnecessary_use_clause-use_type.adb:96:35: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Pack1.Int2 only used for operators
+t_unnecessary_use_clause-use_type.adb:96:33: Delete:96:44
+t_unnecessary_use_clause-use_type.adb:96:46: Insert
+!
+!         use type Pack1.Int2;
+!
+t_unnecessary_use_clause-use_type.adb:96:23: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Pack1.Int1 only used for operators
+t_unnecessary_use_clause-use_type.adb:96:23: Delete:96:34
+t_unnecessary_use_clause-use_type.adb:96:46: Insert
+!
+!         use type Pack1.Int1;
+!
+t_unnecessary_use_clause-use_type.adb:106:23: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Pack1.Int2 only used for operators
+t_unnecessary_use_clause-use_type.adb:106:10: Delete:106:33
+t_unnecessary_use_clause-use_type.adb:106:34: Insert
+!
+!         use type Pack1.Int2;
+!
+t_unnecessary_use_clause-use_type.adb:105:23: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Pack1.Int1 only used for operators
+t_unnecessary_use_clause-use_type.adb:105:10: Delete:105:33
+t_unnecessary_use_clause-use_type.adb:105:34: Insert
+!
+!         use type Pack1.Int1;
+!
+t_unnecessary_use_clause-use_type.adb:115:14: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 only used for operators
+t_unnecessary_use_clause-use_type.adb:8:16: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
+t_unnecessary_use_clause-use_type.adb:8:7: Delete:8:46
+t_unnecessary_use_clause-use_type.adb:5:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
+t_unnecessary_use_clause-use_type.adb:5:4: Delete:5:43
+t_unnecessary_use_clause.adb:75:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings
+t_unnecessary_use_clause.adb:75:7: Delete:75:22
+t_unnecessary_use_clause.adb:67:8: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for T_Unnecessary_Use_Clause
+t_unnecessary_use_clause.adb:67:4: Delete:67:32
+t_unnecessary_use_clause.adb:55:8: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of Pack4 are qualified
 t_unnecessary_use_clause.adb:55:4: Delete:55:13
-t_unnecessary_use_clause.adb:49:4: Error: UNNECESSARY_USE_CLAUSE: use clause for Pack3 only used for operators
-t_unnecessary_use_clause.adb:17:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Strings.Fixed
+t_unnecessary_use_clause.adb:49:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack3 only used for operators
+t_unnecessary_use_clause.adb:17:8: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings.Fixed
 t_unnecessary_use_clause.adb:17:4: Delete:17:25
-t_unnecessary_use_clause.adb:9:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Text_IO
-t_unnecessary_use_clause.adb:9:4: Delete:9:15
-t_unnecessary_use_clause.adb:2:14: Error: UNNECESSARY_USE_CLAUSE: unused use clause for System
+t_unnecessary_use_clause.adb:2:18: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for System
 t_unnecessary_use_clause.adb:2:14: Delete:2:24
-t_unnecessary_use_clause.ads:3:4: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.Command_Line (possible usage in child units)
+t_unnecessary_use_clause.ads:3:8: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Command_Line (possible usage in child units)
 t_unnecessary_use_clause.ads:3:8: Delete:3:25
-x_unnecessary_use_clause.ads:2:1: Error: UNNECESSARY_USE_CLAUSE: use clause for Text_IO can be moved to body
-x_unnecessary_use_clause.ads:2:1: Error: UNNECESSARY_USE_CLAUSE: unused use clause for Ada.numerics
+x_unnecessary_use_clause.ads:2:37: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.numerics (possible usage in child units)
 x_unnecessary_use_clause.ads:2:35: Delete:2:48
-t_unnecessary_use_clause-child.ads:2:4: Error: UNNECESSARY_USE_CLAUSE: use clause for T_Unnecessary_Use_Clause in descendant unit T_Unnecessary_Use_Clause.Child
+x_unnecessary_use_clause.ads:2:5: Error: UNNECESSARY_USE_CLAUSE: Movable: "use" clause for Text_IO can be moved to body
+t_unnecessary_use_clause-child.ads:2:8: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for T_Unnecessary_Use_Clause in child unit T_Unnecessary_Use_Clause.Child
 t_unnecessary_use_clause-child.ads:2:4: Delete:2:32
