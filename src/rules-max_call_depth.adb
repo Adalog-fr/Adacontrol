@@ -38,6 +38,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Binary_Map,
   Thick_Queries,
   Utilities;
@@ -599,7 +600,14 @@ package body Rules.Max_Call_Depth is
                | A_Procedure_Instantiation
                | A_Function_Instantiation
                =>
-               Called_Body := Corresponding_Body (Called_Body);
+               begin
+                  Called_Body := Corresponding_Body (Called_Body);
+               exception
+                  when Asis.Exceptions.ASIS_Inappropriate_Element =>
+                     A4G_Bugs.Trace_Bug ("Max_Call_Depth: call of SP from formal package");
+                     Result := (Unavailable, 0);
+                     exit;
+               end;
 
             when A_Null_Procedure_Declaration =>
                Result := (Regular, 0);

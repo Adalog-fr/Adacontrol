@@ -334,7 +334,13 @@ package body Rules.Global_References is
                if Declaration_Kind (Called.Declaration)
                   not in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration
                then
-                  Check_Body (Corresponding_Body (Called.Declaration));
+                  begin
+                     Check_Body (Corresponding_Body (Called.Declaration));
+                  exception
+                     when Asis.Exceptions.ASIS_Inappropriate_Element =>
+                     -- ASIS bug: the subprogram is declared within a formal package
+                       A4G_Bugs.Trace_Bug ("Global_References: call of SP from formal package");
+                  end;
                end if;
             when An_Enumeration_Literal | A_Predefined_Entity_Call | An_Attribute_Call =>
                null;
