@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.20b3
+@settitle AdaControl User Guide V1.20r4
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -45,7 +45,7 @@ how to add new kinds of rules to AdaControl.
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2017 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2018 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
 2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog.
@@ -68,7 +68,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2017
+This document is Copyright @copyright{} 2005-2018
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -335,9 +335,10 @@ Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International C
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with GNAT version GPL 2017, as distributed
-by AdaCore. If you are using any other version,  please use the source
-distribution of AdaControl and compile it as indicated below.
+AdaControl will work only with GNAT version Community Edition 2018, as
+distributed by AdaCore. If you are using any other version,  please
+use the source distribution of AdaControl and compile it as indicated
+below.
 
 Another reason for using the source distribution of AdaControl is that
 the user may not be interested in all provided rules. It is very easy
@@ -355,7 +356,7 @@ speed. @xref{Customizing AdaControl}.
 @section Building and installing AdaControl from source
 This section is only for the source distribution of AdaControl. If you
 downloaded an executable distribution (and are using the latest
-version of GNAT GPL), you may skip to the next section.
+version of GNAT Community Edition), you may skip to the next section.
 
 @anchor{Getting the correct version of the sources for your Gnat version}
 @subsection Getting the correct version of the sources for your Gnat version
@@ -537,10 +538,10 @@ the following issues:
 @item
 You are using an old version of GNAT.  AdaControl runs without any
 known problem (and it has been checked against the whole ACATS) only
-with the latest GNATPro and GNATGPL versions; earlier versions are
-known to have bugs and unimplemented features that will not allow
-AdaControl to run correctly in some cases. We strongly recommend to
-always use the most recent version of GNAT.
+with the latest GNATPro and GNAT Community Edition versions; earlier
+versions are known to have bugs and unimplemented features that will
+not allow AdaControl to run correctly in some cases. We strongly
+recommend to always use the most recent version of GNAT.
 @item
 You run an old-gnat version of AdaControl with GNATPro (6.1.2 and
 above) and you forgot to specify the ``-XGNAT_FIX=1''
@@ -660,10 +661,10 @@ adactl [-deEirsTuvwx]
 
 AdaControl can process all versions of Ada, up to Ada-2012. If you are
 using Ada-2005 (or Ada-2012) features, make sure that GNAT is set up
-for Ada-2005/2012 (this is the default for GNAT-GPL). Due to technical
-reasons, the -gnat05 or -gnat12 option cannot be passed to the
-compiler in ``compile on the fly'' mode, but you can do any of the
-following:
+for Ada-2005/2012 (this is the default for GNAT Community
+Edition). Due to technical reasons, the -gnat05 or -gnat12 option
+cannot be passed to the compiler in ``compile on the fly'' mode, but
+you can do any of the following:
 @itemize
 @item
 have a ``gnat.adc'' file in the current directory that contains a
@@ -678,10 +679,11 @@ this allows you to pass any other GNAT option as well.
 @end itemize
 
 Note that if your program is pure Ada-95 and you are using a version
-of GNAT where Ada-2005 is the default (especially GNAT-GPL), and in
-the rare cases where your program would not compile in Ada-2005 mode
-(notably if you have a function that returns a task type), you can
-force Ada-95 the same way by using @code{@b{pragma} Ada_95} instead.
+of GNAT where Ada-2005 or above is the default (especially GNAT
+Community Edition), and in the rare cases where your program would not
+compile in Ada-2005 mode (notably if you have a function that returns
+a task type), you can force Ada-95 the same way by using
+@code{@b{pragma} Ada_95} instead.
 
 @menu
 * Command line parameters and options::
@@ -3563,8 +3565,10 @@ statement.  It is intended for cases where it is desired to limit the
 complexity of @code{@b{case}} statements.
 @subsection Syntax
 @example
-<control_kind> Case_Statement ([<category>] <subrule>, <bound> [, <bound>]);
-<subrule> ::= others_span | paths | range_span | values | values_if_others
+<control_kind> Case_Statement ([<category>] <subrule>, <bound>
+                               [, <bound>]);
+<subrule> ::= others_span      | paths | range_span | values | 
+              values_if_others
 <bound>   ::= min | max <value>
 @end example
 
@@ -5303,7 +5307,7 @@ Ex:
 search expressions (real_equality, slice);
 check  expressions (mixed_operators);
 
--- Find logical operators that could be replaced by short-circuits forms:
+-- Find logical operators that could be replaced by short-circuits:
 check expressions (and_boolean, or_boolean);
 
 -- Find all conversions between integer and floating point types
@@ -6543,7 +6547,8 @@ refering to.
 @example
 <control_kind> naming_convention
    ([root] [others] @{<location>@} [<type_spec>] <filter_kind>,
-    [case_sensitive|case_insensitive] [not] "<pattern>"|file "<pattern_file>"
+    [case_sensitive|case_insensitive] [not] "<pattern>" |
+                                            file "<pattern_file>"
     @{, ...@});
 <location>  ::= global | local | unit
 <type_spec> ::= <entity> | @{<category>@}
@@ -6787,15 +6792,15 @@ A set of patterns corresponding to a given control can be given in a file.
 The syntax is the same as for regular patterns, and the patterns must be given
 as strings (enclosed in double quotes (@code{"})).
 
-As a matter of simplification, if a pattern does not contain any wildcard character,
-it can be given as an identifier (without quotes): in this case, it matches
-only the corresponding identifier as a whole.
+As a matter of simplification, if a pattern does not contain any
+wildcard character, it can be given as an identifier (without quotes):
+in this case, it matches only the corresponding identifier as a whole.
 
 Example:
 @example
    "abc"   -- A pattern string, matches any identifier containing "abc"
-   abc     -- An identifier, matches any identifier which is exactly "abc"
-           -- same as "^abc$"
+   abc     -- An identifier, matches any identifier which is exactly 
+           -- "abc" (same as "^abc$")
 @end example
 
 It is possible to put several pattern strings or identifiers on the same line,
@@ -7293,8 +7298,8 @@ for all callable entities (i.e. functions, procedures and entries).
 
 @subsection Syntax
 @example
-<control_kind> parameter_declarations ([no_inout] <subrule> [,<bounds>]
-                                                           @{,<callable>@});
+<control_kind> parameter_declarations ([no_inout] <subrule>
+                                       [,<bounds>] @{,<callable>@});
 <subrule>  ::= all_parameters       | in_parameters         |
                defaulted_parameters | out_parameters        |
                in_out_parameters    | access_parameters     |
@@ -7409,11 +7414,11 @@ named associations) in all kinds of associations.
 
 @subsection Syntax
 @example
-<control_kind> positional_associations [(<subrule>, <max_allowed>
-                                         [, <assoc_kind> @{, <entity>@}])];
+<control_kind> positional_associations 
+   [(<subrule>, <max_allowed> [, <assoc_kind> @{, <entity>@}])];
 <subrule>    ::= all | all_positional | declared | same_type
-<assoc_kind> ::= [not_operator] call | discriminant     | pragma        |
-                 array_aggregate     | record_aggregate | instantiation |
+<assoc_kind> ::= [not_operator] call | discriminant    | pragma        |
+                 record_aggregate    | array_aggregate | instantiation |
                  enumeration_representation
 @end example
 
@@ -9499,7 +9504,8 @@ one.
 @subsection Syntax
 @example
 <control_kind> unnecessary_use_clause [(<subrule> @{,<subrule>@})];
-<subrule> ::= unused | qualified | operator | primitive | nested | movable
+<subrule> ::= unused | qualified | operator | primitive | nested | 
+              movable
 @end example
 
 @subsection Action

@@ -876,7 +876,7 @@ package body Framework.Language is
                                    return Asis.ASIS_Integer
    is
       use Thick_Queries;
-      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
+      use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause ## Gela-ASIS compatibility
       Result : constant Biggest_Int := Get_Integer_Parameter;
    begin
       if Result not in Biggest_Int (Min) .. Biggest_Int (Max) then

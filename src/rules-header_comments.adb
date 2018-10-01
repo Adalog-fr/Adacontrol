@@ -368,7 +368,7 @@ package body Rules.Header_Comments is
 
    procedure Enter_Unit is
       use Ada.Wide_Text_IO;
-      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
+      use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause ## Gela-ASIS compatibility
    begin
       if not Rule_Used then
          return;

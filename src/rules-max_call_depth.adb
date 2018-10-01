@@ -700,7 +700,7 @@ package body Rules.Max_Call_Depth is
          end case;
       end Do_Report;
 
-      use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
+      use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause ## Gela-ASIS compatibility
    begin  -- Process_Call
       if not Rule_Used then
          return;

@@ -1023,7 +1023,7 @@ Rules:
    Usage                           Use_Clauses                     
    With_Clauses                    
 
-ADACTL v. 1.20b3 
+ADACTL v. 1.20r4 
 ----
 Copyright (C) 2004-2018 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.

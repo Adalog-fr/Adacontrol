@@ -1,12 +1,20 @@
 =============
-== V1.20b3 ==
+== V1.20r4 ==
 =============
 
 General:
 --------
+Misc. improvements to GPS integration
+All options not set on the command line now taken from project file (if any)
+Add command rule_file_off
 Output format defaults to CSV if an output file is given whose
-extension is ".csv"
+  extension is ".csv"
+Made Ada2012 default for tests. Adapted to allow tests to run with
+  Gnat Community 2018 without Ada95 compatibility mode.
 
+Categories:
+-----------
+Unify handling of categories, factorize descriptions in User's Guide.
 Add new category: interface
 
 New rule:
@@ -16,10 +24,14 @@ return_statements
 Changes to existing rules:
 --------------------------
 case_statement:
+   add subrule enumeration_range_span
    add optional categories to each subrule
 
 declarations
    add option to ignore declarations whose name matches a pattern
+
+derivations:
+   fix missing case of private extensions
 
 naming_convention
    patterns and identifiers can be read from a file
@@ -34,14 +46,19 @@ simplifiable_statements:
    add subrules for_for_slice, unnecessary_if
 
 statements:
+   add subrules null_case_path, null_if_path, null_loop_body
    add subrule goto_not_continue
+   do not control unnamed loops whose size is less than indicated
+     by the variable Small_Loop_Length
 
 unit_pattern:
    subrule declarations_order: add modifiers to specify order of bodies
       whose spec is given in the public/private/body part.
 
 unnecessary_use_clause:
-   new subrule "primitive", handle all cases of "use all type" clauses
+   recognize case of use clause within its own package
+   add subrule "primitive", handle all cases of "use all type" clauses,
+   add fixes
 
 unsafe_paired_calls:
    handle properly breaking statements
@@ -52,48 +69,6 @@ usage:
    add location from_task_guard
    add fixes generation for subrules variable, in_out_parameter
 
-=============
-== V1.20b2 ==
-=============
-
-General:
---------
-Made Ada2012 default for tests. Adapted to allow tests to run with
-Gnat Community 2018 without Ada95 compatibility mode.
-
-Changes to existing rules:
---------------------------
-statements:
-   do not control unnamed loops whose size is less than indicated
-   by the variable Small_Loop_Length
-
-=============
-== V1.20b1 ==
-=============
-
-General:
---------
-Misc. improvements to GPS integration
-All options not set on the command line now taken from project file (if any)
-New command rule_file_off
-
-Categories:
------------
-Unify handling of categories, factorize descriptions in User's Guide.
-
-Changes to existing rules:
---------------------------
-case_statement:
-   add subrule enumeration_range_span
-
-derivations:
-   fix missing case of private extensions
-
-statements
-   add subrules null_case_path, null_if_path, null_loop_body
-
-unnecessary_use_clause
-   recognize case of use clause within its own package
 
 ==============
 == V1.19r10 ==
