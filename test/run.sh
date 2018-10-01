@@ -90,7 +90,7 @@ put_title_line
 put_title_line "`${ADACTL} -h version 2>&1 | tr -d \\\\r`"
 put_title_line "($EXECUTABLE)"
 put_title_line
-if [ $SUPPORT95 == 1 ] ; then
+if [ $SUPPORT95 = 1 ] ; then
     put_title_line "VALIDATION WITH ADA 95 SUPPORT"
 else
     put_title_line "VALIDATION WITHOUT ADA 95 SUPPORT"
@@ -211,7 +211,7 @@ if [ $SPEEDUP = 0 ] ; then
     test_case=tfw_stress
     nb_fw=$((nb_fw+1))
     list=`find ./ -maxdepth 1 '(' -name "t_*.adb" -or -name "ts_*.adb" -or -name "tfw_*.adb" -or -name "x_*.ads" -or -name "x_*.adb" -or -name "*-*" ')' -printf "%P "`
-    if [ $SUPPORT95 == 1 ] ; then
+    if [ $SUPPORT95 = 1 ] ; then
         list="$list t95_*.adb"
     fi
     export ADACTLINI="set timing global;"
@@ -247,7 +247,7 @@ fi
 put_line "--- Rules tests"
 
 list=`find ./ -maxdepth 1 -name "t_*.adb" ! -name "*-*" -printf "%P "`
-if [ $SUPPORT95 == 1 ] ; then
+if [ $SUPPORT95 = 1 ] ; then
     list="$list t95_*.adb"
 fi
 nb_rules=0
@@ -281,7 +281,7 @@ if  [ $SPEEDUP = 1 ] ; then
 else
     list=`find ref \( -name "t_*.txt" -o -name "tfw_*.txt" -o -name "ts_*.txt" \) -printf "%P "`
 fi
-if [ $SUPPORT95 == 1 ] ; then
+if [ $SUPPORT95 = 1 ] ; then
     cd ref
     list=`echo $list t95_*.txt`
     cd ..

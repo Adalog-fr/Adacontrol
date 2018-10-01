@@ -129,12 +129,12 @@ package body Rules.Unsafe_Paired_Calls.Services is
          begin
             if With_Check then
                raise Invalid_Nesting with Message;
-            else
+            else                                     --## Rule line off Simplifiable_Statements ## To keep symetry
                return Nil_Signature;
             end if;
          end Nil_Or_Raise;
 
-      begin   -- Signature
+      begin   -- Enclosing_Signature
          case Element_Kind (Elem) is
             when A_Statement =>
                case Statement_Kind (Elem) is
