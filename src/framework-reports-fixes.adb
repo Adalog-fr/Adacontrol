@@ -148,6 +148,25 @@ package body Framework.Reports.Fixes is
    --  Exported services
    -------------------------------------------------------------------------------------------
 
+   --------------------
+   -- Indentation_Of --
+   --------------------
+
+   function Indentation_Of (Original : Asis.Element) return Wide_String is
+      The_Lines : constant Line_List         := Lines (Original);
+      Line_Text : constant Asis.Program_Text := Line_Image (The_Lines (The_Lines'First));
+      Inx       : Positive := Line_Text'First;
+   begin
+      while Line_Text (Inx) <= ' ' loop
+         Inx := Inx + 1;
+      end loop;
+      return Line_Text (Line_Text'First .. Inx - 1);
+   end Indentation_Of;
+
+   --------------
+   -- Refactor --
+   --------------
+
    procedure Refactor (Original : Asis.Element) is
    begin
       if not Generate_Fixes then
@@ -244,25 +263,23 @@ package body Framework.Reports.Fixes is
 
       declare
          Place_Span : Span := A4G_Bugs.Element_Span (Elem);
+         Break      : Break_Addition;
       begin
          if Full_Line then
-            Place_Span.First_Column := 1;
-            case Place is
-               when Before =>
-                  Gen_Insert (Get_Location (Elem), Text, Add_Break => Both);
-               when After =>
-                  Gen_Insert (Get_Location (Elem) + 1, Text, Add_Break => Both);
-            end case;
+            Break := Both;
          else
-            case Place is
-               when Before =>
-                  Gen_Insert (Get_Location (Elem), Text, Add_Break => None);
-               when After =>
-                  Place_Span.First_Line   := Place_Span.Last_Line;
-                  Place_Span.First_Column := Place_Span.Last_Column+1;
-                  Gen_Insert (Get_End_Location (Elem) + 1, Text, Add_Break => None);
-            end case;
+            Break := None;
          end if;
+
+         Place_Span.First_Column := 1;
+         case Place is
+            when Before =>
+               Gen_Insert (Get_Location (Elem), Text, Add_Break => Break);
+            when After =>
+               Place_Span.First_Line   := Place_Span.Last_Line;
+               Place_Span.First_Column := Place_Span.Last_Column + 1;
+               Gen_Insert (Get_End_Location (Elem) + 1, Text, Add_Break => Break);
+         end case;
       end;
    end Insert;
 

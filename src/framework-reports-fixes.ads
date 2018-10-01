@@ -42,6 +42,11 @@ package Framework.Reports.Fixes is
    -- Since a fix corresponds to a message, these services must be called after the corresponding call to Report
    -- for Check or Search, but not after a call to Report for Count
 
+   function Indentation_Of (Original : Asis.Element) return Wide_String;
+   -- Leading part of the line that contains Original, up to the first non-blank character
+   -- Useful to insert a line with the same indentation as something else
+   -- Returning the part of the string allows to preserve possibe control characters.
+
    procedure Refactor (Original : Asis.Element);
    -- Activates the "refactor" menu of GPS. To be used, f.e., when the name of an element is changed
 
@@ -51,13 +56,13 @@ package Framework.Reports.Fixes is
                       By         : Asis.Element;
                       Add_Before : Wide_String := "";
                       Add_After  : Wide_String := "");
-   procedure Replace (Original : Asis.Element;
+   procedure Replace (Original   : Asis.Element;
                       By         : Asis.Element_List;
                       Add_Before : Wide_String := "";
                       Add_After  : Wide_String := "");
-   procedure Replace (From     : Location;
-                      Length   : Positive;
-                      By       : Wide_String);
+   procedure Replace (From   : Location;
+                      Length : Positive;
+                      By     : Wide_String);
 
    type Insert_Place is (Before, After);
    procedure Insert (Text : Wide_String; Place : Insert_Place; Elem : Asis.Element; Full_Line : Boolean := False);
