@@ -85,6 +85,8 @@ package Framework.Reports.Fixes is
    -- Inx is the index of the element to be removed from From
    -- The element is removed from From; however, if it was the last element in From, then From
    -- is deleted in whole.
+   procedure List_Remove (Name : Asis.Name);
+   -- Like above, but Name is searched in the Enclosing_Element to find its index
 
    -- An Incremental_Fix accumulates (in order) several inserts at the same place
    -- The fix is emitted (and the Incremental_Fix is reset) by calling Flush

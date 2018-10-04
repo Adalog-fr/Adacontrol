@@ -30,7 +30,8 @@ with
 
 -- ASIS
 with
-   Asis.Clauses;
+   Asis.Clauses,
+   Asis.Elements;
 
 -- Adalog
 with
@@ -380,6 +381,34 @@ package body Framework.Reports.Fixes is
             -- Last character of span of From is ';'
             Delete (From => Get_End_Location (Elements (Inx - 1)) +1, To => Get_End_Location (From));
          end if;
+      end;
+   end List_Remove;
+
+   -----------------
+   -- List_Remove --
+   -----------------
+
+   procedure List_Remove (Name : Asis.Name) is
+      use Asis.Clauses, Asis.Elements;
+      use Utilities;
+   begin
+      if not Generate_Fixes then
+         return;
+      end if;
+
+      declare
+         From     : constant Asis.Element      := Enclosing_Element (Name);
+         Elements : constant Asis.Element_List := Clause_Names (From);
+      begin
+         for E in Elements'Range loop
+            if Is_Equal (Name, Elements (E)) then
+               List_Remove (E, From);
+               return;
+            end if;
+         end loop;
+
+         -- not found
+         Failure ("List_Remove: no found", Name);
       end;
    end List_Remove;
 
