@@ -46,7 +46,6 @@ pragma Elaborate (Framework.Language);
 
 package body Rules.With_Clauses is
    use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
-   use all type Reports.Fixes.Insert_Place;
 
    -- Algorithm
    --
@@ -354,6 +353,8 @@ package body Rules.With_Clauses is
    procedure Process_Identifier (Element : in Asis.Expression) is
       use Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Framework.Reports, Scope_Manager, Thick_Queries, Utilities;
+      use all type Reports.Fixes.Insert_Place;
+
       Elem_Def      : Asis.Defining_Name;
       Elem_Def_Unit : Asis.Compilation_Unit;
       Is_From_Use   : Boolean;

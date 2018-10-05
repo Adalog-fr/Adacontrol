@@ -80,7 +80,7 @@ package body Rules.Max_Blank_Lines is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Language;
 
-      use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause ## Gela-ASIS compatibility
+      use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause Reduceable_Scope ## Gela compatibility
    begin
       if Maximum (Ctl_Kind) /= Asis.ASIS_Natural'Last then
          Parameter_Error (Rule_Id, "Rule already specified");

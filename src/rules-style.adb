@@ -60,7 +60,6 @@ pragma Elaborate (Framework.Ordering_Machine);
 
 package body Rules.Style is
    use Framework, Framework.Control_Manager, Utilities;
-   use all type Framework.Reports.Fixes.Insert_Place;
    use type Thick_Queries.Biggest_Int;
 
    -- See declaration of Style_Names in the private part of the specification
@@ -1142,6 +1141,8 @@ package body Rules.Style is
 
       procedure Check_Formals (Subrule : St_Orders; Formals : Asis.Element_List) is
          use Framework.Reports, Parameter_Ordering_Machine;
+         use all type Framework.Reports.Fixes.Insert_Place;
+
          Enclosing : Asis.Declaration;
          E_Mode    : Extended_Modes;
          Ignore    : Boolean;

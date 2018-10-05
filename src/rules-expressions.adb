@@ -51,8 +51,6 @@ package body Rules.Expressions is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys,
        Framework.Variables, Framework.Variables.Shared_Types;
 
-   use all type Reports.Fixes.Insert_Place;
-
    type Subrules is (E_And,                              E_And_Array,              E_And_Binary,
                      E_And_Boolean,                      E_And_Then,               E_Array_Aggregate,
                      E_Array_Named_Others,               E_Array_Non_Static_Range, E_Array_Partial_Others,
@@ -366,6 +364,7 @@ package body Rules.Expressions is
    procedure Do_Mixed_Report (Call : Asis.Expression; Parameter : Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Reports;
+      use all type Reports.Fixes.Insert_Place;
    begin
       case Expression_Kind (Parameter) is
          when A_Function_Call =>
