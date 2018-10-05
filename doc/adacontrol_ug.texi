@@ -7740,16 +7740,17 @@ scope.
 <control_kind> reduceable_scope [(<subrule> @{, <subrule>@})];
 <subrule> ::= @{<restriction>@} all        | variable | constant |
                               subprogram | type     | package  |
-                              exception  | generic  | use
+                              exception  | generic  | use      |
+                              use_type   | use_all_type
 <restriction> ::= no_blocks | to_body
 @end example
 @subsection Action
 The rule reports on any declaration that is referenced only from a
-single, inner scope, or in the case of @code{@b{use}} clauses, it will
-report on packages named in a @code{@b{use}} clause whose elements are
-used only in a single, inner scope. For entitities declared in package
-specifications, the rule reports if they are used only from the
-corresponding package body.
+single, inner scope, or in the case of @code{@b{use}} clauses (three
+kinds), it will report on packages (or types) named in the clause
+whose elements made visible by the clause are in a single, inner
+scope. For entitities declared in package specifications, the rule
+reports if they could be moved to the corresponding package body.
 
 The initialization of an object is considered a usage of the object at
 the place where it is declared, thus preventing it from being
@@ -7785,9 +7786,16 @@ check reduceable_scope (variable, type);
 -- scope where they are useful, but they are not allowed in blocks:
 check reduceable_scope (no_blocks subprogram, no_blocks package);
 
--- Use clause should be as restricted as possible:
-search reduceable_scope (use);
+-- Use clauses should be as restricted as possible:
+search reduceable_scope (use, use_type, use_all_type);
 @end example
+
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``use'', ``use_type'', ``use_all_type'': The unnecessary package or type is removed from the clause. If there is only one element in the clause, the clause as a whole is removed.
+@end itemize
 
 @subsection Tips
 If you think that @code{@b{use}} clauses are acceptable, but should be
@@ -7797,11 +7805,13 @@ check unnecessary_use_clause;
 check reduceable_scope (use);
 @end example
 
-@subsection Limitation
-Currently, the rule does not report @code{@b{use}} clauses declared in
-a package specification that could be moved to the body. Such clauses
-appear as ``unused'' (but of course, the compiler will complain on the
-body if the clause is removed).
+Note that there is some overlap between the two rules: use clauses
+that serve no purpose or could be moved to body are reported by
+both. There are differences too: ``unnecessary_use_clause'' reports
+@code{@b{use}} clauses that could be changed to @code{@b{use type}} or
+@code{@b{use all type}} clauses, or where all uses are qualified,
+while ``reduceable_scope'' reports clauses that are useful, but only
+in an inner scope.
 
 @node Representation_Clauses, Return_Statements, Reduceable_Scope, Rules reference
 @section Representation_Clauses

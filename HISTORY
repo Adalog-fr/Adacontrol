@@ -1,3 +1,13 @@
+
+=============
+== V1.20b5 ==
+=============
+
+Changes to existing rules:
+--------------------------
+reduceable_scope:
+   add subrules use_type, use_all_type
+
 =============
 == V1.20r4 ==
 =============

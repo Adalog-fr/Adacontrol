@@ -1,6 +1,6 @@
 -- Required style checks:
 check unnecessary_use_clause (unused, nested, movable, qualified);
-check reduceable_scope (no_blocks use);
+check reduceable_scope (no_blocks use, no_blocks use_type, no_blocks use_all_type);
 check style (no_closing_name);
 check style (casing_identifier, original, titlecase);
 check style (casing_attribute, titlecase);

@@ -46,6 +46,7 @@ with
 -- AdaControl
 with
   Framework.Language,
+  Framework.Reports.Fixes,
   Framework.Queries,
   Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
@@ -87,16 +88,26 @@ package body Rules.Reduceable_Scope is
    -- Paths that are no more needed are freed by the scope manager from the associated Clear
    -- procedures; they should not be freed from any other place.
 
+   -- Useful subtype for case statements dealing only with use clauses:
+   subtype Use_Clause_Kinds is Asis.Clause_Kinds range Asis.A_Use_Package_Clause .. Asis.A_Use_All_Type_Clause;
+
    type Declaration_Check_Kinds is (Check_Not_Checkable,
                                     Check_All,
-                                    Check_Variable, Check_Constant,  Check_Subprogram, Check_Type,
-                                    Check_Package,  Check_Exception, Check_Generic,    Check_Use);
+                                    Check_Variable, Check_Constant,    Check_Subprogram, Check_Type,
+                                    Check_Package,  Check_Exception,   Check_Generic,    Check_Use,
+                                    Check_Use_Type, Check_Use_All_Type);
    subtype Subrules is Declaration_Check_Kinds range Check_All .. Declaration_Check_Kinds'Last;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "CHECK_");
    subtype Check_Kind is Subrules range Subrules'Succ (Check_All) .. Subrules'Last;
 
+   Corresponding_Check : constant array (Use_Clause_Kinds) of Check_Kind
+     := (Asis.A_Use_Package_Clause  => Check_Use,
+         Asis.A_Use_Type_Clause     => Check_Use_Type,
+         Asis.A_Use_All_Type_Clause => Check_Use_All_Type);
+
    type Check_Kind_Set is array (Check_Kind) of Boolean;
-   No_Check : constant Check_Kind_Set := (others => False);
+   No_Check   : constant Check_Kind_Set := (others => False);
+   Use_Checks : constant Check_Kind_Set := (Check_Use .. Check_Use_All_Type => True, others => False);
 
    type Restriction_Kinds is (No_Blocks, To_Body);
    package Restriction_Utilities is new Framework.Language.Modifier_Utilities (Restriction_Kinds);
@@ -113,9 +124,9 @@ package body Rules.Reduceable_Scope is
 
    type Declaration_Info is
       record
-         Elem  : Asis.Element;
-         Kind  : Check_Kind;
-         Path  : Scope_List_Access;
+         Elem : Asis.Element;
+         Kind : Check_Kind;
+         Path : Scope_List_Access;
       end record;
    function Equivalent_Keys (L, R : Declaration_Info) return Boolean;
    procedure Clear (Item : in out Declaration_Info);
@@ -133,9 +144,11 @@ package body Rules.Reduceable_Scope is
    -- Management of declaration information, use clauses
    type Use_Info is
       record
-         Elem  : Asis.Element;
-         Path  : Scope_List_Access;
-         Image : Unbounded_Wide_String;
+         Elem          : Asis.Element;
+         Kind          : Use_Clause_Kinds;
+         Path          : Scope_List_Access;
+         Package_Image : Unbounded_Wide_String; -- Package name for use package,
+                                                -- enclosing package name of type for use [all] type
       end record;
    function Equivalent_Keys (L, R : Use_Info) return Boolean;
    procedure Clear (Item : in out Use_Info);
@@ -422,6 +435,24 @@ package body Rules.Reduceable_Scope is
             Failure ("Unexpected place for defining name", Decl);
       end case;
    end Declaration_Check_Kind;
+
+   ---------------------
+   -- Clause_And_Name --
+   ---------------------
+
+   function Clause_And_Name (Info : Use_Info) return Wide_String is
+      use Asis;
+      use Thick_Queries;
+   begin
+      case Info.Kind is
+         when A_Use_Package_Clause =>
+            return """use"" clause for " & Extended_Name_Image (Info.Elem);
+         when A_Use_Type_Clause =>
+            return """use type"" clause for " & Extended_Name_Image (Info.Elem);
+         when A_Use_All_Type_Clause =>
+            return """use all type"" clause for " & Extended_Name_Image (Info.Elem);
+      end case;
+   end Clause_And_Name;
 
    ------------------------------
    -- Report_All_Package_Names --
@@ -785,16 +816,17 @@ package body Rules.Reduceable_Scope is
       end Check_Movable_Declaration;
 
       procedure Check_Movable_Use_Clause is
-         use Framework.Queries;
+         use Framework.Queries, Reports, Thick_Queries;
 
-         Enclosing_Name : constant Unbounded_Wide_String
-           := To_Unbounded_Wide_String (Enclosing_Package_Name (Rule_Id, Name));
+         Enclosing_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Enclosing_Package_Name
+                                                                                      (Rule_Id, Name));
          Info       : Use_Info;
          Good_Depth : Scope_Range;
          Action     : Merge_Action;
       begin
          if Enclosing_Name = "" then
             -- Not declared immediately in a package specification
+            -- Works also for use [all] type clauses, since we are interested only in primitive operations
             return;
          end if;
 
@@ -809,13 +841,32 @@ package body Rules.Reduceable_Scope is
          Use_Clauses.Reset (All_Scopes);
          while Use_Clauses.Data_Available loop
             Info := Use_Clauses.Current_Data;
-            if Info.Image = Enclosing_Name then
+            if Info.Package_Image = Enclosing_Name
+              and then
+                (case Info.Kind is
+                    when A_Use_Package_Clause  => True,
+                    when A_Use_Type_Clause     => Expression_Kind (Name) = An_Operator_Symbol
+                                                  and then Is_Primitive_Of (Info.Elem, Name),
+                    when A_Use_All_Type_Clause => Is_Callable_Construct (Name)
+                                                  and then Is_Primitive_Of (Info.Elem, Name))
+            then
                Merge (Info.Path,
                       Active_Scopes (Use_Clauses.Current_Data_Level + 1 .. Good_Depth),
-                      Blocks_Forbidden => Ctl_Restrictions (Check_Use)(No_Blocks),
+                      Blocks_Forbidden => Ctl_Restrictions (Corresponding_Check(Info.Kind))(No_Blocks),
                       Action           => Action);
                case Action is
                   when Delete =>
+                     if Rule_Used (Corresponding_Check (Info.Kind))
+                       and then Declaration_Kind (Use_Clauses.Current_Data_Scope) = A_Package_Body_Declaration
+                       and then Declaration_Kind (Enclosing_Element (Enclosing_Program_Unit (Info.Elem)))
+                                   in A_Package_Declaration | A_Generic_Package_Declaration
+                     then
+                        Report (Rule_Id,
+                                Ctl_Contexts (Corresponding_Check (Info.Kind)),
+                                Get_Location (Info.Elem),
+                                Clause_And_Name (Info) & " can be moved into package body");
+
+                     end if;
                      Use_Clauses.Delete_Current;
                   when Update =>
                      Use_Clauses.Update_Current (Info);
@@ -842,21 +893,20 @@ package body Rules.Reduceable_Scope is
          return;
       end if;
 
-      if (Rule_Used and Check_Kind_Set'(Check_Use => False, others => True)) /= No_Check then
+      if (Rule_Used and not Use_Checks) /= No_Check then
          EPU := Enclosing_Program_Unit (Corresponding_Name_Declaration (Name));
-         if Is_Nil (EPU) then
-            -- Name is the name of a compilation unit
-            return;
-         end if;
-         Enclosing_Decl := Enclosing_Element (EPU);
-         if Declaration_Kind (Enclosing_Decl) = A_Package_Declaration then
-            Check_Body_Movable_Declaration;
-         else
-            Check_Movable_Declaration;
+         if not Is_Nil (EPU) then
+            -- EPU is nil if Name is the name of a compilation unit (or a predefined operator)
+            Enclosing_Decl := Enclosing_Element (EPU);
+            if Declaration_Kind (Enclosing_Decl) = A_Package_Declaration then
+               Check_Body_Movable_Declaration;
+            else
+               Check_Movable_Declaration;
+            end if;
          end if;
       end if;
 
-      if Rule_Used (Check_Use) then
+      if (Rule_Used and Use_Checks) /= No_Check then
          Check_Movable_Use_Clause;
       end if;
    end Process_Identifier;
@@ -888,23 +938,41 @@ package body Rules.Reduceable_Scope is
    ------------------------
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
-      use Asis.Clauses;
+      use Asis, Asis.Clauses, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
    begin
-      if not Rule_Used (Check_Use) then
+      if (Rule_Used and Use_Checks) = No_Check then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       declare
          Names : constant Asis.Expression_List := Clause_Names (Clause);
+         Kind  : constant Use_Clause_Kinds     := Clause_Kind  (Clause);
       begin
          for I in Names'Range loop
-            Use_Clauses.Push ((Elem  => Names (I),
-                               Path  => null,
-                               Image => To_Unbounded_Wide_String (To_Upper
-                                                                  (Full_Name_Image
-                                                                   (Ultimate_Name (Names (I)))))));
+            case Kind is
+               when A_Use_Package_Clause =>
+                  Use_Clauses.Push ((Elem  => Names (I),
+                                     Kind  => Kind,
+                                     Path  => null,
+                                     Package_Image => To_Unbounded_Wide_String (To_Upper
+                                                                                (Full_Name_Image
+                                                                                 (Ultimate_Name (Names (I)))))
+                                    ));
+            when A_Use_Type_Clause | A_Use_All_Type_Clause =>
+                  Use_Clauses.Push ((Elem  => Names (I),
+                                     Kind  => Kind,
+                                     Path  => null,
+                                     Package_Image => To_Unbounded_Wide_String
+                                                       (To_Upper
+                                                        (Full_Name_Image
+                                                         (Enclosing_Program_Unit
+                                                          (Corresponding_First_Subtype
+                                                           (Corresponding_Name_Declaration
+                                                            (Simple_Name
+                                                             (Strip_Attributes (Names (I)))))))))));
+            end case;
          end loop;
       end;
    end Process_Use_Clause;
@@ -914,15 +982,13 @@ package body Rules.Reduceable_Scope is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      pragma Unreferenced (Scope);
-      use Framework.Reports, Thick_Queries;
-      use Asis, Asis.Declarations;
+      use Framework.Reports;
+      use Asis, Asis.Declarations, Asis.Elements;
 
       D_Info : Declaration_Info;
       U_Info : Use_Info;
 
       function Scope_Image (Elem : Asis.Element) return Wide_String is
-         use Asis.Elements;
       begin
          case Declaration_Kind (Elem) is
             when A_Procedure_Declaration | A_Null_Procedure_Declaration | A_Procedure_Body_Declaration =>
@@ -957,7 +1023,7 @@ package body Rules.Reduceable_Scope is
       Local_Declarations.Reset (Current_Scope_Only);
       while Local_Declarations.Data_Available loop
          D_Info := Local_Declarations.Current_Data;
-         if not Ctl_Restrictions (D_Info.Kind)(To_Body) then
+         if not Ctl_Restrictions (D_Info.Kind) (To_Body) then
             if D_Info.Path = null then
                Report (Rule_Id,
                        Ctl_Contexts (D_Info.Kind),
@@ -979,17 +1045,26 @@ package body Rules.Reduceable_Scope is
       Use_Clauses.Reset (Current_Scope_Only);
       while Use_Clauses.Data_Available loop
          U_Info := Use_Clauses.Current_Data;
-         if not Ctl_Restrictions (Check_Use) (To_Body) then
+         if Rule_Used (Corresponding_Check (U_Info.Kind))
+           and then not Ctl_Restrictions (Corresponding_Check (U_Info.Kind)) (To_Body)
+         then
             if U_Info.Path = null then
-               Report (Rule_Id,
-                       Ctl_Contexts (Check_Use),
-                       Get_Location (U_Info.Elem),
-                       "Use clause for " & Extended_Name_Image (U_Info.Elem) & " is not necessary");
+               -- if a package spec, delay message to body, unless there is no body or it is a pragma import
+               if Declaration_Kind (Scope) not in A_Package_Declaration | A_Generic_Package_Declaration
+                 or else Is_Nil (Corresponding_Body (Scope))
+                 or else Element_Kind (Corresponding_Body (Scope)) = A_Pragma
+               then
+                  Report (Rule_Id,
+                          Ctl_Contexts (Corresponding_Check (U_Info.Kind)),
+                          Get_Location (U_Info.Elem),
+                          Clause_And_Name (U_Info) & " is not necessary");
+                  Fixes.List_Remove (U_Info.Elem);
+               end if;
             else
                Report (Rule_Id,
-                       Ctl_Contexts (Check_Use),
+                       Ctl_Contexts (Corresponding_Check (U_Info.Kind)),
                        Get_Location (U_Info.Elem),
-                       "use clause for " & Extended_Name_Image (U_Info.Elem)
+                       Clause_And_Name (U_Info)
                        & " can be moved inside " & Scope_Image (U_Info.Path (U_Info.Path'Last))
                        & " at " & Image (Get_Location (U_Info.Path (U_Info.Path'Last))));
             end if;

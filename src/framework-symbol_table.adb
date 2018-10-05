@@ -128,6 +128,7 @@ package body Framework.Symbol_Table is
                      when An_Identifier
                         | An_Operator_Symbol
                         | An_Enumeration_Literal
+                        | A_Character_Literal
                           =>
                         Symbol.Name := Corresponding_Name_Definition (Element);
                      when others =>

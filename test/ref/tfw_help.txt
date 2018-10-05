@@ -628,9 +628,10 @@ Rule: REDUCEABLE_SCOPE
 Control declarations that could be moved to an inner scope,
 I.e. where all references are from a single nested scope
 
-Parameter(s): {<restriction>} all        | variable | constant |
-                              subprogram | type     | package  |
-                              exception  | generic  | use
+Parameter(s): {<restriction>} all        | variable     | constant |
+                              subprogram | type         | package  |
+                              exception  | generic      | use      |
+                              use_type   | use_all_type
                               (optional)
 <restriction>: no_blocks | to_body
 ----

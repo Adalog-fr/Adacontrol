@@ -228,7 +228,10 @@ package body Framework.Plugs is
                   Rules.Reduceable_Scope. Process_Use_Clause (Element);
                   Rules.Use_Clauses.      Process_Use_Clause (Element, Is_Type => False);
                when A_Use_Type_Clause =>
-                  Rules.Use_Clauses. Process_Use_Clause (Element, Is_Type => True);
+                  Rules.Reduceable_Scope. Process_Use_Clause (Element);
+                  Rules.Use_Clauses.      Process_Use_Clause (Element, Is_Type => True);
+               when A_Use_All_Type_Clause =>
+                  Rules.Reduceable_Scope. Process_Use_Clause (Element);
                when A_Representation_Clause =>
                   Rules.Object_Declarations.    Process_Representation_Clause (Element);
                   Rules.Representation_Clauses. Process_Clause                (Element);
@@ -735,11 +738,14 @@ package body Framework.Plugs is
                when A_Parenthesized_Expression =>
                   Rules.Simplifiable_Expressions. Process_Parenthesized (Element);
 
+               when A_Character_Literal =>
+                  Rules.Reduceable_Scope. Process_Identifier (Element);
+                  Rules.Style.            Process_Literal    (Element);
+
                when An_Integer_Literal
                   | A_Real_Literal
-                  | A_Character_Literal
                   | A_String_Literal
-                 =>
+                  =>
                   Rules.Style. Process_Literal (Element);
 
                when A_Type_Conversion =>
