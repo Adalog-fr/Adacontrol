@@ -10290,6 +10290,21 @@ replaced with a @code{@b{private}} @code{@b{with}}.
 of the package.
 @end multitable
 
+@subsection Fixes
+The following subrules generate fixes:
+@itemize @bullet
+@item
+``reduceable'' (various cases where the @code{@b{with}} is not
+needed): The unnecessary package is removed from the clause. If there
+is only one element in the clause, the clause as a whole is removed.
+@item
+``reduceable'' (case of @code{@b{with}} that can be made private) : the keyword
+@code{@b{private}} is added to the declaration. 
+@item
+``inherited'': A @code{@b{with}} clause for the inherited package is added
+just before the beginning of the unit.
+@end itemize
+
 @subsection Tips
 A @code{@b{with}} clause can safely be removed if it is unused, and no
 child unit (or subunit) reports that the unit is inherited.
