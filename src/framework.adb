@@ -158,6 +158,14 @@ package body Framework is
               S.First_Column);
    end Get_Location;
 
+   ------------------
+   -- Get_Location --
+   ------------------
+
+   function Get_Location (E : in Asis.Element_List) return Location is
+   begin
+      return Get_Location (E (E'First));
+   end Get_Location;
 
    ----------------------
    -- Get_End_Location --
@@ -177,6 +185,14 @@ package body Framework is
               S.Last_Column);
    end Get_End_Location;
 
+   ----------------------
+   -- Get_End_Location --
+   ----------------------
+
+   function Get_End_Location (E : in Asis.Element_List) return Location is
+   begin
+      return Get_End_Location (E (E'Last));
+   end Get_End_Location;
 
    --------------------------------
    -- Get_Previous_Word_Location --

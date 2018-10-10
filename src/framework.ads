@@ -88,11 +88,13 @@ package Framework is
    function Create_Location (File         : in Wide_String;
                              First_Line   : in Asis.Text.Line_Number;
                              First_Column : in Asis.Text.Character_Position) return Location;
-   function Get_Location (E : in Asis.Element) return Location;
-   -- Returns location of an element
+   function Get_Location (E : in Asis.Element)      return Location;
+   function Get_Location (E : in Asis.Element_List) return Location;
+   -- Returns location of an element or first element of a list
 
-   function Get_End_Location (E : in Asis.Element) return Location;
-   -- Returns location of end of an element
+   function Get_End_Location (E : in Asis.Element)      return Location;
+   function Get_End_Location (E : in Asis.Element_List) return Location;
+   -- Returns location of end of an element or last element of a list
 
    function Get_Previous_Word_Location (E        : in Asis.Element;
                                         Matching : in Wide_String  := "";
