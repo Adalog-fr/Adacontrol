@@ -3567,7 +3567,7 @@ complexity of @code{@b{case}} statements.
 @example
 <control_kind> Case_Statement ([<category>] <subrule>, <bound>
                                [, <bound>]);
-<subrule> ::= others_span      | paths | range_span | values | 
+<subrule> ::= others_span      | paths | range_span | values |
               values_if_others
 <bound>   ::= min | max <value>
 @end example
@@ -4559,13 +4559,19 @@ units. @xref{command files provided with AdaControl}.
 
 @node Derivations, Directly_Accessed_Globals, Dependencies, Rules reference
 @section Derivations
-This rule controls various properties of the declaration of derived types.
+This rule controls various properties of the declaration and primitive
+operations of derived types.
 
 @subsection Syntax
 @example
 <control_kind> derivations (from, <entity>|<category>
                                @{, <entity>|<category>@})
 <control_kind> derivations (max_parents, <value>)
+<control_kind> derivations (indicator
+                            [, overriding  | not_overriding]
+                            [, tagged      | untagged]
+                            [, declaration ]
+                            [, body_required | body_forbidden])
 @end example
 
 @subsection Action
@@ -4631,19 +4637,84 @@ count. This way, it is possible to have a number of parents
 considered a warning (search), and one considered an error (check). Of
 course, this makes sense only if the number for search is less than
 the one for check.
-@end itemize
 
+Ex:
 @example
 check derivations (max_parents, 5);   -- error if more than 5 parents
 search derivations (max_parents, 3);  -- warning if more than 3 parents
 @end example
 
-@subsection Tip
+@item
+``indicator'' controls the presence or absence of overriding
+indicators in the declaration of primitive operations of a derived
+type.
+
+If ``overriding'' or ``not_overriding'' is given, the rule controls
+only the corresponding indicator.  Otherwise, both are controlled.
+
+If ``tagged'' or ``untagged'' is given, the rule controls only
+operations that involve a tagged type (respectively no tagged
+type). Otherwise, both are controlled.
+
+If ``declaration'' is given, the rule applies only to subprogram
+specifications and subprogram bodies acting as specification (when
+there is no explicit specification).
+
+If ``body_required'' is given, the indicators are required also on
+subprogram bodies, while if ``body_forbidden'' is given, the rule
+controls that indicators are @i{not} given on bodies (except for those
+acting as specification). If none of these are given, indicators on
+bodies are not controlled.
+
+In the absence of ``declaration'', ``body_required'', and
+``body_forbidden'',  only declarations are controlled.
+
+Ex:
+@example
+check derivations (indicator);
+-- all defaults, controls all types, declaration only
+
+check  derivations (indicator, tagged, declaration);
+search derivations (indicator, tagged, body_forbidden);
+-- Error if no indicator on a subprogram declaration for a tagged type
+-- Warning if indicator also given on the corresponding body
+
+check  derivations (indicator, overriding);
+search derivations (indicator, not_overriding);
+-- Error if no overriding indicator
+-- Warning if no not overriding indicator
+@end example
+
+This subrule can be given only once for each combination of the parameters.
+@end itemize
+
+@subsection Fixes
+The following subrule generates fixes:
+@itemize @bullet
+@item
+``indicator'': Missing indicators are inserted appropriately,
+forbidden indicators are deleted.
+@end itemize
+
+@subsection Tips
 Since categories are checked only for the @i{parent} type, the control
 ``@code{check derivations (from, interface);}'' controls only the case
 where the parent type is an interface. To check all types that
 implement any interface, add the control ``@code{check derivations
 (max_parents, 1);}", since progenitors are necessarily interfaces.
+
+Normally, an overriding indicator is given on a specification. It is
+allowed on a body for the cases where the body acts as a
+declaration. Hence, it makes sense to forbid an overriding indicator
+on a (true) body. On the other hand, some can prefer having
+specification and body being the same. That's why both
+``body_required'' and ``body_forbidden'' can be specified.
+
+The issue of silently overriding an inherited subprogram is really an
+issue with tagged types and the effect on dynamic dispatching; it is
+much less of an issue for untagged types, therefore it makes sense to
+apply the rule only to tagged types to avoid to many violations for
+regular types.
 
 @node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Derivations, Rules reference
 @section Directly_Accessed_Globals
@@ -6799,7 +6870,7 @@ in this case, it matches only the corresponding identifier as a whole.
 Example:
 @example
    "abc"   -- A pattern string, matches any identifier containing "abc"
-   abc     -- An identifier, matches any identifier which is exactly 
+   abc     -- An identifier, matches any identifier which is exactly
            -- "abc" (same as "^abc$")
 @end example
 
@@ -7414,7 +7485,7 @@ named associations) in all kinds of associations.
 
 @subsection Syntax
 @example
-<control_kind> positional_associations 
+<control_kind> positional_associations
    [(<subrule>, <max_allowed> [, <assoc_kind> @{, <entity>@}])];
 <subrule>    ::= all | all_positional | declared | same_type
 <assoc_kind> ::= [not_operator] call | discriminant    | pragma        |
@@ -9514,7 +9585,7 @@ one.
 @subsection Syntax
 @example
 <control_kind> unnecessary_use_clause [(<subrule> @{,<subrule>@})];
-<subrule> ::= unused | qualified | operator | primitive | nested | 
+<subrule> ::= unused | qualified | operator | primitive | nested |
               movable
 @end example
 
@@ -10299,7 +10370,7 @@ needed): The unnecessary package is removed from the clause. If there
 is only one element in the clause, the clause as a whole is removed.
 @item
 ``reduceable'' (case of @code{@b{with}} that can be made private) : the keyword
-@code{@b{private}} is added to the declaration. 
+@code{@b{private}} is added to the declaration.
 @item
 ``inherited'': A @code{@b{with}} clause for the inherited package is added
 just before the beginning of the unit.

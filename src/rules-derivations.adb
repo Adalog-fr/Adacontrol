@@ -30,6 +30,10 @@ with
   Asis.Elements,
   Asis.Expressions;
 
+-- Asis for Gnat
+with
+  Asis.Extensions;
+
 -- Adalog
 with
   Thick_Queries,
@@ -41,7 +45,8 @@ with
   Framework.Language,
   Framework.Language.Shared_Keys,
   Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Reports,
+  Framework.Reports.Fixes;
 pragma Elaborate (Framework.Language);
 pragma Elaborate (Framework.Language.Shared_Keys);
 
@@ -55,13 +60,24 @@ package body Rules.Derivations is
    --
    -- Max_Parent: count the progenitors, +1 for derived types (but not task, protected, and interfaces)
    --
+   -- Indicator: we start from every subprogram declaration. We determine whether it is primitive, for
+   -- a tagged or untagged derived type, whether it is a specification, a body acting as a declaration, or
+   -- a true body. We cross this with the required checks and whether an indicator is given.
+   -- This is quite simple... The whole difficulty lies in the services dealing with primitive operations in
+   -- Thick_Queries!
+   --
+   --
    -- Future subrules: Max_Depth
 
-   type Subrules is (SR_From, SR_Max_Parents);
+   type Subrules is (SR_From, SR_Max_Parents, SR_Indicator);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
    type Subrules_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrules_Set := (others => False);
 
+   Rule_Used : Subrules_Set := No_Rule;
+   Save_Used : Subrules_Set;
+
+   -- Data for subrules From and Max_Parents:
    type Maxima is array (Control_Kinds) of Thick_Queries.Biggest_Natural;
    Uninitialized : constant Thick_Queries.Biggest_Natural := Thick_Queries.Biggest_Natural'Last;
    type Value_Context is new Basic_Rule_Context with
@@ -71,10 +87,18 @@ package body Rules.Derivations is
 
    Searched_Parents : Context_Store;
 
-   Rule_Used : Subrules_Set := No_Rule;
-   Save_Used : Subrules_Set;
-
    From_Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
+
+
+   -- Data for subrule Indicator :
+   type Type_Gender        is (Gender_Tagged, Gender_Untagged);
+   type Indicator_Gender   is (Gender_Overriding, Gender_Not_Overriding);
+   type Declaration_Gender is (Gender_Declaration, Gender_Body);
+   type Gender_Action      is (Required, Forbidden, Unchecked);
+
+   Indicator_Uses     : array (Type_Gender, Indicator_Gender, Declaration_Gender) of Gender_Action
+                        := (others => (others => (others => Unchecked)));
+   Indicator_Contexts : array (Type_Gender, Indicator_Gender, Declaration_Gender) of Basic_Rule_Context;
 
    ----------
    -- Help --
@@ -82,16 +106,24 @@ package body Rules.Derivations is
 
    procedure Help is
       use Utilities;
+      use Subrules_Flag_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Controls ancestors of a derived type");
+      User_Message ("Controls ancestors and primitives of a derived type");
       User_Message;
-      User_Message ("Parameter(1): From | Max_Parents");
+      Help_On_Flags ("Parameter(1):");
+      User_Message;
       User_Message ("for From subrule:");
       User_Message ("Parameter(2..): <Entity name> | <category>");
       Help_On_Categories (Expected => From_Expected_Categories);
+      User_Message;
       User_Message ("for Max_Parents subrule:");
       User_Message ("Parameter(2)  : <value>");
+      User_Message;
+      User_Message ("for Indicator subrule:");
+      User_Message ("Parameter(2): tagged | untagged (optional)");
+      User_Message ("Parameter(3): overriding | not_overriding (optional)");
+      User_Message ("Parameter(4): declaration | body_required | body_forbidden (optional)");
    end Help;
 
    -----------------
@@ -105,6 +137,10 @@ package body Rules.Derivations is
 
       Subrule_Name : Subrules;
       Bound        : Thick_Queries.Biggest_Natural;
+      Type_Given   : array (Type_Gender)        of Boolean := (others => False);
+      Indic_Given  : array (Indicator_Gender)   of Boolean := (others => False);
+      Decl_Given   : array (Declaration_Gender) of Boolean := (others => False);
+      Body_Action  : Gender_Action;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "parameters required");
@@ -147,6 +183,66 @@ package body Rules.Derivations is
                   Cont.Maximum (Ctl_Kind) := Bound;
                   Update (Searched_Parents, Cont);
             end;
+
+         when SR_Indicator =>
+            if Get_Modifier ("TAGGED") then
+               Type_Given (Gender_Tagged) := True;
+               Get_Null_Parameter;
+            elsif Get_Modifier ("UNTAGGED") then
+               Type_Given (Gender_Untagged) := True;
+               Get_Null_Parameter;
+            else
+               Type_Given := (others => True);
+            end if;
+
+            if Get_Modifier ("OVERRIDING") then
+               Indic_Given (Gender_Overriding) := True;
+               Get_Null_Parameter;
+            elsif Get_Modifier ("NOT_OVERRIDING") then
+               Indic_Given (Gender_Not_Overriding) := True;
+               Get_Null_Parameter;
+            else
+               Indic_Given := (others => True);
+            end if;
+
+            if Get_Modifier ("DECLARATION") then
+               Decl_Given (Gender_Declaration) := True;
+               Get_Null_Parameter;
+            end if;
+            if Get_Modifier ("BODY_REQUIRED") then
+               Decl_Given (Gender_Body) := True;
+               Body_Action := Required;
+               Get_Null_Parameter;
+            elsif Get_Modifier ("BODY_FORBIDDEN") then
+               Decl_Given (Gender_Body) := True;
+               Body_Action := Forbidden;
+               Get_Null_Parameter;
+            end if;
+            if Decl_Given = (Declaration_Gender => False) then
+               Decl_Given (Gender_Declaration) := True;
+               -- No need to initialize Body_Action since Decl_Given(Gender_Body) is false
+            end if;
+
+            for T in Type_Gender loop
+               for I in Indicator_Gender loop
+                  if Type_Given (T) and Indic_Given (I) and Decl_Given (Gender_Declaration) then
+                     if Indicator_Uses (T, I, Gender_Declaration) = Unchecked then
+                        Indicator_Uses     (T, I, Gender_Declaration) := Required;
+                        Indicator_Contexts (T, I, Gender_Declaration) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+                     else
+                        Parameter_Error (Rule_Id, "This combination of parameters already given");
+                     end if;
+                  end if;
+                  if Type_Given (T) and Indic_Given (I) and Decl_Given (Gender_Body) then
+                     if Indicator_Uses (T, I, Gender_Body) = Unchecked then
+                        Indicator_Uses     (T, I, Gender_Body) := Body_Action;
+                        Indicator_Contexts (T, I, Gender_Body) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+                     else
+                        Parameter_Error (Rule_Id, "This combination of parameters already given");
+                     end if;
+                  end if;
+               end loop;
+            end loop;
       end case;
 
       Rule_Used (Subrule_Name) := True;
@@ -163,6 +259,7 @@ package body Rules.Derivations is
          when Clear =>
             Rule_Used := No_Rule;
             Clear (Searched_Parents);
+            Indicator_Uses := (others => (others => (others => Unchecked)));
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := No_Rule;
@@ -406,7 +503,7 @@ package body Rules.Derivations is
       use Asis.Declarations;
       use Thick_Queries;
    begin
-      if Rule_Used = No_Rule then
+      if not Rule_Used (SR_From) and not Rule_Used (SR_Max_Parents) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -426,6 +523,163 @@ package body Rules.Derivations is
          end if;
       end;
    end Process_Synchronized;
+
+   ----------------------
+   -- Process_Callable --
+   ----------------------
+
+   Indicator_Table : constant array (Boolean) of Indicator_Gender := (False => Gender_Not_Overriding,
+                                                                      True  => Gender_Overriding);
+
+   procedure Process_Callable (Callable : Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Extensions;
+      use Reports, Reports.Fixes, Utilities, Thick_Queries;
+   begin
+      if not Rule_Used (SR_Indicator) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Primitive_Types : constant Declaration_List := Corresponding_Primitive_Types (Callable);
+         Type_G            : Type_Gender;
+         Indicator_G       : Indicator_Gender;
+         Declaration_G     : Declaration_Gender;
+         Derived_Found     : Boolean := False;
+         Inst_Or_Call_Decl : Asis.Declaration; -- Instantiation if Callable is from generic, Callable otherwise
+      begin
+         if Primitive_Types = Nil_Element_List then
+            -- Not a primitive operation
+            return;
+         end if;
+
+         if Is_Part_Of_Instance (Callable) then
+            Inst_Or_Call_Decl := Enclosing_Element (Callable);
+         else
+            Inst_Or_Call_Decl := Callable;
+         end if;
+
+         -- Determine type_gender: considered tagged if there is a primitive tagged type.
+         -- In some convoluted case, this may not be the type on which the operation is derived,
+         -- but it seems reasonable to apply the rule for tagged types as soon as there is a (primitive)
+         -- tagged type in the profile.
+         Type_G := Gender_Untagged;
+         for Prim_Type : Asis.Declaration of Primitive_Types loop
+            case Type_Kind (Type_Declaration_View (Prim_Type)) is
+               when A_Tagged_Record_Type_Definition =>
+                  Type_G := Gender_Tagged;
+               when A_Derived_Record_Extension_Definition =>
+                  Derived_Found := True;
+                  Type_G        := Gender_Tagged;
+                  exit;
+               when A_Derived_Type_Definition =>
+                  Derived_Found := True;
+               when others =>
+                  null;
+            end case;
+         end loop;
+         if not Derived_Found then
+            -- not a derived operation
+            return;
+         end if;
+
+         -- Determine declaration_gender and indicator_gender
+         -- They have to be determined together, since bodies that are not completions are considered
+         -- Gender_Declaration, but is_overriding_operation returns False for bodies not acting as spec.
+         case Declaration_Kind (Callable) is
+            when A_Procedure_Body_Declaration
+               | A_Procedure_Body_Stub
+               | A_Procedure_Renaming_Declaration
+               | A_Null_Procedure_Declaration
+               | A_Function_Body_Declaration
+               | A_Function_Body_Stub
+               | A_Function_Renaming_Declaration
+               | An_Expression_Function_Declaration
+               =>
+               -- Note: instantiated generic bodies are not analyzed
+               if Is_Nil (Corresponding_Declaration (Callable)) then
+                  Declaration_G := Gender_Declaration;
+                  Indicator_G   := Indicator_Table (Is_Overriding_Operation (Callable));
+               else
+                  Declaration_G := Gender_Body;
+                  Indicator_G   := Indicator_Table (Is_Overriding_Operation (Corresponding_Declaration (Callable)));
+               end if;
+            when A_Procedure_Declaration
+               | A_Function_Declaration
+               =>
+               Declaration_G := Gender_Declaration;
+               Indicator_G   := Indicator_Table (Is_Overriding_Operation (Inst_Or_Call_Decl));
+            when others =>
+               Failure ("Derivations.Process_Callable: bad callable", Callable);
+         end case;
+
+         case Indicator_Uses (Type_G, Indicator_G, Declaration_G) is
+            when Required =>
+               case Indicator_G is
+                  when Gender_Overriding =>
+                     if not Is_Overriding_Declaration (Callable) then
+                        Report (Rule_Id,
+                                Indicator_Contexts (Type_G, Indicator_G, Declaration_G),
+                                Get_Location (Inst_Or_Call_Decl),
+                                "Missing overriding indicator");
+                        Fixes.Insert ("overriding ", Before, Inst_Or_Call_Decl);
+                     end if;
+                  when Gender_Not_Overriding =>
+                     if not Is_Not_Overriding_Declaration (Callable) then
+                        Report (Rule_Id,
+                                Indicator_Contexts (Type_G, Indicator_G, Declaration_G),
+                                Get_Location (Inst_Or_Call_Decl),
+                                "Missing not overriding indicator");
+                        Fixes.Insert ("not overriding ", Before, Inst_Or_Call_Decl);
+                  end if;
+               end case;
+            when Forbidden =>
+               case Indicator_G is
+                  when Gender_Overriding =>
+                     if Is_Overriding_Declaration (Callable) then
+                        Report (Rule_Id,
+                                Indicator_Contexts (Type_G, Indicator_G, Declaration_G),
+                                Get_Location (Inst_Or_Call_Decl),
+                                "Overriding indicator not allowed here");
+                        Fixes.Delete (From => Get_Location (Inst_Or_Call_Decl),
+                                      To   => Get_Next_Word_Location (Inst_Or_Call_Decl,
+                                                                      Starting => From_Head,
+                                                                      Skipping => 1));
+                     end if;
+                  when Gender_Not_Overriding =>
+                     if Is_Not_Overriding_Declaration (Callable) then
+                        Report (Rule_Id,
+                                Indicator_Contexts (Type_G, Indicator_G, Declaration_G),
+                                Get_Location (Inst_Or_Call_Decl),
+                                "Not overriding indicator not allowed here");
+                        Fixes.Delete (From => Get_Location (Callable),
+                                      To   => Get_Next_Word_Location (Inst_Or_Call_Decl,
+                                                                      Starting => From_Head,
+                                                                      Skipping => 2));
+                     end if;
+               end case;
+            when Unchecked =>
+               null;
+         end case;
+      end;
+   end Process_Callable;
+
+   ---------------------------
+   -- Process_Instantiation --
+   ---------------------------
+
+   procedure Process_Instantiation (Inst : Asis.Declaration) is
+      use Asis.Declarations;
+   begin
+      if not Rule_Used (SR_Indicator) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      -- A generic has always an explicit spec, and only the instantiation is available here
+      -- => process the instantiated spec, ignore the body
+      Process_Callable (Corresponding_Declaration (Inst));
+   end Process_Instantiation;
 
 begin  -- Rules.Derivations
    Framework.Rules_Manager.Register (Rule_Id,

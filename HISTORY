@@ -5,6 +5,9 @@
 
 Changes to existing rules:
 --------------------------
+derivations
+   add subrule indicator
+
 reduceable_scope:
    add subrules use_type, use_all_type
 

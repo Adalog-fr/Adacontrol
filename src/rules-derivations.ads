@@ -31,6 +31,8 @@ package Rules.Derivations is
 
    Rule_Id : constant Wide_String := "DERIVATIONS";
 
-   procedure Process_Derivation   (Element : Asis.Definition);
-   procedure Process_Synchronized (Sync    : Asis.Declaration);
+   procedure Process_Derivation    (Element  : Asis.Definition);
+   procedure Process_Synchronized  (Sync     : Asis.Declaration);
+   procedure Process_Callable      (Callable : Asis.Declaration);
+   procedure Process_Instantiation (Inst     : Asis.Declaration);
 end Rules.Derivations;

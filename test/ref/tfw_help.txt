@@ -233,16 +233,23 @@ Parameter(2..3): <bound> <value>
 <bound>:  min | max
 ----
 Rule: DERIVATIONS
-Controls ancestors of a derived type
+Controls ancestors and primitives of a derived type
 
-Parameter(1): From | Max_Parents
+Parameter(1): from | max_parents | indicator
+
 for From subrule:
 Parameter(2..): <Entity name> | <category>
 <category>: ()      | range  | mod       | delta     | digits |
             array   | record | tagged    | interface | access |
             private | task   | protected
+
 for Max_Parents subrule:
 Parameter(2)  : <value>
+
+for Indicator subrule:
+Parameter(2): tagged | untagged (optional)
+Parameter(3): overriding | not_overriding (optional)
+Parameter(4): declaration | body_required | body_forbidden (optional)
 ----
 Rule: DIRECTLY_ACCESSED_GLOBALS
 Control global package variables accessed by other than dedicated subprograms
@@ -1024,7 +1031,7 @@ Rules:
    Usage                           Use_Clauses                     
    With_Clauses                    
 
-ADACTL v. 1.20r4 
+ADACTL v. 1.20b5 
 ----
 Copyright (C) 2004-2018 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.

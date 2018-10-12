@@ -86,3 +86,42 @@ t_derivations-max_parents.adb:11:15: Found: DERIVATIONS: Type derived from categ
 t_derivations-max_parents.adb:11:15: Error: DERIVATIONS: More than 2 parents (3)
 t_derivations-max_parents.adb:21:4: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-max_parents.adb:26:4: Error: DERIVATIONS: More than 2 parents (3)
+t_derivations-indicator.adb:21:20: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-indicator.adb:22:7: Error: Tagged_Spec: Missing overriding indicator
+t_derivations-indicator.adb:22:7: Insert
+!overriding 
+t_derivations-indicator.adb:23:7: Error: Tagged_Spec: Missing not overriding indicator
+t_derivations-indicator.adb:23:7: Insert
+!not overriding 
+t_derivations-indicator.adb:31:7: Error: Tagged_Body: Not overriding indicator not allowed here
+t_derivations-indicator.adb:31:7: Delete:31:21
+t_derivations-indicator.adb:37:18: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-indicator.adb:39:4: Error: Untagged_Spec: Missing overriding indicator
+t_derivations-indicator.adb:39:4: Insert
+!overriding 
+t_derivations-indicator.adb:40:4: Error: Untagged_Spec: Missing overriding indicator
+t_derivations-indicator.adb:40:4: Insert
+!overriding 
+t_derivations-indicator.adb:42:18: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-indicator.adb:56:4: Found: Untagged_Body: Missing overriding indicator
+t_derivations-indicator.adb:56:4: Insert
+!overriding 
+t_derivations-indicator.adb:57:4: Found: Untagged_Body: Missing overriding indicator
+t_derivations-indicator.adb:57:4: Insert
+!overriding 
+t_derivations-indicator.adb:62:21: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-indicator.adb:63:7: Error: Untagged_Spec: Missing not overriding indicator
+t_derivations-indicator.adb:63:7: Insert
+!not overriding 
+t_derivations-indicator.adb:67:7: Found: Untagged_Body: Missing overriding indicator
+t_derivations-indicator.adb:67:7: Insert
+!overriding 
+t_derivations-indicator.adb:68:7: Error: Untagged_Spec: Missing not overriding indicator
+t_derivations-indicator.adb:68:7: Insert
+!not overriding 
+t_derivations-indicator.adb:69:7: Error: Untagged_Spec: Missing not overriding indicator
+t_derivations-indicator.adb:69:7: Insert
+!not overriding 
+t_derivations-indicator.adb:82:4: Error: Untagged_Spec: Missing overriding indicator
+t_derivations-indicator.adb:82:4: Insert
+!overriding 

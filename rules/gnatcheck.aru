@@ -340,6 +340,9 @@ Quantified_Expressions:
 Raising_Predefined_Exceptions:
    check statements (raise_standard);
 
+"Style_Checks:O":
+   check derivations (indicator);
+
 Subprogram_Access:
    check declarations (access_subprogram_type);
 

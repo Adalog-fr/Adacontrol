@@ -313,6 +313,7 @@ package body Framework.Plugs is
                when A_Function_Body_Declaration =>
                   Rules.Abnormal_Function_Return. Process_Function_Body        (Element);
                   Rules.Comments.                 Process_Program_Unit         (Element);
+                  Rules.Derivations.              Process_Callable             (Element);
                   Rules.Exception_Propagation.    Process_SP_Declaration       (Element);
                   Rules.Global_References.        Process_Body                 (Element);
                   Rules.Improper_Initialization.  Process_Structure            (Element);
@@ -328,6 +329,7 @@ package body Framework.Plugs is
 
                when A_Procedure_Body_Declaration =>
                   Rules.Comments.                Process_Program_Unit   (Element);
+                  Rules.Derivations.             Process_Callable       (Element);
                   Rules.Exception_Propagation.   Process_SP_Declaration (Element);
                   Rules.Global_References.       Process_Body           (Element);
                   Rules.Improper_Initialization. Process_Structure      (Element);
@@ -341,6 +343,7 @@ package body Framework.Plugs is
 
                when A_Null_Procedure_Declaration =>
                   Rules.Comments.                Process_Program_Unit   (Element);
+                  Rules.Derivations.             Process_Callable       (Element);
                   Rules.Exception_Propagation.   Process_SP_Declaration (Element);
                   Rules.Global_References.       Process_Body           (Element);
                   Rules.Improper_Initialization. Process_Structure      (Element);
@@ -436,6 +439,7 @@ package body Framework.Plugs is
 
                when A_Procedure_Instantiation =>
                   Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
+                  Rules.Derivations.            Process_Instantiation         (Element);
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
@@ -450,6 +454,7 @@ package body Framework.Plugs is
 
                when A_Function_Instantiation =>
                   Rules.Default_Parameter.           Process_Call_Or_Instantiation (Element);
+                  Rules.Derivations.                 Process_Instantiation         (Element);
                   Rules.Exception_Propagation.       Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.            Process_Instantiation         (Element);
                   Rules.Instantiations.              Process_Instantiation         (Element);
@@ -466,14 +471,16 @@ package body Framework.Plugs is
                when A_Procedure_Declaration
                   | A_Procedure_Body_Stub
                     =>
+                  Rules.Derivations.            Process_Callable    (Element);
                   Rules.Parameter_Declarations. Process_Declaration (Element);
                   Rules.Style.                  Process_Declaration (Element);
                   Rules.Usage.                  Process_Declaration (Element);
 
                when A_Function_Declaration
-                  | An_Expression_Function_Declaration   -- Ada 2012
+                  | An_Expression_Function_Declaration
                   | A_Function_Body_Stub
                     =>
+                  Rules.Derivations.            Process_Callable             (Element);
                   Rules.Parameter_Declarations. Process_Declaration          (Element);
                   Rules.Return_Type.            Process_Function_Declaration (Element);
                   Rules.Style.                  Process_Declaration          (Element);
@@ -495,9 +502,11 @@ package body Framework.Plugs is
                   Rules.Usage.                  Process_Declaration          (Element);
 
                when A_Procedure_Renaming_Declaration =>
-                  Rules.Style. Process_Declaration (Element);
+                  Rules.Derivations. Process_Callable    (Element);
+                  Rules.Style.       Process_Declaration (Element);
 
                when A_Function_Renaming_Declaration =>
+                  Rules.Derivations. Process_Callable             (Element);
                   Rules.Return_Type. Process_Function_Declaration (Element);
                   Rules.Style.       Process_Declaration          (Element);
 

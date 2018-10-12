@@ -17,6 +17,7 @@ check max_blank_lines (2);
 check characters (control, trailing_space);
 check assignments (groupable, given 2, ratio 100);
 check with_clauses (reduceable);
+check derivations (indicator, declaration, body_forbidden);
 
 -- Acceptable, but should be looked at:
 search parameter_aliasing (possible);

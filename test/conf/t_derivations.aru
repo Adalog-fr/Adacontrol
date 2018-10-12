@@ -13,3 +13,9 @@
 
 check  derivations (max_parents, 2);
 search derivations (max_parents, 1);
+
+Tagged_Spec:   check  derivations (indicator, tagged,                   declaration);
+Tagged_Body:   check  derivations (indicator, tagged,   not_overriding, body_forbidden);
+Untagged_Spec: check  derivations (indicator, untagged,                 declaration);
+Untagged_Body: search derivations (indicator, untagged, overriding,     body_required);
+
