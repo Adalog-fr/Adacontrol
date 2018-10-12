@@ -1328,6 +1328,15 @@ package body Framework.Language is
      return Reference_Dir & Name;
    end Get_File_Parameter;
 
+   ------------------------
+   -- Get_Null_Parameter --
+   ------------------------
+
+   procedure Get_Null_Parameter is
+   begin
+      Next_Parameter;
+   end Get_Null_Parameter;
+
    ------------------
    -- Get_Modifier --
    ------------------

@@ -99,6 +99,10 @@ package Framework.Language is
    -- If the parameter is not an absolute file name, it is made relative to the
    -- directory of the rules file, or to the current directory if there is none
 
+   procedure Get_Null_Parameter;
+   -- Gets nothing, but pretend there was a parameter
+   -- Useful when a list of modifiers is not followed by any parameter
+
    function Get_Modifier (True_KW  : Wide_String;
                           False_KW : Wide_String := "";
                           Default  : Boolean     := False) return Boolean;
