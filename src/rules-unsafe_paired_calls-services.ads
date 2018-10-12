@@ -54,21 +54,21 @@ private package Rules.Unsafe_Paired_Calls.Services is
    -- Another kind of statement is encountered
    -- The associated Exception_Message provides more information
 
-   function Signature (Stmt : Asis.Statement; With_Check : Boolean) return Nesting_Signature;
+   not overriding function Signature (Stmt : Asis.Statement; With_Check : Boolean) return Nesting_Signature;
    -- Computes the signature by going up enclosing elements from Stmt
    -- Stops when anything else than if's (and corresponding paths) is encountered,
    --    or when an if has a condition which is not a simple reference to a boolean constant
    -- If With_Check is True, raises Invalid_Nesting for an inappropriate construct, otherwise
    --    returns the signature up to (not including) the inappropriate construct
 
-   function Matching_Call (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
+   not overriding function Matching_Call (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
    -- Returns the call burried into Stat (nested if statements...)
    -- Checks that Stat contains only (nested) if statements with no elsif paths, that the structure matches Signature,
    --    (including that every condition expression of if statements matches the one from the signature).
    -- Does not check that the call is an opening / closing call matching the one from Signature
    -- Returns Nil_Element if the checks fail.
 
-   function Matching_Block (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
+   not overriding function Matching_Block (Stat : Asis.Statement; Signature : Nesting_Signature) return Asis.Statement;
    -- Check that enclosing elements of Stat match the structure of Signature and return the top of the
    -- corresponding opening/closing block
    -- Return Nil_Element if enclosing elements of Stat do not match Signature.

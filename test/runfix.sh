@@ -106,9 +106,19 @@ for test_case in $list; do
     fi
 done
 
+nb_new=0
+cd fixed/res
+for test_case in `ls *`; do
+    if [ ! -e ../ref/$test_case ] ; then
+	printf "=> %-60s%-13s <=\n" ${test_case} "          NEW"
+        nb_new=$((nb_new+1))
+    fi;
+done
+cd ../..
+
 put_line_line
 put_title_line "`${ADACTL_FIX} -h 2>&1 | head -n 1 | tr -d \\\\r`"
-put_title_line "Passed= $nb_passed, Failed= $nb_failed"
+put_title_line "Passed= $nb_passed, Failed= $nb_failed, New= $nb_new"
 put_line_line
 
 if [ $SILENT -eq 1 ] ; then

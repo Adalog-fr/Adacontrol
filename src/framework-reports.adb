@@ -53,9 +53,9 @@ package body Framework.Reports is
          record
             Value : Output_Format;
          end record;
-      procedure Set (Variable : in out Output_Format_Type.Object; To : Wide_String);
-      function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String;
-      function  All_Values  (Variable : in Output_Format_Type.Object) return Wide_String;
+      overriding procedure Set         (Variable : in out Output_Format_Type.Object; To : Wide_String);
+      overriding function  Value_Image (Variable : in     Output_Format_Type.Object) return Wide_String;
+      overriding function  All_Values  (Variable : in     Output_Format_Type.Object) return Wide_String;
    end Output_Format_Type;
 
    --

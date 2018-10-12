@@ -34,9 +34,9 @@ package Framework.Variables.Shared_Types is
          record
             Value : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
          end record;
-      procedure Set (Variable : in out String_Type.Object; To : Wide_String);
-      function  Value_Image (Variable : in String_Type.Object) return Wide_String;
-      function  All_Values  (Variable : in String_Type.Object) return Wide_String;
+      overriding procedure Set         (Variable : in out String_Type.Object; To : Wide_String);
+      overriding function  Value_Image (Variable : in     String_Type.Object) return Wide_String;
+      overriding function  All_Values  (Variable : in     String_Type.Object) return Wide_String;
    end String_Type;
 
    type Switch is (Off, On);
