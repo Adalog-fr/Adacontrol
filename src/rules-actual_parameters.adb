@@ -45,12 +45,17 @@ with
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
-package body Rules.Default_Parameter is
+package body Rules.Actual_Parameters is
    use Ada.Strings.Wide_Unbounded;
    use Framework, Framework.Control_Manager, Utilities;
 
-   Rule_Used : Boolean := False;
-   Save_Used : Boolean;
+   type Subrules is (SR_Default);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
+   type Subrules_Set is array (Subrules) of Boolean;
+   No_Rule : constant Subrules_Set := (others => False);
+
+   Rule_Used : Subrules_Set := No_Rule;
+   Save_Used : Subrules_Set;
 
    type Usage_Kind is (Used, Positional, Not_Used);
    package Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Usage_Kind);
@@ -86,14 +91,15 @@ package body Rules.Default_Parameter is
 
    procedure Help is
    begin
-      User_Message  ("Rule: " & Rule_Id);
-      User_Message  ("Control subprogram calls or generic instantiations that use the default for a");
-      User_Message  ("given defaulted parameter, or provide it, positionally or using any notation");
+      User_Message ("Rule: " & Rule_Id);
+      User_Message ("Control subprogram calls or generic instantiations that use the default for a");
+      User_Message ("given defaulted parameter, or provide it, positionally or using any notation");
       User_Message;
-      Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter(1):",
+      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(1):");
+      Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter(2):",
                                            Extra_Value => "<Subprogram or generic name>");
-      User_Message  ("Parameter(2): <Formal parameter name> | all");
-      Usage_Kind_Utilities.Help_On_Flags ("Parameter(3):");
+      User_Message ("Parameter(3): <Formal parameter name> | all");
+      Usage_Kind_Utilities.Help_On_Flags ("Parameter(4):");
    end Help;
 
    -----------------
@@ -102,9 +108,10 @@ package body Rules.Default_Parameter is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Usage_Kind_Utilities, Entity_Kind_Utilities;
-
-      Entity      : Entity_Specification;
-      E_Kind      : Entity_Kind;
+      use Subrules_Flag_Utilities;
+      Subrule_Name : Subrules;
+      Entity       : Entity_Specification;
+      E_Kind       : Entity_Kind;
 
       procedure Update (Ent : Entity_Specification; Form : Wide_String; Usg : Usage_Kind) is
          Formals_Map : Parameter_Tree.Map;
@@ -134,38 +141,46 @@ package body Rules.Default_Parameter is
 
    begin  -- Add_Control
       if not Parameter_Exists then
-         Parameter_Error (Rule_Id, "missing subprogram or generic name");
+         Parameter_Error (Rule_Id, "parameters required");
       end if;
 
-      E_Kind := Get_Flag_Parameter (Allow_Any => True);
-      if E_Kind = E_Name then
-         Entity := Get_Entity_Parameter;
-      end if;
-      if not Parameter_Exists then
-         Parameter_Error (Rule_Id, "missing formal name");
-      end if;
+      Subrule_Name := Get_Flag_Parameter (Allow_Any => False);
+      case Subrule_Name is
+         when SR_Default =>
+            if not Parameter_Exists then
+               Parameter_Error (Rule_Id, "missing subprogram or generic name");
+            end if;
 
-      declare
-         Formal : constant Wide_String := Get_Name_Parameter;
-         -- Note: "ALL" is handled as a regular name
-         Usage : Usage_Kind;
-      begin
-         if Parameter_Exists then
-            Usage := Get_Flag_Parameter (Allow_Any => False);
-         else
-            Parameter_Error (Rule_Id, "usage kind expected");
-         end if;
+            E_Kind := Get_Flag_Parameter (Allow_Any => True);
+            if E_Kind = E_Name then
+               Entity := Get_Entity_Parameter;
+            end if;
+            if not Parameter_Exists then
+               Parameter_Error (Rule_Id, "missing formal name");
+            end if;
 
-         case E_Kind is
-            when E_Name =>
-               Update (Entity, Formal, Usage);
-            when E_Calls =>
-               Update (Entity_Calls, Formal, Usage);
-            when E_Instantiations =>
-               Update (Entity_Instantiations, Formal, Usage);
-         end case;
-      end;
-      Rule_Used  := True;
+            declare
+               Formal : constant Wide_String := Get_Name_Parameter;
+               -- Note: "ALL" is handled as a regular name
+               Usage  : Usage_Kind;
+            begin
+               if Parameter_Exists then
+                  Usage := Get_Flag_Parameter (Allow_Any => False);
+               else
+                  Parameter_Error (Rule_Id, "usage kind expected");
+               end if;
+
+               case E_Kind is
+                  when E_Name =>
+                     Update (Entity, Formal, Usage);
+                  when E_Calls =>
+                     Update (Entity_Calls, Formal, Usage);
+                  when E_Instantiations =>
+                     Update (Entity_Instantiations, Formal, Usage);
+               end case;
+            end;
+      end case;
+      Rule_Used (Subrule_Name) := True;
    end Add_Control;
 
    -------------
@@ -204,11 +219,11 @@ package body Rules.Default_Parameter is
    begin
       case Action is
          when Clear =>
-            Rule_Used := False;
+            Rule_Used := No_Rule;
             Clear (Entities);
          when Suspend =>
             Save_Used := Rule_Used;
-            Rule_Used := False;
+            Rule_Used := No_Rule;
          when Resume =>
             Rule_Used := Save_Used;
       end case;
@@ -259,7 +274,7 @@ package body Rules.Default_Parameter is
          end if;
       end Get_Formals_List;
 
-      procedure Check (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class)
+      procedure Check_Default (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class)
       is
          use Asis.Expressions;
          use Framework.Reports, Parameter_Tree;
@@ -323,11 +338,11 @@ package body Rules.Default_Parameter is
                        "non default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
          end if;
-      end Check;
+      end Check_Default;
 
       Entity_All : Entity_Specification;
    begin  -- Process_Call_Or_Instantiation
-      if not Rule_Used then
+      if not Rule_Used (SR_Default) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -357,59 +372,61 @@ package body Rules.Default_Parameter is
             return;
          end if;
 
-         declare
-            Formals : constant Asis.Element_List := Get_Formals_List;
-         begin
-            for I in Formals'Range loop
-               case Element_Kind (Formals (I)) is
-                  when A_Clause =>
-                     -- Use clause in generic formal part
-                     null;
-                  when A_Declaration =>
-                     case Declaration_Kind (Formals (I)) is
-                        when A_Parameter_Specification
-                           | A_Formal_Object_Declaration
-                             =>
-                           if not Is_Nil (Initialization_Expression (Formals (I))) then
-                              declare
-                                 Formal_Names : constant Asis.Expression_List := Names (Formals (I));
-                              begin
-                                 for F in Formal_Names'Range loop
-                                    Check (Formal_Names (F), Name_Context, All_Context);
-                                 end loop;
-                              end;
-                           end if;
-                        when A_Formal_Procedure_Declaration
-                           | A_Formal_Function_Declaration
-                             =>
-                           case Default_Kind (Formals (I)) is
-                              when Not_A_Default =>
-                                 Failure ("Not_A_Default");
-                              when A_Name_Default
-                                 | A_Box_Default
-                                 | A_Null_Default
-                                   =>
-                                 Check (Names (Formals (I))(1), Name_Context, All_Context);
-                              when A_Nil_Default =>
-                                 null;
-                           end case;
-                        when others =>
-                           -- Others cases have no possible default value
-                           null;
-                     end case;
-                  when others =>
-                     Failure ("Bad formal", Formals (I));
-               end case;
-            end loop;
-         end;
+         if Rule_Used (SR_Default) then
+            declare
+               Formals : constant Asis.Element_List := Get_Formals_List;
+            begin
+               for I in Formals'Range loop
+                  case Element_Kind (Formals (I)) is
+                     when A_Clause =>
+                        -- Use clause in generic formal part
+                        null;
+                     when A_Declaration =>
+                        case Declaration_Kind (Formals (I)) is
+                           when A_Parameter_Specification
+                              | A_Formal_Object_Declaration
+                              =>
+                              if not Is_Nil (Initialization_Expression (Formals (I))) then
+                                 declare
+                                    Formal_Names : constant Asis.Expression_List := Names (Formals (I));
+                                 begin
+                                    for F in Formal_Names'Range loop
+                                       Check_Default (Formal_Names (F), Name_Context, All_Context);
+                                    end loop;
+                                 end;
+                              end if;
+                           when A_Formal_Procedure_Declaration
+                              | A_Formal_Function_Declaration
+                              =>
+                              case Default_Kind (Formals (I)) is
+                                 when Not_A_Default =>
+                                    Failure ("Not_A_Default");
+                                 when A_Name_Default
+                                    | A_Box_Default
+                                    | A_Null_Default
+                                    =>
+                                    Check_Default (Names (Formals (I)) (1), Name_Context, All_Context);
+                                 when A_Nil_Default =>
+                                    null;
+                              end case;
+                           when others =>
+                              -- Others cases have no possible default value
+                              null;
+                        end case;
+                     when others =>
+                        Failure ("Bad formal", Formals (I));
+                  end case;
+               end loop;
+            end;
+         end if;
       end;
    end Process_Call_Or_Instantiation;
 
-begin  -- Rules.Default_Parameter
+begin  -- Rules.Actual_Parameters
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
-end Rules.Default_Parameter;
+end Rules.Actual_Parameters;

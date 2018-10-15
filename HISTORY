@@ -1,4 +1,3 @@
-
 =============
 == V1.20b5 ==
 =============
@@ -14,6 +13,14 @@ derivations
 
 reduceable_scope:
    add subrules use_type, use_all_type
+
+New rule:
+---------
+actual parameter
+
+Removed rule:
+-------------
+default_parameter, changed to a subrule of actual_parameter
 
 =============
 == V1.20r4 ==

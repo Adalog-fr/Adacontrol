@@ -1,0 +1,13 @@
+t_actual_parameters-default.adb:10:4: Error: Pos: use of defaulted formal "X" with positional association
+t_actual_parameters-default.adb:10:4: Error: All_1: non default use of formal "X"
+t_actual_parameters-default.adb:10:4: Found: ACTUAL_PARAMETERS: default use of formal "Y"
+t_actual_parameters-default.adb:13:7: Error: All_1: non default use of formal "X"
+t_actual_parameters-default.adb:13:7: Found: ACTUAL_PARAMETERS: default use of formal "Y"
+t_actual_parameters-default.adb:28:4: Error: Pos: use of defaulted formal ""<"" with positional association
+t_actual_parameters-default.adb:28:4: Error: ACTUAL_PARAMETERS: non default use of formal ""<""
+t_actual_parameters-default.adb:29:4: Found: All_I: non default use of formal "Max"
+t_actual_parameters-default.adb:42:4: Error: Pos: use of defaulted formal "X" with positional association
+t_actual_parameters-default.adb:42:4: Found: All_C: non default use of formal "X"
+t_actual_parameters-default.adb:42:4: Found: ACTUAL_PARAMETERS: default use of formal "Y"
+t_actual_parameters-default.adb:43:4: Found: ACTUAL_PARAMETERS: default use of formal "X"
+t_actual_parameters-default.adb:43:4: Found: All_C: non default use of formal "Y"

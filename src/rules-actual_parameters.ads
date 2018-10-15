@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Default_Parameter - Package specification                 --
+--  Rules.Actual_Parameters - Package specification                 --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005.         --
@@ -28,10 +28,10 @@
 with
   Asis;
 
-package Rules.Default_Parameter is
+package Rules.Actual_Parameters is
 
-   Rule_Id : constant Wide_String := "DEFAULT_PARAMETER";
+   Rule_Id : constant Wide_String := "ACTUAL_PARAMETERS";
 
    procedure Process_Call_Or_Instantiation (Element : in Asis.Element);
 
-end Rules.Default_Parameter;
+end Rules.Actual_Parameters;

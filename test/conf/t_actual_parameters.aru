@@ -1,0 +1,14 @@
+       search  actual_parameters (default, t_actual_parameters.default.gen, x,   used);
+       search  actual_parameters (default, t_actual_parameters.default.gen, y,   used);
+All_1: check   actual_parameters (default, t_actual_parameters.default.gen, all, not_used);
+
+       search  actual_parameters (default, t_actual_parameters.default.proc, x,   used);
+       search  actual_parameters (default, t_actual_parameters.default.proc, y,   used);
+All_C: search  actual_parameters (default, calls,                            all, not_used);
+All_I: search  actual_parameters (default, instantiations,                   all, not_used);
+
+       check actual_parameters (default, calls,          "<", not_used);
+       check actual_parameters (default, instantiations, "<", not_used);
+Pos:   check actual_parameters (default, calls,          all, positional);
+Pos:   check actual_parameters (default, instantiations, all, positional);
+

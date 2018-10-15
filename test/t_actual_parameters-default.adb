@@ -1,5 +1,6 @@
 with Ada.Text_IO;
-procedure T_default_parameter is
+separate (T_Actual_Parameters)
+procedure Default is
    use Ada.Text_Io;
 
    generic
@@ -40,5 +41,5 @@ procedure T_default_parameter is
 begin
    Proc (1);            -- X used, Y not used
    Proc (Y => 1.0);     -- X not used, Y used
-end T_default_parameter;
+end Default;
 

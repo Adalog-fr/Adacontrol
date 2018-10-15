@@ -22,6 +22,7 @@ Syntax errors found
 ../rules/SQALE.aru: No syntax error
 ../rules/verif.aru: No syntax error
 conf/t_abnormal_function_return.aru: No syntax error
+conf/t_actual_parameters.aru: No syntax error
 conf/t_allocators.aru: No syntax error
 conf/t_array_declarations.aru: No syntax error
 conf/t_aspects.aru: No syntax error
@@ -32,7 +33,6 @@ conf/t_characters.aru: No syntax error
 conf/t_comments.aru: No syntax error
 conf/t_declarations.aru: No syntax error
 conf/t_declarations_variables.aru: No syntax error
-conf/t_default_parameter.aru: No syntax error
 conf/t_dependencies.aru: No syntax error
 conf/t_derivations.aru: No syntax error
 conf/t_directly_accessed_globals.aru: No syntax error

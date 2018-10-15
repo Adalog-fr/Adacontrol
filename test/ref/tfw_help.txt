@@ -3,6 +3,15 @@ Control functions that can propagate Program_Error due to not executing a return
 
 Parameter(s): none
 ----
+Rule: ACTUAL_PARAMETERS
+Control subprogram calls or generic instantiations that use the default for a
+given defaulted parameter, or provide it, positionally or using any notation
+
+Parameter(1): default
+Parameter(2): <Subprogram or generic name> | calls | instantiations
+Parameter(3): <Formal parameter name> | all
+Parameter(4): used | positional | not_used
+----
 Rule: ALLOCATORS
 Control occurrences of allocators, either all of them,
 or just those for specific type(s) or types belonging
@@ -206,14 +215,6 @@ Parameter(s): {<location>} [ignore "<pattern>"] <decl>
 
 Variables:
 Declarations.Limited_Initialization: (Off, On) = Off
-----
-Rule: DEFAULT_PARAMETER
-Control subprogram calls or generic instantiations that use the default for a
-given defaulted parameter, or provide it, positionally or using any notation
-
-Parameter(1): <Subprogram or generic name> | calls | instantiations
-Parameter(2): <Formal parameter name> | all
-Parameter(3): used | positional | not_used
 ----
 Rule: DEPENDENCIES
 Control units that depend on a set of allowed/forbidden units,
@@ -1001,12 +1002,12 @@ Options:
    -x        exit when internal error
 ----
 Rules:
-   Abnormal_Function_Return        Allocators                      
-   Array_Declarations              Aspects                         
-   Assignments                     Barrier_Expressions             
-   Case_Statement                  Characters                      
-   Comments                        Declarations                    
-   Default_Parameter               Dependencies                    
+   Abnormal_Function_Return        Actual_Parameters               
+   Allocators                      Array_Declarations              
+   Aspects                         Assignments                     
+   Barrier_Expressions             Case_Statement                  
+   Characters                      Comments                        
+   Declarations                    Dependencies                    
    Derivations                     Directly_Accessed_Globals       
    Duplicate_Initialization_Calls  Entities                        
    Entity_Inside_Exception         Exception_Propagation           

@@ -2843,6 +2843,7 @@ is a dispatching call.
 
 @menu
 * Abnormal_Function_Return::
+* Actual_Parameters::
 * Allocators::
 * Array_Declarations::
 * Aspects::
@@ -2852,7 +2853,6 @@ is a dispatching call.
 * Characters::
 * Comments::
 * Declarations::
-* Default_Parameter::
 * Dependencies::
 * Derivations::
 * Directly_Accessed_Globals::
@@ -2914,7 +2914,7 @@ is a dispatching call.
 * With_Clauses::
 @end menu
 
-@node Abnormal_Function_Return, Allocators, Rules reference, Rules reference
+@node Abnormal_Function_Return, Actual_Parameters, Rules reference, Rules reference
 @section Abnormal_Function_Return
 This rule controls functions that may not terminate normally, i.e. where
 @code{Program_Error} could be raised due to reaching the end of the
@@ -2976,7 +2976,64 @@ It is possible to exit from an extended return statement with an
 return statement is not considered a proper return statement, and an
 appropriate message is issued.
 
-@node Allocators, Array_Declarations, Abnormal_Function_Return, Rules reference
+@node Actual_Parameters, Allocators, Abnormal_Function_Return, Rules reference
+@section Actual_Parameters
+This rule checks usage (or non-usage) of defaulted parameters.
+@subsection Syntax
+@example
+<control_kind> actual_parameters (default, <place>, <formal>, <usage>);
+<place>  ::= <entity> | calls | instantiations
+<formal> ::= <formal name> | all
+<usage>  ::= used | positional | not_used
+@end example
+
+@subsection Action
+The rule controls subprogram calls or generic instantiations that use
+the default value for the indicated parameter, or conversely don't use
+it, either in positional notation or in any notation. If a subprogram
+is called, or a generic instantiated, whose name matches <entity>, and
+it has a formal whose name is <formal name>, then:
+@itemize @bullet
+@item
+If the string @code{used} (case irrelevant) is given as the third
+parameter, the rule reports when there is no corresponding actual
+parameter (i.e. the default value is used for the parameter).
+@item
+If the string @code{positional} (case irrelevant) is given as the
+third parameter, the rule reports when there is an explicit
+corresponding actual parameter (i.e. the default is not used for the
+parameter), and the actual uses positional (not named) notation.
+@item
+If the string @code{not_used} (case irrelevant) is given as the third
+parameter, the rule reports when there is an explicit corresponding
+actual parameter (i.e. the default is not used for the parameter),
+independently of whether it uses positional or named notation.
+@end itemize
+
+As usual, the whole syntax for entities is allowed for
+<entity>. @xref{Specifying an Ada entity name}. On the other hand,
+<formal> is the simple name of the formal parameter.
+
+Alternatively, the <entity> can be specified as @code{calls}, to
+control all calls or @code{instantiations}, to control all
+instantiations. The <formal name> can be replaced by @code{all}, in
+which case all formals are controlled.
+
+Ex:
+@example
+check actual_parameters (default, P, X, used);
+check actual_parameters (default, P, Y, not used);
+search actual_parameters (default, calls, all, positional);
+@end example
+
+@subsection Tip
+If the <entity> is a generic subprogram, it is also possible to give a
+formal parameter  (a parameter of the subprogram, not a generic
+parameter) as the <formal name>; in this case, all instantiations of
+the indicated generic subprogram will be controlled for the use of the
+indicated parameter.
+
+@node Allocators, Array_Declarations, Actual_Parameters, Rules reference
 @section Allocators
 This rule controls the use of allocators (i.e. dynamic memory allocation).
 @subsection Syntax
@@ -3837,7 +3894,7 @@ comment is actually the old name of an entity that has been renamed.
 @subsection Limitations
 This rule does not support wide characters outside the basic Latin-1 set.
 
-@node Declarations, Default_Parameter, Comments, Rules reference
+@node Declarations, Dependencies, Comments, Rules reference
 @section Declarations
 This rule controls usage of various kinds of declarations, possibly only
 those occurring at specified locations.
@@ -4396,64 +4453,7 @@ of a modular type definition, thus preventing correct operation of
 ``binary_modular_type'' and ``non_binary_modular_type'' subrules. Such
 cases are detected by the rule ``uncheckable''.  @xref{Uncheckable}.
 
-@node Default_Parameter, Dependencies, Declarations, Rules reference
-@section Default_Parameter
-This rule checks usage (or non-usage) of defaulted parameters.
-@subsection Syntax
-@example
-<control_kind> default_parameter (<place>, <formal>, <usage>);
-<place>  ::= <entity> | calls | instantiations
-<formal> ::= <formal name> | all
-<usage>  ::= used | positional | not_used
-@end example
-
-@subsection Action
-The rule controls subprogram calls or generic instantiations that use
-the default value for the indicated parameter, or conversely don't use
-it, either in positional notation or in any notation. If a subprogram
-is called, or a generic instantiated, whose name matches <entity>, and
-it has a formal whose name is <formal name>, then:
-@itemize @bullet
-@item
-If the string @code{used} (case irrelevant) is given as the third
-parameter, the rule reports when there is no corresponding actual
-parameter (i.e. the default value is used for the parameter).
-@item
-If the string @code{positional} (case irrelevant) is given as the
-third parameter, the rule reports when there is an explicit
-corresponding actual parameter (i.e. the default is not used for the
-parameter), and the actual uses positional (not named) notation.
-@item
-If the string @code{not_used} (case irrelevant) is given as the third
-parameter, the rule reports when there is an explicit corresponding
-actual parameter (i.e. the default is not used for the parameter),
-independently of whether it uses positional or named notation.
-@end itemize
-
-As usual, the whole syntax for entities is allowed for
-<entity>. @xref{Specifying an Ada entity name}. On the other hand,
-<formal> is the simple name of the formal parameter.
-
-Alternatively, the <entity> can be specified as @code{calls}, to
-control all calls or @code{instantiations}, to control all
-instantiations. The <formal name> can be replaced by @code{all}, in
-which case all formals are controlled.
-
-Ex:
-@example
-check default_parameter (P, X, used);
-check default_parameter (P, Y, not used);
-search default_parameter (calls, all, positional);
-@end example
-
-@subsection Tip
-If the <entity> is a generic subprogram, it is also possible to give a
-formal parameter  (a parameter of the subprogram, not a generic
-parameter) as the <formal name>; in this case, all instantiations of
-the indicated generic subprogram will be controlled for the use of the
-indicated parameter.
-
-@node Dependencies, Derivations, Default_Parameter, Rules reference
+@node Dependencies, Derivations, Declarations, Rules reference
 @section Dependencies
 This rule controls dependencies of units (i.e. @code{@b{with}}
 clauses, parents, child units...), either according to a set of

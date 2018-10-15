@@ -31,6 +31,7 @@ with
 -- All general rules
 with
   Rules.Abnormal_Function_Return,
+  Rules.Actual_Parameters,
   Rules.Allocators,
   Rules.Array_Declarations,
   Rules.Aspects,
@@ -40,7 +41,6 @@ with
   Rules.Characters,
   Rules.Comments,
   Rules.Declarations,
-  Rules.Default_Parameter,
   Rules.Dependencies,
   Rules.Derivations,
   Rules.Directly_Accessed_Globals,
@@ -421,7 +421,7 @@ package body Framework.Plugs is
                   Rules.Usage. Process_Declaration (Element);
 
                when A_Package_Instantiation =>
-                  Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
@@ -434,12 +434,12 @@ package body Framework.Plugs is
                   Rules.With_Clauses.           Process_Instantiation         (Element);
 
                when A_Formal_Package_Declaration =>
-                  Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
 
                when A_Procedure_Instantiation =>
-                  Rules.Default_Parameter.      Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
                   Rules.Derivations.            Process_Instantiation         (Element);
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.       Process_Instantiation         (Element);
@@ -454,7 +454,7 @@ package body Framework.Plugs is
                   Rules.With_Clauses.           Process_Instantiation         (Element);
 
                when A_Function_Instantiation =>
-                  Rules.Default_Parameter.           Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.           Process_Call_Or_Instantiation (Element);
                   Rules.Derivations.                 Process_Instantiation         (Element);
                   Rules.Exception_Propagation.       Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.            Process_Instantiation         (Element);
@@ -622,7 +622,7 @@ package body Framework.Plugs is
 
                when A_Procedure_Call_Statement =>
                   Rules.Max_Call_Depth.                 Process_Call                  (Element);
-                  Rules.Default_Parameter.              Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.              Process_Call_Or_Instantiation (Element);
                   Rules.Duplicate_Initialization_Calls. Process_Procedure_Call        (Element);
                   Rules.Expressions.                    Process_Call                  (Element);
                   Rules.Exception_Propagation.          Process_Call                  (Element);
@@ -634,7 +634,7 @@ package body Framework.Plugs is
 
                when An_Entry_Call_Statement =>
                   Rules.Max_Call_Depth.          Process_Call                  (Element);
-                  Rules.Default_Parameter.       Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.       Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.   Process_Call                  (Element);
                   Rules.Expressions.             Process_Call                  (Element);
                   Rules.Insufficient_Parameters. Process_Call                  (Element);
@@ -736,7 +736,7 @@ package body Framework.Plugs is
                   Rules.Not_Elaboration_Calls.Process_Allocator (Element);
 
                 when A_Function_Call =>
-                  Rules.Default_Parameter.        Process_Call_Or_Instantiation (Element);
+                  Rules.Actual_Parameters.        Process_Call_Or_Instantiation (Element);
                   Rules.Exception_Propagation.    Process_Call                  (Element);
                   Rules.Expressions.              Process_Call                  (Element);
                   Rules.Insufficient_Parameters.  Process_Call                  (Element);
