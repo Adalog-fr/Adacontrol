@@ -9,8 +9,8 @@
 -- To make comparisons easier, they are given in the order of the chapter 8 of the Gnatcheck Reference Manual
 
 
--- 8.1 Style related rules
--- 8.1.1 Tasking
+-- 9.1 Style related rules
+-- 9.1.1 Tasking
 Multiple_Entries_In_Protected_Definitions:
    check declarations (multiple_protected_entries);
 
@@ -18,7 +18,7 @@ Volatile_Objects_Without_Address_Clauses:
    check object_declarations (volatile_no_address);
 
 
--- 8.1.2. Object Orientation
+-- 9.1.2. Object Orientation
 -- TBSL Constructors
 
 -- TBSL Deep_Inheritance_Hierarchies
@@ -45,7 +45,7 @@ Visible_Components:
    check declarations (public record_type, public extension);
 
 
--- 8.1.3. Portability
+-- 9.1.3. Portability
 "Forbidden_Attributes:all":
    check entities (all 'all);
 --"Forbidden_Attributes:gnat":
@@ -80,7 +80,7 @@ Separate_Numeric_Error_Handlers:
    check declarations (non_joint_CE_NE_handler);
 
 
--- 8.1.4. Program Structure
+-- 9.1.4. Program Structure
 "Deep_Library_Hierarchy:5":
    check dependencies (parent, max 5);
 
@@ -97,7 +97,7 @@ Non_Visible_Exceptions:
 Raising_External_Exceptions:
    check statements (raise_nonpublic);
 
--- 8.1.5. Programming Practice
+-- 9.1.5. Programming Practice
 Anonymous_Arrays:
    check declarations (single_array);
 
@@ -225,7 +225,7 @@ USE_PACKAGE_Clauses:
    check use_clauses;
 
 
--- 8.1.6. Readability
+-- 9.1.6. Readability
 -- Identifier_Casing
 -- Identifier_Prefixes
 -- Identifier_Suffixes
@@ -246,9 +246,9 @@ Uncommented_BEGIN_In_Package_Bodies:
    -- (better checked by other rules)
 
 
--- 8.1.7. Source Code Presentation (no gnatcheck rule)
+-- 9.1.7. Source Code Presentation (no gnatcheck rule)
 
--- 8.2. Feature Usage Rules
+-- 9.2. Feature Usage Rules
 Abstract_Type_Declarations:
    check declarations (abstract_type);
 
@@ -357,7 +357,7 @@ Unconstrained_Array_Returns:
    check return_type (unconstrained_array);
 
 
---8.3. Metrics-Related Rules
+--9.3. Metrics-Related Rules
 -- TBSL Metrics_Essential_Complexity
 
 -- TBSL Metrics_Cyclomatic_Complexity
@@ -366,7 +366,7 @@ Unconstrained_Array_Returns:
    check max_size (unit, 1000);
 
 
--- 8.4. SPARK Ada Rules
+-- 9.4. SPARK Ada Rules
 Annotated_Comments: -- example for "CMarker"
    check comments (Pattern, "^C[ \t]*Marker");
 
