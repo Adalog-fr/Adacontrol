@@ -37,6 +37,7 @@ with
 -- Adalog
 with
   Binary_Map,
+  Linear_Queue,
   Thick_Queries,
   Utilities;
 
@@ -49,7 +50,7 @@ package body Rules.Actual_Parameters is
    use Ada.Strings.Wide_Unbounded;
    use Framework, Framework.Control_Manager, Utilities;
 
-   type Subrules is (SR_Default);
+   type Subrules is (SR_Default, SR_Entity);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
    type Subrules_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrules_Set := (others => False);
@@ -57,29 +58,54 @@ package body Rules.Actual_Parameters is
    Rule_Used : Subrules_Set := No_Rule;
    Save_Used : Subrules_Set;
 
-   type Usage_Kind is (Used, Positional, Not_Used);
-   package Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Usage_Kind);
+   ----------------------------------------------
+   -- Declarations for subrule SR_Default
+
+   type Default_Usage_Kind is (Used, Positional, Not_Used);
+   package Default_Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Default_Usage_Kind);
 
    type Entity_Kind is (E_Name, E_Calls, E_Instantiations);
    package Entity_Kind_Utilities is new Framework.Language.Flag_Utilities (Entity_Kind, Prefix => "E_");
 
-   type Usage_Rec is new Basic_Rule_Context with
+   type Default_Usage_Rec is new Basic_Rule_Context with
       record
          Active : Boolean;
       end record;
-   type Usage_Tab is array (Usage_Kind) of Usage_Rec;
-   Empty_Usage : constant Usage_Tab := (others => (Basic_Rule_Context with Active => False));
+   type Default_Usage_Tab is array (Default_Usage_Kind) of Default_Usage_Rec;
+   Empty_Default_Usage : constant Default_Usage_Tab := (others => (Basic_Rule_Context with Active => False));
+
+
+   ----------------------------------------------
+   -- Declarations for subrule SR_Entity
+
+   type Entity_Context is new Basic_Rule_Context with
+      record
+         Entity : Entity_Specification;
+      end record;
+
+   package Entity_Queue is new Linear_Queue (Entity_Context);
+
+   ----------------------------------------------
+   -- Declarations for all subrules
+
+   type Parameter_Data is
+      record
+         Default_Data : Default_Usage_Tab;
+         Entity_Data  : Entity_Queue.Queue;
+      end record;
+   Empty_Parameter_Data : constant Parameter_Data := (Default_Data => Empty_Default_Usage,
+                                                      Entity_Data  => Entity_Queue.Empty_Queue);
 
    package Parameter_Tree is new Binary_Map (Key_Type   => Unbounded_Wide_String,
-                                             Value_Type => Usage_Tab);
+                                             Value_Type => Parameter_Data);
 
-   type Entity_Context is new Root_Context with
+   type Controlled_Entity_Context is new Root_Context with
       record
          Formals_Map : Parameter_Tree.Map;
       end record;
-   procedure Clear (Context : in out Entity_Context);
+   procedure Clear (Context : in out Controlled_Entity_Context);
 
-   Entities : Context_Store;
+   Controlled_Entities : Context_Store;
 
    Key_All               : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("ALL");
    Entity_Calls          : constant Entity_Specification  := Value ("CALLS");
@@ -99,7 +125,7 @@ package body Rules.Actual_Parameters is
       Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter(2):",
                                            Extra_Value => "<Subprogram or generic name>");
       User_Message ("Parameter(3): <Formal parameter name> | all");
-      Usage_Kind_Utilities.Help_On_Flags ("Parameter(4):");
+      Default_Usage_Kind_Utilities.Help_On_Flags ("Parameter(4):");
    end Help;
 
    -----------------
@@ -107,37 +133,63 @@ package body Rules.Actual_Parameters is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Usage_Kind_Utilities, Entity_Kind_Utilities;
+      use Framework.Language, Default_Usage_Kind_Utilities, Entity_Kind_Utilities;
       use Subrules_Flag_Utilities;
       Subrule_Name : Subrules;
       Entity       : Entity_Specification;
       E_Kind       : Entity_Kind;
 
-      procedure Update (Ent : Entity_Specification; Form : Wide_String; Usg : Usage_Kind) is
+      procedure Update_Default (Ent : Entity_Specification; Form : Wide_String; Usg : Default_Usage_Kind) is
          Formals_Map : Parameter_Tree.Map;
       begin
          begin
-            Associate (Entities, Ent, Entity_Context'(Formals_Map => Formals_Map));
+            Associate (Controlled_Entities, Ent, Controlled_Entity_Context'(Formals_Map => Formals_Map));
          exception
             when Already_In_Store =>
                null;
          end;
 
          -- Note: Maps have object (reference) semantics
-         Formals_Map := Entity_Context (Association (Entities, Ent)).Formals_Map;
+         Formals_Map := Controlled_Entity_Context (Association (Controlled_Entities, Ent)).Formals_Map;
          declare
-            Val : Usage_Tab := Parameter_Tree.Fetch (Formals_Map,
-                                                     To_Unbounded_Wide_String (Form),
-                                                     Default_Value => Empty_Usage);
+            Formal_Data : Parameter_Data := Parameter_Tree.Fetch (Formals_Map,
+                                                                  To_Unbounded_Wide_String (Form),
+                                                                  Default_Value => Empty_Parameter_Data);
+            Val : Default_Usage_Tab renames Formal_Data.Default_Data;
          begin
             if Val (Usg).Active then
                Parameter_Error (Rule_Id, "this combination of parameters already specified");
             end if;
             Val (Usg) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with True);
-            Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Form), Val);
-            Update (Entities, Entity_Context'(Formals_Map => Formals_Map));
+            Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Form), Formal_Data);
+            Update (Controlled_Entities, Controlled_Entity_Context'(Formals_Map => Formals_Map));
          end;
-      end Update;
+      end Update_Default;
+
+      procedure Update_Entity (Ent : Entity_Specification; Formal : Wide_String; Param_Ent : Entity_Specification) is
+         use Entity_Queue;
+         Formals_Map : Parameter_Tree.Map;
+      begin
+         begin
+            Associate (Controlled_Entities, Ent, Controlled_Entity_Context'(Formals_Map => Formals_Map));
+         exception
+            when Already_In_Store =>
+               null;
+         end;
+
+         -- Note: Maps have object (reference) semantics
+         Formals_Map := Controlled_Entity_Context (Association (Controlled_Entities, Ent)).Formals_Map;
+         declare
+            Formal_Data : Parameter_Data := Parameter_Tree.Fetch (Formals_Map,
+                                                                  To_Unbounded_Wide_String (Formal),
+                                                                  Default_Value => Empty_Parameter_Data);
+
+         begin
+            Append (Formal_Data.Entity_Data, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Param_Ent));
+            Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Formal), Formal_Data);
+            Update (Controlled_Entities, Controlled_Entity_Context'(Formals_Map => Formals_Map));
+         end;
+      end Update_Entity;
 
    begin  -- Add_Control
       if not Parameter_Exists then
@@ -145,25 +197,25 @@ package body Rules.Actual_Parameters is
       end if;
 
       Subrule_Name := Get_Flag_Parameter (Allow_Any => False);
-      case Subrule_Name is
-         when SR_Default =>
-            if not Parameter_Exists then
-               Parameter_Error (Rule_Id, "missing subprogram or generic name");
-            end if;
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "missing subprogram or generic name");
+      end if;
 
-            E_Kind := Get_Flag_Parameter (Allow_Any => True);
-            if E_Kind = E_Name then
-               Entity := Get_Entity_Parameter;
-            end if;
-            if not Parameter_Exists then
-               Parameter_Error (Rule_Id, "missing formal name");
-            end if;
+      E_Kind := Get_Flag_Parameter (Allow_Any => True);
+      if E_Kind = E_Name then
+         Entity := Get_Entity_Parameter;
+      end if;
 
-            declare
-               Formal : constant Wide_String := Get_Name_Parameter;
-               -- Note: "ALL" is handled as a regular name
-               Usage  : Usage_Kind;
-            begin
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "missing formal name");
+      end if;
+      declare
+         Formal : constant Wide_String := To_Upper (Get_Name_Parameter);
+         -- Note: "ALL" is handled as a regular name
+         Usage  : Default_Usage_Kind;
+      begin
+         case Subrule_Name is
+            when SR_Default =>
                if Parameter_Exists then
                   Usage := Get_Flag_Parameter (Allow_Any => False);
                else
@@ -172,14 +224,31 @@ package body Rules.Actual_Parameters is
 
                case E_Kind is
                   when E_Name =>
-                     Update (Entity, Formal, Usage);
+                     Update_Default (Entity, Formal, Usage);
                   when E_Calls =>
-                     Update (Entity_Calls, Formal, Usage);
+                     Update_Default (Entity_Calls, Formal, Usage);
                   when E_Instantiations =>
-                     Update (Entity_Instantiations, Formal, Usage);
+                     Update_Default (Entity_Instantiations, Formal, Usage);
                end case;
-            end;
-      end case;
+            when SR_Entity =>
+               if Parameter_Exists then
+                  loop
+                     case E_Kind is
+                        when E_Name =>
+                           Update_Entity (Entity, Formal, Get_Entity_Parameter);
+                        when E_Calls =>
+                           Update_Entity (Entity_Calls, Formal, Get_Entity_Parameter);
+                        when E_Instantiations =>
+                           Update_Entity (Entity_Instantiations, Formal, Get_Entity_Parameter);
+                     end case;
+                     exit when not Parameter_Exists;
+                  end loop;
+               else
+                  Parameter_Error (Rule_Id, "entity expected");
+               end if;
+         end case;
+      end;
+
       Rule_Used (Subrule_Name) := True;
    end Add_Control;
 
@@ -187,10 +256,10 @@ package body Rules.Actual_Parameters is
    -- Or_Else --
    -------------
 
-   function Or_Else (L, R : Usage_Tab) return Usage_Tab is
-      Result : Usage_Tab;
+   function Or_Else (L, R : Default_Usage_Tab) return Default_Usage_Tab is
+      Result : Default_Usage_Tab;
    begin
-      for U in Usage_Kind loop
+      for U in Default_Usage_Kind loop
          if L (U).Active then
             Result (U) := L (U);
          else
@@ -204,7 +273,7 @@ package body Rules.Actual_Parameters is
    -- Clear --
    -----------
 
-   procedure Clear (Context : in out Entity_Context) is
+   procedure Clear (Context : in out Controlled_Entity_Context) is
       use Parameter_Tree;
    begin
       Clear (Context.Formals_Map);
@@ -220,7 +289,7 @@ package body Rules.Actual_Parameters is
       case Action is
          when Clear =>
             Rule_Used := No_Rule;
-            Clear (Entities);
+            Clear (Controlled_Entities);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := No_Rule;
@@ -235,7 +304,7 @@ package body Rules.Actual_Parameters is
 
    procedure Prepare is
    begin
-      Balance (Entities);
+      Balance (Controlled_Entities);
       -- We do not balance the trees for each formal.
       -- Since we do not expect more than 1 or 2 entries in each...
    end Prepare;
@@ -281,12 +350,11 @@ package body Rules.Actual_Parameters is
 
          Formal_Key : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
-         Usage         : Usage_Tab        := Empty_Usage;
-         Actual        : constant Asis.Expression := Actual_Expression (Element, Formal, Return_Default => False);
-         Is_Defaulted  : constant Boolean := Is_Nil (Actual);
-         Is_Positional : constant Boolean := not Is_Defaulted
-                                             and then Is_Nil (Formal_Parameter (Enclosing_Element (Actual)));
-
+         Usage         :          Default_Usage_Tab := Empty_Default_Usage;
+         Actual        : constant Asis.Expression   := Actual_Expression (Element, Formal, Return_Default => False);
+         Is_Defaulted  : constant Boolean           := Is_Nil (Actual);
+         Is_Positional : constant Boolean           := not Is_Defaulted
+                                                       and then Is_Nil (Formal_Parameter (Enclosing_Element (Actual)));
       begin
          -- Build Usage in order of preferences:
          --    Sp_Name, Formal_Name
@@ -296,19 +364,22 @@ package body Rules.Actual_Parameters is
          --    All,     Positional
          --    All,     All
          if Name_Context /= No_Matching_Context then
-            if Is_Present (Entity_Context (Name_Context).Formals_Map, Formal_Key) then
-               Usage := Fetch (Entity_Context (Name_Context).Formals_Map, Formal_Key);
+            if Is_Present (Controlled_Entity_Context (Name_Context).Formals_Map, Formal_Key) then
+               Usage := Fetch (Controlled_Entity_Context (Name_Context).Formals_Map, Formal_Key).Default_Data;
             end if;
-            if Is_Present (Entity_Context (Name_Context).Formals_Map, Key_All) then
-               Usage := Or_Else (Usage, Fetch (Entity_Context (Name_Context).Formals_Map, Key_All));
+            if Is_Present (Controlled_Entity_Context (Name_Context).Formals_Map, Key_All) then
+               Usage := Or_Else (Usage,
+                                 Fetch (Controlled_Entity_Context (Name_Context).Formals_Map, Key_All).Default_Data);
             end if;
          end if;
          if All_Context /= No_Matching_Context then
-            if Is_Present (Entity_Context (All_Context).Formals_Map, Formal_Key) then
-               Usage := Or_Else (Usage, Fetch (Entity_Context (All_Context).Formals_Map, Formal_Key));
+            if Is_Present (Controlled_Entity_Context (All_Context).Formals_Map, Formal_Key) then
+               Usage := Or_Else (Usage,
+                                 Fetch (Controlled_Entity_Context (All_Context).Formals_Map, Formal_Key).Default_Data);
             end if;
-            if Is_Present (Entity_Context (All_Context).Formals_Map, Key_All) then
-               Usage := Or_Else (Usage, Fetch (Entity_Context (All_Context).Formals_Map, Key_All));
+            if Is_Present (Controlled_Entity_Context (All_Context).Formals_Map, Key_All) then
+               Usage := Or_Else (Usage,
+                                 Fetch (Controlled_Entity_Context (All_Context).Formals_Map, Key_All).Default_Data);
             end if;
          end if;
 
@@ -340,9 +411,96 @@ package body Rules.Actual_Parameters is
          end if;
       end Check_Default;
 
+      procedure Check_Entity (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class)
+      is
+         use Asis.Expressions;
+         use Parameter_Tree;
+
+         Formal_Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
+                                                                                  (Defining_Name_Image (Formal)));
+         Actual : Asis.Expression  := Actual_Expression (Element, Formal, Return_Default => True);
+
+         procedure Do_Entity_Report (Ent_Queue : Entity_Queue.Queue) is
+            use Entity_Queue, Reports;
+            C : Cursor := First (Ent_Queue);
+            Good_Actual : Asis.Expression;
+         begin
+            while Has_Element (C) loop
+               Good_Actual := Actual;
+               if not Matches (Fetch (C).Entity, Good_Actual,Extend_To => All_Extensions) then
+                  Good_Actual := Ultimate_Name (Actual);
+                  if not Matches (Fetch (C).Entity, Good_Actual,Extend_To => All_Extensions) then
+                     Good_Actual := Nil_Element;
+                  end if;
+               end if;
+               if not Is_Nil (Good_Actual) then
+                  if Is_Nil (Actual_Expression (Element, Formal, Return_Default => False)) then
+                     -- A default value, attach message to the call (or instanciation) since the entity does not appear
+                     Report (Rule_Id,
+                             Fetch (C),
+                             Get_Location (Element),
+                             "Entity " & Adjust_Image (Image (Fetch (C).Entity))
+                             & " used as actual for parameter "  & Defining_Name_Image (Formal)
+                             & " (default value)");
+                  else
+                     -- Normal case
+                     Report (Rule_Id,
+                             Fetch (C),
+                             Get_Location (Actual),
+                             "Entity " & Adjust_Image (Image (Fetch (C).Entity))
+                             & " used as actual for parameter "  & Defining_Name_Image (Formal));
+                  end if;
+               end if;
+               C := Next (C);
+            end loop;
+         end Do_Entity_Report;
+
+      begin  -- Check_Entity
+             -- Get a clean name
+         loop
+            case Expression_Kind (Actual) is
+               when An_Identifier | An_Attribute_Reference =>
+                  exit;
+               when A_Selected_Component =>
+                  Actual := Selector (Actual);
+               when An_Indexed_Component =>
+                  Actual := Prefix (Actual);
+               when A_Function_Call =>
+                  Actual := Prefix (Actual);
+               when A_Parenthesized_Expression =>
+                  Actual := Expression_Parenthesized (Actual);
+               when A_Type_Conversion | A_Qualified_Expression =>
+                  Actual := Converted_Or_Qualified_Expression (Actual);
+               when others =>
+                  return;
+            end case;
+         end loop;
+
+         -- Check Sp_Name, Formal_Name
+         --       Sp_Name, All
+         --       All,     Formal_Name
+         --       All,     All
+         if Name_Context /= No_Matching_Context then
+            if Is_Present (Controlled_Entity_Context (Name_Context).Formals_Map, Formal_Key) then
+               Do_Entity_Report (Fetch (Controlled_Entity_Context (Name_Context).Formals_Map, Formal_Key).Entity_Data);
+            end if;
+            if Is_Present (Controlled_Entity_Context (Name_Context).Formals_Map, Key_All) then
+               Do_Entity_Report (Fetch (Controlled_Entity_Context (Name_Context).Formals_Map, Key_All).Entity_Data);
+            end if;
+         end if;
+         if All_Context /= No_Matching_Context then
+            if Is_Present (Controlled_Entity_Context (All_Context).Formals_Map, Formal_Key) then
+               Do_Entity_Report (Fetch (Controlled_Entity_Context (All_Context).Formals_Map, Formal_Key).Entity_Data);
+            end if;
+            if Is_Present (Controlled_Entity_Context (All_Context).Formals_Map, Key_All) then
+               Do_Entity_Report (Fetch (Controlled_Entity_Context (All_Context).Formals_Map, Key_All).Entity_Data);
+            end if;
+         end if;
+      end Check_Entity;
+
       Entity_All : Entity_Specification;
    begin  -- Process_Call_Or_Instantiation
-      if not Rule_Used (SR_Default) then
+      if Rule_Used = No_Rule then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -363,41 +521,46 @@ package body Rules.Actual_Parameters is
       end case;
 
       declare
-         Name_Context : constant Root_Context'Class := Matching_Context (Entities,
+         Name_Context : constant Root_Context'Class := Matching_Context (Controlled_Entities,
                                                                          Name,
                                                                          Extend_To => All_Extensions);
-         All_Context  : constant Root_Context'Class := Control_Manager.Association (Entities, Entity_All);
+         All_Context  : constant Root_Context'Class := Control_Manager.Association (Controlled_Entities, Entity_All);
       begin
          if Name_Context = No_Matching_Context and All_Context = No_Matching_Context then
             return;
          end if;
 
-         if Rule_Used (SR_Default) then
-            declare
-               Formals : constant Asis.Element_List := Get_Formals_List;
-            begin
-               for I in Formals'Range loop
-                  case Element_Kind (Formals (I)) is
-                     when A_Clause =>
-                        -- Use clause in generic formal part
-                        null;
-                     when A_Declaration =>
-                        case Declaration_Kind (Formals (I)) is
-                           when A_Parameter_Specification
-                              | A_Formal_Object_Declaration
-                              =>
-                              if not Is_Nil (Initialization_Expression (Formals (I))) then
-                                 declare
-                                    Formal_Names : constant Asis.Expression_List := Names (Formals (I));
-                                 begin
-                                    for F in Formal_Names'Range loop
+         declare
+            Formals : constant Asis.Element_List := Get_Formals_List;
+         begin
+            for I in Formals'Range loop
+               case Element_Kind (Formals (I)) is
+                  when A_Clause =>
+                     -- Use clause in generic formal part
+                     null;
+                  when A_Declaration =>
+                     case Declaration_Kind (Formals (I)) is
+                        when A_Parameter_Specification
+                           | A_Formal_Object_Declaration
+                           =>
+                           if Rule_Used (SR_Entity) or not Is_Nil (Initialization_Expression (Formals (I))) then
+                              declare
+                                 Formal_Names : constant Asis.Expression_List := Names (Formals (I));
+                              begin
+                                 for F in Formal_Names'Range loop
+                                    if Rule_Used (SR_Default) then
                                        Check_Default (Formal_Names (F), Name_Context, All_Context);
-                                    end loop;
-                                 end;
-                              end if;
-                           when A_Formal_Procedure_Declaration
-                              | A_Formal_Function_Declaration
-                              =>
+                                    end if;
+                                    if Rule_Used (SR_Entity) then
+                                       Check_Entity (Formal_Names (F), Name_Context, All_Context);
+                                    end if;
+                                 end loop;
+                              end;
+                           end if;
+                        when A_Formal_Procedure_Declaration
+                           | A_Formal_Function_Declaration
+                           =>
+                           if Rule_Used (SR_Default) then
                               case Default_Kind (Formals (I)) is
                                  when Not_A_Default =>
                                     Failure ("Not_A_Default");
@@ -409,16 +572,20 @@ package body Rules.Actual_Parameters is
                                  when A_Nil_Default =>
                                     null;
                               end case;
-                           when others =>
-                              -- Others cases have no possible default value
-                              null;
-                        end case;
-                     when others =>
-                        Failure ("Bad formal", Formals (I));
-                  end case;
-               end loop;
-            end;
-         end if;
+                           end if;
+                           if Rule_Used (SR_Entity) then
+                              Check_Entity (Names (Formals (I)) (1), Name_Context, All_Context);
+                           end if;
+
+                        when others =>
+                           -- Others cases have no possible default value
+                           null;
+                     end case;
+                  when others =>
+                     Failure ("Bad formal", Formals (I));
+               end case;
+            end loop;
+         end;
       end;
    end Process_Call_Or_Instantiation;
 

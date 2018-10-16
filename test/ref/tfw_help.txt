@@ -7,10 +7,12 @@ Rule: ACTUAL_PARAMETERS
 Control subprogram calls or generic instantiations that use the default for a
 given defaulted parameter, or provide it, positionally or using any notation
 
-Parameter(1): default
+Parameter(1): default | entity
 Parameter(2): <Subprogram or generic name> | calls | instantiations
 Parameter(3): <Formal parameter name> | all
-Parameter(4): used | positional | not_used
+Parameter(4)
+   for default: used | positional | not_used
+   for entity : <Searched entity>
 ----
 Rule: ALLOCATORS
 Control occurrences of allocators, either all of them,
