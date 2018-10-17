@@ -59,6 +59,7 @@ with
   Rules.Local_Hiding,
   Rules.Max_Blank_Lines,
   Rules.Max_Call_Depth,
+  Rules.Max_Expression_Items,
   Rules.Max_Line_Length,
   Rules.Max_Nesting,
   Rules.Max_Size,
@@ -710,7 +711,8 @@ package body Framework.Plugs is
 
 
          when An_Expression =>
-            Rules.Expressions. Process_Expression (Element);
+            Rules.Expressions.          Process_Expression (Element);
+            Rules.Max_Expression_Items. Process_Expression (Element);
 
             case Expression_Kind (Element) is
                when An_Attribute_Reference =>

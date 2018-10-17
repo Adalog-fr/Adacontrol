@@ -3,6 +3,10 @@
 == V1.20b5 ==
 =============
 
+New rule:
+---------
+max_expression_items
+
 Changes to existing rules:
 --------------------------
 derivations

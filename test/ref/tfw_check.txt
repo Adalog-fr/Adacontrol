@@ -51,6 +51,7 @@ conf/t_local_access.aru: No syntax error
 conf/t_local_hiding.aru: No syntax error
 conf/t_max_blank_lines.aru: No syntax error
 conf/t_max_call_depth.aru: No syntax error
+conf/t_max_expression_items.aru: No syntax error
 conf/t_max_line_length.aru: No syntax error
 conf/t_max_nesting.aru: No syntax error
 conf/t_max_size.aru: No syntax error

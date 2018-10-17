@@ -1,0 +1,16 @@
+t_max_expression_items.adb:14:9: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:15:9: Error: MAX_EXPRESSION_ITEMS: Expression is too complex (5)
+t_max_expression_items.adb:18:9: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:18:16: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:25:13: Error: MAX_EXPRESSION_ITEMS: Expression is too complex (5)
+t_max_expression_items.adb:27:13: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:29:15: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:31:28: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:32:28: Error: MAX_EXPRESSION_ITEMS: Expression is too complex (5)
+t_max_expression_items.adb:35:27: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:36:12: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:37:44: Found: MAX_EXPRESSION_ITEMS: Expression is too complex (4)
+t_max_expression_items.adb:40:9: Error: MAX_EXPRESSION_ITEMS: Expression is too complex (10)
+
+Counts summary:
+MAX_EXPRESSION_ITEMS: 16

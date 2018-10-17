@@ -2871,6 +2871,7 @@ is a dispatching call.
 * Local_Hiding::
 * Max_Blank_Lines::
 * Max_Call_Depth::
+* Max_Expression_Items::
 * Max_Line_Length::
 * Max_Nesting::
 * Max_Size::
@@ -6301,7 +6302,7 @@ check max_blank_lines (5);
 @subsection Fixes
 This rule generates fixes: Extra blank lines are removed.
 
-@node Max_Call_Depth, Max_Line_Length, Max_Blank_Lines, Rules reference
+@node Max_Call_Depth, Max_Expression_Items, Max_Blank_Lines, Rules reference
 @section Max_Call_Depth
 This rule controls the maximum depth of subprograms (or entry) calls.
 @subsection Syntax
@@ -6390,7 +6391,43 @@ subprograms from the standard library; they are all assumed to have a
 depth of 1. Such calls are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
-@node  Max_Line_Length, Max_Nesting, Max_Call_Depth, Rules reference
+@node Max_Expression_Items, Max_Line_Length, Max_Call_Depth, Rules reference
+@section Max_Expression_Items
+This rule controls expressions that have too many elements and are therefore too complex.
+
+@subsection Syntax
+@example
+<control_kind> max_expression_items (<max_allowed_primaries>);
+@end example
+
+@subsection Action
+This rule controls the complexity of expression, as defined by the
+number of primaries (i.e. simple elements connected by operators,
+including short circuit operations). The indicated value is the
+maximum @i{allowed} value, i.e. the rule will trigger if that value is
+exceeded.
+
+More precisely, for the purpose of evaluating the complexity of an
+expression, every simple element counts for 1. A parenthesized
+expression is not counted (it is counted for the value of the
+expression within the parentheses). True (not operators) function
+calls, aggregates, @code{@b{if}} and @code{@b{case}} expressions,
+predicates (@code{@b{for all}}, @code{@b{for some}}), etc. are counted
+for 1, but every subexpression within them is rechecked.
+
+ This rule can be given once for each of check, search, and
+count. This way, it is possible to have a complexity considered a
+warning (search), and one considered an error (check). Of course, this
+makes sense only if the complexity for search is less than the one for
+check.
+
+Ex:
+@example
+   search max_expression_items (10);
+   check  max_expression_items (20);
+@end example
+
+@node  Max_Line_Length, Max_Nesting, Max_Expression_Items, Rules reference
 @section Max_Line_Length
 This rule controls that no line exceeds a given length.
 

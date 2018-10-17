@@ -424,6 +424,12 @@ Parameter (2..): <Forced entity>
 Variables:
 Max_Call_Depth.Count_Expr_Fun_Calls: (Off, On) = On
 ----
+Rule: MAX_EXPRESSION_ITEMS
+Control that the number of items in an expression
+does not exceed the indicated maximum
+
+Parameter: <Max allowed items>
+----
 Rule: MAX_LINE_LENGTH
 Control that no source line is longer than the indicated maximum
 
@@ -1009,27 +1015,27 @@ Rules:
    Improper_Initialization         Instantiations                  
    Insufficient_Parameters         Local_Access                    
    Local_Hiding                    Max_Blank_Lines                 
-   Max_Call_Depth                  Max_Line_Length                 
-   Max_Nesting                     Max_Size                        
-   Max_Statement_Nesting           Movable_Accept_Statements       
-   Naming_Convention               Non_Static                      
-   Not_Elaboration_Calls           Not_Selected_Name               
-   No_Operator_Usage               Object_Declarations             
-   Parameter_Aliasing              Parameter_Declarations          
-   Positional_Associations         Potentially_Blocking_Operations 
-   Pragmas                         Record_Declarations             
-   Reduceable_Scope                Representation_Clauses          
-   Return_Statements               Return_Type                     
-   Side_Effect_Parameters          Silent_Exceptions               
-   Simplifiable_Expressions        Simplifiable_Statements         
-   Statements                      Style                           
-   Terminating_Tasks               Type_Initial_Values             
-   Type_Usage                      Uncheckable                     
-   Units                           Unit_Pattern                    
-   Unnecessary_Use_Clause          Unsafe_Elaboration              
-   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
-   Usage                           Use_Clauses                     
-   With_Clauses                    
+   Max_Call_Depth                  Max_Expression_Items            
+   Max_Line_Length                 Max_Nesting                     
+   Max_Size                        Max_Statement_Nesting           
+   Movable_Accept_Statements       Naming_Convention               
+   Non_Static                      Not_Elaboration_Calls           
+   Not_Selected_Name               No_Operator_Usage               
+   Object_Declarations             Parameter_Aliasing              
+   Parameter_Declarations          Positional_Associations         
+   Potentially_Blocking_Operations Pragmas                         
+   Record_Declarations             Reduceable_Scope                
+   Representation_Clauses          Return_Statements               
+   Return_Type                     Side_Effect_Parameters          
+   Silent_Exceptions               Simplifiable_Expressions        
+   Simplifiable_Statements         Statements                      
+   Style                           Terminating_Tasks               
+   Type_Initial_Values             Type_Usage                      
+   Uncheckable                     Units                           
+   Unit_Pattern                    Unnecessary_Use_Clause          
+   Unsafe_Elaboration              Unsafe_Paired_Calls             
+   Unsafe_Unchecked_Conversion     Usage                           
+   Use_Clauses                     With_Clauses                    
 
 ADACTL v. 1.20b5 
 ----
