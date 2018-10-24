@@ -50,7 +50,7 @@ package body Rules.Actual_Parameters is
    use Ada.Strings.Wide_Unbounded;
    use Framework, Framework.Control_Manager, Utilities;
 
-   type Subrules is (SR_Default, SR_Entity);
+   type Subrules is (SR_Default_Used, SR_Default_Not_Used, SR_Default_Positional, SR_Entity);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
    type Subrules_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrules_Set := (others => False);
@@ -61,8 +61,7 @@ package body Rules.Actual_Parameters is
    ----------------------------------------------
    -- Declarations for subrule SR_Default
 
-   type Default_Usage_Kind is (Used, Positional, Not_Used);
-   package Default_Usage_Kind_Utilities is new Framework.Language.Flag_Utilities (Default_Usage_Kind);
+   subtype Default_Usage_Kind is Subrules range SR_Default_Used .. SR_Default_Positional;
 
    type Entity_Kind is (E_Name, E_Calls, E_Instantiations);
    package Entity_Kind_Utilities is new Framework.Language.Flag_Utilities (Entity_Kind, Prefix => "E_");
@@ -125,7 +124,8 @@ package body Rules.Actual_Parameters is
       Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter(2):",
                                            Extra_Value => "<Subprogram or generic name>");
       User_Message ("Parameter(3): <Formal parameter name> | all");
-      Default_Usage_Kind_Utilities.Help_On_Flags ("Parameter(4):");
+      User_Message ("Parameter(4)");
+      User_Message ("   for entity : <Searched entity> {, ...}");
    end Help;
 
    -----------------
@@ -133,7 +133,7 @@ package body Rules.Actual_Parameters is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Default_Usage_Kind_Utilities, Entity_Kind_Utilities;
+      use Framework.Language, Entity_Kind_Utilities;
       use Subrules_Flag_Utilities;
       Subrule_Name : Subrules;
       Entity       : Entity_Specification;
@@ -195,12 +195,11 @@ package body Rules.Actual_Parameters is
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "parameters required");
       end if;
-
       Subrule_Name := Get_Flag_Parameter (Allow_Any => False);
+
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "missing subprogram or generic name");
       end if;
-
       E_Kind := Get_Flag_Parameter (Allow_Any => True);
       if E_Kind = E_Name then
          Entity := Get_Entity_Parameter;
@@ -212,23 +211,16 @@ package body Rules.Actual_Parameters is
       declare
          Formal : constant Wide_String := To_Upper (Get_Name_Parameter);
          -- Note: "ALL" is handled as a regular name
-         Usage  : Default_Usage_Kind;
       begin
          case Subrule_Name is
-            when SR_Default =>
-               if Parameter_Exists then
-                  Usage := Get_Flag_Parameter (Allow_Any => False);
-               else
-                  Parameter_Error (Rule_Id, "usage kind expected");
-               end if;
-
+            when Default_Usage_Kind =>
                case E_Kind is
                   when E_Name =>
-                     Update_Default (Entity, Formal, Usage);
+                     Update_Default (Entity, Formal, Subrule_Name);
                   when E_Calls =>
-                     Update_Default (Entity_Calls, Formal, Usage);
+                     Update_Default (Entity_Calls, Formal, Subrule_Name);
                   when E_Instantiations =>
-                     Update_Default (Entity_Instantiations, Formal, Usage);
+                     Update_Default (Entity_Instantiations, Formal, Subrule_Name);
                end case;
             when SR_Entity =>
                if Parameter_Exists then
@@ -383,28 +375,28 @@ package body Rules.Actual_Parameters is
             end if;
          end if;
 
-         if Usage (Used).Active then
+         if Usage (SR_Default_Used).Active then
             if Is_Defaulted then
                Report (Rule_Id,
-                       Usage (Used),
+                       Usage (SR_Default_Used),
                        Get_Location (Element),
                        "default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
          end if;
 
-         if Usage (Positional).Active then
+         if Usage (SR_Default_Positional).Active then
             if Is_Positional then
                Report (Rule_Id,
-                       Usage (Positional),
+                       Usage (SR_Default_Positional),
                        Get_Location (Element),
                        "use of defaulted formal """ & Defining_Name_Image (Formal) & """ with positional association");
             end if;
          end if;
 
-         if Usage (Not_Used).Active then
+         if Usage (SR_Default_Not_Used).Active then
              if not Is_Defaulted then
                Report (Rule_Id,
-                       Usage (Not_Used),
+                       Usage (SR_Default_Not_Used),
                        Get_Location (Element),
                        "non default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
@@ -548,7 +540,7 @@ package body Rules.Actual_Parameters is
                                  Formal_Names : constant Asis.Expression_List := Names (Formals (I));
                               begin
                                  for F in Formal_Names'Range loop
-                                    if Rule_Used (SR_Default) then
+                                    if Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
                                        Check_Default (Formal_Names (F), Name_Context, All_Context);
                                     end if;
                                     if Rule_Used (SR_Entity) then
@@ -560,7 +552,7 @@ package body Rules.Actual_Parameters is
                         when A_Formal_Procedure_Declaration
                            | A_Formal_Function_Declaration
                            =>
-                           if Rule_Used (SR_Default) then
+                           if  Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
                               case Default_Kind (Formals (I)) is
                                  when Not_A_Default =>
                                     Failure ("Not_A_Default");

@@ -188,10 +188,10 @@ Overly_Nested_Control_Structures:
 -- TBSL POS_On_Enumeration_Types
 
 Positional_Actuals_For_Defaulted_Generic_Parameters:
-   check actual_parameters (default, instantiations, all, positional);
+   check actual_parameters (default_positional, instantiations, all);
 
 Positional_Actuals_For_Defaulted_Parameters:
-   check actual_parameters (default, calls, all, positional);
+   check actual_parameters (default_positional, calls, all);
 
 Positional_Components:
    check positional_associations(all, 0, array_aggregate),

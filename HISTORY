@@ -4,6 +4,7 @@
 
 New rule:
 ---------
+actual_parameters
 max_expression_items
 
 Changes to existing rules:
@@ -14,13 +15,9 @@ derivations
 reduceable_scope:
    add subrules use_type, use_all_type
 
-New rule:
----------
-actual parameter
-
 Removed rule:
 -------------
-default_parameter, changed to a subrule of actual_parameter
+default_parameter, changed to subrules of actual_parameters
 
 =============
 == V1.20r4 ==

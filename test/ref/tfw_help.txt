@@ -4,15 +4,13 @@ Control functions that can propagate Program_Error due to not executing a return
 Parameter(s): none
 ----
 Rule: ACTUAL_PARAMETERS
-Control subprogram calls or generic instantiations that use the default for a
-given defaulted parameter, or provide it, positionally or using any notation
+Control properties of actual parameters used in calls or instantiations
 
-Parameter(1): default | entity
+Parameter(1): default_used | default_not_used | default_positional |
+              entity
 Parameter(2): <Subprogram or generic name> | calls | instantiations
 Parameter(3): <Formal parameter name> | all
-Parameter(4)
-   for default: used | positional | not_used
-   for entity : <Searched entity>
+Parameter(4..) : <Searched entity> (entity subrule only)
 ----
 Rule: ALLOCATORS
 Control occurrences of allocators, either all of them,

@@ -1,17 +1,17 @@
 -- Subrule Default
-       search  actual_parameters (default, t_actual_parameters.default.gen, x,   used);
-       search  actual_parameters (default, t_actual_parameters.default.gen, y,   used);
-All_1: check   actual_parameters (default, t_actual_parameters.default.gen, all, not_used);
+       search  actual_parameters (default_used,     t_actual_parameters.default.gen, x);
+       search  actual_parameters (default_used,     t_actual_parameters.default.gen, y);
+All_1: check   actual_parameters (default_not_used, t_actual_parameters.default.gen, all);
 
-       search  actual_parameters (default, t_actual_parameters.default.proc, x,   used);
-       search  actual_parameters (default, t_actual_parameters.default.proc, y,   used);
-All_C: search  actual_parameters (default, calls,                            all, not_used);
-All_I: search  actual_parameters (default, instantiations,                   all, not_used);
+       search  actual_parameters (default_used,     t_actual_parameters.default.proc, x);
+       search  actual_parameters (default_used,     t_actual_parameters.default.proc, y);
+All_C: search  actual_parameters (default_not_used, calls,                            all);
+All_I: search  actual_parameters (default_not_used, instantiations,                   all);
 
-       check actual_parameters (default, calls,          "<", not_used);
-       check actual_parameters (default, instantiations, "<", not_used);
-Pos:   check actual_parameters (default, calls,          all, positional);
-Pos:   check actual_parameters (default, instantiations, all, positional);
+       check actual_parameters (default_not_used,   calls,          "<");
+       check actual_parameters (default_not_used,   instantiations, "<");
+Pos:   check actual_parameters (default_positional, calls,          all);
+Pos:   check actual_parameters (default_positional, instantiations, all);
 
 -- Subrule Entity
 "P/X/A":               check actual_parameters (entity, T_Actual_Parameters.Entity.P,   X,   T_Actual_Parameters.Entity.A);
