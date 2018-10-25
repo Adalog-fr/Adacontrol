@@ -5,4 +5,8 @@ package T_unnecessary_use_clause is
    My_Pi : constant := Pi;
 
    procedure Sep;
+
+   package Parent_Pack is
+      Data : Integer;
+   end Parent_Pack;
 end T_unnecessary_use_clause;

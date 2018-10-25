@@ -285,6 +285,7 @@ package body Rules.Unnecessary_Use_Clause is
       Rules_Manager.Enter (Rule_Id);
 
       declare
+         use Asis.Expressions;
          Names     : constant Asis.Name_List        := Clause_Names (Clause);
          This_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Clause);
       begin
@@ -306,9 +307,11 @@ package body Rules.Unnecessary_Use_Clause is
                   end if;
 
                -- Check if ancestor
-               elsif Is_Ancestor (Definition_Compilation_Unit (Strip_Attributes (Names (I))),
-                                  This_Unit,
-                                  Strict => True)
+               elsif Use_Clause_Kinds (Clause_Kind (Clause)) = A_Use_Package_Clause
+                 and then Is_Compilation_Unit (Corresponding_Name_Declaration (Simple_Name (Names (I))))
+                 and then Is_Ancestor (Definition_Compilation_Unit (Strip_Attributes (Names (I))),
+                                       This_Unit,
+                                       Strict => True)
                then
                   if Rule_Used (Nested) then
                      Report (Rule_Id,
