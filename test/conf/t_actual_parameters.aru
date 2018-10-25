@@ -18,7 +18,8 @@ Pos:   check actual_parameters (default_positional, instantiations, all);
 "P/X/B":               check actual_parameters (entity, T_Actual_Parameters.Entity.P,   X,   T_Actual_Parameters.Entity.B);
 "all/Y/B":             check actual_parameters (entity, calls,                          Y,   T_Actual_Parameters.Entity.B);
 "Calls/X/F_No_Param":  check actual_parameters (entity, calls,                          X,   T_Actual_Parameters{}.Entity{}.F{return Standard.Integer});
-"Gen/V/B":             check actual_parameters (entity, T_Actual_Parameters.Entity.gen, v,   T_Actual_Parameters{}.Entity.B);
+"R/X/all_C":           check actual_parameters (entity, T_Actual_Parameters.Entity.R,   all, all T_Actual_Parameters{}.Entity{}.C);
+"Gen/V/B":             check actual_parameters (entity, T_Actual_Parameters.Entity.gen, v,   T_Actual_Parameters{}.Entity{}.B);
 "Gen/F/F_No_Param":    check actual_parameters (entity, T_Actual_Parameters.Entity.gen, f,   T_Actual_Parameters{}.Entity{}.F{return Standard.Integer});
 "Instance":            check actual_parameters (entity, calls,                          all, Ada.Unchecked_Conversion);
 

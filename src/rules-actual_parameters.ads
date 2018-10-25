@@ -32,6 +32,6 @@ package Rules.Actual_Parameters is
 
    Rule_Id : constant Wide_String := "ACTUAL_PARAMETERS";
 
-   procedure Process_Call_Or_Instantiation (Element : in Asis.Element);
+   procedure Process_Call_Or_Instantiation (Call_Inst : in Asis.Element);
 
 end Rules.Actual_Parameters;

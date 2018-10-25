@@ -11,17 +11,27 @@ t_actual_parameters-default.adb:42:4: Found: All_C: non default use of formal "X
 t_actual_parameters-default.adb:42:4: Found: ACTUAL_PARAMETERS: default use of formal "Y"
 t_actual_parameters-default.adb:43:4: Found: ACTUAL_PARAMETERS: default use of formal "X"
 t_actual_parameters-default.adb:43:4: Found: All_C: non default use of formal "Y"
-t_actual_parameters-entity.adb:30:4: Error: Gen/F/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter F (default value)
-t_actual_parameters-entity.adb:32:35: Error: Gen/F/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter F
-t_actual_parameters-entity.adb:36:4: Error: P/X/A: Entity T_Actual_Parameters.Entity.A used as actual for parameter X (default value)
-t_actual_parameters-entity.adb:36:4: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y (default value)
-t_actual_parameters-entity.adb:37:7: Error: P/X/A: Entity T_Actual_Parameters.Entity.A used as actual for parameter X
-t_actual_parameters-entity.adb:37:4: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y (default value)
-t_actual_parameters-entity.adb:38:7: Error: P/X/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter X
-t_actual_parameters-entity.adb:39:7: Error: P/X/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter X
+t_actual_parameters-entity.adb:31:4: Error: Gen/F/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter F (default value)
+t_actual_parameters-entity.adb:32:37: Error: Gen/V/B: Entity T_Actual_Parameters{}.Entity{}.B used as actual for parameter V
+t_actual_parameters-entity.adb:33:35: Error: Gen/F/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter F
+t_actual_parameters-entity.adb:38:4: Error: P/X/A: Entity T_Actual_Parameters.Entity.A used as actual for parameter X (default value)
+t_actual_parameters-entity.adb:38:4: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y (default value)
+t_actual_parameters-entity.adb:39:7: Error: P/X/A: Entity T_Actual_Parameters.Entity.A used as actual for parameter X
 t_actual_parameters-entity.adb:39:4: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y (default value)
 t_actual_parameters-entity.adb:40:7: Error: P/X/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter X
-t_actual_parameters-entity.adb:40:10: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y
-t_actual_parameters-entity.adb:42:7: Error: Calls/X/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter X
+t_actual_parameters-entity.adb:41:7: Error: P/X/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter X
+t_actual_parameters-entity.adb:41:4: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y (default value)
+t_actual_parameters-entity.adb:42:7: Error: P/X/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter X
+t_actual_parameters-entity.adb:42:10: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y
 t_actual_parameters-entity.adb:44:7: Error: Calls/X/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter X
-t_actual_parameters-entity.adb:47:11: Error: Instance: Entity Ada.Unchecked_Conversion used as actual for parameter X
+t_actual_parameters-entity.adb:46:7: Error: Calls/X/F_No_Param: Entity T_Actual_Parameters{}.Entity{}.F{ return Standard.Integer} used as actual for parameter X
+t_actual_parameters-entity.adb:51:4: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used as actual for parameter X (default value)
+t_actual_parameters-entity.adb:51:4: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used in expression for parameter Y (default value)
+t_actual_parameters-entity.adb:51:4: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used in expression for parameter Y (default value)
+t_actual_parameters-entity.adb:52:4: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used in expression for parameter Y (default value)
+t_actual_parameters-entity.adb:52:4: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used in expression for parameter Y (default value)
+t_actual_parameters-entity.adb:53:4: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used as actual for parameter X (default value)
+t_actual_parameters-entity.adb:54:7: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used as actual for parameter X
+t_actual_parameters-entity.adb:54:10: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y
+t_actual_parameters-entity.adb:55:11: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used in expression for parameter X
+t_actual_parameters-entity.adb:58:12: Error: Instance: Entity Ada.Unchecked_Conversion used as actual for parameter X

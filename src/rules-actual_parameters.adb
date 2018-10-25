@@ -32,7 +32,8 @@ with
 with
   Asis.Declarations,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Iterator;
 
 -- Adalog
 with
@@ -79,7 +80,8 @@ package body Rules.Actual_Parameters is
 
    type Entity_Context is new Basic_Rule_Context with
       record
-         Entity : Entity_Specification;
+         Entity      : Entity_Specification;
+         Deep_Search : Boolean;
       end record;
 
    package Entity_Queue is new Linear_Queue (Entity_Context);
@@ -117,15 +119,13 @@ package body Rules.Actual_Parameters is
    procedure Help is
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control subprogram calls or generic instantiations that use the default for a");
-      User_Message ("given defaulted parameter, or provide it, positionally or using any notation");
+      User_Message ("Control properties of actual parameters used in calls or instantiations");
       User_Message;
       Subrules_Flag_Utilities.Help_On_Flags ("Parameter(1):");
       Entity_Kind_Utilities.Help_On_Flags (Header      => "Parameter(2):",
                                            Extra_Value => "<Subprogram or generic name>");
       User_Message ("Parameter(3): <Formal parameter name> | all");
-      User_Message ("Parameter(4)");
-      User_Message ("   for entity : <Searched entity> {, ...}");
+      User_Message ("Parameter(4..) : [all] <Searched entity> (entity subrule only)");
    end Help;
 
    -----------------
@@ -138,6 +138,7 @@ package body Rules.Actual_Parameters is
       Subrule_Name : Subrules;
       Entity       : Entity_Specification;
       E_Kind       : Entity_Kind;
+      Is_Deep      : Boolean;
 
       procedure Update_Default (Ent : Entity_Specification; Form : Wide_String; Usg : Default_Usage_Kind) is
          Formals_Map : Parameter_Tree.Map;
@@ -166,7 +167,11 @@ package body Rules.Actual_Parameters is
          end;
       end Update_Default;
 
-      procedure Update_Entity (Ent : Entity_Specification; Formal : Wide_String; Param_Ent : Entity_Specification) is
+      procedure Update_Entity (Ent       : Entity_Specification;
+                               Formal    : Wide_String;
+                               Param_Ent  : Entity_Specification;
+                               Param_Deep : Boolean)
+      is
          use Entity_Queue;
          Formals_Map : Parameter_Tree.Map;
       begin
@@ -185,7 +190,7 @@ package body Rules.Actual_Parameters is
                                                                   Default_Value => Empty_Parameter_Data);
 
          begin
-            Append (Formal_Data.Entity_Data, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Param_Ent));
+            Append (Formal_Data.Entity_Data, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Param_Ent, Param_Deep));
             Parameter_Tree.Add (Formals_Map, To_Unbounded_Wide_String (Formal), Formal_Data);
             Update (Controlled_Entities, Controlled_Entity_Context'(Formals_Map => Formals_Map));
          end;
@@ -225,13 +230,14 @@ package body Rules.Actual_Parameters is
             when SR_Entity =>
                if Parameter_Exists then
                   loop
+                     Is_Deep := Get_Modifier ("ALL");
                      case E_Kind is
                         when E_Name =>
-                           Update_Entity (Entity, Formal, Get_Entity_Parameter);
+                           Update_Entity (Entity, Formal, Get_Entity_Parameter, Is_Deep);
                         when E_Calls =>
-                           Update_Entity (Entity_Calls, Formal, Get_Entity_Parameter);
+                           Update_Entity (Entity_Calls, Formal, Get_Entity_Parameter, Is_Deep);
                         when E_Instantiations =>
-                           Update_Entity (Entity_Instantiations, Formal, Get_Entity_Parameter);
+                           Update_Entity (Entity_Instantiations, Formal, Get_Entity_Parameter, Is_Deep);
                      end case;
                      exit when not Parameter_Exists;
                   end loop;
@@ -305,7 +311,7 @@ package body Rules.Actual_Parameters is
    -- Process_Call_Or_Instantiation --
    -----------------------------------
 
-   procedure Process_Call_Or_Instantiation (Element : in Asis.Element) is
+   procedure Process_Call_Or_Instantiation (Call_Inst : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Declarations;
       use Thick_Queries;
 
@@ -317,21 +323,21 @@ package body Rules.Actual_Parameters is
          if Expression_Kind (Name) = An_Attribute_Reference then
             -- Calls to attributes must be ignored, since they have no formal name (and no default value)
             return Nil_Element_List;
-         elsif Expression_Kind (Element) = A_Function_Call then
-            return Called_Profile (Element);
-         elsif Statement_Kind (Element) = A_Procedure_Call_Statement or
-           Statement_Kind (Element) = An_Entry_Call_Statement
+         elsif Expression_Kind (Call_Inst) = A_Function_Call then
+            return Called_Profile (Call_Inst);
+         elsif Statement_Kind (Call_Inst) = A_Procedure_Call_Statement or
+           Statement_Kind (Call_Inst) = An_Entry_Call_Statement
          then
-            return Called_Profile (Element);
-         elsif Declaration_Kind (Element) in A_Generic_Instantiation
-           or Declaration_Kind (Element) = A_Formal_Package_Declaration
+            return Called_Profile (Call_Inst);
+         elsif Declaration_Kind (Call_Inst) in A_Generic_Instantiation
+           or Declaration_Kind (Call_Inst) = A_Formal_Package_Declaration
          then
             return Generic_Formal_Part (Corresponding_Name_Declaration
                                         (Simple_Name
                                          (Ultimate_Name
-                                          (Generic_Unit_Name (Element)))));
+                                          (Generic_Unit_Name (Call_Inst)))));
          else
-            Failure ("Default_Parameter: Unexpected element in Get_Formals_List", Element);
+            Failure ("Default_Parameter: Unexpected element in Get_Formals_List", Call_Inst);
          end if;
       end Get_Formals_List;
 
@@ -343,7 +349,7 @@ package body Rules.Actual_Parameters is
          Formal_Key : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
          Usage         :          Default_Usage_Tab := Empty_Default_Usage;
-         Actual        : constant Asis.Expression   := Actual_Expression (Element, Formal, Return_Default => False);
+         Actual        : constant Asis.Expression   := Actual_Expression (Call_Inst, Formal, Return_Default => False);
          Is_Defaulted  : constant Boolean           := Is_Nil (Actual);
          Is_Positional : constant Boolean           := not Is_Defaulted
                                                        and then Is_Nil (Formal_Parameter (Enclosing_Element (Actual)));
@@ -379,7 +385,7 @@ package body Rules.Actual_Parameters is
             if Is_Defaulted then
                Report (Rule_Id,
                        Usage (SR_Default_Used),
-                       Get_Location (Element),
+                       Get_Location (Call_Inst),
                        "default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
          end if;
@@ -388,7 +394,7 @@ package body Rules.Actual_Parameters is
             if Is_Positional then
                Report (Rule_Id,
                        Usage (SR_Default_Positional),
-                       Get_Location (Element),
+                       Get_Location (Call_Inst),
                        "use of defaulted formal """ & Defining_Name_Image (Formal) & """ with positional association");
             end if;
          end if;
@@ -397,76 +403,112 @@ package body Rules.Actual_Parameters is
              if not Is_Defaulted then
                Report (Rule_Id,
                        Usage (SR_Default_Not_Used),
-                       Get_Location (Element),
+                       Get_Location (Call_Inst),
                        "non default use of formal """ & Defining_Name_Image (Formal) & '"');
             end if;
          end if;
       end Check_Default;
 
-      procedure Check_Entity (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class)
-      is
-         use Asis.Expressions;
+      procedure Check_Entity (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class) is
          use Parameter_Tree;
 
          Formal_Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
                                                                                   (Defining_Name_Image (Formal)));
-         Actual : Asis.Expression  := Actual_Expression (Element, Formal, Return_Default => True);
-
-         procedure Do_Entity_Report (Ent_Queue : Entity_Queue.Queue) is
+         procedure Do_Entity_Report (Searched_Entities : Entity_Queue.Queue) is
             use Entity_Queue, Reports;
-            C : Cursor := First (Ent_Queue);
-            Good_Actual : Asis.Expression;
-         begin
-            while Has_Element (C) loop
-               Good_Actual := Actual;
-               if not Matches (Fetch (C).Entity, Good_Actual,Extend_To => All_Extensions) then
-                  Good_Actual := Ultimate_Name (Actual);
-                  if not Matches (Fetch (C).Entity, Good_Actual,Extend_To => All_Extensions) then
-                     Good_Actual := Nil_Element;
-                  end if;
-               end if;
-               if not Is_Nil (Good_Actual) then
-                  if Is_Nil (Actual_Expression (Element, Formal, Return_Default => False)) then
+            use Asis.Expressions, Asis.Iterator;
+            Curs          : Cursor := First (Searched_Entities);
+            Context       : Entity_Context;
+            Ctrl          : Traverse_Control;
+            Actual        : constant Asis.Expression  := Actual_Expression (Call_Inst, Formal, Return_Default => True);
+            Simple_Actual : Asis.Expression := Actual;
+
+            procedure Pre  (Element : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context);
+            procedure Post (Element : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context)
+            is null;
+            procedure Traverse_Expression is new Traverse_Element (Entity_Context, Pre, Post);
+            procedure Pre (Element  : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context) is
+            begin
+               case Expression_Kind (Element) is
+                  when An_Identifier =>
+                     if Matches (State.Entity, Element, Extend_To => All_Extensions) then
+                        if Is_Nil (Actual_Expression (Call_Inst, Formal, Return_Default => False)) then
+                           -- A default value, attach message to the call (or instanciation)
+                           -- since the entity does not appear
+                           Report (Rule_Id,
+                                   Context,
+                                   Get_Location (Process_Call_Or_Instantiation.Call_Inst),
+                                   "Entity " & Adjust_Image (Image (State.Entity))
+                                   & " used in expression for parameter "  & Defining_Name_Image (Formal)
+                                   & " (default value)");
+                        else
+                           -- Normal case
+                           Report (Rule_Id,
+                                   Context,
+                                   Get_Location (Element),
+                                   "Entity " & Adjust_Image (Image (State.Entity))
+                                   & " used in expression for parameter "  & Defining_Name_Image (Formal));
+                        end if;
+                     end if;
+                  when An_Attribute_Reference =>
+                     -- Don't traverse the attribute designator
+                     Traverse_Expression (Prefix (Element), Control, State);
+                     Control := Abandon_Children;
+                  when others =>
+                     null;
+               end case;
+            end Pre;
+
+         begin  -- Do_Entity_Report
+            loop -- Get a clean name
+               case Expression_Kind (Simple_Actual) is
+                  when An_Identifier | An_Attribute_Reference =>
+                     exit;
+                  when A_Selected_Component =>
+                     Simple_Actual := Selector (Simple_Actual);
+                  when An_Indexed_Component =>
+                     Simple_Actual := Prefix (Simple_Actual);
+                  when A_Function_Call =>
+                     Simple_Actual := Prefix (Simple_Actual);
+                  when A_Parenthesized_Expression =>
+                     Simple_Actual := Expression_Parenthesized (Simple_Actual);
+                  when A_Type_Conversion | A_Qualified_Expression =>
+                     Simple_Actual := Converted_Or_Qualified_Expression (Simple_Actual);
+                  when others =>
+                     Simple_Actual := Nil_Element;
+                     exit;
+               end case;
+            end loop;
+
+            while Has_Element (Curs) loop
+               Context := Fetch (Curs);
+               if Matches (Context.Entity, Simple_Actual, Extend_To => All_Extensions) then
+                  if Is_Nil (Actual_Expression (Call_Inst, Formal, Return_Default => False)) then
                      -- A default value, attach message to the call (or instanciation) since the entity does not appear
                      Report (Rule_Id,
-                             Fetch (C),
-                             Get_Location (Element),
-                             "Entity " & Adjust_Image (Image (Fetch (C).Entity))
+                             Context,
+                             Get_Location (Call_Inst),
+                             "Entity " & Adjust_Image (Image (Context.Entity))
                              & " used as actual for parameter "  & Defining_Name_Image (Formal)
                              & " (default value)");
                   else
                      -- Normal case
                      Report (Rule_Id,
-                             Fetch (C),
-                             Get_Location (Actual),
-                             "Entity " & Adjust_Image (Image (Fetch (C).Entity))
+                             Context,
+                             Get_Location (Simple_Actual),
+                             "Entity " & Adjust_Image (Image (Context.Entity))
                              & " used as actual for parameter "  & Defining_Name_Image (Formal));
                   end if;
+
+               elsif Context.Deep_Search then
+                  Ctrl := Continue;
+                  Traverse_Expression (Actual, Ctrl, Context);
                end if;
-               C := Next (C);
+               Curs := Next (Curs);
             end loop;
          end Do_Entity_Report;
 
       begin  -- Check_Entity
-             -- Get a clean name
-         loop
-            case Expression_Kind (Actual) is
-               when An_Identifier | An_Attribute_Reference =>
-                  exit;
-               when A_Selected_Component =>
-                  Actual := Selector (Actual);
-               when An_Indexed_Component =>
-                  Actual := Prefix (Actual);
-               when A_Function_Call =>
-                  Actual := Prefix (Actual);
-               when A_Parenthesized_Expression =>
-                  Actual := Expression_Parenthesized (Actual);
-               when A_Type_Conversion | A_Qualified_Expression =>
-                  Actual := Converted_Or_Qualified_Expression (Actual);
-               when others =>
-                  return;
-            end case;
-         end loop;
 
          -- Check Sp_Name, Formal_Name
          --       Sp_Name, All
@@ -497,18 +539,18 @@ package body Rules.Actual_Parameters is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      case Element_Kind (Element) is
+      case Element_Kind (Call_Inst) is
          when A_Declaration =>
             -- Must be A_Generic_Instantiation or A_Formal_Package_Declaration
-            Name       := Generic_Unit_Name (Element);
+            Name       := Generic_Unit_Name (Call_Inst);
             Entity_All := Entity_Instantiations;
          when An_Expression =>
             -- Must be A_Function_Call
-            Name       := Called_Simple_Name (Element);
+            Name       := Called_Simple_Name (Call_Inst);
             Entity_All := Entity_Calls;
          when others =>
             -- Must be a procedure or entry call
-            Name       := Called_Simple_Name (Element);
+            Name       := Called_Simple_Name (Call_Inst);
             Entity_All := Entity_Calls;
       end case;
 

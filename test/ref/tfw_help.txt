@@ -10,7 +10,7 @@ Parameter(1): default_used | default_not_used | default_positional |
               entity
 Parameter(2): <Subprogram or generic name> | calls | instantiations
 Parameter(3): <Formal parameter name> | all
-Parameter(4..) : <Searched entity> (entity subrule only)
+Parameter(4..) : [all] <Searched entity> (entity subrule only)
 ----
 Rule: ALLOCATORS
 Control occurrences of allocators, either all of them,

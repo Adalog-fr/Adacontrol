@@ -2978,56 +2978,81 @@ appropriate message is issued.
 
 @node Actual_Parameters, Allocators, Abnormal_Function_Return, Rules reference
 @section Actual_Parameters
-This rule checks usage (or non-usage) of defaulted parameters.
+This rule checks properties of actuals provided to calls or instantiations.
 @subsection Syntax
 @example
-<control_kind> actual_parameters (default, <place>, <formal>, <usage>);
+<control_kind> actual_parameters (<subrule>, <place>, <formal>@{, <actual>@});
+<subrule>::= default_used | default_not_used | default_positional | entity
 <place>  ::= <entity> | calls | instantiations
 <formal> ::= <formal name> | all
-<usage>  ::= used | positional | not_used
+<actual> ::= [all] <entity>
 @end example
 
 @subsection Action
-The rule controls subprogram calls or generic instantiations that use
-the default value for the indicated parameter, or conversely don't use
-it, either in positional notation or in any notation. If a subprogram
-is called, or a generic instantiated, whose name matches <entity>, and
-it has a formal whose name is <formal name>, then:
-@itemize @bullet
-@item
-If the string @code{used} (case irrelevant) is given as the third
-parameter, the rule reports when there is no corresponding actual
-parameter (i.e. the default value is used for the parameter).
-@item
-If the string @code{positional} (case irrelevant) is given as the
-third parameter, the rule reports when there is an explicit
-corresponding actual parameter (i.e. the default is not used for the
-parameter), and the actual uses positional (not named) notation.
-@item
-If the string @code{not_used} (case irrelevant) is given as the third
-parameter, the rule reports when there is an explicit corresponding
-actual parameter (i.e. the default is not used for the parameter),
-independently of whether it uses positional or named notation.
-@end itemize
+The first parameter is a subrule keyword. All subrules check
+properties of an actual value of a call or instantiation. The called
+(or instantiated) entity is given by <place>, which is either an
+explicit entity specification, ``calls'' if all calls are controlled, or
+``instantiations'' if all instantiations are controlled.  The check
+applies to parameters whose name is <formal>, or to all parameters if
+<formal> is ``all''.
 
 As usual, the whole syntax for entities is allowed for
 <entity>. @xref{Specifying an Ada entity name}. On the other hand,
 <formal> is the simple name of the formal parameter.
 
-Alternatively, the <entity> can be specified as @code{calls}, to
-control all calls or @code{instantiations}, to control all
-instantiations. The <formal name> can be replaced by @code{all}, in
-which case all formals are controlled.
+Other parameters (<actual>...) are only for the subrule ``entity''.
+
+What is being checked depends on the subrule:
+@itemize
+@item
+``default_used'' controls subprogram calls or generic instantiations that use
+the default value for the indicated parameter (i.e. the parameter is not explicitely specified).
+@item
+``default_not_used'' controls subprogram calls or generic instantiations that do not use
+the default value for the indicated parameter (i.e. the parameter is explicitely specified).
+@item
+``default_positional'' controls subprogram calls or generic
+instantiations that do not use the default value for the indicated
+parameter (i.e. the parameter is explicitely specified), and the
+actual uses positional (not named) notation.
+@item
+``entity'' controls subprogram calls or generic instantiations where
+the actual parameter is one of the entities given as fourth (and
+other) parameter. If the entity specification is preceded by ``all'',
+it is  controlled if it appears anywhere within the expression given
+as the actual parameter; otherwise, the entity must appear directly as
+the actual, or in parentheses, or as the argument of a type conversion
+or of a qualified expression, but not as part of a more complicated
+expression. If the entity is the name of a function, then the subrule
+checks calls to the indicated function. If the entity is (part of) a
+generic, then all instances of the entity are checked.
+@end itemize
+
+This rule can be specified only once for each combination of the
+parameters.
 
 Ex:
 @example
-check actual_parameters (default, P, X, used);
-check actual_parameters (default, P, Y, not used);
-search actual_parameters (default, calls, all, positional);
+-- Check calls to P where the default is used for parameter X:
+check actual_parameters (default_used, P, X);
+
+-- Check calls to P where the default is not used for parameter Y:
+check actual_parameters (default_not_used, P, Y);
+
+-- Check all calls where positional notation is used for any defaulted parameter:
+search actual_parameters (default_positional, calls, all);
+
+-- Check that variable V in package Pack is not used as a parameter Item to some Put:
+check actual_parameters (entity, all Put, Item, Pack.V);
+
+-- Check that no instance of Unchecked_Conversion is used directly as a
+-- parameter to a call (are they trying to get around strong typing?)
+check actual_parameters (entity, calls, all, Ada.Unchecked_Conversion);
 @end example
 
 @subsection Tip
-If the <entity> is a generic subprogram, it is also possible to give a
+If the <place> is a generic subprogram, it is also possible to give a
 formal parameter  (a parameter of the subprogram, not a generic
 parameter) as the <formal name>; in this case, all instantiations of
 the indicated generic subprogram will be controlled for the use of the
@@ -11200,6 +11225,22 @@ that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
+
+@section Migrating from 1.19r10
+@subsection Default_Parameter
+This rule has been changed to three subrules of the new rule
+@code{actual_parameters}. In short, change:
+@example
+check default_parameter (proc, param, used);
+check default_parameter (proc, param, not_used);
+check default_parameter (proc, param, positional);
+@end example
+to:
+@example
+check actual_parameters (default_used,       proc, param);
+check actual_parameters (default_not_used,   proc, param);
+check actual_parameters (default_positional, proc, param);
+@end example
 
 @section Migrating from 1.17r3
 @subsection Statements
