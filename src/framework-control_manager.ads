@@ -150,7 +150,7 @@ package Framework.Control_Manager is
    function  Association (Into : in Context_Store;
                           Key  : in Wide_String) return Root_Context'Class;
    -- Idem, but works with plain strings rather than entities.
-   -- Especially usefule when contexts are associated to "keys" rather than entities
+   -- Especially useful when contexts are associated to "keys" rather than entities
 
    procedure Dissociate (From          : in out Context_Store;
                          Specification : in     Entity_Specification);
