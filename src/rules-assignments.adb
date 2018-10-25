@@ -630,11 +630,16 @@ package body Rules.Assignments is
                   -- of their own. The only way we found to differentiate these from -say- an array of arrays is
                   -- that their Corresponding_Expression_Type_Definition returns Nil_Element. If anyone knows a
                   -- better solution...
-                  while Is_Nil (Thick_Queries.Corresponding_Expression_Type_Definition (Compo_Def)) loop
+                  --
+                  -- Bad luck: Corresponding_Expression_Type returns Nil_Element on these aggregates, therefore
+                  -- fooling Thick_Queries.Corresponding_Expression_Type_Definition... but
+                  -- Asis.Expressions.Corresponding_Expression_Type_Definition seems to work!
+                  -- So, exceptionnally use the one from A4G...
+                  while Is_Nil (Asis.Expressions.Corresponding_Expression_Type_Definition (Compo_Def)) loop
                      Compo_Def := Enclosing_Element (Enclosing_Element (Compo_Def));
                   end loop;
                   Compo_Def := Component_Definition_View (Array_Component_Definition
-                                                          (Thick_Queries.Corresponding_Expression_Type_Definition
+                                                          (Asis.Expressions.Corresponding_Expression_Type_Definition
                                                            (Compo_Def)));
                   if Definition_Kind (Compo_Def) = An_Access_Definition then
                      Check_Type_Def (In_Controlled, Element, Compo_Def);
