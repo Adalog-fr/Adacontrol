@@ -59,7 +59,7 @@
   SQALE_45: check usage (object, not read);
 --SQALE_46: check 
 --SQALE_47: check 
-  SQALE_48: check simplifiable_statements;
+  SQALE_48: check simplifiable_statements(block, handler, if, null);
   SQALE_49: check comments (pattern, "if.*then");   --etc.
 --SQALE_50: compile time
 --SQALE_51: check 

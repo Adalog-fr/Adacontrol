@@ -717,10 +717,12 @@ Parameter(s): conversion  | parentheses  | range   | logical_false |
 Rule: SIMPLIFIABLE_STATEMENTS
 Control Ada statements that can be made simpler
 
-Parameter(s): block       | dead | for_for_slice  |
-              handler     | if   | if_for_case    |
-              if_not      | loop | loop_for_while |
-              nested_path | null | unnecessary_if
+Parameter(s): [no_exit] all            | block         | dead |
+                        for_for_slice  | handler       | if   |
+                        if_for_case    | if_not        | loop |
+                        loop_for_while | nested_path   | null |
+                        unnecessary_if | while_for_for
+no_exit can be given with "all" and "while_for_for"
 ----
 Rule: STATEMENTS
 Control occurrences of Ada statements
@@ -1058,10 +1060,12 @@ Parameter(s): conversion  | parentheses  | range   | logical_false |
 Rule: SIMPLIFIABLE_STATEMENTS
 Control Ada statements that can be made simpler
 
-Parameter(s): block       | dead | for_for_slice  |
-              handler     | if   | if_for_case    |
-              if_not      | loop | loop_for_while |
-              nested_path | null | unnecessary_if
+Parameter(s): [no_exit] all            | block         | dead |
+                        for_for_slice  | handler       | if   |
+                        if_for_case    | if_not        | loop |
+                        loop_for_while | nested_path   | null |
+                        unnecessary_if | while_for_for
+no_exit can be given with "all" and "while_for_for"
 Variables: 
 Tag1: String = "##"
 Tag2: String = "##"

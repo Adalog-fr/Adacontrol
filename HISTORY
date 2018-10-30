@@ -15,6 +15,9 @@ derivations
 reduceable_scope:
    add subrules use_type, use_all_type
 
+simplifiable_statements
+   add subrule while_for_for
+
 Removed rule:
 -------------
 default_parameter, changed to subrules of actual_parameters

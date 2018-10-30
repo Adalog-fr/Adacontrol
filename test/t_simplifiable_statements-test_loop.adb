@@ -11,7 +11,7 @@ begin
    while False loop -- never executed
       null;
    end loop;
-   while I < 2 loop
+   while I < 2 loop -- while_for_for
       I := I + 1;
    end loop;
    loop             -- loop_for_while

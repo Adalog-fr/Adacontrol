@@ -1,1 +1,1 @@
-check simplifiable_statements;
+check simplifiable_statements (no_exit all);

@@ -8482,14 +8482,19 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= block       | dead | for_for_slice  |
-              handler     | if   | if_for_case    |
-              if_not      | loop | loop_for_while |
-              nested_path | null | unnecessary_if
+<subrule> ::= [no_exit] all  | block       | dead |
+              for_for_slice  | handler     | if   |
+              if_for_case    | if_not      | loop |
+              loop_for_while | nested_path | null |
+              unnecessary_if | [no_exit] while_for_for
 @end example
 @subsection Action
 The parameters are subrule keywords:
 @itemize @bullet
+@item
+``all'' (or no subrule given): controls all simplifiable statements. If ``no_exit''is given,
+the ``while_for_for'' subrule will be given the ``no_exit'' modifier (explicitly specifying ``all''
+is necessary only in this case);
 @item
 ``block'': controls block statements that have no labels, no
 declarations, and no exception handlers.
@@ -8643,10 +8648,29 @@ negation  of the condition). Typically:
    @b{return} True;
 @b{end} @b{if};
 @end example
+@item
+``while_for_for'': controls @code{@b{while}} loops that could be
+changed into @code{@b{for}} loops. More precisely, it controls @code{@b{while}} loops
+where:
+@itemize
+@item
+the condition of the @code{@b{while}} is a greater, greater or equal,
+less than, less than or equal, or not equal comparison involving only
+a simple variable on one side;
+@item
+the variable is incremented/decremented exactly once in the loop, in
+the form of being the target of an addition or subtraction of  +1 or
+-1 to the variable, or of a 'Pred or 'Succ attribute applied to the
+variable, and the value of increment is consistent with the direction
+of the test in the @code{@b{while}} condition.
+@item
+the variable is not passed as an @code{@b{out}} or @code{@b{in out}}
+parameter to a procedure (or entry)
+@item
+if the ``no_exit'' modifier is given, the loop does not include an
+@code{@b{exit}} statement that applies to it
 @end itemize
-
-Without parameter, all kinds of simplifiable statements are
-controlled.
+@end itemize
 
 This rule can be given at most once for each subrule.
 
@@ -8654,6 +8678,7 @@ Ex:
 @example
 check simplifiable_statements (block, null);
 search simplifiable_statements (if);
+check simplifiable_statements (no_exit while_for_for);
 @end example
 
 @subsection Fixes
@@ -8689,6 +8714,16 @@ check case_statement (others_span, min 1);
 programmer is supposed to write this. However, experience shows that
 it is a good indicator of code written by people who did not get
 proper Ada training. Such code is certainly worth a peer review...
+
+@subsection Limitation
+``while_for_for'' may trigger false positives in some unlikely cases
+that are impossible (or deemed too costly) to check, like passing the
+control variable as an @code{@b{out}} or @code{@b{in out}} parameter
+to a function, modifying the variable directly from a called
+subprogram or from a concurrently running task... If the user replaces
+the @code{@b{while}} loop with a @code{@b{for}} loop in those cases,
+the control variable will be changed to a constant and the program
+will not compile any more; there is therefore no risk.
 
 @node Statements, Style, Simplifiable_Statements, Rules reference
 @section Statements

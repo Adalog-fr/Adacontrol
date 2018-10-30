@@ -46,17 +46,21 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_Statements is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (Stmt_Block,  Stmt_Dead, Stmt_For_For_Slice,  Stmt_Handler,     Stmt_If,   Stmt_If_For_Case,
-                     Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null, Stmt_Unnecessary_If);
+   type Subrules is (Stmt_All,
+                     Stmt_Block,  Stmt_Dead, Stmt_For_For_Slice,  Stmt_Handler,     Stmt_If,   Stmt_If_For_Case,
+                     Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null, Stmt_Unnecessary_If,
+                     Stmt_While_For_For);
+   subtype True_Subrules is Subrules range Subrules'Succ (Stmt_All) .. Subrules'Last;
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
    use Subrules_Flags_Utilities;
 
-   type Usage_Flags is array (Subrules) of Boolean;
+   type Usage_Flags is array (True_Subrules) of Boolean;
    Not_Used : constant Usage_Flags := (others => False);
    Rule_Used : Usage_Flags := Not_Used;
    Save_Used : Usage_Flags;
    Usage     : array (Subrules) of Basic_Rule_Context;
+   No_Exit   : Boolean := False;
 
    ----------
    -- Help --
@@ -68,7 +72,8 @@ package body Rules.Simplifiable_Statements is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control Ada statements that can be made simpler");
       User_Message;
-      Help_On_Flags ("Parameter(s):");
+      Help_On_Flags ("Parameter(s): [no_exit]");
+      User_Message  ("no_exit can be given with ""all"" and ""while_for_for""");
    end Help;
 
    -----------------
@@ -77,20 +82,40 @@ package body Rules.Simplifiable_Statements is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Utilities;
-      Subrule : Subrules;
-
+      Subrule        : Subrules;
+      No_Exit_Given : Boolean;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
+            No_Exit_Given := Get_Modifier ("NO_EXIT");
             Subrule := Get_Flag_Parameter (Allow_Any => False);
-            if Rule_Used (Subrule) then
-               Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
-            end if;
 
-            Rule_Used (Subrule) := True;
-            Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            if Subrule = Stmt_All then
+               if Rule_Used /= Not_Used then
+                  Parameter_Error (Rule_Id, "some statements already given");
+               end if;
+               No_Exit   := No_Exit_Given;
+               Rule_Used := (others => True);
+               Usage     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+            else
+               if Rule_Used (Subrule) then
+                  Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
+               end if;
+               if Subrule = Stmt_While_For_For then
+                  No_Exit := No_Exit_Given;
+               elsif No_Exit_Given Then
+                  Parameter_Error (Rule_Id, "no_exit allowed only with while_for_for");
+               end if;
+               Rule_Used (Subrule) := True;
+               Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
+            end if;
          end loop;
-      else
+
+      else  -- No parameter
+         if Rule_Used /= Not_Used then
+            Parameter_Error (Rule_Id, "some statements already given");
+         end if;
+         No_Exit   := False;
          Rule_Used := (others => True);
          Usage     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
@@ -106,6 +131,7 @@ package body Rules.Simplifiable_Statements is
       case Action is
          when Clear =>
             Rule_Used  := Not_Used;
+            No_Exit   := False;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -799,6 +825,279 @@ package body Rules.Simplifiable_Statements is
       end if;
    end Process_Case_Statement;
 
+
+   -----------------------------
+   -- Process_While_Statement --
+   -----------------------------
+
+   procedure Process_While_Statement (The_Loop : in Asis.Statement) is
+      use Asis.Statements;
+      use Reports, Thick_Queries;
+      Cond : constant Asis.Expression := While_Condition (The_Loop);
+
+      procedure Check_While_For_For is
+      -- for stmt_while_for_for, signal if:
+      --   - the condition is a "<", "<=", ">", ">=" comparison of a variable with a value, or a membership operator
+      --   - and the variable appears only as "in" parameter of calls, or as the LHS of a single assignment where the
+      --     RHS is +1 or -1 on the same variable, or a call to 'Pred or 'Succ, consistent with the condition
+      -- We do not require initialisation of the loop variable to be the statement preceding the while loop,
+      -- however automatic fix is possible only if this is the case.
+         use Asis, Asis.Elements, Asis.Expressions;
+
+         Func : Asis.Expression;
+         Var  : Asis.Expression;
+         type Direction is (Up, Down, Indeterminate);
+         Loop_Dir : Direction;
+         Not_Changeable : exception;
+
+         procedure Check_Inner_Statements (Stmt : Asis.Element; Assignment_Allowed : in out Boolean) is
+         -- Appropriate element_kinds:
+         --   - A_Statement
+         --   - A_Path
+            Inner_Statements : constant Asis.Statement_List := Thick_Queries.Statements (Stmt);
+            RHS              : Asis.Expression;
+            Called_Func      : Asis.Expression;
+         begin
+            for S: Asis.Statement of Inner_Statements loop
+               case Statement_Kind (S) is
+                  when An_Assignment_Statement =>
+                     if Variables_Proximity (Assignment_Variable_Name (S), Var) = Same_Variable then
+                        if not Assignment_Allowed then
+                           raise Not_Changeable;
+                        end if;
+
+                        -- Here, we have the index variable on the LHS
+                        RHS := Strip_Parentheses (Assignment_Expression (S));
+                        if Expression_Kind (RHS) /= A_Function_Call then
+                           raise Not_Changeable;
+                        end if;
+
+                        Called_Func := Called_Simple_Name (RHS);
+                        declare
+                           Params : constant Asis.Association_List := Function_Call_Parameters (RHS);
+                           Step   : Extended_Biggest_Int;
+                        begin
+                           case Operator_Kind (Called_Func) is
+                              when A_Plus_Operator =>
+                                 if Variables_Proximity (Actual_Parameter (Params (1)), Var) = Same_Variable then
+                                    Step := Discrete_Static_Expression_Value (Actual_Parameter (Params (2)));
+                                    if Step /= 1 and Step /= -1 then
+                                       raise Not_Changeable;
+                                    end if;
+                                 elsif Variables_Proximity (Actual_Parameter (Params (2)), Var) = Same_Variable then
+                                    Step := Discrete_Static_Expression_Value (Actual_Parameter (Params (1)));
+                                    if Step /= 1 and Step /= -1 then
+                                       raise Not_Changeable;
+                                    end if;
+                                 else
+                                    raise Not_Changeable;
+                                 end if;
+                              when A_Minus_Operator =>
+                                 if Variables_Proximity (Actual_Parameter (Params (1)), Var) /= Same_Variable then
+                                    raise Not_Changeable;
+                                 end if;
+                                 Step := Discrete_Static_Expression_Value (Actual_Parameter (Params (2)));
+                                 if Step /= 1 and Step /= -1 then
+                                    raise Not_Changeable;
+                                 end if;
+                                 Step := -Step;
+                              when Not_An_Operator =>
+                                 case Attribute_Kind (Called_Simple_Name (RHS)) is
+                                    when A_Pred_Attribute =>
+                                       if Variables_Proximity (Actual_Parameter (Params (1)), Var) /= Same_Variable then
+                                          raise Not_Changeable;
+                                       end if;
+                                       Step := -1;
+                                    when A_Succ_Attribute =>
+                                       if Variables_Proximity (Actual_Parameter (Params (1)), Var) /= Same_Variable then
+                                          raise Not_Changeable;
+                                       end if;
+                                       Step := 1;
+                                    when others =>
+                                       raise Not_Changeable;
+                                 end case;
+                              when others =>
+                                 raise Not_Changeable;
+                           end case;
+
+                           case Loop_Dir is
+                              when Indeterminate =>
+                                 if Step = 1 then
+                                    Loop_Dir := Up;
+                                 else
+                                    Loop_Dir := Down;
+                                 end if;
+                              when Up =>
+                                 if Step = -1 then
+                                    raise Not_Changeable;
+                                 end if;
+                              when Down =>
+                                 if Step = 1 then
+                                    raise Not_Changeable;
+                                 end if;
+                           end case;
+                        end;
+                        -- Here, we have a good decrement/increment statement, do not allow another one
+                        Assignment_Allowed := False;
+                     end if;
+                  when An_If_Statement    -- Statements with paths
+                     | A_Case_Statement
+                     | A_Selective_Accept_Statement
+                     | A_Timed_Entry_Call_Statement
+                     | A_Conditional_Entry_Call_Statement
+                     | An_Asynchronous_Select_Statement
+                     =>
+                     declare
+                        Paths   : constant Path_List := Statement_Paths (S);
+                        Allowed : Boolean := False;
+                     begin
+                        for P : Asis.Path of Paths loop
+                           Check_Inner_Statements (P, Allowed);
+                        end loop;
+                     end;
+                  when A_Procedure_Call_Statement | An_Entry_Call_Statement =>
+                     declare
+                        use Asis.Declarations;
+                        Profile : constant Asis.Parameter_Specification_List := Called_Profile (S);
+                        Actual  : Asis.Expression;
+                     begin
+                        for P : Asis.Parameter_Specification of Profile loop
+                           if Mode_Kind (P) in An_Out_Mode .. An_In_Out_Mode then
+                              for Formal_Name : Asis.Defining_Name of Names (P) loop
+                                 Actual := Actual_Expression (S, Formal_Name, Return_Default => True);
+                                 -- Since it is an [in] out parameter, the actual is a variable
+                                 if Variables_Proximity (Actual, Var) = Same_Variable then
+                                    raise Not_Changeable;
+                                 end if;
+                              end loop;
+                           end if;
+                        end loop;
+                     end;
+
+                  when An_Exit_Statement =>
+                     if No_Exit and then Is_Equal (Corresponding_Loop_Exited (S), The_Loop) then
+                        raise Not_Changeable;
+                     end if;
+
+                  when others =>
+                     declare
+                        Allowed : Boolean := False;
+                     begin
+                        Check_Inner_Statements (S, Allowed);
+                     end;
+               end case;
+            end loop;
+         end Check_Inner_Statements;
+
+      begin  -- Check_While_For_For
+         case Expression_Kind (Cond) is
+            when A_Function_Call =>
+               Func := Called_Simple_Name (Cond);
+               case Operator_Kind (Func) is
+                  when A_Less_Than_Operator    | A_Less_Than_Or_Equal_Operator    |
+                       A_Greater_Than_Operator | A_Greater_Than_Or_Equal_Operator |
+                       A_Not_Equal_Operator
+                     =>
+                     Var := Actual_Parameter (Function_Call_Parameters (Cond) (1));
+                     if Expression_Kind (Var) = An_Identifier
+                       and then Declaration_Kind (Corresponding_Name_Declaration
+                                                  (Ultimate_Name (Var))) = A_Variable_Declaration
+                     then
+                        Var := Ultimate_Name (Var);
+                        if Operator_Kind (Func) = A_Not_Equal_Operator then
+                           Loop_Dir := Indeterminate;
+                        elsif Operator_Kind (Func) in A_Less_Than_Operator .. A_Less_Than_Or_Equal_Operator then
+                           Loop_Dir := Up;
+                        else -- A_Greater_Than_Operator .. A_Greater_Than_Or_Equal_Operator
+                          Loop_Dir := Down;
+                        end if;
+                     else
+                        -- Some people may write while 10 > I ...
+                        Var := Actual_Parameter (Function_Call_Parameters (Cond) (2));
+                        if Expression_Kind (Var) = An_Identifier
+                          and then Declaration_Kind (Corresponding_Name_Declaration
+                                                     (Ultimate_Name (Var))) = A_Variable_Declaration
+                        then   --## rule line off Simplifiable_statements ## Keep symetry with previous case
+                           Var := Ultimate_Name (Var);
+                           if Operator_Kind (Func) = A_Not_Equal_Operator then
+                              Loop_Dir := Indeterminate;
+                           elsif Operator_Kind (Func) in A_Less_Than_Operator .. A_Less_Than_Or_Equal_Operator then
+                              Loop_Dir := Down;
+                           else -- A_Greater_Than_Operator .. A_Greater_Than_Or_Equal_Operator
+                              Loop_Dir := Up;
+                           end if;
+                        else
+                           -- No simple variable found
+                           return;
+                        end if;
+                     end if;
+                  when others =>  -- Including Not_An_Operator
+                     return;
+               end case;
+            when others =>
+               return;
+         end case;
+
+         -- Here the condition is a comparison of a variable to an expression (or membership)
+         -- Check that there is only one (and appropriate) assignment to the variable in the direct statements
+         -- of the loop, no assignment in compound statements, no use as [in] out or access parameter
+         declare
+            Allowed : Boolean := True;
+         begin
+            Check_Inner_Statements (The_Loop, Assignment_Allowed => Allowed);
+            if Allowed then -- No assignment in loop
+               return;
+            end if;
+         exception
+            when Not_Changeable =>
+               return;
+         end;
+
+         case Loop_Dir is
+            when Indeterminate =>
+               null;
+            when Up =>
+               Report (Rule_Id,
+                       Usage (Stmt_While_For_For),
+                       Get_Location (The_Loop),
+                       "while loop can be replaced with a direct for loop");
+            when Down =>
+               Report (Rule_Id,
+                       Usage (Stmt_While_For_For),
+                       Get_Location (The_Loop),
+                       "while loop can be replaced with a reverse for loop");
+         end case;
+      end Check_While_For_For;
+
+   begin  -- Process_While_Statement
+      -- For stmt_loop, signal an explicit "while True" (or statically known True)
+      if Rule_Used (Stmt_Loop)
+        and then Discrete_Static_Expression_Value (Cond) = Boolean'Pos (True)
+      then
+         Report (Rule_Id,
+                 Usage (Stmt_Loop),
+                 Get_Location (The_Loop),
+                 "while loop has True condition");
+         Fixes.Delete (From => Get_Location (The_Loop), To => Get_Next_Word_Location (Cond));
+      end if;
+
+      -- For stmt_dead, signal any expression statically false
+      if Rule_Used (Stmt_Dead)
+        and then Discrete_Static_Expression_Value (Cond) = Boolean'Pos (False)
+      then
+         Report (Rule_Id,
+                 Usage (Stmt_Dead),
+                 Get_Location (The_Loop),
+                 "while loop is never executed");
+         Fixes.Delete (The_Loop);
+      end if;
+
+      if Rule_Used (Stmt_While_For_For) then
+         Check_While_For_For;
+      end if;
+   end Process_While_Statement;
+
+
    -----------------------
    -- Process_Statement --
    -----------------------
@@ -810,7 +1109,7 @@ package body Rules.Simplifiable_Statements is
       procedure Check_Slice is
       -- Called when Stmt is a (regular) for loop
       -- Checks if every statement in the body of the loop is an assignment, where the LHS and RHS are
-      --    array indexings, with the loop parameter appearing only as TBSL
+      --    array indexings, with the loop parameter appearing only as Inx +- Constant
          use Asis.Expressions;
 
          Loop_Index : constant Asis.Defining_Name := Names (For_Loop_Parameter_Specification (Stmt)) (1);
@@ -1025,32 +1324,8 @@ package body Rules.Simplifiable_Statements is
             end if;
 
          when A_While_Loop_Statement =>
-            if Rule_Used (Stmt_Loop) or Rule_Used (Stmt_Dead) then
-               declare
-                  Expr : constant Asis.Expression := While_Condition (Stmt);
-               begin
-                  -- For stmt_loop, signal an explicit "while True" (or statically known True)
-                  if Rule_Used (Stmt_Loop)
-                    and then Discrete_Static_Expression_Value (Expr) = Boolean'Pos (True)
-                  then
-                     Report (Rule_Id,
-                             Usage (Stmt_Loop),
-                             Get_Location (Stmt),
-                             "while loop has True condition");
-                     Fixes.Delete (From => Get_Location (Stmt), To => Get_Next_Word_Location (Expr));
-                  end if;
-
-                  -- For stmt_dead, signal any expression statically false
-                  if Rule_Used (Stmt_Dead)
-                    and then Discrete_Static_Expression_Value (Expr) = Boolean'Pos (False)
-                  then
-                     Report (Rule_Id,
-                             Usage (Stmt_Dead),
-                             Get_Location (Stmt),
-                             "while loop is never executed");
-                     Fixes.Delete (Stmt);
-                  end if;
-               end;
+            if Rule_Used (Stmt_Loop) or Rule_Used (Stmt_Dead) or Rule_Used (Stmt_While_For_For) then
+               Process_While_Statement (Stmt);
             end if;
          when others =>
             null;
