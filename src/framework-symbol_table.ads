@@ -66,6 +66,7 @@ package Framework.Symbol_Table is
       -- Raises Not_In_Table if not present
       function  Fetch (Element : Asis.Element; Default : Content) return Content;
       -- Returns Default if not present
+      procedure Delete (Element : Asis.Element);
 
       function Is_Present (Element : Asis.Element) return Boolean;
       function Scope_Of   (Element : Asis.Element) return Asis.Element;

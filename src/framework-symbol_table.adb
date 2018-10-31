@@ -270,6 +270,33 @@ package body Framework.Symbol_Table is
             return Default;
       end Fetch;
 
+      ------------
+      -- Delete --
+      ------------
+
+      procedure Delete (Element : Asis.Element) is
+         use Thick_Queries, Utilities;
+         Key : constant Unbounded_Wide_String
+           := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Element, With_Profile => True)));
+         Symbol : Symbol_Entry;
+      begin
+         if not Is_Present (Global_Map, Key) then
+            raise Not_In_Table;
+         end if;
+
+         Symbol := Fetch (Global_Map, Key);
+         if Symbol.Contents (My_Inx) = null then
+            -- The symbol exists, but for someone else
+            raise Not_In_Table;
+         end if;
+
+         Free (Symbol.Contents (My_Inx));
+         if Symbol.Contents = Empty_Content then
+            -- no more used
+            Delete (Global_Map, Key);
+         end if;
+      end Delete;
+
       ----------------
       -- Is_Present --
       ----------------
