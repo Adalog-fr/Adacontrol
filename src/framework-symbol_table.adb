@@ -151,7 +151,15 @@ package body Framework.Symbol_Table is
             -- Similarly, (non generic) formal parameters have the visibility scope of their enclosing
             -- callable unit
 
-            Symbol.Visibility_Scope := Symbol.Declaration_Scope;
+            if Declaration_Kind (Enclosing_Element (Symbol.Name)) = A_Parameter_Specification then
+               -- Parameters are visible outside their declaration
+               -- Note that A_Parameter_Specification does not include generic formals,
+               --      which is appropriate since those are not visible outside the generic
+               -- Skip the Parameter_Specification and the enclosing subprogram or entry declaration
+               Symbol.Visibility_Scope := Enclosing_Element (Enclosing_Element (Symbol.Declaration_Scope));
+            else
+               Symbol.Visibility_Scope := Symbol.Declaration_Scope;
+            end if;
             loop
                case Element_Kind (Symbol.Visibility_Scope) is
                   when Not_An_Element =>
@@ -209,12 +217,6 @@ package body Framework.Symbol_Table is
                            -- Elements from a formal package are visible only in the enclosing generic
                            Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
                            exit;
-                        when A_Parameter_Specification =>
-                           -- Parameters are visible outside their declaration
-                           -- Note that A_Parameter_Specification does not include generic formals,
-                           --      which is appropriate since those are not visible outside the generic
-                           -- Skip the Parameter_Specification and the enclosing subprogram or entry declaration
-                           Symbol.Visibility_Scope := Enclosing_Element (Enclosing_Element (Symbol.Visibility_Scope));
                         when others =>
                            Failure ("wrong enclosing scope 1", Symbol.Visibility_Scope);
                      end case;
@@ -325,7 +327,7 @@ package body Framework.Symbol_Table is
       -- Scope_Of --
       --------------
 
-      function Scope_Of (Element : Asis.Element) return Asis.Element is
+      function Scope_Of (Element : Asis.Element; Scope_Kind : Scope_Kinds := Declaration) return Asis.Element is
          use Thick_Queries, Utilities;
 
          Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
@@ -343,7 +345,12 @@ package body Framework.Symbol_Table is
             raise Not_In_Table;
          end if;
 
-         return Data.Declaration_Scope;
+         case Scope_Kind is
+            when Declaration =>
+               return Data.Declaration_Scope;
+            when Visibility =>
+               return Data.Visibility_Scope;
+         end case;
       end Scope_Of;
 
       -----------

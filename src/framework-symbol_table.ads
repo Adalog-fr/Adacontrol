@@ -69,7 +69,7 @@ package Framework.Symbol_Table is
       procedure Delete (Element : Asis.Element);
 
       function Is_Present (Element : Asis.Element) return Boolean;
-      function Scope_Of   (Element : Asis.Element) return Asis.Element;
+      function Scope_Of   (Element : Asis.Element; Scope_Kind : Scope_Kinds := Declaration) return Asis.Element;
       -- Raises Not_In_Table if not present
 
       procedure Clear;
