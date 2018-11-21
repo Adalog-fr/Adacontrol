@@ -104,11 +104,11 @@ package body Rules.Potentially_Blocking_Operations is
       end Add_SP;
 
       procedure Add_Unit (Name : Wide_String) is
-         use Asis.Declarations, Asis.Elements, Asis.Compilation_Units, Utilities;
+         use Asis.Declarations, Asis.Elements, Asis.Compilation_Units;
          Unit : constant Asis.Compilation_Unit := Library_Unit_Declaration (Name, Framework.Adactl_Context);
 
          function Is_Recognized (Decl : Asis.Declaration; SP_Name, First_Param : Wide_String) return Boolean is
-            use Asis;
+            use Asis, Utilities;
          begin
             if To_Upper (Defining_Name_Image (Names (Decl)(1))) /= SP_Name then
                return False;
