@@ -35,11 +35,11 @@ with
 -- Adalog
 with
   Binary_Map,
-  Scope_Manager,
-  Thick_Queries;
+  Scope_Manager;
 
 -- AdaControl
 with
+  Framework.Queries,
   Utilities;
 
 package body Framework.Symbol_Table is
@@ -110,11 +110,9 @@ package body Framework.Symbol_Table is
 
       procedure Store (Element : Asis.Element; Content_Value : Content) is
          use Asis, Asis.Elements, Asis.Expressions;
-         use Thick_Queries, Utilities;
+         use Framework.Queries, Utilities;
 
-         Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String
-                                                 (To_Upper
-                                                  (Full_Name_Image (Element, With_Profile => True)));
+         Key    : constant Unbounded_Wide_String := To_Key_Upper (Element);
          Symbol : Symbol_Entry;
       begin
          if Is_Present (Global_Map, Key) then
@@ -242,9 +240,8 @@ package body Framework.Symbol_Table is
       -----------
 
       function Fetch (Element : Asis.Element) return Content is
-         use Thick_Queries, Utilities;
-         Key : constant Unbounded_Wide_String
-           := To_Unbounded_Wide_String (To_Upper(Full_Name_Image (Element, With_Profile => True)));
+         use Framework.Queries;
+         Key : constant Unbounded_Wide_String := To_Key_Upper (Element);
          Ptr : Content_Access;
       begin
          if not Is_Present (Global_Map, Key) then
@@ -277,9 +274,8 @@ package body Framework.Symbol_Table is
       ------------
 
       procedure Delete (Element : Asis.Element) is
-         use Thick_Queries, Utilities;
-         Key : constant Unbounded_Wide_String
-           := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Element, With_Profile => True)));
+         use Framework.Queries;
+         Key    : constant Unbounded_Wide_String := To_Key_Upper (Element);
          Symbol : Symbol_Entry;
       begin
          if not Is_Present (Global_Map, Key) then
@@ -304,10 +300,8 @@ package body Framework.Symbol_Table is
       ----------------
 
       function Is_Present (Element : Asis.Element) return Boolean is
-         use Thick_Queries, Utilities;
-         Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-                                                                           (Full_Name_Image
-                                                                            (Element, With_Profile => True)));
+         use Framework.Queries;
+         Key  : constant Unbounded_Wide_String := To_Key_Upper (Element);
          Data : Symbol_Entry;
       begin
          if not Is_Present (Global_Map, Key) then
@@ -328,11 +322,9 @@ package body Framework.Symbol_Table is
       --------------
 
       function Scope_Of (Element : Asis.Element; Scope_Kind : Scope_Kinds := Declaration) return Asis.Element is
-         use Thick_Queries, Utilities;
+         use Framework.Queries;
 
-         Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-                                                                           (Full_Name_Image
-                                                                            (Element, With_Profile => True)));
+         Key : constant Unbounded_Wide_String := To_Key_Upper (Element);
          Data : Symbol_Entry;
       begin
          if not Is_Present (Global_Map, Key) then

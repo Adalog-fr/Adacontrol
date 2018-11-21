@@ -47,7 +47,8 @@ with
 -- AdaControl
 with
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Language;
+  Framework.Language,
+  Framework.Queries;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Global_References is
@@ -322,7 +323,7 @@ package body Rules.Global_References is
    is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
-      use Framework.Reports;
+      use Framework.Queries, Framework.Reports;
 
       New_State : Usage_Value;
 
@@ -358,7 +359,7 @@ package body Rules.Global_References is
          when A_Defining_Name =>
             if Declaration_Kind (Enclosing_Element (Element)) = A_Variable_Declaration then
                Add (Usage,
-                    To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Element, With_Profile => True))),
+                    To_Key (Element),
                     (Nil_Element, Non_Global));
             end if;
 
@@ -392,9 +393,7 @@ package body Rules.Global_References is
                      case Declaration_Kind (Corresponding_Name_Declaration (Element)) is
                         when A_Variable_Declaration =>
                            declare
-                              Key : constant Unbounded_Wide_String
-                                := To_Unbounded_Wide_String (To_Upper
-                                                             (Full_Name_Image (Element, With_Profile => True)));
+                              Key : constant Unbounded_Wide_String := To_Key (Element);
                               U   : Usage_Record;
                            begin
                               if Is_Present (Usage, Key) then
@@ -528,7 +527,7 @@ package body Rules.Global_References is
    procedure Check_Body (Body_Decl : Asis.Declaration) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Declarations, Asis.Elements;
-      use Framework.Rules_Manager, Thick_Queries, Utilities, Usage_Map;
+      use Framework.Queries, Framework.Rules_Manager, Thick_Queries, Usage_Map;
    begin
       if Is_Nil (Body_Decl) -- Predefined operations, dispatching call, f.e. ...
         or else Is_Banned (Body_Decl, Rule_Id)
@@ -544,10 +543,7 @@ package body Rules.Global_References is
       end if;
 
       declare
-         Body_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-                                                                                 (Full_Name_Image
-                                                                                    (Names (Body_Decl)(1),
-                                                                                     With_Profile => True)));
+         Body_Name : constant Unbounded_Wide_String := To_Key (Names (Body_Decl)(1));
          Control   : Asis.Traverse_Control := Continue;
          Ignored   : Usage_Value := Checked;  -- This value will cause failure if used not from renaming
       begin

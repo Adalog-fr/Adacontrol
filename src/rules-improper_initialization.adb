@@ -44,7 +44,8 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Queries;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Improper_Initialization is
@@ -293,7 +294,7 @@ package body Rules.Improper_Initialization is
       is
          use Asis.Elements, Asis.Expressions, Asis.Statements;
          use Ada.Strings.Wide_Unbounded;
-         use Object_Info_Map, Framework.Reports, Thick_Queries, Utilities;
+         use Object_Info_Map, Framework.Queries, Framework.Reports, Thick_Queries, Utilities;
 
          Good_Name : Asis.Expression;
       begin
@@ -321,8 +322,7 @@ package body Rules.Improper_Initialization is
                         return;
                      end if;
                      declare
-                        Key  : constant Unbounded_Wide_String
-                          := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
+                        Key  : constant Unbounded_Wide_String := To_Key (Good_Name);
                         Info : Object_Information;
                      begin
                         if Is_Present (Object_Map, Key) then
@@ -558,6 +558,7 @@ package body Rules.Improper_Initialization is
 
       procedure Process_Target (Name : Asis.Expression) is
          use Ada.Strings.Wide_Unbounded;
+         use Framework.Queries;
 
          Good_Name : Asis.Expression;
          Info      : Object_Information;
@@ -642,8 +643,7 @@ package body Rules.Improper_Initialization is
          case Declaration_Kind (Corresponding_Name_Declaration (Good_Name)) is
             when A_Variable_Declaration | A_Parameter_Specification | A_Return_Variable_Specification =>
                declare
-                  Name_Image : constant Unbounded_Wide_String
-                    := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
+                  Name_Image : constant Unbounded_Wide_String := To_Key (Good_Name);
                begin
                   if Is_Present (Object_Map, Name_Image) then
                      Info := Fetch (Object_Map, Name_Image);
@@ -941,7 +941,8 @@ package body Rules.Improper_Initialization is
    -----------------------
 
    procedure Process_Structure (Elem : in Asis.Element) is
-      use Ada.Strings.Wide_Unbounded, Object_Info_Map;
+      use Object_Info_Map;
+      use Framework.Queries;
 
       Final_Loc  : Location;
       Exit_Cause : Exit_Causes;
@@ -1002,7 +1003,7 @@ package body Rules.Improper_Initialization is
                         begin
                            for Param_Index in Param_Names'Range loop
                               Add (Global_Map,
-                                   To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Param_Names (Param_Index)))),
+                                   To_Key (Param_Names (Param_Index)),
                                    (Identifier => Param_Names (Param_Index),
                                     Kind       => K_Out_Parameter,
                                     Reference  => None));
@@ -1063,7 +1064,7 @@ package body Rules.Improper_Initialization is
 
                for Var_Index in Var_Names'Range loop
                   Add (Global_Map,
-                       To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Var_Names (Var_Index)))),
+                       To_Key (Var_Names (Var_Index)),
                        (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
                end loop;
                return;
@@ -1080,7 +1081,7 @@ package body Rules.Improper_Initialization is
 
                   for Var_Index in Var_Names'Range loop
                      Add (Global_Map,
-                          To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Var_Names (Var_Index)))),
+                          To_Key (Var_Names (Var_Index)),
                           (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
                   end loop;
                   return;
@@ -1109,7 +1110,7 @@ package body Rules.Improper_Initialization is
 
             for Var_Index in Var_Names'Range loop
                Add (Global_Map,
-                    To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Var_Names (Var_Index)))),
+                    To_Key (Var_Names (Var_Index)),
                     (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
             end loop;
          end Add_Variable;

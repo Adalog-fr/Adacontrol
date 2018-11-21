@@ -24,22 +24,40 @@
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+   Ada.Wide_Characters.Handling,
+   Ada.Strings.Wide_Unbounded;
+
 -- Asis
 with
   Asis;
 
 -- Adalog
 with
-Thick_Queries;
+  Thick_Queries;
 
 package Framework.Queries is
    -- This package contain high level ASIS queries, but unlike
    -- Thick_Queries, it is application dependant, i.e. the queries
    -- may refer to the Framework.
 
+   function To_Key (Name : Asis.Name) return Ada.Strings.Wide_Unbounded.Unbounded_Wide_String is
+     (Ada.Strings.Wide_Unbounded.To_Unbounded_Wide_String (Thick_Queries.Full_Name_Image (Name,
+                                                                                          With_Profile => True)));
+   -- To use Name as a key in a binary map or other data structure. Works fine to compare elements, but depends on
+   -- casing
+
+   function To_Key_Upper (Name : Asis.Name) return Ada.Strings.Wide_Unbounded.Unbounded_Wide_String is
+     (Ada.Strings.Wide_Unbounded.To_Unbounded_Wide_String (Ada.Wide_Characters.Handling.To_Upper
+                                                           (Thick_Queries.Full_Name_Image (Name,
+                                                                                           With_Profile => True))));
+   -- Same as before, but the key is forced to upper case. Slightly less efficient, but necessary when the name
+   -- has to be matched against something whose casing is not known (like a name provided by the user in a rule)
+
    function Enclosing_Package_Name (Rule_Id : Wide_String; N : in Asis.Name) return Wide_String;
    -- If N is declared immediately within a package specification, returns the Full_Name_Image
-   -- of the package (in uppercase)
+   -- of the package (with profile).
    -- Otherwise, returns ""
    --
    -- Cannot be made application independant, because it calls Uncheckable in some cases.

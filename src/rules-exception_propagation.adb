@@ -947,11 +947,12 @@ package body Rules.Exception_Propagation is
    ----------------------------
 
    procedure Process_SP_Declaration (Element : in Asis.Declaration) is
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions, Utilities;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
       Spec_Declaration : Asis.Declaration;
 
       procedure Check (Convention : Asis.Expression) is
-         use Framework.Reports;
+         use Framework.Reports, Utilities;
          Risk           : Risk_Level;
          Convention_Img : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Name_Image (Convention)));
@@ -997,17 +998,9 @@ package body Rules.Exception_Propagation is
       end;
 
       -- Convention given by aspect:
-      declare
-         All_Aspects : constant Asis.Element_List := Aspect_Specifications (Spec_Declaration);
-      begin
-         for I in All_Aspects'Range loop
-            if Expression_Kind (Aspect_Mark (All_Aspects (I))) = An_Identifier  -- Could be An_Attribute_Specification
-              and then To_Upper (Name_Image (Aspect_Mark (All_Aspects (I)))) = "CONVENTION"
-            then
-                  Check (Aspect_Definition (All_Aspects (I)));
-            end if;
-         end loop;
-      end;
+      for A : Asis.Definition of Corresponding_Aspects (Spec_Declaration, "CONVENTION") loop
+         Check (Aspect_Definition (A));
+      end loop;
 
    end Process_SP_Declaration;
 

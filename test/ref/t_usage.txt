@@ -18,7 +18,7 @@ t_usage-guards.adb:3:14: Found: USAGE: (normal) T_Usage.Guards.P, procedure, not
 t_usage-guards.adb:11:7: Error: Guard4: (normal) T_Usage.Guards.P.Exc1, in task guard, exception, not raised, not handled
 t_usage-guards.adb:12:7: Error: Guard4: (normal) T_Usage.Guards.P.Exc2, in task guard, exception, raised, not handled
 t_usage-guards.adb:14:16: Found: Guard3: (normal) T_Usage.Guards.P.F, in task guard, function, not called, not accessed (outside guard and corresponding accept)
-t_usage-guards.adb:14:19: Error: Unused_param: (normal) T_Usage.Guards.P.F.X, in parameter, not initialized, not read (unused)
+t_usage-guards.adb:14:19: Error: Unused_param: (normal) T_Usage.Guards.P.F, in parameter, not initialized, not read (unused)
 t_usage-guards.adb:19:16: Found: Guard3: (normal) T_Usage.Guards.P.G, in task guard, function, called, not accessed (outside guard and corresponding accept)
 t_usage-guards.adb:5:7: Error: Guard1: (normal) T_Usage.Guards.P.J, in task guard, variable, not initialized, written, read (outside guard and corresponding accept)
 t_usage-guards.adb:6:7: Error: Guard1: (normal) T_Usage.Guards.P.K, in task guard, variable, not initialized, written, not read (outside guard and corresponding accept)
@@ -36,8 +36,6 @@ t_usage.adb:38:4: Found: Constantable: (instance) T_Usage.Inst2.Y3, visible, var
 t_usage.adb:38:4: Error: Written_Private: (instance) T_Usage.Inst2.Y4, private, variable, not initialized, written, not read
 t_usage.adb:38:4: Found: Removable: (instance) T_Usage.Inst2.Z, visible, constant, not read
 t_usage.adb:15:4: Found: Removable: (normal) T_Usage.Local, variable, not initialized, not written, not read (can be removed)
-t_usage.adb:81:14: Found: USAGE: (normal) T_Usage.P, procedure, called, not accessed
-t_usage.adb:81:17: Error: Unused_param: (normal) T_Usage.P.X, in parameter, not initialized, not read (unused)
 t_usage.adb:41:7: Error: Written_Visible: (normal) T_Usage.Pack.A1, visible, variable, not initialized, written, read
 t_usage.adb:41:11: Error: Written_Visible: (normal) T_Usage.Pack.A2, visible, variable, not initialized, written, not read
 t_usage.adb:42:7: Found: Constantable: (normal) T_Usage.Pack.A3, visible, variable, initialized, not written, read (can be declared constant)
@@ -89,6 +87,8 @@ t_usage.adb:168:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Nothing, v
 t_usage.adb:161:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.S, variable, not initialized, not written, read (never given a value)
 t_usage.adb:169:7: Found: Constantable: (normal) T_Usage.Pseudo_Const.Something, variable, not initialized, not written, read (never given a value)
 t_usage.adb:165:12: Error: type_used: (normal) T_Usage.Pseudo_Const.Tab, (sub)type, used
+t_usage.adb:81:14: Found: USAGE: (normal) T_Usage.P, procedure, called, not accessed
+t_usage.adb:81:17: Error: Unused_param: (normal) T_Usage.P.X, in parameter, not initialized, not read (unused)
 t_usage.adb:9:9: Error: type_used: (normal) T_Usage.Rec, (sub)type, used
 t_usage.adb:204:12: Error: type_used: (normal) T_Usage._anonymous_.Acc_Proc, (sub)type, used
 t_usage.adb:200:16: Found: USAGE: (normal) T_Usage._anonymous_.F1, function, called, not accessed

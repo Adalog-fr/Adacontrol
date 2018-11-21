@@ -103,7 +103,7 @@ package body Rules.Simplifiable_Statements is
                end if;
                if Subrule = Stmt_While_For_For then
                   No_Exit := No_Exit_Given;
-               elsif No_Exit_Given Then
+               elsif No_Exit_Given then
                   Parameter_Error (Rule_Id, "no_exit allowed only with while_for_for");
                end if;
                Rule_Used (Subrule) := True;

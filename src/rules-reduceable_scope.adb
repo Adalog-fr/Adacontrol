@@ -46,8 +46,8 @@ with
 -- AdaControl
 with
   Framework.Language,
-  Framework.Reports.Fixes,
   Framework.Queries,
+  Framework.Reports.Fixes,
   Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
@@ -939,7 +939,7 @@ package body Rules.Reduceable_Scope is
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
       use Asis, Asis.Clauses, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Thick_Queries;
+      use Framework.Queries, Thick_Queries;
    begin
       if (Rule_Used and Use_Checks) = No_Check then
          return;
@@ -956,22 +956,17 @@ package body Rules.Reduceable_Scope is
                   Use_Clauses.Push ((Elem  => Names (I),
                                      Kind  => Kind,
                                      Path  => null,
-                                     Package_Image => To_Unbounded_Wide_String (To_Upper
-                                                                                (Full_Name_Image
-                                                                                 (Ultimate_Name (Names (I)))))
+                                     Package_Image => To_Key (Ultimate_Name (Names (I)))
                                     ));
             when A_Use_Type_Clause | A_Use_All_Type_Clause =>
                   Use_Clauses.Push ((Elem  => Names (I),
                                      Kind  => Kind,
                                      Path  => null,
-                                     Package_Image => To_Unbounded_Wide_String
-                                                       (To_Upper
-                                                        (Full_Name_Image
-                                                         (Enclosing_Program_Unit
-                                                          (Corresponding_First_Subtype
-                                                           (Corresponding_Name_Declaration
-                                                            (Simple_Name
-                                                             (Strip_Attributes (Names (I)))))))))));
+                                     Package_Image => To_Key (Enclosing_Program_Unit
+                                                              (Corresponding_First_Subtype
+                                                               (Corresponding_Name_Declaration
+                                                                (Simple_Name
+                                                                 (Strip_Attributes (Names (I)))))))));
             end case;
          end loop;
       end;

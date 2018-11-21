@@ -229,7 +229,8 @@ package body Rules.Unnecessary_Use_Clause is
          case Use_Clause_Kinds (Clause_Kind (Clause)) is
             when A_Use_Package_Clause =>
                declare
-                  Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Name_Elem)));
+                  Name_String : constant Wide_String := Full_Name_Image (Ultimate_Name (Name_Elem),
+                                                                         With_Profile => True);
                begin
                   return (Name_Length => Name_String'Length,
                           Spec_Length => 0,
@@ -250,8 +251,10 @@ package body Rules.Unnecessary_Use_Clause is
                                                                 (Simple_Name
                                                                  (Strip_Attributes (Name_Elem)))));
 
-                  Name_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Name_Elem)));
-                  Spec_String : constant Wide_String := To_Upper (Full_Name_Image (Ultimate_Name (Type_Unit)));
+                  Name_String : constant Wide_String := Full_Name_Image (Ultimate_Name (Name_Elem),
+                                                                         With_Profile => True);
+                  Spec_String : constant Wide_String := Full_Name_Image (Ultimate_Name (Type_Unit),
+                                                                         With_Profile => True);
                begin
                   if Declaration_Kind (Enclosing_Element (Type_Unit)) = A_Package_Declaration then
                      return (Name_Length => Name_String'Length,
@@ -332,7 +335,8 @@ package body Rules.Unnecessary_Use_Clause is
                         -- Enclosing_PU is nil if use clause in context clauses
                         if not Is_Nil (Enclosing_PU) then
                            declare
-                              Enclosing_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_PU));
+                              Enclosing_Name : constant Wide_String := Full_Name_Image (Enclosing_PU,
+                                                                                        With_Profile => True);
                            begin
                               if Info.Name = Enclosing_Name then
                                  Report (Rule_Id,
@@ -394,7 +398,7 @@ package body Rules.Unnecessary_Use_Clause is
                                          Ctl_Contexts (Nested),
                                          Get_Location (Info.Elem),
                                          "Nested: " & Clause_And_Name (Info)
-                                         & " in scope of use clause for " & Info.Spec_Name
+                                         & " in scope of use clause for " & Strip_Profile (Info.Spec_Name)
                                          & " at " & Image (Get_Location (Used_Elements.Current_Data.Elem)));
                                  Fixes.List_Remove (I, From => Clause);
                               end if;
@@ -457,7 +461,7 @@ package body Rules.Unnecessary_Use_Clause is
          end if;
          case Expression_Kind (Prefix (Name_Enclosing)) is
             when An_Identifier | A_Selected_Component =>
-               return To_Upper (Full_Name_Image (Prefix (Name_Enclosing))) = Pack_Name;
+               return Full_Name_Image (Prefix (Name_Enclosing), With_Profile => True) = Pack_Name;
             when others =>
                -- A_Function_Call, An_Indexed_Component...
                return False;

@@ -49,6 +49,7 @@ with
 -- AdaControl
 with
    Framework.Language,
+   Framework.Queries,
    Framework.Reports.Fixes;
 pragma Elaborate (Framework.Language);
 
@@ -566,7 +567,7 @@ package body Rules.Usage is
       -- Precondition:
       -- Element is a Defining_Name, or the Ultimate_Name of an identifier
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Usage_Map, Thick_Queries;
+      use Framework.Queries, Thick_Queries, Usage_Map;
 
       Unbounded_Key : Unbounded_Wide_String;
       Entry_Value   : Usage_Record;
@@ -579,7 +580,7 @@ package body Rules.Usage is
          Default_Decl := Corresponding_Name_Definition (Element);
       end if;
 
-      Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image (Default_Decl));
+      Unbounded_Key := To_Key (Default_Decl);
       Entry_Value   := Fetch (From          => Own_Usage,
                               Key           => Unbounded_Key,
                               Default_Value => (Declaration      => Default_Decl,
@@ -606,7 +607,7 @@ package body Rules.Usage is
          -- Generic_Decl can be Nil for implicit elements inherited from a derivation in the generic,
          -- which have no corresponding generic elements.
          if not Is_Nil (Generic_Decl) then
-            Unbounded_Key := To_Unbounded_Wide_String (Full_Name_Image (Generic_Decl));
+            Unbounded_Key := To_Key (Generic_Decl);
             Entry_Value   := Fetch (From          => Cumulated_Usage,
                                     Key           => Unbounded_Key,
                                     Default_Value => (Declaration      => Default_Decl,
@@ -799,7 +800,7 @@ package body Rules.Usage is
 
       procedure Report_One (Key : Unbounded_Wide_String; Value : in out Usage_Record) is
          use Asis.Declarations, Asis.Elements;
-         use Reports, Thick_Queries;
+         use Framework.Queries, Reports, Utilities;
 
          Message      : Unbounded_Wide_String;
          True_Usage   : Usage_Value;
@@ -816,6 +817,7 @@ package body Rules.Usage is
          end Usage_Message;
 
          function Is_Pseudo_Const (Entity : Asis.Expression) return Boolean is
+            use Thick_Queries;
          begin
             declare
                Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Entity);
@@ -849,7 +851,7 @@ package body Rules.Usage is
                else
                   True_Usage := Value.Usage
                                 or Fetch (From          => Own_Usage,
-                                          Key           => To_Unbounded_Wide_String (Full_Name_Image (Generic_Elem)),
+                                          Key           => To_Key (Generic_Elem),
                                           Default_Value => (Declaration   => Value.Declaration,
                                                             Origin        => From_Instance,
                                                             Decl_Location => Null_Location, -- Since it's a dummy
@@ -898,7 +900,7 @@ package body Rules.Usage is
             when From_Generic =>
                Message := To_Unbounded_Wide_String ("(generic) ");
          end case;
-         Append (Message, Key);   -- Key is Full_Name_Image of defining name
+         Append (Message, Strip_Profile (To_Wide_String (Key)));   -- Key is Full_Name_Image of defining name
 
          if True_Usage (K_From_Visible) then
             Append (Message, ", visible");

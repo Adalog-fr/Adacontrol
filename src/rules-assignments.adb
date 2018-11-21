@@ -47,7 +47,8 @@ with
 -- AdaControl
 with
   Framework.Language,
-  Framework.Language.Shared_Keys;
+  Framework.Language.Shared_Keys,
+  Framework.Queries;
 pragma Elaborate (Framework.Language);
 pragma Elaborate (Framework.Language.Shared_Keys);
 
@@ -1160,7 +1161,7 @@ package body Rules.Assignments is
                                     Key      : out Unbounded_Wide_String)
       is
          use Asis.Declarations;
-         use Framework.Reports, Utilities;
+         use Framework.Queries, Framework.Reports, Utilities;
          Target       : Asis.Expression := LHS;
          Target_Descr : LHS_Descriptor;
          Parent       : Asis.Expression;
@@ -1229,7 +1230,7 @@ package body Rules.Assignments is
                     /= An_Object_Renaming_Declaration
                   then
                      -- A truly global assignment, not groupable
-                     Key := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Target)));
+                     Key    := To_Key (Target);
                      Parent := Nil_Element;
                      exit;
                   end if;
@@ -1324,7 +1325,7 @@ package body Rules.Assignments is
                        Context,
                        Value.Loc,
                        "too many assignments to components of "
-                       & To_Title (To_Wide_String (Key))
+                       & To_Title (Strip_Profile (To_Wide_String (Key)))
                        & To_Wide_String (Reason));
             end if;
 

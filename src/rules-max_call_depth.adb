@@ -45,6 +45,7 @@ with
 
 -- AdaControl
 with
+  Framework.Queries,
   Framework.Variables,
   Framework.Variables.Shared_Types;
 
@@ -251,7 +252,7 @@ package body Rules.Max_Call_Depth is
    function Call_Depth (Call : Asis.Element) return Depth_Descriptor is
    -- Computes the depth of a call, including itself
       use Asis, Asis.Elements;
-      use Depth_Map, Framework.Control_Manager, Thick_Queries, Utilities;
+      use Depth_Map, Framework.Control_Manager, Framework.Queries, Thick_Queries, Utilities;
 
       Called       : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Call));
       Called_Name  : Unbounded_Wide_String;
@@ -262,7 +263,7 @@ package body Rules.Max_Call_Depth is
          return (Dynamic, 1);
       end if;
 
-      Called_Name := To_Unbounded_Wide_String (Full_Name_Image (Called, With_Profile => True));
+      Called_Name := To_Key (Called);
       if Is_Present (Call_Depths, Called_Name) then
          Called_Depth := Fetch (Call_Depths, Called_Name);
 
@@ -517,10 +518,9 @@ package body Rules.Max_Call_Depth is
    --
    -- Precondition: Decl is the declaration of a real subprogram, not of a renaming
       use Asis, Asis.Declarations, Asis.Elements;
-      use Depth_Map, Framework.Rules_Manager, Thick_Queries, Utilities;
+      use Depth_Map, Framework.Queries, Framework.Rules_Manager, Thick_Queries, Utilities;
 
-      Called_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Full_Name_Image (Names (Decl)(1),
-                                                                                                 With_Profile => True));
+      Called_Name : constant Unbounded_Wide_String := To_Key (Names (Decl)(1));
       Called_Body : Asis.Declaration;
       Control     : Traverse_Control := Continue;
       Result      : Depth_Descriptor;

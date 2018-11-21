@@ -13,7 +13,7 @@ t_unnecessary_use_clause.adb:63:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use"
 t_unnecessary_use_clause.adb:63:7: Delete:63:16
 t_unnecessary_use_clause.adb:67:8: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for T_Unnecessary_Use_Clause inside same package
 t_unnecessary_use_clause.adb:67:4: Delete:67:32
-t_unnecessary_use_clause-use_type.adb:4:13: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Ada.Text_IO.Count in scope of use clause for ADA.TEXT_IO at t_unnecessary_use_clause.adb:9:8
+t_unnecessary_use_clause-use_type.adb:4:13: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Ada.Text_IO.Count in scope of use clause for Ada.Text_IO at t_unnecessary_use_clause.adb:9:8
 t_unnecessary_use_clause-use_type.adb:4:4: Delete:4:30
 t_unnecessary_use_clause-use_type.adb:8:16: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for X_Unnecessary_Use_Clause.Int_1 in scope of use type or use all type clause for same type at t_unnecessary_use_clause-use_type.adb:5:13
 t_unnecessary_use_clause-use_type.adb:8:7: Delete:8:46

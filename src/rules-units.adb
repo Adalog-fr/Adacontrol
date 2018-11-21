@@ -39,11 +39,11 @@ with
 -- Adalog
 with
   Binary_Map,
-  Thick_Queries,
   Utilities;
 
 -- AdaControl
 with
+  Framework.Queries,
   Framework.Language;
 pragma Elaborate (Framework.Language);
 
@@ -150,14 +150,14 @@ package body Rules.Units is
             Report (Rule_Id,
                     Ctl_Contexts (Unchecked),
                     Value.Loc,
-                    "unit " & To_Title (To_Wide_String (Key)) & " not processed by AdaControl");
+                    "unit " & To_Title (Strip_Profile (To_Wide_String (Key))) & " not processed by AdaControl");
          end if;
       else
          if Rule_Used (Unreferenced) then
             Report (Rule_Id,
                     Ctl_Contexts (Unreferenced),
                     Value.Loc,
-                    "unit " & To_Title (To_Wide_String (Key)) & " not withed by any unit");
+                    "unit " & To_Title (Strip_Profile (To_Wide_String (Key))) & " not withed by any unit");
          end if;
       end if;
    end Report_One;
@@ -181,9 +181,9 @@ package body Rules.Units is
    type Usage_Kind is (Definition, Reference);
 
    procedure Update (Name : Asis.Expression; Usage : Usage_Kind) is
-      use Thick_Queries, Units_Map, Utilities;
+      use Framework.Queries, Units_Map;
 
-      Key  : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Name)));
+      Key  : constant Unbounded_Wide_String := To_Key (Name);
       Info : Unit_Info := Fetch (Units_Table,
                                  Key,
                                  Default_Value => (Checked => False, Withed => False, Loc => Null_Location));

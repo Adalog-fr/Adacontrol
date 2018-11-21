@@ -46,6 +46,7 @@ with
   Adactl_Options,
   Framework.Language,
   Framework.Element_Queues,
+  Framework.Queries,
   Framework.Rules_Manager,
   Framework.Reports;
 
@@ -93,12 +94,13 @@ package body Rules.Potentially_Blocking_Operations is
    ----------------------------
 
    procedure Initialize_SP_Property is
-      -- Initialize SP_Property map with known potentially blocking subprograms
+   -- Initialize SP_Property map with known potentially blocking subprograms
+      use Ada.Strings.Wide_Unbounded;
 
-      procedure Add_SP (Name : Wide_String) is
-         use SP_Property_Map, Ada.Strings.Wide_Unbounded, Framework.Element_Queues;
+      procedure Add_SP (Name : Unbounded_Wide_String) is
+         use SP_Property_Map, Framework.Element_Queues;
       begin
-         Add (SP_Property, To_Unbounded_Wide_String (Name), (Is_Blocking => True, Referenced_PTO => Empty_Queue));
+         Add (SP_Property, Name, (Is_Blocking => True, Referenced_PTO => Empty_Queue));
       end Add_SP;
 
       procedure Add_Unit (Name : Wide_String) is
@@ -124,7 +126,7 @@ package body Rules.Potentially_Blocking_Operations is
          end Is_Recognized;
 
          procedure Traverse_Declarations (Decls : in Asis.Declaration_List) is
-            use Asis, Thick_Queries;
+            use Asis, Framework.Queries;
 
          begin  -- Traverse_Declarations
             for I in Decls'Range loop
@@ -135,7 +137,7 @@ package body Rules.Potentially_Blocking_Operations is
                      if    not Is_Recognized (Decls (I), SP_Name => "GET", First_Param => "FROM")
                        and not Is_Recognized (Decls (I), SP_Name => "PUT", First_Param => "TO")
                      then
-                        Add_SP (To_Upper (Full_Name_Image (Names (Decls (I))(1), With_Profile => True)));
+                        Add_SP (To_Key_Upper (Names (Decls (I))(1)));
                      end if;
                   when A_Package_Declaration | A_Generic_Package_Declaration =>
                      Traverse_Declarations (Visible_Part_Declarative_Items (Decls (I)));
@@ -168,8 +170,10 @@ package body Rules.Potentially_Blocking_Operations is
       end;
 
       -- Individual subprograms defined as blocking
-      Add_SP ("ADA.TASK_IDENTIFICATION.ABORT_TASK{ADA.TASK_IDENTIFICATION.TASK_ID}");
-      Add_SP ("ADA.SYNCHRONOUS_TASK_CONTROL.SUSPEND_UNTIL_TRUE{ADA.SYNCHRONOUS_TASK_CONTROL.SUSPENSION_OBJECT}");
+      Add_SP (To_Unbounded_Wide_String (
+              "ADA.TASK_IDENTIFICATION.ABORT_TASK{ADA.TASK_IDENTIFICATION.TASK_ID}"));
+      Add_SP (To_Unbounded_Wide_String (
+              "ADA.SYNCHRONOUS_TASK_CONTROL.SUSPEND_UNTIL_TRUE{ADA.SYNCHRONOUS_TASK_CONTROL.SUSPENSION_OBJECT}"));
 
       -- Text_IO
       Add_Unit ("ADA.TEXT_IO");
@@ -550,7 +554,8 @@ package body Rules.Potentially_Blocking_Operations is
    is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use SP_Property_Map, Framework.Element_Queues, Framework.Rules_Manager, Thick_Queries, Utilities;
+      use Framework.Element_Queues, Framework.Queries, Framework.Rules_Manager, Thick_Queries;
+      use SP_Property_Map;
       Decl : Asis.Declaration := Entity_Decl;
    begin
       -- Get rid of renamings
@@ -565,10 +570,7 @@ package body Rules.Potentially_Blocking_Operations is
       end if;
 
       declare
-         Decl_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
-                                                                                 (Full_Name_Image
-                                                                                  (Names (Decl)(1),
-                                                                                   With_Profile => True)));
+         Decl_Name : constant Unbounded_Wide_String := To_Key_Upper (Names (Decl)(1));
          Control   : Asis.Traverse_Control;
          Body_Info : Info;
          Decl_Body : Asis.Declaration;

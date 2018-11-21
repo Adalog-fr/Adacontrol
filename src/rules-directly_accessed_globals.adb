@@ -41,6 +41,7 @@ with
 -- Adalog
 with
   Binary_Map,
+  Framework.Queries,
   Thick_Queries,
   Utilities;
 
@@ -143,7 +144,7 @@ package body Rules.Directly_Accessed_Globals is
 
    procedure Process_Variable_Declaration (Decl : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
-      use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Variables_Map;
+      use Framework.Queries, Variables_Map;
    begin
       if not Rule_Used then
          return;
@@ -161,7 +162,7 @@ package body Rules.Directly_Accessed_Globals is
       begin
          for I in Name_List'Range loop
             Add (Global_Variables,
-                 To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Name_List (I)))),
+                 To_Key (Name_List (I)),
                  Variable_Info'(Owner_Pack             => Enclosing_Element (Decl),
                                 Var_Loc                => Get_Location (Name_List (I)),
                                 Read_Proc | Write_Proc => Nil_Element));
@@ -175,7 +176,7 @@ package body Rules.Directly_Accessed_Globals is
 
    procedure Process_Identifier (Name : in Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Ada.Strings.Wide_Unbounded, Framework.Reports, Thick_Queries,Utilities, Variables_Map;
+      use Ada.Strings.Wide_Unbounded, Framework.Queries, Framework.Reports, Thick_Queries,Utilities, Variables_Map;
       Good_Name : Asis.Expression;
       Name_Decl : Asis.Declaration;
    begin
@@ -225,7 +226,7 @@ package body Rules.Directly_Accessed_Globals is
       -- Here we have an acceptable variable
 
       declare
-         Var_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper (Full_Name_Image (Good_Name)));
+         Var_Name : constant Unbounded_Wide_String := To_Key (Good_Name);
          Var_Info : Variable_Info                  := Fetch (Global_Variables, Var_Name);
 
          Usage     : constant Expression_Usage_Kinds := Expression_Usage_Kind (Name);
@@ -428,14 +429,16 @@ package body Rules.Directly_Accessed_Globals is
             Report (Rule_Id,
                     Rule_Context,
                     Var_Info.Var_Loc,
-                    "variable """ &  To_Title (To_Wide_String (Key)) & """ is not read from any subprogram");
+                    "variable """ &  To_Title (Strip_Profile (To_Wide_String (Key)))
+                      & """ is not read from any subprogram");
          end if;
 
          if Is_Nil (Var_Info.Write_Proc) then
             Report (Rule_Id,
                     Rule_Context,
                     Var_Info.Var_Loc,
-                    "variable """ &  To_Title (To_Wide_String (Key)) & """ is not written from any subprogram");
+                    "variable """ &  To_Title (Strip_Profile (To_Wide_String (Key)))
+                      & """ is not written from any subprogram");
          end if;
 
          -- Read_Proc/Write_Proc are the defining names of the procs
@@ -451,7 +454,7 @@ package body Rules.Directly_Accessed_Globals is
             Report (Rule_Id,
                     Rule_Context,
                     Var_Info.Var_Loc,
-                    "variable """ &  To_Title (To_Wide_String (Key))
+                    "variable """ &  To_Title (Strip_Profile (To_Wide_String (Key)))
                       & """ is read and written from different protected objects or tasks");
          end if;
 
