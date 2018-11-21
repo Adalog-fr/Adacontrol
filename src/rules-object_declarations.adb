@@ -27,26 +27,65 @@
 with
   Asis.Clauses,
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Statements;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
 -- AdaControl
 with
   Framework.Language,
+  Framework.Queries,
   Framework.Symbol_Table;
 pragma Elaborate (Framework.Language);
 
+-- Child unit
+with
+  Rules.Object_Declarations.NRT_Utilities;
 package body Rules.Object_Declarations is
    use Framework, Framework.Control_Manager;
 
    -- Algorithm
+   -- Note: NRT is used in identifiers as a shorthand for Not_Required_Type
    --
    -- subrules Type and Min_Integer_Span are fairly simple.
+   --
+   --
+   -- for subrule Not_Required_Type, the difficulty comes when a variable is used to compute the value of another
+   -- variable : whether the first variable is required depends on whether the second variable is required.
+   -- And if the second variable is from an outer scope, it may be discovered that the first variable is required
+   -- after leaving its own scope (see tests).
+   -- Another tricky issue is that there may be circularities in dependencies, f.e. if V1 is used to compute V2, then
+   -- later V2 is used to compute V1.
+   --
+   -- A suspect variable is a variable whose type is given to the subrule, until it becomes required.
+   -- A variable is known to be required when it is used as an indexing expression, or within a subexpression (connected
+   -- with predefined operators) and involving 'First and 'Last attributes whose prefix is of an array type.
+   -- This can happen only while within the scope of the variable.
+   -- When a suspect variable is used within the RHS of an assignment, if the LHS is known to be required, the
+   -- variable becomes required; otherwise, it becomes dependent on the LHS variable.
+   -- When a variable becomes required, all variables that depend on it become required (recursively). Note that the
+   -- dependent variables may be out of scope at that point!
+   --
+   -- When exiting the declaration scope of a variable, the variable is reported if it is not required and
+   -- it does not depend on any variable, or all variables it depends on are from the exited scope.
+   -- For all variables that depend on this variable, the variable is removed
+   -- from the set of variables the dependent variable depends on. If the dependent variable does not depend on
+   -- any other variable, then the other variable is reported.
+   --
+   --
+   -- Because this algorithm depends on scopes and also has to keep information indepently of scoping, two data
+   -- structures are necessary. All management of these data structures is provided in the child package Nrt_Utilities.
+   -- This way, this package is only in charge of making high level decisions (when does a variable become dependent...)
+   -- See package Nrt_Utilities for the management of the data structures.
+   --
+   --
    --
    -- for subrule Volatile_No_Address, we avoid relying on Corresponding_Representation_Clauses
    -- and Corresponding_Pragmas, because they are not properly defined (since they take a
@@ -58,8 +97,9 @@ package body Rules.Object_Declarations is
    -- browse the current level. Of course, it works because representation items must be
    -- declared in the same scope as the variable.
 
-   type Subrules is (S_Type, S_Min_Integer_Span, S_Volatile_No_Address, S_Address_Not_Volatile);
+   type Subrules is (S_Type, S_Not_Required_Type, S_Min_Integer_Span, S_Volatile_No_Address, S_Address_Not_Volatile);
    subtype Vol_Addr_Rules is Subrules range S_Volatile_No_Address .. S_Address_Not_Volatile;
+   subtype Type_Rules     is Subrules range S_Type .. S_Not_Required_Type;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "S_");
 
    type Subrule_Set is array (Subrules) of Boolean;
@@ -70,18 +110,26 @@ package body Rules.Object_Declarations is
    type Object_Kinds is (K_All, K_Variable, K_Constant);
    package Object_Kinds_Utilities is new Framework.Language.Modifier_Utilities (Object_Kinds, "K_");
 
-   -- Data for subrule Type
-   Type_Var_Contexts   : Context_Store;
-   Type_Const_Contexts : Context_Store;
+   --------------------------------------------------
+   -- Data for subrules Type and Not_Required_Type
 
+   type Obj_Selector is (Var, Const);
+   Type_Contexts : array (Type_Rules, Obj_Selector) of Context_Store;
+
+
+   --------------------------------------------------
    -- Data for subrule Min_Integer_Span
+
    type Value_Context is new Basic_Rule_Context with
       record
          Min_Values : Thick_Queries.Biggest_Natural := 0;
       end record;
-   Ctl_Contexts : array (Subrules, Object_Kinds, Control_Kinds) of Value_Context;
+   Span_Context : array (Object_Kinds, Control_Kinds) of Value_Context;
 
+
+   --------------------------------------------------
    -- Data for subrule Volatile_No_Address and Address_Not_Volatile:
+
    type Repr_Rec is
       record
          Volatile : Boolean;
@@ -90,6 +138,7 @@ package body Rules.Object_Declarations is
    package Repr_Table is new Framework.Symbol_Table.Data_Access (Repr_Rec);
 
    Vno_Context  : array (Vol_Addr_Rules) of Basic_Rule_Context;
+
 
    ----------
    -- Help --
@@ -103,7 +152,7 @@ package body Rules.Object_Declarations is
       User_Message;
       Help_On_Flags ("Parameter(1):");
       User_Message;
-      User_Message ("for type:");
+      User_Message ("for type and not_required_type:");
       User_Message ("Parameter(2..): [constant|variable] <entity>");
       User_Message;
       User_Message("for Min_Integer_Span:");
@@ -127,7 +176,7 @@ package body Rules.Object_Declarations is
       Subrule := Get_Flag_Parameter (Allow_Any => False);
 
       case Subrule is
-         when S_Type =>
+         when S_Type | S_Not_Required_Type =>
             if not Parameter_Exists then
                Parameter_Error (Rule_Id, "missing type entity specification");
             end if;
@@ -142,18 +191,18 @@ package body Rules.Object_Declarations is
                   Entity := Get_Entity_Parameter;
                   case Ok is
                      when K_All =>
-                        Associate (Into          => Type_Var_Contexts,
+                        Associate (Into          => Type_Contexts (Subrule, Var),
                                    Specification => Entity,
                                    Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
-                        Associate (Into          => Type_Const_Contexts,
+                        Associate (Into          => Type_Contexts (Subrule, Const),
                                    Specification => Entity,
                                    Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
                      when K_Variable =>
-                        Associate (Into          => Type_Var_Contexts,
+                        Associate (Into          => Type_Contexts (Subrule, Var),
                                    Specification => Entity,
                                    Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
                      when K_Constant =>
-                        Associate (Into          => Type_Const_Contexts,
+                        Associate (Into          => Type_Contexts (Subrule, Const),
                                    Specification => Entity,
                                    Context       => Basic.New_Context (Ctl_Kind, Ctl_Label));
                   end case;
@@ -175,16 +224,16 @@ package body Rules.Object_Declarations is
                                    Default  => K_All);
                Vc := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Get_Integer_Parameter (Min => 1));
                if Ok = K_All or Ok = K_Constant then
-                  if Ctl_Contexts (Subrule, K_Constant, Ctl_Kind).Min_Values /= 0 then
+                  if Span_Context (K_Constant, Ctl_Kind).Min_Values /= 0 then
                      Parameter_Error (Rule_Id, "subrule already given for constants");
                   end if;
-                  Ctl_Contexts (Subrule, K_Constant, Ctl_Kind) := Vc;
+                  Span_Context (K_Constant, Ctl_Kind) := Vc;
                end if;
                if Ok = K_All or Ok = K_Variable then
-                  if Ctl_Contexts (Subrule, K_Variable, Ctl_Kind).Min_Values /= 0 then
+                  if Span_Context (K_Variable, Ctl_Kind).Min_Values /= 0 then
                      Parameter_Error (Rule_Id, "subrule already given for variables");
                   end if;
-                  Ctl_Contexts (Subrule, K_Variable, Ctl_Kind) := Vc;
+                  Span_Context (K_Variable, Ctl_Kind) := Vc;
                end if;
                exit when not Parameter_Exists;
             end loop;
@@ -214,11 +263,16 @@ package body Rules.Object_Declarations is
       case Action is
          when Clear =>
             Rule_Used := No_Rule;
-            for Sr in Subrules loop
-               for Ok in Object_Kinds loop
-                  for Rt in Control_Kinds loop
-                     Ctl_Contexts (Sr, Ok, Rt).Min_Values := 0;
-                  end loop;
+
+            for Ok in Object_Kinds loop
+               for Rt in Control_Kinds loop
+                  Span_Context (Ok, Rt).Min_Values := 0;
+               end loop;
+            end loop;
+
+            for T in Type_Rules loop
+               for O in Obj_Selector loop
+                  Clear (Type_Contexts (T, O));
                end loop;
             end loop;
          when Suspend =>
@@ -238,85 +292,138 @@ package body Rules.Object_Declarations is
       use Thick_Queries;
       use Asis, Asis.Declarations, Asis.Elements;
 
-      function Decl_Type_Declaration return Asis.Declaration is
-         -- returns the declaration of the type of Decl,
-         -- nil_element for anonymous type declarations
-         use Asis.Expressions;
-         use Utilities;
-         Def      : Asis.Definition;
-         St_Name  : Asis.Expression;
-      begin
-         Def := Object_Declaration_View (Decl);
-         if Definition_Kind (Def) /= A_Subtype_Indication then
-            -- anonymous array, task, protected
-            return Nil_Element;
-         end if;
-         St_Name := Subtype_Simple_Name (Def);
-         if Expression_Kind (St_Name) = An_Attribute_Reference then
-            case Attribute_Kind (St_Name) is
-               when A_Base_Attribute =>
-                  -- for our purpose, the prefix will do as well
-                  St_Name := Simple_Name (Prefix (St_Name));
-               when A_Class_Attribute =>
-                  -- Certainly not an integer type...
-                  -- For volatile, we have no way of retrieving Corresponding_Pragmas
-                  --   => give up
-                  return Nil_Element;
-               when others =>
-                  Failure ("Bad attribute", St_Name);
-            end case;
-         end if;
-         return Corresponding_Name_Declaration (St_Name);
-      end Decl_Type_Declaration;
-
-      procedure Process_Type is
-         use Framework.Reports, Utilities;
-
-         function Subtype_Or_Type_Context (Store   : Context_Store;
-                                           St_Name : Asis.Expression) return Root_Context'Class
-         is
-            use Asis.Expressions;
-            Ctxt : constant Root_Context'Class := Matching_Context (Store, St_Name);
-         begin
-            if Ctxt /= No_Matching_Context then
-               return Ctxt;
-            end if;
-
-            -- Second chance
-            case Attribute_Kind (St_Name) is
-               when A_Base_Attribute =>
-                  -- Retry without 'Base
-                  return Subtype_Or_Type_Context (Store, Strip_Attributes (St_Name));
-               when A_Class_Attribute =>
-                  -- Nothing else to check, T'Class is not T !
-                  return No_Matching_Context;
-               when Not_An_Attribute =>
-                  -- Regular case: check first subtype
-                  return Matching_Context (Store, Names (Corresponding_First_Subtype
-                                                         (Corresponding_Name_Declaration (St_Name))) (1));
-               when others =>
-                  Failure ("Object_Declarations: unknown type attribute", St_Name);
-            end case;
-         end Subtype_Or_Type_Context;
-
-         Def : constant Asis.Definition := Object_Declaration_View (Decl);
+      procedure Process_Type (Rule : Type_Rules) is
+         use Asis.Definitions;
+         use Framework.Reports, NRT_Utilities, Utilities;
+         Temp : Asis.Element;
       begin   -- Process_Type
-         if Definition_Kind (Def) /= A_Subtype_Indication then
-            -- anonymous array, task, protected
-            return;
-         end if;
-
          case Declaration_Kind (Decl) is
             when A_Constant_Declaration =>
-               Report (Rule_Id,
-                       Subtype_Or_Type_Context (Type_Const_Contexts, Subtype_Simple_Name (Def)),
-                       Get_Location (Decl),
-                       "Constant declaration of type " & Last_Matching_Name (Type_Const_Contexts));
+               if Definition_Kind (Object_Declaration_View (Decl)) /= A_Subtype_Indication then
+                  -- anonymous array, task, protected
+                  return;
+               end if;
+
+               declare
+                  Cont : constant Root_Context'Class := Subtype_Or_Type_Context (Type_Contexts (Rule, Const),
+                                                                                 Subtype_Simple_Name
+                                                                                   (Object_Declaration_View (Decl)));
+               begin
+                  case Rule is
+                     when S_Type =>
+                        Report (Rule_Id,
+                                Cont,
+                                Get_Location (Decl),
+                                "Constant declaration of type " & Last_Matching_Name (Type_Contexts (Rule, Const)));
+                     when S_Not_Required_Type =>
+                        if Cont /= No_Matching_Context then
+                           for Name : Asis.Name of Names (Decl) loop
+                              Make_Suspect (Name,
+                                            Basic_Rule_Context (Cont),
+                                            Last_Matching_Name (Type_Contexts (Rule, Const)));
+                           end loop;
+                        end if;
+                  end case;
+               end;
             when A_Variable_Declaration =>
-               Report (Rule_Id,
-                       Subtype_Or_Type_Context (Type_Var_Contexts, Subtype_Simple_Name (Def)),
-                       Get_Location (Decl),
-                       "Variable declaration of type " & Last_Matching_Name (Type_Var_Contexts));
+               if Definition_Kind (Object_Declaration_View (Decl)) /= A_Subtype_Indication then
+                  -- anonymous array, task, protected
+                  return;
+               end if;
+
+               declare
+                  Cont : constant Root_Context'Class := Subtype_Or_Type_Context (Type_Contexts (Rule, Var),
+                                                                                 Subtype_Simple_Name
+                                                                                   (Object_Declaration_View (Decl)));
+               begin
+                  case Rule is
+                     when S_Type =>
+                        Report (Rule_Id,
+                                Cont,
+                                Get_Location (Decl),
+                                "Variable declaration of type " & Last_Matching_Name (Type_Contexts (Rule, Var)));
+                     when S_Not_Required_Type =>
+                        if Cont /= No_Matching_Context then
+                           for Name : Asis.Name of Names (Decl) loop
+                              Make_Suspect (Name,
+                                            Basic_Rule_Context (Cont),
+                                            Last_Matching_Name (Type_Contexts (Rule, Var)));
+                           end loop;
+                        end if;
+                  end case;
+               end;
+            when A_Parameter_Specification =>
+               -- only for Not_Required_Type
+               Temp := Object_Declaration_View (Decl);
+               if Definition_Kind (Temp) = An_Access_Definition then -- anonymous access type
+                  return;
+               end if;
+
+               declare
+                  Cont : constant Root_Context'Class := Subtype_Or_Type_Context (Type_Contexts (Rule, Var),Temp);
+               begin
+                  if Cont /= No_Matching_Context then
+                     for Name : Asis.Name of Names (Decl) loop
+                        Make_Suspect (Name, Basic_Rule_Context (Cont), Last_Matching_Name(Type_Contexts (Rule, Var)));
+                     end loop;
+                  end if;
+               end;
+            when A_Loop_Parameter_Specification =>
+               Temp := Range_Ultimate_Name (Specification_Subtype_Definition (Decl));
+               if Is_Nil (Temp) then -- Implicit Integer
+                  Temp := Names (Framework.Queries.Standard_Value ("INTEGER"))(1);
+               end if;
+               declare
+                  Cont : constant Root_Context'Class := Subtype_Or_Type_Context (Type_Contexts (Rule, Var), Temp);
+                  Name : Asis.Expression;
+               begin
+                  if Cont /= No_Matching_Context then
+                     Name := Names (Decl) (1);
+                     case Rule is
+                        when S_Type =>
+                           Report (Rule_Id,
+                                   Cont,
+                                   Get_Location (Decl),
+                                   "Loop parameter declaration of type "
+                                   & Last_Matching_Name (Type_Contexts (Rule, Var)));
+                        when S_Not_Required_Type =>
+                           Make_Suspect (Name,
+                                         Basic_Rule_Context (Cont),
+                                         Last_Matching_Name (Type_Contexts (Rule, Var)));
+                     end case;
+                  end if;
+               end;
+
+            when An_Element_Iterator_Specification =>
+               Temp := Thick_Queries.Corresponding_Expression_Type_Definition (Iteration_Scheme_Name (Decl));
+               -- Temp is either an array object or an object of an iterable type
+               if Is_Array_Subtype (Temp) then
+                  Temp := Subtype_Simple_Name (Component_Definition_View (Array_Component_Definition (Temp)));
+               else
+                  -- Generalized element iterators
+                  Temp := A4G_Bugs.Corresponding_Expression_Type (Iteration_Scheme_Name (Decl));
+                  Temp := Simple_Name (Aspect_Definition (Corresponding_Aspects (Temp, "ITERATOR_ELEMENT") (1)));
+               end if;
+               declare
+                  Cont : constant Root_Context'Class := Subtype_Or_Type_Context (Type_Contexts (Rule, Var), Temp);
+                  Name : Asis.Expression;
+               begin
+                  if Cont /= No_Matching_Context then
+                     Name := Names (Decl) (1);
+                     case Rule is
+                        when S_Type =>
+                           Report (Rule_Id,
+                                   Cont,
+                                   Get_Location (Decl),
+                                   "Loop parameter declaration of type "
+                                   & Last_Matching_Name (Type_Contexts (Rule, Var)));
+                        when S_Not_Required_Type =>
+                           Make_Suspect (Name,
+                                         Basic_Rule_Context (Cont),
+                                         Last_Matching_Name (Type_Contexts (Rule, Var)));
+                     end case;
+                  end if;
+               end;
             when others =>
                Failure ("Object_Declarations: Unexpected declaration", Decl);
          end case;
@@ -327,16 +434,46 @@ package body Rules.Object_Declarations is
 
          Val      : Extended_Biggest_Natural;
          Type_Decl : Asis.Declaration;
-         Type_Def : Asis.Definition;
-         Obj_Kind : Object_Kinds;
-      begin
+         Obj_Kind  : Object_Kinds;
+
+         function Decl_Type_Declaration return Asis.Declaration is
+         -- returns the declaration of the type of Decl,
+         -- nil_element for anonymous type declarations
+            use Asis.Expressions;
+            use Utilities;
+            Def      : Asis.Definition;
+            St_Name  : Asis.Expression;
+         begin
+            Def := Object_Declaration_View (Decl);
+            if Definition_Kind (Def) /= A_Subtype_Indication then
+               -- anonymous array, task, protected
+               return Nil_Element;
+            end if;
+            St_Name := Subtype_Simple_Name (Def);
+            if Expression_Kind (St_Name) = An_Attribute_Reference then
+               case Attribute_Kind (St_Name) is
+                  when A_Base_Attribute =>
+                     -- for our purpose, the prefix will do as well
+                     St_Name := Simple_Name (Prefix (St_Name));
+                  when A_Class_Attribute =>
+                     -- Certainly not an integer type...
+                     -- For volatile, we have no way of retrieving Corresponding_Pragmas
+                     --   => give up
+                     return Nil_Element;
+                  when others =>
+                     Failure ("Bad attribute", St_Name);
+               end case;
+            end if;
+            return Corresponding_Name_Declaration (St_Name);
+         end Decl_Type_Declaration;
+
+      begin  -- Process_Min_Integer_Span
          -- Check we have an object of an integer type
          Type_Decl := Decl_Type_Declaration;
          if Is_Nil (Type_Decl) then
             return;
          end if;
-         Type_Def := Type_Declaration_View (Type_Decl);
-         if Type_Kind (Type_Def) not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition then
+         if Type_Kind (Type_Declaration_View (Type_Decl)) not in Integer_Type_Kinds then
             return;
          end if;
 
@@ -364,25 +501,25 @@ package body Rules.Object_Declarations is
 
          -- Note: Unspecified values of Range/Obj_Kind/Control contain 0, and Val is >= 0
          --       No problem in the following tests
-         if Val < Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Check).Min_Values  then
+         if Val < Span_Context (Obj_Kind, Check).Min_Values  then
             Report (Rule_Id,
-                    Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Check),
+                    Span_Context (Obj_Kind, Check),
                     Get_Location (Decl),
                     "integer object declaration has too few values ("
                     & Biggest_Int_Img (Val)
                     & ')');
-         elsif Val < Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Search).Min_Values  then
+         elsif Val < Span_Context (Obj_Kind, Search).Min_Values  then
             Report (Rule_Id,
-                    Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Search),
+                    Span_Context (Obj_Kind, Search),
                     Get_Location (Decl),
                     "integer object declaration has too few values ("
                     & Biggest_Int_Img (Val)
                     & ')');
          end if;
 
-         if Val < Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Count).Min_Values  then
+         if Val < Span_Context (Obj_Kind, Count).Min_Values  then
             Report (Rule_Id,
-                    Ctl_Contexts (S_Min_Integer_Span, Obj_Kind, Count),
+                    Span_Context (Obj_Kind, Count),
                     Get_Location (Decl),
                     "");
          end if;
@@ -404,8 +541,21 @@ package body Rules.Object_Declarations is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
+      if Rule_Used (S_Not_Required_Type) then
+         Process_Type (S_Not_Required_Type);
+      end if;
+
+      if Declaration_Kind (Decl) in
+            A_Parameter_Specification
+          | A_Loop_Parameter_Specification
+          | An_Element_Iterator_Specification
+      then
+         -- Only for Not_Required_Type
+         return;
+      end if;
+
       if Rule_Used (S_Type) then
-         Process_Type;
+         Process_Type (S_Type);
       end if;
 
       if Rule_Used (S_Min_Integer_Span) then
@@ -498,13 +648,174 @@ package body Rules.Object_Declarations is
 
 
    ------------------------
+   -- Process_Identifier --
+   ------------------------
+
+   procedure Process_Identifier (Ident  : in Asis.Name) is
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
+      use NRT_Utilities, Thick_Queries;
+
+      Previous   : Asis.Element := Ident;
+      Current    : Asis.Element := Enclosing_Element (Ident);
+   begin
+      if not Rule_Used (S_Not_Required_Type) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if not Is_Suspect (Ident) then
+         return;
+      end if;
+
+      -- Find out how this identifier is used
+      loop
+         case Element_Kind (Current) is
+            when A_Declaration =>
+               case Declaration_Kind (Current) is
+                  when A_Variable_Declaration | A_Constant_Declaration =>
+                     if not Is_Equal (Previous, Initialization_Expression (Current)) then
+                        return;
+                     end if;
+                     for Name : Asis.Name of Names (Current) loop
+                        Make_Dependent (Ident, On => Name);
+                     end loop;
+                     return;
+                  when A_Loop_Parameter_Specification =>
+                     Make_Dependent (Ident, On => Names (Current)(1));
+                  when others =>
+                     return;
+               end case;
+
+            when A_Definition =>
+               case Definition_Kind (Current) is
+                  when A_Discrete_Range | A_Discrete_Subtype_Definition =>
+                     -- maybe used to slice an array, definition of a for loop...
+                     null;
+                  when others =>
+                     return;
+               end case;
+
+            when An_Expression =>
+               case Expression_Kind (Current) is
+                  when A_Parenthesized_Expression | A_Qualified_Expression =>
+                     null;
+                  when An_Indexed_Component =>
+                     for Inx : Asis.Expression of Index_Expressions (Current) loop
+                        if Is_Equal (Inx, Previous) then
+                           Make_Required (Ident);
+                        end if;
+                     end loop;
+                     return;
+                  when A_Slice =>
+                     if Is_Equal (Slice_Range (Current), Previous) then
+                        Make_Required (Ident);
+                     end if;
+                     return;
+                  when A_Function_Call =>
+                     declare
+                        Actuals  : constant Expression_List := Actual_Parameters (Current);
+                        Called_F : Asis.Declaration;
+                     begin
+                        if Corresponding_Call_Description (Current).Kind = A_Predefined_Entity_Call then
+                           if Expression_Kind (Prefix (Current)) = An_Operator_Symbol and Actuals'Length = 2 then
+                              -- A binary predefined operator => check the other operand
+                              if        (Is_Equal (Previous, Actuals (1))
+                                         and then Is_Requiring (Actuals (2),
+                                                                A4G_Bugs.Corresponding_Expression_Type (Ident)))
+                                or else (Is_Equal (Previous, Actuals (2))
+                                         and then Is_Requiring (Actuals (1),
+                                                                A4G_Bugs.Corresponding_Expression_Type (Ident)))
+                              then
+                                 Make_Required (Ident);
+                                 return;
+                              end if;
+                           end if;
+                        else
+                           for Inx in Actuals'Range loop
+                              if Is_Equal (Previous, Actuals (Inx)) then
+                                 Called_F := Corresponding_Called_Function (Current);
+                                 -- Called_F is Nil_Element for a dynamic (access or dispatching) call
+                                 -- We can't make it dependent on anything, since the formal name is unknow
+                                 -- (and depends on the target).
+                                 if Is_Nil (Called_F) then
+                                    return;
+                                 end if;
+                                 if Ultimate_Origin (Called_F) = An_Application_Unit then
+                                    Make_Dependent (Ident, On => Formal_Name (Current, Inx));
+                                 else
+                                    -- Language defined, implementation defined...
+                                    Make_Required (Ident);
+                                 end if;
+                                 return;
+                              end if;
+                           end loop;
+                        Utilities.Failure ("Object_Declarations: function actual not found", Current);
+                        end if;
+                     end;
+                  when others =>
+                     return;
+               end case;
+
+            when A_Statement =>
+               case Statement_Kind (Current) is
+                  when An_Assignment_Statement =>
+                     if Is_Equal (Assignment_Variable_Name (Current), Ident) then
+                        -- Ident is the LHS variable
+                        if Is_Requiring (Assignment_Expression (Current),
+                                         A4G_Bugs.Corresponding_Expression_Type (Ident))
+                        then
+                           Make_Required (Ident);
+                        end if;
+                        return;
+                     else
+                        -- Ident is within the RHS
+                        Make_Dependent (Ident, On => Assignment_Variable_Name (Current));
+                        return;
+                     end if;
+                  when A_Procedure_Call_Statement | An_Entry_Call_Statement =>
+                     -- find where we are in the call...
+                     declare
+                        Actuals : constant Expression_List := Actual_Parameters (Current);
+                     begin
+                        for Inx in Actuals'Range loop
+                           if Is_Equal (Previous, Actuals (Inx)) then
+                              if Ultimate_Origin (Corresponding_Called_Entity (Current)) = An_Application_Unit then
+                                 Make_Dependent (Ident, On => Formal_Name (Current, Inx));
+                              else
+                                 -- Language defined, implementation defined...
+                                 Make_Required (Ident);
+                              end if;
+                              return;
+                           end if;
+                        end loop;
+                     end;
+                     Utilities.Failure ("Object_Declarations: procedure actual not found", Current);
+                  when others =>
+                     return;
+               end case;
+
+            when An_Association =>
+               null;
+
+            when others =>
+               return;
+         end case;
+
+         -- Nothing interesting here, move up
+         Previous := Current;
+         Current  := Enclosing_Element (Current);
+      end loop;
+   end Process_Identifier;
+
+
+   ------------------------
    -- Process_Scope_Exit --
    ------------------------
 
    procedure Process_Scope_Exit is
-      use Framework.Symbol_Table;
+      use Framework.Symbol_Table, NRT_Utilities;
 
-      procedure Process_One_Scope_Variable (Entity : Asis.Defining_Name; Repr_Data : in out Repr_Rec) is
+      procedure Process_One_Volatile_Address (Entity : Asis.Defining_Name; Repr_Data : in out Repr_Rec) is
          use Framework.Reports;
       begin
          if Rule_Used (S_Volatile_No_Address) and Repr_Data.Volatile and not Repr_Data.Address then
@@ -519,16 +830,39 @@ package body Rules.Object_Declarations is
                     Get_Location (Entity),
                     "variable has address clause and is not volatile");
          end if;
-      end Process_One_Scope_Variable;
+      end Process_One_Volatile_Address;
 
-      procedure Process_All_Scope_Variables is new Repr_Table.On_Every_Entity_From_Scope (Process_One_Scope_Variable);
+      procedure Process_All_Volatile_Address is
+        new Repr_Table.On_Every_Entity_From_Scope (Process_One_Volatile_Address);
+
+      procedure Process_One_Not_Required_Type (Entity : Asis.Defining_Name; State : in out Variable_State) is
+      begin   -- Process_One_Not_Required_Type
+         case State is
+            when Required =>
+               null;  -- There are no dependents at this point
+            when Suspect =>
+               Check_Not_Required (Entity);
+         end case;
+      end Process_One_Not_Required_Type;
+      procedure Process_All_Not_Required_Type is
+        new Active_Suspect_Variables.On_Every_Entity_From_Scope (Process_One_Not_Required_Type);
+
    begin  -- Process_Scope_Exit
-      if not (Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile)) then
+      if not (   Rule_Used (S_Volatile_No_Address)
+              or Rule_Used (S_Address_Not_Volatile)
+              or Rule_Used (S_Not_Required_Type))
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Process_All_Scope_Variables (Declaration);
+      if Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile) then
+         Process_All_Volatile_Address (Declaration);
+      end if;
+
+      if Rule_Used (S_Not_Required_Type) then
+         Process_All_Not_Required_Type (Visibility);
+      end if;
    end Process_Scope_Exit;
 
 begin  -- Rules.Object_Declarations

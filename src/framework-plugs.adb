@@ -206,6 +206,7 @@ package body Framework.Plugs is
       Rules.Directly_Accessed_Globals. Process_Identifier (Element);
       Rules.Entities.                  Process_Identifier (Element);
       Rules.Not_Selected_Name.         Process_Identifier (Element);
+      Rules.Object_Declarations.       Process_Identifier (Element);
       Rules.Reduceable_Scope.          Process_Identifier (Element);
       Rules.Unnecessary_Use_Clause.    Process_Identifier (Element);
       Rules.Style.                     Process_Identifier (Element);
@@ -275,7 +276,8 @@ package body Framework.Plugs is
             case Declaration_Kind (Element) is
 
                when A_Parameter_Specification =>
-                  Rules.Usage.               Process_Declaration      (Element);
+                  Rules.Object_Declarations. Process_Declaration (Element);
+                  Rules.Usage.               Process_Declaration (Element);
 
                when An_Ordinary_Type_Declaration =>
                   Rules.Unit_Pattern.        Process_Type_Declaration (Element);
@@ -310,6 +312,9 @@ package body Framework.Plugs is
                  | A_Number_Declaration
                  =>
                   Rules.Usage. Process_Declaration (Element);
+
+               when A_Loop_Parameter_Specification | An_Element_Iterator_Specification =>
+                  Rules.Object_Declarations. Process_Declaration (Element);
 
                when A_Function_Body_Declaration =>
                   Rules.Abnormal_Function_Return. Process_Function_Body        (Element);

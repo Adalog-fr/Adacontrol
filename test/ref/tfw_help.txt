@@ -560,10 +560,11 @@ Parameter(2..): [<filter>] <observed>
 Rule: OBJECT_DECLARATIONS
 Control allowed forms of object declarations
 
-Parameter(1): type                | min_integer_span     |
-              volatile_no_address | address_not_volatile
+Parameter(1): type                 | not_required_type   |
+              min_integer_span     | volatile_no_address |
+              address_not_volatile
 
-for type:
+for type and not_required_type:
 Parameter(2..): [constant|variable] <entity>
 
 for Min_Integer_Span:

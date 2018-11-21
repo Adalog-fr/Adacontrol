@@ -8,3 +8,7 @@ search object_declarations (address_not_volatile);
 "Var_Int":         check object_declarations (type, variable T_object_declarations.Test_Type.Int);
 "Const_Nat":       check object_declarations (type, constant T_object_declarations.Test_Type.Nat);
 "All_Tag":         check object_declarations (type,          T_object_declarations.Test_Type.Tag);
+
+"NRT_Variable": check  object_declarations (not_required_type, variable t_object_declarations.test_not_required_type.my_int);
+"NRT_Constant": check  object_declarations (not_required_type, constant t_object_declarations.test_not_required_type.my_int);
+"NRT_Count"   : search object_declarations (not_required_type, ada.text_IO.count);

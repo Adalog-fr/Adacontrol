@@ -1,3 +1,38 @@
+t_object_declarations-test_min_integer_span.adb:4:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
+t_object_declarations-test_min_integer_span.adb:6:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
+t_object_declarations-test_min_integer_span.adb:10:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (5)
+t_object_declarations-test_min_integer_span.adb:15:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (8)
+t_object_declarations-test_not_required_type.adb:26:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:25:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:28:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:20:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:58:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:61:7: Found: NRT_Count: Variable declaration of not required type ADA.TEXT_IO.COUNT
+t_object_declarations-test_not_required_type.adb:88:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:89:7: Error: NRT_Constant: Constant declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:90:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:99:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:103:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:109:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:121:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:129:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:125:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:146:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:144:7: Error: NRT_Constant: Constant declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:150:14: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:149:16: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:154:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:167:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:179:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:195:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:197:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:210:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:211:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:224:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:232:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:228:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:64:21: Error: NRT_Variable: Parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:33:23: Error: NRT_Variable: Parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
 t_object_declarations-test_type.adb:15:4: Error: All_All Ttt: Variable declaration of type TTT
 t_object_declarations-test_type.adb:16:4: Error: All_All Ttt: Variable declaration of type TTT
 t_object_declarations-test_type.adb:17:4: Error: Const_Pack1.Ttt: Constant declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.PACK1.TTT
@@ -8,10 +43,6 @@ t_object_declarations-test_type.adb:21:4: Error: Var_Int: Variable declaration o
 t_object_declarations-test_type.adb:22:4: Error: Const_Nat: Constant declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.NAT
 t_object_declarations-test_type.adb:23:4: Error: Var_Int: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.INT
 t_object_declarations-test_type.adb:24:4: Error: All_Tag: Variable declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.TAG
-t_object_declarations-test_min_integer_span.adb:4:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
-t_object_declarations-test_min_integer_span.adb:6:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (4)
-t_object_declarations-test_min_integer_span.adb:10:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (5)
-t_object_declarations-test_min_integer_span.adb:15:4: Error: OBJECT_DECLARATIONS: integer object declaration has too few values (8)
 t_object_declarations-test_volatile_address.adb:7:4: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
 t_object_declarations-test_volatile_address.adb:8:4: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause
 t_object_declarations-test_volatile_address.adb:9:4: Found: OBJECT_DECLARATIONS: variable is volatile and has no address clause

@@ -31,8 +31,9 @@ package Rules.Object_Declarations is
 
    Rule_Id : constant Wide_String := "OBJECT_DECLARATIONS";
 
-   procedure Process_Declaration           (Decl    : in Asis.Declaration);
-   procedure Process_Pragma                (Prgma   : in Asis.Pragma_Element);
-   procedure Process_Representation_Clause (Clause  : in Asis.Representation_Clause);
+   procedure Process_Declaration           (Decl   : in Asis.Declaration);
+   procedure Process_Pragma                (Prgma  : in Asis.Pragma_Element);
+   procedure Process_Representation_Clause (Clause : in Asis.Representation_Clause);
+   procedure Process_Identifier            (Ident  : in Asis.Name);
    procedure Process_Scope_Exit;
 end Rules.Object_Declarations;

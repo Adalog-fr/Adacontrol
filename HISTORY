@@ -9,13 +9,16 @@ max_expression_items
 
 Changes to existing rules:
 --------------------------
-derivations
+derivations:
    add subrule indicator
+
+object_declarations:
+   add subrule not_required_type
 
 reduceable_scope:
    add subrules use_type, use_all_type
 
-simplifiable_statements
+simplifiable_statements:
    add subrule while_for_for
 
 Removed rule:
