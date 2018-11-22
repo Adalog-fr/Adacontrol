@@ -7241,6 +7241,14 @@ check not_selected_name (unit, all Instance);
 search not_selected_name (none, Pack.T);
 @end example
 
+@subsection Fixes
+This rule generates fixes:
+@itemize @bullet
+@item
+The not selected name is replaced by its full name. Note that this may generate
+unnecessary qualifications, but it is harmless.
+@end itemize
+
 @subsection Tip
 Note that, as usual, the entity can be given in the form ``all
 name''. This is especially useful for types that must always be

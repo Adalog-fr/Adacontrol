@@ -1,20 +1,60 @@
 t_not_selected_name.adb:8:11: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+t_not_selected_name.adb:8:11: Replace:8:14
+!X_Not_Selected_Name.Pack
 t_not_selected_name.adb:9:39: Error: Selected_none: non-selected use of element "N"
+t_not_selected_name.adb:9:39: Replace:9:39
+!X_Not_Selected_Name.N
 t_not_selected_name.adb:12:7: Error: Selected_none: non-selected use of element "N"
+t_not_selected_name.adb:12:7: Replace:12:7
+!X_Not_Selected_Name.N
 t_not_selected_name.adb:15:7: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+t_not_selected_name.adb:15:7: Replace:15:10
+!X_Not_Selected_Name.Pack
 t_not_selected_name.adb:16:7: Error: Selected_unit: non-selected use of element "U"
+t_not_selected_name.adb:16:7: Replace:16:7
+!X_Not_Selected_Name.Pack.U
 t_not_selected_name.adb:19:7: Error: Selected_compilation: non-selected use of element "C"
+t_not_selected_name.adb:19:7: Replace:19:7
+!X_Not_Selected_Name.C
 t_not_selected_name.adb:22:7: Error: Selected_family: non-selected use of element "F"
+t_not_selected_name.adb:22:7: Replace:22:7
+!X_Not_Selected_Name.F
 t_not_selected_name.adb:32:7: Error: Selected_none: non-selected use of element "N"
+t_not_selected_name.adb:32:7: Replace:32:7
+!T_Not_Selected_Name.Inst.N
 t_not_selected_name.adb:34:7: Found: from_gen: non-selected use of element "X_Not_Selected_Name_Gen.G"
+t_not_selected_name.adb:34:7: Replace:34:7
+!T_Not_Selected_Name.Inst.G
 x_not_selected_name.adb:5:7: Error: Selected_none: non-selected use of element "N"
+x_not_selected_name.adb:5:7: Replace:5:7
+!X_Not_Selected_Name.N
 x_not_selected_name.adb:8:7: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+x_not_selected_name.adb:8:7: Replace:8:10
+!X_Not_Selected_Name.Pack
 x_not_selected_name.adb:18:8: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+x_not_selected_name.adb:18:8: Replace:18:11
+!X_Not_Selected_Name.Pack
 x_not_selected_name.adb:21:4: Error: Selected_none: non-selected use of element "N"
+x_not_selected_name.adb:21:4: Replace:21:4
+!X_Not_Selected_Name.N
 x_not_selected_name.adb:24:4: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+x_not_selected_name.adb:24:4: Replace:24:7
+!X_Not_Selected_Name.Pack
 x_not_selected_name.adb:25:4: Error: Selected_unit: non-selected use of element "U"
+x_not_selected_name.adb:25:4: Replace:25:4
+!X_Not_Selected_Name.Pack.U
 x_not_selected_name-child.adb:2:8: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+x_not_selected_name-child.adb:2:8: Replace:2:11
+!X_Not_Selected_Name.Pack
 x_not_selected_name-child.adb:5:4: Error: Selected_none: non-selected use of element "N"
+x_not_selected_name-child.adb:5:4: Replace:5:4
+!X_Not_Selected_Name.N
 x_not_selected_name-child.adb:8:4: Found: NOT_SELECTED_NAME: non-selected use of element "X_Not_Selected_Name.Pack"
+x_not_selected_name-child.adb:8:4: Replace:8:7
+!X_Not_Selected_Name.Pack
 x_not_selected_name-child.adb:9:4: Error: Selected_unit: non-selected use of element "U"
+x_not_selected_name-child.adb:9:4: Replace:9:4
+!X_Not_Selected_Name.Pack.U
 x_not_selected_name-child.adb:12:4: Error: Selected_compilation: non-selected use of element "C"
+x_not_selected_name-child.adb:12:4: Replace:12:4
+!X_Not_Selected_Name.C

@@ -12,6 +12,9 @@ Changes to existing rules:
 derivations:
    add subrule indicator
 
+not_selected_name:
+   add fixes
+
 object_declarations:
    add subrule not_required_type
 

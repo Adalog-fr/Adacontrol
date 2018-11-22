@@ -37,7 +37,8 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Reports.Fixes;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Not_Selected_Name is
@@ -149,67 +150,70 @@ package body Rules.Not_Selected_Name is
                                                                                           Renaming => False));
          Encl : Asis.Element;
       begin
-         if Current_Context /= No_Matching_Context then
-            Encl := Enclosing_Element (Element);
-            if Expression_Kind (Encl) = A_Selected_Component
-              and then Is_Equal (Selector (Encl), Element)
-            then
-               return;
-            end if;
+         if Current_Context = No_Matching_Context then
+            return;
+         end if;
 
-            case Selected_Context (Current_Context).Allowed is
-               when None =>
-                  null;
-               when Unit =>
-                  declare
-                     Elem_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_Program_Unit (Element)));
-                     Decl_Name : constant Wide_String := To_Upper (Full_Name_Image
-                                                                   (Enclosing_Program_Unit
-                                                                    (Corresponding_Name_Declaration
-                                                                     (Element))));
-                  begin
-                     if Elem_Name = Decl_Name or else Starts_With (Elem_Name, Decl_Name & '.') then
-                        return;
-                     end if;
-                  end;
-               when Compilation =>
-                  -- Using Full_Name_Image below avoids having to check for specs/bodies
-                  if To_Upper (Full_Name_Image (Names
-                                                (Unit_Declaration
-                                                 (Enclosing_Compilation_Unit
-                                                  (Element))) (1))) =
-                    To_Upper (Full_Name_Image (Names
-                                               (Unit_Declaration
-                                                (Enclosing_Compilation_Unit
-                                                 (Corresponding_Name_Declaration (Element)))) (1)))
-                  then
+         Encl := Enclosing_Element (Element);
+         if Expression_Kind (Encl) = A_Selected_Component
+           and then Is_Equal (Selector (Encl), Element)
+         then
+            return;
+         end if;
+
+         case Selected_Context (Current_Context).Allowed is
+            when None =>
+               null;
+            when Unit =>
+               declare
+                  Elem_Name : constant Wide_String := To_Upper (Full_Name_Image (Enclosing_Program_Unit (Element)));
+                  Decl_Name : constant Wide_String := To_Upper (Full_Name_Image
+                                                                (Enclosing_Program_Unit
+                                                                 (Corresponding_Name_Declaration
+                                                                  (Element))));
+               begin
+                  if Elem_Name = Decl_Name or else Starts_With (Elem_Name, Decl_Name & '.') then
                      return;
                   end if;
-               when Family =>
-                  declare
-                     Elem_Unit_Name : constant Wide_String := To_Upper (Full_Name_Image
-                                                                        (Names
-                                                                         (Unit_Declaration
-                                                                          (Enclosing_Compilation_Unit
-                                                                           (Element))) (1)));
-                     Decl_Unit_Name : constant Wide_String := To_Upper (Full_Name_Image
-                                                                        (Names
-                                                                         (Unit_Declaration
-                                                                          (Enclosing_Compilation_Unit
-                                                                           (Corresponding_Name_Declaration
-                                                                            (Element)))) (1)));
-                  begin
-                     if Elem_Unit_Name = Decl_Unit_Name or else Starts_With (Elem_Unit_Name, Decl_Unit_Name & '.') then
-                        return;
-                     end if;
-                  end;
-            end case;
+               end;
+            when Compilation =>
+               -- Using Full_Name_Image below avoids having to check for specs/bodies
+               if To_Upper (Full_Name_Image (Names
+                            (Unit_Declaration
+                             (Enclosing_Compilation_Unit
+                              (Element))) (1))) =
+                  To_Upper (Full_Name_Image (Names
+                            (Unit_Declaration
+                             (Enclosing_Compilation_Unit
+                              (Corresponding_Name_Declaration (Element)))) (1)))
+               then
+                  return;
+               end if;
+            when Family =>
+               declare
+                  Elem_Unit_Name : constant Wide_String := To_Upper (Full_Name_Image
+                                                                     (Names
+                                                                      (Unit_Declaration
+                                                                       (Enclosing_Compilation_Unit
+                                                                        (Element))) (1)));
+                  Decl_Unit_Name : constant Wide_String := To_Upper (Full_Name_Image
+                                                                     (Names
+                                                                      (Unit_Declaration
+                                                                       (Enclosing_Compilation_Unit
+                                                                        (Corresponding_Name_Declaration
+                                                                         (Element)))) (1)));
+               begin
+                  if Elem_Unit_Name = Decl_Unit_Name or else Starts_With (Elem_Unit_Name, Decl_Unit_Name & '.') then
+                     return;
+                  end if;
+               end;
+         end case;
 
-            Report (Rule_Id,
-                    Current_Context,
-                    Get_Location (Element),
-                    "non-selected use of element """ & To_Title (Last_Matching_Name (Searched_Entities)) & '"');
-         end if;
+         Report (Rule_Id,
+                 Current_Context,
+                 Get_Location (Element),
+                 "non-selected use of element """ & To_Title (Last_Matching_Name (Searched_Entities)) & '"');
+         Fixes.Replace (Element, By => Full_Name_Image (Element));
       end;
    end Process_Identifier;
 
