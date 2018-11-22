@@ -21,6 +21,9 @@ reduceable_scope:
 simplifiable_statements:
    add subrule while_for_for
 
+use_clauses:
+   add subrules all_type, all_type_global, all_type_local
+
 Removed rule:
 -------------
 default_parameter, changed to subrules of actual_parameters

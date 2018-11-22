@@ -7314,8 +7314,8 @@ that is required to be of the type;
 It is used in an expression given as an actual of a call to a
 language-defined or implementation-defined subprogram, unless it is a
 call to predefined operator.
-@item 
-It is used as part of the definition of a @code{@b{for}} loop, and the loop index 
+@item
+It is used as part of the definition of a @code{@b{for}} loop, and the loop index
 is required to be of the type.
 @item
 It is part of an expression that requires the type.
@@ -10385,14 +10385,17 @@ This rule controls usage of @code{@b{use}} clauses.
 @example
 <control_kind> use_clauses
    [([<subrule>,] <package name> @{, <package name>@})];
-<subrule> ::= package | local | global | type | type_local | type_global
+<subrule> ::= package  | local          | global      |
+              type     | type_local     | type_global |
+              all_type | all_type_local | all_type_global
 @end example
 
 @subsection Action
-The rule controls every  @code{@b{use}} or @code{@b{use type}} clause,
-@i{except} those that name one of the mentioned packages/types. It is
-therefore possible to allow @code{@b{use}} or  @code{@b{use type}}
-clauses just for certain packages/types.
+The rule controls every  @code{@b{use}},  @code{@b{use type}}, or
+@code{@b{use all type}} clause, @i{except} those that name one of the
+mentioned packages/types. It is therefore possible to allow
+@code{@b{use}}, @code{@b{use type}} or @code{@b{use all type}} clauses
+just for certain packages/types.
 
 The first parameter is a subrule keyword:
 @itemize
@@ -10413,6 +10416,14 @@ type}} clauses that appear in context clauses (i.e. together with the
 @code{@b{with}} clauses)
 @item
 ``type_local'': controls only @code{@b{use type}} clauses that appear as declarations.
+@item
+``all_type'': controls all @code{@b{use all type}} clauses
+@item
+``all_type_global'': controls only @code{@b{use all type}} clauses
+that appear in context clauses (i.e. together with the @code{@b{with}}
+clauses)
+@item
+``all_type_local'': controls only @code{@b{use all type}} clauses that appear as declarations.
 @end itemize
 Without parameter, the rule defaults to ``package''.
 
@@ -10430,6 +10441,15 @@ check use_clauses (local, Ada.Text_IO, Ada.Wide_Text_IO);
 check use_clauses (type_global);
 count use_clauses (type);
 @end example
+
+@subsection Fixes
+All subrules generate fixes:
+
+@itemize
+@item
+The package or type name is removed from the clause. If there is only
+one element in the clause, the clause as a whole is removed.
+@end itemize
 
 @node With_Clauses,  , Use_Clauses, Rules reference
 @section With_Clauses

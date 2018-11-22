@@ -4,4 +4,9 @@ check  use_clauses (Ada.Text_IO, Ada.Strings);
 
 "use type local" : search use_clauses (type_local);
 "use type global": search use_clauses (type_global, Ada.Numerics.Complex_Types.Complex);
+
+"use all type local" : check  use_clauses (all_type_local, Ada.Text_IO.Count);
+"use all type global": search use_clauses (all_type_global);
+
 "use type": count use_clauses (type);
+"use type": count use_clauses (all_type);

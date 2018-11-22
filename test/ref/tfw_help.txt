@@ -935,11 +935,12 @@ Parameter(s): variable | object | <param> {, [not] <location> | initialized | re
 <param> ::= in_parameter | out_parameter | in_out_parameter
 ----
 Rule: USE_CLAUSES
-Control occurrences of use clauses or use type clauses that mention
+Control occurrences of use clauses or use [all] type clauses that mention
 any package/type other than the ones passed as parameters (if any)
 
-Parameter(1):  package    | local       | global | type |
-               type_local | type_global
+Parameter(1):  package  | local          | global          |
+               type     | type_local     | type_global     |
+               all_type | all_type_local | all_type_global
                (optional)
 Parameter(2..): <Allowed package/type name>
 ----

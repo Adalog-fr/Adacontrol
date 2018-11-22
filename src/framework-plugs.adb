@@ -228,12 +228,13 @@ package body Framework.Plugs is
             case Clause_Kind (Element) is
                when A_Use_Package_Clause =>
                   Rules.Reduceable_Scope. Process_Use_Clause (Element);
-                  Rules.Use_Clauses.      Process_Use_Clause (Element, Is_Type => False);
+                  Rules.Use_Clauses.      Process_Use_Clause (Element);
                when A_Use_Type_Clause =>
                   Rules.Reduceable_Scope. Process_Use_Clause (Element);
-                  Rules.Use_Clauses.      Process_Use_Clause (Element, Is_Type => True);
+                  Rules.Use_Clauses.      Process_Use_Clause (Element);
                when A_Use_All_Type_Clause =>
                   Rules.Reduceable_Scope. Process_Use_Clause (Element);
+                  Rules.Use_Clauses.      Process_Use_Clause (Element);
                when A_Representation_Clause =>
                   Rules.Object_Declarations.    Process_Representation_Clause (Element);
                   Rules.Representation_Clauses. Process_Clause                (Element);
