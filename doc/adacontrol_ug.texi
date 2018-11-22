@@ -9813,7 +9813,7 @@ be several acceptable combinations.
 specification, but all uses are from the corresponding body. The
 message starts with ``Movable: ''.
 
-In this c ase, the @code{@b{use}} clause can safely be moved to the
+In this case, the @code{@b{use}} clause can safely be moved to the
 body, unless it appears in a library package, and there are
 unqualified references to its elements from child units.
 @end itemize
@@ -9825,6 +9825,16 @@ Ex:
 remove: search unnecessary_use_clause (unused);
 use_type: check unnecessary_use_clause (operator);
 @end example
+
+@subsection Fixes
+All subrules generate fixes:
+
+@itemize
+@item
+The unnecessary package or type name is removed from the clause. If
+there is only one element in the clause, the clause as a whole is
+removed.
+@end itemize
 
 @subsection Tips
 This rule checks only usage of @code{@b{use}} clauses. The rule
