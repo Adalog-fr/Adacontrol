@@ -2590,19 +2590,32 @@ Syntax:
 @example
 set Format Gnat|Gnat_Short|CSV|CSV_Short|Source|Source_short|None;
 set Check_Key|Search_Key "<value>"
-set Max_Errors [<value>];
-set Max_Messages [<value>];
+set Max_Errors [min|max] [<value>];
+set Max_Messages [min|max] [<value>];
 set Output|New_Output <output file>;
 set Fixes_Gen Check|Search|None
-set Statistics <level>;
+set Statistics [min|max] <level>;
 set Tag1|Tag2 "<value>";
 set Trace <trace file>;
 set Debug|Exit_On_Error|Verbose|Warning|Warning_As_Error
       On|Off;
 set Timing On|Off|Global
 set Ignore On|Off|Inverted;
-set <Rule_Name>.<Variable> <Value>
+set <Rule_Name>.<Variable> [min|max] <Value>
 @end example
+When a parameter has an integer value, it can be preceded with the
+keywords ``min'' or ``max''. If present, it indicates that the
+parameter should be set to at least (respectively at most) the
+indicated value, i.e. if the current value of the parameter is greater
+(respectively smaller) than the given value, it is not changed.  This
+can be especially useful in rule files that are sourced from other
+rules files, where a value for the parameter has been previously set.
+
+@example
+-- Set statistics to level 2, unless a higher level is already set
+set statistics min 2;
+@end example
+
 The ``set format'' command selects the output format for the messages,
 like the ``-F'' option; see @ref{Control kinds and report messages} for
 details.

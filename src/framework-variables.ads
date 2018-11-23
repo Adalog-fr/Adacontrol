@@ -56,6 +56,15 @@ package Framework.Variables is
    -- For rule variables, the name should be Rule_Id & ".XXX"
    procedure Help_On_Variable (Variable_Name : Wide_String);
 
+
+   --
+   -- Rule variables that accept the Min/Max modifier
+   --
+   type Bounding_Kind is (Exact, Min, Max);
+   type Boundable_Object is abstract new Object with null record;
+   procedure Set (Variable : in out Boundable_Object; To : Wide_String; Bounding : Bounding_Kind) is abstract;
+
+
    --
    -- Generic generators for subclasses
    --
@@ -63,7 +72,7 @@ package Framework.Variables is
    generic
       type Value_Type is (<>);
    package Discrete_Type is
-      type Object is new Variables.Object with  --## Rule line off Local_Hiding ##"Object" is a naming convention
+      type Object is new Variables.Object with
          record
             Value : Value_Type;
          end record;
@@ -75,11 +84,12 @@ package Framework.Variables is
    generic
       type Value_Type is range <>;
    package Integer_Type is
-      type Object is new Variables.Object with  --## Rule line off Local_Hiding ##"Object" is a naming convention
+      type Object is new Variables.Boundable_Object with
          record
             Value : Value_Type;
          end record;
       procedure Set (Variable : in out Integer_Type.Object; To : Wide_String);
+      procedure Set (Variable : in out Integer_Type.Object; To : Wide_String; Bounding : Bounding_Kind);
       function  Value_Image (Variable : in Integer_Type.Object) return Wide_String;
       function  All_Values  (Variable : in Integer_Type.Object) return Wide_String;
    end Integer_Type;
@@ -90,8 +100,9 @@ package Framework.Variables is
    --
    procedure Initialize;
 
-   procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String);
+   procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String; Bounding : Bounding_Kind := Exact);
    No_Such_Variable : exception;
+   Exact_Required   : exception;
 
    type Name_List is array (Natural range <>) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    function All_Variables return Name_List;

@@ -34,7 +34,7 @@
 --  call any outer function (or instantiate any generic) as part    --
 --  of  the  elaboration of its declarations.                       --
 --                                                                  --
---  The package cannot be  made preelaborable due to dependencies   --
+--  The package cannot be made preelaborable due to dependencies    --
 --  to non-preelaborable units.                                     --
 --                                                                  --
 -- (and  if you  don't understand  what this  stuff is  about, just --
@@ -137,6 +137,10 @@ package body Framework.Language is
       Activate_Prompt;
       Next_Token;
    end Close_Command;
+
+   -------------
+   -- Compile --
+   -------------
 
    -------------
    -- Compile --
@@ -402,7 +406,7 @@ package body Framework.Language is
                            Option : constant Wide_String := To_Upper (Image (Current_Token));
                         begin
                            -- Special options: file name, requires Next_Token (Force_String => True)
-                           if Option = "OUTPUT" or Option = "NEW_OUTPUT" then
+                           if Option in "OUTPUT" | "NEW_OUTPUT" then
                               Next_Token (Force_String => True);
                               if Current_Token.Kind /= Name then
                                  Syntax_Error ("File name expected", Current_Token.Position);
@@ -440,40 +444,60 @@ package body Framework.Language is
                                     Syntax_Error ("Variable name expected", Current_Token.Position);
                                  end if;
                                  declare
-                                    Variable : constant Wide_String := Image (Current_Token);
+                                    Variable : constant Wide_String := Option & '.' & Image (Current_Token);
+                                    Bounding  : Bounding_Kind := Exact;
                                  begin
                                     Next_Token;
+                                    if Current_Token.Kind = Name then
+                                       if To_Upper (Image (Current_Token)) = "MIN" then
+                                          Bounding := Min;
+                                          Next_Token;
+                                       elsif To_Upper (Image (Current_Token)) = "MAX" then
+                                          Bounding := Max;
+                                          Next_Token;
+                                       end if;
+                                    end if;
+
                                     if Current_Token.Kind in Value_Token_Kind then
-                                       Set_Variable (Variable => Option & '.' & Variable,
-                                                     Val      => Image (Current_Token));
+                                       Set_Variable (Variable, Val => Image (Current_Token), Bounding => Bounding);
                                        Next_Token;
                                     else  -- default
-                                       Set_Variable (Variable => Option & '.' & Variable,
-                                                     Val      => "");
+                                       Set_Variable (Variable, Val => "", Bounding => Bounding);
                                     end if;
                                  exception
                                     when No_Such_Variable =>
-                                       Syntax_Error ("Unknown variable " & Option & '.' & Variable,
-                                                     Current_Token.Position);
+                                       Syntax_Error ("Unknown variable " & Variable, Current_Token.Position);
+                                    when Exact_Required =>
+                                       Syntax_Error ("Min/Max not allowed for " & Variable, Current_Token.Position);
                                     when Constraint_Error =>
-                                       Syntax_Error ("Illegal value for " & Option & '.' & Variable & ": "
-                                                     & Image (Current_Token),
+                                       Syntax_Error ("Illegal value for " & Variable & ": " & Image (Current_Token),
                                                      Current_Token.Position);
                                  end;
                               else
+                                 declare
+                                    Bounding  : Bounding_Kind := Exact;
                                  begin
+                                    if Current_Token.Kind = Name then
+                                       if To_Upper (Image (Current_Token)) = "MIN" then
+                                          Bounding := Min;
+                                          Next_Token;
+                                       elsif To_Upper (Image (Current_Token)) = "MAX" then
+                                          Bounding := Max;
+                                          Next_Token;
+                                       end if;
+                                    end if;
+
                                     if Current_Token.Kind in Value_Token_Kind then
-                                       Set_Variable (Variable => Option,
-                                                     Val      => Image (Current_Token));
+                                       Set_Variable (Option, Val => Image (Current_Token), Bounding => Bounding);
                                        Next_Token;
                                     else  -- default
-                                       Set_Variable (Variable => Option,
-                                                     Val      => "");
+                                       Set_Variable (Option, Val => "", Bounding => Bounding);
                                     end if;
                                  exception
                                     when No_Such_Variable =>
-                                       Syntax_Error ("Unknown variable " & Option,
-                                                     Current_Token.Position);
+                                       Syntax_Error ("Unknown variable " & Option, Current_Token.Position);
+                                    when Exact_Required =>
+                                       Syntax_Error ("Min/Max not allowed for " & Option, Current_Token.Position);
                                     when Constraint_Error =>
                                        Syntax_Error ("Illegal value for " & Option & ": " & Image (Current_Token),
                                                      Current_Token.Position);

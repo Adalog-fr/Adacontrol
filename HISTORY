@@ -2,6 +2,10 @@
 == V1.20b6 ==
 =============
 
+General:
+--------
+"set" command has a min/max option for integer values
+
 New rules:
 ----------
 actual_parameters

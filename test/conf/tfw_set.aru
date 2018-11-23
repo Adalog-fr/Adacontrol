@@ -2,11 +2,15 @@
 
 check declarations (integer_type);
 search declarations (variable);
+set statistics 2;
 go;
 
+set statistics max 3;
 set check_key "Check";
 set search_key "Search";
 go;
 
+set statistics min 3;
 set format csv_short;
 go;
+

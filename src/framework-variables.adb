@@ -130,10 +130,28 @@ package body Framework.Variables is
 
       procedure Set (Variable : in out Integer_Type.Object; To : Wide_String) is
       begin
+         Set (Variable, To, Exact);
+      end Set;
+
+      procedure Set (Variable : in out Integer_Type.Object; To : Wide_String; Bounding : Bounding_Kind) is
+         Val : Value_Type;
+      begin
          if To = "" then
             Variable.Value := Value_Type'Last;
          else
-            Variable.Value := Value_Type'Wide_Value (To);
+            Val := Value_Type'Wide_Value (To);
+            case Bounding is
+               when Exact =>
+                  Variable.Value := Val;
+               when Min =>
+                  if Variable.Value < Val then
+                     Variable.Value := Val;
+                  end if;
+               when Max =>
+                  if Variable.Value > Val then
+                     Variable.Value := Val;
+                  end if;
+            end case;
          end if;
       end Set;
    end Integer_Type;
@@ -142,10 +160,21 @@ package body Framework.Variables is
    -- Set_Variable --
    ------------------
 
-   procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String) is
+   procedure Set_Variable (Variable : in Wide_String; Val : in Wide_String; Bounding : Bounding_Kind := Exact) is
       use Variables_Map;
    begin
-      Set (Fetch (Variables_Table, Variable_Key (Variable)).all, Val);
+      -- Block required to catch Not_Present from declaration:
+      declare
+         Var : constant Variables.Class_Access := Fetch (Variables_Table, Variable_Key (Variable));
+      begin
+         if Var.all in Boundable_Object'Class then
+            Set (Boundable_Object'Class (Var.all), Val, Bounding);
+         elsif Bounding = Exact then
+            Set (Var.all, Val);
+         else
+            raise Exact_Required;
+         end if;
+      end;
    exception
       when Not_Present =>
          -- This exception not visible to clients, transform it
