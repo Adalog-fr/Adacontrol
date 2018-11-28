@@ -1,6 +1,29 @@
 tfw_set.adb:2:4: Error: DECLARATIONS: use of declaration "integer_type"
 tfw_set.adb:3:4: Found: DECLARATIONS: use of declaration "variable"
+
+Rules usage statistics:
+DECLARATIONS.Not_Controlled: not triggered
+
+Units processed: 1
+Lines processed: 6
+Issued messages: Errors = 1, Warnings = 1
 tfw_set.adb:2:4: Check: DECLARATIONS: use of declaration "integer_type"
 tfw_set.adb:3:4: Search: DECLARATIONS: use of declaration "variable"
+
+Rules usage statistics:
+DECLARATIONS.Not_Controlled: not triggered
+
+Units processed: 1
+Lines processed: 12
+Issued messages: Errors = 1, Warnings = 1
 "tfw_set.adb","2","4","Check","","DECLARATIONS","use of declaration ""integer_type"""
 "tfw_set.adb","3","4","Search","","DECLARATIONS","use of declaration ""variable"""
+
+Rules usage statistics:
+Rule,Label,Check,Search,Count
+DECLARATIONS,,1,1,0
+DECLARATIONS,Not_Controlled,0,0,0
+
+Units processed: 1
+Lines processed: 18
+Issued messages: Errors = 1, Warnings = 1

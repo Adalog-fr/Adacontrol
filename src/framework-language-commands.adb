@@ -365,7 +365,7 @@ package body Framework.Language.Commands is
       User_Message (Message);
 
       if With_Pause then
-         Skip_Line;
+         Skip_Line (Standard_Input);
       end if;
    end Message_Command;
 

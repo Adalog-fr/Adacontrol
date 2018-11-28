@@ -1,16 +1,23 @@
 -- Objective: check "set" command
 
 check declarations (integer_type);
+Not_Controlled: check declarations (float_type);   -- There is none, for statistics
 search declarations (variable);
+
+message "---------------- Stat level 2";
 set statistics 2;
 go;
 
-set statistics max 3;
+message;
+message "---------------- Stat level 2";
+set statistics max 3;     -- Not changed
 set check_key "Check";
 set search_key "Search";
 go;
 
-set statistics min 3;
+message;
+message "---------------- Stat level 3";
+set statistics min 3;     -- Changed
 set format csv_short;
 go;
 

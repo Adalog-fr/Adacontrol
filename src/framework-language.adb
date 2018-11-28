@@ -334,20 +334,21 @@ package body Framework.Language is
 
                      when Key_Message =>
                         Next_Token;
-                        if Current_Token.Kind /= String_Value then
-                           Syntax_Error ("Message string expected", Current_Token.Position);
-                        end if;
                         declare
-                           Mess : constant Wide_String := Image (Current_Token);
-                           With_Pause : Boolean;
+                           Mess : constant Wide_String := (if Current_Token.Kind = String_Value
+                                                           then Image (Current_Token)
+                                                           else "");
+                           With_Pause : Boolean := False;
                         begin
-                           Next_Token;
+                           if Current_Token.Kind = String_Value then
+                              Next_Token;
+                           end if;
+
                            if Is_String (Current_Token, "PAUSE") then
                               With_Pause := True;
                               Next_Token;
-                           else
-                              With_Pause := False;
                            end if;
+
                            Close_Command;
 
                            Message_Command (Mess, With_Pause);
