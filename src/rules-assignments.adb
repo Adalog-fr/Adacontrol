@@ -59,9 +59,11 @@ package body Rules.Assignments is
    -- Algorithm:
    --
    -- Subrule Sliding:
+   -- ----------------
    -- Easy
    --
    -- Subrule Access_Duplication:
+   -- ---------------------------
    -- Traverse the assignment expression recursively, skipping anything that is not part of the value
    -- (like aggregate choices, subprogram parameters, prefixes of qualified expressions), for access variables.
    -- Note that functions could return the value of one of their parameters, hence their duplication status is
@@ -74,6 +76,7 @@ package body Rules.Assignments is
    -- undone (when we go through the same level) in the post_procedure.
    --
    -- Subrules repeated and groupable:
+   -- --------------------------------
    -- Since this rule is about sequences of assignments, it is plugged on any construct
    -- that can contain statements. The sequence of statements is scanned for consecutive
    -- assignments.

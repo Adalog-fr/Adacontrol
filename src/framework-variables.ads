@@ -62,7 +62,9 @@ package Framework.Variables is
    --
    type Bounding_Kind is (Exact, Min, Max);
    type Boundable_Object is abstract new Object with null record;
-   procedure Set (Variable : in out Boundable_Object; To : Wide_String; Bounding : Bounding_Kind) is abstract;
+   not overriding procedure Set (Variable : in out Boundable_Object;
+                                 To       : Wide_String;
+                                 Bounding : Bounding_Kind) is abstract;
 
 
    --

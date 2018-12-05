@@ -29,7 +29,7 @@ with Framework.Interrupt_Std;
 package Framework.Interrupt renames Framework.Interrupt_Std;
 
 -- To use the debug version of Framework.Interrupt, which is only useful
--- for debugging endless loops withing AdaControl, uncomment the
+-- for debugging endless loops within AdaControl, uncomment the
 -- following 2 lines:
 -- with Framework.Interrupt_Dbg;
 -- package Framework.Interrupt renames Framework.Interrupt_Dbg;

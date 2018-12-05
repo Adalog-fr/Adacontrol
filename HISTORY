@@ -1,42 +1,5 @@
 =============
-== V1.20b6 ==
-=============
-
-General:
---------
-"set" command has a min/max option for integer values
-
-New rules:
-----------
-actual_parameters
-max_expression_items
-
-Changes to existing rules:
---------------------------
-derivations:
-   add subrule indicator
-
-not_selected_name:
-   add fixes
-
-object_declarations:
-   add subrule not_required_type
-
-reduceable_scope:
-   add subrules use_type, use_all_type
-
-simplifiable_statements:
-   add subrule while_for_for
-
-use_clauses:
-   add subrules all_type, all_type_global, all_type_local
-
-Removed rule:
--------------
-default_parameter, changed to subrules of actual_parameters
-
-=============
-== V1.20r4 ==
+== V1.20r7 ==
 =============
 
 General:
@@ -44,6 +7,8 @@ General:
 Misc. improvements to GPS integration
 All options not set on the command line now taken from project file (if any)
 Add command rule_file_off
+"set" command has a min/max option for integer values
+"message" command: string is optional
 Output format defaults to CSV if an output file is given whose
   extension is ".csv"
 Made Ada2012 default for tests. Adapted to allow tests to run with
@@ -54,8 +19,10 @@ Categories:
 Unify handling of categories, factorize descriptions in User's Guide.
 Add new category: interface
 
-New rule:
----------
+New rules:
+----------
+actual_parameters
+max_expression_items
 return_statements
 
 Changes to existing rules:
@@ -65,9 +32,11 @@ case_statement:
    add optional categories to each subrule
 
 declarations
+   add subrule indicator
    add option to ignore declarations whose name matches a pattern
 
 derivations:
+   add subrule indicator
    fix missing case of private extensions
 
 naming_convention
@@ -495,6 +464,12 @@ Naming_Convention:
    Do not recheck formal parameters in bodies if there is an explicit
    specification.
 
+not_selected_name:
+   add fixes
+
+object_declarations:
+   add subrule not_required_type
+
 Parameter_Declarations:
    Changed syntax to allow min/max to be specified either for all parameters or
    for parameters of a given mode.
@@ -504,6 +479,12 @@ Parameter_Aliasing:
 
 Pragmas:
    Added modifier "multiple"
+
+reduceable_scope:
+   add subrules use_type, use_all_type
+
+simplifiable_statements:
+   add subrule while_for_for
 
 Statements:
    Added subrule for_iterator_loop
@@ -516,12 +497,19 @@ Style (Casing_Identifier, original):
 Style (exposed_literal):
    Added optional "max" to value, allow in all declarations
 
+use_clauses:
+   add subrules all_type, all_type_global, all_type_local
+
 With_Clauses (Reduceable):
    Control with clauses that can be changed to private with (can be
    disabled with the variable Check_Private_With).
 
 Usage:
    Speed improvement
+
+Removed rule:
+-------------
+default_parameter (changed to subrules of actual_parameters)
 
 =============
 == V1.14r9 ==

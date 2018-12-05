@@ -24,13 +24,11 @@
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
 
-with
-   Ada.Environment_Variables;
-
 -- Ada
 with
   Ada.Characters.Handling,
   Ada.Directories,
+  Ada.Environment_Variables,
   Ada.Strings.Wide_Fixed,
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Unbounded,
