@@ -917,17 +917,22 @@ package body Rules.Reduceable_Scope is
 
    procedure Process_Instantiation (Inst : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      Actuals     : constant Asis.Association_List := Generic_Actual_Part (Inst, Normalized => True);
       Formal_Decl : Asis.Declaration;
    begin
-      for A in Actuals'Range loop
-         if Is_Defaulted_Association (Actuals (A)) then
-            Formal_Decl := Enclosing_Element (Formal_Parameter (Actuals (A)));
+      -- We check Rule_Used here to make sure that nothing is executed if the unit is inhibited
+      -- However, we don't call Enter_Unit, because it will be called from Process_Identifier
+      if Rule_Used = No_Check then
+         return;
+      end if;
+
+      for Actual of Generic_Actual_Part (Inst, Normalized => True) loop
+         if Is_Defaulted_Association (Actual) then
+            Formal_Decl := Enclosing_Element (Formal_Parameter (Actual));
             if Declaration_Kind (Formal_Decl) in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration
               and then Default_Kind (Formal_Decl) = A_Box_Default
             then
                -- The actual must be a name in this case
-               Process_Identifier (Actual_Parameter (Actuals (A)));
+               Process_Identifier (Actual_Parameter (Actual));
             end if;
          end if;
       end loop;
