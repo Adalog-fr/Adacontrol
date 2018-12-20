@@ -2995,8 +2995,10 @@ appropriate message is issued.
 This rule checks properties of actuals provided to calls or instantiations.
 @subsection Syntax
 @example
-<control_kind> actual_parameters (<subrule>, <place>, <formal>@{, <actual>@});
-<subrule>::= default_used | default_not_used | default_positional | entity
+<control_kind> actual_parameters (<subrule>, <place>, <formal>
+                                  @{, <actual>@});
+<subrule>::= default_used | default_not_used | default_positional | 
+             entity
 <place>  ::= <entity> | calls | instantiations
 <formal> ::= <formal name> | all
 <actual> ::= [all] <entity>
@@ -3054,14 +3056,16 @@ check actual_parameters (default_used, P, X);
 -- Check calls to P where the default is not used for parameter Y:
 check actual_parameters (default_not_used, P, Y);
 
--- Check all calls where positional notation is used for any defaulted parameter:
+-- Check all calls where positional notation is used 
+-- for any defaulted parameter:
 search actual_parameters (default_positional, calls, all);
 
--- Check that variable V in package Pack is not used as a parameter Item to some Put:
+-- Check that variable V in package Pack is not used 
+-- as a parameter Item to some Put:
 check actual_parameters (entity, all Put, Item, Pack.V);
 
--- Check that no instance of Unchecked_Conversion is used directly as a
--- parameter to a call (are they trying to get around strong typing?)
+-- Check that no instance of Unchecked_Conversion is used directly as
+--  a parameter to a call (trying to get around strong typing?)
 check actual_parameters (entity, calls, all, Ada.Unchecked_Conversion);
 @end example
 
@@ -4673,15 +4677,18 @@ parents, i.e. the rule is triggered if the number of parents is
 strictly greater than <value>.
 
 This subrule can be given once for each of check, search, and
-count. This way, it is possible to have a number of parents
-considered a warning (search), and one considered an error (check). Of
-course, this makes sense only if the number for search is less than
-the one for check.
+count. This way, it is possible to have a number of parents considered
+a warning (search), and one considered an error (check). Of course,
+this makes sense only if the number for search is less than the one
+for check.
 
 Ex:
 @example
-check derivations (max_parents, 5);   -- error if more than 5 parents
-search derivations (max_parents, 3);  -- warning if more than 3 parents
+-- error if more than 5 parents:
+check derivations (max_parents, 5);
+ 
+-- warning if more than 3 parents
+search derivations (max_parents, 3);
 @end example
 
 @item
@@ -4716,7 +4723,8 @@ check derivations (indicator);
 
 check  derivations (indicator, tagged, declaration);
 search derivations (indicator, tagged, body_forbidden);
--- Error if no indicator on a subprogram declaration for a tagged type
+-- Error if no indicator on a subprogram declaration 
+--       for a tagged type
 -- Warning if indicator also given on the corresponding body
 
 check  derivations (indicator, overriding);
@@ -7280,7 +7288,8 @@ declarations.
 <control_kind> object_declarations (min_integer_span, <min_spec>
                                                    @{, <min_spec>@});
 <control_kind> object_declarations (type, <type_spec> @{, <type_spec>@});
-<control_Kind> object_declarations (not_required_type, <type_spec> @{, <type_spec>@});
+<control_Kind> object_declarations (not_required_type, <type_spec> 
+                                                   @{, <type_spec>@});
 <control_kind> object_declarations (volatile_no_address);
 <control_kind> object_declarations (address_not_volatile);
 <min_spec>  ::= [constant | variable] <value>

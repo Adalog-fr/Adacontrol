@@ -383,13 +383,14 @@ case, and start with the rule's name, like
 ``@code{EXPRESSIONS.CALLED_INFO}'' for example. Of course, it is
 better to use @code{Rule_Id} for building the name, like in:
 @example
-Framework.Variables.Register (Called_Info'Access,
-                              Variable_Name=> Rule_Id & ".CALLED_INFO");
+Framework.Variables.Register
+   (Called_Info'Access,
+    Variable_Name => Rule_Id & ".CALLED_INFO");
 @end example
 This call is typically put in the initalization part of the rule's
 package, after the registration of the rule itself.
 
-The rule @code{Expressions} (in file @code{rules-expressions.adb}
+The rule @code{Expressions} (in file @code{rules-expressions.adb})
 includes a typical usage of a rule variable.
 
 @node  The package Framework.Plugs, The package Scope_Manager, The package Framework.Variables, The framework and utilities packages
@@ -681,9 +682,10 @@ Ex:
   @b{use} Utilities;
 @b{begin}
   User_Message ("Rule: " & Rule_Id);
-  User_Message ("Control usage of specific pragmas");
+  User_Message ("Control occurrences of aspect specifications");
   User_Message;
-  User_Message ("Parameter(s): [multiple] all | nonstandard | <pragma>");
+  User_Message ("Parameter(s): <Aspect_Mark> | implicit_true | all");
+  User_Message ("             (optional, default = all)");
 @b{end} Help;
 @end example
 
