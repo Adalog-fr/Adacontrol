@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Gen_Adactl - Procedure body                                     --
 --                                                                  --
---  This software is (c) Adalog 2004-2016.                          --
+--  This software is (c) Adalog 2004-2018.                          --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --

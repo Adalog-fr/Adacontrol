@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.adacontrol</groupId>
-    <version>1.0a</version>
+    <version>1.0b</version>
     <artifactId>adacontrol-plugin</artifactId>
     <packaging>sonar-plugin</packaging>
 

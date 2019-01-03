@@ -630,7 +630,7 @@ support requires AdaGide version 7.42 or above.
 Integration into GNATDashboard is provided in a separate package that
 you can download from the same source that you obtained AdaControl
 from. It is provided as a .zip file that contains two files:
-@code{adacontrol-plugin-1.0a.jar} and @code{adacontrol.py}.
+@code{adacontrol-plugin-1.0b.jar} and @code{adacontrol.py}.
 
 Of course, the prerequisite is that you have a working installation of
 GNATDashboard, including SonarQube and its sonnar-scanner
