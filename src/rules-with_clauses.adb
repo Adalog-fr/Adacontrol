@@ -550,11 +550,16 @@ package body Rules.With_Clauses is
    -- Note that subprograms with regular defaults do not depend on visibility, and thus
    -- need not be traversed, even when the default is used in the instantiation.
       use Asis.Declarations, Asis.Elements, Asis.Expressions;
-      Actuals : constant Asis.Association_List := Generic_Actual_Part (Decl, Normalized => True);
    begin
-      for A in Actuals'Range loop
-         if Is_Part_Of_Implicit (Actual_Parameter (Actuals (A))) then
-            Process_Identifier (Actual_Parameter (Actuals (A)));
+      -- We check Rule_Used here to make sure that nothing is executed if the unit is inhibited
+      -- However, we don't call Enter_Unit, because it will be called from Process_Identifier
+      if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
+         return;
+      end if;
+
+      for A of Generic_Actual_Part (Decl, Normalized => True) loop
+         if Is_Part_Of_Implicit (Actual_Parameter (A)) then
+            Process_Identifier (Actual_Parameter (A));
          end if;
       end loop;
    end Process_Instantiation;
