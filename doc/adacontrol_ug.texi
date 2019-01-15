@@ -10148,7 +10148,7 @@ the legality of the provided type can be checked only during the
 analysis. If the type is incorrect for some reason, a proper error
 message is issued and execution stops immediately.
 
-@subsection Limitation
+@subsection Limitations
 Due to a weakness of the ASIS standard, dispatching calls  are not
 considered. Especially, this means that the <Lock type> cannot be
 class-wide.  Such calls are detected by the rule ``uncheckable''.

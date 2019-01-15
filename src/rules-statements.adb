@@ -306,9 +306,8 @@ package body Rules.Statements is
             -- compilation unit
             -- NB: Corresponding_Declaration of a proper body returns Nil_Element, therefore
             --     this case is automatically eliminated
-            if (    Declaration_Kind (Decl_Place) /= A_Package_Declaration
-                and Declaration_Kind (Decl_Place) /= A_Generic_Package_Declaration)   -- Exception not from package spec
-              or else Is_Part_Of (Corresponding_Name_Declaration (Exc),               -- Exception from private part
+            if Declaration_Kind (Decl_Place) not in A_Package_Declaration | A_Generic_Package_Declaration
+              or else Is_Part_Of (Corresponding_Name_Declaration (Exc),
                                   Private_Part_Declarative_Items (Decl_Place))
             then
                Do_Report (Stmt_Raise_Nonpublic);

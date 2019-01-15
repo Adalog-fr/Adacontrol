@@ -202,7 +202,9 @@ package Framework.Language is
       procedure Help_On_Flags (Header      : Wide_String := "";
                                Footer      : Wide_String := "";
                                Extra_Value : Wide_String := "NONE");
-      -- We provide "NONE" as the default to allow "" as an explicit value
+      -- Extra_Value replaces the first element of the enumeration, f.e. if it is a special value meaning that
+      -- the parameter is an <entity> in place of a keyword.
+      -- We provide "NONE" as the default to allow "" as an explicit value (thus omitting the first value)
    end Flag_Utilities;
 
    -- Procedure to be called by rules if there is something wrong with the
