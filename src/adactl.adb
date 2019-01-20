@@ -221,6 +221,7 @@ exception
 
    when Occur : others =>
       User_Message ("Unexpected exception at main level: "
+                    & Ada.Exceptions.Wide_Exception_Name  (Occur) & ' '
                     & To_Wide_String (Ada.Exceptions.Exception_Message (Occur)));
       Stack_Traceback (Occur);
       Execute ("help version;");

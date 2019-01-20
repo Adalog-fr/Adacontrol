@@ -267,7 +267,6 @@ package body Adactl_Options is
       use Utilities, Analyzer;
 
       Rules_Specified : Boolean := False;
-      Project_Name : constant String := Value (Option => 'p', Explicit_Required => True);
 
       procedure Flag_To_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
       begin
@@ -370,7 +369,7 @@ package body Adactl_Options is
       Exit_Option.Value := Is_Present (Option => 'x');
 
       begin
-         Project := Project_File.Factory.Corresponding_Project (Project_Name);
+         Project := Project_File.Factory.Corresponding_Project (Value (Option => 'p', Explicit_Required => True));
       exception
          when Occur: Project_Error =>
             Option_Error (Ada.Exceptions.Exception_Message (Occur));
