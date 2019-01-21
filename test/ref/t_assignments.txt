@@ -1,3 +1,18 @@
+t_assignments-type_test.adb:29:7: Error: Ancestor: Assignment to variable of type T_ASSIGNMENTS.TYPE_TEST.T
+t_assignments-type_test.adb:30:7: Error: Direct: Assignment to variable of type T_ASSIGNMENTS.TYPE_TEST.D1
+t_assignments-type_test.adb:30:7: Error: Ancestor: Assignment to variable of type derived from T_ASSIGNMENTS.TYPE_TEST.T
+t_assignments-type_test.adb:31:7: Error: Ancestor: Assignment to variable of type derived from T_ASSIGNMENTS.TYPE_TEST.T
+t_assignments-type_test.adb:32:7: Error: Ancestor: Assignment to variable of type derived from T_ASSIGNMENTS.TYPE_TEST.T
+t_assignments-type_test.adb:43:7: Error: Ancestor: Assignment to variable of type T_ASSIGNMENTS.TYPE_TEST.TAGGED_T
+t_assignments-type_test.adb:44:7: Error: Direct: Assignment to variable of type T_ASSIGNMENTS.TYPE_TEST.TAGGED_D1
+t_assignments-type_test.adb:44:7: Error: Ancestor: Assignment to variable of type derived from T_ASSIGNMENTS.TYPE_TEST.TAGGED_T
+t_assignments-type_test.adb:45:7: Error: Ancestor: Assignment to variable of type derived from T_ASSIGNMENTS.TYPE_TEST.TAGGED_T
+t_assignments-type_test.adb:46:7: Error: Ancestor: Assignment to variable of type T_ASSIGNMENTS.TYPE_TEST.TAGGED_T
+t_assignments-type_test.adb:55:7: Error: Component: Assignment to component of variable of type derived from ADA.STREAMS.STREAM_ELEMENT_ARRAY
+t_assignments-type_test.adb:56:7: Found: whole_stream: Assignment to variable of type derived from ADA.STREAMS.STREAM_ELEMENT_ARRAY
+t_assignments-type_test.adb:64:7: Found: Component_Ances: Assignment to component of variable of type T_ASSIGNMENTS.TYPE_TEST.REC_T
+t_assignments-type_test.adb:65:7: Found: Component: Assignment to component of variable of type T_ASSIGNMENTS.TYPE_TEST.REC_D1
+t_assignments-type_test.adb:65:7: Found: Component_Ances: Assignment to component of variable of type derived from T_ASSIGNMENTS.TYPE_TEST.REC_T
 t_assignments-sliding.adb:23:13: Error: Sliding: Lower bound (2) does not match assigned variable (1)
 t_assignments-sliding.adb:25:13: Error: Sliding: Lower bound (2) does not match assigned variable (1)
 t_assignments-sliding.adb:29:13: Error: Sliding: Lower bound (2) does not match assigned variable (1)

@@ -1,3 +1,10 @@
+Direct:          check  assignments (type,           T_Assignments.Type_Test.D1,         T_Assignments.Type_Test.Tagged_D1);
+Ancestor:        check  assignments (type, ancestor  T_Assignments.Type_Test.T, ancestor T_Assignments.Type_Test.Tagged_T);
+Component:       search assignments (type, component T_Assignments.Type_Test.Rec_D1),
+                 check  assignments (type, component ancestor ada.streams.stream_element_array);
+whole_stream:    search assignments (type, ancestor           ada.streams.stream_element_array);
+Component_Ances: search assignments (type, component ancestor T_Assignments.Type_Test.Rec_T);
+
 Groupable1:     search assignments (groupable, given 2, missing 1);
 Groupable2:     check  assignments (groupable, ratio 75);
 Fully_Assigned: count  assignments (groupable, missing 0);
@@ -10,3 +17,4 @@ Sliding:        check  assignments (sliding);
 Acc_Dup:        check  assignments (not controlled access_duplication, not function, not (), not standard.float);
 Dup_Controlled: Search assignments (    controlled access_duplication);
 Proc_Dup:       check  assignments (access_duplication, procedure);
+

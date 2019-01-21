@@ -1,4 +1,17 @@
 =============
+== V1.20r8 ==
+=============
+
+General:
+--------
+Bug fixes
+
+Changes to existing rules:
+--------------------------
+assignments:
+   add subrule type
+   
+=============
 == V1.20r7 ==
 =============
 

@@ -3402,13 +3402,14 @@ Explicit_Required: check aspects (implicit_true);
 @node  Assignments, Barrier_Expressions, Aspects, Rules reference
 @section Assignments
 This rule controls various issues related to the assignment statement:
-assignments that involve array sliding, assignments that cause
-duplication of access values, redundant assignments to the same
-variable, or groups of assignments that are replaceable by aggregate
-assignment.
+assignments to an object of a given type, assignments that involve
+array sliding, assignments that cause duplication of access values,
+redundant assignments to the same variable, or groups of assignments
+that are replaceable by aggregate assignment.
 
 @subsection Syntax
 @example
+<control_kind> assignments (type, [component] [ancestor] <entity>);
 <control_kind> assignments (sliding);
 <control_kind> assignments ([[not] controlled] access_duplication
                             @{, [not] <target>@});
@@ -3422,6 +3423,16 @@ assignment.
 @subsection Action
 The first parameter is a subrule keyword:
 @itemize
+@item
+``type'' controls assignments to an object whose type is <entity>, or
+if the modifier ``component'' is given, to an (array or record)
+component of the given type. As usual, the whole syntax for entities
+is allowed for <entity>. @xref{Specifying an Ada entity name}. If the
+modifier ``ancestor'' is given, assignments to objects (or components
+of objects) of a type derived from the given type are also controlled.
+
+This form can be given only once without ``component'' and once with
+``component'' for each type.
 @item
 ``sliding'' controls array assignments where the target variable has a
 different lower bound than the assigned expression; this is allowed by
@@ -3444,7 +3455,7 @@ If one or several <target> without @code{not} are given, the control
 applies only to access types whose target type matches the given
 <entity>, or belongs to the given <category>. Conversely, if the
 <target> is preceded by @code{not}, it means that the corresponding
-<entity> or <category> is not controlled.  As usual, the whole syntax
+<entity> or <category> is not controlled. As usual, the whole syntax
 for entities is allowed for <entity>. @xref{Specifying an Ada entity
 name}.
 
@@ -3513,7 +3524,17 @@ subcomponents as well) - recursively, of course.
 
 Ex:
 @example
+-- Check assignments to objects of type Address:
+check Assignments (type, System.Address);
+
+-- Check assignments to components of an object of a type derived from
+-- Stream_Element_Array
+check Assignments (type, component ancestor Ada.Streams.Stream_Element_Array);
+
+-- Warn for assignments involving array sliding:
 search Assignments (sliding);
+
+-- Check multiple assignments to the same variable
 check  Assignments (repeated);
 
 -- Warn if a at least 3 fields are given and at most

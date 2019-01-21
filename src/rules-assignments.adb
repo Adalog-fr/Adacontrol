@@ -39,6 +39,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Binary_Map,
   Linear_Queue,
   Thick_Queries,
@@ -57,6 +58,9 @@ package body Rules.Assignments is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
    -- Algorithm:
+   --
+   -- Subrule Type:
+   -- Easy. Since the same type can be used as full type and as component, we need two different context_store.
    --
    -- Subrule Sliding:
    -- ----------------
@@ -112,8 +116,8 @@ package body Rules.Assignments is
    -- At the end of a sequence of assignments, all LHS in the map are traversed, and
    -- messages are issued according to the values assigned/total subcomponents.
 
-   type Subrules is (Sliding, Access_Duplication, Repeated, Groupable);
-   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
+   type Subrules is (Sr_Type, Sr_Access_Duplication, Sr_Sliding, Sr_Repeated, Sr_Groupable);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "Sr_");
 
    type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio, Crit_Total);
    package Criteria_Utilities is new Framework.Language.Modifier_Utilities (Criteria, Prefix => "Crit_");
@@ -122,10 +126,6 @@ package body Rules.Assignments is
    Not_Used : constant Usage_Flags := (others => False);
    Rule_Used : Usage_Flags := Not_Used;
    Save_Used : Usage_Flags;
-
-
-   -- Data for subrule Sliding:
-   Sliding_Context : Basic_Rule_Context;
 
 
    -- Data for subrule Access_Duplication:
@@ -138,6 +138,21 @@ package body Rules.Assignments is
    Entities : array (Boolean) of Context_Store;
    -- True : context for controlled
    -- False: context for not controlled
+
+
+   -- Data for subrule Type:
+   type Type_Contexts is new Basic_Rule_Context with
+      record
+         Search_Ancestor : Boolean;
+      end record;
+   type LHS_Kinds is (Direct, Component);
+   Target_Types :  array (LHS_Kinds) of Context_Store;
+   -- True : context for component
+   -- False: context for type
+
+
+   -- Data for subrule Sliding:
+   Sliding_Context : Basic_Rule_Context;
 
 
    -- Data for subrule Repeated:
@@ -180,15 +195,21 @@ package body Rules.Assignments is
    ----------
 
    procedure Help is
-      use Utilities, Criteria_Utilities, Subrules_Flag_Utilities;
+      use Utilities, Criteria_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control various issues in relation to assignments:");
-      User_Message ("obvious array slidings, duplication of access value,");
+      User_Message ("assignment to a given type, obvious array slidings, duplication of access value,");
       User_Message ("repeated assignments in a sequence to a same variable, or sequences of assignments");
       User_Message ("to components of a structured variable that could be replaced by an aggregate");
       User_Message;
-      Help_On_Flags ("Parameter(1): [[not] controlled] ");
+      -- Since some subrules have various modifiers, we cannot use Help_On_Flags here.
+      -- Update manually if new subrules are added
+      User_Message ("Parameter(1): type    | [[not] controlled] access_duplication |");
+      User_Message ("              sliding |repeated | groupable");
+      User_Message;
+      User_Message ("For type:");
+      User_Message ("Parameter(2): [component] [ancestor] <Type name>");
       User_Message;
       User_Message ("For access_duplication:");
       User_Message ("Parameter(2..): [not] <Entity name> | <category> | procedure | function");
@@ -214,6 +235,8 @@ package body Rules.Assignments is
       Subrule        : Subrules;
       Has_Not        : Boolean;
       Has_Controlled : Boolean;
+      Has_Ancestor   : Boolean;
+      LHS_Kind       : LHS_Kinds;
       Filter         : Filter_Kind;
       Entity         : Entity_Specification;
       All_Exclude    : Boolean := True;
@@ -225,24 +248,13 @@ package body Rules.Assignments is
       Has_Not        := Get_Modifier ("NOT");
       Has_Controlled := Get_Modifier ("CONTROLLED");
       Subrule        := Get_Flag_Parameter (Allow_Any => False);
-      if Subrule /= Access_Duplication and (Has_Not or Has_Controlled) then
+      if Subrule /= Sr_Access_Duplication and (Has_Not or Has_Controlled) then
          Parameter_Error (Rule_Id, """[not] controlled"" modifier applies only to Access_Duplication");
       elsif Has_Not and not Has_Controlled then
          Parameter_Error (Rule_Id, "missing ""Controlled"" modifier for Access_Duplication");
       end if;
       case Subrule is
-         when Sliding =>
-            if Parameter_Exists then
-               Parameter_Error (Rule_Id, "No parameter for subrule ""sliding""");
-            end if;
-
-            if Rule_Used (Sliding) then
-               Parameter_Error (Rule_Id, "subrule ""sliding"" already specified");
-            end if;
-
-            Sliding_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
-
-         when Access_Duplication =>
+         when Sr_Access_Duplication =>
             if Parameter_Exists then
                while Parameter_Exists loop
                   if Get_Modifier ("NOT") then
@@ -282,17 +294,52 @@ package body Rules.Assignments is
                           Duplication_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Include));
             end if;
 
-         when Repeated =>
+         when Sr_Type =>
+            if Parameter_Exists then
+               while Parameter_Exists loop
+                  if Get_Modifier ("COMPONENT") then
+                     LHS_Kind := Component;
+                  else
+                     LHS_Kind := Direct;
+                  end if;
+                  Has_Ancestor := Get_Modifier ("ANCESTOR");
+                  begin
+                     Entity := Get_Entity_Parameter;
+                     Associate (Target_Types (LHS_Kind),
+                                Entity,
+                                Type_Contexts'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Has_Ancestor));
+                  exception
+                     when Already_In_Store =>
+                        Parameter_Error (Rule_Id,
+                                         "subrule ""type"" already specified for type " & Image (Entity));
+                  end;
+               end loop;
+            else
+               Parameter_Error (Rule_Id, "missing type name for subrule ""type""");
+            end if;
+
+         when Sr_Sliding =>
+            if Parameter_Exists then
+               Parameter_Error (Rule_Id, "No parameter for subrule ""sliding""");
+            end if;
+
+            if Rule_Used (Sr_Sliding) then
+               Parameter_Error (Rule_Id, "subrule ""sliding"" already specified");
+            end if;
+
+            Sliding_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+
+         when Sr_Repeated =>
             if Parameter_Exists then
                Parameter_Error (Rule_Id, "No parameter for subrule ""repeated""");
             end if;
-            if Rule_Used (Repeated) then
+            if Rule_Used (Sr_Repeated) then
                Parameter_Error (Rule_Id, "subrule ""repeated"" already specified");
             end if;
 
             Repeated_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
 
-         when Groupable =>
+         when Sr_Groupable =>
             if not Parameter_Exists then
                Parameter_Error (Rule_Id, "criterion of acceptable component assignments required");
             end if;
@@ -871,6 +918,85 @@ package body Rules.Assignments is
       Traverse (Expr, Ignored, Controlled_Expr);
    end Process_Access_Duplication;
 
+   ------------------
+   -- Process_Type --
+   ------------------
+
+   procedure Process_Type (LHS : Asis.Element) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Thick_Queries;
+      Decl : Asis.Declaration;
+
+      procedure Check_Type (Type_Decl : Asis.Declaration; LHS_Kind : LHS_Kinds) is
+         use Asis.Declarations, Asis.Definitions;
+         use Framework.Reports;
+
+         Store : Context_Store renames Target_Types (LHS_Kind);
+         Cur_Decl : Asis.Declaration := Type_Decl;
+         Cont : constant Root_Context'Class := Matching_Context (Store, Names (Cur_Decl)(1));
+      begin
+         if Cont /= No_Matching_Context then
+            Report (Rule_Id,
+                    Cont,
+                    Get_Location (LHS),
+                    "Assignment to "
+                    & (if LHS_Kind = Component then "component of " else "")
+                    & "variable of type " & Last_Matching_Name (Store));
+         end if;
+
+         while Type_Kind (Type_Declaration_View (Cur_Decl))
+               in A_Derived_Type_Definition | A_Derived_Record_Extension_Definition
+         loop
+            -- Be careful if type derived from T'Base:
+            Cur_Decl := Corresponding_Name_Declaration (Strip_Attributes
+                                                        (Subtype_Simple_Name
+                                                         (Parent_Subtype_Indication
+                                                          (Type_Declaration_View (Cur_Decl)))));
+            declare
+               Der_Cont : constant Root_Context'Class := Matching_Context (Store, Names (Cur_Decl) (1));
+            begin
+               if Der_Cont /= No_Matching_Context and then Type_Contexts (Der_Cont).Search_Ancestor then
+                  Report (Rule_Id,
+                          Der_Cont,
+                          Get_Location (LHS),
+                          "Assignment to "
+                          & (if LHS_Kind = Component then "component of " else "")
+                          & "variable of type derived from " & Last_Matching_Name (Store));
+               end if;
+            end;
+         end loop;
+      end Check_Type;
+
+   begin  -- Process_Type
+      -- Check normal case
+      Decl := Enclosing_Element (Thick_Queries.Corresponding_Expression_Type_Definition (LHS));
+      -- Decl can be an object declaration in case of an anonymous type
+      if Declaration_Kind (Decl) not in A_Type_Declaration | A_Subtype_Declaration then
+         return;
+      end if;
+      Check_Type (Decl, Direct);
+
+      -- Check component case
+      case Expression_Kind (LHS) is
+         when A_Selected_Component =>
+            -- Make sure the prefix is a record (not a program unit). Fortunately, there are no anonymous record types!
+            Decl := A4G_Bugs.Corresponding_Expression_Type (Simple_Name (Prefix (LHS)));
+            -- Decl is nil for package names, and also anonymous types (which is OK)
+            if not Is_Nil (Decl) then
+                  Check_Type (Decl, Component);
+            end if;
+         when An_Indexed_Component =>
+            Decl := Enclosing_Element (Thick_Queries.Corresponding_Expression_Type_Definition (Prefix (LHS)));
+            -- Decl can be an object declaration in case of an anonymous type
+            if Declaration_Kind (Decl) not in A_Type_Declaration | A_Subtype_Declaration then
+               return;
+            end if;
+            Check_Type (Decl, Component);
+         when others =>
+            null;
+      end case;
+   end Process_Type;
+
    ------------------------
    -- Process_Assignment --
    ------------------------
@@ -878,18 +1004,23 @@ package body Rules.Assignments is
    procedure Process_Assignment (Statement : in Asis.Statement) is
       use Asis.Statements;
    begin   -- Process_Assignment
-      if not Rule_Used (Sliding) and not Rule_Used (Access_Duplication) then
+      if (Rule_Used and Usage_Flags'(Sr_Sliding | Sr_Access_Duplication | Sr_Type => True, others => False)) = Not_Used
+      then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      if Rule_Used (Sliding) then
+      if Rule_Used (Sr_Sliding) then
          Process_Sliding (LHS => Assignment_Variable_Name (Statement),
                           RHS => Assignment_Expression (Statement));
       end if;
 
-      if Rule_Used (Access_Duplication) then
+      if Rule_Used (Sr_Access_Duplication) then
          Process_Access_Duplication (Assignment_Expression (Statement));
+      end if;
+
+      if Rule_Used (Sr_Type) then
+         Process_Type (Assignment_Variable_Name (Statement));
       end if;
    end Process_Assignment;
 
@@ -900,7 +1031,7 @@ package body Rules.Assignments is
    procedure Process_Object_Declaration  (Declaration : in Asis.Declaration) is
       use Asis.Declarations, Asis.Elements;
    begin
-      if not Rule_Used (Sliding) and not Rule_Used (Access_Duplication) then
+      if not Rule_Used (Sr_Sliding) and not Rule_Used (Sr_Access_Duplication) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -909,12 +1040,12 @@ package body Rules.Assignments is
          Init_Expr : constant Asis.Expression := Initialization_Expression (Declaration);
       begin
          if not Is_Nil (Init_Expr) then
-            if Rule_Used (Sliding) then
+            if Rule_Used (Sr_Sliding) then
                Process_Sliding (LHS => Names (Declaration) (1),  -- Even if there are several names
                                 RHS => Init_Expr);
             end if;
 
-            if Rule_Used (Access_Duplication) then
+            if Rule_Used (Sr_Access_Duplication) then
                Process_Access_Duplication (Init_Expr);
             end if;
          end if;
@@ -1246,7 +1377,7 @@ package body Rules.Assignments is
          if Is_Present (LHS_Infos, Key) then
             -- Variable already assigned
             Target_Descr := Fetch (LHS_Infos, Key);
-            if Rule_Used (Repeated)
+            if Rule_Used (Sr_Repeated)
               and then (Coverage = Full or Target_Descr.Coverage = Full)
             then
                Report (Rule_Id,
@@ -1278,7 +1409,7 @@ package body Rules.Assignments is
          -- True field, not already seen: Increment parent count if full child, chain otherwise
          Parent_Descr := Fetch (LHS_Infos, Parent_Key);
          if Parent_Descr.Coverage = Full then  -- Parent previously assigned in full
-            if Rule_Used (Repeated) then
+            if Rule_Used (Sr_Repeated) then
                Report (Rule_Id,
                        Repeated_Context,
                        Get_Location (LHS),
@@ -1339,7 +1470,7 @@ package body Rules.Assignments is
       procedure Do_Report is new LHS_Map.Iterate (Report_One);
 
    begin   -- Process_Statement_Container
-      if not Rule_Used (Groupable) and not Rule_Used (Repeated) then
+      if not Rule_Used (Sr_Groupable) and not Rule_Used (Sr_Repeated) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);

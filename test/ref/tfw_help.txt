@@ -56,12 +56,15 @@ Parameter(s): <Aspect_Mark> | implicit_true | all
 ----
 Rule: ASSIGNMENTS
 Control various issues in relation to assignments:
-obvious array slidings, duplication of access value,
+assignment to a given type, obvious array slidings, duplication of access value,
 repeated assignments in a sequence to a same variable, or sequences of assignments
 to components of a structured variable that could be replaced by an aggregate
 
-Parameter(1): [[not] controlled]  sliding  | access_duplication |
-                                  repeated | groupable
+Parameter(1): type    | [[not] controlled] access_duplication |
+              sliding |repeated | groupable
+
+For type:
+Parameter(2): [component] [ancestor] <Type name>
 
 For access_duplication:
 Parameter(2..): [not] <Entity name> | <category> | procedure | function
