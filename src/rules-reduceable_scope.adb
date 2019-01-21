@@ -925,7 +925,7 @@ package body Rules.Reduceable_Scope is
          return;
       end if;
 
-      for Actual of Generic_Actual_Part (Inst, Normalized => True) loop
+      for Actual : Asis.Association of Generic_Actual_Part (Inst, Normalized => True) loop
          if Is_Defaulted_Association (Actual) then
             Formal_Decl := Enclosing_Element (Formal_Parameter (Actual));
             if Declaration_Kind (Formal_Decl) in A_Formal_Procedure_Declaration .. A_Formal_Function_Declaration

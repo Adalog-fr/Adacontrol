@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.20r7
+@settitle AdaControl User Guide V1.20r8
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -45,7 +45,7 @@ how to add new kinds of rules to AdaControl.
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2018 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2019 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
 2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog.
@@ -68,7 +68,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2018
+This document is Copyright @copyright{} 2005-2019
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -3426,10 +3426,11 @@ The first parameter is a subrule keyword:
 @item
 ``type'' controls assignments to an object whose type is <entity>, or
 if the modifier ``component'' is given, to an (array or record)
-component of the given type. As usual, the whole syntax for entities
-is allowed for <entity>. @xref{Specifying an Ada entity name}. If the
-modifier ``ancestor'' is given, assignments to objects (or components
-of objects) of a type derived from the given type are also controlled.
+component of an object of the given type. As usual, the whole syntax
+for entities is allowed for <entity>. @xref{Specifying an Ada entity
+name}. If the modifier ``ancestor'' is given, assignments to objects
+(or components of objects) of a type derived from the given type are
+also controlled.
 
 This form can be given only once without ``component'' and once with
 ``component'' for each type.

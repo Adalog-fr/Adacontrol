@@ -557,7 +557,7 @@ package body Rules.With_Clauses is
          return;
       end if;
 
-      for A of Generic_Actual_Part (Decl, Normalized => True) loop
+      for A : Asis.Association of Generic_Actual_Part (Decl, Normalized => True) loop
          if Is_Part_Of_Implicit (Actual_Parameter (A)) then
             Process_Identifier (Actual_Parameter (A));
          end if;
