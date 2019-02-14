@@ -56,6 +56,12 @@ t_unnecessary_use_clause-use_type.adb:105:34: Insert
 !         use type Pack1.Int1;
 !
 t_unnecessary_use_clause-use_type.adb:115:14: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 only used for operators
+t_unnecessary_use_clause-use_type.adb:137:23: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Pack2.T only used for operators
+t_unnecessary_use_clause-use_type.adb:137:10: Delete:137:30
+t_unnecessary_use_clause-use_type.adb:137:31: Insert
+!
+!         use type Pack2.T;
+!
 t_unnecessary_use_clause-use_type.adb:8:16: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
 t_unnecessary_use_clause-use_type.adb:8:7: Delete:8:46
 t_unnecessary_use_clause-use_type.adb:5:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified

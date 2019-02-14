@@ -461,7 +461,8 @@ package body Rules.Unnecessary_Use_Clause is
          end if;
          case Expression_Kind (Prefix (Name_Enclosing)) is
             when An_Identifier | A_Selected_Component =>
-               return Full_Name_Image (Prefix (Name_Enclosing), With_Profile => True) = Pack_Name;
+               -- Beware: the prefix can be a rename of Pack_Name!
+               return Full_Name_Image (Ultimate_Name (Prefix (Name_Enclosing)), With_Profile => True) = Pack_Name;
             when others =>
                -- A_Function_Call, An_Indexed_Component...
                return False;
@@ -493,7 +494,7 @@ package body Rules.Unnecessary_Use_Clause is
                Current_User : User_Kind := Info.User; -- Default: don't change it
             begin
                if Info.User /= Identifier         -- If already Identifier, no need to check lesser priority uses
-                 and Pack_Name = Enclosing_Name   -- Entity declared in same package
+                 and Pack_Name = Enclosing_Name   -- Entity declared in use-target package
                then
                   if Rule_Used (Movable)
                     and then (Info.User = Nothing and Used_Elements.Current_Origin = Specification)
@@ -517,7 +518,6 @@ package body Rules.Unnecessary_Use_Clause is
                         when A_Use_All_Type_Clause =>
                            if Is_Callable_Construct (Name)
                              and then Is_Use_Type_Visible (Info.Elem, Name)
-                             and then Expression_Kind (Name) = An_Operator_Symbol
                            then
                               Current_User := Qualified_Name;
                            else
@@ -712,7 +712,7 @@ package body Rules.Unnecessary_Use_Clause is
                   when Primitive =>
                      if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) /= A_Use_All_Type_Clause then
                         Report (Rule_Id,
-                                Ctl_Contexts (Operator),
+                                Ctl_Contexts (Primitive),
                                 Get_Location (Info.Elem),
                                 "Primitive: " & Clause_And_Name (Info) & " only used for primitive operations"
                                 & Choose (Child_Warning,

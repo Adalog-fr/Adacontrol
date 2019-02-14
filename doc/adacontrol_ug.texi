@@ -9836,8 +9836,7 @@ be replaced by one or several @code{@b{use type}} clause(s).
 ``primitive'': a @code{@b{use}} clause is given, but the only elements
 within its scope that do not use a qualified name are primitive
 operations (including operators, enumeration literals,
-subprograms...). The message starts with ``only used for
-primitives:''. The message starts with ``Primitive:''
+subprograms...). The message starts with ``Primitive:''
 
 In this case, the @code{@b{use}} clause can be replaced by one or
 several @code{@b{use all type}} clause(s).

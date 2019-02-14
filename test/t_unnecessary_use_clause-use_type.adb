@@ -119,6 +119,29 @@ package body Use_Type is
          V1 := V1 + 1;
          V2 := V2 + 1;
       end;
+
+      declare    -- Primitive declared in instantiation
+         generic
+         package Gen is
+            type T is new Integer;
+            function "and" (L, R : Integer) return T;
+         end Gen;
+         package body Gen is
+            function "and" (L, R : Integer) return T is
+            begin
+               return T (L + R);
+            end "and";
+         end Gen;
+         package Pack2 is new Gen;
+
+         use all type Pack2.T;                         -- Operator: only used for operators
+         V : Pack2.T;
+         I : Integer;
+         B : Boolean;
+      begin
+         V := I and I;
+      end;
    end Proc;
+
 
 end Use_Type;
