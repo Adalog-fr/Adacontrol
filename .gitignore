@@ -13,6 +13,7 @@ b~*
 .directory
 
 adalib/
+adalib_linux/
 
 doc/adacontrol_pm.info*
 doc/adacontrol_pm.html

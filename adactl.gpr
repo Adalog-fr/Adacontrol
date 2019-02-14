@@ -2,9 +2,17 @@ with "adalog_asiscomps";
 with "adalog_comps";
 
 project Adactl is
+   type OS_Type is ("windows", "cygwin", "linux-gnu");
+   Os : OS_Type := external ("OSTYPE", "windows");
 
    for Languages use ("Ada", "Adacontrol", "Project File", "Python");
-   for Object_Dir use "adalib";
+   case Os is
+      when "windows" | "cygwin" =>
+         for Object_Dir use "adalib";
+      when "linux-gnu" =>
+         for Object_Dir use "adalib_linux";
+   end case;
+
    for Main use ("adactl.adb", "pfni.adb", "ptree.adb", "adactl_fix.adb", "gen_adactl.adb");
    for Exec_Dir use "src";
    for Source_Dirs use ("src", "doc", "GPS", "GNATHub", "rules", "test", "test/conf");
