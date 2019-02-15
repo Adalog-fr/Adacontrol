@@ -13,28 +13,32 @@ t_reduceable_scope-use_type.adb:17:7: Error: includes_blocks: Declaration of E c
 t_reduceable_scope-use_type.adb:16:7: Error: includes_blocks: Declaration of I can be moved into package body
 t_reduceable_scope-use_type.adb:13:12: Error: includes_blocks: To_Body is not used
 t_reduceable_scope-use_type.adb:8:12: Error: includes_blocks: declaration of Inner can be moved inside block at t_reduceable_scope-use_type.adb:58:4
-t_reduceable_scope.adb:13:11: Error: use_clauses: "use" clause for Pack1 can be moved inside block at t_reduceable_scope.adb:15:7
-t_reduceable_scope.adb:105:20: Error: includes_blocks: Inner1 is not used
-t_reduceable_scope.adb:104:17: Error: includes_blocks: P is not used
-t_reduceable_scope.adb:101:25: Error: except_blocks: declaration of Pg can be moved inside procedure Inner1 at t_reduceable_scope.adb:105:10
-t_reduceable_scope.adb:100:16: Error: includes_blocks: declaration of L can be moved inside procedure P at t_reduceable_scope.adb:104:7
-t_reduceable_scope.adb:100:10: Error: includes_blocks: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:104:7
-t_reduceable_scope.adb:100:7: Error: includes_blocks: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:105:10
-t_reduceable_scope.adb:136:23: Error: includes_blocks: Inner11 is not used
-t_reduceable_scope.adb:135:20: Error: includes_blocks: Inner1 is not used
-t_reduceable_scope.adb:134:17: Error: includes_blocks: P is not used
-t_reduceable_scope.adb:132:16: Error: includes_blocks: declaration of L can be moved inside procedure Inner1 at t_reduceable_scope.adb:135:10
-t_reduceable_scope.adb:132:10: Error: includes_blocks: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:134:7
-t_reduceable_scope.adb:132:7: Error: includes_blocks: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:135:10
-t_reduceable_scope.adb:26:7: Error: to_body: Declaration of E1 can be moved into package body
-t_reduceable_scope.adb:25:7: Error: includes_blocks: Declaration of I can be moved into package body
-t_reduceable_scope.adb:73:14: Error: includes_blocks: Include_Gen is not used
-t_reduceable_scope.adb:67:14: Error: includes_blocks: declaration of Proc can be moved inside scope at t_reduceable_scope.adb:74:7
-t_reduceable_scope.adb:56:14: Error: includes_blocks: declaration of TT2 can be moved inside block at t_reduceable_scope.adb:91:4
-t_reduceable_scope.adb:24:12: Error: includes_blocks: declaration of Pack2 can be moved inside procedure P at t_reduceable_scope.adb:30:7
-t_reduceable_scope.adb:12:14: Error: includes_blocks: Unused is not used
-t_reduceable_scope.adb:8:12: Error: includes_blocks: declaration of Pack1 can be moved inside procedure Unused at t_reduceable_scope.adb:12:4
-t_reduceable_scope.adb:4:14: Error: includes_blocks: Use_Type is not used
+t_reduceable_scope.adb:14:11: Error: use_clauses: "use" clause for Pack1 can be moved inside block at t_reduceable_scope.adb:16:7
+t_reduceable_scope.adb:106:20: Error: includes_blocks: Inner1 is not used
+t_reduceable_scope.adb:105:17: Error: includes_blocks: P is not used
+t_reduceable_scope.adb:102:25: Error: except_blocks: declaration of Pg can be moved inside procedure Inner1 at t_reduceable_scope.adb:106:10
+t_reduceable_scope.adb:101:16: Error: includes_blocks: declaration of L can be moved inside procedure P at t_reduceable_scope.adb:105:7
+t_reduceable_scope.adb:101:10: Error: includes_blocks: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:105:7
+t_reduceable_scope.adb:101:7: Error: includes_blocks: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:106:10
+t_reduceable_scope.adb:137:23: Error: includes_blocks: Inner11 is not used
+t_reduceable_scope.adb:136:20: Error: includes_blocks: Inner1 is not used
+t_reduceable_scope.adb:135:17: Error: includes_blocks: P is not used
+t_reduceable_scope.adb:133:16: Error: includes_blocks: declaration of L can be moved inside procedure Inner1 at t_reduceable_scope.adb:136:10
+t_reduceable_scope.adb:133:10: Error: includes_blocks: declaration of J can be moved inside procedure P at t_reduceable_scope.adb:135:7
+t_reduceable_scope.adb:133:7: Error: includes_blocks: declaration of I can be moved inside procedure Inner1 at t_reduceable_scope.adb:136:10
+t_reduceable_scope.adb:197:11: Error: use_clauses: "use" clause for Text_Io can be moved inside package Pack1 at t_reduceable_scope.adb:198:7
+t_reduceable_scope.adb:220:11: Error: use_clauses: "use" clause for Text_Io can be moved inside package Inner at t_reduceable_scope.adb:222:10
+t_reduceable_scope.adb:243:15: Error: includes_blocks: Declaration of Enum can be moved into package body
+t_reduceable_scope.adb:276:15: Error: includes_blocks: Enum is not used
+t_reduceable_scope.adb:27:7: Error: to_body: Declaration of E1 can be moved into package body
+t_reduceable_scope.adb:26:7: Error: includes_blocks: Declaration of I can be moved into package body
+t_reduceable_scope.adb:74:14: Error: includes_blocks: Include_Gen is not used
+t_reduceable_scope.adb:68:14: Error: includes_blocks: declaration of Proc can be moved inside scope at t_reduceable_scope.adb:75:7
+t_reduceable_scope.adb:57:14: Error: includes_blocks: declaration of TT2 can be moved inside block at t_reduceable_scope.adb:92:4
+t_reduceable_scope.adb:25:12: Error: includes_blocks: declaration of Pack2 can be moved inside procedure P at t_reduceable_scope.adb:31:7
+t_reduceable_scope.adb:13:14: Error: includes_blocks: Unused is not used
+t_reduceable_scope.adb:9:12: Error: includes_blocks: declaration of Pack1 can be moved inside procedure Unused at t_reduceable_scope.adb:13:4
+t_reduceable_scope.adb:5:14: Error: includes_blocks: Use_Type is not used
 x_reduceable_scope.ads:4:5: Error: use_clauses: "use" clause for Ada.Numerics can be moved into package body
 x_reduceable_scope.adb:2:5: Error: use_clauses: "use" clause for System.Storage_Elements can be moved inside procedure Needs_Body at x_reduceable_scope.adb:9:4
 x_reduceable_scope.ads:6:10: Error: use_clauses: "use type" clause for Ada.Text_IO.Count can be moved inside procedure Needs_Body at x_reduceable_scope.adb:9:4

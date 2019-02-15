@@ -39,6 +39,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Scope_Manager,
   Thick_Queries,
   Utilities;
@@ -87,6 +88,7 @@ package body Rules.Reduceable_Scope is
    -- Note on memory management of paths:
    -- Paths that are no more needed are freed by the scope manager from the associated Clear
    -- procedures; they should not be freed from any other place.
+
 
    -- Useful subtype for case statements dealing only with use clauses:
    subtype Use_Clause_Kinds is Asis.Clause_Kinds range Asis.A_Use_Package_Clause .. Asis.A_Use_All_Type_Clause;
@@ -586,6 +588,22 @@ package body Rules.Reduceable_Scope is
                        Blocks_Forbidden : in     Boolean;
                        Action           : out    Merge_Action)
       is
+
+         function Are_Matching_Declarations (Left, Right : Asis.Element) return Boolean is
+         -- Return True if Left and Right are the same declarations, or if Left is a specification
+         -- and Right the corresponding body
+            use Asis.Declarations;
+         begin
+            if Is_Equal (Left, Right) then
+               return True;
+            end if;
+            if Element_Kind (Right) /= A_Declaration then
+               -- Block statement, exception handler: has no specification
+               return False;
+            end if;
+            return Is_Equal (Left, Corresponding_Declaration (Right));
+         end Are_Matching_Declarations;
+
          function Is_Movable_Target (Target : Asis.Declaration) return Boolean is
             -- Is the given Target a place where a declaration can be moved?
          begin
@@ -635,7 +653,9 @@ package body Rules.Reduceable_Scope is
          -- Determine the common part of both paths
          if Declaration_Path /= null then
             -- Declaration_Path is null on the first reference
-            if not Is_Equal (Usage_Path (Usage_Path'First), Declaration_Path (Declaration_Path'First)) then
+            if not Are_Matching_Declarations (Declaration_Path (Declaration_Path'First),
+                                              Usage_Path (Usage_Path'First))
+            then
                -- Nothing in common, declaration cannot be moved. Remove it.
                Action := Delete;
                return;
@@ -649,9 +669,9 @@ package body Rules.Reduceable_Scope is
                   return;
                end if;
 
-               if not Is_Equal (Usage_Path (I), Declaration_Path (I)) then
+               if not Are_Matching_Declarations (Declaration_Path (I), Usage_Path (I)) then
                   -- Keep in Declaration_Path the common part only
-                  Top := I-1;
+                  Top := I - 1;
                   exit;
                end if;
             end loop;
@@ -680,8 +700,14 @@ package body Rules.Reduceable_Scope is
             Top := Top - 1;
          end loop;
 
-         Declaration_Path := new Scope_List'(Usage_Path (Usage_Path'First .. Top));
-         Action           := Update;
+         -- If Declaration_Path is initialized, get the Path from Declaration_Path rather than from
+         -- Usage_Path to keep package specifications rather that package bodies
+         if Declaration_Path = null then
+            Declaration_Path := new Scope_List'(Usage_Path (Usage_Path'First .. Top));
+         else
+            Declaration_Path := new Scope_List'(Declaration_Path (Declaration_Path'First .. Top));
+         end if;
+         Action := Update;
       end Merge;
 
       Enclosing_Decl : Asis.Declaration;
@@ -694,28 +720,39 @@ package body Rules.Reduceable_Scope is
          Current   : Asis.Element;
          Info      : Package_Info;
          Kind      : Declaration_Check_Kinds;
+         Good_Name : Asis.Element;   -- A name or a defining_name
+         Name_Decl : Asis.Declaration;
       begin
-         if not Package_Visibles.Is_Present (Name) then
+         -- If Name is an enumeration literal, it is not movable, but its type is...
+         if Expression_Kind (Name) = An_Enumeration_Literal then
+            Good_Name := Names (A4G_Bugs.Corresponding_Expression_Type (Name)) (1);
+            Name_Decl := Enclosing_Element (Good_Name);
+         else
+            Good_Name := Name;
+            Name_Decl := Corresponding_Name_Declaration (Good_Name);
+         end if;
+
+         if not Package_Visibles.Is_Present (Good_Name) then
             -- Package is a compilation unit that has not yet been processed
             -- We cannot be in the corresponding body, since a package spec is
             -- always processed before the body
             --    => Not_Movable
-            Kind := Declaration_Check_Kind (Corresponding_Name_Declaration (Name));
+            Kind := Declaration_Check_Kind (Name_Decl);
             if Kind /= Check_Not_Checkable then
-               Package_Visibles.Store (Name, (Outside_Used, Kind));
+               Package_Visibles.Store (Good_Name, (Outside_Used, Kind));
             end if;
             return;
          end if;
 
-         Info := Package_Visibles.Fetch (Name);
+         Info := Package_Visibles.Fetch (Good_Name);
          if Info.Usage = Outside_Used then
             return;
          end if;
 
-         -- Search if Name is within the body of the package that contains its
+         -- Search if Good_Name is within the body of the package that contains its
          -- declaration
          Enclosing_Decl := Corresponding_Body (Enclosing_Decl);
-         Current        := Enclosing_Element (Name);
+         Current        := Enclosing_Element (Name);   -- Name and not Good_Name, we want the place where it is used
          while not Is_Nil (Current) loop
             if Is_Equal (Current, Enclosing_Decl) then
                From_Body := True;
@@ -729,7 +766,7 @@ package body Rules.Reduceable_Scope is
          else
             Info.Usage := Outside_Used;
          end if;
-         Package_Visibles.Store (Name, Info);
+         Package_Visibles.Store (Good_Name, Info);
       end Check_Body_Movable_Declaration;
 
       procedure Check_Movable_Declaration is
@@ -745,9 +782,9 @@ package body Rules.Reduceable_Scope is
             return;
          end if;
 
-         -- If the name returned by Corresponding_Name_Definition is from a body with an
-         -- explicit specification, take the name from the spec
          case Declaration_Kind (Enclosing_Element (Name_Def)) is
+            -- If the name returned by Corresponding_Name_Definition is from a body with an
+            -- explicit specification, take the name from the spec
             when A_Function_Body_Declaration
               | A_Function_Renaming_Declaration
               | A_Function_Body_Stub
@@ -770,11 +807,15 @@ package body Rules.Reduceable_Scope is
                if not Is_Nil (Corresponding_Declaration (Enclosing_Element (Name_Def))) then
                   Name_Def := Names (Corresponding_Declaration (Enclosing_Element (Name_Def))) (1);
                end if;
+            when An_Enumeration_Literal_Specification =>
+               -- An enumeration literal is not movable, but it's use affects movability of its type
+               -- The name is in an Enumeration_Literal_Specification in a Type_Definition in the Type_Declaration
+               Name_Def := Names (Enclosing_Element (Enclosing_Element (Enclosing_Element (Name_Def)))) (1);
             when others =>
                null;
          end case;
 
-         -- Kind and Path are ignored below, since Equivalent_Keys compare only Elem
+         -- Kind and Path are ignored below, since Equivalent_Keys compares only Elem
          Local_Declarations.Reset ((Elem  => Name_Def,
                                     Kind  => Check_Kind'First,
                                     Path  => null), Current_Scope_Only);
@@ -786,7 +827,8 @@ package body Rules.Reduceable_Scope is
          Info      := Local_Declarations.Current_Data;
          Enclosing := Enclosing_Element (Name);
          if Expression_Kind (Enclosing) = An_Attribute_Reference
-           and then Attribute_Kind (Enclosing) in An_Access_Attribute .. An_Address_Attribute
+           and then Attribute_Kind (Enclosing)
+                    in An_Access_Attribute | An_Address_Attribute | An_Unchecked_Access_Attribute
          then
             -- Name used in 'Access or 'Address, too dangerous to move
             Local_Declarations.Delete_Current;
@@ -821,17 +863,17 @@ package body Rules.Reduceable_Scope is
          Enclosing_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Enclosing_Package_Name
                                                                                       (Rule_Id, Name));
          Info       : Use_Info;
-         Good_Depth : Scope_Range;
+         Good_Depth : Scope_Range:= Current_Depth;
          Action     : Merge_Action;
       begin
          if Enclosing_Name = "" then
-            -- Not declared immediately in a package specification
+            -- Name not declared immediately in a package specification => not use visible
             -- Works also for use [all] type clauses, since we are interested only in primitive operations
             return;
          end if;
 
          if Declaration_Kind (Enclosing_Element (Name)) = A_Parameter_Specification then
-            -- This name is part of a parameter specification => must be visible outside
+            -- This name is part of a formal parameter => use clause must be outside
             -- Do not consider the innermost scope (i.e. the declaration of the SP it is a parameter of)
             Good_Depth := Current_Depth - 1;
          else
@@ -860,6 +902,7 @@ package body Rules.Reduceable_Scope is
                        and then Declaration_Kind (Use_Clauses.Current_Data_Scope) = A_Package_Body_Declaration
                        and then Declaration_Kind (Enclosing_Element (Enclosing_Program_Unit (Info.Elem)))
                                    in A_Package_Declaration | A_Generic_Package_Declaration
+                       and then Info.Path = null -- Don't move if the use was movable to inner decl in the spec
                      then
                         Report (Rule_Id,
                                 Ctl_Contexts (Corresponding_Check (Info.Kind)),
@@ -1048,25 +1091,25 @@ package body Rules.Reduceable_Scope is
          if Rule_Used (Corresponding_Check (U_Info.Kind))
            and then not Ctl_Restrictions (Corresponding_Check (U_Info.Kind)) (To_Body)
          then
-            if U_Info.Path = null then
-               -- if a package spec, delay message to body, unless there is no body or it is a pragma import
-               if Declaration_Kind (Scope) not in A_Package_Declaration | A_Generic_Package_Declaration
-                 or else Is_Nil (Corresponding_Body (Scope))
-                 or else Element_Kind (Corresponding_Body (Scope)) = A_Pragma
-               then
+            -- if a package spec, delay message to body, unless there is no body or it is a pragma import
+            if Declaration_Kind (Scope) not in A_Package_Declaration | A_Generic_Package_Declaration
+              or else Is_Nil (Corresponding_Body (Scope))
+              or else Element_Kind (Corresponding_Body (Scope)) = A_Pragma
+            then
+               if U_Info.Path = null then
                   Report (Rule_Id,
                           Ctl_Contexts (Corresponding_Check (U_Info.Kind)),
                           Get_Location (U_Info.Elem),
                           Clause_And_Name (U_Info) & " is not necessary");
                   Fixes.List_Remove (U_Info.Elem);
+               else
+                  Report (Rule_Id,
+                          Ctl_Contexts (Corresponding_Check (U_Info.Kind)),
+                          Get_Location (U_Info.Elem),
+                          Clause_And_Name (U_Info)
+                          & " can be moved inside " & Scope_Image (U_Info.Path (U_Info.Path'Last))
+                          & " at " & Image (Get_Location (U_Info.Path (U_Info.Path'Last))));
                end if;
-            else
-               Report (Rule_Id,
-                       Ctl_Contexts (Corresponding_Check (U_Info.Kind)),
-                       Get_Location (U_Info.Elem),
-                       Clause_And_Name (U_Info)
-                       & " can be moved inside " & Scope_Image (U_Info.Path (U_Info.Path'Last))
-                       & " at " & Image (Get_Location (U_Info.Path (U_Info.Path'Last))));
             end if;
          end if;
 

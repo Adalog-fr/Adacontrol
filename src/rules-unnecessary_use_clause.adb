@@ -451,7 +451,8 @@ package body Rules.Unnecessary_Use_Clause is
       use Framework.Queries, Thick_Queries;
 
       function Is_Name_Prefixed_With (Pack_Name : Wide_String) return Boolean is
-         Name_Enclosing : constant Asis.Element := Enclosing_Element (Name);
+         Name_Enclosing  : constant Asis.Element := Enclosing_Element (Name);
+         Ultimate_Prefix : Asis.Element;
       begin
          if Expression_Kind (Name_Enclosing) /= A_Selected_Component then
             return False;
@@ -462,7 +463,13 @@ package body Rules.Unnecessary_Use_Clause is
          case Expression_Kind (Prefix (Name_Enclosing)) is
             when An_Identifier | A_Selected_Component =>
                -- Beware: the prefix can be a rename of Pack_Name!
-               return Full_Name_Image (Ultimate_Name (Prefix (Name_Enclosing)), With_Profile => True) = Pack_Name;
+               Ultimate_Prefix := Ultimate_Name (Prefix (Name_Enclosing));
+               if Is_Nil (Ultimate_Prefix) then
+                  -- This happens if the prefix is a renaming of a dereference, certainly not a package
+                  return False;
+               else
+                  return Full_Name_Image (Ultimate_Prefix, With_Profile => True) = Pack_Name;
+               end if;
             when others =>
                -- A_Function_Call, An_Indexed_Component...
                return False;

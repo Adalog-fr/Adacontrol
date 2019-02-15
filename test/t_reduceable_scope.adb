@@ -1,5 +1,6 @@
 with X_Reduceable_Scope;
 use  X_Reduceable_Scope;                         -- All uses qualified
+with Text_IO;
 procedure T_Reduceable_Scope (X : Integer) is
    procedure Use_Type is separate;               -- Not used
 
@@ -69,14 +70,14 @@ procedure T_Reduceable_Scope (X : Integer) is
       null;
    end Proc;
 
-   Count : Natural := 0;
+   Counter : Natural := 0;
    procedure Include_Gen is                      -- Not used
       generic
          with procedure P (X : Param_T) is Proc; -- This usage does not bring Proc in formals scope
       procedure Gen_P;                           -- Not used
       procedure Gen_P is
       begin
-         Count := Count + 1;                     -- Used in generic => not movable
+         Counter := Counter + 1;                 -- Used in generic => not movable
       end Gen_P;
       procedure Inst is new Gen_P;
    begin
@@ -181,15 +182,108 @@ begin
       Inst;
    end;
 
---     declare
---        type Enum is (A, B, C);                    -- Not movable
---        I : Integer;
---     begin
---        I := A'Image'Length;
---        begin
---           I := Enum'Pos (A);
---        end;
---     end;
+   declare
+      type Enum is (A, B, C);                    -- Not movable
+      I : Integer;
+   begin
+      I := A'Image'Length;
+      begin
+         I := Enum'Pos (A);
+      end;
+   end;
 
+   -- Check tricky cases of visibility between package spec and body
+   declare
+      use Text_Io;                               -- Movable to spec of Pack1
+      package Pack1 is
+         package Inner is
+            procedure P (X : Count);
+         end Inner;
+      end Pack1;
+
+      package body Pack1 is
+         V : Count;
+         package body Inner is
+            procedure P (X : Count) is
+            begin
+               V := X;
+            end;
+         end Inner;
+      begin
+         V := 0;
+      end Pack1;
+   begin
+      Pack1.Inner.P (1);
+   end;
+
+   declare
+      use Text_Io;                               -- Movable to spec of Inner
+      package Pack2 is
+         package Inner is
+            procedure P (X : Count);
+         end Inner;
+      end Pack2;
+
+      package body Pack2 is
+         package body Inner is
+            procedure P (X : Count) is
+            begin
+               Put_Line (Count'Image (X));
+            end;
+         end Inner;
+      end Pack2;
+   begin
+      Pack2.Inner.P (1);
+   end;
    X_Reduceable_Scope.Needs_Body;
+
+   -- Check tricky cases with enumerations
+   declare
+      package  Pack1 is
+         type Enum is (A, B, C);                    -- Movable
+         I : Integer;
+      end Pack1;
+
+      package body Pack1 is
+      begin
+         I := A'Image'Length;
+      end Pack1;
+
+      package Pack2 is
+         type Enum is (A, B, C);                    -- Not movable
+         I : Integer := A'Image'Length;             -- Movable
+      end Pack2;
+      package body Pack2 is
+         V : Enum;
+      begin
+         V := Enum'First;
+         I := A'Image'Length;
+      end Pack2;
+
+      package Pack3 is
+         type Enum is (A, B, C);                    -- Not movable
+      end Pack3;
+      package body Pack3 is
+         V : Enum;
+         I : Integer;
+      begin
+         V := Enum'First;
+         I := A'Image'Length;
+      end Pack3;
+      X : String := Pack3.A'Image;
+
+      package Pack4 is
+         type Enum is (A, B, C);                    -- Not used
+         I : Integer;
+      end Pack4;
+      package body Pack4 is
+      begin
+         I := 0;
+      end Pack4;
+
+   begin
+      Pack1.I := 0;
+      Pack2.I := 0;
+      Pack4.I := 0;
+   end;
 end T_Reduceable_Scope;
