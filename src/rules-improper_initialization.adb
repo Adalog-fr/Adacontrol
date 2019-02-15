@@ -254,7 +254,7 @@ package body Rules.Improper_Initialization is
          use Utilities;
       begin
          case Expression_Kind (Element) is
-            when An_Identifier =>
+            when An_Identifier | An_Enumeration_Literal =>
                null;
             when An_Attribute_Reference =>
                Traverse_Attribute_Prefix (Prefix (Element), Control, State);
