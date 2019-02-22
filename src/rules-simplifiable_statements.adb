@@ -27,7 +27,9 @@
 with
   Asis.Declarations,
   Asis.Elements,
+  Asis.Exceptions,
   Asis.Expressions,
+  Asis.Iterator,
   Asis.Statements,
   Asis.Text;
 
@@ -47,9 +49,10 @@ package body Rules.Simplifiable_Statements is
    use Framework, Framework.Control_Manager;
 
    type Subrules is (Stmt_All,
-                     Stmt_Block,  Stmt_Dead, Stmt_For_For_Slice,  Stmt_Handler,     Stmt_If,   Stmt_If_For_Case,
-                     Stmt_If_Not, Stmt_Loop, Stmt_Loop_For_While, Stmt_Nested_Path, Stmt_Null, Stmt_Unnecessary_If,
-                     Stmt_While_For_For);
+                     Stmt_Block,          Stmt_Dead,           Stmt_For_For_Slice, Stmt_For_In_For_For_Of,
+                     Stmt_Handler,        Stmt_If,             Stmt_If_For_Case,   Stmt_If_Not,
+                     Stmt_Loop,           Stmt_Loop_For_While, Stmt_Nested_Path,   Stmt_Null,
+                     Stmt_Unnecessary_If, Stmt_While_For_For);
    subtype True_Subrules is Subrules range Subrules'Succ (Stmt_All) .. Subrules'Last;
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
@@ -1106,13 +1109,94 @@ package body Rules.Simplifiable_Statements is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Framework.Reports, Thick_Queries;
 
-      procedure Check_Slice is
+      procedure Check_For_Of (Indexing_Name : Asis.Defining_Name) is
+         use Asis.Iterator;
+
+         type For_Of_State is
+            record
+               Indexing_Name : Asis.Defining_Name;  -- The control variable of the for in stmt
+               Indexed_Name  : Asis.Defining_Name;  -- The variable being indexed; if more than one => not changeable
+            end record;
+
+         procedure Pre_Operation (Element : in     Asis.Element;
+                                  Control : in out Traverse_Control;
+                                  State   : in out For_Of_State)
+         is
+            use Asis.Exceptions, Asis.Expressions;
+            Ident_Def : Asis.Defining_Name;
+         begin
+
+            if Expression_Kind (Element) /= An_Identifier then
+               return;
+            end if;
+            begin
+               Ident_Def := Corresponding_Name_Definition (Element);
+            exception
+               when ASIS_Inappropriate_Element => -- Attribute name, pragma identifier...
+                  return;
+            end;
+            if Variables_Proximity (Ident_Def, State.Indexing_Name) /= Different_Variables then
+               -- Since the identifier is of a discrete type, it can appear in a selected name only as the selector,
+               -- but it can be qualified (by the loop name, and enclosing structures)
+               declare
+                  Indexed_Expr : Asis.Expression := Element;
+                  Indexed_Var  : Asis.Expression;
+               begin
+                  Indexed_Expr := Enclosing_Element (Indexed_Expr);
+                  while Expression_Kind (Indexed_Expr) = A_Selected_Component loop
+                     Indexed_Expr := Enclosing_Element (Indexed_Expr);
+                  end loop;
+
+                  if Expression_Kind (Indexed_Expr) /= An_Indexed_Component then
+                     -- we must still allow the index to appear in renamings
+                     if Declaration_Kind (Indexed_Expr) /= An_Object_Renaming_Declaration then
+                       Control := Terminate_Immediately;
+                     end if;
+                     return;
+                  end if;
+
+                  Indexed_Var := Simple_Name (Prefix (Indexed_Expr));
+                  if Expression_Kind (Indexed_Var) /= An_Identifier then
+                     Control := Terminate_Immediately;
+                     return;
+                  end if;
+
+                  if Is_Nil (State.Indexed_Name) then
+                     State.Indexed_Name := Corresponding_Name_Definition (Indexed_Var);
+                  elsif Variables_Proximity (State.Indexed_Name, Indexed_Var) /= Same_Variable then
+                     Control := Terminate_Immediately;
+                     return;
+                  end if;
+               end;
+            end if;
+         end Pre_Operation;
+
+         procedure Post_Operation (Element : in     Asis.Element;
+                                   Control : in out Traverse_Control;
+                                   State   : in out For_Of_State) is null;
+
+         procedure Traverse_For is new Traverse_Element (For_Of_State);
+
+         Control : Traverse_Control := Continue;
+         State   : For_Of_State := (Indexing_Name => Indexing_Name, Indexed_Name => Nil_Element);
+      begin  -- Check_For_Of
+         Traverse_For (Stmt, Control, State);
+
+         -- Control is Terminate_Immediately if not changeable, Continue otherwise
+         -- State.Indexed_Name is Nil_Element if the loop index has not been used for indexing
+         if Control = Continue and not Is_Nil (State.Indexed_Name) then
+            Report (Rule_Id,
+                    Usage (Stmt_For_In_For_For_Of),
+                    Get_Location (Stmt),
+                    """for ... in"" loop can be changed to ""for ... of"" loop");
+         end if;
+      end Check_For_Of;
+
+      procedure Check_Slice (Loop_Index : Asis.Defining_Name) is
       -- Called when Stmt is a (regular) for loop
       -- Checks if every statement in the body of the loop is an assignment, where the LHS and RHS are
       --    array indexings, with the loop parameter appearing only as Inx +- Constant
          use Asis.Expressions;
-
-         Loop_Index : constant Asis.Defining_Name := Names (For_Loop_Parameter_Specification (Stmt)) (1);
 
          type Indexing_Expr_Kind is (Bad, Good, Good_With_Index);
          function "or" (Left, Right : Indexing_Expr_Kind) return Indexing_Expr_Kind is
@@ -1303,25 +1387,32 @@ package body Rules.Simplifiable_Statements is
             end if;
 
          when A_For_Loop_Statement =>
-            if Rule_Used (Stmt_Dead) then
-               declare
-                  Loop_Spec : constant  Asis.Declaration := For_Loop_Parameter_Specification (Stmt);
-               begin
-                  if Declaration_Kind (Loop_Spec) = A_Loop_Parameter_Specification  -- 2012 Ignore other forms
-                    and then Discrete_Constraining_Lengths (Specification_Subtype_Definition (Loop_Spec)) (1) = 0
-                  then
-                     Report (Rule_Id,
-                             Usage (Stmt_Dead),
-                             Get_Location (Stmt),
-                             "for loop is never executed");
-                     Fixes.Delete (Stmt);
-                  end if;
-               end;
-            end if;
+            declare
+               Loop_Spec : constant  Asis.Declaration := For_Loop_Parameter_Specification (Stmt);
+            begin
+               case Declaration_Kind (Loop_Spec) is
+                  when A_Loop_Parameter_Specification =>  -- 2012 Ignore other forms for dead code
+                     if Rule_Used (Stmt_Dead)
+                       and then Discrete_Constraining_Lengths (Specification_Subtype_Definition (Loop_Spec)) (1) = 0
+                     then
+                        Report (Rule_Id,
+                                Usage (Stmt_Dead),
+                                Get_Location (Stmt),
+                                "for loop is never executed");
+                        Fixes.Delete (Stmt);
+                     end if;
 
-            if Rule_Used (Stmt_For_For_Slice) then
-               Check_Slice;
-            end if;
+                     if Rule_Used (Stmt_For_In_For_For_Of) then
+                        Check_For_Of (Names (Loop_Spec) (1));
+                     end if;
+
+                     if Rule_Used (Stmt_For_For_Slice) then
+                        Check_Slice (Names (Loop_Spec) (1));
+                     end if;
+                  when others =>
+                     null;
+               end case;
+            end;
 
          when A_While_Loop_Statement =>
             if Rule_Used (Stmt_Loop) or Rule_Used (Stmt_Dead) or Rule_Used (Stmt_While_For_For) then

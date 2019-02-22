@@ -1,4 +1,13 @@
 =============
+== V1.21b1 ==
+=============
+
+Changes to existing rules:
+--------------------------
+simplifiable_statements:
+   add subrule for_in_for_for_of
+   
+=============
 == V1.20r9 ==
 =============
 

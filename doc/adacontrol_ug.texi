@@ -8594,11 +8594,11 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= [no_exit] all  | block       | dead |
-              for_for_slice  | handler     | if   |
-              if_for_case    | if_not      | loop |
-              loop_for_while | nested_path | null |
-              unnecessary_if | [no_exit] while_for_for
+<subrule> ::= [no_exit] all     | block          | dead        |
+              for_in_for_for_of | for_for_slice  | handler     |
+              if                | if_for_case    | if_not      |
+              loop              | loop_for_while | nested_path |
+              null              | unnecessary_if | [no_exit] while_for_for
 @end example
 @subsection Action
 The parameters are subrule keywords:
@@ -8620,6 +8620,27 @@ condition is statically known to be true. It includes also
 @code{@b{elsif}} paths) whose condition is statically false, branches
 of @code{@b{case}} statements whose choices are all statically null
 ranges, and @code{@b{for}} loops whose range is statically empty.
+@item
+``for_in_for_for_of'': controls @code{@b{for}} .. @code{@b{in}} loops
+where the loop index is used only for indexing a single variable. Such
+loops can be a changed to a  @code{@b{for}} .. @code{@b{of}} on the
+corresponding array, ofter resulting in simpler code. For example:
+@example
+@b{declare}
+   S : @b{constant} String := Function_Returning_String;
+@b{begin}      
+   @b{for} I @b{in} S'range @b{loop}
+      --  Do something with S(I)
+   @b{end} @b{loop};
+end;
+@end example
+can be changed to:
+@example
+@b{for} C @b{of} Function_Returning_String @b{loop}
+   --  Do something with c
+@b{end} @b{loop};
+@end example
+
 @item
 ``for_for_slice'': controls for loops whose body contains only
 assignments between array elements, and where the indexing and the
