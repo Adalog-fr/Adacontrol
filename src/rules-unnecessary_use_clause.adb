@@ -86,7 +86,7 @@ package body Rules.Unnecessary_Use_Clause is
    type User_Kind is (Nothing,         -- No element from package or no primitive of type (clause is useless)
                       Qualified_Name,  -- Only elements that use a fully qualified notation (clause is useless)
                       Operator,        -- Only primitive operators, use package and use all type changeable to use type
-                      Primitive,       -- Only primitive operations, use package can changeable to use all type
+                      Primitive,       -- Only primitive operations, use package changeable to use all type
                       Identifier);     -- Other elements);
    type Used_Elem_Info (Name_Length : Positive; Spec_Length : Natural) is
       record
@@ -203,7 +203,22 @@ package body Rules.Unnecessary_Use_Clause is
    -- Use [all] type clauses make a little bit more than primitive operations visible, see 8.4(8)
       use Asis, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
+      The_Call : Asis.Element := Enclosing_Element (The_Callable);
    begin
+      while Expression_Kind (The_Call) in A_Selected_Component | An_Indexed_Component | An_Explicit_Dereference loop
+         The_Call := Enclosing_Element (The_Call);
+      end loop;
+
+      -- If the name is the name of the called entity in a call that uses O.M notation, it is not use-type visible
+      if (Expression_Kind (The_Call) = A_Function_Call
+          or else Statement_Kind (The_Call) in A_Procedure_Call_Statement | An_Entry_Call_Statement)
+        and then Is_Equal (Called_Simple_Name (The_Call), The_Callable)
+      then
+         if Is_Prefix_Notation (The_Call) then
+            return False;
+         end if;
+      end if;
+
       if Attribute_Kind (Simple_Name (The_Type)) = A_Class_Attribute
         and then Is_Primitive_Of (Prefix (The_Type), The_Callable)
       then
@@ -295,7 +310,8 @@ package body Rules.Unnecessary_Use_Clause is
          for I in Names'Range loop
             declare
                use Scope_Manager, Framework.Reports;
-               Info : constant Used_Elem_Info := Build_Info (Names, I);
+               Info     : constant Used_Elem_Info := Build_Info (Names, I);
+               Reported : Boolean := False;
             begin
                if Clause_Kind (Clause) in A_Use_Type_Clause | A_Use_All_Type_Clause
                  and then Info.Spec_Length = 0
@@ -329,7 +345,6 @@ package body Rules.Unnecessary_Use_Clause is
                   if Rule_Used (Nested) then
                      declare
                         Enclosing_PU : constant Asis.Defining_Name := Enclosing_Program_Unit (Clause);
-                        Reported     : Boolean := False;
                      begin
                         -- Checks if use clause inside the named package (or one of its nested units)
                         -- Enclosing_PU is nil if use clause in context clauses
@@ -372,6 +387,7 @@ package body Rules.Unnecessary_Use_Clause is
                                                & " in scope of use clause for same package at "
                                                & Image (Get_Location (Used_Elements.Current_Data.Elem)));
                                        Fixes.List_Remove (I, From => Clause);
+                                       Reported := True;
                                     when A_Use_Type_Clause =>
                                        Report (Rule_Id,
                                                Ctl_Contexts (Nested),
@@ -380,8 +396,9 @@ package body Rules.Unnecessary_Use_Clause is
                                                & " in scope of use type or use all type clause for same type at "
                                                & Image (Get_Location (Used_Elements.Current_Data.Elem)));
                                        Fixes.List_Remove (I, From => Clause);
+                                       Reported := True;
                                     when A_Use_All_Type_Clause =>
-                                       -- A use all type clause can make sense in the scope of a use or use type clause
+                                       -- A use all type clause can make sense in the scope of a use type clause
                                        if Clause_Kind (Used_Elements.Current_Data.Use_Clause) /= A_Use_Type_Clause then
                                           Report (Rule_Id,
                                                   Ctl_Contexts (Nested),
@@ -389,8 +406,9 @@ package body Rules.Unnecessary_Use_Clause is
                                                   "Nested: " & Clause_And_Name (Info)
                                                   & " in scope of use all type clause for same type at "
                                                   & Image (Get_Location (Used_Elements.Current_Data.Elem)));
+                                          Fixes.List_Remove (I, From => Clause);
+                                          Reported := True;
                                        end if;
-                                       Fixes.List_Remove (I, From => Clause);
                                  end case;
 
                               elsif Info.Spec_Length /= 0 and then Used_Elements.Current_Data.Name = Info.Spec_Name then
@@ -401,6 +419,7 @@ package body Rules.Unnecessary_Use_Clause is
                                          & " in scope of use clause for " & Strip_Profile (Info.Spec_Name)
                                          & " at " & Image (Get_Location (Used_Elements.Current_Data.Elem)));
                                  Fixes.List_Remove (I, From => Clause);
+                                 Reported := True;
                               end if;
 
                               Used_Elements.Next;
@@ -410,10 +429,12 @@ package body Rules.Unnecessary_Use_Clause is
                   end if;
 
                   -- Add it in any case
-                  -- Note that we DON'T add it in the other paths of the enclosing if statement, because
-                  -- they are cases where the use clause doesn't add any visibility (elements are directly
-                  -- visible anyway), therefore it is not useful to have further messages.
-                  Used_Elements.Push (Info);
+                  -- Note that we DON'T add it in the other paths of the enclosing if statement, or if reported
+                  -- from this path, because they are cases where the use clause doesn't add any visibility
+                  -- (elements are directly visible anyway), therefore it is not useful to have further messages.
+                  if not Reported then
+                     Used_Elements.Push (Info);
+                  end if;
                end if;
             end;
          end loop;
@@ -585,20 +606,13 @@ package body Rules.Unnecessary_Use_Clause is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Associations : constant Asis.Association_List := Generic_Actual_Part (Instantiation,
-                                                                               Normalized => True);
-      begin
-         for I in Associations'Range loop
-            if Is_Defaulted_Association (Associations (I))
-              and then Default_Kind (Enclosing_Element
-                                     (Formal_Parameter
-                                      (Associations (I)))) = A_Box_Default
-            then
-               Process_Identifier (Actual_Parameter (Associations (I)));
-            end if;
-         end loop;
-      end;
+      for Assoc : Asis.Association of Generic_Actual_Part (Instantiation, Normalized => True) loop
+         if Is_Defaulted_Association (Assoc)
+           and then Default_Kind (Enclosing_Element (Formal_Parameter (Assoc))) = A_Box_Default
+         then
+            Process_Identifier (Actual_Parameter (Assoc));
+         end if;
+      end loop;
    end Process_Instantiation;
 
    ------------------------
@@ -717,7 +731,7 @@ package body Rules.Unnecessary_Use_Clause is
                         end if;
                      end if;
                   when Primitive =>
-                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) /= A_Use_All_Type_Clause then
+                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
                         Report (Rule_Id,
                                 Ctl_Contexts (Primitive),
                                 Get_Location (Info.Elem),

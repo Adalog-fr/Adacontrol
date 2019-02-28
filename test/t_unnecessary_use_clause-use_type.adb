@@ -5,7 +5,7 @@ package body Use_Type is
    use type X_Unnecessary_Use_Clause.Int_1;            -- Qualified: All uses qualified
 
    procedure Proc is
-      use type X_Unnecessary_Use_Clause.Int_1;         -- Nested: In scope of use type clause, Qualified: all uses qualified
+      use type X_Unnecessary_Use_Clause.Int_1;         -- Nested: In scope of use type clause
 
       type Local_Int1 is range 1 .. 10;
       use type Local_Int1;                             -- Nested: useless (type not in package spec)
@@ -17,6 +17,8 @@ package body Use_Type is
          subtype Local_Sub is Local_Int1 range 1 .. 2;
 
          type Int1 is range 1 .. 10;
+         procedure Prim (X : Int1) is null;
+
          type Int2 is range 1 .. 10;
 
          type Tag1 is tagged null record;
@@ -36,7 +38,7 @@ package body Use_Type is
       type Der2 is new X_Unnecessary_Use_Clause.Int_1; -- Derived type not in package spec (still has primitive ops)
 
       package Pack3 is
-         use type Pack1.Int1;                           -- Movable: can be moved to body
+         use type Pack1.Int1;                          -- Movable: can be moved to body
       end Pack3;
 
       package body Pack3 is
@@ -76,7 +78,7 @@ package body Use_Type is
       end;
 
       declare
-         use type Pack2.Sub_Der1;                          -- Unused: unused (not primitive op)
+         use type Pack2.Sub_Der1;                      -- Unused: unused (not primitive op)
 
          V : Pack2.Der1;
 
@@ -120,7 +122,7 @@ package body Use_Type is
          V2 := V2 + 1;
       end;
 
-      declare    -- Primitive declared in instantiation
+      declare                                          -- Primitive declared in instantiation
          generic
          package Gen is
             type T is new Integer;
@@ -140,6 +142,15 @@ package body Use_Type is
          B : Boolean;
       begin
          V := I and I;
+      end;
+
+      declare                                          -- case of use package within scope of use type
+         use type Pack1.Int1;
+         V1 : Pack1.Int1;
+         use Pack1;                                    -- Primitive: only used for primitive operation
+      begin
+         V1 := V1 + 1;
+         Prim (V1);
       end;
    end Proc;
 
