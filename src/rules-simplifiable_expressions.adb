@@ -33,7 +33,8 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Text;
 
 -- Adalog
 with
@@ -50,8 +51,40 @@ pragma Elaborate (Framework.Language);
 package body Rules.Simplifiable_Expressions is
    use Framework, Ada.Strings.Wide_Unbounded;
 
+   -- Algorithm:
+   --
+   -- Most subrules are straightforward.
+   --
+   -- Subrule Membership:
+   -- -------------------
+   -- The goal is to identify comparisons to a same variable that are compatible with a membership test
+   -- Such conditions are connected by "or" (for "in") or "and" (for "not in"). We do not accept "or then"
+   -- and "or else", because these have a dependence on order of evaluation that would be lost with a membership
+   -- test.
+   --
+   -- When an "or" (resp. "and") is encountered, it is recursively traversed, to check that all included comparisons
+   -- are OK for membership: "=" (resp "/="), membership tests, and tests of the form "X>= E1 and X <= E2" (resp.
+   -- "X<= E1 or X >= E2"). Note that the logical operator is the opposite of the one between comparisons. We
+   -- require "<=" and ">=" (i.e. "<" and ">" are not recognized), because when changed to a range, they would require
+   -- adding 1 to make a proper range (but what if an enumerated type? a real type? a string? a redefinition of "+" ?)
+   -- The comparisons must involve a same variable (the "pivot" variable). The first comparison initializes the pivot,
+   -- other comparisons check that one side is statically the same as the pivot.
+   -- As soon as something incompatible is found in the traversal, an exception is raised, therefore canceling the
+   -- whole traversal.
+   --
+   -- An issue is that when a complex expression is changeable to membership, all of its subexpressions are also
+   -- changeable to membership, and we want the message to appear only for the topmost expression. Therefore, a global
+   -- variable holds the most recent changeable expression encountered. Since the traversal is done in the
+   -- pre-operation, subexpression will be found after the top level one: if the subexpression is part of the last
+   -- changeable operation, it is ignored.
+   --
+   -- The values that make up the part of the (future) membership test are accumulated in a global unbounded string,
+   -- with appropriate separators. If the traversal is succesful, the variable contains the RHS of the membership
+   -- operator for the fix.
+
+
    -- All "K_Logical_*" must stay together, and K_Logical must stay last
-   type Keywords is (K_Conversion,    K_Parentheses, K_Range,
+   type Keywords is (K_Conversion,    K_Membership,  K_Parentheses,  K_Range,
                      K_Logical_False, K_Logical_Not, K_Logical_True, K_Logical);
    subtype Subrules is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
@@ -78,11 +111,12 @@ package body Rules.Simplifiable_Expressions is
    begin
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control occurrence of various forms of expressions that could be made simpler:");
-      User_Message  ("  T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
-      User_Message  ("  <expression> = (/=) True/False");
-      User_Message  ("  not <comparison>");
-      User_Message  ("  Unnecessary parentheses");
-      User_Message  ("  Conversions of universal values, or to the expression's subtype");
+      User_Message  ("  - Conversions of universal values, or to the expression's subtype");
+      User_Message  ("  - Use of several comparison that can be replaced by membership tests");
+      User_Message  ("  - Unnecessary parentheses");
+      User_Message  ("  - T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
+      User_Message  ("  - <expression> = (/=) True/False");
+      User_Message  ("  - not <comparison>");
       User_Message;
       Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default=all)");
    end Help;
@@ -118,12 +152,13 @@ package body Rules.Simplifiable_Expressions is
             end if;
          end loop;
       else
+         Add_Check (K_Conversion);
+         Add_Check (K_Membership);
+         Add_Check (K_Parentheses);
          Add_Check (K_Range);
          Add_Check (K_Logical_True);
          Add_Check (K_Logical_False);
          Add_Check (K_Logical_Not);
-         Add_Check (K_Parentheses);
-         Add_Check (K_Conversion);
       end if;
       Rule_Used  := True;
    end Add_Control;
@@ -139,9 +174,9 @@ package body Rules.Simplifiable_Expressions is
          when Clear =>
             --The following aggregate hangs Gnat, but the explicit loop is OK...
             --Context   := (others => (others => (Used => False, Label => Null_Unbounded_Wide_String)));
-            for I in Ctl_Contexts'Range loop
-               for J in Usages'Range loop
-                  Ctl_Contexts (I)(J) := (Used => False, Label => Null_Unbounded_Wide_String);
+            for Usage : Usages of Ctl_Contexts loop
+               for U : Usage_Entry of Usage loop
+                  U := (Used => False, Label => Null_Unbounded_Wide_String);
                end loop;
             end loop;
             Rule_Used := False;
@@ -152,6 +187,195 @@ package body Rules.Simplifiable_Expressions is
             Rule_Used := Save_Used;
      end case;
    end Command;
+
+   ---------------------
+   -- Check_Membership --
+   ---------------------
+
+   Not_Appropriate_For_Membership : exception;
+   Top_Membership_Expr            : Asis.Expression := Asis.Nil_Element;
+   Top_Membership_Kind            : Asis.Operator_Kinds;
+   Membership_Values              : Unbounded_Wide_String;
+
+   procedure Check_Membership (Expr : Asis.Expression; Pivot : in out Asis.Expression) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Utilities, Thick_Queries;
+
+      procedure Update_Pivot (Var : Asis.Expression) is
+         Good_Var : constant Asis.Expression := Strip_Parentheses (Var);
+      begin
+         if Is_Nil (Pivot) then
+            Pivot := Good_Var;
+         elsif Variables_Proximity (Pivot, Good_Var) /= Same_Variable then
+            raise Not_Appropriate_For_Membership;
+         end if;
+      end Update_Pivot;
+
+      procedure Check_Comparison (Comparison : Asis.Expression; Separator : Wide_String) is
+         use Asis.Text;
+
+         Parameters   : constant Association_List := Function_Call_Parameters (Comparison);
+         Left_Actual  : constant Asis.Expression  := Strip_Parentheses (Actual_Parameter (Parameters (1)));
+         Right_Actual : constant Asis.Expression  := Strip_Parentheses (Actual_Parameter (Parameters (2)));
+      begin
+         if Is_Static_Object (Left_Actual) then
+            Update_Pivot (Left_Actual);
+            if Membership_Values /= Null_Unbounded_Wide_String then
+               Append (Membership_Values, Separator);
+            end if;
+            Append (Membership_Values, Trim_All (Element_Image (Right_Actual)));
+         else
+            Update_Pivot (Right_Actual);
+            if Membership_Values /= Null_Unbounded_Wide_String then
+               Append (Membership_Values, Separator);
+            end if;
+            Append (Membership_Values, Trim_All (Element_Image (Left_Actual)));
+         end if;
+      end Check_Comparison;
+
+      procedure Check_Range is
+         Parameters   : constant Association_List := Function_Call_Parameters (Expr);
+         Left_Actual  : constant Asis.Expression  := Actual_Parameter (Parameters (1));
+         Right_Actual : constant Asis.Expression  := Actual_Parameter (Parameters (2));
+      begin
+         if   Expression_Kind (Left_Actual)  /= A_Function_Call
+           or Expression_Kind (Right_Actual) /= A_Function_Call
+         then
+            raise Not_Appropriate_For_Membership;
+         end if;
+         case Operator_Kind (Called_Simple_Name (Left_Actual)) is
+            when A_Less_Than_Or_Equal_Operator =>
+               if Operator_Kind (Called_Simple_Name (Right_Actual)) /= A_Greater_Than_Or_Equal_Operator then
+                  raise Not_Appropriate_For_Membership;
+               end if;
+               Check_Comparison (Right_Actual, Separator => " | ");
+               Check_Comparison (Left_Actual, Separator => " .. ");
+            when A_Greater_Than_Or_Equal_Operator =>
+               if Operator_Kind (Called_Simple_Name (Right_Actual)) /= A_Less_Than_Or_Equal_Operator then
+                  raise Not_Appropriate_For_Membership;
+               end if;
+               Check_Comparison (Left_Actual, Separator => " | ");
+               Check_Comparison (Right_Actual, Separator => " .. ");
+            when others =>
+               raise Not_Appropriate_For_Membership;
+         end case;
+      end Check_Range;
+
+   begin  -- Check_Membership
+      case Expression_Kind (Expr) is
+         when Not_An_Expression =>
+            Failure ("Not an expression in Check_Membership", Expr);
+
+         when A_Function_Call =>
+            declare
+               Func_Name : constant Asis.Expression := Called_Simple_Name (Expr);
+               Decl      : Asis.Declaration;
+            begin
+               case Expression_Kind (Func_Name) is
+                  when An_Operator_Symbol =>
+                     -- Check that the operator is the real one, not some user-defined function
+                     -- For predefined operations, either there is no "fake" declaration and
+                     -- Corresponding_Name_Declaration returns Nil_Element (GNAT case), or the
+                     -- Declaration_Origin is An_Implicit_Predefined_Declaration.
+                     Decl := Corresponding_Name_Declaration (Func_Name);
+                     if not Is_Nil (Decl)
+                       and then Declaration_Origin (Decl) /= An_Implicit_Predefined_Declaration
+                     then
+                        raise Not_Appropriate_For_Membership;
+                     end if;
+
+                     if Operator_Kind (Func_Name) = Top_Membership_Kind then
+                        for A : Association of Function_Call_Parameters (Expr) loop
+                           Check_Membership (Strip_Parentheses (Actual_Parameter (A)), Pivot);
+                        end loop;
+                        return;
+                     end if;
+
+                     case Operator_Kind (Func_Name) is
+                        when An_Equal_Operator =>
+                           if Top_Membership_Kind /= An_Or_Operator then
+                              raise Not_Appropriate_For_Membership;
+                           end if;
+                           Check_Comparison (Expr, Separator => " | ");
+
+                        when A_Not_Equal_Operator =>
+                           if Top_Membership_Kind /= An_And_Operator then
+                              raise Not_Appropriate_For_Membership;
+                           end if;
+                           Check_Comparison (Expr, Separator => " | ");
+
+                        when An_And_Operator =>
+                           -- Since it is not the same as Top_Membership_Kind, it is acceptable only in the form of
+                           -- I >= X and I <= Y
+                           Check_Range;
+
+                        when others =>
+                           -- Arithmetic operators
+                           -- If we encounter these during normal traversal, it is not as part
+                           -- of a comparison
+                           raise Not_Appropriate_For_Membership;
+                     end case;
+
+                  when An_Identifier   -- A user-defined function
+                     | An_Attribute_Reference
+                     =>
+                     -- If we encounter these during normal traversal, it is not as part
+                     -- of a comparison
+                     raise Not_Appropriate_For_Membership;
+
+                  when others =>
+                     Failure ("Wrong function name", Func_Name);
+               end case;
+            end;
+
+         when A_Parenthesized_Expression =>
+            Check_Membership (Expression_Parenthesized (Expr), Pivot);
+
+         when An_In_Membership_Test =>
+            if Top_Membership_Kind /= An_Or_Operator then
+               raise Not_Appropriate_For_Membership;
+            end if;
+
+            declare
+               Lhs : constant Asis.Expression := Membership_Test_Expression (Expr);
+            begin
+               if not Is_Static_Object (Lhs) then
+                  raise Not_Appropriate_For_Membership;
+               end if;
+               Update_Pivot (Lhs);
+               if Membership_Values /= Null_Unbounded_Wide_String then
+                  Append (Membership_Values, " | ");
+               end if;
+               Append (Membership_Values, Trim_All (Element_List_Image (Membership_Test_Choices (Expr))));
+            end;
+
+         when A_Not_In_Membership_Test =>
+            if Top_Membership_Kind /= An_And_Operator then
+               raise Not_Appropriate_For_Membership;
+            end if;
+
+            declare
+               Lhs : constant Asis.Expression := Membership_Test_Expression (Expr);
+            begin
+               if not Is_Static_Object (Lhs) then
+                  raise Not_Appropriate_For_Membership;
+               end if;
+               Update_Pivot (Lhs);
+               if Membership_Values /= Null_Unbounded_Wide_String then
+                  Append (Membership_Values, " | ");
+               end if;
+               Append (Membership_Values, Trim_All (Element_List_Image (Membership_Test_Choices (Expr))));
+            end;
+
+         when A_Type_Conversion
+            | A_Qualified_Expression
+            =>
+            Check_Membership (Converted_Or_Qualified_Expression (Expr), Pivot);
+
+         when others =>
+            raise Not_Appropriate_For_Membership;
+      end case;
+   end Check_Membership;
 
    ------------------
    -- Process_Call --
@@ -283,6 +507,7 @@ package body Rules.Simplifiable_Expressions is
                      end if;
                   end if;
                end;
+
             when A_Not_Operator =>
                declare
                   P : constant Asis.Association_List := Function_Call_Parameters (Call);
@@ -315,10 +540,63 @@ package body Rules.Simplifiable_Expressions is
                                    To_Wide_String (Ctl_Contexts (Count) (K_Logical_Not).Label),
                                    Count,
                                    Get_Location (Call),
-                                   """not"" on comparison");
+                                   "");
                         end if;
                      end if;
                   end if;
+               end;
+
+            when An_And_Operator | An_Or_Operator => -- Note that "and then" and "or else" are not replaceable
+               declare
+                  Pivot_Var   : Asis.Expression := Nil_Element;
+                  use Asis.Text, Utilities;
+               begin
+                  -- Is this call part of a bigger, simplifiable, expression?
+                  if Is_Part_Of (Call, Top_Membership_Expr) then
+                     return;
+                  end if;
+
+                  Top_Membership_Expr := Call;
+                  Top_Membership_Kind := Op;
+                  Membership_Values   := Null_Unbounded_Wide_String;
+                  Check_Membership (Call, Pivot_Var);
+
+                  if Ctl_Contexts (Check) (K_Membership).Used then
+                     Report (Rule_Id,
+                             To_Wide_String (Ctl_Contexts (Check) (K_Membership).Label),
+                             Check,
+                             Get_Location (Call),
+                             "Multiple tests on " & Trim_All(Element_Image (Pivot_Var))
+                             & " can be replaced by "
+                             & (if Top_Membership_Kind = An_And_Operator then """not " else """")
+                             & "in"" operator");
+                  elsif Ctl_Contexts (Search) (K_Membership).Used then
+                     Report (Rule_Id,
+                             To_Wide_String (Ctl_Contexts (Search) (K_Membership).Label),
+                             Search,
+                             Get_Location (Call),
+                             "Multiple tests on " & Trim_All (Element_Image (Pivot_Var))
+                             & " can be replaced by "
+                             & (if Top_Membership_Kind = An_And_Operator then """not " else """")
+                             & "in"" operator");
+                  end if;
+                  Fixes.Replace (Top_Membership_Expr,
+                                 Trim_All (Element_Image (Pivot_Var))
+                                 & (if Top_Membership_Kind = An_And_Operator then " not" else "") & " in "
+                                 & To_Wide_String (Membership_Values));
+
+                  -- Always report count
+                  if Ctl_Contexts (Count) (K_Membership).Used then
+                     Report (Rule_Id,
+                             To_Wide_String (Ctl_Contexts (Count) (K_Membership).Label),
+                             Count,
+                             Get_Location (Call),
+                             "");
+                  end if;
+
+               exception
+                  when Not_Appropriate_For_Membership =>
+                     Top_Membership_Expr := Nil_Element;
                end;
 
             when others =>

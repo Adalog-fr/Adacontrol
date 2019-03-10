@@ -6,7 +6,11 @@ Changes to existing rules:
 --------------------------
 simplifiable_statements:
    add subrule for_in_for_for_of
-   
+
+simplifiable_expressions:
+   add subrule membership
+
+
 =============
 == V1.20r9 ==
 =============

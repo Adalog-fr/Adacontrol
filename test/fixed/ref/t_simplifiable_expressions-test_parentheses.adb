@@ -101,7 +101,7 @@ begin
    I := (I+1) ** 3;      -- OK
 
    -- Simple logical
-   B := I = 1 or (I = 2 or  I = 3);  -- OK (removing parentheses changes associativity)
+   B := I = 1 or (I > 2 or  I = 3);  -- OK (removing parentheses changes associativity)
    B := I = 1 or (I = 2 and I = 3);  -- OK
    B := not B;                     -- Should Trigger
    B := not (B and B);               -- OK

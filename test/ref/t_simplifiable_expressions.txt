@@ -216,6 +216,51 @@ t_simplifiable_expressions-test_conversion.adb:19:9: Replace:19:34
 t_simplifiable_expressions-test_conversion.adb:25:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:25:9: Replace:25:27
 !D + 10.0
+t_simplifiable_expressions-test_membership.adb:8:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:8:12: Replace:8:80
+!I1 in 1 | 5 | 10 | 0 | 9
+t_simplifiable_expressions-test_membership.adb:8:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_membership.adb:8:12: Delete:8:12
+t_simplifiable_expressions-test_membership.adb:8:21: Delete:8:21
+t_simplifiable_expressions-test_membership.adb:8:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_membership.adb:8:13: Delete:8:13
+t_simplifiable_expressions-test_membership.adb:8:16: Delete:8:16
+t_simplifiable_expressions-test_membership.adb:9:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:9:12: Replace:9:35
+!I1 in 1 | 12 .. 15
+t_simplifiable_expressions-test_membership.adb:10:23: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I2 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:10:23: Replace:10:38
+!I2 in 2 | 3
+t_simplifiable_expressions-test_membership.adb:12:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:12:12: Replace:12:28
+!I1 in 1 | 2
+t_simplifiable_expressions-test_membership.adb:13:24: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:13:24: Replace:13:40
+!I1 in 5 | 10
+t_simplifiable_expressions-test_membership.adb:14:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:14:12: Replace:14:48
+!I1 in 1 .. 2 | 3 .. 5
+t_simplifiable_expressions-test_membership.adb:15:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:15:12: Replace:15:48
+!I1 in 1 .. 2 | 3 .. 5
+t_simplifiable_expressions-test_membership.adb:19:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "not in" operator
+t_simplifiable_expressions-test_membership.adb:19:12: Replace:19:89
+!I1 not in 1 | 5 | 10 | 0 | 9
+t_simplifiable_expressions-test_membership.adb:19:12: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_membership.adb:19:12: Delete:19:12
+t_simplifiable_expressions-test_membership.adb:19:22: Delete:19:22
+t_simplifiable_expressions-test_membership.adb:19:13: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_membership.adb:19:13: Delete:19:13
+t_simplifiable_expressions-test_membership.adb:19:16: Delete:19:16
+t_simplifiable_expressions-test_membership.adb:20:12: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "not in" operator
+t_simplifiable_expressions-test_membership.adb:20:12: Replace:20:41
+!I1 not in 1 | 12 .. 15
+t_simplifiable_expressions-test_membership.adb:21:25: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I2 can be replaced by "not in" operator
+t_simplifiable_expressions-test_membership.adb:21:25: Replace:21:43
+!I2 not in 2 | 3
+t_simplifiable_expressions-test_membership.adb:22:24: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "not in" operator
+t_simplifiable_expressions-test_membership.adb:22:24: Replace:22:43
+!I1 not in 5 | 10
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 100
+SIMPLIFIABLE_EXPRESSIONS: 115

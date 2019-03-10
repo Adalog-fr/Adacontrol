@@ -8507,8 +8507,8 @@ This rule controls expressions that can be simplified in various ways.
 @subsection Syntax
 @example
 <control_kind> simplifiable_expressions [(<subrule> @{, <subrule>@})];
-<subrule> ::= conversion   | logical     | logical_false | logical_not |
-              logical_true | parentheses | range
+<subrule> ::= conversion   | logical    | logical_false | logical_not |
+              logical_true | membership | parentheses   | range
 @end example
 
 @subsection Action
@@ -8529,6 +8529,17 @@ comparison (which could be inverted).
 @item
  ``logical'': is the same as specifying ``logical_true'',
 ``logical_false'' and ``logical_not''.
+@item
+``membership'': controls multiple comparisons of a same variable that
+could be changed to the new (Ada2012) membership test with multiple
+values. Multiple comparisons for equality, ``@code{@b{in}}''
+membership tests, and range comparisons of the form ``@code{X >= E1
+@b{and} X <= E2}'', all connected by ``@code{@b{or}}'' operators, can be
+changed to a single ``@code{@b{in}}'' membership test.  Multiple
+comparisons for inequality, ``@code{@b{not in}}'' membership tests,
+and range comparisons of the form ``@code{X <= E1 @b{or} X >= E2}'',
+all connected by ``@code{@b{and}}'' operators, can be changed to a
+single ``@code{@b{not in}}'' membership test.
 @item
 ``parentheses'': controls unnecessary parentheses like those
 surrounding the expression of an assignment, an ``if'' or a ``case''
@@ -8554,6 +8565,9 @@ The following subrules generate fixes:
 @itemize @bullet
 @item
 ``Conversions'': The unnecessary conversion (or qualification) is removed.
+@item
+``Membership'': The expression is transformed to a single
+``@code{@b{in}}'' or ``@code{@b{not in}}'' membership test.
 @item
 ``Parentheses'': The unnecessary parentheses are removed.
 @end itemize
@@ -8624,7 +8638,7 @@ ranges, and @code{@b{for}} loops whose range is statically empty.
 ``for_in_for_for_of'': controls @code{@b{for}} .. @code{@b{in}} loops
 where the loop index is used only for indexing a single variable. Such
 loops can be a changed to a  @code{@b{for}} .. @code{@b{of}} on the
-corresponding array, ofter resulting in simpler code. For example:
+corresponding array, often resulting in simpler code. For example:
 @example
 @b{declare}
    S : @b{constant} String := Function_Returning_String;
