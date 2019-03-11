@@ -230,7 +230,7 @@ package body Adactl_Options is
          return;
       end if;
 
-      if Unit_Option = Off and (Ext = ".ADS" or Ext = ".ADB") then
+      if Unit_Option = Off and Ext in ".ADS" | ".ADB" then
          -- Take it as a file name
          if Ext = ".ADB" then
             Body_Found := True;

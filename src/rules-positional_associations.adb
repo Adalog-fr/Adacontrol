@@ -397,7 +397,7 @@ package body Rules.Positional_Associations is
                                   " with more than " & ASIS_Integer_Img (Ctx.Allowed_Number)
                                   & " declared component(s)/parameters(s)"));
                   end case;
-                  if Kind /= Count and (Na = Na_Call or Na = Na_Instantiation) then
+                  if Kind /= Count and Na in Na_Call | Na_Instantiation then
                      Name := Formal_Name (Association);
                      if not Is_Nil (Name) then
                         -- Name is nil for predefined operators used in prefixed calls

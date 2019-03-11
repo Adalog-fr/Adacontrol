@@ -264,7 +264,7 @@ package body Framework.Language.Scanner is
             Prev_Is_US : Boolean := False;
          begin
             while not At_Eol loop
-               if Stop_On_E and then (Cur_Char = 'e' or Cur_Char = 'E') then
+               if Stop_On_E and then Cur_Char in 'e' | 'E' then
                   exit;
                end if;
                case Cur_Char is
@@ -329,7 +329,7 @@ package body Framework.Language.Scanner is
             Next_Char;
          end if;
 
-         if Cur_Char = 'e' or Cur_Char = 'E' then
+         if Cur_Char in 'e' | 'E' then
             Next_Char;
             if Cur_Char not in '0' .. '9' then
                Syntax_Error ("Exponent must be followed by (unsigned) number",
@@ -420,7 +420,7 @@ package body Framework.Language.Scanner is
                         Fractional_Part := -Fractional_Part;
                      end if;
 
-                     if Cur_Char = 'e' or Cur_Char = 'E' then
+                     if Cur_Char in 'e' | 'E' then
                         Next_Char;
                         case Cur_Char is
                            when '+' =>

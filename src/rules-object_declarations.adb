@@ -223,13 +223,13 @@ package body Rules.Object_Declarations is
                                    Expected => (K_All => False, others => True),
                                    Default  => K_All);
                Vc := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Get_Integer_Parameter (Min => 1));
-               if Ok = K_All or Ok = K_Constant then
+               if Ok in K_All | K_Constant then
                   if Span_Context (K_Constant, Ctl_Kind).Min_Values /= 0 then
                      Parameter_Error (Rule_Id, "subrule already given for constants");
                   end if;
                   Span_Context (K_Constant, Ctl_Kind) := Vc;
                end if;
-               if Ok = K_All or Ok = K_Variable then
+               if Ok in K_All | K_Variable then
                   if Span_Context (K_Variable, Ctl_Kind).Min_Values /= 0 then
                      Parameter_Error (Rule_Id, "subrule already given for variables");
                   end if;

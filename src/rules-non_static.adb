@@ -379,7 +379,7 @@ package body Rules.Non_Static is
       begin
          -- Note: Bounds'Length = 2 * Inx_List'Length
          for I in Inx_List'Range loop
-            if Bounds (2 * I - 1) = Not_Static or Bounds (2 * I) = Not_Static then
+            if Not_Static in Bounds (2 * I - 1) | Bounds (2 * I) then
                -- non static bounds
                Report (Rule_Id,
                        Usage (K_Index_Check),

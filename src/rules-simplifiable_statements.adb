@@ -656,7 +656,7 @@ package body Rules.Simplifiable_Statements is
                end loop;
                if Expression_Kind (If_Cond) = A_Function_Call then
                   Op := Operator_Kind (Simple_Name (Prefix (If_Cond)));
-                  if Op = A_Not_Operator or Op = A_Not_Equal_Operator then
+                  if Op in A_Not_Operator | A_Not_Equal_Operator then
                      Report (Rule_Id,
                              Usage (Stmt_If_Not),
                              Get_Location (If_Cond),
@@ -884,12 +884,12 @@ package body Rules.Simplifiable_Statements is
                               when A_Plus_Operator =>
                                  if Variables_Proximity (Actual_Parameter (Params (1)), Var) = Same_Variable then
                                     Step := Discrete_Static_Expression_Value (Actual_Parameter (Params (2)));
-                                    if Step /= 1 and Step /= -1 then
+                                    if Step not in 1 | -1 then
                                        raise Not_Changeable;
                                     end if;
                                  elsif Variables_Proximity (Actual_Parameter (Params (2)), Var) = Same_Variable then
                                     Step := Discrete_Static_Expression_Value (Actual_Parameter (Params (1)));
-                                    if Step /= 1 and Step /= -1 then
+                                    if Step not in 1 | -1 then
                                        raise Not_Changeable;
                                     end if;
                                  else
@@ -900,7 +900,7 @@ package body Rules.Simplifiable_Statements is
                                     raise Not_Changeable;
                                  end if;
                                  Step := Discrete_Static_Expression_Value (Actual_Parameter (Params (2)));
-                                 if Step /= 1 and Step /= -1 then
+                                 if Step not in 1 | -1 then
                                     raise Not_Changeable;
                                  end if;
                                  Step := -Step;

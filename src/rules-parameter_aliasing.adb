@@ -189,10 +189,10 @@ package body Rules.Parameter_Aliasing is
          if With_In_Mode then
             if Left.Mode in An_Out_Mode .. An_In_Out_Mode then
                Cat := Type_Category (Right.Expr, Follow_Derived => True, Privacy => Follow_User_Private);
-               return Cat not in Scalar_Types and Cat /= An_Access_Type; -- Not a Pass by copy type
+               return Cat not in Scalar_Types | An_Access_Type; -- Not a Pass by copy type
             elsif Right.Mode in An_Out_Mode .. An_In_Out_Mode then
                Cat := Type_Category (Left.Expr, Follow_Derived => True, Privacy => Follow_User_Private);
-               return Cat not in Scalar_Types and Cat /= An_Access_Type; -- Not a Pass by copy type
+               return Cat not in Scalar_Types | An_Access_Type; -- Not a Pass by copy type
             end if;
          end if;
 

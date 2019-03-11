@@ -310,7 +310,7 @@ package body Rules.Style is
                      if Casing_Policy (Subrule) (Ca_Original) and Subrule /= St_Casing_Identifier then
                         Parameter_Error (Rule_Id, """Original"" allowed only for identifiers");
                      end if;
-                     if (Subrule = St_Casing_Exponent or Subrule = St_Casing_Number)
+                     if Subrule in St_Casing_Exponent | St_Casing_Number
                        and Casing_Policy (Subrule) (Ca_Titlecase)
                      then
                         Parameter_Error (Rule_Id, """Titlecase"" not allowed for exponents and numbers");

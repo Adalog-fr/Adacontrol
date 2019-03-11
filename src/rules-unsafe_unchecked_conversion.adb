@@ -143,7 +143,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
                                                         (Ultimate_Name
                                                          (Generic_Unit_Name (Instantiation))));
       begin
-         if Name_Image /= "ADA.UNCHECKED_CONVERSION" and Name_Image /= "UNCHECKED_CONVERSION" then
+         if Name_Image not in "ADA.UNCHECKED_CONVERSION" | "UNCHECKED_CONVERSION" then
             -- In Gnat, Unchecked_Conversion is not a renaming of Ada.Unchecked_Conversion
             return;
          end if;

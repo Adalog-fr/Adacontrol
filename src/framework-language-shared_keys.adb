@@ -55,8 +55,8 @@ package body Framework.Language.Shared_Keys is
                                              S_Local      => not Is_Current_Scope_Global,
                                              S_Own        => Scope_Kind = A_Package_Body_Declaration,
                                              S_Private    => In_Private_Part,
-                                             S_Public     => (Scope_Kind = A_Package_Declaration
-                                                              or Scope_Kind = A_Generic_Package_Declaration)
+                                             S_Public     => (Scope_Kind in A_Package_Declaration
+                                                                          | A_Generic_Package_Declaration)
                                                              and not In_Private_Part,
                                              S_In_Generic => Is_Generic_Unit (Current_Scope)
                                                              or else Is_Part_Of_Generic (Current_Scope),

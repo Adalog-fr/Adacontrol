@@ -528,10 +528,10 @@ package body Framework.Language is
                            Next_Token;
                            if Source = "" then
                               Success := True;
-                           elsif (Source (1) = '/' or Source (1) = '\')
+                           elsif Source (1) in '/' | '\'
                              or else (Source'Length >= 3
                                       and then Source (2) = ':'
-                                      and then (Source (3) = '/' or Source (3) = '\'))
+                                      and then Source (3) in '/' | '\')
                            then
                               -- Absolute path
                               Source_Command (Source, Success);
@@ -632,7 +632,7 @@ package body Framework.Language is
 
          function Default_Nb_Col return Positive is
          begin
-            if Extra_Value = "NONE" or Extra_Value = "" then
+            if Extra_Value in "NONE" | "" then
                return Natural'Max (2, 1 + (Display_Width - Header'Length
                                             - True_Width - 3      -- Width of 1st col
                                            ) / (True_Width + 3)); -- 3 => " | "
@@ -1342,8 +1342,8 @@ package body Framework.Language is
          Syntax_Error ("Empty file name", Current_Token.Position);
       end if;
 
-      if (Name (1) = '/' or Name (1) = '\')
-        or else (Name'Length >= 3 and then Name (2) = ':' and then (Name (3) = '/' or Name (3) = '\'))
+      if Name (1) in '/' | '\'
+        or else (Name'Length >= 3 and then Name (2) = ':' and then Name (3) in '/' | '\')
       then
          -- Absolute path
          return Name;
