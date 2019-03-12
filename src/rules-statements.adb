@@ -372,7 +372,9 @@ package body Rules.Statements is
                                                                                              Include_Pragmas => False);
                   begin
                      for D in Decls'Range loop
-                        if Clause_Kind (Decls (D)) not in A_Use_Package_Clause .. A_Use_Type_Clause then
+                        if Clause_Kind (Decls (D))
+                           not in A_Use_Package_Clause | A_Use_Type_Clause | A_Use_All_Type_Clause
+                        then
                            Do_Report (Stmt_Effective_Declare_Block);
                            exit;
                         end if;
