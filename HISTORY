@@ -4,13 +4,18 @@
 
 Changes to existing rules:
 --------------------------
+declarations:
+   add subrule constructor
+
 simplifiable_statements:
    add subrule for_in_for_for_of
 
 simplifiable_expressions:
    add subrule membership
 
-
+unnecessary_use_clause:
+   fixed some spurious messages in cases of complicated visibilities
+   
 =============
 == V1.20r9 ==
 =============

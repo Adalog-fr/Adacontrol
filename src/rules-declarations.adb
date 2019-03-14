@@ -315,13 +315,9 @@ package body Rules.Declarations is
          when A_Variable_Declaration       .. A_Deferred_Constant_Declaration
             | A_Discriminant_Specification .. A_Component_Declaration
             =>
-            declare
-               Var_Names : constant Name_List := Names (Elem);
-            begin
-               for V in Var_Names'Range loop
-                  Do_Report (Decl, Get_Location (Var_Names (V)), Var_Names (V));
-               end loop;
-            end;
+            for N : Asis.Name of Names (Elem) loop
+               Do_Report (Decl, Get_Location (N), N);
+            end loop;
          when Not_A_Declaration =>
             -- block statements passed for the location...
             Do_Report (Decl, Get_Location (Elem), Nil_Element);
@@ -339,8 +335,8 @@ package body Rules.Declarations is
       -- When more than one declaration name is applicable, list given from
       -- less specific to most specific
    begin
-      for Decl in reverse Decl_List'Range loop
-         Do_Report (Decl_List (Decl), Elem);
+      for Sr : Subrules of reverse Decl_List loop
+         Do_Report (Sr, Elem);
       end loop;
    end Do_Report;
 
@@ -361,16 +357,16 @@ package body Rules.Declarations is
       end if;
 
       if Rule_Used (D_Non_Joint_CE_NE_Handler) then
-         for H in Handlers'Range loop
+         for H : Asis.Exception_Handler of Handlers loop
             declare
-               Choices : constant Asis.Element_List := Exception_Choices (Handlers (H));
+               Choices : constant Asis.Element_List := Exception_Choices (H);
             begin
                if Definition_Kind (Choices (1)) /= An_Others_Choice then
                   CE_Found := False;
                   NE_Found := False;
-                  for C in Choices'Range loop
+                  for C : Asis.Element of Choices loop
                      declare
-                        Name : constant Wide_String := To_Upper (Full_Name_Image (Choices (C)));
+                        Name : constant Wide_String := To_Upper (Full_Name_Image (C));
                      begin
                         if Name = "STANDARD.CONSTRAINT_ERROR" then
                            CE_Found := True;
@@ -380,7 +376,7 @@ package body Rules.Declarations is
                      end;
                   end loop;
                   if CE_Found xor NE_Found then
-                     Do_Report (D_Non_Joint_CE_NE_Handler, Handlers (H));
+                     Do_Report (D_Non_Joint_CE_NE_Handler, H);
                   end if;
                end if;
             end;
@@ -428,9 +424,9 @@ package body Rules.Declarations is
          end case;
       end Check_Abstract;
 
-      procedure Check_Constructor (Element : in Asis.Element) is
-         Result_Type : constant Profile_Entry := Types_Profile (Element).Result_Type;
-         Formals     : constant Profile_Table := Types_Profile (Element).Formals;
+      procedure Check_Constructor (Decl : in Asis.Declaration) is
+         Result_Type : constant Profile_Entry := Types_Profile (Decl).Result_Type;
+         Formals     : constant Profile_Table := Types_Profile (Decl).Formals;
          Result_Category : constant Type_Categories := Type_Category (Elem    => Result_Type.Name,
                                                             Privacy => Follow_User_Private);
       begin
@@ -439,14 +435,14 @@ package body Rules.Declarations is
             return;
          end if;
 
-         for Element : Profile_Entry of Formals loop
-            if Is_Equal (Element.Name, Result_Type.Name) then
+         for Formal : Profile_Entry of Formals loop
+            if Is_Equal (Formal.Name, Result_Type.Name) then
                return;
             end if;
          end loop;
 
-         if Is_Primitive_Of (Enclosing_Element(Result_Type.Name), Element) then
-            Do_Report (D_Constructor, Element);
+         if Is_Primitive_Of (Enclosing_Element(Result_Type.Name), Decl) then
+            Do_Report (D_Constructor, Decl);
          end if;
       end Check_Constructor;
 
@@ -492,14 +488,12 @@ package body Rules.Declarations is
       end Check_Access_Discriminated;
 
       procedure Check_Multiple_Entries (Def : Asis.Definition) is
-         Decls : constant Asis.Declaration_List := Visible_Part_Items (Def)
-                                                 & Private_Part_Items (Def);
          First_Seen : Boolean := False;
       begin
-         for I in Decls'Range loop
-            if Declaration_Kind (Decls (I)) = An_Entry_Declaration then
+         for Decl : Asis.Declaration of Asis.Declaration_List'(Visible_Part_Items (Def) & Private_Part_Items (Def)) loop
+            if Declaration_Kind (Decl) = An_Entry_Declaration then
                if First_Seen then
-                  Do_Report (D_Multiple_Protected_Entries, Decls (I));
+                  Do_Report (D_Multiple_Protected_Entries, Decl);
                else
                   First_Seen := True;
                end if;
@@ -513,16 +507,12 @@ package body Rules.Declarations is
             when A_Null_Record_Definition =>
                return True;
             when A_Record_Definition =>
-               declare
-                  Components : constant Asis.Record_Component_List := Record_Components (Def);
-               begin
-                  for I in Components'Range loop
-                     if Definition_Kind (Components (I)) /= A_Null_Component then
-                        -- This includes the case of variant parts
-                        return False;
-                     end if;
-                  end loop;
-               end;
+               for Compo : Asis.Record_Component of Record_Components (Def) loop
+                  if Definition_Kind (Compo) /= A_Null_Component then
+                     -- This includes the case of variant parts
+                     return False;
+                  end if;
+               end loop;
                return True;
             when others =>
                return False;
@@ -651,16 +641,12 @@ package body Rules.Declarations is
                when An_Enumeration_Type_Definition =>
                   Do_Report ((D_Type, D_Enumeration_Type), Element);
                   if Rule_Used (D_Character_Literal) then
-                     declare
-                        Literals : constant Asis.Declaration_List
-                          := Enumeration_Literal_Declarations (Type_Declaration_View (Element));
-                     begin
-                        for I in Literals'Range loop
-                           if Defining_Name_Kind (Names (Literals (I)) (1)) = A_Defining_Character_Literal then
-                              Do_Report (D_Character_Literal, Literals (I));
-                           end if;
-                        end loop;
-                     end;
+                     for Lit : Asis.Declaration of Enumeration_Literal_Declarations (Type_Declaration_View (Element))
+                     loop
+                        if Defining_Name_Kind (Names (Lit) (1)) = A_Defining_Character_Literal then
+                           Do_Report (D_Character_Literal, Lit);
+                        end if;
+                     end loop;
                   end if;
 
                when A_Signed_Integer_Type_Definition =>
@@ -706,14 +692,11 @@ package body Rules.Declarations is
                   if Rule_Used (D_Ordinary_Fixed_Type_With_Small) or Rule_Used (D_Ordinary_Fixed_Type_No_Small) then
                      declare
                         use Asis.Clauses;
-
-                        Rep_Clauses : constant Asis.Representation_Clause_List
-                          := Corresponding_Representation_Clauses (Element);
                         Small_Found : Boolean := False;
                      begin
-                        for R in Rep_Clauses'Range loop
-                           if Representation_Clause_Kind (Rep_Clauses (R)) = An_Attribute_Definition_Clause
-                             and then Attribute_Kind (Representation_Clause_Name (Rep_Clauses (R))) = A_Small_Attribute
+                        for Rep : Asis.Representation_Clause of Corresponding_Representation_Clauses (Element) loop
+                           if Representation_Clause_Kind (Rep) = An_Attribute_Definition_Clause
+                             and then Attribute_Kind (Representation_Clause_Name (Rep)) = A_Small_Attribute
                            then
                               Small_Found := True;
                               exit;

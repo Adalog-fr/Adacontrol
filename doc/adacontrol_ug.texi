@@ -3993,7 +3993,7 @@ those occurring at specified locations.
   child_unit                        | class_wide_constant             |
   class_wide_variable               | constant                        |
   constrained_array_constant        | constrained_array_type          |
-  constrained_array_variable        | constructors                    |
+  constrained_array_variable        | constructor                     |
   controlled_type                   | decimal_fixed_type              |
   defaulted_discriminant            | defaulted_generic_parameter     |
   defaulted_parameter               | deferred_constant               |
@@ -4195,7 +4195,7 @@ enumeration type.
 class-wide type, and @code{deferred_constant} controls the declaration
 of deferred constants.
 @item
-@code{constructors} controls the declaration of a primitive function
+@code{constructor} controls the declaration of a primitive function
 of a tagged type acting as a constructor, i.e. a function that returns
 the tagged type and without any parameter of that type.
 @item
