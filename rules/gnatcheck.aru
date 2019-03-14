@@ -211,7 +211,8 @@ Unchecked_Address_Conversions:
    check instantiations (ada.unchecked_conversion, system.address, access),
    check instantiations (unchecked_conversion,     system.address, access);
 
--- TBSL Unchecked_Conversions_As_Actuals
+Unchecked_Conversions_As_Actuals:
+   check actual_parameters (entity, calls, all, ada.unchecked_conversion, unchecked_conversion);
 
 Unconditional_Exits:
    check statements (unconditional_exit);
@@ -313,7 +314,8 @@ Library_Level_Subprograms:
 
 Membership_Tests:
    check expressions (in, not_in);
-   -- Difference: no option to ignore in pre/post conditions
+   -- Difference: no option to test only multi-choices, float types and to
+   -- ignore in assertions
 
 Non_Qualified_Aggregates:
    check expressions (unqualified_aggregate);
@@ -340,9 +342,6 @@ Quantified_Expressions:
 
 Raising_Predefined_Exceptions:
    check statements (raise_standard);
-
-"Style_Checks:O":
-   check derivations (indicator);
 
 Subprogram_Access:
    check declarations (access_subprogram_type);
@@ -436,4 +435,10 @@ Slices:
 
 Universal_Ranges:
    check expressions (universal_range);
+
+--------------------------------
+-- Checks made by the compiler:
+
+"Style_Checks:O":
+   check derivations (indicator);
 
