@@ -19,7 +19,8 @@ Volatile_Objects_Without_Address_Clauses:
 
 
 -- 9.1.2. Object Orientation
--- TBSL Constructors
+Constructors:
+   check declarations (constructor);
 
 -- TBSL Deep_Inheritance_Hierarchies
 

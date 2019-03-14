@@ -6,6 +6,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
    procedure Test_Anonymous_Subtype is separate;   -- separate, no_spec_procedure
    procedure Test_Self_SP;                         -- not_library_procedure, local_procedure
    procedure Test_Self_SP           is separate;   -- separate
+   procedure Test_Constructors      is separate;   -- constructors
 
    type I1 is range 1 .. 10;      -- signed_type, integer_type
    type I2 is mod 128;            -- binary_modular_type, modular_type, integer_type

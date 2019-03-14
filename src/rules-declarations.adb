@@ -75,6 +75,7 @@ package body Rules.Declarations is
       D_Character_Literal,                 D_Child_Unit,                        D_Class_Wide_Constant,
       D_Class_Wide_Variable,               D_Constant,                          D_Constrained_Array_Constant,
       D_Constrained_Array_Type,            D_Constrained_Array_Variable,        D_Controlled_Type,
+      D_Constructor,
 
       D_Decimal_Fixed_Type,                D_Defaulted_Discriminant,            D_Defaulted_Generic_Parameter,
       D_Defaulted_Parameter,               D_Deferred_Constant,                 D_Derived_Type,
@@ -426,6 +427,28 @@ package body Rules.Declarations is
                Failure ("Abstract not type or subprogram", Element);
          end case;
       end Check_Abstract;
+
+      procedure Check_Constructor (Element : in Asis.Element) is
+         Result_Type : constant Profile_Entry := Types_Profile (Element).Result_Type;
+         Formals     : constant Profile_Table := Types_Profile (Element).Formals;
+         Result_Category : constant Type_Categories := Type_Category (Elem    => Result_Type.Name,
+                                                            Privacy => Follow_User_Private);
+      begin
+         if Result_Type.Attribute = Class or Result_Category /= A_Tagged_Type
+         then
+            return;
+         end if;
+
+         for Element : Profile_Entry of Formals loop
+            if Is_Equal (Element.Name, Result_Type.Name) then
+               return;
+            end if;
+         end loop;
+
+         if Is_Primitive_Of (Enclosing_Element(Result_Type.Name), Element) then
+            Do_Report (D_Constructor, Element);
+         end if;
+      end Check_Constructor;
 
       procedure Check_Discriminant (Decl : Asis.Declaration; Extra_Check : Subrules := D_Any_Declaration) is
          Discr  : constant Asis.Definition         := Discriminant_Part (Decl);
@@ -1166,6 +1189,9 @@ package body Rules.Declarations is
             end if;
             Do_Report (D_Function, Element);
             Check_Abstract;
+            if Rule_Used (D_Constructor) then
+               Check_Constructor (Element);
+            end if;
 
          when An_Expression_Function_Declaration =>   -- Ada 2012
             if Defining_Name_Kind (Names (Element)(1)) = A_Defining_Operator_Symbol then
@@ -1179,6 +1205,9 @@ package body Rules.Declarations is
             end if;
             Do_Report (D_Expression_Function, Element);
             -- Cannot be abstract
+            if Rule_Used (D_Constructor) then
+               Check_Constructor (Element);
+            end if;
 
          when A_Function_Body_Declaration =>
             if Is_Nil (Corresponding_Declaration (Element)) then
@@ -1269,6 +1298,7 @@ package body Rules.Declarations is
 
          when A_Generic_Function_Declaration =>
             Do_Report ((D_Generic, D_Generic_Function), Element);
+            -- We can't define an operation on a primitive type by an instanciation, see 13.14(5), 13.14(16)
 
          when A_Generic_Package_Declaration =>
             Do_Report ((D_Generic, D_Generic_Package), Element);
@@ -1292,6 +1322,9 @@ package body Rules.Declarations is
 
          when A_Function_Instantiation =>
             Do_Report ((D_Instantiation, D_Function_Instantiation), Element);
+            if Rule_Used (D_Constructor) then
+               Check_Constructor (Corresponding_Declaration (Element));
+            end if;
 
          when A_Package_Instantiation =>
             Do_Report ((D_Instantiation, D_Package_Instantiation), Element);
@@ -1331,6 +1364,15 @@ package body Rules.Declarations is
             else
                Do_Report (D_Renaming, Element);
             end if;
+
+            if Rule_Used (D_Constructor) then
+               if Declaration_Kind (Element) = A_Function_Renaming_Declaration then
+                  Check_Constructor (Element);
+               else
+                  Check_Constructor (Corresponding_Declaration (Element));
+               end if;
+            end if;
+
 
             if   Rule_Used (D_Not_Operator_Renaming)
               or Rule_Used (D_Non_Identical_Renaming)
