@@ -162,6 +162,9 @@ begin
 
       if Framework.Language.Had_Errors then
          User_Log ("Syntax errors found");
+         if Adactl_Options.Debug_Option.Value = On then
+            User_Message ("Command line: " & Command_Line);
+         end if;
       elsif Action = Check then
          User_Log ("No syntax error");
       else
