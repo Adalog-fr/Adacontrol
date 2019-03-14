@@ -59,6 +59,7 @@ t_unnecessary_use_clause-use_type.adb:139:31: Insert
 !
 !         use type Pack2.T;
 !
+t_unnecessary_use_clause-use_type.adb:150:14: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 only used for primitive operations
 t_unnecessary_use_clause-use_type.adb:5:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
 t_unnecessary_use_clause-use_type.adb:5:4: Delete:5:43
 t_unnecessary_use_clause.adb:75:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings

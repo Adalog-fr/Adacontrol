@@ -8,13 +8,13 @@ package body T_unnecessary_use_clause is
    use Ada;                      -- OK, used next line
    use Text_IO;                  -- Only used  for operators (in separate body)
    package Pack1 is
-                 -- Nested: In scope of outer clause, Movable: can be moved to body
+                 -- Nested: In scope of outer clause
       procedure Proc;
    end Pack1;
 
    use Ada.Strings.Fixed;        -- Used in Sep
    procedure Sep is separate;
-           -- Nested: In scope of outer clause, Unused: unused
+           -- Nested: In scope of outer clause
 
    package body Pack1 is
       procedure Proc is begin null; end;
@@ -30,7 +30,7 @@ package body T_unnecessary_use_clause is
    end Pack2;
    package body Pack2 is
       procedure Proc2 is
-                       -- Nested: Used inside nested unit, Unused: unused
+                       -- Nested: Used inside nested unit
       begin
          null;
       end;
@@ -64,7 +64,7 @@ package body T_unnecessary_use_clause is
    procedure P (X : Integer);
    pragma Import (C, P);         -- Even when completed by import!
 
-    -- Nested: Same package, Unused: unused
+    -- Nested: Same package
 
    package Use_Type is
    end Use_Type;
