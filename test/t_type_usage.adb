@@ -15,6 +15,19 @@ procedure T_Type_Usage is
    type Arr is array (Enum1 range <>, Modular range <>, Positive range <>) of Character; -- Index_Mod, Index_Integer
    V1 : array (Modular) of Integer;          -- Index_Mod
    V2 : array (1..10)   of Integer;          -- Index_Integer
+
+   type Index is range 1 .. 10;
+   type Table_Pack1 is array (Index) of Character with Pack;
+   type Table_Pack2 is array (Index) of Character with Pack => True;
+   type Table_Pack3 is array (Index) of Character with Pack => False;
+   type Table_Size1 is array (Enum1) of Character with Size => 100; -- Size
+   type Table_Size2 is array (Enum1) of Character; -- Size
+   for Table_Size2'Size use 100;
+   type Table_Size3 is array (Integer) of Character with Size => 16#8000_0000_0#; -- Index_Integer
+   type Table_Component_Size1 is array (Index) of Character with Component_Size => 10;
+   T   : Table_Pack1;
+   Id  : Index;
+   Rep : Integer;
 begin
    E   := Enum1'Last;      -- OK
    E   := Enum1'First;     -- First
@@ -22,4 +35,9 @@ begin
    Int := Enum2'Pos (V);   -- Pos_Repr
    Int := Enum3'Pos (Yes); -- Pos_Size
    Int := Enum4'Pos (V);   -- Pos_Repr, Pos_Repr_Size
+   Id  := Table_Pack1'First;   -- Pack
+   Id  := Table_Pack2'First;   -- Pack
+   Id  := Table_Pack3'First;   -- OK
+   Rep := Enum2'Enum_Rep(V);
+   Id  := Table_Component_Size1'First;   -- Component_Size
 end;

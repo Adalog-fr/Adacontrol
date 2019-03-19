@@ -1,7 +1,11 @@
-"First":         check type_usage ('first, ());
-"Last":          check type_usage ('LAST, range);
-"Index_Mod":     check type_usage (Index, mod);
-"Index_Integer": check type_usage (Index, Standard.Integer);
-"Pos_Repr":      check type_usage ('Pos, (), representation);
-"Pos_Size":      check type_usage ('Pos, (), not representation, size);
-"Pos_Repr_Size": check type_usage ('Pos, (), representation, size);
+"First":          check type_usage ('first, ());
+"Last":           check type_usage ('LAST, range);
+"Index_Mod":      check type_usage (Index, mod);
+"Index_Integer":  check type_usage (Index, Standard.Integer);
+"Pos_Repr":       check type_usage ('Pos, (), representation);
+"Pos_Size":       check type_usage ('Pos, (), not representation, size);
+"Pos_Repr_Size":  check type_usage ('Pos, (), representation, size);
+"Representation": check type_usage ('Image, <>, Representation);
+"Pack":           check type_usage ('first, array, Pack);
+"Size":           check type_usage (Index, (), Size);
+"Component_Size": check type_usage ('first, array, Component_Size);

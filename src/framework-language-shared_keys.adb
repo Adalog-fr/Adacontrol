@@ -27,6 +27,7 @@
 -- ASIS
 with
   Asis.Declarations,
+  Asis.Definitions,
   Asis.Elements,
   Asis.Expressions;
 
@@ -460,7 +461,7 @@ package body Framework.Language.Shared_Keys is
    -------------------------------
 
    function Corresponding_Aspects_Set (Elem : Asis.Element) return Aspects_Set is
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries, Utilities;
 
       Decl         : Asis.Declaration;
@@ -503,6 +504,23 @@ package body Framework.Language.Shared_Keys is
       if not Is_Nil (Attribute_Clause_Expression (A_Component_Size_Attribute, Decl)) then
          Result (Component_Size) := Present;
       end if;
+
+      for Def : Asis.Definition of Aspect_Specifications (Decl) loop
+         declare
+            Mark : constant Wide_String := To_Upper (Extended_Name_Image (Aspect_Mark (Def)));
+         begin
+            if Mark = "PACK" and then
+              (Discrete_Static_Expression_Value (Aspect_Definition (Def)) = Not_Static or
+              Discrete_Static_Expression_Value (Aspect_Definition (Def)) = 1)
+            then
+               Result (Pack) := Present;
+            elsif Mark = "SIZE" then
+               Result (Size) := Present;
+            elsif Mark = "COMPONENT_SIZE" then
+               Result (Component_Size) := Present;
+            end if;
+         end;
+      end loop;
 
       return Result;
    end Corresponding_Aspects_Set;

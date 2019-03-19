@@ -2,9 +2,15 @@ t_type_usage.adb:15:39: Error: Index_Mod: Type category used as index: MOD
 t_type_usage.adb:15:57: Error: Index_Integer: Type used as index: STANDARD.INTEGER
 t_type_usage.adb:16:16: Error: Index_Mod: Type category used as index: MOD
 t_type_usage.adb:17:16: Error: Index_Integer: Type used as index: STANDARD.INTEGER
-t_type_usage.adb:20:11: Error: First: Type category used with 'FIRST: ()
-t_type_usage.adb:21:11: Error: Last: Type category used with 'LAST: RANGE
-t_type_usage.adb:22:11: Error: Pos_Repr: Type category used with 'POS: () with representation 
-t_type_usage.adb:23:11: Error: Pos_Size: Type category used with 'POS: () with not representation size 
-t_type_usage.adb:24:11: Error: Pos_Repr_Size: Type category used with 'POS: () with representation size 
-t_type_usage.adb:24:11: Error: Pos_Repr: Type category used with 'POS: () with representation 
+t_type_usage.adb:23:31: Error: Size: Type category used as index: () with size 
+t_type_usage.adb:24:31: Error: Size: Type category used as index: () with size 
+t_type_usage.adb:26:31: Error: Index_Integer: Type used as index: STANDARD.INTEGER
+t_type_usage.adb:33:11: Error: First: Type category used with 'FIRST: ()
+t_type_usage.adb:34:11: Error: Last: Type category used with 'LAST: RANGE
+t_type_usage.adb:35:11: Error: Pos_Repr: Type category used with 'POS: () with representation 
+t_type_usage.adb:36:11: Error: Pos_Size: Type category used with 'POS: () with not representation size 
+t_type_usage.adb:37:11: Error: Pos_Repr_Size: Type category used with 'POS: () with representation size 
+t_type_usage.adb:37:11: Error: Pos_Repr: Type category used with 'POS: () with representation 
+t_type_usage.adb:38:11: Error: Pack: Type category used with 'FIRST: ARRAY with pack 
+t_type_usage.adb:39:11: Error: Pack: Type category used with 'FIRST: ARRAY with pack 
+t_type_usage.adb:42:11: Error: Component_Size: Type category used with 'FIRST: ARRAY with component_size 

@@ -125,7 +125,7 @@ package body Rules.Type_Usage is
                   Parameter_Error (Rule_Id, "type category expected");
                end if;
 
-               Param := Get_Entity_Parameter (Allow_Extended => Parens_OK);
+               Param := Get_Entity_Parameter (Allow_Extended => Parens_OK or Box_OK);
                Check_Category (Rule_Id, Param, Attr_Expected_Categories);
 
                Associate (Attribute_Contexts,
@@ -256,7 +256,7 @@ package body Rules.Type_Usage is
       use Asis.Declarations, Asis.Elements;
 
       function Get_Index_Location (Inx : Asis.List_Index) return Location is
-      -- Returns the location of the Inx'th index in Definition
+         -- Returns the location of the Inx'th index in Definition
          use Asis, Asis.Definitions;
       begin
          case Type_Kind (Definition) is
@@ -306,7 +306,7 @@ package body Rules.Type_Usage is
                end;
 
             else
-               Type_Aspects := Corresponding_Aspects_Set (Subtypes (S));
+               Type_Aspects := Corresponding_Aspects_Set (Enclosing_Element (Definition));
 
                -- Exact subtype
                Reset (Iterator, Subtypes (S), Extend_To => All_Extensions);
