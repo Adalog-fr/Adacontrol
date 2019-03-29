@@ -20,4 +20,28 @@ begin
    Cond := I1 not in 1 | 12 .. 15;                                                 -- Replaceable by not in
    Cond := I1 /= 1 and (I2 not in 2 | 3);                                              -- Replaceable by not in (subexpression)
    Cond := I1 /= 1 or (I1 not in 5 | 10);                                              -- Replaceable by not in (subexpression)
+
+   -- Check complex variables (Eurocontrol bug report)
+   declare
+      type Rchar is
+         record
+            C : Character;
+         end record;
+      type Arr1 is array (1 .. 3) of Rchar;
+      type Arr2 is array (1 .. 3) of Arr1;
+      type Rec is
+         record
+            Comp1 : Arr1;
+            Comp2 : Arr2;
+         end record;
+      V : Rec;
+   begin
+      if V.Comp1 (1).C in ' ' | 'a' then                                  -- Replaceable by in
+         null;
+      end if;
+
+      if V.Comp2 (1) (1).C in ' ' | 'a' then                          -- Replaceable by in
+         null;
+      end if;
+   end;
 end Test_Membership;

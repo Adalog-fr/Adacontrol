@@ -261,6 +261,12 @@ t_simplifiable_expressions-test_membership.adb:21:25: Replace:21:43
 t_simplifiable_expressions-test_membership.adb:22:24: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on I1 can be replaced by "not in" operator
 t_simplifiable_expressions-test_membership.adb:22:24: Replace:22:43
 !I1 not in 5 | 10
+t_simplifiable_expressions-test_membership.adb:39:10: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on V.Comp1 (1).C can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:39:10: Replace:39:52
+!V.Comp1 (1).C in ' ' | 'a'
+t_simplifiable_expressions-test_membership.adb:43:10: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on V.Comp2 (1) (1).C can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:43:10: Replace:43:60
+!V.Comp2 (1) (1).C in ' ' | 'a'
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 115
+SIMPLIFIABLE_EXPRESSIONS: 117
