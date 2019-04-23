@@ -324,7 +324,6 @@ package body Rules.Potentially_Blocking_Operations is
 
       Is_Blocking    : Boolean;
       Referenced_PTO : Queue;
-      Def            : Asis.Definition;
 
       procedure Set_State (To : Boolean; Message : Wide_String) is
       begin
@@ -451,15 +450,29 @@ package body Rules.Potentially_Blocking_Operations is
                when A_Single_Task_Declaration =>
                   Set_State (True, "task declaration");
                   Control := Abandon_Children;
-               when A_Variable_Declaration =>
-                  Def := Object_Declaration_View (Element);
-                  if Definition_Kind (Def) = A_Subtype_Indication then
-                     if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration (Subtype_Simple_Name (Def)),
-                                                        A_Task_Type_Declaration)
-                     then
-                        Set_State (True, "task declaration");
+               when A_Constant_Declaration | A_Variable_Declaration =>
+                  declare
+                     Def : constant Asis.Definition := Object_Declaration_View (Element);
+                     St_Name : Asis.Expression;
+                  begin
+                     if Definition_Kind (Def) = A_Subtype_Indication then
+                        St_Name := Subtype_Simple_Name (Def);
+                        if Is_Class_Wide_Subtype (St_Name) then
+                           -- We cannot what is actually inside, but it can contain a task only if it is limited
+                           if Is_Limited (St_Name) then
+                              Uncheckable (Rule_Id,
+                                           False_Positive,
+                                           Get_Location (Element),
+                                           "limited class-wide object");
+                              Set_State (True, "possible task declaration");
+                           end if;
+                        elsif Contains_Type_Declaration_Kind (Corresponding_Name_Declaration (St_Name),
+                                                           A_Task_Type_Declaration)
+                        then
+                           Set_State (True, "task declaration");
+                        end if;
                      end if;
-                  end if;
+                  end;
                when others =>
                   null;
             end case;
