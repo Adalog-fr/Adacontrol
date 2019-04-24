@@ -433,8 +433,16 @@ t_statements.adb:468:7: Found: Sequential_Stmts: use of statement "procedure_cal
 t_statements.adb:468:7: Found: Sequential_Stmts: use of statement "dynamic_procedure_call"
 t_statements.adb:469:7: Found: Sequential_Stmts: use of statement "procedure_call"
 t_statements.adb:469:7: Found: Sequential_Stmts: use of statement "dynamic_procedure_call"
+t_statements.adb:472:4: Found: Sequential_Stmts: use of statement "labelled"
 t_statements.adb:472:4: Found: Sequential_Stmts: use of statement "procedure_call"
 t_statements.adb:472:4: Found: Sequential_Stmts: use of statement "dynamic_procedure_call"
+t_statements.adb:474:4: Found: Sequential_Stmts: use of statement "labelled"
+t_statements.adb:474:4: Found: Sequential_Stmts: use of statement "goto"
+t_statements.adb:474:4: Found: Sequential_Stmts: use of statement "goto_not_continue"
+t_statements.adb:474:4: Found: Sequential_Stmts: use of statement "backward_goto"
+t_statements.adb:475:4: Found: Sequential_Stmts: use of statement "goto"
+t_statements.adb:475:4: Found: Sequential_Stmts: use of statement "goto_not_continue"
+t_statements.adb:475:4: Found: Sequential_Stmts: use of statement "backward_goto"
 x_statements_raise.adb:6:7: Found: Sequential_Stmts: use of statement "raise"
 x_statements_raise.adb:7:7: Found: Sequential_Stmts: use of statement "raise"
 x_statements_raise.adb:7:7: Found: Sequential_Stmts: use of statement "raise_nonpublic"
@@ -447,6 +455,6 @@ x_statements_raise.adb:14:4: Found: Sequential_Stmts: use of statement "raise"
 x_statements_raise.adb:14:4: Found: Sequential_Stmts: use of statement "raise_nonpublic"
 
 Counts summary:
-All_Stmts: 226
+All_Stmts: 228
 Case_Count: 3
 If_Count: 9

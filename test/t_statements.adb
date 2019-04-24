@@ -469,5 +469,8 @@ IPC:                                              -- Block, Declare Block, Effec
       Ptr.all (O);   -- procedure_call, dynamic_procedure_call
    end IPC;
 
-   Ptr_Proc.all;     -- procedure_call, dynamic_procedure_call
+   <<Back>>            -- labelled, procedure_call, dynamic_procedure_call
+   Ptr_Proc.all;
+   <<Here>> goto Here; -- labelled, goto, goto_not_continue, backward_goto
+   goto Back;          -- goto, goto_not_continue, backward_goto
 end T_statements;

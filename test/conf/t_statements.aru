@@ -1,5 +1,6 @@
 set statements.small_loop_length 1;
 Sequential_Stmts: search statements (accept_return,
+                                     backward_goto,
                                      block,
                                      case_others,
                                      case_others_null,

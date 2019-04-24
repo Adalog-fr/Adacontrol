@@ -128,6 +128,21 @@ package body Framework is
       return (Left.File_Name, Left.First_Line, Left.First_Column - Right);
    end "-";
 
+   ----------
+   -- "<=" --
+   ----------
+
+   function "<=" (Left, Right : Location) return Boolean is
+      use Utilities;
+   begin
+      if Left.File_Name /= Right.File_Name then
+         Failure ("Compare locations from different files");
+      end if;
+
+      return Left.First_Line < Right.First_Line or else
+        (Left.First_Line = Right.First_Line and Left.First_Column <= Right.First_Column);
+   end "<=";
+
    ---------------------
    -- Create_Location --
    ---------------------

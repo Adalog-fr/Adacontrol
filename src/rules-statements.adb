@@ -55,7 +55,7 @@ package body Rules.Statements is
                      Stmt_Abort,                   Stmt_Accept,                 Stmt_Accept_Return,
                      Stmt_Assignment,              Stmt_Asynchronous_Select,
 
-                     Stmt_Block,
+                     Stmt_Backward_Goto,           Stmt_Block,
 
                      Stmt_Case,                    Stmt_Case_Others,            Stmt_Case_Others_Null,
                      Stmt_Code,                    Stmt_Conditional_Entry_Call,
@@ -367,19 +367,12 @@ package body Rules.Statements is
             if Is_Declare_Block (Stmt) then
                Do_Report (Stmt_Declare_Block);
                if Rule_Used (Stmt_Effective_Declare_Block) then
-                  declare
-                     Decls : constant Asis.Declarative_Item_List := Block_Declarative_Items (Stmt,
-                                                                                             Include_Pragmas => False);
-                  begin
-                     for D in Decls'Range loop
-                        if Clause_Kind (Decls (D))
-                           not in A_Use_Package_Clause | A_Use_Type_Clause | A_Use_All_Type_Clause
-                        then
-                           Do_Report (Stmt_Effective_Declare_Block);
-                           exit;
-                        end if;
-                     end loop;
-                  end;
+                  for D : Asis.Element of Block_Declarative_Items (Stmt, Include_Pragmas => False) loop
+                     if Clause_Kind (D) not in A_Use_Package_Clause | A_Use_Type_Clause | A_Use_All_Type_Clause then
+                        Do_Report (Stmt_Effective_Declare_Block);
+                        exit;
+                     end if;
+                  end loop;
                end if;
                if Rule_Used (Stmt_Simple_Block) or Rule_Used (Stmt_Unnamed_Simple_Block) then
                   declare
@@ -409,9 +402,9 @@ package body Rules.Statements is
                declare
                   Paths : constant Asis.Path_List := Statement_Paths (Stmt);
                begin
-                  for P in Paths'Range loop
-                     if Are_Null_Statements (Sequence_Of_Statements (Paths (P))) then
-                        Do_Report (Stmt_Null_Case_Path, Loc => Get_Location (Paths (P)));
+                  for P : Asis.Path of Paths loop
+                     if Are_Null_Statements (Sequence_Of_Statements (P)) then
+                        Do_Report (Stmt_Null_Case_Path, Loc => Get_Location (P));
                      end if;
                   end loop;
                end;
@@ -561,6 +554,17 @@ package body Rules.Statements is
                end;
             end if;
 
+            if Rule_Used (Stmt_Backward_Goto) then
+               declare
+                  Target_Stmt_Loc : constant Location := Get_Location (Corresponding_Destination_Statement (Stmt));
+                  Stmt_Loc        : constant Location := Get_Location (Stmt);
+               begin
+                  if Target_Stmt_Loc <= Stmt_Loc then
+                     Do_Report (Stmt_Backward_Goto);
+                  end if;
+               end;
+            end if;
+
          when An_If_Statement =>
             Do_Report (Stmt_If);
             declare
@@ -573,9 +577,9 @@ package body Rules.Statements is
                   Do_Report (Stmt_If_Elsif);
                end if;
                if Rule_Used (Stmt_Null_If_Path) then
-                  for P in Paths'Range loop
-                     if Are_Null_Statements (Sequence_Of_Statements (Paths (P))) then
-                        Do_Report (Stmt_Null_If_Path, Loc => Get_Location (Paths (P)));
+                  for P : Asis.Path of Paths loop
+                     if Are_Null_Statements (Sequence_Of_Statements (P)) then
+                        Do_Report (Stmt_Null_If_Path, Loc => Get_Location (P));
                      end if;
                   end loop;
                end if;
@@ -812,14 +816,10 @@ package body Rules.Statements is
 
             when A_Block_Statement =>
                -- Traverse only the statements part
-               declare
-                  Block_Stmts : constant Asis.Statement_List := Block_Statements (Element);
-               begin
-                  for I in Block_Stmts'Range loop
-                     Check (Block_Stmts (I), Control, State);
-                  end loop;
-                  Control := Abandon_Children;
-               end;
+               for S : Asis.Statement of Block_Statements (Element) loop
+                  Check (S, Control, State);
+               end loop;
+               Control := Abandon_Children;
             when others =>
                -- including Not_A_Statement
                null;
@@ -834,31 +834,19 @@ package body Rules.Statements is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Body_Stmts : constant Asis.Statement_List := Body_Statements (Function_Body);
-      begin
+      First_Return := Nil_Element;
+      Control      := Continue;
+      for S : Asis.Statement of Body_Statements (Function_Body) loop
+         Check (S, Control, State);
+      end loop;
+
+      for H : Asis.Exception_Handler of Body_Exception_Handlers (Function_Body) loop
          First_Return := Nil_Element;
          Control      := Continue;
-         for I in Body_Stmts'Range loop
-            Check (Body_Stmts (I), Control, State);
+         for S : Asis.Statement of Handler_Statements (H) loop
+            Check (S, Control, State);
          end loop;
-      end;
-
-      declare
-         Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (Function_Body);
-      begin
-         for H in Handlers'Range loop
-            declare
-               Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Handlers (H));
-            begin
-               First_Return := Nil_Element;
-               Control      := Continue;
-              for I in Handler_Stmts'Range loop
-                  Check (Handler_Stmts (I), Control, State);
-               end loop;
-            end;
-         end loop;
-      end;
+      end loop;
    end Process_Function_Body;
 
 
@@ -905,27 +893,15 @@ package body Rules.Statements is
                end if;
             when A_Block_Statement =>
                -- Traverse only the statements and exceptions parts
-               declare
-                  Block_Stmts : constant Asis.Statement_List := Block_Statements (Element);
-               begin
-                  for I in Block_Stmts'Range loop
-                     Check (Block_Stmts (I), Control, State);
-                  end loop;
-               end;
+               for S : Asis.Statement of Block_Statements (Element) loop
+                  Check (S, Control, State);
+               end loop;
 
-               declare
-                  Block_Handlers : constant Asis.Exception_Handler_List := Block_Exception_Handlers (Element);
-               begin
-                  for H in Block_Handlers'Range loop
-                     declare
-                        Handler_Stmts : constant Asis.Statement_List := Handler_Statements (Block_Handlers (H));
-                     begin
-                        for I in Handler_Stmts'Range loop
-                           Check (Handler_Stmts (I), Control, State);
-                        end loop;
-                     end;
+               for H : Asis.Exception_Handler of Block_Exception_Handlers (Element) loop
+                  for S : Asis.Statement of Handler_Statements (H) loop
+                     Check (S, Control, State);
                   end loop;
-               end;
+               end loop;
                Control := Abandon_Children;
             when others =>
                -- including Not_A_Statement
@@ -945,15 +921,11 @@ package body Rules.Statements is
       State   : State_Info := (Loop_Statement => In_Loop);
       Control : Traverse_Control;
    begin  -- Process_Loop_Statements
-      declare
-         Loop_Stmts : constant Asis.Statement_List := Loop_Statements (In_Loop);
-      begin
-         First_Exit := Nil_Element;
-         Control    := Continue;
-         for I in Loop_Stmts'Range loop
-            Check (Loop_Stmts (I), Control, State);
-         end loop;
-      end;
+      First_Exit := Nil_Element;
+      Control    := Continue;
+      for S : Asis.Statement of Loop_Statements (In_Loop) loop
+         Check (S, Control, State);
+      end loop;
    end Process_Loop_Statements;
 
    ----------------------

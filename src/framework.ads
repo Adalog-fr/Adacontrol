@@ -82,6 +82,9 @@ package Framework is
    -- Moves location by Right characters to the right
    function "-" (Left : Location; Right : Asis.Text.Character_Position) return Location;
    -- Moves location by Right characters to the left
+   function "<=" (Left, Right : Location) return Boolean;
+   -- with Pre => Get_File_Name (Left) = Get_File_Name (Right)
+   -- Check if Left is declared before Right in the same file
 
    type Search_Start is (From_Head, From_Tail);
 
