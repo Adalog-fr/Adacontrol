@@ -1348,12 +1348,10 @@ package body Rules.Declarations is
                Do_Report (D_Renaming, Element);
             end if;
 
-            if Rule_Used (D_Constructor) then
-               if Declaration_Kind (Element) = A_Function_Renaming_Declaration then
-                  Check_Constructor (Element);
-               else
-                  Check_Constructor (Corresponding_Declaration (Element));
-               end if;
+            if Declaration_Kind (Element) = A_Function_Renaming_Declaration
+              and then Rule_Used (D_Constructor)
+            then
+               Check_Constructor (Element);
             end if;
 
 
