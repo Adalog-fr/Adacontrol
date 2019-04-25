@@ -8623,9 +8623,10 @@ various ways without changing the meaning of the program.
 The parameters are subrule keywords:
 @itemize @bullet
 @item
-``all'' (or no subrule given): controls all simplifiable statements. If ``no_exit''is given,
-the ``while_for_for'' subrule will be given the ``no_exit'' modifier (explicitly specifying ``all''
-is necessary only in this case);
+``all'' (or no subrule given): controls all simplifiable
+statements. If ``no_exit''is given, the ``while_for_for'' subrule will
+be given the ``no_exit'' modifier (explicitly specifying ``all'' is
+necessary only in this case);
 @item
 ``block'': controls block statements that have no labels, no
 declarations, and no exception handlers.
@@ -8642,7 +8643,7 @@ ranges, and @code{@b{for}} loops whose range is statically empty.
 @item
 ``for_in_for_for_of'': controls @code{@b{for}} .. @code{@b{in}} loops
 where the loop index is used only for indexing a single variable. Such
-loops can be a changed to a  @code{@b{for}} .. @code{@b{of}} on the
+loops can be changed to a  @code{@b{for}} .. @code{@b{of}} on the
 corresponding array, often resulting in simpler code. For example:
 @example
 @b{declare}
@@ -8876,6 +8877,14 @@ subprogram or from a concurrently running task... If the user replaces
 the @code{@b{while}} loop with a @code{@b{for}} loop in those cases,
 the control variable will be changed to a constant and the program
 will not compile any more; there is therefore no risk.
+
+In accordance with ARM(5.5.2(6.1/4)), ``for_in_for_for_of'' does not
+control loops where the loop index is used to index an array whose
+constraint depends on a discriminant with default values. However, the
+special case of ``known-to-be-constrained'' variables is not
+recognized, possibly resulting in false negatives. This is harmless,
+since it is a very rare case that would just result in keeping the
+``for in'' loop.
 
 @node Statements, Style, Simplifiable_Statements, Rules reference
 @section Statements

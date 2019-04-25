@@ -1139,10 +1139,9 @@ package body Rules.Simplifiable_Statements is
                -- Since the identifier is of a discrete type, it can appear in a selected name only as the selector,
                -- but it can be qualified (by the loop name, and enclosing structures)
                declare
-                  Indexed_Expr : Asis.Expression := Element;
+                  Indexed_Expr : Asis.Expression := Enclosing_Element (Element);
                   Indexed_Var  : Asis.Expression;
                begin
-                  Indexed_Expr := Enclosing_Element (Indexed_Expr);
                   while Expression_Kind (Indexed_Expr) = A_Selected_Component loop
                      Indexed_Expr := Enclosing_Element (Indexed_Expr);
                   end loop;
@@ -1155,14 +1154,29 @@ package body Rules.Simplifiable_Statements is
                      return;
                   end if;
 
-                  Indexed_Var := Simple_Name (Prefix (Indexed_Expr));
-                  if Expression_Kind (Indexed_Var) /= An_Identifier then
+                  Indexed_Var := Prefix (Indexed_Expr);
+                  if Expression_Kind (Indexed_Var) = A_Function_Call then
                      Control := Terminate_Immediately;
                      return;
                   end if;
 
                   if Is_Nil (State.Indexed_Name) then
-                     State.Indexed_Name := Corresponding_Name_Definition (Indexed_Var);
+                     -- If the variable is a component that depends on defaulted discriminants, for..of is not allowed
+                     -- (see 5.5.2(6.1/4)).
+                     -- We ignore the case of the "known to be constrained" variable (too complicated to check, and a
+                     -- false negative is harmless here)
+                     declare
+                        Discrs : constant Asis.Defining_Name_List := Governing_Discriminants (Indexed_Var);
+                     begin
+                        if Discrs /= Nil_Element_List
+                          and then not Is_Nil (Initialization_Expression (Enclosing_Element (Discrs (Discrs'First))))
+                        then
+                           Control := Terminate_Immediately;
+                           return;
+                        end if;
+                     end;
+
+                     State.Indexed_Name := Indexed_Var;
                   elsif Variables_Proximity (State.Indexed_Name, Indexed_Var) /= Same_Variable then
                      Control := Terminate_Immediately;
                      return;
