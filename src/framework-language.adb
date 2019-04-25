@@ -315,9 +315,9 @@ package body Framework.Language is
                               Next_Token;
 
                               Help_Command (To_Wide_String (Rule_Names (1)));
-                              for I in Rules_Count range 2 .. Inx loop
+                              for Name : Unbounded_Wide_String of Rule_Names (2 .. Inx) loop
                                  User_Message ("----");
-                                 Help_Command (To_Wide_String (Rule_Names (I)));
+                                 Help_Command (To_Wide_String (Name));
                               end loop;
 
                               -- Note: Close command *after* providing help, since in case of errors

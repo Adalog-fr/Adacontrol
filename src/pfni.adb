@@ -270,9 +270,7 @@ procedure Pfni is
                         Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Decl);
                         Inx    : ASIS_Integer := Bounds'First;
                      begin
-                        if Bounds /= Nil_Extended_Biggest_Int_List
-                          and Bounds /= (Bounds'Range => Not_Static)
-                        then
+                        if Bounds /= Nil_Extended_Biggest_Int_List and then Bounds /= (Bounds'Range => Not_Static) then
                            Put (" (Range => ");
                            loop
                               if Bounds (Inx) = Not_Static then
@@ -447,14 +445,9 @@ begin  -- PFNI
       My_Unit := Compilation_Unit_Body (To_Wide_String (Unit_Name), My_Context);
    end if;
 
-   declare
-      My_CC_List : constant Context_Clause_List
-        := Context_Clause_Elements (Compilation_Unit => My_Unit, Include_Pragmas  => True) ;
-   begin
-      for I in My_CC_List'Range loop
-         Traverse (My_CC_List (I), The_Control, The_Info);
-      end loop;
-   end;
+   for Cc : Asis.Context_Clause of Context_Clause_Elements (My_Unit, Include_Pragmas  => True) loop
+      Traverse (Cc, The_Control, The_Info);
+   end loop;
 
    My_Declaration := Unit_Declaration (My_Unit);
    Traverse (My_Declaration, The_Control, The_Info);

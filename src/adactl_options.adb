@@ -488,8 +488,8 @@ package body Adactl_Options is
                         if Mains'Length = 0 then
                            Option_Error ("No unit/file specified and no indirect file or mains in project");
                         end if;
-                        for I in Mains'Range loop
-                           Add_Unit (To_Wide_String (Mains (I)));
+                        for Unit : Unbounded_Wide_String of Mains loop
+                           Add_Unit (To_Wide_String (Unit));
                         end loop;
                         if Project.Tool_Switch_Present ("adacontrol", Switch => "-r") then
                            Recursive_Option := On;

@@ -110,12 +110,11 @@ package body Framework.Language.Commands is
 
    procedure Help_On_Variables (Pattern : Wide_String) is
       use Framework.Variables, String_Matching;
-      Var_Names : constant Name_List := All_Variables;
    begin
       User_Message ("Variables: ");
-      for V in Var_Names'Range loop
-         if Match (To_Wide_String(Var_Names (V)), Pattern, Ignore_Case => True) then
-            Help_On_Variable (To_Wide_String (Var_Names (V)));
+      for V : Unbounded_Wide_String of All_Variables loop
+         if Match (To_Wide_String(V), Pattern, Ignore_Case => True) then
+            Help_On_Variable (To_Wide_String (V));
          end if;
       end loop;
    end Help_On_Variables;

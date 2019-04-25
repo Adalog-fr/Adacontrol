@@ -242,25 +242,25 @@ package body Framework.Ruler is
       -- non-Elaborate pragmas available from the Context_Clause_Elements query.
       -- We eliminate duplicates from here since they will appear at their natural place if
       -- analysed as context clauses
-      for I in My_Pragma_List'Range loop
+      for Pr : Asis.Pragma_Element of My_Pragma_List loop
          -- not a very efficient algorithm, but we assumes there are not many compilation pragmas nor
          -- context clauses
          Duplicate := False;
-         for C in My_CC_List'Range loop
-            if Is_Equal (My_Pragma_List (I), My_CC_List (C)) then
+         for Cc : Asis.Context_Clause of My_CC_List loop
+            if Is_Equal (Pr, Cc) then
                Duplicate := True;
                exit;
             end if;
          end loop;
 
          if not Duplicate then
-            Semantic_Traverse_Elements (My_Pragma_List (I), The_Control, The_Info);
+            Semantic_Traverse_Elements (Pr, The_Control, The_Info);
          end if;
       end loop;
 
       -- Process_Context_Clauses
-      for I in My_CC_List'Range loop
-         Semantic_Traverse_Elements (My_CC_List (I), The_Control, The_Info);
+      for Cc : Asis.Context_Clause of My_CC_List loop
+         Semantic_Traverse_Elements (Cc, The_Control, The_Info);
       end loop;
 
       Exit_Context_Clauses (Unit);
@@ -287,7 +287,6 @@ package body Framework.Ruler is
       use Asis, Asis.Elements;
       use Utilities;
 
-      Associations : constant Asis.Association_List := Pragma_Argument_Associations (Element);
       Level_Delta  : Natural range 0..1;
    begin
       case Pragma_Kind (Element) is
@@ -368,8 +367,8 @@ package body Framework.Ruler is
       end case;
 
       State.Pragma_Or_Attribute_Level := State.Pragma_Or_Attribute_Level + Level_Delta;
-      for A in Associations'Range loop
-         Semantic_Traverse_Elements (Associations (A), Control, State);
+      for A : Asis.Association of Pragma_Argument_Associations (Element) loop
+         Semantic_Traverse_Elements (A, Control, State);
          case Control is
             when Continue =>
                null;
@@ -406,8 +405,8 @@ package body Framework.Ruler is
       use Asis, Utilities;
    begin
 
-      for I in Visible_Part'Range loop
-         Semantic_Traverse_Elements (Visible_Part (I), Control, State);
+      for Elem : Asis.Element of Visible_Part loop
+         Semantic_Traverse_Elements (Elem, Control, State);
          case Control is
             when Continue =>
                null;
@@ -423,8 +422,8 @@ package body Framework.Ruler is
 
       Scope_Manager.Enter_Private_Part;
 
-      for I in Private_Part'Range loop
-         Semantic_Traverse_Elements (Private_Part (I), Control, State);
+      for  Elem : Asis.Element of Private_Part loop
+         Semantic_Traverse_Elements (Elem, Control, State);
          case Control is
             when Continue =>
                null;
@@ -501,24 +500,20 @@ package body Framework.Ruler is
       -- Parameter profile: only for procedures, functions and entries
       case Body_Kind is
          when A_Procedure_Body_Declaration | A_Function_Body_Declaration | An_Entry_Body_Declaration =>
-            declare
-               Parms : constant Asis.Parameter_Specification_List := Parameter_Profile (Decl);
-            begin
-               for P in Parms'Range loop
-                  Semantic_Traverse_Elements (Parms (P), Control, State);
-                  case Control is
-                     when Continue =>
-                        null;
-                     when Terminate_Immediately =>
-                        return;
-                     when Abandon_Children =>
-                        Failure ("Ruler: Semantic_Traverse returned Abandon_Children-5");
-                     when Abandon_Siblings =>
-                        Control := Continue;
-                        return;
-                  end case;
-               end loop;
-            end;
+            for Param : Asis.Parameter_Specification of Parameter_Profile (Decl) loop
+               Semantic_Traverse_Elements (Param, Control, State);
+               case Control is
+                  when Continue =>
+                     null;
+                  when Terminate_Immediately =>
+                     return;
+                  when Abandon_Children =>
+                     Failure ("Ruler: Semantic_Traverse returned Abandon_Children-5");
+                  when Abandon_Siblings =>
+                     Control := Continue;
+                     return;
+               end case;
+            end loop;
          when others =>
             null;
       end case;
@@ -556,87 +551,71 @@ package body Framework.Ruler is
       end if;
 
       -- Aspects: for everybody
-      declare
-         Aspects : constant Asis.Definition_List := Aspect_Specifications (Decl);
-      begin
-         for A in Aspects'Range loop
-            Semantic_Traverse_Elements (Aspects (A), Control, State);
-            case Control is
-               when Continue =>
-                  null;
-               when Terminate_Immediately =>
-                  return;
-               when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-8");
-               when Abandon_Siblings =>
-                  Control := Continue;
-                  return;
-            end case;
-         end loop;
-      end;
+      for Asp : Asis.Element of Aspect_Specifications (Decl) loop
+         Semantic_Traverse_Elements (Asp, Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-8");
+            when Abandon_Siblings =>
+               Control := Continue;
+               return;
+         end case;
+      end loop;
 
       -- Declarative part : for everybody
-      declare
-         Decls : constant Asis.Declaration_List := Declarative_Items (Decl, Include_Pragmas => True);
-      begin
-         for D in Decls'Range loop
-            Semantic_Traverse_Elements (Decls (D), Control, State);
-            case Control is
-               when Continue =>
-                  null;
-               when Terminate_Immediately =>
-                  return;
-               when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-8");
-               when Abandon_Siblings =>
-                  Control := Continue;
-                  return;
-            end case;
-         end loop;
-      end;
+      for D : Asis.Declaration of Declarative_Items (Decl, Include_Pragmas => True) loop
+         Semantic_Traverse_Elements (D, Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-8");
+            when Abandon_Siblings =>
+               Control := Continue;
+               return;
+         end case;
+      end loop;
 
       Framework.Plugs.         Enter_Statement_List (Decl);
       Framework.Specific_Plugs.Enter_Statement_List (Decl);
 
       -- Statements : for everybody
-      declare
-         Stmts : constant Asis.Statement_List := Statements (Decl);
-      begin
-         for S in Stmts'Range loop
-            Semantic_Traverse_Elements (Stmts (S), Control, State);
-            case Control is
-               when Continue =>
-                  null;
-               when Terminate_Immediately =>
-                  return;
-               when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-9");
-               when Abandon_Siblings =>
-                  Control := Continue;
-                  return;
-            end case;
-         end loop;
-      end;
+      for S : Asis.Statement of Statements (Decl) loop
+         Semantic_Traverse_Elements (S, Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-9");
+            when Abandon_Siblings =>
+               Control := Continue;
+               return;
+         end case;
+      end loop;
 
       -- Exception_Handlers : for everybody
-      declare
-         Handlers : constant Asis.Exception_Handler_List := Exception_Handlers (Decl);
-      begin
-         for H in Handlers'Range loop
-            Semantic_Traverse_Elements (Handlers (H), Control, State);
-            case Control is
-               when Continue =>
-                  null;
-               when Terminate_Immediately =>
-                  return;
-               when Abandon_Children =>
-                  Failure ("Ruler: Semantic_Traverse returned Abandon_Children-10");
-               when Abandon_Siblings =>
-                  Control := Continue;
-                  return;
-            end case;
-         end loop;
-      end;
+      for H : Asis.Exception_Handler of Exception_Handlers (Decl) loop
+         Semantic_Traverse_Elements (H, Control, State);
+         case Control is
+            when Continue =>
+               null;
+            when Terminate_Immediately =>
+               return;
+            when Abandon_Children =>
+               Failure ("Ruler: Semantic_Traverse returned Abandon_Children-10");
+            when Abandon_Siblings =>
+               Control := Continue;
+               return;
+         end case;
+      end loop;
    end Traverse_Body;
 
 
@@ -675,40 +654,36 @@ package body Framework.Ruler is
         and then Unit_Kind (Unit) in A_Procedure_Body .. A_Task_Body_Subunit
         -- All *_body and *_body_subunit, except a_protected_body_subunit, since it cannot have stubs
       then
-         declare
-            Declaration_List : constant Declarative_Item_List := Body_Declarative_Items (Unit_Declaration (Unit));
-         begin
-            for I in Declaration_List'Range loop
-               if Declaration_Kind (Declaration_List (I)) in A_Body_Stub then
-                  Stub_Nesting := Stub_Nesting + 1;
-                  declare
-                     Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Declaration_List (I));
-                     Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Declaration_List (I)) (1));
-                     Stub_Unit   :  Asis.Compilation_Unit;
-                  begin
-                     if Is_Nil (Proper_Body) then
-                        User_Log (3 * Stub_Nesting * ' '
-                                  & "Controlling separate "
-                                  & Stub_Name
-                                  & " ... not found");
-                        Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
-                     else
-                        Stub_Unit := Enclosing_Compilation_Unit (Proper_Body);
-                        Process_Inhibition (Stub_Unit, Suspend);
-                        User_Log (3 * Stub_Nesting * ' '
-                                  & "Controlling separate "
-                                  & Stub_Name);
+         for Decl : Asis.Declaration of Body_Declarative_Items (Unit_Declaration (Unit)) loop
+            if Declaration_Kind (Decl) in A_Body_Stub then
+               Stub_Nesting := Stub_Nesting + 1;
+               declare
+                  Proper_Body : constant Asis.Declaration := Corresponding_Subunit (Decl);
+                  Stub_Name   : constant Wide_String      := Defining_Name_Image (Names (Decl) (1));
+                  Stub_Unit   :  Asis.Compilation_Unit;
+               begin
+                  if Is_Nil (Proper_Body) then
+                     User_Log (3 * Stub_Nesting * ' '
+                               & "Controlling separate "
+                               & Stub_Name
+                               & " ... not found");
+                     Rules.Uncheckable.Process_Missing_Unit ("missing proper body for " & Stub_Name);
+                  else
+                     Stub_Unit := Enclosing_Compilation_Unit (Proper_Body);
+                     Process_Inhibition (Stub_Unit, Suspend);
+                     User_Log (3 * Stub_Nesting * ' '
+                               & "Controlling separate "
+                               & Stub_Name);
 
-                        Textual_Traverse  (Stub_Unit);
+                     Textual_Traverse  (Stub_Unit);
 
-                        User_Log (3 * Stub_Nesting * ' ' & "returning");
-                        Process_Inhibition (Stub_Unit, Resume);
-                     end if;
-                  end;
-                  Stub_Nesting := Stub_Nesting - 1;
-               end if;
-            end loop;
-         end;
+                     User_Log (3 * Stub_Nesting * ' ' & "returning");
+                     Process_Inhibition (Stub_Unit, Resume);
+                  end if;
+               end;
+               Stub_Nesting := Stub_Nesting - 1;
+            end if;
+         end loop;
       end if;
    end Textual_Traverse;
 
@@ -923,13 +898,9 @@ package body Framework.Ruler is
                            | An_Implementation_Defined_Attribute
                            | An_Unknown_Attribute
                            =>
-                           declare
-                              Expressions : constant Asis.Expression_List := Attribute_Designator_Expressions (Element);
-                           begin
-                              for E in Expressions'Range loop
-                                 Semantic_Traverse_Elements (Expressions (E), Control, State);
-                              end loop;
-                           end;
+                           for Expr : Asis.Expression of Attribute_Designator_Expressions (Element) loop
+                              Semantic_Traverse_Elements (Expr, Control, State);
+                           end loop;
                         when others =>
                            null;
                      end case;

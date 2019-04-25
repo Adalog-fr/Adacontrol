@@ -415,8 +415,8 @@ package body Framework.Symbol_Table is
          pragma Unreferenced (Key);
       begin
          if Is_Equal (Symbol.Visibility_Scope, Scope) then
-            for I in Content_Inx range 1 .. Nb_Instantiated loop
-               Free (Symbol.Contents (I));
+            for C : Content_Access of Symbol.Contents (1 .. Nb_Instantiated) loop
+               Free (C);
             end loop;
             raise Symbols.Delete_Current;
          end if;

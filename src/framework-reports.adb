@@ -784,8 +784,8 @@ package body Framework.Reports is
       use Counters;
    begin
       Clear (Rule_Counter);
-      for R in Control_Kinds loop
-         Clear (Stats_Counters (R));
+      for Ctr : Counters.Map of Stats_Counters loop
+         Clear (Ctr);
       end loop;
    end Clear_All;
 
@@ -800,8 +800,8 @@ package body Framework.Reports is
       Error_Count   := 0;
       Reset (Rule_Counter);
 
-      for R in Control_Kinds loop
-         Reset (Stats_Counters (R));
+      for Ctr : Counters.Map of Stats_Counters loop
+         Reset (Ctr);
       end loop;
    end Reset;
 
@@ -814,8 +814,8 @@ package body Framework.Reports is
       use Counters, Utilities;
       Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Rule & Choose (Label = "", "", "." & Label));
    begin
-      for R in Control_Kinds loop
-        Add (Stats_Counters (R), Key, 0);
+      for Ctr : Counters.Map of Stats_Counters loop
+         Add (Ctr, Key, 0);
       end loop;
    end Init_Stats;
 
@@ -840,8 +840,8 @@ package body Framework.Reports is
    begin  -- Clear
       Check_Delete (Rule_Counter);
 
-      for R in Control_Kinds loop
-         Check_Delete (Stats_Counters (R));
+      for Ctr : Counters.Map of Stats_Counters loop
+         Check_Delete (Ctr);
       end loop;
    end Clear;
 
@@ -859,8 +859,8 @@ package body Framework.Reports is
          Wide_Key        : Wide_String := To_Wide_String (Key);
          Dot_Found       : Boolean     := False;
       begin
-         for R in Control_Kinds range Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last loop
-            Triggered_Count := Triggered_Count + Fetch (Stats_Counters (R), Key, Default_Value => 0);
+         for Ctr : Counters.Map of Stats_Counters (Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last) loop
+            Triggered_Count := Triggered_Count + Fetch (Ctr, Key, Default_Value => 0);
          end loop;
 
          if Triggered_Count = 0 or else Stats_Level.Value = Full then
@@ -885,10 +885,10 @@ package body Framework.Reports is
                when CSV | CSVX | None =>
                   -- Add CSV separator in place of first '.' in wide key
                   -- (Separates rule name from label)
-                  for I in Wide_Key'Range loop
-                     if Wide_Key (I) = '.' then
-                        Wide_Key (I) := CSV_Separator (Format_Option.Value);
-                        Dot_Found    := True;
+                  for C : Wide_Character of Wide_Key loop
+                     if C = '.' then
+                        C         := CSV_Separator (Format_Option.Value);
+                        Dot_Found := True;
                         exit;
                      end if;
                   end loop;
@@ -897,9 +897,9 @@ package body Framework.Reports is
                      Put (CSV_Separator (Format_Option.Value));
                   end if;
 
-                  for R in Control_Kinds loop
+                  for Ctr : Counters.Map of Stats_Counters loop
                      Put (CSV_Separator (Format_Option.Value));
-                     Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
+                     Put (Integer_Img (Fetch (Ctr, Key, Default_Value => 0)));
                   end loop;
             end case;
             New_Line;

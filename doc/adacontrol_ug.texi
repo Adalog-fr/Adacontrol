@@ -9936,7 +9936,7 @@ removed.
 @subsection Tips
 This rule checks only usage of @code{@b{use}} clauses. The rule
 ``reduceable_scope'' can be used to check that @code{@b{use}} clauses
-do not span unnecessarily to wide a scope. @xref{Reduceable_Scope}.
+do not span unnecessarily too wide a scope. @xref{Reduceable_Scope}.
 
 A @code{@b{use type}} or  @code{@b{use all type}} clause that mentions
 a type that is not declared in a package specification is always
