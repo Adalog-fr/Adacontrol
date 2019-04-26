@@ -267,6 +267,9 @@ t_simplifiable_expressions-test_membership.adb:39:10: Replace:39:52
 t_simplifiable_expressions-test_membership.adb:43:10: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on V.Comp2 (1) (1).C can be replaced by "in" operator
 t_simplifiable_expressions-test_membership.adb:43:10: Replace:43:60
 !V.Comp2 (1) (1).C in ' ' | 'a'
+t_simplifiable_expressions-test_membership.adb:54:15: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on S (1 .. 4) can be replaced by "in" operator
+t_simplifiable_expressions-test_membership.adb:54:15: Replace:54:64
+!S (1 .. 4) in "ABCD" | "abcd"
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 117
+SIMPLIFIABLE_EXPRESSIONS: 118

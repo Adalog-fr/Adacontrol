@@ -36,12 +36,24 @@ begin
          end record;
       V : Rec;
    begin
-      if V.Comp1 (1).C = ' '  or V.Comp1 (1).C = 'a' then                                  -- Replaceable by in
+      if V.Comp1 (1).C = ' '  or V.Comp1 (1).C = 'a' then         -- Replaceable by in
          null;
       end if;
 
-      if V.Comp2 (1) (1).C = ' '  or V.Comp2 (1) (1).C = 'a' then                          -- Replaceable by in
+      if V.Comp2 (1) (1).C = ' '  or V.Comp2 (1) (1).C = 'a' then -- Replaceable by in
          null;
       end if;
    end;
+
+   -- Check slices
+   declare
+      S : String (1 .. 10);
+      C : constant := 3;
+      V : Natural := 1; -- not static value
+   begin
+      Cond := S (1 .. 4) = "ABCD" or S (C - 2 .. C + 1) = "abcd"; -- Replaceable by in
+      Cond := S (1 .. 4) = "ABCD" or S (C - 2 .. C)     = "abc";
+      Cond := S (V .. 4) = "ABCD" or S (C - 2 .. V + 2) = "abc";
+   end;
+
 end Test_Membership;
