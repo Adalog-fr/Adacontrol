@@ -39,7 +39,7 @@ procedure Adactl_Fix is
    use Ada.Strings.Unbounded;
    use Ada.Text_IO;
 
-   Version : constant String    := "Adactl_Fix V1.0r4";
+   Version : constant String    := "Adactl_Fix V1.1b1";
    Marker  : constant Character := '!';
 
    --------------------------------------------
@@ -433,6 +433,8 @@ procedure Adactl_Fix is
       begin
          Open (Input_File, In_File, Name);
       exception
+         when Ada.Text_IO.Name_Error =>
+            raise;
          when others =>
             raise Incorrect_Fix_File with "Unable to open " & Name;
       end;
@@ -539,7 +541,7 @@ procedure Adactl_Fix is
 
    Fix_Pos      : Position;
    Previous_Pos : Position;
-
+   Skipping_File : Unbounded_String := Null_Unbounded_String;
 begin   --Adactl_Fix
    Analyze_Options;
 
@@ -557,42 +559,53 @@ begin   --Adactl_Fix
       return;
    end if;
 
-   Previous_Pos := (Key (First (Kept_Fixes)).File_Name, (0, 0), (0,0));
-   Open_Files (To_String (Previous_Pos.File_Name));
+   Previous_Pos := (Null_Unbounded_String, (0, 0), (0,0));
    for Current_Fix in Iterate (Kept_Fixes) loop
       Fix_Pos := Key (Current_Fix);
-      if Fix_Pos.File_Name /= Previous_Pos.File_Name then
-         Print_Rest;
-         Close_Files;
-         Open_Files (To_String (Fix_Pos.File_Name));
+      if Fix_Pos.File_Name /= Skipping_File then
+         begin
+            if Fix_Pos.File_Name /= Previous_Pos.File_Name then
+               if Previous_Pos /= (Null_Unbounded_String, (0, 0), (0, 0)) then
+                  Print_Rest;
+                  Close_Files;
+               end if;
+               Open_Files (To_String (Fix_Pos.File_Name));
+            end if;
+
+            Print_Up_To (Fix_Pos.Start_Pos);
+            declare
+               Fix : constant Fix_Descriptor := Element (Current_Fix);
+            begin
+               case Fix.Kind is
+                  when Insert | Replace =>
+                     Print (To_String (Replacements (Fix.First)));
+                     for Line in Positive range Fix.First + 1 .. Fix.Last loop
+                        Break;
+                        Print (To_String (Replacements (Line)));
+                     end loop;
+                  when Delete | Refactor =>
+                     null;
+               end case;
+
+               case Fix.Kind is
+                  when Insert | Refactor =>
+                     null;
+                  when Replace | Delete =>
+                     Skip_To (Fix_Pos.End_Pos);
+               end case;
+            end;
+            Previous_Pos := Fix_Pos;
+         exception
+            when Name_Error =>
+               Skipping_File := Fix_Pos.File_Name;
+               Message ("*** Unable to open " & To_String (Skipping_File) & ", all corresponding fixes ignored");
+         end;
       end if;
-
-      Print_Up_To (Fix_Pos.Start_Pos);
-      declare
-         Fix : constant Fix_Descriptor := Element (Current_Fix);
-      begin
-         case Fix.Kind is
-            when Insert | Replace =>
-               Print (To_String (Replacements (Fix.First)));
-               for Line in Positive range Fix.First + 1 .. Fix.Last loop
-                  Break;
-                  Print (To_String (Replacements (Line)));
-               end loop;
-            when Delete | Refactor =>
-               null;
-         end case;
-
-         case Fix.Kind is
-            when Insert | Refactor =>
-               null;
-            when Replace | Delete =>
-               Skip_To (Fix_Pos.End_Pos);
-         end case;
-      end;
-      Previous_Pos := Fix_Pos;
    end loop;
-   Print_Rest;
-   Close_Files;
+   if Previous_Pos /= (Null_Unbounded_String, (0, 0), (0, 0)) then
+      Print_Rest;
+      Close_Files;
+   end if;
 
    if Conflicts_Found then
       Message ("*** Some fixes were not applied due to conflicts, run AdaControl again");
