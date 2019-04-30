@@ -515,6 +515,8 @@ package body Rules.Simplifiable_Statements is
                            return "not (" & Stripped_Image (Expr) & ')';
                      end case;
                   end;
+               when An_And_Then_Short_Circuit | An_Or_Else_Short_Circuit =>
+                  return "not (" & Stripped_Image (Expr) & ')';
                when others =>
                   return "not " & Stripped_Image (Expr);
             end case;
