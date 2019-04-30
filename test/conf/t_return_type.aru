@@ -4,3 +4,9 @@ Return_Unknown_Size: check return_type (class_wide,
 Return_Constrained_Array : search return_type (constrained_array);
 Return_Anonymous_Access  : check return_type (anonymous_access);
 
+search return_type (type T_Return_Type.Named_Types.Return_Type_Check.Enum);
+search return_type (type T_Return_Type.Named_Types.Return_Type_Check.Record1);
+search return_type (type T_Return_Type.Named_Types.Return_Type_Check.Record2);
+search return_type (type T_Return_Type.Named_Types.Return_Type_Check.Class1,
+                    type T_Return_Type.Named_Types.Return_Type_Check.Class1'Class);
+search return_type (type Standard.Integer);

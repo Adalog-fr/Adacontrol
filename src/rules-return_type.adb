@@ -40,6 +40,7 @@ with
 -- AdaControl
 with
   Framework.Language;
+
 pragma Elaborate (Framework.Language);
 
 package body Rules.Return_Type is
@@ -65,19 +66,21 @@ package body Rules.Return_Type is
    --   protected and task types.
    --
 
-   type Subrules is (K_Class_Wide,        K_Limited_Class_Wide,  K_Protected,                   K_Task,
-                     K_Constrained_Array, K_Unconstrained_Array, K_Unconstrained_Discriminated,
-                     K_Anonymous_Access);
+   type Subrules is (K_Type, K_Class_Wide,        K_Limited_Class_Wide,  K_Protected,
+                     K_Task, K_Constrained_Array, K_Unconstrained_Array,
+                     K_Unconstrained_Discriminated, K_Anonymous_Access);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "K_");
-
+   subtype Subrules_Usage is Subrules range K_Class_Wide .. Subrules'Last;
    type Usage_Flags is array (Subrules) of Boolean;
 
    Rule_Used  : Usage_Flags := (others => False);
    Save_Used  : Usage_Flags;
-   Usage      : array (Subrules) of Basic_Rule_Context;
+   Usage      : array (Subrules_Usage) of Basic_Rule_Context;
 
    -- A global to store location of instantiation
    Instantiation_Location : Location := Null_Location;
+
+   Searched_Return_Types  : Context_Store;
 
    ----------
    -- Help --
@@ -89,7 +92,8 @@ package body Rules.Return_Type is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control various forms of the type returned by functions");
       User_Message;
-      Subrules_Flag_Utilities.Help_On_Flags ("Parameter(s):");
+      Subrules_Flag_Utilities.Help_On_Flags (Header      => "Parameter(s):",
+                                             Extra_Value => "type <entity>");
    end Help;
 
 
@@ -115,11 +119,23 @@ package body Rules.Return_Type is
       -- each existing parameter must be added for rule checking
       if Parameter_Exists then
          loop
-            Add_One (Get_Flag_Parameter (Allow_Any => False));
+            if Get_Modifier ("TYPE") then
+               declare
+                  Entity        : constant Entity_Specification := Get_Entity_Parameter;
+               begin
+                  Associate (Searched_Return_Types, Entity, Basic.New_Context (Ctl_Kind, Ctl_Label));
+                  Rule_Used (K_Type) := True;
+               exception
+                  when Already_In_Store =>
+                     Parameter_Error (Rule_Id, "return_type of this type already given: " & Image (Entity));
+               end;
+            else
+               Add_One (Get_Flag_Parameter (Allow_Any => False));
+            end if;
             exit when not Parameter_Exists;
          end loop;
       else -- no parameter means all return kinds are checked
-         for K in Subrules loop
+         for K in Subrules_Usage loop
             Add_One (K);
          end loop;
       end if;
@@ -242,21 +258,18 @@ package body Rules.Return_Type is
       Result_Expression       : Asis.Expression;
       Result_Type_Declaration : Asis.Declaration;
 
-      procedure Do_Report (Usage_Kind : in Subrules; Error_Message : in Wide_String) is
+      procedure Do_Report (Usage_Kind    : in Subrules;
+                           Context       : in Control_Manager.Root_Context'Class;
+                           Error_Message : in Wide_String)
+      is
          use Framework.Reports;
       begin
          if Rule_Used (Usage_Kind) then
-            if Instantiation_Location = Null_Location then
-               Report (Rule_Id,
-                       Usage (Usage_Kind),
-                       Get_Location (Result_Expression),
-                       Error_Message);
-            else
-               Report (Rule_Id,
-                       Usage (Usage_Kind),
-                       Instantiation_Location,
-                       Error_Message & " from instantiation");
-            end if;
+            Report (Rule_Id,
+                    Context,
+                    (if Instantiation_Location = Null_Location then
+                        Get_Location (Result_Expression) else Instantiation_Location),
+                    Error_Message & (if Instantiation_Location = Null_Location then "" else " from instantiation"));
          end if;
       end Do_Report;
 
@@ -272,7 +285,9 @@ package body Rules.Return_Type is
                -- We must have a formal type declaration
                null;
             when A_Known_Discriminant_Part =>
-               Do_Report (K_Unconstrained_Discriminated, "function returns unconstrained discriminated type");
+               Do_Report (K_Unconstrained_Discriminated,
+                          Usage (K_Unconstrained_Discriminated),
+                          "function returns unconstrained discriminated type");
             when others =>
                Failure ("unexpected definition: not a discriminant");
          end case;
@@ -281,22 +296,22 @@ package body Rules.Return_Type is
       procedure Check_Tasks_Protected is
       begin
          if Contains_Type_Declaration_Kind (Result_Type_Declaration, A_Task_Type_Declaration) then
-            Do_Report (K_Task, "function returns task type");
+            Do_Report (K_Task, Usage (K_Task), "function returns task type");
          end if;
          if Contains_Type_Declaration_Kind (Result_Type_Declaration, A_Protected_Type_Declaration) then
-            Do_Report (K_Protected, "function returns protected type");
+            Do_Report (K_Protected, Usage (K_Protected), "function returns protected type");
          end if;
       end Check_Tasks_Protected;
 
       procedure Report_Class (Good_Expr : Asis.Expression) is
          Good_Res : Asis.Expression;
       begin
-         Do_Report (K_Class_Wide, "function returns class-wide type");
+         Do_Report (K_Class_Wide, Usage (K_Class_Wide), "function returns class-wide type");
          Good_Res := Simple_Name (Prefix (Good_Expr));
 
          Result_Type_Declaration := Corresponding_Name_Declaration (Good_Res);
          if Is_Limited (Result_Type_Declaration) then
-            Do_Report (K_Limited_Class_Wide, "function returns limited class-wide type");
+            Do_Report (K_Limited_Class_Wide, Usage (K_Limited_Class_Wide), "function returns limited class-wide type");
          end if;
 
          Check_Tasks_Protected;
@@ -311,8 +326,8 @@ package body Rules.Return_Type is
 
       case Declaration_Kind (Decl) is
          when A_Function_Body_Declaration
-           | A_Function_Body_Stub
-           =>
+            | A_Function_Body_Stub
+            =>
             -- return when the specification has already been declared
             -- as the specification exists, there is no need to check the body (stub)
             if not Is_Nil (Corresponding_Declaration (Decl)) then
@@ -325,7 +340,7 @@ package body Rules.Return_Type is
       -- Retrieve the returned type from the function declaration
       Result_Expression := Simple_Name (Result_Profile (Decl));
       if Definition_Kind (Result_Expression) = An_Access_Definition then
-         Do_Report (K_Anonymous_Access, "function returns anonymous access type");
+         Do_Report (K_Anonymous_Access, Usage (K_Anonymous_Access), "function returns anonymous access type");
          return;
       end if;
 
@@ -335,6 +350,16 @@ package body Rules.Return_Type is
             Result_Expression := Simple_Name (Prefix (Result_Expression));
          when A_Class_Attribute =>
             Report_Class (Result_Expression);
+            declare
+               Context : constant Root_Context'Class := Matching_Context (Into => Searched_Return_Types,
+                                                                          Name => Result_Expression);
+            begin
+               if Rule_Used (K_Type) and then Context /= No_Matching_Context then
+                  Do_Report (K_Type, Context,
+                             "function returns type " &
+                               Adjust_Image (To_Title (Last_Matching_Name (Searched_Return_Types))));
+               end if;
+            end;
             return;
          when Not_An_Attribute =>
             -- OK, go on
@@ -345,6 +370,32 @@ package body Rules.Return_Type is
 
       -- Here we have a good ol' identifier
       Result_Type_Declaration := Corresponding_Name_Declaration (Result_Expression);
+
+      if Rule_Used (K_Type) then
+         declare
+            Context : constant Root_Context'Class := Matching_Context (Into => Searched_Return_Types,
+                                                                       Name => Result_Expression);
+         begin
+            if Context = No_Matching_Context then
+               declare
+                  First_Context : constant Root_Context'Class := Matching_Context
+                    (Into => Searched_Return_Types,
+                     Name => Names (Corresponding_First_Subtype (Result_Type_Declaration)) (1));
+               begin
+                  if First_Context /= No_Matching_Context then
+                     Do_Report (K_Type, First_Context,
+                                "function returns type " &
+                                  Adjust_Image (To_Title (Last_Matching_Name (Searched_Return_Types))));
+                  end if;
+               end;
+            else
+               Do_Report (K_Type, Context,
+                          "function returns type " &
+                            Adjust_Image (To_Title (Last_Matching_Name (Searched_Return_Types))));
+            end if;
+         end;
+      end if;
+
       loop
          -- Here we have a type declaration
          case Declaration_Kind (Result_Type_Declaration) is
@@ -358,7 +409,9 @@ package body Rules.Return_Type is
                      -- OK, return type is constrained
                      -- Can be an array subtype
                      if Constraint_Kind (Constraint) = An_Index_Constraint then
-                        Do_Report (K_Constrained_Array, "function returns constrained array type");
+                        Do_Report (K_Constrained_Array,
+                                   Usage (K_Constrained_Array),
+                                   "function returns constrained array type");
                      end if;
 
                      -- But it can also be a task or protected type (with discriminants)...
@@ -377,9 +430,9 @@ package body Rules.Return_Type is
                            when A_Base_Attribute =>
                               -- when matching A_Base_Attribute, we need to retrieve the Selector
                               Result_Type_Declaration := Corresponding_Name_Declaration
-                                                          (Simple_Name
-                                                           (Prefix
-                                                            (Result_Type_Expression)));
+                                (Simple_Name
+                                   (Prefix
+                                        (Result_Type_Expression)));
                            when A_Class_Attribute =>
                               Report_Class (Result_Type_Expression);
                               return;
@@ -399,7 +452,7 @@ package body Rules.Return_Type is
                               -- when matching A_Base_Attribute, we need to retrieve the Prefix
                               Result_Type_Declaration := Corresponding_Name_Declaration (Simple_Name
                                                                                          (Prefix
-                                                                                          (Parent_Name)));
+                                                                                            (Parent_Name)));
                            when A_Class_Attribute =>
                               Report_Class (Parent_Name);
                               return;
@@ -417,12 +470,12 @@ package body Rules.Return_Type is
 
 
             when A_Task_Type_Declaration =>
-               Do_Report (K_Task, "function returns task type");
+               Do_Report (K_Task, Usage (K_Task), "function returns task type");
                Check_Discriminants;
                return;
 
             when A_Protected_Type_Declaration =>
-               Do_Report (K_Protected, "function returns protected type");
+               Do_Report (K_Protected, Usage (K_Protected), "function returns protected type");
                Check_Discriminants;
                return;
 
@@ -444,8 +497,8 @@ package body Rules.Return_Type is
                      when A_Type_Definition =>
                         case Type_Kind (Result_Type_Definition) is
                            when A_Derived_Type_Definition
-                             | A_Derived_Record_Extension_Definition
-                             =>
+                              | A_Derived_Record_Extension_Definition
+                              =>
                               declare
                                  Parent_Type : constant Asis.Subtype_Indication :=
                                    Parent_Subtype_Indication (Result_Type_Definition);
@@ -468,33 +521,37 @@ package body Rules.Return_Type is
                               end;
 
                            when A_Constrained_Array_Definition =>
-                              Do_Report (K_Constrained_Array, "function returns constrained array type");
+                              Do_Report (K_Constrained_Array,
+                                         Usage (K_Constrained_Array),
+                                         "function returns constrained array type");
                               Check_Tasks_Protected;
 
                               -- Cannot have discriminants
                               return;
 
                            when An_Unconstrained_Array_Definition =>
-                              Do_Report (K_Unconstrained_Array, "function returns unconstrained array type");
+                              Do_Report (K_Unconstrained_Array,
+                                         Usage (K_Unconstrained_Array),
+                                         "function returns unconstrained array type");
                               Check_Tasks_Protected;
 
                               -- Cannot have discriminants
                               return;
 
                            when An_Enumeration_Type_Definition
-                             | A_Signed_Integer_Type_Definition
-                             | A_Modular_Type_Definition
-                             | A_Floating_Point_Definition
-                             | An_Ordinary_Fixed_Point_Definition
-                             | A_Decimal_Fixed_Point_Definition
-                             | An_Access_Type_Definition
-                             =>
+                              | A_Signed_Integer_Type_Definition
+                              | A_Modular_Type_Definition
+                              | A_Floating_Point_Definition
+                              | An_Ordinary_Fixed_Point_Definition
+                              | A_Decimal_Fixed_Point_Definition
+                              | An_Access_Type_Definition
+                              =>
                               -- Cannot have discriminants
                               return;
 
                            when A_Record_Type_Definition
-                             | A_Tagged_Record_Type_Definition
-                             =>
+                              | A_Tagged_Record_Type_Definition
+                              =>
                               Check_Tasks_Protected;
                               Check_Discriminants;
                               return;
@@ -505,8 +562,8 @@ package body Rules.Return_Type is
                               return;
 
                            when Not_A_Type_Definition
-                             | A_Root_Type_Definition
-                             =>
+                              | A_Root_Type_Definition
+                              =>
                               Failure ("unexpected type definition");
 
                         end case;
@@ -539,27 +596,29 @@ package body Rules.Return_Type is
 
 
                            when A_Formal_Private_Type_Definition
-                             | A_Formal_Tagged_Private_Type_Definition
-                             =>
+                              | A_Formal_Tagged_Private_Type_Definition
+                              =>
                               Check_Discriminants;
                               return;
 
                               -- when matching A_Formal_Unconstrained_Array_Definition, report an error
                            when A_Formal_Unconstrained_Array_Definition =>
-                              Do_Report (K_Unconstrained_Array, "function returns unconstrained formal array type");
+                              Do_Report (K_Unconstrained_Array,
+                                         Usage (K_Unconstrained_Array),
+                                         "function returns unconstrained formal array type");
                               Check_Tasks_Protected;
 
                               -- Cannot have discriminants
                               return;
 
                            when A_Formal_Discrete_Type_Definition
-                             | A_Formal_Signed_Integer_Type_Definition
-                             | A_Formal_Modular_Type_Definition
-                             | A_Formal_Floating_Point_Definition
-                             | A_Formal_Ordinary_Fixed_Point_Definition
-                             | A_Formal_Decimal_Fixed_Point_Definition
-                             | A_Formal_Access_Type_Definition
-                             =>
+                              | A_Formal_Signed_Integer_Type_Definition
+                              | A_Formal_Modular_Type_Definition
+                              | A_Formal_Floating_Point_Definition
+                              | A_Formal_Ordinary_Fixed_Point_Definition
+                              | A_Formal_Decimal_Fixed_Point_Definition
+                              | A_Formal_Access_Type_Definition
+                              =>
                               -- Cannot have discriminants
                               return;
 
@@ -595,7 +654,7 @@ package body Rules.Return_Type is
       end loop;
 
       -- Here, the type may have discriminants
-  end Process_Function_Declaration;
+   end Process_Function_Declaration;
 
 begin  -- Rules.Return_Type
    Framework.Rules_Manager.Register (Rule_Id,

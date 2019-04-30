@@ -2817,7 +2817,7 @@ offending unit.
 @subsubsection Tip
 This command prevents the unit from being analyzed, and it is not
 possible to ``uninhibit'' it, unlike the ``Rule_File_Off'' command
-(@pxref {Rule_File_Off command}) that simply turns off messages. Note
+(@pxref{Rule_File_Off command}) that simply turns off messages. Note
 also that the ``Rule_File_Off'' command works on file name patterns
 while the ``inhibit'' command works on Ada units.
 
@@ -8268,22 +8268,30 @@ statements in a subprogram, see the simpler rule @ref{Statements}.
 
 @node Return_Type, Side_Effect_Parameters, Return_Statements, Rules reference
 @section Return_Type
-This rule controls that certain form of types are not used for
+This rule controls certain types or form of types that are used for
 function results.
 
 @subsection Syntax
 @example
 <control_kind> return_type [(<subrule> @{, <subrule>@})];
-<subrule> ::= class_wide                  | limited_class_wide  |
-              constrained_array           | protected           |
+<subrule> ::= type <entity>               | anonymous_access    |
+              class_wide                  | constrained_array   |
+              limited_class_wide          | protected           |
               task                        | unconstrained_array |
-              unconstrained_discriminated | anonymous_access
+              unconstrained_discriminated |
+
 @end example
 
 @subsection Action
-This rule controls functions whose return type belongs to one of the
-type kinds given as <subrule>:
+This rule controls functions that return the indicated type, or whose
+return type belongs to one of the kinds given as <subrule>:
 @itemize
+@item
+``type <entity>'': controls the type given as <entity>. If <entity> is
+a subtype, only functions returning that subtype are controlled. If
+<entity> is a type, all functions returning that type (including
+subtypes) are controlled. As usual, the whole syntax for entities is
+allowed for <entity>. @xref{Specifying an Ada entity name}.
 @item
 ``class_wide'': controls all class-wide types
 @item

@@ -687,10 +687,11 @@ Other parameters:  procedure | function | entry
 Rule: RETURN_TYPE
 Control various forms of the type returned by functions
 
-Parameter(s): class_wide                  | limited_class_wide  |
-              protected                   | task                |
-              constrained_array           | unconstrained_array |
-              unconstrained_discriminated | anonymous_access
+Parameter(s): type <entity>       | class_wide                  |
+              limited_class_wide  | protected                   |
+              task                | constrained_array           |
+              unconstrained_array | unconstrained_discriminated |
+              anonymous_access
 ----
 Rule: SIDE_EFFECT_PARAMETERS
 Control subprogram calls or generic instantiations that call

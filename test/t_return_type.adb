@@ -66,6 +66,12 @@ package body T_Return_Type is
    function Empty_String return String is separate;                             -- unconstrained_array
 
 
+   --------------------------
+   -- Checking named types --
+   --------------------------
+
+   procedure Named_Types is separate;
+
    --------------------------------
    -- Checking generic functions --
    --------------------------------

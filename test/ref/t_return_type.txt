@@ -1,16 +1,30 @@
+t_return_type.adb:16:44: Found: RETURN_TYPE: function returns type Standard.Integer
 t_return_type.adb:25:44: Error: Return_Unknown_Size: function returns unconstrained array type
 t_return_type.adb:34:42: Found: Return_Constrained_Array: function returns constrained array type
 t_return_type.adb:41:32: Error: Return_Unknown_Size: function returns unconstrained array type
 t_return_type.adb:50:60: Found: Return_Constrained_Array: function returns constrained array type
 t_return_type.adb:66:33: Error: Return_Unknown_Size: function returns unconstrained array type
 t_return_type-empty_string.adb:4:30: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:87:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
-t_return_type.adb:104:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
-t_return_type.adb:114:56: Found: Return_Constrained_Array: function returns constrained array type
-t_return_type.adb:133:53: Error: Return_Unknown_Size: function returns unconstrained array type
-t_return_type.adb:154:55: Error: Return_Unknown_Size: function returns class-wide type
-t_return_type.adb:176:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
-t_return_type.adb:218:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
-t_return_type.adb:272:4: Found: Return_Constrained_Array: function returns constrained array type from instantiation
+t_return_type-named_types.adb:6:26: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Enum
+t_return_type-named_types.adb:7:30: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Enum
+t_return_type-named_types.adb:12:26: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Record1
+t_return_type-named_types.adb:19:29: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Class1
+t_return_type-named_types.adb:21:32: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type-named_types.adb:21:32: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Class1'Class
+t_return_type-named_types.adb:22:32: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Class1
+t_return_type-named_types.adb:22:32: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type-named_types.adb:29:26: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type-named_types.adb:51:26: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Record2
+t_return_type-named_types.adb:100:4: Found: RETURN_TYPE: function returns type T_Return_Type.Named_Types.Return_Type_Check.Enum from instantiation
+t_return_type-named_types.adb:101:4: Found: RETURN_TYPE: function returns type Standard.Integer from instantiation
+t_return_type.adb:93:60: Error: Return_Unknown_Size: function returns unconstrained formal array type
+t_return_type.adb:110:4: Error: Return_Unknown_Size: function returns unconstrained array type from instantiation
+t_return_type.adb:120:56: Found: Return_Constrained_Array: function returns constrained array type
+t_return_type.adb:139:53: Error: Return_Unknown_Size: function returns unconstrained array type
+t_return_type.adb:160:55: Error: Return_Unknown_Size: function returns class-wide type
+t_return_type.adb:182:49: Error: Return_Unknown_Size: function returns unconstrained discriminated type
+t_return_type.adb:224:4: Error: Return_Unknown_Size: function returns unconstrained discriminated type from instantiation
+t_return_type.adb:276:4: Found: RETURN_TYPE: function returns type Standard.Integer from instantiation
+t_return_type.adb:278:4: Found: Return_Constrained_Array: function returns constrained array type from instantiation
 t_return_type-anonymous_access.adb:2:39: Error: Return_Anonymous_Access: function returns anonymous access type
 t_return_type-anonymous_access.adb:7:39: Error: Return_Anonymous_Access: function returns anonymous access type
