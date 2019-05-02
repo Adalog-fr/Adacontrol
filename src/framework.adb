@@ -143,6 +143,22 @@ package body Framework is
         (Left.First_Line = Right.First_Line and Left.First_Column <= Right.First_Column);
    end "<=";
 
+   ---------------
+   -- No_Indent --
+   ---------------
+
+   function No_Indent (L : Location; Elem : Asis.Element) return Location is
+      use Asis.Text;
+      Source_Line : constant Asis.Program_Text := Line_Image (Lines (Elem, L.First_Line, L.First_Line)(L.First_Line));
+   begin
+      for I in reverse Character_Position range 1 .. L.First_Column - 1 loop
+         if Source_Line (I) > ' ' then
+            return L;
+         end if;
+      end loop;
+      return (File_Name => L.File_Name, First_Line => L.First_Line, First_Column => 1);
+   end No_Indent;
+
    ---------------------
    -- Create_Location --
    ---------------------

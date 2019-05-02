@@ -85,6 +85,11 @@ package Framework is
    function "<=" (Left, Right : Location) return Boolean;
    -- with Pre => Get_File_Name (Left) = Get_File_Name (Right)
    -- Check if Left is declared before Right in the same file
+   function No_Indent (L : Location; Elem : Asis.Element) return Location;
+   -- Returns the location of the beginning of the line that contains L if there are only spaces
+   --   to the left of L.
+   -- Returns L otherwise
+   -- Elem is any element from the same compilation unit as L.
 
    type Search_Start is (From_Head, From_Tail);
 
