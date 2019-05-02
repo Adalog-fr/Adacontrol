@@ -601,7 +601,8 @@ package body Rules.Simplifiable_Statements is
                     "If statement can be replaced by direct use of logical expression into assignment/return");
             Fixes.Delete (From => Get_Location (Stmt), To => Get_Location (Then_Stmts (1)));
             Fixes.Replace (Then_Expr, Condition_Expression (Paths (1)));
-            Fixes.Delete (From => Get_Location (Paths(2)), To => Get_Next_Word_Location (Stmt, Starting => From_Tail));
+            Fixes.Delete (From => No_Indent (Get_Location (Paths (2)), Stmt),
+                          To   => No_Indent (Get_Next_Word_Location (Stmt, Starting => From_Tail), Stmt));
 
          else
             Report (Rule_Id,
@@ -610,7 +611,8 @@ package body Rules.Simplifiable_Statements is
                     "If statement can be replaced by inverted use of logical expression into assignment/return");
             Fixes.Delete (From => Get_Location (Stmt), To => Get_Location (Then_Stmts (1)));
             Fixes.Replace (Then_Expr, Negated_Image (Condition_Expression (Paths (1))));
-            Fixes.Delete (From => Get_Location (Paths (2)), To => Get_Next_Word_Location (Stmt, Starting => From_Tail));
+            Fixes.Delete (From => No_Indent (Get_Location (Paths (2)), Stmt),
+                          To   => No_Indent (Get_Next_Word_Location (Stmt, Starting => From_Tail), Stmt));
          end if;
 
       end Process_Unnecessary_If;
@@ -1196,7 +1198,10 @@ package body Rules.Simplifiable_Statements is
          Control : Traverse_Control := Continue;
          State   : For_Of_State := (Indexing_Name => Indexing_Name, Indexed_Name => Nil_Element);
       begin  -- Check_For_Of
-         Traverse_For (Stmt, Control, State);
+         for S of Thick_Queries.Statements (Stmt) loop
+            Traverse_For (S, Control, State);
+            exit when Control /= Continue;
+         end loop;
 
          -- Control is Terminate_Immediately if not changeable, Continue otherwise
          -- State.Indexed_Name is Nil_Element if the loop index has not been used for indexing

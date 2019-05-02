@@ -92,40 +92,40 @@ t_simplifiable_statements-test_unnecessary_if.adb:7:4: Error: SIMPLIFIABLE_STATE
 t_simplifiable_statements-test_unnecessary_if.adb:7:4: Delete:8:6
 t_simplifiable_statements-test_unnecessary_if.adb:8:13: Replace:8:16
 !V3 = 1
-t_simplifiable_statements-test_unnecessary_if.adb:9:4: Delete:13:3
+t_simplifiable_statements-test_unnecessary_if.adb:9:1: Delete:13:0
 t_simplifiable_statements-test_unnecessary_if.adb:13:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by direct use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:13:4: Delete:14:6
 t_simplifiable_statements-test_unnecessary_if.adb:14:14: Replace:14:17
 !V3 = 1
-t_simplifiable_statements-test_unnecessary_if.adb:15:4: Delete:19:3
+t_simplifiable_statements-test_unnecessary_if.adb:15:1: Delete:19:0
 t_simplifiable_statements-test_unnecessary_if.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:19:4: Delete:20:6
 t_simplifiable_statements-test_unnecessary_if.adb:20:13: Replace:20:17
 !V3 <= 1
-t_simplifiable_statements-test_unnecessary_if.adb:21:4: Delete:25:3
+t_simplifiable_statements-test_unnecessary_if.adb:21:1: Delete:25:0
 t_simplifiable_statements-test_unnecessary_if.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:25:4: Delete:26:6
 t_simplifiable_statements-test_unnecessary_if.adb:26:14: Replace:26:18
 !V3 < 1
-t_simplifiable_statements-test_unnecessary_if.adb:27:4: Delete:31:3
+t_simplifiable_statements-test_unnecessary_if.adb:27:1: Delete:31:0
 t_simplifiable_statements-test_unnecessary_if.adb:31:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
 t_simplifiable_statements-test_unnecessary_if.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:31:4: Delete:32:6
 t_simplifiable_statements-test_unnecessary_if.adb:32:13: Replace:32:17
 !V3 = 1
-t_simplifiable_statements-test_unnecessary_if.adb:33:4: Delete:37:3
+t_simplifiable_statements-test_unnecessary_if.adb:33:1: Delete:37:0
 t_simplifiable_statements-test_unnecessary_if.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: Both paths of if statement assign/return the same value
 t_simplifiable_statements-test_unnecessary_if.adb:43:4: Error: SIMPLIFIABLE_STATEMENTS: Both paths of if statement assign/return the same value
 t_simplifiable_statements-test_unnecessary_if.adb:49:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:49:4: Delete:50:6
 t_simplifiable_statements-test_unnecessary_if.adb:50:14: Replace:50:18
 !not (V3 = 1 and V1)
-t_simplifiable_statements-test_unnecessary_if.adb:51:4: Delete:55:3
+t_simplifiable_statements-test_unnecessary_if.adb:51:1: Delete:55:0
 t_simplifiable_statements-test_unnecessary_if.adb:55:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:55:4: Delete:56:6
 t_simplifiable_statements-test_unnecessary_if.adb:56:14: Replace:56:18
 !not (V3 = 1 or else V1)
-t_simplifiable_statements-test_unnecessary_if.adb:57:4: Delete:61:3
+t_simplifiable_statements-test_unnecessary_if.adb:57:1: Delete:61:0
 t_simplifiable_statements-test_while_for_for.adb:18:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
 t_simplifiable_statements-test_while_for_for.adb:23:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
 t_simplifiable_statements-test_while_for_for.adb:27:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
