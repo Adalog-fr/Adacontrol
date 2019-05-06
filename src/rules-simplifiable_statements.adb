@@ -1198,7 +1198,7 @@ package body Rules.Simplifiable_Statements is
          Control : Traverse_Control := Continue;
          State   : For_Of_State := (Indexing_Name => Indexing_Name, Indexed_Name => Nil_Element);
       begin  -- Check_For_Of
-         for S of Thick_Queries.Statements (Stmt) loop
+         for S : Asis.Statement of Thick_Queries.Statements (Stmt) loop
             Traverse_For (S, Control, State);
             exit when Control /= Continue;
          end loop;

@@ -259,8 +259,8 @@ package body Rules.Parameter_Aliasing is
                E  : Asis.Expression;
                Nb : Natural := 0;
             begin
-               for I in Actuals'Range loop
-                  E := Actual_Parameter (Actuals (I));
+               for Act : Asis.Association of Actuals loop
+                  E := Actual_Parameter (Act);
                   if Expression_Kind (E) = A_Type_Conversion then
                      E := Converted_Or_Qualified_Expression (E);
                   end if;
@@ -295,11 +295,10 @@ package body Rules.Parameter_Aliasing is
                     To_Wide_String (Ctl_Labels (Param_Proximity.Confidence)),
                     Ctl_Kinds (Param_Proximity.Confidence),
                     Get_Location (Call),
-                    Choose (Param_Proximity.Confidence = Certain,
-                      "Certain",
-                      Choose (Param_Proximity.Confidence = Possible,
-                        "Possible",
-                        "Unlikely"))
+                    (case Param_Proximity.Confidence is
+                        when Certain  => "Certain",
+                        when Possible => "Possible",
+                        when Unlikely => "Unlikely")
                     & " aliasing between parameters "
                     & Association_Image (J)
                     & " and "

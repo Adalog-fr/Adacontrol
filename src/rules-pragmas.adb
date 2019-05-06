@@ -132,11 +132,10 @@ package body Rules.Pragmas is
       begin
          if Pragma_Context(Current_Context).Multiple_Only then
             declare
-               Assocs : constant Asis.Association_List := Pragma_Argument_Associations (Pragma_Element);
                Actual : Asis.Expression;
             begin
-               for A in Assocs'Range loop
-                  Actual := Simple_Name (Actual_Parameter (Assocs (A)));
+               for Assoc : Asis.Association of Pragma_Argument_Associations (Pragma_Element) loop
+                  Actual := Simple_Name (Actual_Parameter (Assoc));
                   case Expression_Kind (Actual) is
                      when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
                         begin

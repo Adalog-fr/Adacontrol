@@ -138,20 +138,16 @@ package body Rules.Abnormal_Function_Return is
             when A_Block_Statement =>
                Check (Last_Effective_Statement (Block_Statements (Stmt)));
 
-               declare
-                  Handlers : constant Asis.Exception_Handler_List := Block_Exception_Handlers (Stmt);
-               begin
-                  for H in Handlers'Range loop
-                     Check (Last_Effective_Statement (Handler_Statements (Handlers (H))));
-                  end loop;
-               end;
+               for H : Asis.Exception_Handler of Block_Exception_Handlers (Stmt) loop
+                  Check (Last_Effective_Statement (Handler_Statements (H)));
+               end loop;
 
             when An_If_Statement =>
                declare
                   Paths : constant Asis.Path_List := Statement_Paths (Stmt);
                begin
-                  for This_Path in Paths'Range loop
-                     Check (Last_Effective_Statement (Sequence_Of_Statements (Paths (This_Path))));
+                  for This_Path : Asis.Path of Paths loop
+                     Check (Last_Effective_Statement (Sequence_Of_Statements (This_Path)));
                   end loop;
                   if Path_Kind (Paths (Paths'Last)) /= An_Else_Path then
                      Report (Rule_Id,
@@ -162,13 +158,9 @@ package body Rules.Abnormal_Function_Return is
                end;
 
             when A_Case_Statement =>
-               declare
-                  Paths : constant Asis.Path_List := Statement_Paths (Stmt);
-               begin
-                  for This_Path in Paths'Range loop
-                     Check (Last_Effective_Statement (Sequence_Of_Statements (Paths (This_Path))));
-                  end loop;
-               end;
+               for This_Path : Asis.Path of Statement_Paths (Stmt) loop
+                  Check (Last_Effective_Statement (Sequence_Of_Statements (This_Path)));
+               end loop;
 
             when A_Loop_Statement =>
                -- Non exiting loops (i.e. plain loops without transfer outside) that possibly contain
@@ -198,13 +190,9 @@ package body Rules.Abnormal_Function_Return is
 
       Check (Last_Effective_Statement (Body_Statements (Function_Body)));
 
-      declare
-         Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (Function_Body);
-      begin
-         for H in Handlers'Range loop
-            Check (Last_Effective_Statement (Handler_Statements (Handlers (H))));
-         end loop;
-      end;
+      for H : Asis.Exception_Handler of Body_Exception_Handlers (Function_Body) loop
+         Check (Last_Effective_Statement (Handler_Statements (H)));
+      end loop;
    end Process_Function_Body;
 
 begin  -- Rules.Abnormal_Function_Return

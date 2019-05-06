@@ -88,8 +88,8 @@ package body Rules.Local_Access is
       elsif Rule_Used /= (Subrules => False) then
          Parameter_Error (Rule_Id, "rule already given");
       else
-         for S in Subrules loop
-            Contexts (S) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+         for Cont : Basic_Rule_Context of Contexts loop
+            Cont := Basic.New_Context (Ctl_Kind, Ctl_Label);
          end loop;
          Rule_Used := (Subrules => True);
       end if;

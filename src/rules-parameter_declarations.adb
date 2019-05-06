@@ -418,7 +418,6 @@ package body Rules.Parameter_Declarations is
 
       -- Count parameters for each mode
       declare
-         Profile                : constant Parameter_Specification_List := Parameter_Profile (Good_Decl);
          In_Param_Count         : Biggest_Natural := 0; -- Not counting defaulted ones
          Def_Param_Count        : Biggest_Natural := 0;
          Out_Param_Count        : Biggest_Natural := 0;
@@ -428,16 +427,16 @@ package body Rules.Parameter_Declarations is
          Class_Wide_Param_Count : Biggest_Natural := 0;
          Nb_Names               : Biggest_Natural;
       begin
-         for P in Profile'Range loop
-            Nb_Names := Names (Profile (P))'Length;
-            if Definition_Kind (Object_Declaration_View (Profile (P))) = An_Access_Definition then
+         for P : Asis.Declaration of Parameter_Profile (Good_Decl) loop
+            Nb_Names := Names (P)'Length;
+            if Definition_Kind (Object_Declaration_View (P)) = An_Access_Definition then
                Access_Param_Count := Access_Param_Count + Nb_Names;
             else
-               case Mode_Kind (Profile (P)) is
+               case Mode_Kind (P) is
                   when Not_A_Mode =>
                      Failure ("Parameter_Declarations: not a mode", Good_Decl);
                   when An_In_Mode | A_Default_In_Mode =>
-                     if Is_Nil (Initialization_Expression (Profile (P))) then
+                     if Is_Nil (Initialization_Expression (P)) then
                         In_Param_Count := In_Param_Count + Nb_Names;
                      else
                         Def_Param_Count := Def_Param_Count + Nb_Names;
@@ -449,7 +448,7 @@ package body Rules.Parameter_Declarations is
                end case;
             end if;
             if Rule_Used (Tagged_Parameters, C) /= Empty_Control_Kinds_Set then
-               if Type_Category (Object_Declaration_View (Profile (P)),
+               if Type_Category (Object_Declaration_View (P),
                                  Follow_Derived     => True,
                                  Privacy            => Follow_Private,
                                  Separate_Extension => False) = A_Tagged_Type
@@ -457,7 +456,7 @@ package body Rules.Parameter_Declarations is
                   Tagged_Param_Count := Tagged_Param_Count + Nb_Names;
                end if;
             elsif Rule_Used (Class_Wide_Parameters, C) /= Empty_Control_Kinds_Set then
-               if Is_Class_Wide_Subtype (Object_Declaration_View (Profile (P))) then
+               if Is_Class_Wide_Subtype (Object_Declaration_View (P)) then
                   Class_Wide_Param_Count := Class_Wide_Param_Count + Nb_Names;
                end if;
             end if;

@@ -142,9 +142,9 @@ package body Rules.Entity_Inside_Exception is
          Found  : Boolean := False;
          C_Kind : Callable_Kinds;
       begin
-         for I in Identifiers'Range loop
+         for Id: Asis.Expression of Identifiers loop
             declare
-               Use_Context : constant Root_Context'Class := Matching_Context (Entities, Identifiers (I));
+               Use_Context : constant Root_Context'Class := Matching_Context (Entities, Id);
             begin
                if Use_Context /= No_Matching_Context then
                   Found := True;

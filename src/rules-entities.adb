@@ -201,13 +201,9 @@ package body Rules.Entities is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Used_Idents : constant Asis.Element_List := Used_Identifiers (Identifier);
-      begin
-         for Id in Used_Idents'Range loop
-            Do_Report (Used_Idents (Id), Get_Location (Identifier));
-         end loop;
-      end;
+      for Id : Asis.Expression of Used_Identifiers (Identifier) loop
+         Do_Report (Id, Get_Location (Identifier));
+      end loop;
    end Process_Identifier;
 
 begin  -- Rules.Entities

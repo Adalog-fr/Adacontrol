@@ -250,11 +250,10 @@ package body Rules.Units is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Names : constant Asis.Name_List := Clause_Names (Clause);
          Id    : Asis.Expression;
       begin
-         for N in Names'Range loop
-            Id := Names (N);
+         for N : Asis.Name of Clause_Names (Clause) loop
+            Id := N;
             --
             if Unit_Origin (Element_Unit (Id)) = An_Application_Unit then  --##Rule line off Use_Ultimate_Origin
                                                                            --  Don't follow renamings here

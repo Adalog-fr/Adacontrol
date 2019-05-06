@@ -178,17 +178,13 @@ package body Rules.Type_Initial_Values is
       if Pattern = null then
          State := Matching_Constant;
       else
-         declare
-            All_Names : constant Asis.Defining_Name_List := Names (Decl);
-         begin
-            State := Non_Matching_Constant;
-            for N in All_Names'Range loop
-               if Match (Defining_Name_Image (All_Names (N)), Pattern.all) then
-                  State := Matching_Constant;
-                  exit;  -- One matching name is enough
-               end if;
-            end loop;
-         end;
+         State := Non_Matching_Constant;
+         for N : Asis.Name of Names (Decl) loop
+            if Match (Defining_Name_Image (N), Pattern.all) then
+               State := Matching_Constant;
+               exit;  -- One matching name is enough
+            end if;
+         end loop;
       end if;
       Constant_Table.Store (Const_Type, State);
    end Process_Constant_Declaration;

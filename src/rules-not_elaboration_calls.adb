@@ -117,15 +117,14 @@ package body Rules.Not_Elaboration_Calls is
    procedure Check (Current_Context : Root_Context'Class; Loc : Location) is
       use Asis, Asis.Elements;
       use Framework.Reports, Scope_Manager;
-      Scopes : constant Scope_List := Active_Scopes;
    begin
       if Current_Context = No_Matching_Context then
          return;
       end if;
 
       -- The enclosing scopes must not contain any procedure, function or entry
-      for I in Scopes'Range loop
-         case Declaration_Kind (Scopes (I)) is
+      for Scope : Asis.Element of Active_Scopes loop
+         case Declaration_Kind (Scope) is
             when A_Procedure_Body_Declaration
                | A_Function_Body_Declaration
                | A_Task_Body_Declaration

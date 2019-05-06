@@ -564,62 +564,54 @@ package body Rules.Actual_Parameters is
             return;
          end if;
 
-         declare
-            Formals : constant Asis.Element_List := Get_Formals_List;
-         begin
-            for I in Formals'Range loop
-               case Element_Kind (Formals (I)) is
-                  when A_Clause =>
-                     -- Use clause in generic formal part
-                     null;
-                  when A_Declaration =>
-                     case Declaration_Kind (Formals (I)) is
-                        when A_Parameter_Specification
-                           | A_Formal_Object_Declaration
-                           =>
-                           if Rule_Used (SR_Entity) or not Is_Nil (Initialization_Expression (Formals (I))) then
-                              declare
-                                 Formal_Names : constant Asis.Expression_List := Names (Formals (I));
-                              begin
-                                 for F in Formal_Names'Range loop
-                                    if Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
-                                       Check_Default (Formal_Names (F), Name_Context, All_Context);
-                                    end if;
-                                    if Rule_Used (SR_Entity) then
-                                       Check_Entity (Formal_Names (F), Name_Context, All_Context);
-                                    end if;
-                                 end loop;
-                              end;
-                           end if;
-                        when A_Formal_Procedure_Declaration
-                           | A_Formal_Function_Declaration
-                           =>
-                           if  Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
-                              case Default_Kind (Formals (I)) is
-                                 when Not_A_Default =>
-                                    Failure ("Not_A_Default");
-                                 when A_Name_Default
-                                    | A_Box_Default
-                                    | A_Null_Default
-                                    =>
-                                    Check_Default (Names (Formals (I)) (1), Name_Context, All_Context);
-                                 when A_Nil_Default =>
-                                    null;
-                              end case;
-                           end if;
-                           if Rule_Used (SR_Entity) then
-                              Check_Entity (Names (Formals (I)) (1), Name_Context, All_Context);
-                           end if;
+         for Formal : Asis.Element of Get_Formals_List loop
+            case Element_Kind (Formal) is
+               when A_Clause =>
+                  -- Use clause in generic formal part
+                  null;
+               when A_Declaration =>
+                  case Declaration_Kind (Formal) is
+                     when A_Parameter_Specification
+                        | A_Formal_Object_Declaration
+                        =>
+                        if Rule_Used (SR_Entity) or not Is_Nil (Initialization_Expression (Formal)) then
+                           for N : Asis.Defining_Name of Names (Formal) loop
+                              if Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
+                                 Check_Default (N, Name_Context, All_Context);
+                              end if;
+                              if Rule_Used (SR_Entity) then
+                                 Check_Entity (N, Name_Context, All_Context);
+                              end if;
+                           end loop;
+                        end if;
+                     when A_Formal_Procedure_Declaration
+                        | A_Formal_Function_Declaration
+                        =>
+                        if  Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
+                           case Default_Kind (Formal) is
+                              when Not_A_Default =>
+                                 Failure ("Not_A_Default");
+                              when A_Name_Default
+                                 | A_Box_Default
+                                 | A_Null_Default
+                                 =>
+                                 Check_Default (Names (Formal) (1), Name_Context, All_Context);
+                              when A_Nil_Default =>
+                                 null;
+                           end case;
+                        end if;
+                        if Rule_Used (SR_Entity) then
+                           Check_Entity (Names (Formal) (1), Name_Context, All_Context);
+                        end if;
 
-                        when others =>
-                           -- Others cases have no possible default value
-                           null;
-                     end case;
-                  when others =>
-                     Failure ("Bad formal", Formals (I));
-               end case;
-            end loop;
-         end;
+                     when others =>
+                        -- Others cases have no possible default value
+                        null;
+                  end case;
+               when others =>
+                  Failure ("Bad formal", Formal);
+            end case;
+         end loop;
       end;
    end Process_Call_Or_Instantiation;
 

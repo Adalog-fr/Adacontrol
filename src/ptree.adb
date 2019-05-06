@@ -382,8 +382,8 @@ begin  -- Ptree
         := Context_Clause_Elements (Compilation_Unit => My_Unit,
                                     Include_Pragmas  => True) ;
    begin
-      for I in My_CC_List'Range loop
-         Traverse (My_CC_List (I), The_Control, The_Info);
+      for Cc : Asis.Context_Clause of My_CC_List loop
+         Traverse (Cc, The_Control, The_Info);
       end loop;
    end;
 

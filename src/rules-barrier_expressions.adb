@@ -204,11 +204,10 @@ package body Rules.Barrier_Expressions is
 
             when An_Identifier =>
                declare
-                  Used_Names : constant Asis.Expression_List := Used_Identifiers (Exp);
                   Name_Decl  : Asis.Declaration;
                begin
-                  for N in Used_Names'Range loop
-                     Name_Decl  := Corresponding_Name_Declaration (Used_Names(N));
+                  for N : Asis.Expression of Used_Identifiers (Exp) loop
+                     Name_Decl  := Corresponding_Name_Declaration (N);
                      case Declaration_Kind (Name_Decl) is
                         when A_Package_Declaration
                            | A_Package_Body_Declaration
@@ -237,7 +236,7 @@ package body Rules.Barrier_Expressions is
                            =>
                            Do_Report ("variable",
                                       Control_Manager.Association (Contexts, Image (K_Any_Variable)),
-                                      Used_Names(N));
+                                      N);
                         when A_Component_Declaration =>
                            -- This can be:
                            --   A component of a protected element: boolean fields always allowed, others checked
@@ -253,7 +252,7 @@ package body Rules.Barrier_Expressions is
                               then
                                  Do_Report ("non-boolean protected component",
                                             Control_Manager.Association (Contexts, Image (K_Any_Component)),
-                                            Used_Names(N));
+                                            N);
                               end if;
                            end if;
                         when A_Discriminant_Specification =>
@@ -270,7 +269,7 @@ package body Rules.Barrier_Expressions is
                               then
                                  Do_Report ("non-boolean protected discriminant",
                                             Control_Manager.Association (Contexts, Image (K_Any_Component)),
-                                            Used_Names (N));
+                                            N);
                               end if;
                            end if;
                         when A_Constant_Declaration
@@ -282,17 +281,17 @@ package body Rules.Barrier_Expressions is
                            Failure (Rule_Id
                                     & ": unexpected declaration kind "
                                     & Declaration_Kinds'Wide_Image (Declaration_Kind (Name_Decl)),
-                                    Used_Names(N));
+                                    N);
                      end case;
                   end loop;
                end;
             when An_Integer_Literal
-              | A_String_Literal
-              | A_Real_Literal
-              | A_Character_Literal
-              | An_Enumeration_Literal
-              | A_Null_Literal
-              =>
+               | A_String_Literal
+               | A_Real_Literal
+               | A_Character_Literal
+               | An_Enumeration_Literal
+               | A_Null_Literal
+               =>
                -- always allowed
                null;
 

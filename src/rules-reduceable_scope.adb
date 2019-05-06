@@ -995,26 +995,25 @@ package body Rules.Reduceable_Scope is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Names : constant Asis.Expression_List := Clause_Names (Clause);
-         Kind  : constant Use_Clause_Kinds     := Clause_Kind  (Clause);
+         Kind : constant Use_Clause_Kinds := Clause_Kind  (Clause);
       begin
-         for I in Names'Range loop
+         for N : Asis.Name of Clause_Names (Clause) loop
             case Kind is
                when A_Use_Package_Clause =>
-                  Use_Clauses.Push ((Elem  => Names (I),
+                  Use_Clauses.Push ((Elem  => N,
                                      Kind  => Kind,
                                      Path  => null,
-                                     Package_Image => To_Key (Ultimate_Name (Names (I)))
+                                     Package_Image => To_Key (Ultimate_Name (N))
                                     ));
             when A_Use_Type_Clause | A_Use_All_Type_Clause =>
-                  Use_Clauses.Push ((Elem  => Names (I),
+                  Use_Clauses.Push ((Elem  => N,
                                      Kind  => Kind,
                                      Path  => null,
                                      Package_Image => To_Key (Enclosing_Program_Unit
                                                               (Corresponding_First_Subtype
                                                                (Corresponding_Name_Declaration
                                                                 (Simple_Name
-                                                                 (Strip_Attributes (Names (I)))))))));
+                                                                 (Strip_Attributes (N))))))));
             end case;
          end loop;
       end;

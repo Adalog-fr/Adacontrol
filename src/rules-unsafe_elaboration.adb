@@ -183,24 +183,20 @@ package body Rules.Unsafe_Elaboration is
          return;
       end if;
 
-      declare
-         Context_Clauses : constant Context_Clause_List := Applicable_Context_Clauses;
-      begin
-         for C in Context_Clauses'Range loop
-            if (        Pragma_Kind (Context_Clauses (C)) = An_Elaborate_Pragma
-                or else Pragma_Kind (Context_Clauses (C)) = An_Elaborate_All_Pragma)
-              and then
-                Is_Equal (Enclosing_Compilation_Unit
-                          (Corresponding_Name_Declaration
-                           (Simple_Name
-                            (Actual_Parameter
-                             (Pragma_Argument_Associations (Context_Clauses (C)) (1))))),
-                          Unit)
-            then
-               return;
-            end if;
-         end loop;
-      end;
+      for C : Asis.Context_Clause of Applicable_Context_Clauses loop
+         if (        Pragma_Kind (C) = An_Elaborate_Pragma
+             or else Pragma_Kind (C) = An_Elaborate_All_Pragma)
+           and then
+             Is_Equal (Enclosing_Compilation_Unit
+                       (Corresponding_Name_Declaration
+                          (Simple_Name
+                             (Actual_Parameter
+                                (Pragma_Argument_Associations (C) (1))))),
+                       Unit)
+         then
+            return;
+         end if;
+      end loop;
 
       if Is_Part_Of_Instance (Name) then
          Report (Rule_Id,

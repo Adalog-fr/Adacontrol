@@ -190,8 +190,8 @@ package body Rules.Array_Declarations is
             declare
                Index_List : constant Entity_Specification_List := Build_Index_List;
             begin
-               for I in Index_List'Range loop
-                  Check_Category (Rule_Id, Index_List (I), Index_Expected_Categories);
+               for E : Entity_Specification of Index_List loop
+                  Check_Category (Rule_Id, E, Index_Expected_Categories);
                end loop;
                Associate (Index_Contexts,
                           Value (Integer_Img (Index_List'Length)),

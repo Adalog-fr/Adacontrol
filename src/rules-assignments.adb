@@ -785,12 +785,11 @@ package body Rules.Assignments is
                   end if;
 
                   declare
-                     Assocs  : constant Association_List := Record_Component_Associations (Element, Normalized => True);
                      Compo   : Asis.Expression;
                      Temp_CR : Boolean;
                   begin
-                     for A in Assocs'Range loop
-                        Compo := Component_Expression (Assocs (A));
+                     for Assoc : Asis.Association of Record_Component_Associations (Element, Normalized => True) loop
+                        Compo := Component_Expression (Assoc);
                         if Is_Nil (Compo) then
                            -- Compo is nil for the normalized form of a box expression with no default
                            -- Do like A_Box_Expression above
@@ -804,7 +803,7 @@ package body Rules.Assignments is
                               Compo_Type : Asis.Declaration;
                            begin
                               Compo_Def := Object_Declaration_View (Enclosing_Element
-                                                                    (Record_Component_Choices (Assocs (A)) (1)));
+                                                                    (Record_Component_Choices (Assoc) (1)));
                               if Definition_Kind (Compo_Def) = A_Component_Definition then
                                  Compo_Def := Component_Definition_View (Compo_Def);
                                  if Definition_Kind (Compo_Def) = An_Access_Definition then
@@ -849,11 +848,10 @@ package body Rules.Assignments is
                -- No need to check controlledness, arrays can't be controlled
                declare
                   procedure Traverse_Components (Aggr : Asis.Expression) is
-                     Assocs           : constant Asis.Association_List := Array_Component_Associations (Aggr);
                   begin
-                     for A in Assocs'Range loop
+                     for Assoc : Asis.Association of Array_Component_Associations (Aggr) loop
                         declare
-                           Compo            : constant Asis.Expression := Component_Expression (Assocs (A));
+                           Compo            : constant Asis.Expression := Component_Expression (Assoc);
                            Controlled_Comps : Boolean := In_Controlled;
                         begin
                            if Expression_Kind (Compo) in A_Positional_Array_Aggregate .. A_Named_Array_Aggregate then
@@ -899,12 +897,11 @@ package body Rules.Assignments is
             when A_Case_Expression | An_If_Expression =>
                -- Recurse through data only (not choices)
                declare
-                  Paths : constant Asis.Element_List := Expression_Paths (Element);
                   Controlled_Path : Boolean;
                begin
-                  for P in Paths'Range loop
+                  for P : Asis.Path of Expression_Paths (Element) loop
                      Controlled_Path := In_Controlled;
-                     Traverse (Dependent_Expression (Paths (P)), Control, Controlled_Path);
+                     Traverse (Dependent_Expression (P), Control, Controlled_Path);
                      if Control = Terminate_Immediately then
                         return;
                      end if;
@@ -1094,18 +1091,16 @@ package body Rules.Assignments is
                      when An_Unconstrained_Array_Definition
                         | A_Constrained_Array_Definition
                         =>
-                        declare
-                           Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Struct);
-                           Result  : Biggest_Natural := 1;
-                        begin
-                           for I in Lengths'Range loop
-                              if Lengths (I) = Not_Static then
-                                 return Not_Static;
+                        return Result  : Extended_Biggest_Natural := 1 do
+                           for L : Extended_Biggest_Natural of Discrete_Constraining_Lengths (Struct) loop
+                              if L = Not_Static then
+                                 Result := Not_Static;
+                                 return;
                               end if;
-                              Result := Result * Lengths (I);
+                              Result := Result * L;
                            end loop;
-                           return Result;
-                        end;
+                           return;
+                        end return;
                      when A_Record_Type_Definition
                         | A_Tagged_Record_Type_Definition
                         =>
@@ -1141,46 +1136,35 @@ package body Rules.Assignments is
                      if Definition_Kind (Components (Components'Last)) = A_Variant_Part then
                         return Not_Static;
                      end if;
-                     for I in Components'Range loop
-                        if Definition_Kind (Components (I)) /= A_Null_Component then
-                           Result := Result + Names (Components (I))'Length;
+                     for C : Asis.Element of Components loop
+                        if Definition_Kind (C) /= A_Null_Component then
+                           Result := Result + Names (C)'Length;
                         end if;
                      end loop;
                      if not Is_Nil (Discriminant_Part (Decl)) then
-                        declare
-                           Discrs : constant Asis.Discriminant_Specification_List
-                             := Discriminants (Discriminant_Part (Decl));
-                        begin
-                           for I in Discrs'Range loop
-                              Result := Result + Names (Discrs (I))'Length;
-                           end loop;
-                        end;
+                        for D : Asis.Declaration of Discriminants (Discriminant_Part (Decl)) loop
+                           Result := Result + Names (D)'Length;
+                        end loop;
                      end if;
                      return Result;
                   end;
 
                when A_Protected_Definition =>
                   declare
-                     Decl       : constant Asis.Declaration := Enclosing_Element (Def);
-                     Components : constant Asis.Declarative_Item_List := Private_Part_Items (Def);
-                     Result     : Biggest_Natural := 0;
+                     Decl   : constant Asis.Declaration := Enclosing_Element (Def);
+                     Result : Biggest_Natural := 0;
                   begin
-                     for I in Components'Range loop
-                        if Declaration_Kind (Components (I)) = A_Component_Declaration then
-                           Result := Result + Names (Components (I))'Length;
+                     for Compo : Asis.Element of Private_Part_Items (Def) loop
+                        if Declaration_Kind (Compo) = A_Component_Declaration then
+                           Result := Result + Names (Compo)'Length;
                         end if;
                      end loop;
                      if Declaration_Kind (Decl) = A_Protected_Type_Declaration  -- no discriminants for single PO
                        and then not Is_Nil (Discriminant_Part (Decl))
                      then
-                        declare
-                           Discrs : constant Asis.Discriminant_Specification_List
-                             := Discriminants (Discriminant_Part (Decl));
-                        begin
-                           for I in Discrs'Range loop
-                              Result := Result + Names (Discrs (I))'Length;
-                           end loop;
-                        end;
+                        for D : Asis.Declaration of Discriminants (Discriminant_Part (Decl)) loop
+                           Result := Result + Names (D)'Length;
+                        end loop;
                      end if;
                      return Result;
                   end;
@@ -1330,22 +1314,18 @@ package body Rules.Assignments is
                   end if;
                   Process_Assignment (Parent, Component, Key);
                   Parent_Key := Key;
-                  declare
-                     Indices : constant Asis.Expression_List := Index_Expressions (Target);
-                  begin
-                     Append (Key, '(');
-                     for I in Indices'Range loop
-                        declare
-                           Value : constant Wide_String := Static_Expression_Value_Image (Indices (I));
-                        begin
-                           if Value = "" then
-                              raise Dynamic_LHS;
-                           end if;
-                           Append (Key, Value & ',');
-                        end;
-                     end loop;
-                     Replace_Element (Key, Length (Key), ')');
-                  end;
+                  Append (Key, '(');
+                  for E : Asis.Expression of Index_Expressions (Target) loop
+                     declare
+                        Value : constant Wide_String := Static_Expression_Value_Image (E);
+                     begin
+                        if Value = "" then
+                           raise Dynamic_LHS;
+                        end if;
+                        Append (Key, Value & ',');
+                     end;
+                  end loop;
+                  Replace_Element (Key, Length (Key), ')');
                   exit;
                when A_Slice  =>
                   -- Strictly speaking, we should handle that as as many LHS as elements
@@ -1484,11 +1464,11 @@ package body Rules.Assignments is
             return;
          end if;
 
-         for I in Stmts'Range loop
-            case Statement_Kind (Stmts (I)) is
+         for S : Asis.Statement of Stmts loop
+            case Statement_Kind (S) is
                when An_Assignment_Statement =>
                   begin
-                     Process_Assignment (LHS      => Assignment_Variable_Name (Stmts (I)),
+                     Process_Assignment (LHS      => Assignment_Variable_Name (S),
                                          Coverage => Full,
                                          Key      => Ignored);
                   exception

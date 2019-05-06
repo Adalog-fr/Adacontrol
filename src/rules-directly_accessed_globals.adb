@@ -157,17 +157,13 @@ package body Rules.Directly_Accessed_Globals is
 
       -- Note that since we are in a package /body/, the declaration is always processed
       -- before any use.
-      declare
-         Name_List : constant Asis.Name_List := Names (Decl);
-      begin
-         for I in Name_List'Range loop
-            Add (Global_Variables,
-                 To_Key (Name_List (I)),
-                 Variable_Info'(Owner_Pack             => Enclosing_Element (Decl),
-                                Var_Loc                => Get_Location (Name_List (I)),
-                                Read_Proc | Write_Proc => Nil_Element));
-         end loop;
-      end;
+      for N : Asis.Name of  Names (Decl) loop
+         Add (Global_Variables,
+              To_Key (N),
+              Variable_Info'(Owner_Pack             => Enclosing_Element (Decl),
+                             Var_Loc                => Get_Location (N),
+                             Read_Proc | Write_Proc => Nil_Element));
+      end loop;
    end Process_Variable_Declaration;
 
    ------------------------

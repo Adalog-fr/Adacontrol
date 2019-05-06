@@ -458,37 +458,33 @@ package body Rules.Comments is
             when Declaration =>
                return Declarative_Items (Unit) = Nil_Element_List;
             when Program_Unit =>
-               declare
-                  Decls      : constant Asis.Declaration_List := Declarative_Items (Unit);
-               begin
-                  for D in Decls'Range loop
-                     case Declaration_Kind (Decls (D)) is
-                        when A_Procedure_Declaration
-                           | A_Null_Procedure_Declaration
-                           | A_Generic_Procedure_Declaration
-                           | A_Procedure_Body_Declaration
+               for D : Asis.Element of Declarative_Items (Unit) loop
+                  case Declaration_Kind (D) is
+                     when A_Procedure_Declaration
+                        | A_Null_Procedure_Declaration
+                        | A_Generic_Procedure_Declaration
+                        | A_Procedure_Body_Declaration
 
-                           | A_Function_Declaration
-                           | An_Expression_Function_Declaration   -- Ada 2012
-                           | A_Generic_Function_Declaration
-                           | A_Function_Body_Declaration
+                        | A_Function_Declaration
+                        | An_Expression_Function_Declaration   -- Ada 2012
+                        | A_Generic_Function_Declaration
+                        | A_Function_Body_Declaration
 
-                           | An_Entry_Body_Declaration
+                        | An_Entry_Body_Declaration
 
-                           | A_Package_Declaration
-                           | A_Generic_Package_Declaration
-                           | A_Package_Body_Declaration
+                        | A_Package_Declaration
+                        | A_Generic_Package_Declaration
+                        | A_Package_Body_Declaration
 
-                           | A_Task_Body_Declaration
-                           | A_Protected_Body_Declaration
-                           =>
-                           return False;
-                        when others =>
-                           null;
-                     end case;
-                  end loop;
-                  return True;
-               end;
+                        | A_Task_Body_Declaration
+                        | A_Protected_Body_Declaration
+                        =>
+                        return False;
+                     when others =>
+                        null;
+                  end case;
+               end loop;
+               return True;
          end case;
       end Is_Comment_Optional;
 

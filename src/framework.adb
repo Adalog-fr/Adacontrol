@@ -151,8 +151,8 @@ package body Framework is
       use Asis.Text;
       Source_Line : constant Asis.Program_Text := Line_Image (Lines (Elem, L.First_Line, L.First_Line)(L.First_Line));
    begin
-      for I in reverse Character_Position range 1 .. L.First_Column - 1 loop
-         if Source_Line (I) > ' ' then
+      for C : Wide_Character of reverse Source_Line (1 .. L.First_Column - 1) loop
+         if C > ' ' then
             return L;
          end if;
       end loop;
