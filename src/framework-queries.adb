@@ -61,6 +61,8 @@ package body Framework.Queries is
 
       E : Asis.Element := Corresponding_Name_Declaration (N);
       C : Asis.Compilation_Unit;
+
+      subtype A_Comparison_Operator is Operator_Kinds range An_Equal_Operator .. A_Greater_Than_Or_Equal_Operator;
    begin
       if Is_Nil (E) then
          -- This should be:
@@ -69,9 +71,11 @@ package body Framework.Queries is
          -- 2) an implicitely defined operation for which the
          --    implementation does not build an artificial declaration
          --    We have no way to access the declaration, but this declaration is
-         --    at the same place as the type it operates on
-         --    => use the type of the parameter to determine where the operation
-         --       is declared
+         --    at the same place as the type it operates on.
+         --    => for an operator other than a comparison, this is the type returned by the operator
+         --    => for a comparison (that returns Boolean), take it from one of the operands.
+         --       if both operands are universal, there is no type in sight, return ""
+         --    => for a function that is an attribute, take it from the prefix of the attribute
 
          -- Go up to the function call, but beware that the name of the
          -- function may be composite.
@@ -89,33 +93,40 @@ package body Framework.Queries is
             return "";
 
          elsif Expression_Kind (E) = A_Function_Call then
-            declare
-               Parameters : constant Asis.Element_List := Function_Call_Parameters (E);
-            begin
-               E := A4G_Bugs.Corresponding_Expression_Type (Actual_Parameter (Parameters (1)));
+            case Expression_Kind (N) is
+               when An_Attribute_Reference =>
+                  E := Corresponding_Name_Declaration (Prefix (N));
+               when An_Operator_Symbol =>
+                  case Operator_Kind (N) is
+                     when A_Comparison_Operator =>
+                        declare
+                           Parameters : constant Asis.Element_List := Function_Call_Parameters (E);
+                        begin
+                           E := A4G_Bugs.Corresponding_Expression_Type (Actual_Parameter (Parameters (1)));
+                           if (Is_Nil (E) or else Type_Kind (Type_Declaration_View (E)) = A_Root_Type_Definition)
+                               and Parameters'Length > 1
+                           then
+                              E := A4G_Bugs.Corresponding_Expression_Type (Actual_Parameter (Parameters (2)));
+                           end if;
 
-               -- Annoying cases:
-               -- A string litteral will return a nil element for E
-               -- A universal value will return a declaration, however there is
-               -- not much we can do with it. We recognize universal values by the
-               -- fact that the declaration has no enclosing element. If someone knows
-               -- a better way...
-               if (Is_Nil (E) or else Is_Nil (Enclosing_Element (E)))
-                 and Parameters'Length > 1
-               then
-                  E := A4G_Bugs.Corresponding_Expression_Type (Actual_Parameter (Parameters (2)));
-               end if;
-
-               if Is_Nil (E) or else Is_Nil (Enclosing_Element (E)) then
-                  -- All operands universal or equivalent => give up
-                  -- (anyway, it's a language defined operator, not
-                  -- subject to use clauses)
-                  return "";
-               end if;
-
-               -- Go to the full declaration if necessary (incomplete and private)
-               E := Corresponding_First_Subtype (Corresponding_Full_Type_Declaration (E));
-            end;
+                           if Is_Nil (E) or else Type_Kind (Type_Declaration_View (E)) = A_Root_Type_Definition then
+                              -- All operands universal or equivalent => give up
+                              -- (anyway, it's a language defined operator, not
+                              -- subject to use clauses)
+                              return "";
+                           end if;
+                        end;
+                     when others =>
+                        E := A4G_Bugs.Corresponding_Expression_Type (E);
+                        if Is_Nil (E) then -- Catenation of string literals for example => give up
+                           return "";
+                        end if;
+                  end case;
+                  -- Go to the full declaration if necessary (incomplete and private)
+                  E := Corresponding_First_Subtype (Corresponding_Full_Type_Declaration (E));
+               when others =>
+                  Failure ("Unexpected predefined operation", N);
+            end case;
          elsif Element_Kind (E) = An_Association
            or Declaration_Kind (E) in A_Renaming_Declaration
            or Declaration_Kind (E) in A_Generic_Instantiation
@@ -142,14 +153,13 @@ package body Framework.Queries is
          end if;
       end if;
 
+      -- Here, E is an element located in the same declarative part as N
       if Is_Nil (Enclosing_Element (E)) then
          -- Knowing that N is a name, this happens only in the case of
-         -- a compilation unit. It can be use-visible only if it is a
-         -- child unit => take the parent as the enclosing unit
+         -- a compilation unit => take the parent as the enclosing unit
          C := Corresponding_Parent_Declaration (Enclosing_Compilation_Unit (E));
          if Is_Nil (C) then
-            -- This happens only if the package is Standard itself. This one is
-            -- certainly not use-visible...
+            -- This happens only if the package is Standard itself.
             return "";
          end if;
          E := Unit_Declaration (C);
