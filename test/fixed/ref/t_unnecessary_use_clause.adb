@@ -46,7 +46,8 @@ package body T_unnecessary_use_clause is
       type Int is new Integer;
    end Pack3;
 
-   use Pack3;                    -- Operator: Only used for operators
+   
+   use type T_unnecessary_use_clause.Pack3.Int;                    -- Operator: Only used for operators
    V : Pack3.Int;
 
    package Pack4 is

@@ -9933,12 +9933,16 @@ use_type: check unnecessary_use_clause (operator);
 
 @subsection Fixes
 All subrules generate fixes:
-
 @itemize
 @item
-The unnecessary package or type name is removed from the clause. If
-there is only one element in the clause, the clause as a whole is
-removed.
+If a package or type is totally unnecessary, the name is removed from
+the corresponding clause. If there is only one element in the clause,
+the clause as a whole is removed.
+@item
+If a @code{@b{use}} package clause can be replaced by a @code{@b{use
+type}} or  @code{@b{use all type}} clause, the @code{@b{use}} package
+clause is removed, and one or several @code{@b{use type}} or
+@code{@b{use all type}} clauses are inserted.
 @end itemize
 
 @subsection Tips
@@ -9970,17 +9974,13 @@ compiler as part of a type derivation) visible, and when:
 @item
 the operation is the target of a renaming declaration;
 @item
-or the operation is passed as an actual to a generic instantiation;
-@item
-or all operands of the operation are universal (i.e. untyped).
+or the operation is passed as an actual to a generic instantiation.
 @end itemize
 
 Since these problems come from intrinsic limitations of ASIS, there is
 nothing we can do about it. When this happens, you can disable the
 unnecessary_use_clause rule using the line (or block) disabling
-feature. @xref{Disabling controls}. Note that for the third alternative
-of the second case, you can also qualify one of the parameters, so it
-is not universal any more.
+feature. @xref{Disabling controls}.
 
 @node  Unsafe_Elaboration, Unsafe_Paired_Calls, Unnecessary_Use_Clause, Rules reference
 @section Unsafe_Elaboration

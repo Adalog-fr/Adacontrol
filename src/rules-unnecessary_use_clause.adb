@@ -30,11 +30,11 @@ with
   Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
-  Asis.Expressions,
-  Asis.Text;
+  Asis.Expressions;
 
 -- Adalog
 with
+  Elements_Set,
   Scope_Manager,
   Thick_Queries,
   Utilities;
@@ -47,7 +47,7 @@ with
 pragma Elaborate (Framework.Language);
 
 package body Rules.Unnecessary_Use_Clause is
-   use Framework, Framework.Control_Manager, Utilities;
+   use Framework, Framework.Control_Manager, Utilities, Elements_Set;
 
    -- Algorithm:
    -- We use a Scoped_Store to maintain a list of active use clauses. In case of multiple elements
@@ -90,14 +90,16 @@ package body Rules.Unnecessary_Use_Clause is
                       Identifier);     -- Other elements);
    type Used_Elem_Info (Name_Length : Positive; Spec_Length : Natural) is
       record
-         Use_Clause      : Asis.Element;                       -- The original use clause
-         Elem            : Asis.Element;                       -- The package or type name inside the use clause
-         Position        : Asis.List_Index;                    -- Index of Elem inside the use clause
-         Name            : Wide_String (1 .. Name_Length);     -- Full name image of ultimate identifier
-         Spec_Name       : Wide_String (1 .. Spec_Length);     -- Full_Name_Image of package where the type is defined
-                                                               -- "" if not defined in a package spec, or use package
-         User            : User_Kind;                          -- How the package/type is used
-         Spec_Unused     : Boolean := False;                   -- True after entering a body if User=Nothing from spec
+         Use_Clause     : Asis.Element;                       -- The original use clause
+         Elem           : Asis.Element;                       -- The package or type name inside the use clause
+         Position       : Asis.List_Index;                    -- Index of Elem inside the use clause
+         Name           : Wide_String (1 .. Name_Length);     -- Full name image of ultimate identifier
+         Spec_Name      : Wide_String (1 .. Spec_Length);     -- Full_Name_Image of package where the type is defined
+         -- "" if not defined in a package spec, or use package
+         Op_Type_List   : Set := Empty_Set;                   -- List of all types used in the package
+         Prim_Type_List : Set := Empty_Set;                   -- List of all types used in the package
+         User           : User_Kind;                          -- How the package/type is used
+         Spec_Unused    : Boolean := False;                   -- True after entering a body if User=Nothing from spec
       end record;
 
    -- Spec name is the name of the package specification where the type Elem is declared.
@@ -247,15 +249,17 @@ package body Rules.Unnecessary_Use_Clause is
                   Name_String : constant Wide_String := Full_Name_Image (Ultimate_Name (Name_Elem),
                                                                          With_Profile => True);
                begin
-                  return (Name_Length => Name_String'Length,
-                          Spec_Length => 0,
-                          Use_Clause  => Clause,
-                          Elem        => Name_Elem,
-                          Position    => Inx,
-                          Name        => Name_String,
-                          Spec_Name   => "",
-                          User        => Nothing,
-                          Spec_Unused => False);
+                  return (Name_Length    => Name_String'Length,
+                          Spec_Length    => 0,
+                          Use_Clause     => Clause,
+                          Elem           => Name_Elem,
+                          Position       => Inx,
+                          Name           => Name_String,
+                          Spec_Name      => "",
+                          Op_Type_List   => Empty_Set,
+                          Prim_Type_List => Empty_Set,
+                          User           => Nothing,
+                          Spec_Unused    => False);
                end;
             when A_Use_Type_Clause | A_Use_All_Type_Clause =>
                declare
@@ -272,25 +276,29 @@ package body Rules.Unnecessary_Use_Clause is
                                                                          With_Profile => True);
                begin
                   if Declaration_Kind (Enclosing_Element (Type_Unit)) = A_Package_Declaration then
-                     return (Name_Length => Name_String'Length,
-                             Spec_Length => Spec_String'Length,
-                             Use_Clause  => Clause,
-                             Elem        => Name_Elem,
-                             Position    => Inx,
-                             Name        => Name_String,
-                             Spec_Name   => Spec_String,
-                             User        => Nothing,
-                             Spec_Unused => False);
+                     return (Name_Length    => Name_String'Length,
+                             Spec_Length    => Spec_String'Length,
+                             Use_Clause     => Clause,
+                             Elem           => Name_Elem,
+                             Position       => Inx,
+                             Name           => Name_String,
+                             Spec_Name      => Spec_String,
+                             Op_Type_List   => Empty_Set,
+                             Prim_Type_List => Empty_Set,
+                             User           => Nothing,
+                             Spec_Unused    => False);
                   else  -- We are necessarily in the scope of the type => no need for use [all] type clause
-                     return (Name_Length => Name_String'Length,
-                             Spec_Length => 0,
-                             Use_Clause  => Clause,
-                             Elem        => Name_Elem,
-                             Position    => Inx,
-                             Name        => Name_String,
-                             Spec_Name   => "",
-                             User        => Nothing,
-                             Spec_Unused => False);
+                     return (Name_Length    => Name_String'Length,
+                             Spec_Length    => 0,
+                             Use_Clause     => Clause,
+                             Elem           => Name_Elem,
+                             Position       => Inx,
+                             Name           => Name_String,
+                             Spec_Name      => "",
+                             Op_Type_List   => Empty_Set,
+                             Prim_Type_List => Empty_Set,
+                             User           => Nothing,
+                             Spec_Unused    => False);
                   end if;
                end;
          end case;
@@ -468,7 +476,7 @@ package body Rules.Unnecessary_Use_Clause is
    -- Q.E.D.
 
    procedure Process_Identifier (Name : in Asis.Name) is
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations;
       use Framework.Queries, Thick_Queries;
 
       function Is_Name_Prefixed_With (Pack_Name : Wide_String) return Boolean is
@@ -570,10 +578,17 @@ package body Rules.Unnecessary_Use_Clause is
                            if Is_Equal (Enclosing_Element (T),
                                         Corresponding_Name_Declaration (Simple_Name (Info.Elem)))
                            then
-                              if Expression_Kind (Name) = An_Operator_Symbol then
+                              if Expression_Kind (Name) = An_Operator_Symbol
+                                and then not Contains (Info.Prim_Type_List, Names (T) (1))
+                              then
                                  Current_User := Operator;
+                                 Add (Info.Op_Type_List, Names (T) (1));
                               else
+                                 if Contains (Info.Op_Type_List, Names (T) (1)) then
+                                    Delete (Info.Op_Type_List, Names (T) (1));
+                                 end if;
                                  Current_User := Primitive;
+                                 Add (Info.Prim_Type_List, Names (T) (1));
                               end if;
                            end if;
                         end loop;
@@ -620,12 +635,13 @@ package body Rules.Unnecessary_Use_Clause is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      use Framework.Reports, Scope_Manager, Thick_Queries;
+      use Framework.Reports, Framework.Reports.Fixes, Scope_Manager, Thick_Queries;
       use Asis, Asis.Elements, Asis.Declarations;
 
       Is_Package_Spec : Boolean := False;
       Is_Package_Body : Boolean := False;
 
+      Incr_Fix : Incremental_Fix;
    begin  -- Process_Scope_Exit
       if Rule_Used = Not_Used then
          return;
@@ -675,10 +691,11 @@ package body Rules.Unnecessary_Use_Clause is
          declare
             Info          : constant Used_Elem_Info := Used_Elements.Current_Data;
             Child_Warning : constant Boolean :=  Current_Depth = 1
-                                                 and (Is_Package_Spec
-                                                      or (Is_Package_Body
-                                                          and Used_Elements.Current_Origin = Specification));
-            use Asis.Text, Fixes;
+              and (Is_Package_Spec
+                   or (Is_Package_Body
+                       and Used_Elements.Current_Origin = Specification));
+
+            Remove_Use_Clause : Boolean := False;
          begin
             if Used_Elements.Current_Origin /= Parent then
                if Info.User /= Nothing and Info.Spec_Unused and Rule_Used (Movable) then
@@ -696,8 +713,8 @@ package body Rules.Unnecessary_Use_Clause is
                                 Get_Location (Info.Elem),
                                 "Unused: " & Clause_And_Name (Info)
                                 & Choose (Child_Warning,
-                                          " (possible usage in child units)",
-                                          ""));
+                                  " (possible usage in child units)",
+                                  ""));
                         Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
                      end if;
                   when Qualified_Name =>
@@ -706,40 +723,58 @@ package body Rules.Unnecessary_Use_Clause is
                                 Ctl_Contexts (Qualified),
                                 Get_Location (Info.Elem),
                                 "Qualified: all uses of " & Extended_Name_Image (Info.Elem) & " are qualified"
-                                 & Choose (Child_Warning,
-                                           " (possible usage in child units)",
-                                           ""));
-                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
-                     end if;
-                  when Operator =>
-                     if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
-                        Report (Rule_Id,
-                                Ctl_Contexts (Operator),
-                                Get_Location (Info.Elem),
-                                "Operator: " & Clause_And_Name (Info) & " only used for operators"
-                                & Choose (Child_Warning,
-                                          " (possible usage in child units)",
-                                  ""));
-                        if Clause_Kind (Info.Use_Clause) = A_Use_All_Type_Clause then
-                           -- Too complicated to fix for a use package clause, several types could be used
-                           -- (and we don't know which ones)
-                           Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
-                           Fixes.Insert (Indentation_Of (Info.Use_Clause) & "use type "
-                                          & Trim_All (Element_Image (Info.Elem)) & ";",
-                                         After, Info.Use_Clause,
-                                         Full_Line => True);
-                        end if;
-                     end if;
-                  when Primitive =>
-                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
-                        Report (Rule_Id,
-                                Ctl_Contexts (Primitive),
-                                Get_Location (Info.Elem),
-                                "Primitive: " & Clause_And_Name (Info) & " only used for primitive operations"
                                 & Choose (Child_Warning,
                                   " (possible usage in child units)",
                                   ""));
+                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
                      end if;
+                  when Operator | Primitive =>
+                     for T : Defining_Name of Elements_In_Set (Info.Op_Type_List) loop
+                        if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Operator),
+                                   Get_Location (Info.Elem),
+                                   "Operator: " & Clause_And_Name (Info) & " only used for operators of "
+                                   & Full_Name_Image (T)
+                                   & Choose (Child_Warning,
+                                     " (possible usage in child units)",
+                                     ""));
+                           if Clause_Kind (Info.Use_Clause) in A_Use_All_Type_Clause | A_Use_Package_Clause then
+                              Fixes.Insert (Incr_Fix, Line_Delimiter
+                                            & Indentation_Of (Info.Use_Clause) & "use type "
+                                            & Full_Name_Image (T) & ";",
+                                            After, Info.Use_Clause);
+                              Remove_Use_Clause := True;
+                           end if;
+                        end if;
+                     end loop;
+
+
+                     for T : Defining_Name of Elements_In_Set (Info.Prim_Type_List) loop
+                        if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Primitive),
+                                   Get_Location (Info.Elem),
+                                   "Primitive: " & Clause_And_Name (Info) & " only used for primitive operations of "
+                                   & Full_Name_Image (T)
+                                   & Choose (Child_Warning,
+                                     " (possible usage in child units)",
+                                     ""));
+                           Fixes.Insert (Incr_Fix, Line_Delimiter
+                                         & Indentation_Of (Info.Use_Clause)
+                                         & "use all type "
+                                         & Full_Name_Image (T) & ";",
+                                         After, Info.Use_Clause);
+                           Remove_Use_Clause := True;
+                        end if;
+                     end loop;
+
+                     if Remove_Use_Clause then
+                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
+                        Remove_Use_Clause := False;
+                     end if;
+                     Fixes.Flush (Incr_Fix);
+
                   when Identifier =>
                      null;
                end case;

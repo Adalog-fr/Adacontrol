@@ -88,13 +88,13 @@ package body Framework.Reports.Fixes is
       end if;
 
       while Start <= By'Last loop
-         Stop := Index (By, Pattern => Delimiter_Image, From => Start);
+         Stop := Index (By, Pattern => Line_Delimiter, From => Start);
          exit when Stop = 0;
 
          Raw_Report (Marker & By (Start .. Stop - 1));
-         Start := Stop + Delimiter_Image'Length;
+         Start := Stop + Line_Delimiter'Length;
       end loop;
-      if Start <= By'Last then   -- By was not terminated by Delimiter_Image
+      if Start <= By'Last then   -- By was not terminated by Line_Delimiter
          Raw_Report (Marker & By (Start .. By'Last));
       end if;
    end Gen_Replace;
@@ -108,7 +108,10 @@ package body Framework.Reports.Fixes is
    -- If End_Break, also add line break after Text.
    type Break_Addition is (None, Before, After, Both);
    procedure Gen_Insert (Pos : Location; Text : Wide_String; Add_Break : Break_Addition := None) is
+      use Ada.Strings.Wide_Fixed;
       -- Breaks line
+      Inx : Natural := Text'First;
+      Acc : Natural;
    begin
       Raw_Report (Image (Pos)
                   & ':'
@@ -120,7 +123,15 @@ package body Framework.Reports.Fixes is
          when None | After =>
             null;
       end case;
-      Raw_Report (Marker & Text);
+
+      while Inx <= Text'Last loop
+         Acc := Index (Text (Inx .. Text'Last), Line_Delimiter);
+         exit when Acc = 0;
+         Raw_Report (Marker & Text (Inx .. Acc - 1));
+         Inx := Acc + Line_Delimiter'Length;
+      end loop;
+      Raw_Report (Marker & Text (Inx .. Text'Last));
+
       case Add_Break is
          when After | Both =>
             Raw_Report (Marker);
@@ -301,7 +312,7 @@ package body Framework.Reports.Fixes is
    -- Break --
    -----------
 
-   procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position) is
+   procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position := 0) is
       use Ada.Strings.Wide_Fixed;
    begin
       if not Generate_Fixes then
@@ -416,7 +427,12 @@ package body Framework.Reports.Fixes is
    -- Insert --
    ------------
 
-   procedure Insert (Fix : in out Incremental_Fix; Text : Wide_String; Place : Insert_Place; Elem : Asis.Element) is
+   procedure Insert (Fix       : in out Incremental_Fix;
+                     Text      :        Wide_String;
+                     Place     :        Insert_Place;
+                     Elem      :        Asis.Element)
+
+   is
       use Fix_List;
 
       Curs         : Cursor := First (Fix);
@@ -443,9 +459,12 @@ package body Framework.Reports.Fixes is
       while Has_Element (Curs) loop
          Current := Fetch (Curs);
          Current_Span := A4G_Bugs.Element_Span (Current.Elem);
-         if Current.Place = Place
-           and Current_Span.First_Line = Line
-           and Current_Span.First_Column = Col
+         if Current.Place = Place and then
+            (case Place is
+               when Before => Current_Span.First_Line   = Line
+                          and Current_Span.First_Column = Col,
+               when After => Current_Span.Last_Line   = Line
+                         and Current_Span.Last_Column = Col)
          then
             Append (Current.Text, Text);
             Replace (Curs, Current);

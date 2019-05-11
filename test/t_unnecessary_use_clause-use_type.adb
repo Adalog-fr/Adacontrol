@@ -1,4 +1,5 @@
 with X_Unnecessary_Use_Clause;
+with Ada.Assertions;
 separate (T_Unnecessary_Use_Clause)
 package body Use_Type is
    use type Ada.Text_IO.Count;                         -- Nested: Use type in scope of use package clause
@@ -151,6 +152,72 @@ package body Use_Type is
       begin
          V1 := V1 + 1;
          Prim (V1);
+      end;
+
+      ----------------- These are to check fixes, insertion of use [all] type
+      declare
+         use Pack1;                 -- Primitive: "use" clause for Pack1 only used for operators
+         P : Pack1.Int1;
+      begin
+         P := P + 1;
+      end;
+
+      declare
+         use Pack1;                 -- Primitive: "use" clause for Pack1 only used for primitive operations
+         P : Pack1.Int1;
+      begin
+         P := -1;
+         Prim (P);
+      end;
+
+      declare
+         use Pack1;                 -- Primitive: "use" clause for Pack1 only used for primitive operations
+         P : Pack1.Int1;
+         V : aliased Pack1.Tag1;
+      begin
+         Prim (P);
+         Prim (V'Access);
+      end;
+
+      declare
+         use Ada.Assertions, Pack1; -- Primitive: "use" clause for Pack1 only used for primitive operations
+         P : Pack1.Int1;
+         V : aliased Pack1.Tag1;
+      begin
+         Prim (P);
+         Prim (V'Access);
+         Assert (True);
+      end;
+
+      declare
+         use Pack1;                 -- Operator: "use" clause for Pack1 only used for operators
+         P : Pack1.Int1;
+      begin
+         if P >= 1 then
+            null;
+         end if;
+      end;
+
+      declare
+         use Pack1;                 -- Operator: "use" clause for Pack1 only used for operators
+         P : Pack1.Int1;
+         Q : Pack1.Int2;
+      begin
+         P := -1;
+         if Q >= 1 then
+            null;
+         end if;
+      end;
+
+      declare
+         use Pack1;                 -- Operator: "use" clause for Pack1 only used for operators
+         P : Pack1.Int1;
+         Q : Pack1.Int2;
+      begin
+         Prim (P);
+         if Q >= 1 then
+            null;
+         end if;
       end;
    end Proc;
 

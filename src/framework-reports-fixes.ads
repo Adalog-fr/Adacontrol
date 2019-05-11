@@ -42,6 +42,8 @@ package Framework.Reports.Fixes is
    -- Since a fix corresponds to a message, these services must be called after the corresponding call to Report
    -- for Check or Search, but not after a call to Report for Count
 
+   Line_Delimiter : constant Wide_String; -- This string causes a line break in inserted text
+
    function Indentation_Of (Original : Asis.Element) return Wide_String;
    -- Leading part of the line that contains Original, up to the first non-blank character
    -- Useful to insert a line with the same indentation as something else
@@ -69,7 +71,7 @@ package Framework.Reports.Fixes is
    procedure Insert (Text : Wide_String; From  : Location);
    -- Insert at From characters (can be outside original line, spaces added as needed)
 
-   procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position);
+   procedure Break (Place : Location; Indent_New : Asis.Text.Character_Position := 0);
    -- Inserts a line break
 
    procedure Delete (Elem  : Asis.Element);
@@ -91,10 +93,15 @@ package Framework.Reports.Fixes is
    -- An Incremental_Fix accumulates (in order) several inserts at the same place
    -- The fix is emitted (and the Incremental_Fix is reset) by calling Flush
    type Incremental_Fix is private;
-   procedure Insert (Fix : in out Incremental_Fix; Text : Wide_String; Place : Insert_Place; Elem : Asis.Element);
+   procedure Insert (Fix       : in out Incremental_Fix;
+                     Text      :        Wide_String;
+                     Place     :        Insert_Place;
+                     Elem      :        Asis.Element);
    procedure Flush  (Fix : in out Incremental_Fix);
 
 private
+   Line_Delimiter : constant Wide_String := Asis.Text.Delimiter_Image;
+
    type Delayed_Fix is
       record
          Place : Insert_Place;
