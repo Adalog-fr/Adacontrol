@@ -1,4 +1,25 @@
 =============
+== V1.21b2 ==
+=============
+
+Changes to existing rules:
+--------------------------
+return_types
+   add subrule type
+
+statements:
+   add subrule backward_goto
+   
+unnecessary_use_clause:
+   fixed some spurious messages in cases of complicated visibilities
+   added fixes when use clause replaceable by use [all] type clause
+
+adactl_fix:
+-----------
+Ignore fixable files that are not available
+
+
+=============
 == V1.21b1 ==
 =============
 
@@ -13,8 +34,6 @@ simplifiable_statements:
 simplifiable_expressions:
    add subrule membership
 
-unnecessary_use_clause:
-   fixed some spurious messages in cases of complicated visibilities
    
 =============
 == V1.20r9 ==
