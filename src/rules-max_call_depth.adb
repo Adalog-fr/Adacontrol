@@ -33,6 +33,7 @@ with
   Asis.Elements,
   Asis.Errors,
   Asis.Exceptions,
+  Asis.Expressions,
   Asis.Implementation,
   Asis.Iterator;
 
@@ -252,7 +253,7 @@ package body Rules.Max_Call_Depth is
    function Call_Depth (Call : Asis.Element) return Depth_Descriptor is
    -- Computes the depth of a call, including itself
       use Asis, Asis.Elements;
-      use Depth_Map, Framework.Control_Manager, Framework.Queries, Thick_Queries, Utilities;
+      use Depth_Map, Framework.Control_Manager, Framework.Queries, Thick_Queries;
 
       Called       : constant Asis.Expression := Ultimate_Name (Called_Simple_Name (Call));
       Called_Name  : Unbounded_Wide_String;
@@ -310,10 +311,8 @@ package body Rules.Max_Call_Depth is
       end if;
 
       case Called_Depth.Kind is
-         when Inline | Recursive =>
+         when Inline | Recursive | Dynamic =>
             return Called_Depth;
-         when Dynamic =>
-            Failure ("Dynamic kind returned by Entity_Call_Depth - 1");
          when Regular | Unexplored | Unknown =>
             -- All cases where something is actually called (although we may not know very well what)
             return (Called_Depth.Kind, Called_Depth.Depth + 1);
@@ -517,7 +516,7 @@ package body Rules.Max_Call_Depth is
    -- returns Infinite if Decl is the declaration of a callable_entity that is directly or indirectly recursive
    --
    -- Precondition: Decl is the declaration of a real subprogram, not of a renaming
-      use Asis, Asis.Declarations, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
       use Depth_Map, Framework.Queries, Framework.Rules_Manager, Thick_Queries, Utilities;
 
       Called_Name : constant Unbounded_Wide_String := To_Key (Names (Decl)(1));
@@ -644,7 +643,12 @@ package body Rules.Max_Call_Depth is
             when A_Procedure_Renaming_Declaration
                | A_Function_Renaming_Declaration
                =>
-               Failure ("renaming declaration in Entity_Call_Depth", Called_Body);
+               Called_Body := Simple_Name (Renamed_Entity (Called_Body));
+               if Expression_Kind (Called_Body) = An_Explicit_Dereference then
+                  Result := (Dynamic, 1);
+                  exit;
+               end if;
+               Called_Body := Corresponding_Name_Declaration (Called_Body);
 
             when A_Formal_Function_Declaration
                | A_Formal_Procedure_Declaration
