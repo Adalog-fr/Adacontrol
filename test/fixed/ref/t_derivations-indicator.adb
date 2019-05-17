@@ -39,7 +39,7 @@ procedure Indicator is
    overriding procedure Pi_KO (X : Deri1);                            -- Indicator: Overriding missing untagged
    overriding function F_KO return Deri1;                             -- Indicator: Overriding missing untagged
 
-   type Deri2 is new Deri1;                                -- From : category RANGE
+   type Deri2 is new Deri1;                                -- From: category RANGE; Depth: greater than 1
    procedure Notov (X : Deri2);                            -- OK (not primitive)
    overriding procedure Pi_OK (X : Deri2) renames Notov;   -- OK (indicator given, primitive rename as body, untagged)
 
@@ -59,7 +59,7 @@ procedure Indicator is
 
 
    package Make_Prim is
-      type Deri3 is new Deri2;                             -- From: category RANGE
+      type Deri3 is new Deri2;                             -- From: category RANGE; Depth: greater than 1
       not overriding procedure New_Prim (X : Deri3);                      -- Indicator: Not overriding missing untagged
       package Nested is
          procedure Not_Prim (X : Deri3);
@@ -80,6 +80,69 @@ procedure Indicator is
    end Make_Prim;
 
    overriding procedure Pi_KO is new Gen (Deri2);                     -- Indicator: Overriding missing untagged
+
+
+   -- Case of private types
+   package Pack_Priv is
+      type Tn is private;
+      type Tt is tagged private;
+      procedure Prim (X : Tn) is null;
+      procedure Prim (X : Tt) is null;
+
+   private
+      type Tn is new Integer;                              -- From: STANDARD.Integer, category RANGE
+      type Tt is new Pack.Tt with null record;             -- From: category TAGGED
+   end Pack_Priv;
+
+   -- Case of task/protected
+   package For_Inteface is
+      type I is limited interface;
+      procedure P (X : in out I) is abstract;
+   end For_Inteface;
+
+   task type Tt1 is new For_Inteface.I with
+      entry P;                    -- Indicator: overriding missing task entry (not implemented yet)
+      entry Q;                    -- Indicator: Not overriding missing task entry (not implemented yet)
+   end Tt1;
+
+   task body Tt1 is
+   begin
+      null;
+   end Tt1;
+
+   task Tt2 is new For_Inteface.I with
+      overriding entry P;         -- OK
+      not overriding entry Q;     -- OK
+   end Tt2;
+
+   task body Tt2 is
+   begin
+      null;
+   end Tt2;
+
+   protected Pt1 is new For_Inteface.I with
+      overriding procedure P;                -- Indicator: overriding missing protected
+      not overriding procedure Q;                -- Indicator: Not overriding missing protected
+   end Pt1;
+
+   protected body Pt1 is
+      procedure P is null;
+      procedure Q is null;
+      procedure R;
+      procedure R is null;
+      procedure S is null;
+   end Pt1;
+
+   protected type Pt2 is new For_Inteface.I with
+      overriding procedure P;     -- OK
+      not overriding procedure Q; -- OK
+   end Pt2;
+
+   protected body Pt2 is
+      procedure P is null;        -- Ok (not checked in protected body)
+      procedure Q is null;        -- Ok (not checked in protected body)
+   end Pt2;
+
 begin
    null;
 end Indicator;

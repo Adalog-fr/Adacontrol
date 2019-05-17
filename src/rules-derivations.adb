@@ -565,19 +565,48 @@ package body Rules.Derivations is
          -- tagged type in the profile.
          Type_G := Gender_Untagged;
          for Prim_Type : Asis.Declaration of Primitive_Types loop
-            case Type_Kind (Type_Declaration_View (Prim_Type)) is
-               when A_Tagged_Record_Type_Definition =>
-                  Type_G := Gender_Tagged;
-               when A_Derived_Record_Extension_Definition =>
-                  Derived_Found := True;
+            case Declaration_Kind (Prim_Type) is
+               when An_Ordinary_Type_Declaration =>
+                  case Type_Kind (Type_Declaration_View (Prim_Type)) is
+                     when A_Tagged_Record_Type_Definition =>
+                        Type_G := Gender_Tagged;
+                     when A_Derived_Record_Extension_Definition =>
+                        Derived_Found := True;
+                        Type_G        := Gender_Tagged;
+                        exit;
+                     when A_Derived_Type_Definition =>
+                        Derived_Found := True;
+                     when others =>
+                        null;
+                  end case;
+
+               when A_Task_Type_Declaration
+                  | A_Single_Task_Declaration
+                  | A_Protected_Type_Declaration
+                  | A_Single_Protected_Declaration
+                  =>
+                  -- A task/protected that implements an interface
+                  Derived_Found := Declaration_Kind (Callable) /= An_Entry_Declaration;
+                  -- Because Asis.Extensions.Is_Overriding_Declaration does not work on entries.
+                  -- Replace with True when fixed.
                   Type_G        := Gender_Tagged;
                   exit;
-               when A_Derived_Type_Definition =>
-                  Derived_Found := True;
+
+               when A_Private_Type_Declaration =>
+                  case Definition_Kind (Type_Declaration_View (Prim_Type)) is
+                     when A_Private_Type_Definition =>
+                        null;
+                     when A_Tagged_Private_Type_Definition =>
+                        Type_G := Gender_Tagged;
+                     when others =>
+                        Failure ("Bad private type", Prim_Type);
+                  end case;
+
                when others =>
-                  null;
+                  Failure ("Not a type from Primitive_Types", Prim_Type);
             end case;
          end loop;
+
          if not Derived_Found then
             -- not a derived operation
             return;
@@ -595,6 +624,7 @@ package body Rules.Derivations is
                | A_Function_Body_Stub
                | A_Function_Renaming_Declaration
                | An_Expression_Function_Declaration
+               | An_Entry_Body_Declaration
                =>
                -- Note: instantiated generic bodies are not analyzed
                if Is_Nil (Corresponding_Declaration (Callable)) then
@@ -606,6 +636,7 @@ package body Rules.Derivations is
                end if;
             when A_Procedure_Declaration
                | A_Function_Declaration
+               | An_Entry_Declaration
                =>
                Declaration_G := Gender_Declaration;
                Indicator_G   := Indicator_Table (Is_Overriding_Operation (Inst_Or_Call_Decl));

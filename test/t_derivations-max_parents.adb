@@ -24,12 +24,12 @@ procedure Max_Parents is
    task body S2 is begin accept E; end S2;
 
    protected S3 is new LI1 and LI2 and LI3 with  -- More than 2 parents
-      procedure P;
+      not overriding procedure P;
    end S3;
    protected body S3 is procedure P is begin null; end; end S3;
 
    protected type S4 is new LI1 with             -- OK
-        procedure P;
+      not overriding procedure P;
    end S4;
    protected body S4 is procedure P is begin null; end; end S4;
 begin

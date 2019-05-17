@@ -88,7 +88,7 @@ procedure From is
    type PO_D1 is new PO1;                        -- From: category PROTECTED
 
    protected type PO2 is new Ilim with           -- From: Ilim;
-        procedure P;
+        not overriding procedure P;
    end PO2;
    protected body PO2 Is
       procedure P is begin null; end;

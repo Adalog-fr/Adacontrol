@@ -76,6 +76,7 @@ t_derivations-from.adb:78:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS
 t_derivations-from.adb:78:4: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-from.adb:88:18: Found: DERIVATIONS: Type derived from category PROTECTED
 t_derivations-from.adb:90:4: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
+t_derivations-from.adb:91:9: Error: DERIVATIONS: Type derived from T_DERIVATIONS.FROM.ILIM
 t_derivations-max_parents.adb:7:15: Found: DERIVATIONS: Type derived from category INTERFACE
 t_derivations-max_parents.adb:8:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_parents.adb:9:15: Found: DERIVATIONS: Type derived from category TAGGED
@@ -125,3 +126,54 @@ t_derivations-indicator.adb:69:7: Insert
 t_derivations-indicator.adb:82:4: Error: Untagged_Spec: Missing overriding indicator
 t_derivations-indicator.adb:82:4: Insert
 !overriding 
+t_derivations-indicator.adb:93:18: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-indicator.adb:93:18: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-indicator.adb:94:18: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-indicator.adb:124:7: Error: Tagged_Spec: Missing overriding indicator
+t_derivations-indicator.adb:124:7: Insert
+!overriding 
+t_derivations-indicator.adb:125:7: Error: Tagged_Spec: Missing not overriding indicator
+t_derivations-indicator.adb:125:7: Insert
+!not overriding 
+t_derivations-max_depth.adb:9:15: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:9:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_depth.adb:10:15: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:10:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_depth.adb:11:17: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:11:17: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_depth.adb:11:17: Found: DERIVATIONS: Derivation depth greater than 2 (3)
+t_derivations-max_depth.adb:12:17: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:12:17: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_depth.adb:12:17: Found: DERIVATIONS: Derivation depth greater than 2 (3)
+t_derivations-max_depth.adb:13:17: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:13:17: Error: DERIVATIONS: More than 2 parents (3)
+t_derivations-max_depth.adb:13:17: Found: DERIVATIONS: Derivation depth greater than 2 (3)
+t_derivations-max_depth.adb:14:17: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:14:17: Error: DERIVATIONS: More than 2 parents (3)
+t_derivations-max_depth.adb:14:17: Found: DERIVATIONS: Derivation depth greater than 2 (3)
+t_derivations-max_depth.adb:15:17: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:15:17: Error: DERIVATIONS: More than 2 parents (3)
+t_derivations-max_depth.adb:15:17: Found: DERIVATIONS: Derivation depth greater than 2 (3)
+t_derivations-max_depth.adb:16:15: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:16:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_depth.adb:16:15: Found: DERIVATIONS: Derivation depth greater than 2 (4)
+t_derivations-max_depth.adb:17:15: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-max_depth.adb:17:15: Found: DERIVATIONS: More than 1 parents (2)
+t_derivations-max_depth.adb:17:15: Error: DERIVATIONS: Derivation depth greater than 4 (5)
+t_derivations-max_depth.adb:19:17: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-max_depth.adb:19:17: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-max_depth.adb:20:17: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-max_depth.adb:20:17: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-max_depth.adb:20:17: Found: DERIVATIONS: Derivation depth greater than 1 (2)
+t_derivations-max_depth.adb:21:17: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-max_depth.adb:21:17: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-max_depth.adb:21:17: Found: DERIVATIONS: Derivation depth greater than 1 (3)
+t_derivations-max_depth.adb:22:17: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-max_depth.adb:22:17: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-max_depth.adb:22:17: Found: DERIVATIONS: Derivation depth greater than 1 (4)
+t_derivations-max_depth.adb:23:17: Error: from Integer: Type derived from STANDARD.INTEGER
+t_derivations-max_depth.adb:23:17: Found: DERIVATIONS: Type derived from category RANGE
+t_derivations-max_depth.adb:23:17: Found: DERIVATIONS: Derivation depth greater than 1 (5)
+
+Counts summary:
+C_Depth: 5

@@ -494,6 +494,7 @@ package body Framework.Plugs is
                   Rules.Usage.                  Process_Declaration          (Element);
 
                when An_Entry_Declaration =>
+                  Rules.Derivations.            Process_Callable    (Element);
                   Rules.Parameter_Declarations. Process_Declaration (Element);
                   Rules.Style.                  Process_Declaration (Element);
 
