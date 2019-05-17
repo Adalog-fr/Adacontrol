@@ -691,7 +691,7 @@ package body Rules.Potentially_Blocking_Operations is
 
          for I in Items'Range loop
             case Declaration_Kind (Items (I)) is
-               when A_Procedure_Declaration | A_Function_Declaration =>
+               when A_Procedure_Declaration | A_Function_Declaration | A_Null_Procedure_Declaration =>
                   null;
                when A_Procedure_Body_Declaration
                   | A_Function_Body_Declaration
