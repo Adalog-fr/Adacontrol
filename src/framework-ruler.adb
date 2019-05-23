@@ -799,6 +799,8 @@ package body Framework.Ruler is
                when A_Task_Definition   -- Things that can have a private part
                  | A_Protected_Definition
                  =>
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
                   Traverse_With_Private (Visible_Part_Items (Element, Include_Pragmas => True),
                                          Private_Part_Items (Element, Include_Pragmas => True),
                                          Control,

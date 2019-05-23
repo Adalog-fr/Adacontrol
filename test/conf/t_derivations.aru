@@ -19,3 +19,15 @@ Tagged_Body:   check  derivations (indicator, tagged,   not_overriding, body_for
 Untagged_Spec: check  derivations (indicator, untagged,                 declaration);
 Untagged_Body: search derivations (indicator, untagged, overriding,     body_required);
 
+-- Max depth
+check derivations (max_depth, tagged 4);
+search derivations (max_depth, tagged 2);
+C_Depth : count derivations (max_depth, tagged 3);
+search derivations (max_depth, untagged 1);
+-- Task
+search derivations (max_depth, task 0);
+check derivations (max_depth, task 1);
+-- Protected
+search derivations (max_depth, protected 3);
+check derivations (max_depth, protected 1);
+C_Depth_Task : count derivations (max_depth, task 2);

@@ -428,6 +428,7 @@ package body Framework.Plugs is
 
                when A_Package_Instantiation =>
                   Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
+                  Rules.Derivations.            Process_Instantiation         (Element);
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
@@ -606,6 +607,9 @@ package body Framework.Plugs is
                when An_Aspect_Specification =>
                   Rules.Aspects.Process_Aspect (Element);
                   Rules.Style.  Process_Aspect (Element);
+
+               when A_Task_Definition | A_Protected_Definition =>
+                  Rules.Derivations.Process_Derivation (Element);
 
                when others =>
                   null;

@@ -4638,6 +4638,7 @@ operations of derived types.
 <control_kind> derivations (from, <entity>|<category>
                                @{, <entity>|<category>@})
 <control_kind> derivations (max_parents, <value>)
+<control_kind> derivations (max_depth, [tagged | untagged | task | protected] <value>)
 <control_kind> derivations (indicator
                             [, overriding  | not_overriding]
                             [, tagged      | untagged]
@@ -4719,6 +4720,39 @@ search derivations (max_parents, 3);
 @end example
 
 @item
+``max_depth'' controls the maximum derivation depth. The derivation
+depth of a non derived type is 0. Otherwise, the derivation depth of a
+type is the maximum of the derivation depths of its parent and of all
+progenitors, plus 1.  <value> is the maximum @i{allowed} depth,
+i.e. the rule is triggered when the number of parents is strictly
+greater than <value>.
+
+If one or several modifiers ``tagged'', ``untagged'', ``task'', or
+``protected'' is given the rule applies only to derivations of tagged,
+untagged, task, or protected types respectively. Without modifiers, the
+rule applies to all forms of derived types.
+
+Types declared in generics are normally checked, and are also checked in
+instantiations. The derivation depth in an instantiation may be greater
+than the one of its generic counterpart.
+
+This subrule can be given only once for each combination of ``check'',
+``search'',``count'', and ``tagged'', ''untagged'', ''task'',
+''protected''. This way, it is possible to have a depth considered a
+warning (search), and one considered an error (check). Of course, this
+makes sense only if the number for search is less than the one for
+check.
+
+Ex:
+@example
+-- error if any derivation depth greater than 5
+check derivations (max_depth, 5);
+
+-- warning if derivation depth of tagged types greater than 3
+search derivations (max_depth, tagged 3);
+@end example
+
+@item
 ``indicator'' controls the presence or absence of overriding
 indicators in the declaration of primitive operations of a derived
 type.
@@ -4790,6 +4824,11 @@ issue with tagged types and the effect on dynamic dispatching; it is
 much less of an issue for untagged types, therefore it makes sense to
 apply the rule only to tagged types to avoid to many violations for
 regular types.
+
+@subsection Limitation
+Due to a weakness in the ASIS standard, the presence or absence of
+indicators on entries that implement operations of an interface are
+not checked.
 
 @node Directly_Accessed_Globals, Duplicate_Initialization_Calls, Derivations, Rules reference
 @section Directly_Accessed_Globals

@@ -22,7 +22,8 @@ Volatile_Objects_Without_Address_Clauses:
 Constructors:
    check declarations (constructor);
 
--- TBSL Deep_Inheritance_Hierarchies
+-- 9.1.2.2 Deep_Inheritance_Hierarchies
+   check derivations (Max_Depth, tagged 4);
 
 -- TBSL Direct_Calls_To_Primitives
 

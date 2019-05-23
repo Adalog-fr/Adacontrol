@@ -240,7 +240,7 @@ Parameter(2..3): <bound> <value>
 Rule: DERIVATIONS
 Controls ancestors and primitives of a derived type
 
-Parameter(1): from | max_parents | indicator
+Parameter(1): from | indicator | max_depth | max_parents
 
 for From subrule:
 Parameter(2..): <Entity name> | <category>
@@ -248,13 +248,16 @@ Parameter(2..): <Entity name> | <category>
             array   | record | tagged    | interface | access |
             private | task   | protected
 
-for Max_Parents subrule:
-Parameter(2)  : <value>
-
 for Indicator subrule:
 Parameter(2): tagged | untagged (optional)
 Parameter(3): overriding | not_overriding (optional)
 Parameter(4): declaration | body_required | body_forbidden (optional)
+
+for Max_Depth subrule:
+Parameter(2): [tagged | untagged | task | protected] <value>
+
+for Max_Parents subrule:
+Parameter(2): <value>
 ----
 Rule: DIRECTLY_ACCESSED_GLOBALS
 Control global package variables accessed by other than dedicated subprograms
