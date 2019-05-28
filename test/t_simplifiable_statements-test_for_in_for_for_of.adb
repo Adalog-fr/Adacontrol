@@ -3,6 +3,8 @@ procedure Test_For_In_For_For_Of is
    S1 : String (1 .. 10);
    S2 : String (1 .. 10);
    X  : Character;
+   type Acc_Str is access String;
+   Ptr : Acc_Str;
 
 begin
    L1 : for I in S1'Range loop         -- for_in_for_for_of
@@ -18,6 +20,10 @@ begin
 
    for I in 1 .. 9 loop                -- Index used in expression
       X := S1 (I + 1);
+   end loop;
+
+   for I in Ptr.all'Range loop         -- Indexing of dereference
+      X := Ptr.all (I);
    end loop;
 
    for I in Integer range 1 .. 10 loop -- Different variables

@@ -36,10 +36,10 @@ t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEM
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
-t_simplifiable_statements-test_for_in_for_for_of.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
-t_simplifiable_statements-test_for_in_for_for_of.adb:49:7: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
-t_simplifiable_statements-test_for_in_for_for_of.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
-t_simplifiable_statements-test_for_in_for_for_of.adb:80:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:10:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:55:7: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
+t_simplifiable_statements-test_for_in_for_for_of.adb:67:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:86:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
 t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
 t_simplifiable_statements-test_handler.adb:11:7: Delete:12:15
 t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler

@@ -1159,7 +1159,7 @@ package body Rules.Simplifiable_Statements is
                   end if;
 
                   Indexed_Var := Prefix (Indexed_Expr);
-                  if Expression_Kind (Indexed_Var) = A_Function_Call then
+                  if Expression_Kind (Indexed_Var) in A_Function_Call | An_Explicit_Dereference then
                      Control := Terminate_Immediately;
                      return;
                   end if;
