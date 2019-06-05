@@ -458,7 +458,7 @@ package body Rules.Potentially_Blocking_Operations is
                      if Definition_Kind (Def) = A_Subtype_Indication then
                         St_Name := Subtype_Simple_Name (Def);
                         if Is_Class_Wide_Subtype (St_Name) then
-                           -- We cannot what is actually inside, but it can contain a task only if it is limited
+                           -- We cannot know what is actually inside, but it can contain a task only if it is limited
                            if Is_Limited (St_Name) then
                               Uncheckable (Rule_Id,
                                            False_Positive,
@@ -491,14 +491,25 @@ package body Rules.Potentially_Blocking_Operations is
                when An_Allocation_From_Qualified_Expression =>
                   -- Since Ada 2005, initialization of a limited type (potentially containing a task)
                   -- is possible
-                  if Contains_Type_Declaration_Kind (Corresponding_Name_Declaration
-                                                     (Simple_Name
-                                                      (Converted_Or_Qualified_Subtype_Mark
-                                                       (Allocator_Qualified_Expression (Element)))),
-                                                     A_Task_Type_Declaration)
-                  then
-                     Set_State (True, "task creation");
-                  end if;
+                  declare
+                     St_Name : constant Asis.Expression := Simple_Name (Converted_Or_Qualified_Subtype_Mark
+                                                                        (Allocator_Qualified_Expression (Element)));
+                  begin
+                     if Is_Class_Wide_Subtype (St_Name) then
+                        -- We cannot know what is actually inside, but it can contain a task only if it is limited
+                        if Is_Limited (St_Name) then
+                           Uncheckable (Rule_Id,
+                                        False_Positive,
+                                        Get_Location (Element),
+                                        "limited class-wide object");
+                           Set_State (True, "possible task declaration");
+                        end if;
+                     elsif Contains_Type_Declaration_Kind (Corresponding_Name_Declaration (St_Name),
+                                                           A_Task_Type_Declaration)
+                     then
+                        Set_State (True, "task creation");
+                     end if;
+                  end;
                when An_Attribute_Reference =>
                   -- If the attribute is a function, it is a predefined function => not blocking
                   -- If the attribute is a value, we don't care
