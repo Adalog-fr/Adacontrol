@@ -426,13 +426,9 @@ package body Rules.Derivations is
         or else Type_Kind (Type_Def)        = An_Interface_Type_Definition
         or else Formal_Type_Kind (Type_Def) = A_Formal_Derived_Type_Definition
       then
-         declare
-            Progenitors : constant Asis.Expression_List := Definition_Interface_List (Type_Def);
-         begin
-            for P in Progenitors'Range loop
-               Check_From_Type (Simple_Name (Progenitors (P)), Loc);
-            end loop;
-         end;
+         for Progenitor : Asis.Expression of Definition_Interface_List (Type_Def) loop
+            Check_From_Type (Simple_Name (Progenitor), Loc);
+         end loop;
       end if;
    end Check_From_Type;
 
@@ -669,7 +665,7 @@ package body Rules.Derivations is
    ------------------------
 
    procedure Process_Derivation (Element :  Asis.Definition) is
-      use Asis, Asis.Definitions, Asis.Elements;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
       use Thick_Queries;
    begin
       if Rule_Used = No_Rule then
@@ -688,23 +684,13 @@ package body Rules.Derivations is
 
          -- Untagged derived types have a parent, but no progenitors...
          if Definition_Kind (Element) in A_Protected_Definition | A_Task_Definition then
-            declare
-               use Asis.Declarations;
-
-               Progenitors : constant Asis.Expression_List := Declaration_Interface_List (Enclosing_Element (Element));
-            begin
-               for P in Progenitors'Range loop
-                  Check_From_Type (Simple_Name (Progenitors (P)), Get_Location (Element));
-               end loop;
-            end;
+            for Progenitor : Asis.Expression of Declaration_Interface_List (Enclosing_Element (Element)) loop
+               Check_From_Type (Simple_Name (Progenitor), Get_Location (Element));
+            end loop;
          elsif not (Type_Kind (Element) in A_Derived_Type_Definition | Not_A_Type_Definition) then
-            declare
-               Progenitors : constant Asis.Expression_List := Definition_Interface_List (Element);
-            begin
-               for P in Progenitors'Range loop
-                  Check_From_Type (Simple_Name (Progenitors (P)), Get_Location (Element));
-               end loop;
-            end;
+            for Progenitor : Asis.Expression of Definition_Interface_List (Element) loop
+               Check_From_Type (Simple_Name (Progenitor), Get_Location (Element));
+            end loop;
          end if;
       end if;
 
@@ -777,8 +763,8 @@ package body Rules.Derivations is
          Progenitors : constant Asis.Expression_List := Declaration_Interface_List (Sync);
       begin
          if Rule_Used (SR_From) then
-            for P in Progenitors'Range loop
-               Check_From_Type (Simple_Name (Progenitors (P)), Get_Location (Sync));
+            for Progenitor : Asis.Expression of Progenitors loop
+               Check_From_Type (Simple_Name (Progenitor), Get_Location (Sync));
             end loop;
          end if;
 
@@ -979,7 +965,6 @@ package body Rules.Derivations is
                                 In_Controlled : in out Null_State)
       is
          pragma Unreferenced (Control, In_Controlled);
-         use Asis.Elements;
       begin
          case Element_Kind (Element) is
             when A_Definition =>
@@ -1036,8 +1021,6 @@ package body Rules.Derivations is
       if Rule_Used (SR_Max_Depth) then
          Traverse (Corresponding_Declaration (Inst), Ignored, Controlled_Inst);
          declare
-            use Asis.Elements;
-
             Inst_Body : constant Asis.Declaration := Corresponding_Body (Inst);
          begin
             if not Is_Nil (Inst_Body) then

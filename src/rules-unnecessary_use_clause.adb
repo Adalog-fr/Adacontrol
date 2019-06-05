@@ -736,9 +736,7 @@ package body Rules.Unnecessary_Use_Clause is
                                    Get_Location (Info.Elem),
                                    "Operator: " & Clause_And_Name (Info) & " only used for operators of "
                                    & Full_Name_Image (T)
-                                   & Choose (Child_Warning,
-                                     " (possible usage in child units)",
-                                     ""));
+                                   & (if Child_Warning then " (possible usage in child units)" else ""));
                            if Clause_Kind (Info.Use_Clause) in A_Use_All_Type_Clause | A_Use_Package_Clause then
                               Fixes.Insert (Incr_Fix, Line_Delimiter
                                             & Indentation_Of (Info.Use_Clause) & "use type "
@@ -757,9 +755,7 @@ package body Rules.Unnecessary_Use_Clause is
                                    Get_Location (Info.Elem),
                                    "Primitive: " & Clause_And_Name (Info) & " only used for primitive operations of "
                                    & Full_Name_Image (T)
-                                   & Choose (Child_Warning,
-                                     " (possible usage in child units)",
-                                     ""));
+                                   & (if Child_Warning then " (possible usage in child units)" else ""));
                            Fixes.Insert (Incr_Fix, Line_Delimiter
                                          & Indentation_Of (Info.Use_Clause)
                                          & "use all type "

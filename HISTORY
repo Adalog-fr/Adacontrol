@@ -1,3 +1,9 @@
+Changes to existing rules:
+--------------------------
+Derivations:
+   add subrule Max_Depth
+   check overriding indicator of task entries and protected operations
+
 =============
 == V1.21b2 ==
 =============
