@@ -35,6 +35,7 @@ package Framework.Specific_Plugs is
    procedure Exit_Context_Clauses (Unit    : in Asis.Compilation_Unit);
    procedure Exit_Unit            (Unit    : in Asis.Compilation_Unit);
    procedure Enter_Scope          (Element : in Asis.Element);
+   procedure Enter_Private_Part   (Element : in Asis.Element);
    procedure Exit_Scope           (Element : in Asis.Element);
    procedure Enter_Statement_List (Element : in Asis.Element);
 

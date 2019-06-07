@@ -167,6 +167,18 @@ package body Framework.Ruler is
    end Enter_Scope;
 
 
+   ------------------------
+   -- Enter_Private_Part --
+   ------------------------
+
+   procedure Enter_Private_Part (Element : in Asis.Element) is
+   begin
+      Scope_Manager.           Enter_Private_Part;
+      Framework.Plugs.         Enter_Private_Part (Element);
+      Framework.Specific_Plugs.Enter_Private_Part (Element);
+   end Enter_Private_Part;
+
+
    ----------------
    -- Exit_Scope --
    ----------------
@@ -397,7 +409,8 @@ package body Framework.Ruler is
    -- Note that Enter_Private_Part is called even if there is no private part.
    -- This replaces then normal (recursive) traversal, any code that calls this procedure must
    -- set Control to Abandon_Children
-   procedure Traverse_With_Private (Visible_Part : in     Asis.Declarative_Item_List;
+   procedure Traverse_With_Private (Element      : in     Asis.Element;
+                                    Visible_Part : in     Asis.Declarative_Item_List;
                                     Private_Part : in     Asis.Declarative_Item_List;
                                     Control      : in out Asis.Traverse_Control;
                                     State        : in out Info)
@@ -420,7 +433,7 @@ package body Framework.Ruler is
          end case;
       end loop;
 
-      Scope_Manager.Enter_Private_Part;
+      Enter_Private_Part (Element);
 
       for  Elem : Asis.Element of Private_Part loop
          Semantic_Traverse_Elements (Elem, Control, State);
@@ -761,7 +774,8 @@ package body Framework.Ruler is
                   Framework.Specific_Plugs.Pre_Procedure (Element);
 
                   Enter_Scope (Element);
-                  Traverse_With_Private (Names(Element)(1)
+                  Traverse_With_Private (Element,
+                                         Names (Element) (1)
                                          & Visible_Part_Declarative_Items (Element, Include_Pragmas => True),
                                          Private_Part_Declarative_Items (Element, Include_Pragmas => True),
                                          Control,
@@ -777,7 +791,8 @@ package body Framework.Ruler is
                   Framework.Specific_Plugs.Pre_Procedure (Element);
 
                   Enter_Scope (Element);
-                  Traverse_With_Private (Generic_Formal_Part (Element, Include_Pragmas => True)
+                  Traverse_With_Private (Element,
+                                         Generic_Formal_Part (Element, Include_Pragmas => True)
                                          & Names(Element)(1)
                                          & Visible_Part_Declarative_Items (Element, Include_Pragmas => True),
                                          Private_Part_Declarative_Items (Element, Include_Pragmas => True),
@@ -801,7 +816,8 @@ package body Framework.Ruler is
                  =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
-                  Traverse_With_Private (Visible_Part_Items (Element, Include_Pragmas => True),
+                  Traverse_With_Private (Element,
+                                         Visible_Part_Items (Element, Include_Pragmas => True),
                                          Private_Part_Items (Element, Include_Pragmas => True),
                                          Control,
                                          State);

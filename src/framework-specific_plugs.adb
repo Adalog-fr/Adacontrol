@@ -70,6 +70,16 @@ package body Framework.Specific_Plugs is
       null;
    end Enter_Scope;
 
+   ------------------------
+   -- Enter_Private_Part --
+   ------------------------
+
+   procedure Enter_Private_Part   (Element : in Asis.Element) is
+      pragma Unreferenced (Element);
+   begin
+      null;
+   end Enter_Private_Part;
+
    ----------------
    -- Exit_Scope --
    ----------------
