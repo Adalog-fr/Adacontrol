@@ -28,6 +28,7 @@ with  -- Ada units
      Ada.Containers.Vectors,
      Ada.Directories,
      Ada.Exceptions,
+     Ada.Strings.Fixed,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
 
@@ -74,7 +75,15 @@ procedure Adactl_Fix is
       (Left.File_Name < Right.File_Name
          or else (Left.File_Name = Right.File_Name
                     and (Left.Start_Pos < Right.Start_Pos
-                           or else (Left.Start_Pos = Right.Start_Pos and Left.End_Pos < Right.End_Pos))));
+                         or else (Left.Start_Pos = Right.Start_Pos and Left.End_Pos < Right.End_Pos))));
+
+   function Image (P : Position) return String is
+      use Ada.Strings, Ada.Strings.Fixed;
+   begin
+      return To_String (P.File_Name)
+             & ':' & Trim (P.Start_Pos.Line'Image, Left)
+             & ':' & Trim (P.Start_Pos.Col'Image,  Left);
+   end Image;
 
    --
    -- Fix
@@ -294,14 +303,15 @@ procedure Adactl_Fix is
       --   - TBSL one is fully inside the other one: keep the inner one
       --   - Exactly one is an insertion whose position is equal to the end of the previous one
       --     or the start of the next one: keep both
-      --   - one is a deletion that fully includes the other one: keep the deletion
+      --   - one is a deletion that fully covers the other fix: keep the deletion
       -- Note: Refactor is ignored
 
-         Previous_Curs : constant Fix_Maps.Cursor := Kept_Fixes.Floor (Loc);
+         Previous_Curs : Fix_Maps.Cursor := Kept_Fixes.Floor (Loc);
          Previous_Pos  : Position;
          Previous_Fix  : Fix_Descriptor;
-         Next_Curs     : constant Fix_Maps.Cursor := Kept_Fixes.Ceiling (Loc);
+         Next_Curs     : Fix_Maps.Cursor := Kept_Fixes.Ceiling (Loc);
          Next_Pos      : Position;
+         Next_Fix      : Fix_Descriptor;
 
       begin
          if Previous_Curs /= Fix_Maps.No_Element then
@@ -313,16 +323,25 @@ procedure Adactl_Fix is
                then
                   -- Two inserts at the same position, ignore this one
                   Conflicts_Found := True;
+                  Info ("    Conflict: two inserts at " & Image (Loc));
                   return;
                elsif Previous_Fix.Kind = Insert and Loc.Start_Pos = Previous_Pos.Start_Pos then
                   -- Only one is insert => OK
                   null;
-               elsif Previous_Pos.End_Pos >= Loc.End_Pos and then Previous_Fix.Kind = Delete then
-                  -- Already have a Delete that covers this fix => Ignore this fix
+               elsif Previous_Fix.Kind = Delete and then Previous_Pos.End_Pos >= Loc.End_Pos then
+                  -- Already have a Delete fix that covers this fix => Ignore this fix
                   return;
+               elsif Previous_Fix.Kind = Delete and then Fix.Kind = Delete
+                     and then Previous_Pos.End_Pos >= Loc.Start_Pos
+               then
+                  -- Two overlaping Delete fixes => Replace by Delete covering both
+                  -- Note: Previous does not extend farther than Loc, because it is caught by previous test
+                  Kept_Fixes.Delete (Previous_Curs);
+                  Kept_Fixes.Insert ((Loc.File_Name, Previous_Pos.Start_Pos, Loc.End_Pos), Create (Delete));
                elsif Previous_Pos.End_Pos >= Loc.Start_Pos then
                   -- Previous overlaps this one => ignore this one
                   Conflicts_Found := True;
+                  Info ("    Conflict: overlap between " & Image (Previous_Pos) & " and " & Image (Loc));
                   return;
                end if;
             end if;
@@ -330,15 +349,24 @@ procedure Adactl_Fix is
 
          if Next_Curs /= Fix_Maps.No_Element then
             Next_Pos := Key (Next_Curs);
-            if Fix.Kind = Insert and Loc.Start_Pos = Next_Pos.Start_Pos then
-               -- Only one is insert => OK
-               null;
-            elsif Next_Pos.File_Name = Loc.File_Name then
-               if Loc.End_Pos >= Next_Pos.End_Pos and then Fix.Kind = Delete then
+            if Next_Pos.File_Name = Loc.File_Name then
+               Next_Fix := Element (Next_Curs);
+               if Fix.Kind = Insert and Loc.Start_Pos = Next_Pos.Start_Pos then
+                  -- Only one is insert => OK
+                  null;
+               elsif Fix.Kind = Delete and then Loc.End_Pos >= Next_Pos.End_Pos then
                   -- This is a Delete fix that covers a previous fix => remove previous
                   Kept_Fixes.Delete (Loc);
+               elsif Next_Fix.Kind = Delete and then Fix.Kind = Delete
+                 and then Loc.End_Pos >= Next_Pos.Start_Pos
+               then
+                  -- Two overlaping Delete fixes => Replace by Delete covering both
+                  -- Note: Loc does not extend farther than Next, because it is caught by previous test
+                  Kept_Fixes.Delete (Next_Curs);
+                  Kept_Fixes.Insert ((Loc.File_Name, Loc.Start_Pos, Next_Pos.End_Pos), Create (Delete));
                elsif Loc.End_Pos >= Next_Pos.Start_Pos then
                   Conflicts_Found := True;
+                  Info ("    Conflict: overlap between " & Image (Next_Pos) & " and " & Image (Loc));
                   return;
                end if;
             end if;
@@ -349,14 +377,13 @@ procedure Adactl_Fix is
          exception
             when Constraint_Error =>
                -- Ooops, already have a fix with same location. Ignore this one
+               Info ("    Conflict: already a fix at " & Image (Loc));
                Conflicts_Found := True;
          end;
       end Add_Fix;
 
    begin   -- Read_Fix_File
-      if Verbose_Option then
-         Message ("*** Reading fixes from """ & Fix_Name & '"');
-      end if;
+      Info ("*** Reading fixes from """ & Fix_Name & '"');
 
       Open (Fix_File, In_File, Fix_Name);
 

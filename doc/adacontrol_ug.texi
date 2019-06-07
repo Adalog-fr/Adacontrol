@@ -1151,6 +1151,11 @@ output files being in the same directory, with a "new-" prepended to
 the name. Adactl_Fix will overwrite any existing file with the same
 name.
 
+The ``-v'' (verbose) option prints the names of the fix files being
+processed and of the source files being fixed to the standard error
+file. In case of conflicts, it provides some more information about
+the origin of the conflict.
+
 @subsubsection Conflicts
 It is possible that several fixes modify the same place, or
 overlapping places. When using automatic fixing, if one of the fixes

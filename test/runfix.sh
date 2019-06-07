@@ -8,7 +8,7 @@
 # If -q is given as the first parameter:
 #   run in "quiet" mode: just print PASSED if there are no errors
 #   names of failing tests are still reported in case of errors
-# Other options are passed to AdaControl (notably -d)
+# Other options are passed to adactl_fix (notably -d)
 # -h : print help and exit
 
 #
