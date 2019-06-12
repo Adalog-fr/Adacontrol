@@ -1,18 +1,17 @@
 t_use_clauses.adb:2:1: Found: use global: use clause for "Ada.Strings"
-t_use_clauses.adb:2:27: Delete:2:39
 t_use_clauses.adb:2:1: Error: USE_CLAUSES: use clause for "System"
+t_use_clauses.adb:2:25: Delete:2:37
 t_use_clauses.adb:2:38: Delete:2:45
 t_use_clauses.adb:3:1: Found: use type global: use type clause for "Ada.Text_IO.File_Type"
 t_use_clauses.adb:3:14: Delete:3:36
 t_use_clauses.adb:4:1: Found: use all type global: use all type clause for "Ada.Strings.Truncation"
-t_use_clauses.adb:4:14: Delete:4:37
 t_use_clauses.adb:4:1: Found: use all type global: use all type clause for "Ada.Numerics.Complex_Types.Complex"
-t_use_clauses.adb:4:36: Delete:4:71
+t_use_clauses.adb:4:1: Delete:4:72
 t_use_clauses.adb:7:4: Found: use local: use clause for "Ada.Strings"
 t_use_clauses.adb:7:19: Delete:7:31
 t_use_clauses.adb:8:4: Found: use local: use clause for "Ada.Strings"
-t_use_clauses.adb:8:21: Delete:8:33
 t_use_clauses.adb:8:4: Error: USE_CLAUSES: use clause for "System"
+t_use_clauses.adb:8:19: Delete:8:31
 t_use_clauses.adb:8:32: Delete:8:39
 t_use_clauses.adb:10:4: Found: use type local: use type clause for "Ada.Strings.Alignment"
 t_use_clauses.adb:10:4: Delete:10:34

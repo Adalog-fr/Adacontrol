@@ -240,6 +240,8 @@ package body Rules.Use_Clauses is
 
       declare
          Names : constant Asis.Name_List := Clause_Names (Clause);
+         Fix   : Fixes.Incremental_Fix;
+
          function Use_Qualifier return Wide_String is
          begin
             case Loc is
@@ -267,7 +269,7 @@ package body Rules.Use_Clauses is
                           Check,
                           Get_Location (Clause),
                           "use " & Use_Qualifier & "clause for """ & Extended_Name_Image (Names (N)) & '"');
-                  Fixes.List_Remove (N, From => Clause);
+                  Fixes.List_Remove (Fix, N, From => Clause);
                elsif Rule_Used (Loc, Search) and then
                  (Context = No_Matching_Context or else
                     not Package_Context (Context).Allowed (Loc, Search))
@@ -277,7 +279,7 @@ package body Rules.Use_Clauses is
                           Search,
                           Get_Location (Clause),
                           "use " & Use_Qualifier & "clause for """ & Extended_Name_Image (Names (N)) & '"');
-                  Fixes.List_Remove (N, From => Clause);
+                  Fixes.List_Remove (Fix, N, From => Clause);
                end if;
 
                if Rule_Used (Loc, Count) and then
@@ -290,9 +292,9 @@ package body Rules.Use_Clauses is
                           Get_Location (Clause),
                           "");
                end if;
-
             end;
          end loop;
+         Fixes.Flush (Fix);
       end;
    end Process_Use_Clause;
 
