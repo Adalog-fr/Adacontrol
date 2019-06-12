@@ -85,28 +85,53 @@ package Framework.Reports.Fixes is
    -- From is expected to be an element accepting a list of names (like a with clause
    -- or a use clause);
    -- Inx is the index of the element to be removed from From
-   -- The element is removed from From; however, if it was the last element in From, then From
+   -- The element is removed from From; if it is the only element in From, then From
    -- is deleted in whole.
+   -- See List_Remove with an incremental fix below for the case of successive List_Remove from
+   -- a same clause
    procedure List_Remove (Name : Asis.Name);
    -- Like above, but Name is searched in the Enclosing_Element to find its index
 
-   -- An Incremental_Fix accumulates (in order) several inserts at the same place
+
+   --------------------------------------------------------------------------------
+   -- Incremental fixes
+
+   -- An Incremental_Fix accumulates (in order) several fixes.
    -- The fix is emitted (and the Incremental_Fix is reset) by calling Flush
    type Incremental_Fix is private;
    procedure Insert (Fix       : in out Incremental_Fix;
                      Text      :        Wide_String;
                      Place     :        Insert_Place;
                      Elem      :        Asis.Element);
+   -- Like Insert, but several fixes at the same place are merged (in the order they are given)
+   procedure Break  (Fix       : in out Incremental_Fix;
+                     Place     :        Insert_Place;
+                     Elem      :        Asis.Element);
+   procedure List_Remove (Fix  : in out Incremental_Fix;
+                          Inx  : Asis.List_Index;
+                          From : Asis.Element);
+   -- If all all elements are removed from the clause, Flush will remove the whole clause
+   -- All List_Remove in the same incremental fix must be from the same clause.
    procedure Flush  (Fix : in out Incremental_Fix);
 
 private
    Line_Delimiter : constant Wide_String := Asis.Text.Delimiter_Image;
 
-   type Delayed_Fix is
+   type Delayed_Fix_Kind is (Insert, List_Remove, Deleted);
+   type Delayed_Fix (Kind : Delayed_Fix_Kind) is
       record
-         Place : Insert_Place;
-         Elem  : Asis.Element;
-         Text  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+         case Kind is
+            when Insert =>
+               Place : Insert_Place;
+               Elem  : Asis.Element;
+               Text  : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+            when List_Remove =>
+               From  : Asis.Element;
+               Count : Asis.List_Index;
+               Inx   : Asis.List_Index;
+            when Deleted =>
+               null;
+         end case;
       end record;
 
    package Fix_List is new Linear_Queue (Delayed_Fix);

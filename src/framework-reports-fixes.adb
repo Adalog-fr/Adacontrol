@@ -379,18 +379,17 @@ package body Framework.Reports.Fixes is
          return;
       end if;
 
-      --  TBSL more clever removal if all elems removed
       declare
          Elements : constant Asis.Element_List := Clause_Names (From);
       begin
          if Elements'Length = 1 then
             -- Remove the whole clause
             Delete (From);
-         elsif Inx /= Elements'Last then
-            Delete (Get_Location (Elements (Inx)), Get_Location (Elements (Inx + 1)));
-         else
+         elsif Inx = Elements'Last then
             -- Last character of span of From is ';'
             Delete (From => Get_End_Location (Elements (Inx - 1)) +1, To => Get_End_Location (From));
+         else
+            Delete (From => Get_Location (Elements (Inx)), To => Get_Location (Elements (Inx + 1)));
          end if;
       end;
    end List_Remove;
@@ -436,7 +435,6 @@ package body Framework.Reports.Fixes is
       use Fix_List;
 
       Curs         : Cursor := First (Fix);
-      Current      : Delayed_Fix;
       Current_Span : Span;
       Elem_Span    : constant Span := A4G_Bugs.Element_Span (Elem);
       Line         : Line_Number_Positive;
@@ -457,27 +455,90 @@ package body Framework.Reports.Fixes is
 
       -- Linear search, we expect only very short lists
       while Has_Element (Curs) loop
-         Current := Fetch (Curs);
-         Current_Span := A4G_Bugs.Element_Span (Current.Elem);
-         if Current.Place = Place and then
-            (case Place is
-               when Before => Current_Span.First_Line   = Line
-                          and Current_Span.First_Column = Col,
-               when After => Current_Span.Last_Line   = Line
-                         and Current_Span.Last_Column = Col)
-         then
-            Append (Current.Text, Text);
-            Replace (Curs, Current);
-            return;
-         end if;
+         declare
+            Current : Delayed_Fix := Fetch (Curs);
+         begin
+            if Current.Kind = Insert then
+               Current_Span := A4G_Bugs.Element_Span (Current.Elem);
+               if Current.Place = Place and then
+                 (case Place is
+                     when Before => Current_Span.First_Line   = Line
+                                    and Current_Span.First_Column = Col,
+                     when After  => Current_Span.Last_Line   = Line
+                                    and Current_Span.Last_Column = Col)
+               then
+                  Append (Current.Text, Text);
+                  Replace (Curs, Current);
+                  return;
+               end if;
+            end if;
+         end;
          Curs := Next (Curs);
       end loop;
 
       -- Not found
       -- Use Prepend rather than Append: since it will be generally used in a stack fashion, this will
       -- (slightly) reduce search time.
-      Prepend (Fix, (Place, Elem, To_Unbounded_Wide_String (Text)));
+      Prepend (Fix, (Insert, Place, Elem, To_Unbounded_Wide_String (Text)));
    end Insert;
+
+   -----------
+   -- Break --
+   -----------
+
+   procedure Break  (Fix       : in out Incremental_Fix;
+                     Place     :        Insert_Place;
+                     Elem      :        Asis.Element)
+   is
+   begin
+      Insert (Fix, Line_Delimiter, Place, Elem);
+   end Break;
+
+   -----------------
+   -- List_Remove --
+   -----------------
+
+   procedure List_Remove (Fix  : in out Incremental_Fix;
+                          Inx  : Asis.List_Index;
+                          From : Asis.Element)
+   is
+      use Asis.Elements;
+      use Fix_List;
+
+      Curs : Cursor := First (Fix);
+   begin
+      -- Linear search, we expect only very short lists
+      -- Keep the List_Remove fixes sorted by Inx, the first one holds the
+      -- count of fixes.
+      while Has_Element (Curs) loop
+         declare
+            Current : Delayed_Fix := Fetch (Curs);
+            Temp    : Asis.List_Index;
+            use Utilities;
+         begin
+            if Current.Kind = List_Remove then
+               if not Is_Equal (From, Current.From) then
+                  Failure ("List_Remove from different lists", From);
+               end if;
+               if Inx < Current.Inx then
+                  Prepend (Fix, (List_Remove, From, Current.Count + 1, Inx));
+               else
+                  Temp        := Current.Inx;
+                  Current.Inx := Inx;
+                  Replace (Curs, Current);
+                  Prepend (Fix, (List_Remove, From, Current.Count + 1, Temp));
+               end if;
+               return;
+            end if;
+         end;
+         Curs := Next (Curs);
+      end loop;
+
+      -- Not found
+      -- Use Prepend rather than Append: since we look-up the list, better find the fix early
+      Prepend (Fix, (List_Remove, From, 1, Inx));
+   end List_Remove;
+
 
    -----------
    -- Flush --
@@ -485,17 +546,55 @@ package body Framework.Reports.Fixes is
 
    procedure Flush  (Fix : in out Incremental_Fix) is
       use Fix_List;
+      use Asis, Asis.Clauses, Asis.Elements;
 
-      Curs    : Cursor := First (Fix);
-      Current : Delayed_Fix;
+      Curs             : Cursor;
+      Delete_Curs      : Cursor;
+      Head_Deleted_Inx : Asis.ASIS_Natural := 0;
    begin
       if not Generate_Fixes then
          return;
       end if;
 
+      Curs := First (Fix);
       while Has_Element (Curs) loop
-         Current := Fetch (Curs);
-         Insert (To_Wide_String (Current.Text), Current.Place, Current.Elem);
+         declare
+            Current : constant Delayed_Fix  := Fetch (Curs);
+         begin
+            case Current.Kind is
+               when Insert =>
+                  Insert (To_Wide_String (Current.Text), Current.Place, Current.Elem);
+               when List_Remove =>
+                  declare
+                     Names : constant Asis.Name_List := Clause_Names (Current.From);
+                  begin
+                     if Current.Count = Names'Length then
+                        Delete (Current.From);
+
+                        -- Remove fixes for the same clause
+                        Delete_Curs := Next (Curs);
+                        while Has_Element (Delete_Curs) loop
+                           if Fetch (Delete_Curs).Kind = List_Remove then
+                              Replace (Delete_Curs, (Kind => Deleted));
+                           end if;
+                           Delete_Curs := Next (Delete_Curs);
+                        end loop;
+                     elsif Current.Inx = Head_Deleted_Inx + 1 then
+                        -- Names has more than 1 element, otherwise it would have been caught above
+                        -- Last character of span of From is ';'
+                        -- There is at least one non deleted element, therefore it is safe to access the next element
+                        Delete (From => Get_Location (Names (Current.Inx)),
+                                To   => Get_Location (Names (Current.Inx + 1)));
+                        Head_Deleted_Inx := Current.Inx;
+                     else
+                        Delete (From => Get_End_Location (Names (Current.Inx - 1)) +1,
+                                To   => Get_End_Location (Names (Current.Inx))     +1);
+                     end if;
+                  end;
+               when Deleted =>
+                  null;
+            end case;
+         end;
          Curs := Next (Curs);
       end loop;
       Clear (Fix);
