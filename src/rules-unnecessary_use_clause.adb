@@ -312,8 +312,10 @@ package body Rules.Unnecessary_Use_Clause is
 
       declare
          use Asis.Expressions;
+         use Framework.Reports.Fixes;
          Names     : constant Asis.Name_List        := Clause_Names (Clause);
          This_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Clause);
+         Incr_Fix  : Incremental_Fix;
       begin
          for I in Names'Range loop
             declare
@@ -330,7 +332,7 @@ package body Rules.Unnecessary_Use_Clause is
                              Get_Location (Names (I)),
                              "Nested: " & Clause_And_Name (Info)
                              & ", type not declared in package specification");
-                     Fixes.List_Remove (I, From => Clause);
+                     Fixes.List_Remove (Incr_Fix, I, From => Clause);
                   end if;
 
                -- Check if ancestor
@@ -346,7 +348,7 @@ package body Rules.Unnecessary_Use_Clause is
                              Get_Location (Names (I)),
                              "Nested: " & "use clause for " & Extended_Name_Image (Names (I))
                              & " in child unit "            & Unit_Full_Name (This_Unit));
-                     Fixes.List_Remove (I, From => Clause);
+                     Fixes.List_Remove (Incr_Fix, I, From => Clause);
                   end if;
 
                else
@@ -368,7 +370,7 @@ package body Rules.Unnecessary_Use_Clause is
                                          "Nested: use clause for " & Extended_Name_Image (Names (I))
                                          & " inside same package");
                                  Reported := True;
-                                 Fixes.List_Remove (I, From => Clause);
+                                 Fixes.List_Remove (Incr_Fix, I, From => Clause);
                               elsif Starts_With (Enclosing_Name, Info.Name & '.') then
                                  Report (Rule_Id,
                                          Ctl_Contexts (Nested),
@@ -376,7 +378,7 @@ package body Rules.Unnecessary_Use_Clause is
                                          "Nested: use clause for " & Extended_Name_Image (Names (I))
                                          & " inside nested unit " & Extended_Name_Image (Enclosing_PU));
                                  Reported := True;
-                                 Fixes.List_Remove (I, From => Clause);
+                                 Fixes.List_Remove (Incr_Fix, I, From => Clause);
                               end if;
                            end;
                         end if;
@@ -394,7 +396,7 @@ package body Rules.Unnecessary_Use_Clause is
                                                "Nested: " & Clause_And_Name (Info)
                                                & " in scope of use clause for same package at "
                                                & Image (Get_Location (Used_Elements.Current_Data.Elem)));
-                                       Fixes.List_Remove (I, From => Clause);
+                                       Fixes.List_Remove (Incr_Fix, I, From => Clause);
                                        Reported := True;
                                     when A_Use_Type_Clause =>
                                        Report (Rule_Id,
@@ -403,7 +405,7 @@ package body Rules.Unnecessary_Use_Clause is
                                                "Nested: " & Clause_And_Name (Info)
                                                & " in scope of use type or use all type clause for same type at "
                                                & Image (Get_Location (Used_Elements.Current_Data.Elem)));
-                                       Fixes.List_Remove (I, From => Clause);
+                                       Fixes.List_Remove (Incr_Fix, I, From => Clause);
                                        Reported := True;
                                     when A_Use_All_Type_Clause =>
                                        -- A use all type clause can make sense in the scope of a use type clause
@@ -414,7 +416,7 @@ package body Rules.Unnecessary_Use_Clause is
                                                   "Nested: " & Clause_And_Name (Info)
                                                   & " in scope of use all type clause for same type at "
                                                   & Image (Get_Location (Used_Elements.Current_Data.Elem)));
-                                          Fixes.List_Remove (I, From => Clause);
+                                          Fixes.List_Remove (Incr_Fix, I, From => Clause);
                                           Reported := True;
                                        end if;
                                  end case;
@@ -426,7 +428,7 @@ package body Rules.Unnecessary_Use_Clause is
                                          "Nested: " & Clause_And_Name (Info)
                                          & " in scope of use clause for " & Strip_Profile (Info.Spec_Name)
                                          & " at " & Image (Get_Location (Used_Elements.Current_Data.Elem)));
-                                 Fixes.List_Remove (I, From => Clause);
+                                 Fixes.List_Remove (Incr_Fix, I, From => Clause);
                                  Reported := True;
                               end if;
 
@@ -445,6 +447,7 @@ package body Rules.Unnecessary_Use_Clause is
                   end if;
                end if;
             end;
+            Flush (Incr_Fix);
          end loop;
       end;
    end Process_Use_Clause;
@@ -565,6 +568,7 @@ package body Rules.Unnecessary_Use_Clause is
                      if Is_Callable_Construct (Name) and then Is_Use_Type_Visible (Info.Elem, Name) then
                         if Expression_Kind (Name) = An_Operator_Symbol then
                            Current_User := Operator;
+                           Add (Info.Op_Type_List, Corresponding_Name_Definition (Simple_Name (Info.Elem)));
                         else
                            Current_User := Primitive;
                         end if;
@@ -641,7 +645,11 @@ package body Rules.Unnecessary_Use_Clause is
       Is_Package_Spec : Boolean := False;
       Is_Package_Body : Boolean := False;
 
-      Incr_Fix : Incremental_Fix;
+      Insertions : Incremental_Fix;
+      Deletions  : Incremental_Fix;
+      -- Two different Incremental fix because deletions must be flushed for each clause,
+      -- while all insertions are merged to minimize conflicts.
+      Previous_From : Asis.Element := Nil_Element;
    begin  -- Process_Scope_Exit
       if Rule_Used = Not_Used then
          return;
@@ -691,11 +699,9 @@ package body Rules.Unnecessary_Use_Clause is
          declare
             Info          : constant Used_Elem_Info := Used_Elements.Current_Data;
             Child_Warning : constant Boolean :=  Current_Depth = 1
-              and (Is_Package_Spec
-                   or (Is_Package_Body
-                       and Used_Elements.Current_Origin = Specification));
-
-            Remove_Use_Clause : Boolean := False;
+                                                 and (Is_Package_Spec
+                                                      or (Is_Package_Body
+                                                          and Used_Elements.Current_Origin = Specification));
          begin
             if Used_Elements.Current_Origin /= Parent then
                if Info.User /= Nothing and Info.Spec_Unused and Rule_Used (Movable) then
@@ -715,7 +721,11 @@ package body Rules.Unnecessary_Use_Clause is
                                 & Choose (Child_Warning,
                                   " (possible usage in child units)",
                                   ""));
-                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
+                        if not Is_Equal (Info.Use_Clause, Previous_From) then
+                           Fixes.Flush (Deletions);
+                           Previous_From := Info.Use_Clause;
+                        end if;
+                        Fixes.List_Remove (Deletions, Info.Position, From => Info.Use_Clause);
                      end if;
                   when Qualified_Name =>
                      if Rule_Used (Qualified) then
@@ -726,50 +736,72 @@ package body Rules.Unnecessary_Use_Clause is
                                 & Choose (Child_Warning,
                                   " (possible usage in child units)",
                                   ""));
-                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
+                        if not Is_Equal (Info.Use_Clause, Previous_From) then
+                           Fixes.Flush (Deletions);
+                           Previous_From := Info.Use_Clause;
+                        end if;
+                        Fixes.List_Remove (Deletions, Info.Position, From => Info.Use_Clause);
                      end if;
-                  when Operator | Primitive =>
-                     for T : Defining_Name of Elements_In_Set (Info.Op_Type_List) loop
-                        if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
+                  when Operator =>
+                     if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
+                        for T : Defining_Name of Elements_In_Set (Info.Op_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Operator),
                                    Get_Location (Info.Elem),
-                                   "Operator: " & Clause_And_Name (Info) & " only used for operators of "
+                                   "Operator: " & Clause_And_Name (Info) & " used for operators of "
                                    & Full_Name_Image (T)
                                    & (if Child_Warning then " (possible usage in child units)" else ""));
-                           if Clause_Kind (Info.Use_Clause) in A_Use_All_Type_Clause | A_Use_Package_Clause then
-                              Fixes.Insert (Incr_Fix, Line_Delimiter
+                           Fixes.Insert (Insertions,
+                                         Line_Delimiter
                                             & Indentation_Of (Info.Use_Clause) & "use type "
                                             & Full_Name_Image (T) & ";",
-                                            After, Info.Use_Clause);
-                              Remove_Use_Clause := True;
-                           end if;
+                                         After,
+                                         Info.Use_Clause);
+                        end loop;
+
+                        if not Is_Equal (Info.Use_Clause, Previous_From) then
+                           Fixes.Flush (Deletions);
+                           Previous_From := Info.Use_Clause;
                         end if;
-                     end loop;
+                        Fixes.List_Remove (Deletions, Info.Position, From => Info.Use_Clause);
+                     end if;
+
+                  when Primitive =>
+                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
+                        for T : Defining_Name of Elements_In_Set (Info.Op_Type_List) loop
+                           Report (Rule_Id,
+                                   Ctl_Contexts (Operator),
+                                   Get_Location (Info.Elem),
+                                   "Operator: " & Clause_And_Name (Info) & " used for operators of "
+                                   & Full_Name_Image (T)
+                                   & (if Child_Warning then " (possible usage in child units)" else ""));
+                           Fixes.Insert (Insertions, Line_Delimiter
+                                         & Indentation_Of (Info.Use_Clause) & "use type "
+                                         & Full_Name_Image (T) & ";",
+                                         After, Info.Use_Clause);
+                        end loop;
 
 
-                     for T : Defining_Name of Elements_In_Set (Info.Prim_Type_List) loop
-                        if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
+                        for T : Defining_Name of Elements_In_Set (Info.Prim_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Primitive),
                                    Get_Location (Info.Elem),
-                                   "Primitive: " & Clause_And_Name (Info) & " only used for primitive operations of "
+                                   "Primitive: " & Clause_And_Name (Info) & " used for primitive operations of "
                                    & Full_Name_Image (T)
                                    & (if Child_Warning then " (possible usage in child units)" else ""));
-                           Fixes.Insert (Incr_Fix, Line_Delimiter
+                           Fixes.Insert (Insertions, Line_Delimiter
                                          & Indentation_Of (Info.Use_Clause)
                                          & "use all type "
                                          & Full_Name_Image (T) & ";",
                                          After, Info.Use_Clause);
-                           Remove_Use_Clause := True;
-                        end if;
-                     end loop;
+                        end loop;
 
-                     if Remove_Use_Clause then
-                        Fixes.List_Remove (Info.Position, From => Info.Use_Clause);
-                        Remove_Use_Clause := False;
+                        if not Is_Equal (Info.Use_Clause, Previous_From) then
+                           Fixes.Flush (Deletions);
+                           Previous_From := Info.Use_Clause;
+                        end if;
+                        Fixes.List_Remove (Deletions, Info.Position, From => Info.Use_Clause);
                      end if;
-                     Fixes.Flush (Incr_Fix);
 
                   when Identifier =>
                      null;
@@ -779,6 +811,8 @@ package body Rules.Unnecessary_Use_Clause is
 
          Used_Elements.Next;
       end loop;
+      Fixes.Flush (Deletions);
+      Fixes.Flush (Insertions);
 
    end Process_Scope_Exit;
 

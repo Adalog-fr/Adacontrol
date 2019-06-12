@@ -91,14 +91,16 @@ begin
 
    declare
       
-      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;                                    -- Primitive: only used for primitive operation (on access parameter)
+      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;                                    -- Primitive: used for primitive operation (on access parameter)
       V : aliased Pack1.Tag1;
    begin
       Prim (V'Access);
    end;
 
    declare
-      use all type Pack1.Int1, Pack1.Int2;          -- Operator: only used for operators x2
+      
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;          -- Operator: used for operators x2
       use type Pack1.Flt;                           -- OK
       V1 : Pack1.Int1;
       V2 : Pack1.Int2;
@@ -110,8 +112,10 @@ begin
    end;
 
    declare
-      use all type Pack1.Int1;                      -- Operator: only used for operators
-      use all type Pack1.Int2;                      -- Operator: only used for operators
+      
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                      -- Operator: used for operators
+      
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;                      -- Operator: used for operators
       V1 : Pack1.Int1;
       V2 : Pack1.Int2;
    begin
@@ -122,7 +126,7 @@ begin
    declare
       
       use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;                                    -- Operator: only used for operators
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;                                    -- Operator: used for operators x2
       V1 : Pack1.Int1;
       V2 : Pack1.Int2;
    begin
@@ -144,7 +148,8 @@ begin
       end Gen;
       package Pack2 is new Gen;
 
-      use all type Pack2.T;                         -- Operator: only used for operators
+      
+      use type T_unnecessary_use_clause.Use_Type._anonymous_.Pack2.T;                         -- Operator:  used for operators
       V : Pack2.T;
       I : Integer;
       B : Boolean;
@@ -156,7 +161,7 @@ begin
       use type Pack1.Int1;
       V1 : Pack1.Int1;
       
-      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                                    -- Primitive: only used for primitive operation
+      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                                    -- Primitive: used for primitive operation
    begin
       V1 := V1 + 1;
       Prim (V1);
@@ -165,7 +170,7 @@ begin
    ----------------- These are to check fixes, insertion of use [all] type
    declare
       
-      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Primitive: "use" clause for Pack1 only used for operators
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Primitive: "use" clause for Pack1 used for operators
       P : Pack1.Int1;
    begin
       P := P + 1;
@@ -173,7 +178,7 @@ begin
 
    declare
       
-      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Primitive: "use" clause for Pack1 only used for primitive operations
+      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Primitive: "use" clause for Pack1 used for primitive operations
       P : Pack1.Int1;
    begin
       P := -1;
@@ -183,7 +188,7 @@ begin
    declare
       
       use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;                 -- Primitive: "use" clause for Pack1 only used for primitive operations
+      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;                 -- Primitive: "use" clause for Pack1 used for primitive operations x2
       P : Pack1.Int1;
       V : aliased Pack1.Tag1;
    begin
@@ -194,7 +199,7 @@ begin
    declare
       use Ada.Assertions;
       use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1; -- Primitive: "use" clause for Pack1 only used for primitive operations
+      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1; -- Primitive: "use" clause for Pack1 used for primitive operations x2
       P : Pack1.Int1;
       V : aliased Pack1.Tag1;
    begin
@@ -205,7 +210,7 @@ begin
 
    declare
       
-      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Operator: "use" clause for Pack1 only used for operators
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Operator: "use" clause for Pack1 used for operators
       P : Pack1.Int1;
    begin
       if P >= 1 then
@@ -216,7 +221,7 @@ begin
    declare
       
       use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;                 -- Operator: "use" clause for Pack1 only used for operators
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;                 -- Operator: "use" clause for Pack1 used for operators x2
       P : Pack1.Int1;
       Q : Pack1.Int2;
    begin
@@ -229,7 +234,7 @@ begin
    declare
       
       use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;
-      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Operator: "use" clause for Pack1 only used for operators
+      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;                 -- Operator: "use" clause for Pack1 used for operators, Primitive: "use" clause for Pack1 used for primitive operations
       P : Pack1.Int1;
       Q : Pack1.Int2;
    begin
