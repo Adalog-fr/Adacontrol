@@ -546,7 +546,7 @@ package body Framework.Reports.Fixes is
 
    procedure Flush  (Fix : in out Incremental_Fix) is
       use Fix_List;
-      use Asis, Asis.Clauses, Asis.Elements;
+      use Asis.Clauses;
 
       Curs             : Cursor;
       Delete_Curs      : Cursor;

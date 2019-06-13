@@ -78,9 +78,9 @@ package Framework.Variables is
          record
             Value : Value_Type;
          end record;
-      procedure Set (Variable : in out Discrete_Type.Object; To : Wide_String);
-      function  Value_Image (Variable : in Discrete_Type.Object) return Wide_String;
-      function  All_Values  (Variable : in Discrete_Type.Object) return Wide_String;
+      overriding procedure Set (Variable : in out Discrete_Type.Object; To : Wide_String);
+      overriding function  Value_Image (Variable : in Discrete_Type.Object) return Wide_String;
+      overriding function  All_Values  (Variable : in Discrete_Type.Object) return Wide_String;
    end Discrete_Type;
 
    generic
@@ -90,10 +90,10 @@ package Framework.Variables is
          record
             Value : Value_Type;
          end record;
-      procedure Set (Variable : in out Integer_Type.Object; To : Wide_String);
-      procedure Set (Variable : in out Integer_Type.Object; To : Wide_String; Bounding : Bounding_Kind);
-      function  Value_Image (Variable : in Integer_Type.Object) return Wide_String;
-      function  All_Values  (Variable : in Integer_Type.Object) return Wide_String;
+      overriding procedure Set (Variable : in out Integer_Type.Object; To : Wide_String);
+      overriding procedure Set (Variable : in out Integer_Type.Object; To : Wide_String; Bounding : Bounding_Kind);
+      overriding function  Value_Image (Variable : in Integer_Type.Object) return Wide_String;
+      overriding function  All_Values  (Variable : in Integer_Type.Object) return Wide_String;
    end Integer_Type;
 
    ---------------------------------------------------------------------
