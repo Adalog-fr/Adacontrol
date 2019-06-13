@@ -10708,6 +10708,9 @@ of the package.
 The following subrules generate fixes:
 @itemize @bullet
 @item
+``multiple_names'': The @code{@b{with}} clause is replaced by
+several @code{@b{with}} clauses, each with only one name.
+@item
 ``reduceable'' (various cases where the @code{@b{with}} is not
 needed): The unnecessary package is removed from the clause. If there
 is only one element in the clause, the clause as a whole is removed.

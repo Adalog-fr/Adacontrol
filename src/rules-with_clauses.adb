@@ -272,8 +272,9 @@ package body Rules.With_Clauses is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Names     : constant Asis.Name_List := Clause_Names (Element);
-         This_Unit : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Element);
+         Names         : constant Asis.Name_List := Clause_Names (Element);
+         This_Unit     : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Element);
+         Deletions_Fix : Fixes.Incremental_Fix;
       begin
          if Rule_Used (Multiple_Names) and Names'Length > 1 then
             Report (Rule_Id,
@@ -298,7 +299,7 @@ package body Rules.With_Clauses is
                           Ctl_Contexts (Reduceable),
                           Get_Location (Names (I)),
                           "With clause for ancestor unit " & Extended_Name_Image (Names (I)));
-                  Fixes.List_Remove (I, From => Element);
+                  Fixes.List_Remove (Deletions_Fix, I, From => Element);
                   Status := Redundant;
                else
                   -- Check if already there
@@ -315,7 +316,7 @@ package body Rules.With_Clauses is
                                    Get_Location (Names (I)),
                                    "With clause for " & Extended_Name_Image (Names (I))
                                    & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
-                           Fixes.List_Remove (I, From => Element);
+                           Fixes.List_Remove (Deletions_Fix, I, From => Element);
                            Status := Redundant;
                            exit;
                         end if;
@@ -343,6 +344,7 @@ package body Rules.With_Clauses is
                end if;
             end;
          end loop;
+         Fixes.Flush (Deletions_Fix);
       end;
    end Process_With_Clause;
 
@@ -580,6 +582,8 @@ package body Rules.With_Clauses is
                                     Declaration_Kind (Decl) = A_Function_Declaration             or
                                     Declaration_Kind (Decl) = An_Expression_Function_Declaration or
                                     Declaration_Kind (Decl) in A_Generic_Declaration;
+      Deletions_Fix   : Fixes.Incremental_Fix;
+      Previous_Clause : Asis.Clause := Nil_Element;
    begin
       if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
          return;
@@ -604,14 +608,22 @@ package body Rules.With_Clauses is
                                             """ (possible use in child units)",
                                             """")
                                );
-                        Fixes.List_Remove (Info.Position, From => Info.With_Clause);
+                        if not Is_Equal (Info.With_Clause, Previous_Clause) then
+                           Fixes.Flush (Deletions_Fix);
+                           Previous_Clause := Info.With_Clause;
+                        end if;
+                        Fixes.List_Remove (Deletions_Fix, Info.Position, From => Info.With_Clause);
                      when Used_In_Separate =>
                         Report (Rule_Id,
                                 Ctl_Contexts (Reduceable),
                                 Info.Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
                                 & """ (used in separate unit(s))");
-                        Fixes.List_Remove (Info.Position, From => Info.With_Clause);
+                        if not Is_Equal (Info.With_Clause, Previous_Clause) then
+                           Fixes.Flush (Deletions_Fix);
+                           Previous_Clause := Info.With_Clause;
+                        end if;
+                        Fixes.List_Remove (Deletions_Fix, Info.Position, From => Info.With_Clause);
                      when Used =>
                         null;
                   end case;
@@ -625,6 +637,7 @@ package body Rules.With_Clauses is
 
          Withed_Units.Next;
       end loop;
+      Fixes.Flush (Deletions_Fix);
    end Process_Unit_Exit;
 
 begin  -- Rules.With_Clauses
