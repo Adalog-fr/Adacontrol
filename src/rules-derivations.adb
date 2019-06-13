@@ -852,6 +852,25 @@ package body Rules.Derivations is
                         Failure ("Bad private type", Prim_Type);
                   end case;
 
+               when A_Private_Extension_Declaration =>
+                  Type_G        := Gender_Tagged;
+                  Derived_Found := True;
+                  exit;
+
+               when A_Formal_Type_Declaration =>
+                  case Formal_Type_Kind (Type_Declaration_View (Prim_Type)) is
+                     when A_Formal_Derived_Type_Definition =>
+                        Derived_Found := True;
+                        if Trait_Kind (Type_Declaration_View (Prim_Type)) = A_Private_Trait then
+                           Type_G := Gender_Tagged;
+                           exit;
+                        end if;
+                     when A_Formal_Tagged_Private_Type_Definition | A_Formal_Interface_Type_Definition =>
+                        Type_G := Gender_Tagged;
+                     when others =>
+                        null;
+                  end case;
+
                when others =>
                   Failure ("Not a type from Primitive_Types", Prim_Type);
             end case;
