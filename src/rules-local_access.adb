@@ -80,10 +80,13 @@ package body Rules.Local_Access is
          while Parameter_Exists loop
             Sr := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Sr) then
-               Parameter_Error (Rule_Id, "Subrule already given: " & Image (Sr, Lower_Case));
+               if not Basic.Merge_Context (Contexts (Sr), Ctl_Kind, Ctl_Label) then
+                  Parameter_Error (Rule_Id, "Subrule already given: " & Image (Sr, Lower_Case));
+               end if;
+            else
+               Rule_Used (Sr) := True;
+               Contexts (Sr)  := Basic.New_Context (Ctl_Kind, Ctl_Label);
             end if;
-            Rule_Used (Sr) := True;
-            Contexts (Sr)  := Basic.New_Context (Ctl_Kind, Ctl_Label);
          end loop;
       elsif Rule_Used /= (Subrules => False) then
          Parameter_Error (Rule_Id, "rule already given");

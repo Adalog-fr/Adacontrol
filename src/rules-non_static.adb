@@ -84,11 +84,13 @@ package body Rules.Non_Static is
          use Utilities;
       begin
          if Rule_Used (Subrule) then
-            Parameter_Error (Rule_Id, "parameter already specified: " & Image (Subrule, Lower_Case));
+            if not Basic.Merge_Context (Usage (Subrule), Ctl_Kind, Ctl_Label) then
+               Parameter_Error (Rule_Id, "parameter already specified: " & Image (Subrule, Lower_Case));
+            end if;
+         else
+            Rule_Used (Subrule) := True;
+            Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
          end if;
-
-         Rule_Used (Subrule) := True;
-         Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end Add_One;
 
    begin  -- Add_Control

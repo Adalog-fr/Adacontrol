@@ -101,16 +101,20 @@ package body Rules.Simplifiable_Statements is
                Rule_Used := (others => True);
                Usage     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
             else
-               if Rule_Used (Subrule) then
-                  Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
-               end if;
                if Subrule = Stmt_While_For_For then
                   No_Exit := No_Exit_Given;
                elsif No_Exit_Given then
                   Parameter_Error (Rule_Id, "no_exit allowed only with while_for_for");
                end if;
-               Rule_Used (Subrule) := True;
-               Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
+
+               if Rule_Used (Subrule) then
+                  if not Basic.Merge_Context (Usage (Subrule), Ctl_Kind, Ctl_Label) then
+                     Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
+                  end if;
+               else
+                  Rule_Used (Subrule) := True;
+                  Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               end if;
             end if;
          end loop;
 

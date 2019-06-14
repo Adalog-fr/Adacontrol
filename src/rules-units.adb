@@ -97,11 +97,13 @@ package body Rules.Units is
          while Parameter_Exists loop
             Subrule := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Subrule) then
-               Parameter_Error (Rule_Id, "rule already specified for " & Subrules'Wide_Image (Subrule));
+               if not Basic.Merge_Context (Ctl_Contexts (Subrule), Ctl_Kind, Ctl_Label) then
+                  Parameter_Error (Rule_Id, "rule already specified for " & Subrules'Wide_Image (Subrule));
+               end if;
+            else
+               Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Rule_Used    (Subrule) := True;
             end if;
-
-            Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-            Rule_Used    (Subrule) := True;
          end loop;
       else
          Ctl_Contexts := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));

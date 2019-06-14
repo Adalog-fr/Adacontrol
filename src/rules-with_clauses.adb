@@ -136,13 +136,15 @@ package body Rules.With_Clauses is
             Subrule := Get_Flag_Parameter (Allow_Any => False);
 
             if Rule_Used (Subrule) then
-               Parameter_Error (Rule_Id, "rule already specified for "
-                                & Image (Subrule, Lower_Case));
+               if not Basic.Merge_Context (Ctl_Contexts (Subrule), Ctl_Kind, Ctl_Label) then
+                  Parameter_Error (Rule_Id, "Rule already specified for " & Image (Subrule, Lower_Case));
+               end if;
+            else
+               Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Rule_Used    (Subrule) := True;
             end if;
-
-            Ctl_Contexts (Subrule) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-            Rule_Used    (Subrule) := True;
          end loop;
+
       else
          -- All usages
          if Rule_Used /= (Subrules => False) then

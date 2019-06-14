@@ -68,10 +68,16 @@ package Framework.Control_Manager is
       end record;
 
    package Basic is
-      -- This package to prevent this operations from being primitive.
+      -- This package to prevent these operations from being primitive.
       -- Since New_Context could have been called Basic_New_Context, it is not
       -- really annoying to have to write Basic.New_Context...
       function New_Context (With_Type : in Control_Kinds; With_Label : in Wide_String) return Basic_Rule_Context;
+
+      -- This allows to merge a "Count" context with a non-"Count" context.
+      -- Returns True if the merge is possible, False otherwise (if both or neither are "Count"
+      function Merge_Context (Context    : in out Basic_Rule_Context;
+                              With_Type  : in     Control_Kinds;
+                              With_Label : in     Wide_String) return Boolean;
    end Basic;
 
    Null_Context : constant Root_Context := (null record);

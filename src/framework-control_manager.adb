@@ -70,6 +70,29 @@ package body Framework.Control_Manager is
                  Count_Label => Null_Unbounded_Wide_String);
       end New_Context;
 
+      function Merge_Context (Context    : in out Basic_Rule_Context;
+                              With_Type  : in     Control_Kinds;
+                              With_Label : in     Wide_String) return Boolean is
+      begin
+         if (With_Type = Count) = (Context.Ctl_Kind = Count) then
+            -- Both or neither are Count
+            return False;
+         end if;
+
+         if Context.Ctl_Kind = Count then
+            Context := (Ctl_Kind    => With_Type,
+                        Ctl_Label   => To_Unbounded_Wide_String (With_Label),
+                        With_Count  => True,
+                        Count_Label => Context.Ctl_Label);
+         else
+            Context := (Ctl_Kind    => Context.Ctl_Kind,
+                        Ctl_Label   => Context.Ctl_Label,
+                        With_Count  => True,
+                        Count_Label => To_Unbounded_Wide_String (With_Label));
+         end if;
+         return True;
+      end Merge_Context;
+
    end Basic;
 
    -------------

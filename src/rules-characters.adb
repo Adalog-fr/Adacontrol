@@ -88,10 +88,13 @@ package body Rules.Characters is
          while Parameter_Exists loop
             Sr := Get_Flag_Parameter (Allow_Any => False);
             if Rule_Used (Sr) then
-               Parameter_Error (Rule_Id, "rule already specified for " & Image (Sr, Lower_Case));
+               if not Basic.Merge_Context (Contexts (Sr), Ctl_Kind, Ctl_Label) then
+                  Parameter_Error (Rule_Id, "rule already specified for " & Image (Sr, Lower_Case));
+               end if;
+            else
+               Contexts  (Sr) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Rule_Used (Sr) := True;
             end if;
-            Contexts  (Sr) := Basic.New_Context (Ctl_Kind, Ctl_Label);
-            Rule_Used (Sr) := True;
          end loop;
       else
          for S in Subrule loop

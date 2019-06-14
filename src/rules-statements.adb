@@ -157,11 +157,13 @@ package body Rules.Statements is
       while Parameter_Exists loop
          Subrule := Get_Flag_Parameter (Allow_Any => False);
          if Rule_Used (Subrule) then
-            Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
+            if not Basic.Merge_Context (Usage (Subrule), Ctl_Kind, Ctl_Label) then
+               Parameter_Error (Rule_Id, "statement already given: " & Image (Subrule, Lower_Case));
+            end if;
+         else
+            Rule_Used (Subrule) := True;
+            Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
          end if;
-
-         Rule_Used (Subrule) := True;
-         Usage (Subrule)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end loop;
    end Add_Control;
 

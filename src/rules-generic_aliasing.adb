@@ -134,10 +134,12 @@ package body Rules.Generic_Aliasing is
                   Parameter_Error (Rule_Id, Image (Detail) & " not allowed for " & Subrules'Wide_Image (SR));
                end if;
                if Rule_Used (SR) (Detail) then
-                  Parameter_Error (Rule_Id, "Parameter already given : " & Subrules'Wide_Image (SR));
+                  if not Basic.Merge_Context (Contexts (SR, Detail), Ctl_Kind, Ctl_Label) then
+                     Parameter_Error (Rule_Id, "Parameter already given : " & Subrules'Wide_Image (SR));
+                  end if;
                else
                   Rule_Used (SR) (Detail) := True;
-                  Contexts  (SR, Detail) := Basic.New_Context (Ctl_Kind, Ctl_Label);
+                  Contexts  (SR, Detail)  := Basic.New_Context (Ctl_Kind, Ctl_Label);
                end if;
             end if;
          end loop;

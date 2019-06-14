@@ -108,11 +108,13 @@ package body Rules.Return_Type is
       procedure Add_One (Key : in Subrules) is
       begin
          if Rule_Used (Key) then
-            Parameter_Error (Rule_Id, "rule can be specified only once for each parameter.");
+            if not Basic.Merge_Context (Usage (Key), Ctl_Kind, Ctl_Label) then
+               Parameter_Error (Rule_Id, "rule can be specified only once for each parameter.");
+            end if;
+         else
+            Rule_Used (Key) := True;
+            Usage (Key)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
          end if;
-
-         Rule_Used (Key) := True;
-         Usage (Key)     := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end Add_One;
 
    begin  -- Add_Control
