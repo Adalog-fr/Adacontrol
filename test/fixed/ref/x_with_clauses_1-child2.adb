@@ -1,4 +1,4 @@
-                 -- Reduceable
+                 -- Regular, Reduceable
 
 with X_With_Clauses_2;
 procedure X_With_Clauses_1.Child2 is   -- Inherited

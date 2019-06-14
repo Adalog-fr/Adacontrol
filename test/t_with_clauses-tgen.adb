@@ -1,7 +1,7 @@
-with X_With_Clauses_Gen;
-with X_With_Clauses_1;     -- Unnecessary (not necessary for default of instantiation)
-with X_With_Clauses_2;     -- OK (used for <> default of instantiation)
-with System;               -- OK (used in aspect clause)
+with X_With_Clauses_Gen;   -- Regular
+with X_With_Clauses_1;     -- Regular, Unnecessary (not necessary for default of instantiation)
+with X_With_Clauses_2;     -- Regular, OK (used for <> default of instantiation)
+with System;               -- Regular, OK (used in aspect clause)
 separate (T_With_Clauses)
 procedure Tgen is
    use X_With_Clauses_2;

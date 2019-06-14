@@ -1,2 +1,7 @@
+check  with_clauses (regular);
+search with_clauses (limited, private);
+search with_clauses (Limited_Private);
+count  with_clauses (regular, limited, private, limited_private);
 check  with_clauses (reduceable);
 search with_clauses (inherited);
+check  with_clauses (Multiple_Names);

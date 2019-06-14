@@ -1,5 +1,5 @@
-with X_With_Clauses_1;
-with X_With_Clauses_2;
+with X_With_Clauses_1;      -- Regular
+with X_With_Clauses_2;      -- Regular
 generic
    V1 : Integer;
    V2 : Integer := X_With_Clauses_2.I;

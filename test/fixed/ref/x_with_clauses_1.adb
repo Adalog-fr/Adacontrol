@@ -1,11 +1,11 @@
-             -- Redundant in spec
-with Ada.Calendar;                 -- OK, not redundant because of "use type"
+             -- Regular, Redundant in spec
+with Ada.Calendar;                 -- Regular, OK, not redundant because of "use type"
 use type Ada.Calendar.Day_Duration;
-                 -- Redundant
-                 -- Not used
-              -- Not used except in "use Ada.Directories", still unnecessary
+                 -- Regular, Redundant
+                 -- Regular, Not used
+              -- Regular, Not used except in "use Ada.Directories", still unnecessary
 use Ada.Directories;
-with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Conversion;     -- Regular
 pragma Elaborate (Ada.Unchecked_Conversion);
 package body X_With_Clauses_1 is
    use Ada.Calendar;

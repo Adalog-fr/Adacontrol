@@ -66,9 +66,16 @@ package body Rules.With_Clauses is
    -- Use clauses are special: it is the only case where the name directly matters (not the name of the enclosing
    -- unit). Therefore, an identifier in a use clause should be compared against the original name, not the ultimate
    -- name.
+   --
+   -- Limited is trivial (just checks limited with)
+   --
+   -- Private is trivial (just checks private with)
+   --
+   -- Limited_Private is trivial (just checks limited private with)
 
-   type Subrules is (Multiple_Names, Reduceable, Inherited);
-   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules);
+   type Subrules is (Sr_Regular,        Sr_Limited,    Sr_Private, Sr_Limited_Private,
+                     Sr_Multiple_Names, Sr_Reduceable, Sr_Inherited);
+   package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "Sr_");
 
    type Usage_Flags is array (Subrules) of Boolean;
    Not_Used : constant Usage_Flags := (others => False);
@@ -265,6 +272,20 @@ package body Rules.With_Clauses is
          return False;
       end Required_For_Other_Context_Clauses;
 
+      function With_Image (Cl : Asis.Clause) return Wide_String is
+      begin
+         if Has_Limited (Cl) then
+            if Has_Private (Cl) then
+               return "limited private with ";
+            else
+               return "limited with ";
+            end if;
+         elsif Has_Private (Cl) then
+            return "private with ";
+         else
+            return "with ";
+         end if;
+      end With_Image;
    begin   -- Process_With_Clause
       if Rule_Used = Not_Used then
          return;
@@ -274,16 +295,60 @@ package body Rules.With_Clauses is
       declare
          Names         : constant Asis.Name_List := Clause_Names (Element);
          This_Unit     : constant Asis.Compilation_Unit := Enclosing_Compilation_Unit (Element);
+         Inserts_Fix   : Fixes.Incremental_Fix;
          Deletions_Fix : Fixes.Incremental_Fix;
+
+         use Reports.Fixes;
+
       begin
-         if Rule_Used (Multiple_Names) and Names'Length > 1 then
+         if Rule_Used (Sr_Multiple_Names) and Names'Length > 1 then
             Report (Rule_Id,
-                    Ctl_Contexts (Multiple_Names),
+                    Ctl_Contexts (Sr_Multiple_Names),
                     Get_Location (Element),
                     "With clause uses multiple names");
+            Fixes.Replace (Element, By => With_Image (Element) & Extended_Name_Image (Names (1)) & ';');
+            for N : Asis.Name of Names (2 .. Names'Last) loop
+               Fixes.Break (Inserts_Fix, After, Element);
+               Fixes.Insert (Inserts_Fix, With_Image (Element) & Extended_Name_Image (N) & ';', After, Element);
+            end loop;
+            Fixes.Flush (Inserts_Fix);
          end if;
 
-         if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
+         if Rule_Used (Sr_Regular) then
+            if not Has_Limited (Element) and not Has_Private (Element) then
+               Report (Rule_Id,
+                       Ctl_Contexts (Sr_Private),
+                       Get_Location (Element),
+                       "Regular with clause");
+            end if;
+         end if;
+         if Rule_Used (Sr_Private) then
+            if not Has_Limited (Element) and Has_Private (Element) then
+               Report (Rule_Id,
+                       Ctl_Contexts (Sr_Private),
+                       Get_Location (Element),
+                       "Private with clause");
+            end if;
+         end if;
+         if Rule_Used (Sr_Limited) then
+            if Has_Limited (Element) and not Has_Private (Element) then
+               Report (Rule_Id,
+                       Ctl_Contexts (Sr_Limited),
+                       Get_Location (Element),
+                       "Limited with clause");
+
+            end if;
+         end if;
+         if Rule_Used (Sr_Limited_Private) then
+            if Has_Limited (Element) and Has_Private (Element) then
+               Report (Rule_Id,
+                       Ctl_Contexts (Sr_Limited_Private),
+                       Get_Location (Element),
+                       "Limited private with clause");
+            end if;
+         end if;
+
+         if not Rule_Used (Sr_Reduceable) and not Rule_Used (Sr_Inherited) then
             return;
          end if;
 
@@ -296,7 +361,7 @@ package body Rules.With_Clauses is
                -- Check if for ancestor unit
                if Is_Ancestor (Definition_Compilation_Unit (Names (I)), This_Unit, Strict => True) then
                   Report (Rule_Id,
-                          Ctl_Contexts (Reduceable),
+                          Ctl_Contexts (Sr_Reduceable),
                           Get_Location (Names (I)),
                           "With clause for ancestor unit " & Extended_Name_Image (Names (I)));
                   Fixes.List_Remove (Deletions_Fix, I, From => Element);
@@ -312,7 +377,7 @@ package body Rules.With_Clauses is
                           or else not Required_For_Other_Context_Clauses (Names (I))
                         then
                            Report (Rule_Id,
-                                   Ctl_Contexts (Reduceable),
+                                   Ctl_Contexts (Sr_Reduceable),
                                    Get_Location (Names (I)),
                                    "With clause for " & Extended_Name_Image (Names (I))
                                    & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
@@ -361,7 +426,7 @@ package body Rules.With_Clauses is
       Elem_Def_Unit : Asis.Compilation_Unit;
       Is_From_Use   : Boolean;
    begin
-      if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
+      if not Rule_Used (Sr_Reduceable) and not Rule_Used (Sr_Inherited) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -452,9 +517,9 @@ package body Rules.With_Clauses is
                      when Never_Used | Used_In_Separate =>
                         case Withed_Units.Current_Origin is
                            when Specification =>
-                              if Rule_Used (Reduceable) then
+                              if Rule_Used (Sr_Reduceable) then
                                  Report (Rule_Id,
-                                         Ctl_Contexts (Reduceable),
+                                         Ctl_Contexts (Sr_Reduceable),
                                          Info.Loc,
                                          "With clause for "
                                            & Info.Original_Name
@@ -462,9 +527,9 @@ package body Rules.With_Clauses is
                                            & Choose (Info.Is_Private, " (remove private)", ""));
                               end if;
                            when Parent =>
-                              if Rule_Used (Inherited) then
+                              if Rule_Used (Sr_Inherited) then
                                  Report (Rule_Id,
-                                         Ctl_Contexts (Inherited),
+                                         Ctl_Contexts (Sr_Inherited),
                                          Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
                                          "With clause for "
                                            & Info.Original_Name
@@ -475,13 +540,13 @@ package body Rules.With_Clauses is
                                                Full_Line => True);
                               end if;
                            when Same_Unit =>
-                              if Rule_Used (Reduceable)
+                              if Rule_Used (Sr_Reduceable)
                                 and then Check_Private_With.Value = On
                                 and then In_Private_Part (Compilation_Unit_Scope)
                                 and then not Info.Is_Private
                               then
                                  Report (Rule_Id,
-                                         Ctl_Contexts (Reduceable),
+                                         Ctl_Contexts (Sr_Reduceable),
                                          Info.Loc,
                                          "With clause for "
                                            & Info.Original_Name
@@ -509,7 +574,7 @@ package body Rules.With_Clauses is
          -- Note that the loop will be exited immediately if we are not in a separate unit,
          -- therefore it is not useful (as far as optimization is concerned) to check whether
          -- we are in a separate unit
-         if Rule_Used (Inherited) then
+         if Rule_Used (Sr_Inherited) then
             Withed_Units.Continue (All_Scopes);
             while Withed_Units.Data_Available loop
                declare
@@ -518,7 +583,7 @@ package body Rules.With_Clauses is
                   if Info.Unit_Name = U_Name then
                      if Info.Status = Never_Used then
                         Report (Rule_Id,
-                                Ctl_Contexts (Inherited),
+                                Ctl_Contexts (Sr_Inherited),
                                 Get_Location (Unit_Declaration (Enclosing_Compilation_Unit (Element))),
                                 "With clause for "
                                   & Info.Original_Name
@@ -555,7 +620,7 @@ package body Rules.With_Clauses is
    begin
       -- We check Rule_Used here to make sure that nothing is executed if the unit is inhibited
       -- However, we don't call Enter_Unit, because it will be called from Process_Identifier
-      if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
+      if not Rule_Used (Sr_Reduceable) and not Rule_Used (Sr_Inherited) then
          return;
       end if;
 
@@ -585,7 +650,7 @@ package body Rules.With_Clauses is
       Deletions_Fix   : Fixes.Incremental_Fix;
       Previous_Clause : Asis.Clause := Nil_Element;
    begin
-      if not Rule_Used (Reduceable) and not Rule_Used (Inherited) then
+      if not Rule_Used (Sr_Reduceable) and not Rule_Used (Sr_Inherited) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -597,11 +662,11 @@ package body Rules.With_Clauses is
             declare
                Info : With_Info := Withed_Units.Current_Data;
             begin
-               if Rule_Used (Reduceable) then
+               if Rule_Used (Sr_Reduceable) then
                   case Info.Status is
                      when Never_Used =>
                         Report (Rule_Id,
-                                Ctl_Contexts (Reduceable),
+                                Ctl_Contexts (Sr_Reduceable),
                                 Info.Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
                                   & Choose (Is_Spec or Withed_Units.Current_Origin = Specification,
@@ -615,7 +680,7 @@ package body Rules.With_Clauses is
                         Fixes.List_Remove (Deletions_Fix, Info.Position, From => Info.With_Clause);
                      when Used_In_Separate =>
                         Report (Rule_Id,
-                                Ctl_Contexts (Reduceable),
+                                Ctl_Contexts (Sr_Reduceable),
                                 Info.Loc,
                                 "Unnecessary with clause for """ & Info.Original_Name
                                 & """ (used in separate unit(s))");

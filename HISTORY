@@ -4,6 +4,9 @@ Derivations:
    add subrule Max_Depth
    check overriding indicator of task entries and protected operations
 
+With_clauses:
+   add subrules regular, private, limited, limited_private
+
 =============
 == V1.21b2 ==
 =============

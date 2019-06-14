@@ -1,14 +1,14 @@
-with X_With_Clauses_2;             -- Can be moved to body
-                  -- Unused, could be used by children
-with Ada.Characters.Handling;
-      -- Redundant
-private with Ada.Exceptions;               -- Can be changed to private with
-with Ada.Calendar;
-private with Ada.Command_Line;
-private with Interfaces.C;         -- Can be moved to body (remove private)
-with Ada.Wide_Text_IO;             -- Unused in spec, redundant and used in body
-              -- Unused, could be used by children
-with Ada.Unchecked_Conversion;
+with X_With_Clauses_2;             -- Regular, Can be moved to body
+                  -- Regular, Unused, could be used by children
+with Ada.Characters.Handling;      -- Regular
+      -- Regular, Redundant
+private with Ada.Exceptions;               -- Regular, Can be changed to private with
+with Ada.Calendar;                 -- Regular
+private with Ada.Command_Line;     -- Private with
+private with Interfaces.C;         -- Private with, Can be moved to body (remove private)
+with Ada.Wide_Text_IO;             -- Regular, Unused in spec, redundant and used in body
+              -- Regular, Unused, could be used by children
+with Ada.Unchecked_Conversion;     -- Regular
 package X_With_Clauses_1 is
    procedure Proc;
    X : Ada.Characters.Handling.ISO_646;
