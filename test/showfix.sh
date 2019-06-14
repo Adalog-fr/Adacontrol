@@ -21,18 +21,16 @@ list=`find fixed/res -maxdepth 1 -name "${1:-*}.ad[sb]" -printf "%f "`
 nb_fix=$(echo $list | wc -w)
 current=0
 for f in $list ; do
+    current=$((current+1))
     while true ; do
-        current=$((current+1))
 	echo -n "$current/$nb_fix $f: [Diff, Interactive, Nothing, Quit]? "
 	read REP
 	case $REP in
 	    d | D )
-                echo "           <... ref, >... res"
-		diff "$f" "fixed/res/$f"  2>/dev/null
-                break;;
+                echo "-----------------  <... ref, >... res -----------------"
+		diff "$f" "fixed/res/$f"  2>/dev/null;;
 	    i | I )
-                "$MERGE" "$f" "fixed/res/$f"
-                break;;
+                "$MERGE" "$f" "fixed/res/$f";;
 	    n | N )
 		break;;
 	    q | Q )
