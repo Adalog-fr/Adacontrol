@@ -184,9 +184,9 @@ package body Rules.Expressions is
                     =>
                   case Cat_List'Length is
                      when 0 | 2 =>
-                        for C in Cat_List'Range loop
-                           if not Expected_Categories (Cat_List (C)) then
-                              Parameter_Error (Rule_Id, "Category not allowed: " & Image (Cat_List (C)));
+                        for C : Categories of Cat_List loop
+                           if not Expected_Categories (C) then
+                              Parameter_Error (Rule_Id, "Category not allowed: " & Image (C));
                            end if;
                         end loop;
                         Associate (Usage,
@@ -502,11 +502,10 @@ package body Rules.Expressions is
          if Rule_Used (E_Mixed_Operators) and then not Is_Prefix_Call (Call) then
             declare
                Params : constant Asis.Association_List := Function_Call_Parameters (Call);
-               Called_Kind : constant Asis.Operator_Kinds := Operator_Kind (Called);
             begin
-               if Called_Kind /= Not_An_Operator and Params'Length = 2 then -- Only binary operators
-                  for P in Params'Range loop
-                     Do_Mixed_Report (Call, Actual_Parameter (Params (P)));
+               if Operator_Kind (Called) /= Not_An_Operator and Params'Length = 2 then -- Only binary operators
+                  for P : Asis.Association of Params loop
+                     Do_Mixed_Report (Call, Actual_Parameter (P));
                   end loop;
                end if;
             end;
@@ -553,12 +552,11 @@ package body Rules.Expressions is
 
             declare
                Parsed_First_Parameter : Boolean := False;
-               F                      : constant Asis.Association_List := Function_Call_Parameters (Call);
             begin
                Parameter_Loop :
-               for I in F'Range loop
+               for Param : Asis.Association of Function_Call_Parameters (Call) loop
                   declare
-                     P : constant Asis.Expression := Actual_Parameter (F (I));
+                     P : constant Asis.Expression := Actual_Parameter (Param);
                      T : constant Asis.Definition := Ultimate_Expression_Type (P);
                   begin
                      case Type_Kind (T) is
@@ -627,12 +625,11 @@ package body Rules.Expressions is
             -- Fx * Fx, Fx / Fx, Fx * Integer, Integer * Fx, Fx / Integer (plus universals)
             -- => we control when at least one operand is of an explicit fixed point type
             declare
-               F : constant Asis.Association_List := Function_Call_Parameters (Call);
                Fixed_Parameters_Count : Natural := 0; -- Yes we are lazy to use Integer here...
             begin
-               for I in F'Range loop
+               for Param : Asis.Association of Function_Call_Parameters (Call) loop
                   declare
-                     P : constant Asis.Expression := Actual_Parameter (F (I));
+                     P : constant Asis.Expression := Actual_Parameter (Param);
                      T : constant Asis.Definition := Ultimate_Expression_Type (P);
                   begin
                      case Type_Kind (T) is
@@ -884,26 +881,21 @@ package body Rules.Expressions is
                declare
                   Assocs  : constant Asis.Association_List := Array_Component_Associations (Expression);
                begin
-                  for A in Assocs'Range loop
-                     declare
-                        Choices : constant Asis.Expression_List  := Array_Component_Choices (Assocs (A));
-                     begin
-                        for C in Choices'Range loop
-                           if Definition_Kind (Choices (C)) = A_Discrete_Range then
-                              Do_Report (E_Array_Range, Get_Location (Choices (C)));
-                              if Rule_Used (E_Array_Non_Static_Range) then
-                                 declare
-                                    Bounds : constant Extended_Biggest_Int_List
-                                      := Discrete_Constraining_Values (Choices (C));
-                                 begin
-                                    if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
-                                       Do_Report (E_Array_Non_Static_Range, Get_Location (Choices (C)));
-                                    end if;
-                                 end;
-                              end if;
+                  for Assoc : Asis.Association of Assocs loop
+                     for Choice : Asis.Expression of Array_Component_Choices (Assoc) loop
+                        if Definition_Kind (Choice) = A_Discrete_Range then
+                           Do_Report (E_Array_Range, Get_Location (Choice));
+                           if Rule_Used (E_Array_Non_Static_Range) then
+                              declare
+                                 Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Choice);
+                              begin
+                                 if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
+                                    Do_Report (E_Array_Non_Static_Range, Get_Location (Choice));
+                                 end if;
+                              end;
                            end if;
-                        end loop;
-                     end;
+                        end if;
+                     end loop;
                   end loop;
 
                   Check_Others :
@@ -1200,8 +1192,8 @@ package body Rules.Expressions is
          -- The complex_parameter subrule does not apply to operators, otherwise no expression
          -- more complicated than a single operation would be allowed.
          if Rule_Used (E_Complex_Parameter) and Called_Kind /= Operator then
-            for P in Parameters'Range loop
-               Expression := Actual_Parameter (Parameters (P));
+            for P : Asis.Association of Parameters loop
+               Expression := Actual_Parameter (P);
                if Called_Kind /= Operator
                  and then Expression_Kind (Expression) = A_Function_Call
                then

@@ -262,23 +262,15 @@ package body Rules.Improper_Initialization is
                Traverse_Attribute_Prefix (Prefix   (Element), Control, State);
                Traverse_Attribute_Prefix (Selector (Element), Control, State);
             when An_Indexed_Component =>
-               declare
-                  Indices : constant Asis.Expression_List := Index_Expressions (Element);
-               begin
-                  for I in Indices'Range loop
-                     Traverse (Indices (I), Control, State);
-                  end loop;
-               end;
+               for Ind : Asis.Expression of Index_Expressions (Element) loop
+                  Traverse (Ind, Control, State);
+               end loop;
             when A_Slice =>
                Traverse (Slice_Range (Element), Control, State);
             when A_Function_Call =>
-               declare
-                  Params : constant Asis.Association_List := Function_Call_Parameters (Element);
-               begin
-                  for P in Params'Range loop
-                     Traverse (Params (P), Control, State);
-                  end loop;
-               end;
+               for P : Asis.Association of Function_Call_Parameters (Element) loop
+                  Traverse (P, Control, State);
+               end loop;
             when An_Explicit_Dereference =>
                Traverse (Prefix (Element), Control, State);
             when A_Type_Conversion =>
@@ -403,22 +395,14 @@ package body Rules.Improper_Initialization is
                               when An_Explicit_Dereference =>
                                  Lhs := Prefix (Lhs);
                               when A_Function_Call =>
-                                 declare
-                                    Params : constant Asis.Association_List := Actual_Parameters (Lhs);
-                                 begin
-                                    for P in Params'Range loop
-                                       Check_Object_Use (Params (P), Global_Map);
-                                    end loop;
-                                 end;
+                                 for P : Asis.Association of Actual_Parameters (Lhs)loop
+                                    Check_Object_Use (P, Global_Map);
+                                 end loop;
                                  Lhs := Prefix (Lhs);
                               when An_Indexed_Component =>
-                                 declare
-                                    Indices : constant Asis.Expression_List := Index_Expressions (Lhs);
-                                 begin
-                                    for I in Indices'Range loop
-                                       Check_Object_Use (Indices (I), Global_Map);
-                                    end loop;
-                                 end;
+                                 for Ind : Asis.Expression of Index_Expressions (Lhs) loop
+                                    Check_Object_Use (Ind, Global_Map);
+                                 end loop;
                                  Lhs := Prefix (Lhs);
                               when A_Slice =>
                                  Check_Object_Use (Slice_Range (Lhs), Global_Map);
@@ -568,13 +552,9 @@ package body Rules.Improper_Initialization is
          loop
             case Expression_Kind (Good_Name) is
                when An_Indexed_Component =>
-                  declare
-                     Exprs : constant Asis.Expression_List := Index_Expressions (Good_Name);
-                  begin
-                     for E in Exprs'Range loop
-                        Check_Object_Use (Exprs (E), Object_Map);
-                     end loop;
-                  end;
+                  for E : Asis.Expression of Index_Expressions (Good_Name) loop
+                     Check_Object_Use (E, Object_Map);
+                  end loop;
                   Good_Name := Prefix (Good_Name);
                when A_Slice =>
                   Check_Object_Use (Slice_Range (Good_Name), Object_Map);
@@ -728,15 +708,15 @@ package body Rules.Improper_Initialization is
       -- Marks all remaining entries from the local map as Written in the Object_Map
 
    begin   -- Process_Statements
-      for Stmt_Index in Statement_List'Range loop
-         case Statement_Kind (Statement_List (Stmt_Index)) is
+      for Stmt : Asis.Statement of Statement_List loop
+         case Statement_Kind (Stmt) is
             when An_Assignment_Statement =>
-               Check_Object_Use (Assignment_Expression (Statement_List (Stmt_Index)), Object_Map);
-               Process_Target (Assignment_Variable_Name (Statement_List (Stmt_Index)));
+               Check_Object_Use (Assignment_Expression (Stmt), Object_Map);
+               Process_Target (Assignment_Variable_Name (Stmt));
 
             when An_Entry_Call_Statement | A_Procedure_Call_Statement =>
                declare
-                  Called : constant Asis.Expression := Called_Name (Statement_List (Stmt_Index));
+                  Called : constant Asis.Expression := Called_Name (Stmt);
                begin
                   -- Handle calls to Raise_Exception, Reraise_Occurrence and non returning procedures
                   -- like a raise statement
@@ -764,12 +744,11 @@ package body Rules.Improper_Initialization is
 
                   -- Check for out parameters in procedure and entry calls
                   declare
-                     Actuals : constant Asis.Association_List
-                       := Call_Statement_Parameters (Statement_List (Stmt_Index));
+                     Actuals : constant Asis.Association_List := Call_Statement_Parameters (Stmt);
                      Formal  : Asis.Defining_Name;
                   begin
                      for Actual_Index in Actuals'Range loop
-                        Formal := Formal_Name (Statement_List (Stmt_Index), Actual_Index);
+                        Formal := Formal_Name (Stmt, Actual_Index);
                         -- Formal is nil for calls to a dispatching operation and for calls to attribute procedures
                         -- For attributes, only T'Read and T'Input have an out parameter (the second one).
                         -- For dispatching operations, we don't know the mode => pretend we do nothing
@@ -789,10 +768,7 @@ package body Rules.Improper_Initialization is
                                     Failure ("Not a procedure call attribute", Called);
                               end case;
                            else
-                              Uncheckable (Rule_Id,
-                                           False_Positive,
-                                           Get_Location (Statement_List (Stmt_Index)),
-                                           "Dispatching_Call");
+                              Uncheckable (Rule_Id, False_Positive, Get_Location (Stmt), "Dispatching_Call");
                            end if;
                         else -- Normal case
                            case Mode_Kind (Enclosing_Element (Formal)) is
@@ -811,12 +787,12 @@ package body Rules.Improper_Initialization is
             when An_If_Statement
                | A_Case_Statement
                  =>
-               if Statement_Kind (Statement_List (Stmt_Index)) = A_Case_Statement then
-                  Check_Object_Use (Case_Expression (Statement_List (Stmt_Index)), Object_Map);
+               if Statement_Kind (Stmt) = A_Case_Statement then
+                  Check_Object_Use (Case_Expression (Stmt), Object_Map);
                end if;
 
                declare
-                  Paths     : constant Asis.Path_List := Statement_Paths (Statement_List (Stmt_Index));
+                  Paths     : constant Asis.Path_List := Statement_Paths (Stmt);
                   Local_Map : Map;
                   Ignored   : Location;
                begin
@@ -829,17 +805,17 @@ package body Rules.Improper_Initialization is
                      Local_Map := Clean_Map (Object_Map);
                   end if;
 
-                  for Path_Index in Paths'Range loop
-                     if Path_Kind (Paths (Path_Index)) in An_If_Path .. An_Elsif_Path then
-                        Check_Object_Use (Condition_Expression (Paths (Path_Index)), Object_Map);
+                  for Path : Asis.Path of Paths loop
+                     if Path_Kind (Path) in An_If_Path .. An_Elsif_Path then
+                        Check_Object_Use (Condition_Expression (Path), Object_Map);
                      end if;
                      Process_Statements (Local_Map,
-                                         Sequence_Of_Statements (Paths (Path_Index)),
+                                         Sequence_Of_Statements (Path),
                                          Final_Location => Ignored,
                                          Exit_Cause     => Exit_Cause);
                      case Exit_Cause is
                         when Non_Trivial_Statement =>
-                           Final_Location := Get_Location (Statement_List (Stmt_Index));
+                           Final_Location := Get_Location (Stmt);
                            return;
                         when Return_Statement =>
                            -- This branch does not count for uninitialized variables
@@ -856,13 +832,13 @@ package body Rules.Improper_Initialization is
 
             when A_Return_Statement =>
                declare
-                  Expr : constant Asis.Expression := Return_Expression (Statement_List (Stmt_Index));
+                  Expr : constant Asis.Expression := Return_Expression (Stmt);
                begin
                   if not Is_Nil (Expr) then
                      Check_Object_Use (Expr, Object_Map);
                   end if;
                end;
-               Final_Location := Get_Location (Statement_List (Stmt_Index));
+               Final_Location := Get_Location (Stmt);
 
                -- Out parameters must be OK at this point
                Do_Report (Final_Location, Out_Params_Only => True);
@@ -884,14 +860,12 @@ package body Rules.Improper_Initialization is
 
                declare
                   use Asis.Declarations;
-                  Init_Expr : constant Asis.Expression := Initialization_Expression
-                                                           (Return_Object_Declaration
-                                                            (Statement_List (Stmt_Index)));
+                  Init_Expr : constant Asis.Expression := Initialization_Expression (Return_Object_Declaration (Stmt));
                   -- Local_Map is not really used, since there is only one path, but we need to call Process_Statements
                   -- to detect non trivial statements and uses before intialisation
                   Local_Map         : Map := Clean_Map (Object_Map);
                   Return_Statements : constant Asis.Statement_List
-                    := Extended_Return_Statements (Statement_List (Stmt_Index));
+                    := Extended_Return_Statements (Stmt);
                begin
                   if not Is_Nil (Init_Expr) then
                      Check_Object_Use (Init_Expr, Object_Map);
@@ -909,9 +883,9 @@ package body Rules.Improper_Initialization is
                         -- Note: end of statements is an implicit return, but Final_Location must point at "end"
                         -- Beware that the statement list (and "end") is optional!
                         if Is_Nil (Return_Statements) then
-                           Final_Location := Get_End_Location (Statement_List (Stmt_Index));
+                           Final_Location := Get_End_Location (Stmt);
                         else
-                           Final_Location := Get_Previous_Word_Location (Statement_List (Stmt_Index),
+                           Final_Location := Get_Previous_Word_Location (Stmt,
                                                                          Matching => "END",
                                                                          Starting => From_Tail);
                         end if;
@@ -926,7 +900,7 @@ package body Rules.Improper_Initialization is
 
             when others =>
                -- non trivial statements
-               Final_Location := Get_Location (Statement_List (Stmt_Index));
+               Final_Location := Get_Location (Stmt);
                Exit_Cause     := Non_Trivial_Statement;
                return;
          end case;
@@ -977,12 +951,11 @@ package body Rules.Improper_Initialization is
          end if;
 
          declare
-            Params_Profile : constant Asis.Parameter_Specification_List := General_Parameter_Profile (Element);
             Subtype_Decl   : Asis.Declaration;
             Component_Decl : Asis.Declaration;
          begin
-            for Profile_Index in Params_Profile'Range loop
-               case Mode_Kind (Params_Profile (Profile_Index)) is
+            for Profile : Asis.Parameter_Specification of General_Parameter_Profile (Element) loop
+               case Mode_Kind (Profile) is
                   when Not_A_Mode =>
                      Failure (Rule_Id & ": Not_A_Mode");
                   when An_Out_Mode =>
@@ -990,7 +963,7 @@ package body Rules.Improper_Initialization is
                                      (Simple_Name
                                       (Strip_Attributes
                                        (Declaration_Subtype_Mark
-                                        (Params_Profile (Profile_Index)))));
+                                        (Profile))));
                      Component_Decl := Non_Array_Component_Declaration (Subtype_Decl);
                      -- If Component_Decl is Nil_Element, the component is of an (anonymous) access type
                      if (Extensions (K_Out_Parameter) (M_Access)
@@ -998,17 +971,11 @@ package body Rules.Improper_Initialization is
                        and then
                         (Extensions (K_Out_Parameter) (M_Limited) or else not Is_Limited (Subtype_Decl))
                      then
-                        declare
-                           Param_Names : constant Asis.Defining_Name_List := Names (Params_Profile (Profile_Index));
-                        begin
-                           for Param_Index in Param_Names'Range loop
-                              Add (Global_Map,
-                                   To_Key (Param_Names (Param_Index)),
-                                   (Identifier => Param_Names (Param_Index),
-                                    Kind       => K_Out_Parameter,
-                                    Reference  => None));
-                           end loop;
-                        end;
+                        for Param : Asis.Defining_Name of Names (Profile) loop
+                           Add (Global_Map,
+                                To_Key (Param),
+                                (Identifier => Param, Kind => K_Out_Parameter, Reference  => None));
+                        end loop;
                      end if;
                   when others =>
                      null;
@@ -1062,10 +1029,10 @@ package body Rules.Improper_Initialization is
                   return;
                end if;
 
-               for Var_Index in Var_Names'Range loop
+               for Var : Asis.Defining_Name of Var_Names loop
                   Add (Global_Map,
-                       To_Key (Var_Names (Var_Index)),
-                       (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
+                       To_Key (Var),
+                       (Identifier => Var, Kind => Var_Kind, Reference  => None));
                end loop;
                return;
             elsif Type_Kind (Subtype_Decl) in An_Unconstrained_Array_Definition .. A_Constrained_Array_Definition then
@@ -1079,10 +1046,10 @@ package body Rules.Improper_Initialization is
                      return;
                   end if;
 
-                  for Var_Index in Var_Names'Range loop
+                  for Var : Asis.Defining_Name of Var_Names loop
                      Add (Global_Map,
-                          To_Key (Var_Names (Var_Index)),
-                          (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
+                          To_Key (Var),
+                          (Identifier => Var, Kind => Var_Kind, Reference  => None));
                   end loop;
                   return;
                end if;
@@ -1108,10 +1075,10 @@ package body Rules.Improper_Initialization is
                return;
             end if;
 
-            for Var_Index in Var_Names'Range loop
+            for Var : Asis.Defining_Name of Var_Names loop
                Add (Global_Map,
-                    To_Key (Var_Names (Var_Index)),
-                    (Identifier => Var_Names (Var_Index), Kind => Var_Kind, Reference  => None));
+                    To_Key (Var),
+                    (Identifier => Var, Kind => Var_Kind, Reference  => None));
             end loop;
          end Add_Variable;
 
@@ -1143,149 +1110,124 @@ package body Rules.Improper_Initialization is
             end if;
          end if;
 
-         declare
-            Decls : constant Asis.Declaration_List := Generalized_Declarative_Items (Element);
-         begin
-            for Decl_Index in Decls'Range loop
-               case Element_Kind (Decls (Decl_Index)) is
-                  when A_Declaration =>
-                     case Declaration_Kind (Decls (Decl_Index)) is
-                        when A_Procedure_Declaration
-                           | A_Null_Procedure_Declaration
-                           | A_Function_Declaration
-                           | A_Task_Type_Declaration
-                           | A_Single_Task_Declaration
-                           | A_Procedure_Body_Declaration
-                           | A_Function_Body_Declaration
-                           | A_Task_Body_Declaration
-                           | A_Generic_Procedure_Declaration
-                           | A_Generic_Function_Declaration
-                           | A_Generic_Package_Declaration
-                             =>
-                           null;
+         for Decl : Asis.Declaration of Generalized_Declarative_Items (Element) loop
+            case Element_Kind (Decl) is
+               when A_Declaration =>
+                  case Declaration_Kind (Decl) is
+                     when A_Procedure_Declaration
+                        | A_Null_Procedure_Declaration
+                        | A_Function_Declaration
+                        | A_Task_Type_Declaration
+                        | A_Single_Task_Declaration
+                        | A_Procedure_Body_Declaration
+                        | A_Function_Body_Declaration
+                        | A_Task_Body_Declaration
+                        | A_Generic_Procedure_Declaration
+                        | A_Generic_Function_Declaration
+                        | A_Generic_Package_Declaration
+                        =>
+                        null;
 
-                        when A_Package_Declaration =>
-                           declare
-                              Pack_Decls : constant Asis.Declaration_List := Declarative_Items (Decls (Decl_Index));
-                           begin
-                              for PD in Pack_Decls'Range loop
-                                 Check_Object_Use (Pack_Decls (PD), Global_Map);
-                              end loop;
-                           end;
+                     when A_Package_Declaration =>
+                        for Pack_Decl : Asis.Declaration of Declarative_Items (Decl) loop
+                           Check_Object_Use (Pack_Decl, Global_Map);
+                        end loop;
 
-                        when A_Package_Body_Declaration =>
-                           -- Beware: nothing to do for bodies of generic packages
-                           if not Is_Generic_Unit (Decls (Decl_Index)) then
-                              declare
-                                 Pack_Decls : constant Asis.Declaration_List := Declarative_Items (Decls (Decl_Index));
-                              begin
-                                 for PD in Pack_Decls'Range loop
-                                    Check_Object_Use (Pack_Decls (PD), Global_Map);
-                                 end loop;
-                              end;
-
-                              declare
-                                 Pack_Stmts : constant Asis.Statement_List
-                                   := Thick_Queries.Statements (Decls (Decl_Index));
-                              begin
-                                 for PS in Pack_Stmts'Range loop
-                                    Check_Object_Use (Pack_Stmts (PS), Global_Map);
-                                 end loop;
-                              end;
-                           end if;
-
-                        when A_Procedure_Instantiation
-                           | A_Function_Instantiation
-                           | A_Package_Instantiation
-                             =>
-                           -- Objects may be used in actuals of instantiation
-                           declare
-                              Params : constant Asis.Association_List := Generic_Actual_Part (Decls (Decl_Index));
-                           begin
-                              for P in Params'Range loop
-                                 Check_Object_Use (Params (P), Global_Map);
-                              end loop;
-                           end;
-
-                        when An_Object_Renaming_Declaration =>
-                           -- The actual variable being renamed is not a use of the variable, however
-                           -- any other use of variables within the renamed expression is.
-                           Expr := Renamed_Entity (Decls (Decl_Index));
-                           loop
-                              case Expression_Kind (Expr) is
-                                 when An_Identifier | An_Enumeration_Literal =>
-                                    -- It is the variable being renamed
-                                    exit;
-                                 when An_Explicit_Dereference =>
-                                    Check_Object_Use (Prefix (Expr), Global_Map);
-                                    exit;
-                                 when A_Function_Call =>
-                                    -- Renaming of the result of a function call
-                                    -- May include implicit dereference, but we don't care
-                                    Check_Object_Use (Expr, Global_Map);
-                                    exit;
-                                 when An_Indexed_Component =>
-                                    declare
-                                       Indexes : constant Asis.Expression_List := Index_Expressions (Expr);
-                                    begin
-                                       for I in Indexes'Range loop
-                                          Check_Object_Use (Indexes (I), Global_Map);
-                                       end loop;
-                                    end;
-                                    Expr := Prefix (Expr);
-                                 when A_Slice =>
-                                    Check_Object_Use (Slice_Range (Expr), Global_Map);
-                                    Expr := Prefix (Expr);
-                                 when A_Selected_Component =>
-                                    if Declaration_Kind (Corresponding_Name_Declaration (Selector (Expr)))
-                                    not in A_Discriminant_Specification .. A_Component_Declaration
-                                    then
-                                       -- This is the object being renamed
-                                       Check_Object_Use (Prefix (Expr), Global_Map);
-                                       exit;
-                                    end if;
-
-                                    Expr := Prefix (Expr);
-                                    if Is_Access_Expression (Expr) then
-                                       -- Implicit dereference
-                                       Check_Object_Use (Expr, Global_Map);
-                                       exit;
-                                    end if;
-                                 when A_Type_Conversion =>
-                                    Expr := Converted_Or_Qualified_Expression (Expr);
-                                 when others =>
-                                    -- Remember, this is An_Object_Renaming_Declaration. Hence:
-                                    -- An_Enumeration_Literal and An_Operator_Symbol are also here rather
-                                    --    than with An_Identifier
-                                    -- An_Attribute_Reference is here, because attributes can appear only for
-                                    --    attributes that are functions, and thus should have been caught as
-                                    --    A_Function_Call
-                                    Failure ("Improper_Initialization: bad renaming", Expr);
-                              end case;
+                     when A_Package_Body_Declaration =>
+                        -- Beware: nothing to do for bodies of generic packages
+                        if not Is_Generic_Unit (Decl) then
+                           for Pack_Decl : Asis.Declaration of Declarative_Items (Decl) loop
+                              Check_Object_Use (Pack_Decl, Global_Map);
                            end loop;
 
-                        when A_Variable_Declaration | A_Return_Variable_Specification =>
-                           Add_Variable (Decls (Decl_Index));
-                           Check_Object_Use (Decls (Decl_Index), Global_Map);
+                           for Pack_Stmt : Asis.Statement of Thick_Queries.Statements (Decl) loop
+                              Check_Object_Use (Pack_Stmt, Global_Map);
+                           end loop;
+                        end if;
 
-                        when others =>
-                           Check_Object_Use (Decls (Decl_Index), Global_Map);
-                     end case;  -- declarations
+                     when A_Procedure_Instantiation
+                        | A_Function_Instantiation
+                        | A_Package_Instantiation
+                        =>
+                        -- Objects may be used in actuals of instantiation
+                        for Param : Asis.Association of Generic_Actual_Part (Decl) loop
+                           Check_Object_Use (Param, Global_Map);
+                        end loop;
 
-                  when A_Pragma =>
-                     -- Assume there is no "real" use of variables in pragmas
-                     null;
+                     when An_Object_Renaming_Declaration =>
+                        -- The actual variable being renamed is not a use of the variable, however
+                        -- any other use of variables within the renamed expression is.
+                        Expr := Renamed_Entity (Decl);
+                        loop
+                           case Expression_Kind (Expr) is
+                              when An_Identifier | An_Enumeration_Literal =>
+                                 -- It is the variable being renamed
+                                 exit;
+                              when An_Explicit_Dereference =>
+                                 Check_Object_Use (Prefix (Expr), Global_Map);
+                                 exit;
+                              when A_Function_Call =>
+                                 -- Renaming of the result of a function call
+                                 -- May include implicit dereference, but we don't care
+                                 Check_Object_Use (Expr, Global_Map);
+                                 exit;
+                              when An_Indexed_Component =>
+                                 for Index : Asis.Expression of Index_Expressions (Expr) loop
+                                    Check_Object_Use (Index, Global_Map);
+                                 end loop;
+                                 Expr := Prefix (Expr);
+                              when A_Slice =>
+                                 Check_Object_Use (Slice_Range (Expr), Global_Map);
+                                 Expr := Prefix (Expr);
+                              when A_Selected_Component =>
+                                 if Declaration_Kind (Corresponding_Name_Declaration (Selector (Expr)))
+                                    not in A_Discriminant_Specification .. A_Component_Declaration
+                                 then
+                                    -- This is the object being renamed
+                                    Check_Object_Use (Prefix (Expr), Global_Map);
+                                    exit;
+                                 end if;
 
-                  when A_Clause =>
-                     -- Representation clauses are static, and hence cannot use variables
-                     -- with and use clauses do not use variables.
-                     null;
+                                 Expr := Prefix (Expr);
+                                 if Is_Access_Expression (Expr) then
+                                    -- Implicit dereference
+                                    Check_Object_Use (Expr, Global_Map);
+                                    exit;
+                                 end if;
+                              when A_Type_Conversion =>
+                                 Expr := Converted_Or_Qualified_Expression (Expr);
+                              when others =>
+                                 -- Remember, this is An_Object_Renaming_Declaration. Hence:
+                                 -- An_Enumeration_Literal and An_Operator_Symbol are also here rather
+                                 --    than with An_Identifier
+                                 -- An_Attribute_Reference is here, because attributes can appear only for
+                                 --    attributes that are functions, and thus should have been caught as
+                                 --    A_Function_Call
+                                 Failure ("Improper_Initialization: bad renaming", Expr);
+                           end case;
+                        end loop;
 
-                  when others =>
-                     Failure ("Improper element in declarative part", Decls (Decl_Index));
-               end case;
-            end loop;
-         end;
+                     when A_Variable_Declaration | A_Return_Variable_Specification =>
+                           Add_Variable (Decl);
+                           Check_Object_Use (Decl, Global_Map);
+
+                     when others =>
+                        Check_Object_Use (Decl, Global_Map);
+                  end case;  -- declarations
+
+               when A_Pragma =>
+                  -- Assume there is no "real" use of variables in pragmas
+                  null;
+
+               when A_Clause =>
+                  -- Representation clauses are static, and hence cannot use variables
+                  -- with and use clauses do not use variables.
+                  null;
+
+               when others =>
+                  Failure ("Improper element in declarative part", Decl);
+            end case;
+         end loop;
       end Process_Declarations;
 
    begin -- Process_Structure

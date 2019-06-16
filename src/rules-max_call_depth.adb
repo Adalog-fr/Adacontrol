@@ -536,36 +536,24 @@ package body Rules.Max_Call_Depth is
          -- We traverse all the parts manually (except formal parameters, of course)
          -- Of course, we can stop the traversal as soon as we determine that the
          -- SP is recursive.
-         declare
-            Body_Decls : constant Asis.Declaration_List := Body_Declarative_Items (Called_Body);
-         begin
-            for I in Body_Decls'Range loop
-               Traverse (Body_Decls (I), Control, Result);
-               if Result.Kind = Recursive then
-                  raise Recursivity_Found;
-               end if;
-            end loop;
-         end;
-         declare
-            Body_Stats : constant Asis.Statement_List := Body_Statements (Called_Body);
-         begin
-            for I in Body_Stats'Range loop
-               Traverse (Body_Stats (I), Control, Result);
-               if Result.Kind = Recursive then
-                  raise Recursivity_Found;
-               end if;
-            end loop;
-         end;
-         declare
-            Body_Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (Called_Body);
-         begin
-            for I in Body_Handlers'Range loop
-               Traverse (Body_Handlers (I), Control, Result);
-               if Result.Kind = Recursive then
-                  raise Recursivity_Found;
-               end if;
-            end loop;
-         end;
+         for Body_Decl : Asis.Declaration of Body_Declarative_Items (Called_Body) loop
+            Traverse (Body_Decl, Control, Result);
+            if Result.Kind = Recursive then
+               raise Recursivity_Found;
+            end if;
+         end loop;
+         for Stmt : Asis.Statement of Body_Statements (Called_Body) loop
+            Traverse (Stmt, Control, Result);
+            if Result.Kind = Recursive then
+               raise Recursivity_Found;
+            end if;
+         end loop;
+         for Hndlr : Asis.Exception_Handler of Body_Exception_Handlers (Called_Body) loop
+            Traverse (Hndlr, Control, Result);
+            if Result.Kind = Recursive then
+               raise Recursivity_Found;
+            end if;
+         end loop;
 
       exception
          when Recursivity_Found =>

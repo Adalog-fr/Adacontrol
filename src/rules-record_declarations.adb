@@ -301,14 +301,13 @@ package body Rules.Record_Declarations is
                end case;
 
                declare
-                  Compo_Names : constant Asis.Name_List := Names (Compo);
                   Compo_Clause : Asis.Component_Clause;
                   L            : Extended_Biggest_Natural;
                begin
-                  for C in Compo_Names'Range loop
+                  for Compo_Name : Asis.Name of Names (Compo) loop
                      Extra2      := Null_Unbounded_Wide_String;
                      Applicable2 := True;
-                     Compo_Clause := Corresponding_Component_Clause (Compo_Names (C));
+                     Compo_Clause := Corresponding_Component_Clause (Compo_Name);
                      if Is_Nil (Compo_Clause) then
                         Is_Sized    := False;
                         Is_Aligned  := True;
@@ -376,8 +375,8 @@ package body Rules.Record_Declarations is
                      if Applicable1 and Applicable2 then
                         Report (Rule_Id,
                                 Current_Context,
-                                Get_Location (Compo_Names (C)),
-                                "Component " & Defining_Name_Image (Compo_Names (C))
+                                Get_Location (Compo_Name),
+                                "Component " & Defining_Name_Image (Compo_Name)
                                 & " is "
                                 & To_Wide_String (Extra1)
                                 & To_Wide_String (Extra2)
@@ -405,19 +404,11 @@ package body Rules.Record_Declarations is
                   when A_Null_Component =>
                      return;
                   when A_Variant_Part =>
-                     declare
-                        Variant_List : constant Asis.Variant_List := Variants (Compo);
-                     begin
-                        for V in Variant_List'Range loop
-                           declare
-                              Components : constant Asis.Record_Component_List := Record_Components (Variant_List (V));
-                           begin
-                              for C in Components'Range loop
-                                 Process_Component (Components (C), In_Variant => True);
-                              end loop;
-                           end;
+                     for V : Asis.Variant of Variants (Compo) loop
+                        for C : Asis.Record_Component of Record_Components (V) loop
+                           Process_Component (C, In_Variant => True);
                         end loop;
-                     end;
+                     end loop;
                      return;
                   when others =>
                      Failure ("Unexpected definition for component", Compo);
@@ -445,18 +436,8 @@ package body Rules.Record_Declarations is
          -- Relief! The component has an explicit type
          -- The only possible attribute is 'Base, we can ignore it (no 'Class for components)
          Compo_Type := Corresponding_Name_Declaration (Strip_Attributes (Subtype_Simple_Name (Temp)));
+         Is_Packed  := (for some P of Corresponding_Pragmas (Compo_Type) => Pragma_Kind (P) = A_Pack_Pragma);
 
-         Is_Packed := False;
-         declare
-            Pragma_List : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Compo_Type);
-         begin
-            for P in Pragma_List'Range loop
-               if Pragma_Kind (Pragma_List (P)) = A_Pack_Pragma then
-                  Is_Packed := True;
-                  exit;
-               end if;
-            end loop;
-         end;
          -- Kludge for ASIS bug [J226-011], fixed in GPL2010 and Pro-6.4.1
          -- Strings declared in STANDARD have no pragma Pack
          if not Is_Packed then
@@ -499,13 +480,9 @@ package body Rules.Record_Declarations is
       Rules_Manager.Enter (Rule_Id);
 
       if not Is_Empty (Compo_Contexts) then
-         declare
-            Components : constant Asis.Record_Component_List := Record_Components (Definition);
-         begin
-            for C in Components'Range loop
-               Process_Component (Components (C), In_Variant => False);
-            end loop;
-         end;
+         for C : Asis.Record_Component of Record_Components (Definition) loop
+            Process_Component (C, In_Variant => False);
+         end loop;
       end if;
    end Process_Record_Definition;
 

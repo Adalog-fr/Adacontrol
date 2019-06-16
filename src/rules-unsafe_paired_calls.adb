@@ -261,22 +261,21 @@ package body Rules.Unsafe_Paired_Calls is
       end if;
 
       declare
-         Profile : constant Asis.Parameter_Specification_List := Called_Profile (Lock_Call);
-         Mark    : Asis.Expression;
+         Mark : Asis.Expression;
       begin
          -- Note that we iterate through all parameters, and that we transform Lock_Context
          -- as soon as we find a parameter of the appropriate type.
          -- This is intended to diagnose the case where more than one parameter is of the
          -- provided type.
-         for I in Profile'Range loop
-            Mark := Simple_Name (Declaration_Subtype_Mark (Profile (I)));
+         for Spec : Asis.Parameter_Specification of Called_Profile (Lock_Call) loop
+            Mark := Simple_Name (Declaration_Subtype_Mark (Spec));
             if Matches (Lock_Context.Lock.Entity, Mark) then
-               if Lock_Context.Lock.Kind /= Entity_Spec or Names (Profile (I))'Length /= 1 then
+               if Lock_Context.Lock.Kind /= Entity_Spec or Names (Spec)'Length /= 1 then
                   Parameter_Error (Rule_Id,
                                    "more than one parameter of the provided type",
                                    Lock_Context.Lock.Position);
                else
-                  case Mode_Kind (Profile (I)) is
+                  case Mode_Kind (Spec) is
                      when An_In_Mode | A_Default_In_Mode =>
                         -- Only discrete and access types allowed
                         case Type_Kind (Type_Declaration_View (Corresponding_Name_Declaration (Mark))) is
@@ -293,10 +292,10 @@ package body Rules.Unsafe_Paired_Calls is
                         end case;
 
                         Lock_Context.Lock := (In_Def,
-                                              Formal => Names (Profile (I)) (1));
+                                              Formal => Names (Spec) (1));
                      when An_In_Out_Mode =>
                         Lock_Context.Lock := (In_Out_Def,
-                                              Formal => Names (Profile (I)) (1));
+                                              Formal => Names (Spec) (1));
                      when An_Out_Mode =>
                         Parameter_Error (Rule_Id,
                                          "parameter of the provided type is of mode ""out"" in "
@@ -542,15 +541,12 @@ package body Rules.Unsafe_Paired_Calls is
             end if;
 
             -- Every handler must include directly one and only one call to an SP matching the opening call
-            for I in Handlers'Range loop
+            for H : Asis.Exception_Handler of Handlers loop
                declare
-                  Handler_Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
-                  Call_Count    : Asis.ASIS_Natural := 0;
+                  Call_Count : Asis.ASIS_Natural := 0;
                begin
-                  for J in Handler_Stats'Range loop
-                     if Is_Matching_Locking (Call,                             Opening_Call_Context,
-                                             Matching_Call (Handler_Stats (J), Opening_Sig))
-                     then
+                  for Stmt : Asis.Statement of Handler_Statements (H) loop
+                     if Is_Matching_Locking (Call, Opening_Call_Context, Matching_Call (Stmt, Opening_Sig)) then
                         Call_Count := Call_Count + 1;
                      end if;
                   end loop;
@@ -558,14 +554,14 @@ package body Rules.Unsafe_Paired_Calls is
                      when 0 =>
                         Report (Rule_Id,
                                 Opening_Call_Context,
-                                Get_Location (Handlers (I)),
+                                Get_Location (H),
                                 "handler must have a closing call matching " & Call_Image (Call));
                      when 1 => --OK
                         null;
                      when others =>
                         Report (Rule_Id,
                                 Opening_Call_Context,
-                                Get_Location (Handlers (I)),
+                                Get_Location (H),
                                 "handler must have only one closing call matching " & Call_Image (Call));
                   end case;
                end;

@@ -569,26 +569,16 @@ package body Rules.Movable_Accept_Statements  is
                                               Checked      => False));
 
          -- 2nd step: insert all of the `accept' parameters into the referenced objects queue
-         declare
-            Accept_Entry_Parameters : constant Asis.Parameter_Specification_List
-              := Parameter_Profile (Corresponding_Entry (Statement));
-         begin
-            -- Insert all of the `accept' parameters into the queue
-            for P in Accept_Entry_Parameters'Range loop
-               declare
-                  Params_Ids : constant Asis.Defining_Name_List := Names (Accept_Entry_Parameters (P));
-               begin
-                  for I in Params_Ids'Range loop
-                     Append (The_State.References_Queue, (Nb_Refs      => The_State.Number_Of_Statements,
-                                                          Identifier   => First_Defining_Name (Params_Ids (I)),
-                                                          Kind         => Parameter,
-                                                          References   => (others => False),
-                                                          Checked      => False));
-                  end loop;
-               end;
+         -- Insert all of the `accept' parameters into the queue
+         for P : Asis.Parameter_Specification of Parameter_Profile (Corresponding_Entry (Statement)) loop
+            for Id : Asis.Defining_Name of Names (P) loop
+               Append (The_State.References_Queue, (Nb_Refs      => The_State.Number_Of_Statements,
+                                                    Identifier   => First_Defining_Name (Id),
+                                                    Kind         => Parameter,
+                                                    References   => (others => False),
+                                                    Checked      => False));
             end loop;
-         end;
-
+         end loop;
 
          -- 3rd step: retrieve all identifiers and set the last statement index and kind
      Identifiers_Retrieval:
@@ -710,27 +700,27 @@ package body Rules.Movable_Accept_Statements  is
          end if;
 
      Report_Last_Statements:
-         for Stmt_Index in List_Index range The_State.Last_Statement.Index + 1 .. Body_Statements'Last loop
+         for Stmt : Asis.Statement of Body_Statements (The_State.Last_Statement.Index + 1 .. Body_Statements'Last) loop
             case The_State.Last_Statement.Kind is
                when Exclusive =>
                   Report (Rule_Id,
                           Usage (K_Certain),
-                          Get_Location (Body_Statements (Stmt_Index)),
+                          Get_Location (Stmt),
                           "statement may be removed (dead code)");
                when Parameter_Reference =>
                   Report (Rule_Id,
                           Usage (K_Certain),
-                          Get_Location (Body_Statements (Stmt_Index)),
+                          Get_Location (Stmt),
                           "statement may be moved to an outer scope (after last parameter reference)");
                when User_Defined_Dependency =>
                   Report (Rule_Id,
                           Usage (K_Certain),
-                          Get_Location (Body_Statements (Stmt_Index)),
+                          Get_Location (Stmt),
                           "statement may be moved to an outer scope (after user-defined dependency)");
                when others =>
                   Report (Rule_Id,
                           Usage (K_Certain),
-                          Get_Location (Body_Statements (Stmt_Index)),
+                          Get_Location (Stmt),
                           "statement may be moved to an outer scope");
             end case;
          end loop Report_Last_Statements;

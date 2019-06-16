@@ -72,7 +72,8 @@ package body Framework.Control_Manager is
 
       function Merge_Context (Context    : in out Basic_Rule_Context;
                               With_Type  : in     Control_Kinds;
-                              With_Label : in     Wide_String) return Boolean is
+                              With_Label : in     Wide_String) return Boolean
+      is
       begin
          if (With_Type = Count) = (Context.Ctl_Kind = Count) then
             -- Both or neither are Count

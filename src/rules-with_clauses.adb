@@ -214,58 +214,45 @@ package body Rules.With_Clauses is
       -- Is Name used in a use clause from the same context clause?
          use Asis, Asis.Expressions;
 
-         Unit_Clauses : constant Asis.Context_Clause_List := Context_Clause_Elements
-                                                              (Enclosing_Compilation_Unit (Name),
-                                                               Include_Pragmas =>  True);
          Name_Def : constant Asis.Defining_Name := Thick_Queries.First_Defining_Name (Name);
       begin
-         for C in Unit_Clauses'Range loop
-            case Clause_Kind (Unit_Clauses (C)) is
+         for Clause : Asis.Element of Context_Clause_Elements (Enclosing_Compilation_Unit (Name),
+                                                               Include_Pragmas =>  True)
+         loop
+            case Clause_Kind (Clause) is
                when A_Use_Package_Clause =>
-                  declare
-                     Use_Names : constant Asis.Name_List := Clause_Names (Unit_Clauses (C));
-                  begin
-                     for U in Use_Names'Range loop
-                        if Is_Equal (First_Defining_Name (Use_Names (U)), Name_Def) then
-                           return True;
-                        end if;
-                     end loop;
-                  end;
+                  for N : Asis.Name of Clause_Names (Clause) loop
+                     if Is_Equal (First_Defining_Name (N), Name_Def) then
+                        return True;
+                     end if;
+                  end loop;
                when A_Use_Type_Clause
                   | A_Use_All_Type_Clause
                   =>
-                  declare
-                     Use_Names : constant Asis.Name_List := Clause_Names (Unit_Clauses (C));
-                  begin
-                     for U in Use_Names'Range loop
-                        -- Normally, a use type will use a selected name. The only way to have a
-                        -- simple name is if there is already a use clause for the containing package,
-                        -- and of course this use clause will be analyzed. We can thus safely ignore
-                        -- simple names
-                        if Expression_Kind (Use_Names (U)) = A_Selected_Component
-                          and then Is_Equal (First_Defining_Name (Prefix (Use_Names (U))), Name_Def)
-                        then
-                           return True;
-                        end if;
-                     end loop;
-                  end;
+                  for N : Asis.Name of Clause_Names (Clause) loop
+                     -- Normally, a use type will use a selected name. The only way to have a
+                     -- simple name is if there is already a use clause for the containing package,
+                     -- and of course this use clause will be analyzed. We can thus safely ignore
+                     -- simple names
+                     if Expression_Kind (N) = A_Selected_Component
+                       and then Is_Equal (First_Defining_Name (Prefix (N)), Name_Def)
+                     then
+                        return True;
+                     end if;
+                  end loop;
                when others =>    -- Including Not_A_Clause (pragma)
                   null;
             end case;
 
-            case Pragma_Kind (Unit_Clauses (C)) is
+            case Pragma_Kind (Clause) is
                when An_Elaborate_Pragma
                   | An_Elaborate_All_Pragma
                   =>
-                  declare
-                     Assocs : constant Asis.Association_List := Pragma_Argument_Associations (Unit_Clauses (C));
-                  begin
-                     for A in Assocs'Range loop
-                        if Is_Equal (First_Defining_Name (Actual_Parameter (Assocs (A))), Name_Def) then
-                           return True;
-                        end if;
-                     end loop;
-                  end;
+                  for A : Asis.Association of Pragma_Argument_Associations (Clause) loop
+                     if Is_Equal (First_Defining_Name (Actual_Parameter (A)), Name_Def) then
+                        return True;
+                     end if;
+                  end loop;
                when others =>   -- Including Not_A_Pragma
                   null;
             end case;

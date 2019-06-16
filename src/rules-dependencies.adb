@@ -283,12 +283,12 @@ package body Rules.Dependencies is
          return;
       end if;
 
-      for I in Control_Index range 1 .. Counting_Subrules_Count loop
-         case Counting_Contexts (I).Count_Kind is
+      for Cont : Counting_Subrule_Contexts of Counting_Contexts (1 .. Counting_Subrules_Count) loop
+         case Cont.Count_Kind is
             when Sr_Raw =>
-               Do_Report ("number of withed units", Raw_Count, Counting_Contexts (I));
+               Do_Report ("number of withed units", Raw_Count, Cont);
             when Sr_Direct =>
-               Do_Report ("direct dependencies", Biggest_Int (Cardinal (Direct_Name_Set)), Counting_Contexts (I));
+               Do_Report ("direct dependencies", Biggest_Int (Cardinal (Direct_Name_Set)), Cont);
             when Sr_Parent =>
                case Unit_Kind (Unit) is
                   when A_Subunit | A_Package_Body =>
@@ -297,12 +297,10 @@ package body Rules.Dependencies is
                   when A_Subprogram_Body =>
                      -- Report only if there is no spec
                      if Is_Nil (Corresponding_Declaration (Unit)) then
-                        Do_Report ("number of parents", Biggest_Int (Count (Unit_Full_Name (Unit), ".")),
-                                   Counting_Contexts (I));
+                        Do_Report ("number of parents", Biggest_Int (Count (Unit_Full_Name (Unit), ".")), Cont);
                      end if;
                   when others =>
-                     Do_Report ("number of parents", Biggest_Int (Count (Unit_Full_Name (Unit), ".")),
-                                Counting_Contexts (I));
+                     Do_Report ("number of parents", Biggest_Int (Count (Unit_Full_Name (Unit), ".")), Cont);
                end case;
          end case;
       end loop;
@@ -329,9 +327,9 @@ package body Rules.Dependencies is
          if Counting_Subrules_Count /= 0 then
             Raw_Count := Raw_Count + Withed_Names'Length;
          end if;
-         for N in Withed_Names'Range loop
+         for N : Asis.Name of Withed_Names loop
             if Counting_Subrules_Count /= 0 then
-               Elem := Withed_Names (N);
+               Elem := N;
                Add (Direct_Name_Set, To_Upper (Full_Name_Image (Ultimate_Name (Elem))));
                while Expression_Kind (Elem) = A_Selected_Component loop
                   Elem := Prefix (Elem);
@@ -340,17 +338,16 @@ package body Rules.Dependencies is
             end if;
 
             if Others_Subrule_Used then
-               Elem := Withed_Names (N);
-               if Matching_Context (Allowed_Entities, Elem, Extend_To => All_Extensions) = No_Matching_Context then
+               if Matching_Context (Allowed_Entities, N, Extend_To => All_Extensions) = No_Matching_Context then
                   Report (Rule_Id,
                           Others_Context,
-                          Get_Location (Elem),
-                          "unit depends on " & Full_Name_Image (Ultimate_Name (Elem)));
+                          Get_Location (N),
+                          "unit depends on " & Full_Name_Image (Ultimate_Name (N)));
                end if;
             end if;
 
             if With_Subrule_Used then
-               Elem := Withed_Names (N);
+               Elem := N;
                loop
                   declare
                      Cont : constant Root_Context'Class := Matching_Context (Forbidden_Entities,
@@ -369,20 +366,20 @@ package body Rules.Dependencies is
                end loop;
             end if;
 
-            Elem := Corresponding_Name_Definition (Simple_Name (Withed_Names (N)));
+            Elem := Corresponding_Name_Definition (Simple_Name (N));
             if Public_Child_Used
               and then Unit_Class (Enclosing_Compilation_Unit (Ultimate_Name (Elem)))
                        in A_Public_Declaration .. A_Public_Declaration_And_Body
               and then Starts_With (To_Upper (Full_Name_Image (Elem)), To_Upper (Full_Name_Image (This_Name)) & '.')
             then
-               Report (Rule_Id, Public_Child_Context, Get_Location (Withed_Names (N)), "Use of public child");
+               Report (Rule_Id, Public_Child_Context, Get_Location (N), "Use of public child");
             end if;
 
             if Private_Child_Used
               and then Unit_Class (Enclosing_Compilation_Unit (Ultimate_Name (Elem))) = A_Private_Declaration
               and then Starts_With (To_Upper (Full_Name_Image (Elem)), To_Upper (Full_Name_Image (This_Name)))
             then
-               Report (Rule_Id, Private_Child_Context, Get_Location (Withed_Names (N)), "Use of private child");
+               Report (Rule_Id, Private_Child_Context, Get_Location (N), "Use of private child");
             end if;
          end loop;
       end;

@@ -233,20 +233,19 @@ package body Rules.Insufficient_Parameters is
             -- Check both tested expression and each membership choice
             declare
                Result  : Control_Kinds_Set := Is_Insufficient (Membership_Test_Expression (Expr));
-               Choices : constant Asis.Element_List := Membership_Test_Choices (Expr);
             begin
-               for C in Choices'Range loop
-                  if Element_Kind (Choices (C)) = An_Expression then
-                     Result := Result and Is_Insufficient (Choices (C));
+               for Choice : Asis.Element of Membership_Test_Choices (Expr) loop
+                  if Element_Kind (Choice) = An_Expression then
+                     Result := Result and Is_Insufficient (Choice);
                   else
                      -- A range
-                     case Constraint_Kind (Choices (C)) is
+                     case Constraint_Kind (Choice) is
                         when A_Range_Attribute_Reference =>
                            null;
                         when A_Simple_Expression_Range =>
-                           if Discrete_Range_Kind (Choices (C)) = A_Discrete_Simple_Expression_Range then
-                              Result := Result and Is_Insufficient (Lower_Bound (Choices (C)))
-                                               and Is_Insufficient (Upper_Bound (Choices (C)));
+                           if Discrete_Range_Kind (Choice) = A_Discrete_Simple_Expression_Range then
+                              Result := Result and Is_Insufficient (Lower_Bound (Choice))
+                                               and Is_Insufficient (Upper_Bound (Choice));
                            end if;
                         when others =>
                            Failure (Rule_Id & ": Membership_Test_Range => invalid Constraint_Kind");
@@ -294,18 +293,17 @@ package body Rules.Insufficient_Parameters is
       end if;
 
       declare
-         Parameters       : constant Asis.Association_List := Actual_Parameters (Element);
          Nb_Insufficients : array (Control_Kinds) of Asis.ASIS_Natural := (others => 0);
          Insufficiencies  : Control_Kinds_Set;
       begin
-         for I in Parameters'Range loop
-            if not Is_Nil (Formal_Parameter (Parameters (I))) then
+         for Param : Asis.Association of Actual_Parameters (Element) loop
+            if not Is_Nil (Formal_Parameter (Param)) then
                -- Named notation, no more positional behind
                exit;
             end if;
 
             -- Positional notation
-            Insufficiencies := Is_Insufficient (Actual_Parameter (Parameters (I)));
+            Insufficiencies := Is_Insufficient (Actual_Parameter (Param));
             for T in Control_Kinds loop
                if Insufficiencies (T) then
                   Nb_Insufficients (T) := Nb_Insufficients (T) + 1;

@@ -819,16 +819,7 @@ package body Rules.Usage is
          function Is_Pseudo_Const (Entity : Asis.Expression) return Boolean is
             use Thick_Queries;
          begin
-            declare
-               Lengths : constant Extended_Biggest_Natural_List := Discrete_Constraining_Lengths (Entity);
-            begin
-               for I in Lengths'Range loop
-                  if Lengths (I) = 0 then
-                     return True;
-                  end if;
-               end loop;
-               return False;
-            end;
+            return (for some I of Discrete_Constraining_Lengths (Entity) => I = 0);
          exception
             when others =>
                -- Presumably, a storage_error (maybe changed into an Asis_Failed)
@@ -1186,7 +1177,6 @@ package body Rules.Usage is
             -- Analyze the type for the case where it is an access type, or
             -- an array of accesses, since these are initialized by the compiler.
             declare
-               The_Names       : constant Asis.Defining_Name_List := Names (Element);
                Is_Initialized  : Boolean;
                Root_Definition : Asis.Definition;
             begin
@@ -1258,8 +1248,8 @@ package body Rules.Usage is
                   Is_Initialized := True;
                end if;
 
-               for I in The_Names'Range loop
-                  Update (The_Names (I),
+               for N : Asis.Defining_Name of Names (Element) loop
+                  Update (N,
                           K_Variable,
                           (K_Declared     => True,
                            K_From_Visible => Origin = From_Visible,
@@ -1270,26 +1260,21 @@ package body Rules.Usage is
             end;
 
          when K_Constant =>
-            declare
-               The_Names : constant Asis.Defining_Name_List := Names (Element);
-            begin
-               for I in The_Names'Range loop
-                  Update (The_Names (I),
-                          K_Constant,
-                          (K_Declared | K_Initialized => True,
-                           K_From_Visible             => Origin = From_Visible,
-                           K_From_Private             => Origin = From_Private,
-                           others                     => False));
-               end loop;
-            end;
+            for N : Asis.Defining_Name of Names (Element) loop
+               Update (N,
+                       K_Constant,
+                       (K_Declared | K_Initialized => True,
+                        K_From_Visible             => Origin = From_Visible,
+                        K_From_Private             => Origin = From_Private,
+                        others                     => False));
+            end loop;
 
          when K_In_Parameter =>
             declare
-               The_Names       : constant Asis.Defining_Name_List := Names (Element);
                Is_Initialized  : constant Boolean := not Is_Nil (Initialization_Expression (Element));
             begin
-               for I in The_Names'Range loop
-                  Update (The_Names (I),
+               for N : Asis.Defining_Name of Names (Element) loop
+                  Update (N,
                           E_Kind,
                           (K_Declared     => True,
                            K_From_Visible => Origin = From_Visible,
@@ -1309,18 +1294,14 @@ package body Rules.Usage is
             | K_Out_Parameter
             | K_In_Out_Parameter
               =>
-            declare
-               The_Names : constant Asis.Defining_Name_List := Names (Element);
-            begin
-               for I in The_Names'Range loop
-                  Update (The_Names (I),
-                          E_Kind,
-                          (K_Declared     => True,
-                           K_From_Visible => Origin = From_Visible,
-                           K_From_Private => Origin = From_Private,
-                           others         => False));
-               end loop;
-            end;
+            for N : Asis.Defining_Name of Names (Element) loop
+               Update (N,
+                       E_Kind,
+                       (K_Declared     => True,
+                        K_From_Visible => Origin = From_Visible,
+                        K_From_Private => Origin = From_Private,
+                        others         => False));
+            end loop;
 
          when K_Other =>
             null;

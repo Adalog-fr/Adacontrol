@@ -330,13 +330,9 @@ package body Rules.Barrier_Expressions is
                           Control_Manager.Association (Contexts, Image (K_Record_Aggregate)));
 
                -- Record_Component_Associations + Record_Component_Choices/Component_Expression
-               declare
-                  Record_Associations : constant Asis.Association_List := Record_Component_Associations (Exp);
-               begin
-                  for Assoc in Record_Associations'Range loop
-                     Check_Expression (Component_Expression (Record_Associations (Assoc)));
-                  end loop;
-               end;
+               for Assoc : Asis.Association of Record_Component_Associations (Exp) loop
+                  Check_Expression (Component_Expression (Assoc));
+               end loop;
 
             when An_Extension_Aggregate =>
                Do_Report ("record extension",
@@ -345,14 +341,9 @@ package body Rules.Barrier_Expressions is
                -- Extension_Aggregate_Expression
                -- Record_Component_Associations + Record_Component_Choices/Component_Expression
                Check_Expression (Extension_Aggregate_Expression (Exp));
-               declare
-                  Record_Associations : constant Asis.Association_List :=
-                    Record_Component_Associations (Exp);
-               begin
-                  for Assoc in Record_Associations'Range loop
-                     Check_Expression (Component_Expression (Record_Associations (Assoc)));
-                  end loop;
-               end;
+               for Assoc : Asis.Association of  Record_Component_Associations (Exp) loop
+                  Check_Expression (Component_Expression (Assoc));
+               end loop;
 
             when A_Positional_Array_Aggregate
               | A_Named_Array_Aggregate
@@ -361,50 +352,38 @@ package body Rules.Barrier_Expressions is
                           Control_Manager.Association (Contexts, Image (K_Array_Aggregate)));
 
                -- Array_Component_Associations + Array_Component_Choices/Component_Expression
-               declare
-                  Array_Associations : constant Asis.Association_List :=
-                    Array_Component_Associations (Exp);
-               begin
-                  for Assoc in Array_Associations'Range loop
-                     declare
-                        Choices : constant Asis.Element_List :=
-                          Array_Component_Choices (Array_Associations (Assoc));
-                        Choice : Asis.Element;
-                     begin
-                        for Choice_Index in Choices'Range loop
-                           Choice := Choices (Choice_Index);
-                           if not Is_Nil (Choice) then
-                              case Element_Kind (Choice) is
-                                 when An_Expression =>
-                                    Check_Expression (Choice);
-                                 when A_Definition =>
-                                    case Definition_Kind (Choice) is
-                                       when An_Others_Choice =>
+               for Assoc : Asis.Association of Array_Component_Associations (Exp) loop
+                  for Choice : Asis.Element of Array_Component_Choices (Assoc) loop
+                     if not Is_Nil (Choice) then
+                        case Element_Kind (Choice) is
+                           when An_Expression =>
+                              Check_Expression (Choice);
+                           when A_Definition =>
+                              case Definition_Kind (Choice) is
+                                 when An_Others_Choice =>
+                                    null;
+                                 when A_Discrete_Range =>
+                                    case Discrete_Range_Kind (Choice) is
+                                       when Not_A_Discrete_Range =>
+                                          Failure (Rule_Id & ": Array_Aggregate . Discrete_Range_Kind");
+                                       when A_Discrete_Subtype_Indication
+                                          | A_Discrete_Range_Attribute_Reference
+                                          =>
                                           null;
-                                       when A_Discrete_Range =>
-                                          case Discrete_Range_Kind (Choice) is
-                                             when Not_A_Discrete_Range =>
-                                                Failure (Rule_Id & ": Array_Aggregate . Discrete_Range_Kind");
-                                             when A_Discrete_Subtype_Indication
-                                               | A_Discrete_Range_Attribute_Reference
-                                               =>
-                                                null;
-                                             when A_Discrete_Simple_Expression_Range =>
-                                                Check_Expression (Lower_Bound (Choice));
-                                                Check_Expression (Upper_Bound (Choice));
-                                          end case;
-                                       when others =>
-                                          Failure (Rule_Id & ": Array_Aggregate . Definition_Kind");
+                                       when A_Discrete_Simple_Expression_Range =>
+                                          Check_Expression (Lower_Bound (Choice));
+                                          Check_Expression (Upper_Bound (Choice));
                                     end case;
                                  when others =>
-                                    Failure (Rule_Id & ": Array_Aggregate . Element_Kind");
+                                    Failure (Rule_Id & ": Array_Aggregate . Definition_Kind");
                               end case;
-                           end if;
-                        end loop;
-                     end;
-                     Check_Expression (Component_Expression (Array_Associations (Assoc)));
+                           when others =>
+                              Failure (Rule_Id & ": Array_Aggregate . Element_Kind");
+                        end case;
+                     end if;
                   end loop;
-               end;
+                  Check_Expression (Component_Expression (Assoc));
+               end loop;
 
             when An_In_Membership_Test
               | A_Not_In_Membership_Test
@@ -415,26 +394,22 @@ package body Rules.Barrier_Expressions is
 
                -- Check both tested expression and each membership choice
                Check_Expression (Membership_Test_Expression (Exp));
-               declare
-                  Choices : constant Asis.Element_List := Membership_Test_Choices (Exp);
-               begin
-                  for C in Choices'Range loop
-                     if Element_Kind (Choices (C)) = An_Expression then
-                        Check_Expression (Choices (C));
-                     else
-                        -- A range
-                        case Constraint_Kind (Choices (C)) is
-                           when A_Range_Attribute_Reference =>
-                              null;
-                           when A_Simple_Expression_Range =>
-                              Check_Expression (Lower_Bound (Choices (C)));
-                              Check_Expression (Upper_Bound (Choices (C)));
-                           when others =>
-                              Failure (Rule_Id & ": Membership_Test_Range => invalid Constraint_Kind");
-                        end case;
-                     end if;
-                  end loop;
-               end;
+               for Choice : Asis.Element of Membership_Test_Choices (Exp) loop
+                  if Element_Kind (Choice) = An_Expression then
+                     Check_Expression (Choice);
+                  else
+                     -- A range
+                     case Constraint_Kind (Choice) is
+                        when A_Range_Attribute_Reference =>
+                           null;
+                        when A_Simple_Expression_Range =>
+                           Check_Expression (Lower_Bound (Choice));
+                           Check_Expression (Upper_Bound (Choice));
+                        when others =>
+                           Failure (Rule_Id & ": Membership_Test_Range => invalid Constraint_Kind");
+                     end case;
+                  end if;
+               end loop;
 
             when An_Indexed_Component =>
                Do_Report ("indexing",
@@ -447,13 +422,9 @@ package body Rules.Barrier_Expressions is
                end if;
                -- Check both prefix and indexes of the component
                Check_Expression (Prefix (Exp));
-               declare
-                  Indexes : constant Asis.Expression_List := Index_Expressions (Exp);
-               begin
-                  for I in Indexes'Range loop
-                     Check_Expression (Indexes (I));
-                  end loop;
-               end;
+               for Index : Asis.Expression of Index_Expressions (Exp) loop
+                  Check_Expression (Index);
+               end loop;
 
             when A_Slice =>
                Do_Report ("slice",
@@ -560,13 +531,9 @@ package body Rules.Barrier_Expressions is
                -- Check prefix
                Check_Expression (Prefix (Exp));
                -- Check each parameter
-               declare
-                  Parameters : constant Asis.Association_List := Function_Call_Parameters (Exp);
-               begin
-                  for Index in Parameters'Range loop
-                     Check_Expression (Actual_Parameter (Parameters (Index)));
-                  end loop;
-               end;
+               for Parameter : Asis.Association of Function_Call_Parameters (Exp) loop
+                  Check_Expression (Actual_Parameter (Parameter));
+               end loop;
 
             when An_Explicit_Dereference =>
                Do_Report ("dereference",

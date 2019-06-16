@@ -140,12 +140,12 @@ package body Rules.No_Operator_Usage is
       end if;
 
       -- Check if already there, but allow same value being specified twice if one (and only one) is "count"
-      for C in Asis.List_Index range 1 .. Rule_Used loop
-         if Given_Controls (C).Observed_Filter = SF
-           and then (Given_Controls (C).Category = Cat_Any
+      for Cp : Control_Parameters of Given_Controls (1 .. Rule_Used) loop
+         if Cp.Observed_Filter = SF
+           and then (Cp.Category = Cat_Any
                      or else Cat = Cat_Any
-                     or else Given_Controls (C).Category = Cat)
-           and then (Given_Controls (C).Context.Ctl_Kind = Count) = (Ctl_Kind = Count)
+                     or else Cp.Category = Cat)
+           and then (Cp.Context.Ctl_Kind = Count) = (Ctl_Kind = Count)
          then
             Parameter_Error (Rule_Id, "combination of parameters already given");
          end if;
@@ -404,13 +404,12 @@ package body Rules.No_Operator_Usage is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Subtypes   : constant Asis.Defining_Name_List := Index_Subtypes_Names (Definition);
-         Type_Name  : Asis.Defining_Name;
-         TI         : Type_Info;
+         Type_Name : Asis.Defining_Name;
+         TI        : Type_Info;
       begin
-         for S in Subtypes'Range loop
-            if Type_Category (Subtypes (S), Follow_Derived => True) in Integer_Types then
-               Type_Name           := Names (Corresponding_First_Subtype (Enclosing_Element (Subtypes (S))))(1);
+         for N : Asis.Defining_Name of Index_Subtypes_Names (Definition) loop
+            if Type_Category (N, Follow_Derived => True) in Integer_Types then
+               Type_Name           := Names (Corresponding_First_Subtype (Enclosing_Element (N)))(1);
                TI                  := Type_Usage.Fetch (Type_Name, Default => (Cat_Any, (others => False)));
                TI.Usage (Indexing) := True;
                Type_Usage.Store (Type_Name, TI);
@@ -497,8 +496,8 @@ package body Rules.No_Operator_Usage is
          return;
       end if;
 
-      for C in Asis.List_Index range 1 .. Rule_Used loop
-         Do_Report (Given_Controls (C));
+      for Cont : Control_Parameters of Given_Controls (1 .. Rule_Used) loop
+         Do_Report (Cont);
       end loop;
    end Report_One;
 

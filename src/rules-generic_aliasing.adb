@@ -370,7 +370,9 @@ package body Rules.Generic_Aliasing is
             Left_Formal := Formal_Parameter (Actuals (Left_Inx));
             Left_Kind   := Declaration_Kind (Enclosing_Element (Left_Formal));
 
+            --##Rule Off Simplifiable_statements ## Keep symetry with Left_Inx
             for Right_Inx in List_Index range Left_Inx + 1 .. Actuals'Last loop
+               --##Rule On Simplifiable_statements
                Right_Formal := Formal_Parameter (Actuals (Right_Inx));
                Right_Kind   := Declaration_Kind  (Enclosing_Element (Right_Formal));
 

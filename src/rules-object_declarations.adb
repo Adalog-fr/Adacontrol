@@ -264,16 +264,12 @@ package body Rules.Object_Declarations is
          when Clear =>
             Rule_Used := No_Rule;
 
-            for Ok in Object_Kinds loop
-               for Rt in Control_Kinds loop
-                  Span_Context (Ok, Rt).Min_Values := 0;
-               end loop;
+            for Cont : Value_Context of Span_Context loop
+               Cont.Min_Values := 0;
             end loop;
 
-            for T in Type_Rules loop
-               for O in Obj_Selector loop
-                  Clear (Type_Contexts (T, O));
-               end loop;
+            for Store : Context_Store of Type_Contexts  loop
+               Clear (Store);
             end loop;
          when Suspend =>
             Save_Used := Rule_Used;
@@ -526,11 +522,10 @@ package body Rules.Object_Declarations is
       end Process_Min_Integer_Span;
 
       procedure Process_Volatile_Address is
-         Decl_Names : constant Asis.Defining_Name_List := Names (Decl);
       begin
-         for N in Decl_Names'Range loop
-            Repr_Table.Store (Decl_Names (N),
-                              (Volatile => Corresponding_Pragma_Set (Decl_Names (N)) (A_Volatile_Pragma),
+         for N : Asis.Defining_Name of Names (Decl) loop
+            Repr_Table.Store (N,
+                              (Volatile => Corresponding_Pragma_Set (N) (A_Volatile_Pragma),
                                Address  => False));
          end loop;
       end Process_Volatile_Address;

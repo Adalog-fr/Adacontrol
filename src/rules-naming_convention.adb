@@ -524,14 +524,7 @@ package body Rules.Naming_Convention is
    -------------
 
    function Is_Used (Filters : Key_Set) return Boolean is
-   begin
-      for I in Filters'Range loop
-         if Usage (Filters (I)) then
-            return True;
-         end if;
-      end loop;
-      return False;
-   end Is_Used;
+     (for Some F of Filters => Usage (F));
 
    ---------------------------
    -- Process_Defining_Name --
@@ -758,9 +751,9 @@ package body Rules.Naming_Convention is
                                             Privacy            => Stop_At_Private,
                                             Separate_Extension => True);
          end if;
-         for I in reverse Set'Range loop
-            if Usage (Set (I)) then
-               Check_One_Key (Set (I));
+         for K : Keys of reverse Set loop
+            if Usage (K) then
+               Check_One_Key (K);
             end if;
          end loop;
 
@@ -802,16 +795,12 @@ package body Rules.Naming_Convention is
          -- call to check is deep in the statements, to simplify the structure.
          case Element_Kind (Decl) is
             when A_Statement =>  ------------------------------------------------- Statements
-               declare
-                  Labels : constant Defining_Name_List := Label_Names (Decl);
-               begin
-                  for I in Labels'Range loop
-                     if Is_Equal (Name, Labels (I)) then
-                        Check (Name_Str, (K_All, K_Label));
-                        return;
-                     end if;
-                  end loop;
-               end;
+               for L : Asis.Defining_Name of Label_Names (Decl) loop
+                  if Is_Equal (Name, L) then
+                     Check (Name_Str, (K_All, K_Label));
+                     return;
+                  end if;
+               end loop;
 
                -- It is not a label => must be a loop or block name
                case Statement_Kind (Decl) is

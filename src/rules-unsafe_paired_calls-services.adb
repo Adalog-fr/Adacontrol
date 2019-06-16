@@ -204,8 +204,8 @@ package body Rules.Unsafe_Paired_Calls.Services is
             return Nil_Element;
       end case;
 
-      for E in Signature'Range loop
-         case Element_Kind (Signature (E)) is
+      for E : Asis.Element of Signature loop
+         case Element_Kind (E) is
             when An_Expression =>
                declare
                   Expr : constant Asis.Expression := Condition_Expression (Statement_Paths (Current) (1));
@@ -213,7 +213,7 @@ package body Rules.Unsafe_Paired_Calls.Services is
                   if not Is_Boolean_Constant (Expr) then
                      return Nil_Element;
                   end if;
-                  if not Is_Equal (Corresponding_Name_Declaration (Ultimate_Name (Signature (E))),
+                  if not Is_Equal (Corresponding_Name_Declaration (Ultimate_Name (E)),
                                    Corresponding_Name_Declaration (Ultimate_Name (Expr)))
                   then
                      return Nil_Element;
@@ -221,18 +221,18 @@ package body Rules.Unsafe_Paired_Calls.Services is
                end;
 
             when A_Statement =>
-               case Statement_Kind (Signature (E)) is
+               case Statement_Kind (E) is
                   when An_If_Statement =>
                      if Statement_Kind (Current) /= An_If_Statement then
                         return Nil_Element;
                      end if;
                   when A_Procedure_Call_Statement | An_Entry_Call_Statement =>
-                     if Statement_Kind (Current) /= Statement_Kind (Signature (E)) then
+                     if Statement_Kind (Current) /= Statement_Kind (E) then
                         return Nil_Element;
                      end if;
                      return Current;
                   when others =>
-                     Failure ("Bad signature: invalid statement", Signature (E));
+                     Failure ("Bad signature: invalid statement", E);
                end case;
 
             when A_Path =>
@@ -242,7 +242,7 @@ package body Rules.Unsafe_Paired_Calls.Services is
                declare
                   If_Paths : constant Asis.Path_List := Statement_Paths (Current);
                begin
-                  case Path_Kind (Signature (E)) is
+                  case Path_Kind (E) is
                      when An_If_Path =>
                         Current := If_Paths (1);
                      when An_Else_Path =>
@@ -251,13 +251,13 @@ package body Rules.Unsafe_Paired_Calls.Services is
                         end if;
                         Current := If_Paths (2);
                      when others =>
-                        Failure ("Bad signature: bad path", Signature (E));
+                        Failure ("Bad signature: bad path", E);
                   end case;
                end;
                Current := Sequence_Of_Statements (Current) (1);
 
             when others =>
-               Failure ("Bad signature: unexpected element", Signature (E));
+               Failure ("Bad signature: unexpected element", E);
          end case;
       end loop;
 
@@ -284,8 +284,8 @@ package body Rules.Unsafe_Paired_Calls.Services is
       end if;
 
       Current := Enclosing_Element (Stat);
-      for E in reverse List_Index range Signature'First .. Signature'Last - 1 loop
-         case Element_Kind (Signature (E)) is
+      for E : Asis.Element of reverse Signature (Signature'First .. Signature'Last - 1) loop
+         case Element_Kind (E) is
             when An_Expression =>
                if Statement_Kind (Current) /= An_If_Statement then
                   return Nil_Element;
@@ -296,7 +296,7 @@ package body Rules.Unsafe_Paired_Calls.Services is
                   if not Is_Boolean_Constant (Expr) then
                      return Nil_Element;
                   end if;
-                  if not Is_Equal (Corresponding_Name_Declaration (Ultimate_Name (Signature (E))),
+                  if not Is_Equal (Corresponding_Name_Declaration (Ultimate_Name (E)),
                                    Corresponding_Name_Declaration (Ultimate_Name (Expr)))
                   then
                      return Nil_Element;
@@ -312,13 +312,13 @@ package body Rules.Unsafe_Paired_Calls.Services is
                Current  := Enclosing_Element (Current);
 
             when A_Path =>
-               if Path_Kind (Signature (E)) /= Path_Kind (Current)  then
+               if Path_Kind (E) /= Path_Kind (Current)  then
                   return Nil_Element;
                end if;
                Current := Enclosing_Element (Current);   -- Can't be a path here
 
             when others =>
-               Failure ("Bad signature: unexpected element", Signature (E));
+               Failure ("Bad signature: unexpected element", E);
          end case;
       end loop;
 

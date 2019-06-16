@@ -187,8 +187,8 @@ package body Rules.Local_Hiding is
       case Action is
          when Clear =>
             Rule_Used  := Not_Used;
-            for S in Subrules loop
-               Clear (Allowed_Patterns (S));
+            for Q : Framework.Pattern_Queues.Queue of Allowed_Patterns loop
+               Clear (Q);
             end loop;
             Overloading_Report := (Value => Detailed);
          when Suspend =>
@@ -542,12 +542,11 @@ package body Rules.Local_Hiding is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         All_Names : constant Asis.Element_List := Clause_Names (With_Clause);
          Name      : Asis.Expression;
          Current   : Asis.Expression;
       begin
-         for I in All_Names'Range loop
-            Current := All_Names (I);
+         for N : Asis.Name of Clause_Names (With_Clause) loop
+            Current := N;
             loop
                case Expression_Kind (Current) is
                   when An_Identifier =>
@@ -555,7 +554,7 @@ package body Rules.Local_Hiding is
                   when A_Selected_Component =>
                      Name := Selector (Current);
                   when others =>
-                     Failure ("Unexpected name in with clause", All_Names (I));
+                     Failure ("Unexpected name in with clause", N);
                end case;
                declare
                   Short_Name : constant Wide_String := To_Upper (Name_Image (Name));

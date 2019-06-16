@@ -284,13 +284,9 @@ package body Rules.Exception_Propagation is
                   State := Risk_Level'Max (State, Variable_In_Declaration);
                   Expr := Prefix (Expr);
                when An_Indexed_Component =>
-                  declare
-                     Indices : constant Asis.Expression_List := Index_Expressions (Expr);
-                  begin
-                     for I in Indices'Range loop
-                        Traverse_Declaration (Indices (I), Control, State);
-                     end loop;
-                  end;
+                  for Ind : Asis.Expression of Index_Expressions (Expr) loop
+                     Traverse_Declaration (Ind, Control, State);
+                  end loop;
                   Expr := Prefix (Expr);
                when A_Slice =>
                   Traverse_Declaration (Slice_Range (Expr), Control, State);
@@ -643,7 +639,7 @@ package body Rules.Exception_Propagation is
       end if;
 
       declare
-         Handlers    : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
+         Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
       begin
       -- Is there a handler ?
          if Handlers = Nil_Element_List then
@@ -657,32 +653,24 @@ package body Rules.Exception_Propagation is
 
          -- Is there any raise statement in handler?
          H_State := (No_Risk, Exc => Nil_Element, Reraise => True);
-         for I in Handlers'Range loop
-            declare
-               Stats : constant Asis.Statement_List := Handler_Statements (Handlers (I));
-            begin
-               for J in Stats'Range loop
-                  Traverse_Handler (Stats (J), The_Control, H_State);
-                  if H_State.Risk = Always then
-                     return Always;
-                  end if;
-               end loop;
-            end;
+         for H : Asis.Exception_Handler of Handlers loop
+            for S : Asis.Statement of Handler_Statements (H) loop
+               Traverse_Handler (S, The_Control, H_State);
+               if H_State.Risk = Always then
+                  return Always;
+               end if;
+            end loop;
          end loop;
          Level := No_Risk;
 
          -- No need to check declarations if not requested by the user
          if Max_Level < Always then
-            declare
-               Decls : constant Asis.Declaration_List := Body_Declarative_Items (SP_Body);
-            begin
-               The_Control := Continue;
-               for I in Decls'Range loop
-                  Traverse_Declaration (Decls (I), The_Control, Level);
-                  exit when Level >= Max_Level;
-                  -- Highest risk detected, no need to go further
-               end loop;
-            end;
+            The_Control := Continue;
+            for D : Asis.Declaration of Body_Declarative_Items (SP_Body) loop
+               Traverse_Declaration (D, The_Control, Level);
+               exit when Level >= Max_Level;
+               -- Highest risk detected, no need to go further
+            end loop;
          end if;
 
          return Level;
@@ -983,19 +971,15 @@ package body Rules.Exception_Propagation is
       end if;
 
       -- Convention given by pragma:
-      declare
-         All_Pragmas : constant Asis.Pragma_Element_List := Corresponding_Pragmas (Spec_Declaration);
-      begin
-         for I in All_Pragmas'Range loop
-            case Pragma_Kind (All_Pragmas (I)) is
-               when An_Export_Pragma | A_Convention_Pragma =>
-                  -- The convention is always the first argument of the pragma
-                  Check (Actual_Parameter (Pragma_Argument_Associations (All_Pragmas (I)) (1)));
-               when others =>
-                  null;
-            end case;
-         end loop;
-      end;
+      for P : Asis.Pragma_Element of Corresponding_Pragmas (Spec_Declaration) loop
+         case Pragma_Kind (P) is
+            when An_Export_Pragma | A_Convention_Pragma =>
+               -- The convention is always the first argument of the pragma
+               Check (Actual_Parameter (Pragma_Argument_Associations (P) (1)));
+            when others =>
+               null;
+         end case;
+      end loop;
 
       -- Convention given by aspect:
       for A : Asis.Definition of Corresponding_Aspects (Spec_Declaration, "CONVENTION") loop
@@ -1050,33 +1034,28 @@ package body Rules.Exception_Propagation is
       end case;
 
       declare
-         Handlers      : constant Asis.Exception_Handler_List := Exception_Handlers (Scope);
          H_State       : Handler_State;
          Handler_Found : Boolean := False;
          Reraise       : Boolean;
          The_Control   : Traverse_Control;
       begin
-         Handlers_Loop : for H in Handlers'Range loop
-            declare
-               Choices : constant Asis.Element_List := Exception_Choices (Handlers (H));
-            begin
-               Reraise := False;
-               for C in Choices'Range loop
-                  if Element_Kind (Choices (C)) = A_Definition   -- "others"
-                    or else Is_Equal (Corresponding_Name_Definition (Simple_Name (Choices (C))), Exc)
-                  then
-                     Handler_Found := True;
-                     Reraise       := True;
-                  end if;
-               end  loop;
-            end;
+         Handlers_Loop : for H : Asis.Exception_Handler of Exception_Handlers (Scope) loop
+            Reraise := False;
+            for Choice : Asis.Element of Exception_Choices (H) loop
+               if Element_Kind (Choice) = A_Definition   -- "others"
+                 or else Is_Equal (Corresponding_Name_Definition (Simple_Name (Choice)), Exc)
+               then
+                  Handler_Found := True;
+                  Reraise       := True;
+               end if;
+            end  loop;
             H_State     := (No_Risk, Exc, Reraise);
             The_Control := Continue;
-            Traverse_Handler (Handlers (H), The_Control, H_State);
+            Traverse_Handler (H, The_Control, H_State);
             if H_State.Risk = Always then
                Report (Rule_Id,
                        Local_Exc_Context,
-                       Get_Location (Handlers (H)),
+                       Get_Location (H),
                        "handler can propagate local exception at " & Image (Get_Location (Exc)));
             end if;
          end loop Handlers_Loop;
@@ -1120,13 +1099,9 @@ package body Rules.Exception_Propagation is
       if Rule_Used (Kw_Local_Exception)
         and then Declaration_Kind (Declaration) = An_Exception_Declaration
       then
-         declare
-            Exc_Names : constant Asis.Name_List := Names (Declaration);
-         begin
-            for E in Exc_Names'Range loop
-               Process_Local_Exception (Exc_Names (E));
-            end loop;
-         end;
+         for Exc_Name : Asis.Name of Names (Declaration) loop
+            Process_Local_Exception (Exc_Name);
+         end loop;
       end if;
    end Process_Declaration;
 

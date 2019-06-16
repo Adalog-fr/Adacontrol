@@ -230,45 +230,41 @@ package body Rules.Case_Statement is
       function Count_Non_Others_Choices (Case_Paths : in Path_List) return Biggest_Natural is
          use Utilities;
          Count : Biggest_Natural := 0;
+         Temp  : Extended_Biggest_Natural;
       begin
          -- We know that the last path is for "when others":
-         for CP in List_Index range Case_Paths'First .. Case_Paths'Last - 1 loop
-            declare
-               Path_Elements : constant Element_List := Case_Statement_Alternative_Choices (Case_Paths (CP));
-               Temp          : Extended_Biggest_Natural;
-            begin
-               for PE in Path_Elements'Range loop
-                  if Definition_Kind (Path_Elements (PE)) = A_Discrete_Range then
-                     if Discrete_Range_Kind (Path_Elements (PE)) = A_Discrete_Subtype_Indication
-                       and then not Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (Path_Elements (PE))))
-                     then
-                        -- A subtype with static predicate used for a choice: we don't know (yet) how to evaluate this
-                        Uncheckable (Rule_Id,
-                                     False_Negative,
-                                     Get_Location (Path_Elements (PE)),
-                                     "(others_span) Use of subtype with static predicate");
-                        raise Non_Evaluable;
-                     end if;
-                     Temp := Discrete_Constraining_Lengths (Path_Elements (PE))(1);
-                     if Temp = Not_Static then
-                        -- it IS static, but the evaluator cannot evaluate it...
-                        -- unless it is of a generic formal type
-                        Uncheckable (Rule_Id,
-                                     False_Negative,
-                                     Get_Location (Path_Elements (PE)),
-                                     "(others_span) Could not evaluate bounds of expression");
-                        raise Non_Evaluable;
-                     end if;
-                     Count := Count + Temp;
-
-                  elsif Element_Kind (Path_Elements (PE)) = An_Expression then
-                     Count := Count + 1;
-
-                  else
-                     Failure ("Unexpected path kind:", Path_Elements (PE));
+         for P : Asis.Path of Case_Paths (Case_Paths'First .. Case_Paths'Last - 1) loop
+            for PE : Asis.Element of  Case_Statement_Alternative_Choices (P) loop
+               if Definition_Kind (PE) = A_Discrete_Range then
+                  if Discrete_Range_Kind (PE) = A_Discrete_Subtype_Indication
+                    and then not Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (PE)))
+                  then
+                     -- A subtype with static predicate used for a choice: we don't know (yet) how to evaluate this
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (PE),
+                                  "(others_span) Use of subtype with static predicate");
+                     raise Non_Evaluable;
                   end if;
-               end loop;
-            end;
+                  Temp := Discrete_Constraining_Lengths (PE) (1);
+                  if Temp = Not_Static then
+                     -- it IS static, but the evaluator cannot evaluate it...
+                     -- unless it is of a generic formal type
+                     Uncheckable (Rule_Id,
+                                  False_Negative,
+                                  Get_Location (PE),
+                                  "(others_span) Could not evaluate bounds of expression");
+                     raise Non_Evaluable;
+                  end if;
+                  Count := Count + Temp;
+
+               elsif Element_Kind (PE) = An_Expression then
+                  Count := Count + 1;
+
+               else
+                  Failure ("Unexpected path kind:", PE);
+               end if;
+            end loop;
          end loop;
 
          return Count;
@@ -410,7 +406,6 @@ package body Rules.Case_Statement is
       use Asis.Elements, Asis.Statements;
       use Framework.Reports, Utilities;
 
-      Choices  : constant Asis.Element_List := Case_Statement_Alternative_Choices (Path);
       Nb_Val   : Extended_Biggest_Natural;
       Case_Cat : constant Categories := Matching_Category (Case_Expression (Enclosing_Element (Path)),
                                                            From_Cats          => Discrete_Set,
@@ -423,25 +418,25 @@ package body Rules.Case_Statement is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      for C in Choices'Range loop
-         case Definition_Kind (Choices (C)) is
+      for Choice : Asis.Element of Case_Statement_Alternative_Choices (Path) loop
+         case Definition_Kind (Choice) is
             when Not_A_Definition -- An_Expression
                | An_Others_Choice
                  =>
                null;
             when A_Discrete_Range =>
-               if Discrete_Range_Kind (Choices (C)) /= A_Discrete_Subtype_Indication
-                 or else Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (Choices (C))))
+               if Discrete_Range_Kind (Choice) /= A_Discrete_Subtype_Indication
+                 or else Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (Choice)))
                then
                   -- Normal case
-                  Nb_Val := Discrete_Constraining_Lengths (Choices (C)) (1);
+                  Nb_Val := Discrete_Constraining_Lengths (Choice) (1);
                   if Nb_Val = Not_Static then
                      -- This was supposed to be static, but for some reason we can't evaluate it
                      -- Maybe it is a generic formal type
                      -- Give up
                      Uncheckable (Rule_Id,
                                   False_Negative,
-                                  Get_Location (Choices (C)),
+                                  Get_Location (Choice),
                                   "(range_span) Could not evaluate discrete range");
                      return;
                   end if;
@@ -449,12 +444,12 @@ package body Rules.Case_Statement is
                   Check_Report (Range_Span,
                                 Value    => Nb_Val,
                                 Message  => "values in choice range",
-                                Elem     => Choices (C),
+                                Elem     => Choice,
                                 Elem_Cat => Case_Cat);
                else
                   Uncheckable (Rule_Id,
                                False_Negative,
-                               Get_Location (Choices(C)),
+                               Get_Location (Choice),
                                "(range_span) Range is of a subtype with static predicate");
                end if;
 

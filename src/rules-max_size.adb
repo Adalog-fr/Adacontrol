@@ -226,13 +226,9 @@ package body Rules.Max_Size is
                when A_Case_Statement =>
                   Do_Report (SR_Case, Element);
                   if Maximum (SR_Case_Branch) /= (Control_Kinds => Unused) then
-                     declare
-                        Paths : constant Asis.Path_List := Statement_Paths (Element);
-                     begin
-                        for P in Paths'Range loop
-                           Do_Report (SR_Case_Branch, Measured_Elem => Paths (P));
-                        end loop;
-                     end;
+                     for Path : Asis.Path of Statement_Paths (Element) loop
+                        Do_Report (SR_Case_Branch, Measured_Elem => Path);
+                     end loop;
                   end if;
 
                when A_Loop_Statement
@@ -247,13 +243,9 @@ package body Rules.Max_Size is
                when An_If_Statement =>
                   Do_Report (SR_If, Element);
                   if Maximum (SR_If_Branch) /= (Control_Kinds => Unused) then
-                     declare
-                        Paths : constant Asis.Path_List := Statement_Paths (Element);
-                     begin
-                        for P in Paths'Range loop
-                           Do_Report (SR_If_Branch, Measured_Elem => Paths (P));
-                        end loop;
-                     end;
+                     for Path : Asis.Path of Statement_Paths (Element) loop
+                        Do_Report (SR_If_Branch, Measured_Elem => Path);
+                     end loop;
                   end if;
 
                when others =>

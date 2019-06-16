@@ -308,8 +308,7 @@ package body Rules.Representation_Clauses is
          use Asis.Declarations;
          use Framework.String_Set;
 
-         Components : constant Asis.Component_Clause_List := Component_Clauses (Clause);
-         Compo_Set  : Set;
+         Compo_Set : Set;
 
          procedure Pre_Procedure (Element : in     Asis.Element;
                                   Control : in out Asis.Traverse_Control;
@@ -336,8 +335,8 @@ package body Rules.Representation_Clauses is
          State   : Null_State;
          Decl    : constant Asis.Declaration := Corresponding_Name_Declaration (Representation_Clause_Name (Clause));
       begin  -- Check_Incomplete
-         for C in Components'Range loop
-            Add (Compo_Set, To_Upper (Name_Image (Representation_Clause_Name (Components (C)))));
+         for Compo_Clause : Asis.Component_Clause of Component_Clauses (Clause) loop
+            Add (Compo_Set, To_Upper (Name_Image (Representation_Clause_Name (Compo_Clause))));
          end loop;
 
          if not Is_Nil (Discriminant_Part (Decl)) then
@@ -510,21 +509,17 @@ package body Rules.Representation_Clauses is
             Type_Decl := Corresponding_Type_Completion (Type_Decl);
          end loop;
 
-         declare
-            Rep_List  : constant Asis.Representation_Clause_List := Corresponding_Representation_Clauses (Type_Decl);
-         begin
-            for R in Rep_List'Range loop
-               if Representation_Clause_Kind (Rep_List (R)) = An_Attribute_Definition_Clause
-                 and then Attribute_Kind (Representation_Clause_Name (Rep_List (R))) = A_Bit_Order_Attribute
-               then
-                  return;
-               end if;
-            end loop;
-            Do_Report (Sr_No_Bit_Order_Layout,
-                       Rep_Clause,
-                       "type in layout representation clause has no bit ordering specified",
-                       Loc => Get_Location (Representation_Clause_Name (Rep_Clause)));
-         end;
+         for Clause : Asis.Representation_Clause of Corresponding_Representation_Clauses (Type_Decl) loop
+            if Representation_Clause_Kind (Clause) = An_Attribute_Definition_Clause
+              and then Attribute_Kind (Representation_Clause_Name (Clause)) = A_Bit_Order_Attribute
+            then
+               return;
+            end if;
+         end loop;
+         Do_Report (Sr_No_Bit_Order_Layout,
+                    Rep_Clause,
+                    "type in layout representation clause has no bit ordering specified",
+                    Loc => Get_Location (Representation_Clause_Name (Rep_Clause)));
       end Check_Bit_Order;
 
    begin   -- Process_Clause

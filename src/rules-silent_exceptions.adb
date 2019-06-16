@@ -244,8 +244,8 @@ package body Rules.Silent_Exceptions is
             Rule_Used   := Not_Used;
             Ctl_Labels  := (others => Null_Unbounded_Wide_String);
             Clear (Rule_Uses);
-            for Ck in Control_Kinds loop
-               Clear (Special_Exceptions (Ck));
+            for Queue : Exception_Status_Queues.Queue of Special_Exceptions loop
+               Clear (Queue);
             end loop;
             Others_Uncontrolled := (others => False);
          when Suspend =>
@@ -365,10 +365,10 @@ package body Rules.Silent_Exceptions is
 
       Result : Search_Result := (others => No_Path);
    begin
-      for I in Decls'Range loop
-         case Element_Kind (Decls (I)) is
+      for Elem : Asis.Element of Decls loop
+         case Element_Kind (Elem) is
             when A_Declaration =>
-               case Declaration_Kind (Decls (I)) is
+               case Declaration_Kind (Elem) is
                   when A_Task_Type_Declaration
                      | A_Protected_Type_Declaration
                      | A_Single_Task_Declaration
@@ -395,27 +395,27 @@ package body Rules.Silent_Exceptions is
                      -- => ignore
                      null;
                   when A_Package_Body_Declaration =>
-                     Result := Result and Declarative_Item_List_Usage (Body_Declarative_Items (Decls (I)));
-                     Result := Result and Statement_List_Usage        (Body_Statements        (Decls (I)));
+                     Result := Result and Declarative_Item_List_Usage (Body_Declarative_Items (Elem));
+                     Result := Result and Statement_List_Usage        (Body_Statements        (Elem));
                   when A_Package_Instantiation =>
                      declare
                         Context : constant Root_Context'Class
-                          := Matching_Context (Rule_Uses, Generic_Unit_Name (Decls (I)));
+                          := Matching_Context (Rule_Uses, Generic_Unit_Name (Elem));
                      begin
                         if Context /= No_Matching_Context then
                            Result := Result and Proc_Context(Context).Usage;
                         end if;
                      end;
-                     Result := Result and Expression_Usage (Decls (I));
+                     Result := Result and Expression_Usage (Elem);
                   when others =>
-                     Result := Result and Expression_Usage (Decls (I));
+                     Result := Result and Expression_Usage (Elem);
                end case;
             when A_Pragma
               | A_Clause
               =>
                null;
             when others =>
-               Failure ("Wrong element in declaration list", Decls (I));
+               Failure ("Wrong element in declaration list", Elem);
          end case;
       end loop;
 
@@ -431,14 +431,14 @@ package body Rules.Silent_Exceptions is
       Result : Search_Result := (others => No_Path);
    begin
    Statements_Loop:
-      for I in Stmts'Range loop
-         if Label_Names (Stmts (I)) /= Nil_Element_List then
+      for Stmt : Asis.Statement of Stmts loop
+         if Label_Names (Stmt) /= Nil_Element_List then
             -- We have a <<label>>
             -- all bets are off
             Result := (others => Some_Paths);
          end if;
 
-         case Statement_Kind (Stmts (I)) is
+         case Statement_Kind (Stmt) is
             when A_Null_Statement
               | A_Goto_Statement
               | A_Code_Statement
@@ -451,18 +451,18 @@ package body Rules.Silent_Exceptions is
               | A_Terminate_Alternative_Statement
               | An_Abort_Statement
               =>
-               Result := Result and Expression_Usage (Stmts (I));
+               Result := Result and Expression_Usage (Stmt);
 
             when An_Exit_Statement =>
                declare
-                  Condition : constant Asis.Expression := Exit_Condition (Stmts (I));
-                  Target    : constant Asis.Statement  := Corresponding_Loop_Exited (Stmts (I));
+                  Condition : constant Asis.Expression := Exit_Condition (Stmt);
+                  Target    : constant Asis.Statement  := Corresponding_Loop_Exited (Stmt);
                begin
                   Result := Result and Expression_Usage (Condition);
 
-                  for L in reverse Loops_Level range 1 .. Loops_Depth loop
-                     if Is_Equal (Target, Active_Loops (L).The_Loop) then
-                        Active_Loops (L).Exit_Result := Active_Loops (L).Exit_Result or Result;
+                  for D : Active_Loops_Data of reverse Active_Loops (1 .. Loops_Depth) loop
+                     if Is_Equal (Target, D.The_Loop) then
+                        D.Exit_Result := D.Exit_Result or Result;
                         exit;
                      end if;
                   end loop;
@@ -470,7 +470,7 @@ package body Rules.Silent_Exceptions is
 
             when A_Return_Statement =>
                -- Possible expressions that are part of the return statement must be considered
-               Result := Result and Expression_Usage (Stmts (I));
+               Result := Result and Expression_Usage (Stmt);
                declare
                   Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "RETURN");
                begin
@@ -482,8 +482,8 @@ package body Rules.Silent_Exceptions is
             when An_Extended_Return_Statement =>
                -- There might be an expression as the initialization of the return object
                Result := Result and Expression_Usage (Initialization_Expression
-                                                      (Return_Object_Declaration (Stmts (I))));
-               Result := Result and Statement_List_Usage (Extended_Return_Statements (Stmts (I)));
+                                                      (Return_Object_Declaration (Stmt)));
+               Result := Result and Statement_List_Usage (Extended_Return_Statements (Stmt));
                declare
                   Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "RETURN");
                begin
@@ -496,7 +496,7 @@ package body Rules.Silent_Exceptions is
               | A_Requeue_Statement_With_Abort
               =>
                -- Possible expressions that are part of the statements must be considered
-               Result := Result and Expression_Usage (Stmts (I));
+               Result := Result and Expression_Usage (Stmt);
                declare
                   Context : constant Root_Context'Class := Control_Manager.Association (Rule_Uses, "REQUEUE");
                begin
@@ -510,17 +510,17 @@ package body Rules.Silent_Exceptions is
               =>
                declare
                   Context : constant Root_Context'Class
-                    := Matching_Context (Rule_Uses, Called_Simple_Name (Stmts (I)), Extend_To => All_Extensions);
+                    := Matching_Context (Rule_Uses, Called_Simple_Name (Stmt), Extend_To => All_Extensions);
                begin
                   if Context /= No_Matching_Context then
                      Result := Result and Proc_Context(Context).Usage;
                   end if;
                end;
-               Result := Result and Expression_Usage (Stmts (I));
+               Result := Result and Expression_Usage (Stmt);
 
             when A_Raise_Statement =>
                declare
-                  Is_Reraise : constant Boolean := Is_Nil (Raised_Exception (Stmts (I)));
+                  Is_Reraise : constant Boolean := Is_Nil (Raised_Exception (Stmt));
                   Context    : constant Root_Context'Class
                     := Control_Manager.Association (Rule_Uses, Choose (Is_Reraise, "RERAISE", "EXPLICIT_RAISE"));
                begin
@@ -530,27 +530,27 @@ package body Rules.Silent_Exceptions is
                end;
 
             when An_If_Statement =>
-               Result := Result and Expression_Usage (Stmts (I));
+               Result := Result and Expression_Usage (Stmt);
                declare
-                  Paths      : constant Asis.Path_List := Statement_Paths (Stmts (I));
+                  Paths      : constant Asis.Path_List := Statement_Paths (Stmt);
                   If_Usage   : Search_Result := Statement_List_Usage (Sequence_Of_Statements (Paths (1)));
                   Else_Found : Boolean := False;
                begin
                   -- The first condition is always evaluated:
                   Result := Result and Expression_Usage (Condition_Expression (Paths (1)));
 
-                  for J in List_Index range 2 .. Paths'Last loop
-                     case Path_Kind (Paths (J)) is
+                  for Path : Asis.Path of Paths (2 .. Paths'Last) loop
+                     case Path_Kind (Path) is
                         when An_Elsif_Path =>
-                           If_Usage := If_Usage or (Expression_Usage (Condition_Expression (Paths (J)))
+                           If_Usage := If_Usage or (Expression_Usage (Condition_Expression (Path))
                                                     and Statement_List_Usage (Sequence_Of_Statements
-                                                                              (Paths (J))));
+                                                                              (Path)));
                         when An_Else_Path =>
-                           If_Usage := If_Usage or Statement_List_Usage (Sequence_Of_Statements (Paths (J)));
+                           If_Usage := If_Usage or Statement_List_Usage (Sequence_Of_Statements (Path));
                            Else_Found := True;
                         when others =>
                            -- Including An_If_Path, since it has already been dealt with
-                           Failure ("Illegal path", Paths (J));
+                           Failure ("Illegal path", Path);
                      end case;
                   end loop;
 
@@ -568,13 +568,13 @@ package body Rules.Silent_Exceptions is
               | A_Conditional_Entry_Call_Statement
               | An_Asynchronous_Select_Statement
               =>
-               Result := Result and Expression_Usage (Case_Expression (Stmts (I)));
+               Result := Result and Expression_Usage (Case_Expression (Stmt));
                declare
-                  Paths : constant Asis.Path_List := Statement_Paths (Stmts (I));
+                  Paths : constant Asis.Path_List := Statement_Paths (Stmt);
                   Temp  : Search_Result := Statement_List_Usage (Sequence_Of_Statements (Paths (1)));
                begin
-                  for P in List_Index range 2 .. Paths'Last loop
-                     Temp := Temp or Statement_List_Usage (Sequence_Of_Statements (Paths (P)));
+                  for Path : Asis.Path of Paths (2 .. Paths'Last) loop
+                     Temp := Temp or Statement_List_Usage (Sequence_Of_Statements (Path));
                   end loop;
                   Result := Result and Temp;
                end;
@@ -585,9 +585,9 @@ package body Rules.Silent_Exceptions is
                            & Loops_Level'Wide_Image (Max_Loop_Nesting));
                end if;
                Loops_Depth := Loops_Depth + 1;
-               Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
+               Active_Loops (Loops_Depth) := (Stmt, (others => Neutral));
 
-               Result := Result and Statement_List_Usage (Loop_Statements (Stmts (I)));
+               Result := Result and Statement_List_Usage (Loop_Statements (Stmt));
                Result := Result or Active_Loops (Loops_Depth).Exit_Result;
 
                Loops_Depth := Loops_Depth - 1;
@@ -598,13 +598,13 @@ package body Rules.Silent_Exceptions is
                            & Loops_Level'Wide_Image (Max_Loop_Nesting));
                end if;
                Loops_Depth := Loops_Depth + 1;
-               Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
+               Active_Loops (Loops_Depth) := (Stmt, (others => Neutral));
 
-               Result := Result and Expression_Usage (While_Condition (Stmts (I)));
+               Result := Result and Expression_Usage (While_Condition (Stmt));
                -- Consider we have a parallel branch which is (others => No_Path) for the case
                -- where the loop is not executed
                Result := Result and
-                         (Statement_List_Usage (Loop_Statements (Stmts (I))) or (others => No_Path));
+                         (Statement_List_Usage (Loop_Statements (Stmt)) or (others => No_Path));
                Result := Result or Active_Loops (Loops_Depth).Exit_Result;
 
                Loops_Depth := Loops_Depth - 1;
@@ -615,30 +615,27 @@ package body Rules.Silent_Exceptions is
                            & Loops_Level'Wide_Image (Max_Loop_Nesting));
                end if;
                Loops_Depth := Loops_Depth + 1;
-               Active_Loops (Loops_Depth) := (Stmts (I), (others => Neutral));
+               Active_Loops (Loops_Depth) := (Stmt, (others => Neutral));
 
-               Result := Result and Expression_Usage (For_Loop_Parameter_Specification (Stmts (I)));
+               Result := Result and Expression_Usage (For_Loop_Parameter_Specification (Stmt));
 
                declare
-                  Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Stmts (I));
+                  Loop_Spec : constant Asis.Declaration := For_Loop_Parameter_Specification (Stmt);
                   Nb_Values : Extended_Biggest_Natural;
                begin
                   case Declaration_Kind (Loop_Spec) is
                      when A_Loop_Parameter_Specification =>
                         Nb_Values := Discrete_Constraining_Lengths (Specification_Subtype_Definition
-                                                                    (For_Loop_Parameter_Specification (Stmts (I)))) (1);
+                                                                    (For_Loop_Parameter_Specification (Stmt))) (1);
                      when An_Element_Iterator_Specification =>
-                        declare
-                           Lengths : constant Extended_Biggest_Natural_List
-                             := Discrete_Constraining_Lengths (Iteration_Scheme_Name
-                                                               (For_Loop_Parameter_Specification (Stmts (I))));
-                        begin
-                           -- A for .. of iterator can iterate over all dimensions of a multidimensional array
-                           Nb_Values := 1;
-                           for L in Lengths'Range loop
-                              Nb_Values := Nb_Values * Lengths (L);
-                           end loop;
-                        end;
+                        -- A for .. of iterator can iterate over all dimensions of a multidimensional array
+                        Nb_Values := 1;
+                        for L : Extended_Biggest_Natural of Discrete_Constraining_Lengths
+                                                             (Iteration_Scheme_Name
+                                                               (For_Loop_Parameter_Specification (Stmt)))
+                        loop
+                           Nb_Values := Nb_Values * L;
+                        end loop;
                      when  A_Generalized_Iterator_Specification =>
                         Nb_Values := Not_Static; -- could be pretty much anything...
                      when others =>
@@ -648,7 +645,7 @@ package body Rules.Silent_Exceptions is
                   case Nb_Values is
                      when 1 .. Biggest_Int'Last =>
                         -- Always executed
-                        Result := Result and Statement_List_Usage (Loop_Statements (Stmts (I)));
+                        Result := Result and Statement_List_Usage (Loop_Statements (Stmt));
                      when 0 =>
                         -- Never executed
                         null;
@@ -656,7 +653,7 @@ package body Rules.Silent_Exceptions is
                         -- Consider we have a parallel branch which is (others => No_Path) for the case
                         -- where the loop is not executed
                         Result := Result
-                                  and (Statement_List_Usage (Loop_Statements (Stmts (I))) or (others => No_Path));
+                                  and (Statement_List_Usage (Loop_Statements (Stmt)) or (others => No_Path));
                   end case;
                   Result := Result or Active_Loops (Loops_Depth).Exit_Result;
                end;
@@ -664,12 +661,12 @@ package body Rules.Silent_Exceptions is
                Loops_Depth := Loops_Depth - 1;
 
             when A_Block_Statement =>
-               Result := Result and Declarative_Item_List_Usage (Block_Declarative_Items (Stmts (I)));
-               Result := Result and Statement_List_Usage (Block_Statements (Stmts (I)));
+               Result := Result and Declarative_Item_List_Usage (Block_Declarative_Items (Stmt));
+               Result := Result and Statement_List_Usage (Block_Statements (Stmt));
 
             when An_Accept_Statement =>
-               Result := Result and Expression_Usage (Accept_Entry_Index (Stmts (I))); -- OK if Nil_Element
-               Result := Result and Statement_List_Usage (Accept_Body_Statements (Stmts (I)));
+               Result := Result and Expression_Usage (Accept_Entry_Index (Stmt)); -- OK if Nil_Element
+               Result := Result and Statement_List_Usage (Accept_Body_Statements (Stmt));
 
             when Not_A_Statement =>
                Failure ("Not a statement in statements list");
@@ -713,7 +710,7 @@ package body Rules.Silent_Exceptions is
                   All_Uncontrolled (Ck) := Others_Uncontrolled (Ck);
                else
                   On_Exception_Names :
-                  for H in Handled'Range loop
+                  for H : Asis.Element of Handled loop
 
                      Current := First (Special_Exceptions (Ck));
                      if Has_Element (Current) then
@@ -725,13 +722,10 @@ package body Rules.Silent_Exceptions is
                      end if;
                      while Has_Element (Current) loop
                         Status := Fetch (Current);
-                        if Matches (Status.Entity, Handled (H), Extend_To => All_Extensions)
+                        if Matches (Status.Entity, H, Extend_To => All_Extensions)
                           or else Matches (Status.Entity,
-                                           Names
-                                           (Unit_Declaration
-                                            (Definition_Compilation_Unit
-                                             (Ultimate_Name
-                                              (Handled (H))))) (1),
+                                           Names (Unit_Declaration (Definition_Compilation_Unit
+                                                                    (Ultimate_Name (H)))) (1),
                                            Extend_To => All_Extensions)
                         then
                            Controlled := Status.Controlled;

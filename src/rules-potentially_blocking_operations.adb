@@ -129,18 +129,18 @@ package body Rules.Potentially_Blocking_Operations is
             use Asis, Framework.Queries;
 
          begin  -- Traverse_Declarations
-            for I in Decls'Range loop
-               case Declaration_Kind (Decls (I)) is
+            for Decl : Asis.Declaration of Decls loop
+               case Declaration_Kind (Decl) is
                   when A_Procedure_Declaration | A_Function_Declaration =>
                      -- All non potentially blocking operations from IO packages are either
                      -- Get with a first parameter named From, or Put with a first parameter named To
-                     if    not Is_Recognized (Decls (I), SP_Name => "GET", First_Param => "FROM")
-                       and not Is_Recognized (Decls (I), SP_Name => "PUT", First_Param => "TO")
+                     if    not Is_Recognized (Decl, SP_Name => "GET", First_Param => "FROM")
+                       and not Is_Recognized (Decl, SP_Name => "PUT", First_Param => "TO")
                      then
-                        Add_SP (To_Key_Upper (Names (Decls (I))(1)));
+                        Add_SP (To_Key_Upper (Names (Decl)(1)));
                      end if;
                   when A_Package_Declaration | A_Generic_Package_Declaration =>
-                     Traverse_Declarations (Visible_Part_Declarative_Items (Decls (I)));
+                     Traverse_Declarations (Visible_Part_Declarative_Items (Decl));
                   when others =>
                      null;
                end case;
@@ -400,9 +400,9 @@ package body Rules.Potentially_Blocking_Operations is
          Stop := Result'Last - 10;
 
          -- Get rid of underscores
-         for I in Positive range Start .. Stop loop
-            if Result (I) = '_' then
-               Result (I) := ' ';
+         for C : Wide_Character of Result (Start .. Stop) loop
+            if C = '_' then
+               C := ' ';
             end if;
          end loop;
          return Result (Start .. Stop);
@@ -679,7 +679,6 @@ package body Rules.Potentially_Blocking_Operations is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Items          : constant Asis.Declaration_List := Protected_Operation_Items (Protected_Body);
          Ignored        : Boolean;
          Referenced_PTO : Queue;
          PTO_Def        : Asis.Definition;
@@ -700,8 +699,8 @@ package body Rules.Potentially_Blocking_Operations is
                Failure ("Body is not protected", Good_Body);
          end case;
 
-         for I in Items'Range loop
-            case Declaration_Kind (Items (I)) is
+         for Item : Asis.Declaration of Protected_Operation_Items (Protected_Body) loop
+            case Declaration_Kind (Item) is
                when A_Procedure_Declaration | A_Function_Declaration | A_Null_Procedure_Declaration =>
                   null;
                when A_Procedure_Body_Declaration
@@ -709,7 +708,7 @@ package body Rules.Potentially_Blocking_Operations is
                   | An_Expression_Function_Declaration   -- Ada 2012
                   | An_Entry_Body_Declaration
                   =>
-                  Check (Items (I),
+                  Check (Item,
                          PTO_Def        => PTO_Def,
                          Is_Blocking    => Ignored,
                          Referenced_PTO => Referenced_PTO);
@@ -718,7 +717,7 @@ package body Rules.Potentially_Blocking_Operations is
                   -- Presumably a representation clause
                   null;
                when others =>
-                  Failure ("Wrong protected item", Items (I));
+                  Failure ("Wrong protected item", Item);
             end case;
          end loop;
       end;

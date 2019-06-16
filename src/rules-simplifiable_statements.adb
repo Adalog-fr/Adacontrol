@@ -278,13 +278,9 @@ package body Rules.Simplifiable_Statements is
                           | An_Or_Operator
                           | An_Xor_Operator
                           =>
-                           declare
-                              Params : constant Asis.Association_List := Function_Call_Parameters (Expr);
-                           begin
-                              for I in Params'Range loop
-                                 Check_Condition (Actual_Parameter (Params (I)), Pivot);
-                              end loop;
-                           end;
+                           for Param : Asis.Association of Function_Call_Parameters (Expr) loop
+                              Check_Condition (Actual_Parameter (Param), Pivot);
+                           end loop;
 
                         when An_Equal_Operator
                           | A_Not_Equal_Operator
@@ -344,12 +340,11 @@ package body Rules.Simplifiable_Statements is
             =>
             -- Check each membership choice
             declare
-               Choices : constant Asis.Element_List := Membership_Test_Choices (Expr);
-               Name    : Asis.Expression;
+               Name : Asis.Expression;
             begin
-               for C in Choices'Range loop
-                  if Element_Kind (Choices (C)) = An_Expression then
-                     Name := Simple_Name (Choices (C));
+               for Choice : Asis.Element of Membership_Test_Choices (Expr) loop
+                  if Element_Kind (Choice) = An_Expression then
+                     Name := Simple_Name (Choice);
                      if Expression_Kind (Name) = An_Identifier
                        and then Declaration_Kind (Corresponding_Name_Declaration (Name))
                                 in An_Ordinary_Type_Declaration .. A_Subtype_Declaration
@@ -369,7 +364,7 @@ package body Rules.Simplifiable_Statements is
                      end if;
                   else
                      -- in range
-                     if Discrete_Constraining_Lengths (Choices (C)) = (1 => Not_Static) then
+                     if Discrete_Constraining_Lengths (Choice) = (1 => Not_Static) then
                         raise Not_Appropriate_For_Case;
                      end if;
                   end if;
@@ -697,8 +692,8 @@ package body Rules.Simplifiable_Statements is
 
             Check_Condition (Condition_Expression (Paths (1)), Pivot => Pivot_Var);
 
-            for I in List_Index range 2 .. Last_Elsif loop
-               Check_Condition (Condition_Expression (Paths (I)), Pivot => Special_Var);
+            for Path : Asis.Path of Paths (2 .. Last_Elsif) loop
+               Check_Condition (Condition_Expression (Path), Pivot => Special_Var);
                if Variables_Proximity (Pivot_Var, Special_Var) /= Same_Variable then
                   raise Not_Appropriate_For_Case;
                end if;
@@ -740,15 +735,15 @@ package body Rules.Simplifiable_Statements is
             end if;
          end if;
 
-         for P in List_Index range Paths'First + 1 .. Paths'Last loop
-            if Path_Kind (Paths (P)) /= An_Else_Path
-              and then Static_Expression_Value_Image (Condition_Expression (Paths (P))) = "0"  -- "0" => False
+         for Path : Asis.Path of Paths (Paths'First + 1 .. Paths'Last) loop
+            if Path_Kind (Path) /= An_Else_Path
+              and then Static_Expression_Value_Image (Condition_Expression (Path)) = "0"  -- "0" => False
             then
                Report (Rule_Id,
                        Usage (Stmt_Dead),
-                       Get_Location (Paths (P)),
+                       Get_Location (Path),
                        "condition is always false");
-               Fixes.Delete (Paths (P));
+               Fixes.Delete (Path);
             end if;
          end loop;
       end if;
@@ -773,66 +768,61 @@ package body Rules.Simplifiable_Statements is
    begin
       -- Stmt_Dead
       if Rule_Used (Stmt_Dead) then -- always True (for the moment)
-         declare
-            Case_Paths   : constant Path_List := Statement_Paths (Stmt);
-         begin
-            for CP in Case_Paths'Range loop
-               declare
-                  Path_Elements : constant Element_List := Case_Statement_Alternative_Choices (Case_Paths (CP));
-                  Temp          : Extended_Biggest_Natural;
-                  Count         : Extended_Biggest_Natural := 0;
-               begin
-                  Count_Values :
-                  for PE in Path_Elements'Range loop
-                     if Definition_Kind (Path_Elements (PE)) = A_Discrete_Range then
-                        if Discrete_Range_Kind (Path_Elements (PE)) = A_Discrete_Subtype_Indication
-                          and then not Is_Nil (Corresponding_Static_Predicates
-                                               (Subtype_Simple_Name (Path_Elements (PE))))
-                        then
-                           -- Subtype with static predicate used for a choice: we don't know (yet) how to evaluate this
-                           Uncheckable (Rule_Id,
-                                        False_Negative,
-                                        Get_Location (Path_Elements (PE)),
-                                        "(Dead) Use of subtype with static predicate");
-                           Count := 1; -- or whatever /= 0
-                           exit Count_Values;
-                        end if;
-                        Temp := Discrete_Constraining_Lengths (Path_Elements (PE)) (1);
-                        if Temp = Not_Static then
-                           -- it IS static, but the evaluator cannot evaluate it...
-                           -- unless it is of a generic formal type
-                           Uncheckable (Rule_Id,
-                                        False_Negative,
-                                        Get_Location (Path_Elements (PE)),
-                                        "(Dead) Could not evaluate bounds of expression");
-                           Count := 1; -- or whatever /= 0
-                           exit Count_Values;
-                        end if;
-                        Count := Count + Temp;
-
-                     elsif Definition_Kind (Path_Elements (PE)) = An_Others_Choice then
-                        -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
+         for CP : Asis.Path of Statement_Paths (Stmt) loop
+            declare
+               Temp  : Extended_Biggest_Natural;
+               Count : Extended_Biggest_Natural := 0;
+            begin
+               Count_Values :
+               for PE : Asis.Element of Case_Statement_Alternative_Choices (CP) loop
+                  if Definition_Kind (PE) = A_Discrete_Range then
+                     if Discrete_Range_Kind (PE) = A_Discrete_Subtype_Indication
+                       and then not Is_Nil (Corresponding_Static_Predicates
+                                            (Subtype_Simple_Name (PE)))
+                     then
+                        -- Subtype with static predicate used for a choice: we don't know (yet) how to evaluate this
+                        Uncheckable (Rule_Id,
+                                     False_Negative,
+                                     Get_Location (PE),
+                                     "(Dead) Use of subtype with static predicate");
                         Count := 1; -- or whatever /= 0
                         exit Count_Values;
-
-                     elsif Element_Kind (Path_Elements (PE)) = An_Expression then
-                        Count := 1;
-                        exit Count_Values;
-
-                     else
-                        Failure ("Unexpected path kind:", Path_Elements (PE));
                      end if;
-                  end loop Count_Values;
-                  if Count = 0 then
-                     Report (Rule_Id,
-                             Usage (Stmt_Dead),
-                             Get_Location (Case_Paths (CP)),
-                             "choices cover no value");
-                     Framework.Reports.Fixes.Delete (Case_Paths (Cp));
+                     Temp := Discrete_Constraining_Lengths (PE) (1);
+                     if Temp = Not_Static then
+                        -- it IS static, but the evaluator cannot evaluate it...
+                        -- unless it is of a generic formal type
+                        Uncheckable (Rule_Id,
+                                     False_Negative,
+                                     Get_Location (PE),
+                                     "(Dead) Could not evaluate bounds of expression");
+                        Count := 1; -- or whatever /= 0
+                        exit Count_Values;
+                     end if;
+                     Count := Count + Temp;
+
+                  elsif Definition_Kind (PE) = An_Others_Choice then
+                     -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
+                     Count := 1; -- or whatever /= 0
+                     exit Count_Values;
+
+                  elsif Element_Kind (PE) = An_Expression then
+                     Count := 1;
+                     exit Count_Values;
+
+                  else
+                     Failure ("Unexpected path kind:", PE);
                   end if;
-               end;
-            end loop;
-         end;
+               end loop Count_Values;
+               if Count = 0 then
+                  Report (Rule_Id,
+                          Usage (Stmt_Dead),
+                          Get_Location (CP),
+                          "choices cover no value");
+                  Framework.Reports.Fixes.Delete (CP);
+               end if;
+            end;
+         end loop;
       end if;
    end Process_Case_Statement;
 

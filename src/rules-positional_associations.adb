@@ -210,19 +210,11 @@ package body Rules.Positional_Associations is
    begin
       case Action is
          when Clear =>
-            for R in Subrules loop
-               for A in Association_Names loop
-                  for C in Control_Kinds loop
-                     Clear (Contexts (R, A, C));
-                  end loop;
-               end loop;
+            for Cont : Association_Context of Contexts loop
+               Clear (Cont);
             end loop;
-            for R in Subrules loop
-               for A in Exceptionable_Association_Names loop
-                  for C in Control_Kinds loop
-                     Clear (Positional_Exceptions (R, A, C));
-                  end loop;
-               end loop;
+            for Store : Context_Store of Positional_Exceptions loop
+               Clear (Store);
             end loop;
             Rule_Used := Nothing_Used;
          when Suspend =>
@@ -304,9 +296,9 @@ package body Rules.Positional_Associations is
                when others =>
                   -- Of course, Expr is part of the association list, therefore it will match itself
                   -- and be counted for 1, as it should be.
-                  for A in Actual_Associations'Range loop
+                  for Ass_List : Asis.Association of Actual_Associations loop
                      -- No more positional associations once we find a named one:
-                     exit when Association_Choices (Actual_Associations (A)) /= Nil_Element_List;
+                     exit when Association_Choices (Ass_List) /= Nil_Element_List;
                      case Subrule is
                         when Sr_All | Sr_Declared =>
                            Failure ("Positional_Count: " & Subrules'Wide_Image (Subrule));
@@ -318,12 +310,12 @@ package body Rules.Positional_Associations is
                               return 0;
                            elsif Is_Same_Type (Expr_Type,
                                                Thick_Queries.Corresponding_Expression_Type_Definition
-                                                 (Association_Value (Actual_Associations (A))))
+                                                 (Association_Value (Ass_List)))
                            then
                               Count := Count + 1;
                            elsif Expression_Kind (Strip_Parentheses (Expr)) = A_Character_Literal
                              and then Is_Character_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition
-                                                            (Association_Value (Actual_Associations (A))))
+                                                            (Association_Value (Ass_List)))
                            then
                               Count := Count + 1;
                            end if;

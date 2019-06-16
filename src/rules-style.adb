@@ -1179,17 +1179,17 @@ package body Rules.Style is
          end if;
 
          if Rule_Used (St_Default_In) then
-            for I in Formals'Range loop
+            for F : Asis.Element of Formals loop
                -- Note: Mode_Kind returns Not_A_Mode for generic formals that are not objects (types, subprograms...),
                --  so we don't need to special case these
-               if Mode_Kind (Formals (I)) = A_Default_In_Mode
-                 and then Definition_Kind (Object_Declaration_View (Formals (I))) /= An_Access_Definition
+               if Mode_Kind (F) = A_Default_In_Mode
+                 and then Definition_Kind (Object_Declaration_View (F)) /= An_Access_Definition
                then
                   Report (Rule_Id,
                           Corresponding_Context (St_Default_In),
-                          Get_Location (Declaration_Subtype_Mark (Formals (I))),
+                          Get_Location (Declaration_Subtype_Mark (F)),
                           "default IN mode used for parameter");
-                  Fixes.Insert ("in ", Before, Declaration_Subtype_Mark (Formals (I)));
+                  Fixes.Insert ("in ", Before, Declaration_Subtype_Mark (F));
                end if;
             end loop;
          end if;
@@ -1201,12 +1201,12 @@ package body Rules.Style is
                 or else Is_Nil (Corresponding_Declaration (Enclosing))
             then
                Set_Initial (Parameter_Ordering);
-               for I in Formals'Range loop
-                  Set_State (Parameter_Ordering, Object_Mode (Formals (I)));
+               for F : Asis.Element of Formals loop
+                  Set_State (Parameter_Ordering, Object_Mode (F));
                   if not Is_Allowed (Parameter_Ordering) then
                      Report (Rule_Id,
                              Corresponding_Context (Subrule),
-                             Get_Location (Formals (I)),
+                             Get_Location (F),
                              "subprogram parameter out of order");
                   end if;
                end loop;
@@ -1215,11 +1215,11 @@ package body Rules.Style is
 
          if Subrule = St_Formal_Parameter_Order and Rule_Used (St_Formal_Parameter_Order) then
             Set_Initial (Formal_Parameter_Ordering);
-            for I in Formals'Range loop
+            for F : Asis.Element of Formals loop
                Ignore := False;
-               case Declaration_Kind (Formals (I)) is
+               case Declaration_Kind (F) is
                   when A_Formal_Object_Declaration =>
-                     E_Mode  := Object_Mode (Formals (I));
+                     E_Mode  := Object_Mode (F);
                   when A_Formal_Type_Declaration =>
                      E_Mode  := Mode_Type;
                   when A_Formal_Procedure_Declaration =>
@@ -1234,7 +1234,7 @@ package body Rules.Style is
                      -- presumably, a use clause for a generic formal package
                      Ignore := True;
                   when others =>
-                     Failure ("style: inappropriate declaration_kind for formal", Formals (I));
+                     Failure ("style: inappropriate declaration_kind for formal", F);
                end case;
 
                if not Ignore then
@@ -1242,7 +1242,7 @@ package body Rules.Style is
                   if not Is_Allowed (Formal_Parameter_Ordering) then
                      Report (Rule_Id,
                              Corresponding_Context (Subrule),
-                             Get_Location (Formals (I)),
+                             Get_Location (F),
                              "generic formal parameter out of order");
                   end if;
                end if;
@@ -1394,16 +1394,16 @@ package body Rules.Style is
          Step   : constant Asis.Text.Character_Position := Block_Size + 1;  -- The base step for separators
          Cursor : Asis.Text.Character_Position          := 1;               -- The current tested character position
       begin
-         for I in Name'Range loop
+         for C : Wide_Character of Name loop
             -- Check if we should, or should not, match a separator
             if Cursor mod Step = 0 then
                -- We should match a separator
-               if Name (I) /= '_' then
+               if C /= '_' then
                   return False;
                end if;
             else
                -- We should not match a separator
-               if Name (I) = '_' then
+               if C = '_' then
                   return False;
                end if;
             end if;
@@ -1521,8 +1521,8 @@ package body Rules.Style is
             return;
          end if;
 
-         for N in Positive range Positive (Base_Delimiter_1) + 1 .. Positive (Base_Delimiter_2) - 1 loop
-            if Name (N) in 'a'..'f' and Casing_Policy (St_Casing_Number) (Ca_Uppercase) then
+         for C : Wide_Character of Name (Positive (Base_Delimiter_1) + 1 .. Positive (Base_Delimiter_2) - 1) loop
+            if C in 'a'..'f' and Casing_Policy (St_Casing_Number) (Ca_Uppercase) then
                Report (Rule_Id,
                        Corresponding_Context (St_Casing_Number),
                        Get_Location (Expression) + Base_Delimiter_1,
@@ -1532,7 +1532,7 @@ package body Rules.Style is
                               Length => Base_Delimiter_2 - Base_Delimiter_1 - 1,
                               By     => To_Upper (Name (Base_Delimiter_1 + 1 .. Base_Delimiter_2 - 1)));
                return;
-            elsif Name (N) in 'A' .. 'F' and Casing_Policy (St_Casing_Number) (Ca_Lowercase) then
+            elsif C in 'A' .. 'F' and Casing_Policy (St_Casing_Number) (Ca_Lowercase) then
                Report (Rule_Id,
                        Corresponding_Context (St_Casing_Exponent),
                        Get_Location (Expression) + Base_Delimiter_1,
@@ -1558,14 +1558,14 @@ package body Rules.Style is
             Inx_Out     : Natural := S'First-1;
             Ignore_Next : Boolean := False;
          begin
-            for I in Positive range Index (S, """")+1 .. S'Last-1 loop
+            for C : Wide_Character of S (Index (S, """")+1 .. S'Last-1) loop
                if Ignore_Next then
                   Ignore_Next := False;
-               elsif S (I) = '"' then
+               elsif C = '"' then
                   Ignore_Next := True;
                else
                   Inx_Out := Inx_Out + 1;
-                  Result (Inx_Out) := S (I);
+                  Result (Inx_Out) := C;
                end if;
             end loop;
             return Result (Result'First .. Inx_Out);
@@ -1727,9 +1727,9 @@ package body Rules.Style is
                      return;
                   end if;
 
-                  for K in Permitted_Consts_Count range 1 .. Integer_Count loop
-                     if (Integer_Permitted_Values (K) < 0) = Negative                      -- Both have same sign
-                        and then Truly_Biggest_Int (abs Integer_Permitted_Values (K)) = I  -- and same abs value
+                  for K : Biggest_Int of Integer_Permitted_Values (1 .. Integer_Count) loop
+                     if (K < 0) = Negative                      -- Both have same sign
+                        and then Truly_Biggest_Int (abs K) = I  -- and same abs value
                      then
                         -- OK just return
                         return;
@@ -1771,8 +1771,8 @@ package body Rules.Style is
                   else
                      F := Float'Wide_Value (Value_Image (Expression));
                   end if;
-                  for K in Permitted_Consts_Count range 1 .. Real_Count loop
-                     if abs(Real_Permitted_Values (K)- F) < 2.0*Float'Model_Epsilon then
+                  for K : Float of Real_Permitted_Values (1 .. Real_Count) loop
+                     if abs(K - F) < 2.0*Float'Model_Epsilon then
                         -- OK just return
                         return;
                      end if;
@@ -1831,8 +1831,8 @@ package body Rules.Style is
                   use String_Matching, Ada.Strings.Wide_Unbounded;
                   Good_Image : constant Wide_String := Normalize (Element_Image (Expression));
                begin
-                  for I in Permitted_Consts_Count range 1 .. String_Count loop
-                     if Match (Good_Image, To_Wide_String (String_Permitted_Values (I))) then
+                  for S : Unbounded_Wide_String of String_Permitted_Values (1 .. String_Count) loop
+                     if Match (Good_Image, To_Wide_String (S)) then
                         -- OK just return
                         return;
                      end if;
@@ -1994,19 +1994,19 @@ package body Rules.Style is
             -- Check that all Use_Names are part of With_Names
             -- This is a horrible N**2 algorithm, but since it can reasonably be expected
             -- that in most cases N=1 ...
-            for U in Use_Names'Range loop
-               if Expression_Kind (Use_Names (U)) = A_Selected_Component then
-                  Use_Def := Corresponding_Name_Definition (Selector (Use_Names (U)));
+            for U : Asis.Name of Use_Names loop
+               if Expression_Kind (U) = A_Selected_Component then
+                  Use_Def := Corresponding_Name_Definition (Selector (U));
                else
-                  Use_Def := Corresponding_Name_Definition (Use_Names (U));
+                  Use_Def := Corresponding_Name_Definition (U);
                end if;
 
                Found := False;
-               for W in With_Names'Range loop
-                  if Expression_Kind (With_Names (W)) = A_Selected_Component then
-                     With_Def := Corresponding_Name_Definition (Selector (With_Names (W)));
+               for W : Asis.Name of With_Names loop
+                  if Expression_Kind (W) = A_Selected_Component then
+                     With_Def := Corresponding_Name_Definition (Selector (W));
                   else
-                     With_Def := Corresponding_Name_Definition (With_Names (W));
+                     With_Def := Corresponding_Name_Definition (W);
                   end if;
 
                   if Is_Equal (Use_Def, With_Def) then
@@ -2018,9 +2018,9 @@ package body Rules.Style is
                if not Found then
                   Report (Rule_Id,
                           Corresponding_Context (St_Multiple_Elements, Image (Mu_Clause)),
-                          Get_Location (Use_Names (U)),
+                          Get_Location (U),
                           "use clause does not start line and "
-                          & Extended_Name_Image (Use_Names (U))
+                          & Extended_Name_Image (U)
                           & " is not part of the preceding with clause");
                   Fixes.Break (Get_Location (Use_Clause),
                                Indent_New => A4G_Bugs.Element_Span (All_Clauses (Clause_Pos - 1)).First_Column);
@@ -2230,8 +2230,8 @@ package body Rules.Style is
                            Fixes.Break (Loc, Indentation (Get_Location (Element)));
                         end if;
 
-                        for H in Handlers'Range loop
-                           Loc := Get_Location (Handlers (H));
+                        for H : Asis.Exception_Handler of Handlers loop
+                           Loc := Get_Location (H);
                            if Has_Non_Spaces_Ahead (Loc) then
                               Report (Rule_Id,
                                       Corresponding_Context (St_Multiple_Elements, Image (Mu_Handler, Lower_Case)),
@@ -2280,8 +2280,8 @@ package body Rules.Style is
                   Fixes.Break (Loc, Indentation (Get_Location (Element)));
                end if;
 
-               for P in List_Index range 2 .. Paths'Last loop
-                  Loc := Get_Location (Paths (P));
+               for P : Asis.Path of Paths (2 .. Paths'Last) loop
+                  Loc := Get_Location (P);
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_Else, Lower_Case)),
@@ -2289,9 +2289,9 @@ package body Rules.Style is
                              """elsif/else"" does not start line");
                      Fixes.Break (Loc, Indentation (Get_Location (Element)));
                   end if;
-                  Loc := Get_Previous_Word_Location (Thick_Queries.Statements (Paths (P), Include_Pragmas => True),
+                  Loc := Get_Previous_Word_Location (Thick_Queries.Statements (P, Include_Pragmas => True),
                                                      Starting => From_Head);
-                  if Get_First_Line (Loc) /=  Get_First_Line (Get_Location (Paths (P)))
+                  if Get_First_Line (Loc) /=  Get_First_Line (Get_Location (P))
                     and then Has_Non_Spaces_Ahead (Loc)
                   then
                      Report (Rule_Id,
@@ -2319,8 +2319,8 @@ package body Rules.Style is
                   Fixes.Break (Loc, Indentation (Get_Location (Element)));
                end if;
 
-               for P in Paths'Range loop
-                  Loc := Get_Location (Paths (P));
+               for P : Asis.Path of Paths loop
+                  Loc := Get_Location (P);
                   if Has_Non_Spaces_Ahead (Loc) then
                      Report (Rule_Id,
                              Corresponding_Context (St_Multiple_Elements, Image (Mu_When, Lower_Case)),

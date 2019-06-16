@@ -146,8 +146,8 @@ package body Rules.Duplicate_Initialization_Calls is
          use Framework.Language;
       begin
          Out_Parameter_Found := False;
-         for I in Formals'Range loop
-            case Mode_Kind (Formals (I)) is
+         for Param : Asis.Parameter_Specification of Formals loop
+            case Mode_Kind (Param) is
                when Not_A_Mode =>
                   Failure ("not a mode in parameter specification");
                when A_Default_In_Mode | An_In_Mode =>
@@ -156,7 +156,7 @@ package body Rules.Duplicate_Initialization_Calls is
                   if Out_Parameter_Found then
                      Parameter_Error (Rule_Id,
                                       "not a proper initialization procedure, more than one out parameter ("
-                                      & Adjust_Image (Full_Name_Image (Formal_Parameter (Formals (I))))
+                                      & Adjust_Image (Full_Name_Image (Formal_Parameter (Param)))
                                       & ')'
                                      );
                   end if;
@@ -164,7 +164,7 @@ package body Rules.Duplicate_Initialization_Calls is
                when An_In_Out_Mode =>
                   Parameter_Error (Rule_Id,
                                    "not a proper initialization procedure, parameter "
-                                   & Adjust_Image (Full_Name_Image (Formal_Parameter (Formals (I))))
+                                   & Adjust_Image (Full_Name_Image (Formal_Parameter (Param)))
                                    & " has in out mode"
                                   );
             end case;
@@ -174,11 +174,11 @@ package body Rules.Duplicate_Initialization_Calls is
       procedure Check_Actuals (Actuals : Asis.Association_List; Context : Procedure_Context) is
          -- Check that all parameters are static (case where there is no out parameter)
       begin
-         for I in Actuals'Range loop
-            if not Is_Static_Expression (Actual_Parameter (Actuals (I))) then
+         for Assoc : Asis.Association of Actuals loop
+            if not Is_Static_Expression (Actual_Parameter (Assoc)) then
                Report (Rule_Id,
                        Context,
-                       Get_Location (Actual_Parameter (Actuals (I))),
+                       Get_Location (Actual_Parameter (Assoc)),
                        "non static value in call to initialization procedure");
             end if;
          end loop;

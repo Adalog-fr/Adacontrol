@@ -458,14 +458,13 @@ package body Rules.Unit_Pattern is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Context_Elements : constant Asis.Element_List := Context_Clause_Elements (Unit, Include_Pragmas => True);
-         Clause           : Context_Clause_Element;
+         Clause : Context_Clause_Element;
       begin
          Set_Initial (Context_Clauses_Ordering);
-         for C in Context_Elements'Range loop
-            case Element_Kind (Context_Elements (C)) is
+         for Cont_Elem : Asis.Context_Clause of Context_Clause_Elements (Unit, Include_Pragmas => True) loop
+            case Element_Kind (Cont_Elem) is
                when A_Clause =>
-                  case Clause_Kind (Context_Elements (C)) is
+                  case Clause_Kind (Cont_Elem) is
                      when A_Use_Package_Clause =>
                         Clause := CC_Use;
                      when A_Use_Type_Clause =>
@@ -475,21 +474,21 @@ package body Rules.Unit_Pattern is
                      when A_With_Clause =>
                         Clause := CC_With;
                      when others =>
-                        Failure ("Enter_Unit: unexpected clause", Context_Elements (C));
+                        Failure ("Enter_Unit: unexpected clause", Cont_Elem);
                   end case;
 
                when A_Pragma =>
                   Clause := CC_Pragma;
 
                when others =>
-                  Failure ("Enter_Unit: unexpected clause", Context_Elements (C));
+                  Failure ("Enter_Unit: unexpected clause", Cont_Elem);
             end case;
 
             Set_State (Context_Clauses_Ordering, Clause);
             if not Is_Allowed (Context_Clauses_Ordering) then
                Report (Rule_Id,
                        Control_Manager.Association (Contexts, Value (Subrules'Wide_Image (Context_Clauses_Order))),
-                       Get_Location (Context_Elements (C)),
+                       Get_Location (Cont_Elem),
                        "clause (or pragma) out of order"
                        & " (""" & Image (Clause, Title_Case)
                        & """ found in state " & Integer_Img (Current_State (Context_Clauses_Ordering)) & ')');
@@ -549,15 +548,15 @@ package body Rules.Unit_Pattern is
             New_State : Declarations_Group;
          begin
             Set_Initial (Machine);
-            for D in Part_Declarations'Range loop
+            for Decl : Asis.Declaration of Part_Declarations loop
                -- Actually, we may encounter pragmas and clauses as well as declarations...
                -- We use DG_Others to indicate an element not handled by the rule (and thus ignored)
-               case Element_Kind (Part_Declarations (D)) is
+               case Element_Kind (Decl) is
                   when A_Pragma =>
                      New_State := DG_Others;
 
                   when A_Clause =>
-                     case Clause_Kind (Part_Declarations (D)) is
+                     case Clause_Kind (Decl) is
                         when A_Use_Package_Clause =>
                            New_State := DG_Use;
                         when A_Use_Type_Clause =>
@@ -569,9 +568,9 @@ package body Rules.Unit_Pattern is
                      end case;
 
                   when A_Declaration =>
-                     case Declaration_Kind (Part_Declarations (D)) is
+                     case Declaration_Kind (Decl) is
                         when Not_A_Declaration =>
-                           Failure ("Process_Program_Unit.Check: not_a_declaration", Part_Declarations (D));
+                           Failure ("Process_Program_Unit.Check: not_a_declaration", Decl);
                         when An_Enumeration_Literal_Specification   -- Things whose placement is not free
                            | A_Discriminant_Specification
                            | A_Component_Declaration
@@ -633,10 +632,10 @@ package body Rules.Unit_Pattern is
                         when A_Null_Procedure_Declaration         -- Null procedure and expression function
                            | An_Expression_Function_Declaration
                            =>
-                           if Is_Nil (Corresponding_Declaration (Part_Declarations (D))) then
+                           if Is_Nil (Corresponding_Declaration (Decl)) then
                               New_State := DG_Subprogram_Spec;
                            else
-                              New_State := Placed_State (Part_Declarations (D), DG_Subprogram_Body);
+                              New_State := Placed_State (Decl, DG_Subprogram_Body);
                            end if;
 
                         when A_Procedure_Body_Declaration         -- Bodies
@@ -645,28 +644,28 @@ package body Rules.Unit_Pattern is
                            | A_Function_Body_Stub
                            | An_Entry_Body_Declaration
                            =>
-                           if Is_Generic_Unit (Part_Declarations (D)) then
-                              New_State := Placed_State (Part_Declarations (D), DG_Generic_Subprogram_Body);
+                           if Is_Generic_Unit (Decl) then
+                              New_State := Placed_State (Decl, DG_Generic_Subprogram_Body);
                            else
-                              New_State := Placed_State (Part_Declarations (D), DG_Subprogram_Body);
+                              New_State := Placed_State (Decl, DG_Subprogram_Body);
                            end if;
 
                         when A_Package_Body_Declaration
                            | A_Package_Body_Stub
                            =>
-                           if Is_Generic_Unit (Part_Declarations (D)) then
-                              New_State := Placed_State (Part_Declarations (D), DG_Generic_Package_Body);
+                           if Is_Generic_Unit (Decl) then
+                              New_State := Placed_State (Decl, DG_Generic_Package_Body);
                            else
-                              New_State := Placed_State (Part_Declarations (D), DG_Package_Body);
+                              New_State := Placed_State (Decl, DG_Package_Body);
                            end if;
                         when A_Task_Body_Declaration
                            | A_Task_Body_Stub
                            =>
-                           New_State := Placed_State (Part_Declarations (D), DG_Task_Body);
+                           New_State := Placed_State (Decl, DG_Task_Body);
                         when A_Protected_Body_Declaration
                            | A_Protected_Body_Stub
                            =>
-                           New_State := Placed_State (Part_Declarations (D), DG_Protected_Body);
+                           New_State := Placed_State (Decl, DG_Protected_Body);
 
                         when An_Object_Renaming_Declaration =>    -- Renamings
                            New_State := DG_Object_Renaming;
@@ -695,7 +694,7 @@ package body Rules.Unit_Pattern is
                      end case;
 
                   when others =>
-                     Failure ("Process_Program_Unit.Check: unexpected element", Part_Declarations (D));
+                     Failure ("Process_Program_Unit.Check: unexpected element", Decl);
                end case;
 
                if New_State /= DG_Others then
@@ -703,7 +702,7 @@ package body Rules.Unit_Pattern is
                   if not Is_Allowed (Machine) then
                      Report (Rule_Id,
                              Context,
-                             Get_Location (Part_Declarations (D)),
+                             Get_Location (Decl),
                              "Declaration out of order for " & Set_Casing (Unit_Parts'Wide_Image (Part), Title_Case)
                              & " (""" & Image (New_State, Title_Case)
                              & """ found in state " & Integer_Img (Current_State (Machine)) & ')');

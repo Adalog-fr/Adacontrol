@@ -92,9 +92,9 @@ package body Rules.Instantiations is
       Append (Dummy, "(");
       Append (Dummy, Image (Values (Values'First)));
 
-      for I in List_Index range Values'First + 1 .. Values'Last loop
+      for V : Entity_Specification of Values (Values'First + 1 .. Values'Last) loop
          Append (Dummy, ", ");
-         Append (Dummy, Image (Values (I)));
+         Append (Dummy, Image (V));
       end loop;
 
       Append (Dummy, ")");
@@ -293,8 +293,8 @@ package body Rules.Instantiations is
 
       Values_Index : List_Index := Values'First;
    begin
-      for I in Actual_Part'Range loop
-         if not Is_Corresponding (Values (Values_Index), Actual_Parameter (Actual_Part (I))) then
+      for Assoc : Asis.Association of Actual_Part loop
+         if not Is_Corresponding (Values (Values_Index), Actual_Parameter (Assoc)) then
             return False;
          end if;
 

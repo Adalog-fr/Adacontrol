@@ -133,11 +133,11 @@ package body Rules.Non_Static is
    procedure Check_Static_Index (Constraint_List : Asis.Element_List) is
       use Framework.Reports, Thick_Queries;
    begin
-      for I in Constraint_List'Range loop
-         if Discrete_Constraining_Lengths (Constraint_List (I))(1) = Not_Static then
+      for Const : Asis.Element of Constraint_List loop
+         if Discrete_Constraining_Lengths (Const)(1) = Not_Static then
             Report (Rule_Id,
                     Usage (K_Index_Constraint),
-                    Get_Location (Constraint_List (I)),
+                    Get_Location (Const),
                     "array index non-statically constrained");
          end if;
       end loop;
@@ -189,18 +189,14 @@ package body Rules.Non_Static is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      declare
-         Constraint_List : constant Asis.Discriminant_Association_List := Discriminant_Associations (Elem);
-      begin
-         for I in Constraint_List'Range loop
-            if not Is_Static_Expression (Discriminant_Expression (Constraint_List (I))) then
-               Report (Rule_Id,
-                       Usage (K_Discriminant_Constraint),
-                       Get_Location (Constraint_List (I)),
-                       "discriminant non-statically constrained");
-            end if;
-         end loop;
-      end;
+      for Const : Asis.Discriminant_Association of Discriminant_Associations (Elem) loop
+         if not Is_Static_Expression (Discriminant_Expression (Const)) then
+            Report (Rule_Id,
+                    Usage (K_Discriminant_Constraint),
+                    Get_Location (Const),
+                    "discriminant non-statically constrained");
+         end if;
+      end loop;
    end Process_Discriminant_Constraint;
 
    ---------------------------
@@ -230,21 +226,20 @@ package body Rules.Non_Static is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Actuals    : constant Asis.Association_List := Generic_Actual_Part (Elem, Normalized => True);
          Param_Decl : Asis.Declaration;
       begin
-         for A in Actuals'Range loop
-            Param_Decl := Enclosing_Element (Formal_Parameter (Actuals (A)));
+         for A : Asis.Association of Generic_Actual_Part (Elem, Normalized => True) loop
+            Param_Decl := Enclosing_Element (Formal_Parameter (A));
             case Declaration_Kind (Param_Decl) is
                when A_Formal_Object_Declaration =>
                   case Mode_Kind (Param_Decl) is
                      when An_In_Mode | A_Default_In_Mode =>
-                        if not Is_Static_Expression (Actual_Parameter (Actuals (A))) then
-                           Do_Report (Actuals (A));
+                        if not Is_Static_Expression (Actual_Parameter (A)) then
+                           Do_Report (A);
                         end if;
                      when An_In_Out_Mode =>
-                        if not Is_Static_Object (Actual_Parameter (Actuals (A))) then
-                           Do_Report (Actuals (A));
+                        if not Is_Static_Object (Actual_Parameter (A)) then
+                           Do_Report (A);
                         end if;
                      when others =>
                         Failure ("Bad formal object mode");
@@ -259,7 +254,7 @@ package body Rules.Non_Static is
                when A_Formal_Procedure_Declaration
                   | A_Formal_Function_Declaration
                  =>
-                  case Expression_Kind (Actual_Parameter (Actuals (A))) is
+                  case Expression_Kind (Actual_Parameter (A)) is
                      when An_Attribute_Reference =>
                         -- Protects from calling Ultimate_Name (in when others) with an attribute reference
                         null;
@@ -269,10 +264,10 @@ package body Rules.Non_Static is
                         A4G_Bugs.Trace_Bug ("Non_Static.Process_Instantiation: "
                                             & "Function_Call instead of Attribute_Reference");
                      when An_Explicit_Dereference =>
-                        Do_Report (Actuals (A));
+                        Do_Report (A);
                      when others =>
-                        if Is_Nil (Ultimate_Name (Actual_Parameter (Actuals (A)))) then
-                           Do_Report (Actuals (A));
+                        if Is_Nil (Ultimate_Name (Actual_Parameter (A))) then
+                           Do_Report (A);
                         end if;
                   end case;
                when others =>
