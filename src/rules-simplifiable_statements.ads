@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Rules.Simplifiable_Statement - Package specification            --
+--  Rules.Simplifiable_Statements - Package specification           --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
 --  of Air  Navigation (EUROCONTROL) and Adalog  2004-2007.         --

@@ -7187,7 +7187,7 @@ check no_operator_usage (not indexing, not relational);
 An integer type that uses no operator at all is a good candidate to be
 replaced by an enumerated type. A modular type where only logical
 operators are used is likely to be used as a bit field or a set, and
-is a good canditate for being replaced by an array of booleans.
+is a good candidate for being replaced by an array of booleans.
 
 The rule does not make a distinction between predefined and
 user-defined operators. On the other hand, only calls to operators are
