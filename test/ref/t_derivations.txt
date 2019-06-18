@@ -152,6 +152,14 @@ t_derivations-indicator.adb:124:7: Insert
 t_derivations-indicator.adb:125:7: Error: Tagged_Spec: Missing not overriding indicator
 t_derivations-indicator.adb:125:7: Insert
 !not overriding 
+t_derivations-indicator.adb:151:18: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-indicator.adb:151:18: Error: DERIVATIONS: More than 2 parents (3)
+t_derivations-indicator.adb:153:7: Error: Tagged_Spec: Missing not overriding indicator
+t_derivations-indicator.adb:153:7: Insert
+!not overriding 
+t_derivations-indicator.adb:155:19: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-indicator.adb:158:22: Found: DERIVATIONS: Type derived from category TAGGED
+t_derivations-indicator.adb:158:22: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-max_depth.adb:10:15: Found: DERIVATIONS: Type derived from category TAGGED
 t_derivations-max_depth.adb:10:15: Found: DERIVATIONS: More than 1 parents (2)
 t_derivations-max_depth.adb:11:15: Found: DERIVATIONS: Type derived from category TAGGED
