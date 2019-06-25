@@ -167,6 +167,23 @@ begin
       Prim (V1);
    end;
 
+   declare                                          -- Use type of class-wide type
+      V1     : Pack1.Tag1;
+      V2, V3 : Pack1.Tag1'Class := V1;
+
+      
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Tag1'CLASS;
+      
+      use type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;
+   begin
+      if V3 = V2 then
+         null;
+      end if;
+      if Pack1.Tag1 (V3) = (null record) then
+         null;
+      end if;
+   end;
+
    ----------------- These are to check fixes, insertion of use [all] type
    declare
       
@@ -243,4 +260,12 @@ begin
          null;
       end if;
    end;
+
+   declare
+         -- Unused: unused (x3) (for multiple fixes)
+                -- Nested: in scope of use clause for same package (x2) (for multiple fixes)
+   begin
+      null;
+   end;
+
 end Use_Type;

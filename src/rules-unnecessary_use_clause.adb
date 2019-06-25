@@ -450,8 +450,8 @@ package body Rules.Unnecessary_Use_Clause is
                   end if;
                end if;
             end;
-            Flush (Incr_Fix);
          end loop;
+         Flush (Incr_Fix);
       end;
    end Process_Use_Clause;
 

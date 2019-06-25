@@ -10033,13 +10033,15 @@ All subrules generate fixes:
 @itemize
 @item
 If a package or type is totally unnecessary, the name is removed from
-the corresponding clause. If there is only one element in the clause,
-the clause as a whole is removed.
+the corresponding clause. If all packages or types named by the clause
+are removed, the clause as a whole is removed.
 @item
 If a @code{@b{use}} package clause can be replaced by a @code{@b{use
-type}} or  @code{@b{use all type}} clause, the @code{@b{use}} package
-clause is removed, and one or several @code{@b{use type}} or
-@code{@b{use all type}} clauses are inserted.
+type}} or a @code{@b{use all type}} clause, the package name is
+removed from the @code{@b{use}} clause, and one or several
+@code{@b{use type}} or @code{@b{use all type}} clauses are
+inserted. If all package named by the clause are removed, the clause
+as a whole is removed.
 @end itemize
 
 @subsection Tips

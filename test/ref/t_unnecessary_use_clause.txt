@@ -109,6 +109,13 @@ t_unnecessary_use_clause-use_type.adb:217:17: Insert
 !
 !      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;
 !      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
+t_unnecessary_use_clause-use_type.adb:229:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack1 in scope of use clause for same package at t_unnecessary_use_clause-use_type.adb:228:11
+t_unnecessary_use_clause-use_type.adb:229:18: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack2 in scope of use clause for same package at t_unnecessary_use_clause-use_type.adb:228:18
+t_unnecessary_use_clause-use_type.adb:229:7: Delete:229:23
+t_unnecessary_use_clause-use_type.adb:228:25: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack3
+t_unnecessary_use_clause-use_type.adb:228:18: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack2
+t_unnecessary_use_clause-use_type.adb:228:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack1
+t_unnecessary_use_clause-use_type.adb:228:7: Delete:228:30
 t_unnecessary_use_clause-use_type.adb:6:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
 t_unnecessary_use_clause-use_type.adb:6:4: Delete:6:43
 t_unnecessary_use_clause.adb:75:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings

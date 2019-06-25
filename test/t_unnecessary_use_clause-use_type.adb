@@ -223,4 +223,12 @@ begin
          null;
       end if;
    end;
+
+   declare
+      use Pack1, Pack2, Pack3;   -- Unused: unused (x3) (for multiple fixes)
+      use Pack1, Pack2;          -- Nested: in scope of use clause for same package (x2) (for multiple fixes)
+   begin
+      null;
+   end;
+
 end Use_Type;
