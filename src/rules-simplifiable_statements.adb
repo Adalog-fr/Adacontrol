@@ -358,7 +358,7 @@ package body Rules.Simplifiable_Statements is
                         end if;
                      else
                         -- in value
-                        if not Is_Static_Expression (Expr) then
+                        if not Is_Static_Expression (Choice) then
                            raise Not_Appropriate_For_Case;
                         end if;
                      end if;
