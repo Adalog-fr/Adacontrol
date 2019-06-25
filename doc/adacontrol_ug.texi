@@ -8761,6 +8761,10 @@ can be changed to:
    --  Do something with c
 @b{end} @b{loop};
 @end example
+This subrule applies only to monodimensional arrays. Although
+@code{@b{for}} .. @code{@b{of}} loops can be used with
+multidimensional arrays, this usage is dubious in most
+cases.
 
 @item
 ``for_for_slice'': controls for loops whose body contains only

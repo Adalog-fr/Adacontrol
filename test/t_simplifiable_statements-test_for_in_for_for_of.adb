@@ -5,7 +5,7 @@ procedure Test_For_In_For_For_Of is
    X  : Character;
    type Acc_Str is access String;
    Ptr : Acc_Str;
-
+   Mat : array (1..5, 1..5) of Boolean;
 begin
    L1 : for I in S1'Range loop         -- for_in_for_for_of
       X := S1 (I);
@@ -90,4 +90,11 @@ begin
          X := V2.S (I);
       end loop;
    end;
+
+   for I in Mat'Range (1) loop         -- OK, multidimensional array
+      for J in Mat'Range (2) loop
+         Mat (I, J) := False;
+      end loop;
+   end loop;
+
 end Test_For_In_For_For_Of;

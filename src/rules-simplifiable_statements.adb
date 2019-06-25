@@ -1152,6 +1152,12 @@ package body Rules.Simplifiable_Statements is
                      return;
                   end if;
 
+                  if Index_Expressions (Indexed_Expr)'Length /= 1 then
+                     -- Multi-dimensional array: give up
+                     Control := Terminate_Immediately;
+                     return;
+                  end if;
+
                   Indexed_Var := Prefix (Indexed_Expr);
                   if Expression_Kind (Indexed_Var) in A_Function_Call | An_Explicit_Dereference then
                      Control := Terminate_Immediately;
