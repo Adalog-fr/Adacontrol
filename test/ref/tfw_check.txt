@@ -54,6 +54,7 @@ conf/t_max_call_depth.aru: No syntax error
 conf/t_max_expression_items.aru: No syntax error
 conf/t_max_line_length.aru: No syntax error
 conf/t_max_nesting.aru: No syntax error
+conf/t_max_primitives.aru: No syntax error
 conf/t_max_size.aru: No syntax error
 conf/t_max_statement_nesting.aru: No syntax error
 conf/t_movable_accept_statements.aru: No syntax error

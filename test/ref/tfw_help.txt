@@ -450,6 +450,11 @@ Parameter(1): all | generic | separate | task
               (optional, default=all)
 Parameter(2): <maximum allowed nesting level>
 ----
+Rule: MAX_PRIMITIVES
+Control types that have more primitive operations than the indicated maximum
+
+Parameter(2): [visible | total] [tagged | untagged] <max allowed primitives>
+----
 Rule: MAX_SIZE
 Control the maximum length of Ada statements
 
@@ -1036,25 +1041,26 @@ Rules:
    Local_Hiding                    Max_Blank_Lines                 
    Max_Call_Depth                  Max_Expression_Items            
    Max_Line_Length                 Max_Nesting                     
-   Max_Size                        Max_Statement_Nesting           
-   Movable_Accept_Statements       Naming_Convention               
-   Non_Static                      Not_Elaboration_Calls           
-   Not_Selected_Name               No_Operator_Usage               
-   Object_Declarations             Parameter_Aliasing              
-   Parameter_Declarations          Positional_Associations         
-   Potentially_Blocking_Operations Pragmas                         
-   Record_Declarations             Reduceable_Scope                
-   Representation_Clauses          Return_Statements               
-   Return_Type                     Side_Effect_Parameters          
-   Silent_Exceptions               Simplifiable_Expressions        
-   Simplifiable_Statements         Statements                      
-   Style                           Terminating_Tasks               
-   Type_Initial_Values             Type_Usage                      
-   Uncheckable                     Units                           
-   Unit_Pattern                    Unnecessary_Use_Clause          
-   Unsafe_Elaboration              Unsafe_Paired_Calls             
-   Unsafe_Unchecked_Conversion     Usage                           
-   Use_Clauses                     With_Clauses                    
+   Max_Primitives                  Max_Size                        
+   Max_Statement_Nesting           Movable_Accept_Statements       
+   Naming_Convention               Non_Static                      
+   Not_Elaboration_Calls           Not_Selected_Name               
+   No_Operator_Usage               Object_Declarations             
+   Parameter_Aliasing              Parameter_Declarations          
+   Positional_Associations         Potentially_Blocking_Operations 
+   Pragmas                         Record_Declarations             
+   Reduceable_Scope                Representation_Clauses          
+   Return_Statements               Return_Type                     
+   Side_Effect_Parameters          Silent_Exceptions               
+   Simplifiable_Expressions        Simplifiable_Statements         
+   Statements                      Style                           
+   Terminating_Tasks               Type_Initial_Values             
+   Type_Usage                      Uncheckable                     
+   Units                           Unit_Pattern                    
+   Unnecessary_Use_Clause          Unsafe_Elaboration              
+   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
+   Usage                           Use_Clauses                     
+   With_Clauses                    
 
 ADACTL v. 1.21b2 
 ----

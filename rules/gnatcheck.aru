@@ -41,7 +41,9 @@ Downward_View_Conversions:
 "Too_Many_Parents:5":
    check derivations (Max_Parents, 5);
 
--- TBSL Too_Many_Primitives
+-- 9.1.2.10 Too_Many_Primitives
+"Too_Many_Primitives:5":
+   check max_primitives (visible tagged 5);
 
 Visible_Components:
    check declarations (public record_type, public extension);

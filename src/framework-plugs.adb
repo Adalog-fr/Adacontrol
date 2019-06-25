@@ -62,6 +62,7 @@ with
   Rules.Max_Expression_Items,
   Rules.Max_Line_Length,
   Rules.Max_Nesting,
+  Rules.Max_Primitives,
   Rules.Max_Size,
   Rules.Max_Statement_Nesting,
   Rules.Movable_Accept_Statements,
@@ -167,7 +168,7 @@ package body Framework.Plugs is
    procedure Enter_Private_Part   (Element : in Asis.Element) is
       pragma Unreferenced (Element);
    begin
-      null;
+      Rules.Max_Primitives. Process_Private_Part;
    end Enter_Private_Part;
 
    ----------------
@@ -188,6 +189,7 @@ package body Framework.Plugs is
       Rules.Statements.             Process_Scope_Exit (Element);
       Rules.Type_Initial_Values.    Process_Scope_Exit (Element);
       Rules.Unnecessary_Use_Clause. Process_Scope_Exit (Element);
+      Rules.Max_Primitives.         Process_Scope_Exit (Element);
    end Exit_Scope;
 
    --------------------------
@@ -294,11 +296,13 @@ package body Framework.Plugs is
                   Rules.Unit_Pattern.        Process_Type_Declaration (Element);
                   Rules.Type_Initial_Values. Process_Type_Declaration (Element);
                   Rules.Usage.               Process_Declaration      (Element);
+                  Rules.Max_Primitives.      Process_Type_Declaration (Element);
 
                when A_Private_Type_Declaration
                   | A_Private_Extension_Declaration
                   =>
                   Rules.Type_Initial_Values. Process_Type_Declaration (Element);
+                  Rules.Max_Primitives.      Process_Type_Declaration      (Element);
 
                when A_Subtype_Declaration =>
                   Rules.Usage. Process_Declaration (Element);
@@ -359,17 +363,18 @@ package body Framework.Plugs is
                   Rules.Usage.                   Process_Declaration    (Element);
 
                when A_Null_Procedure_Declaration =>
-                  Rules.Comments.                Process_Program_Unit   (Element);
-                  Rules.Derivations.             Process_Callable       (Element);
-                  Rules.Exception_Propagation.   Process_SP_Declaration (Element);
-                  Rules.Global_References.       Process_Body           (Element);
-                  Rules.Improper_Initialization. Process_Structure      (Element);
-                  Rules.Max_Size.                Process_Element        (Element);
-                  Rules.Parameter_Declarations.  Process_Declaration    (Element);
-                  Rules.Style.                   Process_Construct      (Element);
-                  Rules.Style.                   Process_Declaration    (Element);
-                  Rules.Unit_Pattern.            Process_Program_Unit   (Element);
-                  Rules.Usage.                   Process_Declaration    (Element);
+                  Rules.Comments.                Process_Program_Unit           (Element);
+                  Rules.Derivations.             Process_Callable               (Element);
+                  Rules.Exception_Propagation.   Process_SP_Declaration         (Element);
+                  Rules.Global_References.       Process_Body                   (Element);
+                  Rules.Improper_Initialization. Process_Structure              (Element);
+                  Rules.Max_Size.                Process_Element                (Element);
+                  Rules.Parameter_Declarations.  Process_Declaration            (Element);
+                  Rules.Style.                   Process_Construct              (Element);
+                  Rules.Style.                   Process_Declaration            (Element);
+                  Rules.Unit_Pattern.            Process_Program_Unit           (Element);
+                  Rules.Usage.                   Process_Declaration            (Element);
+                  Rules.Max_Primitives.          Process_Subprogram_Declaration (Element);
 
                when An_Entry_Body_Declaration =>
                   Rules.Barrier_Expressions.     Process_Entry_Declaration (Element);
@@ -391,10 +396,11 @@ package body Framework.Plugs is
                when A_Task_Type_Declaration
                  | A_Protected_Type_Declaration
                   =>
-                  Rules.Derivations. Process_Synchronized (Element);
-                  Rules.Max_Size.    Process_Element      (Element);
-                  Rules.Style.       Process_Construct    (Element);
-                  Rules.Usage.       Process_Declaration  (Element);
+                  Rules.Derivations.         Process_Synchronized     (Element);
+                  Rules.Max_Size.            Process_Element          (Element);
+                  Rules.Style.               Process_Construct        (Element);
+                  Rules.Usage.               Process_Declaration      (Element);
+                  Rules.Max_Primitives.      Process_Type_Declaration (Element);
 
                when A_Package_Body_Declaration =>
                   Rules.Comments.                Process_Program_Unit (Element);
@@ -404,11 +410,11 @@ package body Framework.Plugs is
                   Rules.Style.                   Process_Construct    (Element);
 
                when A_Generic_Package_Declaration =>
-                  Rules.Max_Size.     Process_Element      (Element);
-                  Rules.Style.        Process_Construct    (Element);
-                  Rules.Style.        Process_Declaration  (Element);
-                  Rules.Unit_Pattern. Process_Program_Unit (Element);
-                  Rules.Usage.        Process_Declaration  (Element);
+                  Rules.Max_Size.       Process_Element      (Element);
+                  Rules.Style.          Process_Construct    (Element);
+                  Rules.Style.          Process_Declaration  (Element);
+                  Rules.Unit_Pattern.   Process_Program_Unit (Element);
+                  Rules.Usage.          Process_Declaration  (Element);
 
                when A_Protected_Body_Declaration =>
                   Rules.Max_Size.                       Process_Element        (Element);
@@ -449,6 +455,7 @@ package body Framework.Plugs is
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
                   Rules.With_Clauses.           Process_Instantiation         (Element);
+                  Rules.Max_Primitives.         Process_Instantiation         (Element);
 
                when A_Formal_Package_Declaration =>
                   Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
@@ -469,6 +476,7 @@ package body Framework.Plugs is
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
                   Rules.With_Clauses.           Process_Instantiation         (Element);
+                  Rules.Max_Primitives.         Process_Instantiation         (Element);
 
                when A_Function_Instantiation =>
                   Rules.Actual_Parameters.           Process_Call_Or_Instantiation (Element);
@@ -485,24 +493,27 @@ package body Framework.Plugs is
                   Rules.Unsafe_Unchecked_Conversion. Process_Instantiation         (Element);
                   Rules.Usage.                       Process_Instantiation         (Element);
                   Rules.With_Clauses.                Process_Instantiation         (Element);
+                  Rules.Max_Primitives.              Process_Instantiation         (Element);
 
                when A_Procedure_Declaration
                   | A_Procedure_Body_Stub
                     =>
-                  Rules.Derivations.            Process_Callable    (Element);
-                  Rules.Parameter_Declarations. Process_Declaration (Element);
-                  Rules.Style.                  Process_Declaration (Element);
-                  Rules.Usage.                  Process_Declaration (Element);
+                  Rules.Derivations.            Process_Callable               (Element);
+                  Rules.Parameter_Declarations. Process_Declaration            (Element);
+                  Rules.Style.                  Process_Declaration            (Element);
+                  Rules.Usage.                  Process_Declaration            (Element);
+                  Rules.Max_Primitives.         Process_Subprogram_Declaration (Element);
 
                when A_Function_Declaration
                   | An_Expression_Function_Declaration
                   | A_Function_Body_Stub
                     =>
-                  Rules.Derivations.            Process_Callable             (Element);
-                  Rules.Parameter_Declarations. Process_Declaration          (Element);
-                  Rules.Return_Type.            Process_Function_Declaration (Element);
-                  Rules.Style.                  Process_Declaration          (Element);
-                  Rules.Usage.                  Process_Declaration          (Element);
+                  Rules.Derivations.            Process_Callable               (Element);
+                  Rules.Parameter_Declarations. Process_Declaration            (Element);
+                  Rules.Return_Type.            Process_Function_Declaration   (Element);
+                  Rules.Style.                  Process_Declaration            (Element);
+                  Rules.Usage.                  Process_Declaration            (Element);
+                  Rules.Max_Primitives.         Process_Subprogram_Declaration (Element);
 
                when An_Entry_Declaration =>
                   Rules.Derivations.            Process_Callable    (Element);
@@ -535,6 +546,12 @@ package body Framework.Plugs is
                when A_Formal_Function_Declaration =>
                   Rules.Return_Type. Process_Function_Declaration (Element);
                   Rules.Style.       Process_Declaration          (Element);
+
+               when An_Incomplete_Type_Declaration =>
+                  Rules.Max_Primitives. Process_Type_Declaration (Element);
+
+               when A_Tagged_Incomplete_Type_Declaration =>
+                  Rules.Max_Primitives. Process_Type_Declaration (Element);
 
                when others =>
                  null;

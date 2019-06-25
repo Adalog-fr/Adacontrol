@@ -33,7 +33,7 @@ package Framework.Symbol_Table is
    -- This declaration is here for use in the private part of the generic,
    -- no use for the user
 
-   Max_Instances : constant := 6;
+   Max_Instances : constant := 7;
    -- Max allowed number of instantiations of Data_Access.
    -- Exceeding this number will immediately result in Failure
    -- If necessary, just increase the above constant, no other change required.

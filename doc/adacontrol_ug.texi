@@ -2893,6 +2893,7 @@ is a dispatching call.
 * Max_Expression_Items::
 * Max_Line_Length::
 * Max_Nesting::
+* Max_Primitives::
 * Max_Size::
 * Max_Statement_Nesting::
 * Movable_Accept_Statements::
@@ -6567,7 +6568,7 @@ search max_line_length (80);
 check max_line_length (120);
 @end example
 
-@node Max_Nesting, Max_Size, Max_Line_Length, Rules reference
+@node Max_Nesting, Max_Primitives, Max_Line_Length, Rules reference
 @section Max_Nesting
 This rule controls excessive nesting of declarations.
 
@@ -6614,7 +6615,55 @@ check max_nesting (separate, 0); -- Do not allow separate in separate
 check max_nesting (task, 0);     -- Do not allow a task in another task
 @end example
 
-@node Max_Size, Max_Statement_Nesting, Max_Nesting, Rules reference
+@node Max_Primitives, Max_Nesting, Max_Size, Rules reference
+@section Max_Primitives
+This rule controls excessive primitives of a type.
+
+@subsection Syntax
+@example
+<control_kind> max_primitives ([<visibility>] [<subrule>] <max allowed primitives>);
+<visibility> ::= visible | total
+<subrule>    ::= tagged | untagged
+@end example
+
+@subsection Action
+The first parameter is a visibility keyword:
+@itemize
+@item
+``visible'': controls type declaration that exceed a given
+depth only in the visible part of the package, so before the keywork @i{private}.
+@item
+``total'': controls type declaration that exceed a given
+depth at the end of the package declaration.
+@end itemize
+
+The second parameter is a subrule keyword:
+@itemize
+@item
+``tagged'': controls tagged types. It includes tasks and protected types that
+implements interface.
+@item
+``untagged'': controls untagged types. It includes tasks and protected types that
+do not implements interface.
+@end itemize
+
+Without parameters, the rule set the visibility to ``total'' and subrule to 
+``tagged'' and ``untagged''.  This rule can be given once for each subrule and 
+each of check, search, and count. This way, it is possible to have a level 
+considered a warning (search), and one considered an error (check). 
+Of course, this makes sense only if the level for search is less than the one for check.
+
+Note that the value given is the maximum @i{allowed} primitives.
+
+Ex:
+@example
+count max_primitives (2);
+search max_primitives (visible total 3);
+check max_primitives (visible total tagged 5);
+check max_primitives (tagged untagged 2);
+@end example
+
+@node Max_Size, Max_Statement_Nesting, Max_Primitives, Rules reference
 @section Max_Size
 This rule controls the maximum size, in source lines of code, of
 various statements and declarations.
