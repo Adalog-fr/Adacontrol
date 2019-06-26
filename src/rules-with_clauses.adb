@@ -349,11 +349,13 @@ package body Rules.With_Clauses is
             begin
                -- Check if for ancestor unit
                if Is_Ancestor (Definition_Compilation_Unit (Names (I)), This_Unit, Strict => True) then
-                  Report (Rule_Id,
-                          Ctl_Contexts (Sr_Reduceable),
-                          Get_Location (Names (I)),
-                          "With clause for ancestor unit " & Extended_Name_Image (Names (I)));
-                  Fixes.List_Remove (Deletions_Fix, I, From => Element);
+                  if Rule_Used (Sr_Reduceable) then
+                     Report (Rule_Id,
+                             Ctl_Contexts (Sr_Reduceable),
+                             Get_Location (Names (I)),
+                             "With clause for ancestor unit " & Extended_Name_Image (Names (I)));
+                     Fixes.List_Remove (Deletions_Fix, I, From => Element);
+                  end if;
                   Status := Redundant;
                else
                   -- Check if already there
@@ -365,12 +367,14 @@ package body Rules.With_Clauses is
                         if Withed_Units.Current_Origin /= Specification
                           or else not Required_For_Other_Context_Clauses (Names (I))
                         then
-                           Report (Rule_Id,
-                                   Ctl_Contexts (Sr_Reduceable),
-                                   Get_Location (Names (I)),
-                                   "With clause for " & Extended_Name_Image (Names (I))
-                                   & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
-                           Fixes.List_Remove (Deletions_Fix, I, From => Element);
+                           if Rule_Used (Sr_Reduceable) then
+                              Report (Rule_Id,
+                                      Ctl_Contexts (Sr_Reduceable),
+                                      Get_Location (Names (I)),
+                                      "With clause for " & Extended_Name_Image (Names (I))
+                                      & " redundant with clause at " & Image (Withed_Units.Current_Data.Loc));
+                              Fixes.List_Remove (Deletions_Fix, I, From => Element);
+                           end if;
                            Status := Redundant;
                            exit;
                         end if;
