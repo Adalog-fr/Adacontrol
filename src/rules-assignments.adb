@@ -60,6 +60,7 @@ package body Rules.Assignments is
    -- Algorithm:
    --
    -- Subrule Type:
+   -- -------------
    -- Easy. Since the same type can be used as full type and as component, we need two different context_store.
    --
    -- Subrule Sliding:
@@ -1285,6 +1286,11 @@ package body Rules.Assignments is
          Parent       : Asis.Expression;
          Parent_Key   : Unbounded_Wide_String;
          Parent_Descr : LHS_Descriptor;
+
+         -- Adaptor function for identifiers (rather than subtypes)
+         function Is_Class_Wide (E : Asis.Element) return Boolean is
+           (Is_Class_Wide_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition (E)));
+
       begin
          loop
             case Expression_Kind (Target) is
@@ -1293,7 +1299,7 @@ package body Rules.Assignments is
                   in A_Discriminant_Specification .. A_Component_Declaration
                   then
                      Parent := Prefix (Target);
-                     if Is_Access_Expression (Parent) then
+                     if Is_Access_Expression (Parent) or Is_Class_Wide (Parent) then
                         -- Implicit dereference
                         raise Dynamic_LHS;
                      end if;
@@ -1308,7 +1314,7 @@ package body Rules.Assignments is
 
                when An_Indexed_Component =>
                   Parent := Prefix (Target);
-                  if Is_Access_Expression (Parent) then
+                  if Is_Access_Expression (Parent)  or Is_Class_Wide (Parent) then
                      -- Implicit dereference
                      raise Dynamic_LHS;
                   end if;

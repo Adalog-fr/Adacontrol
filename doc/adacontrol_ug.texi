@@ -3519,9 +3519,9 @@ If several filters are given, the rule is triggered if all conditions
 are met (``and'' logic). Note however that this rule can be given
 several times, thus achieving ``or'' logic.
 
-The rule is @i{not} triggered on an object if a subcomponent of that object
-is of a limited type, since global assignment would not be allowed in
-that case.
+The rule is @i{not} triggered on an object if a subcomponent of that
+object is of a limited or class-wide type, since global assignment
+would not be allowed in that case.
 
 For other structured objects, a subcomponent is counted as assigned if
 it has been assigned in full, or if it @i{should} have been assigned
