@@ -189,7 +189,12 @@ if [ $SPEEDUP = 0 ] ; then
     test_case=tfw_set
     nb_fw=$((nb_fw+1))
     ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
-	| tr -d \\r >res/${test_case}.txt
+    | tr -d \\r >res/${test_case}.txt
+
+    test_case=tfw_fixes
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+    | tr -d \\r >res/${test_case}.txt
 
     put_line "--- Syntax check test"
     test_case=tfw_check

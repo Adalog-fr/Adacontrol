@@ -1,0 +1,11 @@
+search with_clauses;
+check comments (unnamed_begin, procedure);
+check naming_convention (others all, case_sensitive "^[A-Z]");
+check style (casing_pragma, uppercase);
+check style (casing_keyword, lowercase);
+check  simplifiable_expressions (conversion);
+search simplifiable_statements (if);
+search simplifiable_statements (dead);
+check unnecessary_use_clause;
+search style (multiple_elements);
+check reduceable_scope;

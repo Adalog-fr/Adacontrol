@@ -36,3 +36,4 @@ src/essai.*
 
 test/res/
 test/fixed/res
+coverage
