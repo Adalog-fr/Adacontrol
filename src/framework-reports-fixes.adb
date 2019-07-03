@@ -491,6 +491,10 @@ package body Framework.Reports.Fixes is
                      Elem      :        Asis.Element)
    is
    begin
+      if not Generate_Fixes then
+         return;
+      end if;
+
       Insert (Fix, Line_Delimiter, Place, Elem);
    end Break;
 
@@ -507,6 +511,10 @@ package body Framework.Reports.Fixes is
 
       Curs : Cursor := First (Fix);
    begin
+      if not Generate_Fixes then
+         return;
+      end if;
+
       -- Linear search, we expect only very short lists
       -- Keep the List_Remove fixes sorted by Inx, the first one holds the
       -- count of fixes.
@@ -571,7 +579,7 @@ package body Framework.Reports.Fixes is
                      if Current.Count = Names'Length then
                         Delete (Current.From);
 
-                        -- Remove fixes for the same clause
+                        -- Remove other fixes for the same clause
                         Delete_Curs := Next (Curs);
                         while Has_Element (Delete_Curs) loop
                            if Fetch (Delete_Curs).Kind = List_Remove then
