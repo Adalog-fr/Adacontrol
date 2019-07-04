@@ -9,8 +9,8 @@ procedure Groupable_Repeated is
          C1, C2 : Integer;
       end record;
    type Tab is array (1 .. 5) of Integer;
-   type TabRec is array (1..3) of Rec;
-   type MatRec is array (1..3, 1..4) of Rec;
+   type TabRec is array (1 .. 3) of Rec;
+   type MatRec is array (1 .. 3, 1 .. 4) of Rec;
    type RecRec is
       record
          X : Rec;
@@ -34,14 +34,14 @@ begin
 
    R.A := 1;
    R.B := 2;
-   R.C := 3;   -- Groupable1, Groupable2, Count
+   R.C := 3;        -- Groupable1, Groupable2, Count
 
-   T (1) := 1;   -- Repeated
+   T (1) := 1;      -- Repeated
    T (2) := 2;
    null;
    T (3) := 3;
    T (4) := 4;
-   T (5) := 5;   -- Groupable1, Groupable2, Count
+   T (5) := 5;      -- Groupable1, Groupable2, Count
 
    M (1, 1).A := 1;
    M (1, 1).B := 2; -- Groupable1
@@ -66,12 +66,12 @@ begin
 
    RR.X.A     := 1;
    RR.Y (2)   := 2;
-   RR.Z (1).B := 3;  -- OK by transitivity
-   RR.Z (2).C := 4;  -- OK by transitivity
+   RR.Z (1).B := 3; -- OK by transitivity
+   RR.Z (2).C := 4; -- OK by transitivity
 
-   RABis  := 1;      -- Repeated
-   RBBis  := 2;      -- Repeated
-   Rbis.C := 3;      -- Groupable1, Groupable2, Count
+   RABis  := 1;     -- Repeated
+   RBBis  := 2;     -- Repeated
+   Rbis.C := 3;     -- Groupable1, Groupable2, Count
 
    if False then
       null;
@@ -80,9 +80,9 @@ begin
    RR.X.A     := 1;
    RR.Y (2)   := 2;
    RR.Z (1).A := 3;
-   RR.Z (1).B := 4;  -- Groupable1
-   RR.Z (2).B := 4;  -- Groupable1 (RR.Z)
-   RR.Z (2).C := 5;  -- Groupable1
+   RR.Z (1).B := 4; -- Groupable1
+   RR.Z (2).B := 4; -- Groupable1 (RR.Z)
+   RR.Z (2).C := 5; -- Groupable1
 
    begin
       R.A := 1;
@@ -106,15 +106,15 @@ begin
    begin
       S.A := 1;
       S.B := 2;
-      S.C := 3;   -- Groupable1, Groupable2, Count
+      S.C := 3;     -- Groupable1, Groupable2, Count
 
       D.A := 1;
       D.B := 2;
-      D.C := 3;   -- Groupable1, Groupable2, Count
+      D.C := 3;     -- Groupable1, Groupable2, Count
 
       DS.A := 1;
       DS.B := 2;
-      DS.C := 3;   -- Groupable1, Groupable2, Count
+      DS.C := 3;    -- Groupable1, Groupable2, Count
    end;
 
    -- Check no triggering on limited variables
@@ -143,17 +143,17 @@ begin
    end;
 
    -- Simple variable
-Bl: declare
+   Bl : declare
       X : Integer;
       Y : Positive;
       Z : Integer renames X;
    begin
       X := 1;
       Y := 1;
-      X := 1;                                                -- Repeated
-      T_Assignments.Groupable_Repeated.Bl.X := 1;   -- Repeated
-      Z := 1;                                                -- Repeated
-      T_Assignments.Groupable_Repeated.Bl.Z := 1;   -- Repeated
+      X := 1;                                     -- Repeated
+      T_Assignments.Groupable_Repeated.Bl.X := 1; -- Repeated
+      Z := 1;                                     -- Repeated
+      T_Assignments.Groupable_Repeated.Bl.Z := 1; -- Repeated
    end Bl;
 
    -- Tagged types
@@ -169,9 +169,9 @@ Bl: declare
       V1 : T1;
       V2 : T2;
    begin
-      V1.I1 := 1;  -- Groupable2, Small_Rec, Count
+      V1.I1 := 1;           -- Groupable2, Small_Rec, Count
       V2.I1 := 1;
-      V2.I2 := 2;  -- Groupable1, Groupable2, Small_Rec, Count
+      V2.I2 := 2;           -- Groupable1, Groupable2, Small_Rec, Count
    end;
 
    -- Protected types         Mantis 0000009
@@ -188,10 +188,10 @@ Bl: declare
          procedure P is
          begin
             Prot.F1 := 1;
-            Prot.F1 := 2;         -- Repeated
+            Prot.F1 := 2;   -- Repeated
             Prot.F2 := 1;
             Prot.F3.A := 1;
-            Prot.F3.B := 1;       -- Groupable1
+            Prot.F3.B := 1; -- Groupable1
             null;
          end P;
       end Prot;
@@ -199,4 +199,28 @@ Bl: declare
       null;
    end;
 
+   -- Class-wide, not groupable
+   Case_Tagged :
+   declare
+      package Pack is
+         type Tag is tagged
+            record
+               I : Integer;
+               J : Integer;
+            end record;
+      end Pack;
+
+      procedure P (X : out Pack.Tag) is
+      begin
+         X.I := 1;
+         X.J := 2;          -- Groupable1, Groupable2, Small_Rec
+      end P;
+      procedure Q (X : out Pack.Tag'Class) is
+      begin
+         X.I := 1;
+         X.J := 2;          -- OK (class-wide)
+      end Q;
+   begin
+      null;
+   end Case_Tagged;
 end Groupable_Repeated;

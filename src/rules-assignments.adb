@@ -1289,18 +1289,47 @@ package body Rules.Assignments is
 
          -- Adaptor function for identifiers (rather than subtypes)
          function Is_Class_Wide (E : Asis.Element) return Boolean is
-           (Is_Class_Wide_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition (E)));
+            Simple_E : constant Asis.Expression := Simple_Name (E);
+            Decl     : Asis.Declaration;
+         begin
+            case Expression_Kind (Simple_E) is
+               when A_Type_Conversion | A_Qualified_Expression =>
+                  if Expression_Kind (Simple_E) = An_Attribute_Reference then
+                     -- Can only be 'Base or 'Class, and 'Base is not applicable to class-wide types
+                     return Attribute_Kind (Prefix (Simple_E)) = A_Class_Attribute;
+                  end if;
+                  return Is_Class_Wide_Subtype (Type_Declaration_View (Corresponding_Name_Declaration
+                                                                       (Converted_Or_Qualified_Subtype_Mark
+                                                                        (Simple_E))));
+               when An_Indexed_Component | A_Slice =>
+                  -- array elements cannot be class-wide
+                  return False;
+               when An_Explicit_Dereference =>
+                  return Is_Class_Wide_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition (Simple_E));
+               when An_Identifier =>
+                  Decl := Corresponding_Name_Declaration (Simple_E);
+                  case Declaration_Kind (Decl) is
+                     when An_Element_Iterator_Specification =>
+                        -- Certainly not class-wide...
+                        return False;
+                     when others =>
+                        return Is_Class_Wide_Subtype (Object_Declaration_View (Decl));
+                  end case;
+               when others =>
+                    Failure ("Is_Class_Wide: unexpected prefix", E);
+            end case;
+         end Is_Class_Wide;
 
-      begin
+      begin  -- Process_Assignment
          loop
             case Expression_Kind (Target) is
                when A_Selected_Component =>
                   if Declaration_Kind (Corresponding_Name_Declaration (Selector (Target)))
-                  in A_Discriminant_Specification .. A_Component_Declaration
+                     in A_Discriminant_Specification .. A_Component_Declaration
                   then
                      Parent := Prefix (Target);
-                     if Is_Access_Expression (Parent) or Is_Class_Wide (Parent) then
-                        -- Implicit dereference
+                     if Is_Access_Expression (Parent) or else Is_Class_Wide (Parent) then
+                        -- Implicit dereference, or class-wide parent (no aggregate allowed)
                         raise Dynamic_LHS;
                      end if;
                      Process_Assignment (Parent, Component, Key);
@@ -1314,8 +1343,8 @@ package body Rules.Assignments is
 
                when An_Indexed_Component =>
                   Parent := Prefix (Target);
-                  if Is_Access_Expression (Parent)  or Is_Class_Wide (Parent) then
-                     -- Implicit dereference
+                  if Is_Access_Expression (Parent) or else Is_Class_Wide (Parent) then
+                     -- Implicit dereference, or class-wide parent (no aggregate allowed)
                      raise Dynamic_LHS;
                   end if;
                   Process_Assignment (Parent, Component, Key);

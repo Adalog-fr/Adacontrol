@@ -57,6 +57,9 @@ t_assignments-groupable_repeated.adb:174:7: Error: Groupable2: too many assignme
 t_assignments-groupable_repeated.adb:174:7: Error: Small_Rec: too many assignments to components of T_Assignments.Groupable_Repeated._Anonymous_.V2, total: 2 (<=2)
 t_assignments-groupable_repeated.adb:191:13: Error: Repeated: variable already assigned in same group at t_assignments-groupable_repeated.adb:190:13
 t_assignments-groupable_repeated.adb:194:13: Found: Groupable1: too many assignments to components of T_Assignments.Groupable_Repeated._Anonymous_.Prot.F3, given: 2 (>=2), missing: 1 (<=1)
+t_assignments-groupable_repeated.adb:216:10: Found: Groupable1: too many assignments to components of T_Assignments.Groupable_Repeated.Case_Tagged.P.X, given: 2 (>=2), missing: 0 (<=1)
+t_assignments-groupable_repeated.adb:216:10: Error: Groupable2: too many assignments to components of T_Assignments.Groupable_Repeated.Case_Tagged.P.X, ratio: 100 (>=75)
+t_assignments-groupable_repeated.adb:216:10: Error: Small_Rec: too many assignments to components of T_Assignments.Groupable_Repeated.Case_Tagged.P.X, total: 2 (<=2)
 t_assignments-access_duplication.adb:13:20: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
 t_assignments-access_duplication.adb:18:24: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
 t_assignments-access_duplication.adb:37:18: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
@@ -96,4 +99,4 @@ t_assignments-access_duplication.adb:199:13: Error: Acc_Dup: Duplication of not 
 t_assignments-access_duplication.adb:204:18: Error: Proc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:9:21
 
 Counts summary:
-Fully_Assigned: 8
+Fully_Assigned: 9
